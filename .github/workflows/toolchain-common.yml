@@ -1,4 +1,8 @@
-name: Build Game with VC6
+name: Common Toolchain
+
+permissions:
+  contents: read
+  pull-requests: write
 
 on:
   workflow_call:
@@ -6,17 +10,26 @@ on:
       game:
         required: true
         type: string
-        description: "Game to build (Generals or GeneralsMD)"
+        description: "Game to build (Generals, GeneralsMD)"
+      preset:
+        required: true
+        type: string
+        description: "CMake preset"
+      tools:
+        default: false
+        type: boolean
+        description: "Build tools"
 
 jobs:
   build:
     runs-on: windows-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Cache VC6 installation
+        if: startsWith(inputs.preset, 'vc6')
         id: cache-vc6
         uses: actions/cache@v4
         with:
@@ -27,13 +40,13 @@ jobs:
         id: cache-cmake-deps
         uses: actions/cache@v4
         with:
-          path: build\vc6\_deps
-          key: cmake-deps-${{ hashFiles('cmake/**/*.cmake', '**/CMakeLists.txt') }}
+          path: build\${{ inputs.preset }}\_deps
+          key: cmake-deps-${{ inputs.preset }}-${{ hashFiles('cmake/**/*.cmake', '**/CMakeLists.txt') }}
           restore-keys: |
-            cmake-deps-
+            cmake-deps-${{ inputs.preset }}-
 
       - name: Download VC6 Portable from Cloudflare R2
-        if: steps.cache-vc6.outputs.cache-hit != 'true'
+        if: ${{ startsWith(inputs.preset, 'vc6') && steps.cache-vc6.outputs.cache-hit != 'true' }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
@@ -56,14 +69,12 @@ jobs:
           Write-Host "Extracting archive..."
           & 7z x VS6_VisualStudio6.7z -oC:\VC6
 
-          Write-Host "Cleaning up downloaded archive"
-          Remove-Item VS6_VisualStudio6.7z
+          Remove-Item VS6_VisualStudio6.7z -Verbose
 
       - name: Set up VC6 environment
+        if: startsWith(inputs.preset, 'vc6')
         shell: pwsh
         run: |
-          Write-Host "Setting up environment for using Microsoft Visual C++ tools"
-
           # Define the base directories as local variables first
           $VSCommonDir = "C:\VC6\VC6SP6\Common"
           $MSDevDir = "C:\VC6\VC6SP6\Common\msdev98"
@@ -75,54 +86,45 @@ jobs:
           "MSDevDir=$MSDevDir" >> $env:GITHUB_ENV
           "MSVCDir=$MSVCDir" >> $env:GITHUB_ENV
           "VcOsDir=$VcOsDir" >> $env:GITHUB_ENV
-
-          # Set PATH
           "PATH=$MSDevDir\BIN;$MSVCDir\BIN;$VSCommonDir\TOOLS\$VcOsDir;$VSCommonDir\TOOLS;$env:PATH" >> $env:GITHUB_ENV
-
-          # Set INCLUDE
           "INCLUDE=$MSVCDir\ATL\INCLUDE;$MSVCDir\INCLUDE;$MSVCDir\MFC\INCLUDE;$env:INCLUDE" >> $env:GITHUB_ENV
-
-          # Set LIB
           "LIB=$MSVCDir\LIB;$MSVCDir\MFC\LIB;$env:LIB" >> $env:GITHUB_ENV
 
-      - name: Build with CMake using VC6 preset
+      - name: Build ${{ inputs.game }} with CMake using ${{ inputs.preset }} preset
         shell: pwsh
         run: |
-          Write-Host "Configuring project with CMake using VC6 preset - building only ${{ inputs.game }}"
+          Write-Host "Configuring project with CMake using preset: ${{ inputs.game }} (${{ inputs.preset }})"
 
-          # Set build flags based on game
+          # Set build flags based on game and tools
           if ("${{ inputs.game }}" -eq "Generals") {
-            $buildFlags = @("-DGENZH_BUILD_ZEROHOUR=OFF", "-DGENZH_BUILD_GENERALS=ON", "-DGENZH_BUILD_GENERALS_TOOLS=ON")
+            $buildFlags = @("-DGENZH_BUILD_ZEROHOUR=OFF", "-DGENZH_BUILD_GENERALS=ON")
+            if ("${{ inputs.tools }}" -eq "true") {
+              $buildFlags += "-DGENZH_BUILD_GENERALS_TOOLS=ON"
+            }
           } else {
-            $buildFlags = @("-DGENZH_BUILD_ZEROHOUR=ON", "-DGENZH_BUILD_GENERALS=OFF", "-DGENZH_BUILD_ZEROHOUR_TOOLS=ON")
+            $buildFlags = @("-DGENZH_BUILD_ZEROHOUR=ON", "-DGENZH_BUILD_GENERALS=OFF")
+            if ("${{ inputs.tools }}" -eq "true") {
+              $buildFlags += "-DGENZH_BUILD_ZEROHOUR_TOOLS=ON"
+            }
           }
 
-          cmake --preset vc6 $buildFlags
+          cmake --preset ${{ inputs.preset }} $buildFlags
 
-          Write-Host "Building project with CMake using VC6 preset - building only ${{ inputs.game }}"
+          Write-Host "Building project with CMake using preset: ${{ inputs.game }} (${{ inputs.preset }})"
 
-          $buildDir = "build/vc6"
-          "buildDir=$buildDir" >> $env:GITHUB_ENV
+          $buildDir = "build\${{ inputs.preset }}"
 
           cmake --build $buildDir
 
-          Write-Host "Collecting ${{ inputs.game }} tools"
-          $toolsDir = New-Item -ItemType Directory -Force -Path "$buildDir\${{ inputs.game }}\Tools"
-          $files = Get-ChildItem -Path "$buildDir\${{ inputs.game }}" -File | Where-Object { ($_.Extension -eq ".exe" -or $_.Extension -eq ".dll") -and $_.Name -ne "generals.exe" }
-          $files | Move-Item -Destination $toolsDir
+          Write-Host "Collecting ${{ inputs.game }} artifacts"
+          $artifactsDir = New-Item -ItemType Directory -Force -Path "$buildDir\${{ inputs.game }}\artifacts" -Verbose
+          $files = Get-ChildItem -Path "$buildDir\${{ inputs.game }}" -File | Where-Object { $_.Extension -in @(".exe", ".dll", ".pdb") } -Verbose
+          $files | Move-Item -Destination $artifactsDir -Verbose
 
-      - name: Upload ${{ inputs.game }} executable
+      - name: Upload ${{ inputs.game }} (${{ inputs.preset }}) artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.game }}
-          path: ${{ env.buildDir }}/${{ inputs.game }}/generals.exe
-          retention-days: 30
-          if-no-files-found: error
-
-      - name: Upload ${{ inputs.game }} tools
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ inputs.game }}-Tools
-          path: ${{ env.buildDir }}/${{ inputs.game }}/Tools
+          name: ${{ inputs.game }}-${{ inputs.preset }}${{ inputs.tools == true && '+tools' || '' }}
+          path: build\${{ inputs.preset }}\${{ inputs.game }}\artifacts
           retention-days: 30
           if-no-files-found: error
