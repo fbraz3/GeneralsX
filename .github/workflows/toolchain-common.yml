@@ -100,11 +100,13 @@ jobs:
             $buildFlags = @("-DGENZH_BUILD_ZEROHOUR=OFF", "-DGENZH_BUILD_GENERALS=ON")
             if ("${{ inputs.tools }}" -eq "true") {
               $buildFlags += "-DGENZH_BUILD_GENERALS_TOOLS=ON"
+              $buildFlags += "-DGENZH_BUILD_GENERALS_EXTRAS=ON"
             }
           } else {
             $buildFlags = @("-DGENZH_BUILD_ZEROHOUR=ON", "-DGENZH_BUILD_GENERALS=OFF")
             if ("${{ inputs.tools }}" -eq "true") {
               $buildFlags += "-DGENZH_BUILD_ZEROHOUR_TOOLS=ON"
+              $buildFlags += "-DGENZH_BUILD_ZEROHOUR_EXTRAS=ON"
             }
           }
 
