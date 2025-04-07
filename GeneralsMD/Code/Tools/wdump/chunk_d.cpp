@@ -1052,6 +1052,70 @@ void	ChunkTableClass::List_W3D_CHUNK_PS2_SHADERS(ChunkItem * Item,CListCtrl *Lis
 	}
 }
 
+void	ChunkTableClass::List_W3D_CHUNK_FX_SHADERS(ChunkItem * Item,CListCtrl *List)
+{
+	List_Subitems(Item,List);
+}
+
+void	ChunkTableClass::List_W3D_CHUNK_FX_SHADER(ChunkItem* Item, CListCtrl* List)
+{
+	List_Subitems(Item, List);
+}
+
+void	ChunkTableClass::List_W3D_CHUNK_FX_SHADER_INFO(ChunkItem* Item, CListCtrl* List)
+{
+	uint8 version = *(uint8*)Item->Data;
+	W3dFXShaderInfoStruct* shaderinfo = (W3dFXShaderInfoStruct*)((uint8*)Item->Data + 1);
+	int counter = 0;
+
+	AddItem(List, counter, "Version", version);
+	AddItem(List, counter, "ShaderName", shaderinfo->ShaderName);
+	AddItem(List, counter, "Technique", shaderinfo->Technique);
+}
+
+void	ChunkTableClass::List_W3D_CHUNK_FX_SHADER_CONSTANT(ChunkItem* Item, CListCtrl* List)
+{
+	int counter = 0;
+	uint8 *chunkdata = (uint8 *)Item->Data;
+	uint32 type = *(uint32 *)chunkdata;
+	chunkdata += 4;
+	// Includes the null terminator
+	uint32 constantstrlen = *(uint32 *)chunkdata;
+	chunkdata += 4;
+	char* constantname = (char*)chunkdata;
+	chunkdata += constantstrlen;
+	AddItem(List, counter, "Type", type);
+	AddItem(List, counter, "ConstantName", constantname);
+	if (type == CONSTANT_TYPE_TEXTURE)
+	{
+		// This is hopefully also null-terminated
+		uint32 texturestrlen = *(uint32 *)chunkdata;
+		chunkdata += 4;
+		char* texture = (char*)chunkdata;
+		AddItem(List, counter, "Texture", texture);
+	}
+	else if (type >= CONSTANT_TYPE_FLOAT1 && type <= CONSTANT_TYPE_FLOAT4)
+	{
+		int count = type - 1;
+		float* floats = (float*)chunkdata;
+		AddItem(List, counter, "Floats", floats, count);
+	}
+	else if (type == CONSTANT_TYPE_INT)
+	{
+		uint32 u = *(uint32*)chunkdata;
+		AddItem(List, counter, "Int", u);
+	}
+	else if (type == CONSTANT_TYPE_BOOL)
+	{
+		uint8 u = *(uint8*)chunkdata;
+		AddItem(List, counter, "Bool", u);
+	}
+	else
+	{
+		AddItem(List, counter, "Unknown", "Unknown");
+	}
+}
+
 void	ChunkTableClass::List_W3D_CHUNK_TEXTURES(ChunkItem * Item,CListCtrl *List)
 {
 	List_Subitems(Item,List);
@@ -1178,6 +1242,24 @@ void	ChunkTableClass::List_W3D_CHUNK_SCG(ChunkItem * Item,CListCtrl *List)
 	
 		sprintf(buf, "Vertex[%d].SCG", counter);
 		AddItem(List, Counter,buf, data);
+
+		counter++;
+		data++;
+	}
+}
+
+void	ChunkTableClass::List_W3D_CHUNK_FXSHADER_IDS(ChunkItem* Item, CListCtrl* List)
+{
+	int Counter = 0;
+	int counter = 0;
+	uint32* data = (uint32*)Item->Data;
+	void* max = (char*)Item->Data + Item->Length;
+	char buf[256];
+
+	while (data < max) {
+
+		sprintf(buf, "Vertex[%d] FXShader Index", counter);
+		AddItem(List, Counter, buf, *data);
 
 		counter++;
 		data++;
@@ -2057,6 +2139,10 @@ ChunkTableClass::ChunkTableClass() {
 	NewType( W3D_CHUNK_VERTEX_SHADE_INDICES, "W3D_CHUNK_VERTEX_SHADE_INDICES",List_W3D_CHUNK_VERTEX_SHADE_INDICES);
 	NewType( W3D_CHUNK_MATERIAL_INFO,"W3D_CHUNK_MATERIAL_INFO",List_W3D_CHUNK_MATERIAL_INFO);
 	NewType( W3D_CHUNK_SHADERS,"W3D_CHUNK_SHADERS",List_W3D_CHUNK_SHADERS);
+	NewType( W3D_CHUNK_FX_SHADERS,"W3D_CHUNK_FX_SHADERS",List_W3D_CHUNK_FX_SHADERS, true);
+	NewType( W3D_CHUNK_FX_SHADER,"W3D_CHUNK_FX_SHADER",List_W3D_CHUNK_FX_SHADER, true);
+	NewType( W3D_CHUNK_FX_SHADER_INFO, "W3D_CHUNK_FX_SHADER_INFO", List_W3D_CHUNK_FX_SHADER_INFO);
+	NewType( W3D_CHUNK_FX_SHADER_CONSTANT, "W3D_CHUNK_FX_SHADER_CONSTANT", List_W3D_CHUNK_FX_SHADER_CONSTANT);
 	NewType( W3D_CHUNK_PS2_SHADERS,"W3D_CHUNK_PS2_SHADERS",List_W3D_CHUNK_PS2_SHADERS);
 
 	NewType( W3D_CHUNK_VERTEX_MATERIALS, "W3D_CHUNK_VERTEX_MATERIALS",List_W3D_CHUNK_VERTEX_MATERIALS,true);
@@ -2077,7 +2163,8 @@ ChunkTableClass::ChunkTableClass() {
 	NewType( W3D_CHUNK_DCG, "W3D_CHUNK_DCG", List_W3D_CHUNK_DCG);
 	NewType( W3D_CHUNK_DIG, "W3D_CHUNK_DIG", List_W3D_CHUNK_DIG);
 	NewType( W3D_CHUNK_SCG, "W3D_CHUNK_SCG", List_W3D_CHUNK_SCG);
-	
+	NewType( W3D_CHUNK_FXSHADER_IDS, "W3D_CHUNK_FXSHADER_IDS", List_W3D_CHUNK_FXSHADER_IDS);
+
 	NewType( W3D_CHUNK_TEXTURE_STAGE, "W3D_CHUNK_TEXTURE_STAGE", List_W3D_CHUNK_TEXTURE_STAGE,true);
 	NewType( W3D_CHUNK_TEXTURE_IDS, "W3D_CHUNK_TEXTURE_IDS", List_W3D_CHUNK_TEXTURE_IDS);
 	NewType( W3D_CHUNK_STAGE_TEXCOORDS, "W3D_CHUNK_STAGE_TEXCOORDS", List_W3D_CHUNK_STAGE_TEXCOORDS);
