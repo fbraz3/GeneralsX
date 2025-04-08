@@ -1056,7 +1056,7 @@ set(GAMEENGINE_SRC
     Include/Precompiled/PreRTS.h
 )
 
-if(GENZH_GAMEMEMORY_ENABLE)
+if(RTS_GAMEMEMORY_ENABLE)
     # Uses the original Game Memory implementation.
     list(APPEND GAMEENGINE_SRC
         Source/Common/System/GameMemory.cpp
@@ -1091,8 +1091,8 @@ target_link_libraries(g_gameengine PUBLIC
     g_browserdispatch
     g_compression
     g_wwvegas
-    gz_config
-    gz_utility
+    core_config
+    core_utility
     gamespy::gamespy
     stlport
 )

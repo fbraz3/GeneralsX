@@ -25,7 +25,7 @@ target_include_directories(gi_libraries_source_wwvegas_wwsaveload INTERFACE "Lib
 target_include_directories(gi_main INTERFACE "Main")
 target_link_libraries(gi_always INTERFACE
     gi_libraries_include
-    gz_utility
+    core_utility
 )
 
 # Contains internal libraries
@@ -40,6 +40,6 @@ add_subdirectory(GameEngineDevice)
 # Contains the main game exe target.
 add_subdirectory(Main)
 
-if (GENZH_BUILD_GENERALS_TOOLS OR GENZH_BUILD_GENERALS_EXTRAS)
+if (RTS_BUILD_GENERALS_TOOLS OR RTS_BUILD_GENERALS_EXTRAS)
     add_subdirectory(Tools)
 endif()
