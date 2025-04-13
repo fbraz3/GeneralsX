@@ -12,7 +12,6 @@ set(GAMEENGINE_SRC
     Source/Common/System/AsciiString.cpp
     Source/Common/System/BuildAssistant.cpp
     Source/Common/System/CDManager.cpp
-    Source/Common/System/Compression.cpp
     Source/Common/System/CopyProtection.cpp
     Source/Common/System/CriticalSection.cpp
     Source/Common/System/DataChunk.cpp
@@ -33,7 +32,6 @@ set(GAMEENGINE_SRC
     Source/Common/System/LocalFileSystem.cpp
     #Source/Common/System/MemoryInit.cpp
     Source/Common/System/ObjectStatusTypes.cpp
-    Source/Common/System/QuickTrig.cpp
     Source/Common/System/QuotedPrintable.cpp
     Source/Common/System/Radar.cpp
     Source/Common/System/RAMFile.cpp
@@ -41,7 +39,6 @@ set(GAMEENGINE_SRC
     Source/Common/System/Snapshot.cpp
     Source/Common/System/StackDump.cpp
     Source/Common/System/StreamingArchiveFile.cpp
-    Source/Common/System/String.cpp
     Source/Common/System/SubsystemInterface.cpp
     Source/Common/System/Trig.cpp
     Source/Common/System/UnicodeString.cpp
@@ -365,7 +362,6 @@ set(GAMEENGINE_SRC
     Source/GameClient/Drawable/Update/BeaconClientUpdate.cpp
     Source/GameLogic/Object/Update/LaserUpdate.cpp
     Source/GameClient/Drawable/Update/SwayClientUpdate.cpp
-    Source/GameClient/Drawable/DrawableManager.cpp
     "Source/GameClient/System/Debug Displayers/AudioDebugDisplay.cpp"
     Source/GameClient/System/Anim2D.cpp
     Source/GameClient/System/CampaignManager.cpp
@@ -630,7 +626,6 @@ set(GAMEENGINE_SRC
     Include/Common/PlayerTemplate.h
     Include/Common/ProductionPrerequisite.h
     Include/Common/QuickmatchPreferences.h
-    Include/Common/QuickTrig.h
     Include/Common/QuotedPrintable.h
     Include/Common/Radar.h
     Include/Common/RAMFile.h
@@ -652,7 +647,6 @@ set(GAMEENGINE_SRC
     Include/Common/StatsCollector.h
     Include/Common/STLTypedefs.h
     Include/Common/StreamingArchiveFile.h
-    Include/Common/string.h
     Include/Common/SubsystemInterface.h
     Include/Common/SystemInfo.h
     Include/Common/Team.h
@@ -932,7 +926,6 @@ set(GAMEENGINE_SRC
     Include/GameClient/DisplayStringManager.h
     Include/GameClient/Drawable.h
     Include/GameClient/DrawableInfo.h
-    Include/GameClient/DrawableManager.h
     Include/GameClient/DrawGroupInfo.h
     Include/GameClient/EstablishConnectionsMenu.h
     Include/GameClient/Eva.h

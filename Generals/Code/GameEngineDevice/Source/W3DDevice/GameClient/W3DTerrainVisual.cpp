@@ -48,7 +48,6 @@
 #include "W3DDevice/GameClient/W3DDisplay.h"
 #include "W3DDevice/GameClient/W3DDebugIcons.h"
 #include "W3DDevice/GameClient/W3DTerrainTracks.h"
-#include "W3DDevice/GameClient/W3DGranny.h"
 #include "W3DDevice/GameClient/W3DShadow.h"
 #include "W3DDevice/GameClient/HeightMap.h"
 #include "WW3D2/light.h"

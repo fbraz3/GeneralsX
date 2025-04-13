@@ -45,7 +45,6 @@
 #include "Common/ThingTemplate.h"
 #include "Common/GameLOD.h"
 #include "Common/Xfer.h"
-#include "Common/QuickTrig.h"
 #include "GameClient/Drawable.h"
 #include "GameClient/FXList.h"
 #include "GameClient/Shadow.h"

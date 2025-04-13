@@ -40,7 +40,6 @@
 #include "Common/TerrainTypes.h"
 #include "Common/Xfer.h"
 #include "Common/UnitTimings.h" //Contains the DO_UNIT_TIMINGS define jba.		 
-#include "Common/QuickTrig.h"
 
 #include "GameClient/Drawable.h"
 #include "GameClient/ClientRandomValue.h"
@@ -55,7 +54,6 @@
 #include "W3DDevice/GameClient/W3DDisplay.h"
 #include "W3DDevice/GameClient/W3DDebugIcons.h"
 #include "W3DDevice/GameClient/W3DTerrainTracks.h"
-#include "W3DDevice/GameClient/W3DGranny.h"
 #include "W3DDevice/GameClient/W3DShadow.h"
 #include "W3DDevice/GameClient/HeightMap.h"
 #include "W3DDevice/GameClient/FlatHeightMap.h"
