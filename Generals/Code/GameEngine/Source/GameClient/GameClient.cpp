@@ -514,7 +514,7 @@ void GameClient::update( void )
 	//Initial Game Codition.  We must show the movie first and then we can display the shell	
 	if(TheGlobalData->m_afterIntro && !TheDisplay->isMoviePlaying())
 	{
-		if( playSizzle)
+		if( playSizzle && TheGlobalData->m_playSizzle)
 		{
 			TheWritableGlobalData->m_allowExitOutOfMovies = TRUE;
 			if(TheGameLODManager && TheGameLODManager->didMemPass())

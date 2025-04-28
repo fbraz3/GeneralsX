@@ -518,6 +518,7 @@ GlobalData* GlobalData::m_theOriginal = NULL;
 	{ "UseLocalMOTD",								INI::parseBool,				NULL,			offsetof( GlobalData, m_useLocalMOTD ) },
 	{ "BaseStatsDir",								INI::parseAsciiString,NULL,			offsetof( GlobalData, m_baseStatsDir ) },
 	{ "LocalMOTDPath",							INI::parseAsciiString,NULL,			offsetof( GlobalData, m_MOTDPath ) },
+	{ "ExtraLogging",								INI::parseBool,				NULL,			offsetof(GlobalData, m_extraLogging) },
 #endif
 
 	{ NULL,					NULL,						NULL,						0 }  // keep this last
@@ -581,6 +582,7 @@ GlobalData::GlobalData()
 	m_useLocalMOTD = FALSE;
 	m_baseStatsDir = ".\\";
 	m_MOTDPath = "MOTD.txt";
+	m_extraLogging = FALSE;
 #endif
 
 #ifdef DEBUG_CRASHING
@@ -957,6 +959,7 @@ GlobalData::GlobalData()
 	m_shellMapName.set("Maps\\ShellMap1\\ShellMap1.map");
 	m_shellMapOn =TRUE;
 	m_playIntro = TRUE;
+	m_playSizzle = TRUE;
 	m_afterIntro = FALSE;
 	m_allowExitOutOfMovies = FALSE;
 	m_loadScreenRender = FALSE;

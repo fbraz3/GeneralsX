@@ -326,6 +326,7 @@ public:
 	AsciiString m_shellMapName;				///< Holds the shell map name
 	Bool m_shellMapOn;								///< User can set the shell map not to load
 	Bool m_playIntro;									///< Flag to say if we're to play the intro or not
+	Bool m_playSizzle;								///< Flag to say whether we play the sizzle movie after the logo movie.
 	Bool m_afterIntro;								///< we need to tell the game our intro is done
 	Bool m_allowExitOutOfMovies;			///< flag to allow exit out of movies only after the Intro has played
 
@@ -480,6 +481,7 @@ public:
 	Int m_latencyPeriod;					///< Period of sinusoidal modulation of latency
 	Int m_latencyNoise;						///< Max amplitude of jitter to throw in
 	Int m_packetLoss;							///< Percent of packets to drop
+	Bool m_extraLogging;					///< More expensive debug logging to catch crashes.
 #endif
 
 #ifdef DEBUG_CRASHING

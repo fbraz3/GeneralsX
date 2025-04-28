@@ -1,5 +1,5 @@
 /*
-**	Command & Conquer Generals(tm)
+**	Command & Conquer Generals Zero Hour(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -33,6 +33,14 @@
 #include "GameClient/TerrainVisual.h" // for TERRAIN_LOD_MIN definition
 #include "GameClient/GameText.h"
 #include "GameNetwork/NetworkDefs.h"
+
+#ifdef _INTERNAL
+// for occasional debugging...
+//#pragma optimize("", off)
+//#pragma MESSAGE("************************************** WARNING, optimization disabled for debugging purposes")
+#endif
+
+
 
 Bool TheDebugIgnoreSyncErrors = FALSE;
 extern Int DX8Wrapper_PreserveFPU;
@@ -644,7 +652,18 @@ Int parseBuildMapCache(char *args[], int)
 	return 1;
 }
 
-#if defined(_DEBUG) || defined(_INTERNAL)
+
+#if defined(_DEBUG) || defined(_INTERNAL) || defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
+Int parsePreload( char *args[], int num )
+{
+	if( TheWritableGlobalData )
+		TheWritableGlobalData->m_preloadAssets = TRUE;
+	return 1;
+}
+#endif
+
+
+#if defined(_DEBUG) || defined(_INTERNAL) 
 Int parseDisplayDebug(char *args[], int)
 {
 	if (TheWritableGlobalData)
@@ -664,12 +683,6 @@ Int parseFile(char *args[], int num)
 	return 2;
 }
 
-Int parsePreload( char *args[], int num )
-{
-	if( TheWritableGlobalData )
-		TheWritableGlobalData->m_preloadAssets = TRUE;
-	return 1;
-}
 
 Int parsePreloadEverything( char *args[], int num )
 {
@@ -777,6 +790,15 @@ Int parseNoShellMap(char *args[], int)
 	return 1;
 }
 
+Int parseNoShaders(char *args[], int)
+{
+	if (TheWritableGlobalData)
+	{
+		TheWritableGlobalData->m_chipSetType = 1;	//force to a voodoo card which uses least amount of features.
+	}
+	return 1;
+}
+
 #if (defined(_DEBUG) || defined(_INTERNAL))
 Int parseNoLogo(char *args[], int)
 {
@@ -784,10 +806,20 @@ Int parseNoLogo(char *args[], int)
 	{
 		TheWritableGlobalData->m_playIntro = FALSE;
 		TheWritableGlobalData->m_afterIntro = TRUE;
+		TheWritableGlobalData->m_playSizzle = FALSE;
 	}
 	return 1;
 }
 #endif
+
+Int parseNoSizzle( char *args[], int )
+{
+	if (TheWritableGlobalData)
+	{
+		TheWritableGlobalData->m_playSizzle = FALSE;
+	}
+	return 1;
+}
 
 Int parseShellMap(char *args[], int num)
 {
@@ -820,6 +852,10 @@ Int parseQuickStart( char *args[], int num )
 {
 #if (defined(_DEBUG) || defined(_INTERNAL))
   parseNoLogo( args, num );
+#else
+	//Kris: Patch 1.01 -- Allow release builds to skip the sizzle video, but still force the EA logo to show up.
+	//This is for legal reasons.
+	parseNoSizzle( args, num );
 #endif
 	parseNoShellMap( args, num );
 	parseNoWindowAnimation( args, num );
@@ -834,6 +870,29 @@ Int parseConstantDebug( char *args[], int num )
 	}
 	return 1;
 }
+
+#if (defined(_DEBUG) || defined(_INTERNAL))
+Int parseExtraLogging( char *args[], int num )
+{
+	if (TheWritableGlobalData)
+	{
+		TheWritableGlobalData->m_extraLogging = TRUE;
+	}
+	return 1;
+}
+#endif
+
+//-allAdvice feature
+/*
+Int parseAllAdvice( char *args[], int num )
+{
+	if( TheWritableGlobalData )
+	{
+		TheWritableGlobalData->m_allAdvice = TRUE;
+	}
+	return 1;
+}
+*/
 
 Int parseShowTeamDot( char *args[], int num )
 {
@@ -973,6 +1032,20 @@ Int parseBenchmark(char *args[], int num)
 }
 #endif
 
+#if defined(_DEBUG) || defined(_INTERNAL)
+#ifdef DUMP_PERF_STATS
+Int parseStats(char *args[], int num)
+{
+	if (TheWritableGlobalData && num > 1)
+	{
+		TheWritableGlobalData->m_dumpStatsAtInterval = TRUE;
+		TheWritableGlobalData->m_statsInterval  = atoi(args[1]);
+	}
+	return 2;
+}
+#endif
+#endif
+
 #ifdef DEBUG_CRASHING
 Int parseIgnoreAsserts(char *args[], int num)
 {
@@ -1056,14 +1129,14 @@ Int parseMod(char *args[], Int num)
 		}
 
 		// now check for dir-ness
-		struct stat statBuf;
-		if (stat(modPath.str(), &statBuf) != 0)
+		struct _stat statBuf;
+		if (_stat(modPath.str(), &statBuf) != 0)
 		{
 			DEBUG_LOG(("Could not _stat() mod.\n"));
 			return 2; // could not stat the file/dir.
 		}
 
-		if (statBuf.st_mode & S_IFDIR)
+		if (statBuf.st_mode & _S_IFDIR)
 		{
 			if (!modPath.endsWith("\\") && !modPath.endsWith("/"))
 				modPath.concat('\\');
@@ -1129,6 +1202,9 @@ static CommandLineParam params[] =
 	{ "-scriptDebug", parseScriptDebug },
 	{ "-playStats", parsePlayStats },
 	{ "-mod", parseMod },
+	{ "-noshaders", parseNoShaders },
+	{ "-quickstart", parseQuickStart },
+
 #if (defined(_DEBUG) || defined(_INTERNAL))
 	{ "-noaudio", parseNoAudio },
 	{ "-map", parseMapName },
@@ -1137,7 +1213,10 @@ static CommandLineParam params[] =
 	{ "-noLogOrCrash", parseNoLogOrCrash },
 	{ "-FPUPreserve", parseFPUPreserve },
 	{ "-benchmark", parseBenchmark },
-	{ "-saveStats", parseSaveStats },
+#ifdef DUMP_PERF_STATS
+	{ "-stats", parseStats }, 
+#endif
+  { "-saveStats", parseSaveStats },
 	{ "-localMOTD", parseLocalMOTD },
 	{ "-UseCSF", parseUseCSF },
 	{ "-NoInputDisable", parseNoInputDisable },
@@ -1218,8 +1297,10 @@ static CommandLineParam params[] =
 	{ "-munkee", parseMunkee },
 	{ "-displayDebug", parseDisplayDebug },
 	{ "-file", parseFile },
-	{ "-preload", parsePreload },
-	{ "-preloadEverything", parsePreloadEverything },
+  
+//	{ "-preload", parsePreload },
+	
+  { "-preloadEverything", parsePreloadEverything },
 	{ "-logAssets", parseLogAssets },
 	{ "-netMinPlayers", parseNetMinPlayers },
 	{ "-DemoLoadScreen", parseDemoLoadScreen },
@@ -1239,7 +1320,6 @@ static CommandLineParam params[] =
 	{ "-noShellAnim", parseNoWindowAnimation },
 	{ "-winCursors", parseWinCursors },
 	{ "-constantDebug", parseConstantDebug },
-	{ "-quickstart", parseQuickStart },
 	{ "-seed", parseSeed },
 	{ "-noagpfix", parseIncrAGPBuf },
 	{ "-noFPSLimit", parseNoFPSLimit },
@@ -1247,6 +1327,8 @@ static CommandLineParam params[] =
 	{ "-jumpToFrame", parseJumpToFrame },
 	{ "-updateImages", parseUpdateImages },
 	{ "-showTeamDot", parseShowTeamDot },
+	{ "-extraLogging", parseExtraLogging },
+
 #endif
 
 #ifdef DEBUG_LOGGING
@@ -1261,6 +1343,15 @@ static CommandLineParam params[] =
 #ifdef DEBUG_STACKTRACE
 	{ "-ignoreStackTrace", parseIgnoreStackTrace },
 #endif
+
+	//-allAdvice feature
+	//{ "-allAdvice", parseAllAdvice },
+
+#if defined(_DEBUG) || defined(_INTERNAL) || defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
+  { "-preload", parsePreload },
+#endif
+
+
 };
 
 // parseCommandLine ===========================================================
