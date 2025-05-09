@@ -316,7 +316,6 @@ class AudioManager : public SubsystemInterface
 
 		// For tracking purposes
 		virtual AudioHandle allocateNewHandle( void );	
-
     // Remove all AudioEventInfo's with the m_isLevelSpecific flag
     virtual void removeLevelSpecificAudioEventInfos( void );
     
