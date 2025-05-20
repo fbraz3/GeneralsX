@@ -1,0 +1,53 @@
+name: Create a release
+
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-generals:
+    name: Build Generals${{ matrix.preset && '' }}
+    strategy:
+      matrix:
+        include:
+          - preset: "vc6"
+            tools: true
+            extras: true
+          - preset: "win32-vcpkg"
+            tools: true
+            extras: true
+      fail-fast: false
+    uses: ./.github/workflows/build-toolchain.yml
+    with:
+      game: "Generals"
+      preset: ${{ matrix.preset }}
+      tools: ${{ matrix.tools }}
+      extras: ${{ matrix.extras }}
+    secrets: inherit
+
+  build-generalsmd:
+    name: Build GeneralsMD${{ matrix.preset && '' }}
+    strategy:
+      matrix:
+        include:
+          - preset: "vc6"
+            tools: true
+            extras: true
+          - preset: "win32"
+            tools: true
+            extras: true
+      fail-fast: false
+    uses: ./.github/workflows/build-toolchain.yml
+    with:
+      game: "GeneralsMD"
+      preset: ${{ matrix.preset }}
+      tools: ${{ matrix.tools }}
+      extras: ${{ matrix.extras }}
+    secrets: inherit
