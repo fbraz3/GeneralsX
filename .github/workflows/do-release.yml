@@ -55,6 +55,8 @@ jobs:
     secrets: inherit
 
   build-generalsmd:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.changed == 'true'
     name: Build GeneralsMD${{ matrix.preset && '' }}
     strategy:
       matrix:
