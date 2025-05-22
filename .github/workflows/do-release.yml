@@ -12,7 +12,29 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.check.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          CHANGED=$(git diff --name-only $LAST_TAG..HEAD | wc -l)
+          if [ "$CHANGED" -eq "0" ]; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
   build-generals:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.changed == 'true'
     name: Build Generals${{ matrix.preset && '' }}
     strategy:
       matrix:
@@ -101,9 +123,9 @@ jobs:
       - name: Prepare and Zip GeneralsMD VC6
         run: |
           mkdir generalsmd-vc6-release
-          cp generalsmd-vc6-artifacts/generalszh.exe generalsmd-vc6-release/GeneralsZHV.exe
-          cp generalsmd-vc6-artifacts/W3DViewZH.exe generalsmd-vc6-release/W3DViewZHV.exe
-          cp generalsmd-vc6-artifacts/WorldBuilderZH.exe generalsmd-vc6-release/WorldBuilderZHV.exe
+          cp generalsmd-vc6-artifacts/generalszh.exe generalsmd-vc6-release/GeneralsZHv.exe
+          cp generalsmd-vc6-artifacts/W3DViewZH.exe generalsmd-vc6-release/W3DViewZHv.exe
+          cp generalsmd-vc6-artifacts/WorldBuilderZH.exe generalsmd-vc6-release/WorldBuilderZHv.exe
           zip -j generalszh-vc6-${{ steps.set_date.outputs.date }}-alpha.zip generalsmd-vc6-release/*
 
       # GeneralsMD win32
@@ -116,9 +138,9 @@ jobs:
       - name: Prepare and Zip GeneralsMD Win32
         run: |
           mkdir generalsmd-win32-release
-          cp generalsmd-win32-artifacts/generalszh.exe generalsmd-win32-release/GeneralsZHV.exe
-          cp generalsmd-win32-artifacts/W3DViewZH.exe generalsmd-win32-release/W3DViewZHV.exe
-          cp generalsmd-win32-artifacts/WorldBuilderZH.exe generalsmd-win32-release/WorldBuilderZHV.exe
+          cp generalsmd-win32-artifacts/generalszh.exe generalsmd-win32-release/GeneralsZHv.exe
+          cp generalsmd-win32-artifacts/W3DViewZH.exe generalsmd-win32-release/W3DViewZHv.exe
+          cp generalsmd-win32-artifacts/WorldBuilderZH.exe generalsmd-win32-release/WorldBuilderZHv.exe
           zip -j generalszh-win32-${{ steps.set_date.outputs.date }}-alpha.zip generalsmd-win32-release/*
 
       - name: Create GitHub Release
