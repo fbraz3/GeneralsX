@@ -602,13 +602,15 @@ WWINLINE int WWMath::Float_To_Int_Floor (const float& f)
 // ----------------------------------------------------------------------------
 
 #if defined(_MSC_VER) && defined(_M_IX86)
-WWINLINE __declspec(naked) float __fastcall WWMath::Inv_Sqrt(float a)
+WWINLINE float __fastcall WWMath::Inv_Sqrt(float a)
 {
+	float retval;
+
 	__asm {
 		mov		eax, 0be6eb508h
 		mov		DWORD PTR [esp-12],03fc00000h ;  1.5 on the stack
-		sub		eax, DWORD PTR [esp+4]; a
-		sub		DWORD PTR [esp+4], 800000h ; a/2 a=Y0
+		sub		eax, DWORD PTR [a]; a
+		sub		DWORD PTR [a], 800000h ; a/2 a=Y0
 		shr		eax, 1     ; firs approx in eax=R0
 		mov		DWORD PTR [esp-8], eax
 
@@ -616,7 +618,7 @@ WWINLINE __declspec(naked) float __fastcall WWMath::Inv_Sqrt(float a)
 		fmul	st, st            ;r*r
 		fld		DWORD PTR [esp-8] ;r
 		fxch	st(1)
-		fmul	DWORD PTR [esp+4];a ;r*r*y0
+		fmul	DWORD PTR [a];a ;r*r*y0
 		fld		DWORD PTR [esp-12];load 1.5
 		fld		st(0)
 		fsub	st,st(2)			   ;r1 = 1.5 - y1
@@ -644,8 +646,11 @@ WWINLINE __declspec(naked) float __fastcall WWMath::Inv_Sqrt(float a)
 		;x3 = st(1)
 		;r3 = st(0)
 		fmulp	st(1), st
-		ret 4
+
+		fstp retval
 	}
+
+	return retval;
 }
 #else
 WWINLINE float WWMath::Inv_Sqrt(float val)
