@@ -1271,13 +1271,15 @@ BOOL CWorldBuilderDoc::OnNewDocument()
 	m_waypointTableNeedsUpdate = true;
 	m_curWaypointID = 0;
 	WbApp()->selectPointerTool();
-	PolygonTrigger::deleteTriggers();
 
 	// Make sure that all the old units are removed from the list.
 	// Bug fix by MLL 1/14/03
 	TheLayersList->enableUpdates();
 	TheLayersList->resetLayers();
 	TheLayersList->disableUpdates();
+
+	// TheSuperHackers @bugfix Caball009 20/06/2025 Must not delete polygon triggers before calling enableUpdates.
+	PolygonTrigger::deleteTriggers();
 
 	TheSidesList->clear();
 	TheSidesList->validateSides();
