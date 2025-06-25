@@ -1075,6 +1075,10 @@ Bool ScriptConditions::evaluateEnemySighted(Parameter *pItemParm, Parameter *pAl
 		case Parameter::REL_ENEMY:
 			relationDescriber = PartitionFilterRelationship::ALLOW_ENEMIES;
 			break;
+		default:
+			DEBUG_CRASH(("Unhandled case in ScriptConditions::evaluateEnemySighted()\n"));
+			relationDescriber = 0;
+			break;
 	}
 	PartitionFilterRelationship	filterTeam(theObj, relationDescriber);
 
