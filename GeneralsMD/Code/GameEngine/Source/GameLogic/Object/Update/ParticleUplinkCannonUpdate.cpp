@@ -593,8 +593,17 @@ UpdateSleepTime ParticleUplinkCannonUpdate::update()
 							Int linkCount = way->getNumLinks();
 							Int which = GameLogicRandomValue( 0, linkCount-1 );
 							way = way->getLink( which );
-							m_nextDestWaypointID = way->getID();
-							m_overrideTargetDestination.set( way->getLocation() );
+
+							// TheSuperHackers @bugfix Caball009 27/06/2025 Check if the last way point has been reached before attempting to access the next way point.
+							if ( way )
+							{
+								m_nextDestWaypointID = way->getID();
+								m_overrideTargetDestination.set(way->getLocation());
+							}
+							else
+							{
+								m_nextDestWaypointID = INVALID_WAYPOINT_ID;
+							}
 						}
 					}
 				}
