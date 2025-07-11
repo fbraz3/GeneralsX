@@ -1251,7 +1251,7 @@ void W3DRadar::buildTerrainTexture( TerrainLogic *terrain )
 //-------------------------------------------------------------------------------------------------
 void W3DRadar::clearShroud()
 {
-#if defined(RTS_DEBUG)
+#if ENABLE_CONFIGURABLE_SHROUD
 	if (!TheGlobalData->m_shroudOn)
 		return;
 #endif
@@ -1271,7 +1271,7 @@ void W3DRadar::clearShroud()
 //-------------------------------------------------------------------------------------------------
 void W3DRadar::setShroudLevel(Int shroudX, Int shroudY, CellShroudStatus setting)
 {
-#if defined(RTS_DEBUG)
+#if ENABLE_CONFIGURABLE_SHROUD
 	if (!TheGlobalData->m_shroudOn)
 		return;
 #endif
@@ -1408,7 +1408,7 @@ void W3DRadar::draw( Int pixelX, Int pixelY, Int width, Int height )
  	TheDisplay->drawImage( m_overlayImage, ul.x, ul.y, lr.x, lr.y );
 
 	// draw the shroud image
-#if defined(RTS_DEBUG)
+#if ENABLE_CONFIGURABLE_SHROUD
 	if( TheGlobalData->m_shroudOn )
 #else
 	if (true)

@@ -989,7 +989,7 @@ static void drawablePostDraw( Drawable *draw, void *userData )
 
 	Object* obj = draw->getObject();
 	Int localPlayerIndex = ThePlayerList ? ThePlayerList->getLocalPlayer()->getPlayerIndex() : 0;
-#if defined(RTS_DEBUG)
+#if ENABLE_CONFIGURABLE_SHROUD
 	ObjectShroudStatus ss = (!obj || !TheGlobalData->m_shroudOn) ? OBJECTSHROUD_CLEAR : obj->getShroudedStatus(localPlayerIndex);
 #else
 	ObjectShroudStatus ss = (!obj) ? OBJECTSHROUD_CLEAR : obj->getShroudedStatus(localPlayerIndex);
