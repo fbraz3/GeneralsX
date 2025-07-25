@@ -80,3 +80,5 @@ EA has not endorsed and does not support this product. All trademarks are the pr
 This project is licensed under the [GPL-3.0 License](https://www.gnu.org/licenses/gpl-3.0.html), which allows you to
 freely modify and distribute the source code under the terms of this license. Please see [LICENSE.md](LICENSE.md) 
 for details.
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/fbraz3/GeneralsGameCode)
