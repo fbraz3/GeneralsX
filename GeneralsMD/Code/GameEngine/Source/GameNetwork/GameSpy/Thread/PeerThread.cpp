@@ -32,7 +32,6 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
 
 #include "Common/Registry.h"
-#include "Common/StackDump.h"
 #include "Common/UserPreferences.h"
 #include "Common/version.h"
 #include "GameNetwork/IPEnumeration.h"
@@ -1158,7 +1157,6 @@ static UnsignedInt localIP = 0;
 void PeerThreadClass::Thread_Function()
 {
 	try {
-	_set_se_translator( DumpExceptionInfo ); // Hook that allows stack trace.
 
 	PEER peer;
 

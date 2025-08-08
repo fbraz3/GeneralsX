@@ -751,6 +751,15 @@ static Bool initializeAppWindows( HINSTANCE hInstance, Int nCmdShow, Bool runWin
 // Necessary to allow memory managers and such to have useful critical sections
 static CriticalSection critSec1, critSec2, critSec3, critSec4, critSec5;
 
+// UnHandledExceptionFilter ===================================================
+/** Handler for unhandled win32 exceptions. */
+//=============================================================================
+static LONG WINAPI UnHandledExceptionFilter( struct _EXCEPTION_POINTERS* e_info )
+{
+	DumpExceptionInfo( e_info->ExceptionRecord->ExceptionCode, e_info );
+	return EXCEPTION_EXECUTE_HANDLER;
+}
+
 // WinMain ====================================================================
 /** Application entry point */
 //=============================================================================
@@ -765,7 +774,7 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	try {
 
-		_set_se_translator( DumpExceptionInfo ); // Hook that allows stack trace.
+		SetUnhandledExceptionFilter( UnHandledExceptionFilter );
 		//
 		// there is something about checkin in and out the .dsp and .dsw files
 		// that blows the working directory information away on each of the

@@ -20,7 +20,6 @@
 //
 
 #include "StdAfx.h"
-#include <eh.h>
 #include "WorldBuilder.h"
 #include "euladialog.h"
 #include "MainFrm.h"
@@ -261,6 +260,14 @@ CWorldBuilderApp::~CWorldBuilderApp()
 	_exit(0);
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// Handler for unhandled win32 exceptions.
+
+static LONG WINAPI UnHandledExceptionFilter(struct _EXCEPTION_POINTERS* e_info)
+{
+	DumpExceptionInfo(e_info->ExceptionRecord->ExceptionCode, e_info);
+	return EXCEPTION_EXECUTE_HANDLER;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CWorldBuilderApp initialization
@@ -278,7 +285,7 @@ BOOL CWorldBuilderApp::InitInstance()
 	ApplicationHWnd = GetDesktopWindow();
 
 	// initialization
-  _set_se_translator( DumpExceptionInfo ); // Hook that allows stack trace.
+	SetUnhandledExceptionFilter(UnHandledExceptionFilter);
 
 	// initialize the memory manager early
 	initMemoryManager();

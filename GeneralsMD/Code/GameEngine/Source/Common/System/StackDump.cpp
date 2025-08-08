@@ -466,7 +466,6 @@ void WriteStackLine(void*address, void (*callback)(const char*))
 			g_LastErrorDump.concat("\n");
 		}
 	callback(line);
-	callback("\n");
 }
 
 

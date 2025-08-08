@@ -34,7 +34,6 @@
 #include "mutex.h"
 #include "thread.h"
 
-#include "Common/StackDump.h"
 #include "Common/SubsystemInterface.h"
 
 //-------------------------------------------------------------------------
@@ -228,7 +227,6 @@ static void WrapHTTP( const std::string& hostname, std::string& results )
 void GameResultsThreadClass::Thread_Function()
 {
 	try {
-	_set_se_translator( DumpExceptionInfo ); // Hook that allows stack trace.
 	GameResultsRequest req;
 
 	WSADATA wsaData;
