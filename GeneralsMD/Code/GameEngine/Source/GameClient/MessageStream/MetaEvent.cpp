@@ -133,6 +133,7 @@ static const LookupListRec GameMessageMetaTypeNames[] =
 	{ "SELECT_PREV_UNIT",													GameMessage::MSG_META_SELECT_PREV_UNIT },
 	{ "SELECT_NEXT_WORKER",												GameMessage::MSG_META_SELECT_NEXT_WORKER },
 	{ "SELECT_PREV_WORKER",												GameMessage::MSG_META_SELECT_PREV_WORKER },
+	{ "SELECT_NEXT_IDLE_WORKER",											    GameMessage::MSG_META_SELECT_NEXT_IDLE_WORKER },
 	{ "SELECT_HERO",												      GameMessage::MSG_META_SELECT_HERO },
 	{ "SELECT_ALL",																GameMessage::MSG_META_SELECT_ALL },
 	{ "SELECT_ALL_AIRCRAFT",											GameMessage::MSG_META_SELECT_ALL_AIRCRAFT },
@@ -752,6 +753,19 @@ MetaMapRec *MetaMap::getMetaMapRec(GameMessage::Type t)
 			map->m_transition = DOWN;
 			map->m_modState = NONE;
 			map->m_usableIn = COMMANDUSABLE_GAME;
+		}
+	}
+	{
+		// Is useful for Generals and Zero Hour.
+		MetaMapRec* map = TheMetaMap->getMetaMapRec(GameMessage::MSG_META_SELECT_NEXT_IDLE_WORKER);
+		if (map->m_key == MK_NONE) {
+			map->m_key = MK_I;
+			map->m_transition = DOWN;
+			map->m_modState = CTRL;
+			map->m_usableIn = COMMANDUSABLE_GAME;
+			map->m_category = CATEGORY_SELECTION;
+			map->m_description = TheGameText->FETCH_OR_SUBSTITUTE("GUI:SelectNextIdleWorkerDescription", L"Select the next idle worker");
+			map->m_displayName = TheGameText->FETCH_OR_SUBSTITUTE("GUI:SelectNextIdleWorker", L"Next Idle Worker");
 		}
 	}
 

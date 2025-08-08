@@ -2882,6 +2882,15 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 		}	// end select previous worker
 
 		//-----------------------------------------------------------------------------------------
+		case GameMessage::MSG_META_SELECT_NEXT_IDLE_WORKER:
+		{
+			TheInGameUI->selectNextIdleWorker();
+
+			disp = DESTROY_MESSAGE;
+			break;
+		}
+
+		//-----------------------------------------------------------------------------------------
 		case GameMessage::MSG_META_SELECT_HERO:
 		{
 			// if there is nothing on the screen, bail
