@@ -1,0 +1,72 @@
+name: Test notes
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Read base version
+        id: base_version
+        run: echo "base_version=$(cat .github/workflows/base-version.txt)" >> $GITHUB_OUTPUT
+
+      - name: Get latest semver tag
+        id: get_tag
+        run: echo "current_tag=$(cat current_tag.txt)" >> $GITHUB_OUTPUT
+
+      - name: Calculate next version
+        id: next_version
+        run: echo "next_tag=$(cat next_tag.txt)" >> $GITHUB_OUTPUT
+
+      - name: Collect commits since last release
+        id: changelog
+        run: |
+          TAG="0.9.2"
+          NEXT_TAG="0.9.3"
+
+          echo "DEBUG: Current Tag (TAG) = $TAG"
+          echo "DEBUG: Next Tag (NEXT_TAG) = $NEXT_TAG"
+
+          CHANGELOG_COMMITS=""
+          if [ "$TAG" == "$NEXT_TAG" ]; then
+            echo "DEBUG: Condition TAG == NEXT_TAG. Generating changelog for initial release or no new tag."
+            CHANGELOG_COMMITS=$(git log --pretty="format:- %s" --no-merges HEAD | grep -v "Sync Generals repos" | head -n 10 || true)
+
+            if [ -z "$CHANGELOG_COMMITS" ]; then
+              echo "DEBUG: Filtered log for initial release was empty. Trying to get the last 5 commits directly."
+              CHANGELOG_COMMITS=$(git log --pretty="format:- %s" --no-merges HEAD -n 5 || true)
+            fi
+          else
+            echo "DEBUG: Condition TAG != NEXT_TAG. Generating changelog from $TAG to HEAD."
+          
+            echo "Command:"
+            echo git log --pretty="format:- %s" --no-merges "$TAG"..HEAD | grep -v "Sync Generals repos" || true
+            
+            echo "Output:"
+            git log --pretty="format:- %s" --no-merges "$TAG"..HEAD | grep -v "Sync Generals repos" || true
+          
+            CHANGELOG_COMMITS=$(git log --pretty="format:- %s" --no-merges "$TAG"..HEAD | grep -v "Sync Generals repos" || true)
+          fi
+
+          echo "--- DEBUG: Output of captured commits ---"
+          if [ -z "$CHANGELOG_COMMITS" ]; then
+            echo "No commits found for the changelog."
+            CHANGELOG_COMMITS="- No relevant changes detected since the last release."
+          else
+            echo "$CHANGELOG_COMMITS"
+          fi
+          echo "--- END DEBUG ---"
+
+          {
+            echo 'commits<<CHANGELOG_EOF'
+            echo "$CHANGELOG_COMMITS"
+            echo 'CHANGELOG_EOF'
+          } >> "$GITHUB_OUTPUT"
