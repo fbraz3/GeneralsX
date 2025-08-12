@@ -5,14 +5,15 @@ permissions:
   pull-requests: write
 
 on:
-  pull_request:
-    branches:
-      - main
-    types:
-      - opened
-      - edited
-      - synchronize
-      - reopened
+#  pull_request:
+#    branches:
+#      - main
+#    types:
+#      - opened
+#      - edited
+#      - synchronize
+#      - reopened
+  workflow_dispatch:
 
 jobs:
   validate-title-and-commits:
