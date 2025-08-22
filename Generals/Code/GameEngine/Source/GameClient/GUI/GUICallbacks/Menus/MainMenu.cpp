@@ -950,7 +950,9 @@ WindowMsgHandledType MainMenuInput( GameWindow *window, UnsignedInt msg,
 			ICoord2D mouse;
 			mouse.x = mData1 & 0xFFFF;
 			mouse.y = mData1 >> 16;
-			if( mouse.x == 0 && mouse.y == 0)
+
+			// TheSuperHackers @tweak 20/08/2025 Show mouse and menu immediately when shellmap is disabled.
+			if (TheGlobalData->m_shellMapOn && mouse.x == 0 && mouse.y == 0)
 				break;
 
 			static Int mousePosX = mouse.x;
