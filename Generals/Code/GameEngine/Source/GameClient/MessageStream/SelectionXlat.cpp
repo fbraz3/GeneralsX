@@ -910,30 +910,14 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 		//-----------------------------------------------------------------------------
 		case GameMessage::MSG_RAW_MOUSE_RIGHT_BUTTON_UP:
 		{
-			ICoord2D delta, pixel;
-			UnsignedInt currentTime;
 			Coord3D cameraPos;
-
 			TheTacticalView->getPosition(&cameraPos);
 			cameraPos.sub(&m_deselectDownCameraPosition);
 
-			pixel = msg->getArgument( 0 )->pixel;
-			currentTime = (UnsignedInt) msg->getArgument( 2 )->integer;
+			ICoord2D pixel = msg->getArgument( 0 )->pixel;
+			UnsignedInt currentTime = (UnsignedInt) msg->getArgument( 2 )->integer;
 
-			delta.x = m_deselectFeedbackAnchor.x - pixel.x;
-			delta.y = m_deselectFeedbackAnchor.y - pixel.y;
-
-			Bool isClick = TRUE;
-			if (abs(delta.x) > TheMouse->m_dragTolerance || abs(delta.y) > TheMouse->m_dragTolerance)
-			{
-				isClick = FALSE;
-			}
-
-			if (isClick &&
-					currentTime - m_lastClick > TheMouse->m_dragToleranceMS)
-			{
-				isClick = FALSE;
-			}
+			Bool isClick = TheMouse->isClick(&m_deselectFeedbackAnchor, &pixel, m_lastClick, currentTime);
 
 			if (isClick &&
 					cameraPos.length() > TheMouse->m_dragTolerance3D)
