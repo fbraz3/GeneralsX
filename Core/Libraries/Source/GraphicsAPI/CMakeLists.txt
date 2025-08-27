@@ -55,7 +55,10 @@ target_include_directories(GraphicsAPI INTERFACE
 )
 
 # Make sure always.h and other core headers are available
-target_link_libraries(GraphicsAPI PRIVATE z_always)
+target_link_libraries(GraphicsAPI PRIVATE 
+    z_always
+    core_utility
+)
 
 message(STATUS "Graphics API library configured with:")
 if(ENABLE_OPENGL)

@@ -2,10 +2,60 @@
 
 #include <cstdint>
 
-// Forward declarations for W3D types
-class Matrix4;
-class Vector3;
-class Vector4;
+// Try to use real W3D types if available, fall back to mock types
+#ifdef ENABLE_W3D_INTEGRATION
+    #include "W3DTypes.h"
+    // Use real W3D types
+    using Matrix4 = W3DMatrix4;
+    using Vector3 = W3DVector3;
+    using Vector4 = W3DVector4;
+#else
+    // Mock types for standalone testing
+    struct Matrix4 {
+        float m[16];
+        Matrix4() { 
+            for(int i = 0; i < 16; i++) m[i] = 0.0f;
+            m[0] = m[5] = m[10] = m[15] = 1.0f; // Identity
+        }
+        
+        Matrix4(const Matrix4& other) {
+            for(int i = 0; i < 16; i++) m[i] = other.m[i];
+        }
+        
+        Matrix4& operator=(const Matrix4& other) {
+            if (this != &other) {
+                for(int i = 0; i < 16; i++) m[i] = other.m[i];
+            }
+            return *this;
+        }
+        
+        Matrix4 operator*(const Matrix4& other) const {
+            Matrix4 result;
+            for(int i = 0; i < 4; i++) {
+                for(int j = 0; j < 4; j++) {
+                    result.m[i*4 + j] = 0;
+                    for(int k = 0; k < 4; k++) {
+                        result.m[i*4 + j] += m[i*4 + k] * other.m[k*4 + j];
+                    }
+                }
+            }
+            return result;
+        }
+        
+        float* data() { return m; }
+        const float* data() const { return m; }
+    };
+    
+    struct Vector3 {
+        float x, y, z;
+        Vector3(float x = 0, float y = 0, float z = 0) : x(x), y(y), z(z) {}
+    };
+    
+    struct Vector4 {
+        float x, y, z, w;
+        Vector4(float x = 0, float y = 0, float z = 0, float w = 0) : x(x), y(y), z(z), w(w) {}
+    };
+#endif
 
 // Forward declarations
 class TextureClass;
@@ -20,7 +70,14 @@ enum PrimitiveType {
     PRIMITIVE_TRIANGLEFAN,
     PRIMITIVE_LINELIST,
     PRIMITIVE_LINESTRIP,
-    PRIMITIVE_POINTLIST
+    PRIMITIVE_POINTLIST,
+    // Additional aliases for compatibility
+    PRIMITIVE_TRIANGLES = PRIMITIVE_TRIANGLELIST,
+    PRIMITIVE_TRIANGLE_STRIP = PRIMITIVE_TRIANGLESTRIP,
+    PRIMITIVE_TRIANGLE_FAN = PRIMITIVE_TRIANGLEFAN,
+    PRIMITIVE_LINES = PRIMITIVE_LINELIST,
+    PRIMITIVE_LINE_STRIP = PRIMITIVE_LINESTRIP,
+    PRIMITIVE_POINTS = PRIMITIVE_POINTLIST
 };
 
 enum TransformType {

@@ -2,11 +2,6 @@
 
 #include "GraphicsRenderer.h"
 
-// Silence OpenGL deprecation warnings on macOS
-#ifdef __APPLE__
-#define GL_SILENCE_DEPRECATION
-#endif
-
 #ifdef ENABLE_OPENGL
 #ifdef _WIN32
 #include <windows.h>
@@ -15,22 +10,24 @@
 #include <GL/wglext.h>
 #elif defined(__linux__)
 #include <GL/gl.h>
-#include <GL/glx.h>
 #include <GL/glext.h>
+#include <GL/glx.h>
 #elif defined(__APPLE__)
 #include <OpenGL/gl.h>
 #include <OpenGL/glext.h>
 #include <OpenGL/OpenGL.h> // For CGL types
 #endif
-#endif // ENABLE_OPENGL
+#endif
 
-/**
- * OpenGL implementation of the abstract renderer
- */
-class OpenGLRenderer : public IGraphicsRenderer {
+// W3D Integration support
+#ifdef ENABLE_W3D_INTEGRATION
+#include "W3DTypes.h"
+#endif
+
+class OpenGLRendererW3D : public IGraphicsRenderer {
 private:
-    // OpenGL context specific to each platform
 #ifdef ENABLE_OPENGL
+    // Platform-specific context
 #ifdef _WIN32
     HWND m_hWnd;
     HDC m_hDC;
@@ -60,10 +57,22 @@ private:
     bool m_windowed;
     bool m_initialized;
     
-    // Matrices - use forward declared Matrix4
+    // Matrix storage - use W3D types when available
+#ifdef ENABLE_W3D_INTEGRATION
+    W3DMatrix4* m_projectionMatrix;
+    W3DMatrix4* m_viewMatrix;
+    W3DMatrix4* m_worldMatrix;
+    
+    // OpenGL-compatible matrix cache
+    float m_projectionGL[16];
+    float m_viewGL[16];
+    float m_worldGL[16];
+    bool m_matricesNeedUpdate;
+#else
     Matrix4* m_projectionMatrix;
     Matrix4* m_viewMatrix;
     Matrix4* m_worldMatrix;
+#endif
     
     // Function to load OpenGL extensions
     bool LoadOpenGLExtensions();
@@ -76,10 +85,16 @@ private:
 #elif defined(__APPLE__)
     bool InitializeMacOS();
 #endif
-    
+
+    // Helper functions for W3D integration
+#ifdef ENABLE_W3D_INTEGRATION
+    void UpdateMatrixCache();
+    void ConvertW3DMatrix(const W3DMatrix4& w3dMatrix, float* glMatrix);
+#endif
+
 public:
-    OpenGLRenderer();
-    virtual ~OpenGLRenderer();
+    OpenGLRendererW3D();
+    virtual ~OpenGLRendererW3D();
     
     // IGraphicsRenderer interface
     bool Initialize(int width, int height, bool windowed) override;
@@ -91,6 +106,8 @@ public:
     void Present() override;
     
     void SetViewport(int x, int y, int width, int height) override;
+    
+    // Matrix methods - handle both W3D and mock types
     void SetProjectionMatrix(const Matrix4& matrix) override;
     void SetViewMatrix(const Matrix4& matrix) override;
     void SetWorldMatrix(const Matrix4& matrix) override;
@@ -111,16 +128,9 @@ public:
               uint32_t clearColor = 0x00000000) override;
     
     GraphicsAPI GetAPI() const override { return GraphicsAPI::OPENGL; }
-    const char* GetAPIString() const override { return "OpenGL"; }
+    const char* GetAPIString() const override { return "OpenGL (W3D)"; }
     
 private:
-    // OpenGL-specific helper functions
-#ifdef ENABLE_OPENGL
-    GLenum PrimitiveTypeToGL(PrimitiveType type);
-#else
-    uint32_t PrimitiveTypeToGL(PrimitiveType type);
-#endif
     void UpdateMatrices();
-    void SetupBlendState(const ShaderClass* shader);
-    void SetupDepthState(const ShaderClass* shader);
+    GLenum ConvertPrimitiveType(PrimitiveType type);
 };
