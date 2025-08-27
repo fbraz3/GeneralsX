@@ -48,6 +48,9 @@ static void drawFramerateBar(void);
 #include "Common/LocalFileSystem.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
+
+#include "GraphicsAPI/W3DRendererAdapter.h"
+
 #include "Common/ThingTemplate.h"
 #include "Common/GameLOD.h"
 #include "Common/DrawModule.h"
@@ -395,6 +398,10 @@ W3DDisplay::W3DDisplay()
 	m_2DScene = NULL;
 	m_3DInterfaceScene = NULL;
 	m_averageFPS = TheGlobalData->m_framesPerSecondLimit;
+	
+	// Initialize graphics API preferences
+	m_preferredAPI = GraphicsAPI::OPENGL; // Default to OpenGL
+	m_useOpenGL = false;
 #if defined(RTS_DEBUG)
 	m_timerAtCumuFPSStart = 0;
 #endif
@@ -706,6 +713,27 @@ void W3DDisplay::init( void )
 		}
 		if (WW3D::Init( ApplicationHWnd ) != WW3D_ERROR_OK)
 			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
+
+		// Initialize graphics abstraction layer
+		// Try to initialize OpenGL if available, fallback to DirectX
+		GraphicsAPI preferredAPI = GraphicsAPI::OPENGL;
+		
+		// Check if user prefers DirectX (from command line or config)
+		if (TheGlobalData->m_forceDirectX || !defined(ENABLE_OPENGL)) {
+			preferredAPI = GraphicsAPI::DIRECTX8;
+		}
+		
+		if (W3DRendererAdapter::Initialize(preferredAPI)) {
+			m_useOpenGL = W3DRendererAdapter::IsUsingNewRenderer();
+			if (m_useOpenGL) {
+				logIt("Graphics Renderer: Using OpenGL via abstraction layer");
+			} else {
+				logIt("Graphics Renderer: Using DirectX 8 (legacy path)");
+			}
+		} else {
+			logIt("Warning: Failed to initialize graphics abstraction layer, using DirectX 8 only");
+			m_useOpenGL = false;
+		}
 
 		WW3D::Set_Prelit_Mode( WW3D::PRELIT_MODE_LIGHTMAP_MULTI_PASS );
 		WW3D::Set_Collision_Box_Display_Mask(0x00);	///<set to 0xff to make collision boxes visible
@@ -2429,9 +2457,9 @@ void W3DDisplay::drawRectClock(Int startX, Int startY, Int width, Int height, In
 
 			// draw the part of triangle
 			Real percentDraw = (Real)(remain - 12)/ 13;
-			m_2DRender->Add_Tri(Vector2(startX + width/2, startY + height/2),
-													Vector2(startX + width - (width/2 * percentDraw), startY + height),
-													Vector2(startX + width, startY + height),
+			m_2DRender->Add_Tri(Vector2(startX, startY + height - (height/2 * percentDraw)),
+													Vector2(startX, startY + height),
+													Vector2(startX + width/2, startY + height/2),
 													Vector2(0,0),Vector2(0,0),Vector2(0,0),color);
 		}
 		else
@@ -2782,7 +2810,7 @@ void W3DDisplay::drawImage( const Image *image, Int startX, Int startY,
 				percent						= ((clipped_rect.Top - screen_rect.Top) / screen_rect.Height ());
 				clipped_uv_rect.Top		= uv_rect.Top + (uv_rect.Height () * percent);
 
-				percent						= ((clipped_rect.Bottom - screen_rect.Top) / screen_rect.Height ());
+				percent						= ((clipped_rect.Bottom - screen_rect.Top) / screenRect.Height ());
 				clipped_uv_rect.Bottom	= uv_rect.Top + (uv_rect.Height () * percent);
 			}
 
@@ -3404,7 +3432,6 @@ void W3DDisplay::dumpAssetUsage(const char* mapname)
 }
 #endif
 
-//-------------------------------------------------------------------------------------------------
 static void drawFramerateBar(void)
 {
 	static DWORD prevTime = timeGetTime();

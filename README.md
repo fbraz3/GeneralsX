@@ -5,6 +5,15 @@
 
 This project provides **weekly builds** of the [GeneralsGameCode](https://github.com/TheSuperHackers/GeneralsGameCode/) repository, aiming to help the community with up-to-date binaries and easier access to the latest changes.
 
+### 🎮 New: OpenGL Support! 
+This fork now includes **OpenGL rendering support** alongside the original DirectX 8, enabling:
+- **Linux compatibility** 🐧
+- **macOS support** 🍎 (in progress)  
+- **Better cross-platform development**
+- **Modern graphics pipeline**
+
+See [OPENGL_MIGRATION.md](./OPENGL_MIGRATION.md) for technical details and [OPENGL_TESTING_GUIDE.md](./OPENGL_TESTING_GUIDE.md) for testing the graphics system.
+
 - **Daily sync** with the upstream SuperHackers repository.
 - **Weekly builds** including all recent updates.
 - **Not an official project** from SuperHackers — community-driven and maintained.
@@ -20,8 +29,55 @@ Many users want to test the latest features and fixes from the GeneralsGameCode 
 
 ## Usage
 
+### Quick Start
 - Download the latest build from the [Releases](https://github.com/fbraz3/GeneralsGameCode/releases) section.
 - Follow the instructions provided in the release notes to run the game.
+
+### Graphics API Selection
+You can now choose between DirectX 8 (Windows) and OpenGL (cross-platform):
+
+```bash
+# Use OpenGL (recommended for Linux/macOS)
+./generals --opengl
+
+# Use DirectX 8 (Windows only, legacy)
+./generals --directx
+
+# Test graphics system
+./test_graphics --opengl
+```
+
+### Building from Source
+```bash
+# Linux/macOS (OpenGL)
+cmake -DENABLE_OPENGL=ON -DDEFAULT_TO_OPENGL=ON ..
+make
+
+# Windows (both APIs)
+cmake -DENABLE_OPENGL=ON -DENABLE_DIRECTX=ON ..
+msbuild genzh.sln
+```
+
+## Testing OpenGL
+
+To test the OpenGL graphics system before building the full game:
+
+```bash
+# Quick automated test
+./build_opengl_test.sh
+
+# Manual compilation test
+g++ -std=c++17 -I. -framework OpenGL test_simple_compile.cpp -o test_simple
+./test_simple
+```
+
+For detailed testing instructions, see [OPENGL_TESTING_GUIDE.md](./OPENGL_TESTING_GUIDE.md).
+
+## Documentation
+
+- **[OPENGL_MIGRATION.md](./OPENGL_MIGRATION.md)** - Technical implementation details and architecture
+- **[OPENGL_TESTING_GUIDE.md](./OPENGL_TESTING_GUIDE.md)** - Testing and compilation guide for OpenGL system
+- **[CONTRIBUTING.md](./CONTRIBUTING.md)** - Guidelines for contributing to the project
 
 ## Disclaimer
 

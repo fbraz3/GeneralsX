@@ -70,6 +70,11 @@ GlobalData* GlobalData::m_theOriginal = NULL;
 	{ "Windowed",									INI::parseBool,				NULL,			offsetof( GlobalData, m_windowed ) },
 	{ "XResolution",							INI::parseInt,				NULL,			offsetof( GlobalData, m_xResolution ) },
 	{ "YResolution",							INI::parseInt,				NULL,			offsetof( GlobalData, m_yResolution ) },
+	
+	// Graphics API selection
+	{ "ForceDirectX",							INI::parseBool,				NULL,			offsetof( GlobalData, m_forceDirectX ) },
+	{ "ForceOpenGL",							INI::parseBool,				NULL,			offsetof( GlobalData, m_forceOpenGL ) },
+	
 	{ "MapName",									INI::parseAsciiString,NULL,			offsetof( GlobalData, m_mapName ) },
 	{ "MoveHintName",							INI::parseAsciiString,NULL,			offsetof( GlobalData, m_moveHintName ) },
 	{ "UseTrees",									INI::parseBool,				NULL,			offsetof( GlobalData, m_useTrees ) },
@@ -621,6 +626,11 @@ GlobalData::GlobalData()
 	m_windowed = 0;
 	m_xResolution = DEFAULT_DISPLAY_WIDTH;
 	m_yResolution = DEFAULT_DISPLAY_HEIGHT;
+	
+	// Initialize graphics API preferences
+	m_forceDirectX = FALSE;
+	m_forceOpenGL = FALSE;
+	
 	m_maxShellScreens = 0;
 	m_useCloudMap = FALSE;
 	m_use3WayTerrainBlends = 1;

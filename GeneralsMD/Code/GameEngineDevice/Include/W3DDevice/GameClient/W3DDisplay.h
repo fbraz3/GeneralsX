@@ -37,18 +37,13 @@
 #define __W3DDISPLAY_H_
 
 #include "GameClient/Display.h"
-#include "WW3D2/lightenvironment.h"
 
-class VideoBuffer;
-class W3DDebugDisplay;
-class DisplayString;
-class W3DAssetManager;
-class LightClass;
-class Render2DClass;
-class RTS3DScene;
-class RTS2DScene;
+// Forward declarations
 class RTS3DInterfaceScene;
 
+// Include graphics abstraction layer
+#include "GraphicsAPI/GraphicsRenderer.h"
+#include "GraphicsAPI/W3DRendererAdapter.h"
 
 //=============================================================================
 /** W3D implementation of the game display which is responsible for creating
@@ -56,6 +51,10 @@ class RTS3DInterfaceScene;
 	*/
 class W3DDisplay : public Display
 {
+private:
+    // Graphics API management
+    GraphicsAPI m_preferredAPI;
+    bool m_useOpenGL;
 
 public:
 	W3DDisplay();
