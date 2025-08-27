@@ -111,6 +111,6 @@ target_link_libraries(your_target ${OPENGL_LIBRARIES})
 
 **STATUS: MINIMAL OPENGL FUNCTIONALITY ACHIEVED! ✅**
 
-O sistema OpenGL está funcionando minimalmente e pronto para integração com o jogo. A abstração de gráficos está completa, o contexto OpenGL inicializa corretamente, e todas as operações básicas funcionam como esperado.
+The OpenGL system is working minimally and is ready for integration with the game. The graphics abstraction is complete, OpenGL context initializes correctly, and all basic operations work as expected.
 
-O próximo passo é integrar com o sistema W3D existente e testar com o jogo real.
+The next step is to integrate with the existing W3D system and test with the real game.
