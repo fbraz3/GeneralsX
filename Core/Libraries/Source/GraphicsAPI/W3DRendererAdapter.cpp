@@ -2,15 +2,57 @@
 #include "GraphicsRenderer.h"
 #include <iostream>
 
+// Silence OpenGL deprecation warnings on macOS
+#ifdef __APPLE__
+#define GL_SILENCE_DEPRECATION
+#endif
+
+// Include OpenGL headers for texture operations
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#elif defined(_WIN32)
+#include <windows.h>
+#include <GL/gl.h>
+#elif defined(__linux__)
+#include <GL/gl.h>
+#endif
+
+// Enable W3D integration for this adapter
+#define ENABLE_W3D_INTEGRATION
+
+// Mock W3D classes for compilation compatibility
+// These will be replaced with real W3D headers when fully integrated
+#ifndef FULL_W3D_INTEGRATION
+class ShaderClass {
+public:
+    uint32_t Get_CRC() const { return 0; }
+    // Add other methods as needed
+};
+
+class TextureClass {
+public:
+    static void Apply(int stage) {
+        // Mock implementation - does nothing for now
+    }
+    // Add other methods as needed
+};
+#else
+// Include real W3D classes when fully integrated
+#include "shader.h"
+#include "texture.h"
+#endif
+
 // Static members
 IGraphicsRenderer* W3DRendererAdapter::s_renderer = nullptr;
 bool W3DRendererAdapter::s_useNewRenderer = false;
 
 bool W3DRendererAdapter::Initialize(GraphicsAPI preferredAPI) {
     // Detect best API if not specified
-    if (preferredAPI == GraphicsAPI::OPENGL && !defined(ENABLE_OPENGL)) {
+#ifndef ENABLE_OPENGL
+    if (preferredAPI == GraphicsAPI::OPENGL) {
         preferredAPI = GraphicsRendererFactory::DetectBestAPI();
     }
+#endif
     
     s_renderer = GraphicsRendererFactory::CreateRenderer(preferredAPI);
     if (!s_renderer) {

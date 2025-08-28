@@ -67,7 +67,15 @@
 #include <new.h>
 #include <stdio.h>
 #ifdef MEMORYPOOL_OVERRIDE_MALLOC
-	#include <malloc.h>
+#ifdef __APPLE__
+	#include <stdlib.h>  // malloc functions on macOS
+#else
+	#ifdef __APPLE__
+#include <stdlib.h>
+#else
+#include <malloc.h>
+#endif
+#endif
 #endif
 
 // USER INCLUDES //////////////////////////////////////////////////////////////

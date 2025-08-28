@@ -64,7 +64,11 @@
 #ifndef TGA_USES_WWLIB_FILE_CLASSES
 #include <stdio.h>
 #endif
+#ifdef __APPLE__
+#include <stdlib.h>  // malloc functions on macOS
+#else
 #include <malloc.h>
+#endif
 #include <memory.h>
 #include <string.h>
 #ifdef TGA_USES_WWLIB_FILE_CLASSES

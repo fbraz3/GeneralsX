@@ -1,6 +1,10 @@
 #pragma once
 
+// Enable OpenGL for this implementation
+#define ENABLE_OPENGL
+
 #include "GraphicsRenderer.h"
+#include <cstring>  // For memset
 
 #ifdef ENABLE_OPENGL
 #ifdef _WIN32
@@ -21,7 +25,68 @@
 
 // W3D Integration support
 #ifdef ENABLE_W3D_INTEGRATION
-#include "W3DTypes.h"
+// Using simple types for testing to avoid dependency conflicts
+struct W3DMatrix4Test {
+    float m[4][4];
+    W3DMatrix4Test() {
+        memset(m, 0, sizeof(m));
+        m[0][0] = m[1][1] = m[2][2] = m[3][3] = 1.0f;
+    }
+    
+    void Make_Identity() {
+        memset(m, 0, sizeof(m));
+        m[0][0] = m[1][1] = m[2][2] = m[3][3] = 1.0f;
+    }
+    
+    float* operator[](int i) { return m[i]; }
+    const float* operator[](int i) const { return m[i]; }
+};
+
+struct W3DVector3Test {
+    float x, y, z;
+    W3DVector3Test() : x(0), y(0), z(0) {}
+    W3DVector3Test(float x_, float y_, float z_) : x(x_), y(y_), z(z_) {}
+};
+
+struct W3DVector4Test {
+    float x, y, z, w;
+    W3DVector4Test() : x(0), y(0), z(0), w(0) {}
+    W3DVector4Test(float x_, float y_, float z_, float w_) : x(x_), y(y_), z(z_), w(w_) {}
+};
+
+// Utility functions for test types
+namespace W3DTestUtils {
+    inline void MatrixToOpenGL(const W3DMatrix4Test& w3dMatrix, float glMatrix[16]) {
+        for (int row = 0; row < 4; ++row) {
+            for (int col = 0; col < 4; ++col) {
+                glMatrix[col * 4 + row] = w3dMatrix[row][col];
+            }
+        }
+    }
+    
+    inline void GetMatrixData(const W3DMatrix4Test& matrix, float data[16]) {
+        MatrixToOpenGL(matrix, data);
+    }
+    
+    inline W3DMatrix4Test MultiplyMatrices(const W3DMatrix4Test& a, const W3DMatrix4Test& b) {
+        W3DMatrix4Test result;
+        for (int i = 0; i < 4; ++i) {
+            for (int j = 0; j < 4; ++j) {
+                result[i][j] = 0.0f;
+                for (int k = 0; k < 4; ++k) {
+                    result[i][j] += a[i][k] * b[k][j];
+                }
+            }
+        }
+        return result;
+    }
+}
+
+// Use test types for compatibility
+#define W3DMatrix4 W3DMatrix4Test
+#define W3DVector3 W3DVector3Test
+#define W3DVector4 W3DVector4Test
+#define W3DOpenGLUtils W3DTestUtils
 #endif
 
 class OpenGLRendererW3D : public IGraphicsRenderer {

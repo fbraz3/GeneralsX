@@ -36,7 +36,11 @@
 
 // C RunTime Header Files
 #include <stdlib.h>
+#ifdef __APPLE__
+#include <stdlib.h>
+#else
 #include <malloc.h>
+#endif
 #include <memory.h>
 #include <tchar.h>
 

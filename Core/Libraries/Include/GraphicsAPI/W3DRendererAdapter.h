@@ -14,8 +14,10 @@
 #endif
 #endif
 
-// Forward declaration instead of including dx8renderer.h directly
+// Forward declarations to avoid dependency issues
 class DX8Renderer;
+class ShaderClass;
+class TextureClass;
 
 /**
  * Adapter that allows the W3D system to use the new abstract renderer
@@ -64,6 +66,8 @@ class W3DTextureWrapper {
 private:
 #ifdef ENABLE_OPENGL
     GLuint m_glTexture;
+#else
+    uint32_t m_glTexture; // Dummy member when OpenGL is not available
 #endif
     bool m_isGLTexture;
     int m_width, m_height;
@@ -79,6 +83,10 @@ public:
     
     // Texture interface
     virtual void Apply(int stage);
+    
+private:
+    // Internal OpenGL binding method
+    void BindGL(int textureUnit);
     virtual int Get_Width() const { return m_width; }
     virtual int Get_Height() const { return m_height; }
     

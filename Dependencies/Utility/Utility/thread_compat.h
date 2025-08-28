@@ -23,7 +23,11 @@
 
 inline int GetCurrentThreadId()
 {
+#ifdef __APPLE__
+  return (int)(uintptr_t)pthread_self();
+#else
   return pthread_self();
+#endif
 }
 
 inline void Sleep(int ms)

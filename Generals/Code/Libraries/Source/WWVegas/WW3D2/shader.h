@@ -108,7 +108,7 @@ public:
 		PASS_NOTEQUAL,       // pass if incoming not equal to stored
 		PASS_GEQUAL,			// pass if incoming greater than or equal to stored
 		PASS_ALWAYS,			// pass always
-		PASS_MAX					// end of enumeration
+		PASS_TYPE_MAX			// end of enumeration
 	};
 
 	enum DepthMaskType

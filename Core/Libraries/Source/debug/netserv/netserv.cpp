@@ -29,7 +29,11 @@
 #define STRICT
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#ifdef __APPLE__
+#include <stdlib.h>
+#else
 #include <malloc.h>
+#endif
 
 // Note: This implementation is quick'n'ugly. I've developed this
 //       program basically just for testing the net I/O class.

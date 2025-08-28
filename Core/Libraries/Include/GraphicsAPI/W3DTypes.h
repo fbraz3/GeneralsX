@@ -129,8 +129,23 @@ namespace W3DOpenGLBridge {
     }
 }
 
-// Type aliases for easier integration
+// Type aliases for easier integration - only define if not already defined
+#ifndef W3D_MATRIX4_DEFINED
+#define W3D_MATRIX4_DEFINED
 using W3DMatrix4 = W3DCompat::Matrix4x4;
+#endif
+
+#ifndef W3D_MATRIX3_DEFINED
+#define W3D_MATRIX3_DEFINED
 using W3DMatrix3 = W3DCompat::Matrix4x4; // Simplified, can be Matrix3D later
+#endif
+
+#ifndef W3D_VECTOR3_DEFINED
+#define W3D_VECTOR3_DEFINED
 using W3DVector3 = W3DCompat::Vector3;
+#endif
+
+#ifndef W3D_VECTOR4_DEFINED
+#define W3D_VECTOR4_DEFINED
 using W3DVector4 = W3DCompat::Vector4;
+#endif

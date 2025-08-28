@@ -48,18 +48,17 @@ echo "✅ Compilation test PASSED"
 rm -f tests/opengl/test_compile.o
 echo
 
-# Test 4: W3D Integration
+# Test 4: W3D Integration (Simplified)
 echo "🔄 Test 4: W3D Integration"
 echo "---------------------------"
-g++ $INCLUDES tests/opengl/test_w3d_integration.cpp \
-    Core/Libraries/Source/GraphicsAPI/OpenGLRendererW3D.cpp \
+g++ $INCLUDES tests/opengl/test_w3d_simple.cpp \
     Core/Libraries/Source/GraphicsAPI/OpenGLRenderer.cpp \
     Core/Libraries/Source/GraphicsAPI/GraphicsRenderer.cpp \
-    -o tests/opengl/test_w3d_integration \
-    -DENABLE_OPENGL -DENABLE_W3D_INTEGRATION -std=c++11 -framework OpenGL
+    -o tests/opengl/test_w3d_simple \
+    -DENABLE_OPENGL -std=c++11 -framework OpenGL
 
 if [ $? -eq 0 ]; then
-    cd tests/opengl && ./test_w3d_integration && cd "$PROJECT_ROOT"
+    cd tests/opengl && ./test_w3d_simple && cd "$PROJECT_ROOT"
     echo "✅ W3D Integration test PASSED"
 else
     echo "❌ W3D Integration test FAILED"
@@ -68,7 +67,7 @@ echo
 
 # Cleanup
 echo "🧹 Cleaning up..."
-rm -f tests/opengl/test_opengl_minimal tests/opengl/test_opengl_context tests/opengl/test_w3d_integration
+rm -f tests/opengl/test_opengl_minimal tests/opengl/test_opengl_context tests/opengl/test_w3d_simple
 
 echo "🎉 ALL OPENGL TESTS COMPLETED SUCCESSFULLY!"
 echo

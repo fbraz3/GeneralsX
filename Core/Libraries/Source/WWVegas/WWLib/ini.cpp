@@ -95,7 +95,15 @@
 #include	"XPIPE.H"
 #include	"XSTRAW.H"
 #include	<Utility/stdio_adapter.h>
+#ifdef __APPLE__
+#include <stdlib.h>  // malloc functions on macOS
+#else
+#ifdef __APPLE__
+#include <stdlib.h>
+#else
 #include <malloc.h>
+#endif
+#endif
 #ifdef _UNIX
 #include <ctype.h>
 #endif

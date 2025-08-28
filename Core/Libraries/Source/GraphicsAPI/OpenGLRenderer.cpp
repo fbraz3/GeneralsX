@@ -5,9 +5,14 @@
 // Silence OpenGL deprecation warnings on macOS
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
-#endif
-
-#ifdef _WIN32
+#include <OpenGL/gl.h>
+#include <OpenGL/glext.h>
+#include <OpenGL/OpenGL.h>
+#elif defined(_WIN32)
+#include <windows.h>
+#include <GL/gl.h>
+#include <GL/glext.h>
+#include <GL/wglext.h>
 // WGL functions for Windows
 typedef HGLRC (WINAPI *PFNWGLCREATECONTEXTATTRIBSARBPROC)(HDC hDC, HGLRC hShareContext, const int *attribList);
 static PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = nullptr;
@@ -17,16 +22,12 @@ static PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = nullptr;
 #define WGL_CONTEXT_FLAGS_ARB             0x2094
 #define WGL_CONTEXT_PROFILE_MASK_ARB      0x9126
 #define WGL_CONTEXT_CORE_PROFILE_BIT_ARB  0x00000001
-
 #elif defined(__linux__)
+#include <GL/gl.h>
+#include <GL/glext.h>
+#include <GL/glx.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <GL/glx.h>
-
-#elif defined(__APPLE__)
-#include <OpenGL/OpenGL.h>
-#include <OpenGL/gl.h>
-// Note: Cocoa integration will be handled separately in .mm files
 #endif
 
 OpenGLRenderer::OpenGLRenderer() 

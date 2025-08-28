@@ -47,6 +47,7 @@
 #include "Vector.H"
 #include "bittype.h"
 #include <string.h>
+#include "win32_compat.h"
 
 #ifdef _UNIX
 #include "osdep.h"

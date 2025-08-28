@@ -4,7 +4,6 @@
 
 // Test with W3D integration
 #define ENABLE_W3D_INTEGRATION
-#include "W3DTypes.h"
 
 int main() {
     std::cout << "Testing OpenGL integration with W3D types..." << std::endl;

@@ -44,7 +44,7 @@ You can now choose between DirectX 8 (Windows) and OpenGL (cross-platform):
 ./generals --directx
 
 # Test graphics system
-./test_graphics --opengl
+./tests/opengl/run_opengl_tests.sh
 ```
 
 ### Building from Source
@@ -64,10 +64,12 @@ To test the OpenGL graphics system before building the full game:
 
 ```bash
 # Quick automated test
-./build_opengl_test.sh
+./tests/opengl/run_opengl_tests.sh
 
-# Manual compilation test
-g++ -std=c++17 -I. -framework OpenGL test_simple_compile.cpp -o test_simple
+# Manual compilation test  
+cd tests/opengl
+g++ -std=c++17 -I../../Core/Libraries/Include/GraphicsAPI \
+    -framework OpenGL test_simple_compile.cpp -o test_simple
 ./test_simple
 ```
 

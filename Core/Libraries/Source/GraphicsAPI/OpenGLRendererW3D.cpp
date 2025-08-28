@@ -2,30 +2,26 @@
 #include <cstring>
 #include <iostream>
 
+// Enable OpenGL for this file
+#define ENABLE_OPENGL
+
 // Silence OpenGL deprecation warnings on macOS
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
-#endif
-
-#ifdef _WIN32
-// WGL functions for Windows
-typedef HGLRC (WINAPI *PFNWGLCREATECONTEXTATTRIBSARBPROC)(HDC hDC, HGLRC hShareContext, const int *attribList);
-static PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = nullptr;
-
-#define WGL_CONTEXT_MAJOR_VERSION_ARB     0x2091
-#define WGL_CONTEXT_MINOR_VERSION_ARB     0x2092
-#define WGL_CONTEXT_FLAGS_ARB             0x2094
-#define WGL_CONTEXT_PROFILE_MASK_ARB      0x9126
-#define WGL_CONTEXT_CORE_PROFILE_BIT_ARB  0x00000001
-
+#include <OpenGL/gl.h>
+#include <OpenGL/glext.h>
+#include <OpenGL/OpenGL.h>
+#elif defined(_WIN32)
+#include <windows.h>
+#include <GL/gl.h>
+#include <GL/glext.h>
+#include <GL/wglext.h>
 #elif defined(__linux__)
+#include <GL/gl.h>
+#include <GL/glext.h>
+#include <GL/glx.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <GL/glx.h>
-
-#elif defined(__APPLE__)
-#include <OpenGL/OpenGL.h>
-// Note: Cocoa integration will be handled separately in .mm files
 #endif
 
 OpenGLRendererW3D::OpenGLRendererW3D() 
@@ -428,26 +424,25 @@ void OpenGLRendererW3D::UpdateMatrixCache() {
 }
 
 void OpenGLRendererW3D::ConvertW3DMatrix(const W3DMatrix4& w3dMatrix, float* glMatrix) {
-    W3DOpenGLBridge::ConvertMatrix(w3dMatrix, glMatrix);
+    W3DOpenGLUtils::MatrixToOpenGL(w3dMatrix, glMatrix);
 }
 #endif
 
 void OpenGLRendererW3D::UpdateMatrices() {
 #ifdef ENABLE_W3D_INTEGRATION
-    // Use cached OpenGL matrices
+    // Use real W3D matrix operations with conversion utilities
     glMatrixMode(GL_PROJECTION);
-    glLoadMatrixf(m_projectionGL);
+    float projectionGL[16];
+    W3DOpenGLUtils::GetMatrixData(*m_projectionMatrix, projectionGL);
+    glLoadMatrixf(projectionGL);
     
-    // Combine view and world matrices
-    float modelView[16];
-    // This is a simplified approach - in a real implementation,
-    // you'd want to properly multiply the matrices
-    W3DMatrix4 combined;
-    W3DCompat::Multiply(*m_viewMatrix, *m_worldMatrix, &combined);
-    ConvertW3DMatrix(combined, modelView);
+    // Combine view and world matrices using real W3D operations
+    W3DMatrix4 modelView = W3DOpenGLUtils::MultiplyMatrices(*m_viewMatrix, *m_worldMatrix);
+    float modelViewGL[16];
+    W3DOpenGLUtils::GetMatrixData(modelView, modelViewGL);
     
     glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixf(modelView);
+    glLoadMatrixf(modelViewGL);
 #else
     // Use mock matrix system (for testing)
     glMatrixMode(GL_PROJECTION);
