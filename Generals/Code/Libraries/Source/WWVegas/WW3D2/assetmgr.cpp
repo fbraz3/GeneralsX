@@ -106,7 +106,11 @@
 #include "metalmap.h"
 #include "w3dexclusionlist.h"
 #include <INI.H>
+#ifdef _WIN32
 #include <windows.h>
+#else
+#include "win32_compat.h"
+#endif
 #include <stdio.h>
 #include <d3dx8core.h>
 #include "texture.h"

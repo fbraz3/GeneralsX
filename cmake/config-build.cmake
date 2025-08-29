@@ -49,6 +49,13 @@ if(NOT IS_VS6_BUILD)
     target_compile_features(core_config INTERFACE cxx_std_20)
 endif()
 
+# Set RTS_FLAGS based on compiler
+if(MSVC)
+    set(RTS_FLAGS "/W3")
+else()
+    set(RTS_FLAGS "-Wall")
+endif()
+
 if(IS_VS6_BUILD AND RTS_BUILD_OPTION_VC6_FULL_DEBUG)
     target_compile_options(core_config INTERFACE ${RTS_FLAGS} /Zi)
 else()
