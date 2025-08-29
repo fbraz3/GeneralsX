@@ -33,7 +33,7 @@
 #ifndef DX8_WEBBROWSER_H
 #define DX8_WEBBROWSER_H
 
-#include <windows.h>
+#include "win32_compat.h"
 #include "d3d8.h"
 
 // ***********************************

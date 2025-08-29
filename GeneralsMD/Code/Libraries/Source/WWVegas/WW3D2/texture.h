@@ -65,6 +65,7 @@ class DX8Wrapper;
 class TextureLoader;
 class LoaderThreadClass;
 class TextureLoadTaskClass;
+class TextureClass;
 class CubeTextureClass;
 class VolumeTextureClass;
 

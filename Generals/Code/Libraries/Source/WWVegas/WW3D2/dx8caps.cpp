@@ -38,12 +38,23 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "always.h"
+#include "win32_compat.h"
 #include "dx8caps.h"
 #include "dx8wrapper.h"
 #include "formconv.h"
 #pragma warning (disable : 4201)		// nonstandard extension - nameless struct
-#include <windows.h>
-#include <mmsystem.h>
+// #include <mmsystem.h> // Multimedia system - not needed for compatibility
+
+// DirectX compatibility macros
+#ifndef HRESULT
+typedef long HRESULT;
+#endif
+#ifndef SUCCEEDED
+#define SUCCEEDED(hr) ((HRESULT)(hr) >= 0)
+#endif
+#ifndef FAILED
+#define FAILED(hr) ((HRESULT)(hr) < 0)
+#endif
 
 static StringClass CapsWorkString;
 

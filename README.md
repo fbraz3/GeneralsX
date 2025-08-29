@@ -8,11 +8,17 @@ This project provides **weekly builds** of the [GeneralsGameCode](https://github
 ### 🎮 New: OpenGL Support! 
 This fork now includes **OpenGL rendering support** alongside the original DirectX 8, enabling:
 - **Linux compatibility** 🐧
-- **macOS support** 🍎 (in progress)  
+- **macOS support** 🍎 (**Major Progress!** DirectX compatibility layer implemented)  
 - **Better cross-platform development**
 - **Modern graphics pipeline**
 
-See [OPENGL_MIGRATION.md](./OPENGL_MIGRATION.md) for technical details and [OPENGL_TESTING_GUIDE.md](./OPENGL_TESTING_GUIDE.md) for testing the graphics system.
+**Latest macOS Port Progress:**
+- ✅ **DirectX 8 Compatibility Layer** - Complete interface implementations for IDirect3DDevice8, IDirect3DTexture8, and more
+- ✅ **Windows API Compatibility** - Successful porting of Windows-specific functions and types
+- ✅ **Core Libraries Compiling** - Foundation libraries now build successfully on macOS
+- 🔄 **WW3D2 Graphics Module** - Major progress with most files compiling successfully
+
+See [MACOS_PORT.md](./MACOS_PORT.md) for detailed progress, [OPENGL_MIGRATION.md](./OPENGL_MIGRATION.md) for technical details and [OPENGL_TESTING_GUIDE.md](./OPENGL_TESTING_GUIDE.md) for testing the graphics system.
 
 - **Daily sync** with the upstream SuperHackers repository.
 - **Weekly builds** including all recent updates.
@@ -77,6 +83,7 @@ For detailed testing instructions, see [OPENGL_TESTING_GUIDE.md](./OPENGL_TESTIN
 
 ## Documentation
 
+- **[MACOS_PORT.md](./MACOS_PORT.md)** - macOS porting progress, DirectX compatibility layer, and implementation details
 - **[OPENGL_MIGRATION.md](./OPENGL_MIGRATION.md)** - Technical implementation details and architecture
 - **[OPENGL_TESTING_GUIDE.md](./OPENGL_TESTING_GUIDE.md)** - Testing and compilation guide for OpenGL system
 - **[CONTRIBUTING.md](./CONTRIBUTING.md)** - Guidelines for contributing to the project

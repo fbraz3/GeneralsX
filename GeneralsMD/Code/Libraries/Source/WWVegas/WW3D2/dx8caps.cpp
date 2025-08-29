@@ -43,7 +43,7 @@
 #include "formconv.h"
 #pragma warning (disable : 4201)		// nonstandard extension - nameless struct
 #include <windows.h>
-#include <mmsystem.h>
+// #include <mmsystem.h> // Multimedia system - not needed for compatibility
 
 static StringClass CapsWorkString;
 

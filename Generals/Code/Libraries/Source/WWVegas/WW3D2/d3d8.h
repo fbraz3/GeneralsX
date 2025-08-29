@@ -39,17 +39,64 @@ typedef uint32_t D3DCOLOR;
 // DirectX enums and constants
 typedef enum {
     D3DFMT_UNKNOWN = 0,
-    D3DFMT_R3G3B2 = 27,
+    D3DFMT_R8G8B8 = 20,
     D3DFMT_A8R8G8B8 = 21,
     D3DFMT_X8R8G8B8 = 22,
     D3DFMT_R5G6B5 = 23,
     D3DFMT_X1R5G5B5 = 24,
     D3DFMT_A1R5G5B5 = 25,
     D3DFMT_A4R4G4B4 = 26,
+    D3DFMT_R3G3B2 = 27,
+    D3DFMT_A8 = 28,
+    D3DFMT_A8R3G3B2 = 29,
+    D3DFMT_X4R4G4B4 = 30,
+    D3DFMT_A2B10G10R10 = 31,
+    D3DFMT_A8B8G8R8 = 32,
+    D3DFMT_X8B8G8R8 = 33,
+    D3DFMT_G16R16 = 34,
+    D3DFMT_A2R10G10B10 = 35,
+    D3DFMT_A16B16G16R16 = 36,
+    D3DFMT_A8P8 = 40,
+    D3DFMT_P8 = 41,
+    D3DFMT_L8 = 50,
+    D3DFMT_A8L8 = 51,
+    D3DFMT_A4L4 = 52,
+    D3DFMT_V8U8 = 60,
+    D3DFMT_L6V5U5 = 61,
+    D3DFMT_X8L8V8U8 = 62,
+    D3DFMT_Q8W8V8U8 = 63,
+    D3DFMT_V16U16 = 64,
+    D3DFMT_A2W10V10U10 = 67,
+    D3DFMT_W11V11U10 = 65,
+    D3DFMT_UYVY = 1498831189,
+    D3DFMT_R8G8_B8G8 = 1111970375,
+    D3DFMT_YUY2 = 844715353,
+    D3DFMT_G8R8_G8B8 = 1111970375,
     D3DFMT_DXT1 = 827611204,
-    D3DFMT_DXT3 = 827611220,
-    D3DFMT_DXT5 = 894720068
+    D3DFMT_DXT2 = 827611220,
+    D3DFMT_DXT3 = 827611236,
+    D3DFMT_DXT4 = 827611252,
+    D3DFMT_DXT5 = 894720068,
+    D3DFMT_D16_LOCKABLE = 70,
+    D3DFMT_D32 = 71,
+    D3DFMT_D15S1 = 73,
+    D3DFMT_D24S8 = 75,
+    D3DFMT_D24X8 = 77,
+    D3DFMT_D24X4S4 = 79,
+    D3DFMT_D16 = 80,
+    D3DFMT_INDEX16 = 101,
+    D3DFMT_INDEX32 = 102
 } D3DFORMAT;
+
+// Lock flags
+#define D3DLOCK_READONLY 0x00000010L
+#define D3DLOCK_DISCARD 0x00002000L
+#define D3DLOCK_NOOVERWRITE 0x00001000L
+#define D3DLOCK_NOSYSLOCK 0x00000800L
+
+// DDS constants
+#define DDSCAPS2_CUBEMAP 0x00000200L
+#define DDSCAPS2_VOLUME 0x00200000L
 
 typedef enum {
     D3DPOOL_DEFAULT = 0,
@@ -62,7 +109,9 @@ typedef enum {
     D3DUSAGE_RENDERTARGET = 0x00000001L,
     D3DUSAGE_DEPTHSTENCIL = 0x00000002L,
     D3DUSAGE_DYNAMIC = 0x00000200L,
-    D3DUSAGE_WRITEONLY = 0x00000008L
+    D3DUSAGE_WRITEONLY = 0x00000008L,
+    D3DUSAGE_NPATCHES = 0x00000010L,
+    D3DUSAGE_SOFTWAREPROCESSING = 0x00000020L
 } D3DUSAGE;
 
 // DirectX FVF constants
@@ -100,6 +149,9 @@ typedef enum {
 #define D3DFVF_TEXCOORDSIZE2(CoordIndex) (D3DFVF_TEXTUREFORMAT2 << (CoordIndex*2 + 16))
 #define D3DFVF_TEXCOORDSIZE3(CoordIndex) (D3DFVF_TEXTUREFORMAT3 << (CoordIndex*2 + 16))
 #define D3DFVF_TEXCOORDSIZE4(CoordIndex) (D3DFVF_TEXTUREFORMAT4 << (CoordIndex*2 + 16))
+
+// Additional FVF constants
+#define D3DFVF_LASTBETA_UBYTE4 0x1000
 
 // DirectX constants
 #define D3DDP_MAXTEXCOORD 8
@@ -164,7 +216,8 @@ typedef enum {
     D3DRS_AMBIENTMATERIALSOURCE = 147,
     D3DRS_EMISSIVEMATERIALSOURCE = 148,
     D3DRS_VERTEXBLEND = 151,
-    D3DRS_CLIPPLANEENABLE = 152
+    D3DRS_CLIPPLANEENABLE = 152,
+    D3DRS_SOFTWAREVERTEXPROCESSING = 153
 } D3DRENDERSTATETYPE;
 
 // Texture stage state types
@@ -259,12 +312,16 @@ typedef struct {
     DWORD DeviceType;
     DWORD AdapterOrdinal;
     DWORD Caps;
+    DWORD DevCaps;
     DWORD MaxTextureWidth;
     DWORD MaxTextureHeight;
     DWORD MaxSimultaneousTextures;
     DWORD VertexShaderVersion;
     DWORD PixelShaderVersion;
 } D3DCAPS8;
+
+// Device capabilities
+#define D3DDEVCAPS_HWTRANSFORMANDLIGHT 0x00000001L
 
 // DirectX adapter identifier
 typedef struct {
@@ -282,6 +339,7 @@ struct IDirect3DBaseTexture8;
 struct IDirect3DVertexBuffer8;
 struct IDirect3DIndexBuffer8;
 struct IDirect3DTexture8;
+struct IDirect3DSurface8;
 
 // DirectX interface types
 struct IDirect3D8 {
@@ -329,6 +387,20 @@ struct IDirect3DDevice8 {
     virtual int SetPixelShaderConstant(DWORD reg, const void* data, DWORD count) { return D3D_OK; }
     virtual int SetClipPlane(DWORD index, const float* plane) { return D3D_OK; }
     virtual int CopyRects(IDirect3DSurface8* source_surface, const RECT* source_rects, DWORD num_rects, IDirect3DSurface8* dest_surface, const POINT* dest_points) { return D3D_OK; }
+    virtual int GetDeviceCaps(D3DCAPS8* caps) {
+        if (caps) {
+            caps->DeviceType = 0;
+            caps->AdapterOrdinal = 0;
+            caps->Caps = 0;
+            caps->DevCaps = D3DDEVCAPS_HWTRANSFORMANDLIGHT;
+            caps->MaxTextureWidth = 2048;
+            caps->MaxTextureHeight = 2048;
+            caps->MaxSimultaneousTextures = 8;
+            caps->VertexShaderVersion = 0;
+            caps->PixelShaderVersion = 0;
+        }
+        return D3D_OK;
+    }
 };
 
 struct IDirect3DBaseTexture8 {
@@ -340,28 +412,79 @@ struct IDirect3DBaseTexture8 {
 struct IDirect3DTexture8 : public IDirect3DBaseTexture8 {
     virtual int AddRef() { return 1; }
     virtual int Release() { return 0; }
+    virtual int GetLevelDesc(DWORD level, D3DSURFACE_DESC* desc) { 
+        if (desc) {
+            desc->Width = 256;
+            desc->Height = 256;
+            desc->Levels = 1;
+            desc->Usage = 0;
+            desc->Format = D3DFMT_A8R8G8B8;
+            desc->Pool = D3DPOOL_MANAGED;
+        }
+        return D3D_OK; 
+    }
+    virtual int Lock(DWORD level, D3DLOCKED_RECT* locked_rect, const RECT* rect, DWORD flags) { return D3D_OK; }
+    virtual int Unlock(DWORD level) { return D3D_OK; }
 };
 
 struct IDirect3DSurface8 {
     virtual int AddRef() { return 1; }
     virtual int Release() { return 0; }
     virtual int QueryInterface(void*, void**) { return 0; }
+    virtual int GetDesc(D3DSURFACE_DESC* desc) {
+        if (desc) {
+            desc->Width = 256;
+            desc->Height = 256;
+            desc->Levels = 1;
+            desc->Usage = 0;
+            desc->Format = D3DFMT_A8R8G8B8;
+            desc->Pool = D3DPOOL_MANAGED;
+        }
+        return D3D_OK;
+    }
+    virtual int LockRect(D3DLOCKED_RECT* locked_rect, const RECT* rect, DWORD flags) {
+        if (locked_rect) {
+            locked_rect->pBits = nullptr;
+            locked_rect->Pitch = 0;
+        }
+        return D3D_OK;
+    }
+    virtual int UnlockRect() { return D3D_OK; }
 };
 
 struct IDirect3DVertexBuffer8 {
     virtual int AddRef() { return 1; }
     virtual int Release() { return 0; }
     virtual int QueryInterface(void*, void**) { return 0; }
+    virtual int Lock(DWORD offset, DWORD size, unsigned char** data, DWORD flags) { return D3D_OK; }
+    virtual int Unlock() { return D3D_OK; }
 };
 
 struct IDirect3DIndexBuffer8 {
     virtual int AddRef() { return 1; }
     virtual int Release() { return 0; }
     virtual int QueryInterface(void*, void**) { return 0; }
+    virtual int Lock(DWORD offset, DWORD size, unsigned char** data, DWORD flags) { return D3D_OK; }
+    virtual int Unlock() { return D3D_OK; }
 };
 
 // Stub functions
 inline void* Direct3DCreate8(unsigned int) { return nullptr; }
+inline DWORD D3DXGetFVFVertexSize(DWORD fvf) { 
+    // Simple calculation based on FVF flags
+    DWORD size = 0;
+    if (fvf & D3DFVF_XYZ) size += 12;
+    if (fvf & D3DFVF_XYZRHW) size += 16;
+    if (fvf & D3DFVF_NORMAL) size += 12;
+    if (fvf & D3DFVF_DIFFUSE) size += 4;
+    if (fvf & D3DFVF_SPECULAR) size += 4;
+    
+    // Add texture coordinates
+    DWORD tex_count = (fvf & D3DFVF_TEXCOUNT_MASK) >> D3DFVF_TEXCOUNT_SHIFT;
+    size += tex_count * 8; // Assume 2D texture coordinates
+    
+    return size;
+}
 
 #else
 // On Windows, include the real DirectX headers

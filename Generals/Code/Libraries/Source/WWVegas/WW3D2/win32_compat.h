@@ -5,6 +5,8 @@
 
 #ifndef _WIN32
 // Compatibility types for non-Windows systems
+#include <cstring>
+#include <cstdio>
 
 // Basic Windows types
 typedef void* HDC;
@@ -29,11 +31,26 @@ typedef char* LPSTR;
 #ifndef FALSE
 #define FALSE 0
 #endif
+#ifndef MAX_PATH
+#define MAX_PATH 260
+#endif
 
 // Function compatibility
 #define _strdup strdup
 #define _stricmp strcasecmp
 #define _strnicmp strncasecmp
+
+// Windows string functions compatibility
+inline char* lstrcpyn(char* dest, const char* src, int max_len) {
+    if (max_len <= 0) return dest;
+    strncpy(dest, src, max_len - 1);
+    dest[max_len - 1] = '\0';
+    return dest;
+}
+
+inline char* lstrcat(char* dest, const char* src) {
+    return strcat(dest, src);
+}
 
 // DirectX basic types
 typedef struct {

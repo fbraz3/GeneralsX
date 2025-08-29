@@ -25,7 +25,7 @@
 #include "bitmaphandler.h"
 #include "colorspace.h"
 #include <string.h>
-#include <ddraw.h>
+#include "d3d8.h"
 
 // ----------------------------------------------------------------------------
 

@@ -19,6 +19,15 @@ typedef struct {
     LONG y;
 } POINT;
 
+// Forward declarations for DirectX interfaces
+struct IDirect3D8;
+struct IDirect3DDevice8;
+struct IDirect3DTexture8;
+struct IDirect3DSurface8;
+struct IDirect3DVertexBuffer8;
+struct IDirect3DIndexBuffer8;
+struct IDirect3DBaseTexture8;
+
 // Basic DirectX types
 typedef void* LPDIRECT3D8;
 typedef void* LPDIRECT3DDEVICE8;
@@ -28,6 +37,7 @@ typedef void* LPDIRECT3DVERTEXBUFFER8;
 typedef void* LPDIRECT3DINDEXBUFFER8;
 typedef void* LPDIRECT3DSWAPCHAIN8;
 typedef void* IDirect3DSwapChain8;
+typedef void* LPDISPATCH;
 
 // DirectX color type
 typedef uint32_t D3DCOLOR;
@@ -47,9 +57,22 @@ typedef enum {
     D3DFMT_A1R5G5B5 = 25,
     D3DFMT_A4R4G4B4 = 26,
     D3DFMT_DXT1 = 827611204,
-    D3DFMT_DXT3 = 827611220,
+    D3DFMT_DXT3 = 861165636,
     D3DFMT_DXT5 = 894720068
 } D3DFORMAT;
+
+// Additional format constants
+#define D3DFMT_R8G8B8 20
+#define D3DFMT_L8 50
+#define D3DFMT_A8 28
+#define D3DFMT_P8 41
+#define D3DFMT_A8R3G3B2 25
+#define D3DFMT_X4R4G4B4 30
+#define D3DFMT_A8P8 40
+
+// DirectX usage constants
+#define D3DUSAGE_NPATCHES 0x01000000L
+#define D3DUSAGE_SOFTWAREPROCESSING 0x00000010L
 
 typedef enum {
     D3DPOOL_DEFAULT = 0,
@@ -100,6 +123,24 @@ typedef enum {
 #define D3DFVF_TEXCOORDSIZE2(CoordIndex) (D3DFVF_TEXTUREFORMAT2 << (CoordIndex*2 + 16))
 #define D3DFVF_TEXCOORDSIZE3(CoordIndex) (D3DFVF_TEXTUREFORMAT3 << (CoordIndex*2 + 16))
 #define D3DFVF_TEXCOORDSIZE4(CoordIndex) (D3DFVF_TEXTUREFORMAT4 << (CoordIndex*2 + 16))
+
+// Additional FVF constants
+#define D3DFVF_LASTBETA_UBYTE4 0x1000L
+
+// Device capability constants
+#define D3DDEVCAPS_HWTRANSFORMANDLIGHT 0x00000001L
+#define D3DDEVCAPS_NPATCHES 0x01000000L
+
+// Texture operation capability constants
+#define D3DTEXOPCAPS_DOTPRODUCT3 0x00800000L
+#define D3DTEXOPCAPS_BUMPENVMAP 0x00200000L
+#define D3DTEXOPCAPS_BUMPENVMAPLUMINANCE 0x00400000L
+
+// Caps2 constants
+#define D3DCAPS2_FULLSCREENGAMMA 0x00020000L
+
+// Resource type constants
+#define D3DRTYPE_TEXTURE 3
 
 // DirectX constants
 #define D3DDP_MAXTEXCOORD 8
@@ -164,7 +205,9 @@ typedef enum {
     D3DRS_AMBIENTMATERIALSOURCE = 147,
     D3DRS_EMISSIVEMATERIALSOURCE = 148,
     D3DRS_VERTEXBLEND = 151,
-    D3DRS_CLIPPLANEENABLE = 152
+    D3DRS_CLIPPLANEENABLE = 152,
+    D3DRS_SOFTWAREVERTEXPROCESSING = 153,
+    D3DRS_ZBIAS = 154
 } D3DRENDERSTATETYPE;
 
 // Texture stage state types
@@ -211,12 +254,13 @@ typedef struct {
 } D3DLOCKED_RECT;
 
 // Matrix structure from d3dx8math.h
+// Basic matrix type
+#ifndef D3DMATRIX_DEFINED
+#define D3DMATRIX_DEFINED
 typedef struct {
-    float _11, _12, _13, _14;
-    float _21, _22, _23, _24;
-    float _31, _32, _33, _34;
-    float _41, _42, _43, _44;
+    float m[4][4];
 } D3DMATRIX;
+#endif
 
 // DirectX light structure
 typedef struct {
@@ -259,6 +303,10 @@ typedef struct {
     DWORD DeviceType;
     DWORD AdapterOrdinal;
     DWORD Caps;
+    DWORD Caps2;
+    DWORD DevCaps;
+    DWORD RasterCaps;
+    DWORD TextureOpCaps;
     DWORD MaxTextureWidth;
     DWORD MaxTextureHeight;
     DWORD MaxSimultaneousTextures;
@@ -270,6 +318,7 @@ typedef struct {
 typedef struct {
     char Driver[512];
     char Description[512];
+    LARGE_INTEGER DriverVersion;
     DWORD VendorId;
     DWORD DeviceId;
     DWORD SubSysId;
@@ -283,11 +332,22 @@ struct IDirect3DVertexBuffer8;
 struct IDirect3DIndexBuffer8;
 struct IDirect3DTexture8;
 
+// Surface interface (declared early for use in IDirect3DDevice8)
+struct IDirect3DSurface8 {
+    virtual int AddRef() { return 1; }
+    virtual int Release() { return 0; }
+    virtual int QueryInterface(void*, void**) { return 0; }
+    virtual int LockRect(void* locked_rect, const RECT* rect, DWORD flags) { return D3D_OK; }
+    virtual int UnlockRect() { return D3D_OK; }
+    virtual int GetDesc(void* desc) { return D3D_OK; }
+};
+
 // DirectX interface types
 struct IDirect3D8 {
     virtual int AddRef() { return 1; }
     virtual int Release() { return 0; }
     virtual int QueryInterface(void*, void**) { return 0; }
+    virtual int CheckDeviceFormat(DWORD adapter, DWORD device_type, DWORD adapter_format, DWORD usage, DWORD resource_type, DWORD check_format) { return D3D_OK; }
 };
 
 struct IDirect3DDevice8 {
@@ -323,6 +383,7 @@ struct IDirect3DDevice8 {
     virtual int CreateTexture(DWORD width, DWORD height, DWORD levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, IDirect3DTexture8** texture) { return D3D_OK; }
     virtual int SetStreamSource(DWORD stream_number, IDirect3DVertexBuffer8* stream_data, DWORD stride) { return D3D_OK; }
     virtual int SetIndices(IDirect3DIndexBuffer8* index_data, DWORD base_vertex_index) { return D3D_OK; }
+    virtual int GetDeviceCaps(D3DCAPS8* caps) { return D3D_OK; }
     
     // Additional methods for compatibility
     virtual int SetVertexShaderConstant(DWORD reg, const void* data, DWORD count) { return D3D_OK; }
@@ -340,28 +401,36 @@ struct IDirect3DBaseTexture8 {
 struct IDirect3DTexture8 : public IDirect3DBaseTexture8 {
     virtual int AddRef() { return 1; }
     virtual int Release() { return 0; }
-};
-
-struct IDirect3DSurface8 {
-    virtual int AddRef() { return 1; }
-    virtual int Release() { return 0; }
-    virtual int QueryInterface(void*, void**) { return 0; }
+    virtual int LockRect(DWORD level, void* locked_rect, const RECT* rect, DWORD flags) { return D3D_OK; }
+    virtual int UnlockRect(DWORD level) { return D3D_OK; }
+    virtual int GetLevelDesc(DWORD level, void* desc) { return D3D_OK; }
+    virtual int GetSurfaceLevel(DWORD level, IDirect3DSurface8** surface) { return D3D_OK; }
 };
 
 struct IDirect3DVertexBuffer8 {
     virtual int AddRef() { return 1; }
     virtual int Release() { return 0; }
     virtual int QueryInterface(void*, void**) { return 0; }
+    virtual int Lock(DWORD offset, DWORD size, void** data, DWORD flags) { return D3D_OK; }
+    virtual int Unlock() { return D3D_OK; }
+    virtual int GetDesc(void* desc) { return D3D_OK; }
 };
 
 struct IDirect3DIndexBuffer8 {
     virtual int AddRef() { return 1; }
     virtual int Release() { return 0; }
     virtual int QueryInterface(void*, void**) { return 0; }
+    virtual int Lock(DWORD offset, DWORD size, void** data, DWORD flags) { return D3D_OK; }
+    virtual int Unlock() { return D3D_OK; }
+    virtual int GetDesc(void* desc) { return D3D_OK; }
 };
 
 // Stub functions
 inline void* Direct3DCreate8(unsigned int) { return nullptr; }
+inline DWORD D3DXGetFVFVertexSize(DWORD fvf) { 
+    // Simple approximation - return a reasonable size
+    return 64;  // Size for a typical vertex with position, normal, and texture coords
+}
 
 #else
 // On Windows, include the real DirectX headers

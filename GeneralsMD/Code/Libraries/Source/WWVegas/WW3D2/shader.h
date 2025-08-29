@@ -44,7 +44,8 @@
 
 #include "always.h"
 
-#if defined (SR_OS_SOLARIS)
+// Undefine system macros that conflict with our enums
+#ifdef PASS_MAX
 #undef PASS_MAX
 #endif
 
