@@ -67,13 +67,11 @@ class RenderDeviceDescClass
 
 public:
 
-	RenderDeviceDescClass(void) : DeviceName(NULL), DeviceVendor(NULL), DevicePlatform(NULL),
-											DriverName(NULL), DriverVendor(NULL), DriverVersion(NULL),
-											HardwareName(NULL), HardwareVendor(NULL), HardwareChipset(NULL)
+	RenderDeviceDescClass(void) : DeviceName(""), DeviceVendor(""), DevicePlatform(""),
+										DriverName(""), DriverVendor(""), DriverVersion(""),
+										HardwareName(""), HardwareVendor(""), HardwareChipset("")
 	{
-	}
-
-	~RenderDeviceDescClass(void)
+	}	~RenderDeviceDescClass(void)
 	{
 	}
 

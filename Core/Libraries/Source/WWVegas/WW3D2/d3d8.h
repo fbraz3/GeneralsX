@@ -7,18 +7,6 @@
 #include <cstdint>
 
 // Windows API types needed by DirectX
-typedef struct {
-    LONG left;
-    LONG top;
-    LONG right;
-    LONG bottom;
-} RECT;
-
-typedef struct {
-    LONG x;
-    LONG y;
-} POINT;
-
 // Forward declarations for DirectX interfaces
 struct IDirect3D8;
 struct IDirect3DDevice8;
@@ -58,7 +46,9 @@ typedef enum {
     D3DFMT_A4R4G4B4 = 26,
     D3DFMT_DXT1 = 827611204,
     D3DFMT_DXT3 = 861165636,
-    D3DFMT_DXT5 = 894720068
+    D3DFMT_DXT5 = 894720068,
+    D3DFMT_INDEX16 = 101,
+    D3DFMT_INDEX32 = 102
 } D3DFORMAT;
 
 // Additional format constants
@@ -66,13 +56,125 @@ typedef enum {
 #define D3DFMT_L8 50
 #define D3DFMT_A8 28
 #define D3DFMT_P8 41
-#define D3DFMT_A8R3G3B2 25
+#define D3DFMT_A8R3G3B2 29
 #define D3DFMT_X4R4G4B4 30
 #define D3DFMT_A8P8 40
+#define D3DFMT_A8L8 51
+#define D3DFMT_A4L4 52
+
+// Bump mapping formats
+#define D3DFMT_V8U8 60
+#define D3DFMT_L6V5U5 61
+#define D3DFMT_X8L8V8U8 62
+#define D3DFMT_Q8W8V8U8 63
+#define D3DFMT_V16U16 64
+#define D3DFMT_W11V11U10 65
+
+// Additional compression formats
+#define D3DFMT_DXT2 827611205
+#define D3DFMT_DXT4 894720069
+
+// Video formats
+#define D3DFMT_UYVY 1498831189
+#define D3DFMT_YUY2 844715353
+
+// Depth/stencil formats
+#define D3DFMT_D16_LOCKABLE 70
+#define D3DFMT_D32 71
+#define D3DFMT_D15S1 73
+#define D3DFMT_D24S8 75
+#define D3DFMT_D16 80
+#define D3DFMT_D24X8 77
+#define D3DFMT_D24X4S4 79
+
+// DirectX lock flags
+#define D3DLOCK_READONLY 0x00000010L
+#define D3DLOCK_DISCARD 0x00002000L
+#define D3DLOCK_NOOVERWRITE 0x00001000L
+#define D3DLOCK_NOSYSLOCK 0x00000800L
 
 // DirectX usage constants
 #define D3DUSAGE_NPATCHES 0x01000000L
 #define D3DUSAGE_SOFTWAREPROCESSING 0x00000010L
+
+// DirectX raster capabilities
+#define D3DPRASTERCAPS_ZBIAS 0x00004000L
+
+// DirectX texture operation capabilities
+#define D3DTEXOPCAPS_MODULATEALPHA_ADDCOLOR 0x00020000L
+
+// DirectX primitive texture capabilities
+#define D3DPTEXTURECAPS_CUBEMAP 0x00000800L
+
+// DirectX primitive texture filter capabilities
+#define D3DPTFILTERCAPS_MAGFANISOTROPIC 0x04000000L
+#define D3DPTFILTERCAPS_MINFANISOTROPIC 0x00000400L
+
+// DirectX blend modes
+#define D3DBLEND_ZERO 1
+#define D3DBLEND_ONE 2
+#define D3DBLEND_SRCCOLOR 3
+#define D3DBLEND_INVSRCCOLOR 4
+#define D3DBLEND_SRCALPHA 5
+#define D3DBLEND_INVSRCALPHA 6
+#define D3DBLEND_DESTALPHA 7
+#define D3DBLEND_INVDESTALPHA 8
+#define D3DBLEND_DESTCOLOR 9
+#define D3DBLEND_INVDESTCOLOR 10
+#define D3DBLEND_SRCALPHASAT 11
+#define D3DBLEND_BOTHSRCALPHA 12
+#define D3DBLEND_BOTHINVSRCALPHA 13
+
+// DirectX texture coordinate index constants
+#define D3DTSS_TCI_PASSTHRU 0x00000000L
+#define D3DTSS_TCI_CAMERASPACENORMAL 0x00010000L
+#define D3DTSS_TCI_CAMERASPACEPOSITION 0x00020000L
+#define D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR 0x00030000L
+
+// DirectX texture transform flags
+#define D3DTTFF_DISABLE 0
+#define D3DTTFF_COUNT1 1
+#define D3DTTFF_COUNT2 2
+#define D3DTTFF_COUNT3 3
+#define D3DTTFF_COUNT4 4
+#define D3DTTFF_PROJECTED 256
+
+// DirectX fog modes
+#define D3DFOG_NONE 0
+#define D3DFOG_EXP 1
+#define D3DFOG_EXP2 2
+#define D3DFOG_LINEAR 3
+
+// DirectX material color source
+#define D3DMCS_MATERIAL 0
+#define D3DMCS_COLOR1 1
+#define D3DMCS_COLOR2 2
+
+// DirectX device types
+#define D3DDEVTYPE_HAL 1
+#define D3DDEVTYPE_REF 2
+#define D3DDEVTYPE_SW 3
+
+// DirectX creation flags
+#define D3DCREATE_SOFTWARE_VERTEXPROCESSING 0x00000020L
+#define D3DCREATE_HARDWARE_VERTEXPROCESSING 0x00000040L
+#define D3DCREATE_MIXED_VERTEXPROCESSING 0x00000080L
+#define D3DCREATE_FPU_PRESERVE 0x00000002L
+
+// DirectX enumeration flags
+#define D3DENUM_NO_WHQL_LEVEL 0x00000002L
+
+// DirectX error codes
+#define D3DERR_DEVICELOST 0x88760868L
+#define D3DERR_DEVICENOTRESET 0x88760869L
+
+// DirectX display mode structure
+typedef struct {
+    DWORD Width;
+    DWORD Height; 
+    DWORD RefreshRate;
+    D3DFORMAT Format;
+} D3DDISPLAYMODE;
 
 typedef enum {
     D3DPOOL_DEFAULT = 0,
@@ -307,9 +409,12 @@ typedef struct {
     DWORD DevCaps;
     DWORD RasterCaps;
     DWORD TextureOpCaps;
+    DWORD TextureCaps;
+    DWORD TextureFilterCaps;
     DWORD MaxTextureWidth;
     DWORD MaxTextureHeight;
     DWORD MaxSimultaneousTextures;
+    float MaxPointSize;
     DWORD VertexShaderVersion;
     DWORD PixelShaderVersion;
 } D3DCAPS8;
@@ -323,6 +428,7 @@ typedef struct {
     DWORD DeviceId;
     DWORD SubSysId;
     DWORD Revision;
+    GUID DeviceIdentifier;
     DWORD WHQLLevel;
 } D3DADAPTER_IDENTIFIER8;
 
@@ -348,6 +454,12 @@ struct IDirect3D8 {
     virtual int Release() { return 0; }
     virtual int QueryInterface(void*, void**) { return 0; }
     virtual int CheckDeviceFormat(DWORD adapter, DWORD device_type, DWORD adapter_format, DWORD usage, DWORD resource_type, DWORD check_format) { return D3D_OK; }
+    virtual int GetDeviceCaps(DWORD adapter, DWORD device_type, D3DCAPS8* caps) { return D3D_OK; }
+    virtual int GetAdapterIdentifier(DWORD adapter, DWORD flags, void* identifier) { return D3D_OK; }
+    virtual int CreateDevice(DWORD adapter, DWORD device_type, void* focus_window, DWORD behavior_flags, void* presentation_parameters, IDirect3DDevice8** returned_device_interface) { return D3D_OK; }
+    virtual DWORD GetAdapterCount() { return 1; }
+    virtual DWORD GetAdapterModeCount(DWORD adapter) { return 1; }
+    virtual int EnumAdapterModes(DWORD adapter, DWORD mode, D3DDISPLAYMODE* mode_desc) { return D3D_OK; }
 };
 
 struct IDirect3DDevice8 {
@@ -390,6 +502,10 @@ struct IDirect3DDevice8 {
     virtual int SetPixelShaderConstant(DWORD reg, const void* data, DWORD count) { return D3D_OK; }
     virtual int SetClipPlane(DWORD index, const float* plane) { return D3D_OK; }
     virtual int CopyRects(IDirect3DSurface8* source_surface, const RECT* source_rects, DWORD num_rects, IDirect3DSurface8* dest_surface, const POINT* dest_points) { return D3D_OK; }
+    virtual int ValidateDevice(DWORD* num_passes) { return D3D_OK; }
+    virtual int TestCooperativeLevel() { return D3D_OK; }
+    virtual int Reset(void* presentation_parameters) { return D3D_OK; }
+    virtual int ResourceManagerDiscardBytes(DWORD bytes) { return D3D_OK; }
 };
 
 struct IDirect3DBaseTexture8 {

@@ -1,4 +1,9 @@
 #pragma once
+#include <cstring>
+#include <cstdio>
+#include <cstdint>
+
+// Basic Windows typese
 
 #ifndef WIN32_COMPAT_H_INCLUDED
 #define WIN32_COMPAT_H_INCLUDED
@@ -19,10 +24,24 @@ typedef void* HKEY;
 typedef unsigned long DWORD;
 typedef unsigned char BYTE;
 typedef unsigned short WORD;
-typedef unsigned long* DWORD_PTR;
+typedef uintptr_t DWORD_PTR;
 typedef int BOOL;
 typedef long LONG;
 typedef void* LPVOID;
+typedef float FLOAT;
+
+// Basic Windows structures
+typedef struct {
+    LONG left;
+    LONG top;
+    LONG right;
+    LONG bottom;
+} RECT;
+
+typedef struct {
+    LONG x;
+    LONG y;
+} POINT;
 typedef const char* LPCSTR;
 typedef char* LPSTR;
 typedef unsigned int UINT;
@@ -82,16 +101,38 @@ typedef struct {
 #define FALSE 0
 #endif
 
+// Windows API constants
+#define GWL_STYLE (-16)
+#define SWP_NOSIZE 0x0001
+#define SWP_NOMOVE 0x0002
+#define HWND_TOPMOST ((void*)-1)
+
 // Function compatibility
 #define _strdup strdup
 #define _stricmp strcasecmp
 #define _strnicmp strncasecmp
+
+// String function stubs
+inline char* lstrcpyn(char* dest, const char* src, int max_len) {
+    return strncpy(dest, src, max_len - 1);
+}
+
+inline int lstrcat(char* dest, const char* src) {
+    return (int)strlen(strcat(dest, src));
+}
 
 // DirectX basic types
 typedef struct {
     DWORD LowPart;
     LONG HighPart;
 } LARGE_INTEGER;
+
+typedef struct {
+    DWORD Data1;
+    WORD Data2;
+    WORD Data3;
+    BYTE Data4[8];
+} GUID;
 
 typedef struct {
     float x, y, z, w;
@@ -121,15 +162,6 @@ inline void* GetProcAddress(void*, const char*) { return nullptr; }
 inline void FreeLibrary(void*) {}
 inline void ZeroMemory(void* dest, size_t size) { memset(dest, 0, size); }
 
-// String functions
-inline char* lstrcpyn(char* dest, const char* src, int max) {
-    return strncpy(dest, src, max - 1);
-}
-
-inline char* lstrcat(char* dest, const char* src) {
-    return strcat(dest, src);
-}
-
 // Constants
 #define MAX_PATH 260
 
@@ -139,6 +171,52 @@ inline char* lstrcat(char* dest, const char* src) {
 #define HIWORD(l) ((WORD)((DWORD_PTR)(l) >> 16))
 #define LOWORD(l) ((WORD)((DWORD_PTR)(l) & 0xffff))
 
+// Windows API function stubs for non-Windows platforms
+inline int GetClientRect(void* hwnd, RECT* rect) {
+    if (rect) {
+        rect->left = 0;
+        rect->top = 0; 
+        rect->right = 800;
+        rect->bottom = 600;
+    }
+    return 1;
+}
+
+inline LONG GetWindowLong(void* hwnd, int index) {
+    return 0;
+}
+
+inline int AdjustWindowRect(RECT* rect, DWORD style, BOOL menu) {
+    // Stub implementation - just return success
+    return 1;
+}
+
+inline int SetWindowPos(void* hwnd, void* insert_after, int x, int y, int cx, int cy, DWORD flags) {
+    // Stub implementation - just return success  
+    return 1;
+}
+
 #endif // !_WIN32
+
+// String functions available on all platforms
+#ifndef _WIN32
+inline char* lstrcpyn(char* dest, const char* src, int max_len) {
+    strncpy(dest, src, max_len - 1);
+    dest[max_len - 1] = '\0';
+    return dest;
+}
+
+inline char* lstrcat(char* dest, const char* src) {
+    return strcat(dest, src);
+}
+
+// Windows-style structure for monitor info
+typedef struct {
+    DWORD cbSize;
+    RECT rcMonitor;
+    RECT rcWork;
+    DWORD dwFlags;
+} MONITORINFO;
+#endif
 
 #endif // WIN32_COMPAT_H_INCLUDED
