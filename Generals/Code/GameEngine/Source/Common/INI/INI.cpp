@@ -1867,61 +1867,39 @@ void INI::parseDeathTypeFlags(INI* ini, void* /*instance*/, void* store, const v
 // both blockType and blockName are case insensitive
 Bool INI::isDeclarationOfType( AsciiString blockType, AsciiString blockName, char *bufferToCheck )
 {
-	Bool retVal = true;
-	if (!bufferToCheck || blockType.isEmpty() || blockName.isEmpty()) {
+	if (!bufferToCheck || blockType.isEmpty() || blockName.isEmpty())
 		return false;
-	}
-	// DO NOT RETURN EARLY FROM THIS FUNCTION. (beyond this point)
-	// we have to restore the bufferToCheck to its previous state before returning, so
-	// it is important to get through all the checks.
 
-	char restoreChar;
-	char *tempBuff = bufferToCheck;
-	int blockTypeLength = blockType.getLength();
-	int blockNameLength = blockName.getLength();
+	const char* tempBuff = bufferToCheck;
 
-	while (isspace(*tempBuff)) {
+	while (isspace(*tempBuff))
 		++tempBuff;
-	}
 
-	if (strlen(tempBuff) > blockTypeLength) {
-		restoreChar = tempBuff[blockTypeLength];
-		tempBuff[blockTypeLength] = 0;
+	const int blockTypeLength = blockType.getLength();
+	if (strnicmp(tempBuff, blockType.str(), blockTypeLength) != 0)
+		return false;
 
-		if (stricmp(blockType.str(), tempBuff) != 0) {
-			retVal = false;
-		}
+	tempBuff += blockTypeLength;
 
-		tempBuff[blockTypeLength] = restoreChar;
-		tempBuff = tempBuff + blockTypeLength;
-	} else {
-		retVal = false;
-	}
+	if (!isspace(*tempBuff++))
+		return false;
 
-	while (isspace(*tempBuff)) {
+	while (isspace(*tempBuff))
 		++tempBuff;
-	}
 
-	if (strlen(tempBuff) > blockNameLength) {
-		restoreChar = tempBuff[blockNameLength];
-		tempBuff[blockNameLength] = 0;
+	const int blockNameLength = blockName.getLength();
+	if (strnicmp(tempBuff, blockName.str(), blockNameLength) != 0)
+		return false;
 
-		if (stricmp(blockName.str(), tempBuff) != 0) {
-			retVal = false;
-		}
+	tempBuff += blockNameLength;
 
-		tempBuff[blockNameLength] = restoreChar;
-		tempBuff = tempBuff + blockNameLength;
-	} else {
-		retVal = false;
-	}
-
-	while (strlen(tempBuff)) {
-		retVal = retVal && isspace(tempBuff[0]);
+	while (isspace(*tempBuff))
 		++tempBuff;
-	}
 
-	return retVal;
+	if (*tempBuff != '\0')
+		return false;
+
+	return true;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1962,8 +1940,8 @@ Bool INI::isEndOfBlock( char *bufferToCheck )
 		retVal = false;
 	}
 
-	while (strlen(tempBuff)) {
-		retVal = retVal && isspace(tempBuff[0]);
+	while (*tempBuff && retVal) {
+		retVal = isspace(*tempBuff);
 		++tempBuff;
 	}
 
