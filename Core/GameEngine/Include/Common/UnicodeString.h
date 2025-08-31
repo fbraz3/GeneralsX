@@ -149,6 +149,12 @@ public:
 	UnicodeString(const WideChar* s);
 
 	/**
+		Constructs an UnicodeString with the given string and length.
+		The length must not be larger than the actual string length.
+	*/
+	UnicodeString(const WideChar* s, int len);
+
+	/**
 		Destructor. Not too exciting... clean up the works and such.
 	*/
 	~UnicodeString();
@@ -200,11 +206,19 @@ public:
 		refcount.)
 	*/
 	void set(const UnicodeString& stringSrc);
+
 	/**
 		Replace the contents of self with the given string.
 		Note that a copy of the string is made; the input ptr is not saved.
 	*/
 	void set(const WideChar* s);
+
+	/**
+		Replace the contents of self with the given string and length.
+		Note that a copy of the string is made; the input ptr is not saved.
+		The length must not be larger than the actual string length.
+	*/
+	void set(const WideChar* s, int len);
 
 	/**
 		replace contents of self with the given string. Note the
