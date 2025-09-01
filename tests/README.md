@@ -1,130 +1,59 @@
-# Test Suite for Command & Conquer: Generals OpenGL Migration
+# Test Suite Index
+## Command & Conquer: Generals - Test Directory
 
-This directory contains all tests for the OpenGL graphics system migration.
+This directory contains all automated tests for the project.
 
-## Directory Structure
+## 📋 Quick Reference
+
+## 📚 Documentation Integration
+
+This test directory is part of a comprehensive testing strategy:
+
+**General Testing:** [../TESTING_COMPLETE.md](../TESTING.md) - Covers all project testing including platform-specific procedures, build configurations, and CI/CD workflows
+
+**OpenGL Testing:** [../OPENGL_TESTING.md](../OPENGL_TESTING.md) - Detailed OpenGL testing procedures, results, troubleshooting, and development workflow
+
+**Implementation:** [../OPENGL_COMPLETE.md](../OPENGL_SUMMARY.md) - Complete OpenGL implementation guide and architecture
+
+## 📁 Directory Structure
 
 ```
 tests/
-├── README.md               # This file
+├── README.md               # This index file
 └── opengl/                 # OpenGL-specific tests
     ├── run_opengl_tests.sh # Main test runner script
-    ├── test_opengl_minimal.cpp     # Basic functionality test
-    ├── test_opengl_context.cpp     # Context creation test
-    ├── test_w3d_integration.cpp    # W3D integration test
-    └── ... (other test files)
+    ├── test_*.cpp          # Individual test files
+    └── ... (test artifacts)
 ```
 
-## Running Tests
+## 🚀 Quick Start
 
-### All OpenGL Tests
+### Run All OpenGL Tests
 ```bash
 # From project root
 ./tests/opengl/run_opengl_tests.sh
-
-# Or from test directory
-cd tests/opengl
-./run_opengl_tests.sh
 ```
 
-### Individual Tests
+### Run Individual Tests
 ```bash
-# From project root
 cd tests/opengl
-
-# Basic functionality
-g++ -I../../Core/Libraries/Include -I../../Core/Libraries/Include/GraphicsAPI \
-    -I../../Dependencies/Utility test_opengl_minimal.cpp \
-    ../../Core/Libraries/Source/GraphicsAPI/OpenGLRenderer.cpp \
-    ../../Core/Libraries/Source/GraphicsAPI/GraphicsRenderer.cpp \
-    -o test_opengl_minimal -DENABLE_OPENGL -std=c++11 -framework OpenGL
-./test_opengl_minimal
-
-# W3D Integration
-g++ -I../../Core/Libraries/Include -I../../Core/Libraries/Include/GraphicsAPI \
-    -I../../Dependencies/Utility test_w3d_integration.cpp \
-    ../../Core/Libraries/Source/GraphicsAPI/OpenGLRendererW3D.cpp \
-    ../../Core/Libraries/Source/GraphicsAPI/OpenGLRenderer.cpp \
-    ../../Core/Libraries/Source/GraphicsAPI/GraphicsRenderer.cpp \
-    -o test_w3d_integration -DENABLE_OPENGL -DENABLE_W3D_INTEGRATION \
-    -std=c++11 -framework OpenGL
-./test_w3d_integration
+./run_opengl_tests.sh <test_name>
 ```
 
-## Test Files Description
+## 📊 Current Test Status
 
-### Core OpenGL Tests
+| Test Suite | Status | Location |
+|------------|--------|----------|
+| OpenGL Basic | ✅ PASS | `opengl/test_opengl_*.cpp` |
+| W3D Integration | ✅ PASS | `opengl/test_w3d_*.cpp` |
+| Graphics Pipeline | ✅ PASS | `opengl/test_graphics.cpp` |
+| Compilation | ✅ PASS | `opengl/test_*_compile.cpp` |
 
-- **`test_opengl_minimal.cpp`**: Basic OpenGL functionality and type system
-- **`test_opengl_context.cpp`**: OpenGL context creation and management
-- **`test_opengl_compile.cpp`**: Compilation verification test
+## 📚 Documentation
 
-### Integration Tests
-
-- **`test_w3d_integration.cpp`**: W3D type system integration with OpenGL
-- **`test_full_integration.cpp`**: Complete system integration test
-- **`test_advanced_compile.cpp`**: Advanced compilation scenarios
-
-### Graphics Tests
-
-- **`test_graphics.cpp`**: General graphics system tests
-- **`test_simple_compile.cpp`**: Simple compilation verification
-
-## Test Requirements
-
-### System Requirements
-- **macOS**: OpenGL via Metal backend (with deprecation warnings)
-- **Linux**: OpenGL via GLX
-- **Windows**: OpenGL via WGL
-
-### Build Requirements
-- C++11 compatible compiler (g++, clang++)
-- OpenGL development libraries
-- CMake 3.25+ (for full project builds)
-
-### Dependencies
-- Core Graphics API library
-- W3D type system (mock or real)
-- Utility library for compatibility headers
-
-## Test Status
-
-| Test Category | Status | Notes |
-|---------------|--------|-------|
-| Basic Functionality | ✅ PASS | Core OpenGL operations working |
-| Context Creation | ✅ PASS | Platform-specific context creation |
-| Compilation | ✅ PASS | All modules compile correctly |
-| W3D Integration | ✅ PASS | Mock W3D types integrated |
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Include Path Errors**: Ensure you're running from project root or using relative paths correctly
-2. **OpenGL Deprecation (macOS)**: Add `-DGL_SILENCE_DEPRECATION` to suppress warnings
-3. **Missing Dependencies**: Ensure `core_utility` and other dependencies are built
-
-### Debug Mode
-Add `-g -DDEBUG` to compilation flags for debug builds:
-```bash
-g++ -g -DDEBUG -I../../Core/Libraries/Include ... (rest of flags)
-```
-
-## Adding New Tests
-
-1. Create test file in appropriate subdirectory (`tests/opengl/`)
-2. Follow naming convention: `test_<feature>_<type>.cpp`
-3. Update `run_opengl_tests.sh` if adding to main test suite
-4. Document test purpose and requirements in this README
-
-## Integration with CI/CD
-
-The test suite is designed to be CI/CD friendly:
-- Exit codes indicate success/failure
-- Colored output for human readability
-- Detailed error reporting
-- Cleanup of temporary files
+- **[TESTING_COMPLETE.md](../TESTING.md)** - Comprehensive testing guide for all platforms and configurations
+- **[OPENGL_TESTING.md](../OPENGL_TESTING.md)** - Detailed OpenGL testing procedures and results
 
 ---
 
-**Note**: This test infrastructure supports the OpenGL migration project for Command & Conquer: Generals. All tests should pass before integrating changes into the main game engine.
+**Note**: This directory structure supports automated testing for the OpenGL migration and cross-platform porting efforts. All tests should pass before code integration.

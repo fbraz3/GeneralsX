@@ -48,6 +48,16 @@ inline char* lstrcpyn(char* dest, const char* src, int max_len) {
     return dest;
 }
 
+inline char* lstrcpy(char* dest, const char* src) {
+    return strcpy(dest, src);
+}
+
+inline int lstrlen(const char* str) {
+    return strlen(str);
+}
+
+inline void* GetDesktopWindow() { return nullptr; }
+
 inline char* lstrcat(char* dest, const char* src) {
     return strcat(dest, src);
 }

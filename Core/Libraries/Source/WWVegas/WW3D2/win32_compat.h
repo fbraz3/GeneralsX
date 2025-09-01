@@ -48,17 +48,19 @@ typedef unsigned int UINT;
 typedef long HRESULT;
 
 // DirectX specific types
+// D3DFORMAT will be defined in d3d8.h
+
 typedef struct {
     DWORD BackBufferWidth;
     DWORD BackBufferHeight;
-    DWORD BackBufferFormat;
+    DWORD BackBufferFormat;  // Will be cast to D3DFORMAT when needed
     DWORD BackBufferCount;
     DWORD MultiSampleType;
     DWORD SwapEffect;
     HWND hDeviceWindow;
     BOOL Windowed;
     BOOL EnableAutoDepthStencil;
-    DWORD AutoDepthStencilFormat;
+    DWORD AutoDepthStencilFormat;  // Will be cast to D3DFORMAT when needed
     DWORD Flags;
     DWORD FullScreen_RefreshRateInHz;
     DWORD FullScreen_PresentationInterval;
@@ -111,14 +113,23 @@ typedef struct {
 #define _strdup strdup
 #define _stricmp strcasecmp
 #define _strnicmp strncasecmp
+#define _isnan isnan
 
 // String function stubs
 inline char* lstrcpyn(char* dest, const char* src, int max_len) {
-    return strncpy(dest, src, max_len - 1);
+    return strncpy(dest, src, max_len);
 }
 
-inline int lstrcat(char* dest, const char* src) {
-    return (int)strlen(strcat(dest, src));
+inline char* lstrcpy(char* dest, const char* src) {
+    return strcpy(dest, src);
+}
+
+inline int lstrlen(const char* str) {
+    return strlen(str);
+}
+
+inline char* lstrcat(char* dest, const char* src) {
+    return strcat(dest, src);
 }
 
 // DirectX basic types
@@ -150,6 +161,7 @@ inline void DeleteDC(void*) {}
 inline void* CreateCompatibleBitmap(void*, int, int) { return nullptr; }
 inline void* SelectObject(void*, void*) { return nullptr; }
 inline void DeleteObject(void*) {}
+inline void* GetDesktopWindow() { return nullptr; }
 
 // DirectX stub functions
 inline HRESULT D3DXGetErrorStringA(HRESULT hr, char* buffer, DWORD size) { 
@@ -196,20 +208,6 @@ inline int SetWindowPos(void* hwnd, void* insert_after, int x, int y, int cx, in
     return 1;
 }
 
-#endif // !_WIN32
-
-// String functions available on all platforms
-#ifndef _WIN32
-inline char* lstrcpyn(char* dest, const char* src, int max_len) {
-    strncpy(dest, src, max_len - 1);
-    dest[max_len - 1] = '\0';
-    return dest;
-}
-
-inline char* lstrcat(char* dest, const char* src) {
-    return strcat(dest, src);
-}
-
 // Windows-style structure for monitor info
 typedef struct {
     DWORD cbSize;
@@ -217,6 +215,31 @@ typedef struct {
     RECT rcWork;
     DWORD dwFlags;
 } MONITORINFO;
-#endif
+
+// Monitor constants
+#define MONITOR_DEFAULTTOPRIMARY 1
+
+// SetWindowPos constants
+#define SWP_NOZORDER 0x0004
+
+// Monitor stub functions
+inline void* MonitorFromWindow(void* hwnd, DWORD flags) {
+    return (void*)1; // Return dummy monitor handle
+}
+
+inline int GetMonitorInfo(void* monitor, MONITORINFO* info) {
+    if (info && info->cbSize >= sizeof(MONITORINFO)) {
+        info->rcMonitor.left = 0;
+        info->rcMonitor.top = 0;
+        info->rcMonitor.right = 1920;
+        info->rcMonitor.bottom = 1080;
+        info->rcWork = info->rcMonitor;
+        info->dwFlags = 1;
+        return 1;
+    }
+    return 0;
+}
+
+#endif // !_WIN32
 
 #endif // WIN32_COMPAT_H_INCLUDED

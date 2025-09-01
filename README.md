@@ -5,10 +5,10 @@
 
 This project provides **weekly builds** of the [GeneralsGameCode](https://github.com/TheSuperHackers/GeneralsGameCode/) repository, aiming to help the community with up-to-date binaries and easier access to the latest changes.
 
-### 🎮 New: OpenGL Support! 
+### 🎮 New: OpenGL Support!
 This fork now includes **OpenGL rendering support** alongside the original DirectX 8, enabling:
 - **Linux compatibility** 🐧
-- **macOS support** 🍎 (**Major Progress!** DirectX compatibility layer implemented)  
+- **macOS support** 🍎 (**Major Progress!** DirectX compatibility layer implemented)
 - **Better cross-platform development**
 - **Modern graphics pipeline**
 
@@ -18,7 +18,7 @@ This fork now includes **OpenGL rendering support** alongside the original Direc
 - ✅ **Core Libraries Compiling** - Foundation libraries now build successfully on macOS
 - 🔄 **WW3D2 Graphics Module** - Major progress with most files compiling successfully
 
-See [MACOS_PORT.md](./MACOS_PORT.md) for detailed progress, [OPENGL_MIGRATION.md](./OPENGL_MIGRATION.md) for technical details and [OPENGL_TESTING_GUIDE.md](./OPENGL_TESTING_GUIDE.md) for testing the graphics system.
+See [MACOS_PORT.md](./MACOS_PORT.md) for detailed macOS porting progress, [OPENGL_SUMMARY.md](OPENGL_SUMMARY.md) for comprehensive implementation documentation, and [OPENGL_TESTING.md](./OPENGL_TESTING.md) for testing procedures and results.
 
 - **Daily sync** with the upstream SuperHackers repository.
 - **Weekly builds** including all recent updates.
@@ -72,20 +72,22 @@ To test the OpenGL graphics system before building the full game:
 # Quick automated test
 ./tests/opengl/run_opengl_tests.sh
 
-# Manual compilation test  
+# Manual compilation test
 cd tests/opengl
 g++ -std=c++17 -I../../Core/Libraries/Include/GraphicsAPI \
     -framework OpenGL test_simple_compile.cpp -o test_simple
 ./test_simple
 ```
 
-For detailed testing instructions, see [OPENGL_TESTING_GUIDE.md](./OPENGL_TESTING_GUIDE.md).
+For detailed testing instructions, see [OPENGL_TESTING.md](./OPENGL_TESTING.md).
 
 ## Documentation
 
-- **[MACOS_PORT.md](./MACOS_PORT.md)** - macOS porting progress, DirectX compatibility layer, and implementation details
-- **[OPENGL_MIGRATION.md](./OPENGL_MIGRATION.md)** - Technical implementation details and architecture
-- **[OPENGL_TESTING_GUIDE.md](./OPENGL_TESTING_GUIDE.md)** - Testing and compilation guide for OpenGL system
+- **[OPENGL_COMPLETE.md](OPENGL_SUMMARY.md)** - Comprehensive OpenGL implementation guide and architecture documentation
+- **[OPENGL_TESTING.md](./OPENGL_TESTING.md)** - OpenGL-specific testing procedures, results, and troubleshooting
+- **[TESTING_COMPLETE.md](TESTING.md)** - Complete testing guide for all platforms, builds, and configurations
+- **[MACOS_PORT.md](./MACOS_PORT.md)** - macOS porting progress, DirectX compatibility layer, and platform-specific details
+- **[TEST_ORGANIZATION_SUMMARY.md](./TEST_ORGANIZATION_SUMMARY.md)** - Test files organization and project structure summary
 - **[CONTRIBUTING.md](./CONTRIBUTING.md)** - Guidelines for contributing to the project
 
 ## Disclaimer

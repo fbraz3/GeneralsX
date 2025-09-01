@@ -1,5 +1,65 @@
 #pragma once
 
+#define D3DX_DEFAULT 0xFFFFFFFF
+#define D3DX_FILTER_NONE 0x00000001
+#define D3DX_FILTER_POINT 0x00000002  
+#define D3DX_FILTER_LINEAR 0x00000003
+#define D3DX_FILTER_TRIANGLE 0x00000004
+#define D3DX_FILTER_BOX 0x00000005
+
+// D3DLIGHT types
+#define D3DLIGHT_POINT 1
+#define D3DLIGHT_SPOT 2
+#define D3DLIGHT_DIRECTIONAL 3
+
+// D3DBACKBUFFER types
+#define D3DBACKBUFFER_TYPE_MONO 0
+
+// D3DCULL constants
+#define D3DCULL_NONE 1
+#define D3DCULL_CW 2
+#define D3DCULL_CCW 3
+
+// D3DCMP constants
+#define D3DCMP_NEVER 1
+#define D3DCMP_LESS 2
+#define D3DCMP_EQUAL 3
+#define D3DCMP_LESSEQUAL 4
+#define D3DCMP_GREATER 5
+#define D3DCMP_NOTEQUAL 6
+#define D3DCMP_GREATEREQUAL 7
+#define D3DCMP_ALWAYS 8
+
+// D3DFILL constants
+#define D3DFILL_POINT 1
+#define D3DFILL_WIREFRAME 2
+#define D3DFILL_SOLID 3
+
+// D3DSWAPEFFECT constants
+#define D3DSWAPEFFECT_DISCARD 1
+#define D3DSWAPEFFECT_FLIP 2
+#define D3DSWAPEFFECT_COPY 3
+#define D3DSWAPEFFECT_COPY_VSYNC 4
+
+// D3DSGR constants
+#define D3DSGR_NO_CALIBRATION 0x00000000L
+#define D3DSGR_CALIBRATE 0x00000001L
+
+// D3DSHADE constants  
+#define D3DSHADE_FLAT 1
+#define D3DSHADE_GOURAUD 2
+#define D3DSHADE_PHONG 3
+
+// D3DSTENCILOP constants
+#define D3DSTENCILOP_KEEP 1
+#define D3DSTENCILOP_ZERO 2
+#define D3DSTENCILOP_REPLACE 3
+#define D3DSTENCILOP_INCR 4
+#define D3DSTENCILOP_DECR 5
+#define D3DSTENCILOP_INVERT 6
+#define D3DSTENCILOP_INCR_SAT 7
+#define D3DSTENCILOP_DECR_SAT 8
+
 #ifndef _WIN32
 
 // DirectX 8 compatibility header for non-Windows systems
@@ -27,7 +87,7 @@ typedef void* LPDIRECT3DSURFACE8;
 typedef void* LPDIRECT3DVERTEXBUFFER8;
 typedef void* LPDIRECT3DINDEXBUFFER8;
 typedef void* LPDIRECT3DSWAPCHAIN8;
-typedef void* IDirect3DSwapChain8;
+typedef void* LPDISPATCH;
 
 // DirectX color type
 typedef uint32_t D3DCOLOR;
@@ -104,6 +164,51 @@ typedef enum {
     D3DPOOL_SYSTEMMEM = 2,
     D3DPOOL_SCRATCH = 3
 } D3DPOOL;
+
+// D3DBLEND constants
+typedef DWORD D3DBLEND;
+#define D3DBLEND_ZERO 1
+#define D3DBLEND_ONE 2
+#define D3DBLEND_SRCCOLOR 3
+#define D3DBLEND_INVSRCCOLOR 4
+#define D3DBLEND_SRCALPHA 5
+#define D3DBLEND_INVSRCALPHA 6
+#define D3DBLEND_DESTALPHA 7
+#define D3DBLEND_INVDESTALPHA 8
+#define D3DBLEND_DESTCOLOR 9
+#define D3DBLEND_INVDESTCOLOR 10
+#define D3DBLEND_SRCALPHASAT 11
+#define D3DBLEND_BOTHSRCALPHA 12
+#define D3DBLEND_BOTHINVSRCALPHA 13
+
+// D3DTEXTUREOP constants
+typedef DWORD D3DTEXTUREOP;
+#define D3DTOP_DISABLE 1
+#define D3DTOP_SELECTARG1 2
+#define D3DTOP_SELECTARG2 3
+#define D3DTOP_MODULATE 4
+#define D3DTOP_MODULATE2X 5
+#define D3DTOP_MODULATE4X 6
+#define D3DTOP_ADD 7
+#define D3DTOP_ADDSIGNED 8
+#define D3DTOP_ADDSIGNED2X 9
+#define D3DTOP_SUBTRACT 10
+#define D3DTOP_ADDSMOOTH 11
+#define D3DTOP_BLENDDIFFUSEALPHA 12
+#define D3DTOP_BLENDTEXTUREALPHA 13
+#define D3DTOP_BLENDFACTORALPHA 14
+#define D3DTOP_BLENDTEXTUREALPHAPM 15
+#define D3DTOP_BLENDCURRENTALPHA 16
+#define D3DTOP_PREMODULATE 17
+#define D3DTOP_MODULATEALPHA_ADDCOLOR 18
+#define D3DTOP_MODULATECOLOR_ADDALPHA 19
+#define D3DTOP_MODULATEINVALPHA_ADDCOLOR 20
+#define D3DTOP_MODULATEINVCOLOR_ADDALPHA 21
+#define D3DTOP_BUMPENVMAP 22
+#define D3DTOP_BUMPENVMAPLUMINANCE 23
+#define D3DTOP_DOTPRODUCT3 24
+#define D3DTOP_MULTIPLYADD 25
+#define D3DTOP_LERP 26
 
 typedef enum {
     D3DUSAGE_RENDERTARGET = 0x00000001L,
@@ -263,6 +368,29 @@ typedef struct {
     int Pitch;
 } D3DLOCKED_RECT;
 
+// DirectX surface description structure  
+typedef struct {
+    DWORD Width;
+    DWORD Height;
+    DWORD Levels;
+    DWORD Usage;
+    D3DFORMAT Format;
+    D3DPOOL Pool;
+    DWORD Size;
+} D3DSURFACE_DESC;
+
+// DirectX volume description structure
+typedef struct {
+    D3DFORMAT Format;
+    DWORD Type;
+    DWORD Usage;
+    D3DPOOL Pool;
+    DWORD Size;
+    DWORD Width;
+    DWORD Height;
+    DWORD Depth;
+} D3DVOLUME_DESC;
+
 // Matrix structure from d3dx8math.h
 typedef struct {
     float _11, _12, _13, _14;
@@ -271,14 +399,26 @@ typedef struct {
     float _41, _42, _43, _44;
 } D3DMATRIX;
 
+// DirectX gamma ramp structure
+typedef struct {
+    WORD red[256];
+    WORD green[256];
+    WORD blue[256];
+} D3DGAMMARAMP;
+
+// Color structure for D3D
+typedef struct {
+    float r, g, b, a;
+} D3DCOLORVALUE;
+
 // DirectX light structure
 typedef struct {
     DWORD Type;
-    float Diffuse[4];
-    float Specular[4];
-    float Ambient[4];
-    float Position[3];
-    float Direction[3];
+    D3DCOLORVALUE Diffuse;
+    D3DCOLORVALUE Specular;
+    D3DCOLORVALUE Ambient;
+    D3DVECTOR Position;
+    D3DVECTOR Direction;
     float Range;
     float Falloff;
     float Attenuation0;
@@ -379,6 +519,8 @@ struct IDirect3DDevice8 {
     virtual int CreateVertexBuffer(DWORD length, DWORD usage, DWORD fvf, D3DPOOL pool, IDirect3DVertexBuffer8** vertex_buffer) { return D3D_OK; }
     virtual int CreateIndexBuffer(DWORD length, DWORD usage, D3DFORMAT format, D3DPOOL pool, IDirect3DIndexBuffer8** index_buffer) { return D3D_OK; }
     virtual int CreateTexture(DWORD width, DWORD height, DWORD levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, IDirect3DTexture8** texture) { return D3D_OK; }
+    virtual int CreateImageSurface(DWORD width, DWORD height, D3DFORMAT format, IDirect3DSurface8** surface) { return D3D_OK; }
+    virtual int UpdateTexture(IDirect3DBaseTexture8* source_texture, IDirect3DBaseTexture8* dest_texture) { return D3D_OK; }
     virtual int SetStreamSource(DWORD stream_number, IDirect3DVertexBuffer8* stream_data, DWORD stride) { return D3D_OK; }
     virtual int SetIndices(IDirect3DIndexBuffer8* index_data, DWORD base_vertex_index) { return D3D_OK; }
     
@@ -401,12 +543,27 @@ struct IDirect3DDevice8 {
         }
         return D3D_OK;
     }
+    virtual int GetDisplayMode(void* mode) { return D3D_OK; }
+    virtual int GetFrontBuffer(IDirect3DSurface8* dest_surface) { return D3D_OK; }
+    virtual int GetBackBuffer(DWORD back_buffer, DWORD type, IDirect3DSurface8** back_buffer_surface) { return D3D_OK; }
+    virtual int SetRenderTarget(IDirect3DSurface8* render_target, IDirect3DSurface8* new_z_stencil) { return D3D_OK; }
+    virtual int GetRenderTarget(IDirect3DSurface8** render_target) { return D3D_OK; }
+    virtual int CreateAdditionalSwapChain(void* presentation_parameters, void** swap_chain) { return D3D_OK; }
+    virtual DWORD GetAvailableTextureMem() { return 0; }
+    virtual int SetGammaRamp(DWORD flags, const D3DGAMMARAMP* ramp) { return D3D_OK; }
+    virtual int GetDepthStencilSurface(IDirect3DSurface8** depth_stencil_surface) { 
+        if (depth_stencil_surface) *depth_stencil_surface = nullptr;
+        return D3D_OK; 
+    }
 };
 
 struct IDirect3DBaseTexture8 {
     virtual int AddRef() { return 1; }
     virtual int Release() { return 0; }
     virtual int QueryInterface(void*, void**) { return 0; }
+    virtual DWORD GetPriority() { return 0; }
+    virtual DWORD SetPriority(DWORD priority) { return 0; }
+    virtual DWORD GetLevelCount() { return 1; }
 };
 
 struct IDirect3DTexture8 : public IDirect3DBaseTexture8 {
@@ -452,6 +609,35 @@ struct IDirect3DSurface8 {
     virtual int UnlockRect() { return D3D_OK; }
 };
 
+struct IDirect3DCubeTexture8 : public IDirect3DBaseTexture8 {
+    virtual int AddRef() { return 1; }
+    virtual int Release() { return 0; }
+    virtual int LockRect(DWORD face, DWORD level, void* locked_rect, const RECT* rect, DWORD flags) { return D3D_OK; }
+    virtual int UnlockRect(DWORD face, DWORD level) { return D3D_OK; }
+    virtual int GetLevelDesc(DWORD level, void* desc) { return D3D_OK; }
+    virtual int GetCubeMapSurface(DWORD face, DWORD level, IDirect3DSurface8** surface) { return D3D_OK; }
+};
+
+struct IDirect3DVolumeTexture8 : public IDirect3DBaseTexture8 {
+    virtual int AddRef() { return 1; }
+    virtual int Release() { return 0; }
+    virtual int LockBox(DWORD level, void* locked_box, const void* box, DWORD flags) { return D3D_OK; }
+    virtual int UnlockBox(DWORD level) { return D3D_OK; }
+    virtual int GetLevelDesc(DWORD level, void* desc) { return D3D_OK; }
+    virtual int GetVolumeLevel(DWORD level, void** volume) { return D3D_OK; }
+};
+
+struct IDirect3DSwapChain8 {
+    virtual int AddRef() { return 1; }
+    virtual int Release() { return 0; }
+    virtual int QueryInterface(void*, void**) { return 0; }
+    virtual int Present(const RECT* source_rect, const RECT* dest_rect, void* dest_window_override, const void* dirty_region) { return D3D_OK; }
+    virtual int GetBackBuffer(DWORD back_buffer, DWORD type, IDirect3DSurface8** back_buffer_surface) { 
+        if (back_buffer_surface) *back_buffer_surface = nullptr;
+        return D3D_OK; 
+    }
+};
+
 struct IDirect3DVertexBuffer8 {
     virtual int AddRef() { return 1; }
     virtual int Release() { return 0; }
@@ -484,6 +670,33 @@ inline DWORD D3DXGetFVFVertexSize(DWORD fvf) {
     size += tex_count * 8; // Assume 2D texture coordinates
     
     return size;
+}
+
+inline int D3DXCreateTexture(void* device, DWORD width, DWORD height, DWORD miplevels, DWORD usage, D3DFORMAT format, D3DPOOL pool, IDirect3DTexture8** texture) {
+    if (texture) *texture = nullptr;
+    return D3D_OK;
+}
+inline int D3DXCreateCubeTexture(void* device, DWORD edgelength, DWORD miplevels, DWORD usage, D3DFORMAT format, D3DPOOL pool, IDirect3DCubeTexture8** cube_texture) {
+    if (cube_texture) *cube_texture = nullptr;
+    return D3D_OK;
+}
+inline int D3DXCreateVolumeTexture(void* device, DWORD width, DWORD height, DWORD depth, DWORD miplevels, DWORD usage, D3DFORMAT format, D3DPOOL pool, IDirect3DVolumeTexture8** volume_texture) {
+    if (volume_texture) *volume_texture = nullptr;
+    return D3D_OK;
+}
+inline int D3DXLoadSurfaceFromSurface(void* dest_surface, void* dest_palette, void* dest_rect, void* src_surface, void* src_palette, void* src_rect, DWORD filter, DWORD color_key) {
+    return D3D_OK;
+}
+inline int D3DXFilterTexture(void* texture, void* palette, DWORD src_level, DWORD filter) {
+    return D3D_OK;
+}
+inline int D3DXCreateTextureFromFileEx(void* device, const char* src_file, DWORD width, DWORD height, DWORD mip_levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, DWORD filter, DWORD mip_filter, DWORD color_key, void* src_info, void* palette, IDirect3DTexture8** texture) {
+    if (texture) *texture = nullptr;
+    return D3D_OK;
+}
+inline int D3DXCreateTextureFromFileExA(void* device, const char* src_file, DWORD width, DWORD height, DWORD mip_levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, DWORD filter, DWORD mip_filter, DWORD color_key, void* src_info, void* palette, IDirect3DTexture8** texture) {
+    if (texture) *texture = nullptr;
+    return D3D_OK;
 }
 
 #else
