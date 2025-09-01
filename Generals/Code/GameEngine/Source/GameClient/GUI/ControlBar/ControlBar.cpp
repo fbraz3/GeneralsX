@@ -165,6 +165,14 @@ Player* ControlBar::getCurrentlyViewedPlayer()
 	return ThePlayerList->getLocalPlayer();
 }
 
+Relationship ControlBar::getCurrentlyViewedPlayerRelationship(const Team* team)
+{
+	if (Player* player = getCurrentlyViewedPlayer())
+		return player->getRelationship(team);
+
+	return NEUTRAL;
+}
+
 void ControlBar::populatePurchaseScience( Player* player )
 {
 //	TheInGameUI->deselectAllDrawables();
