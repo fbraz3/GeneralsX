@@ -349,6 +349,14 @@ Bool addDrawableToList( Drawable *draw, void *userData )
 	if (!pds->drawableListToFill)
 		return FALSE;
 
+#if !RTS_GENERALS || !RETAIL_COMPATIBLE_BUG
+	if (draw->getFullyObscuredByShroud())
+		return FALSE;
+
+	if (draw->isDrawableEffectivelyHidden())
+		return FALSE;
+#endif
+
 	if (!draw->getTemplate()->isAnyKindOf(pds->kindofsToMatch))
 		return FALSE;
 
@@ -368,28 +376,15 @@ Bool addDrawableToList( Drawable *draw, void *userData )
       return FALSE;
   }
 
-	//Kris: Aug 9, 2003!!! Wow, this bug has been around a LONG time!!
-	//Basically, it was possible to drag select a single enemy/neutral unit even if you couldn't see it
-	//including stealthed units.
-	const Object *obj = draw->getObject();
-	if( obj )
-	{
-		const Player *player = ThePlayerList->getLocalPlayer();
-		Relationship rel = player->getRelationship( obj->getTeam() );
-		if( rel == NEUTRAL || rel == ENEMIES )
-		{
-			if( obj->getShroudedStatus( player->getPlayerIndex() ) >= OBJECTSHROUD_FOGGED )
-			{
-				return FALSE;
-			}
-
-			//If stealthed, no way!
-			if( obj->testStatus( OBJECT_STATUS_STEALTHED ) && !obj->testStatus( OBJECT_STATUS_DETECTED ) )
-			{
-				return FALSE;
-			}
-		}
-	}
+#if !RTS_GENERALS && RETAIL_COMPATIBLE_BUG
+	// TheSuperHackers @info
+	// In retail, hidden objects such as passengers are included here when drag-selected, which causes
+	// enemy selection logic to exit early (only 1 enemy unit can be selected at a time). Some players
+	// exploit this bug to determine if a transport contains passengers and consider this an important
+	// feature and an advanced skill to pull off, so we must leave the exploit.
+	if (draw->getObject() && draw->getObject()->getContain() && draw->getObject()->getContain()->getContainCount() > 0)
+		pds->drawableListToFill->push_back(draw); // Just add the unit twice to prevent enemy selections
+#endif
 
 	pds->drawableListToFill->push_back(draw);
 	return TRUE;
