@@ -163,22 +163,8 @@ typedef DWORD D3DSWAPEFFECT;
 #define D3DSWAPEFFECT_COPY 3
 #define D3DSWAPEFFECT_COPY_VSYNC 4
 
-// DirectX present parameters structure
-typedef struct {
-    UINT BackBufferWidth;
-    UINT BackBufferHeight;
-    D3DFORMAT BackBufferFormat;
-    UINT BackBufferCount;
-    D3DMULTISAMPLE_TYPE MultiSampleType;
-    D3DSWAPEFFECT SwapEffect;
-    HWND hDeviceWindow;
-    BOOL Windowed;
-    BOOL EnableAutoDepthStencil;
-    D3DFORMAT AutoDepthStencilFormat;
-    DWORD Flags;
-    UINT FullScreen_RefreshRateInHz;
-    UINT FullScreen_PresentationInterval;
-} D3DPRESENT_PARAMETERS;
+// D3DFORMAT is defined in win32_compat.h
+// D3DPRESENT_PARAMETERS is defined in win32_compat.h
 
 // Constants
 #define D3D_OK 0x00000000L
@@ -195,11 +181,6 @@ typedef struct {
 #define D3DMULTISAMPLE_4_SAMPLES 4
 #define D3DMULTISAMPLE_8_SAMPLES 8
 #define D3DMULTISAMPLE_16_SAMPLES 16
-
-// Swap effects
-#define D3DSWAPEFFECT_DISCARD 1
-#define D3DSWAPEFFECT_FLIP 0
-#define D3DSWAPEFFECT_COPY 2
 
 // Present intervals
 #define D3DPRESENT_INTERVAL_DEFAULT 0
@@ -254,25 +235,7 @@ typedef struct {
 // DirectX primitive type
 typedef DWORD D3DPRIMITIVETYPE;
 
-// D3DX constants
-#define D3DX_DEFAULT ((UINT)-1)
-
 // DirectX enums and constants
-typedef enum {
-    D3DFMT_UNKNOWN = 0,
-    D3DFMT_R3G3B2 = 27,
-    D3DFMT_A8R8G8B8 = 21,
-    D3DFMT_X8R8G8B8 = 22,
-    D3DFMT_R5G6B5 = 23,
-    D3DFMT_X1R5G5B5 = 24,
-    D3DFMT_A1R5G5B5 = 25,
-    D3DFMT_A4R4G4B4 = 26,
-    D3DFMT_DXT1 = 827611204,
-    D3DFMT_DXT3 = 861165636,
-    D3DFMT_DXT5 = 894720068,
-    D3DFMT_INDEX16 = 101,
-    D3DFMT_INDEX32 = 102
-} D3DFORMAT;
 
 // Conversion helpers for DWORD <-> D3DFORMAT compatibility
 #define DWORD_TO_D3DFORMAT(x) ((D3DFORMAT)(x))
@@ -314,6 +277,33 @@ typedef enum {
 #define D3DFMT_D24X8 77
 #define D3DFMT_D24X4S4 79
 
+// Fill modes
+#define D3DFILL_POINT 1
+#define D3DFILL_WIREFRAME 2
+#define D3DFILL_SOLID 3
+
+// Texture arguments (D3DTA_*)
+#define D3DTA_DIFFUSE 0x00000000
+#define D3DTA_CURRENT 0x00000001
+#define D3DTA_TEXTURE 0x00000002
+#define D3DTA_TFACTOR 0x00000003
+#define D3DTA_SPECULAR 0x00000004
+#define D3DTA_TEMP 0x00000005
+#define D3DTA_COMPLEMENT 0x00000010
+#define D3DTA_ALPHAREPLICATE 0x00000020
+#define D3DTA_SELECTMASK 0x0000000f
+
+// Texture address modes
+#define D3DTADDRESS_WRAP 1
+#define D3DTADDRESS_MIRROR 2
+#define D3DTADDRESS_CLAMP 3
+#define D3DTADDRESS_BORDER 4
+#define D3DTADDRESS_MIRRORONCE 5
+
+// Set Gamma Ramp flags
+#define D3DSGR_NO_CALIBRATION 0x00000000
+#define D3DSGR_CALIBRATE 0x00000001
+
 // DirectX lock flags
 #define D3DLOCK_READONLY 0x00000010L
 #define D3DLOCK_DISCARD 0x00002000L
@@ -336,6 +326,9 @@ typedef enum {
 // DirectX primitive texture filter capabilities
 #define D3DPTFILTERCAPS_MAGFANISOTROPIC 0x04000000L
 #define D3DPTFILTERCAPS_MINFANISOTROPIC 0x00000400L
+#define D3DPTFILTERCAPS_MAGFLINEAR 0x02000000L
+#define D3DPTFILTERCAPS_MINFLINEAR 0x00000200L
+#define D3DPTFILTERCAPS_MIPFLINEAR 0x00020000L
 
 // DirectX blend modes
 #define D3DBLEND_ZERO 1
@@ -505,11 +498,6 @@ typedef enum {
 #define D3DDEVCAPS_HWTRANSFORMANDLIGHT 0x00000001L
 #define D3DDEVCAPS_NPATCHES 0x01000000L
 
-// Texture operation capability constants
-#define D3DTEXOPCAPS_DOTPRODUCT3 0x00800000L
-#define D3DTEXOPCAPS_BUMPENVMAP 0x00200000L
-#define D3DTEXOPCAPS_BUMPENVMAPLUMINANCE 0x00400000L
-
 // Caps2 constants
 #define D3DCAPS2_FULLSCREENGAMMA 0x00020000L
 
@@ -568,6 +556,7 @@ typedef enum {
     D3DRS_STENCILWRITEMASK = 59,
     D3DRS_TEXTUREFACTOR = 60,
     D3DRS_WRAP0 = 128,
+    D3DRS_CLIPPING = 136,
     D3DRS_LIGHTING = 137,
     D3DRS_AMBIENT = 139,
     D3DRS_FOGVERTEXMODE = 140,
@@ -593,13 +582,7 @@ typedef enum {
     D3DRS_WRAP4 = 133,
     D3DRS_WRAP5 = 134,
     D3DRS_WRAP6 = 135,
-    D3DRS_WRAP7 = 136,
-    D3DRS_CLIPPING = 137,
-    D3DRS_LIGHTING = 138,
-    D3DRS_AMBIENT = 139,
-    D3DRS_FOGVERTEXMODE = 140,
-    D3DRS_COLORVERTEX = 141,
-    D3DRS_LOCALVIEWER = 142,
+    D3DRS_WRAP7 = 138,
     D3DRS_POINTSIZE = 154,
     D3DRS_POINTSIZE_MIN = 155,
     D3DRS_POINTSPRITEENABLE = 156,
@@ -667,6 +650,7 @@ typedef struct {
     DWORD Usage;
     D3DFORMAT Format;
     D3DPOOL Pool;
+    DWORD Size;
 } D3DSURFACE_DESC;
 
 // DirectX volume description structure
@@ -756,6 +740,7 @@ typedef struct {
     DWORD TextureFilterCaps;
     DWORD MaxTextureWidth;
     DWORD MaxTextureHeight;
+    DWORD MaxVolumeExtent;
     DWORD MaxSimultaneousTextures;
     float MaxPointSize;
     DWORD VertexShaderVersion;

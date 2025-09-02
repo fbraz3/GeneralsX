@@ -473,47 +473,25 @@ class TextureLoadTaskListClass;        // Added forward declaration
 - **Success Rate**: 83% error reduction achieved
 - **Files Fixed This Session**: 8+ major files now compiling successfully
 
-## 🤝 Contributing to macOS Port
+## 🛠️ Progress Update (September 2, 2025)
 
-### How to Help
+### Project Status Adjustments
 
-1. **Test compilation** on your macOS system and report issues
-2. **Add missing DirectX constants** when you encounter undefined symbols
-3. **Fix Windows API dependencies** in files that don't compile
-4. **Document workarounds** for platform-specific issues
+#### DirectX 8 Compatibility
+- **Updated Status**: The compatibility layer is functional but still has pending improvements.
+  - **Pending Tasks**:
+    - Complete `switch` statements for all enumeration values.
+    - Resolve out-of-order initializations in constructors.
+    - Replace deprecated functions like `sprintf` with `snprintf`.
 
-### Reporting Issues
-When reporting macOS compilation issues, please include:
-- macOS version and Xcode version
-- Full compilation error output
-- The specific file and line number failing
-- CMake configuration used
+#### Progress on Target `z_ww3d2`
+- **Status**: Compilation has advanced significantly, but subcommand failures persist.
+- **Identified Warnings**:
+  - Pragmas unknown to Clang (e.g., `#pragma warning(disable : 4505)`).
+  - Variables set but not used (e.g., `block_count`).
+  - Use of deprecated functions (`sprintf`).
 
-### Code Style for Compatibility Layer
-- Use exact DirectX 8 API signatures
-- Provide sensible default return values
-- Include comments explaining the purpose of stub implementations
-- Follow existing naming conventions
-
-## 📚 References
-
-- **Original DirectX 8 Documentation**: For API reference and parameter validation
-- **OpenGL 4.1+ Specification**: Target rendering API for macOS
-- **CMake Documentation**: Cross-platform build system configuration
-- **GeneralsGameCode Repository**: Original Windows implementation
-
----
-
-**Last Updated**: August 29, 2025  
-**Contributors**: AI Assistant, Project Maintainers  
-**Status**: � Near Completion - 90%+ Progress Achieved!
-
-**Current Session Achievements:**
-- ✅ Comprehensive DirectX 8 compatibility layer (430+ lines)
-- ✅ Complete Windows API compatibility (windows.h, ddraw.h)
-- ✅ Resolved macro conflicts with system headers
-- ✅ Fixed forward declaration dependencies  
-- ✅ 83% error reduction (300+ → 50 errors)
-- ✅ Major WW3D2 module files now compiling successfully
-
-**Next Milestone**: Complete final 50 compilation errors and achieve 100% compilation success! 🎯
+#### Next Steps
+1. Resolve warnings and adjust incompatible pragmas.
+2. Complete `switch` statements and fix out-of-order initializations.
+3. Ensure all subcommands execute successfully.
