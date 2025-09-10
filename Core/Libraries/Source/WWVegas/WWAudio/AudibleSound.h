@@ -47,9 +47,9 @@
 
 //#ifdef __APPLE__
 #include <stdlib.h>
-#else
-#include <malloc.h>
-#endif
+//#else
+//#include <malloc.h>
+//#endif
 #include "vector3.h"
 #include "matrix3d.h"
 #include "refcount.h"

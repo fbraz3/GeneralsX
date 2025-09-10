@@ -1046,7 +1046,7 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 		D3DInterface->GetAdapterDisplayMode( CurRenderDevice, &desktop_mode );
 
 		DisplayFormat = desktop_mode.Format;
-		_PresentParameters.BackBufferFormat = (DWORD)desktop_mode.Format;
+		_PresentParameters.BackBufferFormat = desktop_mode.Format;
 
 		// In windowed mode, define the bitdepth from desktop mode (as it can't be changed)
 		switch (_PresentParameters.BackBufferFormat) {

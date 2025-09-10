@@ -26,9 +26,6 @@ static unsigned missing_image_width=128;
 static unsigned missing_image_height=128;
 static unsigned missing_image_depth=24;
 
-extern unsigned int missing_image_palette[];
-extern unsigned int missing_image_pixels[];
-
 static IDirect3DTexture8 * _MissingTexture = NULL;
 
 IDirect3DTexture8* MissingTexture::_Get_Missing_Texture()

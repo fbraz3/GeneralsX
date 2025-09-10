@@ -3,8 +3,6 @@
 #include <cstdio>
 #include <cstdint>
 
-// Basic Windows typese
-
 #ifndef WIN32_COMPAT_H_INCLUDED
 #define WIN32_COMPAT_H_INCLUDED
 
@@ -12,6 +10,11 @@
 // Compatibility types for non-Windows systems
 #include <cstring>
 #include <cstdlib>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <strings.h>
+#include <cctype>  // for toupper
+#include <cwchar>  // for wchar_t
 
 // Basic Windows types
 typedef void* HDC;
@@ -46,6 +49,21 @@ typedef const char* LPCSTR;
 typedef char* LPSTR;
 typedef unsigned int UINT;
 typedef long HRESULT;
+typedef wchar_t WCHAR;
+typedef const WCHAR* LPCWSTR;
+typedef WCHAR* LPWSTR;
+typedef void* HANDLE;
+
+// Audio types
+typedef DWORD U32;
+typedef long S32;
+typedef void* LPWAVEFORMAT;
+typedef void* HTIMER;
+
+// Calling conventions
+#define _stdcall
+#define __cdecl
+#define AILCALLBACK
 
 // DirectX specific types
 typedef enum {
@@ -87,8 +105,27 @@ typedef enum {
     D3DFMT_D24S8 = 75,
     D3DFMT_D16 = 80,
     D3DFMT_D24X8 = 77,
-    D3DFMT_D24X4S4 = 79
+    D3DFMT_D24X4S4 = 79,
+    D3DFMT_INDEX16 = 101,
+    D3DFMT_INDEX32 = 102
 } D3DFORMAT;
+
+// D3D Cube Map Face enum
+typedef enum {
+    D3DCUBEMAP_FACE_POSITIVE_X = 0,
+    D3DCUBEMAP_FACE_NEGATIVE_X = 1,
+    D3DCUBEMAP_FACE_POSITIVE_Y = 2,
+    D3DCUBEMAP_FACE_NEGATIVE_Y = 3,
+    D3DCUBEMAP_FACE_POSITIVE_Z = 4,
+    D3DCUBEMAP_FACE_NEGATIVE_Z = 5
+} D3DCUBEMAP_FACES;
+
+// D3D Locked Box structure
+typedef struct {
+    int RowPitch;
+    int SlicePitch;
+    void* pBits;
+} D3DLOCKED_BOX;
 // D3DFORMAT will be defined in d3d8.h
 
 typedef struct {
@@ -236,6 +273,37 @@ inline void* SelectObject(void*, void*) { return nullptr; }
 inline void DeleteObject(void*) {}
 inline void* GetDesktopWindow() { return nullptr; }
 
+// GDI functions
+#define RGB(r,g,b) ((DWORD)(((BYTE)(r)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(b))<<16)))
+#define DIB_RGB_COLORS 0
+
+// BITMAP structures
+typedef struct tagBITMAPINFOHEADER {
+    DWORD biSize;
+    LONG biWidth;
+    LONG biHeight;
+    WORD biPlanes;
+    WORD biBitCount;
+    DWORD biCompression;
+    DWORD biSizeImage;
+    LONG biXPelsPerMeter;
+    LONG biYPelsPerMeter;
+    DWORD biClrUsed;
+    DWORD biClrImportant;
+} BITMAPINFOHEADER;
+
+inline void* CreateDIBSection(void* hdc, const BITMAPINFOHEADER* pbmi, UINT usage, void** ppvBits, void* hSection, DWORD offset) {
+    return nullptr;
+}
+
+inline DWORD SetBkColor(void* hdc, DWORD color) {
+    return 0;
+}
+
+inline DWORD SetTextColor(void* hdc, DWORD color) {
+    return 0;
+}
+
 // DirectX stub functions
 inline HRESULT D3DXGetErrorStringA(HRESULT hr, char* buffer, DWORD size) { 
     return 0; 
@@ -312,6 +380,48 @@ inline int GetMonitorInfo(void* monitor, MONITORINFO* info) {
     }
     return 0;
 }
+
+// String manipulation functions
+inline char* strupr(char* str) {
+    if (str) {
+        for (char* p = str; *p; ++p) {
+            *p = toupper(*p);
+        }
+    }
+    return str;
+}
+
+// Case-insensitive string comparison
+inline int lstrcmpi(const char* str1, const char* str2) {
+    return strcasecmp(str1, str2);
+}
+
+// File system functions
+inline DWORD GetCurrentDirectory(DWORD size, char* buffer) {
+    if (getcwd(buffer, size)) {
+        return strlen(buffer);
+    }
+    return 0;
+}
+
+inline DWORD GetFileAttributes(const char* filename) {
+    struct stat st;
+    if (stat(filename, &st) == 0) {
+        return 0; // FILE_ATTRIBUTE_NORMAL
+    }
+    return 0xFFFFFFFF; // INVALID_FILE_ATTRIBUTES
+}
+
+// Bitmap structures
+typedef struct {
+    WORD bfType;
+    DWORD bfSize;
+    WORD bfReserved1;
+    WORD bfReserved2;
+    DWORD bfOffBits;
+} BITMAPFILEHEADER;
+
+#define BI_RGB 0
 
 #endif // !_WIN32
 

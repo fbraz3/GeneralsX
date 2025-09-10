@@ -835,19 +835,17 @@ void TextureLoader::Flush_Pending_Load_Tasks(void)
 
 // Network update macro for texture loader.
 #pragma warning(disable:4201) // warning C4201: nonstandard extension used : nameless struct/union
-#ifndef _WIN32
-#include <sys/time.h>
-static unsigned long timeGetTime() {
-    struct timeval tv;
-    gettimeofday(&tv, nullptr);
-    return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
-}
-#else
+#ifdef _WIN32
 #include <mmsystem.h>
+#define GET_TIME() timeGetTime()
+#else
+#include <chrono>
+#define GET_TIME() std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count()
 #endif
+
 #define UPDATE_NETWORK 											\
 	if (network_callback) {                            \
-		unsigned long time2 = timeGetTime();            \
+		unsigned long time2 = GET_TIME();               \
 		if (time2 - time > 20) {                        \
 			network_callback();                          \
 			time = time2;                                \

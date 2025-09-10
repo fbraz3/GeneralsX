@@ -232,23 +232,23 @@ unsigned long VertexMaterialClass::Compute_CRC(void) const
 void VertexMaterialClass::Get_Ambient(Vector3 * set) const
 {
 	assert(set);
-	*set=Vector3(Material->Ambient.r,Material->Ambient.g,Material->Ambient.b);
+	*set=Vector3(Material->Ambient[0],Material->Ambient[1],Material->Ambient[2]);
 }
 
 void VertexMaterialClass::Set_Ambient(const Vector3 & color)
 {
 	CRCDirty=true;
-	Material->Ambient.r=color.X;
-	Material->Ambient.g=color.Y;
-	Material->Ambient.b=color.Z;
+	Material->Ambient[0]=color.X;
+	Material->Ambient[1]=color.Y;
+	Material->Ambient[2]=color.Z;
 }
 
 void VertexMaterialClass::Set_Ambient(float r,float g,float b)
 {
 	CRCDirty=true;
-	Material->Ambient.r=r;
-	Material->Ambient.g=g;
-	Material->Ambient.b=b;
+	Material->Ambient[0]=r;
+	Material->Ambient[1]=g;
+	Material->Ambient[2]=b;
 }
 
 // Diffuse Get and Sets
@@ -256,23 +256,23 @@ void VertexMaterialClass::Set_Ambient(float r,float g,float b)
 void VertexMaterialClass::Get_Diffuse(Vector3 * set) const
 {
 	assert(set);
-	*set=Vector3(Material->Diffuse.r,Material->Diffuse.g,Material->Diffuse.b);
+	*set=Vector3(Material->Diffuse[0],Material->Diffuse[1],Material->Diffuse[2]);
 }
 
 void VertexMaterialClass::Set_Diffuse(const Vector3 & color)
 {
 	CRCDirty=true;
-	Material->Diffuse.r=color.X;
-	Material->Diffuse.g=color.Y;
-	Material->Diffuse.b=color.Z;
+	Material->Diffuse[0]=color.X;
+	Material->Diffuse[1]=color.Y;
+	Material->Diffuse[2]=color.Z;
 }
 
 void VertexMaterialClass::Set_Diffuse(float r,float g,float b)
 {
 	CRCDirty=true;
-	Material->Diffuse.r=r;
-	Material->Diffuse.g=g;
-	Material->Diffuse.b=b;
+	Material->Diffuse[0]=r;
+	Material->Diffuse[1]=g;
+	Material->Diffuse[2]=b;
 }
 
 // Specular Get and Sets
@@ -280,23 +280,23 @@ void VertexMaterialClass::Set_Diffuse(float r,float g,float b)
 void VertexMaterialClass::Get_Specular(Vector3 * set) const
 {
 	assert(set);
-	*set=Vector3(Material->Specular.r,Material->Specular.g,Material->Specular.b);
+	*set=Vector3(Material->Specular[0],Material->Specular[1],Material->Specular[2]);
 }
 
 void VertexMaterialClass::Set_Specular(const Vector3 & color)
 {
 	CRCDirty=true;
-	Material->Specular.r=color.X;
-	Material->Specular.g=color.Y;
-	Material->Specular.b=color.Z;
+	Material->Specular[0]=color.X;
+	Material->Specular[1]=color.Y;
+	Material->Specular[2]=color.Z;
 }
 
 void VertexMaterialClass::Set_Specular(float r,float g,float b)
 {
 	CRCDirty=true;
-	Material->Specular.r=r;
-	Material->Specular.g=g;
-	Material->Specular.b=b;
+	Material->Specular[0]=r;
+	Material->Specular[1]=g;
+	Material->Specular[2]=b;
 }
 
 // Emissive Get and Sets
@@ -304,23 +304,23 @@ void VertexMaterialClass::Set_Specular(float r,float g,float b)
 void VertexMaterialClass::Get_Emissive(Vector3 * set) const
 {
 	assert(set);
-	*set=Vector3(Material->Emissive.r,Material->Emissive.g,Material->Emissive.b);
+	*set=Vector3(Material->Emissive[0],Material->Emissive[1],Material->Emissive[2]);
 }
 
 void VertexMaterialClass::Set_Emissive(const Vector3 & color)
 {
 	CRCDirty=true;
-	Material->Emissive.r=color.X;
-	Material->Emissive.g=color.Y;
-	Material->Emissive.b=color.Z;
+	Material->Emissive[0]=color.X;
+	Material->Emissive[1]=color.Y;
+	Material->Emissive[2]=color.Z;
 }
 
 void VertexMaterialClass::Set_Emissive(float r,float g,float b)
 {
 	CRCDirty=true;
-	Material->Emissive.r=r;
-	Material->Emissive.g=g;
-	Material->Emissive.b=b;
+	Material->Emissive[0]=r;
+	Material->Emissive[1]=g;
+	Material->Emissive[2]=b;
 }
 
 
@@ -337,13 +337,13 @@ void	VertexMaterialClass::Set_Shininess(float shin)
 
 float	VertexMaterialClass::Get_Opacity(void) const
 {
-	return Material->Diffuse.a;
+	return Material->Diffuse[3];
 }
 
 void	VertexMaterialClass::Set_Opacity(float o)
 {
 	CRCDirty=true;
-	Material->Diffuse.a=o;
+	Material->Diffuse[3]=o;
 }
 
 void	VertexMaterialClass::Set_Ambient_Color_Source(ColorSourceType src)
