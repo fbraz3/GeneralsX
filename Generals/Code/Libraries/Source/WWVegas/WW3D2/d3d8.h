@@ -167,12 +167,15 @@ typedef enum {
 #define DDSCAPS2_CUBEMAP 0x00000200L
 #define DDSCAPS2_VOLUME 0x00200000L
 
+#ifndef D3DPOOL_DEFINED
+#define D3DPOOL_DEFINED
 typedef enum {
     D3DPOOL_DEFAULT = 0,
     D3DPOOL_MANAGED = 1,
     D3DPOOL_SYSTEMMEM = 2,
     D3DPOOL_SCRATCH = 3
 } D3DPOOL;
+#endif
 
 // D3DBLEND constants
 typedef DWORD D3DBLEND;
@@ -219,6 +222,8 @@ typedef DWORD D3DTEXTUREOP;
 #define D3DTOP_MULTIPLYADD 25
 #define D3DTOP_LERP 26
 
+#ifndef D3DUSAGE_DEFINED
+#define D3DUSAGE_DEFINED
 typedef enum {
     D3DUSAGE_RENDERTARGET = 0x00000001L,
     D3DUSAGE_DEPTHSTENCIL = 0x00000002L,
@@ -227,6 +232,7 @@ typedef enum {
     D3DUSAGE_NPATCHES = 0x00000010L,
     D3DUSAGE_SOFTWAREPROCESSING = 0x00000020L
 } D3DUSAGE;
+#endif
 
 // DirectX FVF constants
 #define D3DFVF_RESERVED0        0x001
@@ -270,7 +276,16 @@ typedef enum {
 // DirectX constants
 #define D3DDP_MAXTEXCOORD 8
 
+// Texture stage state constants
+#define D3DTSS_TCI_PASSTHRU 0x00000000L
+#define D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR 0x00030000L
+
+// Texture transform flags
+#define D3DTTFF_COUNT2 2
+
 // Transform state types
+#ifndef D3DTRANSFORMSTATETYPE_DEFINED
+#define D3DTRANSFORMSTATETYPE_DEFINED
 typedef enum {
     D3DTS_WORLD = 256,
     D3DTS_VIEW = 2,
@@ -284,8 +299,11 @@ typedef enum {
     D3DTS_TEXTURE6 = 22,
     D3DTS_TEXTURE7 = 23
 } D3DTRANSFORMSTATETYPE;
+#endif
 
 // Render state types
+#ifndef D3DRENDERSTATETYPE_DEFINED
+#define D3DRENDERSTATETYPE_DEFINED
 typedef enum {
     D3DRS_ZENABLE = 7,
     D3DRS_FILLMODE = 8,
@@ -333,6 +351,7 @@ typedef enum {
     D3DRS_CLIPPLANEENABLE = 152,
     D3DRS_SOFTWAREVERTEXPROCESSING = 153
 } D3DRENDERSTATETYPE;
+#endif
 
 // Texture stage state types
 typedef enum {
@@ -464,8 +483,13 @@ typedef struct {
 } D3DCAPS8;
 
 // Device capabilities
+#ifndef D3DDEVCAPS_HWTRANSFORMANDLIGHT
 #define D3DDEVCAPS_HWTRANSFORMANDLIGHT 0x00000001L
+#endif
+#ifndef D3DDEVCAPS_NPATCHES_DEFINED
+#define D3DDEVCAPS_NPATCHES_DEFINED
 #define D3DDEVCAPS_NPATCHES 0x02000000L
+#endif
 
 // Caps2 values
 #define D3DCAPS2_FULLSCREENGAMMA 0x00020000L

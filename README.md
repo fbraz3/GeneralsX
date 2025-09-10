@@ -18,8 +18,10 @@ This fork now includes **OpenGL rendering support** alongside the original Direc
 - ✅ **DirectX 8 Compatibility Layer** - Complete COM interfaces, matrix operations, and d3dx8math integration
 - ✅ **Profile & Debug Systems** - Fully functional with __forceinline macOS compatibility
 - ✅ **Type System Corrections** - All typedef conflicts resolved with proper include guards
-- 🔄 **Generals Library Build** - Final DirectX compatibility layer coordination in progress
-- ⚠️ **Current Status** - Resolving final DirectX redefinition conflicts between Core and Generals layers
+- ✅ **DirectX Header Coordination** - Resolved enum redefinitions (D3DPOOL, D3DUSAGE, D3DRS_*, D3DTS_*)
+- ✅ **Function Signature Conflicts** - Fixed D3DX function redefinitions with include guards
+- 🔄 **Generals Library Build** - Advanced to texture/surface interface implementations
+- ⚠️ **Current Status** - Building 10+ files successfully, implementing remaining DirectX interfaces
 
 See [MACOS_PORT.md](./MACOS_PORT.md) for detailed macOS porting progress, [OPENGL_SUMMARY.md](OPENGL_SUMMARY.md) for comprehensive implementation documentation, and [OPENGL_TESTING.md](./OPENGL_TESTING.md) for testing procedures and results.
 

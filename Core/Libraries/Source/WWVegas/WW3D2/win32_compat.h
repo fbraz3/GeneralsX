@@ -243,7 +243,10 @@ typedef struct {
 
 // Device capability constants
 #define D3DDEVCAPS_HWTRANSFORMANDLIGHT 0x00000001L
-#define D3DDEVCAPS_NPATCHES 0x01000000L
+#ifndef D3DDEVCAPS_NPATCHES_DEFINED
+#define D3DDEVCAPS_NPATCHES_DEFINED
+#define D3DDEVCAPS_NPATCHES 0x02000000L
+#endif
 
 // Texture operation capability constants
 // DirectX texture operation capabilities
@@ -278,7 +281,6 @@ typedef struct {
 // Windows API compatibility macros
 #define WINAPI
 #define __cdecl
-#define SUCCEEDED(hr) ((HRESULT)(hr) >= 0)
 
 // Constants
 #ifndef TRUE
@@ -391,8 +393,6 @@ inline void ZeroMemory(void* dest, size_t size) { memset(dest, 0, size); }
 #define MAX_PATH 260
 
 // DirectX macros
-#define SUCCEEDED(hr) ((HRESULT)(hr) >= 0)
-#define FAILED(hr) ((HRESULT)(hr) < 0)
 #define HIWORD(l) ((WORD)((DWORD_PTR)(l) >> 16))
 #define LOWORD(l) ((WORD)((DWORD_PTR)(l) & 0xffff))
 

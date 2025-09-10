@@ -71,34 +71,16 @@ typedef enum {
     D3DZB_USEW = 2
 } D3DZBUFFERTYPE;
 
-// DirectX comparison functions
+// DirectX comparison functions - use macros instead of enum
 #ifndef D3DCMPFUNC_DEFINED
 #define D3DCMPFUNC_DEFINED
-typedef enum {
-    D3DCMP_NEVER = 1,
-    D3DCMP_LESS = 2,
-    D3DCMP_EQUAL = 3,
-    D3DCMP_LESSEQUAL = 4,
-    D3DCMP_GREATER = 5,
-    D3DCMP_NOTEQUAL = 6,
-    D3DCMP_GREATEREQUAL = 7,
-    D3DCMP_ALWAYS = 8
-} D3DCMPFUNC;
+typedef DWORD D3DCMPFUNC;
 #endif
 
-// DirectX stencil operations
+// DirectX stencil operations - use macros instead of enum
 #ifndef D3DSTENCILOP_DEFINED
 #define D3DSTENCILOP_DEFINED
-typedef enum {
-    D3DSTENCILOP_KEEP = 1,
-    D3DSTENCILOP_ZERO = 2,
-    D3DSTENCILOP_REPLACE = 3,
-    D3DSTENCILOP_INCRSAT = 4,
-    D3DSTENCILOP_DECRSAT = 5,
-    D3DSTENCILOP_INVERT = 6,
-    D3DSTENCILOP_INCR = 7,
-    D3DSTENCILOP_DECR = 8
-} D3DSTENCILOP;
+typedef DWORD D3DSTENCILOP;
 #endif
 
 // DirectX vertex blend flags
@@ -405,12 +387,15 @@ typedef struct {
     D3DFORMAT Format;
 } D3DDISPLAYMODE;
 
+#ifndef D3DPOOL_DEFINED
+#define D3DPOOL_DEFINED
 typedef enum {
     D3DPOOL_DEFAULT = 0,
     D3DPOOL_MANAGED = 1,
     D3DPOOL_SYSTEMMEM = 2,
     D3DPOOL_SCRATCH = 3
 } D3DPOOL;
+#endif
 
 // D3DBLEND constants
 typedef DWORD D3DBLEND;
@@ -457,12 +442,15 @@ typedef DWORD D3DTEXTUREOP;
 #define D3DTOP_MULTIPLYADD 25
 #define D3DTOP_LERP 26
 
+#ifndef D3DUSAGE_DEFINED
+#define D3DUSAGE_DEFINED
 typedef enum {
     D3DUSAGE_RENDERTARGET = 0x00000001L,
     D3DUSAGE_DEPTHSTENCIL = 0x00000002L,
     D3DUSAGE_DYNAMIC = 0x00000200L,
     D3DUSAGE_WRITEONLY = 0x00000008L
 } D3DUSAGE;
+#endif
 
 // DirectX FVF constants
 #define D3DFVF_RESERVED0        0x001
@@ -505,7 +493,10 @@ typedef enum {
 
 // Device capability constants
 #define D3DDEVCAPS_HWTRANSFORMANDLIGHT 0x00000001L
-#define D3DDEVCAPS_NPATCHES 0x01000000L
+#ifndef D3DDEVCAPS_NPATCHES_DEFINED
+#define D3DDEVCAPS_NPATCHES_DEFINED
+#define D3DDEVCAPS_NPATCHES 0x02000000L
+#endif
 
 // Caps2 constants
 #define D3DCAPS2_FULLSCREENGAMMA 0x00020000L
@@ -517,6 +508,8 @@ typedef enum {
 #define D3DDP_MAXTEXCOORD 8
 
 // Transform state types
+#ifndef D3DTRANSFORMSTATETYPE_DEFINED
+#define D3DTRANSFORMSTATETYPE_DEFINED
 typedef enum {
     D3DTS_WORLD = 256,
     D3DTS_VIEW = 2,
@@ -530,8 +523,11 @@ typedef enum {
     D3DTS_TEXTURE6 = 22,
     D3DTS_TEXTURE7 = 23
 } D3DTRANSFORMSTATETYPE;
+#endif
 
 // Render state types
+#ifndef D3DRENDERSTATETYPE_DEFINED
+#define D3DRENDERSTATETYPE_DEFINED
 typedef enum {
     D3DRS_ZENABLE = 7,
     D3DRS_FILLMODE = 8,
@@ -610,6 +606,7 @@ typedef enum {
     D3DRS_TWEENFACTOR = 170,
     D3DRS_BLENDOP = 171
 } D3DRENDERSTATETYPE;
+#endif
 
 // Texture stage state types
 typedef enum {

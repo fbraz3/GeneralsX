@@ -25,3 +25,4 @@ This project is a fork of the Command & Conquer Generals source code and its exp
 2. All tests must be moved into a dedicated `tests/` directory to improve project organization and maintainability.
 3. The game uses Windows Registry keys for configuration and settings storage. When porting to other platforms, these keys need to be replaced with equivalent configuration files or system settings.
 4. do not create new markdown files for reporting progress focus on the existant ones
+5. always report progress updating the existant markdown files before commit
