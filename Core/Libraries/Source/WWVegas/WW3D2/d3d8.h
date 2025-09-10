@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef _WIN32
+#include "win32_compat.h"
+#endif
+
 #define D3DX_DEFAULT 0xFFFFFFFF
 #define D3DX_FILTER_NONE 0x00000001
 #define D3DX_FILTER_POINT 0x00000002  
@@ -609,6 +613,8 @@ typedef enum {
 #endif
 
 // Texture stage state types
+#ifndef D3DTEXTURESTAGESTATETYPE_DEFINED
+#define D3DTEXTURESTAGESTATETYPE_DEFINED
 typedef enum {
     D3DTSS_COLOROP = 1,
     D3DTSS_COLORARG1 = 2,
@@ -641,14 +647,20 @@ typedef enum {
     D3DTSS_MAXANISOTROPY = 21,
     D3DTSS_ADDRESSW = 25
 } D3DTEXTURESTAGESTATETYPE;
+#endif
 
 // DirectX structures
+#ifndef D3DTLVERTEX_DEFINED
+#define D3DTLVERTEX_DEFINED
 typedef struct {
     float x, y, z, rhw;
     DWORD color;
     float tu, tv;
 } D3DTLVERTEX;
+#endif
 
+#ifndef D3DSURFACE_DESC_DEFINED
+#define D3DSURFACE_DESC_DEFINED
 typedef struct {
     DWORD Width;
     DWORD Height;
@@ -658,8 +670,11 @@ typedef struct {
     D3DPOOL Pool;
     DWORD Size;
 } D3DSURFACE_DESC;
+#endif
 
 // DirectX volume description structure
+#ifndef D3DVOLUME_DESC_DEFINED
+#define D3DVOLUME_DESC_DEFINED
 typedef struct {
     D3DFORMAT Format;
     DWORD Type;
@@ -670,11 +685,15 @@ typedef struct {
     DWORD Height;
     DWORD Depth;
 } D3DVOLUME_DESC;
+#endif
 
+#ifndef D3DLOCKED_RECT_DEFINED
+#define D3DLOCKED_RECT_DEFINED
 typedef struct {
     void* pBits;
     int Pitch;
 } D3DLOCKED_RECT;
+#endif
 
 // Matrix structure from d3dx8math.h
 // Basic matrix type
@@ -686,18 +705,26 @@ typedef struct {
 #endif
 
 // DirectX gamma ramp structure
+#ifndef D3DGAMMARAMP_DEFINED
+#define D3DGAMMARAMP_DEFINED
 typedef struct {
     WORD red[256];
     WORD green[256];
     WORD blue[256];
 } D3DGAMMARAMP;
+#endif
 
 // Color structure for D3D
+#ifndef D3DCOLORVALUE_DEFINED
+#define D3DCOLORVALUE_DEFINED
 typedef struct {
     float r, g, b, a;
 } D3DCOLORVALUE;
+#endif
 
 // DirectX light structure
+#ifndef D3DLIGHT8_DEFINED
+#define D3DLIGHT8_DEFINED
 typedef struct {
     DWORD Type;
     D3DCOLORVALUE Diffuse;
@@ -713,8 +740,11 @@ typedef struct {
     float Theta;
     float Phi;
 } D3DLIGHT8;
+#endif
 
 // DirectX viewport structure
+#ifndef D3DVIEWPORT8_DEFINED
+#define D3DVIEWPORT8_DEFINED
 typedef struct {
     DWORD X;
     DWORD Y;
@@ -723,8 +753,11 @@ typedef struct {
     float MinZ;
     float MaxZ;
 } D3DVIEWPORT8;
+#endif
 
 // DirectX material structure
+#ifndef D3DMATERIAL8_DEFINED
+#define D3DMATERIAL8_DEFINED
 typedef struct {
     float Diffuse[4];
     float Ambient[4];
@@ -732,8 +765,11 @@ typedef struct {
     float Emissive[4];
     float Power;
 } D3DMATERIAL8;
+#endif
 
 // DirectX caps structure (simplified)
+#ifndef D3DCAPS8_DEFINED
+#define D3DCAPS8_DEFINED
 typedef struct {
     DWORD DeviceType;
     DWORD AdapterOrdinal;
@@ -752,19 +788,21 @@ typedef struct {
     DWORD VertexShaderVersion;
     DWORD PixelShaderVersion;
 } D3DCAPS8;
+#endif
 
 // DirectX adapter identifier
+#ifndef D3DADAPTER_IDENTIFIER8_DEFINED
+#define D3DADAPTER_IDENTIFIER8_DEFINED
 typedef struct {
     char Driver[512];
     char Description[512];
-    LARGE_INTEGER DriverVersion;
     DWORD VendorId;
     DWORD DeviceId;
     DWORD SubSysId;
     DWORD Revision;
-    GUID DeviceIdentifier;
     DWORD WHQLLevel;
 } D3DADAPTER_IDENTIFIER8;
+#endif
 
 // Forward declarations
 struct IDirect3DBaseTexture8;
@@ -773,6 +811,8 @@ struct IDirect3DIndexBuffer8;
 struct IDirect3DTexture8;
 
 // Surface interface (declared early for use in IDirect3DDevice8)
+#ifndef IDIRECT3DSURFACE8_DEFINED
+#define IDIRECT3DSURFACE8_DEFINED
 struct IDirect3DSurface8 {
     virtual int AddRef() { return 1; }
     virtual int Release() { return 0; }
@@ -781,8 +821,11 @@ struct IDirect3DSurface8 {
     virtual int UnlockRect() { return D3D_OK; }
     virtual int GetDesc(void* desc) { return D3D_OK; }
 };
+#endif
 
 // DirectX interface types
+#ifndef IDIRECT3D8_DEFINED
+#define IDIRECT3D8_DEFINED
 struct IDirect3D8 {
     virtual int AddRef() { return 1; }
     virtual int Release() { return 0; }
