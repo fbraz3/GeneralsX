@@ -67,7 +67,8 @@
 #include <cstdint>
 
 // Windows API types needed by DirectX - check if already defined
-#ifndef RECT
+#ifndef RECT_DEFINED
+#define RECT_DEFINED
 typedef struct {
     LONG left;
     LONG top;
@@ -76,7 +77,8 @@ typedef struct {
 } RECT;
 #endif
 
-#ifndef POINT
+#ifndef POINT_DEFINED
+#define POINT_DEFINED
 typedef struct {
     LONG x;
     LONG y;
@@ -101,7 +103,8 @@ typedef uint32_t D3DCOLOR;
 #define CONST const
 
 // DirectX enums and constants - check if already defined
-#ifndef D3DFORMAT
+#ifndef D3DFORMAT_DEFINED
+#define D3DFORMAT_DEFINED
 typedef enum {
     D3DFMT_UNKNOWN = 0,
     D3DFMT_R8G8B8 = 20,
@@ -131,8 +134,8 @@ typedef enum {
     D3DFMT_X8L8V8U8 = 62,
     D3DFMT_Q8W8V8U8 = 63,
     D3DFMT_V16U16 = 64,
-    D3DFMT_A2W10V10U10 = 67,
     D3DFMT_W11V11U10 = 65,
+    D3DFMT_A2W10V10U10 = 67,
     D3DFMT_UYVY = 1498831189,
     D3DFMT_R8G8_B8G8 = 1111970375,
     D3DFMT_YUY2 = 844715353,
@@ -152,7 +155,7 @@ typedef enum {
     D3DFMT_INDEX16 = 101,
     D3DFMT_INDEX32 = 102
 } D3DFORMAT;
-#endif // D3DFORMAT
+#endif // D3DFORMAT_DEFINED
 
 // Lock flags
 #define D3DLOCK_READONLY 0x00000010L
@@ -387,12 +390,15 @@ typedef struct {
 } D3DVOLUME_DESC;
 
 // Matrix structure from d3dx8math.h
+#ifndef D3DMATRIX_DEFINED
+#define D3DMATRIX_DEFINED
 typedef struct {
     float _11, _12, _13, _14;
     float _21, _22, _23, _24;
     float _31, _32, _33, _34;
     float _41, _42, _43, _44;
 } D3DMATRIX;
+#endif
 
 // DirectX gamma ramp structure
 typedef struct {

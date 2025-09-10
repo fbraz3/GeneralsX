@@ -72,6 +72,8 @@ typedef enum {
 } D3DZBUFFERTYPE;
 
 // DirectX comparison functions
+#ifndef D3DCMPFUNC_DEFINED
+#define D3DCMPFUNC_DEFINED
 typedef enum {
     D3DCMP_NEVER = 1,
     D3DCMP_LESS = 2,
@@ -82,8 +84,11 @@ typedef enum {
     D3DCMP_GREATEREQUAL = 7,
     D3DCMP_ALWAYS = 8
 } D3DCMPFUNC;
+#endif
 
 // DirectX stencil operations
+#ifndef D3DSTENCILOP_DEFINED
+#define D3DSTENCILOP_DEFINED
 typedef enum {
     D3DSTENCILOP_KEEP = 1,
     D3DSTENCILOP_ZERO = 2,
@@ -94,8 +99,11 @@ typedef enum {
     D3DSTENCILOP_INCR = 7,
     D3DSTENCILOP_DECR = 8
 } D3DSTENCILOP;
+#endif
 
 // DirectX vertex blend flags
+#ifndef D3DVERTEXBLENDFLAGS_DEFINED
+#define D3DVERTEXBLENDFLAGS_DEFINED
 typedef enum {
     D3DVBF_DISABLE = 0,
     D3DVBF_1WEIGHTS = 1,
@@ -104,6 +112,7 @@ typedef enum {
     D3DVBF_TWEENING = 255,
     D3DVBF_0WEIGHTS = 256
 } D3DVERTEXBLENDFLAGS;
+#endif
 
 // DirectX patch edge flags
 typedef enum {
@@ -549,6 +558,7 @@ typedef enum {
     D3DRS_STENCILENABLE = 52,
     D3DRS_STENCILFAIL = 53,
     D3DRS_STENCILZFAIL = 54,
+    D3DRS_ZBIAS = 47,
     D3DRS_STENCILPASS = 55,
     D3DRS_STENCILFUNC = 56,
     D3DRS_STENCILREF = 57,
@@ -570,7 +580,6 @@ typedef enum {
     D3DRS_VERTEXBLEND = 151,
     D3DRS_CLIPPLANEENABLE = 152,
     D3DRS_SOFTWAREVERTEXPROCESSING = 153,
-    D3DRS_ZBIAS = 200,
     
     // Additional DirectX 8 constants
     D3DRS_LINEPATTERN = 10,

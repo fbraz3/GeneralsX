@@ -8,14 +8,24 @@
 // DirectX 8 extensions types and functions - stub implementations
 
 // Basic D3DX types
+#ifndef D3DXMATRIX_DEFINED
+#define D3DXMATRIX_DEFINED
 typedef D3DMATRIX D3DXMATRIX;
+#endif
+
+#ifndef D3DXVECTOR3_DEFINED
+#define D3DXVECTOR3_DEFINED
 typedef struct {
     float x, y, z;
 } D3DXVECTOR3;
+#endif
 
+#ifndef D3DXVECTOR4_DEFINED
+#define D3DXVECTOR4_DEFINED
 typedef struct {
     float x, y, z, w;
 } D3DXVECTOR4;
+#endif
 
 // D3DX utility functions - stub implementations
 inline int D3DXMatrixIdentity(D3DXMATRIX* pOut) { return 0; }

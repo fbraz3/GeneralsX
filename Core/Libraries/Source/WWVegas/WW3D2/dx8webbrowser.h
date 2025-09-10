@@ -34,7 +34,7 @@
 #define DX8_WEBBROWSER_H
 
 #include "win32_compat.h"
-#include "d3d8.h"
+// Note: d3d8.h is included through win32_compat.h to avoid duplicate definitions
 
 // ***********************************
 // Set this to 0 to remove all embedded browser code.

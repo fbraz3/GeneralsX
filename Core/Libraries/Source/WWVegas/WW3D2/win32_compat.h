@@ -95,17 +95,23 @@ typedef void* LPVOID;
 typedef float FLOAT;
 
 // Basic Windows structures
+#ifndef RECT_DEFINED
+#define RECT_DEFINED
 typedef struct {
     LONG left;
     LONG top;
     LONG right;
     LONG bottom;
 } RECT;
+#endif
 
+#ifndef POINT_DEFINED
+#define POINT_DEFINED
 typedef struct {
     LONG x;
     LONG y;
 } POINT;
+#endif
 typedef const char* LPCSTR;
 typedef char* LPSTR;
 typedef unsigned int UINT;
@@ -114,6 +120,17 @@ typedef wchar_t WCHAR;
 typedef const WCHAR* LPCWSTR;
 typedef WCHAR* LPWSTR;
 typedef void* HANDLE;
+
+// HRESULT success/error checking
+#define SUCCEEDED(hr) (((HRESULT)(hr)) >= 0)
+#define FAILED(hr) (((HRESULT)(hr)) < 0)
+
+// Common HRESULT values
+#define S_OK                          ((HRESULT)0L)
+#define S_FALSE                       ((HRESULT)1L)
+#define E_FAIL                        ((HRESULT)0x80004005L)
+#define E_INVALIDARG                  ((HRESULT)0x80070057L)
+#define E_OUTOFMEMORY                 ((HRESULT)0x8007000EL)
 
 // Audio types
 typedef DWORD U32;
@@ -126,7 +143,9 @@ typedef void* HTIMER;
 #define __cdecl
 #define AILCALLBACK
 
-// DirectX specific types
+// DirectX specific types - only define if not already defined
+#ifndef D3DFORMAT_DEFINED
+#define D3DFORMAT_DEFINED
 typedef enum {
     D3DFMT_UNKNOWN = 0,
     D3DFMT_R8G8B8 = 20,
@@ -152,6 +171,7 @@ typedef enum {
     D3DFMT_X8L8V8U8 = 62,
     D3DFMT_Q8W8V8U8 = 63,
     D3DFMT_V16U16 = 64,
+    D3DFMT_W11V11U10 = 65,
     D3DFMT_A2W10V10U10 = 67,
     D3DFMT_UYVY = 0x59565955,
     D3DFMT_YUY2 = 0x32595559,
@@ -170,6 +190,7 @@ typedef enum {
     D3DFMT_INDEX16 = 101,
     D3DFMT_INDEX32 = 102
 } D3DFORMAT;
+#endif // D3DFORMAT_DEFINED
 
 // D3D Cube Map Face enum
 typedef enum {
@@ -209,7 +230,10 @@ typedef struct {
 #ifndef D3DMATRIX_DEFINED
 #define D3DMATRIX_DEFINED
 typedef struct {
-    float m[4][4];
+    float _11, _12, _13, _14;
+    float _21, _22, _23, _24;
+    float _31, _32, _33, _34;
+    float _41, _42, _43, _44;
 } D3DMATRIX;
 #endif
 
@@ -556,6 +580,17 @@ inline int MulDiv(int nNumber, int nNumerator, int nDenominator) {
 #ifndef D3DX_PI
 #define D3DX_PI 3.14159265f
 #endif
+
+// DirectX Texture Stage States
+#define D3DTSS_TCI_CAMERASPACEPOSITION     1
+#define D3DTSS_TCI_CAMERASPACENORMAL       2
+
+// DirectX Texture Transform Flags
+#define D3DTTFF_COUNT1                     1
+#define D3DTTFF_COUNT2                     2
+#define D3DTTFF_COUNT3                     3
+#define D3DTTFF_COUNT4                     4
+#define D3DTTFF_PROJECTED                  256
 
 inline void D3DXMatrixRotationZ(D3DXMATRIX* out, float angle) {
     // Simple 2D rotation matrix around Z axis
