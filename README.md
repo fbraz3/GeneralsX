@@ -16,7 +16,9 @@ This fork now includes **OpenGL rendering support** alongside the original Direc
 - ✅ **DirectX 8 Compatibility Layer** - Complete interface implementations for IDirect3DDevice8, IDirect3DTexture8, and more
 - ✅ **Windows API Compatibility** - Successful porting of Windows-specific functions and types
 - ✅ **Core Libraries Compiling** - Foundation libraries now build successfully on macOS
-- 🔄 **WW3D2 Graphics Module** - Major progress with most files compiling successfully
+- 🔄 **WW3D2 Graphics Module** - Significant progress: 41/86 files compiling (47.7% success rate)
+- 🎯 **DirectX Matrix Operations** - Final compatibility layer for D3DMATRIX multiplication operators in progress
+- ⚠️ **Current Status** - Only 4 critical DirectX matrix operator errors remaining for full z_ww3d2 compilation
 
 See [MACOS_PORT.md](./MACOS_PORT.md) for detailed macOS porting progress, [OPENGL_SUMMARY.md](OPENGL_SUMMARY.md) for comprehensive implementation documentation, and [OPENGL_TESTING.md](./OPENGL_TESTING.md) for testing procedures and results.
 

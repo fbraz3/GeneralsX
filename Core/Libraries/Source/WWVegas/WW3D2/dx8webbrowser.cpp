@@ -51,7 +51,18 @@
 
 #include "EABrowserEngine/BrowserEngine.h"
 
+#ifdef _WIN32
 typedef _com_ptr_t<_com_IIID<IFEBrowserEngine2, &__uuidof(IFEBrowserEngine2)>> IFEBrowserEngine2Ptr;
+#else
+// For non-Windows platforms, define stub types
+typedef IBrowserEngine* IFEBrowserEngine2Ptr;
+typedef IBrowserEngine IFEBrowserEngine2;
+// Stub COM functions
+#define CoInitialize(x) 0
+#define REGDB_E_CLASSNOTREG 0x80040154
+#define __uuidof(x) {}
+#define FEBrowserEngine2 IBrowserEngine
+#endif
 
 #endif
 
@@ -66,11 +77,17 @@ bool DX8WebBrowser::Initialize(	const char* badpageurl,
 {
 	if(pBrowser == 0)
 	{
+#ifdef _WIN32
 		// Initialize COM
 		CoInitialize(0);
 
 		// Create an instance of the browser control
 		HRESULT hr = pBrowser.CreateInstance(__uuidof(FEBrowserEngine2));
+#else
+		// On non-Windows platforms, just stub the browser
+		pBrowser = nullptr;
+		HRESULT hr = 0; // Success stub
+#endif
 
 		if(hr == REGDB_E_CLASSNOTREG)
 		{

@@ -111,7 +111,7 @@ DynamicMeshModel::~DynamicMeshModel(void)
 	REF_PTR_RELEASE(MatInfo);
 }
 
-void DynamicMeshModel::Compute_Plane_Equations(void)
+void DynamicMeshModel::Compute_Plane_Equations(Vector4 * array)
 {
 	// Make sure the arrays are allocated before we do this
 	get_vert_normals();
@@ -124,13 +124,13 @@ void DynamicMeshModel::Compute_Plane_Equations(void)
 	PolyCount = DynamicMeshPNum;
 	VertexCount = DynamicMeshVNum;
 
-	MeshGeometryClass::Compute_Plane_Equations(planes);
+	MeshGeometryClass::Compute_Plane_Equations(array ? array : planes);
 
 	PolyCount = old_poly_count;
 	VertexCount = old_vert_count;
 }
 
-void DynamicMeshModel::Compute_Vertex_Normals(void)
+void DynamicMeshModel::Compute_Vertex_Normals(Vector3 * array)
 {
 	// Make sure the arrays are allocated before we do this
 	Vector3 * vnorms = get_vert_normals();
@@ -143,7 +143,7 @@ void DynamicMeshModel::Compute_Vertex_Normals(void)
 	PolyCount = DynamicMeshPNum;
 	VertexCount = DynamicMeshVNum;
 
-	MeshGeometryClass::Compute_Vertex_Normals(vnorms);
+	MeshGeometryClass::Compute_Vertex_Normals(array ? array : vnorms);
 
 	PolyCount = old_poly_count;
 	VertexCount = old_vert_count;

@@ -50,6 +50,7 @@
 
 //-----------------------------------------------------------------------------
 // srj sez: hack festival :-(
+#include <cstddef>  // For size_t
 class STLSpecialAlloc
 {
 public:

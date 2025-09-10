@@ -1440,16 +1440,16 @@ OuterScale (1.0F, 1.0F)
 RingMeshClass::RingMeshClass(void):
 Radius(0.0f),
 Slices(0),
+face_ct(0),
+TileCount (5),
+InnerScale (1.0F, 1.0F),
+OuterScale (1.0F, 1.0F),
 Vertex_ct(0),			// 1 vertex minimum, for center
 vtx(NULL),
 orig_vtx(NULL),
 vtx_normal(NULL),
 vtx_uv(NULL),
-face_ct(0),
-tri_poly(NULL),
-TileCount (5),
-InnerScale (1.0F, 1.0F),
-OuterScale (1.0F, 1.0F)
+tri_poly(NULL)
 {
 } // empty ringmesh Constructor
 

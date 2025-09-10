@@ -2,6 +2,7 @@
 #include <cstring>
 #include <cstdio>
 #include <cstdint>
+#include <cmath>
 
 #ifndef WIN32_COMPAT_H_INCLUDED
 #define WIN32_COMPAT_H_INCLUDED
@@ -12,7 +13,65 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <strings.h>
+
+// Basic Windows types that might not be defined
+#ifndef LONG
+typedef long LONG;
+#endif
+#ifndef DWORD
+typedef unsigned long DWORD;
+#endif
+#ifndef WORD
+typedef unsigned short WORD;
+#endif
+#ifndef BYTE
+typedef unsigned char BYTE;
+#endif
+
+// Additional types we need
+#ifndef FARPROC
+typedef void* FARPROC;
+#endif
+
+#ifndef HRESULT
+typedef long HRESULT;
+#endif
+
+// COM-related stubs
+#define CoUninitialize() do {} while(0)
+
+#ifndef RGBQUAD
+// Windows bitmap and image types
+typedef struct {
+    DWORD biSize;
+    LONG biWidth;
+    LONG biHeight;
+    WORD biPlanes;
+    WORD biBitCount;
+    DWORD biCompression;
+    DWORD biSizeImage;
+    LONG biXPelsPerMeter;
+    LONG biYPelsPerMeter;
+    DWORD biClrUsed;
+    DWORD biClrImportant;
+} BITMAPINFOHEADER;
+
+typedef struct {
+    BYTE rgbBlue;
+    BYTE rgbGreen;
+    BYTE rgbRed;
+    BYTE rgbReserved;
+} RGBQUAD;
+
+typedef struct {
+    BITMAPINFOHEADER bmiHeader;
+    RGBQUAD bmiColors[1];
+} BITMAPINFO;
+
+// GDI constants
+#define DIB_RGB_COLORS 0
+
+#endif // RGBQUADs.h>
 #include <cctype>  // for toupper
 #include <cwchar>  // for wchar_t
 
@@ -277,22 +336,9 @@ inline void* GetDesktopWindow() { return nullptr; }
 #define RGB(r,g,b) ((DWORD)(((BYTE)(r)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(b))<<16)))
 #define DIB_RGB_COLORS 0
 
-// BITMAP structures
-typedef struct tagBITMAPINFOHEADER {
-    DWORD biSize;
-    LONG biWidth;
-    LONG biHeight;
-    WORD biPlanes;
-    WORD biBitCount;
-    DWORD biCompression;
-    DWORD biSizeImage;
-    LONG biXPelsPerMeter;
-    LONG biYPelsPerMeter;
-    DWORD biClrUsed;
-    DWORD biClrImportant;
-} BITMAPINFOHEADER;
-
-inline void* CreateDIBSection(void* hdc, const BITMAPINFOHEADER* pbmi, UINT usage, void** ppvBits, void* hSection, DWORD offset) {
+// BITMAP function stubs
+inline void* CreateDIBSection(void* hdc, const BITMAPINFO* pbmi, UINT usage, void** ppvBits, void* hSection, DWORD offset) {
+    if (ppvBits) *ppvBits = nullptr;
     return nullptr;
 }
 
@@ -422,6 +468,107 @@ typedef struct {
 } BITMAPFILEHEADER;
 
 #define BI_RGB 0
+
+//Text and Font types and functions
+typedef struct tagSIZE {
+    long cx;
+    long cy;
+} SIZE, *PSIZE, *LPSIZE;
+
+typedef struct tagTEXTMETRIC {
+    long tmHeight;
+    long tmAscent;
+    long tmDescent;
+    long tmInternalLeading;
+    long tmExternalLeading;
+    long tmAveCharWidth;
+    long tmMaxCharWidth;
+    long tmWeight;
+    long tmOverhang;
+    long tmDigitizedAspectX;
+    long tmDigitizedAspectY;
+    char tmFirstChar;
+    char tmLastChar;
+    char tmDefaultChar;
+    char tmBreakChar;
+    BYTE tmItalic;
+    BYTE tmUnderlined;
+    BYTE tmStruckOut;
+    BYTE tmPitchAndFamily;
+    BYTE tmCharSet;
+} TEXTMETRIC, *PTEXTMETRIC, *LPTEXTMETRIC;
+
+// Font weight constants
+#define FW_NORMAL           400
+#define FW_BOLD             700
+
+// Charset constants
+#define DEFAULT_CHARSET     1
+
+// Font precision constants
+#define OUT_DEFAULT_PRECIS  0
+#define CLIP_DEFAULT_PRECIS 0
+#define ANTIALIASED_QUALITY 4
+#define VARIABLE_PITCH      2
+
+// Text output constants
+#define ETO_OPAQUE          2
+
+// Text/Font functions (stubs for non-Windows)
+inline HFONT CreateFont(int nHeight, int nWidth, int nEscapement, int nOrientation,
+                       int fnWeight, DWORD fdwItalic, DWORD fdwUnderline, DWORD fdwStrikeOut,
+                       DWORD fdwCharSet, DWORD fdwOutputPrecision, DWORD fdwClipPrecision,
+                       DWORD fdwQuality, DWORD fdwPitchAndFamily, const char* lpszFace) {
+    return nullptr; // Stub implementation
+}
+
+inline BOOL ExtTextOutW(HDC hdc, int x, int y, UINT options, const RECT* rect,
+                       const wchar_t* string, UINT count, const int* dx) {
+    return FALSE; // Stub implementation
+}
+
+inline BOOL GetTextExtentPoint32W(HDC hdc, const wchar_t* string, int count, SIZE* size) {
+    if (size) {
+        size->cx = count * 8; // Rough estimate
+        size->cy = 16;
+    }
+    return TRUE;
+}
+
+inline BOOL GetTextMetrics(HDC hdc, TEXTMETRIC* tm) {
+    if (tm) {
+        memset(tm, 0, sizeof(TEXTMETRIC));
+        tm->tmHeight = 16;
+        tm->tmAveCharWidth = 8;
+    }
+    return TRUE;
+}
+
+inline int MulDiv(int nNumber, int nNumerator, int nDenominator) {
+    if (nDenominator == 0) return 0;
+    return (int)(((long long)nNumber * nNumerator) / nDenominator);
+}
+
+// DirectX 8 compatibility stubs
+// Note: D3DXMATRIX is defined in d3dx8math.h
+#ifndef D3DX_PI
+#define D3DX_PI 3.14159265f
+#endif
+
+inline void D3DXMatrixRotationZ(D3DXMATRIX* out, float angle) {
+    // Simple 2D rotation matrix around Z axis
+    if (out) {
+        float cosAngle = cosf(angle);
+        float sinAngle = sinf(angle);
+        
+        // Initialize to identity matrix
+        memset(out, 0, sizeof(D3DXMATRIX));
+        out->m[0][0] = cosAngle;  out->m[0][1] = sinAngle;   out->m[0][2] = 0; out->m[0][3] = 0;
+        out->m[1][0] = -sinAngle; out->m[1][1] = cosAngle;   out->m[1][2] = 0; out->m[1][3] = 0;
+        out->m[2][0] = 0;         out->m[2][1] = 0;          out->m[2][2] = 1; out->m[2][3] = 0;
+        out->m[3][0] = 0;         out->m[3][1] = 0;          out->m[3][2] = 0; out->m[3][3] = 1;
+    }
+}
 
 #endif // !_WIN32
 

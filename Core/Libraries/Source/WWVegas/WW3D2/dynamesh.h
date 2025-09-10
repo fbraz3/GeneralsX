@@ -68,8 +68,8 @@ public:
 	~DynamicMeshModel(void);
 
 	// Inherited from MeshGeometryClass
-	virtual void	Compute_Plane_Equations(void);
-	virtual void	Compute_Vertex_Normals(void);
+	virtual void	Compute_Plane_Equations(Vector4 * array);
+	virtual void	Compute_Vertex_Normals(Vector3 * array);
 	virtual void	Compute_Bounds(Vector3 * verts);
 
 	// Reset mesh (with existing max polygon and max vertex counts)
@@ -449,7 +449,7 @@ protected:
 inline Vector3 * DynamicMeshModel::Get_Non_Const_Vertex_Normal_Array(void)
 {
 	if (Get_Flag(DIRTY_VNORMALS)) {
-		Compute_Vertex_Normals();
+		Compute_Vertex_Normals(nullptr);
 	}
 	return get_vert_normals();
 }

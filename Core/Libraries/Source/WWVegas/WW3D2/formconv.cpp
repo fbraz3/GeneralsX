@@ -39,54 +39,54 @@
 #include "formconv.h"
 
 D3DFORMAT WW3DFormatToD3DFormatConversionArray[WW3D_FORMAT_COUNT] = {
-	D3DFMT_UNKNOWN,
-	D3DFMT_R8G8B8,
-	D3DFMT_A8R8G8B8,
-	D3DFMT_X8R8G8B8,
-	D3DFMT_R5G6B5,
-	D3DFMT_X1R5G5B5,
-	D3DFMT_A1R5G5B5,
-	D3DFMT_A4R4G4B4,
-	D3DFMT_R3G3B2,
-	D3DFMT_A8,
-	D3DFMT_A8R3G3B2,
-	D3DFMT_X4R4G4B4,
-	D3DFMT_A8P8,
-	D3DFMT_P8,
-	D3DFMT_L8,
-	D3DFMT_A8L8,
-	D3DFMT_A4L4,
-	D3DFMT_V8U8,		// Bumpmap
-	D3DFMT_L6V5U5,		// Bumpmap
-	D3DFMT_X8L8V8U8,	// Bumpmap
-	D3DFMT_DXT1,
-	D3DFMT_DXT2,
-	D3DFMT_DXT3,
-	D3DFMT_DXT4,
-	D3DFMT_DXT5
+	(D3DFORMAT)D3DFMT_UNKNOWN,
+	(D3DFORMAT)D3DFMT_R8G8B8,
+	(D3DFORMAT)D3DFMT_A8R8G8B8,
+	(D3DFORMAT)D3DFMT_X8R8G8B8,
+	(D3DFORMAT)D3DFMT_R5G6B5,
+	(D3DFORMAT)D3DFMT_X1R5G5B5,
+	(D3DFORMAT)D3DFMT_A1R5G5B5,
+	(D3DFORMAT)D3DFMT_A4R4G4B4,
+	(D3DFORMAT)D3DFMT_R3G3B2,
+	(D3DFORMAT)D3DFMT_A8,
+	(D3DFORMAT)D3DFMT_A8R3G3B2,
+	(D3DFORMAT)D3DFMT_X4R4G4B4,
+	(D3DFORMAT)D3DFMT_A8P8,
+	(D3DFORMAT)D3DFMT_P8,
+	(D3DFORMAT)D3DFMT_L8,
+	(D3DFORMAT)D3DFMT_A8L8,
+	(D3DFORMAT)D3DFMT_A4L4,
+	(D3DFORMAT)D3DFMT_V8U8,		// Bumpmap
+	(D3DFORMAT)D3DFMT_L6V5U5,		// Bumpmap
+	(D3DFORMAT)D3DFMT_X8L8V8U8,	// Bumpmap
+	(D3DFORMAT)D3DFMT_DXT1,
+	(D3DFORMAT)D3DFMT_DXT2,
+	(D3DFORMAT)D3DFMT_DXT3,
+	(D3DFORMAT)D3DFMT_DXT4,
+	(D3DFORMAT)D3DFMT_DXT5
 };
 
 // adding depth stencil format conversion
 D3DFORMAT WW3DZFormatToD3DFormatConversionArray[WW3D_ZFORMAT_COUNT] =
 {
 #ifndef _XBOX
-	D3DFMT_UNKNOWN,
-	D3DFMT_D16_LOCKABLE, // 16-bit z-buffer bit depth. This is an application-lockable surface format.
-	D3DFMT_D32, // 32-bit z-buffer bit depth.
-	D3DFMT_D15S1, // 16-bit z-buffer bit depth where 15 bits are reserved for the depth channel and 1 bit is reserved for the stencil channel.
-	D3DFMT_D24S8, // 32-bit z-buffer bit depth using 24 bits for the depth channel and 8 bits for the stencil channel.
-	D3DFMT_D16, // 16-bit z-buffer bit depth.
-	D3DFMT_D24X8, // 32-bit z-buffer bit depth using 24 bits for the depth channel.
-	D3DFMT_D24X4S4, // 32-bit z-buffer bit depth using 24 bits for the depth channel and 4 bits for the stencil channel.
+	(D3DFORMAT)D3DFMT_UNKNOWN,
+	(D3DFORMAT)D3DFMT_D16_LOCKABLE, // 16-bit z-buffer bit depth. This is an application-lockable surface format.
+	(D3DFORMAT)D3DFMT_D32, // 32-bit z-buffer bit depth.
+	(D3DFORMAT)D3DFMT_D15S1, // 16-bit z-buffer bit depth where 15 bits are reserved for the depth channel and 1 bit is reserved for the stencil channel.
+	(D3DFORMAT)D3DFMT_D24S8, // 32-bit z-buffer bit depth using 24 bits for the depth channel and 8 bits for the stencil channel.
+	(D3DFORMAT)D3DFMT_D16, // 16-bit z-buffer bit depth.
+	(D3DFORMAT)D3DFMT_D24X8, // 32-bit z-buffer bit depth using 24 bits for the depth channel.
+	(D3DFORMAT)D3DFMT_D24X4S4, // 32-bit z-buffer bit depth using 24 bits for the depth channel and 4 bits for the stencil channel.
 #else
-	D3DFMT_UNKNOWN,
-	D3DFMT_D16_LOCKABLE, // 16-bit z-buffer bit depth. This is an application-lockable surface format.
-	D3DFMT_D32, // 32-bit z-buffer bit depth.
-	D3DFMT_D15S1, // 16-bit z-buffer bit depth where 15 bits are reserved for the depth channel and 1 bit is reserved for the stencil channel.
-	D3DFMT_D24S8, // 32-bit z-buffer bit depth using 24 bits for the depth channel and 8 bits for the stencil channel.
-	D3DFMT_D16, // 16-bit z-buffer bit depth.
-	D3DFMT_D24X8, // 32-bit z-buffer bit depth using 24 bits for the depth channel.
-	D3DFMT_D24X4S4, // 32-bit z-buffer bit depth using 24 bits for the depth channel and 4 bits for the stencil channel.
+	(D3DFORMAT)D3DFMT_UNKNOWN,
+	(D3DFORMAT)D3DFMT_D16_LOCKABLE, // 16-bit z-buffer bit depth. This is an application-lockable surface format.
+	(D3DFORMAT)D3DFMT_D32, // 32-bit z-buffer bit depth.
+	(D3DFORMAT)D3DFMT_D15S1, // 16-bit z-buffer bit depth where 15 bits are reserved for the depth channel and 1 bit is reserved for the stencil channel.
+	(D3DFORMAT)D3DFMT_D24S8, // 32-bit z-buffer bit depth using 24 bits for the depth channel and 8 bits for the stencil channel.
+	(D3DFORMAT)D3DFMT_D16, // 16-bit z-buffer bit depth.
+	(D3DFORMAT)D3DFMT_D24X8, // 32-bit z-buffer bit depth using 24 bits for the depth channel.
+	(D3DFORMAT)D3DFMT_D24X4S4, // 32-bit z-buffer bit depth using 24 bits for the depth channel and 4 bits for the stencil channel.
 
 	D3DFMT_LIN_D24S8,
 	D3DFMT_LIN_F24S8,
