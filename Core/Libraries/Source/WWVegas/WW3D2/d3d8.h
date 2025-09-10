@@ -29,13 +29,6 @@
 #define D3DSHADE_GOURAUD 2
 #define D3DSHADE_PHONG 3
 
-#ifndef _WIN32
-
-// DirectX 8 compatibility header for non-Windows systems
-#include "win32_compat.h"
-#include <cstdint>
-
-// Windows API types needed by DirectX
 // Forward declarations for DirectX interfaces
 struct IDirect3D8;
 struct IDirect3DDevice8;
