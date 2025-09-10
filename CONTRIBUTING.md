@@ -136,6 +136,33 @@ Some keywords are interpreted by GitHub. Read about it [here](https://docs.githu
 
 The text body continues with a description of the change in appropriate detail. This serves to educate reviewers and visitors to get a good understanding of the change without the need to study and understand the associated changed files. If the change is controversial or affects gameplay in a considerable way, then a rationale text needs to be appended. The rationale explains why the given change makes sense.
 
+## Cross-Platform Development
+
+### macOS Port Contributions
+
+**🎉 Current Status**: Major breakthrough achieved! All core libraries successfully compile on macOS.
+
+**Priority Areas for Contribution:**
+1. **DirectX Compatibility Layer Coordination** - Help resolve typedef conflicts between Core and Generals DirectX layers
+2. **OpenGL Integration** - Contribute to OpenGL rendering backend development  
+3. **Platform Testing** - Help test and validate macOS builds across different macOS versions
+4. **Documentation** - Improve cross-platform build instructions and troubleshooting guides
+
+**Key Contribution Guidelines for macOS Port:**
+- **Compatibility Layer Approach**: Use include guards (#ifndef) to prevent redefinitions between different compatibility layers
+- **Windows API Compatibility**: Follow the established pattern in `Core/Libraries/Source/WWVegas/WWLib/../WW3D2/win32_compat.h` for new Windows functions
+- **DirectX Compatibility**: Coordinate between Core layer and Generals layer definitions to prevent conflicts
+- **Testing Requirements**: All macOS contributions must compile all core libraries (libww3d2.a, libwwlib.a, libwwmath.a) successfully
+
+**Resources for macOS Contributors:**
+- **[MACOS_PORT.md](./MACOS_PORT.md)** - Comprehensive macOS porting progress and technical details
+- **[TESTING.md](./TESTING.md)** - macOS testing procedures and validation steps
+- **[OPENGL_TESTING.md](./OPENGL_TESTING.md)** - OpenGL-specific testing for cross-platform graphics
+
+### Linux and Other Platforms
+
+Contributions for Linux and other Unix-like platforms are welcome. Follow similar principles as the macOS port for compatibility layer development.
+
 
 ### Pull request merging rules
 

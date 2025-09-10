@@ -19,12 +19,14 @@
 // Download.cpp : Implementation of CDownload
 #include "DownloadDebug.h"
 #include "Download.h"
-#include <mmsystem.h>
+#include "mmsystem.h"
 #include <assert.h>
-#include <direct.h>
+#include "direct.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/stat.h>
+#include <string.h>
+#include <cstring>
 
 /////////////////////////////////////////////////////////////////////////////
 // CDownload

@@ -97,9 +97,18 @@ bool DX8WebBrowser::Initialize(	const char* badpageurl,
 				FARPROC proc = ::GetProcAddress(lib,"DllRegisterServer");
 				if(proc)
 				{
+#ifdef _WIN32
+					// On Windows, call the actual procedure
 					proc();
+#endif
 					// Create an instance of the browser control
+#ifdef _WIN32
 					hr = pBrowser.CreateInstance(__uuidof(FEBrowserEngine2));
+#else
+					// On non-Windows, create a stub instance
+					pBrowser = new IBrowserEngine();
+					hr = S_OK;
+#endif
 				}
 				FreeLibrary(lib);
 			}

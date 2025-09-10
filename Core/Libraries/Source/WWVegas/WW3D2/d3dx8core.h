@@ -5,23 +5,17 @@
 // DirectX 8 extensions compatibility header for non-Windows systems
 #include "d3d8.h"
 
+// Include the math compatibility layer which defines the types
+#include "../WWMath/d3dx8math.h"
+
 // DirectX 8 extensions types and functions - stub implementations
-
-// Basic D3DX types
-typedef D3DMATRIX D3DXMATRIX;
-typedef struct {
-    float x, y, z;
-} D3DXVECTOR3;
-
-typedef struct {
-    float x, y, z, w;
-} D3DXVECTOR4;
+// Note: D3DXMATRIX, D3DXVECTOR3, D3DXVECTOR4 are defined in d3dx8math.h
 
 // D3DX utility functions - stub implementations
 inline int D3DXMatrixIdentity(D3DXMATRIX* pOut) { return 0; }
 inline int D3DXMatrixMultiply(D3DXMATRIX* pOut, const D3DXMATRIX* pM1, const D3DXMATRIX* pM2) { return 0; }
 inline int D3DXMatrixTranspose(D3DXMATRIX* pOut, const D3DXMATRIX* pM) { return 0; }
-inline int D3DXMatrixInverse(D3DXMATRIX* pOut, float* pDeterminant, const D3DXMATRIX* pM) { return 0; }
+// Note: D3DXMatrixInverse is defined in d3dx8math.h
 
 // D3DX texture functions - stub implementations
 inline int D3DXCreateTextureFromFile(IDirect3DDevice8* pDevice, const char* pSrcFile, IDirect3DTexture8** ppTexture) { return D3D_OK; }

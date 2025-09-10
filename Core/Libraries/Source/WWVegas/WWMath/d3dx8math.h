@@ -7,17 +7,30 @@
 
 #ifndef _WIN32
 
+// Include necessary forward declarations and math types
+#ifndef __VECTOR3_H__
+#include "vector3.h"
+#endif
+
+#ifndef __MATRIX4_H__
+#include "matrix4.h"
+#endif
+
 // D3DX Math constants
 #define D3DX_PI 3.14159265358979323846f
 
 // Forward declarations for Matrix types
-struct Matrix3D;
-struct Matrix4;
+class Matrix3D;
 
+#ifndef D3DXVECTOR3_DEFINED
+#define D3DXVECTOR3_DEFINED
 typedef struct D3DXVECTOR3 {
     float x, y, z;
 } D3DXVECTOR3;
+#endif
 
+#ifndef D3DXVECTOR4_DEFINED
+#define D3DXVECTOR4_DEFINED
 // D3DXVECTOR4 structure with array access
 struct D3DXVECTOR4 {
     float x, y, z, w;
@@ -30,7 +43,10 @@ struct D3DXVECTOR4 {
         return (&x)[index];
     }
 };
+#endif
 
+#ifndef D3DXMATRIX_DEFINED
+#define D3DXMATRIX_DEFINED
 // D3DXMATRIX structure with operators
 struct D3DXMATRIX {
     float m[4][4];
@@ -108,5 +124,7 @@ static inline D3DXMATRIX* D3DXMatrixInverse(D3DXMATRIX* pOut, float* pDeterminan
 #ifdef __cplusplus
 }
 #endif
+
+#endif // D3DXMATRIX_DEFINED
 
 #endif // !_WIN32

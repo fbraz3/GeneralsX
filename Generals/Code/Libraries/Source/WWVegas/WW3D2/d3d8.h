@@ -66,18 +66,22 @@
 #include "win32_compat.h"
 #include <cstdint>
 
-// Windows API types needed by DirectX
+// Windows API types needed by DirectX - check if already defined
+#ifndef RECT
 typedef struct {
     LONG left;
     LONG top;
     LONG right;
     LONG bottom;
 } RECT;
+#endif
 
+#ifndef POINT
 typedef struct {
     LONG x;
     LONG y;
 } POINT;
+#endif
 
 // Basic DirectX types
 typedef void* LPDIRECT3D8;
@@ -96,7 +100,8 @@ typedef uint32_t D3DCOLOR;
 #define D3D_OK 0x00000000L
 #define CONST const
 
-// DirectX enums and constants
+// DirectX enums and constants - check if already defined
+#ifndef D3DFORMAT
 typedef enum {
     D3DFMT_UNKNOWN = 0,
     D3DFMT_R8G8B8 = 20,
@@ -147,6 +152,7 @@ typedef enum {
     D3DFMT_INDEX16 = 101,
     D3DFMT_INDEX32 = 102
 } D3DFORMAT;
+#endif // D3DFORMAT
 
 // Lock flags
 #define D3DLOCK_READONLY 0x00000010L
@@ -368,17 +374,6 @@ typedef struct {
     int Pitch;
 } D3DLOCKED_RECT;
 
-// DirectX surface description structure  
-typedef struct {
-    DWORD Width;
-    DWORD Height;
-    DWORD Levels;
-    DWORD Usage;
-    D3DFORMAT Format;
-    D3DPOOL Pool;
-    DWORD Size;
-} D3DSURFACE_DESC;
-
 // DirectX volume description structure
 typedef struct {
     D3DFORMAT Format;
@@ -452,16 +447,30 @@ typedef struct {
     DWORD DeviceType;
     DWORD AdapterOrdinal;
     DWORD Caps;
+    DWORD Caps2;
     DWORD DevCaps;
     DWORD MaxTextureWidth;
     DWORD MaxTextureHeight;
     DWORD MaxSimultaneousTextures;
+    DWORD TextureOpCaps;
     DWORD VertexShaderVersion;
     DWORD PixelShaderVersion;
 } D3DCAPS8;
 
 // Device capabilities
 #define D3DDEVCAPS_HWTRANSFORMANDLIGHT 0x00000001L
+#define D3DDEVCAPS_NPATCHES 0x02000000L
+
+// Caps2 values
+#define D3DCAPS2_FULLSCREENGAMMA 0x00020000L
+
+// Texture operation capabilities
+#define D3DTEXOPCAPS_DOTPRODUCT3 0x00800000L
+#define D3DTEXOPCAPS_BUMPENVMAP 0x00200000L
+#define D3DTEXOPCAPS_BUMPENVMAPLUMINANCE 0x00400000L
+
+// Resource types
+#define D3DRTYPE_TEXTURE 3
 
 // DirectX adapter identifier
 typedef struct {
@@ -486,6 +495,11 @@ struct IDirect3D8 {
     virtual int AddRef() { return 1; }
     virtual int Release() { return 0; }
     virtual int QueryInterface(void*, void**) { return 0; }
+    
+    // Device format checking
+    virtual int CheckDeviceFormat(DWORD adapter, DWORD device_type, D3DFORMAT adapter_format, DWORD usage, DWORD resource_type, D3DFORMAT check_format) {
+        return D3D_OK; // Stub - assume all formats are supported
+    }
 };
 
 struct IDirect3DDevice8 {

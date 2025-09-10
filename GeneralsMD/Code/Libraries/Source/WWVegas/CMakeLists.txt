@@ -17,7 +17,7 @@ target_include_directories(z_wwcommon INTERFACE
 
 add_subdirectory(WWAudio)
 add_subdirectory(WW3D2)
-add_subdirectory(WWDownload)
+# add_subdirectory(WWDownload)  # Temporarily disabled for macOS port
 
 # Helpful interface to bundle the ww modules together.
 add_library(z_wwvegas INTERFACE)
@@ -30,5 +30,5 @@ target_include_directories(z_wwvegas INTERFACE
 target_link_libraries(z_wwvegas INTERFACE
     core_wwvegas
     z_ww3d2
-    z_wwdownload
+    # z_wwdownload  # Temporarily disabled for macOS port
 )

@@ -15,6 +15,31 @@ typedef void* HANDLE;
 #ifndef LONG_PTR
 typedef long LONG_PTR;
 #endif
+#ifndef ULONG_PTR
+typedef unsigned long ULONG_PTR;
+#endif
+#ifndef DWORD
+typedef unsigned long DWORD;
+#endif
+#ifndef BYTE
+typedef unsigned char BYTE;
+#endif
+#ifndef WORD
+typedef unsigned short WORD;
+#endif
+#ifndef LONG
+typedef long LONG;
+#endif
+#ifndef HKEY
+typedef HANDLE HKEY;
+typedef HKEY* PHKEY;
+#endif
+#ifndef LPCSTR
+typedef const char* LPCSTR;
+#endif
+#ifndef LPSTR
+typedef char* LPSTR;
+#endif
 
 // Additional Windows constants and macros
 #define WINAPI
@@ -77,9 +102,21 @@ inline DWORD GetFileSize(HANDLE hFile, DWORD* lpFileSizeHigh) { return 0; }
 
 // Registry functions
 inline LONG RegOpenKeyExA(HKEY hKey, const char* lpSubKey, DWORD ulOptions, DWORD samDesired, PHKEY phkResult) { return ERROR_FILE_NOT_FOUND; }
+inline LONG RegOpenKeyEx(HKEY hKey, const char* lpSubKey, DWORD ulOptions, DWORD samDesired, PHKEY phkResult) { return ERROR_FILE_NOT_FOUND; }
 inline LONG RegCloseKey(HKEY hKey) { return ERROR_SUCCESS; }
 inline LONG RegQueryValueExA(HKEY hKey, const char* lpValueName, DWORD* lpReserved, DWORD* lpType, BYTE* lpData, DWORD* lpcbData) { return ERROR_FILE_NOT_FOUND; }
+inline LONG RegQueryValueEx(HKEY hKey, const char* lpValueName, DWORD* lpReserved, DWORD* lpType, BYTE* lpData, DWORD* lpcbData) { return ERROR_FILE_NOT_FOUND; }
 inline LONG RegSetValueExA(HKEY hKey, const char* lpValueName, DWORD Reserved, DWORD dwType, const BYTE* lpData, DWORD cbData) { return ERROR_ACCESS_DENIED; }
+inline LONG RegSetValueEx(HKEY hKey, const char* lpValueName, DWORD Reserved, DWORD dwType, const BYTE* lpData, DWORD cbData) { return ERROR_ACCESS_DENIED; }
+inline LONG RegCreateKeyEx(HKEY hKey, const char* lpSubKey, DWORD Reserved, char* lpClass, DWORD dwOptions, DWORD samDesired, void* lpSecurityAttributes, PHKEY phkResult, DWORD* lpdwDisposition) { return ERROR_ACCESS_DENIED; }
+inline LONG RegCreateKeyExA(HKEY hKey, const char* lpSubKey, DWORD Reserved, char* lpClass, DWORD dwOptions, DWORD samDesired, void* lpSecurityAttributes, PHKEY phkResult, DWORD* lpdwDisposition) { return ERROR_ACCESS_DENIED; }
+
+// Registry constants
+#define REG_OPTION_NON_VOLATILE 0x00000000L
+#define KEY_READ 0x20019L
+#define KEY_WRITE 0x20006L
+#define REG_DWORD 4
+#define REG_SZ 1
 
 #endif // !_WIN32
 

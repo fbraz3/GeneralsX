@@ -8,6 +8,8 @@
 #define WIN32_COMPAT_H_INCLUDED
 
 #ifndef _WIN32
+// Include DirectX math compatibility
+#include "../WWMath/d3dx8math.h"
 // Compatibility types for non-Windows systems
 #include <cstring>
 #include <cstdlib>

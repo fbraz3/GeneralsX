@@ -32,6 +32,15 @@
 #ifndef DEBUG_DEBUG_H // Include guard
 #define DEBUG_DEBUG_H
 
+// Ensure __forceinline is defined for macOS compatibility
+#ifdef __APPLE__
+#ifndef __forceinline
+#define __forceinline inline __attribute__((always_inline))
+#endif
+#endif
+
+#include <cstdint>
+
 /**
   \class Debug debug.h <rts/debug.h>
 
@@ -567,9 +576,13 @@ DLOG( "My HResult is: " << Debug::HResult(SomeHRESULTValue) << "\n" );
     \brief Write signed 64 bit integer to output log.
 
     \param val signed 64 bit integer
+  /**
+    \brief Write signed 64 bit integer to output log.
+
+    \param val signed 64 bit integer
     \return *this
   */
-  Debug& operator<<(__int64 val);
+  Debug& operator<<(int64_t val);
 
   /** \internal
 
@@ -578,7 +591,7 @@ DLOG( "My HResult is: " << Debug::HResult(SomeHRESULTValue) << "\n" );
     \param val unsigned 64 bit integer
     \return *this
   */
-  Debug& operator<<(unsigned __int64 val);
+  Debug& operator<<(uint64_t val);
 
   /** \internal
 

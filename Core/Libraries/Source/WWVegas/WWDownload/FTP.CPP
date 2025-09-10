@@ -27,11 +27,14 @@
 #include <sys/types.h>
 #include <sys/timeb.h>
 #include <stdlib.h>
-#include <process.h>
+#include "process.h"
 #include <sys/stat.h>
-#include <io.h>
+#include "io.h"
 #include <time.h>
 #include "assert.h"
+#include "direct.h"
+#include <string.h>
+#include <cstring>
 #include "ftp.h"
 #include <time.h>
 #include <direct.h>

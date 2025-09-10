@@ -24,4 +24,4 @@ This project is a fork of the Command & Conquer Generals source code and its exp
 1. The main goal is to port the game to run on Windows, Linux, and macOS systems, starting by updating the graphics library to OpenGL, the extras and tools will be implemented afterwards.
 2. All tests must be moved into a dedicated `tests/` directory to improve project organization and maintainability.
 3. The game uses Windows Registry keys for configuration and settings storage. When porting to other platforms, these keys need to be replaced with equivalent configuration files or system settings.
-4. look for md files to update information about the progress made
+4. do not create new markdown files for reporting progress focus on the existant ones

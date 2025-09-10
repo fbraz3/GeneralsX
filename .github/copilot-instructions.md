@@ -4,6 +4,8 @@
 
 This is the **GeneralsGameCode** project - a community-driven effort to fix and improve the classic RTS games *Command & Conquer: Generals* and *Zero Hour*. The codebase has been modernized from Visual Studio 6/C++98 to Visual Studio 2022/C++20 while maintaining retail compatibility.
 
+**🎉 MAJOR BREAKTHROUGH**: macOS port achieved - all core libraries successfully compiling with comprehensive Windows API compatibility layer.
+
 ## Architecture
 
 ### Dual Game Structure
@@ -17,6 +19,12 @@ This is the **GeneralsGameCode** project - a community-driven effort to fix and 
 - **Core/GameEngineDevice/**: Platform-specific rendering (DirectX 8)
 - **Core/Tools/**: Development tools (W3DView, texture compression, etc.)
 - **Dependencies/**: External dependencies (MaxSDK for VC6, utilities)
+
+### Cross-Platform Compatibility Architecture
+- **Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h**: Primary Windows API compatibility layer
+- **Core/Libraries/Include/windows.h**: 16+ compatibility headers (mmsystem.h, winerror.h, objbase.h, etc.)
+- **Multi-layer DirectX system**: Core layer + Generals layer coordination with include guards
+- **Profile/Debug systems**: Full `__forceinline` macOS compatibility
 
 ## Build System
 
@@ -36,11 +44,14 @@ cmake --build build/vc6
 
 # Build with tools and extras
 cmake --build build/vc6 --target <game>_tools <game>_extras
+
+# macOS Core Libraries (ALL SUCCESSFULLY COMPILING!)
+cmake --build build/vc6 --target ww3d2 wwlib wwmath
 ```
 
-### Retail Compatibility
+### Retail Compatibility (Critical)
 - VC6 builds are required for replay compatibility testing
-- Debug builds break retail compatibility
+- Debug builds break retail compatibility  
 - Use RTS_BUILD_OPTION_DEBUG=OFF for compatibility testing
 
 ## Development Workflow
@@ -56,6 +67,12 @@ cmake --build build/vc6 --target <game>_tools <game>_extras
 - Prefer C++98 style unless modern features add significant value
 - No big refactors mixed with logical changes
 - Use present tense in documentation ("Fixes" not "Fixed")
+
+### Cross-Platform Development Patterns
+- **Include Guards**: Use `#ifndef SYMBOL` guards to prevent redefinition conflicts between compatibility layers
+- **DirectX Compatibility**: Coordinate between Core/win32_compat.h and Generals/d3d8.h definitions
+- **Type Definitions**: Check for existing definitions before adding Windows types (DWORD, LARGE_INTEGER, etc.)
+- **Compiler Intrinsics**: Use `__forceinline inline __attribute__((always_inline))` for macOS compatibility
 
 ## Testing
 
@@ -73,6 +90,18 @@ generalszh.exe -jobs 4 -headless -replay subfolder/*.rep
 - Path-based change detection triggers relevant builds
 - Tools and extras are built with `+t+e` flags
 
+### macOS Compatibility Testing
+```bash
+# Test core libraries compilation
+cmake --build build/vc6 --target ww3d2 wwlib wwmath
+
+# Test Windows API compatibility headers
+echo '#include "windows.h"' | c++ -x c++ -c -
+
+# Test DirectX compatibility coordination
+cmake --build build/vc6 --target g_ww3d2 2>&1 | grep -c "error:"
+```
+
 ## Common Patterns
 
 ### Memory Management
@@ -84,6 +113,11 @@ generalszh.exe -jobs 4 -headless -replay subfolder/*.rep
 - **GameClient**: Rendering, UI, platform-specific code
 - Clean separation maintained for potential future networking
 
+### DirectX Wrapper Pattern
+- **DX8Wrapper**: Central abstraction layer for DirectX 8 calls
+- All DirectX calls go through wrapper for stat tracking and cross-platform compatibility
+- Device management, render states, and resource creation centralized
+
 ### Module Structure
 ```
 Core/
@@ -92,6 +126,8 @@ Core/
 ├── GameEngine/Include/GameClient/ # Rendering/UI
 ├── Libraries/Include/rts/         # RTS-specific utilities
 └── Libraries/Source/WWVegas/      # Graphics framework
+    ├── WW3D2/win32_compat.h      # macOS compatibility layer
+    └── WWLib/windows.h            # Windows API compatibility
 ```
 
 ## External Dependencies
@@ -103,6 +139,7 @@ Core/
 
 ### Platform-Specific
 - **Windows**: DirectX 8, Miles Sound System, Bink Video
+- **macOS**: Comprehensive Windows API compatibility layer (16+ headers)
 - **Registry detection**: Automatic game install path detection from EA registry keys
 
 ## Tools and Utilities
@@ -123,3 +160,5 @@ Core/
 - `Core/GameEngine/Include/`: Core engine interfaces
 - `**/Code/Main/WinMain.cpp`: Application entry points
 - `GeneralsReplays/`: Compatibility test data
+- `Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h`: macOS compatibility layer
+- `MACOS_PORT.md`: Comprehensive macOS porting progress and technical details

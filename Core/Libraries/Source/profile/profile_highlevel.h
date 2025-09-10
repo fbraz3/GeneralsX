@@ -32,6 +32,8 @@
 #ifndef PROFILE_HIGHLEVEL_H // Include guard
 #define PROFILE_HIGHLEVEL_H
 
+#include <cstdint>
+
 /// \internal internal Id representation
 class ProfileId;
 
@@ -173,7 +175,7 @@ public:
     Id m_idTime;
 
     /// start time
-    _int64 m_start;
+    int64_t m_start;
   };
 
   /**
