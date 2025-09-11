@@ -2,6 +2,9 @@
 
 #include <cstring> // For memset in ZeroMemory
 
+// Include Core's compatibility layer for shared DirectX structures
+#include "Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h"
+
 #ifndef _WIN32
 // Basic Windows types for non-Windows systems
 #ifndef DWORD
