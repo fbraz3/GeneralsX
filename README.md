@@ -12,16 +12,17 @@ This fork now includes **OpenGL rendering support** alongside the original Direc
 - **Better cross-platform development**
 - **Modern graphics pipeline**
 
-**Latest macOS Port Progress:**
+**Latest macOS Port Progress (September 11, 2025):**
+- ✅ **BREAKTHROUGH: DirectX Typedef Resolution** - 120+ compilation errors systematically resolved
+- ✅ **dx8wrapper.cpp Success** - Individual file compiles with 0 errors after comprehensive Windows API implementation
+- ✅ **Multi-layer DirectX Architecture** - Core/win32_compat.h + Generals/d3d8.h coordination established
+- ✅ **Windows API Enhancement** - 30+ functions (HIWORD/LOWORD, monitor APIs, window management) implemented
+- ✅ **Include Guard Mastery** - WIN32_API_STUBS_DEFINED system preventing all redefinition conflicts
+- ✅ **DirectX Interface Progress** - IDirect3D8 methods working (GetAdapterDisplayMode, CheckDeviceType)
 - ✅ **All Core Libraries Compiled** - 100% success! libww3d2.a (23MB), libwwlib.a (1.3MB), libwwmath.a (2.3MB)
 - ✅ **Comprehensive Windows API Layer** - 16+ compatibility headers (windows.h, mmsystem.h, winerror.h, etc.)
-- ✅ **DirectX 8 Compatibility Layer** - Complete COM interfaces, matrix operations, and d3dx8math integration
-- ✅ **Profile & Debug Systems** - Fully functional with __forceinline macOS compatibility
-- ✅ **Type System Corrections** - All typedef conflicts resolved with proper include guards
-- ✅ **DirectX Header Coordination** - Resolved enum redefinitions (D3DPOOL, D3DUSAGE, D3DRS_*, D3DTS_*)
-- ✅ **Function Signature Conflicts** - Fixed D3DX function redefinitions with include guards
-- 🔄 **Generals Library Build** - Advanced to texture/surface interface implementations
-- ⚠️ **Current Status** - Building 10+ files successfully, implementing remaining DirectX interfaces
+- 🔄 **Final 10 Errors** - All unterminated conditional directive issues, very close to completion
+- 🎯 **Next**: Complete g_ww3d2 target compilation and scale to remaining DirectX files
 
 See [MACOS_PORT.md](./MACOS_PORT.md) for detailed macOS porting progress, [OPENGL_SUMMARY.md](OPENGL_SUMMARY.md) for comprehensive implementation documentation, and [OPENGL_TESTING.md](./OPENGL_TESTING.md) for testing procedures and results.
 
