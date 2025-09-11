@@ -100,19 +100,97 @@ inline BOOL ReadFile(HANDLE hFile, void* lpBuffer, DWORD nNumberOfBytesToRead, D
 inline BOOL WriteFile(HANDLE hFile, const void* lpBuffer, DWORD nNumberOfBytesToWrite, DWORD* lpNumberOfBytesWritten, void* lpOverlapped) { return FALSE; }
 inline DWORD GetFileSize(HANDLE hFile, DWORD* lpFileSizeHigh) { return 0; }
 
-// Registry functions - commented out to avoid redefinition conflicts
-// Using definitions from Core/Libraries/Include/windows.h instead
-/*
-inline LONG RegOpenKeyExA(HKEY hKey, const char* lpSubKey, DWORD ulOptions, DWORD samDesired, PHKEY phkResult) { return ERROR_FILE_NOT_FOUND; }
-inline LONG RegOpenKeyEx(HKEY hKey, const char* lpSubKey, DWORD ulOptions, DWORD samDesired, PHKEY phkResult) { return ERROR_FILE_NOT_FOUND; }
-inline LONG RegCloseKey(HKEY hKey) { return ERROR_SUCCESS; }
-inline LONG RegQueryValueExA(HKEY hKey, const char* lpValueName, DWORD* lpReserved, DWORD* lpType, BYTE* lpData, DWORD* lpcbData) { return ERROR_FILE_NOT_FOUND; }
-inline LONG RegQueryValueEx(HKEY hKey, const char* lpValueName, DWORD* lpReserved, DWORD* lpType, BYTE* lpData, DWORD* lpcbData) { return ERROR_FILE_NOT_FOUND; }
-inline LONG RegSetValueExA(HKEY hKey, const char* lpValueName, DWORD Reserved, DWORD dwType, const BYTE* lpData, DWORD cbData) { return ERROR_ACCESS_DENIED; }
-inline LONG RegSetValueEx(HKEY hKey, const char* lpValueName, DWORD Reserved, DWORD dwType, const BYTE* lpData, DWORD cbData) { return ERROR_ACCESS_DENIED; }
-*/
-inline LONG RegCreateKeyEx(HKEY hKey, const char* lpSubKey, DWORD Reserved, char* lpClass, DWORD dwOptions, DWORD samDesired, void* lpSecurityAttributes, PHKEY phkResult, DWORD* lpdwDisposition) { return ERROR_ACCESS_DENIED; }
-inline LONG RegCreateKeyExA(HKEY hKey, const char* lpSubKey, DWORD Reserved, char* lpClass, DWORD dwOptions, DWORD samDesired, void* lpSecurityAttributes, PHKEY phkResult, DWORD* lpdwDisposition) { return ERROR_ACCESS_DENIED; }
+// Forward declaration to avoid circular includes
+class ConfigManager;
+extern ConfigManager* g_configManager;
+
+// Registry functions - now implemented using ConfigManager
+#include <map>
+
+// Global registry "handles" - simplified approach using registry path strings
+struct RegistryHandle {
+    std::string path;
+    bool valid;
+    RegistryHandle(const std::string& p = "") : path(p), valid(!p.empty()) {}
+};
+
+static std::map<HKEY, RegistryHandle> g_registryHandles;
+static HKEY g_nextHandle = (HKEY)1000;
+
+inline LONG RegOpenKeyEx(HKEY hKey, const char* lpSubKey, DWORD ulOptions, DWORD samDesired, HKEY* phkResult) {
+    if (!g_configManager) return ERROR_FILE_NOT_FOUND;
+    
+    std::string fullPath;
+    if (hKey == HKEY_LOCAL_MACHINE || hKey == HKEY_CURRENT_USER) {
+        fullPath = lpSubKey ? lpSubKey : "";
+    } else {
+        auto it = g_registryHandles.find(hKey);
+        if (it != g_registryHandles.end() && it->second.valid) {
+            fullPath = it->second.path + (lpSubKey ? std::string("\\") + lpSubKey : "");
+        } else {
+            return ERROR_FILE_NOT_FOUND;
+        }
+    }
+    
+    *phkResult = g_nextHandle++;
+    g_registryHandles[*phkResult] = RegistryHandle(fullPath);
+    return ERROR_SUCCESS;
+}
+
+inline LONG RegOpenKeyExA(HKEY hKey, const char* lpSubKey, DWORD ulOptions, DWORD samDesired, PHKEY phkResult) {
+    return RegOpenKeyEx(hKey, lpSubKey, ulOptions, samDesired, phkResult);
+}
+
+inline LONG RegQueryValueEx(HKEY hKey, const char* lpValueName, DWORD* lpReserved, DWORD* lpType, BYTE* lpData, DWORD* lpcbData) {
+    if (!g_configManager || !lpValueName) return ERROR_FILE_NOT_FOUND;
+    
+    auto it = g_registryHandles.find(hKey);
+    if (it == g_registryHandles.end() || !it->second.valid) {
+        return ERROR_FILE_NOT_FOUND;
+    }
+    
+    // For now, return simple stub - full implementation will be added when ConfigManager is available
+    return ERROR_FILE_NOT_FOUND;
+}
+
+inline LONG RegQueryValueExA(HKEY hKey, const char* lpValueName, DWORD* lpReserved, DWORD* lpType, BYTE* lpData, DWORD* lpcbData) {
+    return RegQueryValueEx(hKey, lpValueName, lpReserved, lpType, lpData, lpcbData);
+}
+
+inline LONG RegSetValueEx(HKEY hKey, const char* lpValueName, DWORD Reserved, DWORD dwType, const BYTE* lpData, DWORD cbData) {
+    if (!g_configManager || !lpValueName || !lpData) return ERROR_ACCESS_DENIED;
+    
+    auto it = g_registryHandles.find(hKey);
+    if (it == g_registryHandles.end() || !it->second.valid) {
+        return ERROR_ACCESS_DENIED;
+    }
+    
+    // For now, return simple stub - full implementation will be added when ConfigManager is available
+    return ERROR_ACCESS_DENIED;
+}
+
+inline LONG RegSetValueExA(HKEY hKey, const char* lpValueName, DWORD Reserved, DWORD dwType, const BYTE* lpData, DWORD cbData) {
+    return RegSetValueEx(hKey, lpValueName, Reserved, dwType, lpData, cbData);
+}
+
+inline LONG RegCloseKey(HKEY hKey) {
+    auto it = g_registryHandles.find(hKey);
+    if (it != g_registryHandles.end()) {
+        g_registryHandles.erase(it);
+        return ERROR_SUCCESS;
+    }
+    return ERROR_INVALID_HANDLE;
+}
+
+inline LONG RegCreateKeyEx(HKEY hKey, const char* lpSubKey, DWORD Reserved, char* lpClass, DWORD dwOptions, DWORD samDesired, void* lpSecurityAttributes, PHKEY phkResult, DWORD* lpdwDisposition) { 
+    // For simplicity, create key is the same as open key in our implementation
+    LONG result = RegOpenKeyEx(hKey, lpSubKey, 0, samDesired, phkResult);
+    if (lpdwDisposition) *lpdwDisposition = REG_CREATED_NEW_KEY;
+    return result;
+}
+inline LONG RegCreateKeyExA(HKEY hKey, const char* lpSubKey, DWORD Reserved, char* lpClass, DWORD dwOptions, DWORD samDesired, void* lpSecurityAttributes, PHKEY phkResult, DWORD* lpdwDisposition) { 
+    return RegCreateKeyEx(hKey, lpSubKey, Reserved, lpClass, dwOptions, samDesired, lpSecurityAttributes, phkResult, lpdwDisposition);
+}
 
 // Registry constants
 #define REG_OPTION_NON_VOLATILE 0x00000000L
@@ -120,6 +198,10 @@ inline LONG RegCreateKeyExA(HKEY hKey, const char* lpSubKey, DWORD Reserved, cha
 #define KEY_WRITE 0x20006L
 #define REG_DWORD 4
 #define REG_SZ 1
+#define REG_CREATED_NEW_KEY 0x00000001L
+#define ERROR_MORE_DATA 234L
+#define ERROR_INVALID_HANDLE 6L
+#define ERROR_INVALID_PARAMETER 87L
 
 #endif // !_WIN32
 

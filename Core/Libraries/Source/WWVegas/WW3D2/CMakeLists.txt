@@ -231,6 +231,10 @@ set(WW3D2_SRC
     ww3dformat.h
     ww3dids.h
     ww3dtrig.h
+    
+    # Cross-platform configuration system
+    config_manager.cpp
+    ini_parser.cpp
 )
 
 add_library(corei_ww3d2 INTERFACE)

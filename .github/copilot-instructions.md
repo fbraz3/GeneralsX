@@ -27,6 +27,39 @@ This is the **GeneralsGameCode** project - a community-driven effort to fix and 
 - **Core/Libraries/Include/windows.h**: 16+ compatibility headers (mmsystem.h, winerror.h, objbase.h, etc.)
 - **Multi-layer DirectX system**: Core layer + Generals layer coordination with include guards
 - **Profile/Debug systems**: Full `__forceinline` macOS compatibility
+- **Unified Configuration System**: Cross-platform INI-based config files replacing Windows Registry
+
+### Configuration System Architecture (Phase 1 Implementation)
+
+**Design Philosophy**: Complete removal of Windows Registry dependency in favor of unified cross-platform configuration files.
+
+**Configuration File Locations**:
+- **Linux/macOS**: `~/.config/cncgenerals.conf`, `~/.config/cncgeneralszh.conf`
+- **Windows**: `%APPDATA%\CNC\cncgenerals.conf`, `%APPDATA%\CNC\cncgeneralszh.conf`
+
+**Game Data Locations**:
+- **macOS**: `~/Library/Application Support/CNC_Generals`, `~/Library/Application Support/CNC_GeneralsZH`
+- **Linux**: `~/Games/CNC_Generals`, `~/Games/CNC_GeneralsZH`
+- **Windows**: `%USERPROFILE%\Documents\Command and Conquer Generals Data`
+
+**Registry API Replacement Strategy**:
+- All `RegOpenKeyEx`, `RegQueryValueEx`, `RegSetValueEx`, `RegCloseKey` calls → INI file operations
+- Registry paths like `SOFTWARE\Electronic Arts\EA Games\Generals` → INI sections `[EA.Games.Generals]`
+- HKEY_LOCAL_MACHINE → system-wide defaults, HKEY_CURRENT_USER → user-specific overrides
+- Automatic migration of existing Windows Registry values to INI format on first run
+
+**Implementation Components**:
+- **config_manager.h/cpp**: Cross-platform configuration management
+- **ini_parser.h/cpp**: Lightweight INI file parser/writer
+- **registry_compat.h**: Registry API → Config API mapping layer
+- **path_resolver.h/cpp**: Platform-specific path resolution for game data and configs
+
+**Key Advantages**:
+- **Full Cross-Platform Compatibility**: Identical behavior on Windows/macOS/Linux
+- **Human-Readable Configs**: INI format is transparent and easily editable
+- **Version Control Friendly**: Config files can be versioned and shared
+- **No System Dependencies**: Eliminates reliance on Windows Registry or platform-specific stores
+- **Migration Support**: Automatic one-time migration from existing Windows Registry values
 
 ## Build System
 
