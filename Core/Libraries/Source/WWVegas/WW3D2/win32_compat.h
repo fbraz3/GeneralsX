@@ -679,6 +679,8 @@ inline HANDLE CreateThread(void* lpThreadAttributes, unsigned long dwStackSize,
     return nullptr; // Stub implementation
 }
 
+#endif // WIN32_COMPAT_FUNCTIONS_DEFINED
+
 #endif // !_WIN32
 
 #endif // WIN32_COMPAT_H_INCLUDED
