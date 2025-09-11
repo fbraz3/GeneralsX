@@ -434,6 +434,9 @@ typedef struct tagMONITORINFO {
 } MONITORINFO;
 
 // Windows API function stubs for non-Windows platforms
+#ifndef WIN32_API_STUBS_DEFINED
+#define WIN32_API_STUBS_DEFINED
+
 inline int GetClientRect(void* hwnd, RECT* rect) {
     if (rect) {
         rect->left = 0;
@@ -470,51 +473,9 @@ inline BOOL GetMonitorInfo(void* monitor, MONITORINFO* info) {
     return FALSE;
 }
 
-inline LONG GetWindowLong(void* hwnd, int index) {
-    return 0;
-}
+#endif // WIN32_API_STUBS_DEFINED
 
-inline int AdjustWindowRect(RECT* rect, DWORD style, BOOL menu) {
-    // Stub implementation - just return success
-    return 1;
-}
-
-inline int SetWindowPos(void* hwnd, void* insert_after, int x, int y, int cx, int cy, DWORD flags) {
-    // Stub implementation - just return success  
-    return 1;
-}
-
-// Windows-style structure for monitor info
-typedef struct {
-    DWORD cbSize;
-    RECT rcMonitor;
-    RECT rcWork;
-    DWORD dwFlags;
-} MONITORINFO;
-
-// Monitor constants
-#define MONITOR_DEFAULTTOPRIMARY 1
-
-// SetWindowPos constants
-#define SWP_NOZORDER 0x0004
-
-// Monitor stub functions
-inline void* MonitorFromWindow(void* hwnd, DWORD flags) {
-    return (void*)1; // Return dummy monitor handle
-}
-
-inline int GetMonitorInfo(void* monitor, MONITORINFO* info) {
-    if (info && info->cbSize >= sizeof(MONITORINFO)) {
-        info->rcMonitor.left = 0;
-        info->rcMonitor.top = 0;
-        info->rcMonitor.right = 1920;
-        info->rcMonitor.bottom = 1080;
-        info->rcWork = info->rcMonitor;
-        info->dwFlags = 1;
-        return 1;
-    }
-    return 0;
-}
+#ifndef WIN32_COMPAT_FUNCTIONS_DEFINED
 
 // String manipulation functions
 inline char* strupr(char* str) {
