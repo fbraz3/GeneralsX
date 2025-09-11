@@ -3,6 +3,12 @@
 
 #ifndef _WIN32
 
+// Standard C libraries needed for compatibility functions
+#include <string.h>
+#include <strings.h>  // for strcasecmp
+#include <unistd.h>   // for getcwd
+#include <sys/stat.h> // for stat
+
 // Windows compatibility layer for non-Windows platforms
 
 // Include base compatibility
@@ -68,10 +74,34 @@ typedef char* LPSTR;
 #define REG_SZ 1
 #define REG_DWORD 4
 
+// Registry creation disposition
+#define REG_CREATED_NEW_KEY     0x00000001
+#define REG_OPENED_EXISTING_KEY 0x00000002
+
+// Bitmap compression constants
+#define BI_RGB 0
+#define BI_RLE8 1
+#define BI_RLE4 2
+#define BI_BITFIELDS 3
+
+// DirectX texture transform flags
+#define D3DTTFF_DISABLE         0
+#define D3DTTFF_COUNT1          1
+#define D3DTTFF_COUNT2          2
+#define D3DTTFF_COUNT3          3
+#define D3DTTFF_COUNT4          4
+#define D3DTTFF_PROJECTED       256
+
 // Error codes
 #define ERROR_SUCCESS 0L
 #define ERROR_FILE_NOT_FOUND 2L
 #define ERROR_ACCESS_DENIED 5L
+#define ERROR_MORE_DATA 234L
+#define ERROR_INVALID_HANDLE 6L
+#define ERROR_INVALID_PARAMETER 87L
+
+// Additional Registry constants
+#define REG_OPTION_NON_VOLATILE 0x00000000L
 
 // Message box constants
 #define MB_OK 0x00000000L
@@ -115,7 +145,7 @@ struct RegistryHandle {
 };
 
 static std::map<HKEY, RegistryHandle> g_registryHandles;
-static HKEY g_nextHandle = (HKEY)1000;
+static int g_nextHandleCounter = 1000;
 
 inline LONG RegOpenKeyEx(HKEY hKey, const char* lpSubKey, DWORD ulOptions, DWORD samDesired, HKEY* phkResult) {
     if (!g_configManager) return ERROR_FILE_NOT_FOUND;
@@ -132,7 +162,7 @@ inline LONG RegOpenKeyEx(HKEY hKey, const char* lpSubKey, DWORD ulOptions, DWORD
         }
     }
     
-    *phkResult = g_nextHandle++;
+    *phkResult = (HKEY)(uintptr_t)g_nextHandleCounter++;
     g_registryHandles[*phkResult] = RegistryHandle(fullPath);
     return ERROR_SUCCESS;
 }
@@ -192,16 +222,33 @@ inline LONG RegCreateKeyExA(HKEY hKey, const char* lpSubKey, DWORD Reserved, cha
     return RegCreateKeyEx(hKey, lpSubKey, Reserved, lpClass, dwOptions, samDesired, lpSecurityAttributes, phkResult, lpdwDisposition);
 }
 
-// Registry constants
-#define REG_OPTION_NON_VOLATILE 0x00000000L
-#define KEY_READ 0x20019L
-#define KEY_WRITE 0x20006L
-#define REG_DWORD 4
-#define REG_SZ 1
-#define REG_CREATED_NEW_KEY 0x00000001L
-#define ERROR_MORE_DATA 234L
-#define ERROR_INVALID_HANDLE 6L
-#define ERROR_INVALID_PARAMETER 87L
+// String functions
+inline int lstrcmpi(const char* lpString1, const char* lpString2) {
+    #ifdef _WIN32
+        return ::lstrcmpiA(lpString1, lpString2);
+    #else
+        return strcasecmp(lpString1, lpString2);
+    #endif
+}
+
+// File system functions
+inline DWORD GetCurrentDirectory(DWORD nBufferLength, char* lpBuffer) {
+    #ifdef _WIN32
+        return ::GetCurrentDirectoryA(nBufferLength, lpBuffer);
+    #else
+        char* result = getcwd(lpBuffer, nBufferLength);
+        return result ? strlen(result) : 0;
+    #endif
+}
+
+inline DWORD GetFileAttributes(const char* lpFileName) {
+    #ifdef _WIN32
+        return ::GetFileAttributesA(lpFileName);
+    #else
+        struct stat st;
+        return (stat(lpFileName, &st) == 0) ? 0 : 0xFFFFFFFF;
+    #endif
+}
 
 #endif // !_WIN32
 

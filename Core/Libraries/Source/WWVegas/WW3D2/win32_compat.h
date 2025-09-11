@@ -63,6 +63,14 @@ typedef struct {
 } BITMAPINFOHEADER;
 
 typedef struct {
+    WORD bfType;
+    DWORD bfSize;
+    WORD bfReserved1;
+    WORD bfReserved2;
+    DWORD bfOffBits;
+} BITMAPFILEHEADER;
+
+typedef struct {
     BYTE rgbBlue;
     BYTE rgbGreen;
     BYTE rgbRed;
