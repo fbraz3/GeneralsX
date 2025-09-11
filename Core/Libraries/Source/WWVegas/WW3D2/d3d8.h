@@ -52,6 +52,7 @@ typedef void* LPDISPATCH;
 typedef uint32_t D3DCOLOR;
 
 // DirectX texture filter types
+#ifndef D3DTEXF_NONE
 typedef enum {
     D3DTEXF_NONE = 0,
     D3DTEXF_POINT = 1,
@@ -60,6 +61,7 @@ typedef enum {
     D3DTEXF_FLATCUBIC = 4,
     D3DTEXF_GAUSSIANCUBIC = 5
 } D3DTEXTUREFILTERTYPE;
+#endif
 
 // DirectX Z-buffer types
 typedef enum {

@@ -2,6 +2,19 @@
 
 #include <cstring> // For memset in ZeroMemory
 
+#ifndef _WIN32
+// Basic Windows types for non-Windows systems
+#ifndef DWORD
+typedef unsigned long DWORD;
+#endif
+#ifndef BOOL
+typedef int BOOL;
+#endif
+#ifndef HRESULT  
+typedef long HRESULT;
+#endif
+#endif
+
 // DirectX 8 SDK Version
 #define D3D_SDK_VERSION 220
 
@@ -79,6 +92,12 @@
 #define D3DMCS_MATERIAL 0
 #define D3DMCS_COLOR1 1
 #define D3DMCS_COLOR2 2
+
+// DirectX comparison function type
+#ifndef D3DCMPFUNC_DEFINED
+#define D3DCMPFUNC_DEFINED
+typedef DWORD D3DCMPFUNC;
+#endif
 
 #ifndef _WIN32
 
@@ -884,8 +903,8 @@ inline int D3DXCreateTextureFromFileExA(void* device, const char* src_file, DWOR
 }
 
 // DirectX matrix and utility functions
-#ifndef D3DMATRIX_TRANSPOSE_DEFINED
-#define D3DMATRIX_TRANSPOSE_DEFINED
+#ifndef CORE_D3DXMATRIXTRANSPOSE_DEFINED
+#define CORE_D3DXMATRIXTRANSPOSE_DEFINED
 inline D3DMATRIX* D3DXMatrixTranspose(D3DMATRIX* out, const D3DMATRIX* in) {
     if (!out || !in) return nullptr;
     // Use _11-_44 field access instead of m[i][j] array notation
@@ -895,7 +914,7 @@ inline D3DMATRIX* D3DXMatrixTranspose(D3DMATRIX* out, const D3DMATRIX* in) {
     out->_41 = in->_14; out->_42 = in->_24; out->_43 = in->_34; out->_44 = in->_44;
     return out;
 }
-#endif // D3DMATRIX_TRANSPOSE_DEFINED
+#endif // CORE_D3DXMATRIXTRANSPOSE_DEFINED
 
 inline const char* D3DXGetErrorStringA(int hr) {
     switch (hr) {
