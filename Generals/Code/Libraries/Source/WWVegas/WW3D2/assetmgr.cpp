@@ -203,6 +203,10 @@ protected:
  *   12/21/97   GTH : Created.                                                                 *
  *   05/10/1999 SKB : Add TextureCache                                                         *
  *=============================================================================================*/
+
+// Explicit template instantiation for memory pool
+DEFINE_AUTO_POOL(GenericSLNode, 256);
+
 WW3DAssetManager::WW3DAssetManager(void) :
 	PrototypeLoaders		(PROTOLOADERS_VECTOR_SIZE),
 	Prototypes				(PROTOTYPES_VECTOR_SIZE),

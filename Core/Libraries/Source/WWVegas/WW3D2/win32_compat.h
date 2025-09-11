@@ -383,11 +383,16 @@ inline HRESULT D3DXGetErrorStringA(HRESULT hr, char* buffer, DWORD size) {
     return 0; 
 }
 
+#ifndef WIN32_COMPAT_FUNCTIONS_DEFINED
+#define WIN32_COMPAT_FUNCTIONS_DEFINED
+
 // Windows API stub functions
 inline void* LoadLibrary(const char*) { return nullptr; }
 inline void* GetProcAddress(void*, const char*) { return nullptr; }
 inline void FreeLibrary(void*) {}
 inline void ZeroMemory(void* dest, size_t size) { memset(dest, 0, size); }
+
+#endif // WIN32_COMPAT_FUNCTIONS_DEFINED
 
 // Constants
 #define MAX_PATH 260

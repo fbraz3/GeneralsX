@@ -1,5 +1,20 @@
 #pragma once
 
+#include <cstring> // For memset in ZeroMemory
+
+// DirectX 8 SDK Version
+#define D3D_SDK_VERSION 220
+
+// HRESULT and error checking macros
+#define S_OK 0
+#define D3D_OK S_OK
+#define SUCCEEDED(hr) ((HRESULT)(hr) >= 0)
+#define FAILED(hr) ((HRESULT)(hr) < 0)
+
+// DirectX error codes
+#define D3DERR_DEVICELOST                       0x88760868L
+#define D3DERR_DEVICENOTRESET                   0x88760869L
+
 #define D3DX_DEFAULT 0xFFFFFFFF
 #define D3DX_FILTER_NONE 0x00000001
 #define D3DX_FILTER_POINT 0x00000002  
@@ -60,6 +75,11 @@
 #define D3DSTENCILOP_INCR_SAT 7
 #define D3DSTENCILOP_DECR_SAT 8
 
+// D3DMATERIALCOLORSOURCE constants
+#define D3DMCS_MATERIAL 0
+#define D3DMCS_COLOR1 1
+#define D3DMCS_COLOR2 2
+
 #ifndef _WIN32
 
 // DirectX 8 compatibility header for non-Windows systems
@@ -97,6 +117,27 @@ typedef void* LPDISPATCH;
 
 // DirectX color type
 typedef uint32_t D3DCOLOR;
+
+// Win32 result types
+typedef long HRESULT;
+#ifndef SUCCEEDED
+#define SUCCEEDED(hr) ((HRESULT)(hr) >= 0)
+#endif
+
+// Constants
+#define D3D_OK 0x00000000L
+#define CONST const
+
+// Windows API compatibility
+#ifndef WINAPI
+#define WINAPI
+#endif
+
+// Library loading functions (stubs for non-Windows) - avoid redefinitions from Core
+// These are already defined in Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h
+
+// Windows registry types
+typedef void* HKEY;
 
 // Constants
 #define D3D_OK 0x00000000L
@@ -176,6 +217,8 @@ typedef enum {
     D3DPOOL_SCRATCH = 3
 } D3DPOOL;
 #endif
+
+// DirectX presentation parameters - already defined in Core/win32_compat.h
 
 // D3DBLEND constants
 typedef DWORD D3DBLEND;
@@ -276,12 +319,59 @@ typedef enum {
 // DirectX constants
 #define D3DDP_MAXTEXCOORD 8
 
+// Texture argument constants
+#define D3DTA_DIFFUSE 0x00000000L
+#define D3DTA_CURRENT 0x00000001L
+#define D3DTA_TEXTURE 0x00000002L
+#define D3DTA_TFACTOR 0x00000003L
+#define D3DTA_SPECULAR 0x00000004L
+#define D3DTA_TEMP 0x00000005L
+#define D3DTA_CONSTANT 0x00000006L
+#define D3DTA_COMPLEMENT 0x00000010L
+#define D3DTA_ALPHAREPLICATE 0x00000020L
+
 // Texture stage state constants
 #define D3DTSS_TCI_PASSTHRU 0x00000000L
+#define D3DTSS_TCI_CAMERASPACENORMAL 0x00010000L
+#define D3DTSS_TCI_CAMERASPACEPOSITION 0x00020000L
 #define D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR 0x00030000L
 
-// Texture transform flags
+// Texture transform flags - only define if not already defined
+#ifndef D3DTTFF_PROJECTED
 #define D3DTTFF_COUNT2 2
+#define D3DTTFF_COUNT3 3
+#define D3DTTFF_COUNT4 4
+#define D3DTTFF_PROJECTED 0x00000100L
+#endif
+
+// Texture filter types
+#define D3DTEXF_NONE 0
+#define D3DTEXF_POINT 1
+#define D3DTEXF_LINEAR 2
+#define D3DTEXF_ANISOTROPIC 3
+#define D3DTEXF_FLATCUBIC 4
+#define D3DTEXF_GAUSSIANCUBIC 5
+
+// Texture address modes
+#define D3DTADDRESS_WRAP 1
+#define D3DTADDRESS_MIRROR 2
+#define D3DTADDRESS_CLAMP 3
+#define D3DTADDRESS_BORDER 4
+#define D3DTADDRESS_MIRRORONCE 5
+
+// Texture operation capability flags
+#define D3DTEXOPCAPS_ADD 0x00000040L
+#define D3DTEXOPCAPS_MODULATE 0x00000008L
+#define D3DTEXOPCAPS_ADDSMOOTH 0x00000080L
+#define D3DTEXOPCAPS_SUBTRACT 0x00000200L
+#define D3DTEXOPCAPS_BLENDTEXTUREALPHA 0x00001000L
+#define D3DTEXOPCAPS_BLENDCURRENTALPHA 0x00008000L
+
+// Filter capability flags  
+#define D3DPTFILTERCAPS_MAGFAFLATCUBIC 0x08000000L
+
+// Raster capability flags
+#define D3DPRASTERCAPS_FOGRANGE 0x00010000L
 
 // Transform state types
 #ifndef D3DTRANSFORMSTATETYPE_DEFINED
@@ -349,7 +439,8 @@ typedef enum {
     D3DRS_EMISSIVEMATERIALSOURCE = 148,
     D3DRS_VERTEXBLEND = 151,
     D3DRS_CLIPPLANEENABLE = 152,
-    D3DRS_SOFTWAREVERTEXPROCESSING = 153
+    D3DRS_SOFTWAREVERTEXPROCESSING = 153,
+    D3DRS_ZBIAS = 47
 } D3DRENDERSTATETYPE;
 #endif
 
@@ -428,10 +519,15 @@ typedef struct {
 #ifndef D3DMATRIX_DEFINED
 #define D3DMATRIX_DEFINED
 typedef struct {
-    float _11, _12, _13, _14;
-    float _21, _22, _23, _24;
-    float _31, _32, _33, _34;
-    float _41, _42, _43, _44;
+    union {
+        struct {
+            float _11, _12, _13, _14;
+            float _21, _22, _23, _24;
+            float _31, _32, _33, _34;
+            float _41, _42, _43, _44;
+        };
+        float m[4][4];
+    };
 } D3DMATRIX;
 #endif
 
@@ -490,10 +586,10 @@ typedef struct {
 #ifndef D3DMATERIAL8_DEFINED
 #define D3DMATERIAL8_DEFINED
 typedef struct {
-    float Diffuse[4];
-    float Ambient[4];
-    float Specular[4];
-    float Emissive[4];
+    struct { float r, g, b, a; } Diffuse;
+    struct { float r, g, b, a; } Ambient;
+    struct { float r, g, b, a; } Specular;
+    struct { float r, g, b, a; } Emissive;
     float Power;
 } D3DMATERIAL8;
 #endif
@@ -636,6 +732,8 @@ struct IDirect3DDevice8 {
         if (depth_stencil_surface) *depth_stencil_surface = nullptr;
         return D3D_OK; 
     }
+    virtual int ResourceManagerDiscardBytes(DWORD bytes) { return D3D_OK; }
+    virtual HRESULT TestCooperativeLevel() { return D3D_OK; }
 };
 
 struct IDirect3DBaseTexture8 {
@@ -784,6 +882,55 @@ inline int D3DXCreateTextureFromFileExA(void* device, const char* src_file, DWOR
     if (texture) *texture = nullptr;
     return D3D_OK;
 }
+
+// DirectX matrix and utility functions
+#ifndef D3DMATRIX_TRANSPOSE_DEFINED
+#define D3DMATRIX_TRANSPOSE_DEFINED
+inline D3DMATRIX* D3DXMatrixTranspose(D3DMATRIX* out, const D3DMATRIX* in) {
+    if (!out || !in) return nullptr;
+    // Use _11-_44 field access instead of m[i][j] array notation
+    out->_11 = in->_11; out->_12 = in->_21; out->_13 = in->_31; out->_14 = in->_41;
+    out->_21 = in->_12; out->_22 = in->_22; out->_23 = in->_32; out->_24 = in->_42;
+    out->_31 = in->_13; out->_32 = in->_23; out->_33 = in->_33; out->_34 = in->_43;
+    out->_41 = in->_14; out->_42 = in->_24; out->_43 = in->_34; out->_44 = in->_44;
+    return out;
+}
+#endif // D3DMATRIX_TRANSPOSE_DEFINED
+
+inline const char* D3DXGetErrorStringA(int hr) {
+    switch (hr) {
+        case D3D_OK: return "D3D_OK";
+        case -1: return "D3DERR_GENERIC";
+        default: return "D3DERR_UNKNOWN";
+    }
+}
+
+// Only define these functions if they haven't been defined already by win32_compat.h
+#ifndef WIN32_COMPAT_FUNCTIONS_DEFINED
+#define WIN32_COMPAT_FUNCTIONS_DEFINED
+
+// ZeroMemory function for compatibility
+inline void ZeroMemory(void* dest, size_t length) {
+    memset(dest, 0, length);
+}
+
+// LoadLibrary/GetProcAddress/FreeLibrary stubs for compatibility
+inline void* LoadLibrary(const char* lib_name) {
+    return (void*)1; // Return a non-null value to indicate success
+}
+
+inline void* GetProcAddress(void* module, const char* proc_name) {
+    return (void*)1; // Return a non-null value to indicate success  
+}
+
+inline void FreeLibrary(void* module) {
+    // No-op on non-Windows platforms
+}
+
+#endif // WIN32_COMPAT_FUNCTIONS_DEFINED
+
+// Render state for patch segments
+#define D3DRS_PATCHSEGMENTS 166
 
 #else
 // On Windows, include the real DirectX headers

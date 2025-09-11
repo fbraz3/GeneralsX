@@ -32,7 +32,9 @@ typedef struct {
 #define D3DX_MATRIX_FUNCTIONS_DEFINED
 inline int D3DXMatrixIdentity(D3DXMATRIX* pOut) { return 0; }
 inline int D3DXMatrixMultiply(D3DXMATRIX* pOut, const D3DXMATRIX* pM1, const D3DXMATRIX* pM2) { return 0; }
+#ifndef D3DMATRIX_TRANSPOSE_DEFINED
 inline int D3DXMatrixTranspose(D3DXMATRIX* pOut, const D3DXMATRIX* pM) { return 0; }
+#endif
 // Note: D3DXMatrixInverse is defined in d3dx8math.h
 #endif
 
