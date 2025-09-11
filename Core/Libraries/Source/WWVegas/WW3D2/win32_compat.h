@@ -320,17 +320,23 @@ inline char* lstrcat(char* dest, const char* src) {
 }
 
 // DirectX basic types
+#ifndef LARGE_INTEGER_DEFINED
+#define LARGE_INTEGER_DEFINED
 typedef struct {
     DWORD LowPart;
     LONG HighPart;
 } LARGE_INTEGER;
+#endif
 
+#ifndef GUID_DEFINED
+#define GUID_DEFINED
 typedef struct {
     DWORD Data1;
     WORD Data2;
     WORD Data3;
     BYTE Data4[8];
 } GUID;
+#endif
 
 class D3DVECTOR4 {
 public:

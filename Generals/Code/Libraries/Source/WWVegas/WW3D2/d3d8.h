@@ -1,4 +1,5 @@
-#pragma once
+#ifndef D3D8_H_INCLUDED
+#define D3D8_H_INCLUDED
 
 #include <cstring> // For memset in ZeroMemory
 
@@ -16,10 +17,11 @@ typedef int BOOL;
 #ifndef HRESULT  
 typedef long HRESULT;
 #endif
-#ifndef LARGE_INTEGER
+#ifndef LARGE_INTEGER_DEFINED
+#define LARGE_INTEGER_DEFINED
 typedef struct {
     DWORD LowPart;
-    LONG HighPart;
+    long HighPart;
 } LARGE_INTEGER;
 #endif
 #endif
@@ -1065,3 +1067,5 @@ inline void FreeLibrary(void* module) {
 // On Windows, include the real DirectX headers
 #include <d3d8.h>
 #endif // !_WIN32
+
+#endif // D3D8_H_INCLUDED
