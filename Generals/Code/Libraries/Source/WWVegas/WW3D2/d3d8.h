@@ -473,8 +473,9 @@ typedef enum {
     D3DRS_MULTISAMPLEANTIALIAS = 161,
     D3DRS_MULTISAMPLEMASK = 162,
     D3DRS_PATCHEDGESTYLE = 163,
+    D3DRS_PATCHSEGMENTS = 164,
     D3DRS_DEBUGMONITORTOKEN = 165,
-    D3DRS_POINTSIZE_MAX = 164,
+    D3DRS_POINTSIZE_MAX = 166,
     D3DRS_INDEXEDVERTEXBLENDENABLE = 167,
     D3DRS_TWEENFACTOR = 170,
     D3DRS_AMBIENT = 139,
@@ -1034,32 +1035,6 @@ struct IDirect3DIndexBuffer8 {
 
 #endif // GENERALS_DIRECTX_INTERFACES_DEFINED
 
-// Basic DirectX types - defined after interface definitions
-#ifndef LPDIRECT3D8
-typedef IDirect3D8* LPDIRECT3D8;
-#endif
-#ifndef LPDIRECT3DDEVICE8  
-typedef IDirect3DDevice8* LPDIRECT3DDEVICE8;
-#endif
-#ifndef LPDIRECT3DTEXTURE8
-typedef IDirect3DTexture8* LPDIRECT3DTEXTURE8;
-#endif
-#ifndef LPDIRECT3DSURFACE8
-typedef IDirect3DSurface8* LPDIRECT3DSURFACE8;
-#endif
-#ifndef LPDIRECT3DVERTEXBUFFER8
-typedef IDirect3DVertexBuffer8* LPDIRECT3DVERTEXBUFFER8;
-#endif
-#ifndef LPDIRECT3DINDEXBUFFER8
-typedef IDirect3DIndexBuffer8* LPDIRECT3DINDEXBUFFER8;
-#endif
-#ifndef LPDIRECT3DSWAPCHAIN8
-typedef IDirect3DSwapChain8* LPDIRECT3DSWAPCHAIN8;
-#endif
-#ifndef LPDISPATCH
-typedef void* LPDISPATCH;
-#endif
-
 // Stub functions
 inline void* Direct3DCreate8(unsigned int) { return nullptr; }
 inline DWORD D3DXGetFVFVertexSize(DWORD fvf) { 
@@ -1166,9 +1141,6 @@ inline void FreeLibrary(void* module) {
 inline BOOL SetDeviceGammaRamp(void* hdc, void* gamma_ramp) {
     return TRUE; // Always return success for compatibility
 }
-
-// Render state for patch segments
-#define D3DRS_PATCHSEGMENTS 166
 
 #else
 // On Windows, include the real DirectX headers

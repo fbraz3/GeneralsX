@@ -36,6 +36,11 @@
 #include "win32_compat.h"
 // Note: d3d8.h is included through win32_compat.h to avoid duplicate definitions
 
+// Forward declaration for compatibility
+#ifndef LPDISPATCH
+typedef void* LPDISPATCH;
+#endif
+
 // ***********************************
 // Set this to 0 to remove all embedded browser code.
 //

@@ -2748,18 +2748,18 @@ DX8Wrapper::Set_Render_Target(IDirect3DSwapChain8 *swap_chain)
 	//	Get the back buffer for the swap chain
 	//
 	LPDIRECT3DSURFACE8 render_target = NULL;
-	swap_chain->GetBackBuffer (0, D3DBACKBUFFER_TYPE_MONO, &render_target);
+	swap_chain->GetBackBuffer (0, D3DBACKBUFFER_TYPE_MONO, (IDirect3DSurface8**)&render_target);
 
 	//
 	//	Set this back buffer as the render targer
 	//
-	Set_Render_Target (render_target);
+	Set_Render_Target ((IDirect3DSurface8*)render_target);
 
 	//
 	//	Release our hold on the back buffer
 	//
 	if (render_target != NULL) {
-		render_target->Release ();
+		((IDirect3DSurface8*)render_target)->Release ();
 		render_target = NULL;
 	}
 
