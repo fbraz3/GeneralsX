@@ -423,5 +423,42 @@ inline void AIL_set_filter_sample_preference(void* sample, const char* attrib, v
 // Audio constants
 #define DP_FILTER 0
 
+// WinSock error constants
+#define WSAEINVAL 10022
+#define WSAEISCONN 10056
+#define WSAENOTCONN 10057
+#define WSAEWOULDBLOCK 10035
+#define WSAEALREADY 10037
+#define WSAECONNRESET 10054
+#define WSAETIMEDOUT 10060
+
+// Path manipulation functions
+inline void _splitpath(const char* path, char* drive, char* dir, char* fname, char* ext) {
+    // Simplified implementation - just extract filename and extension
+    if (drive) drive[0] = '\0';
+    if (dir) dir[0] = '\0';
+    if (fname) fname[0] = '\0';
+    if (ext) ext[0] = '\0';
+    
+    if (!path) return;
+    
+    const char* last_slash = strrchr(path, '/');
+    const char* filename = last_slash ? last_slash + 1 : path;
+    const char* last_dot = strrchr(filename, '.');
+    
+    if (fname) {
+        if (last_dot) {
+            strncpy(fname, filename, last_dot - filename);
+            fname[last_dot - filename] = '\0';
+        } else {
+            strcpy(fname, filename);
+        }
+    }
+    
+    if (ext && last_dot) {
+        strcpy(ext, last_dot);
+    }
+}
+
 #endif // __APPLE__
 #endif // _WINDOWS_H_

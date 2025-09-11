@@ -23,6 +23,36 @@
 /*************************************************************************/
 
 #include "windows.h"
+#include "winsock.h"
+
+// Additional compatibility for macOS
+#ifdef __APPLE__
+inline void _splitpath(const char* path, char* drive, char* dir, char* fname, char* ext) {
+    if (drive) drive[0] = '\0';
+    if (dir) dir[0] = '\0';
+    if (fname) fname[0] = '\0';
+    if (ext) ext[0] = '\0';
+    
+    if (!path) return;
+    
+    const char* last_slash = strrchr(path, '/');
+    const char* filename = last_slash ? last_slash + 1 : path;
+    const char* last_dot = strrchr(filename, '.');
+    
+    if (fname) {
+        if (last_dot) {
+            strncpy(fname, filename, last_dot - filename);
+            fname[last_dot - filename] = '\0';
+        } else {
+            strcpy(fname, filename);
+        }
+    }
+    
+    if (ext && last_dot) {
+        strcpy(ext, last_dot);
+    }
+}
+#endif
 
 #include <stdio.h>
 #include <sys/types.h>

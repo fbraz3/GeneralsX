@@ -27,6 +27,10 @@
     #define WSAECONNABORTED ECONNABORTED
     #define WSAEINPROGRESS EINPROGRESS
     #define WSAEALREADY EALREADY
+    #define WSAEINVAL EINVAL
+    #define WSAEISCONN EISCONN
+    #define WSAENOTCONN ENOTCONN
+    #define WSAETIMEDOUT ETIMEDOUT
     
     // Windows socket functions
     inline int WSAStartup(unsigned short version, void* data) { return 0; }
