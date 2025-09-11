@@ -645,7 +645,9 @@ typedef struct {
 //     return stat(path, buffer);
 // }
 
-// Registry function stubs
+// Registry function stubs - commented out to avoid redefinition conflicts
+// Using definitions from Core/Libraries/Include/windows.h instead
+/*
 inline long RegOpenKeyEx(HKEY hKey, const char* lpSubKey, DWORD ulOptions, DWORD samDesired, HKEY* phkResult) {
     return ERROR_SUCCESS; // Stub implementation
 }
@@ -653,11 +655,12 @@ inline long RegOpenKeyEx(HKEY hKey, const char* lpSubKey, DWORD ulOptions, DWORD
 inline long RegQueryValueEx(HKEY hKey, const char* lpValueName, DWORD* lpReserved, DWORD* lpType, BYTE* lpData, DWORD* lpcbData) {
     return ERROR_SUCCESS; // Stub implementation
 }
+*/
 
 // Threading function stubs
-inline void* CreateThread(void* lpThreadAttributes, unsigned long dwStackSize, 
-                         void* lpStartAddress, void* lpParameter, 
-                         DWORD dwCreationFlags, DWORD* lpThreadId) {
+inline HANDLE CreateThread(void* lpThreadAttributes, unsigned long dwStackSize, 
+                          void* lpStartAddress, void* lpParameter, 
+                          DWORD dwCreationFlags, DWORD* lpThreadId) {
     return nullptr; // Stub implementation
 }
 

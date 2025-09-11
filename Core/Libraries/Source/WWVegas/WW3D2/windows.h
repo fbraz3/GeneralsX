@@ -100,7 +100,9 @@ inline BOOL ReadFile(HANDLE hFile, void* lpBuffer, DWORD nNumberOfBytesToRead, D
 inline BOOL WriteFile(HANDLE hFile, const void* lpBuffer, DWORD nNumberOfBytesToWrite, DWORD* lpNumberOfBytesWritten, void* lpOverlapped) { return FALSE; }
 inline DWORD GetFileSize(HANDLE hFile, DWORD* lpFileSizeHigh) { return 0; }
 
-// Registry functions
+// Registry functions - commented out to avoid redefinition conflicts
+// Using definitions from Core/Libraries/Include/windows.h instead
+/*
 inline LONG RegOpenKeyExA(HKEY hKey, const char* lpSubKey, DWORD ulOptions, DWORD samDesired, PHKEY phkResult) { return ERROR_FILE_NOT_FOUND; }
 inline LONG RegOpenKeyEx(HKEY hKey, const char* lpSubKey, DWORD ulOptions, DWORD samDesired, PHKEY phkResult) { return ERROR_FILE_NOT_FOUND; }
 inline LONG RegCloseKey(HKEY hKey) { return ERROR_SUCCESS; }
@@ -108,6 +110,7 @@ inline LONG RegQueryValueExA(HKEY hKey, const char* lpValueName, DWORD* lpReserv
 inline LONG RegQueryValueEx(HKEY hKey, const char* lpValueName, DWORD* lpReserved, DWORD* lpType, BYTE* lpData, DWORD* lpcbData) { return ERROR_FILE_NOT_FOUND; }
 inline LONG RegSetValueExA(HKEY hKey, const char* lpValueName, DWORD Reserved, DWORD dwType, const BYTE* lpData, DWORD cbData) { return ERROR_ACCESS_DENIED; }
 inline LONG RegSetValueEx(HKEY hKey, const char* lpValueName, DWORD Reserved, DWORD dwType, const BYTE* lpData, DWORD cbData) { return ERROR_ACCESS_DENIED; }
+*/
 inline LONG RegCreateKeyEx(HKEY hKey, const char* lpSubKey, DWORD Reserved, char* lpClass, DWORD dwOptions, DWORD samDesired, void* lpSecurityAttributes, PHKEY phkResult, DWORD* lpdwDisposition) { return ERROR_ACCESS_DENIED; }
 inline LONG RegCreateKeyExA(HKEY hKey, const char* lpSubKey, DWORD Reserved, char* lpClass, DWORD dwOptions, DWORD samDesired, void* lpSecurityAttributes, PHKEY phkResult, DWORD* lpdwDisposition) { return ERROR_ACCESS_DENIED; }
 

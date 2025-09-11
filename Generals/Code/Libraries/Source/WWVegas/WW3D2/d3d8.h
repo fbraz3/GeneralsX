@@ -16,6 +16,12 @@ typedef int BOOL;
 #ifndef HRESULT  
 typedef long HRESULT;
 #endif
+#ifndef LARGE_INTEGER
+typedef struct {
+    DWORD LowPart;
+    LONG HighPart;
+} LARGE_INTEGER;
+#endif
 #endif
 
 // DirectX 8 SDK Version
@@ -491,6 +497,38 @@ typedef enum {
 } D3DTEXTURESTAGESTATETYPE;
 #endif
 
+// D3DMULTISAMPLE_TYPE enumeration
+#ifndef D3DMULTISAMPLE_TYPE_DEFINED
+#define D3DMULTISAMPLE_TYPE_DEFINED
+typedef DWORD D3DMULTISAMPLE_TYPE;
+#define D3DMULTISAMPLE_NONE 0
+#define D3DMULTISAMPLE_2_SAMPLES 2
+#define D3DMULTISAMPLE_3_SAMPLES 3
+#define D3DMULTISAMPLE_4_SAMPLES 4
+#define D3DMULTISAMPLE_5_SAMPLES 5
+#define D3DMULTISAMPLE_6_SAMPLES 6
+#define D3DMULTISAMPLE_7_SAMPLES 7
+#define D3DMULTISAMPLE_8_SAMPLES 8
+#define D3DMULTISAMPLE_9_SAMPLES 9
+#define D3DMULTISAMPLE_10_SAMPLES 10
+#define D3DMULTISAMPLE_11_SAMPLES 11
+#define D3DMULTISAMPLE_12_SAMPLES 12
+#define D3DMULTISAMPLE_13_SAMPLES 13
+#define D3DMULTISAMPLE_14_SAMPLES 14
+#define D3DMULTISAMPLE_15_SAMPLES 15
+#define D3DMULTISAMPLE_16_SAMPLES 16
+#endif
+
+// D3DSWAPEFFECT enumeration
+#ifndef D3DSWAPEFFECT_DEFINED
+#define D3DSWAPEFFECT_DEFINED
+typedef DWORD D3DSWAPEFFECT;
+#define D3DSWAPEFFECT_DISCARD 1
+#define D3DSWAPEFFECT_FLIP 2
+#define D3DSWAPEFFECT_COPY 3
+#define D3DSWAPEFFECT_COPY_VSYNC 4
+#endif
+
 // DirectX structures
 #ifndef D3DTLVERTEX_DEFINED
 #define D3DTLVERTEX_DEFINED
@@ -520,6 +558,25 @@ typedef struct {
     void* pBits;
     int Pitch;
 } D3DLOCKED_RECT;
+#endif
+
+#ifndef D3DPRESENT_PARAMETERS_DEFINED
+#define D3DPRESENT_PARAMETERS_DEFINED
+typedef struct {
+    DWORD BackBufferWidth;
+    DWORD BackBufferHeight;
+    D3DFORMAT BackBufferFormat;
+    DWORD BackBufferCount;
+    D3DMULTISAMPLE_TYPE MultiSampleType;
+    D3DSWAPEFFECT SwapEffect;
+    HWND hDeviceWindow;
+    BOOL Windowed;
+    BOOL EnableAutoDepthStencil;
+    D3DFORMAT AutoDepthStencilFormat;
+    DWORD Flags;
+    DWORD FullScreen_RefreshRateInHz;
+    DWORD FullScreen_PresentationInterval;
+} D3DPRESENT_PARAMETERS;
 #endif
 
 // DirectX volume description structure
@@ -625,6 +682,7 @@ typedef struct {
     DWORD Caps;
     DWORD Caps2;
     DWORD DevCaps;
+    DWORD RasterCaps;
     DWORD MaxTextureWidth;
     DWORD MaxTextureHeight;
     DWORD MaxSimultaneousTextures;
@@ -665,6 +723,7 @@ typedef struct {
     DWORD SubSysId;
     DWORD Revision;
     DWORD WHQLLevel;
+    LARGE_INTEGER DriverVersion;
 } D3DADAPTER_IDENTIFIER8;
 #endif
 
@@ -674,6 +733,7 @@ struct IDirect3DVertexBuffer8;
 struct IDirect3DIndexBuffer8;
 struct IDirect3DTexture8;
 struct IDirect3DSurface8;
+struct IDirect3DDevice8;
 
 // DirectX interface types
 struct IDirect3D8 {
@@ -685,6 +745,38 @@ struct IDirect3D8 {
     virtual int CheckDeviceFormat(DWORD adapter, DWORD device_type, D3DFORMAT adapter_format, DWORD usage, DWORD resource_type, D3DFORMAT check_format) {
         return D3D_OK; // Stub - assume all formats are supported
     }
+    
+    // Device capabilities
+    virtual int GetDeviceCaps(DWORD adapter, DWORD device_type, D3DCAPS8* caps) {
+        if (caps) {
+            caps->DeviceType = 0;
+            caps->AdapterOrdinal = 0;
+            caps->Caps = 0;
+            caps->DevCaps = D3DDEVCAPS_HWTRANSFORMANDLIGHT;
+            caps->RasterCaps = 0;
+            caps->MaxTextureWidth = 2048;
+            caps->MaxTextureHeight = 2048;
+            caps->MaxSimultaneousTextures = 8;
+            caps->VertexShaderVersion = 0;
+            caps->PixelShaderVersion = 0;
+        }
+        return D3D_OK;
+    }
+    
+    // Adapter identifier
+    virtual int GetAdapterIdentifier(DWORD adapter, DWORD flags, void* identifier) {
+        return D3D_OK; // Stub implementation
+    }
+    
+    // Device creation
+    virtual int CreateDevice(DWORD adapter, DWORD device_type, HWND focus_window, DWORD behavior_flags, D3DPRESENT_PARAMETERS* present_params, IDirect3DDevice8** returned_device_interface) {
+        return D3D_OK; // Stub implementation
+    }
+    
+    // Additional adapter methods
+    virtual DWORD GetAdapterCount() { return 1; }
+    virtual DWORD GetAdapterModeCount(DWORD adapter) { return 1; }
+    virtual int EnumAdapterModes(DWORD adapter, DWORD mode, void* mode_desc) { return D3D_OK; }
 };
 
 struct IDirect3DDevice8 {
@@ -756,6 +848,11 @@ struct IDirect3DDevice8 {
     }
     virtual int ResourceManagerDiscardBytes(DWORD bytes) { return D3D_OK; }
     virtual HRESULT TestCooperativeLevel() { return D3D_OK; }
+    virtual int Reset(D3DPRESENT_PARAMETERS* presentation_parameters) { return D3D_OK; }
+    virtual int ValidateDevice(DWORD* num_passes) { 
+        if (num_passes) *num_passes = 1;
+        return D3D_OK; 
+    }
 };
 
 struct IDirect3DBaseTexture8 {
@@ -919,13 +1016,23 @@ inline D3DMATRIX* D3DXMatrixTranspose(D3DMATRIX* out, const D3DMATRIX* in) {
 }
 #endif // CORE_D3DXMATRIXTRANSPOSE_DEFINED
 
-inline const char* D3DXGetErrorStringA(int hr) {
+#ifndef D3DXGETERRORSTRINGA_DEFINED
+#define D3DXGETERRORSTRINGA_DEFINED
+inline HRESULT D3DXGetErrorStringA(HRESULT hr, char* buffer, DWORD bufferSize) {
+    const char* message;
     switch (hr) {
-        case D3D_OK: return "D3D_OK";
-        case -1: return "D3DERR_GENERIC";
-        default: return "D3DERR_UNKNOWN";
+        case D3D_OK: message = "D3D_OK"; break;
+        case -1: message = "D3DERR_GENERIC"; break;
+        default: message = "D3DERR_UNKNOWN"; break;
     }
+    
+    if (buffer && bufferSize > 0) {
+        strncpy(buffer, message, bufferSize - 1);
+        buffer[bufferSize - 1] = '\0';
+    }
+    return D3D_OK;
 }
+#endif
 
 // Only define these functions if they haven't been defined already by win32_compat.h
 #ifndef WIN32_COMPAT_FUNCTIONS_DEFINED
