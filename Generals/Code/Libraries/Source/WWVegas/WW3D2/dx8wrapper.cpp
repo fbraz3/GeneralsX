@@ -981,13 +981,13 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 		/*
 		** Find a appropriate Z buffer
 		*/
-		if (!Find_Z_Mode(DisplayFormat,_PresentParameters.BackBufferFormat,&_PresentParameters.AutoDepthStencilFormat))
+		if (!Find_Z_Mode(DisplayFormat,_PresentParameters.BackBufferFormat,(D3DFORMAT*)&_PresentParameters.AutoDepthStencilFormat))
 		{
 			// If opening 32 bit mode failed, try 16 bit, even if the desktop happens to be 32 bit
 			if (BitDepth==32) {
 				BitDepth=16;
 				_PresentParameters.BackBufferFormat=D3DFMT_R5G6B5;
-				if (!Find_Z_Mode(_PresentParameters.BackBufferFormat,_PresentParameters.BackBufferFormat,&_PresentParameters.AutoDepthStencilFormat)) {
+				if (!Find_Z_Mode(_PresentParameters.BackBufferFormat,_PresentParameters.BackBufferFormat,(D3DFORMAT*)&_PresentParameters.AutoDepthStencilFormat)) {
 					_PresentParameters.AutoDepthStencilFormat=D3DFMT_UNKNOWN;
 				}
 			}
@@ -1002,7 +1002,7 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 		** Try to find a mode that matches the user's desired bit-depth.
 		*/
 		Find_Color_And_Z_Mode(ResolutionWidth,ResolutionHeight,BitDepth,&DisplayFormat,
-			&_PresentParameters.BackBufferFormat,&_PresentParameters.AutoDepthStencilFormat);
+			&_PresentParameters.BackBufferFormat,(D3DFORMAT*)&_PresentParameters.AutoDepthStencilFormat);
 	}
 
 	/*
@@ -1315,9 +1315,9 @@ bool DX8Wrapper::Find_Color_And_Z_Mode(int resx,int resy,int bitdepth,D3DFORMAT 
 
 	static D3DFORMAT _formats32[] =
 	{
-		D3DFMT_A8R8G8B8,
-		D3DFMT_X8R8G8B8,
-		D3DFMT_R8G8B8,
+		(D3DFORMAT)D3DFMT_A8R8G8B8,
+		(D3DFORMAT)D3DFMT_X8R8G8B8,
+		(D3DFORMAT)D3DFMT_R8G8B8,
 	};
 
 	/*
@@ -1423,44 +1423,44 @@ bool DX8Wrapper::Find_Color_Mode(D3DFORMAT colorbuffer, int resx, int resy, UINT
 bool DX8Wrapper::Find_Z_Mode(D3DFORMAT colorbuffer,D3DFORMAT backbuffer, D3DFORMAT *zmode)
 {
 	//MW: Swapped the next 2 tests so that Stencil modes get tested first.
-	if (Test_Z_Mode(colorbuffer,backbuffer,D3DFMT_D24S8))
+	if (Test_Z_Mode(colorbuffer,backbuffer,(D3DFORMAT)D3DFMT_D24S8))
 	{
-		*zmode=D3DFMT_D24S8;
+		*zmode=(D3DFORMAT)D3DFMT_D24S8;
 		WWDEBUG_SAY(("Found zbuffer mode D3DFMT_D24S8"));
 		return true;
 	}
 
-	if (Test_Z_Mode(colorbuffer,backbuffer,D3DFMT_D32))
+	if (Test_Z_Mode(colorbuffer,backbuffer,(D3DFORMAT)D3DFMT_D32))
 	{
-		*zmode=D3DFMT_D32;
+		*zmode=(D3DFORMAT)D3DFMT_D32;
 		WWDEBUG_SAY(("Found zbuffer mode D3DFMT_D32"));
 		return true;
 	}
 
-	if (Test_Z_Mode(colorbuffer,backbuffer,D3DFMT_D24X8))
+	if (Test_Z_Mode(colorbuffer,backbuffer,(D3DFORMAT)D3DFMT_D24X8))
 	{
-		*zmode=D3DFMT_D24X8;
+		*zmode=(D3DFORMAT)D3DFMT_D24X8;
 		WWDEBUG_SAY(("Found zbuffer mode D3DFMT_D24X8"));
 		return true;
 	}
 
-	if (Test_Z_Mode(colorbuffer,backbuffer,D3DFMT_D24X4S4))
+	if (Test_Z_Mode(colorbuffer,backbuffer,(D3DFORMAT)D3DFMT_D24X4S4))
 	{
-		*zmode=D3DFMT_D24X4S4;
+		*zmode=(D3DFORMAT)D3DFMT_D24X4S4;
 		WWDEBUG_SAY(("Found zbuffer mode D3DFMT_D24X4S4"));
 		return true;
 	}
 
-	if (Test_Z_Mode(colorbuffer,backbuffer,D3DFMT_D16))
+	if (Test_Z_Mode(colorbuffer,backbuffer,(D3DFORMAT)D3DFMT_D16))
 	{
-		*zmode=D3DFMT_D16;
+		*zmode=(D3DFORMAT)D3DFMT_D16;
 		WWDEBUG_SAY(("Found zbuffer mode D3DFMT_D16"));
 		return true;
 	}
 
-	if (Test_Z_Mode(colorbuffer,backbuffer,D3DFMT_D15S1))
+	if (Test_Z_Mode(colorbuffer,backbuffer,(D3DFORMAT)D3DFMT_D15S1))
 	{
-		*zmode=D3DFMT_D15S1;
+		*zmode=(D3DFORMAT)D3DFMT_D15S1;
 		WWDEBUG_SAY(("Found zbuffer mode D3DFMT_D15S1"));
 		return true;
 	}
@@ -2880,7 +2880,7 @@ DX8Wrapper::Create_Additional_Swap_Chain (HWND render_window)
 	//	Create the swap chain
 	//
 	IDirect3DSwapChain8 *swap_chain = NULL;
-	DX8CALL(CreateAdditionalSwapChain(&params, &swap_chain));
+	DX8CALL(CreateAdditionalSwapChain(&params, (void**)&swap_chain));
 	return swap_chain;
 }
 

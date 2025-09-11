@@ -98,6 +98,8 @@ typedef struct {
 #define D3DSTENCILOP_INVERT 6
 #define D3DSTENCILOP_INCR_SAT 7
 #define D3DSTENCILOP_DECR_SAT 8
+#define D3DSTENCILOP_INCRSAT 7  // Alias for compatibility
+#define D3DSTENCILOP_DECRSAT 8  // Alias for compatibility
 
 // D3DMATERIALCOLORSOURCE constants
 #define D3DMCS_MATERIAL 0
@@ -134,16 +136,6 @@ typedef struct {
     LONG y;
 } POINT;
 #endif
-
-// Basic DirectX types
-typedef void* LPDIRECT3D8;
-typedef void* LPDIRECT3DDEVICE8;
-typedef void* LPDIRECT3DTEXTURE8;
-typedef void* LPDIRECT3DSURFACE8;
-typedef void* LPDIRECT3DVERTEXBUFFER8;
-typedef void* LPDIRECT3DINDEXBUFFER8;
-typedef void* LPDIRECT3DSWAPCHAIN8;
-typedef void* LPDISPATCH;
 
 // DirectX color type
 typedef uint32_t D3DCOLOR;
@@ -458,6 +450,33 @@ typedef enum {
     D3DRS_TEXTUREFACTOR = 60,
     D3DRS_WRAP0 = 128,
     D3DRS_LIGHTING = 137,
+    D3DRS_CLIPPING = 136,
+    D3DRS_COLORWRITEENABLE = 168,
+    D3DRS_BLENDOP = 171,
+    D3DRS_LINEPATTERN = 10,
+    D3DRS_ZVISIBLE = 30,
+    D3DRS_EDGEANTIALIAS = 40,
+    D3DRS_WRAP1 = 129,
+    D3DRS_WRAP2 = 130,
+    D3DRS_WRAP3 = 131,
+    D3DRS_WRAP4 = 132,
+    D3DRS_WRAP5 = 133,
+    D3DRS_WRAP6 = 134,
+    D3DRS_WRAP7 = 135,
+    D3DRS_POINTSIZE = 154,
+    D3DRS_POINTSIZE_MIN = 155,
+    D3DRS_POINTSPRITEENABLE = 156,
+    D3DRS_POINTSCALEENABLE = 157,
+    D3DRS_POINTSCALE_A = 158,
+    D3DRS_POINTSCALE_B = 159,
+    D3DRS_POINTSCALE_C = 160,
+    D3DRS_MULTISAMPLEANTIALIAS = 161,
+    D3DRS_MULTISAMPLEMASK = 162,
+    D3DRS_PATCHEDGESTYLE = 163,
+    D3DRS_DEBUGMONITORTOKEN = 165,
+    D3DRS_POINTSIZE_MAX = 164,
+    D3DRS_INDEXEDVERTEXBLENDENABLE = 167,
+    D3DRS_TWEENFACTOR = 170,
     D3DRS_AMBIENT = 139,
     D3DRS_FOGVERTEXMODE = 140,
     D3DRS_COLORVERTEX = 141,
@@ -495,7 +514,17 @@ typedef enum {
     D3DTSS_COLORARG0 = 26,
     D3DTSS_ALPHAARG0 = 27,
     D3DTSS_RESULTARG = 28,
-    D3DTSS_CONSTANT = 32
+    D3DTSS_CONSTANT = 32,
+    D3DTSS_ADDRESSU = 13,
+    D3DTSS_ADDRESSV = 14,
+    D3DTSS_BORDERCOLOR = 15,
+    D3DTSS_MAGFILTER = 16,
+    D3DTSS_MINFILTER = 17,
+    D3DTSS_MIPFILTER = 18,
+    D3DTSS_MIPMAPLODBIAS = 19,
+    D3DTSS_MAXMIPLEVEL = 20,
+    D3DTSS_MAXANISOTROPY = 21,
+    D3DTSS_ADDRESSW = 25
 } D3DTEXTURESTAGESTATETYPE;
 #endif
 
@@ -751,6 +780,8 @@ typedef struct {
 #endif
 
 // Forward declarations
+#ifndef GENERALS_DIRECTX_INTERFACES_DEFINED
+#define GENERALS_DIRECTX_INTERFACES_DEFINED
 struct IDirect3DBaseTexture8;
 struct IDirect3DVertexBuffer8;
 struct IDirect3DIndexBuffer8;
@@ -804,6 +835,11 @@ struct IDirect3D8 {
     
     // Device type checking
     virtual int CheckDeviceType(DWORD adapter, D3DDEVTYPE deviceType, D3DFORMAT adapterFormat, D3DFORMAT backBufferFormat, BOOL windowed) {
+        return D3D_OK; // Always report as supported for compatibility
+    }
+    
+    // Depth stencil format checking
+    virtual int CheckDepthStencilMatch(DWORD adapter, D3DDEVTYPE deviceType, D3DFORMAT adapterFormat, D3DFORMAT renderTargetFormat, D3DFORMAT depthStencilFormat) {
         return D3D_OK; // Always report as supported for compatibility
     }
     
@@ -996,6 +1032,34 @@ struct IDirect3DIndexBuffer8 {
     virtual int Unlock() { return D3D_OK; }
 };
 
+#endif // GENERALS_DIRECTX_INTERFACES_DEFINED
+
+// Basic DirectX types - defined after interface definitions
+#ifndef LPDIRECT3D8
+typedef IDirect3D8* LPDIRECT3D8;
+#endif
+#ifndef LPDIRECT3DDEVICE8  
+typedef IDirect3DDevice8* LPDIRECT3DDEVICE8;
+#endif
+#ifndef LPDIRECT3DTEXTURE8
+typedef IDirect3DTexture8* LPDIRECT3DTEXTURE8;
+#endif
+#ifndef LPDIRECT3DSURFACE8
+typedef IDirect3DSurface8* LPDIRECT3DSURFACE8;
+#endif
+#ifndef LPDIRECT3DVERTEXBUFFER8
+typedef IDirect3DVertexBuffer8* LPDIRECT3DVERTEXBUFFER8;
+#endif
+#ifndef LPDIRECT3DINDEXBUFFER8
+typedef IDirect3DIndexBuffer8* LPDIRECT3DINDEXBUFFER8;
+#endif
+#ifndef LPDIRECT3DSWAPCHAIN8
+typedef IDirect3DSwapChain8* LPDIRECT3DSWAPCHAIN8;
+#endif
+#ifndef LPDISPATCH
+typedef void* LPDISPATCH;
+#endif
+
 // Stub functions
 inline void* Direct3DCreate8(unsigned int) { return nullptr; }
 inline DWORD D3DXGetFVFVertexSize(DWORD fvf) { 
@@ -1097,6 +1161,11 @@ inline void FreeLibrary(void* module) {
 }
 
 #endif // WIN32_COMPAT_FUNCTIONS_DEFINED
+
+// SetDeviceGammaRamp stub for compatibility - globally available
+inline BOOL SetDeviceGammaRamp(void* hdc, void* gamma_ramp) {
+    return TRUE; // Always return success for compatibility
+}
 
 // Render state for patch segments
 #define D3DRS_PATCHSEGMENTS 166
