@@ -80,6 +80,9 @@ inline void* CreateCompatibleBitmap(void*, int, int) { return nullptr; }
 inline void* SelectObject(void*, void*) { return nullptr; }
 inline void DeleteObject(void*) {}
 
+// Include Core's comprehensive compatibility layer
+#include "../../../../../../Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h"
+
 #endif // !_WIN32
 
 #endif // WIN32_COMPAT_H_INCLUDED
