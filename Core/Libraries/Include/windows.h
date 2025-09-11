@@ -9,6 +9,9 @@
 #define __forceinline inline __attribute__((always_inline))
 #define __stdcall
 
+// Include comprehensive Windows compatibility layer  
+// #include "Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h"
+
 #include <stdint.h>
 #include <cstdint>
 #include <sys/types.h>
@@ -341,6 +344,84 @@ inline BOOL QueryPerformanceFrequency(LARGE_INTEGER* lpFrequency) {
     lpFrequency->QuadPart = 1000000000LL;
     return TRUE;
 }
+
+// Additional compatibility functions and definitions
+#ifndef F32
+typedef float F32;
+#endif
+
+// String functions for compatibility
+#define _strnicmp strncasecmp
+
+// File system compatibility
+#include <sys/stat.h>
+inline int _stat(const char* path, struct stat* buffer) {
+    return stat(path, buffer);
+}
+
+// Threading types  
+typedef struct {
+    void* DebugInfo;
+    long LockCount;
+    long RecursionCount;
+    void* OwningThread;
+    void* LockSemaphore;
+    unsigned long SpinCount;
+} CRITICAL_SECTION;
+
+// Registry constants
+#define HKEY_LOCAL_MACHINE ((HKEY)0x80000002)
+#define KEY_READ (0x20019)
+#define ERROR_SUCCESS 0L
+#define REG_DWORD 4
+
+// Registry function stubs (use guards to prevent redefinition)
+#ifndef REGISTRY_STUBS_DEFINED
+#define REGISTRY_STUBS_DEFINED
+inline long RegOpenKeyEx(HKEY hKey, const char* lpSubKey, DWORD ulOptions, DWORD samDesired, HKEY* phkResult) {
+    return ERROR_SUCCESS; // Stub implementation
+}
+
+inline long RegQueryValueEx(HKEY hKey, const char* lpValueName, DWORD* lpReserved, DWORD* lpType, BYTE* lpData, DWORD* lpcbData) {
+    return ERROR_SUCCESS; // Stub implementation
+}
+#endif
+
+// Threading function stubs
+inline void* CreateThread(void* lpThreadAttributes, unsigned long dwStackSize, 
+                         void* lpStartAddress, void* lpParameter, 
+                         DWORD dwCreationFlags, DWORD* lpThreadId) {
+    return nullptr; // Stub implementation
+}
+
+// Miles Sound System API stubs
+inline void AIL_lock() {
+    // Audio system lock stub
+}
+
+inline void AIL_unlock() {
+    // Audio system unlock stub  
+}
+
+inline void AIL_set_3D_position(void* sample, float x, float y, float z) {
+    // 3D audio position stub
+}
+
+inline void AIL_set_3D_orientation(void* sample, float front_x, float front_y, float front_z,
+                                  float up_x, float up_y, float up_z) {
+    // 3D audio orientation stub
+}
+
+inline void AIL_set_sample_processor(void* sample, DWORD stage, void* provider) {
+    // Audio sample processor stub
+}
+
+inline void AIL_set_filter_sample_preference(void* sample, const char* attrib, void* value) {
+    // Audio filter preference stub
+}
+
+// Audio constants
+#define DP_FILTER 0
 
 #endif // __APPLE__
 #endif // _WINDOWS_H_

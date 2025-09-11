@@ -612,6 +612,55 @@ inline void D3DXMatrixRotationZ(D3DXMATRIX* out, float angle) {
     }
 }
 
+// Additional Windows types needed for compilation
+#ifndef F32
+typedef float F32;
+#endif
+
+// Threading types
+typedef struct {
+    void* DebugInfo;
+    long LockCount;
+    long RecursionCount;
+    void* OwningThread;
+    void* LockSemaphore;
+    unsigned long SpinCount;
+} CRITICAL_SECTION;
+
+// Registry constants
+#define HKEY_LOCAL_MACHINE ((HKEY)0x80000002)
+#define KEY_READ (0x20019)
+#define ERROR_SUCCESS 0L
+#define REG_DWORD 4
+
+// File system compatibility
+// TODO: Implement _stat compatibility properly
+// #include <sys/stat.h>
+
+// String functions for compatibility
+#define _strnicmp strncasecmp
+
+// Function stubs for file system compatibility
+// inline int _stat(const char* path, struct stat* buffer) {
+//     return stat(path, buffer);
+// }
+
+// Registry function stubs
+inline long RegOpenKeyEx(HKEY hKey, const char* lpSubKey, DWORD ulOptions, DWORD samDesired, HKEY* phkResult) {
+    return ERROR_SUCCESS; // Stub implementation
+}
+
+inline long RegQueryValueEx(HKEY hKey, const char* lpValueName, DWORD* lpReserved, DWORD* lpType, BYTE* lpData, DWORD* lpcbData) {
+    return ERROR_SUCCESS; // Stub implementation
+}
+
+// Threading function stubs
+inline void* CreateThread(void* lpThreadAttributes, unsigned long dwStackSize, 
+                         void* lpStartAddress, void* lpParameter, 
+                         DWORD dwCreationFlags, DWORD* lpThreadId) {
+    return nullptr; // Stub implementation
+}
+
 #endif // !_WIN32
 
 #endif // WIN32_COMPAT_H_INCLUDED
