@@ -3,8 +3,8 @@
 
 #include <cstring> // For memset in ZeroMemory
 
-// Include local compatibility layer first
-#include "win32_compat.h"
+// Include Core compatibility layer
+#include "../../../../../Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h"
 
 #ifndef _WIN32
 // Basic Windows types for non-Windows systems
@@ -531,6 +531,26 @@ typedef DWORD D3DSWAPEFFECT;
 #define D3DSWAPEFFECT_COPY_VSYNC 4
 #endif
 
+// D3DDEVTYPE enumeration
+#ifndef D3DDEVTYPE_DEFINED
+#define D3DDEVTYPE_DEFINED
+typedef DWORD D3DDEVTYPE;
+#define D3DDEVTYPE_HAL 1
+#define D3DDEVTYPE_REF 2
+#define D3DDEVTYPE_SW 3
+#endif
+
+// D3DDISPLAYMODE structure
+#ifndef D3DDISPLAYMODE_DEFINED
+#define D3DDISPLAYMODE_DEFINED
+typedef struct _D3DDISPLAYMODE {
+    UINT Width;
+    UINT Height;
+    UINT RefreshRate;
+    D3DFORMAT Format;
+} D3DDISPLAYMODE;
+#endif
+
 // DirectX structures
 #ifndef D3DTLVERTEX_DEFINED
 #define D3DTLVERTEX_DEFINED
@@ -562,6 +582,7 @@ typedef struct {
 } D3DLOCKED_RECT;
 #endif
 
+// D3DPRESENT_PARAMETERS - Ensure compatibility with Core/win32_compat.h
 #ifndef D3DPRESENT_PARAMETERS_DEFINED
 #define D3DPRESENT_PARAMETERS_DEFINED
 typedef struct {
@@ -768,6 +789,22 @@ struct IDirect3D8 {
     // Adapter identifier
     virtual int GetAdapterIdentifier(DWORD adapter, DWORD flags, void* identifier) {
         return D3D_OK; // Stub implementation
+    }
+    
+    // Adapter display mode
+    virtual int GetAdapterDisplayMode(DWORD adapter, D3DDISPLAYMODE* mode) {
+        if (mode) {
+            mode->Width = 1024;
+            mode->Height = 768;
+            mode->RefreshRate = 60;
+            mode->Format = D3DFMT_X8R8G8B8;
+        }
+        return D3D_OK;
+    }
+    
+    // Device type checking
+    virtual int CheckDeviceType(DWORD adapter, D3DDEVTYPE deviceType, D3DFORMAT adapterFormat, D3DFORMAT backBufferFormat, BOOL windowed) {
+        return D3D_OK; // Always report as supported for compatibility
     }
     
     // Device creation
@@ -1018,6 +1055,7 @@ inline D3DMATRIX* D3DXMatrixTranspose(D3DMATRIX* out, const D3DMATRIX* in) {
 }
 #endif // CORE_D3DXMATRIXTRANSPOSE_DEFINED
 
+// D3DXGetErrorStringA - Ensure compatibility with Core/win32_compat.h
 #ifndef D3DXGETERRORSTRINGA_DEFINED
 #define D3DXGETERRORSTRINGA_DEFINED
 inline HRESULT D3DXGetErrorStringA(HRESULT hr, char* buffer, DWORD bufferSize) {

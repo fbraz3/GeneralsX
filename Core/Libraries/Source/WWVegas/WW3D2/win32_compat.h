@@ -30,6 +30,10 @@ typedef unsigned short WORD;
 typedef unsigned char BYTE;
 #endif
 
+#ifndef UINT
+typedef unsigned int UINT;
+#endif
+
 // Additional types we need
 #ifndef FARPROC
 typedef void* FARPROC;
@@ -210,6 +214,7 @@ typedef struct {
 } D3DLOCKED_BOX;
 // D3DFORMAT will be defined in d3d8.h
 
+#ifndef D3DPRESENT_PARAMETERS_DEFINED
 typedef struct {
     DWORD BackBufferWidth;
     DWORD BackBufferHeight;
@@ -225,6 +230,8 @@ typedef struct {
     DWORD FullScreen_RefreshRateInHz;
     DWORD FullScreen_PresentationInterval;
 } D3DPRESENT_PARAMETERS;
+#define D3DPRESENT_PARAMETERS_DEFINED
+#endif // D3DPRESENT_PARAMETERS_DEFINED
 
 // Matrix type
 #ifndef D3DMATRIX_DEFINED
@@ -385,9 +392,12 @@ inline DWORD SetTextColor(void* hdc, DWORD color) {
 }
 
 // DirectX stub functions
+#ifndef D3DXGETERRORSTRINGA_DEFINED
 inline HRESULT D3DXGetErrorStringA(HRESULT hr, char* buffer, DWORD size) { 
     return 0; 
 }
+#define D3DXGETERRORSTRINGA_DEFINED
+#endif // D3DXGETERRORSTRINGA_DEFINED
 
 #ifndef WIN32_COMPAT_FUNCTIONS_DEFINED
 #define WIN32_COMPAT_FUNCTIONS_DEFINED
@@ -407,15 +417,57 @@ inline void ZeroMemory(void* dest, size_t size) { memset(dest, 0, size); }
 #define HIWORD(l) ((WORD)((DWORD_PTR)(l) >> 16))
 #define LOWORD(l) ((WORD)((DWORD_PTR)(l) & 0xffff))
 
+// Window positioning flags
+#define SWP_NOSIZE 0x0001
+#define SWP_NOMOVE 0x0002
+#define SWP_NOZORDER 0x0004
+#define GWL_STYLE -16
+#define HWND_TOPMOST ((HWND)-1)
+#define MONITOR_DEFAULTTOPRIMARY 0x00000001
+
+// Monitor info structure
+typedef struct tagMONITORINFO {
+    DWORD cbSize;
+    RECT rcMonitor;
+    RECT rcWork;
+    DWORD dwFlags;
+} MONITORINFO;
+
 // Windows API function stubs for non-Windows platforms
 inline int GetClientRect(void* hwnd, RECT* rect) {
     if (rect) {
         rect->left = 0;
-        rect->top = 0; 
+        rect->top = 0;
         rect->right = 800;
         rect->bottom = 600;
     }
     return 1;
+}
+
+inline DWORD GetWindowLong(HWND hwnd, int index) {
+    return 0;
+}
+
+inline void AdjustWindowRect(RECT* rect, DWORD style, BOOL menu) {
+    // Stub implementation - no adjustment
+}
+
+inline BOOL SetWindowPos(HWND hwnd, HWND insertAfter, int x, int y, int cx, int cy, UINT flags) {
+    return TRUE;
+}
+
+inline void* MonitorFromWindow(HWND hwnd, DWORD flags) {
+    return (void*)1; // Fake monitor handle
+}
+
+inline BOOL GetMonitorInfo(void* monitor, MONITORINFO* info) {
+    if (info && info->cbSize >= sizeof(MONITORINFO)) {
+        info->rcMonitor = {0, 0, 1920, 1080};
+        info->rcWork = {0, 0, 1920, 1040};
+        info->dwFlags = 0;
+        return TRUE;
+    }
+    return FALSE;
 }
 
 inline LONG GetWindowLong(void* hwnd, int index) {

@@ -379,12 +379,15 @@ typedef DWORD D3DPRIMITIVETYPE;
 #define D3DERR_DEVICENOTRESET 0x88760869L
 
 // DirectX display mode structure
+#ifndef D3DDISPLAYMODE_DEFINED
+#define D3DDISPLAYMODE_DEFINED
 typedef struct {
     DWORD Width;
     DWORD Height; 
     DWORD RefreshRate;
     D3DFORMAT Format;
 } D3DDISPLAYMODE;
+#endif
 
 #ifndef D3DPOOL_DEFINED
 #define D3DPOOL_DEFINED
