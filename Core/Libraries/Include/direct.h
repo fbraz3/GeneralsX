@@ -8,10 +8,23 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
-// Directory functions
-inline int _mkdir(const char* dirname) {
-    return mkdir(dirname, 0755);
-}
+// Directory functions - using macros for compatibility
+#ifdef __APPLE__
+#include <unistd.h>
+#include <sys/stat.h>
+#ifndef _mkdir
+#define _mkdir(path) mkdir(path, 0755)
+#endif
+#ifndef _rmdir
+#define _rmdir(path) rmdir(path)
+#endif
+#ifndef _getcwd
+#define _getcwd(buffer, size) getcwd(buffer, size)
+#endif
+#ifndef _chdir
+#define _chdir(path) chdir(path)
+#endif
+#endif
 
 inline int _rmdir(const char* dirname) {
     return rmdir(dirname);

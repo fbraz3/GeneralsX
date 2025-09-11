@@ -28,6 +28,16 @@
 #include <string.h>
 #include <cstring>
 
+// Additional compatibility definitions for macOS
+#ifdef __APPLE__
+#define _strnicmp strncasecmp
+#define _stat stat
+inline int MulDiv(int nNumber, int nNumerator, int nDenominator) {
+    if (nDenominator == 0) return 0;
+    return (int)(((long long)nNumber * nNumerator) / nDenominator);
+}
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 // CDownload
 

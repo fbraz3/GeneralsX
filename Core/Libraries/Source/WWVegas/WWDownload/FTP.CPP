@@ -22,6 +22,7 @@
 /*_$                      Include Files                                  */
 /*************************************************************************/
 
+#include "windows.h"
 
 #include <stdio.h>
 #include <sys/types.h>
