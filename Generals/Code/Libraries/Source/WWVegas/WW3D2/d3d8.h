@@ -112,8 +112,8 @@ typedef DWORD D3DCMPFUNC;
 
 #ifndef _WIN32
 
-// DirectX 8 compatibility header for non-Windows systems
-#include "win32_compat.h"
+// DirectX 8 compatibility header for non-Windows systems  
+// Use Core compatibility layer only (local file moved to backup)
 #include <cstdint>
 
 // Windows API types needed by DirectX - check if already defined

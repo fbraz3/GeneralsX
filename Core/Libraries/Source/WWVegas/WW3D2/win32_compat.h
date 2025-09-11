@@ -77,7 +77,7 @@ typedef struct {
 // GDI constants
 #define DIB_RGB_COLORS 0
 
-#endif // RGBQUADs.h>
+#endif // RGBQUAD
 #include <cctype>  // for toupper
 #include <cwchar>  // for wchar_t
 
@@ -301,7 +301,7 @@ typedef struct {
 #define GWL_STYLE (-16)
 #define SWP_NOSIZE 0x0001
 #define SWP_NOMOVE 0x0002
-#define HWND_TOPMOST ((void*)-1)
+#define HWND_TOPMOST ((HWND)-1)
 
 // Function compatibility
 #define _strdup strdup
@@ -417,12 +417,8 @@ inline void ZeroMemory(void* dest, size_t size) { memset(dest, 0, size); }
 #define HIWORD(l) ((WORD)((DWORD_PTR)(l) >> 16))
 #define LOWORD(l) ((WORD)((DWORD_PTR)(l) & 0xffff))
 
-// Window positioning flags
-#define SWP_NOSIZE 0x0001
-#define SWP_NOMOVE 0x0002
+// Additional window flags (not previously defined)
 #define SWP_NOZORDER 0x0004
-#define GWL_STYLE -16
-#define HWND_TOPMOST ((HWND)-1)
 #define MONITOR_DEFAULTTOPRIMARY 0x00000001
 
 // Monitor info structure
