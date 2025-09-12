@@ -38,6 +38,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "font3d.h"
+#include "win32_compat.h"  // For strupr on non-Windows platforms
 #include "assetmgr.h"
 #include "texture.h"
 #include <assert.h>

@@ -359,8 +359,11 @@ typedef enum {
 #define D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR 0x00030000L
 
 // Texture transform flags - only define if not already defined
-#ifndef D3DTTFF_PROJECTED
+#ifndef D3DTTFF_DISABLE
 #define D3DTTFF_DISABLE 0
+#endif
+
+#ifndef D3DTTFF_PROJECTED
 #define D3DTTFF_COUNT1 1
 #define D3DTTFF_COUNT2 2
 #define D3DTTFF_COUNT3 3
@@ -976,6 +979,8 @@ struct IDirect3DTexture8 : public IDirect3DBaseTexture8 {
     }
     virtual int Lock(DWORD level, D3DLOCKED_RECT* locked_rect, const RECT* rect, DWORD flags) { return D3D_OK; }
     virtual int Unlock(DWORD level) { return D3D_OK; }
+    virtual int LockRect(DWORD level, D3DLOCKED_RECT* locked_rect, const RECT* rect, DWORD flags) { return D3D_OK; }
+    virtual int UnlockRect(DWORD level) { return D3D_OK; }
 };
 
 struct IDirect3DSurface8 {

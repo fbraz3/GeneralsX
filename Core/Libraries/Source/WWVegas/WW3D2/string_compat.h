@@ -8,7 +8,12 @@
 
 // Windows string API compatibility for macOS
 
-// Case conversion functions
+// Note: strupr is provided by win32_compat.h
+
+// Note: _strlwr is provided by Dependencies/Utility/Utility/string_compat.h
+
+// String case conversion functions
+#ifdef __APPLE__
 inline char* strupr(char* str) {
     if (!str) return nullptr;
     char* p = str;
@@ -18,16 +23,7 @@ inline char* strupr(char* str) {
     }
     return str;
 }
-
-inline char* strlwr(char* str) {
-    if (!str) return nullptr;
-    char* p = str;
-    while (*p) {
-        *p = (char)std::tolower(*p);
-        ++p;
-    }
-    return str;
-}
+#endif
 
 // String comparison functions
 inline int stricmp(const char* str1, const char* str2) {

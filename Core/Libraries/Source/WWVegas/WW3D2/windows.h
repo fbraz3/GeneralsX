@@ -255,35 +255,9 @@ inline DWORD GetFileAttributes(const char* lpFileName) {
     #endif
 }
 
-// Dynamic library functions
-inline void* GetProcAddress(void* hModule, const char* lpProcName) {
-    #ifdef _WIN32
-        return ::GetProcAddress((HMODULE)hModule, lpProcName);
-    #else
-        // On Unix, this would use dlsym, but for now we'll return NULL
-        // indicating the function is not available
-        return NULL;
-    #endif
-}
-
-inline void* LoadLibrary(const char* lpLibFileName) {
-    #ifdef _WIN32
-        return ::LoadLibraryA(lpLibFileName);
-    #else
-        // On Unix, this would use dlopen, but for now we'll return NULL
-        return NULL;
-    #endif
-}
-
-inline BOOL FreeLibrary(void* hLibModule) {
-    #ifdef _WIN32
-        return ::FreeLibrary((HMODULE)hLibModule);
-    #else
-        // On Unix, this would use dlclose
-        return TRUE;
-    #endif
-}
+// Dynamic library functions defined in win32_compat.h
+// (LoadLibrary, GetProcAddress, FreeLibrary)
 
 #endif // !_WIN32
 
-#endif // WINDOWS_COMPAT_H
+#endif // WIN32_COMPAT_H

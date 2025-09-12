@@ -61,6 +61,7 @@ public:
 
 
 #include "w3d_dep.h"
+#include "win32_compat.h"  // For strupr on non-Windows platforms
 #include "w3d_file.h"
 #include <assert.h>
 #include <chunkio.h>

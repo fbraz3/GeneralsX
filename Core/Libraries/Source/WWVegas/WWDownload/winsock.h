@@ -32,10 +32,8 @@
     #define WSAENOTCONN ENOTCONN
     #define WSAETIMEDOUT ETIMEDOUT
     
-    // Windows socket functions
-    inline int WSAStartup(unsigned short version, void* data) { return 0; }
-    inline int WSACleanup() { return 0; }
-    inline int WSAGetLastError() { return errno; }
+    // Windows socket functions defined in network.h
+    // (WSAStartup, WSACleanup, WSAGetLastError)
     inline int closesocket(SOCKET s) { return close(s); }
     inline int ioctlsocket(SOCKET s, long cmd, unsigned long* argp) { 
         return ioctl(s, cmd, argp); 

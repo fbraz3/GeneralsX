@@ -62,6 +62,8 @@ typedef struct {
     DWORD biClrImportant;
 } BITMAPINFOHEADER;
 
+#ifndef BITMAPFILEHEADER_DEFINED
+#define BITMAPFILEHEADER_DEFINED
 typedef struct {
     WORD bfType;
     DWORD bfSize;
@@ -69,6 +71,7 @@ typedef struct {
     WORD bfReserved2;
     DWORD bfOffBits;
 } BITMAPFILEHEADER;
+#endif
 
 typedef struct {
     BYTE rgbBlue;
@@ -479,7 +482,8 @@ inline BOOL GetMonitorInfo(void* monitor, MONITORINFO* info) {
 
 #endif // WIN32_API_STUBS_DEFINED
 
-#ifndef WIN32_COMPAT_FUNCTIONS_DEFINED
+#ifndef WIN32_STRING_FUNCTIONS_DEFINED
+#define WIN32_STRING_FUNCTIONS_DEFINED
 
 // String manipulation functions
 inline char* strupr(char* str) {
@@ -513,6 +517,8 @@ inline DWORD GetFileAttributes(const char* filename) {
 }
 
 // Bitmap structures
+#ifndef BITMAPFILEHEADER_DEFINED
+#define BITMAPFILEHEADER_DEFINED
 typedef struct {
     WORD bfType;
     DWORD bfSize;
@@ -520,6 +526,7 @@ typedef struct {
     WORD bfReserved2;
     DWORD bfOffBits;
 } BITMAPFILEHEADER;
+#endif
 
 #define BI_RGB 0
 
@@ -687,7 +694,7 @@ inline HANDLE CreateThread(void* lpThreadAttributes, unsigned long dwStackSize,
     return nullptr; // Stub implementation
 }
 
-#endif // WIN32_COMPAT_FUNCTIONS_DEFINED
+#endif // WIN32_STRING_FUNCTIONS_DEFINED
 
 #endif // !_WIN32
 

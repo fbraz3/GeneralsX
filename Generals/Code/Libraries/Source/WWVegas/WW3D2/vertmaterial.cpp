@@ -38,6 +38,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "vertmaterial.h"
+#include "d3d8.h"  // For D3DTTFF_DISABLE and other DirectX constants
 #include "realcrc.h"
 #include "wwdebug.h"
 #include "w3d_util.h"

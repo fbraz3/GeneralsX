@@ -38,6 +38,7 @@
 //
 
 #include <string.h>	// stricmp()
+#include "win32_compat.h"  // For strupr on non-Windows platforms
 #include "animatedsoundmgr.h"
 #include "INI.H"
 #include "inisup.h"
