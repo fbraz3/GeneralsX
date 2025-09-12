@@ -51,7 +51,16 @@ The macOS port has achieved major milestones by successfully compiling all core 
 - ✅ **DirectX Typedef Resolution COMPLETE** - Zero compilation errors achieved for g_ww3d2 target through LP* coordination
 - 🎯 **Next milestone** - Extend successful typedef resolution pattern to remaining DirectX targets and complete full game compilation
 
-## 🚀 Current Status
+## � Port Phases Overview
+
+### Complete macOS Port Roadmap
+- **✅ Phase 1**: Cross-platform configuration (RegOpenKeyEx → INI files)
+- **✅ Phase 2**: Core Windows APIs (CreateThread, CreateDirectory, socket functions)
+- **🎯 Phase 3**: DirectX/Graphics APIs (D3D device creation, rendering pipeline)
+- **📋 Phase 4**: Memory management & performance APIs (HeapAlloc, VirtualAlloc, QueryPerformanceCounter)
+- **📋 Phase 5**: Audio & multimedia APIs (DirectSound, multimedia timers, codec support)
+
+## �🚀 Current Status
 
 ### 📋 Current Session Progress (September 11, 2025)
 
