@@ -23,7 +23,8 @@
 - **✅ Phase 1**: Cross-platform configuration (RegOpenKeyEx → INI files)
 - **✅ Phase 2**: Core Windows APIs (CreateThread, CreateDirectory, socket functions)
 - **🎯 Phase 3**: DirectX/Graphics APIs (D3D device creation, rendering pipeline)
-- **📋 Future**: Audio, Input, Advanced DirectX features
+- **📋 Phase 4**: Memory management & performance APIs (HeapAlloc, VirtualAlloc, QueryPerformanceCounter)
+- **📋 Phase 5**: Audio & multimedia APIs (DirectSound, multimedia timers, codec support)
 
 ## Build System
 
