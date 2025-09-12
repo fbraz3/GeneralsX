@@ -2,232 +2,52 @@
 
 ## Project Overview
 
-This is the **GeneralsGameCode** project - a community-driven effort to fix and improve the classic RTS games *Command & Conquer: Generals* and *Zero Hour*. The codebase has been modernized from Visual Studio 6/C++98 to Visual Studio 2022/C++20 while maintaining retail compatibility.
+**GeneralsGameCode** - Community effort to fix and improve C&C Generals/Zero Hour. Modernized from VC6/C++98 to VS2022/C++20 while maintaining retail compatibility.
 
-**🎉 MAJOR BREAKTHROUGH**: macOS port achieved - all core libraries successfully compiling with comprehensive Windows API compatibility layer.
-
-**🚀 SEPTEMBER 11, 2025 BREAKTHROUGH**: DirectX typedef redefinition resolution completed! 120+ compilation errors resolved with dx8wrapper.cpp achieving 0 errors through comprehensive Windows API implementation and multi-layer DirectX architecture coordination.
+**🚀 macOS Port Status**: All core libraries compiling + comprehensive Windows API compatibility layer implemented.
 
 ## Architecture
 
-### Dual Game Structure
-- **Generals/**: Original C&C Generals (v1.08) codebase
-- **GeneralsMD/**: Zero Hour expansion (v1.04) codebase - **primary focus**
-- **Core/**: Shared game engine and libraries used by both games
+### Structure
+- **Generals/**: Original C&C Generals (v1.08) 
+- **GeneralsMD/**: Zero Hour expansion (v1.04) - **primary focus**
+- **Core/**: Shared engine and libraries
 
-### Key Components
-- **Core/GameEngine/**: Base game engine with GameClient/GameLogic separation
-- **Core/Libraries/**: Internal libraries including WWVegas graphics framework
-- **Core/GameEngineDevice/**: Platform-specific rendering (DirectX 8)
-- **Core/Tools/**: Development tools (W3DView, texture compression, etc.)
-- **Dependencies/**: External dependencies (MaxSDK for VC6, utilities)
-
-### Cross-Platform Compatibility Architecture
-- **Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h**: Primary Windows API compatibility layer
-- **Core/Libraries/Include/windows.h**: 16+ compatibility headers (mmsystem.h, winerror.h, objbase.h, etc.)
-- **Multi-layer DirectX system**: Core layer + Generals layer coordination with include guards
-- **Profile/Debug systems**: Full `__forceinline` macOS compatibility
-- **Unified Configuration System**: Cross-platform INI-based config files replacing Windows Registry
-
-### Configuration System Architecture (Phase 1 Implementation)
-
-**Design Philosophy**: Complete removal of Windows Registry dependency in favor of unified cross-platform configuration files.
-
-**Configuration File Locations**:
-- **Linux/macOS**: `~/.config/cncgenerals.conf`, `~/.config/cncgeneralszh.conf`
-- **Windows**: `%APPDATA%\CNC\cncgenerals.conf`, `%APPDATA%\CNC\cncgeneralszh.conf`
-
-**Game Data Locations**:
-- **macOS**: `~/Library/Application Support/CNC_Generals`, `~/Library/Application Support/CNC_GeneralsZH`
-- **Linux**: `~/Games/CNC_Generals`, `~/Games/CNC_GeneralsZH`
-- **Windows**: `%USERPROFILE%\Documents\Command and Conquer Generals Data`
-
-**Registry API Replacement Strategy**:
-- All `RegOpenKeyEx`, `RegQueryValueEx`, `RegSetValueEx`, `RegCloseKey` calls → INI file operations
-- Registry paths like `SOFTWARE\Electronic Arts\EA Games\Generals` → INI sections `[EA.Games.Generals]`
-- HKEY_LOCAL_MACHINE → system-wide defaults, HKEY_CURRENT_USER → user-specific overrides
-- Automatic migration of existing Windows Registry values to INI format on first run
-
-**Implementation Components**:
-- **config_manager.h/cpp**: Cross-platform configuration management
-- **ini_parser.h/cpp**: Lightweight INI file parser/writer
-- **registry_compat.h**: Registry API → Config API mapping layer
-- **path_resolver.h/cpp**: Platform-specific path resolution for game data and configs
-
-**Key Advantages**:
-- **Full Cross-Platform Compatibility**: Identical behavior on Windows/macOS/Linux
-- **Human-Readable Configs**: INI format is transparent and easily editable
-- **Version Control Friendly**: Config files can be versioned and shared
-- **No System Dependencies**: Eliminates reliance on Windows Registry or platform-specific stores
-- **Migration Support**: Automatic one-time migration from existing Windows Registry values
-
-### Comprehensive Windows API Compatibility (Phase 2 Implementation)
-
-**Design Philosophy**: Complete Windows API compatibility layer enabling seamless cross-platform operation with native performance.
-
-**Threading System Implementation**:
-- **pthread Backend**: Full Windows threading API using POSIX threads foundation
-- **Function Mapping**: `CreateThread` → `pthread_create`, `WaitForSingleObject` → `pthread_join`
-- **Synchronization**: `CreateMutex`, `CloseHandle` with proper handle lifecycle management
-- **Type Safety**: ThreadHandle/MutexHandle structures with proper HANDLE casting using uintptr_t
-
-**File System Compatibility Layer**:
-- **POSIX Integration**: Windows file API → native POSIX operations (`CreateDirectory` → `mkdir`)
-- **Permission Management**: `_chmod` implementation with Windows→POSIX permission conversion
-- **Handle Management**: `CreateFile` → `open` with flag mapping (GENERIC_READ/WRITE → O_RDONLY/O_WRONLY)
-- **Cross-Platform Paths**: Unified path handling across Windows/macOS/Linux
-
-**Network API Abstraction**:
-- **Namespace Isolation**: Win32Net namespace preventing conflicts with system socket functions
-- **Socket Compatibility**: Windows Winsock API signatures mapped to POSIX socket functions
-- **Type System**: SOCKET typedef, INVALID_SOCKET, SOCKET_ERROR constants for perfect compatibility
-- **WSA Function Stubs**: WSAStartup, WSACleanup, WSAGetLastError for Windows API completeness
-
-**String Functions & Constants**:
-- **Case Operations**: `strupr`, `strlwr` using std::toupper/tolower with proper null checking
-- **Comparison Functions**: `stricmp`, `strnicmp` → `strcasecmp`, `strncasecmp` mapping
-- **Graphics Constants**: BI_RGB, BI_RLE8, DirectX constants (D3DPTFILTERCAPS_*, D3DTTFF_*)
-- **DirectX Enhancement**: Complete texture filter and transform flag definitions
-
-**Implementation Files**:
-- **threading.h/cpp**: pthread-based Windows threading compatibility
-- **filesystem.h**: POSIX-based Windows file operations compatibility  
-- **network.h**: Socket compatibility with namespace isolation
-- **string_compat.h**: Cross-platform string manipulation functions
+### Key Cross-Platform APIs (Implemented)
+- **Phase 1**: INI-based config system replacing Windows Registry
+- **Phase 2**: Threading (pthread), File System (POSIX), Network (Win32Net), String APIs
+- **Primary compatibility layer**: `Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h`
 
 ## Build System
 
 ### CMake Presets (Critical)
-- **vc6**: Visual Studio 6 compatible build (retail compatibility required)
-- **win32**: Modern Visual Studio 2022 build
-- **vc6-debug/vc6-profile**: Debug/profiling variants
-- Use `cmake --preset <preset-name>` followed by `cmake --build build/<preset>`
-
-### Build Commands
-```bash
-# Configure with specific preset
-cmake --preset vc6
-
-# Build (from project root)
-cmake --build build/vc6
-
-# Build with tools and extras
-cmake --build build/vc6 --target <game>_tools <game>_extras
-
-# macOS Core Libraries (ALL SUCCESSFULLY COMPILING!)
-cmake --build build/vc6 --target ww3d2 wwlib wwmath
-```
+- **vc6**: VC6 compatible (retail compatibility required)
+- **win32**: Modern VS2022 build
+- Use: `cmake --preset <name>` then `cmake --build build/<name>`
 
 ### Retail Compatibility (Critical)
-- VC6 builds are required for replay compatibility testing
-- Debug builds break retail compatibility  
-- Use RTS_BUILD_OPTION_DEBUG=OFF for compatibility testing
+- VC6 builds required for replay compatibility
+- Debug builds break retail compatibility
+- Use `RTS_BUILD_OPTION_DEBUG=OFF` for testing
 
 ## Development Workflow
 
-### Pull Request Guidelines
-- Title format: `type: Description starting with action verb`
-- Types: `bugfix:`, `feat:`, `fix:`, `refactor:`, `perf:`, `build:`
-- Zero Hour changes take precedence over Generals
-- Changes must be identical between both games when applicable
-
 ### Code Style
-- Maintain consistency with surrounding legacy code
-- Prefer C++98 style unless modern features add significant value
-- No big refactors mixed with logical changes
-- Use present tense in documentation ("Fixes" not "Fixed")
+- Maintain consistency with legacy code
+- Prefer C++98 unless modern features add significant value
+- Present tense in documentation ("Fixes" not "Fixed")
 
-### Cross-Platform Development Patterns
-- **Include Guards**: Use `#ifndef SYMBOL` guards to prevent redefinition conflicts between compatibility layers
-- **DirectX Compatibility**: Coordinate between Core/win32_compat.h and Generals/d3d8.h definitions
-- **Type Definitions**: Check for existing definitions before adding Windows types (DWORD, LARGE_INTEGER, etc.)
-- **Compiler Intrinsics**: Use `__forceinline inline __attribute__((always_inline))` for macOS compatibility
+### Cross-Platform Patterns
+- Use include guards to prevent redefinition conflicts
+- Coordinate Core/win32_compat.h and Generals/d3d8.h
+- Check existing definitions before adding Windows types
 
-## Testing
+### Testing
+- **Replay compatibility**: `GeneralsReplays/` - critical for retail compatibility
+- **macOS testing**: `cmake --build build/vc6 --target ww3d2 wwlib wwmath`
 
-### Replay Compatibility Testing
-Located in `GeneralsReplays/` - critical for ensuring retail compatibility:
-```bash
-generalszh.exe -jobs 4 -headless -replay subfolder/*.rep
-```
-- Requires VC6 optimized build with RTS_BUILD_OPTION_DEBUG=OFF
-- Copies replays to `%USERPROFILE%/Documents/Command and Conquer Generals Zero Hour Data/Replays`
-- CI automatically tests GeneralsMD builds against known replays
-
-### Build Validation
-- CI tests multiple presets: vc6, vc6-profile, vc6-debug, win32 variants
-- Path-based change detection triggers relevant builds
-- Tools and extras are built with `+t+e` flags
-
-### macOS Compatibility Testing
-```bash
-# Test core libraries compilation
-cmake --build build/vc6 --target ww3d2 wwlib wwmath
-
-# Test Windows API compatibility headers
-echo '#include "windows.h"' | c++ -x c++ -c -
-
-# Test DirectX compatibility coordination
-cmake --build build/vc6 --target g_ww3d2 2>&1 | grep -c "error:"
-```
-
-## Common Patterns
-
-### Memory Management
-- Manual memory management (delete/delete[]) - this is legacy C++98 code
-- STLPort for VC6 compatibility (see `cmake/stlport.cmake`)
-
-### Game Engine Separation
-- **GameLogic**: Game state, rules, simulation
-- **GameClient**: Rendering, UI, platform-specific code
-- Clean separation maintained for potential future networking
-
-### DirectX Wrapper Pattern
-- **DX8Wrapper**: Central abstraction layer for DirectX 8 calls
-- All DirectX calls go through wrapper for stat tracking and cross-platform compatibility
-- Device management, render states, and resource creation centralized
-
-### Module Structure
-```
-Core/
-├── GameEngine/Include/Common/     # Shared interfaces
-├── GameEngine/Include/GameLogic/  # Game simulation
-├── GameEngine/Include/GameClient/ # Rendering/UI
-├── Libraries/Include/rts/         # RTS-specific utilities
-└── Libraries/Source/WWVegas/      # Graphics framework
-    ├── WW3D2/win32_compat.h      # macOS compatibility layer
-    └── WWLib/windows.h            # Windows API compatibility
-```
-
-## External Dependencies
-
-### Required for Building
-- **VC6 builds**: Requires MSVC 6.0 toolchain (automated in CI via itsmattkc/MSVC600)
-- **Modern builds**: Visual Studio 2022, Ninja generator
-- **vcpkg** (optional): zlib, ffmpeg for enhanced builds
-
-### Platform-Specific
-- **Windows**: DirectX 8, Miles Sound System, Bink Video
-- **macOS**: Comprehensive Windows API compatibility layer (16+ headers)
-- **Registry detection**: Automatic game install path detection from EA registry keys
-
-## Tools and Utilities
-
-### Development Scripts (`scripts/cpp/`)
-- `fixInludesCase.sh`: Fix include case sensitivity
-- `refactor_*.py`: Code refactoring utilities
-- `remove_trailing_whitespace.py`: Code cleanup
-
-### Build Tools
-- W3DView: 3D model viewer
-- TextureCompress: Asset optimization
-- MapCacheBuilder: Map preprocessing
-
-## Key Files to Understand
-- `CMakePresets.json`: All build configurations
-- `cmake/config-build.cmake`: Build options and feature flags
-- `Core/GameEngine/Include/`: Core engine interfaces
-- `**/Code/Main/WinMain.cpp`: Application entry points
+## Key Files
+- `CMakePresets.json`: Build configurations
+- `MACOS_PORT.md`: Detailed macOS porting progress  
+- `Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h`: Main compatibility layer
 - `GeneralsReplays/`: Compatibility test data
-- `Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h`: macOS compatibility layer
-- `MACOS_PORT.md`: Comprehensive macOS porting progress and technical details
