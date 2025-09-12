@@ -26,6 +26,7 @@
 #endif
 
 #include "always.h"
+#include "d3d8.h"
 #include "ww3dformat.h"
 #include "wwstring.h"
 #include "vector3.h"

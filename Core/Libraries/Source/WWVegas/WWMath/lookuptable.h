@@ -40,7 +40,7 @@
 #ifndef LOOKUPTABLE_H
 #define LOOKUPTABLE_H
 
-#include "always.h"
+#include "../WWLib/always.h"
 #include "simplevec.h"
 #include "wwstring.h"
 #include "refcount.h"

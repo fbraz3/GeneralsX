@@ -42,7 +42,7 @@
 #ifndef VECTOR2I_H
 #define VECTOR2I_H
 
-#include "always.h"
+#include "../WWLib/always.h"
 
 class Vector2i
 {

@@ -59,7 +59,7 @@
 #ifndef AABOX_H
 #define AABOX_H
 
-#include "always.h"
+#include "../WWLib/always.h"
 #include "matrix3d.h"
 #include "lineseg.h"
 #include "colmath.h"

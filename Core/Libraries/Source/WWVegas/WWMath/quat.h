@@ -42,7 +42,7 @@
 #ifndef QUAT_H
 #define QUAT_H
 
-#include "always.h"
+#include "../WWLib/always.h"
 #include "wwmath.h"
 #include "matrix3.h"
 #include "vector3.h"

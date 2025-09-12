@@ -45,7 +45,7 @@
 
 static unsigned Get_FVF_Vertex_Size(unsigned FVF)
 {
-	return D3DXGetFVFVertexSize(FVF);
+	return CORE_D3DXGetFVFVertexSize(FVF);
 }
 
 FVFInfoClass::FVFInfoClass(unsigned FVF_, unsigned vertex_size)

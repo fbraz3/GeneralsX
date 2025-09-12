@@ -48,6 +48,7 @@
 #define TEXTURE_H
 
 #include "always.h"
+#include "d3d8.h"
 #include "refcount.h"
 #include "chunkio.h"
 #include "surfaceclass.h"
@@ -56,10 +57,7 @@
 #include "vector3.h"
 #include "texturefilter.h"
 
-struct IDirect3DBaseTexture8;
-struct IDirect3DTexture8;
-struct IDirect3DCubeTexture8;
-struct IDirect3DVolumeTexture8;
+// Forward declarations removed to avoid conflicts with d3d8.h macro definitions
 
 class DX8Wrapper;
 class TextureLoader;

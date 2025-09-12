@@ -43,7 +43,7 @@
 #ifndef ODE_H
 #define ODE_H
 
-#include "always.h"
+#include "../WWLib/always.h"
 #include "Vector.H"
 #include "wwdebug.h"
 

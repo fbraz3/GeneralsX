@@ -7,9 +7,13 @@
 
 #include "windows.h"
 
+// Include time compatibility first to avoid conflicts
+#include "../../../Dependencies/Utility/./Utility/time_compat.h"
+
 // Multimedia types - check if already defined
 #ifndef MMRESULT
-typedef DWORD MMRESULT;
+// Use same type as time_compat.h to avoid conflicts
+typedef int MMRESULT;
 #endif
 #ifndef DWORD_PTR
 typedef DWORD DWORD_PTR;
@@ -42,11 +46,13 @@ typedef void* HWAVEIN;
 // Wave format
 #define WAVE_FORMAT_PCM 1
 
-// Timer capabilities structure
+// Timer capabilities structure - skip to avoid conflicts with win32_compat.h
+/*
 typedef struct tagTIMECAPS {
     DWORD wPeriodMin;
     DWORD wPeriodMax;
 } TIMECAPS, *LPTIMECAPS;
+*/
 
 // Timer callback function type
 typedef void (CALLBACK *LPTIMECALLBACK)(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2);
@@ -58,7 +64,8 @@ typedef void (CALLBACK *LPTIMECALLBACK)(UINT uTimerID, UINT uMsg, DWORD_PTR dwUs
 #define TIMERR_NOERROR  0
 #define TIMERR_NOCANDO  97
 
-// Wave format structure
+// Wave format structure - skip to avoid conflicts with win32_compat.h
+/*
 typedef struct tWAVEFORMATEX {
     WORD wFormatTag;
     WORD nChannels;
@@ -68,13 +75,10 @@ typedef struct tWAVEFORMATEX {
     WORD wBitsPerSample;
     WORD cbSize;
 } WAVEFORMATEX;
+*/
 
 // Multimedia function stubs - check if already defined
-#ifndef timeGetTime
-inline DWORD timeGetTime() {
-    return GetTickCount(); // Use our Windows compatibility function
-}
-#endif
+// timeGetTime is already defined in time_compat.h, so skip it here
 
 #ifndef timeGetDevCaps
 inline MMRESULT timeGetDevCaps(LPTIMECAPS ptc, DWORD cbtc) {
@@ -99,7 +103,8 @@ inline MMRESULT timeEndPeriod(DWORD uPeriod) {
 }
 #endif
 
-// Enhanced multimedia timer functions
+// Enhanced multimedia timer functions - skip to avoid conflicts with win32_compat.h
+/*
 #ifndef timeSetEvent
 inline MMRESULT timeSetEvent(UINT uDelay, UINT uResolution, LPTIMECALLBACK fptc, DWORD_PTR dwUser, UINT fuEvent) {
     // Use our compatibility layer implementation
@@ -113,11 +118,14 @@ inline MMRESULT timeKillEvent(UINT uTimerID) {
     return ::timeKillEvent(uTimerID);
 }
 #endif
+*/
 
-// Wave functions stubs
+// Wave functions stubs - skip to avoid conflicts with win32_compat.h
+/*
 inline DWORD waveOutGetNumDevs() {
     return 0; // No devices
 }
+*/
 
 inline MMRESULT waveOutGetDevCaps(DWORD_PTR uDeviceID, void* pwoc, DWORD cbwoc) {
     return MMSYSERR_BADDEVICEID; // Stub

@@ -51,7 +51,7 @@
 #ifndef VECTOR4_H
 #define VECTOR4_H
 
-#include "always.h"
+#include "../WWLib/always.h"
 #include "wwmath.h"
 #include <math.h>
 

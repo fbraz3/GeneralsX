@@ -46,6 +46,7 @@
 #define __WEBBROWSER_H__
 
 #include "Common/SubsystemInterface.h"
+#ifdef _WIN32
 #include <atlbase.h>
 #include <windows.h>
 #include <Common/GameMemory.h>
@@ -125,4 +126,5 @@ class WebBrowser :
 	};
 
 extern CComObject<WebBrowser> *TheWebBrowser;
+#endif // _WIN32
 #endif // __WEBBROWSER_H__

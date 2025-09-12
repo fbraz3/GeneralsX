@@ -8,6 +8,9 @@
 #include "windows.h"
 #include <stddef.h>
 
+// Include our compatibility first to avoid conflicts
+#include "../../Source/WWVegas/WW3D2/win32_compat.h"
+
 // Basic types
 typedef size_t SIZE_T;
 
@@ -16,15 +19,18 @@ typedef wchar_t OLECHAR;
 typedef OLECHAR* LPOLESTR;
 typedef const OLECHAR* LPCOLESTR;
 
-// COM basic types - check if already defined
+// COM basic types - check if already defined and avoid conflicts
 #ifndef _GUID_DEFINED
 #define _GUID_DEFINED
+// GUID is already defined in win32_compat.h, so skip redefinition
+/*
 typedef struct _GUID {
     unsigned long Data1;
     unsigned short Data2;
     unsigned short Data3;
     unsigned char Data4[8];
 } GUID;
+*/
 #endif
 
 #ifndef IID
@@ -79,9 +85,12 @@ inline HRESULT CoInitializeEx(LPVOID pvReserved, DWORD dwCoInit) {
     return S_OK; // Stub
 }
 
+// CoUninitialize is already defined as macro in win32_compat.h, so skip it here
+/*
 inline void CoUninitialize() {
     // Stub
 }
+*/
 
 inline HRESULT CoCreateInstance(REFCLSID rclsid, IUnknown* pUnkOuter, 
                                DWORD dwClsContext, REFIID riid, LPVOID* ppv) {

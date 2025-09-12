@@ -28,14 +28,14 @@ static unsigned missing_image_depth=24;
 
 static IDirect3DTexture8 * _MissingTexture = NULL;
 
-IDirect3DTexture8* MissingTexture::_Get_Missing_Texture()
+CORE_IDirect3DTexture8* MissingTexture::_Get_Missing_Texture()
 {
 	WWASSERT(_MissingTexture);
 	_MissingTexture->AddRef();
 	return _MissingTexture;
 }
 
-IDirect3DSurface8* MissingTexture::_Create_Missing_Surface()
+CORE_IDirect3DSurface8* MissingTexture::_Create_Missing_Surface()
 {
 	IDirect3DSurface8 *texture_surface = NULL;
 	DX8_ErrorCode(_MissingTexture->GetSurfaceLevel(0, &texture_surface));
@@ -99,7 +99,7 @@ void MissingTexture::_Init()
 		DX8_ErrorCode(tex->GetSurfaceLevel(i-1,&src));
 		DX8_ErrorCode(tex->GetSurfaceLevel(i,&dst));
 
-		DX8_ErrorCode(D3DXLoadSurfaceFromSurface(
+		DX8_ErrorCode(CORE_D3DXLoadSurfaceFromSurface(
 			dst,
 			NULL,	// palette
 			NULL,	// rect

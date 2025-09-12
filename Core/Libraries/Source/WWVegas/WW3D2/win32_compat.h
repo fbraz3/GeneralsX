@@ -100,6 +100,10 @@ typedef void* HWND;
 typedef void* HINSTANCE;
 typedef void* HMODULE;
 typedef void* HKEY;
+typedef void* HICON;
+typedef void* HPALETTE;
+typedef void* HMETAFILE;
+typedef void* HENHMETAFILE;
 typedef unsigned long DWORD;
 typedef unsigned char BYTE;
 typedef unsigned short WORD;
@@ -154,6 +158,27 @@ typedef DWORD U32;
 typedef long S32;
 typedef void* LPWAVEFORMAT;
 typedef void* HTIMER;
+
+// System time structure
+typedef struct {
+    WORD wYear;
+    WORD wMonth;
+    WORD wDayOfWeek;
+    WORD wDay;
+    WORD wHour;
+    WORD wMinute;
+    WORD wSecond;
+    WORD wMilliseconds;
+} SYSTEMTIME;
+
+// File system compatibility
+#include <sys/stat.h>
+#define _stat stat
+#define _S_IFDIR S_IFDIR
+
+// File system stat structure (on macOS, use the system's stat)
+#include <sys/stat.h>
+#define _stat stat
 
 // Calling conventions
 #define _stdcall
@@ -993,6 +1018,75 @@ inline MMRESULT waveOutGetDevCaps(UINT deviceId, LPWAVEOUTCAPS caps, UINT cbcaps
 #endif // AUDIO_DEVICE_DEFINED
 
 #endif // AUDIO_MULTIMEDIA_DEFINED
+
+#ifndef WINDOW_FUNCTIONS_DEFINED
+#define WINDOW_FUNCTIONS_DEFINED
+
+// Window management functions stubs
+inline BOOL SetWindowText(HWND hWnd, const char* lpString) {
+    // Stub implementation for setting window text
+    return TRUE;
+}
+
+inline BOOL SetWindowTextW(HWND hWnd, const wchar_t* lpString) {
+    // Stub implementation for setting window text (wide char)
+    return TRUE;
+}
+
+inline BOOL ShowWindow(HWND hWnd, int nCmdShow) {
+    // Stub implementation for showing/hiding window
+    return TRUE;
+}
+
+inline BOOL UpdateWindow(HWND hWnd) {
+    // Stub implementation for updating window
+    return TRUE;
+}
+
+inline HWND GetActiveWindow(void) {
+    // Stub implementation for getting active window
+    return (HWND)0;
+}
+
+inline HWND SetActiveWindow(HWND hWnd) {
+    // Stub implementation for setting active window
+    return hWnd;
+}
+
+inline BOOL GetWindowRect(HWND hWnd, RECT* lpRect) {
+    // Stub implementation for getting window rectangle
+    if (lpRect) {
+        lpRect->left = 0;
+        lpRect->top = 0;
+        lpRect->right = 800;
+        lpRect->bottom = 600;
+    }
+    return TRUE;
+}
+
+// Additional Windows API functions
+inline char* GetCommandLineA(void) {
+    // Stub implementation for getting command line
+    static char cmdline[] = "game.exe";
+    return cmdline;
+}
+
+inline UINT GetDoubleClickTime(void) {
+    // Stub implementation for double-click time (in milliseconds)
+    return 500;
+}
+
+inline DWORD GetModuleFileName(HMODULE hModule, char* lpFilename, DWORD nSize) {
+    // Stub implementation for getting module filename
+    if (lpFilename && nSize > 0) {
+        strncpy(lpFilename, "/Applications/Game.app/Contents/MacOS/game", nSize - 1);
+        lpFilename[nSize - 1] = '\0';
+        return strlen(lpFilename);
+    }
+    return 0;
+}
+
+#endif // WINDOW_FUNCTIONS_DEFINED
 
 #endif // WIN32_STRING_FUNCTIONS_DEFINED
 

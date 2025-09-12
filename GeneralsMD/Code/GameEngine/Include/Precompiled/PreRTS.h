@@ -81,14 +81,16 @@ class STLSpecialAlloc;
 #include <winerror.h>
 #ifdef _WIN32
 #include <wininet.h>
-#endif
 #include <winreg.h>
+#endif
 
 #ifndef DIRECTINPUT_VERSION
 #	define DIRECTINPUT_VERSION	0x800
 #endif
 
+#ifdef _WIN32
 #include <dinput.h>
+#endif
 
 //------------------------------------------------------------------------------------ STL Includes
 // srj sez: no, include STLTypesdefs below, instead, thanks

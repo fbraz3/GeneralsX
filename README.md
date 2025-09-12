@@ -34,9 +34,13 @@ This fork now includes **OpenGL rendering support** alongside the original Direc
   - ✅ **3D Audio APIs**: Spatial audio positioning, listener orientation, doppler effects
   - ✅ **Multimedia Timers**: timeSetEvent, timeKillEvent → thread-based timer system
   - ✅ **OpenAL Integration**: Cross-platform audio backend with Windows API compatibility
-- 🎯 **Next Phase: DirectX Graphics & Device APIs**
-  - **DirectX Graphics**: D3D device creation, resource management, rendering pipeline
-  - **Target**: Full executable compilation with complete graphics compatibility
+- 🔄 **PHASE 6 IN PROGRESS: DirectX Graphics & Game Engine Compilation**
+  - ✅ **DirectX Type System**: CORE_IDirect3D* types with macro aliasing coordination
+  - ✅ **Windows Header Compatibility**: Resolved header conflicts, conditional compilation
+  - ✅ **DirectInput Definitions**: Complete DIK_* key codes for cross-platform input
+  - ✅ **Windows API Stubs**: Window management, system info, file operations
+  - 🎯 **Current**: 11/691 files compiling, resolving final DirectX function gaps
+  - **Target**: Complete z_generals executable compilation
 
 See [MACOS_PORT.md](./MACOS_PORT.md) for detailed macOS porting progress, [OPENGL_SUMMARY.md](OPENGL_SUMMARY.md) for comprehensive implementation documentation, and [OPENGL_TESTING.md](./OPENGL_TESTING.md) for testing procedures and results.
 

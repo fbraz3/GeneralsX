@@ -34,7 +34,12 @@
 
 #define WIN32_LEAN_AND_MEAN
 #define STRICT
+#ifdef __APPLE__
+#include "../WWVegas/WWLib/always.h"
+#include "../WWVegas/WW3D2/win32_compat.h"
+#else
 #include <windows.h>
+#endif
 
 #include "profile.h"
 #include "internal.h"

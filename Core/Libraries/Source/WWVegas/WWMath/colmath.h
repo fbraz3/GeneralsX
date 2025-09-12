@@ -42,7 +42,7 @@
 #define COLMATH_H
 
 #ifndef ALWAYS_H
-#include "always.h"
+#include "../WWLib/always.h"
 #endif
 
 #ifndef VECTOR3_H
