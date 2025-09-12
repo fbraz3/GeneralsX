@@ -1105,6 +1105,14 @@ inline D3DMATRIX* D3DXMatrixTranspose(D3DMATRIX* out, const D3DMATRIX* in) {
 }
 #endif // CORE_D3DXMATRIXTRANSPOSE_DEFINED
 
+// D3DXMatrixTranspose overload for D3DXMATRIX compatibility
+#ifndef D3DXMATRIXTRANSPOSE_OVERLOAD_DEFINED
+#define D3DXMATRIXTRANSPOSE_OVERLOAD_DEFINED
+inline D3DXMATRIX* D3DXMatrixTranspose(D3DXMATRIX* out, const D3DXMATRIX* in) {
+    return (D3DXMATRIX*)D3DXMatrixTranspose((D3DMATRIX*)out, (const D3DMATRIX*)in);
+}
+#endif // D3DXMATRIXTRANSPOSE_OVERLOAD_DEFINED
+
 // D3DXGetErrorStringA - Ensure compatibility with Core/win32_compat.h
 #ifndef D3DXGETERRORSTRINGA_DEFINED
 #define D3DXGETERRORSTRINGA_DEFINED
