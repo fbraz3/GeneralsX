@@ -155,7 +155,7 @@ NodeCompressedMotionStruct::~NodeCompressedMotionStruct()
 
 	if (Vis) delete Vis;
 
-}  // ~NodeCompressedMotionStruct
+}
 
 
 /***********************************************************************************************
@@ -370,7 +370,7 @@ Error:
 	Free();
 	return LOAD_ERROR;
 
-}	 // Load_W3D
+}
 
 /***********************************************************************************************
  * HCompressedAnimClass::read_channel -- Reads in a single channel of motion                   *
@@ -391,7 +391,7 @@ bool HCompressedAnimClass::read_channel(ChunkLoadClass & cload,TimeCodedMotionCh
 
 	return result;
 
-}	// read_channel
+}
 
 bool HCompressedAnimClass::read_channel(ChunkLoadClass & cload,AdaptiveDeltaMotionChannelClass * * newchan)
 {
@@ -400,7 +400,7 @@ bool HCompressedAnimClass::read_channel(ChunkLoadClass & cload,AdaptiveDeltaMoti
 
 	return result;
 
-}	// read_channel
+}
 
 
 /***********************************************************************************************
@@ -438,7 +438,7 @@ void HCompressedAnimClass::add_channel(TimeCodedMotionChannelClass * newchan)
 			break;
 	}
 
-}	// add_channel
+}
 
 void HCompressedAnimClass::add_channel(AdaptiveDeltaMotionChannelClass * newchan)
 {
@@ -463,7 +463,7 @@ void HCompressedAnimClass::add_channel(AdaptiveDeltaMotionChannelClass * newchan
 			break;
 	}
 
-}	// add_channel
+}
 
 
 
@@ -487,7 +487,7 @@ bool HCompressedAnimClass::read_bit_channel(ChunkLoadClass & cload,TimeCodedBitC
 
 	return result;
 
-}	// read_bit_channel
+}
 
 
 /***********************************************************************************************
@@ -576,7 +576,7 @@ void HCompressedAnimClass::Get_Orientation(Quaternion& q, int pividx,float frame
 			WWASSERT(0); // unknown flavor
 			break;
 	}
-} // Get_Orientation
+}
 
 /***********************************************************************************************
  * HCompressedAnimClass::Get_Transform -- returns the transform matrix for the given frame	  *
