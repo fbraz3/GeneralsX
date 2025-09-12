@@ -235,6 +235,9 @@ set(WW3D2_SRC
     # Cross-platform configuration system
     config_manager.cpp
     ini_parser.cpp
+    
+    # Cross-platform API compatibility (Phase 2)
+    threading.cpp
 )
 
 add_library(corei_ww3d2 INTERFACE)

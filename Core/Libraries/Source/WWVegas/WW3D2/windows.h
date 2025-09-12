@@ -14,6 +14,12 @@
 // Include base compatibility
 #include "win32_compat.h"
 
+// Include additional compatibility layers
+#include "threading.h"
+#include "filesystem.h"  
+#include "network.h"
+#include "string_compat.h"
+
 // Additional Windows types
 #ifndef HANDLE
 typedef void* HANDLE;
@@ -247,6 +253,35 @@ inline DWORD GetFileAttributes(const char* lpFileName) {
     #else
         struct stat st;
         return (stat(lpFileName, &st) == 0) ? 0 : 0xFFFFFFFF;
+    #endif
+}
+
+// Dynamic library functions
+inline void* GetProcAddress(void* hModule, const char* lpProcName) {
+    #ifdef _WIN32
+        return ::GetProcAddress((HMODULE)hModule, lpProcName);
+    #else
+        // On Unix, this would use dlsym, but for now we'll return NULL
+        // indicating the function is not available
+        return NULL;
+    #endif
+}
+
+inline void* LoadLibrary(const char* lpLibFileName) {
+    #ifdef _WIN32
+        return ::LoadLibraryA(lpLibFileName);
+    #else
+        // On Unix, this would use dlopen, but for now we'll return NULL
+        return NULL;
+    #endif
+}
+
+inline BOOL FreeLibrary(void* hLibModule) {
+    #ifdef _WIN32
+        return ::FreeLibrary((HMODULE)hLibModule);
+    #else
+        // On Unix, this would use dlclose
+        return TRUE;
     #endif
 }
 
