@@ -41,6 +41,20 @@ include(FetchContent)
 # Add OpenGL support
 include(cmake/opengl.cmake)
 
+# Add OpenAL support for cross-platform audio (Phase 5)
+if(NOT WIN32)
+    find_package(OpenAL REQUIRED)
+    if(OpenAL_FOUND)
+        message(STATUS "OpenAL found: ${OPENAL_LIBRARY}")
+        # Only create the imported target if it doesn't exist
+        if(NOT TARGET OpenAL::OpenAL)
+            add_library(OpenAL::OpenAL INTERFACE IMPORTED)
+            target_link_libraries(OpenAL::OpenAL INTERFACE ${OPENAL_LIBRARY})
+            target_include_directories(OpenAL::OpenAL INTERFACE ${OPENAL_INCLUDE_DIR})
+        endif()
+    endif()
+endif()
+
 # Find/Add build dependencies and stubs shared by all projects
 if((WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows") AND ${CMAKE_SIZEOF_VOID_P} EQUAL 4)
     include(cmake/miles.cmake)

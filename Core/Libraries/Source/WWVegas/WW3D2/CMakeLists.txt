@@ -238,6 +238,10 @@ set(WW3D2_SRC
     
     # Cross-platform API compatibility (Phase 2)
     threading.cpp
+    
+    # Phase 5: Audio & Multimedia APIs (OpenAL-based DirectSound compatibility)
+    dsound_compat.cpp
+    multimedia_timers.cpp
 )
 
 add_library(corei_ww3d2 INTERFACE)
@@ -254,3 +258,13 @@ target_link_libraries(corei_ww3d2 INTERFACE
     core_browserengine
     core_wwlib
 )
+
+# Add include directory for config_manager.h and other headers
+target_include_directories(corei_ww3d2 INTERFACE
+    ${CMAKE_SOURCE_DIR}/Core/Libraries/Include
+)
+
+# Link OpenAL for audio support on non-Windows platforms
+if(NOT WIN32 AND TARGET OpenAL::OpenAL)
+    target_link_libraries(corei_ww3d2 INTERFACE OpenAL::OpenAL)
+endif()

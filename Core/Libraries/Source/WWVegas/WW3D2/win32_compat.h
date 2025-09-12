@@ -106,6 +106,8 @@ typedef unsigned short WORD;
 typedef uintptr_t DWORD_PTR;
 typedef int BOOL;
 typedef long LONG;
+typedef unsigned long ULONG;  // Added ULONG type
+typedef char CHAR;            // Added CHAR type
 typedef void* LPVOID;
 typedef float FLOAT;
 
@@ -370,9 +372,12 @@ public:
     }
 };
 
+#ifndef D3DVECTOR_DEFINED
+#define D3DVECTOR_DEFINED
 typedef struct {
     float x, y, z;
 } D3DVECTOR;
+#endif
 
 // Stub functions that do nothing on non-Windows
 inline void* GetDC(void*) { return nullptr; }
@@ -808,6 +813,186 @@ inline BOOL QueryPerformanceFrequency(LARGE_INTEGER* lpFrequency) {
 // #endif
 
 #endif // PERFORMANCE_TIMING_DEFINED
+
+//=============================================================================
+// PHASE 5: AUDIO & MULTIMEDIA APIs
+//=============================================================================
+
+#ifndef AUDIO_MULTIMEDIA_DEFINED
+#define AUDIO_MULTIMEDIA_DEFINED
+
+// Include DirectSound compatibility layer
+#include "dsound_compat.h"
+
+// Multimedia timer functions
+#ifndef MULTIMEDIA_TIMERS_DEFINED
+#define MULTIMEDIA_TIMERS_DEFINED
+
+#ifndef CALLBACK
+#define CALLBACK
+#endif
+
+#include <thread>
+#include <chrono>
+#include <functional>
+#include <map>
+#include <mutex>
+
+// MMRESULT is already defined in Dependencies/Utility/time_compat.h as 'int'
+// We should not redefine it - use the existing definition
+
+typedef UINT MMIOID;
+
+// Only define LPTIMECALLBACK if not already defined
+#ifndef LPTIMECALLBACK
+typedef void (CALLBACK *LPTIMECALLBACK)(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2);
+#endif
+
+// Multimedia timer constants
+#define TIMERR_NOERROR      0
+#define TIMERR_NOCANDO      97
+#define TIMERR_BADDEVICEID  98
+#define TIME_ONESHOT        0x0000
+#define TIME_PERIODIC       0x0001
+#define TIME_CALLBACK_FUNCTION 0x0000
+
+// Multimedia timer structures
+typedef struct timecaps_tag {
+    UINT wPeriodMin;
+    UINT wPeriodMax;
+} TIMECAPS, *PTIMECAPS, *LPTIMECAPS;
+
+// Timer management class
+class MultimediaTimerManager {
+public:
+    static MultimediaTimerManager& getInstance();
+    
+    MMRESULT timeSetEvent(UINT delay, UINT resolution, LPTIMECALLBACK callback, 
+                         DWORD_PTR user, UINT flags);
+    MMRESULT timeKillEvent(UINT timerId);
+    MMRESULT timeGetDevCaps(LPTIMECAPS caps, UINT cbcaps);
+    MMRESULT timeBeginPeriod(UINT period);
+    MMRESULT timeEndPeriod(UINT period);
+    
+private:
+    struct TimerInfo {
+        std::thread thread;
+        std::atomic<bool> active;
+        UINT delay;
+        LPTIMECALLBACK callback;
+        DWORD_PTR user;
+        UINT flags;
+    };
+    
+    std::map<UINT, std::unique_ptr<TimerInfo>> m_timers;
+    std::mutex m_timersMutex;
+    UINT m_nextTimerId;
+    
+    MultimediaTimerManager() : m_nextTimerId(1) {}
+    ~MultimediaTimerManager();
+    
+    void timerThread(UINT timerId);
+};
+
+// Multimedia timer API functions
+inline MMRESULT timeSetEvent(UINT delay, UINT resolution, LPTIMECALLBACK callback, 
+                            DWORD_PTR user, UINT flags) {
+    return MultimediaTimerManager::getInstance().timeSetEvent(delay, resolution, callback, user, flags);
+}
+
+inline MMRESULT timeKillEvent(UINT timerId) {
+    return MultimediaTimerManager::getInstance().timeKillEvent(timerId);
+}
+
+inline MMRESULT timeGetDevCaps(LPTIMECAPS caps, UINT cbcaps) {
+    return MultimediaTimerManager::getInstance().timeGetDevCaps(caps, cbcaps);
+}
+
+inline MMRESULT timeBeginPeriod(UINT period) {
+    return MultimediaTimerManager::getInstance().timeBeginPeriod(period);
+}
+
+inline MMRESULT timeEndPeriod(UINT period) {
+    return MultimediaTimerManager::getInstance().timeEndPeriod(period);
+}
+
+#endif // MULTIMEDIA_TIMERS_DEFINED
+
+// WAVE format structures for audio compatibility
+#ifndef WAVE_FORMAT_DEFINED
+#define WAVE_FORMAT_DEFINED
+
+#define WAVE_FORMAT_PCM         1
+#define WAVE_FORMAT_ADPCM       2
+#define WAVE_FORMAT_IEEE_FLOAT  3
+
+typedef struct waveformat_tag {
+    WORD    wFormatTag;
+    WORD    nChannels;
+    DWORD   nSamplesPerSec;
+    DWORD   nAvgBytesPerSec;
+    WORD    nBlockAlign;
+} WAVEFORMAT;
+
+typedef struct pcmwaveformat_tag {
+    WAVEFORMAT  wf;
+    WORD        wBitsPerSample;
+} PCMWAVEFORMAT;
+
+typedef struct waveformatex_tag {
+    WORD        wFormatTag;
+    WORD        nChannels;
+    DWORD       nSamplesPerSec;
+    DWORD       nAvgBytesPerSec;
+    WORD        nBlockAlign;
+    WORD        wBitsPerSample;
+    WORD        cbSize;
+} WAVEFORMATEX, *PWAVEFORMATEX, *LPWAVEFORMATEX;
+
+#endif // WAVE_FORMAT_DEFINED
+
+// Audio device management
+#ifndef AUDIO_DEVICE_DEFINED
+#define AUDIO_DEVICE_DEFINED
+
+// Audio device types
+#define WAVE_MAPPER             ((UINT)-1)
+#define CALLBACK_NULL           0x00000000
+#define CALLBACK_WINDOW         0x00010000
+#define CALLBACK_TASK           0x00020000
+#define CALLBACK_FUNCTION       0x00030000
+
+// Audio device capabilities
+typedef struct waveoutcaps_tag {
+    WORD    wMid;
+    WORD    wPid;
+    DWORD   vDriverVersion;
+    CHAR    szPname[32];
+    DWORD   dwFormats;
+    WORD    wChannels;
+    WORD    wReserved1;
+    DWORD   dwSupport;
+} WAVEOUTCAPS, *PWAVEOUTCAPS, *LPWAVEOUTCAPS;
+
+// Audio device functions (stubs for compatibility)
+inline MMRESULT waveOutGetNumDevs() {
+    return 1; // Always report one device available
+}
+
+inline MMRESULT waveOutGetDevCaps(UINT deviceId, LPWAVEOUTCAPS caps, UINT cbcaps) {
+    if (caps && cbcaps >= sizeof(WAVEOUTCAPS)) {
+        memset(caps, 0, sizeof(WAVEOUTCAPS));
+        strcpy(caps->szPname, "OpenAL Audio Device");
+        caps->dwFormats = 0xFFFFFFFF; // Support all formats
+        caps->wChannels = 2; // Stereo
+        return TIMERR_NOERROR;
+    }
+    return TIMERR_BADDEVICEID;
+}
+
+#endif // AUDIO_DEVICE_DEFINED
+
+#endif // AUDIO_MULTIMEDIA_DEFINED
 
 #endif // WIN32_STRING_FUNCTIONS_DEFINED
 

@@ -48,6 +48,16 @@ typedef struct tagTIMECAPS {
     DWORD wPeriodMax;
 } TIMECAPS, *LPTIMECAPS;
 
+// Timer callback function type
+typedef void (CALLBACK *LPTIMECALLBACK)(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2);
+
+// Timer constants
+#define TIME_ONESHOT    0x0000
+#define TIME_PERIODIC   0x0001
+#define TIME_CALLBACK_FUNCTION 0x0000
+#define TIMERR_NOERROR  0
+#define TIMERR_NOCANDO  97
+
 // Wave format structure
 typedef struct tWAVEFORMATEX {
     WORD wFormatTag;
@@ -86,6 +96,21 @@ inline MMRESULT timeBeginPeriod(DWORD uPeriod) {
 #ifndef timeEndPeriod
 inline MMRESULT timeEndPeriod(DWORD uPeriod) {
     return MMSYSERR_NOERROR; // Stub
+}
+#endif
+
+// Enhanced multimedia timer functions
+#ifndef timeSetEvent
+inline MMRESULT timeSetEvent(UINT uDelay, UINT uResolution, LPTIMECALLBACK fptc, DWORD_PTR dwUser, UINT fuEvent) {
+    // Use our compatibility layer implementation
+    return ::timeSetEvent(uDelay, uResolution, fptc, dwUser, fuEvent);
+}
+#endif
+
+#ifndef timeKillEvent
+inline MMRESULT timeKillEvent(UINT uTimerID) {
+    // Use our compatibility layer implementation
+    return ::timeKillEvent(uTimerID);
 }
 #endif
 

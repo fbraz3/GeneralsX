@@ -6,7 +6,6 @@
 #include <algorithm>
 
 #ifdef _WIN32
-#include <windows.h>
 #include <shlobj.h>
 #elif defined(__APPLE__)
 #include <CoreFoundation/CoreFoundation.h>
@@ -145,9 +144,13 @@ bool ConfigManager::getUnsignedInt(const std::string& section, const std::string
 }
 
 unsigned int ConfigManager::getUnsignedInt(const std::string& section, const std::string& key, unsigned int defaultValue) {
-    unsigned int value;
-    if (getUnsignedInt(section, key, value)) {
-        return value;
+    std::string strValue;
+    if (getString(section, key, strValue)) {
+        try {
+            return static_cast<unsigned int>(std::stoul(strValue));
+        } catch (...) {
+            return defaultValue;
+        }
     }
     return defaultValue;
 }
@@ -184,7 +187,16 @@ bool ConfigManager::setStringInRegistryPath(const std::string& registryPath, con
 
 bool ConfigManager::getUnsignedIntFromRegistryPath(const std::string& registryPath, const std::string& key, unsigned int& value) {
     std::string section = registryPathToSection(registryPath);
-    return getUnsignedInt(section, key, value);
+    std::string strValue;
+    if (getString(section, key, strValue)) {
+        try {
+            value = static_cast<unsigned int>(std::stoul(strValue));
+            return true;
+        } catch (...) {
+            return false;
+        }
+    }
+    return false;
 }
 
 bool ConfigManager::setUnsignedIntInRegistryPath(const std::string& registryPath, const std::string& key, unsigned int value) {

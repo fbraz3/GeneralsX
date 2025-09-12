@@ -38,7 +38,7 @@
 /*		7/18/2002 : Initial creation                                           */
 /*---------------------------------------------------------------------------*/
 
-#include <dsound.h>
+#include "../../../Libraries/Source/WWVegas/WW3D2/dsound.h"
 #include "Lib/BaseType.h"
 #include "MilesAudioDevice/MilesAudioManager.h"
 

@@ -1,6 +1,11 @@
 #ifndef THREADING_COMPAT_H
 #define THREADING_COMPAT_H
 
+#pragma once
+
+// Include Windows compatibility layer for basic types
+#include "win32_compat.h"
+
 #ifndef _WIN32
 
 #include <pthread.h>
