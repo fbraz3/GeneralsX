@@ -181,6 +181,10 @@
 #define DIK_SLEEP           0xDF
 #define DIK_CAPSLOCK        0x3A    /* Caps Lock (alias) */
 #define DIK_LALT            0x38    /* left Alt (alias) */
+#define DIK_RALT            0xB8    /* right Alt (alias) */
+#define DIK_PGUP            0xC9    /* PgUp on arrow keypad (alias) */
+#define DIK_PGDN            0xD1    /* PgDn on arrow keypad (alias) */
+#define DIK_NUMPADSLASH     0xB5    /* / on numeric keypad (alias) */
 #define DIK_UPARROW         0xC8    /* UpArrow on arrow keypad (alias) */
 #define DIK_DOWNARROW       0xD0    /* DownArrow on arrow keypad (alias) */
 #define DIK_LEFTARROW       0xCB    /* LeftArrow on arrow keypad (alias) */

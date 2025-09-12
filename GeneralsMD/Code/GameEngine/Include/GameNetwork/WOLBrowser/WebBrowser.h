@@ -126,5 +126,30 @@ class WebBrowser :
 	};
 
 extern CComObject<WebBrowser> *TheWebBrowser;
+#else
+// Stub definitions for non-Windows platforms
+#include <Lib/BaseType.h>
+
+// Forward declaration
+struct FieldParse;
+
+class WebBrowserURL {
+public:
+    AsciiString m_url;
+    
+    WebBrowserURL() {}
+    ~WebBrowserURL() {}
+    
+    // Stub for getFieldParse method
+    const FieldParse* getFieldParse() { return nullptr; }
+};
+
+class WebBrowser {
+public:
+    WebBrowserURL* findURL(const AsciiString& tag) { return nullptr; }
+    WebBrowserURL* makeNewURL(const AsciiString& tag) { return nullptr; }
+};
+
+extern WebBrowser *TheWebBrowser;
 #endif // _WIN32
 #endif // __WEBBROWSER_H__

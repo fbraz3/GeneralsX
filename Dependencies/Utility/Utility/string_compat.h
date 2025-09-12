@@ -24,12 +24,8 @@ typedef const char* LPCSTR;
 typedef char* LPSTR;
 
 // String functions
-inline char *_strlwr(char *str) {
-  for (int i = 0; str[i] != '\0'; i++) {
-    str[i] = tolower(str[i]);
-  }
-  return str;
-}
+// Note: _strlwr is provided by GameSpy headers, so we don't define it here
+// to avoid linkage conflicts
 
 #define strlwr _strlwr
 #define stricmp strcasecmp

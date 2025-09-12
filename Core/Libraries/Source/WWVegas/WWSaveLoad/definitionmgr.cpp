@@ -45,6 +45,7 @@
 #include "wwmemlog.h"
 #include "twiddler.h"
 #include <string.h>
+#include <cctype>
 #include "wwprofile.h"
 
 

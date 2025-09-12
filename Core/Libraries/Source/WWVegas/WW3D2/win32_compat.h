@@ -29,6 +29,9 @@ typedef unsigned short WORD;
 #ifndef BYTE
 typedef unsigned char BYTE;
 #endif
+#ifndef __int64
+typedef long long __int64;
+#endif
 
 #ifndef UINT
 typedef unsigned int UINT;
@@ -173,6 +176,7 @@ typedef struct {
 
 // File system compatibility
 #include <sys/stat.h>
+#include <time.h>
 #define _stat stat
 #define _S_IFDIR S_IFDIR
 
@@ -687,6 +691,31 @@ typedef struct {
     void* LockSemaphore;
     unsigned long SpinCount;
 } CRITICAL_SECTION;
+
+// Critical Section functions
+inline void InitializeCriticalSection(CRITICAL_SECTION* lpCriticalSection) {
+    // For cross-platform compatibility, we'll use a simple approach
+    // In a real implementation, this would use pthread_mutex_init
+    memset(lpCriticalSection, 0, sizeof(CRITICAL_SECTION));
+}
+
+inline void DeleteCriticalSection(CRITICAL_SECTION* lpCriticalSection) {
+    // For cross-platform compatibility
+    // In a real implementation, this would use pthread_mutex_destroy
+    memset(lpCriticalSection, 0, sizeof(CRITICAL_SECTION));
+}
+
+inline void EnterCriticalSection(CRITICAL_SECTION* lpCriticalSection) {
+    // For cross-platform compatibility, this is a simple stub
+    // In a real implementation, this would use pthread_mutex_lock
+    (void)lpCriticalSection; // Suppress unused parameter warning
+}
+
+inline void LeaveCriticalSection(CRITICAL_SECTION* lpCriticalSection) {
+    // For cross-platform compatibility, this is a simple stub
+    // In a real implementation, this would use pthread_mutex_unlock
+    (void)lpCriticalSection; // Suppress unused parameter warning
+}
 #endif
 
 // Registry constants
@@ -1086,9 +1115,54 @@ inline DWORD GetModuleFileName(HMODULE hModule, char* lpFilename, DWORD nSize) {
     return 0;
 }
 
+inline void GetLocalTime(SYSTEMTIME* lpSystemTime) {
+    // Stub implementation for getting local time
+    if (lpSystemTime) {
+        time_t now = time(0);
+        struct tm* t = localtime(&now);
+        lpSystemTime->wYear = t->tm_year + 1900;
+        lpSystemTime->wMonth = t->tm_mon + 1;
+        lpSystemTime->wDayOfWeek = t->tm_wday;
+        lpSystemTime->wDay = t->tm_mday;
+        lpSystemTime->wHour = t->tm_hour;
+        lpSystemTime->wMinute = t->tm_min;
+        lpSystemTime->wSecond = t->tm_sec;
+        lpSystemTime->wMilliseconds = 0;
+    }
+}
+
 #endif // WINDOW_FUNCTIONS_DEFINED
 
 #endif // WIN32_STRING_FUNCTIONS_DEFINED
+
+// Microsoft-specific max/min macros
+#ifndef __max
+#define __max(a,b) (((a) > (b)) ? (a) : (b))
+#endif
+#ifndef __min
+#define __min(a,b) (((a) < (b)) ? (a) : (b))
+#endif
+
+// String functions for compatibility
+// GameSpy provides _strlwr but with different linkage, so we work around this
+#ifndef _WIN32
+
+// Helper function with a different name to avoid conflicts
+static inline char *ww_strlwr_impl(char *str) {
+    if (str) {
+        for (char *p = str; *p; ++p) {
+            *p = tolower(*p);
+        }
+    }
+    return str;
+}
+
+// Only define the macro if we haven't seen GameSpy headers yet
+#if !defined(__GSPLATFORM_H__) && !defined(_strlwr)
+#define _strlwr ww_strlwr_impl
+#endif
+
+#endif // !_WIN32
 
 #endif // !_WIN32
 

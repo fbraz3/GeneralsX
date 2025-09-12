@@ -130,6 +130,8 @@ typedef HKEY* PHKEY;
 inline DWORD GetLastError() { return 0; }
 inline void SetLastError(DWORD dwErrCode) {}
 inline int MessageBoxA(void* hWnd, const char* lpText, const char* lpCaption, UINT uType) { return IDOK; }
+inline int MessageBox(void* hWnd, const char* lpText, const char* lpCaption, UINT uType) { return IDOK; }
+inline int MessageBoxW(void* hWnd, const wchar_t* lpText, const wchar_t* lpCaption, UINT uType) { return IDOK; }
 inline HANDLE CreateFileA(const char* lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, void* lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile) { return INVALID_HANDLE_VALUE; }
 // CloseHandle is defined in threading.h
 // ReadFile and WriteFile are defined in filesystem.h
