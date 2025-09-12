@@ -1162,7 +1162,52 @@ static inline char *ww_strlwr_impl(char *str) {
 #define _strlwr ww_strlwr_impl
 #endif
 
-#endif // !_WIN32
+// Additional Windows APIs
+// itoa function for integer to string conversion
+inline char *itoa(int value, char *str, int base) {
+    if (base == 10) {
+        sprintf(str, "%d", value);
+    } else if (base == 16) {
+        sprintf(str, "%x", value);
+    } else {
+        // Simple base-10 fallback for other bases
+        sprintf(str, "%d", value);
+    }
+    return str;
+}
+
+// Font resource management stubs
+inline int AddFontResource(const char* filename) {
+    (void)filename;
+    return 1; // Success stub
+}
+
+inline BOOL RemoveFontResource(const char* filename) {
+    (void)filename;
+    return TRUE; // Success stub
+}
+
+// OS Version information
+typedef struct {
+    DWORD dwOSVersionInfoSize;
+    DWORD dwMajorVersion;
+    DWORD dwMinorVersion;
+    DWORD dwBuildNumber;
+    DWORD dwPlatformId;
+    char szCSDVersion[128];
+} OSVERSIONINFO;
+
+inline BOOL GetVersionEx(OSVERSIONINFO* lpVersionInfo) {
+    if (lpVersionInfo) {
+        lpVersionInfo->dwMajorVersion = 10;  // macOS major version
+        lpVersionInfo->dwMinorVersion = 15;  // macOS minor version  
+        lpVersionInfo->dwBuildNumber = 0;
+        lpVersionInfo->dwPlatformId = 2;     // VER_PLATFORM_WIN32_NT equivalent
+        strcpy(lpVersionInfo->szCSDVersion, "");
+        return TRUE;
+    }
+    return FALSE;
+}
 
 #endif // !_WIN32
 
