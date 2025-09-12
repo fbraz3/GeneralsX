@@ -13,16 +13,9 @@
 // Note: _strlwr is provided by Dependencies/Utility/Utility/string_compat.h
 
 // String case conversion functions
+// Note: strupr is provided by win32_compat.h
 #ifdef __APPLE__
-inline char* strupr(char* str) {
-    if (!str) return nullptr;
-    char* p = str;
-    while (*p) {
-        *p = (char)std::toupper(*p);
-        ++p;
-    }
-    return str;
-}
+// All string functions are provided by win32_compat.h
 #endif
 
 // String comparison functions

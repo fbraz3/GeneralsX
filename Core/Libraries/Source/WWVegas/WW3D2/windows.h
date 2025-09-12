@@ -227,33 +227,8 @@ inline LONG RegCreateKeyExA(HKEY hKey, const char* lpSubKey, DWORD Reserved, cha
     return RegCreateKeyEx(hKey, lpSubKey, Reserved, lpClass, dwOptions, samDesired, lpSecurityAttributes, phkResult, lpdwDisposition);
 }
 
-// String functions
-inline int lstrcmpi(const char* lpString1, const char* lpString2) {
-    #ifdef _WIN32
-        return ::lstrcmpiA(lpString1, lpString2);
-    #else
-        return strcasecmp(lpString1, lpString2);
-    #endif
-}
-
-// File system functions
-inline DWORD GetCurrentDirectory(DWORD nBufferLength, char* lpBuffer) {
-    #ifdef _WIN32
-        return ::GetCurrentDirectoryA(nBufferLength, lpBuffer);
-    #else
-        char* result = getcwd(lpBuffer, nBufferLength);
-        return result ? strlen(result) : 0;
-    #endif
-}
-
-inline DWORD GetFileAttributes(const char* lpFileName) {
-    #ifdef _WIN32
-        return ::GetFileAttributesA(lpFileName);
-    #else
-        struct stat st;
-        return (stat(lpFileName, &st) == 0) ? 0 : 0xFFFFFFFF;
-    #endif
-}
+// String and file functions provided by win32_compat.h
+// (lstrcmpi, GetCurrentDirectory, GetFileAttributes)
 
 // Dynamic library functions defined in win32_compat.h
 // (LoadLibrary, GetProcAddress, FreeLibrary)

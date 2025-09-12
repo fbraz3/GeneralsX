@@ -338,7 +338,7 @@ inline char* lstrcat(char* dest, const char* src) {
 }
 
 // DirectX basic types
-#ifndef LARGE_INTEGER_DEFINED
+#if !defined(_WIN32) && !defined(LARGE_INTEGER_DEFINED)
 #define LARGE_INTEGER_DEFINED
 typedef struct {
     DWORD LowPart;
@@ -346,7 +346,7 @@ typedef struct {
 } LARGE_INTEGER;
 #endif
 
-#ifndef GUID_DEFINED
+#if !defined(_WIN32) && !defined(GUID_DEFINED)
 #define GUID_DEFINED
 typedef struct {
     DWORD Data1;
@@ -502,7 +502,7 @@ inline int lstrcmpi(const char* str1, const char* str2) {
 
 // File system functions
 inline DWORD GetCurrentDirectory(DWORD size, char* buffer) {
-    if (getcwd(buffer, size)) {
+    if (::getcwd(buffer, size)) {
         return strlen(buffer);
     }
     return 0;
@@ -648,6 +648,7 @@ typedef float F32;
 #endif
 
 // Threading types
+#if !defined(_WIN32) && !defined(_CRITICAL_SECTION_)
 typedef struct {
     void* DebugInfo;
     long LockCount;
@@ -656,6 +657,7 @@ typedef struct {
     void* LockSemaphore;
     unsigned long SpinCount;
 } CRITICAL_SECTION;
+#endif
 
 // Registry constants
 #define HKEY_LOCAL_MACHINE ((HKEY)0x80000002)
@@ -688,11 +690,14 @@ inline long RegQueryValueEx(HKEY hKey, const char* lpValueName, DWORD* lpReserve
 */
 
 // Threading function stubs
+#if !defined(_WIN32) && !defined(CREATETHREAD_DEFINED)
+#define CREATETHREAD_DEFINED
 inline HANDLE CreateThread(void* lpThreadAttributes, unsigned long dwStackSize, 
                           void* lpStartAddress, void* lpParameter, 
                           DWORD dwCreationFlags, DWORD* lpThreadId) {
     return nullptr; // Stub implementation
 }
+#endif
 
 #endif // WIN32_STRING_FUNCTIONS_DEFINED
 

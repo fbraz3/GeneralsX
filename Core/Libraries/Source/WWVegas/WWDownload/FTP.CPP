@@ -1047,7 +1047,11 @@ unsigned long MyIPAddress( int sockfd )
 		i = sizeof( sin );
 		getsockname( sockfd, (struct sockaddr *)&sin, &i );
 
+		#ifdef _WIN32
 		ip = sin.sin_addr.S_un.S_addr;
+		#else
+		ip = sin.sin_addr.s_addr;
+		#endif
 	}
 	else
 	{

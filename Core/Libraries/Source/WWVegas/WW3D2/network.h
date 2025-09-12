@@ -119,7 +119,7 @@ namespace Win32Net {
 
 // Map Windows function names to our compatibility functions
 // Only define these macros when needed (not when including std headers)
-#if !defined(_FUNCTIONAL_) && !defined(__FUNCTIONAL) && !defined(_GLIBCXX_FUNCTIONAL) && !defined(_LIBCPP_FUNCTIONAL) && !defined(__MACH__)
+#if !defined(_FUNCTIONAL_) && !defined(__FUNCTIONAL) && !defined(_GLIBCXX_FUNCTIONAL) && !defined(_LIBCPP_FUNCTIONAL)
 #define getsockname Win32Net::compat_getsockname
 // #define bind Win32Net::compat_bind  // Commented out to avoid conflicts with std::bind
 #define connect Win32Net::compat_connect

@@ -13,6 +13,9 @@
     #include <errno.h>
     #include <sys/ioctl.h>
     
+    // Include our network compatibility layer
+    #include "../WW3D2/network.h"
+    
     // Windows socket types
     typedef int SOCKET;
     typedef struct sockaddr SOCKADDR;
@@ -31,6 +34,9 @@
     #define WSAEISCONN EISCONN
     #define WSAENOTCONN ENOTCONN
     #define WSAETIMEDOUT ETIMEDOUT
+    
+    // Windows in_addr compatibility - map S_un.S_addr to s_addr
+    #define S_un_S_addr s_addr
     
     // Windows socket functions defined in network.h
     // (WSAStartup, WSACleanup, WSAGetLastError)
