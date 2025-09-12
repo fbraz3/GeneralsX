@@ -747,10 +747,14 @@ typedef struct {
     DWORD Caps2;
     DWORD DevCaps;
     DWORD RasterCaps;
+    DWORD TextureOpCaps;
+    DWORD TextureCaps;
+    DWORD TextureFilterCaps;
     DWORD MaxTextureWidth;
     DWORD MaxTextureHeight;
+    DWORD MaxVolumeExtent;
     DWORD MaxSimultaneousTextures;
-    DWORD TextureOpCaps;
+    float MaxPointSize;
     DWORD VertexShaderVersion;
     DWORD PixelShaderVersion;
 } D3DCAPS8;

@@ -131,9 +131,8 @@ inline DWORD GetLastError() { return 0; }
 inline void SetLastError(DWORD dwErrCode) {}
 inline int MessageBoxA(void* hWnd, const char* lpText, const char* lpCaption, UINT uType) { return IDOK; }
 inline HANDLE CreateFileA(const char* lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, void* lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile) { return INVALID_HANDLE_VALUE; }
-inline BOOL CloseHandle(HANDLE hObject) { return TRUE; }
-inline BOOL ReadFile(HANDLE hFile, void* lpBuffer, DWORD nNumberOfBytesToRead, DWORD* lpNumberOfBytesRead, void* lpOverlapped) { return FALSE; }
-inline BOOL WriteFile(HANDLE hFile, const void* lpBuffer, DWORD nNumberOfBytesToWrite, DWORD* lpNumberOfBytesWritten, void* lpOverlapped) { return FALSE; }
+// CloseHandle is defined in threading.h
+// ReadFile and WriteFile are defined in filesystem.h
 inline DWORD GetFileSize(HANDLE hFile, DWORD* lpFileSizeHigh) { return 0; }
 
 // Forward declaration to avoid circular includes

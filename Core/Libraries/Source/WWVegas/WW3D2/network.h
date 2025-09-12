@@ -101,23 +101,25 @@ namespace Win32Net {
     }
 
     inline u_short compat_htons(u_short hostshort) {
-        return ::htons(hostshort);
+        return htons(hostshort);
     }
 
     inline u_short compat_ntohs(u_short netshort) {
-        return ::ntohs(netshort);
+        return ntohs(netshort);
     }
 
     inline u_long compat_htonl(u_long hostlong) {
-        return ::htonl(hostlong);
+        return htonl(hostlong);
     }
 
     inline u_long compat_ntohl(u_long netlong) {
-        return ::ntohl(netlong);
+        return ntohl(netlong);
     }
 }
 
 // Map Windows function names to our compatibility functions
+// Only define these macros when needed (not when including std headers)
+#ifndef __FUNCTIONAL
 #define getsockname Win32Net::compat_getsockname
 #define bind Win32Net::compat_bind
 #define connect Win32Net::compat_connect
@@ -132,10 +134,16 @@ namespace Win32Net {
 #define getsockopt Win32Net::compat_getsockopt
 #define inet_addr Win32Net::compat_inet_addr
 #define inet_ntoa Win32Net::compat_inet_ntoa
+#endif // __FUNCTIONAL
+
+// Only redefine byte order functions on non-macOS platforms
+// On macOS, use the system macros directly
+#ifndef __APPLE__
 #define htons Win32Net::compat_htons
-#define ntohs Win32Net::compat_ntohs
+#define ntohs Win32Net::compat_ntohs  
 #define htonl Win32Net::compat_htonl
 #define ntohl Win32Net::compat_ntohl
+#endif
 
 // WSA functions (Windows Socket API)
 inline int WSAStartup(u_short wVersionRequested, void* lpWSAData) {
