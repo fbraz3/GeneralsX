@@ -52,7 +52,10 @@ typedef struct {
 typedef unsigned long ULONG;
 
 // Global memory functions
+#ifndef GLOBALALLOCPTR_DEFINED
+#define GLOBALALLOCPTR_DEFINED
 inline void* GlobalAllocPtr(UINT flags, DWORD size) { return malloc(size); }
+#endif
 inline void GlobalFreePtr(void* ptr) { free(ptr); }
 
 // Rectangle function

@@ -699,6 +699,116 @@ inline HANDLE CreateThread(void* lpThreadAttributes, unsigned long dwStackSize,
 }
 #endif
 
+// Memory management APIs
+#ifndef MEMORY_MANAGEMENT_DEFINED
+#define MEMORY_MANAGEMENT_DEFINED
+
+// Memory allocation flags
+#define HEAP_ZERO_MEMORY     0x00000008
+#define GMEM_FIXED           0x0000
+#define GMEM_MOVEABLE        0x0002
+#define GHND                 0x0042
+
+// Process heap handle type
+typedef void* HANDLE;
+#define INVALID_HANDLE_VALUE ((HANDLE)-1)
+
+// Get process heap (returns a dummy handle)
+inline HANDLE GetProcessHeap() {
+    static int dummy_heap = 1;
+    return (HANDLE)&dummy_heap;
+}
+
+// Heap allocation functions
+inline void* HeapAlloc(HANDLE hHeap, DWORD dwFlags, size_t dwBytes) {
+    (void)hHeap; // Unused parameter
+    void* ptr = malloc(dwBytes);
+    if (ptr && (dwFlags & HEAP_ZERO_MEMORY)) {
+        memset(ptr, 0, dwBytes);
+    }
+    return ptr;
+}
+
+inline BOOL HeapFree(HANDLE hHeap, DWORD dwFlags, void* lpMem) {
+    (void)hHeap; (void)dwFlags; // Unused parameters
+    if (lpMem) {
+        free(lpMem);
+        return TRUE;
+    }
+    return FALSE;
+}
+
+// Global memory allocation functions
+typedef void* HGLOBAL;
+
+inline HGLOBAL GlobalAlloc(UINT uFlags, size_t dwBytes) {
+    void* ptr = malloc(dwBytes);
+    if (ptr && (uFlags & GHND)) {
+        memset(ptr, 0, dwBytes);
+    }
+    return (HGLOBAL)ptr;
+}
+
+#ifndef GLOBALALLOCPTR_DEFINED
+#define GLOBALALLOCPTR_DEFINED
+inline void* GlobalAllocPtr(UINT uFlags, size_t dwBytes) {
+    return GlobalAlloc(uFlags, dwBytes);
+}
+#endif
+
+inline HGLOBAL GlobalFree(HGLOBAL hMem) {
+    if (hMem) {
+        free(hMem);
+    }
+    return nullptr;
+}
+
+#endif // MEMORY_MANAGEMENT_DEFINED
+
+// Performance timing APIs
+#ifndef PERFORMANCE_TIMING_DEFINED
+#define PERFORMANCE_TIMING_DEFINED
+
+#include <chrono>
+#include <sys/time.h>
+
+// High-resolution performance counter
+inline BOOL QueryPerformanceCounter(LARGE_INTEGER* lpPerformanceCount) {
+    if (!lpPerformanceCount) return FALSE;
+    
+    auto now = std::chrono::high_resolution_clock::now();
+    auto duration = now.time_since_epoch();
+    auto ticks = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
+    
+    lpPerformanceCount->LowPart = (DWORD)(ticks & 0xFFFFFFFF);
+    lpPerformanceCount->HighPart = (LONG)(ticks >> 32);
+    return TRUE;
+}
+
+// Performance counter frequency (nanoseconds per second)
+inline BOOL QueryPerformanceFrequency(LARGE_INTEGER* lpFrequency) {
+    if (!lpFrequency) return FALSE;
+    
+    // High-resolution clock frequency is 1 nanosecond = 1,000,000,000 per second
+    lpFrequency->LowPart = 1000000000;
+    lpFrequency->HighPart = 0;
+    return TRUE;
+}
+
+// System tick count in milliseconds
+// Note: GetTickCount is provided by Dependencies/Utility/Utility/time_compat.h
+// #ifndef GETTICKCOUNT_DEFINED
+// #define GETTICKCOUNT_DEFINED
+// inline DWORD GetTickCount() {
+//     auto now = std::chrono::steady_clock::now();
+//     auto duration = now.time_since_epoch();
+//     auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+//     return (DWORD)millis;
+// }
+// #endif
+
+#endif // PERFORMANCE_TIMING_DEFINED
+
 #endif // WIN32_STRING_FUNCTIONS_DEFINED
 
 #endif // !_WIN32

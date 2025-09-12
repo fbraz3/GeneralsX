@@ -1035,7 +1035,7 @@ unsigned long MyIPAddress( int sockfd )
 {
 
 	int		 test = 99;
-	int i;
+	socklen_t i;
 	char pBuffer[ 256 ];
 	char * pAddr;
 	struct hostent * pHE;
