@@ -1559,7 +1559,7 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 					GadgetListBoxGetSelected(GetGameListBox(), &selected);
 					if (selected >= 0)
 					{
-						Int selectedID = (Int)GadgetListBoxGetItemData(GetGameListBox(), selected);
+						Int selectedID = (Int)(uintptr_t)GadgetListBoxGetItemData(GetGameListBox(), selected);
 						if (selectedID > 0)
 						{
 							StagingRoomMap *srm = TheGameSpyInfo->getStagingRoomList();
@@ -1670,7 +1670,7 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 					if (rowSelected >= 0)
 					{
 						Int groupID;
-						groupID = (Int)GadgetComboBoxGetItemData(comboLobbyGroupRooms, rowSelected);
+						groupID = (Int)(uintptr_t)GadgetComboBoxGetItemData(comboLobbyGroupRooms, rowSelected);
 						DEBUG_LOG(("ItemData was %d, current Group Room is %d", groupID, TheGameSpyInfo->getCurrentGroupRoom()));
 						if (groupID && groupID != TheGameSpyInfo->getCurrentGroupRoom())
 						{
@@ -1795,7 +1795,7 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 						break;
 					}
 
-					Int selectedID = (Int)GadgetListBoxGetItemData(control, rc->pos);
+					Int selectedID = (Int)(uintptr_t)GadgetListBoxGetItemData(control, rc->pos);
 					if (selectedID > 0)
 					{
 						StagingRoomMap *srm = TheGameSpyInfo->getStagingRoomList();

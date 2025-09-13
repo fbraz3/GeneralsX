@@ -481,7 +481,7 @@ static const LadderInfo * getLadderInfo( void )
 	Int index;
 	Int selected;
 	GadgetComboBoxGetSelectedPos( comboBoxLadder, &selected );
-	index = (Int)GadgetComboBoxGetItemData( comboBoxLadder, selected );
+	index = (Int)(uintptr_t)GadgetComboBoxGetItemData( comboBoxLadder, selected );
 	const LadderInfo *li = TheLadderList->findLadderByIndex( index );
 	return li;
 }
@@ -560,7 +560,7 @@ static void populateQuickMatchMapSelectListbox( QuickMatchPreferences& pref )
 	Int index;
 	Int selected;
 	GadgetComboBoxGetSelectedPos( comboBoxLadder, &selected );
-	index = (Int)GadgetComboBoxGetItemData( comboBoxLadder, selected );
+	index = (Int)(uintptr_t)GadgetComboBoxGetItemData( comboBoxLadder, selected );
 	const LadderInfo *li = TheLadderList->findLadderByIndex( index );
 	//listboxMapSelect->winEnable( li == NULL || li->randomMaps == FALSE );
 
@@ -619,7 +619,7 @@ static void saveQuickMatchOptions( void )
 	Int index;
 	Int selected;
 	GadgetComboBoxGetSelectedPos( comboBoxLadder, &selected );
-	index = (Int)GadgetComboBoxGetItemData( comboBoxLadder, selected );
+	index = (Int)(uintptr_t)GadgetComboBoxGetItemData( comboBoxLadder, selected );
 	const LadderInfo *li = TheLadderList->findLadderByIndex( index );
 	Int numPlayers = 0;
 
@@ -675,7 +675,7 @@ static void saveQuickMatchOptions( void )
 
 	Int item;
 	GadgetComboBoxGetSelectedPos(comboBoxSide, &selected);
-	item = (Int)GadgetComboBoxGetItemData(comboBoxSide, selected);
+	item = (Int)(uintptr_t)GadgetComboBoxGetItemData(comboBoxSide, selected);
 	pref.setSide(max(0, item));
 	GadgetComboBoxGetSelectedPos(comboBoxColor, &selected);
 	pref.setColor(max(0, selected));
@@ -1558,7 +1558,7 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 					if (pos >= 0)
 					{
 						QuickMatchPreferences pref;
-						Int ladderID = (Int)GadgetComboBoxGetItemData(control, pos);
+						Int ladderID = (Int)(uintptr_t)GadgetComboBoxGetItemData(control, pos);
 						if (ladderID == 0)
 						{
 							// no ladder selected - enable buttons
@@ -1684,7 +1684,7 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 
 					Int ladderIndex, index, selected;
 					GadgetComboBoxGetSelectedPos( comboBoxLadder, &selected );
-					ladderIndex = (Int)GadgetComboBoxGetItemData( comboBoxLadder, selected );
+					ladderIndex = (Int)(uintptr_t)GadgetComboBoxGetItemData( comboBoxLadder, selected );
 					const LadderInfo *ladderInfo = NULL;
 					if (ladderIndex < 0)
 					{
@@ -1705,7 +1705,7 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 					index = -1;
 					GadgetComboBoxGetSelectedPos( comboBoxSide, &selected );
 					if (selected >= 0)
-						index = (Int)GadgetComboBoxGetItemData( comboBoxSide, selected );
+						index = (Int)(uintptr_t)GadgetComboBoxGetItemData( comboBoxSide, selected );
 					req.QM.side = index;
 					if (ladderInfo && ladderInfo->randomFactions)
 					{
@@ -1744,7 +1744,7 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 						{
 							Int numberComboBoxEntries = GadgetComboBoxGetLength(comboBoxSide);
 							Int randomPick = GameClientRandomValue(0, numberComboBoxEntries - 1);
-							index = (Int)GadgetComboBoxGetItemData( comboBoxSide, randomPick );
+							index = (Int)(uintptr_t)GadgetComboBoxGetItemData( comboBoxSide, randomPick );
 							req.QM.side = index;
 
 							randomTries++;
@@ -1754,7 +1754,7 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 					index = -1;
 					GadgetComboBoxGetSelectedPos( comboBoxColor, &selected );
 					if (selected >= 0)
-						index = (Int)GadgetComboBoxGetItemData( comboBoxColor, selected );
+						index = (Int)(uintptr_t)GadgetComboBoxGetItemData( comboBoxColor, selected );
 					req.QM.color = index;
 
 					OptionPreferences natPref;
