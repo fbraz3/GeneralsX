@@ -663,12 +663,28 @@ inline BOOL CopyFile(const char* existingFileName, const char* newFileName, BOOL
 
 // Shell folder constants
 #define CSIDL_DESKTOP 0x0000
+#define CSIDL_DESKTOPDIRECTORY 0x0010
 
-inline long SHGetSpecialFolderLocation(void* hwnd, int csidl, void** ppidl) {
-    (void)hwnd; (void)csidl; (void)ppidl;
+inline long SHGetSpecialFolderLocation(void* hwnd, int csidl, LPITEMIDLIST* ppidl) {
+    (void)hwnd; (void)csidl;
     // Stub implementation - return success
     if (ppidl) *ppidl = nullptr;
     return 0; // S_OK
+}
+
+inline BOOL SHGetPathFromIDList(LPITEMIDLIST pidl, char* pszPath) {
+    (void)pidl;
+    if (pszPath) {
+        // Return user's Desktop directory path for macOS
+        const char* home = getenv("HOME");
+        if (home) {
+            sprintf(pszPath, "%s/Desktop", home);
+        } else {
+            strcpy(pszPath, "/tmp");
+        }
+        return TRUE;
+    }
+    return FALSE;
 }
 
 inline void GlobalMemoryStatus(MEMORYSTATUS* memoryStatus) {

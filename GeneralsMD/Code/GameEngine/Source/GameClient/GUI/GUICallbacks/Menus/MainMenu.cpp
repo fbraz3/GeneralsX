@@ -317,7 +317,7 @@ static MessageBoxReturnType checkCDCallback( void *userData )
 	}
 	else
 	{
-		prepareCampaignGame((GameDifficulty)(Int)(Int *)userData);
+		prepareCampaignGame((GameDifficulty)(Int)(uintptr_t)userData);
 		return MB_RETURN_CLOSE;
 	}
 }
