@@ -70,8 +70,8 @@
 #include "GameNetwork/GameSpy/LobbyUtils.h"
 #include "GameNetwork/RankPointValue.h"
 
-void refreshGameList( Bool forceRefresh = FALSE );
-void refreshPlayerList( Bool forceRefresh = FALSE );
+static void refreshGameList( Bool forceRefresh = FALSE );
+static void refreshPlayerList( Bool forceRefresh = FALSE );
 
 #ifdef DEBUG_LOGGING
 #define PERF_TEST
@@ -1481,7 +1481,7 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 
 						PeerRequest req;
 						req.peerRequestType = PeerRequest::PEERREQUEST_GETEXTENDEDSTAGINGROOMINFO;
-						req.stagingRoom.id = (Int)GadgetListBoxGetItemData(control, rowSelected, 0);
+						req.stagingRoom.id = (Int)(uintptr_t)GadgetListBoxGetItemData(control, rowSelected, 0);
 
 						if (lastID != req.stagingRoom.id || now > lastFrame + 60)
 						{

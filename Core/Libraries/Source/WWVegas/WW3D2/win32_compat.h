@@ -229,6 +229,7 @@ inline HIMC ImmGetContext(HWND hWnd) {
 
 // IME message constants
 #define WM_IME_CHAR 0x0286
+#define WM_CHAR 0x0102
 
 // System time structure
 typedef struct {

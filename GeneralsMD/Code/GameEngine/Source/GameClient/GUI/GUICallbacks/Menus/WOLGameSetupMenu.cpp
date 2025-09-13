@@ -767,7 +767,7 @@ static void handleStartingCashSelection()
     GadgetComboBoxGetSelectedPos(comboBoxStartingCash, &selIndex);
 
     Money startingCash;
-    startingCash.deposit( (UnsignedInt)GadgetComboBoxGetItemData( comboBoxStartingCash, selIndex ), FALSE );
+    startingCash.deposit( (UnsignedInt)(uintptr_t)GadgetComboBoxGetItemData( comboBoxStartingCash, selIndex ), FALSE );
     myGame->setStartingCash( startingCash );
     myGame->resetAccepted();
 
@@ -1021,7 +1021,7 @@ void WOLDisplayGameOptions( void )
   Int index = 0;
   for ( ; index < itemCount; index++ )
   {
-    Int value  = (Int)GadgetComboBoxGetItemData(comboBoxStartingCash, index);
+    Int value  = (Int)(uintptr_t)GadgetComboBoxGetItemData(comboBoxStartingCash, index);
     if ( value == theGame->getStartingCash().countMoney() )
     {
       // Note: must check if combobox is already correct to avoid infinite recursion
