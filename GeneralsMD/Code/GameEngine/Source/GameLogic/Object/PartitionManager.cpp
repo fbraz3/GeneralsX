@@ -1,5 +1,5 @@
 /*
-**	Command & Conquer Generals Zero Hour(tm)
+**	Command & Conquer Generals(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -82,10 +82,6 @@
 #ifdef RTS_DEBUG
 //#include "GameClient/InGameUI.h"	// for debugHints
 #include "Common/PlayerList.h"
-#endif
-
-#ifdef PM_CACHE_TERRAIN_HEIGHT
-#include "Common/MapObject.h"
 #endif
 
 #ifdef DUMP_PERF_STATS
@@ -332,14 +328,14 @@ inline Real maxReal(Real a, Real b)
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
-static void hLineAddLooker(Int x1, Int x2, Int y, void *playerIndexVoid);
-static void hLineRemoveLooker(Int x1, Int x2, Int y, void *playerIndexVoid);
-static void hLineAddShrouder(Int x1, Int x2, Int y, void *playerIndexVoid);
-static void hLineRemoveShrouder(Int x1, Int x2, Int y, void *playerIndexVoid);
-static void hLineAddThreat(Int x1, Int x2, Int y, void *threatValueParms);
-static void hLineRemoveThreat(Int x1, Int x2, Int y, void *threatValueParms);
-static void hLineAddValue(Int x1, Int x2, Int y, void *threatValueParms);
-static void hLineRemoveValue(Int x1, Int x2, Int y, void *threatValueParms);
+void hLineAddLooker(Int x1, Int x2, Int y, void *playerIndexVoid);
+void hLineRemoveLooker(Int x1, Int x2, Int y, void *playerIndexVoid);
+void hLineAddShrouder(Int x1, Int x2, Int y, void *playerIndexVoid);
+void hLineRemoveShrouder(Int x1, Int x2, Int y, void *playerIndexVoid);
+void hLineAddThreat(Int x1, Int x2, Int y, void *threatValueParms);
+void hLineRemoveThreat(Int x1, Int x2, Int y, void *threatValueParms);
+void hLineAddValue(Int x1, Int x2, Int y, void *threatValueParms);
+void hLineRemoveValue(Int x1, Int x2, Int y, void *threatValueParms);
 
 static void projectCoord3D(Coord3D *coord, const Coord3D *unitDir, Real dist);
 static void flipCoord3D(Coord3D *coord);
@@ -1749,7 +1745,7 @@ void PartitionData::addSubPixToCoverage(PartitionCell *cell)
 		// see if we already have a coi for this cell.
 		CellAndObjectIntersection *coi = m_coiArray;
 		CellAndObjectIntersection *coiToUse = NULL;
-		for (Int i = __min(m_coiInUseCount,m_coiArrayCount); i; --i, ++coi)
+		for (Int i = m_coiInUseCount; i; --i, ++coi)
 		{
 			if (coi->getCell() == cell)
 			{
@@ -2145,19 +2141,16 @@ static AsciiString theObjName;
 Int PartitionData::calcMaxCoiForShape(GeometryType geom, Real majorRadius, Real minorRadius, Bool isSmall)
 {
 	Int result;
-
-
-  // THis is commented out, since some cases od big extets labeled small seem to be escaping.
-  //M Lorenzen 8/26/03
-//	if (isSmall)
-//	{
-//		#if defined(RTS_DEBUG)
-//		Int chk = calcMaxCoiForShape(geom, majorRadius, minorRadius, false);
-//		DEBUG_ASSERTCRASH(chk <= 4, ("Small objects should be <= 4 cells, but I calced %s as %d",theObjName.str(),chk));
-//		#endif
-//		result = 4;
-//	}
-//	else
+	if (isSmall)
+	{
+		#if defined(RTS_DEBUG)
+		Int chk = calcMaxCoiForShape(geom, majorRadius, minorRadius, false);
+		(void)chk;
+		DEBUG_ASSERTCRASH(chk <= 4, ("Small objects should be <= 4 cells, but I calced %s as %d",theObjName.str(),chk));
+		#endif
+		result = 4;
+	}
+	else
 	{
 		switch(geom)
 		{
@@ -2590,7 +2583,7 @@ static void calcHeights(const Region3D& world, Real cellSize, Int x, Int y, Real
 	DEBUG_ASSERTCRASH(TheTerrainLogic, ("no TheTerrainLogic"));
 	Real xbase = world.lo.x + (x * cellSize);
 	Real ybase = world.lo.y + (y * cellSize);
-	const Real ROUGH_STEP_SIZE = MAP_XY_FACTOR;	// no point in stepping smaller than grid scale
+	const Real ROUGH_STEP_SIZE = 2;	// roughly every 2 ft, please
 	Real numSteps = ceilf(cellSize / ROUGH_STEP_SIZE);
 	Real step = cellSize / numSteps;
 	loZ = HUGE_DIST;		// huge positive
@@ -3079,32 +3072,6 @@ CellShroudStatus PartitionManager::getShroudStatusForPlayer(Int playerIndex, con
 	return getShroudStatusForPlayer( playerIndex, x, y );
 }
 
-
-//-----------------------------------------------------------------------------
-ObjectShroudStatus PartitionManager::getPropShroudStatusForPlayer(Int playerIndex, const Coord3D *loc ) const
-{
-	Int x, y;
-
-	ThePartitionManager->worldToCell( loc->x - m_cellSize*0.5f, loc->y - m_cellSize*0.5f, &x, &y );
-
-	CellShroudStatus cellStat = getShroudStatusForPlayer( playerIndex, x, y );
-	if (cellStat != getShroudStatusForPlayer( playerIndex, x+1, y )) {
-		return OBJECTSHROUD_PARTIAL_CLEAR;
-	}
-	if (cellStat != getShroudStatusForPlayer( playerIndex, x+1, y+1 )) {
-		return OBJECTSHROUD_PARTIAL_CLEAR;
-	}
-	if (cellStat != getShroudStatusForPlayer( playerIndex, x, y+1 )) {
-		return OBJECTSHROUD_PARTIAL_CLEAR;
-	}
-	if (cellStat == CELLSHROUD_SHROUDED) {
-		return OBJECTSHROUD_SHROUDED;
-	}
-	if (cellStat == CELLSHROUD_CLEAR) {
-		return OBJECTSHROUD_CLEAR;
-	}
-	return OBJECTSHROUD_FOGGED;
-}
 
 
 
@@ -3775,9 +3742,6 @@ Bool PartitionManager::tryPosition( const Coord3D *center,
 		{
 			return FALSE;
 		}
-		if( BitIsSet(options->flags, FPF_CLEAR_CELLS_ONLY) && cell->getType() != PathfindCell::CELL_CLEAR )
-			return FALSE;
-
 	}
 
 	//
@@ -3876,7 +3840,7 @@ Bool PartitionManager::tryPosition( const Coord3D *center,
 		const AIUpdateInterface *ai = options->sourceToPathToDest->getAIUpdateInterface();
 
 		// check for path existence
-		if( ai && TheAI->pathfinder()->clientSafeQuickDoesPathExist( ai->getLocomotorSet(),
+		if( ai && TheAI->pathfinder()->quickDoesPathExist( ai->getLocomotorSet(),
 																									options->sourceToPathToDest->getPosition(),
 																									&pos ) == FALSE )
 				return FALSE;
@@ -5386,6 +5350,17 @@ Bool PartitionFilterPossibleToAttack::allow(Object *objOther)
 {
 	// objOther is guaranteed to be non-null, so we don't need to check (srj)
 
+// don't do this here... done in getAbleToAttackSpecificObject (srj)
+//	// cannot attack dead things
+//	if (objOther->isEffectivelyDead())
+//		return false;
+
+// don't do this here... done in getAbleToAttackSpecificObject, with more/better checking for Disguise (srj)
+//  // stealthed items can't ever be attacked.
+//	UnsignedInt status = objOther->getStatusBits();
+//	if ((status & OBJECT_STATUS_STEALTHED) && !(status & OBJECT_STATUS_DETECTED))
+//		return false;
+
 	// we should have already filtered out isAbleToAttack!
 	DEBUG_ASSERTCRASH(m_obj->isAbleToAttack(), ("if the object is unable to attack at all, you should filter that out ahead of time!"));
 
@@ -5398,46 +5373,6 @@ Bool PartitionFilterPossibleToAttack::allow(Object *objOther)
 }
 
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-PartitionFilterPossibleToEnter::PartitionFilterPossibleToEnter(const Object *obj, CommandSourceType commandSource) :
-	m_obj(obj),
-	m_commandSource(commandSource)
-{
-}
-
-//-----------------------------------------------------------------------------
-Bool PartitionFilterPossibleToEnter::allow(Object *objOther)
-{
-	if (!objOther || !m_obj)
-		return FALSE;
-
-	if( TheActionManager->canEnterObject( m_obj, objOther, m_commandSource, DONT_CHECK_CAPACITY ) )
-		return TRUE;
-	else
-		return FALSE;
-}
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-PartitionFilterPossibleToHijack::PartitionFilterPossibleToHijack(const Object *obj, CommandSourceType commandSource) :
-	m_obj(obj),
-	m_commandSource(commandSource)
-{
-}
-
-//-----------------------------------------------------------------------------
-Bool PartitionFilterPossibleToHijack::allow(Object *objOther)
-{
-	if (!objOther || !m_obj)
-		return FALSE;
-
-	if( TheActionManager->canHijackVehicle(m_obj, objOther, m_commandSource) )
-		return TRUE;
-	else
-		return FALSE;
-}
-
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
@@ -5521,7 +5456,6 @@ Bool PartitionFilterStealthedAndUndetected::allow( Object *objOther )
 
 	Bool stealthed = objOther->testStatus( OBJECT_STATUS_STEALTHED );
 	Bool detected = objOther->testStatus( OBJECT_STATUS_DETECTED );
-	Bool disguised = objOther->testStatus( OBJECT_STATUS_DISGUISED );
 
 	if( stealthed && !detected )
 	{
@@ -5530,12 +5464,10 @@ Bool PartitionFilterStealthedAndUndetected::allow( Object *objOther )
 			//We have a stealthed & undetected object.
 			return m_allow;
 		}
-		else if( disguised )
+		else
 		{
 			//Exception case -- bomb trucks can't be considered stealthed units when they are disguised as the enemy.
-
-      StealthUpdate *update = objOther->getStealth();
-
+			StealthUpdate *update = objOther->getStealth();
 			if( update && update->isDisguised() )
 			{
 				Player *ourPlayer = m_obj->getControllingPlayer();
@@ -5620,7 +5552,7 @@ static void hLineAddLooker(Int x1, Int x2, Int y, void *playerIndexVoid)
 	if (y < 0 || y >= ThePartitionManager->m_cellCountY || x1 >= ThePartitionManager->m_cellCountX || x2 < 0)
 		return;
 
-	Int playerIndex = (Int)(playerIndexVoid);
+	Int playerIndex = (Int)(uintptr_t)(playerIndexVoid);
 
 	PartitionCell* cell = &ThePartitionManager->m_cells[y * ThePartitionManager->m_cellCountX + x1];	// yes, this could be invalid. we'll skip the bad ones.
 	for (Int x = x1; x <= x2; ++x, ++cell)
@@ -5637,7 +5569,7 @@ static void hLineRemoveLooker(Int x1, Int x2, Int y, void *playerIndexVoid)
 	if (y < 0 || y >= ThePartitionManager->m_cellCountY || x1 >= ThePartitionManager->m_cellCountX || x2 < 0)
 		return;
 
-	Int playerIndex = (Int)(playerIndexVoid);
+	Int playerIndex = (Int)(uintptr_t)(playerIndexVoid);
 
 	PartitionCell* cell = &ThePartitionManager->m_cells[y * ThePartitionManager->m_cellCountX + x1];	// yes, this could be invalid. we'll skip the bad ones.
 	for (Int x = x1; x <= x2; ++x, ++cell)
@@ -5654,7 +5586,7 @@ static void hLineAddShrouder(Int x1, Int x2, Int y, void *playerIndexVoid)
 	if (y < 0 || y >= ThePartitionManager->m_cellCountY || x1 >= ThePartitionManager->m_cellCountX || x2 < 0)
 		return;
 
-	Int playerIndex = (Int)(playerIndexVoid);
+	Int playerIndex = (Int)(uintptr_t)(playerIndexVoid);
 
 	PartitionCell* cell = &ThePartitionManager->m_cells[y * ThePartitionManager->m_cellCountX + x1];	// yes, this could be invalid. we'll skip the bad ones.
 	for (Int x = x1; x <= x2; ++x, ++cell)
@@ -5671,7 +5603,7 @@ static void hLineRemoveShrouder(Int x1, Int x2, Int y, void *playerIndexVoid)
 	if (y < 0 || y >= ThePartitionManager->m_cellCountY || x1 >= ThePartitionManager->m_cellCountX || x2 < 0)
 		return;
 
-	Int playerIndex = (Int)(playerIndexVoid);
+	Int playerIndex = (Int)(uintptr_t)(playerIndexVoid);
 
 	PartitionCell* cell = &ThePartitionManager->m_cells[y * ThePartitionManager->m_cellCountX + x1];	// yes, this could be invalid. we'll skip the bad ones.
 	for (Int x = x1; x <= x2; ++x, ++cell)

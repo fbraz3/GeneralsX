@@ -214,9 +214,14 @@ typedef struct {
 typedef DWORD* LPDWORD;
 
 typedef struct {
+    DWORD dwSize;
+    DWORD dwStyle;
     DWORD dwCount;
+    DWORD dwSelection;
+    DWORD dwPageStart;
+    DWORD dwPageSize;
     DWORD dwOffset[1];
-} CANDIDATELIST;
+} CANDIDATELIST, *LPCANDIDATELIST;
 
 // IME function stubs
 inline HIMC ImmAssociateContext(HWND hWnd, HIMC hIMC) {
@@ -273,6 +278,21 @@ inline DWORD ImmGetCandidateListCountW(HIMC hIMC, LPDWORD lpdwListCount) {
     return 0;
 }
 
+inline DWORD ImmGetCandidateListCountA(HIMC hIMC, LPDWORD lpdwListCount) {
+    (void)hIMC; (void)lpdwListCount;
+    return 0;
+}
+
+inline DWORD ImmGetCandidateListW(HIMC hIMC, DWORD deIndex, LPCANDIDATELIST lpCandList, DWORD dwBufLen) {
+    (void)hIMC; (void)deIndex; (void)lpCandList; (void)dwBufLen;
+    return 0;
+}
+
+inline DWORD ImmGetCandidateListA(HIMC hIMC, DWORD deIndex, LPCANDIDATELIST lpCandList, DWORD dwBufLen) {
+    (void)hIMC; (void)deIndex; (void)lpCandList; (void)dwBufLen;
+    return 0;
+}
+
 // IME message constants
 #define WM_IME_CHAR 0x0286
 #define WM_CHAR 0x0102
@@ -296,6 +316,31 @@ inline DWORD ImmGetCandidateListCountW(HIMC hIMC, LPDWORD lpdwListCount) {
 #define IMN_GUIDELINE          0x000D
 #define IMN_SETCONVERSIONMODE  0x0006
 #define IMN_SETSENTENCEMODE    0x0008
+
+// IME candidate list style constants
+#define IME_CAND_UNKNOWN       0x0000
+#define IME_CAND_READ          0x0001
+#define IME_CAND_CODE          0x0002
+#define IME_CAND_MEANING       0x0003
+
+// IME property constants
+#define IGP_PROPERTY           0x0004
+#define IME_PROP_CANDLIST_START_FROM_1  0x00080000
+#define IME_PROP_UNICODE       0x20000000
+
+// Keyboard layout type
+typedef DWORD HKL;
+
+// Additional IME functions
+inline HKL GetKeyboardLayout(DWORD idThread) {
+    (void)idThread;
+    return 0;
+}
+
+inline DWORD ImmGetProperty(HKL hKL, DWORD fdwIndex) {
+    (void)hKL; (void)fdwIndex;
+    return 0;
+}
 
 // Additional string functions for Windows compatibility
 inline size_t _mbsnccnt(const unsigned char* str, size_t count) {

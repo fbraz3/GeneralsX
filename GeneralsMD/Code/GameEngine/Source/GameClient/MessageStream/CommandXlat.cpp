@@ -204,7 +204,7 @@ bool changeMaxRenderFps(FpsValueChange change)
 	}
 	else
 	{
-		message = TheGameText->FETCH_OR_SUBSTITUTE_FORMAT("GUI:SetUncappedRenderFps", L"Max Render FPS is uncapped");
+		message = TheGameText->FETCH_OR_SUBSTITUTE("GUI:SetUncappedRenderFps", L"Max Render FPS is uncapped");
 	}
 
 	TheInGameUI->messageNoFormat(message);
