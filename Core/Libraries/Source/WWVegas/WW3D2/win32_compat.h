@@ -109,6 +109,15 @@ typedef struct {
 #define TIME_FORCE24HOURFORMAT 0x00000008
 #define TIME_NOTIMEMARKER 0x00000004
 
+// Virtual Key codes
+#define VK_RETURN 0x0D
+#define VK_ESCAPE 0x1B
+#define VK_SPACE 0x20
+#define VK_LEFT 0x25
+#define VK_UP 0x26
+#define VK_RIGHT 0x27
+#define VK_DOWN 0x28
+
 #endif // RGBQUAD
 #include <cctype>  // for toupper
 #include <cwchar>  // for wchar_t
