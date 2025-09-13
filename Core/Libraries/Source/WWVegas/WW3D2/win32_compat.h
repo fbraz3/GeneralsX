@@ -634,6 +634,43 @@ inline BOOL FindClose(HANDLE hFindFile) {
     return TRUE;
 }
 
+inline BOOL CopyFile(const char* existingFileName, const char* newFileName, BOOL failIfExists) {
+    (void)failIfExists;
+    // Use POSIX file copy functionality
+    FILE* src = fopen(existingFileName, "rb");
+    if (!src) return FALSE;
+    
+    FILE* dst = fopen(newFileName, "wb");
+    if (!dst) {
+        fclose(src);
+        return FALSE;
+    }
+    
+    char buffer[8192];
+    size_t bytes;
+    while ((bytes = fread(buffer, 1, sizeof(buffer), src)) > 0) {
+        if (fwrite(buffer, 1, bytes, dst) != bytes) {
+            fclose(src);
+            fclose(dst);
+            return FALSE;
+        }
+    }
+    
+    fclose(src);
+    fclose(dst);
+    return TRUE;
+}
+
+// Shell folder constants
+#define CSIDL_DESKTOP 0x0000
+
+inline long SHGetSpecialFolderLocation(void* hwnd, int csidl, void** ppidl) {
+    (void)hwnd; (void)csidl; (void)ppidl;
+    // Stub implementation - return success
+    if (ppidl) *ppidl = nullptr;
+    return 0; // S_OK
+}
+
 inline void GlobalMemoryStatus(MEMORYSTATUS* memoryStatus) {
     if (memoryStatus) {
         memoryStatus->dwLength = sizeof(MEMORYSTATUS);
