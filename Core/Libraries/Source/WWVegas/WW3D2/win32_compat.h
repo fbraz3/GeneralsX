@@ -202,6 +202,34 @@ typedef struct {
     DWORD dwOffset[1];
 } CANDIDATELIST;
 
+// IME function stubs
+inline HIMC ImmAssociateContext(HWND hWnd, HIMC hIMC) {
+    (void)hWnd; (void)hIMC;
+    return NULL;
+}
+
+inline BOOL ImmReleaseContext(HWND hWnd, HIMC hIMC) {
+    (void)hWnd; (void)hIMC;
+    return TRUE;
+}
+
+inline BOOL ImmDestroyContext(HIMC hIMC) {
+    (void)hIMC;
+    return TRUE;
+}
+
+inline HIMC ImmCreateContext(void) {
+    return NULL;
+}
+
+inline HIMC ImmGetContext(HWND hWnd) {
+    (void)hWnd;
+    return NULL;
+}
+
+// IME message constants
+#define WM_IME_CHAR 0x0286
+
 // System time structure
 typedef struct {
     WORD wYear;
