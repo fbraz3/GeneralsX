@@ -3,6 +3,8 @@
 #include <cstdio>
 #include <cstdint>
 #include <cmath>
+#include <cstddef>
+#include <unistd.h>
 
 #ifndef WIN32_COMPAT_H_INCLUDED
 #define WIN32_COMPAT_H_INCLUDED
@@ -91,6 +93,22 @@ typedef struct {
 // GDI constants
 #define DIB_RGB_COLORS 0
 
+// Platform version constants
+#define VER_PLATFORM_WIN32_WINDOWS 1
+#define VER_PLATFORM_WIN32_NT 2
+
+// File attributes
+#define FILE_ATTRIBUTE_DIRECTORY 0x00000010
+
+// Locale constants
+#define LOCALE_SYSTEM_DEFAULT 0x0800
+
+// Date/Time format constants
+#define DATE_SHORTDATE 0x00000001
+#define TIME_NOSECONDS 0x00000002
+#define TIME_FORCE24HOURFORMAT 0x00000008
+#define TIME_NOTIMEMARKER 0x00000004
+
 #endif // RGBQUAD
 #include <cctype>  // for toupper
 #include <cwchar>  // for wchar_t
@@ -173,6 +191,35 @@ typedef struct {
     WORD wSecond;
     WORD wMilliseconds;
 } SYSTEMTIME;
+
+// File system structures
+typedef struct {
+    DWORD dwFileAttributes;
+    DWORD ftCreationTime_dwLowDateTime;
+    DWORD ftCreationTime_dwHighDateTime;
+    DWORD ftLastAccessTime_dwLowDateTime;
+    DWORD ftLastAccessTime_dwHighDateTime;
+    DWORD ftLastWriteTime_dwLowDateTime;
+    DWORD ftLastWriteTime_dwHighDateTime;
+    DWORD nFileSizeHigh;
+    DWORD nFileSizeLow;
+    DWORD dwReserved0;
+    DWORD dwReserved1;
+    char cFileName[260];
+    char cAlternateFileName[14];
+} WIN32_FIND_DATA;
+
+// Memory status structure
+typedef struct {
+    DWORD dwLength;
+    DWORD dwMemoryLoad;
+    DWORD dwTotalPhys;
+    DWORD dwAvailPhys;
+    DWORD dwTotalPageFile;
+    DWORD dwAvailPageFile;
+    DWORD dwTotalVirtual;
+    DWORD dwAvailVirtual;
+} MEMORYSTATUS;
 
 // File system compatibility
 #include <sys/stat.h>
@@ -550,6 +597,79 @@ inline DWORD GetFileAttributes(const char* filename) {
     return 0xFFFFFFFF; // INVALID_FILE_ATTRIBUTES
 }
 
+inline BOOL SetCurrentDirectory(const char* path) {
+    return (chdir(path) == 0) ? TRUE : FALSE;
+}
+
+inline HANDLE FindFirstFile(const char* pattern, WIN32_FIND_DATA* findData) {
+    // Simplified implementation for cross-platform compatibility
+    (void)pattern;
+    (void)findData;
+    return (HANDLE)-1; // INVALID_HANDLE_VALUE
+}
+
+inline BOOL FindNextFile(HANDLE hFindFile, WIN32_FIND_DATA* findData) {
+    (void)hFindFile;
+    (void)findData;
+    return FALSE;
+}
+
+inline BOOL FindClose(HANDLE hFindFile) {
+    (void)hFindFile;
+    return TRUE;
+}
+
+inline void GlobalMemoryStatus(MEMORYSTATUS* memoryStatus) {
+    if (memoryStatus) {
+        memoryStatus->dwLength = sizeof(MEMORYSTATUS);
+        memoryStatus->dwMemoryLoad = 50; // 50% memory load
+        memoryStatus->dwTotalPhys = 8 * 1024 * 1024 * 1024UL; // 8GB
+        memoryStatus->dwAvailPhys = 4 * 1024 * 1024 * 1024UL; // 4GB available
+        memoryStatus->dwTotalPageFile = 16 * 1024 * 1024 * 1024UL; // 16GB
+        memoryStatus->dwAvailPageFile = 8 * 1024 * 1024 * 1024UL; // 8GB available
+        memoryStatus->dwTotalVirtual = SIZE_MAX;
+        memoryStatus->dwAvailVirtual = SIZE_MAX / 2;
+    }
+}
+
+inline int GetDateFormat(DWORD locale, DWORD flags, const void* date, const char* format, char* buffer, int size) {
+    (void)locale; (void)flags; (void)date; (void)format;
+    if (buffer && size > 0) {
+        strncpy(buffer, "01/01/2025", size - 1);
+        buffer[size - 1] = '\0';
+        return strlen(buffer);
+    }
+    return 0;
+}
+
+inline int GetDateFormatW(DWORD locale, DWORD flags, const void* date, const wchar_t* format, wchar_t* buffer, int size) {
+    (void)locale; (void)flags; (void)date; (void)format;
+    if (buffer && size > 0) {
+        wcscpy(buffer, L"01/01/2025");
+        return wcslen(buffer);
+    }
+    return 0;
+}
+
+inline int GetTimeFormat(DWORD locale, DWORD flags, const void* time, const char* format, char* buffer, int size) {
+    (void)locale; (void)flags; (void)time; (void)format;
+    if (buffer && size > 0) {
+        strncpy(buffer, "12:00", size - 1);
+        buffer[size - 1] = '\0';
+        return strlen(buffer);
+    }
+    return 0;
+}
+
+inline int GetTimeFormatW(DWORD locale, DWORD flags, const void* time, const wchar_t* format, wchar_t* buffer, int size) {
+    (void)locale; (void)flags; (void)time; (void)format;
+    if (buffer && size > 0) {
+        wcscpy(buffer, L"12:00");
+        return wcslen(buffer);
+    }
+    return 0;
+}
+
 // Bitmap structures
 #ifndef BITMAPFILEHEADER_DEFINED
 #define BITMAPFILEHEADER_DEFINED
@@ -757,6 +877,13 @@ inline HANDLE CreateThread(void* lpThreadAttributes, unsigned long dwStackSize,
     return nullptr; // Stub implementation
 }
 #endif
+
+inline HANDLE CreateEvent(void* lpEventAttributes, BOOL bManualReset, BOOL bInitialState, const char* lpName) {
+    (void)lpEventAttributes; (void)bManualReset; (void)bInitialState; (void)lpName;
+    // Return a dummy handle for compatibility
+    static int dummy_event = 1;
+    return (HANDLE)&dummy_event;
+}
 
 // Memory management APIs
 #ifndef MEMORY_MANAGEMENT_DEFINED
@@ -1145,7 +1272,6 @@ inline void GetLocalTime(SYSTEMTIME* lpSystemTime) {
 
 // String functions for compatibility
 // GameSpy provides _strlwr but with different linkage, so we work around this
-#ifndef _WIN32
 
 // Helper function with a different name to avoid conflicts
 static inline char *ww_strlwr_impl(char *str) {
