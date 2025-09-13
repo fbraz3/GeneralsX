@@ -198,6 +198,22 @@ typedef void* HTIMER;
 // IME types (stubs for non-Windows platforms)
 typedef void* HIMC;
 typedef struct {
+    DWORD dwStyle;
+    RECT  rcArea;
+    // Simplified structure for cross-platform compatibility
+} COMPOSITIONFORM, *LPCOMPOSITIONFORM;
+
+typedef struct {
+    DWORD dwIndex;
+    DWORD dwStyle;
+    POINT ptCurrentPos;
+    RECT  rcArea;
+    // Simplified structure for cross-platform compatibility
+} CANDIDATEFORM, *LPCANDIDATEFORM;
+
+typedef DWORD* LPDWORD;
+
+typedef struct {
     DWORD dwCount;
     DWORD dwOffset[1];
 } CANDIDATELIST;
@@ -227,6 +243,36 @@ inline HIMC ImmGetContext(HWND hWnd) {
     return NULL;
 }
 
+inline BOOL ImmSetCompositionWindow(HIMC hIMC, LPCOMPOSITIONFORM lpCompForm) {
+    (void)hIMC; (void)lpCompForm;
+    return TRUE;
+}
+
+inline BOOL ImmSetCandidateWindow(HIMC hIMC, LPCANDIDATEFORM lpCandidate) {
+    (void)hIMC; (void)lpCandidate;
+    return TRUE;
+}
+
+inline LONG ImmGetCompositionString(HIMC hIMC, DWORD dwIndex, LPVOID lpBuf, DWORD dwBufLen) {
+    (void)hIMC; (void)dwIndex; (void)lpBuf; (void)dwBufLen;
+    return 0;
+}
+
+inline LONG ImmGetCompositionStringW(HIMC hIMC, DWORD dwIndex, LPVOID lpBuf, DWORD dwBufLen) {
+    (void)hIMC; (void)dwIndex; (void)lpBuf; (void)dwBufLen;
+    return 0;
+}
+
+inline LONG ImmGetCompositionStringA(HIMC hIMC, DWORD dwIndex, LPVOID lpBuf, DWORD dwBufLen) {
+    (void)hIMC; (void)dwIndex; (void)lpBuf; (void)dwBufLen;
+    return 0;
+}
+
+inline DWORD ImmGetCandidateListCountW(HIMC hIMC, LPDWORD lpdwListCount) {
+    (void)hIMC; (void)lpdwListCount;
+    return 0;
+}
+
 // IME message constants
 #define WM_IME_CHAR 0x0286
 #define WM_CHAR 0x0102
@@ -234,12 +280,28 @@ inline HIMC ImmGetContext(HWND hWnd) {
 #define WM_IME_STARTCOMPOSITION 0x010D
 #define WM_IME_ENDCOMPOSITION 0x010E
 #define WM_IME_COMPOSITION 0x010F
+#define WM_IME_SETCONTEXT       0x0281
+#define WM_IME_NOTIFY           0x0282
+#define WM_IME_COMPOSITIONFULL  0x0284
 
 // IME notification constants
 #define GCS_RESULTSTR 0x0800
+#define GCS_COMPSTR            0x0008
+#define GCS_CURSORPOS          0x0080
 #define CS_INSERTCHAR 0x2000
+#define CS_NOMOVECARET         0x4000
+#define IMN_OPENCANDIDATE      0x0005
+#define IMN_CLOSECANDIDATE     0x0004
+#define IMN_CHANGECANDIDATE    0x0003
+#define IMN_GUIDELINE          0x000D
+#define IMN_SETCONVERSIONMODE  0x0006
+#define IMN_SETSENTENCEMODE    0x0008
 
-// System time structure
+// Additional string functions for Windows compatibility
+inline size_t _mbsnccnt(const unsigned char* str, size_t count) {
+    (void)str; (void)count;
+    return count; // Simple fallback for cross-platform
+}
 typedef struct {
     WORD wYear;
     WORD wMonth;
