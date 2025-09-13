@@ -118,6 +118,12 @@ typedef struct {
 #define VK_RIGHT 0x27
 #define VK_DOWN 0x28
 
+// FormatMessage constants
+#define FORMAT_MESSAGE_FROM_SYSTEM 0x00001000
+
+// Utility macros
+#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+
 #endif // RGBQUAD
 #include <cctype>  // for toupper
 #include <cwchar>  // for wchar_t
@@ -674,6 +680,25 @@ inline int GetTimeFormatW(DWORD locale, DWORD flags, const void* time, const wch
     (void)locale; (void)flags; (void)time; (void)format;
     if (buffer && size > 0) {
         wcscpy(buffer, L"12:00");
+        return wcslen(buffer);
+    }
+    return 0;
+}
+
+inline DWORD FormatMessage(DWORD flags, const void* source, DWORD messageId, DWORD languageId, char* buffer, DWORD size, void* arguments) {
+    (void)flags; (void)source; (void)messageId; (void)languageId; (void)arguments;
+    if (buffer && size > 0) {
+        strncpy(buffer, "Unknown error", size - 1);
+        buffer[size - 1] = '\0';
+        return strlen(buffer);
+    }
+    return 0;
+}
+
+inline DWORD FormatMessageW(DWORD flags, const void* source, DWORD messageId, DWORD languageId, wchar_t* buffer, DWORD size, void* arguments) {
+    (void)flags; (void)source; (void)messageId; (void)languageId; (void)arguments;
+    if (buffer && size > 0) {
+        wcscpy(buffer, L"Unknown error");
         return wcslen(buffer);
     }
     return 0;
