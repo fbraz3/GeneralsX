@@ -195,6 +195,13 @@ typedef long S32;
 typedef void* LPWAVEFORMAT;
 typedef void* HTIMER;
 
+// IME types (stubs for non-Windows platforms)
+typedef void* HIMC;
+typedef struct {
+    DWORD dwCount;
+    DWORD dwOffset[1];
+} CANDIDATELIST;
+
 // System time structure
 typedef struct {
     WORD wYear;
@@ -664,6 +671,12 @@ inline BOOL CopyFile(const char* existingFileName, const char* newFileName, BOOL
 // Shell folder constants
 #define CSIDL_DESKTOP 0x0000
 #define CSIDL_DESKTOPDIRECTORY 0x0010
+
+// Shell folder types - forward declaration if not already defined
+#ifndef _SHLOBJ_H_
+struct _ITEMIDLIST;
+typedef struct _ITEMIDLIST* LPITEMIDLIST;
+#endif
 
 inline long SHGetSpecialFolderLocation(void* hwnd, int csidl, LPITEMIDLIST* ppidl) {
     (void)hwnd; (void)csidl;
@@ -1387,6 +1400,23 @@ inline char *itoa(int value, char *str, int base) {
         sprintf(str, "%d", value);
     }
     return str;
+}
+
+// Wide string to integer conversion
+inline int _wtoi(const wchar_t* wstr) {
+    if (!wstr) return 0;
+    
+    // Convert wchar_t to char for atoi
+    char buffer[64];
+    size_t len = wcslen(wstr);
+    if (len >= sizeof(buffer)) len = sizeof(buffer) - 1;
+    
+    for (size_t i = 0; i < len; i++) {
+        buffer[i] = (char)wstr[i];  // Simple conversion for ASCII numbers
+    }
+    buffer[len] = '\0';
+    
+    return atoi(buffer);
 }
 
 // Font resource management stubs

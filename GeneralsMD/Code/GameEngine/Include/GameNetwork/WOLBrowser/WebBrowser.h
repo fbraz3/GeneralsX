@@ -132,6 +132,7 @@ extern CComObject<WebBrowser> *TheWebBrowser;
 
 // Forward declaration
 struct FieldParse;
+class GameWindow;
 
 class WebBrowserURL {
 public:
@@ -148,6 +149,10 @@ class WebBrowser {
 public:
     WebBrowserURL* findURL(const AsciiString& tag) { return nullptr; }
     WebBrowserURL* makeNewURL(const AsciiString& tag) { return nullptr; }
+    
+    // Stub implementations for browser window methods
+    virtual Bool createBrowserWindow(const char *tag, GameWindow *win) { return false; }
+    virtual void closeBrowserWindow(GameWindow *win) { /* stub */ }
 };
 
 extern WebBrowser *TheWebBrowser;

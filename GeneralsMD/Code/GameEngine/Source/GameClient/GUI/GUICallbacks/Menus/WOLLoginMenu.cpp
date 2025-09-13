@@ -873,6 +873,9 @@ void WOLLoginMenuUpdate( WindowLayout * layout, void *userData)
 					SetUpGameSpy( motd.str(), config.str() );
 				}
 				break;
+			default:
+				// Other response types not handled in login menu
+				break;
 			}
 		}
 
