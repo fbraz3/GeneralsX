@@ -99,7 +99,7 @@ bool DX8WebBrowser::Initialize(	const char* badpageurl,
 				{
 #ifdef _WIN32
 					// On Windows, call the actual procedure
-					proc();
+					((int(*)())proc)();
 #endif
 					// Create an instance of the browser control
 #ifdef _WIN32

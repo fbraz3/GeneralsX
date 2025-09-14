@@ -5,7 +5,11 @@
 // Multimedia system compatibility for macOS port
 #ifdef __APPLE__
 
+#ifdef _WIN32
 #include "windows.h"
+#else
+#include "../Source/WWVegas/WW3D2/win32_compat.h"
+#endif
 
 // Include time compatibility first to avoid conflicts
 #include "../../../Dependencies/Utility/./Utility/time_compat.h"

@@ -17,6 +17,8 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 // Basic Windows types that might not be defined
 #ifndef LONG
@@ -146,6 +148,14 @@ typedef unsigned short WORD;
 typedef uintptr_t DWORD_PTR;
 typedef int BOOL;
 typedef long LONG;
+
+// SAL annotations (placeholders for macOS)
+#ifndef IN
+#define IN
+#endif
+#ifndef OUT
+#define OUT
+#endif
 typedef unsigned long ULONG;  // Added ULONG type
 typedef char CHAR;            // Added CHAR type
 typedef void* LPVOID;
@@ -194,6 +204,41 @@ typedef DWORD U32;
 typedef long S32;
 typedef void* LPWAVEFORMAT;
 typedef void* HTIMER;
+
+// Miles Sound System compatibility stubs
+inline void AIL_lock() {
+    // Miles Sound System lock - stub implementation for cross-platform
+}
+
+inline void AIL_unlock() {
+    // Miles Sound System unlock - stub implementation for cross-platform
+}
+
+inline void AIL_set_3D_position(void* sample, float x, float y, float z) {
+    // Miles Sound System 3D position - stub implementation for cross-platform
+}
+
+inline void AIL_set_3D_orientation(void* sample, float x_face, float y_face, float z_face, 
+                                  float x_up, float y_up, float z_up) {
+    // Miles Sound System 3D orientation - stub implementation for cross-platform
+}
+
+inline void AIL_set_sample_processor(void* sample, int pipeline_stage, void* provider) {
+    // Miles Sound System sample processor - stub implementation for cross-platform
+}
+
+inline void AIL_set_filter_sample_preference(void* filter, const char* preference, void* value) {
+    // Miles Sound System filter preference - stub implementation for cross-platform
+}
+
+// Miles Sound System constants
+#define DP_FILTER 0x1000
+
+// Miles Sound System types
+typedef unsigned long MILES_HANDLE;
+
+// Miles Sound System invalid handle for HPROVIDER
+#define INVALID_HPROVIDER ((HPROVIDER)(MILES_HANDLE)-1)
 
 // IME types (stubs for non-Windows platforms)
 typedef void* HIMC;
@@ -1532,7 +1577,103 @@ static inline char *ww_strlwr_impl(char *str) {
 #define _strlwr ww_strlwr_impl
 #endif
 
+// Windows Sockets API compatibility
+#define MAKEWORD(a, b)      ((WORD)(((BYTE)(a)) | ((WORD)((BYTE)(b))) << 8))
+#define LOBYTE(w)           ((BYTE)(((DWORD)(w)) & 0xff))
+#define HIBYTE(w)           ((BYTE)((((DWORD)(w)) >> 8) & 0xff))
+
+// Windows Socket Error Constants
+#define WSAEWOULDBLOCK     EAGAIN
+#define WSAEINVAL          EINVAL  
+#define WSAEALREADY        EALREADY
+#define WSAEISCONN         EISCONN
+#define WSAENOTCONN        ENOTCONN
+#define WSAECONNRESET      ECONNRESET
+#define WSAECONNABORTED    ECONNABORTED
+#define WSAEINPROGRESS     EINPROGRESS
+#define WSAETIMEDOUT       ETIMEDOUT
+#define WSAENETDOWN        ENETDOWN
+#define WSAENETUNREACH     ENETUNREACH
+#define WSAEHOSTDOWN       EHOSTDOWN
+#define WSAEHOSTUNREACH    EHOSTUNREACH
+
+typedef struct {
+    WORD wVersion;
+    WORD wHighVersion;
+    char szDescription[257];
+    char szSystemStatus[129];
+    unsigned short iMaxSockets;
+    unsigned short iMaxUdpDg;
+    char *lpVendorInfo;
+} WSADATA;
+
+// Socket types and functions
+typedef int SOCKET;
+typedef struct sockaddr SOCKADDR;
+typedef struct sockaddr_in SOCKADDR_IN;
+typedef struct hostent HOSTENT;
+
+// Additional socket functions (to be implemented in network compatibility layer)
+inline int getsockname(SOCKET s, struct sockaddr* addr, int* addrlen) {
+    // Platform-specific implementation would go here
+    // For now, return success but this needs proper implementation
+    return 0;
+}
+
+inline int listen(SOCKET s, int backlog) {
+    // Platform-specific implementation would go here
+    return ::listen(s, backlog);
+}
+
+// Note: closesocket is defined in WWDownload/winsock.h
+// Define closesocket for GameSpy compatibility
+#ifndef closesocket
+#define closesocket(s) close(s)
+#endif
+
+// Note: WSAStartup, WSACleanup, WSAGetLastError and other network functions are defined in network.h
+// Note: gethostbyname and gethostname are provided by system headers
+
+// Windows compatibility for cross-platform build
+#ifndef _WIN32
+// Windows calling convention stubs
+#define WINAPI
+#define __stdcall
+
+// Windows far pointer compatibility
+#define FAR
+
+// Windows types needed for ICMP
+typedef void* LPVOID;
+#endif
+
 // Additional Windows APIs
+// Floating-point control functions
+inline void _fpreset() {
+    // Microsoft floating-point reset - stub for cross-platform
+}
+
+inline unsigned int _statusfp() {
+    // Microsoft floating-point status - stub for cross-platform
+    return 0;
+}
+
+inline unsigned int _controlfp(unsigned int newval, unsigned int mask) {
+    // Microsoft floating-point control - stub for cross-platform
+    return 0;
+}
+
+// Floating-point control constants
+#define _MCW_RC     0x00000300  /* Rounding Control */
+#define _MCW_PC     0x00030000  /* Precision Control */
+#define _RC_NEAR    0x00000000  /* Near */
+#define _RC_DOWN    0x00000100  /* Down */
+#define _RC_UP      0x00000200  /* Up */
+#define _RC_CHOP    0x00000300  /* Chop */
+#define _PC_24      0x00020000  /* 24 bits */
+#define _PC_53      0x00010000  /* 53 bits */
+#define _PC_64      0x00000000  /* 64 bits */
+
 // itoa function for integer to string conversion
 inline char *itoa(int value, char *str, int base) {
     if (base == 10) {

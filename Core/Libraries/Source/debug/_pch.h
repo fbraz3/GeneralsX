@@ -37,7 +37,11 @@
 // we need windows.h at too many places...
 #define STRICT
 #define WIN32_LEAN_AND_MEAN
+#ifdef _WIN32
 #include <windows.h>
+#else
+#include "../WWVegas/WW3D2/win32_compat.h"
+#endif
 
 #include "internal.h"
 #include "internal_io.h"

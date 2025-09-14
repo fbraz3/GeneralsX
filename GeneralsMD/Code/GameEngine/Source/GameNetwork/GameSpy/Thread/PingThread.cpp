@@ -1,5 +1,7 @@
 /*
-**	Command & Conquer Generals Zero Hour(tm)
+**	Command & Conquer Gene#include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+
+// winsock definitions are included via win32_compat.h in PreRTS.hs Zero Hour(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -28,7 +30,7 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
 
-#include <winsock.h>	// This one has to be here. Prevents collisions with windsock2.h
+// winsock definitions are included via win32_compat.h in PreRTS.h
 
 #include "GameNetwork/GameSpy/PingThread.h"
 #include "mutex.h"
@@ -342,6 +344,7 @@ BOOL WINAPI IcmpCloseHandle(HANDLE IcmpHandle); /* FALSE on error */
 /* Note 2: For the most part, you can refer to RFC 791 for detials
  * on how to fill in values for the IP option information structure.
  */
+#ifndef _WIN32
 typedef struct ip_option_information
 {
    UnsignedByte Ttl;         /* Time To Live (used for traceroute) */
@@ -352,12 +355,6 @@ typedef struct ip_option_information
 }
 IPINFO, *PIPINFO, FAR *LPIPINFO;
 
-
-/* Note 1: The Reply Buffer will have an array of ICMP_ECHO_REPLY
- * structures, followed by options and the data in ICMP echo reply
- * datagram received. You must have room for at least one ICMP
- * echo reply structure, plus 8 bytes for an ICMP header.
- */
 typedef struct icmp_echo_reply
 {
    UnsignedInt Address;     /* source address */
@@ -369,6 +366,8 @@ typedef struct icmp_echo_reply
    struct ip_option_information Options; /* reply options */
 }
 ICMPECHO, *PICMPECHO, FAR *LPICMPECHO;
+
+#endif // !_WIN32
 
 
 DWORD WINAPI IcmpSendEcho(

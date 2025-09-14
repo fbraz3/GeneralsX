@@ -8157,6 +8157,59 @@ Bool Pathfinder::clientSafeQuickDoesPathExistForUI( const LocomotorSet& locomoto
 
 /**
  * Does any path exist from 'from' to 'to' given the locomotor set
+ * This is the fast check, looks at whether the terrain and buildings are blocking the destination.
+ * @param locomotorSet which kind of movement is desired.
+ * @param from starting position
+ * @param to desired ending position
+ * @return TRUE if any path could be made
+ */
+Bool Pathfinder::quickDoesPathExist( const LocomotorSet& locomotorSet,
+																const Coord3D *from,
+																const Coord3D *to )
+{
+	// See if terrain or building is blocking the destination.
+	PathfindLayerEnum destinationLayer = TheTerrainLogic->getLayerForDestination(to);
+	PathfindLayerEnum fromLayer = TheTerrainLogic->getLayerForDestination(from);
+	Int zone1, zone2;
+
+	PathfindCell *parentCell = getClippedCell(fromLayer, from);
+	PathfindCell *goalCell = getClippedCell(destinationLayer, to);
+	if (goalCell->getType()==PathfindCell::CELL_CLIFF) {
+		return false; // No goals on cliffs.
+	}
+	Bool doingTerrainZone = false;
+	zone1 = m_zoneManager.getEffectiveZone(locomotorSet.getValidSurfaces(), false, parentCell->getZone());
+
+	if (parentCell->getType() == PathfindCell::CELL_OBSTACLE) {
+		doingTerrainZone = true;
+	}
+	zone2 =  m_zoneManager.getEffectiveZone(locomotorSet.getValidSurfaces(), false, goalCell->getZone());
+	if (goalCell->getType() == PathfindCell::CELL_OBSTACLE) {
+		doingTerrainZone = true;
+	}
+	if (doingTerrainZone) {
+		zone1 = parentCell->getZone();
+		zone1 = m_zoneManager.getEffectiveTerrainZone(zone1);
+		zone1 = m_zoneManager.getEffectiveZone(locomotorSet.getValidSurfaces(), false, zone1);
+		zone1 = m_zoneManager.getEffectiveTerrainZone(zone1);
+		zone2 = goalCell->getZone();
+		zone2 = m_zoneManager.getEffectiveTerrainZone(zone2);
+		zone2 = m_zoneManager.getEffectiveZone(locomotorSet.getValidSurfaces(), false, zone2);
+		zone2 = m_zoneManager.getEffectiveTerrainZone(zone2);
+	}
+	if (!validMovementPosition(false, destinationLayer, locomotorSet, to)) {
+		return false;
+	}
+	// If the terrain is connected using this locomotor set, we can path somehow.
+	if (zone1 == zone2) {
+		// There is not terrain blocking the from & to.
+		return true;
+	}
+	return FALSE;  // no path exists
+}
+
+/**
+ * Does any path exist from 'from' to 'to' given the locomotor set
  * This is the careful check, looks at whether the terrain, buindings and units are possible or
  * impossible to path over.  Takes other units into account.
  * False means it is impossible to path.

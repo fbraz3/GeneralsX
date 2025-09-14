@@ -483,7 +483,7 @@ ScriptEngine::~ScriptEngine()
 	if (st_DebugDLL) {
 		FARPROC proc = GetProcAddress(st_DebugDLL, "DestroyDebugDialog");
 		if (proc) {
-			proc();
+			((void(*)())proc)();
 		}
 
 		FreeLibrary(st_DebugDLL);
@@ -493,7 +493,7 @@ ScriptEngine::~ScriptEngine()
 	if (st_ParticleDLL) {
 		FARPROC proc = GetProcAddress(st_ParticleDLL, "DestroyParticleSystemDialog");
 		if (proc) {
-			proc();
+			((void(*)())proc)();
 		}
 
 		FreeLibrary(st_ParticleDLL);
@@ -542,14 +542,14 @@ void ScriptEngine::init( void )
 		if (st_DebugDLL) {
 			FARPROC proc = GetProcAddress(st_DebugDLL, "CreateDebugDialog");
 			if (proc) {
-				proc();
+				((void(*)())proc)();
 			}
 		}
 
 	if (st_ParticleDLL) {
 		FARPROC proc = GetProcAddress(st_ParticleDLL, "CreateParticleSystemDialog");
 		if (proc) {
-			proc();
+			((void(*)())proc)();
 		}
 	}
 
@@ -9452,7 +9452,7 @@ void _appendAllParticleSystems( void )
 
 	proc = GetProcAddress(st_ParticleDLL, "RemoveAllParticleSystems");
 	if (proc) {
-		proc();
+		((void(*)())proc)();
 	} else {
 		return;
 	}
@@ -9481,7 +9481,7 @@ void _appendAllThingTemplates( void )
 
 	proc = GetProcAddress(st_ParticleDLL, "RemoveAllThingTemplates");
 	if (proc) {
-		proc();
+		((void(*)())proc)();
 	} else {
 		return;
 	}

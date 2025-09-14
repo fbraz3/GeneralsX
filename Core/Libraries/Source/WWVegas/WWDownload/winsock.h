@@ -40,7 +40,9 @@
     
     // Windows socket functions defined in network.h
     // (WSAStartup, WSACleanup, WSAGetLastError)
+    #ifndef closesocket
     inline int closesocket(SOCKET s) { return close(s); }
+    #endif
     inline int ioctlsocket(SOCKET s, long cmd, unsigned long* argp) { 
         return ioctl(s, cmd, argp); 
     }

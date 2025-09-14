@@ -66,6 +66,7 @@
 #include "WW3D2/rendobj.h"
 #include "WW3D2/mesh.h"
 #include "WW3D2/meshmdl.h"
+#include "WWMath/vector3.h"
 #include "Common/BitFlagsIO.h"
 
 

@@ -5,7 +5,11 @@
 // SNMP compatibility for macOS port
 #ifdef __APPLE__
 
+#ifdef _WIN32
 #include "windows.h"
+#else
+#include "../Source/WWVegas/WW3D2/win32_compat.h"
+#endif
 
 // Additional types for compatibility
 typedef void VOID;

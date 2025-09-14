@@ -126,7 +126,7 @@ enum CallbackType
 
 void callbackWrapper( GPConnection *con, void *arg, void *param )
 {
-	CallbackType info = (CallbackType)(Int)param;
+	CallbackType info = (CallbackType)(intptr_t)param;
 	BuddyThreadClass *thread = MESSAGE_QUEUE->getThread() ? MESSAGE_QUEUE->getThread() : NULL /*(TheGameSpyBuddyMessageQueue)?TheGameSpyBuddyMessageQueue->getThread():NULL*/;
 	if (!thread)
 		return;
