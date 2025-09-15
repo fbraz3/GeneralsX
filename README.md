@@ -1,4 +1,3 @@
-[![Weekly Release](https://github.com/fbraz3/GeneralsGameCode/actions/workflows/weekly-release.yml/badge.svg)](https://github.com/fbraz3/GeneralsGameCode/actions/workflows/weekly-release.yml)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/fbraz3/GeneralsGameCode)
 
 ## Command & Conquer: Generals - Cross-Platform Port
@@ -58,6 +57,19 @@ Built upon the excellent foundation work by [TheSuperHackers](https://github.com
 - Maintained DirectX 8 support for Windows legacy systems
 - Improved texture loading and memory management
 - Enhanced graphics debugging and profiling tools
+
+**Why OpenGL over Vulkan?**
+
+We chose OpenGL as our cross-platform graphics API for several strategic reasons:
+
+- **🕰 Legacy Compatibility**: The original game engine was designed for DirectX 8 (2002), making OpenGL's more traditional immediate-mode approach a natural fit for porting existing rendering code
+- **🔧 Development Speed**: OpenGL's simpler state machine aligns better with the original graphics architecture, allowing faster porting with fewer fundamental code rewrites
+- **📚 Mature Ecosystem**: OpenGL has decades of documentation, debugging tools, and community knowledge that accelerates development
+- **🎯 Sufficient Performance**: For a 2003 RTS game, OpenGL provides more than adequate performance while maintaining broad hardware compatibility
+- **🖥 Hardware Support**: OpenGL works excellently on older hardware that C&C Generals players might still be using, including integrated graphics
+- **⚡ Future Path**: The OpenGL foundation can be enhanced with modern extensions or eventually serve as a stepping stone to Vulkan if needed
+
+This approach prioritizes **getting the game running cross-platform quickly** rather than chasing cutting-edge graphics performance that the original game design doesn't require.
 
 **Modern Development**:
 - Updated from Visual C++ 6.0 to modern C++20 standards

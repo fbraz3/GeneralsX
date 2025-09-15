@@ -42,8 +42,8 @@ on:
         required: false
         type: string
 
-  schedule:
-    - cron: '0 9 * * 5'
+  # schedule:
+  #   - cron: '0 9 * * 5'  # Disabled during cross-platform development phase
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
