@@ -341,7 +341,7 @@ Bool Transport::doRecv()
 						(Int)(TheGlobalData->m_latencyAmplitude * sin(now * TheGlobalData->m_latencyPeriod)) +
 						GameClientRandomValue(-TheGlobalData->m_latencyNoise, TheGlobalData->m_latencyNoise);
 					m_delayedInBuffer[i].message.length = incomingMessage.length;
-					m_delayedInBuffer[i].message.addr = ntohl(from.sin_addr.S_un.S_addr);
+					m_delayedInBuffer[i].message.addr = ntohl(from.sin_addr.s_addr);
 					m_delayedInBuffer[i].message.port = ntohs(from.sin_port);
 					memcpy(&m_delayedInBuffer[i].message, buf, len);
 					break;
@@ -354,7 +354,7 @@ Bool Transport::doRecv()
 				{
 					// Empty slot; use it
 					m_inBuffer[i].length = incomingMessage.length;
-					m_inBuffer[i].addr = ntohl(from.sin_addr.S_un.S_addr);
+					m_inBuffer[i].addr = ntohl(from.sin_addr.s_addr);
 					m_inBuffer[i].port = ntohs(from.sin_port);
 					memcpy(&m_inBuffer[i], buf, len);
 					break;

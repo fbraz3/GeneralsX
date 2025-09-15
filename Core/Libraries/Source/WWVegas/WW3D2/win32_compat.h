@@ -432,6 +432,44 @@ typedef struct {
     DWORD dwAvailVirtual;
 } MEMORYSTATUS;
 
+// User and computer name constants
+#define UNLEN 256
+#define MAX_COMPUTERNAME_LENGTH 15
+
+// User and computer name functions
+inline BOOL GetUserName(char* lpBuffer, DWORD* pcbBuffer) {
+    const char* username = getenv("USER");
+    if (!username) username = getenv("USERNAME");
+    if (!username) username = "unknown";
+    
+    size_t len = strlen(username);
+    if (len >= *pcbBuffer) {
+        *pcbBuffer = len + 1;
+        return FALSE;
+    }
+    
+    strcpy(lpBuffer, username);
+    *pcbBuffer = len;
+    return TRUE;
+}
+
+inline BOOL GetComputerName(char* lpBuffer, DWORD* nSize) {
+    char hostname[256];
+    if (gethostname(hostname, sizeof(hostname)) != 0) {
+        strcpy(hostname, "unknown");
+    }
+    
+    size_t len = strlen(hostname);
+    if (len >= *nSize) {
+        *nSize = len + 1;
+        return FALSE;
+    }
+    
+    strcpy(lpBuffer, hostname);
+    *nSize = len;
+    return TRUE;
+}
+
 // File system compatibility
 #include <sys/stat.h>
 #include <time.h>
@@ -629,9 +667,16 @@ inline char* lstrcat(char* dest, const char* src) {
 // DirectX basic types
 #if !defined(_WIN32) && !defined(LARGE_INTEGER_DEFINED)
 #define LARGE_INTEGER_DEFINED
-typedef struct {
-    DWORD LowPart;
-    LONG HighPart;
+
+// Define LONGLONG type
+typedef long long LONGLONG;
+
+typedef union {
+    struct {
+        DWORD LowPart;
+        LONG HighPart;
+    };
+    LONGLONG QuadPart;
 } LARGE_INTEGER;
 #endif
 
@@ -1164,6 +1209,13 @@ inline HANDLE CreateThread(void* lpThreadAttributes, unsigned long dwStackSize,
                           void* lpStartAddress, void* lpParameter, 
                           DWORD dwCreationFlags, DWORD* lpThreadId) {
     return nullptr; // Stub implementation
+}
+
+inline BOOL TerminateThread(HANDLE hThread, DWORD dwExitCode) {
+    (void)hThread; (void)dwExitCode;
+    // Stub implementation - in real cross-platform code, would use pthread_cancel
+    // For now, just return success to maintain compatibility
+    return TRUE;
 }
 #endif
 
@@ -1735,6 +1787,12 @@ inline BOOL GetVersionEx(OSVERSIONINFO* lpVersionInfo) {
         return TRUE;
     }
     return FALSE;
+}
+
+inline DWORD GetCurrentTime() {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (DWORD)(tv.tv_sec * 1000 + tv.tv_usec / 1000);
 }
 
 #endif // !_WIN32

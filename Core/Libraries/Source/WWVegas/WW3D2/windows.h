@@ -122,6 +122,11 @@ typedef char* LPSTR;
 #define IDYES 6
 #define IDNO 7
 
+// MessageBox constants
+#define MB_OK                0x00000000L
+#define MB_ICONERROR         0x00000010L
+#define MB_SYSTEMMODAL       0x00001000L
+
 // Additional types
 typedef void* HKEY;
 typedef HKEY* PHKEY;
