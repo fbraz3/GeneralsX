@@ -2,60 +2,104 @@
 
 ## Project Overview
 
-**GeneralsGameCode** - Community effort to fix and improve C&C Generals/Zero Hour. Modernized from VC6/C++98 to VS2022/C++20 while maintaining retail compatibility.
+**GeneralsGameCode** - Cross-platform port of Command & Conquer: Generals/Zero Hour. Modernized from VC6/C++98 to modern C++20 with comprehensive macOS/Linux compatibility.
 
-**🚀 macOS Port Status**: 95% complete - 12 core libraries compiled, only DirectX interface harmonization and debug isolation remaining.
+**🎯 Current Status**: Phase 13 - Final 93 compilation errors, 95% complete, focusing on Vector3/Vector4 conflicts and DirectX harmonization.
 
-## Architecture
+## Architecture & Critical Patterns
 
 ### Directory Structure
-- **Generals/**: Original C&C Generals (v1.08)
-- **GeneralsMD/**: Zero Hour expansion (v1.04) - **primary focus**
-- **Core/**: Shared engine and libraries
+- **Core/**: Shared engine (50MB+ compiled libraries)
+  - `win32_compat.h` (1,800+ lines) - **Primary compatibility layer**
+  - `Libraries/Source/WWVegas/WW3D2/` - 3D graphics engine  
+  - `Libraries/Source/debug/` - Cross-platform debug system
+- **GeneralsMD/**: Zero Hour expansion - **PRIMARY TARGET**
+- **Generals/**: Original game - secondary target  
 
-### Executable Targets
-- **g_generals**: Generals original → `generalsv` executable (5 compile errors)
-- **z_generals**: Zero Hour expansion → `generalszh` executable (4 compile errors) 
-- **generalszh**: Alias for z_generals (same target, different name)
+### Build System Commands
+```bash
+# Primary workflow - ALWAYS use vc6 preset for retail compatibility
+cmake --preset vc6
+cmake --build build/vc6 --target z_generals  # Main target (4 errors)
+cmake --build build/vc6 --target g_generals  # Secondary (5 errors)
 
-**Priority Order**: z_generals (main focus) → g_generals → generalszh
+# Test core libraries independently
+cmake --build build/vc6 --target ww3d2 wwlib wwmath
+```
 
-### Cross-Platform Compatibility (95% Complete)
-- **✅ Windows API Layer**: 200+ functions implemented in `Core/win32_compat.h`
-- **✅ 12 Core Libraries**: 50MB+ compiled successfully (libww3d2.a, libwwmath.a, etc.)
-- **🔧 Final Blockers**: DirectX type conflicts, debug component isolation, process APIs
+### Cross-Platform Compatibility Strategy
+**Essential Pattern**: `#ifdef _WIN32` conditional compilation throughout
+- Windows APIs isolated in `win32_compat.h` 
+- POSIX alternatives for macOS/Linux
+- 200+ Windows functions replaced (HeapAlloc→malloc, wsprintf→snprintf, etc.)
+- **Never break Windows compatibility** - all original code paths preserved
 
-## Build System
+## Critical Development Issues
 
-### CMake Configuration
-- **Preset**: `cmake --preset vc6` (retail compatibility)
-- **Build**: `cmake --build build/vc6 --target <target>`
-- **Test Libraries**: `cmake --build build/vc6 --target ww3d2 wwlib wwmath`
+### Vector3/Vector4 Type Conflicts (Current Blocker)
+**Root Cause**: `Core/Libraries/Include/GraphicsAPI/GraphicsRenderer.h` mock types conflict with WWMath classes
+```cpp
+// WRONG - causes redefinition errors
+struct Vector3 { float x, y, z; };
 
-### Critical Build Flags
-- `RTS_BUILD_ZEROHOUR=ON` - enables Zero Hour (main focus)
-- `RTS_BUILD_GENERALS=ON` - enables original Generals
-- `RTS_BUILD_OPTION_DEBUG=OFF` - maintains retail compatibility
+// CORRECT - forward declarations only
+class Vector3;  // From WWMath/vector3.h
+```
+**Fix Pattern**: Use forward declarations, avoid mock types when real WWMath types available
 
-## Current Development Focus
+### DirectX Interface Harmonization  
+**Pattern**: Consistent `IDirect3DTexture8*` usage across Core/Generals/GeneralsMD
+- Files: `dx8wrapper.cpp`, `texture.h`, `d3d8.h` in both Generals and GeneralsMD
+- **Issue**: `CORE_IDirect3DTexture8` vs `IDirect3DTexture8` naming conflicts
+- **Solution**: Unified typedef pattern in compatibility headers
 
-### DirectX Interface Harmonization (Priority 1)
-- **Issue**: `CORE_IDirect3DTexture8` vs `IDirect3DTexture8` type conflicts
-- **Files**: `dx8wrapper.cpp`, Core/Generals/GeneralsMD `d3d8.h` files
-- **Fix**: Consistent casting pattern and type guards
+### Debug System Architecture (Recently Completed)
+**Pattern**: Complete Windows API isolation
+```cpp
+#ifdef _WIN32
+    // Windows-specific: wsprintf, _itoa, MessageBox, etc.
+#else  
+    // Cross-platform: snprintf, console output, etc.
+#endif
+```
 
-### Debug Component Isolation (Priority 2)  
-- **Issue**: Windows-specific debug I/O compiled on macOS (19 errors/file)
-- **Files**: `debug_io_*.cpp` in `Core/Libraries/Source/debug/`
-- **Fix**: `#ifdef _WIN32` guards and macOS alternatives
+## Development Workflows
 
-### Process Management APIs (Priority 3)
-- **Issue**: `SECURITY_ATTRIBUTES`, `CreatePipe` missing POSIX implementation
-- **Files**: `Core/GameEngine/Source/Common/WorkerProcess.cpp`
-- **Fix**: POSIX pipe/fork/exec implementation
+### Error Resolution Priority
+1. **Vector/Type Conflicts** - Fix GraphicsRenderer.h mock types first
+2. **DirectX Harmonization** - Unify texture interface naming  
+3. **Missing Types** - Add forward declarations for RTS3DScene, TerrainTextureClass
+4. **sprintf Deprecation** - Replace with snprintf (security warnings)
 
-## Key Files
-- `MACOS_PORT.md`: Detailed port status and implementation roadmap
-- `Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h`: Main compatibility layer
-- `GeneralsReplays/`: Retail compatibility test data
-- `CMakePresets.json`: Build system configurations
+### Testing Strategy
+- **Retail Compatibility**: Always test with `RTS_BUILD_OPTION_DEBUG=OFF`
+- **Library Verification**: Build core libraries first before game targets
+- **Cross-Platform**: Test macOS builds regularly (`#ifdef _WIN32` guards)
+
+### Memory Management Patterns
+**Critical**: Game uses custom memory pools extensively
+```cpp
+MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(ClassName, "PoolName")
+// Generates operator new/delete with pool allocation
+```
+**Never modify** pool macros - they maintain exact retail memory layout
+
+## Key Integration Points
+
+### Graphics Pipeline
+- **W3D Engine**: 25MB compiled graphics libraries (libww3d2.a)
+- **DirectX8→OpenGL**: Compatibility via `dx8wrapper.cpp` abstraction
+- **Texture Management**: `TextureBaseClass` hierarchy with DirectX interfaces
+
+### Platform-Specific Files
+- **Windows**: Native DirectX, all original functionality preserved
+- **macOS**: OpenGL rendering, POSIX APIs via win32_compat.h  
+- **Cross-Platform**: Conditional compilation, no platform-specific branches
+
+## Essential Files for AI Context
+- `MACOS_PORT.md` - Detailed progress tracking and error analysis
+- `NEXT_STEPS.md` - Current phase status and remaining work  
+- `Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h` - All platform abstractions
+- `CMakePresets.json` - Build configurations (use "vc6" preset)
+
+**Debugging Tip**: Current errors focus on type redefinitions and missing forward declarations - check include order and conditional compilation guards first.
