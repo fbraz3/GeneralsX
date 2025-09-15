@@ -40,6 +40,13 @@
 
 // Forward declarations
 class RTS3DInterfaceScene;
+class RTS3DScene;
+class RTS2DScene;
+class W3DAssetManager;
+class LightClass;
+class LightEnvironmentClass;
+class Render2DClass;
+class W3DDebugDisplay;
 
 // Include graphics abstraction layer
 #include "GraphicsAPI/GraphicsRenderer.h"
@@ -53,7 +60,7 @@ class W3DDisplay : public Display
 {
 private:
     // Graphics API management
-    GraphicsAPI m_preferredAPI;
+    GraphicsAPIType m_preferredAPI;
     bool m_useOpenGL;
 
 public:
@@ -165,7 +172,7 @@ protected:
 	static Bool isTimeFrozen();
 
 	Byte m_initialized;												///< TRUE when system is initialized
-	LightClass *m_myLight[LightEnvironmentClass::MAX_LIGHTS];										///< light hack for now
+	LightClass *m_myLight[4];  // LightEnvironmentClass::MAX_LIGHTS = 4										///< light hack for now
 	Render2DClass *m_2DRender;								///< interface for common 2D functions
 	IRegion2D m_clipRegion;									///< the clipping region for images
 	Bool m_isClippedEnabled;	///<used by 2D drawing operations to define clip re

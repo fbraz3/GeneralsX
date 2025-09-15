@@ -50,11 +50,19 @@
 #define __WIN32DIKEYBOARD_H_
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
+#ifdef _WIN32
 #ifndef DIRECTINPUT_VERSION
 #	define DIRECTINPUT_VERSION	0x800
 #endif
 
 #include <dinput.h>
+#else
+// macOS: DirectInput not available, use stubs
+typedef void* LPDIRECTINPUT8;
+typedef void* LPDIRECTINPUTDEVICE8;
+typedef int HRESULT;
+#define DI_OK 0
+#endif
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "GameClient/Keyboard.h"

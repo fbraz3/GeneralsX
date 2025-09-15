@@ -192,7 +192,7 @@ public:
     void Clear(bool color, bool depth, bool stencil, 
               uint32_t clearColor = 0x00000000) override;
     
-    GraphicsAPI GetAPI() const override { return GraphicsAPI::OPENGL; }
+    GraphicsAPIType GetAPI() const override { return GraphicsAPIType::OPENGL; }
     const char* GetAPIString() const override { return "OpenGL (W3D)"; }
     
 private:

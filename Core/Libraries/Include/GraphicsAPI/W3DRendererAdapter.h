@@ -30,7 +30,7 @@ private:
     
 public:
     // Initialization
-    static bool Initialize(GraphicsAPI preferredAPI = GraphicsAPI::OPENGL);
+    static bool Initialize(GraphicsAPIType preferredAPI = GraphicsAPIType::OPENGL);
     static void Shutdown();
     
     // Configuration
@@ -85,8 +85,6 @@ public:
     virtual void Apply(int stage);
     
 private:
-    // Internal OpenGL binding method
-    void BindGL(int textureUnit);
     virtual int Get_Width() const { return m_width; }
     virtual int Get_Height() const { return m_height; }
     

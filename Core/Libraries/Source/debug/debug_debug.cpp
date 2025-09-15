@@ -955,7 +955,7 @@ Debug& Debug::operator<<(unsigned short val)
 #endif
 }
 
-Debug& Debug::operator<<(__int64 val)
+Debug& Debug::operator<<(int64_t val)
 {
   // usually having a fixed size buffer and a function
   // that doesn't check for buffer overflow isn't a good idea
@@ -979,7 +979,7 @@ Debug& Debug::operator<<(__int64 val)
 #endif
 }
 
-Debug& Debug::operator<<(unsigned __int64 val)
+Debug& Debug::operator<<(uint64_t val)
 {
   // usually having a fixed size buffer and a function
   // that doesn't check for buffer overflow isn't a good idea
@@ -1440,7 +1440,11 @@ void Debug::StartOutput(DebugIOInterface::StringType type, const char *fmt, ...)
   // potentially dangerous (fixed string buffer...)
   va_list va;
   va_start(va,fmt);
+#ifdef _WIN32
   wvsprintf(curSource,fmt,va);
+#else
+  vsnprintf(curSource, sizeof(curSource), fmt, va);
+#endif
   va_end(va);
   __ASSERT(curSource[sizeof(curSource)-1]==0);
 }
@@ -1461,12 +1465,27 @@ void Debug::AddOutput(const char *str, unsigned remainingLen)
       // add timestamp now?
       if (ioBuffer[curType].lastWasCR)
       {
+#ifdef _WIN32
         SYSTEMTIME systime;
         GetLocalTime(&systime);
-
         char ts[40];
         wsprintf(ts,"[%02i:%02i.%02i.%03i] ",systime.wHour,systime.wMinute,
                       systime.wSecond,systime.wMilliseconds);
+#else
+        // macOS: Use time functions and snprintf
+        time_t rawtime;
+        struct tm * timeinfo;
+        struct timeval tv;
+        
+        time(&rawtime);
+        timeinfo = localtime(&rawtime);
+        gettimeofday(&tv, NULL);
+        
+        char ts[40];
+        snprintf(ts, sizeof(ts), "[%02d:%02d.%02d.%03d] ", 
+                timeinfo->tm_hour, timeinfo->tm_min, 
+                timeinfo->tm_sec, (int)(tv.tv_usec / 1000));
+#endif
 
         unsigned tsLen=strlen(ts);
         memcpy(ioBuffer[curType].buffer+ioBuffer[curType].used,ts,tsLen+1);
@@ -1775,12 +1794,14 @@ void Debug::ExecCommand(const char *cmdstart, const char *cmdend)
   DebugFreeMemory(strbuf);
 }
 
-// little helper to get app window
+// little helper to get app window - Windows only
+#ifdef _WIN32
 static BOOL CALLBACK EnumThreadWndProc(HWND hwnd, LPARAM lParam)
 {
   *(HWND *)lParam=hwnd;
   return FALSE;
 }
+#endif
 
 bool Debug::IsWindowed(void)
 {
@@ -1788,6 +1809,7 @@ bool Debug::IsWindowed(void)
   if (m_isWindowed)
     return m_isWindowed>0;
 
+#ifdef _WIN32
   // find main app window
   HWND appHWnd=NULL;
   EnumThreadWindows(GetCurrentThreadId(),EnumThreadWndProc,(LPARAM)&appHWnd);
@@ -1801,6 +1823,11 @@ bool Debug::IsWindowed(void)
   // we assume full screen if WS_CAPTION is not set
   m_isWindowed=(GetWindowLong(appHWnd,GWL_STYLE)&WS_CAPTION)?1:-1;
   return m_isWindowed>0;
+#else
+  // macOS: Always assume windowed mode for now
+  m_isWindowed=1;
+  return true;
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////

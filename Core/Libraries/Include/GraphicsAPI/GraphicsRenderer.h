@@ -2,16 +2,16 @@
 
 #include <cstdint>
 
-// Try to use real W3D types if available, fall back to mock types
-#ifdef ENABLE_W3D_INTEGRATION
-    #include "W3DTypes.h"
-    // Use real W3D types
-    using Matrix4 = W3DMatrix4;
-    using Vector3 = W3DVector3;
-    using Vector4 = W3DVector4;
-#else
-    // Mock types for standalone testing
-    struct Matrix4 {
+// Forward declarations for W3D types - avoid conflicts with WWMath
+class Vector3;
+class Vector4;
+
+// Only define mock types when W3D types are absolutely not available
+#if !defined(WWMATH_VECTOR3_H) && !defined(_VECTOR3_H_) && !defined(ENABLE_W3D_INTEGRATION)
+    
+    // Mock types for standalone testing only - namespaced to avoid conflicts
+    namespace GraphicsAPI {
+        struct Matrix4 {
         float m[16];
         Matrix4() { 
             for(int i = 0; i < 16; i++) m[i] = 0.0f;
@@ -46,15 +46,13 @@
         const float* data() const { return m; }
     };
     
-    struct Vector3 {
-        float x, y, z;
-        Vector3(float x = 0, float y = 0, float z = 0) : x(x), y(y), z(z) {}
-    };
+    // Don't define Vector3/Vector4 mock types to avoid conflicts with WWMath
+    // Use forward declarations only
+    }
     
-    struct Vector4 {
-        float x, y, z, w;
-        Vector4(float x = 0, float y = 0, float z = 0, float w = 0) : x(x), y(y), z(z), w(w) {}
-    };
+    // Only use Matrix4 mock when necessary
+    using Matrix4 = GraphicsAPI::Matrix4;
+    
 #endif
 
 // Forward declarations
@@ -101,7 +99,7 @@ struct SamplerState {
     int wrapT;
 };
 
-enum class GraphicsAPI {
+enum class GraphicsAPIType {
     DIRECTX8,
     OPENGL,
     VULKAN  // Para o futuro
@@ -152,7 +150,7 @@ public:
                       uint32_t clearColor = 0x00000000) = 0;
     
     // API information
-    virtual GraphicsAPI GetAPI() const = 0;
+    virtual GraphicsAPIType GetAPI() const = 0;
     virtual const char* GetAPIString() const = 0;
 };
 
@@ -161,11 +159,11 @@ public:
  */
 class GraphicsRendererFactory {
 public:
-    static IGraphicsRenderer* CreateRenderer(GraphicsAPI api);
+    static IGraphicsRenderer* CreateRenderer(GraphicsAPIType api);
     static void DestroyRenderer(IGraphicsRenderer* renderer);
     
     // Automatically detects the best available API
-    static GraphicsAPI DetectBestAPI();
+    static GraphicsAPIType DetectBestAPI();
 };
 
 // Global renderer instance
