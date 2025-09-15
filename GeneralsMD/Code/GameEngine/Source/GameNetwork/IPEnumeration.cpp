@@ -36,11 +36,13 @@ IPEnumeration::IPEnumeration( void )
 
 IPEnumeration::~IPEnumeration( void )
 {
+#ifdef _WIN32
 	if (m_isWinsockInitialized)
 	{
 		WSACleanup();
 		m_isWinsockInitialized = false;
 	}
+#endif
 
 	EnumeratedIP *ip = m_IPlist;
 	while (ip)
@@ -53,6 +55,7 @@ IPEnumeration::~IPEnumeration( void )
 
 EnumeratedIP * IPEnumeration::getAddresses( void )
 {
+#ifdef _WIN32
 	if (m_IPlist)
 		return m_IPlist;
 
@@ -121,6 +124,13 @@ EnumeratedIP * IPEnumeration::getAddresses( void )
 	}
 
 	return m_IPlist;
+#else
+	// macOS: Simple IP enumeration stub
+	if (!m_IPlist) {
+		addNewIP(127, 0, 0, 1); // localhost
+	}
+	return m_IPlist;
+#endif
 }
 
 void IPEnumeration::addNewIP( UnsignedByte a, UnsignedByte b, UnsignedByte c, UnsignedByte d )
@@ -165,6 +175,7 @@ void IPEnumeration::addNewIP( UnsignedByte a, UnsignedByte b, UnsignedByte c, Un
 
 AsciiString IPEnumeration::getMachineName( void )
 {
+#ifdef _WIN32
 	if (!m_isWinsockInitialized)
 	{
 		WORD verReq = MAKEWORD(2, 2);
@@ -191,6 +202,14 @@ AsciiString IPEnumeration::getMachineName( void )
 	}
 
 	return AsciiString(hostname);
+#else
+	// macOS: Get machine name using POSIX
+	char hostname[256];
+	if (gethostname(hostname, sizeof(hostname)) == 0) {
+		return AsciiString(hostname);
+	}
+	return AsciiString("localhost");
+#endif
 }
 
 

@@ -248,6 +248,7 @@ AsciiString Pinger::getPingString( Int timeout )
 
 void PingThreadClass::Thread_Function()
 {
+#ifdef _WIN32
 	try {
 	PingRequest req;
 
@@ -329,6 +330,10 @@ void PingThreadClass::Thread_Function()
 	} catch ( ... ) {
 		DEBUG_CRASH(("Exception in ping thread!"));
 	}
+#else
+	// macOS: GameSpy ping thread not implemented
+	DEBUG_LOG(("PingThread not implemented on macOS"));
+#endif
 }
 
 //-------------------------------------------------------------------------

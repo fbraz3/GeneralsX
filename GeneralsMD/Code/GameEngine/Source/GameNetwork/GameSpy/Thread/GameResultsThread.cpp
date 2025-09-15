@@ -208,6 +208,7 @@ Bool GameResultsQueue::areGameResultsBeingSent( void )
 
 void GameResultsThreadClass::Thread_Function()
 {
+#ifdef _WIN32
 	try {
 	GameResultsRequest req;
 
@@ -269,6 +270,10 @@ void GameResultsThreadClass::Thread_Function()
 	} catch ( ... ) {
 		DEBUG_CRASH(("Exception in results thread!"));
 	}
+#else
+	// macOS: GameSpy results thread not implemented
+	DEBUG_LOG(("GameResultsThread not implemented on macOS"));
+#endif
 }
 
 //-------------------------------------------------------------------------
@@ -344,6 +349,7 @@ static const char *getWSAErrorString( Int error )
 
 Int GameResultsThreadClass::sendGameResults( UnsignedInt IP, UnsignedShort port, const std::string& results )
 {
+#ifdef _WIN32
 	int error = 0;
 
 	// create the socket
@@ -389,6 +395,11 @@ Int GameResultsThreadClass::sendGameResults( UnsignedInt IP, UnsignedShort port,
 	closesocket(sock);
 
 	return results.length();
+#else
+	// macOS: GameSpy not implemented
+	(void)IP; (void)port; (void)results;
+	return -1;
+#endif
 }
 
 

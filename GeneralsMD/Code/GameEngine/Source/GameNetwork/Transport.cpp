@@ -88,6 +88,7 @@ Bool Transport::init( UnsignedInt ip, UnsignedShort port )
 	// ----- Initialize Winsock -----
 	if (!m_winsockInit)
 	{
+#ifdef _WIN32
 		WORD verReq = MAKEWORD(2, 2);
 		WSADATA wsadata;
 
@@ -100,6 +101,7 @@ Bool Transport::init( UnsignedInt ip, UnsignedShort port )
 			WSACleanup();
 			return false;
 		}
+#endif
 		m_winsockInit = true;
 	}
 
@@ -170,7 +172,9 @@ void Transport::reset( void )
 
 	if (m_winsockInit)
 	{
+#ifdef _WIN32
 		WSACleanup();
+#endif
 		m_winsockInit = false;
 	}
 }
