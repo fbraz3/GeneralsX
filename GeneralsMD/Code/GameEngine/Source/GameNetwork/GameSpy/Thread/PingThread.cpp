@@ -343,8 +343,10 @@ void PingThreadClass::Thread_Function()
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
 
+#ifdef _WIN32
 HANDLE WINAPI IcmpCreateFile(VOID); /* INVALID_HANDLE_VALUE on error */
 BOOL WINAPI IcmpCloseHandle(HANDLE IcmpHandle); /* FALSE on error */
+#endif
 
 /* Note 2: For the most part, you can refer to RFC 791 for detials
  * on how to fill in values for the IP option information structure.
@@ -423,6 +425,7 @@ DWORD WINAPI IcmpSendEcho(
 
 Int PingThreadClass::doPing(UnsignedInt IP, Int timeout)
 {
+#ifdef _WIN32
    /*
     * Initialize default settings
     */
@@ -574,6 +577,10 @@ cleanup:
       FreeLibrary((HINSTANCE)hICMP_DLL);
 
    return pingTime;
+#else
+   // macOS: Ping functionality not implemented
+   return -1;
+#endif
 }
 
 

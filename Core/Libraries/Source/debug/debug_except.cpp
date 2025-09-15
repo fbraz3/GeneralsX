@@ -27,7 +27,9 @@
 // Unhandled exception handler
 //////////////////////////////////////////////////////////////////////////////
 #include "_pch.h"
+#ifdef _WIN32
 #include <commctrl.h>
+#endif
 
 DebugExceptionhandler::DebugExceptionhandler(void)
 {

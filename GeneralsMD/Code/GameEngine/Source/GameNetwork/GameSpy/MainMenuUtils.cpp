@@ -32,6 +32,10 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
 
 #include <fcntl.h>
+#ifndef _WIN32
+#include <unistd.h>
+#include <sys/stat.h>
+#endif
 
 //#include "Common/Registry.h"
 #include "Common/UserPreferences.h"
@@ -148,6 +152,7 @@ static Bool hasWriteAccess()
 
 	remove(filename);
 
+#ifdef _WIN32
 	int handle = _open( filename, _O_CREAT | _O_RDWR, _S_IREAD | _S_IWRITE);
 	if (handle == -1)
 	{
@@ -155,6 +160,15 @@ static Bool hasWriteAccess()
 	}
 
 	_close(handle);
+#else
+	int handle = open(filename, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+	if (handle == -1)
+	{
+		return false;
+	}
+
+	close(handle);
+#endif
 	remove(filename);
 
 	unsigned int val;
@@ -678,12 +692,17 @@ int asyncGethostbyname(char * szName)
 	{
 		/* Kick off gethostname thread */
 		s_asyncDNSThreadDone = FALSE;
+#ifdef _WIN32
 		s_asyncDNSThreadHandle = CreateThread( NULL, 0, asyncGethostbynameThreadFunc, szName, 0, &threadid );
 
 		if( s_asyncDNSThreadHandle == NULL )
 		{
 			return( LOOKUP_FAILED );
 		}
+#else
+		// macOS: Return immediate failure, async DNS not supported
+		return( LOOKUP_FAILED );
+#endif
 		stat = 1;
 	}
 	if( stat == 1 )

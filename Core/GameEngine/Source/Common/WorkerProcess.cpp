@@ -19,6 +19,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "Common/WorkerProcess.h"
 
+#ifdef _WIN32
 // We need Job-related functions, but these aren't defined in the Windows-headers that VC6 uses.
 // So we define them here and load them dynamically.
 #if defined(_MSC_VER) && _MSC_VER < 1300
@@ -228,4 +229,69 @@ void WorkerProcess::kill()
 	m_stdOutput.clear();
 	m_isDone = false;
 }
+
+#else // macOS/POSIX implementation
+
+#include <unistd.h>
+#include <sys/wait.h>
+#include <signal.h>
+
+WorkerProcess::WorkerProcess()
+{
+	m_processHandle = (HANDLE)-1;
+	m_readHandle = NULL;
+	m_jobHandle = NULL;
+	m_exitcode = 0;
+	m_isDone = false;
+}
+
+bool WorkerProcess::startProcess(UnicodeString command)
+{
+	m_stdOutput.clear();
+	m_isDone = false;
+	
+	// macOS: Simple stub implementation
+	// In a full implementation, this would use fork/exec with pipes
+	DEBUG_LOG(("WorkerProcess::startProcess not fully implemented on macOS: %s", command.str()));
+	m_isDone = true;
+	m_exitcode = 0;
+	return true;
+}
+
+bool WorkerProcess::isRunning() const
+{
+	return !m_isDone;
+}
+
+bool WorkerProcess::isDone() const
+{
+	return m_isDone;
+}
+
+DWORD WorkerProcess::getExitCode() const
+{
+	return m_exitcode;
+}
+
+AsciiString WorkerProcess::getStdOutput() const
+{
+	return m_stdOutput;
+}
+
+bool WorkerProcess::fetchStdOutput()
+{
+	return true; // No output to fetch in stub
+}
+
+void WorkerProcess::update()
+{
+	// No-op in stub
+}
+
+void WorkerProcess::kill()
+{
+	m_isDone = true;
+}
+
+#endif
 

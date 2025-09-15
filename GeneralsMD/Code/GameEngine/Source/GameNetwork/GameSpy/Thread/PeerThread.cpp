@@ -1140,11 +1140,20 @@ void checkQR2Queries( PEER peer, SOCKET sock )
 	while (1)
 	{
 		error = select(FD_SETSIZE, &set, NULL, NULL, &timeout);
+#ifdef _WIN32
 		if (SOCKET_ERROR == error || 0 == error)
 			return;
+#else
+		if (-1 == error || 0 == error)
+			return;
+#endif
 		//else we have data
 		error = recvfrom(sock, indata, INBUF_LEN - 1, 0, (struct sockaddr *)&saddr, &saddrlen);
+#ifdef _WIN32
 		if (error != SOCKET_ERROR)
+#else
+		if (error != -1)
+#endif
 		{
 			indata[error] = '\0';
 			peerParseQuery( peer, indata, error, (sockaddr *)&saddr );

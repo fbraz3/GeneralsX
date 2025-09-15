@@ -22,6 +22,10 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
 #include <set>
+#ifndef _WIN32
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
 
 #include "Common/GameState.h"
 #include "Common/RandomValue.h"
@@ -613,11 +617,23 @@ void SetUpGameSpy( const char *motdBuffer, const char *configBuffer )
 	TearDownGameSpy();
 
 	AsciiString dir = TheGlobalData->getPath_UserData();
+#ifdef _WIN32
 	CreateDirectory(dir.str(), NULL);
+#else
+	mkdir(dir.str(), 0755);
+#endif
 	dir.format("%sGeneralsOnline", TheGlobalData->getPath_UserData().str());
+#ifdef _WIN32
 	CreateDirectory(dir.str(), NULL);
+#else
+	mkdir(dir.str(), 0755);
+#endif
 	dir.format("%sGeneralsOnline\\Ladders", TheGlobalData->getPath_UserData().str());
+#ifdef _WIN32
 	CreateDirectory(dir.str(), NULL);
+#else
+	mkdir(dir.str(), 0755);
+#endif
 
 	TheGameSpyBuddyMessageQueue = GameSpyBuddyMessageQueueInterface::createNewMessageQueue();
 	TheGameSpyBuddyMessageQueue->startThread();

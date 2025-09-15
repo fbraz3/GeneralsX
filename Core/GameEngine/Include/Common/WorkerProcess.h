@@ -47,9 +47,15 @@ private:
 	bool fetchStdOutput();
 
 private:
+#ifdef _WIN32
 	HANDLE m_processHandle;
 	HANDLE m_readHandle;
 	HANDLE m_jobHandle;
+#else
+	void* m_processHandle;
+	void* m_readHandle;
+	void* m_jobHandle;
+#endif
 	AsciiString m_stdOutput;
 	DWORD m_exitcode;
 	bool m_isDone;

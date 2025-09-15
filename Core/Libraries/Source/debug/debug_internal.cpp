@@ -33,12 +33,20 @@ void DebugInternalAssert(const char *file, int line, const char *expr)
   // dangerous as well but since this function is used in this
   // module only we know how long stuff can get
   char buf[512];
+#ifdef _WIN32
   wsprintf(buf,"File %s, line %i:\n%s",file,line,expr);
   MessageBox(NULL,buf,"Internal assert failed",
                         MB_OK|MB_ICONSTOP|MB_TASKMODAL|MB_SETFOREGROUND);
 
   // stop right now!
   TerminateProcess(GetCurrentProcess(),666);
+#else
+  snprintf(buf, sizeof(buf), "File %s, line %i:\n%s", file, line, expr);
+  printf("Internal assert failed: %s\n", buf);
+  
+  // stop right now!
+  exit(666);
+#endif
 }
 
 void *DebugAllocMemory(unsigned numBytes)
