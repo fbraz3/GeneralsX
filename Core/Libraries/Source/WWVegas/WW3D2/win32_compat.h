@@ -41,6 +41,14 @@ typedef long long __int64;
 typedef unsigned int UINT;
 #endif
 
+#ifndef WPARAM
+typedef uintptr_t WPARAM;
+#endif
+
+#ifndef LPARAM
+typedef uintptr_t LPARAM;
+#endif
+
 // Additional types we need
 #ifndef FARPROC
 typedef void* FARPROC;
@@ -646,6 +654,7 @@ typedef struct {
 #define _stricmp strcasecmp
 #define _strnicmp strncasecmp
 #define _isnan isnan
+#define _wcsicmp wcscasecmp
 
 // String function stubs
 inline char* lstrcpyn(char* dest, const char* src, int max_len) {

@@ -53,7 +53,7 @@ public:
 		WW3DFormat texture_format);	// Pass WW3D_FORMAT_UNKNOWN if you don't care
 	static void Load_Mipmap_Levels(TextureLoadTaskClass* texture);
 
-	static IDirect3DSurface8* Load_Surface_Immediate(
+	static CORE_IDirect3DSurface8* Load_Surface_Immediate(
 		const StringClass& filename,
 		WW3DFormat surface_format,		// Pass WW3D_FORMAT_UNKNOWN if you don't care
 		bool allow_compression);

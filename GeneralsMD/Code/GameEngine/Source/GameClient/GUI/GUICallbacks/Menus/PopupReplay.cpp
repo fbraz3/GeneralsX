@@ -280,6 +280,7 @@ void reallySaveReplay(void)
 
 	if (TheLocalFileSystem->doesFileExist(filename.str()))
 	{
+#ifdef _WIN32
 		if(DeleteFile(filename.str()) == 0)
 		{
 			wchar_t buffer[1024];
@@ -287,6 +288,12 @@ void reallySaveReplay(void)
 			UnicodeString errorStr;
 			errorStr.set(buffer);
 			errorStr.trim();
+#else
+		if(unlink(filename.str()) != 0)
+		{
+			UnicodeString errorStr;
+			errorStr.set(L"Failed to delete file");
+#endif
 			if(messageBoxWin)
 			{
 				TheWindowManager->winUnsetModal(messageBoxWin);
@@ -305,6 +312,7 @@ void reallySaveReplay(void)
 	}
 
 	// copy the replay to the right place
+#ifdef _WIN32
 	if(CopyFile(oldFilename.str(),filename.str(), FALSE) == 0)
 	{
 		wchar_t buffer[1024];
@@ -320,6 +328,36 @@ void reallySaveReplay(void)
 		MessageBoxOk(TheGameText->fetch("GUI:Error"),errorStr, NULL);
 		return;
 	}
+#else
+	// macOS file copy
+	FILE* src = fopen(oldFilename.str(), "rb");
+	FILE* dst = fopen(filename.str(), "wb");
+	bool copy_failed = true;
+	if (src && dst) {
+		char buffer[4096];
+		size_t bytes;
+		copy_failed = false;
+		while ((bytes = fread(buffer, 1, sizeof(buffer), src)) > 0) {
+			if (fwrite(buffer, 1, bytes, dst) != bytes) {
+				copy_failed = true;
+				break;
+			}
+		}
+	}
+	if (src) fclose(src);
+	if (dst) fclose(dst);
+	if (!src || !dst || copy_failed) {
+		UnicodeString errorStr;
+		errorStr.set(L"Failed to copy file");
+		if(messageBoxWin)
+		{
+			TheWindowManager->winUnsetModal(messageBoxWin);
+			messageBoxWin = NULL;
+		}
+		MessageBoxOk(TheGameText->fetch("GUI:Error"),errorStr, NULL);
+		return;
+	}
+#endif
 
 	// get the listbox that will have the save games in it
 	GameWindow *listboxGames = TheWindowManager->winGetWindowFromId( parent, listboxGamesKey );

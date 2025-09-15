@@ -2315,7 +2315,7 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
 		&texture);
 
 	if (result != D3D_OK) {
-		return MissingTexture::_Get_Missing_Texture();
+		return (IDirect3DTexture8*)MissingTexture::_Get_Missing_Texture();
 	}
 
 	// Make sure texture wasn't paletted!
@@ -2323,7 +2323,7 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
 	texture->GetLevelDesc(0,&desc);
 	if (desc.Format==D3DFMT_P8) {
 		texture->Release();
-		return MissingTexture::_Get_Missing_Texture();
+		return (IDirect3DTexture8*)MissingTexture::_Get_Missing_Texture();
 	}
 	return texture;
 }
@@ -2416,12 +2416,12 @@ IDirect3DSurface8 * DX8Wrapper::_Create_DX8_Surface(const char *filename_)
 			}
 			file_auto_ptr myfile2(_TheFileFactory,compressed_name);
 			if (!myfile2->Is_Available())
-				return MissingTexture::_Create_Missing_Surface();
+				return (IDirect3DSurface8*)MissingTexture::_Create_Missing_Surface();
 		}
 	}
 
 	StringClass filename_string(filename_,true);
-	surface=TextureLoader::Load_Surface_Immediate(
+	surface=(IDirect3DSurface8*)TextureLoader::Load_Surface_Immediate(
 		filename_string,
 		WW3D_FORMAT_UNKNOWN,
 		true);
@@ -2637,7 +2637,7 @@ SurfaceClass * DX8Wrapper::_Get_DX8_Back_Buffer(unsigned int num)
 	DX8CALL(GetBackBuffer(num,D3DBACKBUFFER_TYPE_MONO,&bb));
 	if (bb)
 	{
-		surf=NEW_REF(SurfaceClass,(bb));
+		surf=NEW_REF(SurfaceClass,((CORE_IDirect3DSurface8*)bb));
 		bb->Release();
 	}
 
@@ -2734,7 +2734,7 @@ DX8Wrapper::Set_Render_Target
 	WWASSERT(texture != NULL);
 	SurfaceClass * surf = texture->Get_Surface_Level();
 	WWASSERT(surf != NULL);
-	Set_Render_Target(surf->Peek_D3D_Surface());
+	Set_Render_Target((IDirect3DSurface8*)surf->Peek_D3D_Surface());
 	REF_PTR_RELEASE(surf);
 }
 

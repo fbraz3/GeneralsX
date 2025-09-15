@@ -30,6 +30,8 @@
 
 #include "Common/Registry.h"
 
+#ifdef _WIN32
+
 
 Bool  getStringFromRegistry(HKEY root, AsciiString path, AsciiString key, AsciiString& val)
 {
@@ -192,3 +194,22 @@ UnsignedInt GetRegistryMapPackVersion(void)
 	GetUnsignedIntFromRegistry("", "MapPackVersion", val);
 	return val;
 }
+
+#else
+// macOS/Linux stubs for registry functions
+Bool getStringFromRegistry(HKEY root, AsciiString path, AsciiString key, AsciiString& val) { return false; }
+Bool GetStringFromRegistry(AsciiString path, AsciiString key, AsciiString& val) { return false; }
+Bool getUnicodeStringFromRegistry(HKEY root, AsciiString path, AsciiString key, UnicodeString& val) { return false; }
+Bool GetUnicodeStringFromRegistry(AsciiString path, AsciiString key, UnicodeString& val) { return false; }
+Bool getUnsignedIntFromRegistry(HKEY root, AsciiString path, AsciiString key, UnsignedInt& val) { return false; }
+Bool GetUnsignedIntFromRegistry(AsciiString path, AsciiString key, UnsignedInt& val) { return false; }
+Bool putStringToRegistry(HKEY root, AsciiString path, AsciiString key, AsciiString val) { return false; }
+Bool PutStringToRegistry(AsciiString path, AsciiString key, AsciiString val) { return false; }
+Bool putUnicodeStringToRegistry(HKEY root, AsciiString path, AsciiString key, UnicodeString val) { return false; }
+Bool PutUnicodeStringToRegistry(AsciiString path, AsciiString key, UnicodeString val) { return false; }
+Bool putUnsignedIntToRegistry(HKEY root, AsciiString path, AsciiString key, UnsignedInt val) { return false; }
+Bool PutUnsignedIntToRegistry(AsciiString path, AsciiString key, UnsignedInt val) { return false; }
+AsciiString GetRegistrySKU(void) { return ""; }
+UnsignedInt GetRegistryVersion(void) { return 65536; }
+UnsignedInt GetRegistryMapPackVersion(void) { return 65536; }
+#endif

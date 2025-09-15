@@ -502,7 +502,11 @@ AsciiString GameState::findNextSaveFilename( UnicodeString desc )
 			fullPath = getFilePathInSaveDirectory(filename);
 
 			// if file does not exist we're all good
+#ifdef _WIN32
 			if( _access( fullPath.str(), 0 ) == -1 )
+#else
+			if( access( fullPath.str(), 0 ) == -1 )
+#endif
 				return filename;
 
 			// test the text filename
@@ -549,7 +553,11 @@ SaveCode GameState::saveGame( AsciiString filename, UnicodeString desc,
 	}  // end if
 
 	// make absolutely sure the save directory exists
+#ifdef _WIN32
 	CreateDirectory( getSaveDirectory().str(), NULL );
+#else
+	mkdir( getSaveDirectory().str(), 0755 );
+#endif
 
 	// construct path to file
 	AsciiString filepath = getFilePathInSaveDirectory(filename);

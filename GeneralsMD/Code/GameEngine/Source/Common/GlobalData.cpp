@@ -1030,6 +1030,7 @@ GlobalData::GlobalData()
   // Set user data directory based on registry settings instead of INI parameters. This allows us to
   // localize the leaf name.
   char temp[_MAX_PATH + 1];
+#ifdef _WIN32
   if (::SHGetSpecialFolderPath(NULL, temp, CSIDL_PERSONAL, true))
   {
     AsciiString myDocumentsDirectory = temp;
@@ -1053,6 +1054,16 @@ GlobalData::GlobalData()
     CreateDirectory(myDocumentsDirectory.str(), NULL);
     m_userDataDir = myDocumentsDirectory;
   }
+#else
+  // macOS: Use ~/Documents directory
+  const char* home = getenv("HOME");
+  if (home) {
+    AsciiString myDocumentsDirectory;
+    myDocumentsDirectory.format("%s/Documents/Command and Conquer Generals Zero Hour Data/", home);
+    mkdir(myDocumentsDirectory.str(), 0755);
+    m_userDataDir = myDocumentsDirectory;
+  }
+#endif
 
 	//-allAdvice feature
 	//m_allAdvice = FALSE;

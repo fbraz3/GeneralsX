@@ -55,6 +55,10 @@
 #include "Common/Debug.h"
 #include "Common/Errors.h"
 
+#ifndef _WIN32
+#include "WW3D2/win32_compat.h"
+#endif
+
 class UnicodeString;
 
 // -----------------------------------------------------

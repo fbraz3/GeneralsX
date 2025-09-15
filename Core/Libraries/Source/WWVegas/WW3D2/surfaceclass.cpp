@@ -222,13 +222,13 @@ SurfaceClass::SurfaceClass(unsigned width, unsigned height, WW3DFormat format):
 {
 	WWASSERT(width);
 	WWASSERT(height);
-	D3DSurface = DX8Wrapper::_Create_DX8_Surface(width, height, format);
+	D3DSurface = (CORE_IDirect3DSurface8*)DX8Wrapper::_Create_DX8_Surface(width, height, format);
 }
 
 SurfaceClass::SurfaceClass(const char *filename):
 	D3DSurface(NULL)
 {
-	D3DSurface = DX8Wrapper::_Create_DX8_Surface(filename);
+	D3DSurface = (CORE_IDirect3DSurface8*)DX8Wrapper::_Create_DX8_Surface(filename);
 	SurfaceDescription desc;
 	Get_Description(desc);
 	SurfaceFormat=desc.Format;
@@ -494,7 +494,7 @@ void SurfaceClass::Copy(
 		POINT dst;
 		dst.x=dstx;
 		dst.y=dsty;
-		DX8Wrapper::_Copy_DX8_Rects(other->D3DSurface,&src,1,D3DSurface,&dst);
+		DX8Wrapper::_Copy_DX8_Rects((IDirect3DSurface8*)other->D3DSurface,&src,1,(IDirect3DSurface8*)D3DSurface,&dst);
 	}
 	else
 	{

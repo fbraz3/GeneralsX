@@ -509,7 +509,11 @@ void GameStateMap::clearScratchPadMaps( void )
 
 		// delete file if set
 		if( fileToDelete.isEmpty() == FALSE )
+#ifdef _WIN32
 			DeleteFile( fileToDelete.str() );
+#else
+			unlink( fileToDelete.str() );
+#endif
 
 	}  // end while
 

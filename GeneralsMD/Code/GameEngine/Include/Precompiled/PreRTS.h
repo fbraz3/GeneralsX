@@ -40,25 +40,30 @@ class STLSpecialAlloc;
 // different .cpp files, so I bit the bullet and included it here.
 // PLEASE DO NOT ABUSE WINDOWS OR IT WILL BE REMOVED ENTIRELY. :-)
 //--------------------------------------------------------------------------------- System Includes
+#ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <atlbase.h>
 #include <windows.h>
+#endif
 
 #include <assert.h>
 #include <ctype.h>
-#include <direct.h>
-#include <excpt.h>
 #include <float.h>
 #include <Utility/fstream_adapter.h>
+#ifdef _WIN32
+#include <direct.h>
+#include <excpt.h>
 #include <imagehlp.h>
 #include <io.h>
+#endif
 #include <limits.h>
+#include <math.h>
+#include <memory.h>
+#ifdef _WIN32
 #include <lmcons.h>
 #if defined(_MSC_VER) && _MSC_VER < 1300
 #include <mapicode.h>
 #endif
-#include <math.h>
-#include <memory.h>
 #include <mmsystem.h>
 #include <objbase.h>
 #include <ocidl.h>
@@ -67,6 +72,7 @@ class STLSpecialAlloc;
 #include <shlobj.h>
 #include <shlguid.h>
 #include <snmp.h>
+#endif
 #include <stdarg.h>
 #include <stddef.h>
 #include <Utility/stdio_adapter.h>
@@ -75,11 +81,11 @@ class STLSpecialAlloc;
 #include <sys/stat.h>
 #include <sys/timeb.h>
 #include <sys/types.h>
-#include <tchar.h>
 #include <time.h>
+#ifdef _WIN32
+#include <tchar.h>
 #include <vfw.h>
 #include <winerror.h>
-#ifdef _WIN32
 #include <wininet.h>
 #include <winreg.h>
 #endif

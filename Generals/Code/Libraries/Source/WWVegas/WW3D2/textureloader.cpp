@@ -193,7 +193,7 @@ IDirect3DTexture8* TextureLoader::Load_Thumbnail(const StringClass& filename,WW3
 		// If load failed, return missing texture
 		if (!thumb->Peek_Bitmap()) {
 			delete thumb;
-			return MissingTexture::_Get_Missing_Texture();
+			return (IDirect3DTexture8*)MissingTexture::_Get_Missing_Texture();
 		}
 	}
 
@@ -318,7 +318,7 @@ IDirect3DTexture8* Load_Compressed_Texture(
 // format and performs color space conversion.
 //
 // ----------------------------------------------------------------------------
-IDirect3DSurface8* TextureLoader::Load_Surface_Immediate(
+CORE_IDirect3DSurface8* TextureLoader::Load_Surface_Immediate(
 	const StringClass& filename,
 	WW3DFormat texture_format,
 	bool allow_compression)
@@ -331,7 +331,7 @@ IDirect3DSurface8* TextureLoader::Load_Surface_Immediate(
 			IDirect3DSurface8* d3d_surface=NULL;
 			DX8_ErrorCode(comp_tex->GetSurfaceLevel(0,&d3d_surface));
 			comp_tex->Release();
-			return d3d_surface;
+			return (CORE_IDirect3DSurface8*)d3d_surface;
 		}
 	}
 
@@ -421,7 +421,7 @@ IDirect3DSurface8* TextureLoader::Load_Surface_Immediate(
 
 	if (converted_surface) delete[] converted_surface;
 
-	return d3d_surface;
+	return (CORE_IDirect3DSurface8*)d3d_surface;
 }
 
 
@@ -794,7 +794,7 @@ IDirect3DTexture8* TextureLoader::Generate_Bumpmap(TextureBaseClass* texture)
 {
 	WW3DFormat bump_format=WW3D_FORMAT_U8V8;
 	if (!DX8Wrapper::Get_Current_Caps()->Support_Texture_Format(bump_format)) {
-		return MissingTexture::_Get_Missing_Texture();
+		return (IDirect3DTexture8*)MissingTexture::_Get_Missing_Texture();
 	}
 
 	D3DSURFACE_DESC desc;
@@ -1100,7 +1100,7 @@ void TextureLoadTaskClass::Begin_Texture_Load()
 		if (!loaded) {
 			Targa targa;
 			if (TARGA_ERROR_HANDLER(targa.Open(Texture->Get_Full_Path(), TGA_READMODE),Texture->Get_Full_Path())) {
-				D3DTexture=MissingTexture::_Get_Missing_Texture();
+				D3DTexture=(IDirect3DTexture8*)MissingTexture::_Get_Missing_Texture();
 				HasFailed=true;
 				IsLoading=false;
 				End_Load();

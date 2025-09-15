@@ -32,7 +32,7 @@ CORE_IDirect3DTexture8* MissingTexture::_Get_Missing_Texture()
 {
 	WWASSERT(_MissingTexture);
 	_MissingTexture->AddRef();
-	return _MissingTexture;
+	return (CORE_IDirect3DTexture8*)_MissingTexture;
 }
 
 CORE_IDirect3DSurface8* MissingTexture::_Create_Missing_Surface()
@@ -51,7 +51,7 @@ CORE_IDirect3DSurface8* MissingTexture::_Create_Missing_Surface()
 		&surface));
 	DX8CALL(CopyRects(texture_surface, NULL, 0, surface, NULL));
 	texture_surface->Release();
-	return surface;
+	return (CORE_IDirect3DSurface8*)surface;
 }
 
 void MissingTexture::_Init()

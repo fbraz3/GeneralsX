@@ -265,7 +265,7 @@ TextureClass::TextureClass(SurfaceClass *surface, MipCountType mip_level_count)
 	default: break;
 	}
 
-	D3DTexture = DX8Wrapper::_Create_DX8_Texture(surface->Peek_D3D_Surface(), mip_level_count);
+	D3DTexture = DX8Wrapper::_Create_DX8_Texture((IDirect3DSurface8*)surface->Peek_D3D_Surface(), mip_level_count);
 	LastAccessed=WW3D::Get_Sync_Time();
 }
 
@@ -414,7 +414,7 @@ void TextureClass::Load_Locked_Surface()
 bool TextureClass::Is_Missing_Texture()
 {
 	bool flag = false;
-	IDirect3DTexture8 *missing_texture = MissingTexture::_Get_Missing_Texture();
+	IDirect3DTexture8 *missing_texture = (IDirect3DTexture8*)MissingTexture::_Get_Missing_Texture();
 
 	if(D3DTexture == missing_texture)
 		flag = true;
@@ -465,7 +465,7 @@ SurfaceClass *TextureClass::Get_Surface_Level(unsigned int level)
 {
 	IDirect3DSurface8 *d3d_surface = NULL;
 	DX8_ErrorCode(Peek_D3D_Texture()->GetSurfaceLevel(level, &d3d_surface));
-	SurfaceClass *surface = W3DNEW SurfaceClass(d3d_surface);
+	SurfaceClass *surface = W3DNEW SurfaceClass((CORE_IDirect3DSurface8*)d3d_surface);
 	d3d_surface->Release();
 	return surface;
 }

@@ -165,7 +165,9 @@ void initSubsystem(SUBSYSTEM*& sysref, AsciiString name, SUBSYSTEM* sys, Xfer *p
 
 //-------------------------------------------------------------------------------------------------
 extern HINSTANCE ApplicationHInstance;  ///< our application instance
+#ifdef _WIN32
 extern CComModule _Module;
+#endif
 
 //-------------------------------------------------------------------------------------------------
 static void updateTGAtoDDS();
@@ -254,7 +256,9 @@ GameEngine::GameEngine( void )
 	m_isActive = FALSE;
 	m_enableLogicTimeScale = FALSE;
 
+#ifdef _WIN32
 	_Module.Init(NULL, ApplicationHInstance, NULL);
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -296,7 +300,9 @@ GameEngine::~GameEngine()
 
 	Drawable::killStaticImages();
 
+#ifdef _WIN32
 	_Module.Term();
+#endif
 
 #ifdef PERF_TIMERS
 	PerfGather::termPerfDump();
@@ -452,7 +458,11 @@ void GameEngine::init()
 		//I was unable to resolve the RTPatch method of deleting a shipped file. English, Chinese, and Korean
 		//SKU's shipped with two INIZH.big files. One properly in the Run directory and the other in Run\INI\Data.
 		//We need to toast the latter in order for the game to patch properly.
+#ifdef _WIN32
 		DeleteFile( "Data\\INI\\INIZH.big" );
+#else
+		unlink("Data/INI/INIZH.big");
+#endif
 
 		// not part of the subsystem list, because it should normally never be reset!
 		TheNameKeyGenerator = MSGNEW("GameEngineSubsystem") NameKeyGenerator;
@@ -1169,4 +1179,8 @@ void updateTGAtoDDS()
 // If we're using the Wide character version of MessageBox, then there's no additional
 // processing necessary. Please note that this is a sleazy way to get this information,
 // but pending a better one, this'll have to do.
+#ifdef _WIN32
 extern const Bool TheSystemIsUnicode = (((void*) (::MessageBox)) == ((void*) (::MessageBoxW)));
+#else
+extern const Bool TheSystemIsUnicode = false; // macOS uses UTF-8 by default
+#endif

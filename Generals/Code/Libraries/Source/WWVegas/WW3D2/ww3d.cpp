@@ -1355,8 +1355,8 @@ void WW3D::Make_Screen_Shot( const char * filename_base , const float gamma, con
 	SurfaceClass::SurfaceDescription surfaceDesc;
 	surface->Get_Description(surfaceDesc);
 
-	SurfaceClass* surfaceCopy = NEW_REF(SurfaceClass, (DX8Wrapper::_Create_DX8_Surface(surfaceDesc.Width, surfaceDesc.Height, surfaceDesc.Format)));
-	DX8Wrapper::_Copy_DX8_Rects(surface->Peek_D3D_Surface(), NULL, 0, surfaceCopy->Peek_D3D_Surface(), NULL);
+	SurfaceClass* surfaceCopy = NEW_REF(SurfaceClass, ((CORE_IDirect3DSurface8*)DX8Wrapper::_Create_DX8_Surface(surfaceDesc.Width, surfaceDesc.Height, surfaceDesc.Format)));
+	DX8Wrapper::_Copy_DX8_Rects((IDirect3DSurface8*)surface->Peek_D3D_Surface(), NULL, 0, (IDirect3DSurface8*)surfaceCopy->Peek_D3D_Surface(), NULL);
 
 	surface->Release_Ref();
 	surface = NULL;
@@ -1705,8 +1705,8 @@ void WW3D::Update_Movie_Capture( void )
 	SurfaceClass::SurfaceDescription surfaceDesc;
 	surface->Get_Description(surfaceDesc);
 
-	SurfaceClass* surfaceCopy = NEW_REF(SurfaceClass, (DX8Wrapper::_Create_DX8_Surface(surfaceDesc.Width, surfaceDesc.Height, surfaceDesc.Format)));
-	DX8Wrapper::_Copy_DX8_Rects(surface->Peek_D3D_Surface(), NULL, 0, surfaceCopy->Peek_D3D_Surface(), NULL);
+	SurfaceClass* surfaceCopy = NEW_REF(SurfaceClass, ((CORE_IDirect3DSurface8*)DX8Wrapper::_Create_DX8_Surface(surfaceDesc.Width, surfaceDesc.Height, surfaceDesc.Format)));
+	DX8Wrapper::_Copy_DX8_Rects((IDirect3DSurface8*)surface->Peek_D3D_Surface(), NULL, 0, (IDirect3DSurface8*)surfaceCopy->Peek_D3D_Surface(), NULL);
 
 	surface->Release_Ref();
 	surface = NULL;
