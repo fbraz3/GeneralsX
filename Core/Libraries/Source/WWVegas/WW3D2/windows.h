@@ -126,6 +126,14 @@ typedef char* LPSTR;
 #define MB_OK                0x00000000L
 #define MB_ICONERROR         0x00000010L
 #define MB_SYSTEMMODAL       0x00001000L
+#define MB_TASKMODAL         0x00002000L
+
+// Window positioning constants
+#define HWND_NOTOPMOST       ((HWND)-2)
+
+// SetWindowPos constants
+#define SWP_NOSIZE           0x0001
+#define SWP_NOMOVE           0x0002
 
 // Additional types
 typedef void* HKEY;

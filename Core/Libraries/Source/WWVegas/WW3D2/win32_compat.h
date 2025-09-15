@@ -1583,6 +1583,17 @@ inline DWORD GetModuleFileName(HMODULE hModule, char* lpFilename, DWORD nSize) {
     return 0;
 }
 
+inline DWORD GetModuleFileNameW(HMODULE hModule, wchar_t* lpFilename, DWORD nSize) {
+    // Stub implementation for getting module filename (wide char version)
+    if (lpFilename && nSize > 0) {
+        const wchar_t* path = L"/Applications/Game.app/Contents/MacOS/game";
+        wcsncpy(lpFilename, path, nSize - 1);
+        lpFilename[nSize - 1] = L'\0';
+        return wcslen(lpFilename);
+    }
+    return 0;
+}
+
 inline void GetLocalTime(SYSTEMTIME* lpSystemTime) {
     // Stub implementation for getting local time
     if (lpSystemTime) {
