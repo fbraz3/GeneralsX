@@ -62,6 +62,7 @@ Built upon the excellent foundation work by [TheSuperHackers](https://github.com
 
 We chose OpenGL as our cross-platform graphics API for several strategic reasons:
 
+- **🍎 macOS Native Support**: macOS deprecated OpenGL but still provides native support, while Vulkan requires complex wrapper layers (MoltenVK) that translate Vulkan calls to Metal, adding unnecessary complexity and potential performance overhead
 - **🕰 Legacy Compatibility**: The original game engine was designed for DirectX 8 (2002), making OpenGL's more traditional immediate-mode approach a natural fit for porting existing rendering code
 - **🔧 Development Speed**: OpenGL's simpler state machine aligns better with the original graphics architecture, allowing faster porting with fewer fundamental code rewrites
 - **📚 Mature Ecosystem**: OpenGL has decades of documentation, debugging tools, and community knowledge that accelerates development
