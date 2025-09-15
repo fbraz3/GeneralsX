@@ -38,6 +38,7 @@ DebugExceptionhandler::DebugExceptionhandler(void)
 
 const char *DebugExceptionhandler::GetExceptionType(struct _EXCEPTION_POINTERS *exptr, char *explanation)
 {
+#ifdef _WIN32
   #define EX(code,text)   \
     case EXCEPTION_##code: strcpy(explanation,text); return "EXCEPTION_" #code;
 
@@ -103,19 +104,30 @@ const char *DebugExceptionhandler::GetExceptionType(struct _EXCEPTION_POINTERS *
   }
 
   #undef EX
+#else
+  // macOS: Exception handling not implemented - return generic info
+  strcpy(explanation, "Exception handling not supported on macOS");
+  return "EXCEPTION_GENERIC";
+#endif
 }
 
 void DebugExceptionhandler::LogExceptionLocation(Debug &dbg, struct _EXCEPTION_POINTERS *exptr)
 {
+#ifdef _WIN32
   struct _CONTEXT &ctx=*exptr->ContextRecord;
 
   char buf[512];
   DebugStackwalk::Signature::GetSymbol(ctx.Eip,buf,sizeof(buf));
   dbg << "Exception occured at\n" << buf << ".";
+#else
+  // macOS: Exception location logging not supported
+  dbg << "Exception location logging not supported on macOS";
+#endif
 }
 
 void DebugExceptionhandler::LogRegisters(Debug &dbg, struct _EXCEPTION_POINTERS *exptr)
 {
+#ifdef _WIN32
   struct _CONTEXT &ctx=*exptr->ContextRecord;
 
   dbg << Debug::FillChar('0')
@@ -136,10 +148,15 @@ void DebugExceptionhandler::LogRegisters(Debug &dbg, struct _EXCEPTION_POINTERS 
       << "\nES:" << Debug::Width(4) << ctx.SegEs
       << " FS:" << Debug::Width(4) << ctx.SegFs
       << " GS:" << Debug::Width(4) << ctx.SegGs << "\n" << Debug::FillChar() << Debug::Dec();
+#else
+  // macOS: Register logging not supported
+  dbg << "Register logging not supported on macOS";
+#endif
 }
 
 void DebugExceptionhandler::LogFPURegisters(Debug &dbg, struct _EXCEPTION_POINTERS *exptr)
 {
+#ifdef _WIN32
   struct _CONTEXT &ctx=*exptr->ContextRecord;
 
   if (!(ctx.ContextFlags&CONTEXT_FLOATING_POINT))
@@ -185,11 +202,16 @@ void DebugExceptionhandler::LogFPURegisters(Debug &dbg, struct _EXCEPTION_POINTE
     dbg << " " << fpVal << "\n";
   }
   dbg << Debug::FillChar() << Debug::Dec();
+#else
+  // macOS: FPU register logging not supported
+  dbg << "FPU register logging not supported on macOS";
+#endif
 }
 
 // include exception dialog box
 #include "rc_exception.inl"
 
+#ifdef _WIN32
 // stupid dialog box function needs this
 static struct _EXCEPTION_POINTERS *exPtrs;
 
@@ -198,7 +220,9 @@ static char regInfo[1024],verInfo[256];
 
 // and this saves us from doing a stack walk twice
 static DebugStackwalk::Signature sig;
+#endif
 
+#ifdef _WIN32
 static BOOL CALLBACK ExceptionDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
   switch(uMsg)
@@ -343,9 +367,11 @@ static BOOL CALLBACK ExceptionDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
   return TRUE;
 }
+#endif
 
 #include <stdio.h>
 
+#ifdef _WIN32
 LONG __stdcall DebugExceptionhandler::ExceptionFilter(struct _EXCEPTION_POINTERS* pExPtrs)
 {
   // we should not be calling ourselves!
@@ -418,3 +444,11 @@ LONG __stdcall DebugExceptionhandler::ExceptionFilter(struct _EXCEPTION_POINTERS
   // Now die
   return EXCEPTION_EXECUTE_HANDLER;
 }
+#else
+LONG __stdcall DebugExceptionhandler::ExceptionFilter(struct _EXCEPTION_POINTERS* pExPtrs)
+{
+  // macOS: Exception filtering not supported
+  printf("Exception occurred - exception handling not supported on macOS\n");
+  return 0; // Continue search
+}
+#endif

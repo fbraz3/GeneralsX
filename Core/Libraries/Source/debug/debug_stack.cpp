@@ -27,6 +27,9 @@
 // Stack walker
 //////////////////////////////////////////////////////////////////////////////
 #include "_pch.h"
+#include <cstdint>
+
+#ifdef _WIN32
 #include <imagehlp.h>
 
 // Definitions to allow run-time linking to the dbghelp.dll functions.
@@ -89,7 +92,7 @@ static void InitDbghelp(void)
   unsigned k=0;
   for (;DebughelpFunctionNames[k];++k,++funcptr)
   {
-    *funcptr=(unsigned)GetProcAddress(g_dbghelp,DebughelpFunctionNames[k]);
+    *funcptr=(unsigned)(uintptr_t)GetProcAddress(g_dbghelp,DebughelpFunctionNames[k]);
     if (!*funcptr)
       break;
   }
@@ -390,3 +393,6 @@ int DebugStackwalk::StackWalk(Signature &sig, struct _CONTEXT *ctx)
 
 	return sig.m_numAddr;
 }
+#else
+// macOS: Stack walking functionality not supported - use empty stubs or minimal implementations as needed by other parts of the system
+#endif

@@ -18,6 +18,7 @@
 
 // Used for dynamically linking to dbghelp.dll functions.
 
+#ifdef _WIN32
 // keep this always as first entry
 DBGHELP(SymInitialize,
         BOOL,
@@ -61,3 +62,4 @@ DBGHELP(SymGetLineFromAddr,
 DBGHELP(SymCleanup,
         BOOL,
         (HANDLE hProcess))
+#endif

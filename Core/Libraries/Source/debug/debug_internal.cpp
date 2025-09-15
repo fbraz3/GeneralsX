@@ -51,10 +51,17 @@ void DebugInternalAssert(const char *file, int line, const char *expr)
 
 void *DebugAllocMemory(unsigned numBytes)
 {
+#ifdef _WIN32
   HGLOBAL h=GlobalAlloc(GMEM_FIXED,numBytes);
   if (!h)
     DCRASH_RELEASE("Debug mem alloc failed");
   return (void *)h;
+#else
+  void *ptr = malloc(numBytes);
+  if (!ptr)
+    DCRASH_RELEASE("Debug mem alloc failed");
+  return ptr;
+#endif
 }
 
 void *DebugReAllocMemory(void *oldPtr, unsigned newSize)
@@ -66,10 +73,15 @@ void *DebugReAllocMemory(void *oldPtr, unsigned newSize)
   // Shrinking to 0 size is basically freeing memory
   if (!newSize)
   {
+#ifdef _WIN32
     GlobalFree((HGLOBAL)oldPtr);
+#else
+    free(oldPtr);
+#endif
     return 0;
   }
 
+#ifdef _WIN32
   // now try GlobalReAlloc first
   HGLOBAL h=GlobalReAlloc((HGLOBAL)oldPtr,newSize,0);
   if (!h)
@@ -85,10 +97,20 @@ void *DebugReAllocMemory(void *oldPtr, unsigned newSize)
   }
 
   return (void *)h;
+#else
+  void *ptr = realloc(oldPtr, newSize);
+  if (!ptr)
+    DCRASH_RELEASE("Debug mem realloc failed");
+  return ptr;
+#endif
 }
 
 void DebugFreeMemory(void *ptr)
 {
   if (ptr)
+#ifdef _WIN32
     GlobalFree((HGLOBAL)ptr);
+#else
+    free(ptr);
+#endif
 }

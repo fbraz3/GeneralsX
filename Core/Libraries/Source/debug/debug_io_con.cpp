@@ -33,6 +33,7 @@
 DebugIOCon::DebugIOCon(void):
   m_inputUsed(0), m_inputRead(0)
 {
+#ifdef _WIN32
   // check: is there already a console window open?
   m_allocatedConsole=AllocConsole()!=0;
   if (m_allocatedConsole)
@@ -59,13 +60,20 @@ DebugIOCon::DebugIOCon(void):
 
     Write(StringType::Other,NULL,"\n\nEA/Debug console open\n\n");
   }
+#else
+  // macOS: Console functionality not implemented, use stdout
+  m_allocatedConsole = false;
+  printf("\nEA/Debug console (stdout mode)\n\n");
+#endif
 }
 
 DebugIOCon::~DebugIOCon()
 {
   // close console if we allocated it
+#ifdef _WIN32
   if (m_allocatedConsole)
     FreeConsole();
+#endif
 }
 
 int DebugIOCon::Read(char *buf, int maxchar)
@@ -101,6 +109,7 @@ int DebugIOCon::Read(char *buf, int maxchar)
     return numRead;
   }
 
+#ifdef _WIN32
   // update our input buffer
   HANDLE h=GetStdHandle(STD_INPUT_HANDLE);
   bool returnChars=false;
@@ -178,6 +187,10 @@ int DebugIOCon::Read(char *buf, int maxchar)
   }
 
   return 0;
+#else
+  // macOS: Console input not implemented, return no input
+  return 0;
+#endif
 }
 
 void DebugIOCon::Write(StringType type, const char *src, const char *str)
@@ -185,8 +198,12 @@ void DebugIOCon::Write(StringType type, const char *src, const char *str)
   if (type==StringType::StructuredCmdReply||!str)
     return;
 
+#ifdef _WIN32
   DWORD dwDummy;
   WriteFile(GetStdHandle(STD_OUTPUT_HANDLE),str,strlen(str),&dwDummy,NULL);
+#else
+  printf("%s", str);
+#endif
 }
 
 void DebugIOCon::Execute(class Debug& dbg, const char *cmd, bool structuredCmd,
@@ -200,6 +217,7 @@ void DebugIOCon::Execute(class Debug& dbg, const char *cmd, bool structuredCmd,
   }
   else if (!strcmp(cmd,"add"))
   {
+#ifdef _WIN32
     if (argn>0&&m_allocatedConsole)
     {
       // resize our console area
@@ -215,6 +233,13 @@ void DebugIOCon::Execute(class Debug& dbg, const char *cmd, bool structuredCmd,
       SetConsoleScreenBufferSize(h,newSize);
       SetConsoleWindowInfo(h,TRUE,&sr);
     }
+#else
+    // macOS: Console resizing not implemented
+    if (argn > 0) {
+      printf("Console resize requested: %dx%d (not implemented on macOS)\n", 
+             atoi(argv[0]), argn>1?atoi(argv[1]):25);
+    }
+#endif
   }
 }
 

@@ -28,6 +28,7 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "_pch.h"
 #include <stdlib.h>
+#include <cstdint>
 #include <Utility/stdio_adapter.h>
 #include <string.h>
 #include <new>      // needed for placement new prototype
@@ -43,11 +44,17 @@ bool __DebugIncludeInLink1;
 // .CRT$XCZ. We jam in our own two functions at the very beginning
 // and end of this list (B and Y respectively since the A and Z segments
 // contain list delimiters).
+#ifdef _WIN32
 #pragma data_seg(".CRT$XCB")
 void *Debug::PreStatic=&Debug::PreStaticInit;
 #pragma data_seg(".CRT$XCY")
 void *Debug::PostStatic=&Debug::PostStaticInit;
 #pragma data_seg()
+#else
+// macOS: Use explicit function pointer casts for compatibility
+void *Debug::PreStatic=(void*)&Debug::PreStaticInit;
+void *Debug::PostStatic=(void*)&Debug::PostStaticInit;
+#endif
 
 Debug::LogDescription::LogDescription(const char *fileOrGroup, const char *description)
 {
@@ -103,7 +110,9 @@ void Debug::PreStaticInit(void)
   Instance.m_fillChar=' ';
 
   /// install exception handler
+#ifdef _WIN32
   SetUnhandledExceptionFilter(DebugExceptionhandler::ExceptionFilter);
+#endif
 }
 
 void Debug::PostStaticInit(void)
@@ -120,6 +129,7 @@ void Debug::PostStaticInit(void)
   AddCommands("debug",new (DebugAllocMemory(sizeof(DebugCmdInterfaceDebug))) DebugCmdInterfaceDebug);
 
   /// exec dbgcmd file
+#ifdef _WIN32
   char ioBuffer[2048];
   GetModuleFileName(NULL,ioBuffer,sizeof(ioBuffer));
   char *q=strrchr(ioBuffer,'.');
@@ -163,6 +173,7 @@ void Debug::PostStaticInit(void)
     CloseHandle(h);
   }
   else
+#endif
   {
     // exec default commands
     const char *p=DebugGetDefaultCommands();
@@ -257,7 +268,9 @@ static void LocalSETranslator(unsigned, struct _EXCEPTION_POINTERS *pExPtrs)
 
 void Debug::InstallExceptionHandler(void)
 {
+#ifdef _WIN32
   _set_se_translator(LocalSETranslator);
+#endif
 }
 
 bool Debug::SkipNext(void)
@@ -270,11 +283,16 @@ bool Debug::SkipNext(void)
   // do not implement this function inline, we do need
   // a valid frame pointer here!
   unsigned help;
+#ifdef _WIN32
   _asm
   {
     mov eax,[ebp+4]   // return address
     mov help,eax
   };
+#else
+  // macOS: Assembly not supported - use alternative approach
+  help = 0; // Cannot get return address on macOS without platform-specific code
+#endif
   curStackFrame=help;
 
   // do we know if to skip the following code?
@@ -366,6 +384,7 @@ bool Debug::AssertDone(void)
       /// @todo replace MessageBox with custom dialog w/ 4 options: abort, skip 1, skip all, break
 
       // now display message, wait for user input
+#ifdef _WIN32
       int result=MessageBox(NULL,help,"Assertion failed",
                             MB_ABORTRETRYIGNORE|MB_ICONSTOP|MB_TASKMODAL|MB_SETFOREGROUND);
       switch(result)
@@ -391,6 +410,38 @@ bool Debug::AssertDone(void)
         default:
           ((void)0);
       }
+#else
+      // macOS: Use console output instead of message box
+      printf("Assertion failed: %s\n", help);
+      printf("Options: (a)bort, (i)gnore, (r)etry: ");
+      char choice = getchar();
+      switch(choice)
+      {
+        case 'a':
+        case 'A':
+          curFrameEntry=NULL;
+          exit(1);
+          break;
+        case 'i':
+        case 'I':
+          {
+            // build 'pattern'
+            char help[200];
+            __ASSERT(strlen(curFrameEntry->fileOrGroup)<190);
+            snprintf(help, sizeof(help), "%s(%i)",curFrameEntry->fileOrGroup,
+                                   curFrameEntry->line);
+            AddPatternEntry(FrameTypeAssert,false,help);
+            curFrameEntry->status=Skip;
+          }
+          break;
+        case 'r':
+        case 'R':
+          // Cannot trigger debugger break on macOS
+          break;
+        default:
+          ((void)0);
+      }
+#endif
     }
     else
     {
@@ -407,7 +458,7 @@ bool Debug::AssertDone(void)
         // build 'pattern'
         char help[200];
         __ASSERT(strlen(curFrameEntry->fileOrGroup)<190);
-        wsprintf(help,"%s(%i)",curFrameEntry->fileOrGroup,
+        snprintf(help, sizeof(help), "%s(%i)",curFrameEntry->fileOrGroup,
                                curFrameEntry->line);
         AddPatternEntry(FrameTypeAssert,false,help);
 
@@ -491,7 +542,7 @@ bool Debug::CheckDone(void)
       // build 'pattern'
       char help[200];
       __ASSERT(strlen(curFrameEntry->fileOrGroup)<190);
-      wsprintf(help,"%s(%i)",curFrameEntry->fileOrGroup,
+      snprintf(help, sizeof(help), "%s(%i)",curFrameEntry->fileOrGroup,
                              curFrameEntry->line);
       AddPatternEntry(FrameTypeCheck,false,help);
 
@@ -686,8 +737,13 @@ bool Debug::CrashDone(bool die)
     else
 #endif
     {
+#ifdef _WIN32
       MessageBox(NULL,help,"Game crash",
                           MB_OK|MB_ICONSTOP|MB_TASKMODAL|MB_SETFOREGROUND);
+#else
+      // macOS: Use console output for crash notification
+      printf("Game crash: %s\n", help);
+#endif
       curFrameEntry=NULL;
       _exit(1);
     }
@@ -741,7 +797,21 @@ Debug& Debug::operator<<(int val)
   // but in this case we know how long it can be at max...
   char help[1+32+1]; // sign, 32 digits (binary), NUL
   AddOutput(m_prefix,strlen(m_prefix));
+#ifdef _WIN32
   return (*this) << _itoa(val,help,m_radix);
+#else
+  // macOS: Use snprintf for integer conversion
+  if (m_radix == 10) {
+    snprintf(help, sizeof(help), "%d", val);
+  } else if (m_radix == 16) {
+    snprintf(help, sizeof(help), "%x", val);
+  } else if (m_radix == 8) {
+    snprintf(help, sizeof(help), "%o", val);
+  } else {
+    snprintf(help, sizeof(help), "%d", val); // fallback to decimal
+  }
+  return (*this) << help;
+#endif
 }
 
 Debug& Debug::operator<<(unsigned val)
@@ -751,7 +821,21 @@ Debug& Debug::operator<<(unsigned val)
   // but in this case we know how long it can be at max...
   char help[32+1]; // 32 digits, NUL
   AddOutput(m_prefix,strlen(m_prefix));
+#ifdef _WIN32
   return (*this) << _ultoa(val,help,m_radix);
+#else
+  // macOS: Use snprintf for unsigned integer conversion
+  if (m_radix == 10) {
+    snprintf(help, sizeof(help), "%u", val);
+  } else if (m_radix == 16) {
+    snprintf(help, sizeof(help), "%x", val);
+  } else if (m_radix == 8) {
+    snprintf(help, sizeof(help), "%o", val);
+  } else {
+    snprintf(help, sizeof(help), "%u", val); // fallback to decimal
+  }
+  return (*this) << help;
+#endif
 }
 
 Debug& Debug::operator<<(long val)
@@ -761,7 +845,21 @@ Debug& Debug::operator<<(long val)
   // but in this case we know how long it can be at max...
   char help[1+32+1]; // sign, 32 digits, NUL
   AddOutput(m_prefix,strlen(m_prefix));
+#ifdef _WIN32
   return (*this) << _itoa(val,help,m_radix);
+#else
+  // macOS: Use snprintf for long integer conversion
+  if (m_radix == 10) {
+    snprintf(help, sizeof(help), "%ld", val);
+  } else if (m_radix == 16) {
+    snprintf(help, sizeof(help), "%lx", val);
+  } else if (m_radix == 8) {
+    snprintf(help, sizeof(help), "%lo", val);
+  } else {
+    snprintf(help, sizeof(help), "%ld", val); // fallback to decimal
+  }
+  return (*this) << help;
+#endif
 }
 
 Debug& Debug::operator<<(unsigned long val)
@@ -771,7 +869,21 @@ Debug& Debug::operator<<(unsigned long val)
   // but in this case we know how long it can be at max...
   char help[32+1]; // 32 digits, NUL
   AddOutput(m_prefix,strlen(m_prefix));
+#ifdef _WIN32
   return (*this) << _ultoa(val,help,m_radix);
+#else
+  // macOS: Use snprintf for unsigned long conversion
+  if (m_radix == 10) {
+    snprintf(help, sizeof(help), "%lu", val);
+  } else if (m_radix == 16) {
+    snprintf(help, sizeof(help), "%lx", val);
+  } else if (m_radix == 8) {
+    snprintf(help, sizeof(help), "%lo", val);
+  } else {
+    snprintf(help, sizeof(help), "%lu", val); // fallback to decimal
+  }
+  return (*this) << help;
+#endif
 }
 
 Debug& Debug::operator<<(bool val)
@@ -802,7 +914,21 @@ Debug& Debug::operator<<(short val)
   // but in this case we know how long it can be at max...
   char help[1+16+1]; // sign, 16 digits, NUL
   AddOutput(m_prefix,strlen(m_prefix));
+#ifdef _WIN32
   return (*this) << _itoa(val,help,m_radix);
+#else
+  // macOS: Use snprintf for short integer conversion
+  if (m_radix == 10) {
+    snprintf(help, sizeof(help), "%d", (int)val);
+  } else if (m_radix == 16) {
+    snprintf(help, sizeof(help), "%x", (int)val);
+  } else if (m_radix == 8) {
+    snprintf(help, sizeof(help), "%o", (int)val);
+  } else {
+    snprintf(help, sizeof(help), "%d", (int)val); // fallback to decimal
+  }
+  return (*this) << help;
+#endif
 }
 
 Debug& Debug::operator<<(unsigned short val)
@@ -812,7 +938,21 @@ Debug& Debug::operator<<(unsigned short val)
   // but in this case we know how long it can be at max...
   char help[16+1]; // 16 digits, NUL
   AddOutput(m_prefix,strlen(m_prefix));
+#ifdef _WIN32
   return (*this) << _itoa(val,help,m_radix);
+#else
+  // macOS: Use snprintf for unsigned short conversion
+  if (m_radix == 10) {
+    snprintf(help, sizeof(help), "%u", (unsigned int)val);
+  } else if (m_radix == 16) {
+    snprintf(help, sizeof(help), "%x", (unsigned int)val);
+  } else if (m_radix == 8) {
+    snprintf(help, sizeof(help), "%o", (unsigned int)val);
+  } else {
+    snprintf(help, sizeof(help), "%u", (unsigned int)val); // fallback to decimal
+  }
+  return (*this) << help;
+#endif
 }
 
 Debug& Debug::operator<<(__int64 val)
@@ -822,7 +962,21 @@ Debug& Debug::operator<<(__int64 val)
   // but in this case we know how long it can be at max...
   char help[1+64+1]; // sign, 64 digits, NUL
   AddOutput(m_prefix,strlen(m_prefix));
+#ifdef _WIN32
   return (*this) << _i64toa(val,help,m_radix);
+#else
+  // macOS: Use snprintf for 64-bit integer conversion
+  if (m_radix == 10) {
+    snprintf(help, sizeof(help), "%lld", (long long)val);
+  } else if (m_radix == 16) {
+    snprintf(help, sizeof(help), "%llx", (long long)val);
+  } else if (m_radix == 8) {
+    snprintf(help, sizeof(help), "%llo", (long long)val);
+  } else {
+    snprintf(help, sizeof(help), "%lld", (long long)val); // fallback to decimal
+  }
+  return (*this) << help;
+#endif
 }
 
 Debug& Debug::operator<<(unsigned __int64 val)
@@ -832,7 +986,21 @@ Debug& Debug::operator<<(unsigned __int64 val)
   // but in this case we know how long it can be at max...
   char help[64+1]; // sign, 64 digits, NUL
   AddOutput(m_prefix,strlen(m_prefix));
+#ifdef _WIN32
   return (*this) << _ui64toa(val,help,m_radix);
+#else
+  // macOS: Use snprintf for unsigned 64-bit integer conversion
+  if (m_radix == 10) {
+    snprintf(help, sizeof(help), "%llu", (unsigned long long)val);
+  } else if (m_radix == 16) {
+    snprintf(help, sizeof(help), "%llx", (unsigned long long)val);
+  } else if (m_radix == 8) {
+    snprintf(help, sizeof(help), "%llo", (unsigned long long)val);
+  } else {
+    snprintf(help, sizeof(help), "%llu", (unsigned long long)val); // fallback to decimal
+  }
+  return (*this) << help;
+#endif
 }
 
 Debug& Debug::operator<<(const void *ptr)
@@ -840,8 +1008,14 @@ Debug& Debug::operator<<(const void *ptr)
   (*this) << "ptr:";
   if (ptr)
   {
-    char help[9];
+    char help[17]; // Increased size for 64-bit pointers
+#ifdef _WIN32
     (*this) << "0x" << _ultoa((unsigned long)ptr,help,16);
+#else
+    // macOS: Use snprintf for pointer conversion
+    snprintf(help, sizeof(help), "%lx", (unsigned long)(uintptr_t)ptr);
+    (*this) << "0x" << help;
+#endif
   }
   else
     (*this) << "NULL";
@@ -872,8 +1046,8 @@ Debug& Debug::operator<<(const MemDump &dump)
   for (unsigned i=0;i<dump.m_numItems;i+=itemPerLine,cur+=itemPerLine*dump.m_bytePerItem)
   {
     // address
-    char buf[9];
-    sprintf(buf,"%08x",dump.m_absAddr?unsigned(cur):cur-dump.m_startPtr);
+    char buf[17]; // Increased size for 64-bit addresses
+    sprintf(buf,"%08lx",dump.m_absAddr?(unsigned long)(uintptr_t)cur:(unsigned long)(cur-dump.m_startPtr));
     operator<<(buf);
 
     // items
@@ -888,7 +1062,11 @@ Debug& Debug::operator<<(const MemDump &dump)
         for (unsigned l=dump.m_bytePerItem;l;--l)
           operator<<("  ");
       }
+#ifdef _WIN32
       else if (IsBadReadPtr(curByte,dump.m_bytePerItem))
+#else
+      else if (false) // macOS: Cannot check bad read pointers - assume valid
+#endif
       {
         for (unsigned l=dump.m_bytePerItem;l;--l)
           operator<<("??");
@@ -913,7 +1091,11 @@ Debug& Debug::operator<<(const MemDump &dump)
     {
       if (k+i>=dump.m_numItems)
         break;
+#ifdef _WIN32
       else if (IsBadReadPtr(curByte,dump.m_bytePerItem))
+#else
+      else if (false) // macOS: Cannot check bad read pointers - assume valid
+#endif
       {
         for (unsigned l=dump.m_bytePerItem;l;--l)
           operator<<("?");
@@ -942,7 +1124,13 @@ Debug& Debug::operator<<(HResult hres)
       return *this;
   (*this) << "HResult:0x";
   char help[9];
+#ifdef _WIN32
   return (*this) << _ultoa(hres.m_hresult,help,16);
+#else
+  // macOS: Use snprintf for HResult conversion
+  snprintf(help, sizeof(help), "%lx", (unsigned long)hres.m_hresult);
+  return (*this) << help;
+#endif
 }
 
 bool Debug::IsLogEnabled(const char *fileOrGroup)
@@ -951,9 +1139,9 @@ bool Debug::IsLogEnabled(const char *fileOrGroup)
   // to be used from the D_ISLOG macros only and those guarantee
   // that we are having real static strings let's use
   // that strings address as frame address...
-  FrameHashEntry *e=Instance.LookupFrame((unsigned)fileOrGroup);
+  FrameHashEntry *e=Instance.LookupFrame((unsigned)(uintptr_t)fileOrGroup);
   if (!e)
-    e=Instance.AddFrameEntry((unsigned)fileOrGroup,FrameTypeLog,fileOrGroup,0);
+    e=Instance.AddFrameEntry((unsigned)(uintptr_t)fileOrGroup,FrameTypeLog,fileOrGroup,0);
   if (e->status==Unknown)
     Instance.UpdateFrameStatus(*e);
   return e->status==NoSkip;
@@ -1184,7 +1372,7 @@ void Debug::UpdateFrameStatus(FrameHashEntry &entry)
   char help[512];
   if (entry.frameType==FrameTypeAssert||
       entry.frameType==FrameTypeCheck)
-    wsprintf(help,"%s(%i)",entry.fileOrGroup,entry.line);
+    snprintf(help, sizeof(help), "%s(%i)",entry.fileOrGroup,entry.line);
   else
     strcpy(help,entry.fileOrGroup);
 

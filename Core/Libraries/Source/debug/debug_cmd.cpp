@@ -183,7 +183,11 @@ bool DebugCmdInterfaceDebug::Execute(class Debug& dbg, const char *cmd,
                 continue;
 
               char help[256];
+#ifdef _WIN32
               wsprintf(help,"%s(%i)",cur->fileOrGroup,cur->line);
+#else
+              snprintf(help, sizeof(help), "%s(%i)", cur->fileOrGroup, cur->line);
+#endif
               if (Debug::SimpleMatch(help,pattern))
               {
                 dbg << help << " (" << cur->hits << " hits)";

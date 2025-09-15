@@ -29,6 +29,11 @@
 #include "_pch.h"
 #include <new>
 #include "mmsystem.h"
+#ifndef _WIN32
+#include <stdint.h>
+#include <cstdlib>
+typedef int64_t _int64;
+#endif
 
 // yuk, I'm doing this so weird because the destructor
 // of cmd must never be called...
@@ -41,10 +46,17 @@ static bool __RegisterDebugCmdGroup_Profile=Debug::AddCommands("profile",&cmd);
 
 void *ProfileAllocMemory(unsigned numBytes)
 {
+#ifdef _WIN32
   HGLOBAL h=GlobalAlloc(GMEM_FIXED,numBytes);
   if (!h)
     DCRASH_RELEASE("Debug mem alloc failed");
   return (void *)h;
+#else
+  void *ptr = malloc(numBytes);
+  if (!ptr)
+    DCRASH_RELEASE("Debug mem alloc failed");
+  return ptr;
+#endif
 }
 
 void *ProfileReAllocMemory(void *oldPtr, unsigned newSize)
@@ -56,10 +68,15 @@ void *ProfileReAllocMemory(void *oldPtr, unsigned newSize)
   // Shrinking to 0 size is basically freeing memory
   if (!newSize)
   {
+#ifdef _WIN32
     GlobalFree((HGLOBAL)oldPtr);
+#else
+    free(oldPtr);
+#endif
     return 0;
   }
 
+#ifdef _WIN32
   // now try GlobalReAlloc first
   HGLOBAL h=GlobalReAlloc((HGLOBAL)oldPtr,newSize,0);
   if (!h)
@@ -75,12 +92,22 @@ void *ProfileReAllocMemory(void *oldPtr, unsigned newSize)
   }
 
   return (void *)h;
+#else
+  void *ptr = realloc(oldPtr, newSize);
+  if (!ptr)
+    DCRASH_RELEASE("Debug mem realloc failed");
+  return ptr;
+#endif
 }
 
 void ProfileFreeMemory(void *ptr)
 {
   if (ptr)
+#ifdef _WIN32
     GlobalFree((HGLOBAL)ptr);
+#else
+    free(ptr);
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -294,7 +321,11 @@ void Profile::StopRange(const char *range)
       m_frameNames[k].lastGlobalIndex=m_rec;
       m_recNames=(char **)ProfileReAllocMemory(m_recNames,(m_rec+1)*sizeof(char *));
       m_recNames[m_rec]=(char *)ProfileAllocMemory(strlen(range)+1+6);
+#ifdef _WIN32
       wsprintf(m_recNames[m_rec++],"%s:%i",range,++m_frameNames[k].frames);
+#else
+      snprintf(m_recNames[m_rec++], strlen(range)+7, "%s:%i", range, ++m_frameNames[k].frames);
+#endif
     }
     else
       atIndex=m_frameNames[k].lastGlobalIndex;

@@ -5,7 +5,7 @@
 // ImageHlp compatibility for macOS port
 #ifdef __APPLE__
 
-#include "windows.h"
+#include "../Source/WWVegas/WW3D2/win32_compat.h"
 
 // 64-bit types
 typedef uint64_t DWORD64;

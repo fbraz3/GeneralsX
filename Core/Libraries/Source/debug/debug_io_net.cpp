@@ -1,6 +1,28 @@
 /*
 **	Command & Conquer Generals Zero Hour(tm)
-**	Copyright 2025 Electronic Arts Inc.
+**	Copyright 2025 void DebugIONet::Write(StringType type, const char *src, const char *str)
+{
+#ifdef _WIN32
+  if (m_pipe==INVALID_HANDLE_VALUE||!str)
+    return;
+
+  DWORD dummy;
+  WriteFile(m_pipe,&type,1,&dummy,NULL);
+
+  unsigned len;
+  len=src?strlen(src):0;
+  WriteFile(m_pipe,&len,4,&dummy,NULL);
+  if (len)
+    WriteFile(m_pipe,src,len,&dummy,NULL);
+
+  len=strlen(str);
+  WriteFile(m_pipe,&len,4,&dummy,NULL);
+  if (len)
+    WriteFile(m_pipe,str,len,&dummy,NULL);
+#else
+  // macOS: Named pipe write not implemented
+#endif
+}.
 **
 **	This program is free software: you can redistribute it and/or modify
 **	it under the terms of the GNU General Public License as published by
@@ -35,12 +57,15 @@ DebugIONet::DebugIONet(void)
 
 DebugIONet::~DebugIONet()
 {
+#ifdef _WIN32
   if (m_pipe!=INVALID_HANDLE_VALUE)
     CloseHandle(m_pipe);
+#endif
 }
 
 int DebugIONet::Read(char *buf, int maxchar)
 {
+#ifdef _WIN32
   if (m_pipe==INVALID_HANDLE_VALUE)
     return 0;
 
@@ -54,10 +79,15 @@ int DebugIONet::Read(char *buf, int maxchar)
   SetNamedPipeHandleState(m_pipe,&mode,NULL,NULL);
 
   return read;
+#else
+  // macOS: Named pipes not implemented
+  return 0;
+#endif
 }
 
 void DebugIONet::Write(StringType type, const char *src, const char *str)
 {
+#ifdef _WIN32
   if (m_pipe==INVALID_HANDLE_VALUE)
     return;
 
@@ -74,6 +104,14 @@ void DebugIONet::Write(StringType type, const char *src, const char *str)
   WriteFile(m_pipe,&len,4,&dummy,NULL);
   if (len)
     WriteFile(m_pipe,str,len,&dummy,NULL);
+#else
+  // macOS: Named pipe write not implemented - use fallback
+  if (src) {
+    printf("[%s] %s", src, str);
+  } else {
+    printf("%s", str);
+  }
+#endif
 }
 
 void DebugIONet::EmergencyFlush(void)
@@ -91,6 +129,7 @@ void DebugIONet::Execute(class Debug& dbg, const char *cmd, bool structuredCmd,
   }
   else if (!strcmp(cmd,"add"))
   {
+#ifdef _WIN32
     const char *machine=argn?argv[0]:".";
 
     char buf[256];
@@ -113,6 +152,10 @@ void DebugIONet::Execute(class Debug& dbg, const char *cmd, bool structuredCmd,
     GetComputerName(comp,&mode);
     wsprintf(buf,"Client at %s\n",comp);
     Write(Other,NULL,buf);
+#else
+    // macOS: Named pipe connection not implemented
+    printf("Net I/O: Named pipe not supported on macOS\n");
+#endif
   }
 }
 
