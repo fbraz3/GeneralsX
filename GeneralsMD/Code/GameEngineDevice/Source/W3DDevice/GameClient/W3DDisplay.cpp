@@ -1730,7 +1730,11 @@ void W3DDisplay::step()
 	static UnsignedInt syncTime = 0;
 
 	extern HWND ApplicationHWnd;
+	#ifdef _WIN32
 	if (ApplicationHWnd && ::IsIconic(ApplicationHWnd)) {
+#else
+	if (false) {
+#endif
 		return;
 	}
 
@@ -1765,7 +1769,11 @@ void W3DDisplay::draw( void )
 	//USE_PERF_TIMER(W3DDisplay_draw)
 
 	extern HWND ApplicationHWnd;
+	#ifdef _WIN32
 	if (ApplicationHWnd && ::IsIconic(ApplicationHWnd)) {
+#else
+	if (false) {
+#endif
 		return;
 	}
 

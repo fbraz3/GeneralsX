@@ -387,7 +387,11 @@ void W3DMouse::setCursor( MouseCursor cursor )
 	//make sure Windows didn't reset our cursor
 	if (m_currentRedrawMode == RM_DX8)
 	{
-		SetCursor(NULL);	//Kill Windows Cursor
+#ifdef _WIN32
+		#ifdef _WIN32
+		SetCursor(NULL);
+	#endif	//Kill Windows Cursor
+#endif
 
 		LPDIRECT3DDEVICE8 m_pDev=DX8Wrapper::_Get_D3D_Device8();
 		Bool doImageChange=FALSE;
@@ -423,7 +427,9 @@ void W3DMouse::setCursor( MouseCursor cursor )
 	}
 	else if (m_currentRedrawMode == RM_POLYGON)
 	{
-		SetCursor(NULL);	//Kill Windows Cursor
+		#ifdef _WIN32
+		SetCursor(NULL);
+	#endif	//Kill Windows Cursor
 		m_currentD3DCursor=NONE;
 		m_currentW3DCursor=NONE;
 		m_currentPolygonCursor = cursor;
@@ -431,7 +437,9 @@ void W3DMouse::setCursor( MouseCursor cursor )
 	}
 	else if (m_currentRedrawMode == RM_W3D)
 	{
-		SetCursor(NULL);	//Kill Windows Cursor
+		#ifdef _WIN32
+		SetCursor(NULL);
+	#endif	//Kill Windows Cursor
 		m_currentD3DCursor=NONE;
 		m_currentPolygonCursor=NONE;
 		if (cursor != m_currentW3DCursor)

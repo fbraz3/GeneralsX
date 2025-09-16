@@ -194,10 +194,12 @@ int TerrainTextureClass::update(WorldHeightMap *htMap)
 	}
 	surface_level->UnlockRect();
 	surface_level->Release();
+#ifdef _WIN32
 	DX8_ErrorCode(D3DXFilterTexture(Peek_D3D_Texture(), NULL, 0, D3DX_FILTER_BOX));
 	if (TheWritableGlobalData->m_textureReductionFactor) {
 		Peek_D3D_Texture()->SetLOD(TheWritableGlobalData->m_textureReductionFactor);
 	}
+#endif
 	return(surface_desc.Height);
 }
 
@@ -351,7 +353,9 @@ int TerrainTextureClass::update(WorldHeightMap *htMap)
 	}
 	surface_level->UnlockRect();
 	surface_level->Release();
+#ifdef _WIN32
 	DX8_ErrorCode(D3DXFilterTexture(D3DTexture, NULL, 0, D3DX_FILTER_BOX));
+#endif
 	return(surface_desc.Height);
 }
 #endif
@@ -363,7 +367,9 @@ int TerrainTextureClass::update(WorldHeightMap *htMap)
 //=============================================================================
 void TerrainTextureClass::setLOD(Int LOD)
 {
+#ifdef _WIN32
 	if (Peek_D3D_Texture()) Peek_D3D_Texture()->SetLOD(LOD);
+#endif
 }
 //=============================================================================
 // TerrainTextureClass::update
@@ -424,7 +430,9 @@ Bool TerrainTextureClass::updateFlat(WorldHeightMap *htMap, Int xCell, Int yCell
 
 	surface_level->UnlockRect();
 	surface_level->Release();
+#ifdef _WIN32
 	DX8_ErrorCode(D3DXFilterTexture(Peek_D3D_Texture(), NULL, 0, D3DX_FILTER_BOX));
+#endif
 	return(surface_desc.Height);
 }
 
@@ -836,7 +844,9 @@ int AlphaEdgeTextureClass::update(WorldHeightMap *htMap)
 	}
 	surface_level->UnlockRect();
 	surface_level->Release();
+#ifdef _WIN32
 	DX8_ErrorCode(D3DXFilterTexture(Peek_D3D_Texture(), NULL, 0, D3DX_FILTER_BOX));
+#endif
 	return(surface_desc.Height);
 }
 

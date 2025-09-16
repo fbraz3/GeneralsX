@@ -949,6 +949,13 @@ struct CORE_IDirect3DDevice8 {
     virtual int CreateAdditionalSwapChain(void* presentation_parameters, void** swap_chain) { return D3D_OK; }
     virtual DWORD GetAvailableTextureMem() { return 0; }
     virtual int SetGammaRamp(DWORD flags, const D3DGAMMARAMP* ramp) { return D3D_OK; }
+    
+    // Missing methods for macOS compatibility
+    virtual int DrawPrimitiveUP(DWORD primitive_type, DWORD primitive_count, const void* vertex_stream_zero_data, DWORD vertex_stream_zero_stride) { return D3D_OK; }
+    virtual BOOL ShowCursor(BOOL show) { return TRUE; }
+    virtual int SetCursorProperties(DWORD xHotSpot, DWORD yHotSpot, CORE_IDirect3DSurface8* cursor_bitmap) { return D3D_OK; }
+    virtual int SetCursorPosition(int x, int y, DWORD flags) { return D3D_OK; }
+    virtual int GetRenderState(D3DRENDERSTATETYPE state, DWORD* value) { return D3D_OK; }
 };
 #endif
 

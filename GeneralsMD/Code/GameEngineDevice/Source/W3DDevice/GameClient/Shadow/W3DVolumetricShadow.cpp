@@ -1363,7 +1363,12 @@ void W3DVolumetricShadow::RenderMeshVolume(Int meshIndex, Int lightIndex, const 
 
 	///@todo: W3D always does transpose on all of matrix sets.  Slow???  Better to hack view matrix.
 	Matrix4x4 mWorldTransposed = mWorld.Transpose();
+#ifdef _WIN32
 	m_pDev->SetTransform(D3DTS_WORLD,(_D3DMATRIX *)&mWorldTransposed);
+#else
+	// macOS: Use Matrix4x4 directly without DirectX types
+	m_pDev->SetTransform(D3DTS_WORLD, (void*)&mWorldTransposed);
+#endif
 
 	W3DBufferManager::W3DVertexBufferSlot *vbSlot=m_shadowVolumeVB[lightIndex][ meshIndex ];
 	if (!vbSlot)
@@ -1426,13 +1431,13 @@ void W3DVolumetricShadow::RenderDynamicMeshVolume(Int meshIndex, Int lightIndex,
 
 	if (nShadowVertsInBuf > (SHADOW_VERTEX_SIZE-numVerts))	//check if room for model verts
 	{	//flush the buffer by drawing the contents and re-locking again
-		if (shadowVertexBufferD3D->Lock(0,numVerts*sizeof(SHADOW_DYNAMIC_VOLUME_VERTEX),(unsigned char**)&pvVertices,D3DLOCK_DISCARD) != D3D_OK)
+		if (shadowVertexBufferD3D->Lock(0,numVerts*sizeof(SHADOW_DYNAMIC_VOLUME_VERTEX),(void**)(unsigned char**)&pvVertices,D3DLOCK_DISCARD) != D3D_OK)
 			return;
 		nShadowVertsInBuf=0;
 		nShadowStartBatchVertex=0;
 	}
 	else
-	{	if (shadowVertexBufferD3D->Lock(nShadowVertsInBuf*sizeof(SHADOW_DYNAMIC_VOLUME_VERTEX),numVerts*sizeof(SHADOW_DYNAMIC_VOLUME_VERTEX), (unsigned char**)&pvVertices,D3DLOCK_NOOVERWRITE) != D3D_OK)
+	{	if (shadowVertexBufferD3D->Lock(nShadowVertsInBuf*sizeof(SHADOW_DYNAMIC_VOLUME_VERTEX),numVerts*sizeof(SHADOW_DYNAMIC_VOLUME_VERTEX), (void**)(unsigned char**)&pvVertices,D3DLOCK_NOOVERWRITE) != D3D_OK)
 			return;
 	}
 #ifdef SV_DEBUG
@@ -1456,13 +1461,13 @@ void W3DVolumetricShadow::RenderDynamicMeshVolume(Int meshIndex, Int lightIndex,
 
 	if (nShadowIndicesInBuf > (SHADOW_INDEX_SIZE-numIndex))	//check if room for model verts
 	{	//flush the buffer by drawing the contents and re-locking again
-		if (shadowIndexBufferD3D->Lock(0,numIndex*sizeof(short),(unsigned char**)&pvIndices,D3DLOCK_DISCARD) != D3D_OK)
+		if (shadowIndexBufferD3D->Lock(0,numIndex*sizeof(short),(void**)(unsigned char**)&pvIndices,D3DLOCK_DISCARD) != D3D_OK)
 			return;
 		nShadowIndicesInBuf=0;
 		nShadowStartBatchIndex=0;
 	}
 	else
-	{	if (shadowIndexBufferD3D->Lock(nShadowIndicesInBuf*sizeof(short),numIndex*sizeof(short), (unsigned char**)&pvIndices,D3DLOCK_NOOVERWRITE) != D3D_OK)
+	{	if (shadowIndexBufferD3D->Lock(nShadowIndicesInBuf*sizeof(short),numIndex*sizeof(short), (void**)(unsigned char**)&pvIndices,D3DLOCK_NOOVERWRITE) != D3D_OK)
 			return;
 	}
 
@@ -1478,7 +1483,12 @@ void W3DVolumetricShadow::RenderDynamicMeshVolume(Int meshIndex, Int lightIndex,
 
 	Matrix4x4 mWorld(*meshXform);
 	Matrix4x4 mWorldTransposed = mWorld.Transpose();
+#ifdef _WIN32
 	m_pDev->SetTransform(D3DTS_WORLD,(_D3DMATRIX *)&mWorldTransposed);
+#else
+	// macOS: Skip DirectX transform for now
+	// m_pDev->SetTransform(D3DTS_WORLD, (void*)&mWorldTransposed);
+#endif
 
 	if (shadowVertexBufferD3D != lastActiveVertexBuffer)
 	{	m_pDev->SetStreamSource(0,shadowVertexBufferD3D,sizeof(SHADOW_DYNAMIC_VOLUME_VERTEX));
@@ -1577,13 +1587,13 @@ void W3DVolumetricShadow::RenderMeshVolumeBounds(Int meshIndex, Int lightIndex, 
 
 	if (nShadowVertsInBuf > (SHADOW_VERTEX_SIZE-numVerts))	//check if room for model verts
 	{	//flush the buffer by drawing the contents and re-locking again
-		if (shadowVertexBufferD3D->Lock(0,numVerts*sizeof(SHADOW_DYNAMIC_VOLUME_VERTEX),(unsigned char**)&pvVertices,D3DLOCK_DISCARD) != D3D_OK)
+		if (shadowVertexBufferD3D->Lock(0,numVerts*sizeof(SHADOW_DYNAMIC_VOLUME_VERTEX),(void**)(unsigned char**)&pvVertices,D3DLOCK_DISCARD) != D3D_OK)
 			return;
 		nShadowVertsInBuf=0;
 		nShadowStartBatchVertex=0;
 	}
 	else
-	{	if (shadowVertexBufferD3D->Lock(nShadowVertsInBuf*sizeof(SHADOW_DYNAMIC_VOLUME_VERTEX),numVerts*sizeof(SHADOW_DYNAMIC_VOLUME_VERTEX), (unsigned char**)&pvVertices,D3DLOCK_NOOVERWRITE) != D3D_OK)
+	{	if (shadowVertexBufferD3D->Lock(nShadowVertsInBuf*sizeof(SHADOW_DYNAMIC_VOLUME_VERTEX),numVerts*sizeof(SHADOW_DYNAMIC_VOLUME_VERTEX), (void**)(unsigned char**)&pvVertices,D3DLOCK_NOOVERWRITE) != D3D_OK)
 			return;
 	}
 	srand(0x1345465);
@@ -1604,13 +1614,13 @@ void W3DVolumetricShadow::RenderMeshVolumeBounds(Int meshIndex, Int lightIndex, 
 
 	if (nShadowIndicesInBuf > (SHADOW_INDEX_SIZE-numIndex))	//check if room for model verts
 	{	//flush the buffer by drawing the contents and re-locking again
-		if (shadowIndexBufferD3D->Lock(0,numIndex*sizeof(short),(unsigned char**)&pvIndices,D3DLOCK_DISCARD) != D3D_OK)
+		if (shadowIndexBufferD3D->Lock(0,numIndex*sizeof(short),(void**)(unsigned char**)&pvIndices,D3DLOCK_DISCARD) != D3D_OK)
 			return;;
 		nShadowIndicesInBuf=0;
 		nShadowStartBatchIndex=0;
 	}
 	else
-	{	if (shadowIndexBufferD3D->Lock(nShadowIndicesInBuf*sizeof(short),numIndex*sizeof(short), (unsigned char**)&pvIndices,D3DLOCK_NOOVERWRITE) != D3D_OK)
+	{	if (shadowIndexBufferD3D->Lock(nShadowIndicesInBuf*sizeof(short),numIndex*sizeof(short), (void**)(unsigned char**)&pvIndices,D3DLOCK_NOOVERWRITE) != D3D_OK)
 			return;
 	}
 
@@ -1633,7 +1643,12 @@ void W3DVolumetricShadow::RenderMeshVolumeBounds(Int meshIndex, Int lightIndex, 
 	//todo: replace this with mesh transform
 	Matrix4x4 mWorld(1);	//identity since boxes are pre-transformed to world space.
 	Matrix4x4 mWorldTransposed = mWorld.Transpose();
+#ifdef _WIN32
 	m_pDev->SetTransform(D3DTS_WORLD,(_D3DMATRIX *)&mWorldTransposed);
+#else
+	// macOS: Skip DirectX transform for now
+	// m_pDev->SetTransform(D3DTS_WORLD, (void*)&mWorldTransposed);
+#endif
 
 	m_pDev->SetStreamSource(0,shadowVertexBufferD3D,sizeof(SHADOW_DYNAMIC_VOLUME_VERTEX));
 	m_pDev->SetVertexShader(SHADOW_DYNAMIC_VOLUME_FVF);
@@ -3486,11 +3501,13 @@ void W3DVolumetricShadowManager::renderShadows( Bool forceStencilFill )
 		m_pDev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 	#else
 		//disable writes to color buffer
+#ifdef _WIN32
 		if (DX8Wrapper::Get_Current_Caps()->Get_DX8_Caps().PrimitiveMiscCaps & D3DPMISCCAPS_COLORWRITEENABLE)
 		{	DX8Wrapper::_Get_D3D_Device8()->GetRenderState(D3DRS_COLORWRITEENABLE, &oldColorWriteEnable);
 			DX8Wrapper::Set_DX8_Render_State(D3DRS_COLORWRITEENABLE,0);
 		}
 		else
+#endif
 		{	//device does not support disabling writes to color buffer so fake it through alpha blending
 			m_pDev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_ZERO );
 			m_pDev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_ONE );

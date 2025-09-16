@@ -2,12 +2,12 @@
 
 #include <cstdint>
 
-// Forward declarations for W3D types - avoid conflicts with WWMath
-class Vector3;
-class Vector4;
+// Include actual W3D types first - use relative path from Include/GraphicsAPI
+#include "../../Source/WWVegas/WWMath/vector3.h"
+#include "../../Source/WWVegas/WWMath/vector4.h"
 
-// Only define mock types when W3D types are absolutely not available
-#if !defined(WWMATH_VECTOR3_H) && !defined(_VECTOR3_H_) && !defined(ENABLE_W3D_INTEGRATION)
+// Only define mock types when W3D types are absolutely not available  
+#if !defined(VECTOR3_H) && !defined(_VECTOR3_H_) && !defined(ENABLE_W3D_INTEGRATION)
     
     // Mock types for standalone testing only - namespaced to avoid conflicts
     namespace GraphicsAPI {
@@ -53,6 +53,9 @@ class Vector4;
     // Only use Matrix4 mock when necessary
     using Matrix4 = GraphicsAPI::Matrix4;
     
+#else
+    // When W3D types are available, Matrix4 should come from WWMath
+    class Matrix4;  // Forward declaration for now
 #endif
 
 // Forward declarations

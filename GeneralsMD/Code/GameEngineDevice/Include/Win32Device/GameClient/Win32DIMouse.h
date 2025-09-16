@@ -43,11 +43,27 @@
 #define __WIN32DIMOUSE_H_
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
+#ifdef _WIN32
 #ifndef DIRECTINPUT_VERSION
 #	define DIRECTINPUT_VERSION	0x800
 #endif
 
 #include <dinput.h>
+#else
+// macOS: DirectInput not available, use stubs
+typedef void* LPDIRECTINPUT8;
+typedef void* LPDIRECTINPUTDEVICE8;
+typedef long HRESULT;
+#define DI_OK 0
+
+// Stub for DIDEVICEOBJECTDATA
+typedef struct {
+    unsigned int dwOfs;
+    unsigned int dwData;
+    unsigned int dwTimeStamp;
+    unsigned int dwSequence;
+} DIDEVICEOBJECTDATA;
+#endif
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "GameClient/Mouse.h"

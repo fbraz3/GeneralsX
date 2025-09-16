@@ -60,7 +60,7 @@
 // macOS: DirectInput not available, use stubs
 typedef void* LPDIRECTINPUT8;
 typedef void* LPDIRECTINPUTDEVICE8;
-typedef int HRESULT;
+typedef long HRESULT;
 #define DI_OK 0
 #endif
 

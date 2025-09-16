@@ -948,9 +948,9 @@ Bool ModelConditionInfo::findPristineBonePos(NameKeyType boneName, Coord3D& pos)
 	if (mtx)
 	{
 		Vector3 v = mtx->Get_Translation();
-		pos.x = v.x;
-		pos.y = v.y;
-		pos.z = v.z;
+		pos.x = v.X;
+		pos.y = v.Y;
+		pos.z = v.Z;
 		return true;
 	}
 	else
@@ -1162,9 +1162,9 @@ const Vector3* W3DModelDrawModuleData::getAttachToDrawableBoneOffset(const Drawa
 			}
 			else
 			{
-				m_attachToDrawableBoneOffset.x = 0;
-				m_attachToDrawableBoneOffset.y = 0;
-				m_attachToDrawableBoneOffset.z = 0;
+				m_attachToDrawableBoneOffset.X = 0;
+				m_attachToDrawableBoneOffset.Y = 0;
+				m_attachToDrawableBoneOffset.Z = 0;
 			}
 			m_attachToDrawableBoneOffsetValid = true;
 		}
@@ -1999,9 +1999,9 @@ void W3DModelDraw::adjustTransformMtx(Matrix3D& mtx) const
 	if (offset)
 	{
 		Vector3 tmp = mtx.Rotate_Vector(*offset);
-		mtx.Adjust_X_Translation(tmp.x);
-		mtx.Adjust_Y_Translation(tmp.y);
-		mtx.Adjust_Z_Translation(tmp.z);
+		mtx.Adjust_X_Translation(tmp.X);
+		mtx.Adjust_Y_Translation(tmp.Y);
+		mtx.Adjust_Z_Translation(tmp.Z);
 	}
 #else
 	if (d->m_attachToDrawableBone.isNotEmpty())
@@ -2619,9 +2619,9 @@ void W3DModelDraw::recalcBonesForClientParticleSystems()
 
 							m_renderObject->Set_Transform(originalTransform);					// restore it
 
-							pos.x = vpos.x;
-							pos.y = vpos.y;
-							pos.z = vpos.z;
+							pos.x = vpos.X;
+							pos.y = vpos.Y;
+							pos.z = vpos.Z;
 						}
 
 						// got the bone position...
@@ -2699,9 +2699,9 @@ Bool W3DModelDraw::updateBonesForClientParticleSystems()
         Vector3 vpos = boneTransform.Get_Translation();
 
         Coord3D pos;
-				pos.x = vpos.x;
-				pos.y = vpos.y;
-				pos.z = vpos.z;
+				pos.x = vpos.X;
+				pos.y = vpos.Y;
+				pos.z = vpos.Z;
 
 				sys->setPosition(&pos);
 
@@ -3240,9 +3240,9 @@ Bool W3DModelDraw::clientOnly_getRenderObjInfo(Coord3D* pos, Real* boundingSpher
 		return false;
 
 	Vector3 objPos = m_renderObject->Get_Position();	//get position of object
-	pos->x = objPos.x;
-	pos->y = objPos.y;
-	pos->z = objPos.z;
+	pos->x = objPos.X;
+	pos->y = objPos.Y;
+	pos->z = objPos.Z;
 
 	*transform = m_renderObject->Get_Transform();
 	*boundingSphereRadius = m_renderObject->Get_Bounding_Sphere().Radius;
@@ -3307,16 +3307,16 @@ Bool W3DModelDraw::getProjectileLaunchOffset(
 #ifdef CACHE_ATTACH_BONE
 #else
 	Coord3D techOffset;
-	techOffset.zero();
+	techOffset.Zero();
 	// must use pristine bone here since the result is used by logic
 	Matrix3D pivot;
 	if (d->m_attachToDrawableBone.isNotEmpty() &&
 			getDrawable()->getPristineBonePositions( d->m_attachToDrawableBone.str(), 0, NULL, &pivot, 1 ) == 1)
 	{
 		pivot.Pre_Rotate_Z(getDrawable()->getOrientation());
-		techOffset.x = pivot.Get_X_Translation();
-		techOffset.y = pivot.Get_Y_Translation();
-		techOffset.z = pivot.Get_Z_Translation();
+		techOffset.X = pivot.Get_X_Translation();
+		techOffset.Y = pivot.Get_Y_Translation();
+		techOffset.Z = pivot.Get_Z_Translation();
 	}
 #endif
 
@@ -3346,7 +3346,7 @@ Bool W3DModelDraw::getProjectileLaunchOffset(
 			}
 #ifdef CACHE_ATTACH_BONE
 #else
-			launchPos->Adjust_Translation( Vector3( techOffset.x, techOffset.y, techOffset.z ) );
+			launchPos->Adjust_Translation( Vector3( techOffset.X, techOffset.Y, techOffset.Z ) );
 #endif
 
 			DUMPMATRIX3D(launchPos);
@@ -3374,9 +3374,9 @@ Bool W3DModelDraw::getProjectileLaunchOffset(
 #ifdef CACHE_ATTACH_BONE
 			if (offset)
 			{
-				turretRotPos->x += offset->x;
-				turretRotPos->y += offset->y;
-				turretRotPos->z += offset->z;
+				turretRotPos->x += offset->X;
+				turretRotPos->y += offset->Y;
+				turretRotPos->z += offset->Z;
 			}
 #endif
 		}
@@ -3390,9 +3390,9 @@ Bool W3DModelDraw::getProjectileLaunchOffset(
 #ifdef CACHE_ATTACH_BONE
 			if (offset)
 			{
-				turretPitchPos->x += offset->x;
-				turretPitchPos->y += offset->y;
-				turretPitchPos->z += offset->z;
+				turretPitchPos->x += offset->X;
+				turretPitchPos->y += offset->Y;
+				turretPitchPos->z += offset->Z;
 			}
 #endif
 		}
@@ -3493,9 +3493,9 @@ Int W3DModelDraw::getPristineBonePositionsForConditionState(
 		for (i = 0; i < posCount; ++i)
 		{
 			Vector3 pos = transforms[i].Get_Translation();
-			positions[i].x = pos.x;
-			positions[i].y = pos.y;
-			positions[i].z = pos.z;
+			positions[i].x = pos.X;
+			positions[i].y = pos.Y;
+			positions[i].z = pos.Z;
 //			if (isValidTimeToCalcLogicStuff())
 //			{
 //				DUMPCOORD3D(&(positions[i]));
@@ -3636,9 +3636,9 @@ Int W3DModelDraw::getCurrentBonePositions(
 		for (i = 0; i < posCount; ++i)
 		{
 			Vector3 pos = transforms[i].Get_Translation();
-			positions[i].x = pos.x;
-			positions[i].y = pos.y;
-			positions[i].z = pos.z;
+			positions[i].x = pos.X;
+			positions[i].y = pos.Y;
+			positions[i].z = pos.Z;
 		}
 	}
 
