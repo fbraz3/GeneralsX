@@ -1367,7 +1367,7 @@ void W3DVolumetricShadow::RenderMeshVolume(Int meshIndex, Int lightIndex, const 
 	m_pDev->SetTransform(D3DTS_WORLD,(_D3DMATRIX *)&mWorldTransposed);
 #else
 	// macOS: Use Matrix4x4 directly without DirectX types
-	m_pDev->SetTransform(D3DTS_WORLD, (void*)&mWorldTransposed);
+	m_pDev->SetTransform(D3DTS_WORLD, (const D3DMATRIX*)&mWorldTransposed);
 #endif
 
 	W3DBufferManager::W3DVertexBufferSlot *vbSlot=m_shadowVolumeVB[lightIndex][ meshIndex ];

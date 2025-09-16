@@ -499,11 +499,13 @@ void W3DMouse::draw(void)
 
 			if (TheDisplay && !TheDisplay->getWindowed())
 			{	//if we're full-screen, need to manually move cursor image
+#ifdef _WIN32
 				POINT ptCursor;
 
 				GetCursorPos( &ptCursor );
 				ScreenToClient( ApplicationHWnd, &ptCursor );
 				m_pDev->SetCursorPosition( ptCursor.x, ptCursor.y, D3DCURSOR_IMMEDIATE_UPDATE);
+#endif
 			}
 			//Check if animated cursor and new frame
 			if (m_currentFrames > 1)

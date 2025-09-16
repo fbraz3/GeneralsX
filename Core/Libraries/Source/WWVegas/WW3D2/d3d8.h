@@ -95,6 +95,26 @@ typedef enum {
 } D3DVERTEXBLENDFLAGS;
 #endif
 
+// DirectX vector types for compatibility
+#ifndef D3DVECTOR_DEFINED
+#define D3DVECTOR_DEFINED
+typedef struct _D3DVECTOR {
+    float x;
+    float y;
+    float z;
+} D3DVECTOR;
+
+typedef struct _D3DXVECTOR4 {
+    float x, y, z, w;
+    
+    _D3DXVECTOR4() {}
+    _D3DXVECTOR4(float _x, float _y, float _z, float _w) : x(_x), y(_y), z(_z), w(_w) {}
+} D3DXVECTOR4;
+
+// Define D3DXMATRIX as an alias for D3DMATRIX for compatibility
+typedef D3DMATRIX D3DXMATRIX;
+#endif
+
 // DirectX patch edge flags
 typedef enum {
     D3DPATCHEDGE_DISCRETE = 0,
@@ -199,6 +219,24 @@ typedef DWORD D3DSWAPEFFECT;
 #define D3DCLEAR_TARGET 0x00000001L
 #define D3DCLEAR_ZBUFFER 0x00000002L
 #define D3DCLEAR_STENCIL 0x00000004L
+
+// DirectX vertex shader declaration constants
+#define D3DVSD_STREAM(StreamNumber) (0x10000000 | (StreamNumber))
+#define D3DVSD_REG(RegisterAddress, Type) (0x20000000 | ((Type) << 16) | (RegisterAddress))
+#define D3DVSD_END() 0xFFFFFFFF
+
+// DirectX vertex shader data types
+#define D3DVSDT_FLOAT1 0x00
+#define D3DVSDT_FLOAT2 0x01
+#define D3DVSDT_FLOAT3 0x02
+#define D3DVSDT_FLOAT4 0x03
+#define D3DVSDT_D3DCOLOR 0x04
+#define D3DVSDT_UBYTE4 0x05
+#define D3DVSDT_SHORT2 0x06
+#define D3DVSDT_SHORT4 0x07
+
+// DirectX primitive miscellaneous capabilities
+#define D3DPMISCCAPS_COLORWRITEENABLE 0x00000080L
 
 // DirectX primitive types
 #define D3DPT_POINTLIST 1
@@ -812,6 +850,7 @@ typedef struct {
     DWORD Caps;
     DWORD Caps2;
     DWORD DevCaps;
+    DWORD PrimitiveMiscCaps;
     DWORD RasterCaps;
     DWORD TextureOpCaps;
     DWORD TextureCaps;
@@ -931,6 +970,8 @@ struct CORE_IDirect3DDevice8 {
     // Additional methods for compatibility
     virtual int SetVertexShaderConstant(DWORD reg, const void* data, DWORD count) { return D3D_OK; }
     virtual int SetPixelShaderConstant(DWORD reg, const void* data, DWORD count) { return D3D_OK; }
+    virtual int DeletePixelShader(DWORD handle) { return D3D_OK; }
+    virtual int DeleteVertexShader(DWORD handle) { return D3D_OK; }
     virtual int SetClipPlane(DWORD index, const float* plane) { return D3D_OK; }
     virtual int CopyRects(CORE_IDirect3DSurface8* source_surface, const RECT* source_rects, DWORD num_rects, CORE_IDirect3DSurface8* dest_surface, const POINT* dest_points) { return D3D_OK; }
     virtual int ValidateDevice(DWORD* num_passes) { return D3D_OK; }
@@ -976,6 +1017,7 @@ struct CORE_IDirect3DBaseTexture8 {
 struct CORE_IDirect3DTexture8 : public CORE_IDirect3DBaseTexture8 {
     virtual int AddRef() { return 1; }
     virtual int Release() { return 0; }
+    virtual DWORD SetLOD(DWORD lod_new) { return 0; }
     virtual int LockRect(DWORD level, void* locked_rect, const RECT* rect, DWORD flags) { return D3D_OK; }
     virtual int UnlockRect(DWORD level) { return D3D_OK; }
     virtual int GetLevelDesc(DWORD level, void* desc) { return D3D_OK; }
@@ -1118,6 +1160,59 @@ inline int CORE_D3DXCreateTextureFromFileExA(void* device, const char* src_file,
 inline int CORE_D3DXCreateTextureFromFileExA(void* device, const char* src_file, DWORD width, DWORD height, DWORD mip_levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, DWORD filter, DWORD mip_filter, DWORD color_key, void* src_info, void* palette, CORE_IDirect3DTexture8** texture) {
     if (texture) *texture = nullptr;
     return D3D_OK;
+}
+#endif
+
+// D3DX Math Functions
+#ifndef CORE_D3DXMATH_FUNCTIONS_DEFINED
+#define CORE_D3DXMATH_FUNCTIONS_DEFINED
+
+inline D3DMATRIX* D3DXMatrixTranslation(D3DMATRIX* out, float x, float y, float z) {
+    if (out) {
+        out->_11 = 1.0f; out->_12 = 0.0f; out->_13 = 0.0f; out->_14 = x;
+        out->_21 = 0.0f; out->_22 = 1.0f; out->_23 = 0.0f; out->_24 = y;
+        out->_31 = 0.0f; out->_32 = 0.0f; out->_33 = 1.0f; out->_34 = z;
+        out->_41 = 0.0f; out->_42 = 0.0f; out->_43 = 0.0f; out->_44 = 1.0f;
+    }
+    return out;
+}
+
+inline D3DMATRIX* D3DXMatrixScaling(D3DMATRIX* out, float sx, float sy, float sz) {
+    if (out) {
+        out->_11 = sx;   out->_12 = 0.0f; out->_13 = 0.0f; out->_14 = 0.0f;
+        out->_21 = 0.0f; out->_22 = sy;   out->_23 = 0.0f; out->_24 = 0.0f;
+        out->_31 = 0.0f; out->_32 = 0.0f; out->_33 = sz;   out->_34 = 0.0f;
+        out->_41 = 0.0f; out->_42 = 0.0f; out->_43 = 0.0f; out->_44 = 1.0f;
+    }
+    return out;
+}
+
+inline D3DMATRIX* D3DXMatrixMultiply(D3DMATRIX* out, const D3DMATRIX* m1, const D3DMATRIX* m2) {
+    if (out && m1 && m2) {
+        D3DMATRIX temp;
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                temp.m[i][j] = m1->m[i][0] * m2->m[0][j] + 
+                               m1->m[i][1] * m2->m[1][j] + 
+                               m1->m[i][2] * m2->m[2][j] + 
+                               m1->m[i][3] * m2->m[3][j];
+            }
+        }
+        *out = temp;
+    }
+    return out;
+}
+
+inline D3DMATRIX* D3DXMatrixInverse(D3DMATRIX* out, float* determinant, const D3DMATRIX* m) {
+    // Simple identity matrix for stub implementation
+    if (out) {
+        out->_11 = 1.0f; out->_12 = 0.0f; out->_13 = 0.0f; out->_14 = 0.0f;
+        out->_21 = 0.0f; out->_22 = 1.0f; out->_23 = 0.0f; out->_24 = 0.0f;
+        out->_31 = 0.0f; out->_32 = 0.0f; out->_33 = 1.0f; out->_34 = 0.0f;
+        out->_41 = 0.0f; out->_42 = 0.0f; out->_43 = 0.0f; out->_44 = 1.0f;
+    }
+    if (determinant) *determinant = 1.0f;
+    return out;
 }
 #endif
 

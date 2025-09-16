@@ -400,7 +400,7 @@ W3DDisplay::W3DDisplay()
 	m_averageFPS = TheGlobalData->m_framesPerSecondLimit;
 	
 	// Initialize graphics API preferences
-	m_preferredAPI = GraphicsAPI::OPENGL; // Default to OpenGL
+	m_preferredAPI = GraphicsAPIType::OPENGL; // Default to OpenGL
 	m_useOpenGL = false;
 #if defined(RTS_DEBUG)
 	m_timerAtCumuFPSStart = 0;
@@ -716,22 +716,26 @@ void W3DDisplay::init( void )
 
 		// Initialize graphics abstraction layer
 		// Try to initialize OpenGL if available, fallback to DirectX
-		GraphicsAPI preferredAPI = GraphicsAPI::OPENGL;
+		GraphicsAPIType preferredAPI = GraphicsAPIType::OPENGL;
 		
 		// Check if user prefers DirectX (from command line or config)
-		if (TheGlobalData->m_forceDirectX || !defined(ENABLE_OPENGL)) {
-			preferredAPI = GraphicsAPI::DIRECTX8;
+#ifdef ENABLE_OPENGL
+		if (TheGlobalData->m_forceDirectX) {
+			preferredAPI = GraphicsAPIType::DIRECTX8;
 		}
+#else
+		preferredAPI = GraphicsAPIType::DIRECTX8;
+#endif
 		
 		if (W3DRendererAdapter::Initialize(preferredAPI)) {
 			m_useOpenGL = W3DRendererAdapter::IsUsingNewRenderer();
 			if (m_useOpenGL) {
-				logIt("Graphics Renderer: Using OpenGL via abstraction layer");
+				DEBUG_LOG(("Graphics Renderer: Using OpenGL via abstraction layer"));
 			} else {
-				logIt("Graphics Renderer: Using DirectX 8 (legacy path)");
+				DEBUG_LOG(("Graphics Renderer: Using DirectX 8 (legacy path)"));
 			}
 		} else {
-			logIt("Warning: Failed to initialize graphics abstraction layer, using DirectX 8 only");
+			DEBUG_LOG(("Warning: Failed to initialize graphics abstraction layer, using DirectX 8 only"));
 			m_useOpenGL = false;
 		}
 
@@ -2818,7 +2822,7 @@ void W3DDisplay::drawImage( const Image *image, Int startX, Int startY,
 				percent						= ((clipped_rect.Top - screen_rect.Top) / screen_rect.Height ());
 				clipped_uv_rect.Top		= uv_rect.Top + (uv_rect.Height () * percent);
 
-				percent						= ((clipped_rect.Bottom - screen_rect.Top) / screenRect.Height ());
+				percent						= ((clipped_rect.Bottom - screen_rect.Top) / screen_rect.Height ());
 				clipped_uv_rect.Bottom	= uv_rect.Top + (uv_rect.Height () * percent);
 			}
 
@@ -3029,6 +3033,7 @@ void W3DDisplay::setShroudLevel( Int x, Int y, CellShroudStatus setting )
 
 //=============================================================================
 ///Utility function to dump data into a .BMP file
+#ifdef _WIN32
 static void CreateBMPFile(LPTSTR pszFile, char *image, Int width, Int height)
 {
 	HANDLE hf;                  // file handle
@@ -3103,6 +3108,7 @@ static void CreateBMPFile(LPTSTR pszFile, char *image, Int width, Int height)
 	// Free memory.
 	LocalFree( (HLOCAL) pbmi);
 }
+#endif // _WIN32
 
 ///Save Screen Capture to a file
 void W3DDisplay::takeScreenShot(void)
@@ -3232,7 +3238,9 @@ void W3DDisplay::takeScreenShot(void)
 			ptr1++;
 			}
 	}
+#ifdef _WIN32
 	CreateBMPFile(pathname, image, width, height);
+#endif
 #endif
 
 	delete [] image;
