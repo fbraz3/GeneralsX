@@ -32,7 +32,9 @@
 #include "GameClient/Image.h"
 #include "GameClient/GameWindow.h"
 #include "vector2i.h"
+#ifdef _WIN32
 #include <d3dx8.h>
+#endif
 #include "WW3D2/dx8wrapper.h"
 #include "WW3D2/dx8webbrowser.h"
 
@@ -57,6 +59,7 @@ Bool W3DWebBrowser::createBrowserWindow(const char *tag, GameWindow *win)
 		return FALSE;
 	}
 
+#ifdef _WIN32
 #ifdef __GNUC__
 	CComQIIDPtr<I_ID(IDispatch)> idisp(m_dispatch);
 #else
@@ -66,6 +69,10 @@ Bool W3DWebBrowser::createBrowserWindow(const char *tag, GameWindow *win)
 	{
 		return FALSE;
 	}
+#else
+	// Non-Windows stub implementation
+	return FALSE;
+#endif
 
 	DX8WebBrowser::CreateBrowser(windowName.str(), url->m_url.str(), x, y, w, h, 0, BROWSEROPTION_SCROLLBARS | BROWSEROPTION_3DBORDER, (LPDISPATCH)this);
 

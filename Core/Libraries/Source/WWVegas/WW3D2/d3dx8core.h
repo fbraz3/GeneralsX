@@ -15,9 +15,9 @@
 #ifndef D3DX_MATRIX_FUNCTIONS_DEFINED
 #define D3DX_MATRIX_FUNCTIONS_DEFINED
 inline int D3DXMatrixIdentity(D3DXMATRIX* pOut) { return 0; }
-inline int D3DXMatrixMultiply(D3DXMATRIX* pOut, const D3DXMATRIX* pM1, const D3DXMATRIX* pM2) { return 0; }
-inline int D3DXMatrixTranspose(D3DXMATRIX* pOut, const D3DXMATRIX* pM) { return 0; }
-// Note: D3DXMatrixInverse is defined in d3dx8math.h
+// Note: D3DXMatrixMultiply is defined in d3d8.h with proper signature
+// Note: D3DXMatrixTranspose is defined in d3d8.h with proper signature  
+// Note: D3DXMatrixInverse is defined in d3d8.h with proper signature
 #endif
 
 // D3DX texture functions - stub implementations

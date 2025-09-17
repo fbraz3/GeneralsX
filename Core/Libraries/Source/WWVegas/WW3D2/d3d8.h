@@ -38,6 +38,18 @@ struct CORE_IDirect3DVertexBuffer8;
 struct CORE_IDirect3DIndexBuffer8;
 struct CORE_IDirect3DBaseTexture8;
 
+// Compatibility aliases for non-prefixed DirectX interfaces (only if not already defined)
+#ifndef IDirect3DVertexBuffer8
+#ifndef _D3D8_H_  // Avoid conflicts with actual DirectX headers
+typedef CORE_IDirect3DVertexBuffer8 IDirect3DVertexBuffer8;
+#endif
+#endif
+#ifndef IDirect3DIndexBuffer8
+#ifndef _D3D8_H_  // Avoid conflicts with actual DirectX headers
+typedef CORE_IDirect3DIndexBuffer8 IDirect3DIndexBuffer8;
+#endif
+#endif
+
 // Basic DirectX types
 typedef void* LPDIRECT3D8;
 typedef void* LPDIRECT3DDEVICE8;
@@ -219,6 +231,12 @@ typedef DWORD D3DSWAPEFFECT;
 #define D3DCLEAR_TARGET 0x00000001L
 #define D3DCLEAR_ZBUFFER 0x00000002L
 #define D3DCLEAR_STENCIL 0x00000004L
+
+// DirectX usage flags
+#define D3DUSAGE_POINTS 0x00000040L
+
+// DirectX lock flags
+#define D3DLOCK_NO_DIRTY_UPDATE 0x00008000L
 
 // DirectX vertex shader declaration constants
 #define D3DVSD_STREAM(StreamNumber) (0x10000000 | (StreamNumber))
@@ -954,8 +972,10 @@ struct CORE_IDirect3DDevice8 {
     virtual int Present(const void* src_rect, const void* dest_rect, void* dest_window_override, const void* dirty_region) { return D3D_OK; }
     virtual int SetVertexShader(DWORD handle) { return D3D_OK; }
     virtual int GetVertexShader(DWORD* handle) { return D3D_OK; }
+    virtual int CreateVertexShader(const DWORD* declaration, const DWORD* function, DWORD* handle, DWORD usage) { return D3D_OK; }
     virtual int SetPixelShader(DWORD handle) { return D3D_OK; }
     virtual int GetPixelShader(DWORD* handle) { return D3D_OK; }
+    virtual int CreatePixelShader(const DWORD* function, DWORD* handle) { return D3D_OK; }
     virtual int DrawPrimitive(DWORD primitive_type, DWORD start_vertex, DWORD primitive_count) { return D3D_OK; }
     virtual int DrawIndexedPrimitive(DWORD type, DWORD min_index, DWORD num_vertices, DWORD start_index, DWORD primitive_count) { return D3D_OK; }
     virtual int CreateVertexBuffer(DWORD length, DWORD usage, DWORD fvf, D3DPOOL pool, CORE_IDirect3DVertexBuffer8** vertex_buffer) { return D3D_OK; }
@@ -1177,6 +1197,11 @@ inline D3DMATRIX* D3DXMatrixTranslation(D3DMATRIX* out, float x, float y, float 
     return out;
 }
 
+// Overload for D3DXMATRIX
+inline D3DXMATRIX* D3DXMatrixTranslation(D3DXMATRIX* out, float x, float y, float z) {
+    return (D3DXMATRIX*)D3DXMatrixTranslation((D3DMATRIX*)out, x, y, z);
+}
+
 inline D3DMATRIX* D3DXMatrixScaling(D3DMATRIX* out, float sx, float sy, float sz) {
     if (out) {
         out->_11 = sx;   out->_12 = 0.0f; out->_13 = 0.0f; out->_14 = 0.0f;
@@ -1185,6 +1210,11 @@ inline D3DMATRIX* D3DXMatrixScaling(D3DMATRIX* out, float sx, float sy, float sz
         out->_41 = 0.0f; out->_42 = 0.0f; out->_43 = 0.0f; out->_44 = 1.0f;
     }
     return out;
+}
+
+// Overload for D3DXMATRIX
+inline D3DXMATRIX* D3DXMatrixScaling(D3DXMATRIX* out, float sx, float sy, float sz) {
+    return (D3DXMATRIX*)D3DXMatrixScaling((D3DMATRIX*)out, sx, sy, sz);
 }
 
 inline D3DMATRIX* D3DXMatrixMultiply(D3DMATRIX* out, const D3DMATRIX* m1, const D3DMATRIX* m2) {
@@ -1203,17 +1233,12 @@ inline D3DMATRIX* D3DXMatrixMultiply(D3DMATRIX* out, const D3DMATRIX* m1, const 
     return out;
 }
 
-inline D3DMATRIX* D3DXMatrixInverse(D3DMATRIX* out, float* determinant, const D3DMATRIX* m) {
-    // Simple identity matrix for stub implementation
-    if (out) {
-        out->_11 = 1.0f; out->_12 = 0.0f; out->_13 = 0.0f; out->_14 = 0.0f;
-        out->_21 = 0.0f; out->_22 = 1.0f; out->_23 = 0.0f; out->_24 = 0.0f;
-        out->_31 = 0.0f; out->_32 = 0.0f; out->_33 = 1.0f; out->_34 = 0.0f;
-        out->_41 = 0.0f; out->_42 = 0.0f; out->_43 = 0.0f; out->_44 = 1.0f;
-    }
-    if (determinant) *determinant = 1.0f;
-    return out;
+// Overload for D3DXMATRIX
+inline D3DXMATRIX* D3DXMatrixMultiply(D3DXMATRIX* out, const D3DXMATRIX* m1, const D3DXMATRIX* m2) {
+    return (D3DXMATRIX*)D3DXMatrixMultiply((D3DMATRIX*)out, (const D3DMATRIX*)m1, (const D3DMATRIX*)m2);
 }
+
+// Note: D3DXMatrixInverse is defined in d3dx8math.h
 #endif
 
 #ifndef CORE_D3DXMATRIXTRANSPOSE_DEFINED
@@ -1227,6 +1252,11 @@ inline D3DMATRIX* D3DXMatrixTranspose(D3DMATRIX* out, const D3DMATRIX* in) {
         out->_41 = temp._14; out->_42 = temp._24; out->_43 = temp._34; out->_44 = temp._44;
     }
     return out;
+}
+
+// Overload for D3DXMATRIX
+inline D3DXMATRIX* D3DXMatrixTranspose(D3DXMATRIX* out, const D3DXMATRIX* in) {
+    return (D3DXMATRIX*)D3DXMatrixTranspose((D3DMATRIX*)out, (const D3DMATRIX*)in);
 }
 
 #else

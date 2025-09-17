@@ -55,6 +55,7 @@ static void RTSFlagsToOSFlags(UnsignedInt buttonFlags, UnsignedInt otherFlags, U
 	}
 
 	//-----------------------------------------------------------------------------------------------
+#ifdef _WIN32
 	if (BitIsSet(otherFlags, OSDOF_SYSTEMMODAL)) {
 		outWindowsFlags |= MB_SYSTEMMODAL;
 	}
@@ -82,6 +83,10 @@ static void RTSFlagsToOSFlags(UnsignedInt buttonFlags, UnsignedInt otherFlags, U
 	if (BitIsSet(otherFlags, OSDOF_STOPICON)) {
 		outWindowsFlags |= MB_ICONSTOP;
 	}
+#else
+	// Non-Windows systems - stub implementation
+	(void)otherFlags; // Avoid unused parameter warning
+#endif
 
 }
 

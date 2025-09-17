@@ -27,6 +27,9 @@
 // Desc:       Interface for the mouse using only the Win32 messages
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+#ifdef _WIN32
+// This file is Windows-specific
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -491,3 +494,5 @@ void Win32Mouse::releaseCapture( void )
 	}
 
 }  // end releaseCapture
+
+#endif // _WIN32

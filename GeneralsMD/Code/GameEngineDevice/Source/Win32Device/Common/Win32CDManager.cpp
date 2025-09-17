@@ -131,6 +131,7 @@ void Win32CDDrive::refreshInfo( void )
 	Bool mayRequireUpdate = (m_disk != CD::NO_DISK);
 	Char volName[1024];
 	// read the volume info
+#ifdef _WIN32
 	if ( GetVolumeInformation( m_drivePath.str(), volName, sizeof(volName) -1, NULL, NULL, NULL, NULL, 0 ))
 	{
 		m_diskName = volName;
@@ -138,6 +139,12 @@ void Win32CDDrive::refreshInfo( void )
 	}
 	else
 	{
+#else
+	// Non-Windows systems - stub implementation
+	m_diskName = "Generic Disk";
+	m_disk = CD::UNKNOWN_DISK;
+	if (false) {
+#endif
 		m_diskName.clear();
 		m_disk = CD::NO_DISK;
 
@@ -182,10 +189,15 @@ void Win32CDManager::init( void )
 		AsciiString drivePath;
 		drivePath.format( "%c:\\", driveLetter );
 
+#ifdef _WIN32
 		if ( GetDriveType( drivePath.str() ) == DRIVE_CDROM )
 		{
 			newDrive( drivePath.str() );
 		}
+#else
+		// Non-Windows systems - no CD drive detection
+		(void)drivePath; // Avoid unused variable warning
+#endif
 	}
 
 	refreshDrives();

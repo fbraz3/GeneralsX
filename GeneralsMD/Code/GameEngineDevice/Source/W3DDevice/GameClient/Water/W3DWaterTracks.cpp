@@ -1136,7 +1136,11 @@ static void TestWaterUpdate(void)
 //		track->init(1.5f,8.0f,Vector2(139.0f,66.0f),Vector2(138.8f,67.6f),"wave2.tga");
 	}
 
+#ifdef _WIN32
 	if (GetAsyncKeyState(VK_F5) & 0x8001)	//check if F5 pressed since last call
+#else
+	if (false) // Non-Windows stub
+#endif
 	{
 		if (trackEditModeReset)
 		{
@@ -1172,11 +1176,17 @@ static void TestWaterUpdate(void)
 	if (trackEditMode)
 	{   //we are in wave edit mode
 
+#ifdef _WIN32
 		if (GetCursorPos(&screenPoint))	//read mouse position
 		{
 			ScreenToClient( ApplicationHWnd, &screenPoint);
 
 			if (GetAsyncKeyState(VK_F6) & 0x8001)
+#else
+		if (false) // Non-Windows stub
+		{
+			if (false) // Non-Windows stub
+#endif
 			{
 				if (addPointReset)
 				{
@@ -1232,7 +1242,11 @@ static void TestWaterUpdate(void)
 			else
 				addPointReset=1;
 
+#ifdef _WIN32
 			if (GetAsyncKeyState(VK_DELETE) & 0x8001)
+#else
+			if (false) // Non-Windows stub
+#endif
 			{	//delete last segment added
 				if (deleteTrackReset && track)
 				{	deleteTrackReset=0;
@@ -1248,7 +1262,11 @@ static void TestWaterUpdate(void)
 			else
 				deleteTrackReset=1;
 
+#ifdef _WIN32
 			if (GetAsyncKeyState(VK_INSERT) & 0x8001)
+#else
+			if (false) // Non-Windows stub
+#endif
 			{	//change current wave type
 				if (changeTypeReset)
 				{	changeTypeReset=0;
@@ -1264,7 +1282,11 @@ static void TestWaterUpdate(void)
 			else
 				changeTypeReset=1;
 
+#ifdef _WIN32
 			if (GetAsyncKeyState(VK_F7) & 0x8001)
+#else
+			if (false) // Non-Windows stub
+#endif
 			{	//save all segments added
 				if (saveTracksReset)
 				{	saveTracksReset=0;
@@ -1281,7 +1303,11 @@ static void TestWaterUpdate(void)
 			else
 				saveTracksReset=1;
 
+#ifdef _WIN32
 			if (GetAsyncKeyState(VK_F8) & 0x8001)
+#else
+			if (false) // Non-Windows stub
+#endif
 			{	//load tracks for map
 				if (loadTracksReset)
 				{	loadTracksReset=0;

@@ -22,6 +22,7 @@
 #define _W3DSNOW_H_
 
 #include "GameClient/Snow.h"
+#include "WW3D2/d3d8.h"  // For CORE_IDirect3DVertexBuffer8 type
 
 class DX8IndexBufferClass;
 class RenderInfoClass;
@@ -49,7 +50,7 @@ class W3DSnowManager : public SnowManager
  private:
 	DX8IndexBufferClass	*m_indexBuffer;
 	TextureClass *m_snowTexture;
-	IDirect3DVertexBuffer8*  m_VertexBufferD3D;
+	CORE_IDirect3DVertexBuffer8*  m_VertexBufferD3D;
 	Int m_dwBase;	///<index to beginning of unused vertex buffer space.
     Int m_dwFlush;	///<maximum amount of vertices to sumbit before rendering.
 	Int m_dwDiscard;	///<maximum index allowed before needing to discard the buffer.

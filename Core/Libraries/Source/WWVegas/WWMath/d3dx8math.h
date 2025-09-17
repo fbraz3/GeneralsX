@@ -92,6 +92,13 @@ struct D3DXMATRIX {
         }
         return result;
     }
+    
+    // Matrix multiplication assignment operator
+    D3DXMATRIX& operator*=(const D3DXMATRIX& other) {
+        D3DXMATRIX temp = *this * other;
+        *this = temp;
+        return *this;
+    }
 };
 
 // D3DX Math functions
