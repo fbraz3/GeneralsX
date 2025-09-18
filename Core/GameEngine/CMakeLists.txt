@@ -1188,7 +1188,7 @@ target_link_libraries(corei_gameengine_public INTERFACE
     core_browserdispatch
     core_utility
     #core_wwvegas
-    d3d8lib
+    $<$<PLATFORM_ID:Windows>:d3d8lib>
     gamespy::gamespy
     stlport
 )

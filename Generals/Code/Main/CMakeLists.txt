@@ -9,19 +9,19 @@ endif()
 
 target_link_libraries(g_generals PRIVATE
     binkstub
-    comctl32
-    d3d8
-    d3dx8
-    dbghelplib
-    dinput8
-    dxguid
+    $<$<PLATFORM_ID:Windows>:comctl32>
+    $<$<PLATFORM_ID:Windows>:d3d8>
+    $<$<PLATFORM_ID:Windows>:d3dx8>
+    $<$<PLATFORM_ID:Windows>:dbghelplib>
+    $<$<PLATFORM_ID:Windows>:dinput8>
+    $<$<PLATFORM_ID:Windows>:dxguid>
     g_gameengine
     g_gameenginedevice
     gi_always
-    imm32
-    milesstub
-    vfw32
-    winmm
+    $<$<PLATFORM_ID:Windows>:imm32>
+    $<$<PLATFORM_ID:Windows>:milesstub>
+    $<$<PLATFORM_ID:Windows>:vfw32>
+    $<$<PLATFORM_ID:Windows>:winmm>
 )
 
 # Set build information variables with default values that can be overridden

@@ -223,10 +223,10 @@ target_link_libraries(corei_gameenginedevice_private INTERFACE
 )
 
 target_link_libraries(corei_gameenginedevice_public INTERFACE
-    binkstub
+    ${CMAKE_SOURCE_DIR}/libbinkstub.a
     corei_gameengine_public
-    d3d8lib
-    milesstub
+    $<$<PLATFORM_ID:Windows>:d3d8lib>
+    $<$<PLATFORM_ID:Windows>:milesstub>
 )
 
 if(RTS_BUILD_OPTION_FFMPEG)

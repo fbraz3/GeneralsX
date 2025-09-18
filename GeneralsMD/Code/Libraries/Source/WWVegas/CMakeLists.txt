@@ -5,8 +5,8 @@ target_link_libraries(z_wwcommon INTERFACE
     core_config
     core_utility
     core_wwcommon
-    d3d8lib
-    milesstub
+    $<$<PLATFORM_ID:Windows>:d3d8lib>
+    $<$<PLATFORM_ID:Windows>:milesstub>
     stlport
 )
 

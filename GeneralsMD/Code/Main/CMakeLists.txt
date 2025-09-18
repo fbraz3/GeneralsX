@@ -8,19 +8,19 @@ else()
 endif()
 
 target_link_libraries(z_generals PRIVATE
-    $<$<PLATFORM_ID:Windows>:binkstub>
-    comctl32
+    ${CMAKE_SOURCE_DIR}/libbinkstub.a
+    $<$<PLATFORM_ID:Windows>:comctl32>
     core_debug
     core_profile
-    d3d8
-    d3dx8
-    dbghelplib
-    dinput8
-    dxguid
-    imm32
+    $<$<PLATFORM_ID:Windows>:d3d8>
+    $<$<PLATFORM_ID:Windows>:d3dx8>
+    $<$<PLATFORM_ID:Windows>:dbghelplib>
+    $<$<PLATFORM_ID:Windows>:dinput8>
+    $<$<PLATFORM_ID:Windows>:dxguid>
+    $<$<PLATFORM_ID:Windows>:imm32>
     $<$<PLATFORM_ID:Windows>:milesstub>
-    vfw32
-    winmm
+    $<$<PLATFORM_ID:Windows>:vfw32>
+    $<$<PLATFORM_ID:Windows>:winmm>
     z_gameengine
     z_gameenginedevice
     zi_always
