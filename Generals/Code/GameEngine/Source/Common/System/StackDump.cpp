@@ -26,6 +26,8 @@
 
 #if defined(RTS_DEBUG) || defined(IG_DEBUG_STACKTRACE)
 
+#ifdef _WIN32
+
 #pragma pack(push, 8)
 
 #include "Common/StackDump.h"
@@ -628,6 +630,23 @@ void DumpExceptionInfo( unsigned int u, EXCEPTION_POINTERS* e_info )
 
 
 #pragma pack(pop)
+
+#else // !_WIN32
+
+// Stub implementations for non-Windows platforms
+void StackDumpHandler(unsigned int, struct _EXCEPTION_POINTERS*) {
+    // No-op on non-Windows platforms
+}
+
+void SetStackDumpHandler(void) {
+    // No-op on non-Windows platforms
+}
+
+void ClearStackDumpHandler(void) {
+    // No-op on non-Windows platforms  
+}
+
+#endif // _WIN32
 
 #endif
 

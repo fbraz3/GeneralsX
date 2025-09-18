@@ -8,7 +8,7 @@ else()
 endif()
 
 target_link_libraries(z_generals PRIVATE
-    binkstub
+    $<$<PLATFORM_ID:Windows>:binkstub>
     comctl32
     core_debug
     core_profile
@@ -18,7 +18,7 @@ target_link_libraries(z_generals PRIVATE
     dinput8
     dxguid
     imm32
-    milesstub
+    $<$<PLATFORM_ID:Windows>:milesstub>
     vfw32
     winmm
     z_gameengine
@@ -85,7 +85,9 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/BuildVersion.h
 "
 )
 
-target_link_options(z_generals PRIVATE "/NODEFAULTLIB:libci.lib")
+if(WIN32)
+    target_link_options(z_generals PRIVATE "/NODEFAULTLIB:libci.lib")
+endif()
 
 target_include_directories(z_generals PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}

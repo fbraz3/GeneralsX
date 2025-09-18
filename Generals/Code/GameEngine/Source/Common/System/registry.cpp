@@ -28,6 +28,8 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
 
+#ifdef _WIN32
+
 #include "Common/Registry.h"
 
 
@@ -177,3 +179,56 @@ UnsignedInt GetRegistryMapPackVersion(void)
 	GetUnsignedIntFromRegistry("", "MapPackVersion", val);
 	return val;
 }
+
+#else // !_WIN32
+
+// Stub implementations for non-Windows platforms
+Bool getStringFromRegistry(HKEY root, AsciiString path, AsciiString key, AsciiString& val) {
+    (void)root; (void)path; (void)key; (void)val;
+    return false; // Registry operations not supported on non-Windows
+}
+
+Bool getUnsignedIntFromRegistry(HKEY root, AsciiString path, AsciiString key, UnsignedInt& val) {
+    (void)root; (void)path; (void)key; (void)val;
+    return false; // Registry operations not supported on non-Windows
+}
+
+Bool setStringInRegistry(HKEY root, AsciiString path, AsciiString key, AsciiString val) {
+    (void)root; (void)path; (void)key; (void)val;
+    return false; // Registry operations not supported on non-Windows
+}
+
+Bool setUnsignedIntInRegistry(HKEY root, AsciiString path, AsciiString key, UnsignedInt val) {
+    (void)root; (void)path; (void)key; (void)val;
+    return false; // Registry operations not supported on non-Windows
+}
+
+Bool GetStringFromRegistry(AsciiString path, AsciiString key, AsciiString& val) {
+    (void)path; (void)key; (void)val;
+    return false; // Registry operations not supported on non-Windows
+}
+
+Bool GetUnsignedIntFromRegistry(AsciiString path, AsciiString key, UnsignedInt& val) {
+    (void)path; (void)key; (void)val;
+    return false; // Registry operations not supported on non-Windows
+}
+
+Bool SetStringInRegistry(AsciiString path, AsciiString key, AsciiString val) {
+    (void)path; (void)key; (void)val;
+    return false; // Registry operations not supported on non-Windows
+}
+
+Bool SetUnsignedIntInRegistry(AsciiString path, AsciiString key, UnsignedInt val) {
+    (void)path; (void)key; (void)val;
+    return false; // Registry operations not supported on non-Windows
+}
+
+UnsignedInt GetRegistryVersion(void) {
+    return 65536; // Default version for non-Windows platforms
+}
+
+UnsignedInt GetRegistryMapPackVersion(void) {
+    return 65536; // Default version for non-Windows platforms
+}
+
+#endif // _WIN32

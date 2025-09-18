@@ -256,7 +256,11 @@ GameEngine::GameEngine( void )
 	m_isActive = FALSE;
 	m_enableLogicTimeScale = FALSE;
 
+#ifdef _WIN32
 	_Module.Init(NULL, ApplicationHInstance, NULL);
+#else
+	_Module.Init(NULL, ApplicationHInstance);  // Non-Windows version takes only 2 parameters
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------

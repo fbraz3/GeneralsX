@@ -27,22 +27,17 @@ typedef struct {
 } D3DXVECTOR4;
 #endif
 
-// D3DX utility functions - stub implementations
+// D3DX utility functions - use Core implementations instead
 #ifndef D3DX_MATRIX_FUNCTIONS_DEFINED
 #define D3DX_MATRIX_FUNCTIONS_DEFINED
-inline int D3DXMatrixIdentity(D3DXMATRIX* pOut) { return 0; }
-inline int D3DXMatrixMultiply(D3DXMATRIX* pOut, const D3DXMATRIX* pM1, const D3DXMATRIX* pM2) { return 0; }
-#ifndef CORE_D3DXMATRIXTRANSPOSE_DEFINED
-inline int D3DXMatrixTranspose(D3DXMATRIX* pOut, const D3DXMATRIX* pM) { return 0; }
-#endif
-// Note: D3DXMatrixInverse is defined in d3dx8math.h
+// All matrix functions removed - use Core implementations
+// Note: D3DXMatrixMultiply is defined in d3d8.h with proper signature
 #endif
 
-// D3DX texture functions - stub implementations
+// D3DX texture functions - use Core implementations instead
 #ifndef D3DX_TEXTURE_FUNCTIONS_DEFINED
 #define D3DX_TEXTURE_FUNCTIONS_DEFINED
-inline int D3DXCreateTextureFromFile(IDirect3DDevice8* pDevice, const char* pSrcFile, IDirect3DTexture8** ppTexture) { return D3D_OK; }
-inline int D3DXCreateTextureFromFileEx(IDirect3DDevice8* pDevice, const char* pSrcFile, DWORD Width, DWORD Height, DWORD MipLevels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, DWORD Filter, DWORD MipFilter, D3DCOLOR ColorKey, void* pSrcInfo, void* pPalette, IDirect3DTexture8** ppTexture) { return D3D_OK; }
+// All texture functions removed - use Core implementations
 #endif
 
 // D3DX mesh functions - stub implementations

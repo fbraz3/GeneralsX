@@ -34,10 +34,20 @@
 #define WIN32_LEAN_AND_MEAN  // only bare bones windows stuff wanted
 #include <windows.h>
 #include <stdlib.h>
+#ifdef _WIN32
 #include <crtdbg.h>
 #include <eh.h>
 #include <ole2.h>
 #include <dbt.h>
+#else
+// Cross-platform: debug headers not needed on macOS/Linux
+#define _CrtSetDbgFlag(f) (0)
+#define _CRTDBG_ALLOC_MEM_DF 0
+#define _CRTDBG_LEAK_CHECK_DF 0
+#define _CRTDBG_REPORT_FLAG 0
+typedef int _se_translator_function;
+#define _set_se_translator(f) ((void)0)
+#endif
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "WinMain.h"

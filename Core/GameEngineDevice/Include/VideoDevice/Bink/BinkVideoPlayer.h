@@ -54,9 +54,7 @@
 #include "bink.h"
 #else
 // macOS: Bink codec not available, use stubs
-typedef void* HBINK;
-typedef void* BINKSND;
-#define BINKOLDFRAMEFORMAT 0x00008000L
+#include "bink.h"
 #endif
 
 //----------------------------------------------------------------------------

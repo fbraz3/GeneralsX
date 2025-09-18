@@ -63,7 +63,16 @@ typedef IBrowserEngine* IFEBrowserEngine2Ptr;
 // COM creation stubs
 struct FEBrowserEngine2 {};
 
+// __uuidof compatibility
+#ifndef _WIN32
+// Simple stub implementation for non-Windows platforms
+template<typename T>
+inline void* __uuidof_impl(const T&) { return nullptr; }
+#define __uuidof(x) __uuidof_impl(x)
+#else
+// On Windows, __uuidof is a proper keyword
 inline void* __uuidof(const FEBrowserEngine2&) { return nullptr; }
+#endif
 
 // Stub factory function
 inline IBrowserEngine* CreateBrowserEngine(IBrowserEngineHost* host) {

@@ -54,13 +54,8 @@
 #define DSSPEAKER_GEOMETRY_WIDE     0x00000014
 #define DSSPEAKER_GEOMETRY_MAX      0x000000B4
 
-// GUID definitions (simplified for compatibility)
-typedef struct _GUID {
-    unsigned long  Data1;
-    unsigned short Data2;
-    unsigned short Data3;
-    unsigned char  Data4[8];
-} GUID;
+// GUID definitions already available via win32_compat.h
+// No need to redefine here
 
 // Common GUIDs used by DirectSound (stub definitions)
 static const GUID DSDEVID_DefaultPlayback = {0xDEF00000, 0x9C6D, 0x47ED, {0xAA, 0xF1, 0x4D, 0xDA, 0x8F, 0x2B, 0x5C, 0x03}};

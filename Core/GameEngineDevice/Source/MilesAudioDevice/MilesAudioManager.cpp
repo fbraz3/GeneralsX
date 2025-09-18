@@ -39,6 +39,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "../../../Libraries/Source/WWVegas/WW3D2/dsound.h"
+#include "../../../Libraries/Source/WWVegas/WW3D2/threading.h"
 #include "Lib/BaseType.h"
 #include "MilesAudioDevice/MilesAudioManager.h"
 

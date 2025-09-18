@@ -798,12 +798,25 @@ typedef struct {
 } D3DADAPTER_IDENTIFIER8;
 #endif
 
-// Forward declarations
+// Forward declarations - use Core implementations
 #ifndef GENERALS_DIRECTX_INTERFACES_DEFINED
 #define GENERALS_DIRECTX_INTERFACES_DEFINED
 struct IDirect3DBaseTexture8;
-struct IDirect3DVertexBuffer8;
-struct IDirect3DIndexBuffer8;
+// Complete struct definitions for interfaces that need implementation
+struct IDirect3DVertexBuffer8 {
+    virtual int AddRef() { return 1; }
+    virtual int Release() { return 0; }
+    virtual int QueryInterface(void*, void**) { return 0; }
+    virtual int Lock(DWORD offset, DWORD size, unsigned char** data, DWORD flags) { return D3D_OK; }
+    virtual int Unlock() { return D3D_OK; }
+};
+struct IDirect3DIndexBuffer8 {
+    virtual int AddRef() { return 1; }
+    virtual int Release() { return 0; }
+    virtual int QueryInterface(void*, void**) { return 0; }
+    virtual int Lock(DWORD offset, DWORD size, unsigned char** data, DWORD flags) { return D3D_OK; }
+    virtual int Unlock() { return D3D_OK; }
+};
 struct IDirect3DTexture8;
 struct IDirect3DSurface8;
 struct IDirect3DDevice8;
@@ -1037,21 +1050,13 @@ struct IDirect3DSwapChain8 {
     }
 };
 
-struct IDirect3DVertexBuffer8 {
-    virtual int AddRef() { return 1; }
-    virtual int Release() { return 0; }
-    virtual int QueryInterface(void*, void**) { return 0; }
-    virtual int Lock(DWORD offset, DWORD size, unsigned char** data, DWORD flags) { return D3D_OK; }
-    virtual int Unlock() { return D3D_OK; }
-};
-
-struct IDirect3DIndexBuffer8 {
-    virtual int AddRef() { return 1; }
-    virtual int Release() { return 0; }
-    virtual int QueryInterface(void*, void**) { return 0; }
-    virtual int Lock(DWORD offset, DWORD size, unsigned char** data, DWORD flags) { return D3D_OK; }
-    virtual int Unlock() { return D3D_OK; }
-};
+// Include Core DirectX definitions first to resolve conflicts
+#ifndef GENERALS_CORE_INCLUDES_ADDED
+#define GENERALS_CORE_INCLUDES_ADDED
+// We must include the Core definitions before defining our own
+// This ensures compatibility and avoids redefinition errors
+#include "../../../../Core/Libraries/Source/WWVegas/WW3D2/d3d8.h"
+#endif
 
 #endif // GENERALS_DIRECTX_INTERFACES_DEFINED
 
@@ -1100,27 +1105,8 @@ inline int D3DXCreateTextureFromFileExA(void* device, const char* src_file, DWOR
     return D3D_OK;
 }
 
-// DirectX matrix and utility functions
-#ifndef CORE_D3DXMATRIXTRANSPOSE_DEFINED
-#define CORE_D3DXMATRIXTRANSPOSE_DEFINED
-inline D3DMATRIX* D3DXMatrixTranspose(D3DMATRIX* out, const D3DMATRIX* in) {
-    if (!out || !in) return nullptr;
-    // Use _11-_44 field access instead of m[i][j] array notation
-    out->_11 = in->_11; out->_12 = in->_21; out->_13 = in->_31; out->_14 = in->_41;
-    out->_21 = in->_12; out->_22 = in->_22; out->_23 = in->_32; out->_24 = in->_42;
-    out->_31 = in->_13; out->_32 = in->_23; out->_33 = in->_33; out->_34 = in->_43;
-    out->_41 = in->_14; out->_42 = in->_24; out->_43 = in->_34; out->_44 = in->_44;
-    return out;
-}
-#endif // CORE_D3DXMATRIXTRANSPOSE_DEFINED
-
-// D3DXMatrixTranspose overload for D3DXMATRIX compatibility
-#ifndef D3DXMATRIXTRANSPOSE_OVERLOAD_DEFINED
-#define D3DXMATRIXTRANSPOSE_OVERLOAD_DEFINED
-inline D3DXMATRIX* D3DXMatrixTranspose(D3DXMATRIX* out, const D3DXMATRIX* in) {
-    return (D3DXMATRIX*)D3DXMatrixTranspose((D3DMATRIX*)out, (const D3DMATRIX*)in);
-}
-#endif // D3DXMATRIXTRANSPOSE_OVERLOAD_DEFINED
+// D3DXMatrixTranspose - Use Core implementation instead of defining locally
+// Removed to avoid redefinition conflicts with Core/WW3D2/d3d8.h
 
 // D3DXGetErrorStringA - Ensure compatibility with Core/win32_compat.h
 #ifndef D3DXGETERRORSTRINGA_DEFINED

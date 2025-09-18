@@ -32,7 +32,6 @@
 #ifndef _WIN32
 #include <stdint.h>
 #include <cstdlib>
-typedef int64_t _int64;
 #endif
 
 // yuk, I'm doing this so weird because the destructor

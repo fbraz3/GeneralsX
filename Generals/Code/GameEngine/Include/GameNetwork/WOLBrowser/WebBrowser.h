@@ -46,11 +46,15 @@
 #define __WEBBROWSER_H__
 
 #include "Common/SubsystemInterface.h"
+#ifndef _WIN32
+// Browser functionality disabled on non-Windows platforms
+#else
 #include <atlbase.h>
 #include <windows.h>
 #include <Common/GameMemory.h>
 #include "EABrowserDispatch/BrowserDispatch.h"
 #include "FEBDispatch.h"
+#endif
 #include <Lib/BaseType.h>
 
 class GameWindow;
@@ -78,7 +82,9 @@ public:
 
 
 class WebBrowser :
+#ifdef _WIN32
 		public FEBDispatch<WebBrowser, IBrowserDispatch, &IID_IBrowserDispatch>,
+#endif
 		public SubsystemInterface
 	{
 	public:
@@ -106,9 +112,12 @@ class WebBrowser :
 //		Bool RetrieveHTMLPath(char* path, int size);
 
 	protected:
+#ifdef _WIN32
 		ULONG mRefCount;
+#endif
 		WebBrowserURL *m_urlList;
 
+#ifdef _WIN32
 	//---------------------------------------------------------------------------
 	// IUnknown methods
 	//---------------------------------------------------------------------------
@@ -122,6 +131,7 @@ class WebBrowser :
 	//---------------------------------------------------------------------------
 	public:
 		STDMETHOD(TestMethod)(Int num1);
+#endif
 	};
 
 extern CComObject<WebBrowser> *TheWebBrowser;

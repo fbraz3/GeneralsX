@@ -38,16 +38,17 @@ struct CORE_IDirect3DVertexBuffer8;
 struct CORE_IDirect3DIndexBuffer8;
 struct CORE_IDirect3DBaseTexture8;
 
-// Compatibility aliases for non-prefixed DirectX interfaces (only if not already defined)
-#ifndef IDirect3DVertexBuffer8
-#ifndef _D3D8_H_  // Avoid conflicts with actual DirectX headers
-typedef CORE_IDirect3DVertexBuffer8 IDirect3DVertexBuffer8;
+// Forward declarations only - avoid typedef conflicts
+#ifndef IDirect3DVertexBuffer8_DECLARED
+#define IDirect3DVertexBuffer8_DECLARED
+// Forward declaration only to prevent redefinition conflicts
+struct IDirect3DVertexBuffer8;
 #endif
-#endif
-#ifndef IDirect3DIndexBuffer8
-#ifndef _D3D8_H_  // Avoid conflicts with actual DirectX headers
-typedef CORE_IDirect3DIndexBuffer8 IDirect3DIndexBuffer8;
-#endif
+
+#ifndef IDirect3DIndexBuffer8_DECLARED  
+#define IDirect3DIndexBuffer8_DECLARED
+// Forward declaration only to prevent redefinition conflicts
+struct IDirect3DIndexBuffer8;
 #endif
 
 // Basic DirectX types
@@ -1257,6 +1258,33 @@ inline D3DMATRIX* D3DXMatrixTranspose(D3DMATRIX* out, const D3DMATRIX* in) {
 // Overload for D3DXMATRIX
 inline D3DXMATRIX* D3DXMatrixTranspose(D3DXMATRIX* out, const D3DXMATRIX* in) {
     return (D3DXMATRIX*)D3DXMatrixTranspose((D3DMATRIX*)out, (const D3DMATRIX*)in);
+};
+
+// ID3DXBuffer interface for D3DX compatibility
+class ID3DXBuffer
+{
+public:
+    virtual ~ID3DXBuffer() {}
+    virtual void* GetBufferPointer() = 0;
+    virtual DWORD GetBufferSize() = 0;
+    virtual ULONG AddRef() = 0;
+    virtual ULONG Release() = 0;
+};
+
+// D3DX Function stubs for shader compilation
+inline int D3DXAssembleShader(
+    const char* srcData,
+    UINT srcDataLen,
+    const void* defines,
+    const void* include,
+    DWORD flags,
+    ID3DXBuffer** shader,
+    ID3DXBuffer** errorMsgs)
+{
+    // Cross-platform stub - shaders not supported
+    if (shader) *shader = nullptr;
+    if (errorMsgs) *errorMsgs = nullptr;
+    return -1; // E_FAIL equivalent
 }
 
 #else

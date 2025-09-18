@@ -139,12 +139,15 @@ typedef char* LPSTR;
 typedef void* HKEY;
 typedef HKEY* PHKEY;
 
-// Stub functions for Windows API
+// Stub functions for Windows API (with guards to prevent redefinition)
 inline DWORD GetLastError() { return 0; }
 inline void SetLastError(DWORD dwErrCode) {}
+#ifndef MESSAGEBOX_DEFINED
+#define MESSAGEBOX_DEFINED
 inline int MessageBoxA(void* hWnd, const char* lpText, const char* lpCaption, UINT uType) { return IDOK; }
 inline int MessageBox(void* hWnd, const char* lpText, const char* lpCaption, UINT uType) { return IDOK; }
 inline int MessageBoxW(void* hWnd, const wchar_t* lpText, const wchar_t* lpCaption, UINT uType) { return IDOK; }
+#endif
 inline HANDLE CreateFileA(const char* lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, void* lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile) { return INVALID_HANDLE_VALUE; }
 // CloseHandle is defined in threading.h
 // ReadFile and WriteFile are defined in filesystem.h

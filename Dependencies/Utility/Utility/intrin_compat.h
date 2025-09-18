@@ -71,7 +71,7 @@ static inline __int64 _rdtsc()
 
 #include <cstdint>
 
-#if !defined(_lrotl) && !defined(_WIN32)
+#if !defined(_lrotl) && !defined(_WIN32) && !defined(__clang__)
 static inline uint32_t _lrotl(uint32_t value, int shift)
 {
 #if defined(__has_builtin) && __has_builtin(__builtin_rotateleft32)
@@ -107,7 +107,7 @@ static inline uint64_t _rdtsc()
 #ifdef _WIN32
 #include <intrin.h>
 #pragma intrinsic(_ReturnAddress)
-#elif defined(__has_builtin)
+#elif defined(__has_builtin) && !defined(__clang__)
     #if __has_builtin(__builtin_return_address)
     static inline uintptr_t _ReturnAddress()
     {
@@ -116,6 +116,10 @@ static inline uint64_t _rdtsc()
     #else
     #error "No implementation for _ReturnAddress"
     #endif
+#elif defined(__clang__)
+    // On Clang with -fms-extensions, _ReturnAddress is available as builtin returning void*
+    // Just use the builtin directly, no need to redefine
+    // The builtin _ReturnAddress() is already available
 #else
 #error "No implementation for _ReturnAddress"
 #endif

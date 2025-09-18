@@ -32,7 +32,9 @@ typedef void* LPSECURITY_ATTRIBUTES;
 #define TRUE 1
 #define FALSE 0
 
-// File system functions
+// File system functions (with guard to prevent redefinition)
+#ifndef CREATEDIRECTORY_DEFINED
+#define CREATEDIRECTORY_DEFINED
 inline BOOL CreateDirectory(LPCSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecurityAttributes) {
     if (!lpPathName) return FALSE;
     
@@ -46,13 +48,17 @@ inline BOOL CreateDirectory(LPCSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecurityA
         return FALSE;
     }
 }
+#endif
 
+#ifndef DELETEFILE_DEFINED
+#define DELETEFILE_DEFINED
 inline BOOL DeleteFile(LPCSTR lpFileName) {
     if (!lpFileName) return FALSE;
     
     int result = unlink(lpFileName);
     return (result == 0) ? TRUE : FALSE;
 }
+#endif
 
 inline HANDLE CreateFile(
     LPCSTR lpFileName,

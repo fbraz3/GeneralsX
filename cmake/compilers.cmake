@@ -63,3 +63,8 @@ if(RTS_BUILD_OPTION_ASAN)
         add_link_options(-fsanitize=address)
     endif()
 endif()
+
+# Enable Microsoft extensions for non-MSVC compilers (needed for __declspec)
+if(NOT MSVC)
+    add_compile_options(-fms-extensions)
+endif()

@@ -37,6 +37,11 @@ typedef unsigned char BYTE;
 typedef long long __int64;
 #endif
 
+// Microsoft compiler attributes compatibility
+#ifndef __declspec
+#define __declspec(x)
+#endif
+
 #ifndef UINT
 typedef unsigned int UINT;
 #endif
@@ -191,7 +196,57 @@ typedef const char* LPCSTR;
 typedef char* LPSTR;
 typedef unsigned int UINT;
 typedef long HRESULT;
+typedef long LRESULT;
 typedef wchar_t WCHAR;
+typedef void* HBRUSH;
+typedef void* HDC;
+typedef WORD ATOM;
+
+// GDI structures
+typedef struct {
+    HDC hdc;
+    BOOL fErase;
+    RECT rcPaint;
+    BOOL fRestore;
+    BOOL fIncUpdate;
+    BYTE rgbReserved[32];
+} PAINTSTRUCT;
+
+// Window class structure
+typedef struct {
+    UINT style;
+    LRESULT (*lpfnWndProc)(HWND, UINT, WPARAM, LPARAM);
+    int cbClsExtra;
+    int cbWndExtra;
+    HINSTANCE hInstance;
+    void* hIcon;
+    void* hCursor;
+    HBRUSH hbrBackground;
+    LPCSTR lpszMenuName;
+    LPCSTR lpszClassName;
+} WNDCLASS;
+
+// Exception handling structures
+typedef struct _EXCEPTION_RECORD {
+    DWORD ExceptionCode;
+    DWORD ExceptionFlags;
+    struct _EXCEPTION_RECORD* ExceptionRecord;
+    void* ExceptionAddress;
+    DWORD NumberParameters;
+    void* ExceptionInformation[15];
+} EXCEPTION_RECORD;
+
+typedef struct _CONTEXT {
+    // Simplified context structure
+    DWORD ContextFlags;
+    DWORD Eax, Ebx, Ecx, Edx, Esi, Edi;
+    DWORD Esp, Ebp, Eip;
+} CONTEXT;
+
+typedef struct _EXCEPTION_POINTERS {
+    EXCEPTION_RECORD* ExceptionRecord;
+    CONTEXT* ContextRecord;
+} EXCEPTION_POINTERS;
 typedef const WCHAR* LPCWSTR;
 typedef WCHAR* LPWSTR;
 typedef void* HANDLE;
@@ -1188,9 +1243,13 @@ inline void LeaveCriticalSection(CRITICAL_SECTION* lpCriticalSection) {
 
 // Registry constants
 #define HKEY_LOCAL_MACHINE ((HKEY)0x80000002)
+#define HKEY_CURRENT_USER ((HKEY)0x80000001)
 #define KEY_READ (0x20019)
+#define KEY_WRITE (0x20006)
 #define ERROR_SUCCESS 0L
 #define REG_DWORD 4
+#define REG_SZ 1
+#define REG_OPTION_NON_VOLATILE 0
 
 // File system compatibility
 // TODO: Implement _stat compatibility properly
@@ -1204,17 +1263,7 @@ inline void LeaveCriticalSection(CRITICAL_SECTION* lpCriticalSection) {
 //     return stat(path, buffer);
 // }
 
-// Registry function stubs - commented out to avoid redefinition conflicts
-// Using definitions from Core/Libraries/Include/windows.h instead
-/*
-inline long RegOpenKeyEx(HKEY hKey, const char* lpSubKey, DWORD ulOptions, DWORD samDesired, HKEY* phkResult) {
-    return ERROR_SUCCESS; // Stub implementation
-}
-
-inline long RegQueryValueEx(HKEY hKey, const char* lpValueName, DWORD* lpReserved, DWORD* lpType, BYTE* lpData, DWORD* lpcbData) {
-    return ERROR_SUCCESS; // Stub implementation
-}
-*/
+// Registry function stubs - using definitions from windows.h to avoid conflicts
 
 // Threading function stubs
 #if !defined(_WIN32) && !defined(CREATETHREAD_DEFINED)
@@ -1349,6 +1398,15 @@ inline BOOL QueryPerformanceFrequency(LARGE_INTEGER* lpFrequency) {
 // #endif
 
 #endif // PERFORMANCE_TIMING_DEFINED
+
+// Mutex and synchronization APIs - using definitions from threading.h and windows.h
+#ifndef MUTEX_SYNCHRONIZATION_DEFINED
+#define MUTEX_SYNCHRONIZATION_DEFINED
+
+// Error codes
+#define ERROR_ALREADY_EXISTS 183L
+
+#endif // MUTEX_SYNCHRONIZATION_DEFINED
 
 //=============================================================================
 // PHASE 5: AUDIO & MULTIMEDIA APIs
@@ -1712,6 +1770,104 @@ inline int listen(SOCKET s, int backlog) {
 // Note: gethostbyname and gethostname are provided by system headers
 
 // Windows compatibility for cross-platform build
+
+inline void PostQuitMessage(int nExitCode) {
+    // On non-Windows platforms, this would typically signal the main loop to exit
+    (void)nExitCode; // Stub implementation
+}
+
+// GDI functions
+inline HDC BeginPaint(HWND hWnd, PAINTSTRUCT* lpPaint) {
+    (void)hWnd;
+    if (lpPaint) {
+        memset(lpPaint, 0, sizeof(PAINTSTRUCT));
+        lpPaint->hdc = (HDC)1; // Dummy HDC
+    }
+    return (HDC)1;
+}
+
+inline BOOL EndPaint(HWND hWnd, const PAINTSTRUCT* lpPaint) {
+    (void)hWnd; (void)lpPaint;
+    return TRUE;
+}
+
+inline int SaveDC(HDC hdc) {
+    (void)hdc;
+    return 1;
+}
+
+inline BOOL RestoreDC(HDC hdc, int nSavedDC) {
+    (void)hdc; (void)nSavedDC;
+    return TRUE;
+}
+
+inline BOOL BitBlt(HDC hdc, int x, int y, int cx, int cy, HDC hdcSrc, int x1, int y1, DWORD rop) {
+    (void)hdc; (void)x; (void)y; (void)cx; (void)cy; (void)hdcSrc; (void)x1; (void)y1; (void)rop;
+    return TRUE;
+}
+
+inline LRESULT DefWindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
+    (void)hWnd; (void)Msg; (void)wParam; (void)lParam;
+    return 0;
+}
+
+inline void* LoadIcon(HINSTANCE hInstance, LPCSTR lpIconName) {
+    (void)hInstance; (void)lpIconName;
+    return (void*)1; // Dummy icon handle
+}
+
+inline void* GetStockObject(int i) {
+    (void)i;
+    return (void*)1; // Dummy object handle
+}
+
+inline ATOM RegisterClass(const WNDCLASS* lpWndClass) {
+    (void)lpWndClass;
+    return 1; // Dummy class atom
+}
+
+inline int GetSystemMetrics(int nIndex) {
+    switch (nIndex) {
+        case 0: return 1920; // SM_CXSCREEN - Default screen width
+        case 1: return 1080; // SM_CYSCREEN - Default screen height
+        default: return 0;
+    }
+}
+
+inline HWND SetFocus(HWND hWnd) {
+    (void)hWnd;
+    return (HWND)1; // Previous focus window
+}
+
+inline BOOL SetForegroundWindow(HWND hWnd) {
+    (void)hWnd;
+    return TRUE;
+}
+
+inline HWND CreateWindow(LPCSTR lpClassName, LPCSTR lpWindowName, DWORD dwStyle,
+                        int x, int y, int nWidth, int nHeight,
+                        HWND hWndParent, void* hMenu, HINSTANCE hInstance, void* lpParam) {
+    (void)lpClassName; (void)lpWindowName; (void)dwStyle; (void)x; (void)y;
+    (void)nWidth; (void)nHeight; (void)hWndParent; (void)hMenu; (void)hInstance; (void)lpParam;
+    return (HWND)1; // Dummy window handle
+}
+
+typedef LONG (*PTOP_LEVEL_EXCEPTION_FILTER)(EXCEPTION_POINTERS* ExceptionInfo);
+
+inline PTOP_LEVEL_EXCEPTION_FILTER SetUnhandledExceptionFilter(PTOP_LEVEL_EXCEPTION_FILTER lpTopLevelExceptionFilter) {
+    (void)lpTopLevelExceptionFilter;
+    return NULL;
+}
+
+inline HWND FindWindow(LPCSTR lpClassName, LPCSTR lpWindowName) {
+    (void)lpClassName; (void)lpWindowName;
+    return NULL; // Window not found
+}
+
+inline void* LoadImage(HINSTANCE hInst, LPCSTR name, UINT type, int cx, int cy, UINT fuLoad) {
+    (void)hInst; (void)name; (void)type; (void)cx; (void)cy; (void)fuLoad;
+    return (void*)1; // Dummy image handle
+}
 #ifndef _WIN32
 // Windows calling convention stubs
 #define WINAPI
@@ -1819,6 +1975,202 @@ inline DWORD GetCurrentTime() {
     gettimeofday(&tv, NULL);
     return (DWORD)(tv.tv_sec * 1000 + tv.tv_usec / 1000);
 }
+
+// PeekMessage constants
+#define PM_NOREMOVE     0x0000
+#define PM_REMOVE       0x0001
+
+// Windows Message constants
+#define WM_SIZE         0x0005
+#define WM_ACTIVATE     0x0006
+#define WM_SETFOCUS     0x0007
+#define WM_KILLFOCUS    0x0008
+#define WM_ACTIVATEAPP  0x001C
+#define WM_PAINT        0x000F
+#define WM_CLOSE        0x0010
+#define WM_QUIT         0x0012
+#define WM_SYSCOMMAND   0x0112
+#define WM_POWERBROADCAST 0x0218
+#define WM_QUERYENDSESSION 0x0011
+#define WM_MOVE         0x0003
+#define WM_SETCURSOR    0x0020
+#define WM_ERASEBKGND   0x0014
+#define WM_KEYDOWN      0x0100
+#define WM_KEYUP        0x0101
+#define WM_CHAR         0x0102
+#define WM_NCHITTEST    0x0084
+#define WM_MOUSEMOVE    0x0200
+#define WM_LBUTTONDOWN  0x0201
+#define WM_LBUTTONUP    0x0202
+#define WM_LBUTTONDBLCLK 0x0203
+#define WM_RBUTTONDOWN  0x0204
+#define WM_RBUTTONUP    0x0205
+#define WM_RBUTTONDBLCLK 0x0206
+#define WM_MBUTTONDOWN  0x0207
+#define WM_MBUTTONUP    0x0208
+#define WM_MBUTTONDBLCLK 0x0209
+#define WM_MOUSEWHEEL   0x020A
+
+// Hit test constants for WM_NCHITTEST
+#define HTCLIENT        1
+
+// System command constants for WM_SYSCOMMAND
+#define SC_KEYMENU      0xF100
+#define SC_MOVE         0xF010
+#define SC_SIZE         0xF000
+#define SC_MAXIMIZE     0xF030
+#define SC_MONITORPOWER 0xF170
+
+// Window activation constants
+#define WA_INACTIVE     0
+
+// Window style constants
+#define WS_POPUP        0x80000000L
+#define WS_VISIBLE      0x10000000L
+#define WS_DLGFRAME     0x00400000L
+#define WS_CAPTION      0x00C00000L
+#define WS_SYSMENU      0x00080000L
+
+// Window class styles
+#define CS_HREDRAW      0x0002
+#define CS_VREDRAW      0x0001
+#define CS_DBLCLKS      0x0008
+
+// GDI constants
+#define SRCCOPY         0x00CC0020
+#define BLACK_BRUSH     4
+
+// System metrics constants
+#define SM_CXSCREEN     0
+#define SM_CYSCREEN     1
+
+// Image loading constants
+#define IMAGE_BITMAP    0
+#define LR_SHARED       0x8000
+#define LR_LOADFROMFILE 0x0010
+
+// Exception handling constants
+#define EXCEPTION_EXECUTE_HANDLER 1
+
+// ShowWindow constants
+#define SW_RESTORE      9
+
+// Resource macros
+#define MAKEINTRESOURCE(i) ((LPCSTR)((ULONG_PTR)((WORD)(i))))
+
+// Text macro for Unicode/ANSI compatibility
+#define TEXT(quote) quote
+
+// Extended window styles
+#define WS_EX_TOPMOST   0x00000008L
+
+// Window positioning constants
+#define HWND_TOP        ((HWND)0)
+
+// Windows message structure
+typedef struct tagMSG {
+    HWND hwnd;
+    UINT message;
+    WPARAM wParam;
+    LPARAM lParam;
+    DWORD time;
+    POINT pt;
+} MSG, *PMSG, *LPMSG;
+
+// Additional Windows functions
+inline BOOL IsIconic(HWND hWnd) {
+    (void)hWnd;
+    return FALSE; // Stub: assume window is not minimized
+}
+
+inline BOOL PeekMessage(MSG* lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, UINT wRemoveMsg) {
+    (void)lpMsg; (void)hWnd; (void)wMsgFilterMin; (void)wMsgFilterMax; (void)wRemoveMsg;
+    return FALSE; // No messages pending
+}
+
+inline BOOL GetMessage(MSG* lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax) {
+    (void)lpMsg; (void)hWnd; (void)wMsgFilterMin; (void)wMsgFilterMax;
+    return FALSE; // No messages
+}
+
+inline BOOL TranslateMessage(const MSG* lpMsg) {
+    (void)lpMsg;
+    return TRUE;
+}
+
+inline LRESULT DispatchMessage(const MSG* lpMsg) {
+    (void)lpMsg;
+    return 0;
+}
+
+inline UINT SetErrorMode(UINT uMode) {
+    (void)uMode;
+    return 0; // Previous error mode
+}
+
+// Error mode constants
+#define SEM_FAILCRITICALERRORS 0x0001
+
+// MessageBox constants
+#define IDOK     1
+#define IDCANCEL 2
+#define IDABORT  3
+#define IDRETRY  4
+#define IDIGNORE 5
+#define IDYES    6
+#define IDNO     7
+
+// Security attributes placeholder
+typedef void* LPSECURITY_ATTRIBUTES;
+
+// Additional Windows API functions for SaveGame and GameEngine (only if not already defined)
+#ifndef MESSAGEBOX_DEFINED
+#define MESSAGEBOX_DEFINED
+inline int MessageBox(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType) {
+    printf("MessageBox: %s - %s\n", lpCaption ? lpCaption : "Alert", lpText ? lpText : "");
+    return IDOK;
+}
+
+inline int MessageBoxW(HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType) {
+    printf("MessageBoxW: Alert - (wide string message)\n");
+    return IDOK;
+}
+#endif
+
+#ifndef DELETEFILE_DEFINED
+#define DELETEFILE_DEFINED
+inline BOOL DeleteFile(LPCSTR lpFileName) {
+    return unlink(lpFileName) == 0 ? TRUE : FALSE;
+}
+#endif
+
+#ifndef CREATEDIRECTORY_DEFINED
+#define CREATEDIRECTORY_DEFINED
+inline BOOL CreateDirectory(LPCSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecurityAttributes) {
+    return mkdir(lpPathName, 0755) == 0 ? TRUE : FALSE;
+}
+#endif
+
+inline int _access(const char* path, int mode) {
+    return access(path, mode);
+}
+
+// COM module stub for non-Windows platforms
+class CComModule {
+public:
+    int Init(void* obj_map, HINSTANCE instance) { return 0; }
+    void Term() {}
+    HRESULT RegisterServer(BOOL bRegTypeLib = FALSE) { return S_OK; }
+    HRESULT UnregisterServer(BOOL bUnRegTypeLib = FALSE) { return S_OK; }
+};
+
+// COM object stub for non-Windows platforms
+template<typename T>
+class CComObject : public T {
+public:
+    CComObject() {}
+    virtual ~CComObject() {}
+};
 
 #endif // !_WIN32
 
