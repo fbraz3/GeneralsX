@@ -27,3 +27,4 @@ This project is a fork of the Command & Conquer Generals source code and its exp
 4. The game uses Windows Registry keys for configuration and settings storage. When porting to other platforms, these keys need to be replaced with equivalent configuration files or system settings.
 5. before finish a session, update the files `MACOS_PORT.md` and `NEXT_STEPS.md` with the progress made and the next steps to be taken.
 6. Commit and push changes before finish a session (and after changing markdown files from step 4).
+7. When compiling the project, try to use half of the available CPU cores to avoid overloading the system.

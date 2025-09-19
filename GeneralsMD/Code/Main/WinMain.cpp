@@ -34,6 +34,7 @@
 #define WIN32_LEAN_AND_MEAN  // only bare bones windows stuff wanted
 #include <windows.h>
 #include <stdlib.h>
+#include <string>
 #ifdef _WIN32
 #include <crtdbg.h>
 #include <eh.h>
@@ -955,3 +956,19 @@ GameEngine *CreateGameEngine( void )
 	return engine;
 
 }  // end CreateGameEngine
+
+#ifndef _WIN32
+// Cross-platform main function for non-Windows systems
+int main(int argc, char* argv[])
+{
+    // Convert command line arguments to Windows-style
+    std::string cmdLine;
+    for (int i = 1; i < argc; ++i) {
+        if (i > 1) cmdLine += " ";
+        cmdLine += argv[i];
+    }
+    
+    // Call WinMain with appropriate parameters
+    return WinMain(nullptr, nullptr, const_cast<char*>(cmdLine.c_str()), 1);
+}
+#endif

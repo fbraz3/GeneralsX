@@ -103,3 +103,5 @@ MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(ClassName, "PoolName")
 - `CMakePresets.json` - Build configurations (use "vc6" preset)
 
 **Debugging Tip**: Current errors focus on type redefinitions and missing forward declarations - check include order and conditional compilation guards first.
+
+**compilation tip**: When compiling the project, try to use half of the available CPU cores to avoid overloading the system.

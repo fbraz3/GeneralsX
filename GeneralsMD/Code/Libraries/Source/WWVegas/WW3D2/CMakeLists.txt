@@ -231,6 +231,8 @@ set(WW3D2_SRC
     #ww3dformat.h
     #ww3dids.h
     #ww3dtrig.h
+    # Cross-platform stub implementations
+    ../../../../../../Core/Libraries/Source/WWVegas/WW3D2/cross_platform_stubs.cpp
 )
 
 add_library(z_ww3d2 STATIC)

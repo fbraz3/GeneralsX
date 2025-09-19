@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cmath>
 #include <cstddef>
+#include <string>
 #include <unistd.h>
 
 #ifndef WIN32_COMPAT_H_INCLUDED
@@ -35,6 +36,14 @@ typedef unsigned char BYTE;
 #endif
 #ifndef __int64
 typedef long long __int64;
+#endif
+
+// Boolean constants
+#ifndef TRUE
+#define TRUE 1
+#endif
+#ifndef FALSE
+#define FALSE 0
 #endif
 
 // Microsoft compiler attributes compatibility
@@ -117,6 +126,8 @@ typedef struct {
 
 // Locale constants
 #define LOCALE_SYSTEM_DEFAULT 0x0800
+
+// Registry API compatibility - see windows.h for implementations
 
 // Date/Time format constants
 #define DATE_SHORTDATE 0x00000001
@@ -2171,6 +2182,79 @@ public:
     CComObject() {}
     virtual ~CComObject() {}
 };
+
+#endif // !_WIN32
+
+// Cross-platform symbol implementations for undefined symbols
+#ifndef _WIN32
+
+// Global variables needed for linking
+// Note: g_LastErrorDump is declared in GeneralsMD/Code/GameEngine/Include/Common/StackDump.h
+// as AsciiString, not char array
+// char g_LastErrorDump[4096];
+
+// Forward declaration for WebBrowser class
+class WebBrowser;
+extern WebBrowser* TheWebBrowser;
+
+// Forward declaration for StringClass (defined in wwstring.h)
+class StringClass;
+
+// Registry functions - for StringClass-dependent functions, include wwstring.h first
+// Note: Real implementations are in WWDownload/Registry.h
+
+// Remove stub functions that conflict with real implementations
+// GetStringFromRegistry and SetStringInRegistry are implemented in Registry.h
+
+// Registry helper functions not covered by Registry.h
+inline bool GetRegistryKeyExists(const std::string& path, const std::string& key) {
+    // Stub for checking if key exists
+    return false;
+}
+
+// Note: SetUnsignedIntInRegistry and GetUnsignedIntFromRegistry are implemented in Registry.h
+
+inline bool GetStringFromGeneralsRegistry(const std::string& path, const std::string& key, std::string& val) {
+    // This function should use the real Registry.h implementation
+    extern bool GetStringFromRegistry(std::string path, std::string key, std::string& val);
+    return GetStringFromRegistry(path, key, val);
+}
+
+// Debug/Stack trace functions
+inline void FillStackAddresses(void** addresses, unsigned int maxDepth, unsigned int skipFrames) {
+    for (unsigned int i = 0; i < maxDepth; i++) {
+        addresses[i] = nullptr;
+    }
+}
+
+inline void StackDumpFromAddresses(void** addresses, unsigned int count, void (*output)(const char*)) {
+    if (output) {
+        output("Stack dump not available on this platform\n");
+    }
+}
+
+// Stub class implementations  
+// Note: RegistryClass is defined in registry.h - no need to redefine here
+
+// Note: W3DRendererAdapter is a real class in Core/Libraries/Include/GraphicsAPI/W3DRendererAdapter.h
+// Removed stub namespace to avoid conflicts
+
+// Note: All stub class implementations removed - using real implementations from GameEngine
+
+// Cross-platform function stubs for functions referenced but not found
+#ifndef _WIN32
+
+// Global error dump variable (used in Debug.cpp)
+// extern char g_LastErrorDump[4096];  // Commented out to avoid type conflict with AsciiString version
+
+// Registry language function stub - forward declaration
+// Implementation should be in GeneralsMD/Code/GameEngine/Source/Common/System/registry.cpp
+AsciiString GetRegistryLanguage(void);
+
+// Generals-specific registry function stub  
+bool GetStringFromGeneralsRegistry(AsciiString section, AsciiString key, AsciiString& value);
+
+#endif // !_WIN32
 
 #endif // !_WIN32
 
