@@ -119,18 +119,7 @@ inline Real maxf(Real a, Real b) { if (a > b) return a; else return b; }
 //-------------------------------------------------------------------------------------------------
 static void normAngle(Real &angle)
 {
-	if (angle < -10*PI) {
-		angle = 0;
-	}
-	if (angle > 10*PI) {
-		angle = 0;
-	}
-	while (angle < -PI) {
-		angle += 2*PI;
-	}
-	while (angle > PI) {
-		angle -= 2*PI;
-	}
+	angle = WWMath::Normalize_Angle(angle);
 }
 
 #define TERRAIN_SAMPLE_SIZE 40.0f
@@ -445,13 +434,9 @@ void W3DView::buildCameraTransform( Matrix3D *transform )
 						// WST 10.22.2002. Update the Listener positions used by audio system
 						//--------------------------------------------------------------------
 						Vector3 position = transform->Get_Translation();
-						m_pos.x = position.X;
-						m_pos.y = position.Y;
-						m_pos.z = position.Z;
-
-
-						//DEBUG_LOG(("mpos x%f, y%f, z%f", m_pos.x, m_pos.y, m_pos.z ));
-
+						Coord3D coord;
+						coord.set(position.X, position.Y, position.Z);
+						View::setPosition(&coord);
 						break;
 					}
 				}
@@ -1919,7 +1904,7 @@ void W3DView::setAngleAndPitchToDefault( void )
 	// call our base class, we are adding functionality
 	View::setAngleAndPitchToDefault();
 
-	this->m_FXPitch = 1.0;
+	m_FXPitch = 1.0;
 
 	// set the camera
 	setCameraTransform();
@@ -1941,19 +1926,7 @@ void W3DView::setDefaultView(Real pitch, Real angle, Real maxHeight)
 //-------------------------------------------------------------------------------------------------
 void W3DView::setHeightAboveGround(Real z)
 {
-	m_heightAboveGround = z;
-
-  // if our zoom is limited, we will stay within a predefined distance from the terrain
-	if( m_zoomLimited )
-	{
-
-		if (m_heightAboveGround < m_minHeightAboveGround)
-			m_heightAboveGround = m_minHeightAboveGround;
-
-		if (m_heightAboveGround > m_maxHeightAboveGround)
-			m_heightAboveGround = m_maxHeightAboveGround;
-
-	}
+	View::setHeightAboveGround(z);
 
 	m_doingMoveCameraOnWaypointPath = false;
 	m_CameraArrivedAtWaypointOnPathFlag = false;
