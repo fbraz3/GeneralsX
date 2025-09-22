@@ -27,6 +27,25 @@ cmake --build build/vc6 --target g_generals  # Secondary (5 errors)
 cmake --build build/vc6 --target ww3d2 wwlib wwmath
 ```
 
+### Running & Debugging with Game Assets
+**Asset Setup**: Game requires original Command & Conquer assets to run properly
+```bash
+# Setup assets directory (one-time setup)
+mkdir -p $HOME/Downloads/generals
+cp ./build/vc6/GeneralsMD/generalszh $HOME/Downloads/generals/
+
+# Copy game assets (Data/, Maps/, etc.) to $HOME/Downloads/generals/
+# Assets from original game installation required for proper initialization
+
+# Debug with lldb (recommended for crash investigation)
+cd $HOME/Downloads/generals && lldb -s /Users/felipebraz/PhpstormProjects/pessoal/GeneralsGameCode/scripts/debug_script.lldb generalszh
+
+# Direct execution (shows printf debug output)
+cd $HOME/Downloads/generals && ./generalszh
+```
+
+**Debug Workflow**: Always test in asset-rich environment for accurate debugging
+
 ### Cross-Platform Compatibility Strategy
 **Essential Pattern**: `#ifdef _WIN32` conditional compilation throughout
 - Windows APIs isolated in `win32_compat.h` 

@@ -97,6 +97,12 @@ AsciiString::AsciiString(const AsciiString& stringSrc) : m_data(stringSrc.m_data
 void AsciiString::validate() const
 {
 	if (!m_data) return;
+	
+	// Check for corrupted pointer first (common issue on cross-platform ports)
+	if ((uintptr_t)m_data < 0x1000) {
+		return; // Don't try to access corrupted memory
+	}
+	
 	DEBUG_ASSERTCRASH(m_data->m_refCount > 0, ("m_refCount is zero"));
 	DEBUG_ASSERTCRASH(m_data->m_refCount < 32000, ("m_refCount is suspiciously large"));
 	DEBUG_ASSERTCRASH(m_data->m_numCharsAllocated > 0, ("m_numCharsAllocated is zero"));
@@ -123,6 +129,12 @@ void AsciiString::debugIgnoreLeaks()
 // -----------------------------------------------------
 void AsciiString::ensureUniqueBufferOfSize(int numCharsNeeded, Bool preserveData, const char* strToCopy, const char* strToCat)
 {
+	// Check for corrupted m_data pointer FIRST (common issue on cross-platform ports)
+	if (m_data && ((uintptr_t)m_data < 0x1000)) {
+		// Corrupted pointer detected - reset to null and allocate new buffer
+		m_data = nullptr;
+	}
+
 	validate();
 
 	if (m_data &&

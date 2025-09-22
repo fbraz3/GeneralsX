@@ -1,0 +1,6 @@
+# LLDB debug script for GeneralsX debugging
+# Usage: cd $HOME/Downloads/generals && lldb -s scripts/debug_script.lldb generalszh
+
+run
+bt
+exit
