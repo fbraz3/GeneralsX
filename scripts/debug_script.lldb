@@ -1,6 +1,21 @@
 # LLDB debug script for GeneralsX debugging
 # Usage: cd $HOME/Downloads/generals && lldb -s scripts/debug_script.lldb generalszh
 
+# Set up breakpoint for catching crashes
+breakpoint set --name main
 run
+
+# If we get here, check if process crashed or exited normally
+process status
+
+# Print backtrace if available
 bt
-exit
+
+# Print thread info
+thread list
+
+# If process is still running, continue and let it finish
+continue
+
+# Exit LLDB automatically
+quit

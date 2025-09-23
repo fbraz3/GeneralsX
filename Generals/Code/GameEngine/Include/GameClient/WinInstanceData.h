@@ -193,14 +193,14 @@ inline UnicodeString WinInstanceData::getTooltipText( void )
 {
 	if( m_tooltip )
 		return m_tooltip->getText();
-	return UnicodeString::TheEmptyString;
+	return UnicodeString::getEmptyString();
 
 }
 inline UnicodeString WinInstanceData::getText( void )
 {
 	if( m_text )
 		return m_text->getText();
-	return UnicodeString::TheEmptyString;
+	return UnicodeString::getEmptyString();
 }
 inline Int WinInstanceData::getTextLength( void )
 {

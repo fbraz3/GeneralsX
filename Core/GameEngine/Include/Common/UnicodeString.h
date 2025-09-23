@@ -131,7 +131,8 @@ public:
 		string, so we don't need to construct temporaries
 		for such a common thing.
 	*/
-	static UnicodeString TheEmptyString;
+	static const UnicodeString& getEmptyString();
+	static UnicodeString TheEmptyString; // Deprecated - use getEmptyString() instead
 
 	/**
 		Default constructor -- construct a new, empty UnicodeString.
@@ -306,7 +307,7 @@ public:
 		token was found. (note that this modifies 'this' as well, stripping
 		the token off!)
 	*/
-	Bool nextToken(UnicodeString* token, UnicodeString delimiters = UnicodeString::TheEmptyString);
+	Bool nextToken(UnicodeString* token, UnicodeString delimiters = UnicodeString::getEmptyString());
 
 //
 // You might think it would be a good idea to overload the * operator

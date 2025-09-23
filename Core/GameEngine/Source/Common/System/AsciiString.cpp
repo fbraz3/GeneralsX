@@ -49,7 +49,13 @@
 
 // -----------------------------------------------------
 
-/*static*/ AsciiString AsciiString::TheEmptyString;
+/*static*/ const AsciiString& AsciiString::getEmptyString()
+{
+    static AsciiString TheEmptyString;
+    return TheEmptyString;
+}
+
+/*static*/ AsciiString AsciiString::TheEmptyString = AsciiString::getEmptyString();
 
 //-----------------------------------------------------------------------------
 inline char* skipSeps(char* p, const char* seps)

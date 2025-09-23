@@ -201,7 +201,11 @@ LogClass BonePosLog("bonePositions.txt");
 //-------------------------------------------------------------------------------------------------
 
 #if defined(RTS_DEBUG) || defined(DEBUG_CRASHING)
-extern AsciiString TheThingTemplateBeingParsedName;
+#if defined(RTS_DEBUG) || defined(DEBUG_CRASHING)
+// Function to get the thing template name being parsed (lazy initialization)
+AsciiString& getThingTemplateBeingParsedName();
+#define TheThingTemplateBeingParsedName getThingTemplateBeingParsedName()
+#endif
 #endif
 
 #if defined(RTS_DEBUG)

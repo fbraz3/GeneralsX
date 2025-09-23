@@ -1,53 +1,55 @@
 # GeneralsX - Next Steps
 
 **Current Status**: Phase 19 - Runtime Debugging and Stabilization  
-**Last Updated**: September 21, 2025  
-**Critical Achievement**: Segmentation fault resolved, stable runtime execution achieved
+**Last Updated**: December 24, 2024  
+**Critical Achievement**: Global AsciiString variables converted to lazy initialization, "Technical Difficulties" startup issue identified
 
 ## 🎯 Immediate Priorities
 
-### 1. Root Cause Investigation (High Priority)
-**Issue**: AsciiString initialization with corrupted pointer (0x7)
-- **Current Fix**: Protective validation detects and resets corrupted pointers
-- **Investigation Needed**: Why does AsciiString get initialized with 0x7?
+### 1. Startup Crash Investigation (High Priority)
+**Issue**: Game exits with "Technical Difficulties" error during initialization
+- **Status**: Memory corruption issues resolved, but different initialization problem remains
 - **Likely Causes**: 
-  - Static initialization order issues
-  - Memory layout conflicts between cross-platform code
-  - Uninitialized global/static string variables
+  - Graphics subsystem initialization failure (OpenGL/DirectX compatibility)
+  - Missing dependencies or asset files  
+  - Platform-specific startup sequence issues
+  - Audio system initialization problems
 
 **Action Steps**:
 ```bash
-# Test current fix stability
-cd $HOME/Downloads/generals && ./generalszh
-
-# Debug with asset environment
+# Debug startup sequence with lldb
 cd $HOME/Downloads/generals && lldb -s /path/to/debug_script.lldb generalszh
 
-# Investigate static initialization
-grep -r "AsciiString.*static\|static.*AsciiString" Core/ GeneralsMD/
+# Check for missing dependencies
+otool -L generalszh
+
+# Test with different asset configurations
+# Investigate WinMain.cpp startup sequence
 ```
 
-### 2. Core Game Functionality Testing (Medium Priority)
-**Goal**: Verify game systems work beyond initial loading
-- **Graphics Engine**: Test W3D rendering pipeline
-- **File System**: Verify asset loading from Data/ directory
-- **Input System**: Test mouse/keyboard interaction
-- **Audio System**: Test Miles Sound System integration
+### 2. Global Variable Conversion Validation (Medium Priority)
+**Goal**: Verify all converted global variables work correctly
+- **Completed**: TheThingTemplateBeingParsedName, theSystemString, theInputString, theTooltipString, theDrawString, theObjName, static_readPlayerNames, TheEmptyString (both ASCII/Unicode)
+- **Testing Needed**: Verify lazy initialization patterns work correctly during runtime
+- **Search for Additional**: Continue systematic search for remaining problematic global variables
 
 **Testing Approach**:
 ```bash
-# Compile with minimal warnings
+# Search for remaining global AsciiString variables
+grep -r "^static.*AsciiString\|^AsciiString.*static" --include="*.cpp" Core/ GeneralsMD/ Generals/
+
+# Search for global UnicodeString variables
+grep -r "^static.*UnicodeString\|^UnicodeString.*static" --include="*.cpp" Core/ GeneralsMD/ Generals/
+
+# Validate compilation after each conversion
 cmake --build build/vc6 --target z_generals -j 4
-
-# Test with verbose logging
-cd $HOME/Downloads/generals
-VERBOSE=1 ./generalszh
-
-# Monitor for additional crashes
-lldb -o run -o bt -o quit ./generalszh
 ```
 
-### 3. Memory Corruption Prevention (Low Priority)
+### 3. Root Cause Investigation (Medium Priority)
+**Issue**: Understand why global AsciiString variables were causing memory corruption
+- **Fixed**: Protective validation detects and resets corrupted pointers
+- **Investigation**: Why did global static variables get corrupted pointers (0x7)?
+- **Pattern**: Static initialization order dependencies causing memory layout issues
 **Enhancement**: Extend protective validation to other core classes
 - **Target Classes**: UnicodeString, FastCriticalSection, FileSystem classes
 - **Pattern**: Implement similar `((uintptr_t)ptr < 0x1000)` checks

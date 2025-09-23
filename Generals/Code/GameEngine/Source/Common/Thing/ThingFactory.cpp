@@ -359,7 +359,12 @@ Drawable *ThingFactory::newDrawable(const ThingTemplate *tmplate, DrawableStatus
 }  // end newDrawableByType
 
 #if defined(RTS_DEBUG) || defined(DEBUG_CRASHING)
-AsciiString TheThingTemplateBeingParsedName;
+// Lazy initialization function to avoid global constructor issues
+AsciiString& getThingTemplateBeingParsedName()
+{
+	static AsciiString TheThingTemplateBeingParsedName;
+	return TheThingTemplateBeingParsedName;
+}
 #endif
 
 //-------------------------------------------------------------------------------------------------
@@ -368,7 +373,7 @@ AsciiString TheThingTemplateBeingParsedName;
 /*static*/ void ThingFactory::parseObjectDefinition( INI* ini, const AsciiString& name, const AsciiString& reskinFrom )
 {
 #if defined(RTS_DEBUG) || defined(DEBUG_CRASHING)
-	TheThingTemplateBeingParsedName = name;
+	getThingTemplateBeingParsedName() = name;
 #endif
 
 	// find existing item if present
@@ -422,7 +427,7 @@ AsciiString TheThingTemplateBeingParsedName;
 	thingTemplate->validate();
 
 #if defined(RTS_DEBUG) || defined(DEBUG_CRASHING)
-	TheThingTemplateBeingParsedName.clear();
+	getThingTemplateBeingParsedName().clear();
 #endif
 }
 

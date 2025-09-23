@@ -420,7 +420,11 @@ SidesInfo *SidesList::findSkirmishSideInfo(AsciiString name, Int* index /*= NULL
 	return NULL;
 }
 
-static AsciiString static_readPlayerNames[MAX_PLAYER_COUNT];
+// Lazy-initialized static array to avoid global constructor issues
+static AsciiString* getStaticReadPlayerNames() {
+	static AsciiString static_readPlayerNames[MAX_PLAYER_COUNT];
+	return static_readPlayerNames;
+}
 
 /**
 * ParsePlayersDataChunk - read players names data chunk.
@@ -434,7 +438,7 @@ static Bool ParsePlayersDataChunk(DataChunkInput &file, DataChunkInfo *info, voi
 	Int i;
 	for (i=0; i<numNames; i++) {
 		if (i>=MAX_PLAYER_COUNT) break;
-		static_readPlayerNames[i] = file.readAsciiString();
+		getStaticReadPlayerNames()[i] = file.readAsciiString();
 	}
 	DEBUG_ASSERTCRASH(file.atEndOfChunk(), ("Unexpected data left over."));
 	return true;
@@ -528,7 +532,7 @@ void SidesList::prepareForMP_or_Skirmish(void)
 					Int j;
 					for (j=0; j<m_numSkirmishSides; j++) {
  						AsciiString name = getSkirmishSideInfo(j)->getDict()->getAsciiString(TheKey_playerName);
-						if (name == static_readPlayerNames[i]) {
+						if (name == getStaticReadPlayerNames()[i]) {
 							curSide = j;
 							break;
 						}
@@ -543,7 +547,7 @@ void SidesList::prepareForMP_or_Skirmish(void)
 					scripts[i] = NULL;
 				}
 				for (i=0; i<MAX_PLAYER_COUNT; i++) {
-					static_readPlayerNames[i].clear();
+					getStaticReadPlayerNames()[i].clear();
 				}
 		}
 

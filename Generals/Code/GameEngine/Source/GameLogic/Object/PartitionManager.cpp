@@ -2134,7 +2134,12 @@ void PartitionData::invalidateShroudedStatusForAllPlayers()
 }
 
 #if defined(RTS_DEBUG)
-static AsciiString theObjName;
+static AsciiString& getObjName()
+{
+    static AsciiString theObjName;
+    return theObjName;
+}
+#define theObjName getObjName()
 #endif
 
 //-----------------------------------------------------------------------------
