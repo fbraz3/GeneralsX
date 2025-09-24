@@ -763,7 +763,22 @@ void GameEngine::init()
 
 
 
-		initSubsystem(TheThingFactory,"TheThingFactory", createThingFactory(), &xferCRC, "Data\\INI\\Default\\Object.ini", NULL, "Data\\INI\\Object");
+		printf("GameEngine::init() - About to initialize TheThingFactory\n");
+		fflush(stdout);
+		
+		try {
+			initSubsystem(TheThingFactory,"TheThingFactory", createThingFactory(), &xferCRC, "Data\\INI\\Default\\Object.ini", NULL, "Data\\INI\\Object");
+			printf("GameEngine::init() - TheThingFactory initialized successfully\n");
+			fflush(stdout);
+		} catch (const std::exception& e) {
+			printf("GameEngine::init() - Exception during TheThingFactory init: %s\n", e.what());
+			fflush(stdout);
+			throw;
+		} catch (...) {
+			printf("GameEngine::init() - Unknown exception during TheThingFactory init\n");
+			fflush(stdout);
+			throw;
+		}
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////

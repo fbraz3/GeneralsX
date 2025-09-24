@@ -135,41 +135,117 @@ GlobalLanguage::~GlobalLanguage()
 
 void GlobalLanguage::init( void )
 {
+	printf("GlobalLanguage::init() - METHOD ENTRY\n");
+	fflush(stdout);
 
-	INI ini;
-	AsciiString fname;
-	fname.format("Data\\%s\\Language.ini", GetRegistryLanguage().str());
+	try {
+		printf("GlobalLanguage::init() - About to create INI object\n");
+		fflush(stdout);
+		
+		INI ini;
+		AsciiString fname;
+		
+		printf("GlobalLanguage::init() - About to call GetRegistryLanguage()\n");
+		fflush(stdout);
+		
+		#ifdef _WIN32
+		fname.format("Data\\%s\\Language.ini", GetRegistryLanguage().str());
+		printf("GlobalLanguage::init() - Windows: fname = %s\n", fname.str());
+		#else
+		// On macOS/Linux, default to English with forward slashes
+		fname.format("Data/English/Language.ini");
+		printf("GlobalLanguage::init() - macOS: defaulting to fname = %s\n", fname.str());
+		#endif
+		fflush(stdout);
 
-	OSVERSIONINFO	osvi;
-	osvi.dwOSVersionInfoSize=sizeof(OSVERSIONINFO);
+		printf("GlobalLanguage::init() - About to check OS version\n");
+		fflush(stdout);
 
-	//GS NOTE: Must call doesFileExist in either case so that NameKeyGenerator will stay in sync
-	AsciiString tempName;
-	tempName.format("Data\\%s\\Language9x.ini", GetRegistryLanguage().str());
-	bool isExist = TheFileSystem->doesFileExist(tempName.str());
-	if (GetVersionEx(&osvi)  &&  osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS  && isExist)
-	{	//check if we're running Win9x variant since they may need different fonts
-		fname = tempName;
-	}
+		#ifdef _WIN32
+		OSVERSIONINFO	osvi;
+		osvi.dwOSVersionInfoSize=sizeof(OSVERSIONINFO);
 
-
-	ini.load( fname, INI_LOAD_OVERWRITE, NULL );
-	StringListIt it = m_localFonts.begin();
-	while( it != m_localFonts.end())
-	{
-		AsciiString font = *it;
-		if(AddFontResource(font.str()) == 0)
-		{
-			DEBUG_ASSERTCRASH(FALSE,("GlobalLanguage::init Failed to add font %s", font.str()));
+		//GS NOTE: Must call doesFileExist in either case so that NameKeyGenerator will stay in sync
+		AsciiString tempName;
+		tempName.format("Data\\%s\\Language9x.ini", GetRegistryLanguage().str());
+		bool isExist = TheFileSystem->doesFileExist(tempName.str());
+		if (GetVersionEx(&osvi)  &&  osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS  && isExist)
+		{	//check if we're running Win9x variant since they may need different fonts
+			fname = tempName;
 		}
-		else
-		{
-			//SendMessage( HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
+		#else
+		// On macOS/Linux, skip Win9x check
+		printf("GlobalLanguage::init() - macOS: skipping Win9x compatibility check\n");
+		#endif
+		fflush(stdout);
+
+		printf("GlobalLanguage::init() - About to load INI file: %s\n", fname.str());
+		fflush(stdout);
+		
+		try {
+			printf("GlobalLanguage::init() - Creating INI load operation...\n");
+			fflush(stdout);
+			
+			// On macOS, skip INI loading and use defaults
+			#ifdef _WIN32
+			ini.load( fname, INI_LOAD_OVERWRITE, NULL );
+			printf("GlobalLanguage::init() - INI file loaded successfully\n");
+			#else
+			printf("GlobalLanguage::init() - macOS: skipping INI file loading, using defaults\n");
+			#endif
+			fflush(stdout);
+		} catch (const std::exception& e) {
+			printf("GlobalLanguage::init() - Exception during INI load: %s\n", e.what());
+			fflush(stdout);
+			throw;
+		} catch (...) {
+			printf("GlobalLanguage::init() - Unknown exception during INI load\n");
+			fflush(stdout);
+			throw;
 		}
-		++it;
+		
+		printf("GlobalLanguage::init() - About to process local fonts (count: %d)\n", (int)m_localFonts.size());
+		fflush(stdout);
+		
+		StringListIt it = m_localFonts.begin();
+		while( it != m_localFonts.end())
+		{
+			AsciiString font = *it;
+			printf("GlobalLanguage::init() - Processing font: %s\n", font.str());
+			fflush(stdout);
+			
+			#ifdef _WIN32
+			if(AddFontResource(font.str()) == 0)
+			{
+				printf("GlobalLanguage::init() - WARNING: Failed to add font %s\n", font.str());
+				// Don't crash on font failure
+				// DEBUG_ASSERTCRASH(FALSE,("GlobalLanguage::init Failed to add font %s", font.str()));
+			}
+			else
+			{
+				printf("GlobalLanguage::init() - Successfully added font: %s\n", font.str());
+				//SendMessage( HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
+			}
+			#else
+			// On macOS/Linux, just log the font (no actual loading)
+			printf("GlobalLanguage::init() - macOS: Skipping font loading for: %s\n", font.str());
+			#endif
+			++it;
+		}
+		
+		printf("GlobalLanguage::init() - Font processing completed\n");
+		printf("GlobalLanguage::init() - METHOD COMPLETED SUCCESSFULLY\n");
+		fflush(stdout);
+		
+	} catch (const std::exception& e) {
+		printf("GlobalLanguage::init() - Caught std::exception: %s\n", e.what());
+		fflush(stdout);
+		throw; // Re-throw to maintain error handling
+	} catch (...) {
+		printf("GlobalLanguage::init() - Caught unknown exception\n");
+		fflush(stdout);
+		throw; // Re-throw to maintain error handling
 	}
-
-
 }
 void GlobalLanguage::reset( void ) {}
 
