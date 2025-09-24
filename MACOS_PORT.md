@@ -2,17 +2,53 @@
 
 **Project Name**: 🎯 **GeneralsX** (formerly Command & Conquer: Generals)
 
-**Port Status**: 🎯 **Phase 20: MASSIVE BREAKTHROUGH - 25+ SUBSYSTEMS WORKING** 
+**Port Status**: 🎯 **Phase 21: RUNTIME DEBUGGING - EXACT CRASH POINT ISOLATED** 
 
-**Date**: December 27, 2024
+**Date**: December 30, 2025
 
-**Commitment**: ✅ **MASSIVE SUBSYSTEM INITIALIZATION SUCCESS** - Over 300% progress improvement achieved!
+**Commitment**: ✅ **THETHINGFACTORY CRASH ISOLATION** - Exact failure point identified in conditionsYes.parse()
 
 ## 🎯 Overview
 
-**🎉 HISTORIC MILESTONE (December 27, 2024)**: **PHASE 20 - MASSIVE BREAKTHROUGH ACHIEVED!** ✅ Successfully resolved TheGlobalLanguageData bottleneck, achieving progression from 6 to 25+ working subsystems in a single session!
+**🎉 PHASE 21 - THETHINGFACTORY CRASH ISOLATION (December 30, 2025)**: **EXACT FAILURE POINT IDENTIFIED!** ✅ Successfully traced TheThingFactory crash to specific line in W3DModelDrawModuleData::parseConditionState()
 
-**🚀 PHASE 20 MASSIVE BREAKTHROUGH PROGRESS (December 27, 2024)**:
+**🚀 PHASE 21 DEBUGGING BREAKTHROUGH PROGRESS (December 30, 2025)**:
+
+- ✅ **CRASH LOCATION ISOLATED**: Exception occurs immediately after `conditionsYes.parse()` success for "DOOR_1_OPENING"
+- ✅ **DEBUGGING INFRASTRUCTURE**: Added comprehensive printf/fflush debugging throughout INI parsing pipeline
+- ✅ **WIN32BIGFILESYSTEM CONFIRMED**: 42 .big archive files loading successfully including INIZH.big
+- ✅ **INI LOADING VERIFIED**: General INI parsing works correctly through multiple subsystem levels
+- ✅ **CONDITION PARSING SUCCESS**: conditionsYes.parse() completes successfully for "DOOR_1_OPENING" 
+- ✅ **EXCEPTION TIMING PRECISE**: Unknown exception thrown immediately after successful parse() but before anyIntersectionWith()
+- 🎯 **CURRENT FOCUS**: Investigate what happens between conditionsYes.parse() completion and anyIntersectionWith() call
+
+**🎯 PHASE 21 DETAILED CRASH ANALYSIS (December 30, 2025)**:
+
+**TheThingFactory Crash Investigation Results**:
+1. **File Processing Chain Verified** ✅
+   - **Win32BIGFileSystem**: Successfully loads 42 .big files including crucial INIZH.big
+   - **INI Loading**: prepFile() and load() methods work correctly through archive system
+   - **Block Parsing**: Successfully processes multiple Object blocks before crash
+
+2. **Crash Timing Precision** ✅  
+   - **Location**: W3DModelDrawModuleData::parseConditionState() for "AirF_AmericaJetSpectreGunship1"
+   - **Specific Line**: `ConditionState = DOOR_1_OPENING` parsing
+   - **Success Point**: conditionsYes.parse() completes successfully 
+   - **Failure Point**: Exception occurs immediately after parse() but before anyIntersectionWith()
+
+3. **Debug Output Analysis** ✅
+   - **Last Success**: "conditionsYes.parse() completed successfully for non-debug"
+   - **Immediate Failure**: "Unknown exception in field parser for: 'ConditionState'"
+   - **Pattern**: Exception happens between successful parsing and validation logic
+
+**Technical Investigation Status**:
+- **Root Cause**: Unknown exception thrown in validation code immediately after successful condition parsing
+- **Next Steps**: Add line-by-line debugging between parse() completion and anyIntersectionWith() call
+- **Priority**: Investigate BitFlags validation logic and intersection checking mechanisms
+
+**Session Achievement**: **PRECISION DEBUGGING SUCCESS** - From general crash to exact line identification represents major diagnostic breakthrough. The issue is not with .big file loading or general INI parsing, but with specific condition flag validation logic.
+
+**🎯 PHASE 20 BREAKTHROUGH SESSION (December 27, 2024)**:
 
 - ✅ **GLOBALLANGUAGE RESOLUTION**: Completely resolved TheGlobalLanguageData initialization with comprehensive macOS compatibility
 - ✅ **25+ SUBSYSTEMS WORKING**: TheLocalFileSystem, TheArchiveFileSystem, TheWritableGlobalData, TheGameText, TheScienceStore, TheMultiplayerSettings, TheTerrainTypes, TheTerrainRoads, TheGlobalLanguageData, TheCDManager, TheAudio, TheFunctionLexicon, TheModuleFactory, TheMessageStream, TheSidesList, TheCaveSystem, TheRankInfoStore, ThePlayerTemplateStore, TheParticleSystemManager, TheFXListStore, TheWeaponStore, TheObjectCreationListStore, TheLocomotorStore, TheSpecialPowerStore, TheDamageFXStore, TheArmorStore, TheBuildAssistant

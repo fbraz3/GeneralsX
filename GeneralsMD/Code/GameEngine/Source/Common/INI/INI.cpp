@@ -259,6 +259,9 @@ void INI::loadDirectory( AsciiString dirName, Bool subdirs, INILoadType loadType
 //-------------------------------------------------------------------------------------------------
 void INI::prepFile( AsciiString filename, INILoadType loadType )
 {
+	printf("INI::prepFile - METHOD ENTRY: %s\n", filename.str());
+	fflush(stdout);
+	
 	// if we have a file open already -- we can't do another one
 	if( m_file != NULL )
 	{
@@ -268,23 +271,39 @@ void INI::prepFile( AsciiString filename, INILoadType loadType )
 
 	}  // end if
 
+	printf("INI::prepFile - About to open file: %s\n", filename.str());
+	fflush(stdout);
+	
 	// open the file
 	m_file = TheFileSystem->openFile(filename.str(), File::READ);
 	if( m_file == NULL )
 	{
-
+		printf("INI::prepFile - ERROR: Failed to open file: %s\n", filename.str());
+		fflush(stdout);
 		DEBUG_CRASH(( "INI::load, cannot open file '%s'", filename.str() ));
 		throw INI_CANT_OPEN_FILE;
 
 	}  // end if
+	
+	printf("INI::prepFile - Successfully opened file: %s\n", filename.str());
+	fflush(stdout);
+
+	printf("INI::prepFile - Successfully opened file: %s\n", filename.str());
+	fflush(stdout);
 
 	m_file = m_file->convertToRAMFile();
+	
+	printf("INI::prepFile - File converted to RAM: %s\n", filename.str());
+	fflush(stdout);
 
 	// save our filename
 	m_filename = filename;
 
 	// save our load time
 	m_loadType = loadType;
+	
+	printf("INI::prepFile - METHOD COMPLETED: %s\n", filename.str());
+	fflush(stdout);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -346,10 +365,20 @@ static INIFieldParseProc findFieldParse(const FieldParse* parseTable, const char
 //-------------------------------------------------------------------------------------------------
 void INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 {
+	printf("INI::load - METHOD ENTRY: %s\n", filename.str());
+	fflush(stdout);
+	
 	setFPMode(); // so we have consistent Real values for GameLogic -MDC
 
 	s_xfer = pXfer;
+	
+	printf("INI::load - About to call prepFile: %s\n", filename.str());
+	fflush(stdout);
+	
 	prepFile(filename, loadType);
+	
+	printf("INI::load - prepFile completed, beginning file parsing: %s\n", filename.str());
+	fflush(stdout);
 
 	try
 	{
@@ -373,10 +402,25 @@ void INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 					#ifdef DEBUG_CRASHING
 					strcpy(m_curBlockStart, m_buffer);
 					#endif
+					printf("INI::load - About to parse block '%s' in file '%s'\n", token, m_filename.str());
+					fflush(stdout);
+					
 					try {
 						(*parse)( this );
+						printf("INI::load - Successfully parsed block '%s'\n", token);
+						fflush(stdout);
 
+					} catch (const std::exception& e) {
+						printf("INI::load - std::exception parsing block '%s': %s\n", token, e.what());
+						fflush(stdout);
+						DEBUG_CRASH(("Error parsing block '%s' in INI file '%s'", token, m_filename.str()) );
+						char buff[1024];
+						sprintf(buff, "Error parsing INI file '%s' (Line: '%s')\n", m_filename.str(), currentLine.str());
+
+						throw INIException(buff);
 					} catch (...) {
+						printf("INI::load - Unknown exception parsing block '%s' in file '%s'\n", token, m_filename.str());
+						fflush(stdout);
 						DEBUG_CRASH(("Error parsing block '%s' in INI file '%s'", token, m_filename.str()) );
 						char buff[1024];
 						sprintf(buff, "Error parsing INI file '%s' (Line: '%s')\n", m_filename.str(), currentLine.str());
@@ -397,9 +441,23 @@ void INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 			}  // end if
 
 		}  // end while
+		
+		printf("INI::load - File parsing completed successfully: %s\n", m_filename.str());
+		fflush(stdout);
+	}
+	catch (const std::exception& e)
+	{
+		printf("INI::load - std::exception caught during file parsing: %s - %s\n", m_filename.str(), e.what());
+		fflush(stdout);
+		unPrepFile();
+
+		// propagate the exception.
+		throw;
 	}
 	catch (...)
 	{
+		printf("INI::load - Unknown exception caught during file parsing: %s\n", m_filename.str());
+		fflush(stdout);
 		unPrepFile();
 
 		// propagate the exception.
@@ -407,6 +465,9 @@ void INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 	}
 
 	unPrepFile();
+	
+	printf("INI::load - METHOD COMPLETED SUCCESSFULLY: %s\n", m_filename.str());
+	fflush(stdout);
 
 }  // end load
 
@@ -1471,32 +1532,53 @@ void INI::initFromINIMultiProc( void *what, BuildMultiIniFieldProc proc )
 //-------------------------------------------------------------------------------------------------
 void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList )
 {
+	printf("INI::initFromINIMulti - METHOD ENTRY\n");
+	fflush(stdout);
+	
 	Bool done = FALSE;
 
 	if( what == NULL )
 	{
+		printf("INI::initFromINIMulti - ERROR: what is NULL\n");
+		fflush(stdout);
 		DEBUG_ASSERTCRASH( 0, ("INI::initFromINI - Invalid parameters supplied!") );
 		throw INI_INVALID_PARAMS;
 	}
 
 	// read each of the data fields
+	printf("INI::initFromINIMulti - About to enter parsing loop\n");
+	fflush(stdout);
+	
 	while( !done )
 	{
 
 		// read next line
+		printf("INI::initFromINIMulti - About to read line\n");
+		fflush(stdout);
+		
 		readLine();
+		
+		printf("INI::initFromINIMulti - Read line: '%s'\n", m_buffer);
+		fflush(stdout);
 
 		// check for end token
 		const char* field = strtok( m_buffer, INI::getSeps() );
 		if( field )
 		{
+			printf("INI::initFromINIMulti - Processing field: '%s'\n", field);
+			fflush(stdout);
 
 			if( stricmp( field, m_blockEndToken ) == 0 )
 			{
+				printf("INI::initFromINIMulti - Found end token, done\n");
+				fflush(stdout);
 				done = TRUE;
 			}
 			else
 			{
+				printf("INI::initFromINIMulti - Looking for field parser for: '%s'\n", field);
+				fflush(stdout);
+				
 				Bool found = false;
 				for (int ptIdx = 0; ptIdx < parseTableList.getCount(); ++ptIdx)
 				{
@@ -1505,15 +1587,28 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 					INIFieldParseProc parse = findFieldParse(parseTableList.getNthFieldParse(ptIdx), field, offset, userData);
 					if (parse)
 					{
+						printf("INI::initFromINIMulti - Found parser for field: '%s'\n", field);
+						fflush(stdout);
+						
 						// parse this block and check for parse errors
 						try {
 
 						(*parse)( this, what, (char *)what + offset + parseTableList.getNthExtraOffset(ptIdx), userData );
 
-						} catch (...) {
+						} catch (const std::exception& e) {
+							printf("INI::initFromINIMulti - std::exception in field parser: %s\n", e.what());
+							fflush(stdout);
 							DEBUG_CRASH( ("[LINE: %d - FILE: '%s'] Error reading field '%s' of block '%s'",
 																 INI::getLineNum(), INI::getFilename().str(), field, m_curBlockStart) );
 
+							char buff[1024];
+							sprintf(buff, "[LINE: %d - FILE: '%s'] Error reading field '%s'\n", INI::getLineNum(), INI::getFilename().str(), field);
+							throw INIException(buff);
+						} catch (...) {
+							printf("INI::initFromINIMulti - Unknown exception in field parser for: '%s'\n", field);
+							fflush(stdout);
+							DEBUG_CRASH( ("[LINE: %d - FILE: '%s'] Error reading field '%s' of block '%s'",
+																 INI::getLineNum(), INI::getFilename().str(), field, m_curBlockStart) );
 
 							char buff[1024];
 							sprintf(buff, "[LINE: %d - FILE: '%s'] Error reading field '%s'\n", INI::getLineNum(), INI::getFilename().str(), field);
@@ -1521,6 +1616,8 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 						}
 
 						found = true;
+						printf("INI::initFromINIMulti - Successfully parsed field: '%s'\n", field);
+						fflush(stdout);
 						break;
 
 					}
@@ -1528,8 +1625,10 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 
 				if (!found)
 				{
-					DEBUG_ASSERTCRASH( 0, ("[LINE: %d - FILE: '%s'] Unknown field '%s' in block '%s'",
-														 INI::getLineNum(), INI::getFilename().str(), field, m_curBlockStart) );
+					printf("INI::initFromINIMulti - ERROR: Unknown field '%s'\n", field);
+					fflush(stdout);
+					DEBUG_ASSERTCRASH( 0, ("[LINE: %d - FILE: '%s'] Unknown field '%s'",
+														 INI::getLineNum(), INI::getFilename().str(), field) );
 					throw INI_UNKNOWN_TOKEN;
 				}
 
@@ -1542,6 +1641,8 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 		{
 
 			done = TRUE;
+			printf("INI::initFromINIMulti - ERROR: Missing end token\n");
+			fflush(stdout);
 			DEBUG_ASSERTCRASH( 0, ("Error parsing block '%s', in INI file '%s'.  Missing '%s' token",
 												 m_curBlockStart, getFilename().str(), m_blockEndToken) );
 			throw INI_MISSING_END_TOKEN;
@@ -1549,6 +1650,9 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 		}  // end if
 
 	}  // end while
+	
+	printf("INI::initFromINIMulti - METHOD COMPLETED SUCCESSFULLY\n");
+	fflush(stdout);
 
 }
 

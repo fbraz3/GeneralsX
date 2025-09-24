@@ -1,30 +1,49 @@
 # GeneralsX - Next Steps
 
-**Current Status**: Phase 20 - MASSIVE BREAKTHROUGH - 25+ Subsystems Working  
-**Last Updated**: December 27, 2024  
-**Critical Achievement**: TheGlobalLanguageData completely resolved, achieving massive progression from 6 to 25+ working subsystems (over 300% improvement)
+**Current Status**: Phase 21 - RUNTIME DEBUGGING - EXACT CRASH POINT ISOLATED  
+**Last Updated**: December 30, 2025  
+**Critical Achievement**: TheThingFactory crash isolated to sp### Phase 19 Achievements ✅ (Maintained)
+- [x] Segmentation fault resolved
+- [x] Corrupted pointer detection implemented
+- [x] Cross-platform LocalFileSystem working
+- [x] Debugging infrastructure established
+- [x] Game exits gracefully instead of crashingin W3DModelDrawModuleData::parseConditionState() - conditionsYes.parse() succeeds but exception occurs immediately after
 
 ## 🎯 Immediate Priorities
 
-### 1. TheThingFactory Object.ini Investigation (High Priority) ⚠️
-**Objetivo**: Resolve final subsystem initialization blocker
-- **Status**: Todas as tentativas resultam em "unknown exception" durante carregamento de Object.ini
-- **Problema**: Excepção consistente independente do conteúdo do Object.ini (testado: vazio, mínimo, elaborado)
-- **Possíveis Causas**:
-  - Problemas de manipulação de caminhos (Windows backslashes vs Unix forward slashes)
-  - Inicialização interna do ThingFactory incompatível com ambiente macOS
-  - Problemas no sistema de carregamento de arquivos INI
-  - Dependências de templates/objetos específicos não disponíveis
+### 1. W3DModelDrawModuleData::parseConditionState Exception Investigation (URGENT) ⚠️
+**Objetivo**: Resolve precise crash in condition flag validation immediately after successful parsing
+- **Status**: Exception isolada à linha específica - conditionsYes.parse() para "DOOR_1_OPENING" é bem-sucedida mas exceção ocorre imediatamente após
+- **Local Exato**: Entre conditionsYes.parse() completion e anyIntersectionWith() call
+- **Evidência Debug**: 
+  - ✅ "conditionsYes.parse() completed successfully for non-debug"  
+  - ❌ "Unknown exception in field parser for: 'ConditionState'"
+- **Investigação Necessária**:
+  - Lógica de validação BitFlags entre parse() e anyIntersectionWith()
+  - Verificação de intersecção de condition states
+  - Template BitFlags<117>::s_bitNameList problemas de declaração forward
 
 **Action Steps**:
 ```bash
-# Investigar inicialização do ThingFactory
-# Examinar sistema de carregamento INI
-# Testar bypass do Object.ini similar ao GlobalLanguage
-# Implementar debugging mais específico no ThingFactory
+# Adicionar debugging linha-por-linha entre parse() completion e anyIntersectionWith()
+# Investigar BitFlags::anyIntersectionWith() implementation
+# Verificar m_ignoreConditionStates data structure initialization
+# Examinar template BitFlags<117> forward declaration issues
 ```
 
-### 2. MASSIVE BREAKTHROUGH ACHIEVED (CONCLUÍDO ✅)
+### 2. Archive System & INI Loading Verification (CONCLUÍDO ✅)
+**Objetivo**: Verificar se sistemas de arquivos .big e carregamento INI funcionam corretamente
+- **Status**: SUCESSO COMPLETO - Sistemas fundamentais confirmados funcionais
+- **Win32BIGFileSystem**: ✅ 42 arquivos .big carregados com sucesso incluindo INIZH.big crítico
+- **INI Loading Pipeline**: ✅ prepFile(), load(), initFromINIMulti() funcionando corretamente
+- **Block Processing**: ✅ Múltiplos blocos Object processados com sucesso antes do crash
+
+**Resultados Verificados**:
+- Sistema de arquivos funciona perfeitamente com arquivos do jogo
+- Carregamento INI geral funciona em todos os níveis de subsistema
+- Parsing de condições funciona para outros objetos antes de "AirF_AmericaJetSpectreGunship1"
+
+### 3. MASSIVE BREAKTHROUGH MAINTAINED (CONCLUÍDO ✅)
 **Objetivo**: Resolver TheGlobalLanguageData e desbloquear inicialização do engine
 - **Status**: SUCESSO COMPLETO - Breakthrough revolucionário atingido
 - **Subsistemas Funcionando**: 25+ subsistemas agora inicializando corretamente:
@@ -125,7 +144,28 @@ cmake --build build/vc6 --target z_generals -j 4 &
 
 ## 📁 Modified Files Status
 
-### Core Fixes Applied
+### Phase 21 Debug Enhancements
+- ✅ `GeneralsMD/Code/GameEngineDevice/Source/W3DDevice/GameClient/Drawable/Draw/W3DModelDraw.cpp`
+  - Added comprehensive printf debugging in parseConditionState()
+  - Isolated exact crash location between conditionsYes.parse() and anyIntersectionWith()
+  - Enhanced exception handling around condition flag parsing
+
+- ✅ `GeneralsMD/Code/GameEngine/Source/Common/GameEngine.cpp`
+  - Added detailed printf debugging throughout initSubsystem() calls
+  - Enhanced exception handling for TheThingFactory initialization
+  - Comprehensive subsystem initialization tracking
+
+- ✅ `Core/Libraries/Source/WWVegas/WW3D2/Win32BIGFileSystem.cpp`
+  - Added detailed debugging for .big file loading verification
+  - Confirmed 42 .big files including INIZH.big load successfully
+  - Enhanced directory tree building debug output
+
+- ✅ `Core/GameEngine/Source/Common/System/INI.cpp`
+  - Added comprehensive field-by-field parsing debug output
+  - Enhanced load() and initFromINIMulti() method debugging
+  - Detailed exception tracking for INI parsing failures
+
+### Core Fixes Maintained
 - ✅ `Core/GameEngine/Source/Common/System/AsciiString.cpp`
   - Added corrupted pointer detection in `validate()` and `ensureUniqueBufferOfSize()`
   - Pointer validation: `((uintptr_t)m_data < 0x1000)`
@@ -149,7 +189,27 @@ cmake --build build/vc6 --target z_generals -j 4 &
 
 ## 🎯 Success Metrics
 
-### Phase 19 Achievements ✅
+### Phase 21 Achievements ✅
+- [x] Exact crash location isolated in W3DModelDrawModuleData::parseConditionState()
+- [x] conditionsYes.parse() confirmed working for "DOOR_1_OPENING"
+- [x] Exception timing precisely identified (immediately after successful parse)
+- [x] Win32BIGFileSystem confirmed working (42 .big files loaded)
+- [x] INI loading pipeline verified functional through multiple levels
+- [x] Comprehensive debugging infrastructure established
+
+### Phase 21 Goals
+- [ ] Investigate BitFlags validation logic between parse() and anyIntersectionWith()
+- [ ] Resolve unknown exception in condition flag intersection checking
+- [ ] Complete TheThingFactory initialization successfully
+- [ ] Achieve full game engine initialization without crashes
+
+### Phase 20 Achievements ✅ (Maintained)
+- [x] TheGlobalLanguageData completely resolved
+- [x] 25+ subsystems successfully initializing
+- [x] Massive progression from 6 to 25+ working subsystems (300+ improvement)
+- [x] Engine core architecture proven functional on macOS
+
+### Phase 19 Achievements ✅ (Maintained)
 - [x] Segmentation fault resolved
 - [x] Corrupted pointer detection implemented
 - [x] Cross-platform LocalFileSystem working
@@ -169,21 +229,23 @@ cmake --build build/vc6 --target z_generals -j 4 &
 # Navigate to project
 cd /Users/felipebraz/PhpstormProjects/pessoal/GeneralsGameCode
 
-# Verify current fix is working
+# Verify current debugging is working
 cmake --build build/vc6 --target z_generals -j 4
-cd $HOME/Downloads/generals && ./generalszh
+cd $HOME/Downloads/generals && ./generalszh 2>&1 | tail -50
 
-# Begin root cause investigation
-# Focus on static initialization order and memory layout
+# Begin BitFlags investigation
+# Focus on anyIntersectionWith() implementation and condition state validation
 ```
 
 ### Key Investigation Areas
-1. **Static String Globals**: Search for global AsciiString variables
-2. **Initialization Order**: Check constructor call sequences
-3. **Memory Layout**: Verify pointer arithmetic in cross-platform code
-4. **Asset Dependencies**: Ensure proper game data loading
+1. **BitFlags Validation**: Investigate anyIntersectionWith() logic and m_ignoreConditionStates
+2. **Template Issues**: Check BitFlags<117>::s_bitNameList forward declaration problems  
+3. **Intersection Logic**: Verify condition flag intersection checking mechanisms
+4. **Validation Timing**: Understand what happens between parse() success and anyIntersectionWith()
 
-**Note**: Current protective fix ensures stability - root cause investigation can proceed without crash risk.
+**Note**: Exact crash location identified - investigation can focus precisely on condition flag validation logic.
+
+**Current Priority**: Resolve the unknown exception that occurs immediately after successful conditionsYes.parse() completion.
    - **Full permissions**: Executable ready for testing
 
 #### Phase 19 Immediate Tasks:

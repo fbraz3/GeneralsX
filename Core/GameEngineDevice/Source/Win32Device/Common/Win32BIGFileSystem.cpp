@@ -52,22 +52,43 @@ Win32BIGFileSystem::~Win32BIGFileSystem() {
 }
 
 void Win32BIGFileSystem::init() {
+	printf("Win32BIGFileSystem::init() - METHOD ENTRY\n");
+	fflush(stdout);
+	
 	DEBUG_ASSERTCRASH(TheLocalFileSystem != NULL, ("TheLocalFileSystem must be initialized before TheArchiveFileSystem."));
 	if (TheLocalFileSystem == NULL) {
+		printf("Win32BIGFileSystem::init() - TheLocalFileSystem is NULL, returning\n");
+		fflush(stdout);
 		return;
 	}
 
+	printf("Win32BIGFileSystem::init() - About to load .big files from current directory\n");
+	fflush(stdout);
 	loadBigFilesFromDirectory("", "*.big");
 
 #if RTS_ZEROHOUR
     // load original Generals assets
     AsciiString installPath;
+    printf("Win32BIGFileSystem::init() - About to get InstallPath from registry\n");
+    fflush(stdout);
     GetStringFromGeneralsRegistry("", "InstallPath", installPath );
     //@todo this will need to be ramped up to a crash for release
     DEBUG_ASSERTCRASH(installPath != "", ("Be 1337! Go install Generals!"));
     if (installPath!="")
+    {
+      printf("Win32BIGFileSystem::init() - InstallPath found: %s\n", installPath.str());
+      fflush(stdout);
       loadBigFilesFromDirectory(installPath, "*.big");
+    }
+    else
+    {
+      printf("Win32BIGFileSystem::init() - No InstallPath found in registry\n");
+      fflush(stdout);
+    }
 #endif
+    
+    printf("Win32BIGFileSystem::init() - METHOD COMPLETED SUCCESSFULLY\n");
+    fflush(stdout);
 }
 
 void Win32BIGFileSystem::reset() {
@@ -209,25 +230,42 @@ void Win32BIGFileSystem::closeAllFiles() {
 }
 
 Bool Win32BIGFileSystem::loadBigFilesFromDirectory(AsciiString dir, AsciiString fileMask, Bool overwrite) {
+	printf("Win32BIGFileSystem::loadBigFilesFromDirectory - dir: '%s', fileMask: '%s'\n", dir.str(), fileMask.str());
+	fflush(stdout);
 
 	FilenameList filenameList;
 	TheLocalFileSystem->getFileListInDirectory(dir, AsciiString(""), fileMask, filenameList, TRUE);
 
+	printf("Win32BIGFileSystem::loadBigFilesFromDirectory - found %d files matching pattern\n", (int)filenameList.size());
+	fflush(stdout);
+
 	Bool actuallyAdded = FALSE;
 	FilenameListIter it = filenameList.begin();
 	while (it != filenameList.end()) {
+		printf("Win32BIGFileSystem::loadBigFilesFromDirectory - attempting to open: %s\n", (*it).str());
+		fflush(stdout);
+		
 		ArchiveFile *archiveFile = openArchiveFile((*it).str());
 
 		if (archiveFile != NULL) {
 			DEBUG_LOG(("Win32BIGFileSystem::loadBigFilesFromDirectory - loading %s into the directory tree.", (*it).str()));
+			printf("Win32BIGFileSystem::loadBigFilesFromDirectory - successfully loaded: %s\n", (*it).str());
+			fflush(stdout);
 			loadIntoDirectoryTree(archiveFile, *it, overwrite);
 			m_archiveFileMap[(*it)] = archiveFile;
 			DEBUG_LOG(("Win32BIGFileSystem::loadBigFilesFromDirectory - %s inserted into the archive file map.", (*it).str()));
 			actuallyAdded = TRUE;
 		}
+		else
+		{
+			printf("Win32BIGFileSystem::loadBigFilesFromDirectory - FAILED to load: %s\n", (*it).str());
+			fflush(stdout);
+		}
 
 		it++;
 	}
 
+	printf("Win32BIGFileSystem::loadBigFilesFromDirectory - completed, actuallyAdded: %s\n", actuallyAdded ? "true" : "false");
+	fflush(stdout);
 	return actuallyAdded;
 }
