@@ -1,53 +1,69 @@
 # GeneralsX - Next Steps
 
-**Current Status**: Phase 21 - RUNTIME DEBUGGING - EXACT CRASH POINT ISOLATED  
-**Last Updated**: December 30, 2025  
-**Critical Achievement**: TheThingFactory crash isolated to sp### Phase 19 Achievements ✅ (Maintained)
-- [x] Segmentation fault resolved
-- [x] Corrupted pointer detection implemented
-- [x] Cross-platform LocalFileSystem working
-- [x] Debugging infrastructure established
-- [x] Game exits gracefully instead of crashingin W3DModelDrawModuleData::parseConditionState() - conditionsYes.parse() succeeds but exception occurs immediately after
+**Current Status**: 🎉 Phase 22 - THETHINGFACTORY CRASH RESOLUTION COMPLETE ✅  
+**Last Updated**: Janeiro 24, 2025  
+**Critical Achievement**: 🎉 TheThingFactory crash COMPLETELY RESOLVED through systematic token ordering fixes!
+
+### Phase 19-22 Achievements ✅ (Complete Resolution Chain)
+- [x] Segmentation fault resolved (Phase 19)
+- [x] Corrupted pointer detection implemented (Phase 19)
+- [x] Cross-platform LocalFileSystem working (Phase 19)  
+- [x] Debugging infrastructure established (Phases 20-21)
+- [x] Game exits gracefully instead of crashing (Phase 19)
+- [x] TheThingFactory crash isolated to exact line (Phase 21)
+- [x] **TOKEN ORDERING ISSUE IDENTIFIED AND RESOLVED** (Phase 22) 🎉
+- [x] **DOOR_1_OPENING parsing now works correctly** (Phase 22) ✅
+- [x] **AirF_AmericaJetSpectreGunship1 object loads successfully** (Phase 22) ✅
 
 ## 🎯 Immediate Priorities
 
-### 1. W3DModelDrawModuleData::parseConditionState Exception Investigation (URGENT) ⚠️
-**Objetivo**: Resolve precise crash in condition flag validation immediately after successful parsing
-- **Status**: Exception isolada à linha específica - conditionsYes.parse() para "DOOR_1_OPENING" é bem-sucedida mas exceção ocorre imediatamente após
-- **Local Exato**: Entre conditionsYes.parse() completion e anyIntersectionWith() call
-- **Evidência Debug**: 
-  - ✅ "conditionsYes.parse() completed successfully for non-debug"  
-  - ❌ "Unknown exception in field parser for: 'ConditionState'"
-- **Investigação Necessária**:
-  - Lógica de validação BitFlags entre parse() e anyIntersectionWith()
-  - Verificação de intersecção de condition states
-  - Template BitFlags<117>::s_bitNameList problemas de declaração forward
+### 1. 🎉 RESOLVED: W3DModelDrawModuleData::parseConditionState Token Ordering ✅
+**Objetivo**: Resolve precise crash in condition flag validation - **COMPLETE SUCCESS!**
+- **Status**: ✅ **COMPLETELY RESOLVED** - Token ordering issue fixed comprehensively
+- **Root Cause Identified**: ini->initFromINI() consuming tokens BEFORE conditionsYes.parse() in #else block  
+- **Resolution Applied**: 
+  - ✅ Reordered conditionsYes.parse() to occur BEFORE ini->initFromINI() 
+  - ✅ Removed all token-consuming debug code
+  - ✅ Eliminated duplicate initFromINI() calls
+  - ✅ Added comprehensive debug logging for validation
+- **Validation Results**:
+  - ✅ "ConditionState = DOOR_1_OPENING" now parses successfully
+  - ✅ No more "Error parsing INI file" for AirF_AmericaJetSpectreGunship1
+  - ✅ Game continues loading objects without crashes
+  - ✅ Token sequence verified through debug output
+
+**Files Modified**:
+- `W3DModelDraw.cpp`: parseConditionState() method - token ordering corrected
+- `BitFlags.cpp`: Template instantiation confirmed working
+### 2. Next Engine Subsystem Progression (NEW PRIORITY) 🎯
+**Objetivo**: Determine what subsystem initialization follows TheThingFactory success
+- **Status**: Ready for investigation - TheThingFactory now stable
+- **Expected**: Game should progress significantly further in initialization sequence
+- **Investigation**: Run full game initialization to see next potential failure point
+- **Priority**: Assess if other Object.ini parsing issues exist or if game reaches next major milestone
 
 **Action Steps**:
 ```bash
-# Adicionar debugging linha-por-linha entre parse() completion e anyIntersectionWith()
-# Investigar BitFlags::anyIntersectionWith() implementation
-# Verificar m_ignoreConditionStates data structure initialization
-# Examinar template BitFlags<117> forward declaration issues
+# Test full game initialization without timeout to see how far it progresses
+cd $HOME/Downloads/generals && ./generalszh 2>&1 | head -100
+# Monitor for next potential failure point in engine initialization
+# Document progress beyond TheThingFactory resolution
 ```
-
-### 2. Archive System & INI Loading Verification (CONCLUÍDO ✅)
-**Objetivo**: Verificar se sistemas de arquivos .big e carregamento INI funcionam corretamente
-- **Status**: SUCESSO COMPLETO - Sistemas fundamentais confirmados funcionais
-- **Win32BIGFileSystem**: ✅ 42 arquivos .big carregados com sucesso incluindo INIZH.big crítico
-- **INI Loading Pipeline**: ✅ prepFile(), load(), initFromINIMulti() funcionando corretamente
-- **Block Processing**: ✅ Múltiplos blocos Object processados com sucesso antes do crash
-
-**Resultados Verificados**:
-- Sistema de arquivos funciona perfeitamente com arquivos do jogo
-- Carregamento INI geral funciona em todos os níveis de subsistema
-- Parsing de condições funciona para outros objetos antes de "AirF_AmericaJetSpectreGunship1"
 
 ### 3. MASSIVE BREAKTHROUGH MAINTAINED (CONCLUÍDO ✅)
 **Objetivo**: Resolver TheGlobalLanguageData e desbloquear inicialização do engine
-- **Status**: SUCESSO COMPLETO - Breakthrough revolucionário atingido
+- **Status**: SUCESSO COMPLETO - Breakthrough revolucionário atingido e mantido
 - **Subsistemas Funcionando**: 25+ subsistemas agora inicializando corretamente:
   - ✅ TheLocalFileSystem, TheArchiveFileSystem, TheWritableGlobalData
+  - ✅ TheGameText, TheScienceStore, TheMultiplayerSettings
+  - ✅ TheGlobalLanguageData (major breakthrough), TheCDManager, TheAudio
+  - ✅ TheThingFactory (now resolved!)
+
+**Resultados Verificados**:
+- Sistema de arquivos funciona perfeitamente com arquivos do jogo ✅
+- Carregamento INI geral funciona em todos os níveis de subsistema ✅  
+- TheThingFactory agora processa objetos sem crashes ✅
+- Token ordering sistemicamente corrigido para parsing robusto ✅
   - ✅ TheGameText, TheScienceStore, TheMultiplayerSettings
   - ✅ TheTerrainTypes, TheTerrainRoads, TheGlobalLanguageData
   - ✅ TheCDManager, TheAudio, TheFunctionLexicon, TheModuleFactory
