@@ -537,6 +537,9 @@ GlobalData* GlobalData::m_theOriginal = NULL;
 //-------------------------------------------------------------------------------------------------
 GlobalData::GlobalData()
 {
+	printf("GlobalData::GlobalData() - CONSTRUCTOR ENTRY\n");
+	fflush(stdout);
+
 	Int i, j;
 
 	//
@@ -548,6 +551,9 @@ GlobalData::GlobalData()
 	if( m_theOriginal == NULL )
 		m_theOriginal = this;
 	m_next = NULL;
+
+	printf("GlobalData::GlobalData() - Basic initialization done\n");
+	fflush(stdout);
 
 #if defined(RTS_DEBUG) || defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
 	m_specialPowerUsesDelay = TRUE;
@@ -1264,7 +1270,12 @@ void GlobalData::parseCustomDefinition()
 
 UnsignedInt GlobalData::generateExeCRC()
 {
+	printf("GlobalData::generateExeCRC() - METHOD ENTRY\n");
+	fflush(stdout);
+	
 	DEBUG_ASSERTCRASH(TheFileSystem != NULL, ("TheFileSystem is NULL"));
+	printf("GlobalData::generateExeCRC() - TheFileSystem check passed\n");
+	fflush(stdout);
 
 	// lets CRC the executable!  Whee!
 	const Int blockSize = 65536;
@@ -1282,11 +1293,20 @@ UnsignedInt GlobalData::generateExeCRC()
 	DEBUG_LOG(("Fake EXE CRC is 0x%8.8X", exeCRC.get()));
 
 #else
+	printf("GlobalData::generateExeCRC() - About to get module filename\n");
+	fflush(stdout);
+	
 	{
 		Char buffer[ _MAX_PATH ];
 		GetModuleFileName( NULL, buffer, sizeof( buffer ) );
+		printf("GlobalData::generateExeCRC() - Module filename: %s\n", buffer);
+		fflush(stdout);
+		
 		fp = TheFileSystem->openFile(buffer, File::READ | File::BINARY);
 		if (fp != NULL) {
+			printf("GlobalData::generateExeCRC() - File opened successfully\n");
+			fflush(stdout);
+			
 			unsigned char crcBlock[blockSize];
 			Int amtRead = 0;
 			while ( (amtRead=fp->read(crcBlock, blockSize)) > 0 )
@@ -1294,10 +1314,15 @@ UnsignedInt GlobalData::generateExeCRC()
 				exeCRC.computeCRC(crcBlock, amtRead);
 			}
 			DEBUG_LOG(("EXE CRC is 0x%8.8X", exeCRC.get()));
+			printf("GlobalData::generateExeCRC() - CRC calculated: 0x%8.8X\n", exeCRC.get());
+			fflush(stdout);
+			
 			fp->close();
 			fp = NULL;
 		}
 		else {
+			printf("GlobalData::generateExeCRC() - ERROR: Could not open executable file: %s\n", buffer);
+			fflush(stdout);
 			DEBUG_CRASH(("Executable file has failed to open"));
 		}
 	}

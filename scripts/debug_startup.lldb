@@ -1,0 +1,79 @@
+# Enhanced Debug Script for GeneralsX Startup Investigation  
+# Usage: cd $HOME/Downloads/generals && export DYLD_LIBRARY_PATH=.:$DYLD_LIBRARY_PATH && lldb -s /path/to/debug_startup.lldb generalszh
+
+# Set environment variables for TheSuperHackers libraries debugging
+settings set target.env-vars MILES_DEBUG=1
+settings set target.env-vars BINK_DEBUG=1
+
+# Create breakpoints at critical initialization points
+breakpoint set --name main
+breakpoint set --name WinMain  
+breakpoint set --name "GameEngine::init"
+breakpoint set --name "createFileSystem"
+breakpoint set --name "createLocalFileSystem"
+breakpoint set --name "createArchiveFileSystem"
+
+# Create breakpoints for error detection
+breakpoint set --name ReleaseCrash
+breakpoint set --name "RELEASE_CRASH"
+breakpoint set --symbol-name _ZN10GameEngine4initEv
+
+# Create breakpoints for exception handling
+breakpoint set --name __cxa_throw
+
+# Set detailed breakpoint commands  
+breakpoint command add 1
+print "=== MAIN ENTRY POINT ==="
+continue
+DONE
+
+breakpoint command add 2  
+print "=== WinMain ENTRY ==="
+continue
+DONE
+
+breakpoint command add 3
+print "=== GameEngine::init() START ==="
+continue
+DONE
+
+breakpoint command add 4
+print "=== createFileSystem() called ==="
+continue  
+DONE
+
+breakpoint command add 5
+print "=== createLocalFileSystem() called ==="
+continue
+DONE
+
+breakpoint command add 6
+print "=== createArchiveFileSystem() called ==="
+continue
+DONE
+
+breakpoint command add 7
+print "*** RELEASE_CRASH CALLED - FATAL ERROR ***"
+print reason
+bt
+continue
+DONE
+
+breakpoint command add 8
+print "*** RELEASE_CRASH SYMBOL - FATAL ERROR ***"
+bt
+continue
+DONE
+
+breakpoint command add 9
+print "*** GameEngine::init mangled symbol ***"
+continue
+DONE
+
+breakpoint command add 10
+print "*** C++ EXCEPTION THROWN ***"
+continue
+DONE
+
+# Run the application
+run -win

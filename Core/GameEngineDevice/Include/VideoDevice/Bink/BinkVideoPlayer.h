@@ -50,12 +50,8 @@
 //----------------------------------------------------------------------------
 
 #include "GameClient/VideoPlayer.h"
-#ifdef _WIN32
+// Use TheSuperHackers bink-sdk-stub for cross-platform compatibility
 #include "bink.h"
-#else
-// macOS: Bink codec not available, use stubs
-#include "bink.h"
-#endif
 
 //----------------------------------------------------------------------------
 //           Forward References

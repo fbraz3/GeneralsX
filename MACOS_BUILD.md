@@ -146,7 +146,6 @@ cmake --preset vc6
 
 - **Progress Tracking**: [MACOS_PORT.md](MACOS_PORT.md)
 - **Next Steps**: [NEXT_STEPS.md](NEXT_STEPS.md)
-- **Project Instructions**: [.github/copilot-instructions.md](.github/copilot-instructions.md)
 
 ## 🆘 Troubleshooting
 

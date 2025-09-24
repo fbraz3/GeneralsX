@@ -56,9 +56,11 @@ if(NOT WIN32)
 endif()
 
 # Find/Add build dependencies and stubs shared by all projects
+# TheSuperHackers stubs are cross-platform, include always
+include(cmake/miles.cmake)
+include(cmake/bink.cmake)
+
 if((WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows") AND ${CMAKE_SIZEOF_VOID_P} EQUAL 4)
-    include(cmake/miles.cmake)
-    include(cmake/bink.cmake)
     include(cmake/dx8.cmake)
     include(cmake/dbghelp.cmake)
 endif()

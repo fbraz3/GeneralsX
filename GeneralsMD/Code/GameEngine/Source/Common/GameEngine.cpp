@@ -159,8 +159,33 @@ template<class SUBSYSTEM>
 void initSubsystem(SUBSYSTEM*& sysref, AsciiString name, SUBSYSTEM* sys, Xfer *pXfer,  const char* path1 = NULL,
 									 const char* path2 = NULL, const char* dirpath = NULL)
 {
+	printf("initSubsystem - Entered for subsystem: %s\n", name.str());
+	fflush(stdout);
 	sysref = sys;
-	TheSubsystemList->initSubsystem(sys, path1, path2, dirpath, pXfer, name);
+	printf("initSubsystem - sysref assigned for %s\n", name.str());
+	fflush(stdout);
+	
+	printf("initSubsystem - About to call TheSubsystemList->initSubsystem for %s\n", name.str());
+	printf("initSubsystem - Parameters: path1=%s, path2=%s\n", 
+		   path1 ? path1 : "NULL", path2 ? path2 : "NULL");
+	fflush(stdout);
+	
+	try {
+		TheSubsystemList->initSubsystem(sys, path1, path2, dirpath, pXfer, name);
+		printf("initSubsystem - TheSubsystemList->initSubsystem completed successfully for %s\n", name.str());
+		fflush(stdout);
+	} catch (const std::exception& e) {
+		printf("initSubsystem - std::exception caught for %s: %s\n", name.str(), e.what());
+		fflush(stdout);
+		throw;
+	} catch (...) {
+		printf("initSubsystem - Unknown exception caught for %s\n", name.str());
+		fflush(stdout);
+		throw;
+	}
+	
+	printf("initSubsystem - Completed for %s\n", name.str());
+	fflush(stdout);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -404,9 +429,14 @@ Real GameEngine::getActualLogicTimeScaleOverFpsRatio()
  */
 void GameEngine::init()
 {
+	printf("GameEngine::init() - METHOD ENTRY POINT\n");
+	fflush(stdout);
+	printf("GameEngine::init() - Starting initialization\n");
 	try {
+		printf("GameEngine::init() - Inside try block\n");
 		//create an INI object to use for loading stuff
 		INI ini;
+		printf("GameEngine::init() - INI object created\n");
 
 #ifdef DEBUG_LOGGING
 		if (TheVersion)
@@ -444,15 +474,20 @@ void GameEngine::init()
 	#endif//////////////////////////////////////////////////////////////////////////////
 
 
+		printf("GameEngine::init() - Creating SubsystemList\n");
 		TheSubsystemList = MSGNEW("GameEngineSubsystem") SubsystemInterfaceList;
 
+		printf("GameEngine::init() - Adding subsystem\n");
 		TheSubsystemList->addSubsystem(this);
 
 		// initialize the random number system
+		printf("GameEngine::init() - Initializing random number system\n");
 		InitRandom();
 
 		// Create the low-level file system interface
+		printf("GameEngine::init() - Creating file system\n");
 		TheFileSystem = createFileSystem();
+		printf("GameEngine::init() - File system created\n");
 
 		//Kris: Patch 1.01 - November 17, 2003
 		//I was unable to resolve the RTPatch method of deleting a shipped file. English, Chinese, and Korean
@@ -493,7 +528,12 @@ void GameEngine::init()
 		xferCRC.open("lightCRC");
 
 
+		printf("GameEngine::init() - About to initialize TheLocalFileSystem\n");
 		initSubsystem(TheLocalFileSystem, "TheLocalFileSystem", createLocalFileSystem(), NULL);
+		printf("GameEngine::init() - TheLocalFileSystem initialized\n");
+		
+		printf("GameEngine::init() - About to initialize TheArchiveFileSystem\n");
+		fflush(stdout);
 
 
     	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
@@ -505,18 +545,103 @@ void GameEngine::init()
 
 
 		initSubsystem(TheArchiveFileSystem, "TheArchiveFileSystem", createArchiveFileSystem(), NULL); // this MUST come after TheLocalFileSystem creation
+		printf("GameEngine::init() - TheArchiveFileSystem initialized\n");
+		fflush(stdout);
+
+		printf("GameEngine::init() - IMMEDIATELY after TheArchiveFileSystem initialized\n");
+		fflush(stdout);
+
+		printf("GameEngine::init() - About to enter second DUMP_PERF_STATS section\n");
+		fflush(stdout);
 
     	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
-	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
-	sprintf(Buf,"----------------------------------------------------------------------------After TheArchiveFileSystem  = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
-  startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
-	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
+		printf("GameEngine::init() - Inside second DUMP_PERF_STATS ifdef\n");
+		fflush(stdout);
+		GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
+		printf("GameEngine::init() - GetPrecisionTimer completed for ArchiveFileSystem\n");
+		fflush(stdout);
+		sprintf(Buf,"----------------------------------------------------------------------------After TheArchiveFileSystem  = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
+		printf("GameEngine::init() - sprintf completed for ArchiveFileSystem\n");
+		fflush(stdout);
+  		startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
+		DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
+		printf("GameEngine::init() - DEBUG_LOG completed for ArchiveFileSystem\n");
+		fflush(stdout);
+	#else
+		printf("GameEngine::init() - DUMP_PERF_STATS not defined (ArchiveFileSystem section)\n");
+		fflush(stdout);
 	#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
+		printf("GameEngine::init() - Completed ArchiveFileSystem DUMP_PERF_STATS section\n");
+		fflush(stdout);
 
-		DEBUG_ASSERTCRASH(TheWritableGlobalData,("TheWritableGlobalData expected to be created"));
-		initSubsystem(TheWritableGlobalData, "TheWritableGlobalData", TheWritableGlobalData, &xferCRC, "Data\\INI\\Default\\GameData.ini", "Data\\INI\\GameData.ini");
+
+		// Create TheWritableGlobalData if it doesn't exist
+		printf("GameEngine::init() - Checking if TheWritableGlobalData is NULL\n");
+		fflush(stdout);
+		if (TheWritableGlobalData == NULL) {
+			printf("GameEngine::init() - Creating TheWritableGlobalData\n");
+			fflush(stdout);
+			
+			try {
+				TheWritableGlobalData = NEW GlobalData;
+				printf("GameEngine::init() - TheWritableGlobalData created successfully\n");
+				fflush(stdout);
+			}
+			catch (const std::exception& e) {
+				printf("GameEngine::init() - Exception during GlobalData creation: %s\n", e.what());
+				fflush(stdout);
+				throw;
+			}
+			catch (...) {
+				printf("GameEngine::init() - Unknown exception during GlobalData creation\n");
+				fflush(stdout);
+				throw;
+			}
+		}
+		// DEBUG_ASSERTCRASH(TheWritableGlobalData,("TheWritableGlobalData expected to be created"));
+		printf("GameEngine::init() - TheWritableGlobalData check: %s\n", TheWritableGlobalData ? "OK" : "NULL");
+		fflush(stdout);
+		printf("GameEngine::init() - About to initialize TheWritableGlobalData\n");
+		
+		printf("GameEngine::init() - About to call initSubsystem for TheWritableGlobalData\n");
+		printf("GameEngine::init() - TheWritableGlobalData pointer: %p\n", TheWritableGlobalData);
+		printf("GameEngine::init() - xferCRC pointer: %p\n", &xferCRC);
+		printf("GameEngine::init() - TheSubsystemList pointer: %p\n", TheSubsystemList);
+		fflush(stdout);
+		
+		// Test string creation
+		printf("GameEngine::init() - Testing string creation...\n");
+		fflush(stdout);
+		AsciiString test_name = "TheWritableGlobalData";
+		printf("GameEngine::init() - String creation successful: %s\n", test_name.str());
+		fflush(stdout);
+		
+		// Test the initSubsystem call step by step
+		printf("GameEngine::init() - About to call initSubsystem with simple parameters\n");
+		fflush(stdout);
+		
+		try {
+			printf("GameEngine::init() - Entering initSubsystem call...\n");
+			fflush(stdout);
+			// Try just the basic call without INI files first
+			initSubsystem(TheWritableGlobalData, test_name, TheWritableGlobalData, &xferCRC);
+			printf("GameEngine::init() - initSubsystem call completed successfully for TheWritableGlobalData\n");
+			fflush(stdout);
+		} catch (const std::exception& e) {
+			printf("GameEngine::init() - std::exception caught during initSubsystem for TheWritableGlobalData: %s\n", e.what());
+			fflush(stdout);
+			throw;
+		} catch (...) {
+			printf("GameEngine::init() - Unknown exception caught during initSubsystem for TheWritableGlobalData\n");
+			fflush(stdout);
+			throw;
+		}
+		printf("GameEngine::init() - TheWritableGlobalData initialized\n");
+		fflush(stdout);
 		TheWritableGlobalData->parseCustomDefinition();
+		printf("GameEngine::init() - parseCustomDefinition completed\n");
+		fflush(stdout);
 
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
@@ -649,7 +774,9 @@ void GameEngine::init()
 
 
 		initSubsystem(TheUpgradeCenter,"TheUpgradeCenter", MSGNEW("GameEngineSubsystem") UpgradeCenter, &xferCRC, "Data\\INI\\Default\\Upgrade.ini", "Data\\INI\\Upgrade.ini");
+		printf("GameEngine::init() - About to initialize TheGameClient\n");
 		initSubsystem(TheGameClient,"TheGameClient", createGameClient(), NULL);
+		printf("GameEngine::init() - TheGameClient initialized\n");
 
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
@@ -804,13 +931,16 @@ void GameEngine::init()
 	}
 	catch (ErrorCode ec)
 	{
+		printf("GameEngine::init() - Caught ErrorCode exception: %d\n", ec);
 		if (ec == ERROR_INVALID_D3D)
 		{
+			printf("GameEngine::init() - ERROR_INVALID_D3D detected\n");
 			RELEASE_CRASHLOCALIZED("ERROR:D3DFailurePrompt", "ERROR:D3DFailureMessage");
 		}
 	}
 	catch (INIException e)
 	{
+		printf("GameEngine::init() - Caught INIException\n");
 		if (e.mFailureMessage)
 			RELEASE_CRASH((e.mFailureMessage));
 		else
@@ -819,6 +949,7 @@ void GameEngine::init()
 	}
 	catch (...)
 	{
+		printf("GameEngine::init() - Caught unknown exception\n");
 		RELEASE_CRASH(("Uncaught Exception during initialization."));
 	}
 

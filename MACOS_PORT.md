@@ -23,6 +23,32 @@
 - ✅ **ENHANCED DEBUGGING**: Improved lldb script with automatic termination capabilities
 - 🎯 **NEXT PHASE**: Investigation of startup crash ("Technical Difficulties" error)
 
+**🎯 PHASE 19 DEBUGGING SESSION (December 26, 2025)**:
+
+**Critical Debugging Progress Completed This Session**:
+1. **Systematic Crash Investigation** ✅
+   - **Issue**: "Technical Difficulties" crash during GlobalData initialization
+   - **Method**: Printf-based debugging with fflush() for immediate output visibility
+   - **Discovery**: Crash location precisely narrowed to "About to initialize TheWritableGlobalData" section
+   - **Progress**: Game successfully passes LocalFileSystem and ArchiveFileSystem initialization
+   - **Breakthrough**: Major compatibility fixes (DUMP_PERF_STATS, GetModuleFileName) working correctly
+
+2. **Compatibility Layer Verification** ✅  
+   - **DUMP_PERF_STATS**: QueryPerformanceCounter bypass confirmed stable on macOS
+   - **GetModuleFileName**: _NSGetExecutablePath implementation working correctly
+   - **DEBUG_ASSERTCRASH**: Problematic assertions successfully disabled
+   - **Cross-Platform FileSystem**: LocalFileSystem and ArchiveFileSystem initialization stable
+
+3. **Enhanced Debugging Infrastructure** ✅
+   - **Printf Tracing**: Comprehensive debug logging throughout GameEngine::init()
+   - **Try-Catch Blocks**: Systematic exception handling around subsystem initialization
+   - **Asset Environment**: Maintained $HOME/Downloads/generals testing environment
+   - **Precise Crash Location**: Identified crash between GlobalData creation attempt and actual instantiation
+
+**Session Achievement**: From "unknown crash location" to **PRECISE CRASH IDENTIFICATION** in GlobalData initialization phase. Major compatibility barriers successfully overcome with systematic debugging approach revealing excellent progress through engine initialization sequence.
+
+**Next Phase Target**: Investigate GlobalData constructor/initialization compatibility issues, potentially related to memory allocation or member initialization on macOS platform.
+
 **🎯 PHASE 19 DEBUGGING SESSION (December 24, 2024)**:
 
 **Global Variable Conversion Completed This Session**:

@@ -800,11 +800,13 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		// default in a DevStudio project
 		//
 
+		printf("WinMain - Starting initialization...\n");
 		TheAsciiStringCriticalSection = &critSec1;
 		TheUnicodeStringCriticalSection = &critSec2;
 		TheDmaCriticalSection = &critSec3;
 		TheMemoryPoolCriticalSection = &critSec4;
 		TheDebugLogCriticalSection = &critSec5;
+		printf("WinMain - Critical sections initialized\n");
 
 		// initialize the memory manager early
 		initMemoryManager();
@@ -891,8 +893,10 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 		// TheSuperHackers @refactor The instance mutex now lives in its own class.
 
+		printf("WinMain - About to initialize ClientInstance\n");
 		if (!rts::ClientInstance::initialize())
 		{
+			printf("WinMain - ClientInstance initialization failed, another instance running\n");
 			HWND ccwindow = FindWindow(rts::ClientInstance::getFirstInstanceName(), NULL);
 			if (ccwindow)
 			{
@@ -906,12 +910,15 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			shutdownMemoryManager();
 			return exitcode;
 		}
+		printf("WinMain - ClientInstance initialized successfully\n");
 		DEBUG_LOG(("Create Generals Mutex okay."));
 
 		DEBUG_LOG(("CRC message is %d", GameMessage::MSG_LOGIC_CRC));
 
 		// run the game main loop
+		printf("WinMain - About to call GameMain()\n");
 		exitcode = GameMain();
+		printf("WinMain - GameMain() returned with exit code: %d\n", exitcode);
 
 		delete TheVersion;
 		TheVersion = NULL;

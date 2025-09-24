@@ -63,7 +63,9 @@
 
 // ----------------------------------------------------------------------------------------------
 #if defined(RTS_DEBUG)
-	#define DUMP_PERF_STATS
+	// Temporarily disabled due to macOS compatibility issues with QueryPerformanceCounter
+	// #define DUMP_PERF_STATS
+	#define NO_DUMP_PERF_STATS
 #else
 	#define NO_DUMP_PERF_STATS
 #endif

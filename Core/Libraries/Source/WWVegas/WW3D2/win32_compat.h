@@ -20,6 +20,7 @@
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <mach-o/dyld.h>  // For _NSGetExecutablePath on macOS
 
 // Basic Windows types that might not be defined
 #ifndef LONG
@@ -1657,11 +1658,18 @@ inline UINT GetDoubleClickTime(void) {
 }
 
 inline DWORD GetModuleFileName(HMODULE hModule, char* lpFilename, DWORD nSize) {
-    // Stub implementation for getting module filename
+    // Cross-platform implementation for getting module filename
     if (lpFilename && nSize > 0) {
-        strncpy(lpFilename, "/Applications/Game.app/Contents/MacOS/game", nSize - 1);
-        lpFilename[nSize - 1] = '\0';
-        return strlen(lpFilename);
+#ifdef _WIN32
+        // Windows implementation would go here
+        return ::GetModuleFileName(hModule, lpFilename, nSize);
+#else
+        // macOS/Unix implementation using _NSGetExecutablePath
+        uint32_t size = nSize;
+        if (_NSGetExecutablePath(lpFilename, &size) == 0) {
+            return strlen(lpFilename);
+        }
+#endif
     }
     return 0;
 }

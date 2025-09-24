@@ -78,6 +78,36 @@ if (m_data && ((uintptr_t)m_data < 0x1000)) {
 #endif
 ```
 
+### ✅ Performance Timing Compatibility (December 2025)
+**Issue**: QueryPerformanceCounter unavailable on macOS causing DUMP_PERF_STATS crashes
+```cpp
+// RESOLVED - Disable performance monitoring entirely on macOS
+// In GameCommon.h
+#ifndef _WIN32
+// No performance monitoring on macOS - QueryPerformanceCounter unavailable
+#else
+#define DUMP_PERF_STATS
+#endif
+```
+**Pattern**: Complete feature bypass for platform-incompatible subsystems
+
+### ✅ Win32 API Compatibility Enhancements (December 2025)  
+**Issue**: GetModuleFileName implementation needed for executable path resolution
+```cpp
+// RESOLVED - Enhanced implementation in win32_compat.h
+#include <mach-o/dyld.h>
+DWORD GetModuleFileName(HMODULE hModule, LPSTR lpFilename, DWORD nSize) {
+    if (hModule == NULL) {
+        uint32_t size = nSize;
+        if (_NSGetExecutablePath(lpFilename, &size) == 0) {
+            return strlen(lpFilename);
+        }
+    }
+    return 0;
+}
+```
+**Pattern**: Use native macOS APIs (_NSGetExecutablePath) for equivalent functionality
+
 ### DirectX Interface Harmonization (Ongoing)
 **Pattern**: Consistent `IDirect3DTexture8*` usage across Core/Generals/GeneralsMD
 - Files: `dx8wrapper.cpp`, `texture.h`, `d3d8.h` in both Generals and GeneralsMD
@@ -88,9 +118,10 @@ if (m_data && ((uintptr_t)m_data < 0x1000)) {
 
 ### Error Resolution Priority
 1. **Runtime Stability** - Test executable functionality with assets
-2. **Root Cause Investigation** - Investigate why AsciiString gets corrupted pointers
-3. **Memory Protection** - Extend protective validation to other core classes  
-4. **Graphics Pipeline** - Verify W3D rendering works correctly
+2. **Systematic Crash Investigation** - Use printf/fflush debugging for immediate visibility
+3. **Root Cause Investigation** - Investigate why AsciiString gets corrupted pointers
+4. **Memory Protection** - Extend protective validation to other core classes  
+5. **Graphics Pipeline** - Verify W3D rendering works correctly
 
 ### Testing Strategy
 - **Asset-Dependent Testing**: Always test with original game assets in `$HOME/Downloads/generals`
@@ -123,10 +154,37 @@ MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(ClassName, "PoolName")
 - **LLDB Integration**: `scripts/debug_script.lldb` for systematic crash investigation
 - **Asset Environment**: Required `$HOME/Downloads/generals` with original game data
 - **Memory Validation**: Protective checks for corrupted pointers across string classes
+- **Printf Debugging**: Systematic printf/fflush pattern for immediate crash investigation
+- **Try-Catch Debugging**: Comprehensive exception handling around subsystem initialization
 - **Example debug command**:
 ```bash
 # Note: replace $REPO_PATH with actual path to repository
 cd $HOME/Downloads/generals && lldb -s $REPO_PATH/scripts/debug_script.lldb generalszh
+
+# Or direct execution with printf output
+cd $HOME/Downloads/generals && ./generalszh
+```
+
+### Systematic Debugging Patterns (December 2025)
+**Printf Debugging Pattern**: Immediate visibility for crash investigation
+```cpp
+printf("About to initialize subsystem X\n");
+fflush(stdout);  // Ensure output before potential crash
+// ... initialization code ...
+printf("Successfully initialized subsystem X\n");
+```
+
+**Exception Handling Pattern**: Isolate compatibility issues
+```cpp
+try {
+    printf("About to create GlobalData\n");
+    fflush(stdout);
+    TheWritableGlobalData = NEW GlobalData();
+    printf("GlobalData created successfully\n");
+} catch (const std::exception& e) {
+    printf("Exception during GlobalData creation: %s\n", e.what());
+    return false;
+}
 ```
 
 ## Essential Files for AI Context

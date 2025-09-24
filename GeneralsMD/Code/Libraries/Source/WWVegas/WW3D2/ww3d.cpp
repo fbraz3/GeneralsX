@@ -276,9 +276,12 @@ WW3DErrorType WW3D::Init(void *hwnd, char *defaultpal, bool lite)
 	*/
 	Init_D3D_To_WW3_Conversion();
 	WWDEBUG_SAY(("Init DX8Wrapper"));
+	printf("WW3D::Init - About to initialize DX8Wrapper\n");
 	if (!DX8Wrapper::Init(_Hwnd, lite)) {
+		printf("WW3D::Init - DX8Wrapper::Init failed!\n");
 		return(WW3D_ERROR_INITIALIZATION_FAILED);
 	}
+	printf("WW3D::Init - DX8Wrapper initialized successfully\n");
 	WWDEBUG_SAY(("Allocate Debug Resources"));
 	Allocate_Debug_Resources();
 

@@ -163,7 +163,6 @@ Windows builds are maintained through the official TheSuperHackers repository wi
 - **[NEXT_STEPS.md](NEXT_STEPS.md)** - Current development phase and upcoming work
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Guidelines for contributing to cross-platform development
 - **[TESTING.md](TESTING.md)** - Cross-platform testing procedures and validation
-- **[RELEASE_TRANSITION.md](RELEASE_TRANSITION.md)** - Information about official integration
 
 ### 🎯 Roadmap
 
