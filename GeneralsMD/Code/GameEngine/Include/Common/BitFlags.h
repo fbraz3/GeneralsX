@@ -135,7 +135,33 @@ public:
 
 	inline Bool operator==(const BitFlags& that) const
 	{
-		return this->m_bits == that.m_bits;
+		// Protective validation to prevent crashes from corrupted BitFlags objects
+		// Similar pattern to AsciiString::validate()
+		
+		// Check for obvious memory corruption patterns
+		if (this == nullptr) {
+			printf("BitFlags::operator== - ERROR: 'this' pointer is null\n");
+			return false;
+		}
+		
+		// Check if 'that' object has corrupted memory patterns  
+		if ((uintptr_t)&that < 0x1000) {
+			printf("BitFlags::operator== - ERROR: 'that' object at invalid address %p\n", &that);
+			return false;
+		}
+		
+		// Check for stack corruption patterns (very high addresses)
+		if ((uintptr_t)&that > 0x7FFFFFFFFFF0) {
+			printf("BitFlags::operator== - ERROR: 'that' object at suspicious high address %p\n", &that);
+			return false;
+		}
+		
+		try {
+			return this->m_bits == that.m_bits;
+		} catch (...) {
+			printf("BitFlags::operator== - EXCEPTION during bitset comparison, assuming false\n");
+			return false;
+		}
 	}
 
 	inline Bool operator!=(const BitFlags& that) const

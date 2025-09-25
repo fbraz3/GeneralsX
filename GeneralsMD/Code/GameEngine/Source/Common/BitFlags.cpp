@@ -190,3 +190,6 @@ const char* ArmorSetFlags::s_bitNameList[] =
 	NULL
 };
 
+// Explicit template instantiation for ModelConditionFlags
+template class BitFlags<117>;
+

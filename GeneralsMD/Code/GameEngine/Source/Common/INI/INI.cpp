@@ -1719,24 +1719,33 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 //-------------------------------------------------------------------------------------------------
 /*static*/ Int INI::scanIndexList(const char* token, ConstCharPtrArray nameList)
 {
+	printf("INI::scanIndexList - Searching for token: '%s'\n", token);
+	fflush(stdout);
+	
 	if( nameList == NULL || nameList[ 0 ] == NULL )
 	{
-
+		printf("INI::scanIndexList - ERROR: nameList is null or empty\n");
+		fflush(stdout);
 		DEBUG_ASSERTCRASH( 0, ("INTERNAL ERROR! scanIndexList, invalid name list") );
 		throw INI_INVALID_NAME_LIST;
-
 	}
 
 	// search for matching name
 	Int count = 0;
 	for(ConstCharPtrArray name = nameList; *name; name++, count++ )
 	{
+		printf("INI::scanIndexList - Checking index %d: '%s' vs '%s'\n", count, *name, token);
+		fflush(stdout);
 		if( stricmp( *name, token ) == 0 )
 		{
+			printf("INI::scanIndexList - MATCH FOUND at index %d\n", count);
+			fflush(stdout);
 			return count;
 		}
 	}
 
+	printf("INI::scanIndexList - NO MATCH FOUND for token '%s', throwing exception\n", token);
+	fflush(stdout);
 	DEBUG_CRASH(("token %s is not a valid member of the index list",token));
 	throw INI_INVALID_DATA;
 	return 0;	// never executed, but keeps compiler happy

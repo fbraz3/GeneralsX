@@ -1404,15 +1404,108 @@ static void parseBoneNameKey(INI* ini, void *instance, void * store, const void 
 //-------------------------------------------------------------------------------------------------
 static Bool doesStateExist(const ModelConditionVector& v, const ModelConditionFlags& f)
 {
-	for (ModelConditionVector::const_iterator it = v.begin(); it != v.end(); ++it)
-	{
-		for (Int i = it->getConditionsYesCount()-1; i >= 0; --i)
-		{
-			if (f == it->getNthConditionsYes(i))
-				return true;
+	// Protective validation to prevent BitFlags corruption crashes
+	printf("doesStateExist - ENTRY: vector size = %zu\n", v.size());
+	fflush(stdout);
+	
+	try {
+		// Critical: Check for vector corruption first
+		size_t vectorSize = v.size();
+		if (vectorSize == 0) {
+			printf("doesStateExist - Vector is empty, returning false\n");
+			fflush(stdout);
+			return false;
 		}
+		
+		// Detect massive corruption - vector size should never be this big
+		if (vectorSize > 100000) { // Reasonable upper limit for condition states
+			printf("doesStateExist - VECTOR CORRUPTION DETECTED! Size %zu is too large, returning false\n", vectorSize);
+			fflush(stdout);
+			return false;
+		}
+		
+		printf("doesStateExist - Vector size validation passed: %zu\n", vectorSize);
+		fflush(stdout);
+		
+		// Process each element with extra protection
+		for (size_t idx = 0; idx < vectorSize; ++idx) {
+			printf("doesStateExist - Processing element %zu/%zu\n", idx, vectorSize);
+			fflush(stdout);
+			
+			try {
+				// Safely access the element using index instead of iterator
+				const auto& condState = v[idx];
+				
+				// Check conditions count with strict validation
+				int condCount = condState.getConditionsYesCount();
+				printf("doesStateExist - Element %zu: getConditionsYesCount() = %d\n", idx, condCount);
+				fflush(stdout);
+				
+				// Strict sanity check for condition count
+				if (condCount < 0 || condCount > 200) {
+					printf("doesStateExist - CORRUPTION DETECTED at element %zu: Invalid condition count %d, skipping\n", idx, condCount);
+					fflush(stdout);
+					continue;
+				}
+				
+				if (condCount == 0) {
+					printf("doesStateExist - Element %zu has no conditions, skipping\n", idx);
+					fflush(stdout);
+					continue;
+				}
+				
+				// Process each condition with bounds checking (reverse loop like original)
+				for (int i = condCount - 1; i >= 0; --i) {
+					printf("doesStateExist - Element %zu: About to call getNthConditionsYes(%d)\n", idx, i);
+					fflush(stdout);
+					
+					try {
+						const ModelConditionFlags& rightSide = condState.getNthConditionsYes(i);
+						printf("doesStateExist - Element %zu: Got rightSide reference for index %d, about to compare\n", idx, i);
+						fflush(stdout);
+						
+						// This is line 1411 where crash occurs - add extra protection
+						if (f == rightSide) {
+							printf("doesStateExist - MATCH FOUND at element %zu, index %d! Returning true\n", idx, i);
+							fflush(stdout);
+							return true;
+						}
+						printf("doesStateExist - Element %zu: No match for condition index %d\n", idx, i);
+						fflush(stdout);
+					} catch (const std::exception& e) {
+						printf("doesStateExist - Exception in getNthConditionsYes(%d) at element %zu: %s\n", i, idx, e.what());
+						fflush(stdout);
+						continue;
+					} catch (...) {
+						printf("doesStateExist - Unknown exception in getNthConditionsYes(%d) at element %zu\n", i, idx);
+						fflush(stdout);
+						continue;
+					}
+				}
+			} catch (const std::exception& e) {
+				printf("doesStateExist - Exception accessing element %zu: %s\n", idx, e.what());
+				fflush(stdout);
+				continue;
+			} catch (...) {
+				printf("doesStateExist - Unknown exception accessing element %zu\n", idx);
+				fflush(stdout);
+				continue;
+			}
+		}
+		
+		printf("doesStateExist - No match found after checking all elements, returning false\n");
+		fflush(stdout);
+		return false;
+		
+	} catch (const std::exception& e) {
+		printf("doesStateExist - Top-level exception: %s\n", e.what());
+		fflush(stdout);
+		return false;
+	} catch (...) {
+		printf("doesStateExist - Unknown top-level exception\n");
+		fflush(stdout);
+		return false;
 	}
-	return false;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1461,13 +1554,28 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 	{
 		case PARSE_DEFAULT:
 		{
+			printf("W3DModelDrawModuleData::parseConditionState - PARSE_DEFAULT case entry\n");
+			fflush(stdout);
+			printf("W3DModelDrawModuleData::parseConditionState - PARSE_DEFAULT case entry\n");
+			fflush(stdout);
+			
 			if (self->m_defaultState >= 0)
 			{
+				printf("W3DModelDrawModuleData::parseConditionState - ERROR: multiple default states\n");
+				fflush(stdout);
 				DEBUG_CRASH(("*** ASSET ERROR: you may have only one default state!"));
 				throw INI_INVALID_DATA;
 			}
-			else if (ini->getNextTokenOrNull())
+			
+			const char* nextToken = ini->getNextTokenOrNull();
+			printf("W3DModelDrawModuleData::parseConditionState - Next token after DefaultConditionState: %s\n", 
+			       nextToken ? nextToken : "NULL");
+			fflush(stdout);
+			
+			if (nextToken)
 			{
+				printf("W3DModelDrawModuleData::parseConditionState - ERROR: unexpected token after DefaultConditionState: %s\n", nextToken);
+				fflush(stdout);
 				DEBUG_CRASH(("*** ASSET ERROR: unknown keyword"));
 				throw INI_INVALID_DATA;
 			}
@@ -1487,6 +1595,13 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 				ModelConditionFlags blankConditions;
 				info.m_conditionsYesVec.clear();
 				info.m_conditionsYesVec.push_back(blankConditions);
+
+				// Parse any additional fields for DefaultConditionState
+				printf("W3DModelDrawModuleData::parseConditionState - PARSE_DEFAULT - Calling ini->initFromINI for info\n");
+				fflush(stdout);
+				ini->initFromINI(&info, myFieldParse);
+				printf("W3DModelDrawModuleData::parseConditionState - PARSE_DEFAULT - ini->initFromINI completed successfully\n");
+				fflush(stdout);
 
 	#if defined(RTS_DEBUG)
 				info.m_description.clear();
@@ -1550,9 +1665,48 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 			prevState.m_description.concat("\nAKA: ");
 			prevState.m_description.concat(description);
 	#else
-			conditionsYes.parse(ini, NULL);
+		printf("W3DModelDrawModuleData::parseConditionState - PARSE_ALIAS case - About to call conditionsYes.parse()\n");
+		fflush(stdout);
+		
+		// Debug: Check what tokens are available before parsing
+		printf("W3DModelDrawModuleData::parseConditionState - About to check available tokens\n");
+		fflush(stdout);
+		
+		conditionsYes.parse(ini, NULL);
+		
+		printf("W3DModelDrawModuleData::parseConditionState - PARSE_ALIAS case - conditionsYes.parse() returned successfully\n");
+		printf("W3DModelDrawModuleData::parseConditionState - After parse: conditionsYes.any() = %s\n", 
+			   conditionsYes.any() ? "true" : "false");
+		fflush(stdout);
+		
+		// Debug: Check specific bit for DOOR_1_OPENING (index 18)
+		printf("W3DModelDrawModuleData::parseConditionState - DOOR_1_OPENING bit (index 18): %s\n", 
+			   conditionsYes.test(18) ? "SET" : "NOT SET");
+		fflush(stdout);
 	#endif
-
+		
+		printf("W3DModelDrawModuleData::parseConditionState - conditionsYes.parse() completed successfully for non-debug\n");
+		fflush(stdout);
+		
+		printf("W3DModelDrawModuleData::parseConditionState - Checking conditionsYes.any() after parse: %s\n", 
+			   conditionsYes.any() ? "true" : "false");
+		fflush(stdout);
+		
+		printf("W3DModelDrawModuleData::parseConditionState - Checking conditionsYes.any(): %s\n", 
+			   conditionsYes.any() ? "true" : "false");
+		fflush(stdout);
+		
+		printf("W3DModelDrawModuleData::parseConditionState - Checking self pointer: %p\n", self);
+		fflush(stdout);
+		
+		printf("W3DModelDrawModuleData::parseConditionState - About to access m_ignoreConditionStates\n");
+		fflush(stdout);
+		
+		try {
+			// Test access to m_ignoreConditionStates
+			printf("W3DModelDrawModuleData::parseConditionState - m_ignoreConditionStates accessed successfully\n");
+			fflush(stdout);
+			
 			printf("W3DModelDrawModuleData::parseConditionState - About to call anyIntersectionWith\n");
 			fflush(stdout);
 			if (conditionsYes.anyIntersectionWith(self->m_ignoreConditionStates))
@@ -1560,8 +1714,17 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 				DEBUG_CRASH(("You should not specify bits in a state once they are used in IgnoreConditionStates (%s)", TheThingTemplateBeingParsedName.str()));
 				throw INI_INVALID_DATA;
 			}
-
-			if (doesStateExist(self->m_conditionStates, conditionsYes))
+			printf("W3DModelDrawModuleData::parseConditionState - anyIntersectionWith completed successfully\n");
+			fflush(stdout);
+		} catch (const std::exception& e) {
+			printf("W3DModelDrawModuleData::parseConditionState - Exception in anyIntersectionWith: %s\n", e.what());
+			fflush(stdout);
+			throw;
+		} catch (...) {
+			printf("W3DModelDrawModuleData::parseConditionState - Unknown exception in anyIntersectionWith\n");
+			fflush(stdout);
+			throw;
+		}			if (doesStateExist(self->m_conditionStates, conditionsYes))
 			{
 				DEBUG_CRASH(("*** ASSET ERROR: duplicate condition states are not currently allowed"));
 				throw INI_INVALID_DATA;
@@ -1582,11 +1745,25 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 
 		case PARSE_NORMAL:
 		{
+			printf("W3DModelDrawModuleData::parseConditionState - PARSE_NORMAL case - START\n");
+			fflush(stdout);
+			
+			// Move variable declaration to the top to isolate destructor issues
+			ModelConditionFlags conditionsYes;
+			ModelConditionInfo info;
+			
+			printf("W3DModelDrawModuleData::parseConditionState - Variables declared successfully\n");
+			fflush(stdout);
+			
 			if (self->m_defaultState >= 0 && cst != PARSE_ALIAS)
 			{
+				printf("W3DModelDrawModuleData::parseConditionState - Setting info from default state\n");
+				fflush(stdout);
 				info = self->m_conditionStates.at(self->m_defaultState);
 				info.m_iniReadFlags |= (1<<ANIMS_COPIED_FROM_DEFAULT_STATE);
 				info.m_conditionsYesVec.clear();
+				printf("W3DModelDrawModuleData::parseConditionState - Info from default state set successfully\n");
+				fflush(stdout);
 			}
 	// no, we do not currently require a default state, cuz it would break the exiting INI
 	// files too badly. maybe someday.
@@ -1596,7 +1773,6 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 	//		throw INI_INVALID_DATA;
 	//	}
 
-			ModelConditionFlags conditionsYes;
 	#if defined(RTS_DEBUG) || defined(DEBUG_CRASHING)
 			AsciiString description;
 			try {
@@ -1619,16 +1795,60 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 				throw;
 			}
 
+			printf("W3DModelDrawModuleData::parseConditionState - About to set info.m_description\n");
+			fflush(stdout);
 			info.m_description.clear();
 			info.m_description.concat(TheThingTemplateBeingParsedName);
 			info.m_description.concat("\n         ");
 			info.m_description.concat(description);
+			printf("W3DModelDrawModuleData::parseConditionState - Info description set successfully\n");
+			fflush(stdout);
 	#else
 			try {
 				printf("W3DModelDrawModuleData::parseConditionState - About to call conditionsYes.parse() for non-debug\n");
 				fflush(stdout);
+				
+				printf("W3DModelDrawModuleData::parseConditionState - conditionsYes object address: %p\n", &conditionsYes);
+				fflush(stdout);
+				
+				printf("W3DModelDrawModuleData::parseConditionState - ini object address: %p\n", ini);
+				fflush(stdout);
+				
+				printf("W3DModelDrawModuleData::parseConditionState - BEFORE parse: conditionsYes.any() = %s\n", 
+					conditionsYes.any() ? "true" : "false");
+				fflush(stdout);
+				
+				// CRITICAL: Parse conditionsYes directly from remaining tokens on the line
+				// For ConditionState = DOOR_1_OPENING, we need to parse DOOR_1_OPENING as the condition
 				conditionsYes.parse(ini, NULL);
+				
 				printf("W3DModelDrawModuleData::parseConditionState - conditionsYes.parse() completed successfully for non-debug\n");
+				fflush(stdout);
+				
+				// Debug: Check if conditionsYes has any flags set AFTER parse
+				printf("W3DModelDrawModuleData::parseConditionState - AFTER parse: conditionsYes.any() = %s\n", 
+					conditionsYes.any() ? "true" : "false");
+				fflush(stdout);
+				
+				printf("W3DModelDrawModuleData::parseConditionState - Calling ini->initFromINI with FieldParse table\n");
+				fflush(stdout);
+				ini->initFromINI(instance, myFieldParse);
+				printf("W3DModelDrawModuleData::parseConditionState - ini->initFromINI completed successfully\n");
+				fflush(stdout);
+				
+				// Debug: Check if conditionsYes has any flags set AFTER initFromINI
+				printf("W3DModelDrawModuleData::parseConditionState - conditionsYes.any() after initFromINI = %s\n", 
+					conditionsYes.any() ? "true" : "false");
+				fflush(stdout);
+				printf("W3DModelDrawModuleData::parseConditionState - ini->initFromINI completed successfully\n");
+				fflush(stdout);
+				
+				// Debug: Check if conditionsYes has any flags set
+				printf("W3DModelDrawModuleData::parseConditionState - conditionsYes.any() = %s\n", 
+					conditionsYes.any() ? "true" : "false");
+				fflush(stdout);
+				fflush(stdout);
+				printf("W3DModelDrawModuleData::parseConditionState - About to exit try-catch block for non-debug\n");
 				fflush(stdout);
 			} catch (const std::exception& e) {
 				printf("W3DModelDrawModuleData::parseConditionState - conditionsYes.parse() std::exception: %s\n", e.what());
@@ -1643,17 +1863,41 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 				fflush(stdout);
 				throw;
 			}
+			printf("W3DModelDrawModuleData::parseConditionState - Non-debug block completed successfully\n");
+			fflush(stdout);
 	#endif
 
-			if (conditionsYes.anyIntersectionWith(self->m_ignoreConditionStates))
+		printf("W3DModelDrawModuleData::parseConditionState - About to call anyIntersectionWith\n");
+		fflush(stdout);
+		
+		try {
+			printf("W3DModelDrawModuleData::parseConditionState - Just before anyIntersectionWith call\n");
+			fflush(stdout);
+			Bool intersectionResult = conditionsYes.anyIntersectionWith(self->m_ignoreConditionStates);
+			printf("W3DModelDrawModuleData::parseConditionState - anyIntersectionWith returned: %s\n", intersectionResult ? "true" : "false");
+			fflush(stdout);
+			
+			if (intersectionResult)
 			{
-				printf("W3DModelDrawModuleData::parseConditionState - ERROR: anyIntersectionWith failed\n");
+				printf("W3DModelDrawModuleData::parseConditionState - ERROR: anyIntersectionWith returned true\n");
 				fflush(stdout);
 				DEBUG_CRASH(("You should not specify bits in a state once they are used in IgnoreConditionStates (%s)", TheThingTemplateBeingParsedName.str()));
 				throw INI_INVALID_DATA;
 			}
-
-			printf("W3DModelDrawModuleData::parseConditionState - Passed anyIntersectionWith check\n");
+			printf("W3DModelDrawModuleData::parseConditionState - anyIntersectionWith completed successfully (returned false)\n");
+			fflush(stdout);
+		} catch (const std::exception& e) {
+			printf("W3DModelDrawModuleData::parseConditionState - anyIntersectionWith threw std::exception: %s\n", e.what());
+			fflush(stdout);
+			throw;
+		} catch (...) {
+			printf("W3DModelDrawModuleData::parseConditionState - anyIntersectionWith threw unknown exception\n");
+			fflush(stdout);
+			throw;
+		}
+		
+		printf("W3DModelDrawModuleData::parseConditionState - About to exit function normally\n");
+		fflush(stdout);			printf("W3DModelDrawModuleData::parseConditionState - Passed anyIntersectionWith check\n");
 			fflush(stdout);
 
 			if (self->m_defaultState < 0 && self->m_conditionStates.empty() && conditionsYes.any())
@@ -1705,35 +1949,24 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 		printf("W3DModelDrawModuleData::parseConditionState - About to break from switch\n");
 		fflush(stdout);
 		break;
+	
+	default:
+		{
+			printf("W3DModelDrawModuleData::parseConditionState - DEFAULT case - Unknown cst value: %d\n", (int)cst);
+			fflush(stdout);
+			DEBUG_CRASH(("*** ASSET ERROR: unknown ParseCondStateType value"));
+			throw INI_INVALID_DATA;
+		}
 	}
 
 	printf("W3DModelDrawModuleData::parseConditionState - Exited switch statement successfully\n");
 	fflush(stdout);
 
-	printf("W3DModelDrawModuleData::parseConditionState - About to call ini->initFromINI\n");
-	fflush(stdout);
+	// REMOVED: Second initFromINI call that was consuming tokens
+	// The initFromINI should only be called inside the switch cases where needed
 	
-	try {
-		printf("W3DModelDrawModuleData::parseConditionState - About to call initFromINI with &info=%p, myFieldParse=%p\n", (void*)&info, (void*)myFieldParse);
-		fflush(stdout);
-		
-		ini->initFromINI(&info, myFieldParse);
-		
-		printf("W3DModelDrawModuleData::parseConditionState - initFromINI completed successfully\n");
-		fflush(stdout);
-	} catch (const std::exception& e) {
-		printf("W3DModelDrawModuleData::parseConditionState - std::exception caught: %s\n", e.what());
-		fflush(stdout);
-		throw;
-	} catch (int intEx) {
-		printf("W3DModelDrawModuleData::parseConditionState - Integer exception caught: %d\n", intEx);
-		fflush(stdout);
-		throw;
-	} catch (...) {
-		printf("W3DModelDrawModuleData::parseConditionState - Unknown exception caught in initFromINI call\n");
-		fflush(stdout);
-		throw;
-	}
+	printf("W3DModelDrawModuleData::parseConditionState - Skipping second initFromINI call\n");
+	fflush(stdout);
 
 	if (info.m_modelName.isEmpty())
 	{

@@ -66,12 +66,17 @@ void BitFlags<NUMBITS>::parse(INI* ini, AsciiString* str)
 	if (str)
 		str->clear();
 
+	printf("BitFlags::parse - Starting parse method\n");
+	fflush(stdout);
+
 	Bool foundNormal = false;
 	Bool foundAddOrSub = false;
 
 	// loop through all tokens
 	for (const char *token = ini->getNextTokenOrNull(); token != NULL; token = ini->getNextTokenOrNull())
 	{
+		printf("BitFlags::parse - Processing token: '%s'\n", token ? token : "NULL");
+		fflush(stdout);
 		if (str)
 		{
 			if (str->isNotEmpty())

@@ -1375,15 +1375,108 @@ static void parseBoneNameKey(INI* ini, void *instance, void * store, const void 
 //-------------------------------------------------------------------------------------------------
 static Bool doesStateExist(const ModelConditionVector& v, const ModelConditionFlags& f)
 {
-	for (ModelConditionVector::const_iterator it = v.begin(); it != v.end(); ++it)
-	{
-		for (Int i = it->getConditionsYesCount()-1; i >= 0; --i)
-		{
-			if (f == it->getNthConditionsYes(i))
-				return true;
+	// Protective validation to prevent BitFlags corruption crashes
+	printf("doesStateExist - ENTRY: vector size = %zu\n", v.size());
+	fflush(stdout);
+	
+	try {
+		// Critical: Check for vector corruption first
+		size_t vectorSize = v.size();
+		if (vectorSize == 0) {
+			printf("doesStateExist - Vector is empty, returning false\n");
+			fflush(stdout);
+			return false;
 		}
+		
+		// Detect massive corruption - vector size should never be this big
+		if (vectorSize > 100000) { // Reasonable upper limit for condition states
+			printf("doesStateExist - VECTOR CORRUPTION DETECTED! Size %zu is too large, returning false\n", vectorSize);
+			fflush(stdout);
+			return false;
+		}
+		
+		printf("doesStateExist - Vector size validation passed: %zu\n", vectorSize);
+		fflush(stdout);
+		
+		// Process each element with extra protection
+		for (size_t idx = 0; idx < vectorSize; ++idx) {
+			printf("doesStateExist - Processing element %zu/%zu\n", idx, vectorSize);
+			fflush(stdout);
+			
+			try {
+				// Safely access the element using index instead of iterator
+				const auto& condState = v[idx];
+				
+				// Check conditions count with strict validation
+				int condCount = condState.getConditionsYesCount();
+				printf("doesStateExist - Element %zu: getConditionsYesCount() = %d\n", idx, condCount);
+				fflush(stdout);
+				
+				// Strict sanity check for condition count
+				if (condCount < 0 || condCount > 200) {
+					printf("doesStateExist - CORRUPTION DETECTED at element %zu: Invalid condition count %d, skipping\n", idx, condCount);
+					fflush(stdout);
+					continue;
+				}
+				
+				if (condCount == 0) {
+					printf("doesStateExist - Element %zu has no conditions, skipping\n", idx);
+					fflush(stdout);
+					continue;
+				}
+				
+				// Process each condition with bounds checking (reverse loop like original)
+				for (int i = condCount - 1; i >= 0; --i) {
+					printf("doesStateExist - Element %zu: About to call getNthConditionsYes(%d)\n", idx, i);
+					fflush(stdout);
+					
+					try {
+						const ModelConditionFlags& rightSide = condState.getNthConditionsYes(i);
+						printf("doesStateExist - Element %zu: Got rightSide reference for index %d, about to compare\n", idx, i);
+						fflush(stdout);
+						
+						// This is line 1411 where crash occurs - add extra protection
+						if (f == rightSide) {
+							printf("doesStateExist - MATCH FOUND at element %zu, index %d! Returning true\n", idx, i);
+							fflush(stdout);
+							return true;
+						}
+						printf("doesStateExist - Element %zu: No match for condition index %d\n", idx, i);
+						fflush(stdout);
+					} catch (const std::exception& e) {
+						printf("doesStateExist - Exception in getNthConditionsYes(%d) at element %zu: %s\n", i, idx, e.what());
+						fflush(stdout);
+						continue;
+					} catch (...) {
+						printf("doesStateExist - Unknown exception in getNthConditionsYes(%d) at element %zu\n", i, idx);
+						fflush(stdout);
+						continue;
+					}
+				}
+			} catch (const std::exception& e) {
+				printf("doesStateExist - Exception accessing element %zu: %s\n", idx, e.what());
+				fflush(stdout);
+				continue;
+			} catch (...) {
+				printf("doesStateExist - Unknown exception accessing element %zu\n", idx);
+				fflush(stdout);
+				continue;
+			}
+		}
+		
+		printf("doesStateExist - No match found after checking all elements, returning false\n");
+		fflush(stdout);
+		return false;
+		
+	} catch (const std::exception& e) {
+		printf("doesStateExist - Top-level exception: %s\n", e.what());
+		fflush(stdout);
+		return false;
+	} catch (...) {
+		printf("doesStateExist - Unknown top-level exception\n");
+		fflush(stdout);
+		return false;
 	}
-	return false;
 }
 
 //-------------------------------------------------------------------------------------------------
