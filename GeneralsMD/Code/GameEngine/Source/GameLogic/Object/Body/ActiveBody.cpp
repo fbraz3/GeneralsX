@@ -492,9 +492,11 @@ void ActiveBody::attemptDamage( DamageInfo *damageInfo )
 		if( !canBeSubdued() )
 			return;
 
+		// TheSuperHackers @bugfix Stubbjax 20/09/2025 The isSubdued() function now directly checks status instead
+		// of health to prevent indefinite subdue status when internally shifting health across the threshold.
 		Bool wasSubdued = isSubdued();
 		internalAddSubdualDamage(amount);
-		Bool nowSubdued = isSubdued();
+		Bool nowSubdued = m_maxHealth <= m_currentSubdualDamage;
 		alreadyHandled = TRUE;
 		allowModifier = FALSE;
 
@@ -1313,7 +1315,11 @@ void ActiveBody::onSubdualChange( Bool isNowSubdued )
 //-------------------------------------------------------------------------------------------------
 Bool ActiveBody::isSubdued() const
 {
+#if RETAIL_COMPATIBLE_CRC
 	return m_maxHealth <= m_currentSubdualDamage;
+#else
+	return getObject()->isDisabledByType(DISABLED_SUBDUED);
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------
