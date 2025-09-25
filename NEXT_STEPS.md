@@ -17,7 +17,23 @@
 
 ## 🎯 Immediate Priorities
 
-### 1. 🎉 RESOLVED: W3DModelDrawModuleData::parseConditionState Token Ordering ✅
+### 1. 🔧 NEW CRITICAL ISSUE: Segmentation Fault in doesStateExist() ⚠️
+**Objetivo**: Resolver crash em comparação de BitFlags durante validação de estado
+- **Status**: 🚨 **CRÍTICO** - Segmentação fault identificada com stack trace completo
+- **Localização Exata**: `W3DModelDraw.cpp` linha 1411 na função `doesStateExist()`
+- **Root Cause**: `BitFlags<117ul>::operator==()` tentando comparar BitFlags corrompidos
+- **Context**: Processando `ConditionState = DOOR_1_OPENING` para `W3DOverlordAircraftDraw`
+- **Stack Trace**: Crash em `std::__1::bitset<117ul>::operator==()` durante comparação de condition states
+- **Próximos Passos**:
+  - 🔄 Testar com assets limpos para eliminar corrupção de .big files
+  - 🔍 Investigar inicialização de objetos BitFlags
+  - 🛡️ Adicionar validação protetiva para BitFlags similar ao AsciiString
+
+**Files Afetados**:
+- `W3DModelDraw.cpp`: função `doesStateExist()` - linha 1411 crash identificado
+- Possível asset corruption nos arquivos .big
+
+### 2. ✅ RESOLVED: W3DModelDrawModuleData::parseConditionState Token Ordering
 **Objetivo**: Resolve precise crash in condition flag validation - **COMPLETE SUCCESS!**
 - **Status**: ✅ **COMPLETELY RESOLVED** - Token ordering issue fixed comprehensively
 - **Root Cause Identified**: ini->initFromINI() consuming tokens BEFORE conditionsYes.parse() in #else block  
@@ -27,10 +43,9 @@
   - ✅ Eliminated duplicate initFromINI() calls
   - ✅ Added comprehensive debug logging for validation
 - **Validation Results**:
-  - ✅ "ConditionState = DOOR_1_OPENING" now parses successfully
-  - ✅ No more "Error parsing INI file" for AirF_AmericaJetSpectreGunship1
-  - ✅ Game continues loading objects without crashes
+  - ✅ DefaultConditionState parsing funciona perfeitamente
   - ✅ Token sequence verified through debug output
+  - ⚠️ **NOVO PROBLEMA**: Crash ao processar ConditionState normal (não-default)
 
 **Files Modified**:
 - `W3DModelDraw.cpp`: parseConditionState() method - token ordering corrected

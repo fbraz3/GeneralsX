@@ -2,11 +2,39 @@
 
 **Project Name**: 🎯 **GeneralsX** (formerly Command & Conquer: Generals)
 
-**Port Status**: � **Phase 22: THETHINGFACTORY CRASH RESOLUTION COMPLETE** ✅
+**Port Status**: 🚨 **Phase 22.5: NEW SEGMENTATION FAULT IN BITFLAGS** ⚠️
 
 **Date**: Janeiro 24, 2025
 
-**Commitment**: 🎉 **MAJOR BREAKTHROUGH ACHIEVED** - TheThingFactory crash completely resolved!
+**Status**: 🚨 **NOVA ISSUE CRÍTICA** - Segmentação fault em BitFlags::operator== após sucesso do DefaultConditionState
+
+## � Overview
+
+**🚨 PHASE 22.5 - NOVO SEGMENTATION FAULT (Janeiro 24, 2025)**: **INVESTIGAÇÃO ATIVA** ⚠️ Nova issue crítica identificada em doesStateExist()
+
+**🎉 SUCESSO ANTERIOR**: TheThingFactory DefaultConditionState parsing completamente resolvido
+
+**❌ NOVA ISSUE CRÍTICA**: Segmentação fault em BitFlags comparison durante ConditionState processing
+
+### Stack Trace da Nova Issue (via LLDB)
+```
+* thread #1, queue = 'com.apple.main-thread', stop reason = EXC_BAD_ACCESS (code=1, address=0x0)
+* frame #0: 0x0000000102b4c4ec generalszh`std::__1::bitset<117ul>::operator==(bitset<117ul> const&) const + 28
+  frame #1: 0x0000000102b4c4c4 generalszh`BitFlags<117ul>::operator==(BitFlags<117ul> const&) const + 36
+  frame #2: 0x0000000102b4bec0 generalszh`W3DModelDrawModuleData::doesStateExist() + 1344
+  frame #3: 0x0000000102b4b7c4 generalszh`W3DModelDrawModuleData::parseConditionState() + 292
+```
+
+### Análise da Nova Issue
+- **Localização**: `W3DModelDraw.cpp`, linha 1411, função `doesStateExist()`
+- **Root Cause**: `BitFlags<117ul>::operator==()` comparando objetos corrompidos
+- **Context**: Processando `ConditionState = DOOR_1_OPENING` para `W3DOverlordAircraftDraw`
+- **Crash Point**: `if (f == it->getNthConditionsYes(i))` - null pointer dereference em BitFlags comparison
+
+### Próxima Estratégia: Asset Replacement Testing
+1. **Clean Asset Testing**: Substituir assets atuais por cópia limpa
+2. **BitFlags Validation**: Adicionar proteção como `AsciiString::validate()`
+3. **Memory Corruption Investigation**: Análise de inicialização de BitFlags objects
 
 ## 🎯 Overview
 
