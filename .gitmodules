@@ -1,3 +1,12 @@
 [submodule "GeneralsReplays"]
 	path = GeneralsReplays
 	url = https://github.com/TheSuperHackers/GeneralsReplays
+[submodule "references/fighter19-dxvk-port"]
+	path = references/fighter19-dxvk-port
+	url = https://github.com/Fighter19/CnC_Generals_Zero_Hour.git
+[submodule "references/jmarshall-win64-modern"]
+	path = references/jmarshall-win64-modern
+	url = https://github.com/jmarshall2323/CnC_Generals_Zero_Hour.git
+[submodule "references/dsalzner-linux-attempt"]
+	path = references/dsalzner-linux-attempt
+	url = https://github.com/dsalzner/CnC_Generals_Zero_Hour-Linux.git
