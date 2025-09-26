@@ -1,32 +1,250 @@
 # GeneralsX - Linux Build Guide
 
-## 🐧 Linux Port Status
+This guide provides detailed instructions for building GeneralsX on Linux 64-bit systems.
 
-The GeneralsX port to Linux is currently **under active development**.
+## 📋 Prerequisites
 
-### 📋 Current Status
+### Essential Tools
+- **GCC** or **Clang** compiler (C++20 support required)
+- **CMake** 3.20 or higher
+- **Ninja** build system (recommended)
+- **Git** for repository management
 
-- **Phase**: Initial development
-- **Priority**: High (after macOS port stabilization)
-- **Timeline**: Detailed information coming soon
+### Distribution-Specific Installation
 
-### 🔄 Next Steps
+#### Ubuntu/Debian
+```bash
+# Install build tools
+sudo apt update
+sudo apt install build-essential cmake ninja-build git
 
-Linux port development will follow the same successful methodology as the macOS port:
+# Install additional dependencies
+sudo apt install libgl1-mesa-dev libglu1-mesa-dev libasound2-dev
+```
 
-1. **Compatibility Analysis**: Identification of system-specific APIs
-2. **Abstraction Layer**: Extension of `win32_compat.h` for Linux
-3. **Build System**: CMake adaptation for Linux distributions
-4. **Testing**: Validation across multiple distributions
+#### Fedora
+```bash
+# Install build tools
+sudo dnf install gcc-c++ cmake ninja-build git
 
-### 🎯 Planned Distributions
+# Install additional dependencies
+sudo dnf install mesa-libGL-devel mesa-libGLU-devel alsa-lib-devel
+```
 
-Initial focus will be on major distributions:
-- **Ubuntu** (LTS)
-- **Debian** (Stable)
-- **Fedora** (Latest)
-- **Arch Linux**
-- **openSUSE**
+#### Arch Linux
+```bash
+# Install build tools
+sudo pacman -S base-devel cmake ninja git
+
+# Install additional dependencies
+sudo pacman -S mesa glu alsa-lib
+```
+
+## 🔧 Environment Setup
+
+### 1. Repository Clone
+```bash
+git clone https://github.com/fbraz3/GeneralsX.git
+cd GeneralsX
+```
+
+### 2. Build Configuration
+```bash
+# Configure using linux preset for 64-bit Linux
+cmake --preset linux
+```
+
+## 🏗️ Building
+
+### 🎯 Primary Target: Zero Hour (z_generals)
+```bash
+# Build the main Zero Hour executable
+cmake --build build/linux --target z_generals -j 4
+
+# Executable will be created at: build/linux/GeneralsMD/generalszh
+```
+
+### 🎮 Secondary Target: Original Generals (g_generals)
+```bash
+# Build the original Generals executable
+cmake --build build/linux --target g_generals -j 4
+
+# Executable will be created at: build/linux/Generals/generals
+```
+
+### 🔧 Core Libraries (Optional Testing)
+```bash
+# To test core libraries independently
+cmake --build build/linux --target ww3d2 wwlib wwmath -j 4
+```
+
+### ⚡ Performance Build Optimization
+```bash
+# Use dynamic core allocation (recommended)
+cmake --build build/linux --target z_generals -j $(nproc --ignore=1)
+```
+
+## 🎮 Runtime Setup
+
+### Game Assets (Required)
+The game requires original Command & Conquer: Generals/Zero Hour assets to run properly.
+
+```bash
+# Create directory for assets
+mkdir -p $HOME/Downloads/generals
+
+# Copy the executable (Zero Hour recommended)
+cp ./build/linux/GeneralsMD/generalszh $HOME/Downloads/generals/
+
+# Copy original game assets to $HOME/Downloads/generals/
+# Required: Data/, Maps/, etc. from original installation
+# Zero Hour assets recommended for best compatibility
+```
+
+### Running the Game
+```bash
+# Run in directory with assets
+cd $HOME/Downloads/generals && ./generalszh
+
+# Alternative: Original Generals
+cd $HOME/Downloads/generals && ./generals
+```
+
+## 🐛 Debug and Development
+
+### Debugging with GDB
+```bash
+# Use GDB for crash investigation
+cd $HOME/Downloads/generals && gdb ./generalszh
+
+# Direct execution with debug output
+cd $HOME/Downloads/generals && ./generalszh
+```
+
+### Alternative Build Configurations
+
+#### Debug Build
+```bash
+# For development with debug symbols
+cmake --preset linux -DRTS_BUILD_OPTION_DEBUG=ON
+cmake --build build/linux --target z_generals -j 4
+```
+
+#### Release Build (Default)
+```bash
+# For optimized performance
+cmake --preset linux -DRTS_BUILD_OPTION_DEBUG=OFF
+cmake --build build/linux --target z_generals -j 4
+```
+
+## ⚡ Performance Tips
+
+### Linux Native Compilation Benefits
+- **Native Performance**: Optimized for Linux 64-bit architecture
+- **Distribution Flexibility**: Works across major Linux distributions
+- **Development Tools**: Full access to Linux debugging and profiling tools
+- **Open Source Ecosystem**: Integration with Linux development workflow
+
+### Parallel Compilation
+```bash
+# Use all cores except one to avoid system overload
+cmake --build build/linux --target z_generals -j $(nproc --ignore=1)
+```
+
+### Build Cleanup
+```bash
+# Clean previous build if needed
+rm -rf build/linux
+cmake --preset linux
+```
+
+## 📊 Linux Port Status
+
+### 🔄 In Development (Phase 22.7+)
+- **Build System**: CMake preset implementation ready
+- **Cross-Platform APIs**: Win32→POSIX compatibility layer in progress
+- **Testing**: Validation pending across major distributions
+- **Graphics Pipeline**: OpenGL rendering system planned
+
+### 🎯 Planned Features
+- **Distribution Support**: Ubuntu, Debian, Fedora, Arch, openSUSE
+- **Package Management**: Integration with system package managers
+- **Desktop Integration**: .desktop files and system integration
+- **Performance Optimization**: Linux-specific performance enhancements
+
+### 📈 Next Steps
+- Complete Win32→POSIX API compatibility layer
+- Testing across target distributions
+- Graphics subsystem validation
+- Full gameplay testing
+
+## 📚 Additional Resources
+
+- **Progress Tracking**: [MACOS_PORT.md](MACOS_PORT.md)
+- **Next Steps**: [NEXT_STEPS.md](NEXT_STEPS.md)
+- **macOS Guide**: [MACOS_BUILD.md](MACOS_BUILD.md)
+
+## 🆘 Troubleshooting
+
+### Common Issues
+
+#### CMake can't find dependencies
+```bash
+# Update package manager and reinstall cmake
+# Ubuntu/Debian:
+sudo apt update && sudo apt upgrade cmake
+
+# Fedora:
+sudo dnf update cmake
+
+# Arch Linux:
+sudo pacman -Syu cmake
+```
+
+#### Compiler errors
+```bash
+# Ensure C++20 support
+gcc --version  # Should be 10+ or later
+clang --version  # Should be 13+ or later
+```
+
+#### Linking errors
+```bash
+# Clean and rebuild
+rm -rf build/linux
+cmake --preset linux
+cmake --build build/linux --target z_generals -j 4
+```
+
+#### Missing graphics libraries
+```bash
+# Ubuntu/Debian:
+sudo apt install libgl1-mesa-dev libglu1-mesa-dev
+
+# Fedora:
+sudo dnf install mesa-libGL-devel mesa-libGLU-devel
+
+# Arch Linux:
+sudo pacman -S mesa glu
+```
+
+### Performance Issues
+```bash
+# Verify 64-bit executable
+file build/linux/GeneralsMD/generalszh
+# Should show: ELF 64-bit LSB executable, x86-64
+
+# Check system resources
+htop  # or: top -p $(pgrep generalszh)
+```
+
+### Support
+For Linux port specific issues, check [Issues](https://github.com/fbraz3/GeneralsX/issues) or open a new one.
+
+---
+**Last updated**: Dezembro 30, 2024  
+**Status**: Phase 22.7+ - Linux Support Implementation  
+**Architecture**: Linux 64-bit (x86_64)
 
 ### 📚 Contributions
 

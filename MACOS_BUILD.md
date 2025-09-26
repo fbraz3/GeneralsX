@@ -38,9 +38,15 @@ cd GeneralsX
 cmake --preset macos-arm64
 ```
 
-### Alternative: Intel Compatibility
+### Alternative: Intel x64 macOS
 ```bash
-# For Intel Macs or compatibility mode using vc6 preset
+# For Intel Macs using dedicated Intel preset
+cmake --preset macos-x64
+```
+
+### Compatibility: Legacy VC6 preset
+```bash
+# For compatibility or Windows development
 cmake --preset vc6
 ```
 
@@ -59,13 +65,22 @@ cmake --build build/macos-arm64 --target z_generals -j 4
 # Build the original Generals executable
 cmake --build build/macos-arm64 --target g_generals -j 4
 
-# Executable will be created at: build/macos-arm64/Generals/generals
+# For Intel Macs:
+cmake --build build/macos-x64 --target g_generals -j 4
+
+# Executables will be created at:
+# ARM64: build/macos-arm64/Generals/generals
+# Intel: build/macos-x64/Generals/generals
 ```
 
 ### 🔧 Core Libraries (Optional Testing)
 ```bash
 # To test core libraries independently
+# ARM64:
 cmake --build build/macos-arm64 --target ww3d2 wwlib wwmath -j 4
+
+# Intel x64:
+cmake --build build/macos-x64 --target ww3d2 wwlib wwmath -j 4
 ```
 
 ### ⚡ Performance Build Optimization
@@ -84,7 +99,11 @@ The game requires original Command & Conquer: Generals/Zero Hour assets to run p
 mkdir -p $HOME/Downloads/generals
 
 # Copy the executable (Zero Hour recommended)
+# ARM64:
 cp ./build/macos-arm64/GeneralsMD/generalszh $HOME/Downloads/generals/
+
+# Intel x64:
+cp ./build/macos-x64/GeneralsMD/generalszh $HOME/Downloads/generals/
 
 # Copy original game assets to $HOME/Downloads/generals/
 # Required: Data/, Maps/, etc. from original installation
@@ -120,6 +139,13 @@ cmake --preset macos-arm64 -DRTS_BUILD_OPTION_DEBUG=ON
 cmake --build build/macos-arm64 --target z_generals -j 4
 ```
 
+#### Intel x64 Debug Build
+```bash
+# For development with debug symbols (Intel)
+cmake --preset macos-x64 -DRTS_BUILD_OPTION_DEBUG=ON
+cmake --build build/macos-x64 --target z_generals -j 4
+```
+
 #### ARM64 Native Release Build (Default)
 ```bash
 # For optimized performance (ARM64)
@@ -127,11 +153,11 @@ cmake --preset macos-arm64 -DRTS_BUILD_OPTION_DEBUG=OFF
 cmake --build build/macos-arm64 --target z_generals -j 4
 ```
 
-#### Intel Compatibility Build
+#### Intel x64 Release Build
 ```bash
-# For Intel Macs or compatibility testing
-cmake --preset vc6 -DRTS_BUILD_OPTION_DEBUG=OFF
-cmake --build build/vc6 --target z_generals -j 4
+# For optimized performance (Intel)
+cmake --preset macos-x64 -DRTS_BUILD_OPTION_DEBUG=OFF
+cmake --build build/macos-x64 --target z_generals -j 4
 ```
 
 ## ⚡ Performance Tips
@@ -152,8 +178,13 @@ cmake --build build/macos-arm64 --target z_generals -j $(sysctl -n hw.ncpu | awk
 ### Build Cleanup
 ```bash
 # Clean previous build if architecture changed
+# ARM64:
 rm -rf build/macos-arm64
 cmake --preset macos-arm64
+
+# Intel x64:
+rm -rf build/macos-x64
+cmake --preset macos-x64
 ```
 
 ## 📊 macOS Port Status
@@ -199,10 +230,16 @@ brew update && brew upgrade cmake
 
 #### Architecture mismatch errors
 ```bash
-# Clean and rebuild with explicit ARM64
+# Clean and rebuild with explicit architecture
+# ARM64:
 rm -rf build/macos-arm64
 cmake --preset macos-arm64
 cmake --build build/macos-arm64 --target z_generals -j 4
+
+# Intel x64:
+rm -rf build/macos-x64
+cmake --preset macos-x64
+cmake --build build/macos-x64 --target z_generals -j 4
 ```
 
 #### Linking errors
@@ -228,9 +265,14 @@ cd $HOME/Downloads/generals && lldb -s $REPO_PATH/scripts/debug_script.lldb gene
 
 ### Performance Issues
 ```bash
-# Verify ARM64 native execution (not Intel emulation)
+# Verify architecture execution
+# ARM64:
 file build/macos-arm64/GeneralsMD/generalszh
 # Should show: Mach-O 64-bit executable arm64
+
+# Intel x64:
+file build/macos-x64/GeneralsMD/generalszh
+# Should show: Mach-O 64-bit executable x86_64
 
 # Check system resources
 top -pid $(pgrep generalszh)
