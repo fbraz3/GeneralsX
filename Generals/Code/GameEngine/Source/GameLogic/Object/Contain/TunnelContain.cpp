@@ -105,7 +105,6 @@ void TunnelContain::removeFromContain( Object *obj, Bool exposeStealthUnits )
 		return;
 
 	owningPlayer->getTunnelSystem()->removeFromContain( obj, exposeStealthUnits );
-
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -164,6 +163,7 @@ void TunnelContain::onRemoving( Object *obj )
 	obj->clearDisabled( DISABLED_HELD );
 
 	/// place the object in the world at position of the container m_object
+#if RETAIL_COMPATIBLE_CRC
 	ThePartitionManager->registerObject( obj );
 	obj->setPosition( getObject()->getPosition() );
 	if( obj->getDrawable() )
@@ -171,6 +171,12 @@ void TunnelContain::onRemoving( Object *obj )
 		obj->setSafeOcclusionFrame(TheGameLogic->getFrame()+obj->getTemplate()->getOcclusionDelay());
 		obj->getDrawable()->setDrawableHidden( false );
 	}
+#else
+	// TheSuperHackers @bugfix Now correctly adds the objects to the world without issues with shrouded portable structures.
+	obj->setPosition(getObject()->getPosition());
+	obj->setSafeOcclusionFrame(TheGameLogic->getFrame() + obj->getTemplate()->getOcclusionDelay());
+	addOrRemoveObjFromWorld(obj, TRUE);
+#endif
 
 	doUnloadSound();
 }
