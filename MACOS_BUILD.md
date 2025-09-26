@@ -1,6 +1,6 @@
 # GeneralsX - macOS Build Guide
 
-This guide provides detailed instructions for building GeneralsX on macOS.
+This guide provides detailed instructions for building GeneralsX on macOS, including ARM64 native compilation for Apple Silicon (M1/M2).
 
 ## 📋 Prerequisites
 
@@ -9,6 +9,10 @@ This guide provides detailed instructions for building GeneralsX on macOS.
 - **Homebrew** for package management
 - **CMake** 3.20 or higher
 - **Ninja** build system (recommended)
+
+### Recommended Target
+- **Main Executable Target**: `z_generals` (Zero Hour expansion, ARM64 native)
+- **Apple Silicon**: Use ARM64 native compilation for best performance
 
 ### Prerequisites Installation
 
@@ -34,6 +38,9 @@ cd GeneralsX
 ### 2. Build Configuration
 ```bash
 # Configure using vc6 preset (recommended for compatibility)
+# For Apple Silicon (M1/M2):
+cmake --preset vc6 -DCMAKE_OSX_ARCHITECTURES=arm64
+# Para Intel Macs:
 cmake --preset vc6
 ```
 
@@ -41,10 +48,11 @@ cmake --preset vc6
 
 ### Build Zero Hour (Recommended)
 ```bash
-# Build the main Zero Hour executable
+# Build the main Zero Hour executable (ARM64 native recommended)
 cmake --build build/vc6 --target z_generals -j 4
 
 # Executable will be created at: build/vc6/GeneralsMD/generalszh
+# For Apple Silicon, this binary will be ARM64 native
 ```
 
 ### Build Original Generals
@@ -95,15 +103,15 @@ cd $HOME/Downloads/generals && lldb -s $REPO_PATH/scripts/debug_script.lldb gene
 
 #### Debug Build
 ```bash
-# For development with debug symbols
-cmake --preset vc6 -DRTS_BUILD_OPTION_DEBUG=ON
+# For development with debug symbols (Apple Silicon)
+cmake --preset vc6 -DCMAKE_OSX_ARCHITECTURES=arm64 -DRTS_BUILD_OPTION_DEBUG=ON
 cmake --build build/vc6 --target z_generals -j 4
 ```
 
 #### Release Build (Default)
 ```bash
-# For optimized performance
-cmake --preset vc6 -DRTS_BUILD_OPTION_DEBUG=OFF
+# For optimized performance (Apple Silicon)
+cmake --preset vc6 -DCMAKE_OSX_ARCHITECTURES=arm64 -DRTS_BUILD_OPTION_DEBUG=OFF
 cmake --build build/vc6 --target z_generals -j 4
 ```
 
@@ -115,6 +123,7 @@ cmake --build build/vc6 --target z_generals -j 4
 # For 8-core machine: -j 4
 # For 16-core machine: -j 8
 cmake --build build/vc6 --target z_generals -j $(sysctl -n hw.ncpu | awk '{print int($1/2)}')
+# For Apple Silicon, this ensures optimal performance
 ```
 
 ### Build Cleanup
