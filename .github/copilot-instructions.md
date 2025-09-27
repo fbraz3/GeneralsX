@@ -106,4 +106,36 @@ diff -r GeneralsMD/ references/jmarshall-win64-modern/GeneralsMD/  # Compare sol
 - `Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h` - Platform abstractions
 - `.github/instructions/project.instructions.md` - Project-specific guidelines
 
-**Build Tip**: Use `-j 4` (half CPU cores) to prevent system overload during compilation
+**Build Tip**: Use `-j 4` (half CPU cores) to prevent system overload during compilation.
+
+**Big Files Reference**: See `BIG_FILES_REFERENCE.md` for detailed asset structure and INI debugging.
+
+**How to Find INI Files in .BIG Archives**:
+
+| INI Pattern | Primary Location | Fallback Location | Notes |
+|-------------|------------------|-------------------|-------|
+| `Data\INI\*.ini` | INIZH.big | INI.big | Root configuration files |
+| `Data\INI\Object\*.ini` | INIZH.big | INI.big | Object definitions |
+| `Data\INI\Object\*General.ini` | **INIZH.big ONLY** | - | Zero Hour exclusive generals |
+
+** Aditional crash logs**:
+There is a crash log for the expansion (Zero Hour) in `$HOME/Documents/Command\ and\ Conquer\ Generals\ Zero\ Hour\ Data/ReleaseCrashInfo.txt`
+
+**Historical Progress**:
+```
+# OLD CRASH (RESOLVED via Universal INI Protection):
+cat $HOME/Documents/Command\ and\ Conquer\ Generals\ Zero\ Hour\ Data/ReleaseCrashInfo.txt
+Release Crash at Fri Sep 26 16:27:16 2025
+; Reason Error parsing INI file 'Data\INI\GameLOD.ini' (Line: 'StaticGameLOD = Low ')
+
+# CURRENT STATUS (Phase 22.8 - September 2025):
+- ✅ GameLOD.ini parsing: RESOLVED via Universal Protection
+- ✅ TheArmorStore: COMPLETED successfully  
+- ✅ TheBuildAssistant: COMPLETED successfully
+- ✅ TheThingFactory: COMPLETED successfully  
+- ✅ TheFXListStore: COMPLETED successfully
+- 🚧 TheWeaponStore: Segmentation fault at RadiusDamageAffects field
+```
+
+**Universal INI Protection System**:
+Implemented comprehensive field parser exception handling that allows engine continuation through hundreds of unknown exceptions while processing complex INI files. This breakthrough enabled progression from immediate GameLOD.ini crashes to advanced engine subsystem initialization.

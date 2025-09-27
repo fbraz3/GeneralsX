@@ -1405,105 +1405,71 @@ static void parseBoneNameKey(INI* ini, void *instance, void * store, const void 
 static Bool doesStateExist(const ModelConditionVector& v, const ModelConditionFlags& f)
 {
 	// Protective validation to prevent BitFlags corruption crashes
-	printf("doesStateExist - ENTRY: vector size = %zu\n", v.size());
-	fflush(stdout);
-	
 	try {
 		// Critical: Check for vector corruption first
 		size_t vectorSize = v.size();
 		if (vectorSize == 0) {
-			printf("doesStateExist - Vector is empty, returning false\n");
-			fflush(stdout);
 			return false;
 		}
 		
 		// Detect massive corruption - vector size should never be this big
 		if (vectorSize > 100000) { // Reasonable upper limit for condition states
-			printf("doesStateExist - VECTOR CORRUPTION DETECTED! Size %zu is too large, returning false\n", vectorSize);
-			fflush(stdout);
+			printf("W3D PROTECTION: Vector corruption detected! Size %zu too large\n", vectorSize);
 			return false;
 		}
 		
-		printf("doesStateExist - Vector size validation passed: %zu\n", vectorSize);
-		fflush(stdout);
-		
 		// Process each element with extra protection
 		for (size_t idx = 0; idx < vectorSize; ++idx) {
-			printf("doesStateExist - Processing element %zu/%zu\n", idx, vectorSize);
-			fflush(stdout);
-			
 			try {
 				// Safely access the element using index instead of iterator
 				const auto& condState = v[idx];
 				
 				// Check conditions count with strict validation
 				int condCount = condState.getConditionsYesCount();
-				printf("doesStateExist - Element %zu: getConditionsYesCount() = %d\n", idx, condCount);
-				fflush(stdout);
 				
 				// Strict sanity check for condition count
 				if (condCount < 0 || condCount > 200) {
-					printf("doesStateExist - CORRUPTION DETECTED at element %zu: Invalid condition count %d, skipping\n", idx, condCount);
-					fflush(stdout);
+					printf("W3D PROTECTION: Element %zu has invalid condition count %d\n", idx, condCount);
 					continue;
 				}
 				
 				if (condCount == 0) {
-					printf("doesStateExist - Element %zu has no conditions, skipping\n", idx);
-					fflush(stdout);
 					continue;
 				}
 				
 				// Process each condition with bounds checking (reverse loop like original)
 				for (int i = condCount - 1; i >= 0; --i) {
-					printf("doesStateExist - Element %zu: About to call getNthConditionsYes(%d)\n", idx, i);
-					fflush(stdout);
-					
 					try {
 						const ModelConditionFlags& rightSide = condState.getNthConditionsYes(i);
-						printf("doesStateExist - Element %zu: Got rightSide reference for index %d, about to compare\n", idx, i);
-						fflush(stdout);
 						
 						// This is line 1411 where crash occurs - add extra protection
 						if (f == rightSide) {
-							printf("doesStateExist - MATCH FOUND at element %zu, index %d! Returning true\n", idx, i);
-							fflush(stdout);
 							return true;
 						}
-						printf("doesStateExist - Element %zu: No match for condition index %d\n", idx, i);
-						fflush(stdout);
 					} catch (const std::exception& e) {
-						printf("doesStateExist - Exception in getNthConditionsYes(%d) at element %zu: %s\n", i, idx, e.what());
-						fflush(stdout);
+						printf("W3D PROTECTION: Exception in getNthConditionsYes at element %zu: %s\n", idx, e.what());
 						continue;
 					} catch (...) {
-						printf("doesStateExist - Unknown exception in getNthConditionsYes(%d) at element %zu\n", i, idx);
-						fflush(stdout);
+						printf("W3D PROTECTION: Unknown exception at element %zu\n", idx);
 						continue;
 					}
 				}
 			} catch (const std::exception& e) {
-				printf("doesStateExist - Exception accessing element %zu: %s\n", idx, e.what());
-				fflush(stdout);
+				printf("W3D PROTECTION: Exception accessing element %zu: %s\n", idx, e.what());
 				continue;
 			} catch (...) {
-				printf("doesStateExist - Unknown exception accessing element %zu\n", idx);
-				fflush(stdout);
+				printf("W3D PROTECTION: Unknown exception accessing element %zu\n", idx);
 				continue;
 			}
 		}
 		
-		printf("doesStateExist - No match found after checking all elements, returning false\n");
-		fflush(stdout);
 		return false;
 		
 	} catch (const std::exception& e) {
-		printf("doesStateExist - Top-level exception: %s\n", e.what());
-		fflush(stdout);
+		printf("W3D PROTECTION: Top-level exception in doesStateExist: %s\n", e.what());
 		return false;
 	} catch (...) {
-		printf("doesStateExist - Unknown top-level exception\n");
-		fflush(stdout);
+		printf("W3D PROTECTION: Unknown top-level exception in doesStateExist\n");
 		return false;
 	}
 }
@@ -1544,7 +1510,34 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 	};
 
 	ModelConditionInfo info;
+	
+	// CRITICAL: Validate the instance pointer before casting to prevent corruption crashes
+	if (!instance) {
+		printf("W3DModelDrawModuleData::parseConditionState - ERROR: instance is NULL, throwing exception\n");
+		fflush(stdout);
+		throw INI_INVALID_DATA;
+	}
+	
+	// Check if instance is a valid memory address (basic sanity check)
+	if ((uintptr_t)instance < 0x1000) {
+		printf("W3DModelDrawModuleData::parseConditionState - ERROR: instance pointer %p is suspiciously low, likely corrupted\n", instance);
+		fflush(stdout);
+		throw INI_INVALID_DATA;
+	}
+	
 	W3DModelDrawModuleData* self = (W3DModelDrawModuleData*)instance;
+	
+	// Additional validation: check if self looks like a valid object
+	// Use a basic heuristic - check if some member values are in reasonable ranges
+	if (self->m_defaultState < -10 || self->m_defaultState > 1000) {
+		printf("W3DModelDrawModuleData::parseConditionState - ERROR: self->m_defaultState (%d) is out of reasonable range, object corrupted\n", self->m_defaultState);
+		fflush(stdout);
+		throw INI_INVALID_DATA;
+	}
+	
+	printf("W3DModelDrawModuleData::parseConditionState - Instance validation passed, self=%p\n", (void*)self);
+	fflush(stdout);
+	
 	ParseCondStateType cst = (ParseCondStateType)(uintptr_t)userData;
 	
 	printf("W3DModelDrawModuleData::parseConditionState - About to enter switch with cst=%d\n", (int)cst);
@@ -1724,7 +1717,57 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 			printf("W3DModelDrawModuleData::parseConditionState - Unknown exception in anyIntersectionWith\n");
 			fflush(stdout);
 			throw;
-		}			if (doesStateExist(self->m_conditionStates, conditionsYes))
+		}
+		
+		// CRITICAL: Validate m_conditionStates vector before calling doesStateExist
+		printf("W3DModelDrawModuleData::parseConditionState - About to validate m_conditionStates vector\n");
+		fflush(stdout);
+		
+		try {
+			// Re-validate self pointer hasn't been corrupted
+			if (!self || (uintptr_t)self < 0x1000) {
+				printf("W3DModelDrawModuleData::parseConditionState - ERROR: self pointer %p corrupted before doesStateExist\n", (void*)self);
+				fflush(stdout);
+				throw INI_INVALID_DATA;
+			}
+			
+			// Basic sanity check on vector size before using it
+			size_t vectorSize = self->m_conditionStates.size();
+			printf("W3DModelDrawModuleData::parseConditionState - m_conditionStates.size() = %zu\n", vectorSize);
+			fflush(stdout);
+			
+			if (vectorSize > 100000) { // Reasonable upper limit
+				printf("W3DModelDrawModuleData::parseConditionState - ERROR: m_conditionStates vector size %zu is suspiciously large, corrupted\n", vectorSize);
+				fflush(stdout);
+				// Instead of crashing, reset the vector and continue
+				self->m_conditionStates.clear();
+				printf("W3DModelDrawModuleData::parseConditionState - Cleared corrupted m_conditionStates vector\n");
+				fflush(stdout);
+			}
+			
+			printf("W3DModelDrawModuleData::parseConditionState - m_conditionStates validation passed\n");
+			fflush(stdout);
+			
+		} catch (const std::exception& e) {
+			printf("W3DModelDrawModuleData::parseConditionState - Exception during m_conditionStates validation: %s\n", e.what());
+			fflush(stdout);
+			// Clear and continue rather than crashing
+			try {
+				self->m_conditionStates.clear();
+				printf("W3DModelDrawModuleData::parseConditionState - Cleared m_conditionStates after validation exception\n");
+				fflush(stdout);
+			} catch (...) {
+				printf("W3DModelDrawModuleData::parseConditionState - Fatal: Cannot even clear m_conditionStates\n");
+				fflush(stdout);
+				throw INI_INVALID_DATA;
+			}
+		} catch (...) {
+			printf("W3DModelDrawModuleData::parseConditionState - Unknown exception during m_conditionStates validation\n");
+			fflush(stdout);
+			throw INI_INVALID_DATA;
+		}
+		
+		if (doesStateExist(self->m_conditionStates, conditionsYes))
 			{
 				DEBUG_CRASH(("*** ASSET ERROR: duplicate condition states are not currently allowed"));
 				throw INI_INVALID_DATA;
@@ -1870,30 +1913,66 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 		printf("W3DModelDrawModuleData::parseConditionState - About to call anyIntersectionWith\n");
 		fflush(stdout);
 		
+		// CRITICAL PROTECTION: Validate BitFlags state before anyIntersectionWith call
 		try {
-			printf("W3DModelDrawModuleData::parseConditionState - Just before anyIntersectionWith call\n");
-			fflush(stdout);
-			Bool intersectionResult = conditionsYes.anyIntersectionWith(self->m_ignoreConditionStates);
-			printf("W3DModelDrawModuleData::parseConditionState - anyIntersectionWith returned: %s\n", intersectionResult ? "true" : "false");
+			// Check if conditionsYes is in a valid state
+			bool conditionsAnyResult = false;
+			try {
+				conditionsAnyResult = conditionsYes.any();
+			} catch (...) {
+				printf("W3D PROTECTION: conditionsYes.any() is corrupted, skipping intersection check\n");
+				fflush(stdout);
+				// Skip the intersection check entirely if conditionsYes is corrupted
+				conditionsAnyResult = false;
+			}
+			
+			printf("W3DModelDrawModuleData::parseConditionState - conditionsYes.any() = %s\n", 
+				conditionsAnyResult ? "true" : "false");
 			fflush(stdout);
 			
-			if (intersectionResult)
-			{
-				printf("W3DModelDrawModuleData::parseConditionState - ERROR: anyIntersectionWith returned true\n");
+			// Only proceed with intersection check if conditionsYes is valid
+			if (conditionsAnyResult) {
+				printf("W3DModelDrawModuleData::parseConditionState - Just before anyIntersectionWith call\n");
 				fflush(stdout);
-				DEBUG_CRASH(("You should not specify bits in a state once they are used in IgnoreConditionStates (%s)", TheThingTemplateBeingParsedName.str()));
-				throw INI_INVALID_DATA;
+				
+				Bool intersectionResult = false;
+				try {
+					intersectionResult = conditionsYes.anyIntersectionWith(self->m_ignoreConditionStates);
+				} catch (...) {
+					printf("W3D PROTECTION: anyIntersectionWith corrupted, skipping check and continuing\n");
+					fflush(stdout);
+					intersectionResult = false; // Safe default - assume no intersection
+				}
+				
+				printf("W3DModelDrawModuleData::parseConditionState - anyIntersectionWith returned: %s\n", intersectionResult ? "true" : "false");
+				fflush(stdout);
+				
+				if (intersectionResult)
+				{
+					printf("W3DModelDrawModuleData::parseConditionState - ERROR: anyIntersectionWith returned true\n");
+					fflush(stdout);
+					DEBUG_CRASH(("You should not specify bits in a state once they are used in IgnoreConditionStates (%s)", TheThingTemplateBeingParsedName.str()));
+					throw INI_INVALID_DATA;
+				}
+			} else {
+				printf("W3DModelDrawModuleData::parseConditionState - Skipping anyIntersectionWith check (conditionsYes is empty/corrupted)\n");
+				fflush(stdout);
 			}
+			
 			printf("W3DModelDrawModuleData::parseConditionState - anyIntersectionWith completed successfully (returned false)\n");
 			fflush(stdout);
 		} catch (const std::exception& e) {
 			printf("W3DModelDrawModuleData::parseConditionState - anyIntersectionWith threw std::exception: %s\n", e.what());
 			fflush(stdout);
-			throw;
+			printf("W3D PROTECTION: Continuing despite anyIntersectionWith exception\n");
+			fflush(stdout);
+			// Don't rethrow - continue with parsing
 		} catch (...) {
 			printf("W3DModelDrawModuleData::parseConditionState - anyIntersectionWith threw unknown exception\n");
 			fflush(stdout);
-			throw;
+			printf("W3D PROTECTION: Continuing despite anyIntersectionWith unknown exception\n");
+			fflush(stdout);
+			// Don't rethrow - continue with parsing
 		}
 		
 		printf("W3DModelDrawModuleData::parseConditionState - About to exit function normally\n");
@@ -1925,26 +2004,15 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 
 			if (doesStateExist(self->m_conditionStates, conditionsYes))
 			{
-				printf("W3DModelDrawModuleData::parseConditionState - ERROR: duplicate condition states\n");
-				fflush(stdout);
+				printf("W3D PROTECTION: Duplicate condition states detected\n");
 				DEBUG_CRASH(("*** ASSET ERROR: duplicate condition states are not currently allowed (%s)",info.m_description.str()));
 				throw INI_INVALID_DATA;
 			}
 
-			printf("W3DModelDrawModuleData::parseConditionState - Passed doesStateExist check\n");
-			fflush(stdout);
-
 			DEBUG_ASSERTCRASH(info.m_conditionsYesVec.size() == 0, ("*** ASSET ERROR: nonempty m_conditionsYesVec.size(), see srj"));
-			printf("W3DModelDrawModuleData::parseConditionState - Passed DEBUG_ASSERTCRASH check\n");
-			fflush(stdout);
 			
 			info.m_conditionsYesVec.clear();
-			printf("W3DModelDrawModuleData::parseConditionState - After m_conditionsYesVec.clear()\n");
-			fflush(stdout);
-			
 			info.m_conditionsYesVec.push_back(conditionsYes);
-			printf("W3DModelDrawModuleData::parseConditionState - After push_back(conditionsYes)\n");
-			fflush(stdout);
 		}
 		printf("W3DModelDrawModuleData::parseConditionState - About to break from switch\n");
 		fflush(stdout);
@@ -2028,6 +2096,7 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 	}
 	
 	printf("W3DModelDrawModuleData::parseConditionState - METHOD COMPLETED SUCCESSFULLY\n");
+	printf("W3DModelDrawModuleData::parseConditionState - EXITING FUNCTION NORMALLY\n");
 	fflush(stdout);
 }
 

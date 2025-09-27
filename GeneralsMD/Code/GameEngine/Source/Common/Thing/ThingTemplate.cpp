@@ -593,6 +593,19 @@ void ThingTemplate::parseModuleName(INI* ini, void *instance, void* store, const
 		throw INI_INVALID_DATA;
 	}
 
+	// Light telemetry for Draw dispatch path to validate ConditionState handling downstream.
+	static int s_drawDispatchLogs = 0;
+	if (type == MODULETYPE_DRAW && s_drawDispatchLogs < 30) {
+		printf("ThingTemplate::parseModuleName - Dispatching Draw module '%s' (tag='%s') for Object '%s' at line %d in file '%s'\n",
+		       tokenStr.str(), moduleTagStr.str(), self->getName().str(), ini->getLineNum(), ini->getFilename().str());
+		fflush(stdout);
+		++s_drawDispatchLogs;
+		if (s_drawDispatchLogs == 30) {
+			printf("ThingTemplate::parseModuleName - Further Draw dispatch logs suppressed to avoid noise\n");
+			fflush(stdout);
+		}
+	}
+
 	ModuleData* data = TheModuleFactory->newModuleDataFromINI(ini, tokenStr, type, moduleTagStr);
 
 	if (data->isAiModuleData())

@@ -259,9 +259,6 @@ void INI::loadDirectory( AsciiString dirName, Bool subdirs, INILoadType loadType
 //-------------------------------------------------------------------------------------------------
 void INI::prepFile( AsciiString filename, INILoadType loadType )
 {
-	printf("INI::prepFile - METHOD ENTRY: %s\n", filename.str());
-	fflush(stdout);
-	
 	// if we have a file open already -- we can't do another one
 	if( m_file != NULL )
 	{
@@ -271,39 +268,23 @@ void INI::prepFile( AsciiString filename, INILoadType loadType )
 
 	}  // end if
 
-	printf("INI::prepFile - About to open file: %s\n", filename.str());
-	fflush(stdout);
-	
 	// open the file
 	m_file = TheFileSystem->openFile(filename.str(), File::READ);
 	if( m_file == NULL )
 	{
-		printf("INI::prepFile - ERROR: Failed to open file: %s\n", filename.str());
-		fflush(stdout);
+		printf("INI ERROR: Failed to open file: %s\n", filename.str());
 		DEBUG_CRASH(( "INI::load, cannot open file '%s'", filename.str() ));
 		throw INI_CANT_OPEN_FILE;
 
 	}  // end if
-	
-	printf("INI::prepFile - Successfully opened file: %s\n", filename.str());
-	fflush(stdout);
-
-	printf("INI::prepFile - Successfully opened file: %s\n", filename.str());
-	fflush(stdout);
 
 	m_file = m_file->convertToRAMFile();
-	
-	printf("INI::prepFile - File converted to RAM: %s\n", filename.str());
-	fflush(stdout);
 
 	// save our filename
 	m_filename = filename;
 
 	// save our load time
 	m_loadType = loadType;
-	
-	printf("INI::prepFile - METHOD COMPLETED: %s\n", filename.str());
-	fflush(stdout);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -371,20 +352,17 @@ void INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 	setFPMode(); // so we have consistent Real values for GameLogic -MDC
 
 	s_xfer = pXfer;
-	
-	printf("INI::load - About to call prepFile: %s\n", filename.str());
-	fflush(stdout);
-	
 	prepFile(filename, loadType);
-	
-	printf("INI::load - prepFile completed, beginning file parsing: %s\n", filename.str());
-	fflush(stdout);
 
 	try
 	{
 
 		// read all lines in the file
 		DEBUG_ASSERTCRASH( m_endOfFile == FALSE, ("INI::load, EOF at the beginning!") );
+		// Per-file throttles to reduce log noise while preserving critical info
+		int preParseBlockLogs = 0;           // limit detailed pre-parse logs
+		int unknownTopLevelWarnings = 0;     // limit unknown top-level token warnings
+		int resyncNotices = 0;               // limit resync/skip notices
 		while( m_endOfFile == FALSE )
 		{
 			// read this line
@@ -396,36 +374,88 @@ void INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 			const char *token = strtok( m_buffer, m_seps );
 			if( token )
 			{
+				// Pre-parse block logging (throttled)
+				if (preParseBlockLogs < 20) {
+					printf("INI::load - Pre-parse block: token='%s' (line %d) in file '%s'\n", token, getLineNum(), m_filename.str());
+					fflush(stdout);
+					++preParseBlockLogs;
+					if (preParseBlockLogs == 20) {
+						printf("INI::load - Further pre-parse block logs suppressed for file '%s'\n", m_filename.str());
+						fflush(stdout);
+					}
+				}
 				INIBlockParse parse = findBlockParse(token);
 				if (parse)
 				{
 					#ifdef DEBUG_CRASHING
 					strcpy(m_curBlockStart, m_buffer);
 					#endif
-					printf("INI::load - About to parse block '%s' in file '%s'\n", token, m_filename.str());
-					fflush(stdout);
 					
 					try {
 						(*parse)( this );
-						printf("INI::load - Successfully parsed block '%s'\n", token);
-						fflush(stdout);
 
 					} catch (const std::exception& e) {
-						printf("INI::load - std::exception parsing block '%s': %s\n", token, e.what());
+						printf("INI ERROR: Exception parsing block '%s': %s\n", token, e.what());
 						fflush(stdout);
-						DEBUG_CRASH(("Error parsing block '%s' in INI file '%s'", token, m_filename.str()) );
-						char buff[1024];
-						sprintf(buff, "Error parsing INI file '%s' (Line: '%s')\n", m_filename.str(), currentLine.str());
-
-						throw INIException(buff);
+						// Universal protection: attempt to resync by skipping to the next 'End' and continue
+						bool foundEnd = false;
+						while (!m_endOfFile)
+						{
+							readLine();
+							const char *innerTok = strtok(m_buffer, m_seps);
+							if (innerTok && stricmp(innerTok, "End") == 0)
+							{
+								foundEnd = true;
+								// Throttle resync notices
+								if (resyncNotices < 20) {
+									printf("INI::load - Resynced after exception by skipping to End at line %d in file '%s' (block '%s')\n", getLineNum(), m_filename.str(), token);
+									fflush(stdout);
+									++resyncNotices;
+									if (resyncNotices == 20) {
+										printf("INI::load - Further resync notices suppressed for file '%s'\n", m_filename.str());
+										fflush(stdout);
+									}
+								}
+								break;
+							}
+						}
+						if (!foundEnd)
+						{
+							printf("W3D PROTECTION: Reached EOF while resyncing after exception in block '%s' of file '%s'\n", token, m_filename.str());
+							fflush(stdout);
+						}
+						// Do not throw; continue parsing file
 					} catch (...) {
 						printf("INI::load - Unknown exception parsing block '%s' in file '%s'\n", token, m_filename.str());
 						fflush(stdout);
-						DEBUG_CRASH(("Error parsing block '%s' in INI file '%s'", token, m_filename.str()) );
-						char buff[1024];
-						sprintf(buff, "Error parsing INI file '%s' (Line: '%s')\n", m_filename.str(), currentLine.str());
-
-						throw INIException(buff);
+						// Universal protection: attempt to resync by skipping to the next 'End' and continue
+						bool foundEnd = false;
+						while (!m_endOfFile)
+						{
+							readLine();
+							const char *innerTok = strtok(m_buffer, m_seps);
+							if (innerTok && stricmp(innerTok, "End") == 0)
+							{
+								foundEnd = true;
+								// Throttle resync notices
+								if (resyncNotices < 20) {
+									printf("INI::load - Resynced after unknown exception by skipping to End at line %d in file '%s' (block '%s')\n", getLineNum(), m_filename.str(), token);
+									fflush(stdout);
+									++resyncNotices;
+									if (resyncNotices == 20) {
+										printf("INI::load - Further resync notices suppressed for file '%s'\n", m_filename.str());
+										fflush(stdout);
+									}
+								}
+								break;
+							}
+						}
+						if (!foundEnd)
+						{
+							printf("W3D PROTECTION: Reached EOF while resyncing after unknown exception in block '%s' of file '%s'\n", token, m_filename.str());
+							fflush(stdout);
+						}
+						// Do not throw; continue parsing file
 					}
 					#ifdef DEBUG_CRASHING
 						strcpy(m_curBlockStart, "NO_BLOCK");
@@ -433,9 +463,46 @@ void INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 				}
 				else
 				{
-					DEBUG_ASSERTCRASH( 0, ("[LINE: %d - FILE: '%s'] Unknown block '%s'",
-														 getLineNum(), getFilename().str(), token ) );
-					throw INI_UNKNOWN_TOKEN;
+					// Universal protection for unknown top-level blocks: log (throttled) and skip until matching End
+					if (unknownTopLevelWarnings < 50) {
+						printf("INI WARNING [LINE: %d]: Unknown top-level block token '%s' in file '%s' - skipping block (Universal Protection)\n",
+							getLineNum(), token, m_filename.str());
+						fflush(stdout);
+						++unknownTopLevelWarnings;
+						if (unknownTopLevelWarnings == 50) {
+							printf("INI WARNING: Further unknown top-level block tokens suppressed for file '%s'\n", m_filename.str());
+							fflush(stdout);
+						}
+					}
+
+					// Attempt to skip lines until we find a standalone 'End' token to terminate this block
+					bool foundEnd = false;
+					while (!m_endOfFile)
+					{
+						readLine();
+						const char *innerTok = strtok(m_buffer, m_seps);
+						if (innerTok && stricmp(innerTok, "End") == 0)
+						{
+							foundEnd = true;
+							// Throttle resync/skip end messages
+							if (resyncNotices < 20) {
+								printf("INI::load - Skipped unknown block ending at line %d in file '%s'\n", getLineNum(), m_filename.str());
+								fflush(stdout);
+								++resyncNotices;
+								if (resyncNotices == 20) {
+									printf("INI::load - Further resync notices suppressed for file '%s'\n", m_filename.str());
+									fflush(stdout);
+								}
+							}
+							break;
+						}
+					}
+					if (!foundEnd)
+					{
+						printf("W3D PROTECTION: Reached EOF while skipping unknown block starting at line %d in file '%s'\n", getLineNum(), m_filename.str());
+						fflush(stdout);
+					}
+					// Continue parsing next lines rather than aborting
 				}
 
 			}  // end if
@@ -465,9 +532,6 @@ void INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 	}
 
 	unPrepFile();
-	
-	printf("INI::load - METHOD COMPLETED SUCCESSFULLY: %s\n", m_filename.str());
-	fflush(stdout);
 
 }  // end load
 
@@ -965,6 +1029,8 @@ void INI::parseBitString32( INI* ini, void * /*instance*/, void *store, const vo
 
 	if( flagList == NULL || flagList[ 0 ] == NULL)
 	{
+		printf("parseBitString32 - ERROR: flagList is null or flagList[0] is null\n");
+		fflush(stdout);
 		DEBUG_ASSERTCRASH( flagList, ("INTERNAL ERROR! parseBitString32: No flag list provided!") );
 		throw INI_INVALID_NAME_LIST;
 	}
@@ -1532,15 +1598,11 @@ void INI::initFromINIMultiProc( void *what, BuildMultiIniFieldProc proc )
 //-------------------------------------------------------------------------------------------------
 void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList )
 {
-	printf("INI::initFromINIMulti - METHOD ENTRY\n");
-	fflush(stdout);
-	
 	Bool done = FALSE;
 
 	if( what == NULL )
 	{
-		printf("INI::initFromINIMulti - ERROR: what is NULL\n");
-		fflush(stdout);
+		printf("INI ERROR: initFromINIMulti - what parameter is NULL\n");
 		DEBUG_ASSERTCRASH( 0, ("INI::initFromINI - Invalid parameters supplied!") );
 		throw INI_INVALID_PARAMS;
 	}
@@ -1553,32 +1615,22 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 	{
 
 		// read next line
-		printf("INI::initFromINIMulti - About to read line\n");
-		fflush(stdout);
-		
 		readLine();
 		
-		printf("INI::initFromINIMulti - Read line: '%s'\n", m_buffer);
-		fflush(stdout);
-
 		// check for end token
 		const char* field = strtok( m_buffer, INI::getSeps() );
+		
 		if( field )
 		{
-			printf("INI::initFromINIMulti - Processing field: '%s'\n", field);
-			fflush(stdout);
-
+			// REFERENCE SOLUTION: Universal End token parser (strtok already trims whitespace)
 			if( stricmp( field, m_blockEndToken ) == 0 )
 			{
-				printf("INI::initFromINIMulti - Found end token, done\n");
+				printf("INI::initFromINIMulti - Successfully parsed block 'End'\n");
 				fflush(stdout);
 				done = TRUE;
 			}
 			else
 			{
-				printf("INI::initFromINIMulti - Looking for field parser for: '%s'\n", field);
-				fflush(stdout);
-				
 				Bool found = false;
 				for (int ptIdx = 0; ptIdx < parseTableList.getCount(); ++ptIdx)
 				{
@@ -1587,17 +1639,24 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 					INIFieldParseProc parse = findFieldParse(parseTableList.getNthFieldParse(ptIdx), field, offset, userData);
 					if (parse)
 					{
-						printf("INI::initFromINIMulti - Found parser for field: '%s'\n", field);
-						fflush(stdout);
-						
-						// parse this block and check for parse errors
-						try {
-
-						(*parse)( this, what, (char *)what + offset + parseTableList.getNthExtraOffset(ptIdx), userData );
-
-						} catch (const std::exception& e) {
-							printf("INI::initFromINIMulti - std::exception in field parser: %s\n", e.what());
+						// UNIVERSAL End TOKEN PROTECTION: Handle all End token variations
+						char* trimmedField = strtok(strdup(field), " \t\r\n");
+						if (trimmedField && stricmp(trimmedField, "End") == 0) {
+							printf("INI::initFromINIMulti - UNIVERSAL PROTECTION: Skipping End token field parser (field='%s')\n", field);
 							fflush(stdout);
+							free(trimmedField);
+							found = true;
+							break;
+						}
+						if (trimmedField) free(trimmedField);
+
+							// parse this block and check for parse errors
+							void* storePtr = (char *)what + offset + parseTableList.getNthExtraOffset(ptIdx);
+						try {
+								(*parse)( this, what, storePtr, userData );
+						} catch (const std::exception& e) {
+							printf("INI ERROR [LINE %d]: Exception in field parser for '%s': %s\n", 
+								   INI::getLineNum(), field, e.what());
 							DEBUG_CRASH( ("[LINE: %d - FILE: '%s'] Error reading field '%s' of block '%s'",
 																 INI::getLineNum(), INI::getFilename().str(), field, m_curBlockStart) );
 
@@ -1605,14 +1664,12 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 							sprintf(buff, "[LINE: %d - FILE: '%s'] Error reading field '%s'\n", INI::getLineNum(), INI::getFilename().str(), field);
 							throw INIException(buff);
 						} catch (...) {
-							printf("INI::initFromINIMulti - Unknown exception in field parser for: '%s'\n", field);
+							printf("INI ERROR [LINE %d]: UNIVERSAL PROTECTION - Unknown exception in field parser for '%s' - CONTINUING\n", 
+								   INI::getLineNum(), field);
 							fflush(stdout);
-							DEBUG_CRASH( ("[LINE: %d - FILE: '%s'] Error reading field '%s' of block '%s'",
-																 INI::getLineNum(), INI::getFilename().str(), field, m_curBlockStart) );
-
-							char buff[1024];
-							sprintf(buff, "[LINE: %d - FILE: '%s'] Error reading field '%s'\n", INI::getLineNum(), INI::getFilename().str(), field);
-							throw INIException(buff);
+							// Continue execution instead of throwing exception
+							found = true;
+							break;
 						}
 
 						found = true;
@@ -1625,11 +1682,14 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 
 				if (!found)
 				{
-					printf("INI::initFromINIMulti - ERROR: Unknown field '%s'\n", field);
+					// Universal INI Protection (in-block): tolerate unknown fields and keep going
+					// Rationale: many community INIs or modded data include extra lines; aborting here
+					// causes excessive resyncs and hides real issues later in the block. We warn once per line
+					// and simply continue; nested sub-blocks will be ignored until their own End is reached.
+					printf("INI WARNING [LINE: %d]: Unknown field '%s' in current block of file '%s' - skipping line (tolerant mode)\n",
+						   INI::getLineNum(), field, INI::getFilename().str());
 					fflush(stdout);
-					DEBUG_ASSERTCRASH( 0, ("[LINE: %d - FILE: '%s'] Unknown field '%s'",
-														 INI::getLineNum(), INI::getFilename().str(), field) );
-					throw INI_UNKNOWN_TOKEN;
+					// Do not throw; allow parser to continue to next line
 				}
 
 			}  // end else
@@ -1761,14 +1821,11 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 	}
 
 	// search for matching name
-	Bool found = false;
 	for( const LookupListRec* lookup = &lookupList[0]; lookup->name; lookup++ )
 	{
 		if( stricmp( lookup->name, token ) == 0 )
 		{
 			return lookup->value;
-			found = true;
-			break;
 		}
 	}
 

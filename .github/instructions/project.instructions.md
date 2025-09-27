@@ -52,3 +52,47 @@ This project is a fork of the Command & Conquer Generals source code and its exp
     - **Linux**: `cmake --preset linux` → `cmake --build build/linux --target z_generals -j 4`
     - **Windows**: `cmake --preset vc6` → `cmake --build build/vc6 --target z_generals -j 4`
 13. **Target priority**: `z_generals` (Zero Hour) is the primary stable target, `g_generals` (Original Generals) is secondary. Core libraries (`ww3d2`, `wwlib`, `wwmath`) can be tested independently.
+
+# Reference Repositories (Git Submodules)
+The project includes reference repositories as git submodules for comparative analysis and solution discovery:
+
+## Available Reference Repositories
+- **`references/jmarshall-win64-modern/`** - Windows 64-bit modernization with comprehensive fixes
+  - **Primary use**: Cross-platform compatibility solutions, INI parser fixes, memory management
+  - **Key success**: Provided the breakthrough End token parsing solution (Phase 22.7-22.8)
+  - **Coverage**: Full Windows 64-bit port with modern toolchain compatibility
+
+- **`references/fighter19-dxvk-port/`** - Linux port with DXVK graphics integration  
+  - **Primary use**: Graphics layer solutions (DirectX→Vulkan via DXVK), Linux compatibility
+  - **Focus areas**: OpenGL/Vulkan rendering, graphics pipeline modernization
+  - **Coverage**: Complete Linux port with advanced graphics compatibility
+
+- **`references/dsalzner-linux-attempt/`** - Linux port attempt with POSIX compatibility
+  - **Primary use**: Win32→POSIX API translations, Linux-specific fixes
+  - **Focus areas**: System calls, file handling, threading compatibility
+  - **Coverage**: Partial Linux port focusing on core system compatibility
+
+## Reference Analysis Workflow
+1. **Comparative debugging**: When encountering complex cross-platform issues, examine equivalent code in reference repositories
+2. **Solution discovery**: Use `git submodule update --init --recursive` to initialize all references
+3. **Code comparison**: Compare implementations across repositories to identify proven solutions
+4. **Best practices**: Extract successful patterns and apply with GeneralsX-specific adaptations
+
+## Reference Repository Commands
+```bash
+# Initialize all reference repositories
+git submodule update --init --recursive
+
+# Update references to latest versions  
+git submodule update --remote
+
+# Navigate to specific reference
+cd references/jmarshall-win64-modern/
+cd references/fighter19-dxvk-port/
+cd references/dsalzner-linux-attempt/
+
+# Compare implementations
+diff -r GeneralsMD/Code/GameEngine/ references/jmarshall-win64-modern/GeneralsMD/Code/GameEngine/
+```
+
+**Success Story**: The End token parsing issue (Phase 22.7) was resolved through comparative analysis of `jmarshall-win64-modern`, leading to a simple but effective solution that eliminated all INI parser exceptions.

@@ -66,6 +66,28 @@ void Win32BIGFileSystem::init() {
 	fflush(stdout);
 	loadBigFilesFromDirectory("", "*.big");
 
+	// Fallback: also try the directory of the executable (common on macOS/Linux ports)
+	// This allows placing .big archives next to the game binary (e.g., $HOME/Downloads/generals)
+	{
+		char exePath[_MAX_PATH] = {0};
+		// Cross-platform GetModuleFileName is provided by win32_compat.h
+		if (GetModuleFileName(NULL, exePath, sizeof(exePath)) > 0) {
+			// Derive directory from full path
+			char *lastSlash = strrchr(exePath, '/');
+			char *lastBack  = strrchr(exePath, '\\');
+			char *last = lastSlash ? (lastBack && lastBack > lastSlash ? lastBack : lastSlash) : lastBack;
+			if (last) {
+				*last = '\0';
+				AsciiString exeDir = exePath;
+				if (exeDir != "") {
+					printf("Win32BIGFileSystem::init() - Also scanning executable directory for .big: %s\n", exeDir.str());
+					fflush(stdout);
+					loadBigFilesFromDirectory(exeDir, "*.big");
+				}
+			}
+		}
+	}
+
 #if RTS_ZEROHOUR
     // load original Generals assets
     AsciiString installPath;

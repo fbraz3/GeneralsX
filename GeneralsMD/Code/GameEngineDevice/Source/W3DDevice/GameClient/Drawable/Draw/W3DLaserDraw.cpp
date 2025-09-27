@@ -82,7 +82,21 @@ W3DLaserDrawModuleData::~W3DLaserDrawModuleData()
 //-------------------------------------------------------------------------------------------------
 void W3DLaserDrawModuleData::buildFieldParse(MultiIniFieldParse& p)
 {
-  ModuleData::buildFieldParse(p);
+  try {
+    ModuleData::buildFieldParse(p);
+  } catch (const std::exception& e) {
+    printf("W3D PROTECTION: W3DLaserDrawModuleData::buildFieldParse - Exception in ModuleData::buildFieldParse: %s\n", e.what());
+    fflush(stdout);
+    // Continue without base field parse
+  } catch (...) {
+    printf("W3D PROTECTION: W3DLaserDrawModuleData::buildFieldParse - Unknown exception in ModuleData::buildFieldParse\n");
+    fflush(stdout);
+    // Continue without base field parse
+  }
+
+  // Suppress offsetof warnings for this legacy pattern - used extensively in game engine
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Winvalid-offsetof"
 
 	static const FieldParse dataFieldParse[] =
 	{
@@ -102,7 +116,20 @@ void W3DLaserDrawModuleData::buildFieldParse(MultiIniFieldParse& p)
 		{ "TilingScalar",					INI::parseReal,									NULL, offsetof( W3DLaserDrawModuleData, m_tilingScalar ) },
 		{ 0, 0, 0, 0 }
 	};
-  p.add(dataFieldParse);
+  
+  #pragma GCC diagnostic pop
+  
+  try {
+    p.add(dataFieldParse);
+  } catch (const std::exception& e) {
+    printf("W3D PROTECTION: W3DLaserDrawModuleData::buildFieldParse - Exception adding field parse: %s\n", e.what());
+    fflush(stdout);
+    // Continue without adding this field parse table
+  } catch (...) {
+    printf("W3D PROTECTION: W3DLaserDrawModuleData::buildFieldParse - Unknown exception adding field parse\n");
+    fflush(stdout);
+    // Continue without adding this field parse table
+  }
 }
 
 

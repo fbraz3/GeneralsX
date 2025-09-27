@@ -377,22 +377,43 @@ void WeaponTemplate::reset( void )
 
 	const char* token = ini->getNextTokenOrNull(ini->getSepsColon());
 
-	if( stricmp(token, MIN_LABEL) == 0 )
+	// Defensive: token may be null if the INI has an empty value (e.g., "DelayBetweenShots =")
+	if (!token) {
+		printf("W3D PROTECTION: parseShotDelay - NULL token; defaulting to 0\n");
+		self->m_minDelayBetweenShots = 0;
+		self->m_maxDelayBetweenShots = 0;
+	}
+	else if( stricmp(token, MIN_LABEL) == 0 )
 	{
 		// Two entry min/max
-		self->m_minDelayBetweenShots = INI::scanInt(ini->getNextToken(ini->getSepsColon()));
+		const char* minTok = ini->getNextTokenOrNull(ini->getSepsColon());
+		if (minTok) {
+			self->m_minDelayBetweenShots = INI::scanInt(minTok);
+		} else {
+			printf("W3D PROTECTION: parseShotDelay - NULL Min value; defaulting to 0\n");
+			self->m_minDelayBetweenShots = 0;
+		}
+
 		token = ini->getNextTokenOrNull(ini->getSepsColon());
-		if( stricmp(token, MAX_LABEL) != 0 )
+		if( !token || stricmp(token, MAX_LABEL) != 0 )
 		{
 			// Messed up double entry
 			self->m_maxDelayBetweenShots = self->m_minDelayBetweenShots;
 		}
-		else
-			self->m_maxDelayBetweenShots = INI::scanInt(ini->getNextToken(ini->getSepsColon()));
+		else {
+			const char* maxTok = ini->getNextTokenOrNull(ini->getSepsColon());
+			if (maxTok) {
+				self->m_maxDelayBetweenShots = INI::scanInt(maxTok);
+			} else {
+				printf("W3D PROTECTION: parseShotDelay - NULL Max value; using Min=%d\n", self->m_minDelayBetweenShots);
+				self->m_maxDelayBetweenShots = self->m_minDelayBetweenShots;
+			}
+		}
 	}
 	else
 	{
 		// single entry, as in no label so the first token is just a number
+		// token is non-null here due to the guard above
 		self->m_minDelayBetweenShots = INI::scanInt(token);
 		self->m_maxDelayBetweenShots = self->m_minDelayBetweenShots;
 	}
