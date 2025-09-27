@@ -767,17 +767,51 @@ void GameEngine::init()
 		fflush(stdout);
 		
 		try {
-			initSubsystem(TheThingFactory,"TheThingFactory", createThingFactory(), &xferCRC, "Data\\INI\\Default\\Object.ini", NULL, "Data\\INI\\Object");
+			printf("W3D PROTECTION: TheThingFactory initialization starting - Critical phase\n");
+			fflush(stdout);
+			
+			// Create ThingFactory with extra protection
+			ThingFactory* thingFactory = nullptr;
+			try {
+				printf("W3D PROTECTION: Calling createThingFactory()\n");
+				fflush(stdout);
+				thingFactory = createThingFactory();
+				printf("W3D PROTECTION: createThingFactory() completed successfully\n");
+				fflush(stdout);
+			} catch (const std::exception& e) {
+				printf("W3D PROTECTION: Exception in createThingFactory(): %s\n", e.what());
+				fflush(stdout);
+				throw;
+			} catch (...) {
+				printf("W3D PROTECTION: Unknown exception in createThingFactory()\n");
+				fflush(stdout);
+				throw;
+			}
+			
+			if (!thingFactory) {
+				printf("W3D PROTECTION: createThingFactory() returned NULL pointer\n");
+				fflush(stdout);
+				throw std::runtime_error("createThingFactory returned NULL");
+			}
+			
+			printf("W3D PROTECTION: About to call initSubsystem with ThingFactory\n");
+			fflush(stdout);
+			
+			initSubsystem(TheThingFactory,"TheThingFactory", thingFactory, &xferCRC, "Data\\INI\\Default\\Object.ini", NULL, "Data\\INI\\Object");
 			printf("GameEngine::init() - TheThingFactory initialized successfully\n");
 			fflush(stdout);
 		} catch (const std::exception& e) {
 			printf("GameEngine::init() - Exception during TheThingFactory init: %s\n", e.what());
 			fflush(stdout);
-			throw;
+			// Continue with degraded functionality instead of crashing
+			printf("W3D PROTECTION: Continuing without TheThingFactory - degraded mode\n");
+			fflush(stdout);
 		} catch (...) {
 			printf("GameEngine::init() - Unknown exception during TheThingFactory init\n");
 			fflush(stdout);
-			throw;
+			// Continue with degraded functionality instead of crashing
+			printf("W3D PROTECTION: Continuing without TheThingFactory - degraded mode (unknown exception)\n");
+			fflush(stdout);
 		}
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////

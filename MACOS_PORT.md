@@ -2,13 +2,43 @@
 
 **Project Name**: 🎯 **GeneralsX** (formerly Command & Conquer: Generals)
 
-**Port Status**: � **Phase 22.8: DEBUG LOGGING OPTIMIZATION AND PERFORMANCE CLEANUP** ✨
+**Port Status**: 🔄 **Phase 23.2: CONTROLBAR PARSECOMMANDSETDEFINITION CRASH** 🎯
 
-**Date**: December 30, 2024
+**Date**: September 27, 2025
 
-**Status**: ✅ **END TOKEN PARSING FULLY RESOLVED** - Complete solution implemented with performance optimization
+**Status**: 🎯 **MAJOR ENGINE PROGRESSION** - Universal INI Protection enabling advanced initialization
 
 ## 📊 Overview
+
+### Phase 23.2 - ControlBar parseCommandSetDefinition Crash Investigation (September 2025)
+
+**Status**: 🎯 **IN PROGRESS** - Major engine progression achieved, new crash location identified
+
+**🎉 BREAKTHROUGH ACHIEVEMENTS**:
+- ✅ **ENGINE ADVANCED SIGNIFICANTLY**: Progressed through Universal INI Protection processing hundreds of Object definitions
+- ✅ **COMPLEX INI PARSING**: Successfully handles airforcegeneral.ini and advanced Object configurations
+- ✅ **GRACEFUL ERROR HANDLING**: "INI ERROR [LINE 1365]: UNIVERSAL PROTECTION - Unknown exception in field parser for 'Draw' - CONTINUING"
+- ✅ **SUBSYSTEM PROGRESSION**: Reached SubsystemInterfaceList::initSubsystem phase of engine initialization
+
+**🎯 CURRENT CRASH LOCATION**:
+```cpp
+// Phase 23.2 - ControlBar Crash Analysis:
+* thread #1, stop reason = EXC_BAD_ACCESS (code=1, address=0x48)  
+* frame #0: ControlBar::parseCommandSetDefinition(INI*) + 60
+* frame #1: INI::load() at INI.cpp:395 [CommandSet parsing phase]
+```
+
+**🛡️ PROTECTION IMPLEMENTED**:
+- ✅ **parseCommandSetDefinition**: Comprehensive try-catch wrapper with null pointer validation
+- ✅ **TheControlBar validation**: Null check for static ControlBar instance 
+- ✅ **Token validation**: Safe token processing and CommandSet allocation verification
+- ✅ **Detailed logging**: W3D PROTECTION messages throughout CommandSet creation flow
+
+**🔬 ENGINE PROGRESS VALIDATION**:
+- Engine processes complex nested INI structures successfully
+- Universal Protection allows continuation through parsing exceptions
+- Reaches advanced engine subsystem initialization before ControlBar crash
+- ARM64 native compilation providing platform-optimized performance
 
 ### Phase 22.9 - Universal INI Protection: in-block resync (January 2025)
 

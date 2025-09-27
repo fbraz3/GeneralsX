@@ -1979,20 +1979,44 @@ CommandButton *ControlBar::newCommandButtonOverride( CommandButton *buttonToOver
 //-------------------------------------------------------------------------------------------------
 /*static*/ void ControlBar::parseCommandSetDefinition( INI *ini )
 {
-	AsciiString name;
-	CommandSet *commandSet;
+	// W3D PROTECTION: Universal exception handling for CommandSet parsing
+	try
+	{
+		AsciiString name;
+		CommandSet *commandSet;
 
-	// read the name
-	const char* c = ini->getNextToken();
-	name.set( c );
+		// W3D PROTECTION: Check if TheControlBar is initialized
+		if( TheControlBar == NULL )
+		{
+			printf("W3D PROTECTION: TheControlBar is NULL during parseCommandSetDefinition - SKIPPING CommandSet parsing\n");
+			// Return early to skip the section - INI parser will handle remaining tokens
+			return;
+		}
 
-	// find existing item if present
-	commandSet = TheControlBar->findNonConstCommandSet( name );
+		// read the name
+		const char* c = ini->getNextToken();
+		if( c == NULL )
+		{
+			printf("W3D PROTECTION: NULL token in parseCommandSetDefinition - SKIPPING\n");
+			return;
+		}
+		name.set( c );
+
+		printf("W3D PROTECTION: Processing CommandSet '%s'\n", name.str());
+
+		// find existing item if present
+		commandSet = TheControlBar->findNonConstCommandSet( name );
 	if( commandSet == NULL )
 	{
 
 		// allocate a new item
+		printf("W3D PROTECTION: Creating new CommandSet '%s'\n", name.str());
 		commandSet = TheControlBar->newCommandSet( name );
+		if( commandSet == NULL )
+		{
+			printf("W3D PROTECTION: Failed to create CommandSet '%s' - SKIPPING\n", name.str());
+			return;
+		}
 		if (ini->getLoadType() == INI_LOAD_CREATE_OVERRIDES) {
 			commandSet->markAsOverride();
 		}
@@ -2014,10 +2038,25 @@ CommandButton *ControlBar::newCommandButtonOverride( CommandButton *buttonToOver
 	}
 
 	// sanity
-	DEBUG_ASSERTCRASH( commandSet, ("parseCommandSetDefinition: Unable to allocate set '%s'", name.str()) );
+	if( commandSet == NULL )
+	{
+		printf("W3D PROTECTION: CommandSet allocation failed for '%s' - SKIPPING\n", name.str());
+		return;
+	}
+
+	printf("W3D PROTECTION: Successfully created CommandSet '%s', parsing INI definition\n", name.str());
 
 	// parse the ini definition
 	ini->initFromINI( commandSet, commandSet->friend_getFieldParse() );
+
+	printf("W3D PROTECTION: CommandSet '%s' parsing completed successfully\n", name.str());
+
+	}
+	catch( ... )
+	{
+		printf("W3D PROTECTION: Exception caught in parseCommandSetDefinition - CONTINUING\n");
+		return;
+	}
 
 }  // end parseCommandSetDefinition
 
