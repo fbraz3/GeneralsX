@@ -249,43 +249,192 @@ void GameClient::init( void )
 
 	INI ini;
 	// Load the DrawGroupInfo here, before the Display Manager is loaded.
+	printf("GameClient::init() - DEBUG: About to load DrawGroupInfo.ini\n");
+	fflush(stdout);
 	ini.load("Data\\INI\\DrawGroupInfo.ini", INI_LOAD_OVERWRITE, NULL);
+	printf("GameClient::init() - DEBUG: DrawGroupInfo.ini loaded successfully\n");
+	fflush(stdout);
 
 	// Override the ini values with localized versions:
+	printf("GameClient::init() - DEBUG: About to check TheGlobalLanguageData\n");
+	fflush(stdout);
+	
 	if (TheGlobalLanguageData && TheGlobalLanguageData->m_drawGroupInfoFont.name.isNotEmpty())
 	{
+		printf("GameClient::init() - DEBUG: Overriding with localized font settings\n");
+		fflush(stdout);
 		TheDrawGroupInfo->m_fontName = TheGlobalLanguageData->m_drawGroupInfoFont.name;
 		TheDrawGroupInfo->m_fontSize = TheGlobalLanguageData->m_drawGroupInfoFont.size;
 		TheDrawGroupInfo->m_fontIsBold = TheGlobalLanguageData->m_drawGroupInfoFont.bold;
+		printf("GameClient::init() - DEBUG: Localized font settings applied\n");
+		fflush(stdout);
+	} else {
+		printf("GameClient::init() - DEBUG: No localized font settings available\n");
+		fflush(stdout);
 	}
 
 	// create the display string factory
+	printf("GameClient::init() - DEBUG: About to create DisplayStringManager\n");
+	fflush(stdout);
 	TheDisplayStringManager = createDisplayStringManager();
 	if( TheDisplayStringManager )	{
+		printf("GameClient::init() - DEBUG: DisplayStringManager created, initializing\n");
+		fflush(stdout);
 		TheDisplayStringManager->init();
 		TheDisplayStringManager->setName("TheDisplayStringManager");
+		printf("GameClient::init() - DEBUG: DisplayStringManager initialized successfully\n");
+		fflush(stdout);
+	} else {
+		printf("GameClient::init() - WARNING: DisplayStringManager creation FAILED\n");
+		fflush(stdout);
 	}
 
+	printf("GameClient::init() - DEBUG: About to check headless mode\n");
+	fflush(stdout);
 	if (!TheGlobalData->m_headless)
 	{
 		// create the keyboard
-		TheKeyboard = createKeyboard();
-		TheKeyboard->init();
-		TheKeyboard->setName("TheKeyboard");
+		printf("GameClient::init() - DEBUG: Not headless, creating keyboard\n");
+		fflush(stdout);
+		
+#if defined(__APPLE__)
+		// On macOS we currently do not have a native Keyboard implementation.
+		// Skip keyboard creation entirely to avoid crashes and continue engine init.
+		printf("GameClient::init() - macOS: Skipping keyboard creation (headless keyboard mode)\n");
+		fflush(stdout);
+		TheKeyboard = NULL;
+#else
+		try {
+			TheKeyboard = createKeyboard();
+			
+			if (TheKeyboard == NULL) {
+				printf("GameClient::init() - WARNING: createKeyboard() returned NULL - using null keyboard mode\n");
+				fflush(stdout);
+			} else {
+				printf("GameClient::init() - DEBUG: Keyboard created successfully, initializing\n");
+				fflush(stdout);
+				
+				try {
+					TheKeyboard->init();
+					printf("GameClient::init() - DEBUG: Keyboard init() completed successfully\n");
+					fflush(stdout);
+					
+					TheKeyboard->setName("TheKeyboard");
+					printf("GameClient::init() - DEBUG: Keyboard setName() completed successfully\n");
+					fflush(stdout);
+				} catch (...) {
+					printf("GameClient::init() - ERROR: Exception during keyboard initialization - continuing without keyboard\n");
+					fflush(stdout);
+					TheKeyboard = NULL;
+				}
+			}
+		} catch (...) {
+			printf("GameClient::init() - ERROR: Exception during createKeyboard() - continuing without keyboard\n");
+			fflush(stdout);
+			TheKeyboard = NULL;
+		}
+#endif // __APPLE__
+	} else {
+		printf("GameClient::init() - DEBUG: Headless mode detected, skipping keyboard creation\n");
+		fflush(stdout);
 	}
 
 	// allocate and load image collection for the GUI and just load the 256x256 ones for now
+	printf("GameClient::init() - W3D PROTECTION: About to allocate TheMappedImageCollection\n");
+	fflush(stdout);
+	
 	TheMappedImageCollection = MSGNEW("GameClientSubsystem") ImageCollection;
-	TheMappedImageCollection->load( 512 );
+	
+	if (TheMappedImageCollection == NULL) {
+		printf("GameClient::init() - CRITICAL ERROR: TheMappedImageCollection allocation FAILED - MSGNEW returned NULL\n");
+		fflush(stdout);
+		
+		// Try alternative allocation approach
+		printf("GameClient::init() - W3D PROTECTION: Attempting alternative allocation\n");
+		fflush(stdout);
+		
+		try {
+			TheMappedImageCollection = new ImageCollection();
+			if (TheMappedImageCollection != NULL) {
+				printf("GameClient::init() - W3D PROTECTION: Alternative allocation SUCCESSFUL\n");
+				fflush(stdout);
+			} else {
+				printf("GameClient::init() - CRITICAL ERROR: Alternative allocation also FAILED\n");
+				fflush(stdout);
+				return;
+			}
+		} catch (...) {
+			printf("GameClient::init() - CRITICAL ERROR: Exception during alternative allocation\n");
+			fflush(stdout);
+			return;
+		}
+	} else {
+		printf("GameClient::init() - W3D PROTECTION: TheMappedImageCollection allocated successfully\n");
+		fflush(stdout);
+	}
+	
+	// Additional safety check before calling load()
+	if (TheMappedImageCollection != NULL) {
+		printf("GameClient::init() - W3D PROTECTION: About to call TheMappedImageCollection->load(512)\n");
+		fflush(stdout);
+		try {
+			TheMappedImageCollection->load( 512 );
+			printf("GameClient::init() - W3D PROTECTION: TheMappedImageCollection->load(512) completed successfully\n");
+			fflush(stdout);
+		} catch (...) {
+			printf("GameClient::init() - W3D PROTECTION: Exception caught during TheMappedImageCollection->load(512)\n");
+			fflush(stdout);
+		}
+	} else {
+		printf("GameClient::init() - CRITICAL ERROR: TheMappedImageCollection is NULL, skipping load()\n");
+		fflush(stdout);
+		return;
+	}
 
 	// now that we have all the images loaded ... load any animation definitions from those images
+	printf("GameClient::init() - DEBUG: About to allocate TheAnim2DCollection\n");
+	fflush(stdout);
+	
 	TheAnim2DCollection = MSGNEW("GameClientSubsystem") Anim2DCollection;
-	TheAnim2DCollection->init();
- 	TheAnim2DCollection->setName("TheAnim2DCollection");
+	
+	if (TheAnim2DCollection == NULL) {
+		printf("GameClient::init() - CRITICAL ERROR: TheAnim2DCollection allocation FAILED\n");
+		fflush(stdout);
+		return;
+	}
+	
+	printf("GameClient::init() - DEBUG: TheAnim2DCollection allocated, calling init()\n");
+	fflush(stdout);
+	
+	try {
+		TheAnim2DCollection->init();
+		printf("GameClient::init() - DEBUG: TheAnim2DCollection->init() completed\n");
+		fflush(stdout);
+	} catch (...) {
+		printf("GameClient::init() - ERROR: Exception during TheAnim2DCollection->init()\n");
+		fflush(stdout);
+	}
+	
+	printf("GameClient::init() - DEBUG: Setting TheAnim2DCollection name\n");
+	fflush(stdout);
+	
+	try {
+ 		TheAnim2DCollection->setName("TheAnim2DCollection");
+		printf("GameClient::init() - DEBUG: TheAnim2DCollection->setName() completed\n");
+		fflush(stdout);
+	} catch (...) {
+		printf("GameClient::init() - ERROR: Exception during TheAnim2DCollection->setName()\n");
+		fflush(stdout);
+	}
+
+	printf("GameClient::init() - DEBUG: About to register message translators\n");
+	fflush(stdout);
 
 	// register message translators
 	if( TheMessageStream )
 	{
+		printf("GameClient::init() - DEBUG: TheMessageStream exists, registering translators\n");
+		fflush(stdout);
 
 		//
 		// NOTE: Make sure m_translators[] is large enough to accomodate all the translators you
@@ -293,12 +442,71 @@ void GameClient::init( void )
 		//
 
 		// since we only allocate one of each, don't bother pooling 'em
-		m_translators[ m_numTranslators++ ] =	TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") WindowTranslator,     10 );
-		m_translators[ m_numTranslators++ ] =	TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") MetaEventTranslator,	20 );
-		m_translators[ m_numTranslators++ ] =	TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") HotKeyTranslator,	25 );
-		m_translators[ m_numTranslators++ ] =	TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") PlaceEventTranslator,	30 );
-		m_translators[ m_numTranslators++ ] = TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") GUICommandTranslator, 40 );
-		m_translators[ m_numTranslators++ ] =	TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") SelectionTranslator,	50 );
+		printf("GameClient::init() - DEBUG: About to create WindowTranslator\n");
+		fflush(stdout);
+		try {
+			m_translators[ m_numTranslators++ ] =	TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") WindowTranslator,     10 );
+			printf("GameClient::init() - DEBUG: WindowTranslator created successfully\n");
+			fflush(stdout);
+		} catch (...) {
+			printf("GameClient::init() - ERROR: Exception during WindowTranslator creation\n");
+			fflush(stdout);
+		}
+		
+		printf("GameClient::init() - DEBUG: About to create MetaEventTranslator\n");
+		fflush(stdout);
+		try {
+			m_translators[ m_numTranslators++ ] =	TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") MetaEventTranslator,	20 );
+			printf("GameClient::init() - DEBUG: MetaEventTranslator created successfully\n");
+			fflush(stdout);
+		} catch (...) {
+			printf("GameClient::init() - ERROR: Exception during MetaEventTranslator creation\n");
+			fflush(stdout);
+		}
+		
+		printf("GameClient::init() - DEBUG: About to create HotKeyTranslator\n");
+		fflush(stdout);
+		try {
+			m_translators[ m_numTranslators++ ] =	TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") HotKeyTranslator,	25 );
+			printf("GameClient::init() - DEBUG: HotKeyTranslator created successfully\n");
+			fflush(stdout);
+		} catch (...) {
+			printf("GameClient::init() - ERROR: Exception during HotKeyTranslator creation\n");
+			fflush(stdout);
+		}
+		
+		printf("GameClient::init() - DEBUG: About to create PlaceEventTranslator\n");
+		fflush(stdout);
+		try {
+			m_translators[ m_numTranslators++ ] =	TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") PlaceEventTranslator,	30 );
+			printf("GameClient::init() - DEBUG: PlaceEventTranslator created successfully\n");
+			fflush(stdout);
+		} catch (...) {
+			printf("GameClient::init() - ERROR: Exception during PlaceEventTranslator creation\n");
+			fflush(stdout);
+		}
+		
+		printf("GameClient::init() - DEBUG: About to create GUICommandTranslator\n");
+		fflush(stdout);
+		try {
+			m_translators[ m_numTranslators++ ] = TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") GUICommandTranslator, 40 );
+			printf("GameClient::init() - DEBUG: GUICommandTranslator created successfully\n");
+			fflush(stdout);
+		} catch (...) {
+			printf("GameClient::init() - ERROR: Exception during GUICommandTranslator creation\n");
+			fflush(stdout);
+		}
+		
+		printf("GameClient::init() - DEBUG: About to create SelectionTranslator\n");
+		fflush(stdout);
+		try {
+			m_translators[ m_numTranslators++ ] =	TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") SelectionTranslator,	50 );
+			printf("GameClient::init() - DEBUG: SelectionTranslator created successfully\n");
+			fflush(stdout);
+		} catch (...) {
+			printf("GameClient::init() - ERROR: Exception during SelectionTranslator creation\n");
+			fflush(stdout);
+		}
 		m_translators[ m_numTranslators++ ] =	TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") LookAtTranslator,			60 );
 		m_translators[ m_numTranslators ] =	TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") CommandTranslator,		70 );
 		// we keep a pointer to the command translator because it's useful

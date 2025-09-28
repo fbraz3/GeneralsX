@@ -1547,6 +1547,13 @@ bool DX8Wrapper::Find_Color_And_Z_Mode(int resx,int resy,int bitdepth,D3DFORMAT 
 // refresh rate
 bool DX8Wrapper::Find_Color_Mode(D3DFORMAT colorbuffer, int resx, int resy, UINT *mode)
 {
+#ifdef __APPLE__
+	// On macOS, we use OpenGL backend - mock mode finding for compatibility
+	WWDEBUG_SAY(("Find_Color_Mode - macOS mock implementation: accepting %dx%d", resx, resy));
+	if (mode) *mode = 0; // Default mode index
+	return true; // Always succeed on macOS
+#endif
+
 	UINT i,j,modemax;
 	UINT rx,ry;
 	D3DDISPLAYMODE dmode;
@@ -1651,6 +1658,12 @@ bool DX8Wrapper::Find_Z_Mode(D3DFORMAT colorbuffer,D3DFORMAT backbuffer, D3DFORM
 
 bool DX8Wrapper::Test_Z_Mode(D3DFORMAT colorbuffer,D3DFORMAT backbuffer, D3DFORMAT zmode)
 {
+#ifdef __APPLE__
+	// On macOS, we use OpenGL backend - mock Z-buffer format testing
+	WWDEBUG_SAY(("Test_Z_Mode - macOS mock implementation: accepting format %d", zmode));
+	return true; // Always succeed on macOS
+#endif
+
 	// See if we have this mode first
 	if (FAILED(D3DInterface->CheckDeviceFormat(D3DADAPTER_DEFAULT,WW3D_DEVTYPE,
 		colorbuffer,D3DUSAGE_DEPTHSTENCIL,D3DRTYPE_SURFACE,zmode)))
