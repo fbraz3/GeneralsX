@@ -211,6 +211,17 @@ DX8_CleanupHook	 *DX8Wrapper::m_pCleanupHook=NULL;
 #ifdef EXTENDED_STATS
 DX8_Stats	 DX8Wrapper::stats;
 #endif
+
+#ifdef __APPLE__
+/***********************************************************************************
+**
+** macOS Mock D3D8 Interfaces - Uses existing CORE implementations
+**
+***********************************************************************************/
+static CORE_IDirect3D8 g_mockD3D8Interface;
+static CORE_IDirect3DDevice8 g_mockD3DDevice;
+#endif
+
 /***********************************************************************************
 **
 ** DX8Wrapper Implementation
@@ -348,7 +359,7 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 		// On non-Windows platforms, create a mock D3D interface for compatibility
 		// The actual rendering will be handled by OpenGL backend
 		printf("DX8Wrapper::Init - Creating mock D3D interface for macOS\n");
-		D3DInterface = (IDirect3D8*)1; // Non-null placeholder pointer
+		D3DInterface = &g_mockD3D8Interface; // Use existing CORE_IDirect3D8 mock
 #endif
 		IsInitted = true;
 
@@ -548,6 +559,35 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Shutdowns(void)
 
 bool DX8Wrapper::Create_Device(void)
 {
+#ifdef __APPLE__
+	// On macOS, we use OpenGL backend - mock device creation
+	WWDEBUG_SAY(("Create_Device - macOS mock implementation"));
+	
+	// Mock successful device creation
+	WWASSERT(D3DDevice==NULL);
+	
+	// Create mock D3D device using CORE_IDirect3DDevice8
+	D3DDevice = &g_mockD3DDevice;
+	
+	// Initialize mock adapter identifier
+	::ZeroMemory(&CurrentAdapterIdentifier, sizeof(D3DADAPTER_IDENTIFIER8));
+	strcpy(CurrentAdapterIdentifier.Driver, "OpenGL");
+	strcpy(CurrentAdapterIdentifier.Description, "macOS OpenGL Compatibility Layer");
+	
+	// Set mock vertex processing behavior
+	Vertex_Processing_Behavior = D3DCREATE_HARDWARE_VERTEXPROCESSING;
+	
+	// Set mock display format for macOS
+	DisplayFormat = D3DFMT_X8R8G8B8; // 32-bit RGBA format
+	
+	// CRITICAL: Initialize all subsystems like the Windows version does
+	Do_Onetime_Device_Dependent_Inits();
+	
+	// Mock successful creation
+	WWDEBUG_SAY(("Create_Device - macOS mock device created successfully"));
+	return true;
+#endif
+
 	WWASSERT(D3DDevice==NULL);	// for now, once you've created a device, you're stuck with it!
 
 	D3DCAPS8 caps;
