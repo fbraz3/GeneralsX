@@ -1,3 +1,23 @@
+# Phase 23.4 – DirectX8 Texture Mock success (runtime advances)
+
+Date: 2025-09-28
+
+Summary (Done):
+- Implemented functional mocks for IDirect3DTexture8 and IDirect3DSurface8 (memory-backed LockRect/UnlockRect).
+- Wired device virtuals so CreateTexture returns a valid mock object.
+- Built and ran z_generals (macOS ARM64) and observed continued initialization past previous crash point (MissingTexture::_Init). No crash observed; engine proceeds to parse GameLOD, GameLODPresets, and Water INIs.
+
+Immediate Next Steps:
+- Broaden texture/surface mock coverage: validate CreateImageSurface/CopyRects and any GetLevelDesc/Level handling exercised by W3D.
+- Add targeted debug logs around DX8Wrapper::Do_Onetime_Device_Dependent_Inits and W3DDisplay initialization to explicitly confirm MissingTexture creation path.
+- Prepare minimal OpenGL upload pathway placeholder for future rendering hookup (safe no-op accepted for now).
+- Continue reference-repo diffing for texture semantics and edge cases (lock flags, mip levels, usage).
+
+Acceptance criteria for this phase:
+- No NULL dereference in MissingTexture::_Init (LockRect/UnlockRect path works on mock texture).
+- Game reaches post-graphics INI parsing reliably without device-dependent crashes.
+- Logs clearly mark DX8 wrapper initialization milestones.
+
 # **Project**: 🎯 **General### 🎯️ **Engine Subsystem Progression Timeline**
 ```
 PHASE 23.3 (RESOLVED):
