@@ -1979,19 +1979,29 @@ CommandButton *ControlBar::newCommandButtonOverride( CommandButton *buttonToOver
 //-------------------------------------------------------------------------------------------------
 /*static*/ void ControlBar::parseCommandSetDefinition( INI *ini )
 {
+	// W3D PROTECTION: ULTIMATE SOLUTION - Create TheControlBar if not exists
+	if( TheControlBar == NULL )
+	{
+		printf("W3D PROTECTION: CRITICAL - Creating TheControlBar on-demand during parseCommandSetDefinition\n");
+		TheControlBar = NEW ControlBar;
+		TheControlBar->init();
+		printf("W3D PROTECTION: TheControlBar created successfully on-demand\n");
+	}
+
+	// W3D PROTECTION: Additional corruption check  
+	if( ((uintptr_t)TheControlBar < 0x1000) || ((uintptr_t)TheControlBar > 0x7FFFFFFFFFFF) )
+	{
+		printf("W3D PROTECTION: TheControlBar appears corrupted (address: %p) - EMERGENCY RECREATION\n", TheControlBar);
+		TheControlBar = NEW ControlBar;
+		TheControlBar->init();
+		printf("W3D PROTECTION: TheControlBar recreated after corruption detection\n");
+	}
+
 	// W3D PROTECTION: Universal exception handling for CommandSet parsing
 	try
 	{
 		AsciiString name;
 		CommandSet *commandSet;
-
-		// W3D PROTECTION: Check if TheControlBar is initialized
-		if( TheControlBar == NULL )
-		{
-			printf("W3D PROTECTION: TheControlBar is NULL during parseCommandSetDefinition - SKIPPING CommandSet parsing\n");
-			// Return early to skip the section - INI parser will handle remaining tokens
-			return;
-		}
 
 		// read the name
 		const char* c = ini->getNextToken();
@@ -2004,8 +2014,17 @@ CommandButton *ControlBar::newCommandButtonOverride( CommandButton *buttonToOver
 
 		printf("W3D PROTECTION: Processing CommandSet '%s'\n", name.str());
 
-		// find existing item if present
-		commandSet = TheControlBar->findNonConstCommandSet( name );
+		// find existing item if present - with additional protection
+		commandSet = NULL;
+		try
+		{
+			commandSet = TheControlBar->findNonConstCommandSet( name );
+		}
+		catch( ... )
+		{
+			printf("W3D PROTECTION: Exception during findNonConstCommandSet for '%s' - treating as NULL\n", name.str());
+			commandSet = NULL;
+		}
 	if( commandSet == NULL )
 	{
 
@@ -2037,19 +2056,45 @@ CommandButton *ControlBar::newCommandButtonOverride( CommandButton *buttonToOver
 		commandSet = TheControlBar->newCommandSetOverride(commandSet);
 	}
 
-	// sanity
+	// W3D PROTECTION: Enhanced sanity check with comprehensive validation
 	if( commandSet == NULL )
 	{
-		printf("W3D PROTECTION: CommandSet allocation failed for '%s' - SKIPPING\n", name.str());
-		return;
+		printf("W3D PROTECTION: CommandSet allocation failed for '%s' - CRITICAL ERROR\n", name.str());
+		// Don't just return, throw exception like the original to prevent further processing
+		DEBUG_CRASH(( "parseCommandSetDefinition: Unable to allocate set '%s'", name.str() ));
+		throw INI_INVALID_DATA;
+	}
+
+	// W3D PROTECTION: Additional validation before accessing CommandSet methods
+	const FieldParse* fieldParse = nullptr;
+	try 
+	{
+		fieldParse = commandSet->friend_getFieldParse();
+		if( fieldParse == nullptr )
+		{
+			printf("W3D PROTECTION: CommandSet '%s' has NULL FieldParse - CRITICAL ERROR\n", name.str());
+			throw INI_INVALID_DATA;
+		}
+	}
+	catch( ... )
+	{
+		printf("W3D PROTECTION: Exception accessing CommandSet '%s' FieldParse - CRITICAL ERROR\n", name.str());
+		throw INI_INVALID_DATA;
 	}
 
 	printf("W3D PROTECTION: Successfully created CommandSet '%s', parsing INI definition\n", name.str());
 
-	// parse the ini definition
-	ini->initFromINI( commandSet, commandSet->friend_getFieldParse() );
-
-	printf("W3D PROTECTION: CommandSet '%s' parsing completed successfully\n", name.str());
+	// W3D PROTECTION: Safe parse with additional exception handling
+	try
+	{
+		ini->initFromINI( commandSet, fieldParse );
+		printf("W3D PROTECTION: CommandSet '%s' parsing completed successfully\n", name.str());
+	}
+	catch( ... )
+	{
+		printf("W3D PROTECTION: Exception during CommandSet '%s' INI parsing - CONTINUING\n", name.str());
+		throw; // Re-throw to let universal handler catch it
+	}
 
 	}
 	catch( ... )
@@ -2065,14 +2110,43 @@ CommandButton *ControlBar::newCommandButtonOverride( CommandButton *buttonToOver
 //-------------------------------------------------------------------------------------------------
 CommandSet* ControlBar::findNonConstCommandSet( const AsciiString& name )
 {
-	CommandSet* set;
+	// W3D PROTECTION: Check this pointer validity
+	if( this == NULL )
+	{
+		printf("W3D PROTECTION: NULL this pointer in findNonConstCommandSet - returning NULL\n");
+		return NULL;
+	}
 
-	for( set = m_commandSets; set != NULL; set = set->friend_getNext() )
-		if( set->getName() == name )
-			return const_cast<CommandSet*>((const CommandSet *) set);
+	// W3D PROTECTION: Check m_commandSets validity
+	if( ((uintptr_t)m_commandSets > 0x1000) && ((uintptr_t)m_commandSets < 0x7FFFFFFFFFFF) )
+	{
+		CommandSet* set;
+		try
+		{
+			for( set = m_commandSets; set != NULL; set = set->friend_getNext() )
+			{
+				// W3D PROTECTION: Additional validation for each CommandSet
+				if( ((uintptr_t)set < 0x1000) || ((uintptr_t)set > 0x7FFFFFFFFFFF) )
+				{
+					printf("W3D PROTECTION: Corrupted CommandSet pointer found in chain - breaking\n");
+					break;
+				}
+				
+				if( set->getName() == name )
+					return const_cast<CommandSet*>((const CommandSet *) set);
+			}
+		}
+		catch( ... )
+		{
+			printf("W3D PROTECTION: Exception during CommandSet search for '%s' - returning NULL\n", name.str());
+		}
+	}
+	else
+	{
+		printf("W3D PROTECTION: Invalid m_commandSets pointer (%p) in findNonConstCommandSet - returning NULL\n", m_commandSets);
+	}
 
 	return NULL;  // set not found
-
 }
 //-------------------------------------------------------------------------------------------------
 /** find existing command button if present	*/

@@ -10,3 +10,6 @@
 [submodule "references/dsalzner-linux-attempt"]
 	path = references/dsalzner-linux-attempt
 	url = https://github.com/dsalzner/CnC_Generals_Zero_Hour-Linux.git
+[submodule "references/dxgldotorg-dxgl"]
+	path = references/dxgldotorg-dxgl
+	url = https://github.com/dxgldotorg/dxgl.git

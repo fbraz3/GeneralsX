@@ -129,7 +129,15 @@ protected:
 
 };  // end class W3DGameClient
 
-inline Keyboard *W3DGameClient::createKeyboard( void ) { return NEW DirectInputKeyboard; }
+inline Keyboard *W3DGameClient::createKeyboard( void ) { 
+#ifdef __APPLE__
+    // TODO: Implement macOS-compatible keyboard (SDL3 or native)
+    printf("W3DGameClient::createKeyboard() - macOS: returning NULL for headless mode\n");
+    return nullptr;
+#else
+    return NEW DirectInputKeyboard; 
+#endif
+}
 inline Mouse *W3DGameClient::createMouse( void )
 {
 	//return new DirectInputMouse;

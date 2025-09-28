@@ -57,7 +57,7 @@ This project is a fork of the Command & Conquer Generals source code and its exp
 The project includes reference repositories as git submodules for comparative analysis and solution discovery:
 
 ## Available Reference Repositories
-- **`references/jmarshall-win64-modern/`** - Windows 64-bit modernization with comprehensive fixes
+- **`references/jmarshall-win64-modern/`** - Windows 64-bit modernization with comprehensive fixes - Game base (Generals) Only
   - **Primary use**: Cross-platform compatibility solutions, INI parser fixes, memory management
   - **Key success**: Provided the breakthrough End token parsing solution (Phase 22.7-22.8)
   - **Coverage**: Full Windows 64-bit port with modern toolchain compatibility
@@ -71,6 +71,12 @@ The project includes reference repositories as git submodules for comparative an
   - **Primary use**: Win32→POSIX API translations, Linux-specific fixes
   - **Focus areas**: System calls, file handling, threading compatibility
   - **Coverage**: Partial Linux port focusing on core system compatibility
+
+- **`references/dxgldotorg-dxgl/`** - DirectDraw/Direct3D7 to OpenGL compatibility layer
+  - **Primary use**: DirectX→OpenGL wrapper techniques, mock interface patterns, graphics compatibility
+  - **Focus areas**: DirectX API stubbing, OpenGL rendering pipeline, device capability emulation
+  - **Coverage**: Complete DirectDraw/D3D7 wrapper with mature OpenGL backend
+  - **Note**: While focused on D3D7, provides excellent patterns for DirectX8 compatibility layer development
 
 ## Reference Analysis Workflow
 1. **Comparative debugging**: When encountering complex cross-platform issues, examine equivalent code in reference repositories

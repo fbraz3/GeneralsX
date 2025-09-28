@@ -48,6 +48,7 @@
 #include "Common/ArchiveFileSystem.h"
 #include "Common/LocalFileSystem.h"
 #include "Common/CDManager.h"
+#include "GameClient/ControlBar.h"
 #include "Common/GlobalData.h"
 #include "Common/PerfTimer.h"
 #include "Common/RandomValue.h"
@@ -761,6 +762,22 @@ void GameEngine::init()
 	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
 	#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
+	// W3D PROTECTION: Initialize TheControlBar before TheThingFactory to avoid parseCommandSetDefinition crash
+	printf("GameEngine::init() - CRITICAL FIX: Initializing TheControlBar before INI parsing\n");
+	fflush(stdout);
+	if (TheControlBar == NULL) {
+		printf("GameEngine::init() - Creating TheControlBar instance\n");
+		fflush(stdout);
+		TheControlBar = NEW ControlBar;
+		printf("GameEngine::init() - TheControlBar created, calling init()\n");
+		fflush(stdout);
+		TheControlBar->init();
+		printf("GameEngine::init() - TheControlBar initialization completed successfully\n");
+		fflush(stdout);
+	} else {
+		printf("GameEngine::init() - TheControlBar already exists, skipping creation\n");
+		fflush(stdout);
+	}
 
 
 		printf("GameEngine::init() - About to initialize TheThingFactory\n");
