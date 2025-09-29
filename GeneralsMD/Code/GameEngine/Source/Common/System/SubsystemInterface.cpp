@@ -157,12 +157,40 @@ void SubsystemInterfaceList::initSubsystem(SubsystemInterface* sys, const char* 
 	sys->init();
 
 	INI ini;
-	if (path1)
-		ini.load(path1, INI_LOAD_OVERWRITE, pXfer );
-	if (path2)
-		ini.load(path2, INI_LOAD_OVERWRITE, pXfer );
-	if (dirpath)
-		ini.loadDirectory(dirpath, TRUE, INI_LOAD_OVERWRITE, pXfer );
+	// Robust loading: proceed even if one of the files is missing or unreadable
+	if (path1) {
+		try {
+			ini.load(path1, INI_LOAD_OVERWRITE, pXfer);
+		} catch (const std::exception& e) {
+			printf("SubsystemInterfaceList::initSubsystem - WARNING: Failed to load INI path1 '%s' for %s: %s\n", path1, name.str(), e.what());
+			fflush(stdout);
+		} catch (...) {
+			printf("SubsystemInterfaceList::initSubsystem - WARNING: Unknown error loading INI path1 '%s' for %s\n", path1, name.str());
+			fflush(stdout);
+		}
+	}
+	if (path2) {
+		try {
+			ini.load(path2, INI_LOAD_OVERWRITE, pXfer);
+		} catch (const std::exception& e) {
+			printf("SubsystemInterfaceList::initSubsystem - WARNING: Failed to load INI path2 '%s' for %s: %s\n", path2, name.str(), e.what());
+			fflush(stdout);
+		} catch (...) {
+			printf("SubsystemInterfaceList::initSubsystem - WARNING: Unknown error loading INI path2 '%s' for %s\n", path2, name.str());
+			fflush(stdout);
+		}
+	}
+	if (dirpath) {
+		try {
+			ini.loadDirectory(dirpath, TRUE, INI_LOAD_OVERWRITE, pXfer);
+		} catch (const std::exception& e) {
+			printf("SubsystemInterfaceList::initSubsystem - WARNING: Failed to load INI dir '%s' for %s: %s\n", dirpath, name.str(), e.what());
+			fflush(stdout);
+		} catch (...) {
+			printf("SubsystemInterfaceList::initSubsystem - WARNING: Unknown error loading INI dir '%s' for %s\n", dirpath, name.str());
+			fflush(stdout);
+		}
+	}
 
 	m_subsystems.push_back(sys);
 }
