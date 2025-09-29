@@ -4,9 +4,6 @@
 
 #include <cstring>
 #include <cstddef>
-// Use the real engine headers to avoid ODR and ABI mismatches
-#include "../../../../GameEngine/Include/Common/AsciiString.h"
-#include "win32_compat.h"
 
 // Simple stub class definitions
 class ErrorDumpClass {
@@ -198,14 +195,4 @@ int PartitionManager::getPropShroudStatusForPlayer(int player, const Coord3D* co
     return 0;
 }
 
-// Registry function implementations
-AsciiString GetRegistryLanguage(void) {
-    // macOS/Linux default language when registry is unavailable.
-    // Return a lowercase value to match common asset folder naming, e.g., Data/english/
-    return AsciiString("english");
-}
-
-bool GetStringFromGeneralsRegistry(AsciiString section, AsciiString key, AsciiString& value) {
-    value = AsciiString("");
-    return false;
-}
+// Registry functions now stubbed in platform-specific registry.cpp for non-Windows builds.

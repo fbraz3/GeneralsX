@@ -231,4 +231,8 @@ UnsignedInt GetRegistryMapPackVersion(void) {
     return 65536; // Default version for non-Windows platforms
 }
 
+AsciiString GetRegistryLanguage(void) {
+	return "english";
+}
+
 #endif // _WIN32

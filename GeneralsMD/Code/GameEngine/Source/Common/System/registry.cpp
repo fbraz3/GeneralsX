@@ -209,6 +209,8 @@ Bool putUnicodeStringToRegistry(HKEY root, AsciiString path, AsciiString key, Un
 Bool PutUnicodeStringToRegistry(AsciiString path, AsciiString key, UnicodeString val) { return false; }
 Bool putUnsignedIntToRegistry(HKEY root, AsciiString path, AsciiString key, UnsignedInt val) { return false; }
 Bool PutUnsignedIntToRegistry(AsciiString path, AsciiString key, UnsignedInt val) { return false; }
+// Default to english when registry is unavailable on non-Windows
+AsciiString GetRegistryLanguage(void) { return "english"; }
 AsciiString GetRegistrySKU(void) { return ""; }
 UnsignedInt GetRegistryVersion(void) { return 65536; }
 UnsignedInt GetRegistryMapPackVersion(void) { return 65536; }
