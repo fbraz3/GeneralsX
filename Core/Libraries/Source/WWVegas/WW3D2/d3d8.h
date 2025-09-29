@@ -1044,9 +1044,28 @@ struct CORE_IDirect3DDevice8 {
         if (depth_stencil_surface) *depth_stencil_surface = nullptr;
         return D3D_OK; 
     }
-    virtual int GetDisplayMode(void* mode) { return D3D_OK; }
+    virtual int GetDisplayMode(void* mode) {
+#if !defined(_WIN32)
+        if (mode) {
+            D3DDISPLAYMODE* m = reinterpret_cast<D3DDISPLAYMODE*>(mode);
+            m->Width = 640;
+            m->Height = 480;
+            m->RefreshRate = 60;
+            m->Format = D3DFMT_X8R8G8B8;
+        }
+#endif
+        return D3D_OK;
+    }
     virtual int GetFrontBuffer(CORE_IDirect3DSurface8* dest_surface) { return D3D_OK; }
-    virtual int GetBackBuffer(DWORD back_buffer, DWORD type, CORE_IDirect3DSurface8** back_buffer_surface) { return D3D_OK; }
+    virtual int GetBackBuffer(DWORD back_buffer, DWORD type, CORE_IDirect3DSurface8** back_buffer_surface) {
+#if !defined(_WIN32)
+        if (!back_buffer_surface) return D3DERR_NOTAVAILABLE;
+        // Provide a valid mock back buffer surface to avoid NULL/garbage pointers
+        return CORE_Device_CreateImageSurface(this, 640, 480, D3DFMT_A8R8G8B8, back_buffer_surface);
+#else
+        return D3D_OK;
+#endif
+    }
     virtual int SetRenderTarget(CORE_IDirect3DSurface8* render_target, CORE_IDirect3DSurface8* new_z_stencil) { return D3D_OK; }
     virtual int GetRenderTarget(CORE_IDirect3DSurface8** render_target) { return D3D_OK; }
     virtual int CreateAdditionalSwapChain(void* presentation_parameters, void** swap_chain) { return D3D_OK; }

@@ -158,6 +158,7 @@ Bool LanguageFilter::readWord(File *file1, WideChar *buf) {
 	Int index = 0;
 	Bool retval = TRUE;
 	Int val = 0;
+	const Int MAX_WORD_LENGTH = 127; // Leave space for null terminator
 
 	WideChar c;
 
@@ -168,14 +169,14 @@ Bool LanguageFilter::readWord(File *file1, WideChar *buf) {
 	}
 	buf[index] = c;
 
-	while (buf[index] != L' ') {
+	while (buf[index] != L' ' && index < MAX_WORD_LENGTH) {
 		++index;
 		val = file1->read(&c, sizeof(WideChar));
 		if ((val == -1) || (val == 0)) {
 			c = WEOF;
 		}
 
-		if ((c == WEOF) || (c == L' ')) {
+		if ((c == WEOF) || (c == L' ') || (index >= MAX_WORD_LENGTH)) {
 			buf[index] = 0;
 			if (c == WEOF) {
 				retval = FALSE;
@@ -184,6 +185,12 @@ Bool LanguageFilter::readWord(File *file1, WideChar *buf) {
 		}
 		buf[index] = c;
 	}
+	
+	// Ensure null termination in case of overflow
+	if (index >= MAX_WORD_LENGTH) {
+		buf[MAX_WORD_LENGTH] = 0;
+	}
+	
 	return retval;
 }
 

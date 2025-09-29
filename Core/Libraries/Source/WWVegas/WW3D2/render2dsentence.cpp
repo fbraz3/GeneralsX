@@ -978,6 +978,16 @@ void	Render2DSentenceClass::Build_Sentence_Centered (const WCHAR *text, int *hkX
 ////////////////////////////////////////////////////////////////////////////////////
 Vector2	Render2DSentenceClass::Build_Sentence_Not_Centered (const WCHAR *text, int *hkX, int *hkY, bool justCalcExtents)
 {
+#ifndef _WIN32
+	// macOS protection: Check for NULL text pointer
+	if (text == NULL) {
+		printf("FONT PROTECTION: Build_Sentence_Not_Centered called with NULL text\n");
+		Vector2 emptyExtent;
+		emptyExtent.Set(0.0f, 0.0f);
+		return emptyExtent;
+	}
+#endif
+
 	Vector2 cursor = Cursor;
 	int textureStartX = TextureStartX;
 	float maxX = 0;
@@ -1008,18 +1018,39 @@ Vector2	Render2DSentenceClass::Build_Sentence_Not_Centered (const WCHAR *text, i
 	TextureOffset.Set (TEXTURE_OFFSET, 0);
 	TextureStartX = TEXTURE_OFFSET;
 
+#ifndef _WIN32
+	// macOS protection: Check for valid Font object
+	if (Font == NULL) {
+		printf("FONT PROTECTION: Font is NULL in Build_Sentence_Not_Centered\n");
+		Vector2 emptyExtent;
+		emptyExtent.Set(0.0f, 0.0f);
+		return emptyExtent;
+	}
+#endif
+
 	float char_height = Font->Get_Char_Height ();
 
 	//
 	//	Loop over all the characters in the string
 	//
 	while (text != NULL) {
+#ifndef _WIN32
+		// macOS protection: Check for valid memory access
+		if ((uintptr_t)text < 0x1000) {
+			printf("FONT PROTECTION: Invalid text pointer %p in loop\n", text);
+			break;
+		}
+		printf("FONT PROTECTION: About to read character at %p\n", text);
+#endif
 		WCHAR ch = *text++;
+#ifndef _WIN32
+		printf("FONT PROTECTION: Read character %d (0x%x) from %p\n", (int)ch, (int)ch, text-1);
+#endif
 		dontBlit = false;
 		//
 		//	Determine how much horizontal space this character requires
 		//
-		if(ParseHotKey && (ch == L'&') && (*text != 0) && (*text > L' ') && (*text != L'\n'))
+		if(ParseHotKey && (ch == L'&') && text && (*text != 0) && (*text > L' ') && (*text != L'\n'))
 		{
 				hotKeyPosY = Cursor.Y;
 			if (calcHotKeyX)
@@ -1306,7 +1337,7 @@ void
 FontCharsClass::Blit_Char (WCHAR ch, uint16 *dest_ptr, int dest_stride, int x, int y)
 {
 	const FontCharsClassCharDataStruct	* data = Get_Char_Data( ch );
-	if ( data != NULL && data->Width != 0 ) {
+	if ( data != NULL && data->Width != 0 && data->Buffer != NULL ) {
 
 		//
 		//	Setup the src and destination pointers
@@ -1330,6 +1361,12 @@ FontCharsClass::Blit_Char (WCHAR ch, uint16 *dest_ptr, int dest_stride, int x, i
 			dest_ptr	+= dest_inc;
 		}
 	}
+#ifndef _WIN32
+	else {
+		printf("FONT PROTECTION: Blit_Char failed for char %d - data=%p, width=%d, buffer=%p\n", 
+		       (int)ch, data, data ? data->Width : 0, data ? data->Buffer : nullptr);
+	}
+#endif
 
 	return ;
 }
@@ -1344,17 +1381,40 @@ const FontCharsClassCharDataStruct *
 FontCharsClass::Store_GDI_Char (WCHAR ch)
 {
 #ifndef _WIN32
-	// macOS: Safe fallback for GDI rendering
-	// Create a simple fallback character metrics
+	// macOS: Safe fallback for GDI rendering with actual bitmap buffer
 	static FontCharsClassCharDataStruct fallbackCharData;
+	static uint16* fallbackBuffer = nullptr;
 	int charWidth = PointSize;
+	
+	// Allocate bitmap buffer if needed (16-bit ARGB4444 format)
+	int bufferSize = charWidth * CharHeight;
+	if (!fallbackBuffer) {
+		fallbackBuffer = new uint16[bufferSize * 256]; // Buffer for multiple chars
+		// Initialize with transparent background
+		for (int i = 0; i < bufferSize * 256; i++) {
+			fallbackBuffer[i] = 0x0000; // Transparent black
+		}
+	}
+	
+	// Create simple fallback glyph - filled rectangle for visible chars
+	uint16* charBuffer = &fallbackBuffer[((ch % 256) * bufferSize)];
+	uint16 pixelColor = 0xFFFF; // White with full alpha (A4R4G4B4 format)
+	
+	// Only fill for printable characters
+	if (ch >= 32 && ch <= 126) {
+		for (int row = 0; row < CharHeight; row++) {
+			for (int col = 0; col < charWidth; col++) {
+				charBuffer[row * charWidth + col] = pixelColor;
+			}
+		}
+	}
 	
 	// Fill fallback character data 
 	fallbackCharData.Value = ch;
 	fallbackCharData.Width = charWidth;
-	fallbackCharData.Buffer = nullptr; // No actual bitmap data on macOS
+	fallbackCharData.Buffer = charBuffer;
 	
-	printf("Store_GDI_Char: macOS fallback for char %d (width %d)\n", (int)ch, charWidth);
+	printf("Store_GDI_Char: macOS fallback for char %d (width %d) with buffer\n", (int)ch, charWidth);
 	return &fallbackCharData;
 #endif
 

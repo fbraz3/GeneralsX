@@ -3282,6 +3282,17 @@ SurfaceClass * DX8Wrapper::_Get_DX8_Back_Buffer(unsigned int num)
 	IDirect3DSurface8 * bb;
 	SurfaceClass *surf=NULL;
 	DX8CALL(GetBackBuffer(num,D3DBACKBUFFER_TYPE_MONO,&bb));
+	if (bb == NULL) {
+		// Fallback: create a small image surface to avoid NULL deref on platforms with stubs
+		WWDEBUG_SAY(("DX8Wrapper::_Get_DX8_Back_Buffer - NULL back buffer, creating fallback surface"));
+		D3DDISPLAYMODE mode;
+		::ZeroMemory(&mode, sizeof(D3DDISPLAYMODE));
+		DX8CALL(GetDisplayMode(&mode));
+		if (mode.Width == 0 || mode.Height == 0) {
+			mode.Width = 640; mode.Height = 480; mode.Format = D3DFMT_A8R8G8B8;
+		}
+		DX8CALL(CreateImageSurface(mode.Width, mode.Height, mode.Format, &bb));
+	}
 	if (bb)
 	{
 		surf=NEW_REF(SurfaceClass,(bb));
