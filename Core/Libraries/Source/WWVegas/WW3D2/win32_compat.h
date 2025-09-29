@@ -795,7 +795,10 @@ typedef struct {
 // Stub functions that do nothing on non-Windows
 inline void* GetDC(void*) { return nullptr; }
 inline void ReleaseDC(void*, void*) {}
-inline void* CreateCompatibleDC(void*) { return nullptr; }
+inline void* CreateCompatibleDC(void*) { 
+    static char dummy_dc = 1; // Dummy non-NULL pointer for macOS compatibility
+    return &dummy_dc; 
+}
 inline void DeleteDC(void*) {}
 inline void* CreateCompatibleBitmap(void*, int, int) { return nullptr; }
 inline void* SelectObject(void*, void*) { return nullptr; }
@@ -1149,29 +1152,44 @@ inline HFONT CreateFont(int nHeight, int nWidth, int nEscapement, int nOrientati
                        int fnWeight, DWORD fdwItalic, DWORD fdwUnderline, DWORD fdwStrikeOut,
                        DWORD fdwCharSet, DWORD fdwOutputPrecision, DWORD fdwClipPrecision,
                        DWORD fdwQuality, DWORD fdwPitchAndFamily, const char* lpszFace) {
-    return nullptr; // Stub implementation
+    // Return a non-null opaque handle to indicate success on non-Windows
+    static char dummy_font;
+    (void)nHeight; (void)nWidth; (void)nEscapement; (void)nOrientation;
+    (void)fnWeight; (void)fdwItalic; (void)fdwUnderline; (void)fdwStrikeOut;
+    (void)fdwCharSet; (void)fdwOutputPrecision; (void)fdwClipPrecision;
+    (void)fdwQuality; (void)fdwPitchAndFamily; (void)lpszFace;
+    return (HFONT)&dummy_font;
 }
 
 inline BOOL ExtTextOutW(HDC hdc, int x, int y, UINT options, const RECT* rect,
                        const wchar_t* string, UINT count, const int* dx) {
-    return FALSE; // Stub implementation
+    // macOS stub - simulate successful text rendering
+    return TRUE; // Return success instead of failure
 }
 
 inline BOOL GetTextExtentPoint32W(HDC hdc, const wchar_t* string, int count, SIZE* size) {
-    if (size) {
-        size->cx = count * 8; // Rough estimate
-        size->cy = 16;
+    (void)hdc;
+    if (size && count > 0) {
+        // Use a conservative average width, tuned later if needed
+        size->cx = count * 10; // average width
+        size->cy = 16;         // line height
+        return TRUE;
     }
-    return TRUE;
+    if (size) { size->cx = 0; size->cy = 0; }
+    return FALSE;
 }
 
 inline BOOL GetTextMetrics(HDC hdc, TEXTMETRIC* tm) {
+    (void)hdc;
     if (tm) {
         memset(tm, 0, sizeof(TEXTMETRIC));
         tm->tmHeight = 16;
+        tm->tmAscent = 13;
+        tm->tmOverhang = 0;
         tm->tmAveCharWidth = 8;
+        return TRUE;
     }
-    return TRUE;
+    return FALSE;
 }
 
 inline int MulDiv(int nNumber, int nNumerator, int nDenominator) {

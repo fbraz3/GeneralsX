@@ -436,7 +436,10 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Inits(void)
    /*
 	** Initalize any other subsystems inside of WW3D
 	*/
+	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - BEGIN\n");
+	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - About to init MissingTexture\n");
 	MissingTexture::_Init();
+	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - MissingTexture init complete\n");
 	TextureFilterClass::_Init_Filters((TextureFilterClass::TextureFilterMode)WW3D::Get_Texture_Filter());
 	TheDX8MeshRenderer.Init();
 	SHD_INIT;

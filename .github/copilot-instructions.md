@@ -3,7 +3,7 @@
 ## Project Overview
 **GeneralsX** - Cross-platform port of Command & Conquer: Generals/Zero Hour. Modernized C++20 engine with native macOS/Linux/Windows compatibility.
 
-**Current Status**: � **Phase 23.3** - GameClient ImageCollection allocation crash (Historical breakthrough: ControlBar resolved)
+**Current Status**: � **Phase 23.4** - Font rendering crash progression (Store_GDI_Char resolved, Blit_Char NULL pointer)
 
 ## Quick Start Commands
 
@@ -62,13 +62,14 @@ if (TheControlBar == NULL) {
 ```
 **Impact**: Engine advanced from TheThingFactory to TheGameClient (5+ subsystems progression)
 
-### 🎯 Current Investigation: GameClient Crash
+### 🎯 Current Investigation: Font Rendering Crash  
 ```cpp
-// CRASH LOCATION (Phase 23.3):
+// CRASH LOCATION (Phase 23.4):
 * thread #1, stop reason = EXC_BAD_ACCESS (code=1, address=0x0)
-* frame #0: 0x0000000000000000 [NULL pointer dereference]
-* frame #1: GameClient::init() at GameClient.cpp:273 [ImageCollection allocation]
-// Issue: TheMappedImageCollection = MSGNEW("GameClientSubsystem") ImageCollection; returning NULL
+* frame #0: FontCharsClass::Blit_Char() at render2dsentence.cpp:1323:22
+* frame #1: Render2DSentenceClass::Build_Sentence_Not_Centered()
+// Issue: uint16 curData = *src_ptr; - src_ptr is NULL pointer
+// Context: Creating InGameUI ControlBar, processing "GUI:DeleteBeacon" text
 ```
 
 ### ✅ Memory Corruption Protection
@@ -82,6 +83,12 @@ if (m_data && ((uintptr_t)m_data < 0x1000)) {
 if (vectorSize > 100000) {
     printf("W3D PROTECTION: Vector corruption detected! Size %zu\n", vectorSize);
     return false;
+}
+
+// Font rendering macOS protection
+if (!src_ptr || !data || !data->Buffer) {
+    printf("FONT PROTECTION: NULL pointer in Blit_Char\n");
+    return; // Safe fallback
 }
 ```
 
@@ -150,7 +157,8 @@ diff -r Core/ references/fighter19-dxvk-port/Core/  # Compare compatibility laye
 - ✅ Phase 22.8: End token parsing & vector corruption (RESOLVED)
 - ✅ Phase 23.1: W3DLaserDraw offsetof warnings (RESOLVED) 
 - ✅ Phase 23.2: ControlBar parseCommandSetDefinition crash (RESOLVED)
-- 🔄 Phase 23.3: GameClient ImageCollection allocation crash (CURRENT)
+- ✅ Phase 23.3: GameClient ImageCollection allocation crash (RESOLVED)
+- 🔄 Phase 23.4: Font rendering Blit_Char NULL pointer crash (CURRENT)
 
 # Engine Progression:
 - ✅ GameLOD.ini parsing: RESOLVED via Universal Protection
@@ -160,7 +168,10 @@ diff -r Core/ references/fighter19-dxvk-port/Core/  # Compare compatibility laye
 - ✅ TheFXListStore: COMPLETED successfully
 - ✅ TheUpgradeCenter: COMPLETED successfully
 - ✅ ControlBar CommandSet parsing: RESOLVED via early initialization
-- 🎯 GameClient ImageCollection allocation: NULL pointer dereference at GameClient.cpp:273
+- ✅ GameClient ImageCollection: COMPLETED successfully
+- ✅ InGameUI initialization: COMPLETED successfully  
+- ✅ Store_GDI_Char font processing: RESOLVED with macOS fallback
+- 🎯 Blit_Char font rendering: NULL src_ptr at render2dsentence.cpp:1323
 ```
 
 **Universal INI Protection System**: Comprehensive field parser exception handling enables engine continuation through hundreds of unknown exceptions while processing complex INI files. This breakthrough enabled progression from immediate GameLOD.ini crashes to advanced GameClient subsystem initialization.

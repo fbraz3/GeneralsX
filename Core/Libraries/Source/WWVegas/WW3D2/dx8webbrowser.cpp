@@ -75,6 +75,12 @@ bool DX8WebBrowser::Initialize(	const char* badpageurl,
 											const char* mousefilename,
 											const char* mousebusyfilename)
 {
+#ifndef _WIN32
+	// On non-Windows platforms, WebBrowser functionality is disabled
+	// This is a compatibility stub that allows the engine to continue initialization
+	printf("DX8WebBrowser::Initialize - macOS compatibility stub - WebBrowser disabled\n");
+	return true;
+#else
 	if(pBrowser == 0)
 	{
 #ifdef _WIN32
@@ -140,10 +146,16 @@ bool DX8WebBrowser::Initialize(	const char* badpageurl,
 	}
 
 	return true;
+#endif
 }
 
 void DX8WebBrowser::Shutdown()
 {
+#ifndef _WIN32
+	// On non-Windows platforms, WebBrowser functionality is disabled
+	// This is a compatibility stub - no shutdown required
+	return;
+#else
 	if(pBrowser)
 	{
 		// Shutdown the browser
@@ -157,6 +169,7 @@ void DX8WebBrowser::Shutdown()
 		// Shut down COM
 		CoUninitialize();
 	}
+#endif
 }
 
 
@@ -173,7 +186,13 @@ void DX8WebBrowser::Shutdown()
 // ******************************************************************************************
 void	DX8WebBrowser::Update(void)
 {
+#ifndef _WIN32
+	// On non-Windows platforms, WebBrowser functionality is disabled
+	// This is a compatibility stub - no update required
+	return;
+#else
 	if(pBrowser) pBrowser->D3DUpdate();
+#endif
 };
 
 

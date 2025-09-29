@@ -1343,6 +1343,27 @@ FontCharsClass::Blit_Char (WCHAR ch, uint16 *dest_ptr, int dest_stride, int x, i
 const FontCharsClassCharDataStruct *
 FontCharsClass::Store_GDI_Char (WCHAR ch)
 {
+#ifndef _WIN32
+	// macOS: Safe fallback for GDI rendering
+	// Create a simple fallback character metrics
+	static FontCharsClassCharDataStruct fallbackCharData;
+	int charWidth = PointSize;
+	
+	// Fill fallback character data 
+	fallbackCharData.Value = ch;
+	fallbackCharData.Width = charWidth;
+	fallbackCharData.Buffer = nullptr; // No actual bitmap data on macOS
+	
+	printf("Store_GDI_Char: macOS fallback for char %d (width %d)\n", (int)ch, charWidth);
+	return &fallbackCharData;
+#endif
+
+	// Early safety checks for Win32 GDI resources
+	if (!MemDC || !GDIBitmapBits) {
+		printf("Store_GDI_Char: GDI resources not initialized (MemDC=%p, GDIBitmapBits=%p)\n", MemDC, GDIBitmapBits);
+		static FontCharsClassCharDataStruct nullCharData = {};
+		return &nullCharData;
+	}
 	int width	= PointSize * 2;
 	int height	= PointSize * 2;
 
@@ -1370,67 +1391,74 @@ FontCharsClass::Store_GDI_Char (WCHAR ch)
 	curr_buffer_p += CurrPixelOffset;
 
 	//
-	//	Copy the BMP contents to the buffer
+	//  Copy the BMP contents to the buffer (or generate a fallback glyph)
 	//
-	int stride = (((width * 3) + 3) & ~3);
-	for (int row = 0; row < char_size.cy; row ++) {
+	//  On non-Windows platforms, GDI stubs may leave GDIBitmapBits/ MemDC as NULL.
+	//  To avoid NULL dereference and still render text, synthesize a simple
+	//  filled glyph with full alpha using the measured width and CharHeight.
+	//
+	if (GDIBitmapBits == NULL || MemDC == NULL) {
+		// Fallback path: draw a solid rectangle as the glyph
+		for (int row = 0; row < CharHeight; row++) {
+			for (int col = 0; col < char_size.cx; col++) {
+				const uint16 pixel_color = 0x0FFF; // white RGB in A4R4G4B4
+				const uint8 alpha_value = 0xF;     // full alpha
+				*curr_buffer_p++ = pixel_color | (alpha_value << 12);
+			}
+		}
+	} else {
+		// Normal Windows path: read back from the DIB bits populated by ExtTextOutW
+		int stride = (((width * 3) + 3) & ~3);
+		for (int row = 0; row < char_size.cy; row ++) {
 
-		//
-		//	Compute the indices into the BMP and surface
-		//
-		int index = (row * stride);
+			// Compute the indices into the BMP and surface
+			int index = (row * stride);
 
-		//
-		//	Loop over each column
-		//
-		for (int col = 0; col < char_size.cx; col ++) {
+			// Loop over each column
+			for (int col = 0; col < char_size.cx; col ++) {
 
-			//
-			//	Get the pixel color at this location
-			//
-			uint8 pixel_value = GDIBitmapBits[index];
-			index += 3;
+				// Get the pixel color at this location
+				uint8 pixel_value = GDIBitmapBits[index];
+				index += 3;
 #ifdef TEST_PLACEMENT
- 			if (row==CharHeight-1&&col==0) {
- 				pixel_value = 0xff;
- 			}
- 			if (row==CharHeight-2&&col==1) {
- 				pixel_value = 0xff;
- 			}
- 			if (row==0&&col==0) {
- 				pixel_value = 0xff;
- 			}
- 			if (row==1&&col==1) {
- 				pixel_value = 0xff;
- 			}
- 			if (row==CharHeight-1&&col==char_size.cx-1-PixelOverlap) {
- 				pixel_value = 0xff;
- 			}
- 			if (row==CharHeight-2&&col==char_size.cx-2-PixelOverlap) {
- 				pixel_value = 0xff;
- 			}
- 			if (row==0&&col==char_size.cx-1-PixelOverlap) {
- 				pixel_value = 0xff;
- 			}
- 			if (row==1&&col==char_size.cx-2-PixelOverlap) {
- 				pixel_value = 0xff;
- 			}
- 			if (pixel_value == 0x00) {
- 				pixel_value = 0x40;
- 			}
+				if (row==CharHeight-1&&col==0) {
+					pixel_value = 0xff;
+				}
+				if (row==CharHeight-2&&col==1) {
+					pixel_value = 0xff;
+				}
+				if (row==0&&col==0) {
+					pixel_value = 0xff;
+				}
+				if (row==1&&col==1) {
+					pixel_value = 0xff;
+				}
+				if (row==CharHeight-1&&col==char_size.cx-1-PixelOverlap) {
+					pixel_value = 0xff;
+				}
+				if (row==CharHeight-2&&col==char_size.cx-2-PixelOverlap) {
+					pixel_value = 0xff;
+				}
+				if (row==0&&col==char_size.cx-1-PixelOverlap) {
+					pixel_value = 0xff;
+				}
+				if (row==1&&col==char_size.cx-2-PixelOverlap) {
+					pixel_value = 0xff;
+				}
+				if (pixel_value == 0x00) {
+					pixel_value = 0x40;
+				}
 #endif
 
-			uint16 pixel_color = 0;
-			if (pixel_value != 0) {
-				pixel_color = 0x0FFF;
-			}
+				uint16 pixel_color = 0;
+				if (pixel_value != 0) {
+					pixel_color = 0x0FFF;
+				}
 
-			//
-			//	Convert the pixel intensity from 8bit to 4bit and
-			// store it in our buffer
-			//
-			uint8 alpha_value	= ((pixel_value >> 4) & 0xF);
-			*curr_buffer_p++	= pixel_color | (alpha_value << 12);
+				// Convert the pixel intensity from 8bit to 4bit and store it
+				uint8 alpha_value = ((pixel_value >> 4) & 0xF);
+				*curr_buffer_p++ = pixel_color | (alpha_value << 12);
+			}
 		}
 	}
 
@@ -1582,16 +1610,33 @@ FontCharsClass::Create_GDI_Font (const char *font_name)
 	//
 	//	Now select the BMP and font into the DC
 	//
-	OldGDIBitmap	= (HBITMAP)::SelectObject (MemDC, GDIBitmap);
-	OldGDIFont		= (HFONT)::SelectObject (MemDC, GDIFont);
-	::SetBkColor (MemDC, RGB (0, 0, 0));
-	::SetTextColor (MemDC, RGB (255, 255, 255));
+	if (MemDC && GDIBitmap) {
+		OldGDIBitmap = (HBITMAP)::SelectObject (MemDC, GDIBitmap);
+	} else {
+		OldGDIBitmap = nullptr;
+	}
+	if (MemDC && GDIFont) {
+		OldGDIFont = (HFONT)::SelectObject (MemDC, GDIFont);
+	} else {
+		OldGDIFont = nullptr;
+	}
+	if (MemDC) {
+		::SetBkColor (MemDC, RGB (0, 0, 0));
+		::SetTextColor (MemDC, RGB (255, 255, 255));
+	}
 
 	//
 	//	Lookup the pixel height of the font
 	//
 	TEXTMETRIC text_metric = { 0 };
-	::GetTextMetrics (MemDC, &text_metric);
+	if (MemDC) {
+		::GetTextMetrics (MemDC, &text_metric);
+	} else {
+		// Reasonable defaults for non-Windows platforms
+		text_metric.tmHeight = std::max(12, PointSize + 2);
+		text_metric.tmAscent = text_metric.tmHeight - 3;
+		text_metric.tmOverhang = 0;
+	}
 	CharHeight = text_metric.tmHeight;
 	CharAscent = text_metric.tmAscent;
 	CharOverhang = text_metric.tmOverhang;
