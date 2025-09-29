@@ -33,6 +33,12 @@ Immediate Next Steps:
 Documentation update (September 28, 2025):
 - Restored detailed multithreading plan to MULTITHREADING_ANALYSIS.md and updated README to reference it briefly.
 
+Phase 23.4 Runtime Highlights (macOS):
+- Headless input mode enabled on macOS (`createKeyboard` returns NULL under `__APPLE__`).
+- DX8 mock layer expanded: `Find_Color_Mode` returns default mode index 0; `Test_Z_Mode` always succeeds.
+- Runtime status: All .big files loaded; global CRC 0x31D937BF; multiple CommandSet entries parsed successfully.
+- DXGL reference added (`references/dxgldotorg-dxgl/`) to inform API mocking and capability emulation patterns.
+
 Next Steps (Phase 23.5):
 - Implement mock vertex buffer (CreateVertexBuffer + Lock/Unlock semantics).
 - Add minimal GetDesc for index/vertex buffers if callers request it.
@@ -42,6 +48,12 @@ Acceptance criteria for this phase:
 - No NULL dereference in MissingTexture::_Init (LockRect/UnlockRect path works on mock texture).
 - Game reaches post-graphics INI parsing reliably without device-dependent crashes.
 - Logs clearly mark DX8 wrapper initialization milestones.
+
+Next Development Priorities (carry-over):
+- Complete graphics pipeline bring-up through W3DDisplay init with additional DX8 stubs as encountered.
+- Prepare Miles Audio compatibility on macOS (plan minimal stubs or CoreAudio bridge).
+- Extend headless input path for mouse as needed during early runtime.
+- Keep DXGL patterns in mind for capability emulation and API surface completeness.
 
 # **Project**: 🎯 **General### 🎯️ **Engine Subsystem Progression Timeline**
 ```

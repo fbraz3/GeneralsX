@@ -34,6 +34,32 @@ Next Up:
 - Mirror the approach for vertex buffers (CreateVertexBuffer + Lock/Unlock) to preempt similar crashes.
 - Add minimal GetDesc support where needed by callers.
 
+### Additional Phase 23.4 Progress (September 2025)
+
+macOS Headless Mode (Input):
+- Implemented `#ifdef __APPLE__` guard in `GameClient.cpp`; `createKeyboard()` returns `NULL` on macOS to avoid DirectInput dependency.
+- Effect: GameClient initialization proceeds without keyboard subsystem; input runs in headless mode during early bring-up.
+
+DirectX8 Mock Layer Additions:
+- Fixed `DX8Wrapper::Find_Color_Mode()` crash at address 0x1 by ensuring valid interface state on macOS.
+- Implemented macOS-specific mock behavior:
+  - `Find_Color_Mode()` returns success with default mode index 0.
+  - `Test_Z_Mode()` returns true for all Z-buffer format tests.
+- Result: Engine advances past additional DX8 capability checks on macOS.
+
+Current Engine Status (runtime):
+- File System: All 19 .big files loaded successfully.
+- Global Data: CRC calculated (0x31D937BF).
+- Universal INI Protection: Hundreds of INI files processed.
+- CommandSet Processing: Multiple sets parsed successfully (e.g., GLAInfantryTerroristCommandSet, Demo_GLAInfantryTerroristCommandSet, Slth_GLAInfantryTerroristCommandSet).
+- Graphics Mock Layer: DirectX→OpenGL compatibility functional.
+- Headless Mode: Keyboard-free operation on macOS.
+
+DXGL Reference Integration:
+- Added `references/dxgldotorg-dxgl/` submodule (DirectDraw/Direct3D7 → OpenGL).
+- Value: Patterns for DirectX API mocking and OpenGL integration.
+- Techniques applied: Mock interface patterns, capability emulation, functional stubs, graceful error handling for unsupported features.
+
 **🎯 NEW CRASH LOCATION (Phase 23.4) – RESOLVED THIS SESSION**:
 ```cpp
 // MissingTexture::_Init() - DirectX8 texture interface crash
