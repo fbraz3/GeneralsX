@@ -795,6 +795,12 @@ RenderObjClass * WW3DAssetManager::Create_Render_Obj(const char * name)
 	WWPROFILE( "WW3DAssetManager::Create_Render_Obj" );
 	WWMEMLOG(MEM_GEOMETRY);
 
+	// macOS/ARM64 protection: avoid asserts/traps on bad input
+	if (name == NULL || name[0] == '\0') {
+		WWDEBUG_SAY(("ASSET PROTECTION: Create_Render_Obj called with NULL/empty name"));
+		return _NullPrototype.Create();
+	}
+
 	// Try to find a prototype
 	PrototypeClass * proto = Find_Prototype(name);
 
@@ -829,7 +835,8 @@ RenderObjClass * WW3DAssetManager::Create_Render_Obj(const char * name)
 			}
 			AssetStatusClass::Peek_Instance()->Report_Missing_RObj(name);
 		}
-		return NULL;		// Failed to find a prototype
+		WWDEBUG_SAY(("ASSET PROTECTION: Substituting NULL render object for missing asset '%s'", name));
+		return _NullPrototype.Create();		// Safe fallback
 	}
 
 	return proto->Create();
