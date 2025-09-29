@@ -4,6 +4,9 @@
 
 #include <cstring>
 #include <cstddef>
+// Use the real engine headers to avoid ODR and ABI mismatches
+#include "../../../../GameEngine/Include/Common/AsciiString.h"
+#include "win32_compat.h"
 
 // Simple stub class definitions
 class ErrorDumpClass {
@@ -195,56 +198,10 @@ int PartitionManager::getPropShroudStatusForPlayer(int player, const Coord3D* co
     return 0;
 }
 
-// Minimal AsciiString implementation
-class AsciiString {
-private:
-    char* data;
-    size_t length;
-    
-public:
-    AsciiString() : data(nullptr), length(0) {}
-    AsciiString(const char* str) {
-        if (str) {
-            length = strlen(str);
-            data = new char[length + 1];
-            strcpy(data, str);
-        } else {
-            data = nullptr;
-            length = 0;
-        }
-    }
-    AsciiString(const AsciiString& other) {
-        if (other.data) {
-            length = other.length;
-            data = new char[length + 1];
-            strcpy(data, other.data);
-        } else {
-            data = nullptr;
-            length = 0;
-        }
-    }
-    AsciiString& operator=(const AsciiString& other) {
-        if (this != &other) {
-            delete[] data;
-            if (other.data) {
-                length = other.length;
-                data = new char[length + 1];
-                strcpy(data, other.data);
-            } else {
-                data = nullptr;
-                length = 0;
-            }
-        }
-        return *this;
-    }
-    ~AsciiString() { delete[] data; }
-    
-    const char* Str() const { return data ? data : ""; }
-    operator const char*() const { return Str(); }
-};
-
 // Registry function implementations
 AsciiString GetRegistryLanguage(void) {
+    // macOS/Linux default language when registry is unavailable.
+    // Return a lowercase value to match common asset folder naming, e.g., Data/english/
     return AsciiString("english");
 }
 
