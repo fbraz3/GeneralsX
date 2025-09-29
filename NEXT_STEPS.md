@@ -852,3 +852,9 @@ This macOS port represents a **groundbreaking achievement** in the C&C Generals 
 6. **Commit Changes**: Conventional commit messages with architectural context
 
 This systematic approach has successfully resolved hundreds of compatibility issues and established a robust foundation for completing the macOS port.
+
+## 2025-09-29 — MetaMap INI Fallback + AsciiString ODR Fix
+
+- Hardened `SubsystemInterfaceList::initSubsystem` INI loading with try/catch. Missing localized INI (e.g., `Data\\<lang>\\CommandMap.ini`) no longer aborts subsystem init; the loader proceeds to fallback paths (e.g., `Data\\INI\\CommandMap.ini`). Expect TheMetaMap to advance.
+- Removed duplicate minimal `AsciiString` from `WW3D2/cross_platform_stubs.cpp` and switched to including the engine `AsciiString.h` to avoid ODR/ABI mismatches that could corrupt strings during INI parsing and file path formatting. Kept `GetRegistryLanguage()` default as `"english"` on non-Windows.
+- Next run goal: confirm logs show TheMetaMap initialized and proceeding to TheActionManager and subsequent subsystems.
