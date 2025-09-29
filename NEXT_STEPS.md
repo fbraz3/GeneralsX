@@ -30,6 +30,9 @@ Immediate Next Steps:
 
 **Current Achievement**: Complete DirectX8 buffer/texture mock system successfully eliminates ALL graphics-related crashes on macOS ARM64. Engine initialization has advanced significantly beyond previous stopping points.
 
+Documentation update (September 28, 2025):
+- Restored detailed multithreading plan to MULTITHREADING_ANALYSIS.md and updated README to reference it briefly.
+
 Next Steps (Phase 23.5):
 - Implement mock vertex buffer (CreateVertexBuffer + Lock/Unlock semantics).
 - Add minimal GetDesc for index/vertex buffers if callers request it.
