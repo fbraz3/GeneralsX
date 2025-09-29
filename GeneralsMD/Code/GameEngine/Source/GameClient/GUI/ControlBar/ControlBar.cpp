@@ -1499,8 +1499,16 @@ void ControlBar::update( void )
 		}
 	}
 
-	if(!m_contextParent[ CP_PURCHASE_SCIENCE ]->winIsHidden())
-		updateContextPurchaseScience();
+	// macOS protection: ensure window exists before dereferencing
+	if (m_contextParent[ CP_PURCHASE_SCIENCE ] != NULL) {
+		if (!m_contextParent[ CP_PURCHASE_SCIENCE ]->winIsHidden()) {
+			updateContextPurchaseScience();
+		}
+	} else {
+#ifndef _WIN32
+		printf("CONTROLBAR PROTECTION: CP_PURCHASE_SCIENCE window is NULL in update() check\n");
+#endif
+	}
 
 	//
 	// first, if the UI is dirty repopulate the UI with what the user should see for all the
@@ -1727,8 +1735,16 @@ void ControlBar::evaluateContextUI( void )
 	m_UIDirty = FALSE;
 
 	// if our purchase science window is up, we will want to update it by repopulating it.
-	if(!m_contextParent[ CP_PURCHASE_SCIENCE ]->winIsHidden())
-		showPurchaseScience();
+	// macOS protection: ensure window exists before dereferencing
+	if (m_contextParent[ CP_PURCHASE_SCIENCE ] != NULL) {
+		if (!m_contextParent[ CP_PURCHASE_SCIENCE ]->winIsHidden()) {
+			showPurchaseScience();
+		}
+	} else {
+#ifndef _WIN32
+		printf("CONTROLBAR PROTECTION: CP_PURCHASE_SCIENCE window is NULL in evaluateContextUI() check\n");
+#endif
+	}
 
 	// erase any current state of the GUI by switching out to the empty context
 	switchToContext( CB_CONTEXT_NONE, NULL );
@@ -3066,6 +3082,13 @@ void ControlBar::showPurchaseScience( void )
 		return;
 	populatePurchaseScience(ThePlayerList->getLocalPlayer());
 	m_genStarFlash = FALSE;
+	// macOS protection: ensure window exists before dereferencing
+	if (m_contextParent[ CP_PURCHASE_SCIENCE ] == NULL) {
+#ifndef _WIN32
+		printf("CONTROLBAR PROTECTION: CP_PURCHASE_SCIENCE window is NULL in showPurchaseScience\n");
+#endif
+		return;
+	}
 	if(!m_contextParent[ CP_PURCHASE_SCIENCE ]->winIsHidden())
 		return;
 	//switchToContext(CB_CONTEXT_PURCHASE_SCIENCE, NULL);
@@ -3078,6 +3101,13 @@ void ControlBar::showPurchaseScience( void )
 
 void ControlBar::hidePurchaseScience( void )
 {
+	// macOS protection: ensure window exists before dereferencing
+	if (m_contextParent[ CP_PURCHASE_SCIENCE ] == NULL) {
+#ifndef _WIN32
+		printf("CONTROLBAR PROTECTION: CP_PURCHASE_SCIENCE window is NULL in hidePurchaseScience\n");
+#endif
+		return;
+	}
 	if(m_contextParent[ CP_PURCHASE_SCIENCE ]->winIsHidden())
 		return;
 
@@ -3103,10 +3133,18 @@ void ControlBar::hidePurchaseScience( void )
 
 void ControlBar::togglePurchaseScience( void )
 {
-	if(m_contextParent[ CP_PURCHASE_SCIENCE ]->winIsHidden())
+	// macOS protection: tolerate NULL pointer by logging and returning
+	if (m_contextParent[ CP_PURCHASE_SCIENCE ] == NULL) {
+#ifndef _WIN32
+		printf("CONTROLBAR PROTECTION: CP_PURCHASE_SCIENCE window is NULL in togglePurchaseScience\n");
+#endif
+		return;
+	}
+	if (m_contextParent[ CP_PURCHASE_SCIENCE ]->winIsHidden()) {
 		showPurchaseScience();
-	else
+	} else {
 		hidePurchaseScience();
+	}
 }
 
 void ControlBar::toggleControlBarStage( void )

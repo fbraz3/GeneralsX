@@ -1,34 +1,35 @@
-# Phase 23.6 – Complete DirectX8 Buffer Mock System (Major Success!)
+# Phase 23.7 – LanguageFilter Buffer Overflow Fix (Critical Success!)
 
 Date: 2025-09-28
 
 Summary (Done):
-- Implemented functional mocks for IDirect3DTexture8 and IDirect3DSurface8 (memory-backed LockRect/UnlockRect).
-- Wired device virtuals so CreateTexture returns a valid mock object.
-- Built and ran z_generals (macOS ARM64) and observed continued initialization past previous crash point (MissingTexture::_Init). No crash observed; engine proceeds to parse GameLOD, GameLODPresets, and Water INIs.
+- Fixed critical stack buffer overflow in LanguageFilter::readWord() that was causing SIGABRT/__stack_chk_fail crashes.
+- Added proper bounds checking to prevent buffer overrun in wchar_t word[128] buffer.
+- Built and ran z_generals (macOS ARM64) and observed continued initialization past LanguageFilter, now reaching TheMetaMap subsystem.
 
-Index Buffer Mock Success (Phase 23.5):
-- Implemented CORE_MockIndexBuffer8 (CPU-backed) with Lock/Unlock and wired CORE_IDirect3DDevice8::CreateIndexBuffer on non-Windows to return valid buffers.
-- Rebuilt z_generals (macOS ARM64) and smoke-tested; runtime proceeds into UI INIs (Mouse.ini) with no index buffer NULL deref.
+**BREAKTHROUGH - Stack Protection Fix (Phase 23.7):**
+- Identified that LanguageFilter::readWord() was writing beyond the 128 wchar_t buffer without bounds checking
+- Added MAX_WORD_LENGTH constant and proper index bounds validation to prevent stack corruption
+- Ensured null termination even on overflow conditions
+- **MAJOR SUCCESS**: Engine now passes LanguageFilter initialization and advances through multiple subsystems:
+  - TheRadar (completed successfully)
+  - TheVictoryConditions (completed successfully)  
+  - TheMetaMap (reached, looking for CommandMap.ini)
 
-**BREAKTHROUGH - Vertex Buffer Mock Success (Phase 23.6):**
-- Implemented CORE_MockVertexBuffer8 (CPU-backed) with Lock/Unlock interface matching IDirect3DVertexBuffer8
-- Updated CORE_IDirect3DDevice8::CreateVertexBuffer stub to return valid mock objects instead of NULL
-- **MAJOR SUCCESS**: Engine now runs without ANY DirectX8 buffer crashes and successfully parses:
-  - MappedImages INIs (texture coordinate processing) 
-  - Animation2D.ini (UI animation sequences)
-  - Mouse.ini (cursor configuration)
-  - All UI and interface configuration files
+Previous Major Achievements:
+- Complete DirectX8 buffer mock system (Phase 23.6) - all graphics buffer/texture mocks working
+- Index/Vertex buffer mocks (Phase 23.5) - CPU-backed Lock/Unlock interfaces
+- DirectX8 surface/texture mocks - memory-backed LockRect/UnlockRect functionality
+- Engine successfully parses all UI configuration files without crashes
 
 Immediate Next Steps:
-Immediate Next Steps:
-- **Monitor for additional DirectX8 API calls**: Engine may hit other D3D interfaces (shaders, states, render targets)
-- **Investigate deeper engine initialization**: With all basic DirectX8 mocks working, engine will likely advance to game-specific subsystems
-- **Add targeted debug logs**: Instrument remaining W3D subsystem initialization points
-- **Prepare minimal OpenGL pathway**: Begin sketching no-op OpenGL upload stubs for future rendering hookup
-- **Reference comparison**: Continue diffing with working reference repos for additional compatibility patterns
+- **Monitor TheMetaMap subsystem**: Engine is now trying to load Data\ish\CommandMap.ini and falling back to Data\INI\CommandMap.ini
+- **Investigate missing INI files**: Address file loading errors for command mapping configuration
+- **Continue subsystem progression**: With major memory safety issues resolved, engine should advance further
+- **Add targeted debug logs**: Instrument remaining subsystem initialization points for any new crash patterns
+- **Reference comparison**: Compare with working reference repos for additional compatibility insights
 
-**Current Achievement**: Complete DirectX8 buffer/texture mock system successfully eliminates ALL graphics-related crashes on macOS ARM64. Engine initialization has advanced significantly beyond previous stopping points.
+**Current Achievement**: Critical memory safety fixes eliminate stack corruption crashes. Engine initialization has advanced significantly beyond previous stopping points with robust buffer protection.
 
 Documentation update (September 28, 2025):
 - Restored detailed multithreading plan to MULTITHREADING_ANALYSIS.md and updated README to reference it briefly.

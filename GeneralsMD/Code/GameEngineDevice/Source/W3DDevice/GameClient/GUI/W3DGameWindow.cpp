@@ -545,6 +545,25 @@ Int W3DGameWindow::winSetText( UnicodeString newText )
 	// extending functionality
 	GameWindow::winSetText( newText );
 
+#ifndef _WIN32
+	// macOS protection: Check for valid text before building sentence
+	const WCHAR* textPtr = m_instData.getText().str();
+	if (textPtr == NULL) {
+		printf("W3D PROTECTION: getText().str() returned NULL in winSetText\n");
+		return WIN_ERR_OK;
+	}
+	if ((uintptr_t)textPtr < 0x1000) {
+		printf("W3D PROTECTION: getText().str() returned invalid pointer %p in winSetText\n", textPtr);
+		return WIN_ERR_OK;
+	}
+	
+	// Also check if text renderer has a valid font
+	if (m_textRenderer.Peek_Font() == NULL) {
+		printf("W3D PROTECTION: Text renderer has no font in winSetText\n");
+		return WIN_ERR_OK;
+	}
+#endif
+
 	// rebuild the sentence in our text renderer
 	m_textRenderer.Build_Sentence( m_instData.getText().str(),NULL, NULL );
 
