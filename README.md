@@ -196,56 +196,12 @@ Windows builds are maintained through the official TheSuperHackers repository wi
 
 ### 🧵 Multithreading Modernization
 
-*Note: This is a **future implementation** planned after achieving stable cross-platform compilation and basic functionality.*
+This is a future initiative to leverage multi-core CPUs while preserving deterministic gameplay. High-level plan:
+- Start with low-risk tasks (parallel asset/INI loading, background audio/I/O)
+- Evolve to moderate threading (AI batches, object updates with partitioning)
+- Consider advanced loop decoupling (producer–consumer) once stable
 
-Command & Conquer: Generals (2003) was designed for single-core CPUs and presents significant opportunities for modernization to leverage multiple CPU cores.
-
-#### **Current Architecture**
-- **Single-threaded main loop**: Logic → AI → Physics → Rendering (sequential)
-- **Limited threading**: Only networking, audio, and I/O operations
-- **Existing infrastructure**: ThreadClass, CriticalSectionClass, Mutex primitives available
-
-#### **Modernization Opportunities**
-
-**Phase 1: Low-Risk Optimizations**
-- **Parallel Asset Loading** (40-60% faster startup)
-- **Background Audio Processing** (10-15% CPU reduction)
-- **Parallel INI File Parsing** (faster initialization)
-
-**Phase 2: Moderate Complexity**
-- **Threaded AI Processing** (20-30% AI performance boost)
-- **Parallel Object Updates** (30-50% logic performance)
-- **Background Resource Management**
-
-**Phase 3: Advanced Architecture**
-- **Producer-Consumer Game Loop** (25-40% overall FPS improvement)
-- **Task-Based Parallelism** with dependency management
-- **NUMA-aware thread allocation**
-
-#### **Technical Challenges**
-- **Deterministic Multiplayer**: Threading can introduce desynchronization
-- **Shared State Management**: GameObject data accessed by multiple systems
-- **Order-Dependent Logic**: Game systems require specific execution sequences
-
-#### **Implementation Strategy**
-1. **Foundation Phase** (2-3 weeks): Thread pool infrastructure and safe parallelization
-2. **Safe Enhancements** (4-6 weeks): Background processing and non-critical parallelization
-3. **Core Loop Modernization** (8-12 weeks): Advanced threading with careful state management
-
-#### **Expected Performance Impact**
-- **4-core systems**: 40-60% performance improvement
-- **8-core systems**: Optimal scaling with diminishing returns
-- **Requirements**: Minimum 2+ cores, optimal with 4-8 cores
-
-#### **Why After Cross-Platform Stability**
-Multithreading introduces complexity that could mask platform-specific issues. Our approach:
-1. ✅ **First**: Achieve stable single-threaded execution on all platforms
-2. ✅ **Then**: Add controlled parallelization with extensive testing
-3. ✅ **Finally**: Advanced threading optimizations
-
-This ensures each enhancement builds on a solid, tested foundation rather than adding complexity to unstable systems.
-
-*For detailed technical analysis, see the development discussions and architectural documentation.*
+Read the full analysis and phased plan in MULTITHREADING_ANALYSIS.md.
 
 ---
 

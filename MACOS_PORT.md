@@ -10,6 +10,8 @@
 
 ## 📊 Overview
 
+Note (September 28, 2025): The detailed multithreading modernization analysis has been restored to a standalone document at MULTITHREADING_ANALYSIS.md. The README now includes a short briefing and links to it.
+
 ### Phase 23.4 - DirectX8 Texture Mock Implementation (September 2025)
 
 **Status**: 🎯 **IN PROGRESS** - Major breakthrough: DirectX8 device and texture/surface mocks implemented. Engine reaches and passes MissingTexture initialization.
