@@ -20,6 +20,18 @@
 - ✅ **DEVICE INITIALIZATION SUCCESS**: W3DShaderManager, DX8Caps, and device creation working with proper mock interfaces
 - ✅ **GRAPHICS PIPELINE PROGRESS**: Advanced to MissingTexture creation in DirectX8 wrapper initialization
 
+### Phase 23.5 – IndexBuffer Mock (macOS)
+
+Status: Implemented a CPU-backed mock for IDirect3DIndexBuffer8 (CORE_MockIndexBuffer8) in Core d3d8.h and wired CORE_IDirect3DDevice8::CreateIndexBuffer to allocate it on non-Windows.
+
+Impact:
+- DX8IndexBufferClass now receives a valid buffer; Lock/Unlock work without NULL deref.
+- Runtime advances further into UI initialization (Mouse.ini parsing shows repeated successful blocks) without index buffer crashes.
+
+Next Up:
+- Mirror the approach for vertex buffers (CreateVertexBuffer + Lock/Unlock) to preempt similar crashes.
+- Add minimal GetDesc support where needed by callers.
+
 **🎯 NEW CRASH LOCATION (Phase 23.4) – RESOLVED THIS SESSION**:
 ```cpp
 // MissingTexture::_Init() - DirectX8 texture interface crash

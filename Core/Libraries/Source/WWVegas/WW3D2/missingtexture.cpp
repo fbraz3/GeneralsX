@@ -56,6 +56,7 @@ CORE_IDirect3DSurface8* MissingTexture::_Create_Missing_Surface()
 
 void MissingTexture::_Init()
 {
+	printf("MissingTexture::_Init - BEGIN (expected %ux%u)\n", missing_image_width, missing_image_height);
 	WWASSERT(!_MissingTexture);
 
 	IDirect3DTexture8* tex=DX8Wrapper::_Create_DX8_Texture
@@ -114,6 +115,7 @@ void MissingTexture::_Init()
 	}
 
 	_MissingTexture=tex;
+	printf("MissingTexture::_Init - DONE (tex=%p, levels=%u)\n", (void*)_MissingTexture, _MissingTexture ? _MissingTexture->GetLevelCount() : 0);
 /*
 	//Load an 8-bit tga and generate text representation
 	FILE *fp;

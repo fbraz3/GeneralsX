@@ -340,65 +340,71 @@ void GameClient::init( void )
 	}
 
 	// allocate and load image collection for the GUI and just load the 256x256 ones for now
-	printf("GameClient::init() - W3D PROTECTION: About to allocate TheMappedImageCollection\n");
+	printf("GameClient::init() - W3D PROTECTION: About to allocate TheMappedImageCollection using direct new\n");
 	fflush(stdout);
 	
-	TheMappedImageCollection = MSGNEW("GameClientSubsystem") ImageCollection;
-	
-	if (TheMappedImageCollection == NULL) {
-		printf("GameClient::init() - CRITICAL ERROR: TheMappedImageCollection allocation FAILED - MSGNEW returned NULL\n");
-		fflush(stdout);
+	try {
+		// Use direct allocation instead of MSGNEW to avoid memory pool issues
+		TheMappedImageCollection = new ImageCollection();
 		
-		// Try alternative allocation approach
-		printf("GameClient::init() - W3D PROTECTION: Attempting alternative allocation\n");
-		fflush(stdout);
-		
-		try {
-			TheMappedImageCollection = new ImageCollection();
-			if (TheMappedImageCollection != NULL) {
-				printf("GameClient::init() - W3D PROTECTION: Alternative allocation SUCCESSFUL\n");
-				fflush(stdout);
-			} else {
-				printf("GameClient::init() - CRITICAL ERROR: Alternative allocation also FAILED\n");
-				fflush(stdout);
-				return;
-			}
-		} catch (...) {
-			printf("GameClient::init() - CRITICAL ERROR: Exception during alternative allocation\n");
+		if (TheMappedImageCollection != NULL) {
+			printf("GameClient::init() - W3D PROTECTION: TheMappedImageCollection allocated successfully (ptr=%p)\n", TheMappedImageCollection);
 			fflush(stdout);
-			return;
+		} else {
+			printf("GameClient::init() - CRITICAL ERROR: new ImageCollection() returned NULL\n");
+			fflush(stdout);
+			throw std::bad_alloc();
 		}
-	} else {
-		printf("GameClient::init() - W3D PROTECTION: TheMappedImageCollection allocated successfully\n");
+	} catch (const std::exception& e) {
+		printf("GameClient::init() - CRITICAL ERROR: Exception during ImageCollection allocation: %s\n", e.what());
 		fflush(stdout);
-	}
-	
-	// Additional safety check before calling load()
-	if (TheMappedImageCollection != NULL) {
-		printf("GameClient::init() - W3D PROTECTION: About to call TheMappedImageCollection->load(512)\n");
-		fflush(stdout);
-		try {
-			TheMappedImageCollection->load( 512 );
-			printf("GameClient::init() - W3D PROTECTION: TheMappedImageCollection->load(512) completed successfully\n");
-			fflush(stdout);
-		} catch (...) {
-			printf("GameClient::init() - W3D PROTECTION: Exception caught during TheMappedImageCollection->load(512)\n");
-			fflush(stdout);
-		}
-	} else {
-		printf("GameClient::init() - CRITICAL ERROR: TheMappedImageCollection is NULL, skipping load()\n");
+		return;
+	} catch (...) {
+		printf("GameClient::init() - CRITICAL ERROR: Unknown exception during ImageCollection allocation\n");
 		fflush(stdout);
 		return;
 	}
-
-	// now that we have all the images loaded ... load any animation definitions from those images
-	printf("GameClient::init() - DEBUG: About to allocate TheAnim2DCollection\n");
+	
+	// Load the image collection
+	printf("GameClient::init() - W3D PROTECTION: About to call TheMappedImageCollection->load(512)\n");
 	fflush(stdout);
 	
-	TheAnim2DCollection = MSGNEW("GameClientSubsystem") Anim2DCollection;
+	try {
+		TheMappedImageCollection->load( 512 );
+		printf("GameClient::init() - W3D PROTECTION: TheMappedImageCollection->load(512) completed successfully\n");
+		fflush(stdout);
+	} catch (const std::exception& e) {
+		printf("GameClient::init() - W3D PROTECTION: Exception caught during load(512): %s\n", e.what());
+		fflush(stdout);
+		// Continue execution even if loading fails
+	} catch (...) {
+		printf("GameClient::init() - W3D PROTECTION: Unknown exception caught during TheMappedImageCollection->load(512)\n");
+		fflush(stdout);
+		// Continue execution even if loading fails
+	}
+
+	// now that we have all the images loaded ... load any animation definitions from those images
+	printf("GameClient::init() - DEBUG: About to allocate TheAnim2DCollection using direct new\n");
+	fflush(stdout);
 	
-	if (TheAnim2DCollection == NULL) {
-		printf("GameClient::init() - CRITICAL ERROR: TheAnim2DCollection allocation FAILED\n");
+	try {
+		// Use direct allocation instead of MSGNEW to avoid memory pool issues
+		TheAnim2DCollection = new Anim2DCollection();
+		
+		if (TheAnim2DCollection != NULL) {
+			printf("GameClient::init() - DEBUG: TheAnim2DCollection allocated successfully (ptr=%p)\n", TheAnim2DCollection);
+			fflush(stdout);
+		} else {
+			printf("GameClient::init() - CRITICAL ERROR: new Anim2DCollection() returned NULL\n");
+			fflush(stdout);
+			throw std::bad_alloc();
+		}
+	} catch (const std::exception& e) {
+		printf("GameClient::init() - CRITICAL ERROR: Exception during Anim2DCollection allocation: %s\n", e.what());
+		fflush(stdout);
+		return;
+	} catch (...) {
+		printf("GameClient::init() - CRITICAL ERROR: Unknown exception during Anim2DCollection allocation\n");
 		fflush(stdout);
 		return;
 	}
@@ -410,8 +416,11 @@ void GameClient::init( void )
 		TheAnim2DCollection->init();
 		printf("GameClient::init() - DEBUG: TheAnim2DCollection->init() completed\n");
 		fflush(stdout);
+	} catch (const std::exception& e) {
+		printf("GameClient::init() - ERROR: Exception during TheAnim2DCollection->init(): %s\n", e.what());
+		fflush(stdout);
 	} catch (...) {
-		printf("GameClient::init() - ERROR: Exception during TheAnim2DCollection->init()\n");
+		printf("GameClient::init() - ERROR: Unknown exception during TheAnim2DCollection->init()\n");
 		fflush(stdout);
 	}
 	
@@ -422,8 +431,11 @@ void GameClient::init( void )
  		TheAnim2DCollection->setName("TheAnim2DCollection");
 		printf("GameClient::init() - DEBUG: TheAnim2DCollection->setName() completed\n");
 		fflush(stdout);
+	} catch (const std::exception& e) {
+		printf("GameClient::init() - ERROR: Exception during TheAnim2DCollection->setName(): %s\n", e.what());
+		fflush(stdout);
 	} catch (...) {
-		printf("GameClient::init() - ERROR: Exception during TheAnim2DCollection->setName()\n");
+		printf("GameClient::init() - ERROR: Unknown exception during TheAnim2DCollection->setName()\n");
 		fflush(stdout);
 	}
 
@@ -507,11 +519,41 @@ void GameClient::init( void )
 			printf("GameClient::init() - ERROR: Exception during SelectionTranslator creation\n");
 			fflush(stdout);
 		}
-		m_translators[ m_numTranslators++ ] =	TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") LookAtTranslator,			60 );
-		m_translators[ m_numTranslators ] =	TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") CommandTranslator,		70 );
-		// we keep a pointer to the command translator because it's useful
-		m_commandTranslator = (CommandTranslator *)TheMessageStream->findTranslator( m_translators[ m_numTranslators++ ] );
-		m_translators[ m_numTranslators++ ] =	TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") HintSpyTranslator,		100 );
+		
+		printf("GameClient::init() - DEBUG: About to create LookAtTranslator\n");
+		fflush(stdout);
+		try {
+			m_translators[ m_numTranslators++ ] =	TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") LookAtTranslator,			60 );
+			printf("GameClient::init() - DEBUG: LookAtTranslator created successfully\n");
+			fflush(stdout);
+		} catch (...) {
+			printf("GameClient::init() - ERROR: Exception during LookAtTranslator creation\n");
+			fflush(stdout);
+		}
+		
+		printf("GameClient::init() - DEBUG: About to create CommandTranslator\n");
+		fflush(stdout);
+		try {
+			m_translators[ m_numTranslators ] =	TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") CommandTranslator,		70 );
+			// we keep a pointer to the command translator because it's useful
+			m_commandTranslator = (CommandTranslator *)TheMessageStream->findTranslator( m_translators[ m_numTranslators++ ] );
+			printf("GameClient::init() - DEBUG: CommandTranslator created successfully\n");
+			fflush(stdout);
+		} catch (...) {
+			printf("GameClient::init() - ERROR: Exception during CommandTranslator creation\n");
+			fflush(stdout);
+		}
+		
+		printf("GameClient::init() - DEBUG: About to create HintSpyTranslator\n");
+		fflush(stdout);
+		try {
+			m_translators[ m_numTranslators++ ] =	TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") HintSpyTranslator,		100 );
+			printf("GameClient::init() - DEBUG: HintSpyTranslator created successfully\n");
+			fflush(stdout);
+		} catch (...) {
+			printf("GameClient::init() - ERROR: Exception during HintSpyTranslator creation\n");
+			fflush(stdout);
+		}
 
 		//
 		// the client message translator should probably remain as the last reaction of the
@@ -519,31 +561,118 @@ void GameClient::init( void )
 		// lets all systems in the client give events that can be processed by the
 		// client message translator
 		//
-		m_translators[ m_numTranslators++ ] =	TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") GameClientMessageDispatcher, 999999999 );
+		printf("GameClient::init() - DEBUG: About to create GameClientMessageDispatcher\n");
+		fflush(stdout);
+		try {
+			m_translators[ m_numTranslators++ ] =	TheMessageStream->attachTranslator( MSGNEW("GameClientSubsystem") GameClientMessageDispatcher, 999999999 );
+			printf("GameClient::init() - DEBUG: GameClientMessageDispatcher created successfully\n");
+			fflush(stdout);
+		} catch (...) {
+			printf("GameClient::init() - ERROR: Exception during GameClientMessageDispatcher creation\n");
+			fflush(stdout);
+		}
 
 	}
+	
+	printf("GameClient::init() - DEBUG: About to create FontLibrary\n");
+	fflush(stdout);
 
 	// create the font library
-	TheFontLibrary = createFontLibrary();
-	if( TheFontLibrary )
-		TheFontLibrary->init();
-
-	// create the mouse
-	TheMouse = TheGlobalData->m_headless ? NEW MouseDummy : createMouse();
-	TheMouse->parseIni();
-	TheMouse->initCursorResources();
- 	TheMouse->setName("TheMouse");
-
-	// instantiate the display
-	TheDisplay = createGameDisplay();
-	if( TheDisplay ) {
-		TheDisplay->init();
- 		TheDisplay->setName("TheDisplay");
+	try {
+		TheFontLibrary = createFontLibrary();
+		if( TheFontLibrary ) {
+			printf("GameClient::init() - DEBUG: FontLibrary created, calling init()\n");
+			fflush(stdout);
+			TheFontLibrary->init();
+			printf("GameClient::init() - DEBUG: FontLibrary init() completed\n");
+			fflush(stdout);
+		} else {
+			printf("GameClient::init() - WARNING: createFontLibrary() returned NULL\n");
+			fflush(stdout);
+		}
+	} catch (...) {
+		printf("GameClient::init() - ERROR: Exception during FontLibrary creation/initialization\n");
+		fflush(stdout);
+		TheFontLibrary = NULL;
 	}
 
-	TheHeaderTemplateManager = MSGNEW("GameClientSubsystem") HeaderTemplateManager;
-	if(TheHeaderTemplateManager){
-		TheHeaderTemplateManager->init();
+	printf("GameClient::init() - DEBUG: About to create Mouse\n");
+	fflush(stdout);
+	
+	// create the mouse
+	try {
+		TheMouse = TheGlobalData->m_headless ? NEW MouseDummy : createMouse();
+		if (TheMouse) {
+			printf("GameClient::init() - DEBUG: Mouse created, calling parseIni()\n");
+			fflush(stdout);
+			TheMouse->parseIni();
+			
+			printf("GameClient::init() - DEBUG: Mouse parseIni() completed, calling initCursorResources()\n");
+			fflush(stdout);
+			TheMouse->initCursorResources();
+			
+			printf("GameClient::init() - DEBUG: Mouse initCursorResources() completed, setting name\n");
+			fflush(stdout);
+ 			TheMouse->setName("TheMouse");
+			
+			printf("GameClient::init() - DEBUG: Mouse initialization completed successfully\n");
+			fflush(stdout);
+		} else {
+			printf("GameClient::init() - WARNING: Mouse creation returned NULL\n");
+			fflush(stdout);
+		}
+	} catch (...) {
+		printf("GameClient::init() - ERROR: Exception during Mouse creation/initialization\n");
+		fflush(stdout);
+		TheMouse = NULL;
+	}
+
+	printf("GameClient::init() - DEBUG: About to create Display\n");
+	fflush(stdout);
+	
+	// instantiate the display
+	try {
+		TheDisplay = createGameDisplay();
+		if( TheDisplay ) {
+			printf("GameClient::init() - DEBUG: Display created, calling init()\n");
+			fflush(stdout);
+			TheDisplay->init();
+			
+			printf("GameClient::init() - DEBUG: Display init() completed, setting name\n");
+			fflush(stdout);
+ 			TheDisplay->setName("TheDisplay");
+			
+			printf("GameClient::init() - DEBUG: Display initialization completed successfully\n");
+			fflush(stdout);
+		} else {
+			printf("GameClient::init() - WARNING: createGameDisplay() returned NULL\n");
+			fflush(stdout);
+		}
+	} catch (...) {
+		printf("GameClient::init() - ERROR: Exception during Display creation/initialization\n");
+		fflush(stdout);
+		TheDisplay = NULL;
+	}
+
+	printf("GameClient::init() - DEBUG: About to create HeaderTemplateManager\n");
+	fflush(stdout);
+	
+	try {
+		TheHeaderTemplateManager = MSGNEW("GameClientSubsystem") HeaderTemplateManager;
+		if(TheHeaderTemplateManager) {
+			printf("GameClient::init() - DEBUG: HeaderTemplateManager created, calling init()\n");
+			fflush(stdout);
+			TheHeaderTemplateManager->init();
+			printf("GameClient::init() - DEBUG: HeaderTemplateManager init() completed\n");
+			fflush(stdout);
+		} else {
+			printf("GameClient::init() - WARNING: HeaderTemplateManager allocation failed\n");
+			fflush(stdout);
+		}
+	} catch (...) {
+		printf("GameClient::init() - ERROR: Exception during HeaderTemplateManager creation/initialization\n");
+		fflush(stdout);
+		TheHeaderTemplateManager = NULL;
 	}
 
 	// create the window manager

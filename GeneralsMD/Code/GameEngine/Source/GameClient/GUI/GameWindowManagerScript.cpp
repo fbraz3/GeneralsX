@@ -2456,7 +2456,7 @@ static GameWindow *parseWindow( File *inFile, char *buffer )
 			else if (asciibuf.compare("END") == 0)
 			{
 				// Check to see if we have a header template, if so, set the font equal to that.
-				if(TheHeaderTemplateManager->getFontFromTemplate(instData.m_headerTemplateName))
+				if(TheHeaderTemplateManager && TheHeaderTemplateManager->getFontFromTemplate(instData.m_headerTemplateName))
 					instData.m_font = TheHeaderTemplateManager->getFontFromTemplate(instData.m_headerTemplateName);
 
 				// Create a window using the current description

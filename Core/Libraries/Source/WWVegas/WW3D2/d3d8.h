@@ -906,10 +906,21 @@ struct CORE_IDirect3DVertexBuffer8;
 struct CORE_IDirect3DIndexBuffer8;
 struct CORE_IDirect3DTexture8;
 
+// Forward declarations for mock helpers (implemented later in this header on non-Windows)
+#if !defined(_WIN32)
+CORE_IDirect3DTexture8* CORE_CreateMockTexture(DWORD width, DWORD height, DWORD levels, DWORD usage, D3DFORMAT format, D3DPOOL pool);
+int CORE_Device_CreateTexture(CORE_IDirect3DDevice8* self, DWORD width, DWORD height, DWORD levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, CORE_IDirect3DTexture8** texture);
+int CORE_Device_CreateImageSurface(CORE_IDirect3DDevice8* self, DWORD width, DWORD height, D3DFORMAT format, CORE_IDirect3DSurface8** surface);
+int CORE_Device_CopyRects(CORE_IDirect3DDevice8* self, CORE_IDirect3DSurface8* source_surface, const RECT* source_rects, DWORD num_rects, CORE_IDirect3DSurface8* dest_surface, const POINT* dest_points);
+int CORE_Device_CreateIndexBuffer(CORE_IDirect3DDevice8* self, DWORD length, DWORD usage, D3DFORMAT format, D3DPOOL pool, CORE_IDirect3DIndexBuffer8** index_buffer);
+int CORE_Device_CreateVertexBuffer(CORE_IDirect3DDevice8* self, DWORD length, DWORD usage, DWORD fvf, D3DPOOL pool, CORE_IDirect3DVertexBuffer8** vertex_buffer);
+#endif
+
 // Surface interface (declared early for use in IDirect3DDevice8)
 #ifndef CORE_IDIRECT3DSURFACE8_DEFINED
 #define CORE_IDIRECT3DSURFACE8_DEFINED
 struct CORE_IDirect3DSurface8 {
+    // Basic virtual interface; real behavior implemented by mock below
     virtual int AddRef() { return 1; }
     virtual int Release() { return 0; }
     virtual int QueryInterface(void*, void**) { return 0; }
@@ -979,10 +990,34 @@ struct CORE_IDirect3DDevice8 {
     virtual int CreatePixelShader(const DWORD* function, DWORD* handle) { return D3D_OK; }
     virtual int DrawPrimitive(DWORD primitive_type, DWORD start_vertex, DWORD primitive_count) { return D3D_OK; }
     virtual int DrawIndexedPrimitive(DWORD type, DWORD min_index, DWORD num_vertices, DWORD start_index, DWORD primitive_count) { return D3D_OK; }
-    virtual int CreateVertexBuffer(DWORD length, DWORD usage, DWORD fvf, D3DPOOL pool, CORE_IDirect3DVertexBuffer8** vertex_buffer) { return D3D_OK; }
-    virtual int CreateIndexBuffer(DWORD length, DWORD usage, D3DFORMAT format, D3DPOOL pool, CORE_IDirect3DIndexBuffer8** index_buffer) { return D3D_OK; }
-    virtual int CreateTexture(DWORD width, DWORD height, DWORD levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, CORE_IDirect3DTexture8** texture) { return D3D_OK; }
-    virtual int CreateImageSurface(DWORD width, DWORD height, D3DFORMAT format, CORE_IDirect3DSurface8** surface) { return D3D_OK; }
+    virtual int CreateVertexBuffer(DWORD length, DWORD usage, DWORD fvf, D3DPOOL pool, CORE_IDirect3DVertexBuffer8** vertex_buffer) {
+#if !defined(_WIN32)
+    return CORE_Device_CreateVertexBuffer(this, length, usage, fvf, pool, vertex_buffer);
+#else
+    return D3D_OK;
+#endif
+    }
+    virtual int CreateIndexBuffer(DWORD length, DWORD usage, D3DFORMAT format, D3DPOOL pool, CORE_IDirect3DIndexBuffer8** index_buffer) {
+#if !defined(_WIN32)
+    return CORE_Device_CreateIndexBuffer(this, length, usage, format, pool, index_buffer);
+#else
+    return D3D_OK;
+#endif
+    }
+    virtual int CreateTexture(DWORD width, DWORD height, DWORD levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, CORE_IDirect3DTexture8** texture) {
+#if !defined(_WIN32)
+    return CORE_Device_CreateTexture(this, width, height, levels, usage, format, pool, texture);
+#else
+    return D3D_OK;
+#endif
+    }
+    virtual int CreateImageSurface(DWORD width, DWORD height, D3DFORMAT format, CORE_IDirect3DSurface8** surface) {
+#if !defined(_WIN32)
+    return CORE_Device_CreateImageSurface(this, width, height, format, surface);
+#else
+    return D3D_OK;
+#endif
+    }
     virtual int UpdateTexture(CORE_IDirect3DBaseTexture8* source_texture, CORE_IDirect3DBaseTexture8* dest_texture) { return D3D_OK; }
     virtual int SetStreamSource(DWORD stream_number, CORE_IDirect3DVertexBuffer8* stream_data, DWORD stride) { return D3D_OK; }
     virtual int SetIndices(CORE_IDirect3DIndexBuffer8* index_data, DWORD base_vertex_index) { return D3D_OK; }
@@ -994,7 +1029,13 @@ struct CORE_IDirect3DDevice8 {
     virtual int DeletePixelShader(DWORD handle) { return D3D_OK; }
     virtual int DeleteVertexShader(DWORD handle) { return D3D_OK; }
     virtual int SetClipPlane(DWORD index, const float* plane) { return D3D_OK; }
-    virtual int CopyRects(CORE_IDirect3DSurface8* source_surface, const RECT* source_rects, DWORD num_rects, CORE_IDirect3DSurface8* dest_surface, const POINT* dest_points) { return D3D_OK; }
+    virtual int CopyRects(CORE_IDirect3DSurface8* source_surface, const RECT* source_rects, DWORD num_rects, CORE_IDirect3DSurface8* dest_surface, const POINT* dest_points) {
+#if !defined(_WIN32)
+    return CORE_Device_CopyRects(this, source_surface, source_rects, num_rects, dest_surface, dest_points);
+#else
+    return D3D_OK;
+#endif
+    }
     virtual int ValidateDevice(DWORD* num_passes) { return D3D_OK; }
     virtual int TestCooperativeLevel() { return D3D_OK; }
     virtual int Reset(void* presentation_parameters) { return D3D_OK; }
@@ -1125,7 +1166,19 @@ inline DWORD CORE_D3DXGetFVFVertexSize(DWORD fvf) {
 #ifndef CORE_D3DXCREATETEXTURE_DEFINED
 #define CORE_D3DXCREATETEXTURE_DEFINED
 inline int CORE_D3DXCreateTexture(void* device, DWORD width, DWORD height, DWORD miplevels, DWORD usage, D3DFORMAT format, D3DPOOL pool, CORE_IDirect3DTexture8** texture) {
-    if (texture) *texture = nullptr;
+    if (!texture) return D3DERR_NOTAVAILABLE;
+    *texture = nullptr;
+    // Implemented below by mock texture struct; forward declared here
+    struct CORE_MockTexture8;
+    // Allocate a simple mock texture with CPU buffer backing
+    try {
+        // Defined after mock structs section; placement create via new
+        extern CORE_IDirect3DTexture8* CORE_CreateMockTexture(DWORD width, DWORD height, DWORD levels, DWORD usage, D3DFORMAT format, D3DPOOL pool);
+        *texture = CORE_CreateMockTexture(width, height, (miplevels == 0 || miplevels == 0xFFFFFFFF) ? 1 : miplevels, usage, format, pool);
+    } catch (...) {
+        *texture = nullptr;
+        return D3DERR_OUTOFVIDEOMEMORY;
+    }
     return D3D_OK;
 }
 #endif
@@ -1163,8 +1216,9 @@ inline int CORE_D3DXFilterTexture(void* texture, void* palette, DWORD src_level,
 #ifndef CORE_D3DXCREATETEXTUREFROMFILEEX_DEFINED
 #define CORE_D3DXCREATETEXTUREFROMFILEEX_DEFINED
 inline int CORE_D3DXCreateTextureFromFileEx(void* device, const char* src_file, DWORD width, DWORD height, DWORD mip_levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, DWORD filter, DWORD mip_filter, DWORD color_key, void* src_info, void* palette, CORE_IDirect3DTexture8** texture) {
+    // Not implemented: signal NOTAVAILABLE so callers can fallback to MissingTexture
     if (texture) *texture = nullptr;
-    return D3D_OK;
+    return D3DERR_NOTAVAILABLE;
 }
 #endif
 
@@ -1172,7 +1226,7 @@ inline int CORE_D3DXCreateTextureFromFileEx(void* device, const char* src_file, 
 #define CORE_D3DXCREATETEXTUREFROMFILEEXA_DEFINED
 inline int CORE_D3DXCreateTextureFromFileExA(void* device, const char* src_file, DWORD width, DWORD height, DWORD mip_levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, DWORD filter, DWORD mip_filter, DWORD color_key, void* src_info, void* palette, CORE_IDirect3DTexture8** texture) {
     if (texture) *texture = nullptr;
-    return D3D_OK;
+    return D3DERR_NOTAVAILABLE;
 }
 #endif
 
@@ -1180,7 +1234,7 @@ inline int CORE_D3DXCreateTextureFromFileExA(void* device, const char* src_file,
 #define CORE_D3DXCREATETEXTUREFROMFILEEXA_DEFINED
 inline int CORE_D3DXCreateTextureFromFileExA(void* device, const char* src_file, DWORD width, DWORD height, DWORD mip_levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, DWORD filter, DWORD mip_filter, DWORD color_key, void* src_info, void* palette, CORE_IDirect3DTexture8** texture) {
     if (texture) *texture = nullptr;
-    return D3D_OK;
+    return D3DERR_NOTAVAILABLE;
 }
 #endif
 
@@ -1290,4 +1344,234 @@ inline int D3DXAssembleShader(
 #else
 // On Windows, include the real DirectX headers
 #include <d3d8.h>
+#endif // !_WIN32
+
+// =========================
+// Mock implementations (macOS/Linux) for Texture and Surface with CPU buffers
+// Placed at end of header to keep declarations above intact
+#if !defined(_WIN32)
+
+#include <vector>
+
+struct CORE_MockSurface8 : public CORE_IDirect3DSurface8 {
+    DWORD m_width{0};
+    DWORD m_height{0};
+    D3DFORMAT m_format{D3DFMT_A8R8G8B8};
+    D3DPOOL m_pool{D3DPOOL_MANAGED};
+    std::vector<unsigned char> m_data;
+    int m_ref{1};
+
+    CORE_MockSurface8(DWORD w, DWORD h, D3DFORMAT fmt, D3DPOOL pool)
+        : m_width(w), m_height(h), m_format(fmt), m_pool(pool) {
+        // Use 4 bytes per pixel backing store to cover common ARGB formats
+        size_t pitch = static_cast<size_t>(w) * 4u;
+        m_data.resize(pitch * static_cast<size_t>(h), 0);
+    }
+
+    int AddRef() override { return ++m_ref; }
+    int Release() override {
+        int r = --m_ref;
+        if (r <= 0) { delete this; return 0; }
+        return r;
+    }
+    int LockRect(void* locked_rect, const RECT* rect, DWORD /*flags*/) override {
+        if (!locked_rect) return D3DERR_NOTAVAILABLE;
+        D3DLOCKED_RECT* lr = reinterpret_cast<D3DLOCKED_RECT*>(locked_rect);
+        const int pitch = static_cast<int>(m_width) * 4;
+        lr->Pitch = pitch;
+        if (rect) {
+            int x = rect->left; int y = rect->top;
+            unsigned char* base = m_data.data();
+            size_t offset = static_cast<size_t>(y) * static_cast<size_t>(pitch) + static_cast<size_t>(x) * 4u;
+            lr->pBits = base + offset;
+        } else {
+            lr->pBits = m_data.data();
+        }
+        return D3D_OK;
+    }
+    int UnlockRect() override { return D3D_OK; }
+    int GetDesc(void* desc) override {
+        if (!desc) return D3DERR_NOTAVAILABLE;
+        D3DSURFACE_DESC* d = reinterpret_cast<D3DSURFACE_DESC*>(desc);
+        d->Width = m_width;
+        d->Height = m_height;
+        d->Levels = 1;
+        d->Usage = 0;
+        d->Format = m_format;
+        d->Pool = m_pool;
+        d->Size = static_cast<DWORD>(m_width * m_height * 4u);
+        return D3D_OK;
+    }
+};
+
+struct CORE_MockTexture8 : public CORE_IDirect3DTexture8 {
+    DWORD m_width{0};
+    DWORD m_height{0};
+    DWORD m_levels{1};
+    D3DFORMAT m_format{D3DFMT_A8R8G8B8};
+    D3DPOOL m_pool{D3DPOOL_MANAGED};
+    std::vector<unsigned char> m_level0;
+    int m_ref{1};
+
+    CORE_MockTexture8(DWORD w, DWORD h, DWORD levels, DWORD /*usage*/, D3DFORMAT fmt, D3DPOOL pool)
+        : m_width(w), m_height(h), m_levels(levels ? levels : 1), m_format(fmt), m_pool(pool) {
+        size_t pitch = static_cast<size_t>(w) * 4u; // 4 bytes per pixel backing store
+        m_level0.resize(pitch * static_cast<size_t>(h), 0);
+    }
+
+    int AddRef() override { return ++m_ref; }
+    int Release() override {
+        int r = --m_ref;
+        if (r <= 0) { delete this; return 0; }
+        return r;
+    }
+    DWORD GetLevelCount() override { return m_levels; }
+    int LockRect(DWORD /*level*/, void* locked_rect, const RECT* rect, DWORD /*flags*/) override {
+        if (!locked_rect) return D3DERR_NOTAVAILABLE;
+        D3DLOCKED_RECT* lr = reinterpret_cast<D3DLOCKED_RECT*>(locked_rect);
+        const int pitch = static_cast<int>(m_width) * 4;
+        lr->Pitch = pitch;
+        if (rect) {
+            int x = rect->left; int y = rect->top;
+            unsigned char* base = m_level0.data();
+            size_t offset = static_cast<size_t>(y) * static_cast<size_t>(pitch) + static_cast<size_t>(x) * 4u;
+            lr->pBits = base + offset;
+        } else {
+            lr->pBits = m_level0.data();
+        }
+        return D3D_OK;
+    }
+    int UnlockRect(DWORD /*level*/) override { return D3D_OK; }
+    int GetLevelDesc(DWORD /*level*/, void* desc) override {
+        if (!desc) return D3DERR_NOTAVAILABLE;
+        D3DSURFACE_DESC* d = reinterpret_cast<D3DSURFACE_DESC*>(desc);
+        d->Width = m_width;
+        d->Height = m_height;
+        d->Levels = m_levels;
+        d->Usage = 0;
+        d->Format = m_format;
+        d->Pool = m_pool;
+        d->Size = static_cast<DWORD>(m_width * m_height * 4u);
+        return D3D_OK;
+    }
+    int GetSurfaceLevel(DWORD /*level*/, CORE_IDirect3DSurface8** surface) override {
+        if (!surface) return D3DERR_NOTAVAILABLE;
+        *surface = new CORE_MockSurface8(m_width, m_height, m_format, m_pool);
+        return (*surface) ? D3D_OK : D3DERR_OUTOFVIDEOMEMORY;
+    }
+};
+
+// Factory helpers used by stubs above
+inline CORE_IDirect3DTexture8* CORE_CreateMockTexture(DWORD width, DWORD height, DWORD levels, DWORD usage, D3DFORMAT format, D3DPOOL pool) {
+    return new CORE_MockTexture8(width, height, levels, usage, format, pool);
+}
+
+// Extend device stub methods to produce real mock objects
+inline int CORE_Device_CreateTexture(CORE_IDirect3DDevice8* /*self*/, DWORD width, DWORD height, DWORD levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, CORE_IDirect3DTexture8** texture) {
+    if (!texture) return D3DERR_NOTAVAILABLE;
+    *texture = CORE_CreateMockTexture(width, height, (levels == 0 || levels == 0xFFFFFFFF) ? 1 : levels, usage, format, pool);
+    return (*texture) ? D3D_OK : D3DERR_OUTOFVIDEOMEMORY;
+}
+
+inline int CORE_Device_CreateImageSurface(CORE_IDirect3DDevice8* /*self*/, DWORD width, DWORD height, D3DFORMAT format, CORE_IDirect3DSurface8** surface) {
+    if (!surface) return D3DERR_NOTAVAILABLE;
+    *surface = new CORE_MockSurface8(width, height, format, D3DPOOL_MANAGED);
+    return (*surface) ? D3D_OK : D3DERR_OUTOFVIDEOMEMORY;
+}
+
+inline int CORE_Device_CopyRects(CORE_IDirect3DDevice8* /*self*/, CORE_IDirect3DSurface8* src, const RECT* /*srcRects*/, DWORD /*numRects*/, CORE_IDirect3DSurface8* dst, const POINT* /*dstPoints*/) {
+    // Best-effort copy when both are mock surfaces and match dimensions
+    auto* s = dynamic_cast<CORE_MockSurface8*>(src);
+    auto* d = dynamic_cast<CORE_MockSurface8*>(dst);
+    if (!s || !d) return D3D_OK; // Nothing to do for non-mock
+    if (s->m_width != d->m_width || s->m_height != d->m_height) return D3D_OK;
+    d->m_data = s->m_data;
+    return D3D_OK;
+}
+
+// -------------------------------
+// Mock implementation for IndexBuffer
+// -------------------------------
+struct CORE_MockIndexBuffer8 : public CORE_IDirect3DIndexBuffer8 {
+    DWORD m_length{0};
+    DWORD m_usage{0};
+    D3DFORMAT m_format{D3DFMT_INDEX16};
+    D3DPOOL m_pool{D3DPOOL_MANAGED};
+    std::vector<unsigned char> m_data; // CPU backing store
+    int m_ref{1};
+
+    CORE_MockIndexBuffer8(DWORD length, DWORD usage, D3DFORMAT format, D3DPOOL pool)
+        : m_length(length), m_usage(usage), m_format(format), m_pool(pool) {
+        m_data.resize(static_cast<size_t>(length), 0);
+    }
+
+    int AddRef() override { return ++m_ref; }
+    int Release() override {
+        int r = --m_ref;
+        if (r <= 0) { delete this; return 0; }
+        return r;
+    }
+    int Lock(DWORD offset, DWORD size, void** data, DWORD /*flags*/) override {
+        if (!data) return D3DERR_NOTAVAILABLE;
+        if (offset > m_length) return D3DERR_NOTAVAILABLE;
+        // size of 0 means lock entire buffer from offset
+        DWORD lockSize = size == 0 ? (m_length - offset) : size;
+        if (offset + lockSize > m_length) return D3DERR_NOTAVAILABLE;
+        *data = m_data.data() + static_cast<size_t>(offset);
+        return D3D_OK;
+    }
+    int Unlock() override { return D3D_OK; }
+    int GetDesc(void* /*desc*/) override { return D3D_OK; }
+};
+
+inline int CORE_Device_CreateIndexBuffer(CORE_IDirect3DDevice8* /*self*/, DWORD length, DWORD usage, D3DFORMAT format, D3DPOOL pool, CORE_IDirect3DIndexBuffer8** index_buffer) {
+    if (!index_buffer) return D3DERR_NOTAVAILABLE;
+    *index_buffer = new CORE_MockIndexBuffer8(length, usage, format, pool);
+    return (*index_buffer) ? D3D_OK : D3DERR_OUTOFVIDEOMEMORY;
+}
+
+// -------------------------------
+// Mock implementation for VertexBuffer
+// -------------------------------
+struct CORE_MockVertexBuffer8 : public CORE_IDirect3DVertexBuffer8 {
+    DWORD m_length{0};
+    DWORD m_usage{0};
+    DWORD m_fvf{0};
+    D3DPOOL m_pool{D3DPOOL_MANAGED};
+    std::vector<unsigned char> m_data; // CPU backing store
+    int m_ref{1};
+
+    CORE_MockVertexBuffer8(DWORD length, DWORD usage, DWORD fvf, D3DPOOL pool)
+        : m_length(length), m_usage(usage), m_fvf(fvf), m_pool(pool) {
+        m_data.resize(static_cast<size_t>(length), 0);
+    }
+
+    int AddRef() override { return ++m_ref; }
+    int Release() override {
+        int r = --m_ref;
+        if (r <= 0) { delete this; return 0; }
+        return r;
+    }
+    int Lock(DWORD offset, DWORD size, void** data, DWORD /*flags*/) override {
+        if (!data) return D3DERR_NOTAVAILABLE;
+        if (offset > m_length) return D3DERR_NOTAVAILABLE;
+        DWORD lockSize = size == 0 ? (m_length - offset) : size;
+        if (offset + lockSize > m_length) return D3DERR_NOTAVAILABLE;
+        *data = m_data.data() + static_cast<size_t>(offset);
+        return D3D_OK;
+    }
+    int Unlock() override { return D3D_OK; }
+    int GetDesc(void* /*desc*/) override { return D3D_OK; }
+};
+
+inline int CORE_Device_CreateVertexBuffer(CORE_IDirect3DDevice8* /*self*/, DWORD length, DWORD usage, DWORD fvf, D3DPOOL pool, CORE_IDirect3DVertexBuffer8** vertex_buffer) {
+    if (!vertex_buffer) return D3DERR_NOTAVAILABLE;
+    *vertex_buffer = new CORE_MockVertexBuffer8(length, usage, fvf, pool);
+    return (*vertex_buffer) ? D3D_OK : D3DERR_OUTOFVIDEOMEMORY;
+}
+
+// Hook the virtuals by providing small derived device that overrides the creation methods when used directly.
+// If the engine calls CORE_IDirect3DDevice8::CreateTexture/CreateImageSurface/CopyRects directly on the base stub,
+// they will still return D3D_OK without side-effects. DX8Wrapper predominantly uses CORE_D3DX* helpers above.
+
 #endif // !_WIN32
