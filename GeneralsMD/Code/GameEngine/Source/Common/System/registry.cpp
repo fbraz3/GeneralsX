@@ -197,6 +197,10 @@ UnsignedInt GetRegistryMapPackVersion(void)
 
 #else
 // macOS/Linux stubs for registry functions
+// NOTE: On non-Windows platforms we don't have access to the Windows Registry.
+// These functions return false to indicate the value was not found and callers
+// should use their platform-specific fallbacks (e.g., config files, defaults).
+Bool GetStringFromGeneralsRegistry(AsciiString path, AsciiString key, AsciiString& val) { return false; }
 Bool getStringFromRegistry(HKEY root, AsciiString path, AsciiString key, AsciiString& val) { return false; }
 Bool GetStringFromRegistry(AsciiString path, AsciiString key, AsciiString& val) { return false; }
 Bool getUnicodeStringFromRegistry(HKEY root, AsciiString path, AsciiString key, UnicodeString& val) { return false; }
