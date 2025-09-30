@@ -670,9 +670,6 @@ Bool BuildAssistant::isLocationClearOfObjects( const Coord3D *worldPos,
 	MemoryPoolObjectHolder hold(iter);
 	for( them = iter->first(); them; them = iter->next() )
 	{
-		if (them->getDrawable() && them->getDrawable()->getFullyObscuredByShroud())
-			return false;
-
 		// ignore any kind of class of objects that we will "remove" for building
 		if( isRemovableForConstruction( them ) == TRUE )
 			continue;
@@ -686,11 +683,17 @@ Bool BuildAssistant::isLocationClearOfObjects( const Coord3D *worldPos,
 		if (them->isKindOf(KINDOF_INERT))
 			continue;
 
-		// an immobile object may obstruct our building depending on flags.
-		if( them->isKindOf( KINDOF_IMMOBILE ) )	{
-			if (onlyCheckEnemies && builderObject && builderObject->getRelationship( them ) != ENEMIES )	{
+		if (them->isKindOf(KINDOF_IMMOBILE)) {
+			if (onlyCheckEnemies && builderObject && builderObject->getRelationship(them) != ENEMIES) {
 				continue;
 			}
+		}
+
+		if (builderObject && them->getShroudedStatus(builderObject->getControllingPlayer()->getPlayerIndex()) >= OBJECTSHROUD_FOGGED)
+			return false;
+
+		// an immobile object may obstruct our building depending on flags.
+		if( them->isKindOf( KINDOF_IMMOBILE ) )	{
 			TheTerrainVisual->addFactionBib(them, true);
 			return false;
 		}
@@ -801,7 +804,7 @@ Bool BuildAssistant::isLocationClearOfObjects( const Coord3D *worldPos,
 
 		// an immobile object will obstruct our building no matter what team it's on
 		if ( them->isKindOf( KINDOF_IMMOBILE ) )	{
-			Bool shrouded = them->getDrawable() && them->getDrawable()->getFullyObscuredByShroud();
+			Bool shrouded = builderObject && them->getShroudedStatus(builderObject->getControllingPlayer()->getPlayerIndex()) >= OBJECTSHROUD_FOGGED;
 			/* Check for overlap of my exit rectangle to his geom info. */
 			if (checkMyExit && ThePartitionManager->geomCollidesWithGeom(them->getPosition(), hisBounds, them->getOrientation(),
 				&myExitPos, myGeom, angle)) {

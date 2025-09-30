@@ -670,9 +670,6 @@ LegalBuildCode BuildAssistant::isLocationClearOfObjects( const Coord3D *worldPos
 	MemoryPoolObjectHolder hold(iter);
 	for( them = iter->first(); them; them = iter->next() )
 	{
-		if (them->getDrawable() && them->getDrawable()->getFullyObscuredByShroud())
-			return LBC_SHROUD;
-
 		Bool feedbackWithFailure = TRUE;
 		Relationship rel = builderObject ? builderObject->getRelationship( them ) : NEUTRAL;
 
@@ -695,16 +692,6 @@ LegalBuildCode BuildAssistant::isLocationClearOfObjects( const Coord3D *worldPos
 			}
 		}
 
-		//Kris: Patch 1.01 - November 5, 2003
-		//Prevent busy units (black lotus hacking from being moved by trying to place a building -- exploit).
-		if( rel == ALLIES )
-		{
-			if( them->testStatus( OBJECT_STATUS_IS_USING_ABILITY ) || them->getAI() && them->getAI()->isBusy() )
-			{
-				return LBC_OBJECTS_IN_THE_WAY;
-			}
-		}
-
 		// ignore any kind of class of objects that we will "remove" for building
 		if( isRemovableForConstruction( them ) == TRUE )
 			continue;
@@ -718,13 +705,28 @@ LegalBuildCode BuildAssistant::isLocationClearOfObjects( const Coord3D *worldPos
 		if (them->isKindOf(KINDOF_INERT))
 			continue;
 
+		if (them->isKindOf(KINDOF_IMMOBILE))
+		{
+			if (onlyCheckEnemies && builderObject && rel != ENEMIES)
+				continue;
+		}
+
+		if (builderObject && them->getShroudedStatus(builderObject->getControllingPlayer()->getPlayerIndex()) >= OBJECTSHROUD_FOGGED)
+			return LBC_SHROUD;
+
+		//Kris: Patch 1.01 - November 5, 2003
+		//Prevent busy units (black lotus hacking from being moved by trying to place a building -- exploit).
+		if (rel == ALLIES)
+		{
+			if (them->testStatus(OBJECT_STATUS_IS_USING_ABILITY) || them->getAI() && them->getAI()->isBusy())
+			{
+				return LBC_OBJECTS_IN_THE_WAY;
+			}
+		}
+
 		// an immobile object may obstruct our building depending on flags.
 		if( them->isKindOf( KINDOF_IMMOBILE ) )
 		{
-			if (onlyCheckEnemies && builderObject && rel != ENEMIES )
-			{
-				continue;
-			}
 			if( feedbackWithFailure )
 			{
 				TheTerrainVisual->addFactionBib( them, TRUE );
@@ -869,7 +871,7 @@ LegalBuildCode BuildAssistant::isLocationClearOfObjects( const Coord3D *worldPos
 
 		// an immobile object will obstruct our building no matter what team it's on
 		if ( them->isKindOf( KINDOF_IMMOBILE ) )	{
-			Bool shrouded = them->getDrawable() && them->getDrawable()->getFullyObscuredByShroud();
+			Bool shrouded = builderObject && them->getShroudedStatus(builderObject->getControllingPlayer()->getPlayerIndex()) >= OBJECTSHROUD_FOGGED;
 			/* Check for overlap of my exit rectangle to his geom info. */
 			if (checkMyExit && ThePartitionManager->geomCollidesWithGeom(them->getPosition(), hisBounds, them->getOrientation(),
 				&myExitPos, myGeom, angle)) {
