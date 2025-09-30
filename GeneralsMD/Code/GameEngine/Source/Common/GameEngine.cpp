@@ -876,14 +876,41 @@ void GameEngine::init()
 		fname.format("Data\\%s\\CommandMap.ini", GetRegistryLanguage().str());
 		initSubsystem(TheMetaMap,"TheMetaMap", MSGNEW("GameEngineSubsystem") MetaMap(), NULL, fname.str(), "Data\\INI\\CommandMap.ini");
 
-		TheMetaMap->generateMetaMap();
+		// Generate default meta map entries with robust protection
+		try {
+			printf("GameEngine::init() - Generating default MetaMap bindings\n");
+			TheMetaMap->generateMetaMap();
+			printf("GameEngine::init() - MetaMap defaults generated\n");
+		} catch (const std::exception& e) {
+			printf("W3D PROTECTION: Exception in TheMetaMap->generateMetaMap(): %s\n", e.what());
+			fflush(stdout);
+		} catch (...) {
+			printf("W3D PROTECTION: Unknown exception in TheMetaMap->generateMetaMap()\n");
+			fflush(stdout);
+		}
 
 #if defined(RTS_DEBUG)
-		ini.load("Data\\INI\\CommandMapDebug.ini", INI_LOAD_MULTIFILE, NULL);
+		try {
+			ini.load("Data\\INI\\CommandMapDebug.ini", INI_LOAD_MULTIFILE, NULL);
+		} catch (const std::exception& e) {
+			printf("GameEngine::init() - WARNING: Failed to load optional CommandMapDebug.ini: %s\n", e.what());
+			fflush(stdout);
+		} catch (...) {
+			printf("GameEngine::init() - WARNING: Unknown error loading optional CommandMapDebug.ini\n");
+			fflush(stdout);
+		}
 #endif
 
 #if defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
-		ini.load("Data\\INI\\CommandMapDemo.ini", INI_LOAD_MULTIFILE, NULL);
+		try {
+			ini.load("Data\\INI\\CommandMapDemo.ini", INI_LOAD_MULTIFILE, NULL);
+		} catch (const std::exception& e) {
+			printf("GameEngine::init() - WARNING: Failed to load optional CommandMapDemo.ini: %s\n", e.what());
+			fflush(stdout);
+		} catch (...) {
+			printf("GameEngine::init() - WARNING: Unknown error loading optional CommandMapDemo.ini\n");
+			fflush(stdout);
+		}
 #endif
 
 

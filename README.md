@@ -40,22 +40,30 @@ This project transforms the Windows-exclusive Command & Conquer: Generals into a
 
 ### 🚀 Current Port Status
 
-**Phase 19 - Runtime Debugging and Stabilization**
+**Phase 23.8 – MetaMap hardened; MapCache under protection**
 
 **✅ MAJOR ACHIEVEMENTS**:
-- **✅ 100% Compilation Success** - All modules compile and link successfully on macOS
-- **✅ Memory Corruption Fixes** - AsciiString and memory management issues resolved
-- **✅ Cross-Platform Compatibility** - Full Win32→POSIX API compatibility layer
-- **✅ Build System** - CMake/Ninja infrastructure fully operational across platforms
-- **✅ Official Integration** - Code successfully merged into TheSuperHackers project
+- ✅ 100% compilation success on macOS (ARM64)
+- ✅ Engine subsystem progress: 30/42 subsystems (71%) operational
+- ✅ Memory safety: stack buffer overflow fixed in LanguageFilter; widespread NULL/Bounds guards
+- ✅ Cross-platform: Win32→POSIX compatibility layer stable
+- ✅ Universal INI Protection: resilient parsing across hundreds of INIs
+- ✅ MetaMap stabilized: localized and fallback CommandMap.ini load flow hardened
+- ✅ MapCache protections: numPlayers clamped; waypoint access bounds-checked; map scan guards
+
+**🎯 ENGINE SUBSYSTEM STATUS**:
+- ✅ Functional: 30/42 subsystems (71%) – file system, audio, content, UI
+- 🔄 Testing: 7/42 subsystems (17%) – AI, game logic, player management
+- 🎯 Remaining: 5/42 subsystems (12%) – late-phase logic and validation
+- � Current focus: Map systems (MapCache parsing and scanning) under protection
 
 **🔧 CURRENT FOCUS**:
-- **Startup Crash Investigation** - Resolving initialization issues during game launch
-- **Graphics Pipeline Validation** - Ensuring W3D/OpenGL rendering works correctly
-- **Asset Loading Optimization** - Improving resource management and loading
+- Map systems hardening – Continue guarding MapCache parse/scan and rebuild flows
+- Graphics pipeline validation – W3D/OpenGL path stability with DX8 mocks
+- Final subsystem validation – Complete the remaining ~12% initialization
 
 **Platform Status**:
-- **macOS**: Compiles ✅, Links ✅, Runtime debugging in progress 🔄
+- **macOS**: Compiles ✅, Links ✅, Engine 87% operational 🎯
 - **Linux**: Planned for Q1 2026 based on macOS foundation 📅
 - **Windows**: Enhanced compatibility maintained ✅
 
@@ -63,7 +71,7 @@ This project transforms the Windows-exclusive Command & Conquer: Generals into a
 
 | Platform | Status | Graphics API | Build System | Documentation |
 |----------|--------|--------------|--------------|---------------|
-| **macOS** | 🟡 Runtime Debugging | OpenGL | CMake/Ninja ✅ | [MACOS_BUILD.md](MACOS_BUILD.md) |
+| **macOS** | 🟡 Runtime Debugging (Map systems) | OpenGL | CMake/Ninja ✅ | [MACOS_BUILD.md](MACOS_BUILD.md) |
 | **Linux** | � Planned Q1 2026 | OpenGL | CMake/Ninja ✅ | [LINUX_BUILD.md](LINUX_BUILD.md) |
 | **Windows** | ✅ Enhanced | DirectX 8 + OpenGL | CMake/Ninja ✅ | Windows-native |
 
@@ -166,13 +174,18 @@ Windows builds are maintained through the official TheSuperHackers repository wi
 
 ### 🎯 Roadmap
 
-**Phase 19 (Current): Runtime Debugging**
-- 🔄 Investigate and resolve startup crash
-- 🔄 Validate graphics pipeline functionality
-- 🔄 Optimize asset loading and memory management
+**Phase 23.8 (Current): Map systems & UI stability**
+- 🔄 MapCache hardening (parsing/scanning, tolerant rebuild on first run)
+- 🔄 Complete remaining 5 subsystems (12%)
+- 🔄 Validate full engine initialization pipeline
 
-**Phase 20: Linux Port Foundation**
-- � Extend compatibility layer for Linux APIs
+**Phase 24: Graphics and Gameplay Validation**
+- 📋 Test W3D graphics pipeline functionality
+- � Validate game logic and AI systems
+- 📋 Complete macOS gameplay testing
+
+**Phase 25: Linux Port Foundation**
+- 📋 Extend compatibility layer for Linux APIs
 - 📋 Adapt build system for Linux distributions
 - 📋 Initial Linux compilation targets
 
@@ -222,10 +235,11 @@ This repository represents the **experimental development branch** of cross-plat
 Contributions are welcome! We're particularly interested in:
 
 **Current Priority Areas**:
-- **macOS Runtime Debugging** - Help resolve startup crash issues
+- **TheMetaMap Subsystem Resolution** - Help resolve CommandMap.ini loading issues
+- **Final Subsystem Validation** - Test remaining 5/42 subsystems (12%)
+- **Graphics Pipeline Testing** - Validate W3D/OpenGL rendering functionality
 - **Linux Compatibility Research** - Prepare foundation for Linux port
 - **Cross-Platform Testing** - Validate functionality across systems
-- **Documentation Improvements** - Enhance technical guides and tutorials
 
 **How to Contribute**:
 1. Check current issues and [NEXT_STEPS.md](NEXT_STEPS.md)
