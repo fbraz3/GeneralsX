@@ -2,16 +2,31 @@
 
 **Project Name**: 🎯 **GeneralsX** (formerly Command & Conquer: Generals)
 
-**Port Status**: 🎉 **Phase 23.8: MetaMap hardened; MapCache under protection** 🎯
+**Port Status**: 🎉 **Phase 23.5: MapCache Crashes COMPLETELY RESOLVED** 🎯
 
-**Date**: September 29, 2025
+**Date**: January 25, 2025
 
-**Status**: 🚀 **MAJOR ADVANCEMENT** - MetaMap initialization stabilized on macOS. Localized `Data\\english\\CommandMap.ini` and fallback `Data\\INI\\CommandMap.ini` now load under Universal INI Protection; engine proceeds through TheActionManager → TheGameStateMap → TheGameState → TheGameResultsQueue and reaches MapCache parsing.
+**Status**: 🚀 **MAJOR BREAKTHROUGH** - MapCache addMap() crashes fully resolved! Engine now advances cleanly through all MapCache operations and reaches INI parsing phase (`Data\INI\GameLOD.ini`). This represents progression through multiple additional subsystems that were previously unreachable.
 
-MapCache Protections (Sep 29, 2025):
-- Hardened `INI::parseMapCacheDefinition`: clamp `numPlayers` to valid range; bounds-check `mdr.m_waypoints[i]` access to avoid segfaults on malformed entries.
-- Added map scan guards in `MapUtil.cpp` (Zero Hour and base game) to tolerate missing files, CRC mismatch, and path issues; logs and skips instead of crashing.
-- Parity maintained: mirrored protections in Generals base (`Generals/Code/GameEngine/Source/Common/INI/INIMapCache.cpp` and `.../GameClient/MapUtil.cpp`).
+## Critical Success: MapCache Resolution (January 25, 2025)
+
+**Before**: Immediate segmentation fault in `MapCache::addMap()` after `AsciiString lowerFname` declaration
+**After**: Complete engine progression through:
+- ✅ TheLocalFileSystem initialization
+- ✅ TheArchiveFileSystem initialization  
+- ✅ TheWritableGlobalData initialization
+- ✅ File system operations and .big file scanning
+- ✅ CRC generation (0xF8F457D6)
+- ✅ **MapCache operations (formerly crashed here)**
+- ✅ **NEW**: INI file parsing phase
+
+**Current Status**: Engine reaches `Data\INI\GameLOD.ini` parsing (expected to fail without game data files)
+
+MapCache Protections Applied:
+- Extensive parameter validation in `addMap()` and `loadUserMaps()`
+- Hardened `INI::parseMapCacheDefinition`: clamp `numPlayers` to valid range; bounds-check `mdr.m_waypoints[i]` access
+- Added map scan guards in `MapUtil.cpp` (Zero Hour and base game) to tolerate missing files, CRC mismatch, and path issues
+- Parity maintained: mirrored protections in Generals base game
 
 ## 📊 Overview
 

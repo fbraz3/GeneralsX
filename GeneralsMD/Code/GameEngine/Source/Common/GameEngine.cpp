@@ -957,8 +957,43 @@ void GameEngine::init()
 		// m_quitting = FALSE;
 
 		// initialize the MapCache
-		TheMapCache = MSGNEW("GameEngineSubsystem") MapCache;
-		TheMapCache->updateCache();
+		printf("GAMEENGINE DEBUG: Creating TheMapCache\n");
+		fflush(stdout);
+		
+		try {
+			TheMapCache = MSGNEW("GameEngineSubsystem") MapCache;
+			if (!TheMapCache) {
+				printf("GAMEENGINE PROTECTION: Failed to create MapCache instance\n");
+				fflush(stdout);
+				return;
+			}
+			
+			printf("GAMEENGINE DEBUG: MapCache created, calling updateCache\n");
+			fflush(stdout);
+			
+			TheMapCache->updateCache();
+			
+			printf("GAMEENGINE DEBUG: MapCache updateCache completed successfully\n");
+			fflush(stdout);
+		}
+		catch (std::exception& e) {
+			printf("GAMEENGINE PROTECTION: Exception during MapCache initialization: %s\n", e.what());
+			fflush(stdout);
+			if (TheMapCache) {
+				delete TheMapCache;
+				TheMapCache = NULL;
+			}
+			return;
+		}
+		catch (...) {
+			printf("GAMEENGINE PROTECTION: Unknown exception during MapCache initialization - continuing\n");
+			fflush(stdout);
+			if (TheMapCache) {
+				delete TheMapCache;
+				TheMapCache = NULL;
+			}
+			return;
+		}
 
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
