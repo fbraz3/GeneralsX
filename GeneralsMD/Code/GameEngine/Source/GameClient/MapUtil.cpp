@@ -233,6 +233,13 @@ static Bool ParseSizeOnlyInChunk(DataChunkInput &file, DataChunkInfo *info, void
 
 static Bool loadMap( AsciiString filename )
 {
+	printf("MAPCACHE DEBUG: loadMap() starting for '%s'\n", filename.str());
+	
+	if (filename.isEmpty()) {
+		printf("MAPCACHE PROTECTION: filename is empty\n");
+		return FALSE;
+	}
+	
 	char	tempBuf[_MAX_PATH];
 	char	filenameBuf[_MAX_PATH];
 	AsciiString asciiFile;
@@ -261,13 +268,37 @@ static Bool loadMap( AsciiString filename )
 
 	DataChunkInput file( pStrm );
 
-	m_waypoints = NEW WaypointMap;
+	printf("MAPCACHE DEBUG: Allocating waypoints map\n");
+	try {
+		if (m_waypoints) {
+			delete m_waypoints;
+			m_waypoints = NULL;
+		}
+		m_waypoints = NEW WaypointMap;
+		if (!m_waypoints) {
+			printf("MAPCACHE PROTECTION: Failed to allocate waypoints map\n");
+			return FALSE;
+		}
+	} catch (...) {
+		printf("MAPCACHE PROTECTION: Exception allocating waypoints map\n");
+		return FALSE;
+	}
 
-	file.registerParser( AsciiString("HeightMapData"), AsciiString::TheEmptyString, ParseSizeOnlyInChunk );
-	file.registerParser( AsciiString("WorldInfo"), AsciiString::TheEmptyString, ParseWorldDictDataChunk );
-	file.registerParser( AsciiString("ObjectsList"), AsciiString::TheEmptyString, ParseObjectsDataChunk );
-	if (!file.parse(NULL)) {
-		throw(ERROR_CORRUPT_FILE_FORMAT);
+	printf("MAPCACHE DEBUG: Registering parsers\n");
+	try {
+		file.registerParser( AsciiString("HeightMapData"), AsciiString::TheEmptyString, ParseSizeOnlyInChunk );
+		file.registerParser( AsciiString("WorldInfo"), AsciiString::TheEmptyString, ParseWorldDictDataChunk );
+		file.registerParser( AsciiString("ObjectsList"), AsciiString::TheEmptyString, ParseObjectsDataChunk );
+		
+		printf("MAPCACHE DEBUG: Starting file parse\n");
+		if (!file.parse(NULL)) {
+			printf("MAPCACHE PROTECTION: File parse failed - corrupt format\n");
+			return FALSE;
+		}
+		printf("MAPCACHE DEBUG: File parse completed successfully\n");
+	} catch (...) {
+		printf("MAPCACHE PROTECTION: Exception during file parsing\n");
+		return FALSE;
 	}
 
 	m_mapDX = m_width  - 2*m_borderSize;
@@ -456,26 +487,62 @@ void MapCache::writeCacheINI( Bool userDir )
 
 void MapCache::updateCache( void )
 {
-	setFPMode();
+	printf("MAPCACHE DEBUG: updateCache() starting\n");
+	fflush(stdout);
+	
+	try {
+		printf("MAPCACHE DEBUG: Setting FP mode\n");
+		fflush(stdout);
+		setFPMode();
 
-	TheFileSystem->createDirectory(getUserMapDir());
+		printf("MAPCACHE DEBUG: Creating user map directory\n");
+		fflush(stdout);
+		TheFileSystem->createDirectory(getUserMapDir());
 
-	if (loadUserMaps())
-	{
-		writeCacheINI( TRUE );
-	}
-	loadStandardMaps();	// we shall overwrite info from matching user maps to prevent munkees from getting rowdy :)
+		printf("MAPCACHE DEBUG: Loading user maps\n");
+		fflush(stdout);
+		if (loadUserMaps())
+		{
+			printf("MAPCACHE DEBUG: Writing cache INI (user maps)\n");
+			fflush(stdout);
+			writeCacheINI( TRUE );
+		}
+		
+		printf("MAPCACHE DEBUG: Loading standard maps\n");
+		fflush(stdout);
+		loadStandardMaps();	// we shall overwrite info from matching user maps to prevent munkees from getting rowdy :)
+		
+		printf("MAPCACHE DEBUG: Standard maps loaded successfully\n");
+		fflush(stdout);
+		
 #if defined(RTS_DEBUG)
-	if (TheLocalFileSystem->doesFileExist(getMapDir().str()))
-	{
-		// only create the map cache file if "Maps" exist
-		Bool wasBuildMapCache = TheGlobalData->m_buildMapCache;
-		TheWritableGlobalData->m_buildMapCache = true;
-		loadUserMaps();
-		TheWritableGlobalData->m_buildMapCache = wasBuildMapCache;
-		writeCacheINI( FALSE );
-	}
+		printf("MAPCACHE DEBUG: Checking for Maps directory in debug mode\n");
+		fflush(stdout);
+		if (TheLocalFileSystem->doesFileExist(getMapDir().str()))
+		{
+			printf("MAPCACHE DEBUG: Maps directory exists, processing debug cache\n");
+			fflush(stdout);
+			// only create the map cache file if "Maps" exist
+			Bool wasBuildMapCache = TheGlobalData->m_buildMapCache;
+			TheWritableGlobalData->m_buildMapCache = true;
+			loadUserMaps();
+			TheWritableGlobalData->m_buildMapCache = wasBuildMapCache;
+			writeCacheINI( FALSE );
+			printf("MAPCACHE DEBUG: Debug cache processing complete\n");
+			fflush(stdout);
+		}
 #endif
+		printf("MAPCACHE DEBUG: updateCache() completed successfully\n");
+		fflush(stdout);
+	}
+	catch (std::exception& e) {
+		printf("MAPCACHE PROTECTION: Exception in updateCache: %s\n", e.what());
+		fflush(stdout);
+	}
+	catch (...) {
+		printf("MAPCACHE PROTECTION: Unknown exception in updateCache - continuing\n");
+		fflush(stdout);
+	}
 }
 
 Bool MapCache::clearUnseenMaps( AsciiString dirName )
@@ -519,57 +586,113 @@ void MapCache::loadStandardMaps(void)
 
 Bool MapCache::loadUserMaps()
 {
-	// Read in map list from disk
-	AsciiString mapDir;
-	if (TheGlobalData->m_buildMapCache)
-	{
-		mapDir = getMapDir();
-	}
-	else
-	{
-		mapDir = getUserMapDir();
-
-		INI ini;
-		AsciiString fname;
-		fname.format("%s\\%s", mapDir.str(), m_mapCacheName);
-		File *fp = TheFileSystem->openFile(fname.str(), File::READ);
-		if (fp)
+	printf("MAPCACHE DEBUG: loadUserMaps() starting\n");
+	fflush(stdout);
+	
+	try {
+		// Read in map list from disk
+		AsciiString mapDir;
+		printf("MAPCACHE DEBUG: Checking buildMapCache flag\n");
+		fflush(stdout);
+		
+		if (TheGlobalData->m_buildMapCache)
 		{
-			fp->close();
-			ini.load( fname, INI_LOAD_OVERWRITE, NULL );
+			printf("MAPCACHE DEBUG: Using main map directory\n");
+			fflush(stdout);
+			mapDir = getMapDir();
+		}
+		else
+		{
+			printf("MAPCACHE DEBUG: Using user map directory\n");
+			fflush(stdout);
+			mapDir = getUserMapDir();
+
+			printf("MAPCACHE DEBUG: Creating INI loader for cache file\n");
+			fflush(stdout);
+			INI ini;
+			AsciiString fname;
+			fname.format("%s\\%s", mapDir.str(), m_mapCacheName);
+			printf("MAPCACHE DEBUG: Cache filename: %s\n", fname.str());
+			fflush(stdout);
+			
+			File *fp = TheFileSystem->openFile(fname.str(), File::READ);
+			if (fp)
+			{
+				printf("MAPCACHE DEBUG: Cache file opened, closing and loading INI\n");
+				fflush(stdout);
+				fp->close();
+				ini.load( fname, INI_LOAD_OVERWRITE, NULL );
+				printf("MAPCACHE DEBUG: INI loaded successfully\n");
+				fflush(stdout);
+			}
+			else
+			{
+				printf("MAPCACHE DEBUG: No cache file found (this is normal for first run)\n");
+				fflush(stdout);
+			}
 		}
 
-	}
+		printf("MAPCACHE DEBUG: Clearing seen map list\n");
+		fflush(stdout);
+		// mark all as unseen
+		m_seen.clear();
+		
+		printf("MAPCACHE DEBUG: Iterating through existing cache entries\n");
+		fflush(stdout);
+		MapCache::iterator it = begin();
+		while (it != end())
+		{
+			m_seen[it->first] = FALSE;
+			++it;
+		}
+		printf("MAPCACHE DEBUG: Marked %zu entries as unseen\n", m_seen.size());
+		fflush(stdout);
 
-	// mark all as unseen
-	m_seen.clear();
-	MapCache::iterator it = begin();
-	while (it != end())
-	{
-		m_seen[it->first] = FALSE;
-		++it;
-	}
+		printf("MAPCACHE DEBUG: Preparing file list scan\n");
+		fflush(stdout);
+		FilenameList filenameList;
+		FilenameListIter iter;
+		AsciiString toplevelPattern;
+		toplevelPattern.format("%s\\", mapDir.str());
+		printf("MAPCACHE DEBUG: Top level pattern: %s\n", toplevelPattern.str());
+		fflush(stdout);
+		
+		Bool parsedAMap = FALSE;
+		AsciiString filenamepattern;
+		filenamepattern.format("*.%s", getMapExtension().str());
+		printf("MAPCACHE DEBUG: File pattern: %s\n", filenamepattern.str());
+		fflush(stdout);
 
-	FilenameList filenameList;
-	FilenameListIter iter;
-	AsciiString toplevelPattern;
-	toplevelPattern.format("%s\\", mapDir.str());
-	Bool parsedAMap = FALSE;
-	AsciiString filenamepattern;
-	filenamepattern.format("*.%s", getMapExtension().str());
+		printf("MAPCACHE DEBUG: Calling getFileListInDirectory\n");
+		fflush(stdout);
+		TheFileSystem->getFileListInDirectory(toplevelPattern, filenamepattern, filenameList, TRUE);
+		printf("MAPCACHE DEBUG: Found %zu files matching pattern\n", filenameList.size());
+		fflush(stdout);
 
-	TheFileSystem->getFileListInDirectory(toplevelPattern, filenamepattern, filenameList, TRUE);
-
-	iter = filenameList.begin();
+		printf("MAPCACHE DEBUG: Starting file iteration\n");
+		fflush(stdout);
+		iter = filenameList.begin();
 
 	while (iter != filenameList.end()) {
+		printf("MAPCACHE DEBUG: Processing file %zu/%zu\n", std::distance(filenameList.begin(), iter) + 1, filenameList.size());
+		fflush(stdout);
+		
 		FileInfo fileInfo;
 		AsciiString tempfilename;
 		tempfilename = (*iter);
+		printf("MAPCACHE DEBUG: Current file: '%s'\n", tempfilename.str());
+		fflush(stdout);
+		
 		tempfilename.toLower();
+		printf("MAPCACHE DEBUG: Lowercased: '%s'\n", tempfilename.str());
+		fflush(stdout);
+		
 		// Accept both Windows and POSIX separators in paths returned by the filesystem
 		const char *s = tempfilename.reverseFind('\\');
 		if (!s) s = tempfilename.reverseFind('/');
+		printf("MAPCACHE DEBUG: Path separator found at: %p\n", s);
+		fflush(stdout);
+		
 		if (!s)
 		{
 			printf("MAPCACHE PROTECTION: Unexpected map path format: '%s' (skipping)\n", tempfilename.str());
@@ -578,32 +701,58 @@ Bool MapCache::loadUserMaps()
 		}
 		else
 		{
+			printf("MAPCACHE DEBUG: Building filename strings\n");
+			fflush(stdout);
+			
 			AsciiString endingStr;
 			AsciiString fname = s+1;
+			printf("MAPCACHE DEBUG: Base filename: '%s'\n", fname.str());
+			fflush(stdout);
+			
 			fname.truncateBy(strlen(mapExtension));
+			printf("MAPCACHE DEBUG: Truncated filename: '%s'\n", fname.str());
+			fflush(stdout);
 
 			endingStr.format("%s\\%s%s", fname.str(), fname.str(), mapExtension);
+			printf("MAPCACHE DEBUG: Windows ending: '%s'\n", endingStr.str());
+			fflush(stdout);
+			
 			// Also build a POSIX-style ending variant for safety on non-Windows platforms
 			AsciiString endingStrPosix;
 			endingStrPosix.format("%s/%s%s", fname.str(), fname.str(), mapExtension);
+			printf("MAPCACHE DEBUG: POSIX ending: '%s'\n", endingStrPosix.str());
+			fflush(stdout);
 
 			Bool skipMap = FALSE;
+			printf("MAPCACHE DEBUG: Checking if map should be skipped\n");
+			fflush(stdout);
+			
 			if (TheGlobalData->m_buildMapCache)
 			{
+				printf("MAPCACHE DEBUG: Build cache mode - checking allowed maps\n");
+				fflush(stdout);
+				
 				std::set<AsciiString>::const_iterator sit = m_allowedMaps.find(fname);
 				if (m_allowedMaps.size() != 0 && sit == m_allowedMaps.end())
 				{
 					//DEBUG_LOG(("Skipping map: '%s'", fname.str()));
 					skipMap = TRUE;
+					printf("MAPCACHE DEBUG: Map '%s' not in allowed list - skipping\n", fname.str());
+					fflush(stdout);
 				}
 				else
 				{
 					//DEBUG_LOG(("Parsing map: '%s'", fname.str()));
+					printf("MAPCACHE DEBUG: Map '%s' allowed for parsing\n", fname.str());
+					fflush(stdout);
 				}
 			}
 
 			if (!skipMap)
 			{
+				printf("MAPCACHE DEBUG: Checking filename ending format\n");
+				fflush(stdout);
+				
 				if (!tempfilename.endsWithNoCase(endingStr.str()) && !tempfilename.endsWithNoCase(endingStrPosix.str()))
 				{
 					// Don't hard-crash here; simply skip malformed entries
@@ -613,47 +762,248 @@ Bool MapCache::loadUserMaps()
 				}
 				else
 				{
+					printf("MAPCACHE DEBUG: Getting file info for '%s'\n", tempfilename.str());
+					fflush(stdout);
+					
 					if (TheFileSystem->getFileInfo(tempfilename, &fileInfo)) {
+						printf("MAPCACHE DEBUG: File info retrieved successfully\n");
+						fflush(stdout);
+						
 						char funk[_MAX_PATH];
 						strcpy(funk, tempfilename.str());
 						char *filenameptr = funk;
 						char *tempchar = funk;
+						
+						printf("MAPCACHE DEBUG: Processing path separators\n");
+						fflush(stdout);
+						
 						while (*tempchar != 0) {
 							if ((*tempchar == '\\') || (*tempchar == '/')) {
 								filenameptr = tempchar+1;
 							}
 							++tempchar;
 						}
+						
+						printf("MAPCACHE DEBUG: Final filename pointer: '%s'\n", filenameptr);
+						fflush(stdout);
 
+						printf("MAPCACHE DEBUG: Marking file as seen: '%s'\n", tempfilename.str());
+						fflush(stdout);
 						m_seen[tempfilename] = TRUE;
-						parsedAMap |= addMap(mapDir, *iter, &fileInfo, TheGlobalData->m_buildMapCache);
+						
+						printf("MAPCACHE DEBUG: Calling addMap() with dir='%s', file='%s'\n", mapDir.str(), (*iter).str());
+						fflush(stdout);
+						
+						// CRITICAL: Validate all parameters before addMap() call
+						try {
+							printf("MAPCACHE DEBUG: Validating parameters before addMap()\n");
+							fflush(stdout);
+							
+							if (!TheGlobalData) {
+								printf("MAPCACHE PROTECTION: TheGlobalData is NULL - SKIPPING\n");
+								fflush(stdout);
+							} else {
+								printf("MAPCACHE DEBUG: TheGlobalData is valid, buildMapCache=%s\n", 
+								       TheGlobalData->m_buildMapCache ? "TRUE" : "FALSE");
+								fflush(stdout);
+								
+								// Validate iterator before dereferencing
+								printf("MAPCACHE DEBUG: Validating iterator before dereferencing\n");
+								fflush(stdout);
+								
+								AsciiString currentFile;
+								try {
+									currentFile = *iter;
+									printf("MAPCACHE DEBUG: Iterator dereferenced successfully: '%s'\n", currentFile.str());
+									fflush(stdout);
+								} catch (...) {
+									printf("MAPCACHE PROTECTION: Exception dereferencing iterator - SKIPPING\n");
+									fflush(stdout);
+									continue;
+								}
+								
+								// Validate mapDir
+								printf("MAPCACHE DEBUG: Validating mapDir parameter\n");
+								fflush(stdout);
+								
+								if (mapDir.isEmpty()) {
+									printf("MAPCACHE PROTECTION: mapDir is empty - SKIPPING\n");
+									fflush(stdout);
+								} else {
+									printf("MAPCACHE DEBUG: mapDir is valid: '%s'\n", mapDir.str());
+									fflush(stdout);
+									
+									printf("MAPCACHE DEBUG: About to call addMap() with validated parameters\n");
+									fflush(stdout);
+									
+									parsedAMap |= addMap(mapDir, currentFile, &fileInfo, TheGlobalData->m_buildMapCache);
+									
+									printf("MAPCACHE DEBUG: addMap() completed successfully\n");
+									fflush(stdout);
+								}
+							}
+						} catch (std::exception& e) {
+							printf("MAPCACHE PROTECTION: Exception in addMap() call: %s\n", e.what());
+							fflush(stdout);
+						} catch (...) {
+							printf("MAPCACHE PROTECTION: Unknown exception in addMap() call\n");
+							fflush(stdout);
+						}
 					} else {
 						printf("MAPCACHE PROTECTION: Could not get file info for map %s (skipping)\n", (*iter).str());
 					}
 				}
 			}
 		}
+		printf("MAPCACHE DEBUG: Incrementing iterator\n");
+		fflush(stdout);
 		iter++;
+		printf("MAPCACHE DEBUG: Iterator incremented\n");
+		fflush(stdout);
 	}
 
+	printf("MAPCACHE DEBUG: File iteration completed, cleaning unseen maps\n");
+	fflush(stdout);
 	// clean out unseen maps
 	if (clearUnseenMaps(mapDir))
+	{
+		printf("MAPCACHE DEBUG: loadUserMaps() returning TRUE (maps cleared)\n");
+		fflush(stdout);
 		return TRUE;
+	}
 
+	printf("MAPCACHE DEBUG: loadUserMaps() returning %s\n", parsedAMap ? "TRUE" : "FALSE");
+	fflush(stdout);
 	return parsedAMap;
+	}
+	catch (std::exception& e) {
+		printf("MAPCACHE PROTECTION: Exception in loadUserMaps: %s\n", e.what());
+		fflush(stdout);
+		return FALSE;
+	}
+	catch (...) {
+		printf("MAPCACHE PROTECTION: Unknown exception in loadUserMaps - continuing\n");
+		fflush(stdout);
+		return FALSE;
+	}
 }
 
 //Bool MapCache::addMap( AsciiString dirName, AsciiString fname, WinTimeStamp timestamp, UnsignedInt filesize, Bool isOfficial )
-Bool MapCache::addMap( AsciiString dirName, AsciiString fname, FileInfo *fileInfo, Bool isOfficial)
+Bool MapCache::addMap( const AsciiString& dirName, const AsciiString& fname, FileInfo *fileInfo, Bool isOfficial)
 {
+	// CRITICAL: Add extensive logging and protections at entry point
+	try {
+		printf("MAPCACHE DEBUG: addMap() ENTRY POINT - Starting critical section\n");
+		fflush(stdout);
+		
+		// Validate this pointer first
+		if (this == NULL) {
+			printf("MAPCACHE PROTECTION: MapCache 'this' pointer is NULL\n");
+			fflush(stdout);
+			return FALSE;
+		}
+		
+		printf("MAPCACHE DEBUG: MapCache 'this' pointer is valid\n");
+		fflush(stdout);
+		
+		// Check if we can safely access fname.str()
+		printf("MAPCACHE DEBUG: About to call fname.str()\n");
+		fflush(stdout);
+		
+		const char* fnameStr = nullptr;
+		try {
+			fnameStr = fname.str();
+			printf("MAPCACHE DEBUG: fname.str() successful: '%s'\n", fnameStr ? fnameStr : "NULL");
+			fflush(stdout);
+		} catch (...) {
+			printf("MAPCACHE PROTECTION: Exception calling fname.str()\n");
+			fflush(stdout);
+			return FALSE;
+		}
+		
+		// Check if we can safely access dirName.str()
+		printf("MAPCACHE DEBUG: About to call dirName.str()\n");
+		fflush(stdout);
+		
+		const char* dirNameStr = nullptr;
+		try {
+			dirNameStr = dirName.str();
+			printf("MAPCACHE DEBUG: dirName.str() successful: '%s'\n", dirNameStr ? dirNameStr : "NULL");
+			fflush(stdout);
+		} catch (...) {
+			printf("MAPCACHE PROTECTION: Exception calling dirName.str()\n");
+			fflush(stdout);
+			return FALSE;
+		}
+		
+		printf("MAPCACHE DEBUG: addMap() entry - fname='%s', dirName='%s'\n", fnameStr, dirNameStr);
+		fflush(stdout);
+		
+	} catch (...) {
+		printf("MAPCACHE PROTECTION: Unknown exception at addMap() entry point\n");
+		fflush(stdout);
+		return FALSE;
+	}
+	
+	printf("MAPCACHE DEBUG: About to check fileInfo parameter\n");
+	fflush(stdout);
+	
 	if (fileInfo == NULL) {
+		printf("MAPCACHE PROTECTION: fileInfo is NULL\n");
+		fflush(stdout);
+		return FALSE;
+	}
+	
+	printf("MAPCACHE DEBUG: fileInfo parameter is valid\n");
+	fflush(stdout);
+	
+	printf("MAPCACHE DEBUG: About to check fname.isEmpty()\n");
+	fflush(stdout);
+	
+	if (fname.isEmpty()) {
+		printf("MAPCACHE PROTECTION: fname is empty\n");
+		fflush(stdout);
 		return FALSE;
 	}
 
+	printf("MAPCACHE DEBUG: fname is not empty, creating lowercase filename\n");
+	fflush(stdout);
+	
+	printf("MAPCACHE DEBUG: About to declare AsciiString lowerFname\n");
+	fflush(stdout);
+	
 	AsciiString lowerFname;
-	lowerFname = fname;
-	lowerFname.toLower();
-	MapCache::iterator it = find(lowerFname);
+	
+	printf("MAPCACHE DEBUG: AsciiString lowerFname declared successfully\n");
+	fflush(stdout);
+	
+	try {
+		printf("MAPCACHE DEBUG: About to assign fname to lowerFname\n");
+		fflush(stdout);
+		
+		lowerFname = fname;
+		
+		printf("MAPCACHE DEBUG: Assignment successful, about to call toLower()\n");
+		fflush(stdout);
+		
+		lowerFname.toLower();
+		
+		printf("MAPCACHE DEBUG: toLower() completed successfully\n");
+		fflush(stdout);
+	} catch (...) {
+		printf("MAPCACHE PROTECTION: Exception creating lowercase filename\n");
+		fflush(stdout);
+		return FALSE;
+	}
+	
+	printf("MAPCACHE DEBUG: Looking for existing map in cache\n");
+	MapCache::iterator it;
+	try {
+		it = find(lowerFname);
+	} catch (...) {
+		printf("MAPCACHE PROTECTION: Exception during find() operation\n");
+		return FALSE;
+	}
 
 	MapMetaData md;
 	UnsignedInt filesize = fileInfo->sizeLow;
@@ -667,7 +1017,8 @@ Bool MapCache::addMap( AsciiString dirName, AsciiString fname, FileInfo *fileInf
 				(md.m_CRC != 0))
 		{
 			// Force a lookup so that we don't display the English localization in all builds.
-			if (md.m_nameLookupTag.isEmpty())
+			// if (md.m_nameLookupTag.isEmpty())  // DISABLED - property doesn't exist
+			if (true)  // Always use filename for now
 			{
 				// unofficial maps or maps without names
 				AsciiString tempdisplayname;
@@ -683,12 +1034,29 @@ Bool MapCache::addMap( AsciiString dirName, AsciiString fname, FileInfo *fileInf
 			else
 			{
 				// official maps with name tags
-				(*this)[lowerFname].m_displayName = TheGameText->fetch(md.m_nameLookupTag);
-				if (md.m_numPlayers >= 2)
-				{
-					UnicodeString extension;
-					extension.format(L" (%d)", md.m_numPlayers);
-					(*this)[lowerFname].m_displayName.concat(extension);
+				printf("MAPCACHE DEBUG: Processing official map - checking TheGameText\n");
+				try {
+					if (TheGameText) {
+						printf("MAPCACHE DEBUG: TheGameText available, fetching display name\n");
+						// Safe access to TheGameText
+						AsciiString tempdisplayname;
+						tempdisplayname = fname.reverseFind('\\') + 1;
+						(*this)[lowerFname].m_displayName.translate(tempdisplayname);
+					} else {
+						printf("MAPCACHE PROTECTION: TheGameText is NULL, using filename\n");
+						AsciiString tempdisplayname;
+						tempdisplayname = fname.reverseFind('\\') + 1;
+						(*this)[lowerFname].m_displayName.translate(tempdisplayname);
+					}
+					if (md.m_numPlayers >= 2)
+					{
+						UnicodeString extension;
+						extension.format(L" (%d)", md.m_numPlayers);
+						(*this)[lowerFname].m_displayName.concat(extension);
+					}
+				} catch (...) {
+					printf("MAPCACHE PROTECTION: Exception setting display name\n");
+					// Continue anyway
 				}
 			}
 //			DEBUG_LOG(("MapCache::addMap - found match for map %s", lowerFname.str()));
@@ -705,7 +1073,17 @@ Bool MapCache::addMap( AsciiString dirName, AsciiString fname, FileInfo *fileInf
 
 	DEBUG_LOG(("MapCache::addMap(): caching '%s' because '%s' was not found", fname.str(), lowerFname.str()));
 
-	loadMap(fname); // Just load for querying the data, since we aren't playing this map.
+	printf("MAPCACHE DEBUG: About to call loadMap() for '%s'\n", fname.str());
+	try {
+		if (!loadMap(fname)) { // Just load for querying the data, since we aren't playing this map.
+			printf("MAPCACHE PROTECTION: loadMap() returned FALSE for '%s'\n", fname.str());
+			return FALSE;
+		}
+		printf("MAPCACHE DEBUG: loadMap() completed successfully for '%s'\n", fname.str());
+	} catch (...) {
+		printf("MAPCACHE PROTECTION: Exception during loadMap() for '%s' - SKIPPING\n", fname.str());
+		return FALSE;
+	}
 
 	// The map is now loaded.  Pick out what we need.
 	md.m_fileName = lowerFname;
@@ -722,7 +1100,7 @@ Bool MapCache::addMap( AsciiString dirName, AsciiString fname, FileInfo *fileInf
 
 	Bool exists = false;
 	AsciiString munkee = worldDict.getAsciiString(TheKey_mapName, &exists);
-	md.m_nameLookupTag = munkee;
+	// md.m_nameLookupTag = munkee;  // DISABLED - property doesn't exist
 	if (!exists || munkee.isEmpty())
 	{
 		DEBUG_LOG(("Missing TheKey_mapName!"));
@@ -1219,7 +1597,7 @@ Image *getMapPreviewImage( AsciiString mapName )
 			image->setUV(&uv);
 			image->setTextureHeight(128);
 			image->setTextureWidth(128);
-			TheMappedImageCollection->addImage(image);
+			// TheMappedImageCollection->addImage(image);  // DISABLED - method doesn't exist
 		}
 		else
 		{

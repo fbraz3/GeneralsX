@@ -113,7 +113,7 @@ private:
 	Bool loadUserMaps(void);				// returns true if we needed to (re)parse a map
 //	Bool addMap( AsciiString dirName, AsciiString fname, WinTimeStamp timestamp,
 //		UnsignedInt filesize, Bool isOfficial );	///< returns true if it had to (re)parse the map
-	Bool addMap( AsciiString dirName, AsciiString fname, FileInfo *fileInfo, Bool isOfficial); ///< returns true if it had to (re)parse the map
+	Bool addMap( const AsciiString& dirName, const AsciiString& fname, FileInfo *fileInfo, Bool isOfficial); ///< returns true if it had to (re)parse the map
 	void writeCacheINI( Bool userDir );
 
 	static const char * m_mapCacheName;
