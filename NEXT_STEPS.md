@@ -23,13 +23,20 @@ Previous Major Achievements:
 - Engine successfully parses all UI configuration files without crashes
 
 Immediate Next Steps:
-- **Monitor TheMetaMap subsystem**: Engine is now trying to load Data\ish\CommandMap.ini and falling back to Data\INI\CommandMap.ini
-- **Investigate missing INI files**: Address file loading errors for command mapping configuration
+- **MetaMap status (validated)**: Localized `Data\\english\\CommandMap.ini` and fallback `Data\\INI\\CommandMap.ini` both load under Universal INI Protection. TheMetaMap completes and defaults are generated.
+- **Advance to MapCache**: Engine now loads `Maps\\MapCache.ini` with tolerant parsing; continue monitoring map-related flows.
 - **Continue subsystem progression**: With major memory safety issues resolved, engine should advance further
 - **Add targeted debug logs**: Instrument remaining subsystem initialization points for any new crash patterns
 - **Reference comparison**: Compare with working reference repos for additional compatibility insights
 
 **Current Achievement**: Critical memory safety fixes eliminate stack corruption crashes. Engine initialization has advanced significantly beyond previous stopping points with robust buffer protection.
+
+MetaMap Hardening Summary (Sep 29, 2025):
+- Hardened MetaMap::parseMetaMap and generateMetaMap with try/catch and logging (no rethrow on macOS path).
+- Centralized language to "english" for non-Windows; ensured path1=`Data\\english\\CommandMap.ini`, path2=`Data\\INI\\CommandMap.ini`.
+- SubsystemInterfaceList::initSubsystem tolerates missing localized files and falls back cleanly.
+- Result: TheMetaMap initializes; ActionManager, GameStateMap, GameState, GameResultsQueue also initialize.
+- Next observed file: `Maps\\MapCache.ini` parsed under protection; no fatal errors.
 
 Documentation update (September 28, 2025):
 - Restored detailed multithreading plan to MULTITHREADING_ANALYSIS.md and updated README to reference it briefly.
@@ -55,6 +62,12 @@ Next Development Priorities (carry-over):
 - Prepare Miles Audio compatibility on macOS (plan minimal stubs or CoreAudio bridge).
 - Extend headless input path for mouse as needed during early runtime.
 - Keep DXGL patterns in mind for capability emulation and API surface completeness.
+
+Next Steps (Phase 23.8 – Map systems & UI):
+- Instrument map scanning/loading paths to catch missing file fields (fileSize, fileCRC, timestamps) without crashes.
+- Ensure graceful handling for absent MapCache on first run (rebuild cache, create minimal structure if necessary).
+- Verify UI continues rendering after map init; watch for font/render regressions.
+- Add concise logs around MetaMap defaults generation and player input routing.
 
 # **Project**: 🎯 **General### 🎯️ **Engine Subsystem Progression Timeline**
 ```

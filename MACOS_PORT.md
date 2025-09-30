@@ -2,11 +2,11 @@
 
 **Project Name**: 🎯 **GeneralsX** (formerly Command & Conquer: Generals)
 
-**Port Status**: 🎉 **Phase 23.4: DIRECTX8 TEXTURE MOCK IMPLEMENTATION** 🎯
+**Port Status**: 🎉 **Phase 23.8: MetaMap hardened, progressing to MapCache** 🎯
 
-**Date**: September 28, 2025
+**Date**: September 29, 2025
 
-**Status**: 🚀 **MAJOR ADVANCEMENT** - GameClient progressed to W3DDisplay initialization. Texture/surface mocks implemented; runtime advances past MissingTexture initialization without crash.
+**Status**: 🚀 **MAJOR ADVANCEMENT** - MetaMap initialization stabilized on macOS. Localized `Data\\english\\CommandMap.ini` and fallback `Data\\INI\\CommandMap.ini` now load under Universal INI Protection; engine proceeds through TheActionManager → TheGameStateMap → TheGameState → TheGameResultsQueue and reaches MapCache parsing.
 
 ## 📊 Overview
 
@@ -73,17 +73,15 @@ The GeneralsX Zero Hour engine contains 42 core subsystems that must be initiali
 38. **TheRecorder** — Recorder system 🔄
 39. **TheRadar** — Radar system 🔄
 
-### 🎯 Remaining Subsystems (5/42 - 12%)
+### 🎯 Remaining Subsystems (now 0 immediate blockers in this phase)
 
-**End-Game Systems**:
-40. **TheVictoryConditions** — Victory conditions 🎯
-41. **TheMetaMap** — CURRENT BLOCKER — Command meta-map 🔴
-42. **TheActionManager** — Action manager 🎯
-
-**State Management**:
-43. **TheGameStateMap** — Game state map 🎯
-44. **TheGameState** — Current game state 🎯
-45. **TheGameResultsQueue** — Game results queue 🎯
+Recent progression confirms the following end-game subsystems initialize successfully on macOS:
+– TheVictoryConditions ✅
+– TheMetaMap ✅ (with localized+fallback INI handling)
+– TheActionManager ✅
+– TheGameStateMap ✅
+– TheGameState ✅
+– TheGameResultsQueue ✅
 
 ### 📊 Progress Analysis
 
@@ -92,10 +90,9 @@ The GeneralsX Zero Hour engine contains 42 core subsystems that must be initiali
 - 17% Under Validation — 7 subsystems under test
 - 12% Remaining — final 5 subsystems
 
-**Current Failure Point**: **TheMetaMap** (subsystem #41)
-- **Issue**: CommandMap.ini INI file missing or corrupted
-- **Impact**: Blocking progression to the final subsystems
-- **Path Forward**: Investigate Zero Hour–specific INI layouts and fallbacks
+**Current Focus Shift**: After MetaMap success, engine proceeds to MapCache processing
+- Observed: `Maps\\MapCache.ini` loads under protection with several fields using tolerant parsing (fileSize, fileCRC, timestamps, flags).
+- Impact: No crash; indicates we are entering map subsystem flows. Next likely touchpoints are map scanning and UI transitions.
 
 **Port Breakthroughs**:
 - From immediate crashes → 87% of subsystems now functional
@@ -108,7 +105,7 @@ The GeneralsX Zero Hour engine contains 42 core subsystems that must be initiali
 2. Validate the remaining subsystems — exercise the last 5 subsystems
 3. Final optimization — performance and stability polish
 
-Update (Sep 29, 2025): Implemented robust INI loading in `SubsystemInterfaceList::initSubsystem` to gracefully skip missing localized files like `Data\\<lang>\\CommandMap.ini` and continue with `Data\\INI\\CommandMap.ini`. Also removed a duplicate `AsciiString` stub to avoid potential memory corruption during string formatting. Expect TheMetaMap to initialize and engine to proceed to TheActionManager on macOS.
+Update (Sep 29, 2025): Implemented robust INI loading in `SubsystemInterfaceList::initSubsystem` to gracefully skip missing localized files like `Data\\<lang>\\CommandMap.ini` and continue with `Data\\INI\\CommandMap.ini`. Removed a duplicate `AsciiString` stub that could corrupt runtime state. Result validated: TheMetaMap initializes; engine proceeds through TheActionManager → TheGameStateMap → TheGameState → TheGameResultsQueue. Now parsing `Maps\\MapCache.ini` without fatal errors.
 
 ### Phase 23.4 - DirectX8 Texture Mock Implementation (September 2025)
 
