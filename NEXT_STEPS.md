@@ -69,6 +69,16 @@ Next Steps (Phase 23.8 – Map systems & UI):
 - Verify UI continues rendering after map init; watch for font/render regressions.
 - Add concise logs around MetaMap defaults generation and player input routing.
 
+Update (Sep 29, 2025) – MapCache Hardening Notes:
+- Zero Hour: `GeneralsMD/Code/GameEngine/Source/Common/INI/INIMapCache.cpp` now clamps `numPlayers` and bounds-checks waypoint access.
+- Base game parity: `Generals/Code/GameEngine/Source/Common/INI/INIMapCache.cpp` updated with same protections.
+- Map scan guards: `.../GameClient/MapUtil.cpp` updated in both game variants to log-and-skip missing/invalid map entries and guard CRC/file open paths.
+
+Upcoming Actions:
+- Expand guards for vertex buffers similar to index buffers to avoid future NULL deref (CreateVertexBuffer + Lock/Unlock minimal mocks where needed).
+- Add tolerant MapCache rebuild path if `Maps/MapCache.ini` is missing or corrupt (create minimal structure and continue).
+- Compare MapCache logic with `references/jmarshall-win64-modern` for additional robustness patterns.
+
 # **Project**: 🎯 **General### 🎯️ **Engine Subsystem Progression Timeline**
 ```
 PHASE 23.3 (RESOLVED):

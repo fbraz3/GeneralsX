@@ -102,9 +102,10 @@ static UnsignedInt calcCRC( AsciiString dirName, AsciiString fname )
 	File *fp;
 	asciiFile = fname;
 	fp = TheFileSystem->openFile(asciiFile.str(), File::READ);
-	if( !fp )
+	if (!fp)
 	{
-		DEBUG_CRASH(("Couldn't open '%s'", fname.str()));
+		// MAPCACHE PROTECTION: CRC file missing or inaccessible should not crash the engine
+		printf("MAPCACHE PROTECTION: calcCRC could not open '%s' (skipping CRC)\n", fname.str());
 		return 0;
 	}
 
@@ -249,8 +250,10 @@ static Bool loadMap( AsciiString filename )
 	CachedFileInputStream fileStrm;
 
 	asciiFile = filename;
-	if( !fileStrm.open(asciiFile) )
+	if (!fileStrm.open(asciiFile))
 	{
+		// MAPCACHE PROTECTION: Unable to open map file for metadata scan
+		printf("MAPCACHE PROTECTION: loadMap failed to open '%s'\n", filename.str());
 		return FALSE;
 	}
 
@@ -562,11 +565,14 @@ Bool MapCache::loadUserMaps()
 		AsciiString tempfilename;
 		tempfilename = (*iter);
 		tempfilename.toLower();
-
+		// Accept both Windows and POSIX separators in paths returned by the filesystem
 		const char *s = tempfilename.reverseFind('\\');
+		if (!s) s = tempfilename.reverseFind('/');
 		if (!s)
 		{
-			DEBUG_CRASH(("Couldn't find \\ in map name!"));
+			printf("MAPCACHE PROTECTION: Unexpected map path format: '%s' (skipping)\n", tempfilename.str());
+			++iter;
+			continue;
 		}
 		else
 		{
@@ -575,6 +581,9 @@ Bool MapCache::loadUserMaps()
 			fname.truncateBy(strlen(mapExtension));
 
 			endingStr.format("%s\\%s%s", fname.str(), fname.str(), mapExtension);
+			// Also build a POSIX-style ending variant for safety on non-Windows platforms
+			AsciiString endingStrPosix;
+			endingStrPosix.format("%s/%s%s", fname.str(), fname.str(), mapExtension);
 
 			Bool skipMap = FALSE;
 			if (TheGlobalData->m_buildMapCache)
@@ -593,9 +602,12 @@ Bool MapCache::loadUserMaps()
 
 			if (!skipMap)
 			{
-				if (!tempfilename.endsWithNoCase(endingStr.str()))
+				if (!tempfilename.endsWithNoCase(endingStr.str()) && !tempfilename.endsWithNoCase(endingStrPosix.str()))
 				{
-					DEBUG_CRASH(("Found map '%s' in wrong spot (%s)", fname.str(), tempfilename.str()));
+					// Don't hard-crash here; simply skip malformed entries
+					printf("MAPCACHE PROTECTION: Map '%s' in unexpected path '%s' (skipping)\n", fname.str(), tempfilename.str());
+					++iter;
+					continue;
 				}
 				else
 				{
@@ -614,7 +626,7 @@ Bool MapCache::loadUserMaps()
 						m_seen[tempfilename] = TRUE;
 						parsedAMap |= addMap(mapDir, *iter, &fileInfo, TheGlobalData->m_buildMapCache);
 					} else {
-						DEBUG_CRASH(("Could not get file info for map %s", (*iter).str()));
+						printf("MAPCACHE PROTECTION: Could not get file info for map %s (skipping)\n", (*iter).str());
 					}
 				}
 			}

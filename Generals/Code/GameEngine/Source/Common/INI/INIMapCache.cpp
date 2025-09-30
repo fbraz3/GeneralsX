@@ -124,11 +124,33 @@ void INI::parseMapCacheDefinition( INI* ini )
 	name = QuotedPrintableToAsciiString(name);
 	md.m_waypoints.clear();
 
+	// Initialize critical fields to safe defaults before tolerant parsing.
+	mdr.m_numPlayers = 0;
+	mdr.m_isOfficial = 0;
+	mdr.m_isMultiplayer = 0;
+	mdr.m_filesize = 0;
+	mdr.m_CRC = 0;
+	mdr.m_timestamp.m_lowTimeStamp = 0;
+	mdr.m_timestamp.m_highTimeStamp = 0;
+	mdr.m_initialCameraPosition = Coord3D();
+	for (int i_init = 0; i_init < MAX_SLOTS; ++i_init) {
+		mdr.m_waypoints[i_init] = Coord3D();
+	}
+
 	ini->initFromINI( &mdr, mdr.getFieldParse() );
 
 	md.m_extent = mdr.m_extent;
 	md.m_isOfficial = mdr.m_isOfficial != 0;
 	md.m_isMultiplayer = mdr.m_isMultiplayer != 0;
+	// Clamp player count to safe range [0, MAX_SLOTS]
+	if (mdr.m_numPlayers < 0) {
+		printf("MAPCACHE PROTECTION: Negative numPlayers %d detected, clamping to 0\n", mdr.m_numPlayers);
+		mdr.m_numPlayers = 0;
+	}
+	if (mdr.m_numPlayers > MAX_SLOTS) {
+		printf("MAPCACHE PROTECTION: numPlayers %d exceeds MAX_SLOTS %d, clamping to %d\n", mdr.m_numPlayers, (int)MAX_SLOTS, (int)MAX_SLOTS);
+		mdr.m_numPlayers = MAX_SLOTS;
+	}
 	md.m_numPlayers = mdr.m_numPlayers;
 	md.m_filesize = mdr.m_filesize;
 	md.m_CRC = mdr.m_CRC;
@@ -139,7 +161,7 @@ void INI::parseMapCacheDefinition( INI* ini )
 	md.m_displayName = QuotedPrintableToUnicodeString(mdr.m_asciiDisplayName);
 
 	AsciiString startingCamName;
-	for (Int i=0; i<md.m_numPlayers; ++i)
+	for (Int i=0; i<md.m_numPlayers && i < MAX_SLOTS; ++i)
 	{
 		startingCamName.format("Player_%d_Start", i+1); // start pos waypoints are 1-based
 		md.m_waypoints[startingCamName] = mdr.m_waypoints[i];

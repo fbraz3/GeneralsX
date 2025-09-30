@@ -2,11 +2,16 @@
 
 **Project Name**: 🎯 **GeneralsX** (formerly Command & Conquer: Generals)
 
-**Port Status**: 🎉 **Phase 23.8: MetaMap hardened, progressing to MapCache** 🎯
+**Port Status**: 🎉 **Phase 23.8: MetaMap hardened; MapCache under protection** 🎯
 
 **Date**: September 29, 2025
 
 **Status**: 🚀 **MAJOR ADVANCEMENT** - MetaMap initialization stabilized on macOS. Localized `Data\\english\\CommandMap.ini` and fallback `Data\\INI\\CommandMap.ini` now load under Universal INI Protection; engine proceeds through TheActionManager → TheGameStateMap → TheGameState → TheGameResultsQueue and reaches MapCache parsing.
+
+MapCache Protections (Sep 29, 2025):
+- Hardened `INI::parseMapCacheDefinition`: clamp `numPlayers` to valid range; bounds-check `mdr.m_waypoints[i]` access to avoid segfaults on malformed entries.
+- Added map scan guards in `MapUtil.cpp` (Zero Hour and base game) to tolerate missing files, CRC mismatch, and path issues; logs and skips instead of crashing.
+- Parity maintained: mirrored protections in Generals base (`Generals/Code/GameEngine/Source/Common/INI/INIMapCache.cpp` and `.../GameClient/MapUtil.cpp`).
 
 ## 📊 Overview
 

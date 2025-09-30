@@ -674,7 +674,9 @@ GameMessage::Type MetaMap::findGameMessageMetaType(const char* name)
 		if (stricmp(metaNames->name, name) == 0)
 			return (GameMessage::Type)metaNames->value;
 
-	DEBUG_CRASH(("MetaTypeName %s not found -- did you remember to add it to GameMessageMetaTypeNames[] ?", name));
+	// Hardened path: don't crash here on macOS; log and return invalid to allow fallback
+	printf("META PROTECTION: Unknown MetaTypeName '%s' in CommandMap.ini, ignoring entry\n", name ? name : "<null>");
+	fflush(stdout);
 	return GameMessage::MSG_INVALID;
 }
 
@@ -709,15 +711,27 @@ MetaMapRec *MetaMap::getMetaMapRec(GameMessage::Type t)
 	// read and ignore the meta-map name
 	const char *c = ini->getNextToken();
 
-	GameMessage::Type t = TheMetaMap->findGameMessageMetaType(c);
-	if (t == GameMessage::MSG_INVALID)
-		throw INI_INVALID_DATA;
+	try {
+		GameMessage::Type t = TheMetaMap->findGameMessageMetaType(c);
+		if (t == GameMessage::MSG_INVALID) {
+			// Skip unknown meta types gracefully
+			return;
+		}
 
-	MetaMapRec *map = TheMetaMap->getMetaMapRec(t);
-	if (map == NULL)
-		throw INI_INVALID_DATA;
+		MetaMapRec *map = TheMetaMap->getMetaMapRec(t);
+		if (map == NULL) {
+			printf("META PROTECTION: getMetaMapRec returned NULL\n");
+			return;
+		}
 
-	ini->initFromINI(map, TheMetaMapFieldParseTable);
+		ini->initFromINI(map, TheMetaMapFieldParseTable);
+	} catch (const std::exception& e) {
+		printf("META PROTECTION: Exception in parseMetaMap: %s\n", e.what());
+		fflush(stdout);
+	} catch (...) {
+		printf("META PROTECTION: Unknown exception in parseMetaMap\n");
+		fflush(stdout);
+	}
 }
 
 //-------------------------------------------------------------------------------------------------

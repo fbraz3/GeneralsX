@@ -183,6 +183,10 @@ UnsignedInt GetRegistryMapPackVersion(void)
 #else // !_WIN32
 
 // Stub implementations for non-Windows platforms
+// NOTE: On non-Windows platforms we don't have access to the Windows Registry.
+// These functions return false to indicate the value was not found and callers
+// should use their platform-specific fallbacks (e.g., config files, defaults).
+Bool GetStringFromGeneralsRegistry(AsciiString path, AsciiString key, AsciiString& val) { return false; }
 Bool getStringFromRegistry(HKEY root, AsciiString path, AsciiString key, AsciiString& val) {
     (void)root; (void)path; (void)key; (void)val;
     return false; // Registry operations not supported on non-Windows
