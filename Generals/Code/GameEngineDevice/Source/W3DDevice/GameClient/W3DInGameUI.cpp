@@ -484,6 +484,13 @@ void W3DInGameUI::drawMoveHints( View *view )
 			// create render object and add to scene of needed
 			if( m_moveHintRenderObj[ i ] == NULL )
 			{
+				// W3D ASSET PROTECTION: Check for empty/invalid move hint name
+				if (TheGlobalData->m_moveHintName.isEmpty() || TheGlobalData->m_moveHintName.str() == NULL || 
+				    strlen(TheGlobalData->m_moveHintName.str()) == 0) {
+					printf("W3D ASSET PROTECTION: MoveHintName is empty, skipping hint creation\n");
+					continue;
+				}
+
 				RenderObjClass *hint;
 				HAnimClass *anim;
 

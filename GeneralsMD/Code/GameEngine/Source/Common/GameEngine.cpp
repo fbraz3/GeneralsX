@@ -1229,15 +1229,27 @@ extern HWND ApplicationHWnd;
  */
 void GameEngine::execute( void )
 {
+	printf("GameEngine::execute() - ENTRY POINT - About to create FrameRateLimit\n");
+	fflush(stdout);
 	FrameRateLimit* frameRateLimit = new FrameRateLimit();
+	printf("GameEngine::execute() - FrameRateLimit created successfully\n");
+	fflush(stdout);
 
 #if defined(RTS_DEBUG)
 	DWORD startTime = timeGetTime() / 1000;
 #endif
 
 	// pretty basic for now
+	printf("GameEngine::execute() - About to enter main loop (while !m_quitting)\n");
+	fflush(stdout);
+	int loopCount = 0;
 	while( !m_quitting )
 	{
+		if (loopCount < 3) {
+			printf("GameEngine::execute() - Loop iteration %d\n", loopCount);
+			fflush(stdout);
+		}
+		loopCount++;
 
 		//if (TheGlobalData->m_vTune)
 		{
@@ -1271,10 +1283,18 @@ void GameEngine::execute( void )
 #endif
 
 			{
+				if (loopCount < 3) {
+					printf("GameEngine::execute() - About to call update()\n");
+					fflush(stdout);
+				}
 				try
 				{
 					// compute a frame
 					update();
+					if (loopCount < 3) {
+						printf("GameEngine::execute() - update() completed\n");
+						fflush(stdout);
+					}
 				}
 				catch (INIException e)
 				{
@@ -1321,7 +1341,15 @@ void GameEngine::execute( void )
 						// with higher resolution counters to cap the frame rate more accurately to the desired limit.
 						allowFpsLimit &= TheGlobalData->m_useFpsLimit;
 						const UnsignedInt maxFps = allowFpsLimit ? getFramesPerSecondLimit() : RenderFpsPreset::UncappedFpsValue;
+						if (loopCount < 3) {
+							printf("GameEngine::execute() - About to call wait(maxFps=%u)\n", maxFps);
+							fflush(stdout);
+						}
 						m_updateTime = frameRateLimit->wait(maxFps);
+						if (loopCount < 3) {
+							printf("GameEngine::execute() - wait() returned %f\n", m_updateTime);
+							fflush(stdout);
+						}
 					}
 
 				}
