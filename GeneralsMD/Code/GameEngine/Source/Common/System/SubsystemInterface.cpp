@@ -151,7 +151,7 @@ void SubsystemInterfaceList::removeSubsystem(SubsystemInterface* sys)
 #endif
 }
 //-----------------------------------------------------------------------------
-void SubsystemInterfaceList::initSubsystem(SubsystemInterface* sys, const char* path1, const char* path2, const char* dirpath, Xfer *pXfer, AsciiString name)
+void SubsystemInterfaceList::initSubsystem(SubsystemInterface* sys, const char* path1, const char* path2, Xfer *pXfer, AsciiString name)
 {
 	sys->setName(name);
 	sys->init();
@@ -177,17 +177,6 @@ void SubsystemInterfaceList::initSubsystem(SubsystemInterface* sys, const char* 
 			fflush(stdout);
 		} catch (...) {
 			printf("SubsystemInterfaceList::initSubsystem - WARNING: Unknown error loading INI path2 '%s' for %s\n", path2, name.str());
-			fflush(stdout);
-		}
-	}
-	if (dirpath) {
-		try {
-			ini.loadDirectory(dirpath, TRUE, INI_LOAD_OVERWRITE, pXfer);
-		} catch (const std::exception& e) {
-			printf("SubsystemInterfaceList::initSubsystem - WARNING: Failed to load INI dir '%s' for %s: %s\n", dirpath, name.str(), e.what());
-			fflush(stdout);
-		} catch (...) {
-			printf("SubsystemInterfaceList::initSubsystem - WARNING: Unknown error loading INI dir '%s' for %s\n", dirpath, name.str());
 			fflush(stdout);
 		}
 	}
