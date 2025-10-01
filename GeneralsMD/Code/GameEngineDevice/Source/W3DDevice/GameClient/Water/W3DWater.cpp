@@ -43,6 +43,7 @@
 #include "mesh.h"
 #include "matinfo.h"
 
+#include "Common/GameEngine.h"
 #include "Common/GameState.h"
 #include "Common/GlobalData.h"
 #include "Common/PerfTimer.h"
@@ -313,8 +314,7 @@ WaterRenderObjClass::~WaterRenderObjClass(void)
 		SAFE_RELEASE( m_pBumpTexture2[i]);
 	}
 
-	if (m_meshData)
-		delete [] m_meshData;
+	delete [] m_meshData;
 	m_meshData = NULL;
 	m_meshDataSize = 0;
 
@@ -327,8 +327,7 @@ WaterRenderObjClass::~WaterRenderObjClass(void)
 	TheWaterTransparency = NULL;
 	ReleaseResources();
 
-	if (m_waterTrackSystem)
-		delete m_waterTrackSystem;
+	delete m_waterTrackSystem;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -541,7 +540,7 @@ HRESULT WaterRenderObjClass::initBumpMap(LPDIRECT3DTEXTURE8 *pTex, TextureClass 
 		pTex[0]->UnlockRect(level);
 		surf->Unlock();
 		REF_PTR_RELEASE (surf);
-	}//for each level
+	}
 
 #else
 	surf=pBumpSource->Get_Surface_Level();
@@ -1009,7 +1008,7 @@ void WaterRenderObjClass::load(void)
 Int WaterRenderObjClass::init(Real waterLevel, Real dx, Real dy, SceneClass *parentScene, WaterType type)
 {
 
-	m_iBumpFrame=0;
+	m_fBumpFrame=0;
 	m_fBumpScale=SEA_BUMP_SCALE;
 
 	m_dx=dx;
@@ -1187,14 +1186,14 @@ void WaterRenderObjClass::reset( void )
 				// on to the next one
 				pData++;
 
-			}  // end for i
+			}
 
-		}  // end for j
+		}
 
 		// mesh data is no longer in motion
 		m_meshInMotion = FALSE;
 
-	}  // end if, water type 3
+	}
 
 	if (m_waterTrackSystem)
 		m_waterTrackSystem->reset();
@@ -1229,38 +1228,33 @@ void WaterRenderObjClass::enableWaterGrid(Bool state)
 }
 
 // ------------------------------------------------------------------------------------------------
-/** Update phase for water if we need it.  This called once per client frame reguardless
-	* of how fast the logic framerate is running */
+/** Update phase for water if we need it. */
 // ------------------------------------------------------------------------------------------------
 void WaterRenderObjClass::update( void )
 {
-	static UnsignedInt lastLogicFrame = 0;
-	UnsignedInt currLogicFrame = 0;
+	// TheSuperHackers @tweak The water movement time step is now decoupled from the render update.
+	const Real timeScale = TheGameEngine->getActualLogicTimeScaleOverFpsRatio();
 
-	if( TheGameLogic )
-		currLogicFrame = TheGameLogic->getFrame();
-
-	// we only process things if the logic frame has changed
-	if( lastLogicFrame != currLogicFrame )
 	{
+		constexpr const Real MagicOffset = 0.0125f * 33 / 5000; ///< the work of top Munkees; do not question it
 
-		m_riverVOrigin += 0.002f;
-		m_riverXOffset += (Real)(0.0125*33/5000);
-		m_riverYOffset += (Real)(2*0.0125*33/5000);
-		if (m_riverXOffset > 1) m_riverXOffset -= 1;
-		if (m_riverYOffset > 1) m_riverYOffset -= 1;
-		if (m_riverXOffset < -1) m_riverXOffset += 1;
-		if (m_riverYOffset < -1) m_riverYOffset += 1;
- 		m_iBumpFrame++;
-		if (m_iBumpFrame >= NUM_BUMP_FRAMES) {
-			m_iBumpFrame = 0;
-		}
+		m_riverVOrigin += 0.002f * timeScale;
+		m_riverXOffset += (Real)(MagicOffset * timeScale);
+		m_riverYOffset += (Real)(2 * MagicOffset * timeScale);
+
+		// This moves offsets towards zero when smaller -1.0 or larger 1.0
+		m_riverXOffset -= (Int)m_riverXOffset;
+		m_riverYOffset -= (Int)m_riverYOffset;
+
+		m_fBumpFrame += timeScale;
+		if (m_fBumpFrame >= NUM_BUMP_FRAMES)
+			m_fBumpFrame = 0.0f;
 
 		// for vertex animated water we need to update the vector field
 		if( m_doWaterGrid && m_meshInMotion == TRUE )
 		{
 			const Real PREFERRED_HEIGHT_FUDGE = 1.0f;		///< this is close enough to at rest
-			const Real AT_REST_VELOCITY_FUDGE = 1.0f;		///< when we're close enought to at rest height and velocity we will stop
+			const Real AT_REST_VELOCITY_FUDGE = 1.0f;		///< when we're close enough to at rest height and velocity we will stop
 			const Real WATER_DAMPENING = 0.93f;					///< use with up force of 15.0
 			Int i, j;
 			Int	mx = m_gridCellsX+1;
@@ -1308,32 +1302,29 @@ void WaterRenderObjClass::update( void )
 							pData->height = pData->preferredHeight;
 							pData->velocity = 0.0f;
 
-						}  // end if
+						}
 						else
 						{
 
 							// there is still motion in the mesh, we need to process next frame
 							m_meshInMotion = TRUE;
 
-						}  // end else
+						}
 
-					}  // end if
+					}
 
 					// on to the next one
 					pData++;
 
-				}  // end for i
+				}
 
-			}  // end for j
+			}
 
-		}  // end if
+		}
 
-		// mark the last logic frame we processed on
-		lastLogicFrame = currLogicFrame;
+	}
 
-	}  // end if, a logic frame has passed
-
-}  // end update
+}
 
 
 //-------------------------------------------------------------------------------------------------
@@ -1740,12 +1731,12 @@ void WaterRenderObjClass::Render(RenderInfoClass & rinfo)
 				ShaderClass::Invalidate();	//reset shading system so it forces full state set.
 
 				renderWater();
-			}	//WATER_TYPE_1
+			}
 			break;
 
 		default:
 			break;
-	}//switch
+	}
 
 	if (TheGlobalData && TheGlobalData->m_drawSkyBox)
 	{	//center skybox around camera
@@ -1878,7 +1869,7 @@ void WaterRenderObjClass::drawSea(RenderInfoClass & rinfo)
 	m_pDev->SetTextureStageState(1, D3DTSS_ADDRESSU, D3DTADDRESS_CLAMP);
 	m_pDev->SetTextureStageState(1, D3DTSS_ADDRESSV, D3DTADDRESS_CLAMP);
 
-	m_pDev->SetTexture( 0, m_pBumpTexture[m_iBumpFrame]);
+	m_pDev->SetTexture( 0, m_pBumpTexture[(Int)m_fBumpFrame]);
 #ifdef MIPMAP_BUMP_TEXTURE
 	m_pDev->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTEXF_POINT );
 	m_pDev->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTEXF_LINEAR );
@@ -2325,7 +2316,7 @@ void WaterRenderObjClass::addVelocity( Real worldX, Real worldY,
 
 		}
 
-	}  // end if, water type is 3
+	}
 
 }
 
@@ -2487,11 +2478,11 @@ Real WaterRenderObjClass::getWaterHeight(Real x, Real y)
 				waterZ = pTrig->getPoint( 0 )->z;
 				waterHandle = pTrig->getWaterHandle();
 
-			}  // end if
+			}
 
-		}  // end if
+		}
 
-	}  // end for
+	}
 
 	if (waterHandle)
 		return waterHandle->m_polygon->getPoint( 0 )->z;
@@ -2863,7 +2854,7 @@ void WaterRenderObjClass::renderSkyBody(Matrix3D *mat)
 void WaterRenderObjClass::crc( Xfer *xfer )
 {
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer
@@ -2887,7 +2878,7 @@ void WaterRenderObjClass::xfer( Xfer *xfer )
 		DEBUG_CRASH(( "WaterRenderObjClass::xfer - cells X mismatch" ));
 		throw SC_INVALID_DATA;
 
-	}  // end if
+	}
 
 	// grid cells Y
 	Int cellsY = m_gridCellsY;
@@ -2898,7 +2889,7 @@ void WaterRenderObjClass::xfer( Xfer *xfer )
 		DEBUG_CRASH(( "WaterRenderObjClass::xfer - cells Y mismatch" ));
 		throw SC_INVALID_DATA;
 
-	}  // end if
+	}
 
 	// xfer each of the mesh data points
 	for( UnsignedInt i = 0; i < m_meshDataSize; ++i )
@@ -2916,9 +2907,9 @@ void WaterRenderObjClass::xfer( Xfer *xfer )
 		// preferred height
 		xfer->xferUnsignedByte( &m_meshData[ i ].preferredHeight );
 
-	}  // end for, i
+	}
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
@@ -2926,6 +2917,6 @@ void WaterRenderObjClass::xfer( Xfer *xfer )
 void WaterRenderObjClass::loadPostProcess( void )
 {
 
-}  // end loadPostProcess
+}
 
 

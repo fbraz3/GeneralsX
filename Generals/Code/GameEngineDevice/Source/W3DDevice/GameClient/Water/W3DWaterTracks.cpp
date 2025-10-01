@@ -47,6 +47,7 @@
 #include "W3DDevice/GameClient/W3DWaterTracks.h"
 #include "GameClient/InGameUI.h"
 #include "GameLogic/TerrainLogic.h"
+#include "Common/GameEngine.h"
 #include "Common/GlobalData.h"
 #include "Common/UnicodeString.h"
 #include "Common/file.h"
@@ -58,10 +59,6 @@
 #include "camera.h"
 #include "assetmgr.h"
 #include "WW3D2/dx8wrapper.h"
-
-//#pragma optimize("", off)
-
-//#define ALLOW_WATER_TRACK_EDIT
 
 //number of vertex pages allocated - allows double buffering of vertex updates.
 //while one is being rendered, another is being updated.  Improves HW parallelism.
@@ -280,18 +277,6 @@ void WaterTracksObj::init( Real width, const Vector2 &start, const Vector2 &end,
 //=============================================================================
 Int WaterTracksObj::update(Int msElapsed)
 {
-#ifdef	ALLOW_WATER_TRACK_EDIT
-//	if (pauseWaves)
-//		m_elapsedMs = m_timeToReachBeach+m_timeToStop;
-//	else
-#endif
-
-	//nothing to do here...most of the work is done on render.
-	m_elapsedMs += msElapsed;	//advance time for this update
-
-	///@todo: Should check in here if we are done with this object are return FALSE to free it.
-	//	return FALSE;
-
 	return TRUE;	//assume we had an update
 }
 
@@ -307,6 +292,9 @@ Int WaterTracksObj::update(Int msElapsed)
 
 Int WaterTracksObj::render(DX8VertexBufferClass	*vertexBuffer, Int batchStart)
 {
+	// TheSuperHackers @tweak The wave movement time step is now decoupled from the render update.
+	m_elapsedMs += TheGameEngine->getLogicTimeStepMilliseconds();
+
 	VertexFormatXYZDUV1 *vb;
 	Vector2	waveTailOrigin,waveFrontOrigin;
 	Real	ooWaveDirLen=1.0f/m_waveDir.Length();	//one over length
@@ -541,7 +529,7 @@ WaterTracksObj *WaterTracksRenderSystem::bindTrack(waveType type)
 		}
 
 		mod->m_bound=true;
-	}  // end if
+	}
 
 	#ifdef SYNC_WAVES
 	nextmod=m_usedModules;
@@ -550,11 +538,11 @@ WaterTracksObj *WaterTracksRenderSystem::bindTrack(waveType type)
 	{
 		nextmod->m_elapsedMs=nextmod->m_initTimeOffset;
 		nextmod=nextmod->m_nextSystem;
-	}  // end while
+	}
 	#endif
 
 	return mod;
-}  //end bindTrack
+}
 
 //=============================================================================
 //WaterTracksRenderSystem::unbindTrack
@@ -728,7 +716,7 @@ void WaterTracksRenderSystem::init(void)
 		assert( 0 );
 		return;
 
-	}  // end if
+	}
 
 	// allocate our modules for this system
 	for( i = 0; i < numModules; i++ )
@@ -743,7 +731,7 @@ void WaterTracksRenderSystem::init(void)
 			assert( 0 );
 			return;
 
-		}  // end if
+		}
 
 		mod->m_prevSystem = NULL;
 		mod->m_nextSystem = m_freeModules;
@@ -751,9 +739,9 @@ void WaterTracksRenderSystem::init(void)
 			m_freeModules->m_prevSystem = mod;
 		m_freeModules = mod;
 
-	}  // end for i
+	}
 
-}  // end init
+}
 
 void WaterTracksRenderSystem::reset(void)
 {
@@ -769,7 +757,7 @@ void WaterTracksRenderSystem::reset(void)
 		releaseTrack(mod);
 
 		mod = nextMod;
-	}  // end while
+	}
 
 
 	// free all attached things and used modules
@@ -796,7 +784,7 @@ void WaterTracksRenderSystem::shutdown( void )
 			releaseTrack(mod);
 
 		mod = nextMod;
-	}  // end while
+	}
 
 
 	// free all attached things and used modules
@@ -810,13 +798,13 @@ void WaterTracksRenderSystem::shutdown( void )
 		delete m_freeModules;
 		m_freeModules = nextMod;
 
-	}  // end while
+	}
 
 	REF_PTR_RELEASE(m_indexBuffer);
 	REF_PTR_RELEASE(m_vertexMaterialClass);
 	REF_PTR_RELEASE(m_vertexBuffer);
 
-}  // end shutdown
+}
 
 //=============================================================================
 // WaterTracksRenderSystem::update
@@ -843,7 +831,7 @@ void WaterTracksRenderSystem::update()
 		}
 
 		mod = nextMod;
-	}  // end while
+	}
 }
 
 
@@ -914,7 +902,7 @@ Try improving the fit to vertical surfaces like cliffs.
 		m_batchStart = vertsRendered;	//advance past vertices already in buffer
 
 		mod = mod->m_nextSystem;
-	}	//while (mod)
+	}
 
 	DX8Wrapper::Set_DX8_Render_State(D3DRS_ZBIAS,0);
 }
@@ -930,7 +918,7 @@ WaterTracksObj *WaterTracksRenderSystem::findTrack(Vector2 &start, Vector2 &end,
 			mod->m_type == type)
 			return mod;
 		mod = mod->m_nextSystem;
-	}	//while (mod)
+	}
 	return NULL;
 }
 void WaterTracksRenderSystem::saveTracks(void)
@@ -965,7 +953,7 @@ void WaterTracksRenderSystem::saveTracks(void)
 				trackCount++;
 			}
 			umod=umod->m_nextSystem;
-		}  // end while
+		}
 		fwrite(&trackCount,sizeof(trackCount),1,fp);
 		fclose(fp);
 	}

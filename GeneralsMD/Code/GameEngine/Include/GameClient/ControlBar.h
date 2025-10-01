@@ -102,12 +102,10 @@ enum CommandOption CPP_11(: Int)
 	USES_MINE_CLEARING_WEAPONSET= 0x00200000,	// uses the special mine-clearing weaponset, even if not current
 	CAN_USE_WAYPOINTS						= 0x00400000, // button has option to use a waypoint path
 	MUST_BE_STOPPED							= 0x00800000, // Unit must be stopped in order to be able to use button.
-
-	NUM_COMMAND_OPTIONS						// keep this last
 };
 
 #ifdef DEFINE_COMMAND_OPTION_NAMES
-static const char *TheCommandOptionNames[] =
+static const char *const TheCommandOptionNames[] =
 {
 	"NEED_TARGET_ENEMY_OBJECT",
 	"NEED_TARGET_NEUTRAL_OBJECT",
@@ -218,11 +216,11 @@ enum GUICommandType CPP_11(: Int)
 
 	// add more commands here, don't forget to update the string command list below too ...
 
-	GUI_COMMAND_NUM_COMMANDS							// keep this last
+	GUI_COMMAND_NUM_COMMANDS
 };
 
 #ifdef DEFINE_GUI_COMMMAND_NAMES
-static const char *TheGuiCommandNames[] =
+static const char *const TheGuiCommandNames[] =
 {
 	"NONE",
 	"DOZER_CONSTRUCT",
@@ -268,6 +266,7 @@ static const char *TheGuiCommandNames[] =
 
 	NULL
 };
+static_assert(ARRAY_SIZE(TheGuiCommandNames) == GUI_COMMAND_NUM_COMMANDS + 1, "Incorrect array size");
 #endif  // end DEFINE_GUI_COMMAND_NAMES
 
 enum CommandButtonMappedBorderType CPP_11(: Int)
@@ -278,7 +277,7 @@ enum CommandButtonMappedBorderType CPP_11(: Int)
 	COMMAND_BUTTON_BORDER_ACTION,
 	COMMAND_BUTTON_BORDER_SYSTEM,
 
-	COMMAND_BUTTON_BORDER_COUNT // keep this last
+	COMMAND_BUTTON_BORDER_COUNT
 };
 
 static const LookupListRec CommandButtonMappedBorderTypeNames[] =
@@ -289,8 +288,9 @@ static const LookupListRec CommandButtonMappedBorderTypeNames[] =
 	{ "ACTION",				COMMAND_BUTTON_BORDER_ACTION },
 	{ "SYSTEM",				COMMAND_BUTTON_BORDER_SYSTEM },
 
-	{ NULL, 0	}// keep this last!
+	{ NULL, 0	}
 };
+static_assert(ARRAY_SIZE(CommandButtonMappedBorderTypeNames) == COMMAND_BUTTON_BORDER_COUNT + 1, "Incorrect array size");
 //-------------------------------------------------------------------------------------------------
 /** Command buttons are used to load the buttons we place on throughout the command bar
 	* interface in different context sensitive windows depending on the situation and
@@ -588,8 +588,6 @@ enum ControlBarContext CPP_11(: Int)
 	CB_CONTEXT_OBSERVER_INFO,					///< for when we want to populate the player info
 	CB_CONTEXT_OBSERVER_LIST,					///< for when we want to update the observer list
 	CB_CONTEXT_OCL_TIMER,							///< Countdown for OCL spewers
-
-	NUM_CB_CONTEXTS
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -747,6 +745,10 @@ public:
 
 	/// Returns the currently viewed player. May return NULL if no player is selected while observing.
 	Player* getCurrentlyViewedPlayer();
+	/// Returns the relationship with the currently viewed player. May return NEUTRAL if no player is selected while observing.
+	Relationship getCurrentlyViewedPlayerRelationship(const Team* team);
+	/// Returns the currently viewed player. Returns "Observer" if no player is selected while observing.
+	AsciiString getCurrentlyViewedPlayerSide();
 
 //	ControlBarResizer *getControlBarResizer( void ) {return m_controlBarResizer;}
 

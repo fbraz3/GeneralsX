@@ -1138,10 +1138,7 @@ exit:
 
 	db->ClearChanges ();
 
-	if ( label )
-	{
-		delete label;
-	}
+	delete label;
 
 	if ( file )
 	{
@@ -1982,7 +1979,7 @@ int CBabylonDlg::UpdateDB(TransDB *source, TransDB *destination, int update )
 				source->ClearChanges ();
 			}
 		}
-	}	// update
+	}
 
 
 	Ready ();

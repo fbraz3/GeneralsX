@@ -119,18 +119,7 @@ inline Real maxf(Real a, Real b) { if (a > b) return a; else return b; }
 //-------------------------------------------------------------------------------------------------
 static void normAngle(Real &angle)
 {
-	if (angle < -10*PI) {
-		angle = 0;
-	}
-	if (angle > 10*PI) {
-		angle = 0;
-	}
-	while (angle < -PI) {
-		angle += 2*PI;
-	}
-	while (angle > PI) {
-		angle -= 2*PI;
-	}
+	angle = WWMath::Normalize_Angle(angle);
 }
 
 #define TERRAIN_SAMPLE_SIZE 40.0f
@@ -182,7 +171,7 @@ W3DView::W3DView()
 	m_shakerAngles.Y =0.0f;
 	m_shakerAngles.Z =0.0f;
 
-}  // end W3DView
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -192,7 +181,7 @@ W3DView::~W3DView()
 	REF_PTR_RELEASE( m_2DCamera );
 	REF_PTR_RELEASE( m_3DCamera );
 
-}  // end ~W3DView
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Sets the height of the viewport, while maintaining original camera perspective. */
@@ -410,8 +399,7 @@ void W3DView::buildCameraTransform( Matrix3D *transform )
 
 	//WST 11/12/2002 New camera shaker system
 	// TheSuperHackers @tweak The camera shaker is now decoupled from the render update.
-	const Real logicTimeScaleOverFpsRatio = TheGameEngine->getActualLogicTimeScaleOverFpsRatio();
-	CameraShakerSystem.Timestep(TheW3DFrameLengthInMsec * logicTimeScaleOverFpsRatio);
+	CameraShakerSystem.Timestep(TheGameEngine->getLogicTimeStepMilliseconds());
 	CameraShakerSystem.Update_Camera_Shaker(sourcePos, &m_shakerAngles);
 	transform->Rotate_X(m_shakerAngles.X);
 	transform->Rotate_Y(m_shakerAngles.Y);
@@ -446,13 +434,9 @@ void W3DView::buildCameraTransform( Matrix3D *transform )
 						// WST 10.22.2002. Update the Listener positions used by audio system
 						//--------------------------------------------------------------------
 						Vector3 position = transform->Get_Translation();
-						m_pos.x = position.X;
-						m_pos.y = position.Y;
-						m_pos.z = position.Z;
-
-
-						//DEBUG_LOG(("mpos x%f, y%f, z%f", m_pos.x, m_pos.y, m_pos.z ));
-
+						Coord3D coord;
+						coord.set(position.X, position.Y, position.Z);
+						View::setPosition(&coord);
 						break;
 					}
 				}
@@ -560,6 +544,10 @@ void W3DView::setCameraTransform( void )
 {
 	if (TheGlobalData->m_headless)
 		return;
+
+	if (m_viewLockedUntilFrame > TheGameClient->getFrame())
+		return;
+
 	m_cameraHasMovedSinceRequest = true;
 	Matrix3D cameraTransform( 1 );
 
@@ -664,7 +652,7 @@ void W3DView::init( void )
 
 	m_scrollAmountCutoff = TheGlobalData->m_scrollAmountCutoff;
 
-}  // end init
+}
 
 //-------------------------------------------------------------------------------------------------
 const Coord3D& W3DView::get3DCameraPosition() const
@@ -701,9 +689,9 @@ void W3DView::reset( void )
 static void drawDrawable( Drawable *draw, void *userData )
 {
 
-	draw->draw( (View *)userData );
+	draw->draw();
 
-}  // end drawDrawable
+}
 
 // ------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -769,7 +757,7 @@ static void drawContainedDrawable( Object *obj, void *userData )
 	if( draw )
 		drawDrawableExtents( draw, userData );
 
-}  // end drawContainedDrawable
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -819,11 +807,11 @@ static void drawDrawableExtents( Drawable *draw, void *userData )
 
 				z += draw->getDrawableGeometryInfo().getMaxHeightAbovePosition();
 
-			}  // end for i
+			}
 
 			break;
 
-		}  // end case box
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GEOMETRY_SPHERE:	// not quite right, but close enough
@@ -839,7 +827,7 @@ static void drawDrawableExtents( Drawable *draw, void *userData )
 
         // next time 'round, draw the top of the cylinder
         center.z += draw->getDrawableGeometryInfo().getMaxHeightAbovePosition();
-			}	// end for i
+			}
 
 			// draw centerline
       ICoord2D start, end;
@@ -851,9 +839,9 @@ static void drawDrawableExtents( Drawable *draw, void *userData )
 
 			break;
 
-		}	// case CYLINDER
+		}
 
-	} // end switch
+	}
 
 	// draw any extents for things that are contained by this
 	Object *obj = draw->getObject();
@@ -864,9 +852,9 @@ static void drawDrawableExtents( Drawable *draw, void *userData )
 		if( contain )
 			contain->iterateContained( drawContainedDrawable, userData, FALSE );
 
-	}  // end if
+	}
 
-}  // end drawDrawableExtents
+}
 
 
 void drawAudioLocations( Drawable *draw, void *userData );
@@ -880,7 +868,7 @@ static void drawContainedAudioLocations( Object *obj, void *userData )
   if( draw )
     drawAudioLocations( draw, userData );
 
-}  // end drawContainedAudio
+}
 
 
 //-------------------------------------------------------------------------------------------------
@@ -897,7 +885,7 @@ static void drawAudioLocations( Drawable *draw, void *userData )
     if( contain )
       contain->iterateContained( drawContainedAudioLocations, userData, FALSE );
 
-  }  // end if
+  }
 
   const ThingTemplate * thingTemplate = draw->getTemplate();
 
@@ -1025,7 +1013,7 @@ static void drawablePostDraw( Drawable *draw, void *userData )
 
 	TheGameClient->incrementRenderedObjectCount();
 
-}  // end drawablePostDraw
+}
 
 //-------------------------------------------------------------------------------------------------
 // Display AI debug visuals
@@ -1057,8 +1045,8 @@ Bool W3DView::updateCameraMovements()
 	} else if (m_doingMoveCameraOnWaypointPath) {
 		m_previousLookAtPosition = *getPosition();
 		// TheSuperHackers @tweak The scripted camera movement is now decoupled from the render update.
-		const Real logicTimeScaleOverFpsRatio = TheGameEngine->getActualLogicTimeScaleOverFpsRatio();
-		moveAlongWaypointPath(TheW3DFrameLengthInMsec * logicTimeScaleOverFpsRatio);
+		// The scripted camera will still move when the time is frozen, but not when the game is halted.
+		moveAlongWaypointPath(TheGameEngine->getLogicTimeStepMilliseconds(GameEngine::IgnoreFrozenTime));
 		didUpdate = true;
 	}
 	if (m_doingScriptedCameraLock)
@@ -1082,13 +1070,9 @@ void W3DView::updateView(void)
 	UPDATE();
 }
 
-// TheSuperHackers @tweak xezon 12/08/2025 The drawable update is no longer tied to the
-// render update, but it advanced separately for every fixed time step. This ensures that
-// things like vehicle wheels no longer spin too fast on high frame rates or keep spinning
-// on game pause.
-// The camera shaker is also no longer tied to the render update. The shake does sharp shakes
-// on every fixed time step, and is not intended to have linear interpolation during the
-// render update.
+// TheSuperHackers @tweak xezon 12/08/2025 The camera shaker is no longer tied to the render
+// update. The shake does sharp shakes on every fixed time step, and is not intended to have
+// linear interpolation during the render update.
 void W3DView::stepView()
 {
 	//
@@ -1113,17 +1097,6 @@ void W3DView::stepView()
 		m_shakeOffset.x = 0.0f;
 		m_shakeOffset.y = 0.0f;
 	}
-
-	if (TheScriptEngine->isTimeFast()) {
-		return; // don't draw - makes it faster :) jba.
-	}
-
-	Region3D axisAlignedRegion;
-	getAxisAlignedViewRegion(axisAlignedRegion);
-
-	// render all of the visible Drawables
-	/// @todo this needs to use a real region partition or something
-	TheGameClient->iterateDrawablesInRegion( &axisAlignedRegion, drawDrawable, this );
 }
 
 //DECLARE_PERF_TIMER(W3DView_updateView)
@@ -1358,40 +1331,46 @@ void W3DView::update(void)
 	 * scrolling), the zoom will move toward matching the desired height.
 	 */
 	// TheSuperHackers @tweak Can now also zoom when the game is paused.
+	// TheSuperHackers @tweak The camera zoom speed is now decoupled from the render update.
+	// TheSuperHackers @bugfix The camera terrain height adjustment now also works in replay playback.
+
 	m_terrainHeightUnderCamera = getHeightAroundPos(m_pos.x, m_pos.y);
 	m_currentHeightAboveGround = m_cameraOffset.z * m_zoom - m_terrainHeightUnderCamera;
+
 	if (TheTerrainLogic && TheGlobalData && TheInGameUI && m_okToAdjustHeight)
 	{
 		Real desiredHeight = (m_terrainHeightUnderCamera + m_heightAboveGround);
 		Real desiredZoom = desiredHeight / m_cameraOffset.z;
-  	if (didScriptedMovement || (TheGameLogic->isInReplayGame() && TheGlobalData->m_useCameraInReplay))
+
+  	if (didScriptedMovement)
   	{
   		// if we are in a scripted camera movement, take its height above ground as our desired height.
   		m_heightAboveGround = m_currentHeightAboveGround;
 			//DEBUG_LOG(("Frame %d: height above ground: %g %g %g %g", TheGameLogic->getFrame(), m_heightAboveGround,
 			//	m_cameraOffset.z, m_zoom, m_terrainHeightUnderCamera));
   	}
+
 		if (TheInGameUI->isScrolling())
 		{
 			// if scrolling, only adjust if we're too close or too far
 			if (m_scrollAmount.length() < m_scrollAmountCutoff || (m_currentHeightAboveGround < m_minHeightAboveGround) || (TheGlobalData->m_enforceMaxCameraHeight && m_currentHeightAboveGround > m_maxHeightAboveGround))
 			{
-				Real zoomAdj = (desiredZoom - m_zoom)*TheGlobalData->m_cameraAdjustSpeed;
-				if (fabs(zoomAdj) >= 0.0001)	// only do positive
+				const Real fpsRatio = (Real)BaseFps / TheGameEngine->getUpdateFps();
+				const Real zoomAdj = (desiredZoom - m_zoom) * TheGlobalData->m_cameraAdjustSpeed * fpsRatio;
+				if (fabs(zoomAdj) >= 0.0001f)	// only do positive
 				{
 					m_zoom += zoomAdj;
 					recalcCamera = true;
 				}
 			}
 		}
-		else
+		else if (!didScriptedMovement)
 		{
 			// we're not scrolling; settle toward desired height above ground
-			Real zoomAdj = (m_zoom - desiredZoom)*TheGlobalData->m_cameraAdjustSpeed;
-			Real zoomAdjAbs = fabs(zoomAdj);
-			if (zoomAdjAbs >= 0.0001 && !didScriptedMovement)
+			const Real fpsRatio = (Real)BaseFps / TheGameEngine->getUpdateFps();
+			const Real zoomAdj = (m_zoom - desiredZoom) * TheGlobalData->m_cameraAdjustSpeed * fpsRatio;
+			if (fabs(zoomAdj) >= 0.0001f)
 			{
-				//DEBUG_LOG(("W3DView::update() - m_zoom=%g, desiredHeight=%g", m_zoom, desiredZoom));
 				m_zoom -= zoomAdj;
 				recalcCamera = true;
 			}
@@ -1408,9 +1387,16 @@ void W3DView::update(void)
 
 
 #ifdef DO_SEISMIC_SIMULATIONS
-  // Give the terrain a chance to refresh animaing (Seismic) regions, if any.
+  // Give the terrain a chance to refresh animating (Seismic) regions, if any.
   TheTerrainVisual->updateSeismicSimulations();
 #endif
+
+	Region3D axisAlignedRegion;
+	getAxisAlignedViewRegion(axisAlignedRegion);
+
+	// render all of the visible Drawables
+	/// @todo this needs to use a real region partition or something
+	TheGameClient->iterateDrawablesInRegion( &axisAlignedRegion, drawDrawable, NULL );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1443,7 +1429,7 @@ void W3DView::getAxisAlignedViewRegion(Region3D &axisAlignedRegion)
 		if( box[ i ].y > axisAlignedRegion.hi.y )
 		  axisAlignedRegion.hi.y = box[ i ].y;
 
-	}  // end for i
+	}
 
 	// low and high regions will be based of the extent of the map
 	Region3D mapExtent;
@@ -1706,7 +1692,7 @@ void W3DView::draw( void )
 			}
 		}
 
-	}  // end if, show debug AI
+	}
 
 #if defined(RTS_DEBUG)
 	if( TheGlobalData->m_debugCamera )
@@ -1818,32 +1804,36 @@ void W3DView::setSnapMode( CameraLockType lockType, Real lockDist )
 }
 
 //-------------------------------------------------------------------------------------------------
-/** Scroll the view by the given delta in SCREEN COORDINATES, this interface
-	* assumes we will be scrolling along the X,Y plane */
+// Scroll the view by the given delta in SCREEN COORDINATES, this interface
+// assumes we will be scrolling along the X,Y plane
+//
+// TheSuperHackers @bugfix Now rotates the view plane on the Z axis only to properly discard the
+// camera pitch. The aspect ratio also no longer modifies the vertical scroll speed.
 //-------------------------------------------------------------------------------------------------
 void W3DView::scrollBy( Coord2D *delta )
 {
 	// if we haven't moved, ignore
 	if( delta && (delta->x != 0 || delta->y != 0) )
 	{
-		const Real SCROLL_RESOLUTION = 250.0f;
+		constexpr const Real SCROLL_RESOLUTION = 250.0f;
 
 		Vector3 world, worldStart, worldEnd;
-		Vector2 screen, start, end;
+		Vector2 start, end;
 
 		m_scrollAmount = *delta;
 
-		screen.X = delta->x;
-		screen.Y = delta->y;
-
 		start.X = getWidth();
 		start.Y = getHeight();
-		Real aspect = getHeight() == 0 ? 1 : getWidth()/getHeight();
-		end.X = start.X + delta->x * SCROLL_RESOLUTION;
-		end.Y = start.Y + delta->y * SCROLL_RESOLUTION*aspect;
 
-		m_3DCamera->Device_To_World_Space( start, &worldStart );
-		m_3DCamera->Device_To_World_Space( end, &worldEnd );
+		end.X = start.X + delta->x * SCROLL_RESOLUTION;
+		end.Y = start.Y + delta->y * SCROLL_RESOLUTION;
+
+		m_3DCamera->Device_To_View_Space( start, &worldStart );
+		m_3DCamera->Device_To_View_Space( end, &worldEnd );
+
+		const Real zRotation = m_3DCamera->Get_Transform().Get_Z_Rotation();
+		worldStart.Rotate_Z(zRotation);
+		worldEnd.Rotate_Z(zRotation);
 
 		world.X = worldEnd.X - worldStart.X;
 		world.Y = worldEnd.Y - worldStart.Y;
@@ -1863,9 +1853,9 @@ void W3DView::scrollBy( Coord2D *delta )
 		// set new camera position
 		setCameraTransform();
 
-	}  // end if
+	}
 
-}  // end scrollBy
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -1924,7 +1914,7 @@ void W3DView::setAngleAndPitchToDefault( void )
 	// call our base class, we are adding functionality
 	View::setAngleAndPitchToDefault();
 
-	this->m_FXPitch = 1.0;
+	m_FXPitch = 1.0;
 
 	// set the camera
 	setCameraTransform();
@@ -1946,19 +1936,7 @@ void W3DView::setDefaultView(Real pitch, Real angle, Real maxHeight)
 //-------------------------------------------------------------------------------------------------
 void W3DView::setHeightAboveGround(Real z)
 {
-	m_heightAboveGround = z;
-
-  // if our zoom is limited, we will stay within a predefined distance from the terrain
-	if( m_zoomLimited )
-	{
-
-		if (m_heightAboveGround < m_minHeightAboveGround)
-			m_heightAboveGround = m_minHeightAboveGround;
-
-		if (m_heightAboveGround > m_maxHeightAboveGround)
-			m_heightAboveGround = m_maxHeightAboveGround;
-
-	}  // end if
+	View::setHeightAboveGround(z);
 
 	m_doingMoveCameraOnWaypointPath = false;
 	m_CameraArrivedAtWaypointOnPathFlag = false;
@@ -1972,15 +1950,13 @@ void W3DView::setHeightAboveGround(Real z)
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
+// TheSuperHackers @bugfix xezon 18/09/2025 setZoom is no longer clamped by a min and max zoom.
+// Instead the min and max camera height will be clamped elsewhere. Clamping the zoom would cause
+// issues with camera playback in replay playback where changes in terrain elevation would not raise
+// the camera height.
 void W3DView::setZoom(Real z)
 {
-	m_zoom = z;
-
-	if (m_zoom < m_minZoom)
-		m_zoom = m_minZoom;
-
-	if (m_zoom > m_maxZoom)
-		m_zoom = m_maxZoom;
+	View::setZoom(z);
 
 	m_doingMoveCameraOnWaypointPath = false;
 	m_CameraArrivedAtWaypointOnPathFlag = false;
@@ -2081,10 +2057,10 @@ View::WorldToScreenReturn W3DView::worldToScreenTriReturn( const Coord3D *w, ICo
 
     return WTS_INSIDE_FRUSTUM;
 
-	}  // end if
+	}
 
   return WTS_INVALID;
-}  // end worldToScreenTriReturn
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Using the W3D camera translate the screen coord to world coord */
@@ -2099,9 +2075,9 @@ void W3DView::screenToWorld( const ICoord2D *s, Coord3D *w )
 	if( m_3DCamera )
 	{
 		DEBUG_CRASH(("implement me"));
-	}  // end if
+	}
 
-}  // end screenToWorld
+}
 
 //-------------------------------------------------------------------------------------------------
 /** all the drawables in the view, that fall within the 2D screen region
@@ -2145,7 +2121,7 @@ Int W3DView::iterateDrawablesInRegion( IRegion2D *screenRegion,
 		normalizedRegion.hi.x = ((Real)(screenRegion->hi.x - m_originX) / (Real)getWidth()) * 2.0f - 1.0f;
 		normalizedRegion.hi.y = -(((Real)(screenRegion->lo.y - m_originY) / (Real)getHeight()) * 2.0f - 1.0f);
 
-	}  // end if
+	}
 
 
 	Drawable *onlyDrawableToTest = NULL;
@@ -2196,10 +2172,10 @@ Int W3DView::iterateDrawablesInRegion( IRegion2D *screenRegion,
 
 					inside = TRUE;
 
-				}  // end if
+				}
 			}
 
-		}  //end else
+		}
 
 		// if inside do the callback and count up
 		if( inside )
@@ -2208,17 +2184,17 @@ Int W3DView::iterateDrawablesInRegion( IRegion2D *screenRegion,
 			if( callback( draw, userData ) )
 				++count;
 
-		}  // end if
+		}
 
 		// If onlyDrawableToTest, then we should bail out now.
 		if (onlyDrawableToTest != NULL)
 			break;
 
-	}  // end for draw
+	}
 
 	return count;
 
-}  // end iterateDrawablesInRegion
+}
 
 //-------------------------------------------------------------------------------------------------
 /** cast a ray from the screen coords into the scene and return a drawable
@@ -2277,7 +2253,7 @@ Drawable *W3DView::pickDrawable( const ICoord2D *screen, Bool forceAttack, PickT
 
 	return draw;
 
-}  // end pickDrawable
+}
 
 //-------------------------------------------------------------------------------------------------
 /** convert a pixel (x,y) to a location in the world on the terrain.
@@ -2324,7 +2300,7 @@ void W3DView::screenToTerrain( const ICoord2D *screen, Coord3D *world )
 		// get the point of intersection according to W3D
 		intersection = result.ContactPoint;
 
-	}  // end if
+	}
 
 	// Pick bridges.
 	Vector3 bridgePt;
@@ -2342,7 +2318,7 @@ void W3DView::screenToTerrain( const ICoord2D *screen, Coord3D *world )
 	req.second = (*world);
 	m_locationRequests.push_back(req);	// Insert this request at the end, requires no extra copies
 
-}  // end screenToTerrain
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -2381,7 +2357,7 @@ void W3DView::lookAt( const Coord3D *o )
 			pos.x = result.ContactPoint.X;
 			pos.y = result.ContactPoint.Y;
 
-		}  // end if
+		}
 	}
 	pos.z = 0;
 	setPosition(&pos);
@@ -3338,7 +3314,7 @@ void W3DView::screenToWorldAtZ( const ICoord2D *s, Coord3D *w, Real z )
 	w->y = Vector3::Find_Y_At_Z( z, rayStart, rayEnd );
 	w->z = z;
 
-}  // end screenToWorldAtZ
+}
 
 void W3DView::cameraEnableSlaveMode(const AsciiString & objectName, const AsciiString & boneName)
 {

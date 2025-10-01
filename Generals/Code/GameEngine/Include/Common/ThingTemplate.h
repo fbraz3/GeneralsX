@@ -82,7 +82,7 @@ typedef std::map<AsciiString, const FXList*> PerUnitFXMap;
 //	INV_IMAGE_HILITE,
 //	INV_IMAGE_PUSHED,
 //
-//	INV_IMAGE_NUM_IMAGES  // keep this last
+//	INV_IMAGE_NUM_IMAGES
 //
 //};
 //-------------------------------------------------------------------------------------------------
@@ -141,7 +141,7 @@ enum ThingTemplateAudioType CPP_11(: Int)
 	TTAUDIO_voiceAttackAir,						///< Unit is ordered to attack an airborne unit
 	TTAUDIO_voiceGuard,								///< Unit is ordered to guard an area
 
-	TTAUDIO_COUNT   // keep last!
+	TTAUDIO_COUNT
 };
 
 class AudioArray
@@ -158,8 +158,7 @@ public:
 	~AudioArray()
 	{
 		for (Int i = 0; i < TTAUDIO_COUNT; ++i)
-			if (m_audio[i])
-				deleteInstance(m_audio[i]);
+			deleteInstance(m_audio[i]);
 	}
 
 	AudioArray(const AudioArray& that)
@@ -205,10 +204,10 @@ enum BuildCompletionType CPP_11(: Int)
 	BC_APPEARS_AT_RALLY_POINT,	///< unit appears at rally point of its #1 prereq
 	BC_PLACED_BY_PLAYER,				///< unit must be manually placed by player
 
-	BC_NUM_TYPES								// leave this last
+	BC_NUM_TYPES
 };
 #ifdef DEFINE_BUILD_COMPLETION_NAMES
-static const char *BuildCompletionNames[] =
+static const char *const BuildCompletionNames[] =
 {
 	"INVALID",
 	"APPEARS_AT_RALLY_POINT",
@@ -216,6 +215,7 @@ static const char *BuildCompletionNames[] =
 
 	NULL
 };
+static_assert(ARRAY_SIZE(BuildCompletionNames) == BC_NUM_TYPES + 1, "Incorrect array size");
 #endif  // end DEFINE_BUILD_COMPLETION_NAMES
 
 enum BuildableStatus CPP_11(: Int)
@@ -226,11 +226,11 @@ enum BuildableStatus CPP_11(: Int)
 	BSTATUS_NO,
 	BSTATUS_ONLY_BY_AI,
 
-	BSTATUS_NUM_TYPES	// leave this last
+	BSTATUS_NUM_TYPES
 };
 
 #ifdef DEFINE_BUILDABLE_STATUS_NAMES
-static const char *BuildableStatusNames[] =
+static const char *const BuildableStatusNames[] =
 {
 	"Yes",
 	"Ignore_Prerequisites",
@@ -238,6 +238,7 @@ static const char *BuildableStatusNames[] =
 	"Only_By_AI",
 	NULL
 };
+static_assert(ARRAY_SIZE(BuildableStatusNames) == BSTATUS_NUM_TYPES + 1, "Incorrect array size");
 #endif	// end DEFINE_BUILDABLE_STATUS_NAMES
 
 //-------------------------------------------------------------------------------------------------
@@ -429,6 +430,7 @@ public:
 	Real getFenceXOffset() const { return m_fenceXOffset; }  // return fence offset
 
 	Bool isBridge() const { return m_isBridge; }  // return fence offset
+	Bool isBridgeLike() const { return isBridge() || isKindOf(KINDOF_WALK_ON_TOP_OF_WALL); }
 
 	// Only Object can ask this.  Everyone else should ask the Object.  In fact, you really should ask the Object everything.
 	Real friend_getVisionRange() const { return m_visionRange; }  ///< get vision range

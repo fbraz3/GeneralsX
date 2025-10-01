@@ -25,6 +25,7 @@
 // GameClient/Eva.cpp /////////////////////////////////////////////////////////////////////////////
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "GameClient/ControlBar.h"
 #include "GameClient/Eva.h"
 
 #include "Common/Player.h"
@@ -33,7 +34,7 @@
 
 
 //-------------------------------------------------------------------------------------------------
-const char *TheEvaMessageNames[] =
+static const char *const TheEvaMessageNames[] =
 {
 	"LOWPOWER",
 	"INSUFFICIENTFUNDS",
@@ -92,9 +93,8 @@ const char *TheEvaMessageNames[] =
 	//****************************************************************************
 	//Kris: Don't forget to add another handler below -- it's ghey-ly implemented.
 	//****************************************************************************
-
-	"EVA_INVALID",
 };
+static_assert(ARRAY_SIZE(TheEvaMessageNames) == EVA_COUNT, "Incorrect array size");
 
 //-------------------------------------------------------------------------------------------------
 const ShouldPlayFunc Eva::s_shouldPlayFuncs[] =
@@ -152,7 +152,6 @@ const ShouldPlayFunc Eva::s_shouldPlayFuncs[] =
   Eva::shouldPlayGenericHandler,
   Eva::shouldPlayGenericHandler,
   Eva::shouldPlayGenericHandler,
-	NULL,
 };
 
 
@@ -245,8 +244,7 @@ Eva::~Eva()
 {
 	EvaCheckInfoPtrVecIt it;
 	for (it = m_allCheckInfos.begin(); it != m_allCheckInfos.end(); ++it) {
-		if (*it)
-			deleteInstance(*it);
+		deleteInstance(*it);
 	}
 }
 
@@ -255,7 +253,7 @@ void Eva::init()
 {
 	// parse the INI here, etc.
 	INI ini;
-	ini.load( AsciiString( "Data\\INI\\Eva.ini" ), INI_LOAD_OVERWRITE, NULL);
+	ini.loadFileDirectory( AsciiString( "Data\\INI\\Eva" ), INI_LOAD_OVERWRITE, NULL);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -286,7 +284,7 @@ void Eva::update()
 		return;
 	}
 
-	m_localPlayer = ThePlayerList->getLocalPlayer();
+	m_localPlayer = TheControlBar->getCurrentlyViewedPlayer();
 	UnsignedInt frame = TheGameLogic->getFrame();
 
 	// Don't update for the first few frames. This way, we don't have to deal with our initial power
@@ -316,10 +314,6 @@ void Eva::update()
 //-------------------------------------------------------------------------------------------------
 EvaMessage Eva::nameToMessage(const AsciiString& name)
 {
-  DEBUG_ASSERTCRASH( ELEMENTS_OF( TheEvaMessageNames ) == EVA_COUNT + 1, ("TheEvaMessageNames out of sync" ) );
-  DEBUG_ASSERTCRASH( stricmp( TheEvaMessageNames[ EVA_COUNT ], "EVA_INVALID" ) == 0, ("TheEvaMessageNames out of sync" ) );
-  DEBUG_ASSERTCRASH( stricmp( TheEvaMessageNames[ EVA_COUNT - 1], "EVA_INVALID" ) != 0, ("TheEvaMessageNames out of sync" ) );
-
 	for (Int i = EVA_FIRST; i < EVA_COUNT; ++i) {
 		if (name.compareNoCase(TheEvaMessageNames[i]) == 0) {
 			return (EvaMessage) i;
@@ -333,10 +327,6 @@ EvaMessage Eva::nameToMessage(const AsciiString& name)
 //-------------------------------------------------------------------------------------------------
 AsciiString Eva::messageToName(EvaMessage message)
 {
-  DEBUG_ASSERTCRASH( ELEMENTS_OF( TheEvaMessageNames ) == EVA_COUNT + 1, ("TheEvaMessageNames out of sync" ) );
-  DEBUG_ASSERTCRASH( stricmp( TheEvaMessageNames[ EVA_COUNT ], "EVA_INVALID" ) == 0, ("TheEvaMessageNames out of sync" ) );
-  DEBUG_ASSERTCRASH( stricmp( TheEvaMessageNames[ EVA_COUNT - 1], "EVA_INVALID" ) != 0, ("TheEvaMessageNames out of sync" ) );
-
   if (message >= EVA_FIRST && message < EVA_COUNT)
 		return TheEvaMessageNames[message];
 
@@ -415,9 +405,7 @@ Bool Eva::messageShouldPlay(EvaMessage messageToTest, UnsignedInt currentFrame) 
 		return FALSE;
 	}
 
-  DEBUG_ASSERTCRASH( ELEMENTS_OF( s_shouldPlayFuncs ) == EVA_COUNT + 1, ("Eva::s_shouldPlayFuncs out of sync" ) );
-  DEBUG_ASSERTCRASH( s_shouldPlayFuncs[ EVA_COUNT ] == NULL, ("Eva::s_shouldPlayFuncs out of sync" ) );
-  DEBUG_ASSERTCRASH( s_shouldPlayFuncs[ EVA_COUNT - 1] != NULL, ("Eva::s_shouldPlayFuncs out of sync" ) );
+	static_assert(ARRAY_SIZE(s_shouldPlayFuncs) == EVA_COUNT, "Incorrect array size");
 
 	m_messageBeingTested = messageToTest;
 	return s_shouldPlayFuncs[messageToTest](m_localPlayer);
@@ -515,7 +503,7 @@ void Eva::processPlayingMessages(UnsignedInt currentFrame)
 	}
 
 	// We've got a winner!
-	AsciiString side = ThePlayerList->getLocalPlayer()->getSide();
+	AsciiString side = TheControlBar->getCurrentlyViewedPlayerSide();
 	Int numSides = storedIt->m_evaInfo->m_evaSideSounds.size();
 
   // clear it. If we can't find the side we want, don't play anything

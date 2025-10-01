@@ -184,11 +184,9 @@ AudioManager::~AudioManager()
 	AudioEventInfoHashIt it;
 	for (it = m_allAudioEventInfo.begin(); it != m_allAudioEventInfo.end(); ++it) {
 		AudioEventInfo *eventInfo = (*it).second;
-		if (eventInfo) {
-			deleteInstance(eventInfo);
-			eventInfo = NULL;
-		}
+		deleteInstance(eventInfo);
 	}
+	m_allAudioEventInfo.clear();
 
 	delete m_silentAudioEvent;
 	m_silentAudioEvent = NULL;
@@ -205,30 +203,29 @@ AudioManager::~AudioManager()
 	delete m_audioSettings;
 	m_audioSettings = NULL;
 
-	if (m_savedValues)
-		delete [] m_savedValues;
+	delete [] m_savedValues;
 }
 
 //-------------------------------------------------------------------------------------------------
 void AudioManager::init()
 {
 	INI ini;
-	ini.load( AsciiString( "Data\\INI\\AudioSettings.ini" ), INI_LOAD_OVERWRITE, NULL);
+	ini.loadFileDirectory( AsciiString( "Data\\INI\\AudioSettings" ), INI_LOAD_OVERWRITE, NULL);
 
-	ini.load( AsciiString( "Data\\INI\\Default\\Music.ini" ), INI_LOAD_OVERWRITE, NULL );
-	ini.load( AsciiString( "Data\\INI\\Music.ini" ), INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( AsciiString( "Data\\INI\\Default\\Music" ), INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( AsciiString( "Data\\INI\\Music" ), INI_LOAD_OVERWRITE, NULL );
 
-	ini.load( AsciiString( "Data\\INI\\Default\\SoundEffects.ini" ), INI_LOAD_OVERWRITE, NULL );
-	ini.load( AsciiString( "Data\\INI\\SoundEffects.ini" ), INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( AsciiString( "Data\\INI\\Default\\SoundEffects" ), INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( AsciiString( "Data\\INI\\SoundEffects" ), INI_LOAD_OVERWRITE, NULL );
 
-	ini.load( AsciiString( "Data\\INI\\Default\\Speech.ini" ), INI_LOAD_OVERWRITE, NULL );
-	ini.load( AsciiString( "Data\\INI\\Speech.ini" ), INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( AsciiString( "Data\\INI\\Default\\Speech" ), INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( AsciiString( "Data\\INI\\Speech" ), INI_LOAD_OVERWRITE, NULL );
 
-	ini.load( AsciiString( "Data\\INI\\Default\\Voice.ini" ), INI_LOAD_OVERWRITE, NULL );
-	ini.load( AsciiString( "Data\\INI\\Voice.ini" ), INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( AsciiString( "Data\\INI\\Default\\Voice" ), INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( AsciiString( "Data\\INI\\Voice" ), INI_LOAD_OVERWRITE, NULL );
 
-	// do the miscellaneous sound files last so that we find the audioeventrts associated with the events.
-	ini.load( AsciiString( "Data\\INI\\MiscAudio.ini" ), INI_LOAD_OVERWRITE, NULL);
+	// do the miscellaneous sound files last so that we find the AudioEventRTS associated with the events.
+	ini.loadFileDirectory( AsciiString( "Data\\INI\\MiscAudio" ), INI_LOAD_OVERWRITE, NULL);
 
 	// determine if one of the music tracks exists. Since their now BIGd, one implies all.
 	// If they don't exist, then attempt to load them from the CD.
@@ -807,9 +804,7 @@ AudioRequest *AudioManager::allocateAudioRequest( Bool useAudioEvent )
 //-------------------------------------------------------------------------------------------------
 void AudioManager::releaseAudioRequest( AudioRequest *requestToRelease )
 {
-	if (requestToRelease) {
-		deleteInstance(requestToRelease);
-	}
+	deleteInstance(requestToRelease);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1089,11 +1084,8 @@ AudioHandle AudioManager::allocateNewHandle( void )
 //-------------------------------------------------------------------------------------------------
 void AudioManager::releaseAudioEventRTS( AudioEventRTS *&eventToRelease )
 {
-	if( eventToRelease )
-	{
-		delete eventToRelease;
-		eventToRelease = NULL;
-	}
+	delete eventToRelease;
+	eventToRelease = NULL;
 }
 
 //-------------------------------------------------------------------------------------------------

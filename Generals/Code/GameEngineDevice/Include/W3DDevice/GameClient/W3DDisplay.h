@@ -162,7 +162,6 @@ protected:
 	void calculateTerrainLOD(void);						///< Calculate terrain LOD.
 	void renderLetterBox(UnsignedInt time);							///< draw letter box border
 	void updateAverageFPS(void);	///< figure out the average fps over the last 30 frames.
-	static Bool isTimeFrozen();
 
 	Byte m_initialized;												///< TRUE when system is initialized
 	LightClass *m_myLight[LightEnvironmentClass::MAX_LIGHTS];										///< light hack for now
@@ -202,6 +201,6 @@ protected:
 
 	W3DDebugDisplay *m_nativeDebugDisplay;		///< W3D specific debug display interface
 
-};  // end W3DDisplay
+};
 
 #endif  // end __W3DDISPLAY_H_

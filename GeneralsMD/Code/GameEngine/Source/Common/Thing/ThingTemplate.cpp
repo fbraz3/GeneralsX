@@ -245,7 +245,7 @@ const FieldParse ThingTemplate::s_objectFieldParseTable[] =
 	{ "CrusherLevel",					INI::parseUnsignedByte,			NULL, offsetof( ThingTemplate, m_crusherLevel ) },
 	{ "CrushableLevel",				INI::parseUnsignedByte,			NULL, offsetof( ThingTemplate, m_crushableLevel ) },
 
-	{ 0, 0, 0, 0 }  // keep this last
+	{ 0, 0, 0, 0 }
 
 };
 // NOTE NOTE NOTE -- s_objectFieldParseTable and s_objectReskinFieldParseTable must be updated in tandem -- see comment above
@@ -267,7 +267,7 @@ const FieldParse ThingTemplate::s_objectReskinFieldParseTable[] =
   { "MaxSimultaneousOfType",	ThingTemplate::parseMaxSimultaneous,		NULL, offsetof(ThingTemplate, m_maxSimultaneousOfType ) },
   { "MaxSimultaneousLinkKey",	NameKeyGenerator::parseStringAsNameKeyType,		NULL, offsetof(ThingTemplate, m_maxSimultaneousLinkKey ) },
 
-	{ 0, 0, 0, 0 }  // keep this last
+	{ 0, 0, 0, 0 }
 
 };
 // NOTE NOTE NOTE -- s_objectFieldParseTable and s_objectReskinFieldParseTable must be updated in tandem -- see comment above
@@ -286,7 +286,7 @@ const ModuleInfo::Nugget *ModuleInfo::getNuggetWithTag( const AsciiString& tag )
 	// no match
 	return NULL;
 
-}  // end isTagPresent
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Add this module info to the thing template */
@@ -324,7 +324,7 @@ void ModuleInfo::addModuleInfo(ThingTemplate *thingTemplate,
 
 		// srj sez: prevent people from ignoring this.
 		throw INI_INVALID_DATA;
-	}  // end if
+	}
 
 	nugget = thingTemplate->getDrawModuleInfo().getNuggetWithTag( moduleTag );
 	if( nugget != NULL )
@@ -342,7 +342,7 @@ void ModuleInfo::addModuleInfo(ThingTemplate *thingTemplate,
 
 		// srj sez: prevent people from ignoring this.
 		throw INI_INVALID_DATA;
-	}  // end if
+	}
 
 	nugget = thingTemplate->getClientUpdateModuleInfo().getNuggetWithTag( moduleTag );
 	if( nugget != NULL )
@@ -359,7 +359,7 @@ void ModuleInfo::addModuleInfo(ThingTemplate *thingTemplate,
 												nugget->first.str()) );
 		// srj sez: prevent people from ignoring this.
 		throw INI_INVALID_DATA;
-	}  // end if
+	}
 
 #endif
 

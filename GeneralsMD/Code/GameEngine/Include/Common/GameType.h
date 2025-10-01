@@ -67,17 +67,18 @@ class INI;
 //-------------------------------------------------------------------------------------------------
 enum TimeOfDay CPP_11(: Int)
 {
-	TIME_OF_DAY_INVALID = 0,
-	TIME_OF_DAY_FIRST = 1,
-	TIME_OF_DAY_MORNING = TIME_OF_DAY_FIRST,
+	TIME_OF_DAY_INVALID,
+
+	TIME_OF_DAY_MORNING,
 	TIME_OF_DAY_AFTERNOON,
 	TIME_OF_DAY_EVENING,
 	TIME_OF_DAY_NIGHT,
 
-	TIME_OF_DAY_COUNT					// keep this last
+	TIME_OF_DAY_COUNT,
+	TIME_OF_DAY_FIRST = TIME_OF_DAY_MORNING,
 };
 
-extern const char *TimeOfDayNames[];
+extern const char *const TimeOfDayNames[];
 // defined in Common/GameType.cpp
 
 //-------------------------------------------------------------------------------------------------
@@ -86,10 +87,10 @@ enum Weather CPP_11(: Int)
 	WEATHER_NORMAL = 0,
 	WEATHER_SNOWY = 1,
 
-	WEATHER_COUNT					// keep this last
+	WEATHER_COUNT
 };
 
-extern const char *WeatherNames[];
+extern const char *const WeatherNames[];
 
 enum Scorches CPP_11(: Int)
 {
@@ -176,7 +177,7 @@ enum WeaponSlotType CPP_11(: Int)
 	SECONDARY_WEAPON,
 	TERTIARY_WEAPON,
 
-	WEAPONSLOT_COUNT	// keep last
+	WEAPONSLOT_COUNT
 };
 
 //-------------------------------------------------------------------------------------------------

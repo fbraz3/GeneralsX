@@ -109,14 +109,14 @@ void LANAPI::OnAccept( UnsignedInt playerIP, Bool status )
 				else
 					m_currentGame->getLANSlot(i)->unAccept();
 				break;
-			}// if
-		}// for
+			}
+		}
 		if (i != MAX_SLOTS )
 		{
 			RequestGameOptions( GenerateGameOptionsString(), false );
 			lanUpdateSlotList();
 		}
-	}//if
+	}
 	else
 	{
 		//i'm not the host but if the accept came from the host...
@@ -127,7 +127,7 @@ void LANAPI::OnAccept( UnsignedInt playerIP, Bool status )
 			OnChat(UnicodeString(L"SYSTEM"), m_localIP, text, LANCHAT_SYSTEM);
 		}
 	}
-}// void LANAPI::OnAccept( UnicodeString player, Bool status )
+}
 
 void LANAPI::OnHasMap( UnsignedInt playerIP, Bool status )
 {
@@ -140,8 +140,8 @@ void LANAPI::OnHasMap( UnsignedInt playerIP, Bool status )
 			{
 				m_currentGame->getLANSlot(i)->setMapAvailability( status );
 				break;
-			}// if
-		}// for
+			}
+		}
 		if (i != MAX_SLOTS )
 		{
 			UnicodeString mapDisplayName;
@@ -169,8 +169,8 @@ void LANAPI::OnHasMap( UnsignedInt playerIP, Bool status )
 			}
 			lanUpdateSlotList();
 		}
-	}//if
-}// void LANAPI::OnHasMap( UnicodeString player, Bool status )
+	}
+}
 
 void LANAPI::OnGameStartTimer( Int seconds )
 {
@@ -210,10 +210,8 @@ void LANAPI::OnGameStart( void )
 		// Set up the game network
 		DEBUG_ASSERTCRASH(TheNetwork == NULL, ("For some reason TheNetwork isn't NULL at the start of this game.  Better look into that."));
 
-		if (TheNetwork != NULL) {
-			delete TheNetwork;
-			TheNetwork = NULL;
-		}
+		delete TheNetwork;
+		TheNetwork = NULL;
 
 		// Time to initialize TheNetwork for this game.
 		TheNetwork = NetworkInterface::createNetwork();
@@ -237,10 +235,10 @@ void LANAPI::OnGameStart( void )
 			removeGame(m_currentGame);
 			m_currentGame = NULL;
 			m_inLobby = TRUE;
-			if (TheNetwork != NULL) {
-				delete TheNetwork;
-				TheNetwork = NULL;
-			}
+
+			delete TheNetwork;
+			TheNetwork = NULL;
+
 			OnChat(UnicodeString::TheEmptyString, 0, TheGameText->fetch("GUI:CouldNotTransferMap"), LANCHAT_SYSTEM);
 			return;
 		}
@@ -591,7 +589,7 @@ void LANAPI::OnGameList( LANGameInfo *gameList )
 	{
 		LANDisplayGameList(listboxGames, gameList);
 	}
-}//void LANAPI::OnGameList( LANGameInfo *gameList )
+}
 
 void LANAPI::OnGameCreate( ReturnType ret )
 {
@@ -622,7 +620,7 @@ void LANAPI::OnGameCreate( ReturnType ret )
 		}
 	}
 
-}//void OnGameCreate( ReturnType ret )
+}
 
 void LANAPI::OnPlayerList( LANPlayer *playerList )
 {

@@ -57,7 +57,7 @@ void INI::parseWaterSettingDefinition( INI* ini )
 	name.set( token );
 
 	// get the water setting we want to load based on name
-	const char **timeOfDayName = TimeOfDayNames;
+	const char *const *timeOfDayName = TimeOfDayNames;
 	Int timeOfDayIndex = 0;  // TIME_OF_DAY_INVALID
 	while( timeOfDayName && *timeOfDayName )
 	{
@@ -68,13 +68,13 @@ void INI::parseWaterSettingDefinition( INI* ini )
 			waterSetting = &WaterSettings[ timeOfDayIndex ];
 			break;
 
-		}  // end if
+		}
 
 		// next name
 		timeOfDayName++;
 		timeOfDayIndex++;
 
-	}  // end while
+	}
 
 	// check for no time of day match
 	if( waterSetting == NULL )
@@ -83,7 +83,7 @@ void INI::parseWaterSettingDefinition( INI* ini )
 	// parse the data
 	ini->initFromINI( waterSetting, waterSetting->getFieldParse() );
 
-}  // end parseWaterSetting
+}
 
 //-------------------------------------------------------------------------------------------------
 void INI::parseWaterTransparencyDefinition( INI *ini )

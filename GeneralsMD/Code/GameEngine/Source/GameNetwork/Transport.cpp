@@ -106,8 +106,7 @@ Bool Transport::init( UnsignedInt ip, UnsignedShort port )
 	}
 
 	// ------- Bind our port --------
-	if (m_udpsock)
-		delete m_udpsock;
+	delete m_udpsock;
 	m_udpsock = NEW UDP();
 
 	if (!m_udpsock)
@@ -164,11 +163,8 @@ Bool Transport::init( UnsignedInt ip, UnsignedShort port )
 
 void Transport::reset( void )
 {
-	if (m_udpsock)
-	{
-		delete m_udpsock;
-		m_udpsock = NULL;
-	}
+	delete m_udpsock;
+	m_udpsock = NULL;
 
 	if (m_winsockInit)
 	{
@@ -247,7 +243,7 @@ Bool Transport::doSend() {
 				//DEBUG_LOG(("Transport::doSend returning FALSE"));
 			}
 		}
-	} // for (i=0; i<MAX_MESSAGES; ++i)
+	}
 
 #if defined(RTS_DEBUG)
 	// Latency simulation - deliver anything we're holding on to that is ready

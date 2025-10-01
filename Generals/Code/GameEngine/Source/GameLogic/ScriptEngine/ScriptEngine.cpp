@@ -153,7 +153,7 @@ AttackPriorityInfo::AttackPriorityInfo() :m_defaultPriority(ATTACK_PRIORITY_DEFA
 //-------------------------------------------------------------------------------------------------
 AttackPriorityInfo::~AttackPriorityInfo()
 {
-	if (m_priorityMap) delete m_priorityMap;
+	delete m_priorityMap;
 	m_priorityMap = NULL;
 }
 
@@ -216,16 +216,10 @@ void AttackPriorityInfo::reset( void )
 	// go back to default priority
 	m_defaultPriority = ATTACK_PRIORITY_DEFAULT;
 
-	// delete the priority map if present
-	if( m_priorityMap )
-	{
+	delete m_priorityMap;
+	m_priorityMap = NULL;
 
-		delete m_priorityMap;
-		m_priorityMap = NULL;
-
-	}  // end if
-
-}  // end reset
+}
 
 // ------------------------------------------------------------------------------------------------
 /** CRC */
@@ -233,7 +227,7 @@ void AttackPriorityInfo::reset( void )
 void AttackPriorityInfo::crc( Xfer *xfer )
 {
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -270,7 +264,7 @@ void AttackPriorityInfo::xfer( Xfer *xfer )
 		for( it = m_priorityMap->begin(); it != m_priorityMap->end(); ++it )
 			++priorityMapCount;
 
-	}  // end if
+	}
 	xfer->xferUnsignedShort( &priorityMapCount );
 
 	// priority map
@@ -303,16 +297,16 @@ void AttackPriorityInfo::xfer( Xfer *xfer )
 				priority = (*it).second;
 				xfer->xferInt( &priority );
 
-			}  // end for i
+			}
 
 			// sanity
 			DEBUG_ASSERTCRASH( count == priorityMapCount,
 												("AttackPriorityInfo::xfer - Mismatch in priority map size.  Size() method returned '%d' but actual iteration count was '%d'",
 												 priorityMapCount, count) );
 
-		}  // end if
+		}
 
-	}  // end if, save
+	}
 	else
 	{
 
@@ -330,7 +324,7 @@ void AttackPriorityInfo::xfer( Xfer *xfer )
 											thingTemplateName.str() ));
 				throw SC_INVALID_DATA;
 
-			}  // end if
+			}
 
 			// read priority
 			xfer->xferInt( &priority );
@@ -338,11 +332,11 @@ void AttackPriorityInfo::xfer( Xfer *xfer )
 			// set priority (this will allocate the map on the first call as well)
 			setPriority( thingTemplate, priority );
 
-		}  // end for
+		}
 
-	}  // end else, load
+	}
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
@@ -350,7 +344,7 @@ void AttackPriorityInfo::xfer( Xfer *xfer )
 void AttackPriorityInfo::loadPostProcess( void )
 {
 
-}  // end loadPostProcess
+}
 
 // ScriptEngine class
 
@@ -391,7 +385,7 @@ m_ChooseVictimAlwaysUsesNormal(false)
 	// By default, difficulty should be normal.
 	setGlobalDifficulty(DIFFICULTY_NORMAL);
 
-}  // end ScriptEngine
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -422,7 +416,7 @@ ScriptEngine::~ScriptEngine()
 #endif
 
 	reset(); // just in case.
-}  // end ~ScriptEngine
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Init */
@@ -4528,7 +4522,7 @@ void ScriptEngine::init( void )
 
 	reset();
 
-}  // end init
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Reset */
@@ -4694,7 +4688,7 @@ void ScriptEngine::reset( void )
 	// clear topple directions
 	m_toppleDirections.clear();
 
-}  // end reset
+}
 
 //-------------------------------------------------------------------------------------------------
 /** newMap */
@@ -4763,7 +4757,7 @@ void ScriptEngine::newMap( void )
 	m_fadeFramesDecrease = FRAMES_TO_FADE_IN_AT_START;
 	m_curFadeValue = 0.0f;
 
-}  // end newMap
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Update */
@@ -4807,8 +4801,7 @@ void ScriptEngine::update( void )
 	if (m_endGameTimer>0) {
 		m_endGameTimer--;
 		if (m_endGameTimer < 1) {
-			// clear out all the game data
-			/*GameMessage *msg =*/ TheMessageStream->appendMessage( GameMessage::MSG_CLEAR_GAME_DATA );
+			TheGameLogic->exitGame();
 			//TheScriptActions->closeWindows(FALSE); // Close victory or defeat windows.
 		}
 	}
@@ -4907,7 +4900,7 @@ void ScriptEngine::update( void )
 	_updateVTune();
 #endif
 
-}  // end update
+}
 
 //-------------------------------------------------------------------------------------------------
 /** getStats */
@@ -4965,7 +4958,7 @@ AsciiString ScriptEngine::getStats(Real *curTimePtr, Real *script1Time, Real *sc
 #endif
 #endif
 	return msg;
-}  // end getStats
+}
 
 //-------------------------------------------------------------------------------------------------
 /** startQuickEndGameTimer */
@@ -4973,7 +4966,7 @@ AsciiString ScriptEngine::getStats(Real *curTimePtr, Real *script1Time, Real *sc
 void ScriptEngine::startQuickEndGameTimer( void )
 {
 	m_endGameTimer = 1;
-}  // end startQuickEndGameTimer
+}
 
 //-------------------------------------------------------------------------------------------------
 /** startEndGameTimer */
@@ -4981,7 +4974,7 @@ void ScriptEngine::startQuickEndGameTimer( void )
 void ScriptEngine::startEndGameTimer( void )
 {
 	m_endGameTimer = FRAMES_TO_SHOW_WIN_LOSE_MESSAGE;
-}  // end startEndGameTimer
+}
 
 //-------------------------------------------------------------------------------------------------
 /** startCloseWindowTimer */
@@ -4989,7 +4982,7 @@ void ScriptEngine::startEndGameTimer( void )
 void ScriptEngine::startCloseWindowTimer( void )
 {
 	m_closeWindowTimer = FRAMES_TO_SHOW_WIN_LOSE_MESSAGE;
-}  // end startCloseWindowTimer
+}
 
 //-------------------------------------------------------------------------------------------------
 /** updateFades */
@@ -5019,7 +5012,7 @@ void ScriptEngine::updateFades( void )
 	}
 	// time is up.
 	m_fade = FADE_NONE;
-}  // end updateFades
+}
 
 //-------------------------------------------------------------------------------------------------
 /** getCurrentPlayer */
@@ -5029,7 +5022,7 @@ Player *ScriptEngine::getCurrentPlayer(void)
 	if (m_currentPlayer==NULL)
 		AppendDebugMessage("***Unexpected NULL player:***", false);
 	return m_currentPlayer;
-}  // end getCurrentPlayer
+}
 
 //-------------------------------------------------------------------------------------------------
 /** clearFlag */
@@ -5048,7 +5041,7 @@ void ScriptEngine::clearFlag(const AsciiString &name)
 			}
 		}
 	}
-}  // end clearFlag
+}
 
 //-------------------------------------------------------------------------------------------------
 /** clearTeamFlags */
@@ -5064,7 +5057,7 @@ void ScriptEngine::clearTeamFlags(void)
 	clearFlag("GLA Team is Building");
 	clearFlag("GLA Inf Team is Building");
 
-}  // end clearTeamFlags
+}
 
 //-------------------------------------------------------------------------------------------------
 /** getSkirmishEnemyPlayer */
@@ -5274,7 +5267,7 @@ Team * ScriptEngine::getTeamNamed(const AsciiString& teamName)
 		}
 	}
 	return theTeamProto->getFirstItemIn_TeamInstanceList();
-}  // end getTeamNamed
+}
 
 //-------------------------------------------------------------------------------------------------
 /** getUnitNamed */
@@ -5362,7 +5355,7 @@ void ScriptEngine::runScript(const AsciiString& scriptName, Team *pThisTeam)
 	// m_callingTeam is restored automatically via LatchRestore
 	m_conditionTeam = m_conditionTeam;
 	m_currentPlayer = savPlayer;
-}  // end runScript
+}
 
 
 //-------------------------------------------------------------------------------------------------
@@ -5407,7 +5400,7 @@ void ScriptEngine::runObjectScript(const AsciiString& scriptName, Object *pThisO
 		}
 	}
 	m_callingObject = pSavCallingObject;
-}  // end runScript
+}
 
 
 //-------------------------------------------------------------------------------------------------
@@ -6968,7 +6961,7 @@ void ScriptEngine::executeScripts( Script *pScriptHead )
 		}
 		executeScript(pCurScript);
 	}
-}  // end update
+}
 
 
 //-------------------------------------------------------------------------------------------------
@@ -6981,7 +6974,7 @@ const ActionTemplate * ScriptEngine::getActionTemplate( Int ndx )
 	DEBUG_ASSERTCRASH (!m_actionTemplates[ndx].getName().isEmpty(), ("Need to initialize action enum=%d.", ndx));
 
 	return &m_actionTemplates[ndx];
-}  // end getActionTemplate
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Gets the ui and parameter template for a script condition */
@@ -6992,7 +6985,7 @@ const ConditionTemplate * ScriptEngine::getConditionTemplate( Int ndx )
 	if (ndx <0 || ndx >= Condition::NUM_ITEMS) ndx = 0;
 	DEBUG_ASSERTCRASH (!m_conditionTemplates[ndx].getName().isEmpty(), ("Need to initialize Condition enum=%d.", ndx));
 	return &m_conditionTemplates[ndx];
-}  // end getConditionTemplate
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Fills the named object cache initally. */
@@ -7431,7 +7424,7 @@ SequentialScript::SequentialScript() : m_teamToExecOn(NULL),
 void SequentialScript::crc( Xfer *xfer )
 {
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method
@@ -7463,9 +7456,9 @@ void SequentialScript::xfer( Xfer *xfer )
 										teamID ));
 			throw SC_INVALID_DATA;
 
-		}  // end if
+		}
 
-	}  // end if
+	}
 
 	// object id
 	xfer->xferObjectID( &m_objectID );
@@ -7479,7 +7472,7 @@ void SequentialScript::xfer( Xfer *xfer )
 		scriptName = m_scriptToExecuteSequentially->getName();
 		xfer->xferAsciiString( &scriptName );
 
-	}  // end if, save
+	}
 	else
 	{
 
@@ -7496,7 +7489,7 @@ void SequentialScript::xfer( Xfer *xfer )
 		DEBUG_ASSERTCRASH( m_scriptToExecuteSequentially != NULL,
 											 ("SequentialScript::xfer - m_scriptToExecuteSequentially is NULL but should not be") );
 
-	}  // end else, load
+	}
 
 	// current instruction
 	xfer->xferInt( &m_currentInstruction );
@@ -7510,7 +7503,7 @@ void SequentialScript::xfer( Xfer *xfer )
 	// dont advance instruction
 	xfer->xferBool( &m_dontAdvanceInstruction );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
@@ -7518,7 +7511,7 @@ void SequentialScript::xfer( Xfer *xfer )
 void SequentialScript::loadPostProcess( void )
 {
 
-}  // end loadPostProcess
+}
 
 #ifdef NOT_IN_USE
 //----SequentialScriptStatus Stuff ----------------------------------------------------------------
@@ -7528,7 +7521,7 @@ void SequentialScript::loadPostProcess( void )
 void SequentialScriptStatus::crc( Xfer *xfer )
 {
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method
@@ -7552,7 +7545,7 @@ void SequentialScriptStatus::xfer( Xfer *xfer )
 	// is executing sequentially
 	xfer->xferBool( &m_isExecutingSequentially );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 // Load post process */
@@ -7560,7 +7553,7 @@ void SequentialScriptStatus::xfer( Xfer *xfer )
 void SequentialScriptStatus::loadPostProcess( void )
 {
 
-}  // end loadPostProcess
+}
 #endif
 
 //----Particle Editor Stuff------------------------------------------------------------------------
@@ -7815,7 +7808,7 @@ void ScriptEngine::AdjustDebugVariableData(const AsciiString& variableName, Int 
 void ScriptEngine::crc( Xfer *xfer )
 {
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Version Info:
@@ -7849,9 +7842,9 @@ static void xferListAsciiString( Xfer *xfer, ListAsciiString *list )
 			string = *it;
 			xfer->xferAsciiString( &string );
 
-		}  // end for, it
+		}
 
-	}  // end if, save
+	}
 	else
 	{
 
@@ -7862,7 +7855,7 @@ static void xferListAsciiString( Xfer *xfer, ListAsciiString *list )
 			DEBUG_CRASH(( "xferListAsciiString - list should be empty upon loading but is not" ));
 			throw SC_INVALID_DATA;
 
-		}  // end if
+		}
 
 		// read each string
 		for( UnsignedShort i = 0; i < count; ++i )
@@ -7874,11 +7867,11 @@ static void xferListAsciiString( Xfer *xfer, ListAsciiString *list )
 			// put on list
 			list->push_back( string );
 
-		}  // end for, i
+		}
 
-	}  // end else, load
+	}
 
-}  // end xferListAsciiString
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Version Info:
@@ -7918,9 +7911,9 @@ static void xferListAsciiStringUINT( Xfer *xfer, ListAsciiStringUINT *list )
 			unsignedIntData = it->second;
 			xfer->xferUnsignedInt( &unsignedIntData );
 
-		}  // end for, it
+		}
 
-	}  // end if, save
+	}
 	else
 	{
 		PairAsciiStringUINT newPair;
@@ -7932,7 +7925,7 @@ static void xferListAsciiStringUINT( Xfer *xfer, ListAsciiStringUINT *list )
 			DEBUG_CRASH(( "xferListAsciiStringUINT - list should be empty upon loading but is not" ));
 			throw SC_INVALID_DATA;
 
-		}  // end if
+		}
 
 		// read each string
 		for( UnsignedShort i = 0; i < count; ++i )
@@ -7949,11 +7942,11 @@ static void xferListAsciiStringUINT( Xfer *xfer, ListAsciiStringUINT *list )
 			newPair.second = unsignedIntData;
 			list->push_back( newPair );
 
-		}  // end for, i
+		}
 
-	}  // end else, load
+	}
 
-}  // end xferListAsciiStringUINT
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Version Info:
@@ -7993,9 +7986,9 @@ static void xferListAsciiStringObjectID( Xfer *xfer, ListAsciiStringObjectID *li
 			objectID = it->second;
 			xfer->xferObjectID( &objectID );
 
-		}  // end for, it
+		}
 
-	}  // end if, save
+	}
 	else
 	{
 		AsciiStringObjectIDPair newPair;
@@ -8007,7 +8000,7 @@ static void xferListAsciiStringObjectID( Xfer *xfer, ListAsciiStringObjectID *li
 			DEBUG_CRASH(( "xferListAsciiStringObjectID - list should be empty upon loading but is not" ));
 			throw SC_INVALID_DATA;
 
-		}  // end if
+		}
 
 		// read each string
 		for( UnsignedShort i = 0; i < count; ++i )
@@ -8024,11 +8017,11 @@ static void xferListAsciiStringObjectID( Xfer *xfer, ListAsciiStringObjectID *li
 			newPair.second = objectID;
 			list->push_back( newPair );
 
-		}  // end for, i
+		}
 
-	}  // end else, load
+	}
 
-}  // end xferListAsciiStringObjectID
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Version Info:
@@ -8068,9 +8061,9 @@ static void xferListAsciiStringCoord3D( Xfer *xfer, ListAsciiStringCoord3D *list
 			coord = it->second;
 			xfer->xferCoord3D( &coord );
 
-		}  // end for, it
+		}
 
-	}  // end if, save
+	}
 	else
 	{
 		AsciiStringCoord3DPair newPair;
@@ -8082,7 +8075,7 @@ static void xferListAsciiStringCoord3D( Xfer *xfer, ListAsciiStringCoord3D *list
 			DEBUG_CRASH(( "xferListAsciiStringCoord3D - list should be empty upon loading but is not" ));
 			throw SC_INVALID_DATA;
 
-		}  // end if
+		}
 
 		// read each string
 		for( UnsignedShort i = 0; i < count; ++i )
@@ -8099,11 +8092,11 @@ static void xferListAsciiStringCoord3D( Xfer *xfer, ListAsciiStringCoord3D *list
 			newPair.second = coord;
 			list->push_back( newPair );
 
-		}  // end for, i
+		}
 
-	}  // end else, load
+	}
 
-}  // ene xferListAsciiStringCoord3D
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -8150,9 +8143,9 @@ void ScriptEngine::xfer( Xfer *xfer )
 			// xfer data
 			xfer->xferSnapshot( sequentialScript );
 
-		}  // end for, it
+		}
 
-	}  // end if, save
+	}
 	else
 	{
 
@@ -8163,7 +8156,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 			DEBUG_CRASH(( "ScriptEngine::xfer - m_sequentialScripts should be empty but is not" ));
 			throw SC_INVALID_DATA;
 
-		}  // end if
+		}
 
 		// read each entry
 		for( UnsignedShort i = 0; i < sequentialScriptCount; ++i )
@@ -8178,9 +8171,9 @@ void ScriptEngine::xfer( Xfer *xfer )
 			// xfer data
 			xfer->xferSnapshot( sequentialScript );
 
-		}  // end for i
+		}
 
-	}  // end else, load
+	}
 
 	// counters
 	UnsignedShort countersSize = m_numCounters;
@@ -8191,7 +8184,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 		DEBUG_CRASH(( "ScriptEngine::xfer - MAX_COUNTERS has changed size, need to version this" ));
 		throw SC_INVALID_DATA;
 
-	}  // end if
+	}
 	for( i = 0; i < countersSize; ++i )
 	{
 
@@ -8204,7 +8197,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 		// countdown timer
 		xfer->xferBool( &m_counters[ i ].isCountdownTimer );
 
-	}  // end for, i
+	}
 
 	// num counters
 	xfer->xferInt( &m_numCounters );
@@ -8218,7 +8211,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 		DEBUG_CRASH(( "ScriptEngine::xfer - MAX_FLAGS has changed size, need to version this" ));
 		throw SC_INVALID_DATA;
 
-	}  // end if
+	}
 	for( i = 0; i < flagsSize; ++i )
 	{
 
@@ -8228,7 +8221,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 		// name
 		xfer->xferAsciiString( &m_flags[ i ].name );
 
-	}  // end for i
+	}
 
 	// num flags
 	xfer->xferInt( &m_numFlags );
@@ -8242,14 +8235,14 @@ void ScriptEngine::xfer( Xfer *xfer )
 		DEBUG_CRASH(( "ScriptEngine::xfer - MAX_ATTACK_PRIORITIES size has changed, need to version this" ));
 		throw SC_INVALID_DATA;
 
-	}  // end if
+	}
 	for( i = 0; i < attackPriorityInfoSize; ++i )
 	{
 
 		// xfer each data
 		xfer->xferSnapshot( &m_attackPriorityInfo[ i ] );
 
-	}  // end for i
+	}
 
 	// num attack info
 	xfer->xferInt( &m_numAttackInfo );
@@ -8281,9 +8274,9 @@ void ScriptEngine::xfer( Xfer *xfer )
 			objectID = obj ? obj->getID() : INVALID_ID;
 			xfer->xferObjectID( &objectID );
 
-		}  // end for i
+		}
 
-	}  // end if, save
+	}
 	else
 	{
 		NamedRequest req;
@@ -8310,16 +8303,16 @@ void ScriptEngine::xfer( Xfer *xfer )
 				DEBUG_CRASH(( "ScriptEngine::xfer - Unable to find object by ID for m_namedObjects" ));
 				throw SC_INVALID_DATA;
 
-			}  // end if
+			}
 
 			// assign
 			req.first = namedObjectName;
 			req.second = obj;
 			m_namedObjects.push_back( req );
 
-		}  // end for, i
+		}
 
-	}  // end else, load
+	}
 
 	// first update
 	xfer->xferBool( &m_firstUpdate );
@@ -8369,7 +8362,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 		DEBUG_CRASH(( "ScriptEngine::xfer - MAX_PLAYER_COUNT has changed, m_triggeredSpecialPowers size is now different and we must version this" ));
 		throw SC_INVALID_DATA;
 
-	}  // end if
+	}
 	for( i = 0; i < triggeredSpecialPowersSize; ++i )
 		xferListAsciiStringObjectID( xfer, &m_triggeredSpecialPowers[ i ] );
 
@@ -8382,7 +8375,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 		DEBUG_CRASH(( "ScriptEngine::xfer - MAX_PLAYER_COUNT has changed, m_midwaySpecialPowers size is now different and we must version this" ));
 		throw SC_INVALID_DATA;
 
-	}  // end if
+	}
 	for( i = 0; i < midwaySpecialPowersSize; ++i )
 		xferListAsciiStringObjectID( xfer, &m_midwaySpecialPowers[ i ] );
 
@@ -8395,7 +8388,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 		DEBUG_CRASH(( "ScriptEngine::xfer - MAX_PLAYER_COUNT has changed, m_finishedSpecialPowers size is now different and we must version this" ));
 		throw SC_INVALID_DATA;
 
-	}  // end if
+	}
 	for( i = 0; i < finishedSpecialPowersSize; ++i )
 		xferListAsciiStringObjectID( xfer, &m_finishedSpecialPowers[ i ] );
 
@@ -8408,7 +8401,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 		DEBUG_CRASH(( "ScriptEngine::xfer - MAX_PLAYER_COUNT has changed, m_completedUpgrades size is now different and we must version this" ));
 		throw SC_INVALID_DATA;
 
-	}  // end if
+	}
 	for( i = 0; i < completedUpgradesSize; ++i )
 		xferListAsciiStringObjectID( xfer, &m_completedUpgrades[ i ] );
 
@@ -8421,7 +8414,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 		DEBUG_CRASH(( "ScriptEngine::xfer - MAX_PLAYER_COUNT has changed, m_acquiredSciences size is now different and we must version this" ));
 		throw SC_INVALID_DATA;
 
-	}  // end if
+	}
 	for( i = 0; i < acquiredSciencesSize; ++i )
 		xfer->xferScienceVec( &m_acquiredSciences[ i ] );
 
@@ -8473,9 +8466,9 @@ void ScriptEngine::xfer( Xfer *xfer )
 				// player name
 				xfer->xferAsciiString( &it->m_playerName );
 
-			}  // end for, it
+			}
 
-		}  // end if, save
+		}
 		else
 		{
 
@@ -8486,7 +8479,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 				DEBUG_CRASH(( "ScriptEngine::xfer - m_namedReveals should be empty but is not!" ));
 				throw SC_INVALID_DATA;
 
-			}  // end if
+			}
 
 			// read all entries
 			NamedReveal reveal;
@@ -8508,9 +8501,9 @@ void ScriptEngine::xfer( Xfer *xfer )
 				// put on list
 				m_namedReveals.push_back( reveal );
 
-			}  // end for, i
+			}
 
-		}  // end else, load
+		}
 
 		// all object type lists size
 		UnsignedShort allObjectTypesCount = m_allObjectTypeLists.size();
@@ -8532,9 +8525,9 @@ void ScriptEngine::xfer( Xfer *xfer )
 				// save object types
 				xfer->xferSnapshot( objectTypes );
 
-			}  // end for, it
+			}
 
-		}  // end if, save
+		}
 		else
 		{
 
@@ -8545,7 +8538,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 				DEBUG_CRASH(( "ScriptEngine::xfer - m_allObjectTypeLists should be empty but is not!" ));
 				throw SC_INVALID_DATA;
 
-			}  // end if
+			}
 
 			// read all data
 			ObjectTypes *objectTypes;
@@ -8561,11 +8554,11 @@ void ScriptEngine::xfer( Xfer *xfer )
 				// put on list
 				m_allObjectTypeLists.push_back( objectTypes );
 
-			}  // end for, i
+			}
 
-		}  //  end else, load
+		}
 
-	}  // end if, version 2
+	}
 
 	if (version >= 3) {
 		xfer->xferBool(&m_objectsShouldReceiveDifficultyBonus);
@@ -8600,7 +8593,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 			m_curFadeValue = 0.0f;
 		}
 	}
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
@@ -8619,7 +8612,7 @@ void ScriptEngine::loadPostProcess( void )
 		TheAudio->addAudioEvent(&event);
 	}
 
-}  // end loadPostProcess
+}
 
 //#if defined(RTS_DEBUG)
 void ScriptEngine::debugVictory( void )

@@ -18,6 +18,21 @@
 
 #pragma once
 
+#include "stringex.h"
+
+
+// This macro serves as a general way to determine the number of elements within an array.
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(x) int(sizeof(x)/sizeof(x[0]))
+#endif
+
+enum
+{
+	// TheSuperHackers @info The original WWSync was 33 ms, ~30 fps, integer.
+	// Changing this will require tweaking all Drawable code that concerns the ww3d time step, including locomotion physics.
+	WWSyncPerSecond = 30
+};
+
 #if defined(_MSC_VER) && _MSC_VER < 1300
 typedef unsigned MemValueType;
 #else

@@ -69,10 +69,9 @@ m_riverStart(0)
 */
 PolygonTrigger::~PolygonTrigger(void)
 {
-	if (m_points) {
-		delete [] m_points;
-		m_points = NULL;
-	}
+	delete [] m_points;
+	m_points = NULL;
+
 	if (m_nextPolygonTrigger) {
 		PolygonTrigger *cur = m_nextPolygonTrigger;
 		PolygonTrigger *next;
@@ -497,7 +496,7 @@ Bool PolygonTrigger::isValid(void) const
 void PolygonTrigger::crc( Xfer *xfer )
 {
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -526,7 +525,7 @@ void PolygonTrigger::xfer( Xfer *xfer )
 		// xfer point
 		xfer->xferICoord3D( point );
 
-	}  // end for, i
+	}
 
 	// bounds
 	xfer->xferIRegion2D( &m_bounds );
@@ -537,7 +536,7 @@ void PolygonTrigger::xfer( Xfer *xfer )
 	// bounds need update
 	xfer->xferBool( &m_boundsNeedsUpdate );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
@@ -545,4 +544,4 @@ void PolygonTrigger::xfer( Xfer *xfer )
 void PolygonTrigger::loadPostProcess( void )
 {
 
-}  // end loadPostProcess
+}

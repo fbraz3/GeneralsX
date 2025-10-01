@@ -70,7 +70,7 @@ static const FieldParse GameSpyColorFieldParse[] =
 	{ "MOTD",								INI::parseColorInt,	NULL,	OFFSET(GSCOLOR_MOTD) },
 	{ "MOTDHeading",				INI::parseColorInt,	NULL,	OFFSET(GSCOLOR_MOTD_HEADING) },
 
-	{ NULL,					NULL,						NULL,						0 }  // keep this last
+	{ NULL,					NULL,						NULL,						0 }
 
 };
 
@@ -255,7 +255,7 @@ void GameSpyInfo::addChat( PlayerInfo p, UnicodeString msg, Bool isPublic, Bool 
 			if( TheAudio )
 			{
 				TheAudio->addAudioEvent( &privMsgAudio );
-			}  // end if
+			}
 		}
 	}
 

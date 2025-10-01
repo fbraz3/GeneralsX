@@ -51,7 +51,7 @@ typedef enum
 
 } ImageStatus;
 #ifdef DEFINE_IMAGE_STATUS_NAMES
-static const char *imageStatusNames[] =
+static const char *const imageStatusNames[] =
 {
 	"ROTATED_90_CLOCKWISE",
 	"RAW_TEXTURE",
@@ -113,7 +113,7 @@ friend class ImageCollection;
 
 	static const FieldParse m_imageFieldParseTable[];		///< the parse table for INI definition
 
-};  // end Image
+};
 
 //-------------------------------------------------------------------------------------------------
 /** A collection of images */
@@ -144,7 +144,7 @@ protected:
 
 	Image *m_imageList;  ///< the image list
 
-};  // end ImageCollection
+};
 
 // INLINING ///////////////////////////////////////////////////////////////////////////////////////
 inline void Image::setName( AsciiString name ) { m_name = name; }

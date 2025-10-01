@@ -73,8 +73,7 @@ FireWeaponUpdate::FireWeaponUpdate( Thing *thing, const ModuleData* moduleData )
 //-------------------------------------------------------------------------------------------------
 FireWeaponUpdate::~FireWeaponUpdate( void )
 {
-	if (m_weapon)
-		deleteInstance(m_weapon);
+	deleteInstance(m_weapon);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -111,7 +110,7 @@ void FireWeaponUpdate::crc( Xfer *xfer )
 	// extend base class
 	UpdateModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -132,7 +131,7 @@ void FireWeaponUpdate::xfer( Xfer *xfer )
 	// weapon
 	xfer->xferSnapshot( m_weapon );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
@@ -143,4 +142,4 @@ void FireWeaponUpdate::loadPostProcess( void )
 	// extend base class
 	UpdateModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

@@ -36,6 +36,7 @@ static const Int WOL_NAME_LEN = 64;
 /// Max number of commands per frame
 static const Int MAX_COMMANDS = 256;
 
+extern Int MIN_LOGIC_FRAMES;
 extern Int MAX_FRAMES_AHEAD;
 extern Int MIN_RUNAHEAD;
 
@@ -155,8 +156,6 @@ enum NetCommandType CPP_11(: Int) {
 	NETCOMMANDTYPE_DISCONNECTFRAME,
 	NETCOMMANDTYPE_DISCONNECTSCREENOFF,
 	NETCOMMANDTYPE_DISCONNECTEND,
-
-	NETCOMMANDTYPE_MAX
 };
 
 enum NetLocalStatus CPP_11(: Int) {

@@ -59,7 +59,7 @@ LocomotorStore *TheLocomotorStore = NULL;					///< the Locomotor store definitio
 
 const Real BIGNUM = 99999.0f;
 
-static const char *TheLocomotorPriorityNames[] =
+static const char *const TheLocomotorPriorityNames[] =
 {
 	"MOVES_BACK",
 	"MOVES_MIDDLE",
@@ -67,7 +67,7 @@ static const char *TheLocomotorPriorityNames[] =
 
 	NULL
 };
-
+static_assert(ARRAY_SIZE(TheLocomotorPriorityNames) == LOCOMOTOR_PRIORITY_COUNT + 1, "Array size");
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
@@ -500,7 +500,7 @@ const FieldParse* LocomotorTemplate::getFieldParse() const
 		{ "RudderCorrectionRate",			 INI::parseReal, NULL, offsetof(LocomotorTemplate, m_rudderCorrectionRate) },
 		{ "ElevatorCorrectionDegree",	 INI::parseReal, NULL, offsetof(LocomotorTemplate, m_elevatorCorrectionDegree) },
 		{ "ElevatorCorrectionRate",		 INI::parseReal, NULL, offsetof(LocomotorTemplate, m_elevatorCorrectionRate) },
-		{ NULL, NULL, NULL, 0 }  // keep this last
+		{ NULL, NULL, NULL, 0 }
 
 	};
 	return TheFieldParse;
@@ -596,7 +596,7 @@ LocomotorTemplate *LocomotorStore::newOverride( LocomotorTemplate *locoTemplate 
 	// return the newly created override for us to set values with etc
 	return newTemplate;
 
-}  // end newOverride
+}
 
 //-------------------------------------------------------------------------------------------------
 /*static*/ void LocomotorStore::parseLocomotorTemplateDefinition(INI* ini)
@@ -731,7 +731,7 @@ Locomotor::~Locomotor()
 void Locomotor::crc( Xfer *xfer )
 {
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -766,7 +766,7 @@ void Locomotor::xfer( Xfer *xfer )
 	xfer->xferReal(&m_angleOffset);
 	xfer->xferReal(&m_offsetIncrement);
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
@@ -774,7 +774,7 @@ void Locomotor::xfer( Xfer *xfer )
 void Locomotor::loadPostProcess( void )
 {
 
-}  // end loadPostProcess
+}
 
 //-------------------------------------------------------------------------------------------------
 void Locomotor::startMove(void)
@@ -2648,7 +2648,7 @@ LocomotorSet::~LocomotorSet()
 void LocomotorSet::crc( Xfer *xfer )
 {
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -2715,7 +2715,7 @@ void LocomotorSet::xfer( Xfer *xfer )
 void LocomotorSet::loadPostProcess( void )
 {
 
-}  // end loadPostProcess
+}
 
 //-------------------------------------------------------------------------------------------------
 void LocomotorSet::xferSelfAndCurLocoPtr(Xfer *xfer, Locomotor** loco)
@@ -2760,8 +2760,7 @@ void LocomotorSet::clear()
 {
 	for (size_t i = 0; i < m_locomotors.size(); ++i)
 	{
-		if (m_locomotors[i])
-			deleteInstance(m_locomotors[i]);
+		deleteInstance(m_locomotors[i]);
 	}
 	m_locomotors.clear();
 	m_validLocomotorSurfaces = 0;

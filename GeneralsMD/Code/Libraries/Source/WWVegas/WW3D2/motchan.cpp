@@ -135,14 +135,11 @@ MotionChannelClass::~MotionChannelClass(void)
  *=============================================================================================*/
 void MotionChannelClass::Free(void)
 {
-	if (CompressedData) {
-		delete[] CompressedData;
-		CompressedData=NULL;
-	}
-	if (Data) {
-		delete[] Data;
-		Data = NULL;
-	}
+	delete[] CompressedData;
+	CompressedData=NULL;
+
+	delete[] Data;
+	Data = NULL;
 }
 
 
@@ -251,10 +248,8 @@ BitChannelClass::~BitChannelClass(void)
  *=============================================================================================*/
 void BitChannelClass::Free(void)
 {
-	if (Bits != NULL) {
-		delete[] Bits;
-		Bits = NULL;
-	}
+	delete[] Bits;
+	Bits = NULL;
 }
 
 
@@ -364,10 +359,8 @@ TimeCodedMotionChannelClass::~TimeCodedMotionChannelClass(void)
  *=============================================================================================*/
 void TimeCodedMotionChannelClass::Free(void)
 {
-	if (Data) {
-		delete[] Data;
-		Data = NULL;
-	}
+	delete[] Data;
+	Data = NULL;
 }
 
 
@@ -476,7 +469,7 @@ void	TimeCodedMotionChannelClass::Get_Vector(float32 frame,float * setvec)
 
   }
 
-}	// Get_Vector
+}
 
 
 Quaternion TimeCodedMotionChannelClass::Get_QuatVector(float32 frame)
@@ -535,7 +528,7 @@ Quaternion TimeCodedMotionChannelClass::Get_QuatVector(float32 frame)
 
 	return( q );
 
-} // Get_QuatVector
+}
 
 
 
@@ -606,7 +599,7 @@ uint32 TimeCodedMotionChannelClass::binary_search_index(uint32 timecode)
 	assert(0);
 	return(0);
 
-}	// binary_search_index
+}
 
 
 /***********************************************************************************************
@@ -648,7 +641,7 @@ uint32 TimeCodedMotionChannelClass::get_index(uint32 timecode)
 
 	return(CachedIdx);
 
-}	// get_index
+}
 
 /***********************************************************************************************
  * TimeCodedMotionChannelClass::set_identity -- returns an "identity" vector (not really...hmm...)      *
@@ -676,7 +669,7 @@ void TimeCodedMotionChannelClass::set_identity(float * setvec)
 		setvec[0] = 0.0f;
 
 	}
-}	// set_identity
+}
 
 
 /***********************************************************************************************
@@ -732,10 +725,8 @@ TimeCodedBitChannelClass::~TimeCodedBitChannelClass(void)
  *=============================================================================================*/
 void TimeCodedBitChannelClass::Free(void)
 {
-	if (Bits != NULL) {
-		delete[] Bits;
-		Bits = NULL;
-	}
+	delete[] Bits;
+	Bits = NULL;
 }
 
 
@@ -785,7 +776,7 @@ bool TimeCodedBitChannelClass::Load_W3D(ChunkLoadClass & cload)
 	}
 
 	return true;
-}	 // Load_W3D
+}
 
 
 /***********************************************************************************************
@@ -834,7 +825,7 @@ int TimeCodedBitChannelClass::Get_Bit(int frame)
 
 	return (((Bits[idx] & W3D_TIMECODED_BIT_MASK) == W3D_TIMECODED_BIT_MASK));
 
-}	 // Get_Bit
+}
 
 
 // Begin Adaptive Delta
@@ -912,17 +903,12 @@ AdaptiveDeltaMotionChannelClass::~AdaptiveDeltaMotionChannelClass(void)
  *=============================================================================================*/
 void AdaptiveDeltaMotionChannelClass::Free(void)
 {
-	if (Data) {
-		delete[] Data;
-		Data = NULL;
-	}
+	delete[] Data;
+	Data = NULL;
 
-	if (CacheData) {
-		delete CacheData;
-		CacheData = NULL;
-	}
-
-}	// Free
+	delete CacheData;
+	CacheData = NULL;
+}
 
 
 /***********************************************************************************************
@@ -965,7 +951,7 @@ bool AdaptiveDeltaMotionChannelClass::Load_W3D(ChunkLoadClass & cload)
 	}
 	return true;
 
-}	// Load_W3D
+}
 
 
 /***********************************************************************************************
@@ -1039,19 +1025,19 @@ void AdaptiveDeltaMotionChannelClass::decompress(uint32 frame_idx, float *outdat
 				}
 				frame++;
 
-			} // for fi < 16
+			}
 
 			if (done) break;	// we're at the desired frame
 
 			pPacket+= ((PACKET_SIZE * VectorLen) - 1);	// skip to next packet
 
-		} // for frame_idx
+		}
 
       outdata[vi] = last_value;
 
-	} // for vi=0; vi < 4
+	}
 
-} // decompress, from beginning
+}
 
 void AdaptiveDeltaMotionChannelClass::decompress(uint32 src_idx, float *srcdata, uint32 frame_idx, float *outdata)
 {
@@ -1119,20 +1105,20 @@ void AdaptiveDeltaMotionChannelClass::decompress(uint32 src_idx, float *srcdata,
 				}
 				frame++;
 
-			} // for fi < 16
+			}
          fi = 0;
 
 			if (done) break;	// we're at the desired frame
 
 			pPacket+= ((PACKET_SIZE * VectorLen) - 1);	// skip to next packet
 
-		} // for frame_idx
+		}
 
       outdata[vi] = last_value;
 
-	} // for vi=0; vi < 4
+	}
 
-} // decompress, from continuation
+}
 
 
 /***********************************************************************************************
@@ -1209,7 +1195,7 @@ float AdaptiveDeltaMotionChannelClass::getframe(uint32 frame_idx, uint32 vector_
 
    return(CacheData[vector_idx]);
 
-} // getframe
+}
 
 /***********************************************************************************************
  * AdaptiveDeltaMotionChannelClass::Get_Vector -- returns the vector for the specified frame # *
@@ -1236,7 +1222,7 @@ void	AdaptiveDeltaMotionChannelClass::Get_Vector(float32 frame,float * setvec)
    *setvec = WWMath::Lerp(value1,value2,ratio);
 
 
-}	// Get_Vector
+}
 
 
 //
@@ -1269,7 +1255,7 @@ Quaternion AdaptiveDeltaMotionChannelClass::Get_QuatVector(float32 frame)
 
 	return( q );
 
-} // Get_QuatVector
+}
 
 //==========================================================================================
 void MotionChannelClass::

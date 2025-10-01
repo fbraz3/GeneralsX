@@ -50,7 +50,7 @@ const Int MAX_IDX = 32;
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-static const char *TheStructureCollapsePhaseNames[] =
+static const char *const TheStructureCollapsePhaseNames[] =
 {
 	"INITIAL",
 	"DELAY",
@@ -59,6 +59,7 @@ static const char *TheStructureCollapsePhaseNames[] =
 
 	NULL
 };
+static_assert(ARRAY_SIZE(TheStructureCollapsePhaseNames) == SC_PHASE_COUNT + 1, "Wrong array size");
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -361,7 +362,7 @@ void StructureCollapseUpdate::crc( Xfer *xfer )
 	// extend base class
 	UpdateModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -394,7 +395,7 @@ void StructureCollapseUpdate::xfer( Xfer *xfer )
 	// current height
 	xfer->xferReal( &m_currentHeight );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
@@ -405,4 +406,4 @@ void StructureCollapseUpdate::loadPostProcess( void )
 	// extend base class
 	UpdateModule::loadPostProcess();
 
-}  // end loadPostProcess
+}

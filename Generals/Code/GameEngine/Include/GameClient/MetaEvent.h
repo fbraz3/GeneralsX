@@ -44,7 +44,8 @@ enum MappableKeyCategories CPP_11(: Int)
 	CATEGORY_TEAM,
 	CATEGORY_MISC,
 	CATEGORY_DEBUG,
-	CATEGORY_NUM_CATEGORIES // keep this last
+
+	CATEGORY_NUM_CATEGORIES
 };
 
 static const LookupListRec CategoryListName[] =
@@ -57,7 +58,7 @@ static const LookupListRec CategoryListName[] =
 	{"TEAM",							CATEGORY_TEAM},
 	{"MISC",							CATEGORY_MISC},
 	{"DEBUG",							CATEGORY_DEBUG},
-	{NULL, 0}// keep this last
+	{NULL, 0}
 };
 
 
@@ -260,7 +261,7 @@ static const LookupListRec KeyNames[] =
 	{ "KEY_INS", MK_INS },
 	{ "KEY_DEL", MK_DEL },
 	{ "KEY_NONE", MK_NONE },
-	{ NULL, 0	} // keep this last!
+	{ NULL, 0	}
 };
 
 // -------------------------------------------------------------------------------
@@ -268,7 +269,9 @@ enum MappableKeyTransition CPP_11(: Int)
 {
 	DOWN,
 	UP,
-	DOUBLEDOWN	// if a key transition is repeated immediately, we generate this.
+	DOUBLEDOWN,	// if a key transition is repeated immediately, we generate this.
+
+	MAPPABLE_KEY_TRANSITION_COUNT
 };
 
 static const LookupListRec TransitionNames[] =
@@ -276,8 +279,9 @@ static const LookupListRec TransitionNames[] =
 	{ "DOWN",				DOWN },
 	{ "UP",					UP },
 	{ "DOUBLEDOWN",	DOUBLEDOWN },
-	{ NULL, 0	}// keep this last!
+	{ NULL, 0	}
 };
+static_assert(ARRAY_SIZE(TransitionNames) == MAPPABLE_KEY_TRANSITION_COUNT + 1, "Incorrect array size");
 
 // -------------------------------------------------------------------------------
 // an easier-to-type subset of the KEY_STATE stuff.
@@ -303,7 +307,7 @@ static const LookupListRec ModifierNames[] =
 	{ "SHIFT_CTRL",				SHIFT_CTRL },
 	{ "SHIFT_ALT",				SHIFT_ALT },
 	{ "SHIFT_ALT_CTRL" ,	SHIFT_ALT_CTRL },
-	{ NULL, 0	}// keep this last!
+	{ NULL, 0	}
 };
 
 
@@ -314,16 +318,18 @@ enum CommandUsableInType CPP_11(: Int)
 {
 	COMMANDUSABLE_NONE				= 0,
 
-	COMMANDUSABLE_SHELL				= (1 << 0),
-	COMMANDUSABLE_GAME				= (1 << 1),
+	COMMANDUSABLE_SHELL				= (1 << 0), // Command is usable when in Shell (Menus)
+	COMMANDUSABLE_GAME				= (1 << 1), // Command is usable when not in Shell
+	COMMANDUSABLE_OBSERVER		= (1 << 2), // TheSuperHackers @feature Command is usable when observing
 
-	COMMANDUSABLE_EVERYWHERE = COMMANDUSABLE_SHELL | COMMANDUSABLE_GAME,
+	COMMANDUSABLE_EVERYWHERE = ~0,
 };
 
-static const char* TheCommandUsableInNames[] =
+static const char* const TheCommandUsableInNames[] =
 {
 	"SHELL",
 	"GAME",
+	"OBSERVER",
 
 	NULL
 };

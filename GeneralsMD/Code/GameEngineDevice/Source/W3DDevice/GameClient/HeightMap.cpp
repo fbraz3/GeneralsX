@@ -1074,10 +1074,9 @@ Int HeightMapRenderObjClass::updateBlock(Int x0, Int y0, Int x1, Int y1,  WorldH
 HeightMapRenderObjClass::~HeightMapRenderObjClass(void)
 {
 	freeMapResources();
-	if (m_extraBlendTilePositions) {
-		delete [] m_extraBlendTilePositions;
-		m_extraBlendTilePositions = NULL;
-	}
+
+	delete [] m_extraBlendTilePositions;
+	m_extraBlendTilePositions = NULL;
 }
 
 //=============================================================================
@@ -1913,7 +1912,14 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 
 	Int i,j,devicePasses;
 	W3DShaderManager::ShaderTypes st;
-	Bool doCloud = TheGlobalData->m_useCloudMap;
+	const Bool doCloud = useCloud();
+
+	if (doCloud)
+	{
+		// TheSuperHackers @tweak Updates the cloud movement before applying it to the world.
+		// Is now decoupled from logic step.
+		W3DShaderManager::updateCloud();
+	}
 
 	Matrix3D tm(Transform);
 #if 0 // There is some weirdness sometimes with the dx8 static buffers.
@@ -2003,10 +2009,6 @@ void HeightMapRenderObjClass::Render(RenderInfoClass & rinfo)
 	{
 		DX8Wrapper::Set_Material(m_vertexMaterialClass);
 		DX8Wrapper::Set_Shader(m_shaderClass);
-
-		if (TheGlobalData->m_timeOfDay == TIME_OF_DAY_NIGHT) {
-			doCloud = false;
-		}
 
  		st=W3DShaderManager::ST_TERRAIN_BASE; //set default shader
 
@@ -2377,9 +2379,9 @@ void HeightMapRenderObjClass::renderExtraBlendTiles(void)
 				ib += 6;
 				vertexCount +=4;
 				indexCount +=6;
-			}//tile has 3rd blend layer and is visible
-		}	//for all extre blend tiles
-	}//unlock vertex buffer
+			}
+		}
+	}
 
 	if (vertexCount)
 	{
@@ -2416,10 +2418,7 @@ void HeightMapRenderObjClass::renderExtraBlendTiles(void)
 
 			W3DShaderManager::ShaderTypes st = W3DShaderManager::ST_ROAD_BASE;
 
-			Bool doCloud = TheGlobalData->m_useCloudMap;
-			if (TheGlobalData->m_timeOfDay == TIME_OF_DAY_NIGHT) {
-				doCloud = false;
-			}
+			const Bool doCloud = useCloud();
 
 			if (TheGlobalData->m_useLightMap && doCloud)
  			{

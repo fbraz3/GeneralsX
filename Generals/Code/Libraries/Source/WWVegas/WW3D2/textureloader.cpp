@@ -419,7 +419,7 @@ CORE_IDirect3DSurface8* TextureLoader::Load_Surface_Immediate(
 
 	DX8_ErrorCode(d3d_surface->UnlockRect());
 
-	if (converted_surface) delete[] converted_surface;
+	delete[] converted_surface;
 
 	return (CORE_IDirect3DSurface8*)d3d_surface;
 }
@@ -555,7 +555,7 @@ bool TextureLoader::Load_Uncompressed_Mipmap_Levels_From_TGA(TextureLoadTaskClas
 		if (!width || !height || !src_width || !src_height) break;
 	}
 
-	if (converted_surface) delete[] converted_surface;
+	delete[] converted_surface;
 
 	return true;
 }

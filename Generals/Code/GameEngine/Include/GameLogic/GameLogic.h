@@ -133,6 +133,7 @@ public:
 	Real getHeight( void );													///< Returns the height of the world
 
 	Bool isInGameLogicUpdate( void ) const { return m_isInUpdate; }
+	Bool hasUpdated() const { return m_hasUpdated; } ///< Returns true if the logic frame has advanced in the current client/render update
 	UnsignedInt getFrame( void );										///< Returns the current simulation frame number
 	UnsignedInt getCRC( Int mode = CRC_CACHED, AsciiString deepCRCFileName = AsciiString::TheEmptyString );		///< Returns the CRC
 
@@ -173,6 +174,7 @@ public:
 	Bool isInInternetGame( void );
 	Bool isInShellGame( void );
 	Bool isInMultiplayerGame( void );
+	Bool isInInteractiveGame() const;
 
 	static Bool isInInteractiveGame(GameMode mode) { return mode != GAME_NONE && mode != GAME_SHELL; }
 
@@ -197,6 +199,7 @@ public:
 	void updateObjectsChangedTriggerAreas(void) {m_frameObjectsChangedTriggerAreas = m_frame;}
 	UnsignedInt getFrameObjectsChangedTriggerAreas(void) {return m_frameObjectsChangedTriggerAreas;}
 
+	void exitGame();
 	void clearGameData(Bool showScoreScreen = TRUE);														///< Clear the game data
 	void closeWindows( void );
 
@@ -205,7 +208,7 @@ public:
 
 	void bindObjectAndDrawable(Object* obj, Drawable* draw);
 
-	void setGamePausedInFrame( UnsignedInt frame );
+	void setGamePausedInFrame( UnsignedInt frame, Bool disableLogicTimeScale );
 	UnsignedInt getGamePauseFrame() const { return m_pauseFrame; }
 	void setGamePaused( Bool paused, Bool pauseMusic = TRUE, Bool pauseInput = TRUE );
 	Bool isGamePaused( void );
@@ -253,6 +256,8 @@ protected:
 
 private:
 
+	void updateDisplayBusyState();
+
 	void pauseGameLogic(Bool paused);
 	void pauseGameSound(Bool paused);
 	void pauseGameMusic(Bool paused);
@@ -297,6 +302,7 @@ private:
 	Bool m_loadingScene;
 
 	Bool m_isInUpdate;
+	Bool m_hasUpdated;
 
 	Int m_rankPointsToAddAtGameStart;
 
@@ -352,6 +358,7 @@ private:
 	Bool m_pauseInput;
 	Bool m_inputEnabledMemory;// Latches used to remember what to restore to after we unpause
 	Bool m_mouseVisibleMemory;
+	Bool m_logicTimeScaleEnabledMemory;
 
 	Bool m_progressComplete[MAX_SLOTS];
 	enum { PROGRESS_COMPLETE_TIMEOUT = 60000 };							///< Timeout we wait for when we've completed our Load
@@ -395,6 +402,7 @@ inline GameMode GameLogic::getGameMode( void ) { return m_gameMode; }
 inline Bool GameLogic::isInLanGame( void ) { return (m_gameMode == GAME_LAN); }
 inline Bool GameLogic::isInSkirmishGame( void ) { return (m_gameMode == GAME_SKIRMISH); }
 inline Bool GameLogic::isInMultiplayerGame( void ) { return (m_gameMode == GAME_LAN) || (m_gameMode == GAME_INTERNET) ; }
+inline Bool GameLogic::isInInteractiveGame() const { return isInInteractiveGame(m_gameMode); }
 inline Bool GameLogic::isInReplayGame( void ) { return (m_gameMode == GAME_REPLAY); }
 inline Bool GameLogic::isInInternetGame( void ) { return (m_gameMode == GAME_INTERNET); }
 inline Bool GameLogic::isInShellGame( void ) { return (m_gameMode == GAME_SHELL); }

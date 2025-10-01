@@ -306,7 +306,7 @@ RingRenderObjClass::~RingRenderObjClass()
 {
 	REF_PTR_RELEASE(RingMaterial);
 	REF_PTR_RELEASE(RingTexture);
-} // destructor
+}
 
 
 /***********************************************************************************************
@@ -430,7 +430,7 @@ void RingRenderObjClass::Init_Material (void)
 	// Texturing, zbuffer, primary gradient, alpha blending
 	RingShader = ShaderClass::_PresetAlphaShader;
 
-}	// Init_Material
+}
 
 
 
@@ -597,7 +597,7 @@ void RingRenderObjClass::render_ring(RenderInfoClass & rinfo,const Vector3 & cen
 		DX8Wrapper::Draw_Triangles(0, ring.face_ct, 0, ring.Vertex_ct);
 	}
 
-} // render_ring
+}
 
 
 /***********************************************************************************************
@@ -617,7 +617,7 @@ void RingRenderObjClass::render_ring(RenderInfoClass & rinfo,const Vector3 & cen
 void RingRenderObjClass::vis_render_ring(SpecialRenderInfoClass & rinfo,const Vector3 & center,const Vector3 & extent)
 {
 	WWASSERT(0);
-}	// vis_render_ring
+}
 
 
 /***********************************************************************************************
@@ -734,7 +734,7 @@ void RingRenderObjClass::Render(RenderInfoClass & rinfo)
 		//
 		render_ring (rinfo, ObjSpaceCenter, ObjSpaceExtent);
 	}
-}	// Render
+}
 
 
 /***********************************************************************************************
@@ -1146,13 +1146,9 @@ void RingRenderObjClass::animate()
 				InnerScaleChannel.Get_Key_Count () > 0 ||
 				OuterScaleChannel.Get_Key_Count () > 0)
 		{
-			//
-			// Convert from milliseconds to seconds and normalize the time
-			//
 			if (AnimDuration > 0) {
-				float	frametime = WW3D::Get_Frame_Time();
-				frametime = (frametime * 0.001F) / AnimDuration;
-				anim_time += frametime;
+				float frametime = WW3D::Get_Logic_Frame_Time_Seconds();
+				anim_time += frametime / AnimDuration;
 			} else {
 				anim_time = 1.0F;
 			}
@@ -1185,7 +1181,7 @@ void RingRenderObjClass::animate()
 	}
 
 	return ;
-} // animate
+}
 
 
 /*
@@ -1451,7 +1447,7 @@ vtx_normal(NULL),
 vtx_uv(NULL),
 tri_poly(NULL)
 {
-} // empty ringmesh Constructor
+}
 
 
 void RingMeshClass::Set_Tiling (int count)
@@ -1633,11 +1629,11 @@ RingMeshClass::~RingMeshClass(void)
 void RingMeshClass::Free(void)
 {
 
-	if (vtx)				delete vtx;
-	if (orig_vtx)		delete orig_vtx;
-	if (vtx_normal)	delete vtx_normal;
-	if (vtx_uv)			delete vtx_uv;
-	if (tri_poly)		delete tri_poly;
+	delete vtx;
+	delete orig_vtx;
+	delete vtx_normal;
+	delete vtx_uv;
+	delete tri_poly;
 
 	vtx			= NULL;
 	orig_vtx		= NULL;
@@ -1645,6 +1641,6 @@ void RingMeshClass::Free(void)
 	vtx_uv		= NULL;
 	tri_poly		= NULL;
 
-} // Free
+}
 
 // EOF - ringobj.cpp

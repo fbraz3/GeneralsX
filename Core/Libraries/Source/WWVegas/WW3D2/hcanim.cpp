@@ -137,25 +137,25 @@ NodeCompressedMotionStruct::~NodeCompressedMotionStruct()
 
 	switch (Flavor) {
 		case ANIM_FLAVOR_TIMECODED:
-			if (tc.X) delete tc.X;
-			if (tc.Y) delete tc.Y;
-			if (tc.Z) delete tc.Z;
-			if (tc.Q) delete tc.Q;
+			delete tc.X;
+			delete tc.Y;
+			delete tc.Z;
+			delete tc.Q;
 			break;
 		case ANIM_FLAVOR_ADAPTIVE_DELTA:
-			if (ad.X) delete ad.X;
-			if (ad.Y) delete ad.Y;
-			if (ad.Z) delete ad.Z;
-			if (ad.Q) delete ad.Q;
+			delete ad.X;
+			delete ad.Y;
+			delete ad.Z;
+			delete ad.Q;
 			break;
 		default:
 			WWASSERT(0);	// unknown flavor
 			break;
 	}
 
-	if (Vis) delete Vis;
+	delete Vis;
 
-}  // ~NodeCompressedMotionStruct
+}
 
 
 /***********************************************************************************************
@@ -214,9 +214,8 @@ HCompressedAnimClass::~HCompressedAnimClass(void)
  *=============================================================================================*/
 void HCompressedAnimClass::Free(void)
 {
-	if (NodeMotion != NULL) {
-		delete[] NodeMotion;
-	}
+	delete[] NodeMotion;
+	NodeMotion = NULL;
 }
 
 
@@ -371,7 +370,7 @@ Error:
 	Free();
 	return LOAD_ERROR;
 
-}	 // Load_W3D
+}
 
 /***********************************************************************************************
  * HCompressedAnimClass::read_channel -- Reads in a single channel of motion                   *
@@ -392,7 +391,7 @@ bool HCompressedAnimClass::read_channel(ChunkLoadClass & cload,TimeCodedMotionCh
 
 	return result;
 
-}	// read_channel
+}
 
 bool HCompressedAnimClass::read_channel(ChunkLoadClass & cload,AdaptiveDeltaMotionChannelClass * * newchan)
 {
@@ -401,7 +400,7 @@ bool HCompressedAnimClass::read_channel(ChunkLoadClass & cload,AdaptiveDeltaMoti
 
 	return result;
 
-}	// read_channel
+}
 
 
 /***********************************************************************************************
@@ -439,7 +438,7 @@ void HCompressedAnimClass::add_channel(TimeCodedMotionChannelClass * newchan)
 			break;
 	}
 
-}	// add_channel
+}
 
 void HCompressedAnimClass::add_channel(AdaptiveDeltaMotionChannelClass * newchan)
 {
@@ -464,7 +463,7 @@ void HCompressedAnimClass::add_channel(AdaptiveDeltaMotionChannelClass * newchan
 			break;
 	}
 
-}	// add_channel
+}
 
 
 
@@ -488,7 +487,7 @@ bool HCompressedAnimClass::read_bit_channel(ChunkLoadClass & cload,TimeCodedBitC
 
 	return result;
 
-}	// read_bit_channel
+}
 
 
 /***********************************************************************************************
@@ -577,7 +576,7 @@ void HCompressedAnimClass::Get_Orientation(Quaternion& q, int pividx,float frame
 			WWASSERT(0); // unknown flavor
 			break;
 	}
-} // Get_Orientation
+}
 
 /***********************************************************************************************
  * HCompressedAnimClass::Get_Transform -- returns the transform matrix for the given frame	  *

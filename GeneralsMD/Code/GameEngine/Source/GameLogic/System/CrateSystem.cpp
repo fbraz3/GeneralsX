@@ -47,10 +47,7 @@ CrateSystem::~CrateSystem()
 	for( Int templateIndex = 0; templateIndex < count; templateIndex ++ )
 	{
 		CrateTemplate *currentTemplate = m_crateTemplateVector[templateIndex];
-		if( currentTemplate )
-		{
-			deleteInstance(currentTemplate);
-		}
+		deleteInstance(currentTemplate);
 	}
 	m_crateTemplateVector.clear();
 }
@@ -188,7 +185,7 @@ const FieldParse CrateTemplate::TheCrateTemplateFieldParseTable[] =
 	{ "CrateObject",			CrateTemplate::parseCrateCreationEntry,	NULL,									NULL },
 	{ "KillerScience",		INI::parseScience,											NULL,									offsetof( CrateTemplate, m_killerScience) },
 	{ "OwnedByMaker",			INI::parseBool,													NULL,									offsetof( CrateTemplate, m_isOwnedByMaker) },
-	{ NULL,								NULL,																		NULL,									NULL },		// keep this last!
+	{ NULL,								NULL,																		NULL,									NULL },
 };
 
 CrateTemplate::CrateTemplate()

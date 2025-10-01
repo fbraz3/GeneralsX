@@ -130,11 +130,8 @@ void GameResultsQueue::endThreads( void )
 {
 	for (Int i=0; i<NumWorkerThreads; ++i)
 	{
-		if (m_workerThreads[i])
-		{
-			delete m_workerThreads[i];
-			m_workerThreads[i] = NULL;
-		}
+		delete m_workerThreads[i];
+		m_workerThreads[i] = NULL;
 	}
 }
 
@@ -219,7 +216,7 @@ static void WrapHTTP( const std::string& hostname, std::string& results )
 	char szHdr[256];
 	snprintf( szHdr, 256, HEADER, hostname.c_str(), results.length() );
 	results = szHdr + results;
-} //WrapHTTP
+}
 
 
 //-------------------------------------------------------------------------

@@ -18,8 +18,14 @@
 
 #pragma once
 
+#include "WWDefines.h"
+
 // Note: Retail compatibility must not be broken before this project officially does.
 // Use RETAIL_COMPATIBLE_CRC and RETAIL_COMPATIBLE_XFER_SAVE to guard breaking changes.
+
+#ifndef RETAIL_COMPATIBLE_BUG
+#define RETAIL_COMPATIBLE_BUG (1) // Retain bugs present in retail Generals 1.08 and Zero Hour 1.04
+#endif
 
 #ifndef RETAIL_COMPATIBLE_CRC
 #define RETAIL_COMPATIBLE_CRC (1) // Game is expected to be CRC compatible with retail Generals 1.08, Zero Hour 1.04
@@ -27,6 +33,13 @@
 
 #ifndef RETAIL_COMPATIBLE_XFER_SAVE
 #define RETAIL_COMPATIBLE_XFER_SAVE (1) // Game is expected to be Xfer Save compatible with retail Generals 1.08, Zero Hour 1.04
+#endif
+
+// This is here to easily toggle between the retail compatible with fixed pathfinding fallback and pure fixed pathfinding mode
+#if RETAIL_COMPATIBLE_CRC
+#define RETAIL_COMPATIBLE_PATHFINDING (1)
+#else
+#define RETAIL_COMPATIBLE_PATHFINDING (0)
 #endif
 
 // This is essentially synonymous for RETAIL_COMPATIBLE_CRC. There is a lot wrong with AIGroup, such as use-after-free, double-free, leaks,

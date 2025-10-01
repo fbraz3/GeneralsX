@@ -482,22 +482,22 @@ WindowMsgHandledType ScoreScreenInput( GameWindow *window, UnsignedInt msg,
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
 																								(WindowMsgData)buttonOk, buttonOkID );
 
-					}  // end if
+					}
 
 					// don't let key fall through anywhere else
 					return MSG_HANDLED;
 
-				}  // end escape
+				}
 
-			}  // end switch( key )
+			}
 
-		}  // end char
+		}
 
-	}  // end switch( msg )
+	}
 
 	return MSG_IGNORED;
 
-}  // end MainMenuInput
+}
 
 static Bool showReplayButtonContinue()
 {
@@ -531,7 +531,7 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 				*(Bool *)mData2 = TRUE;
 
 			break;
-		}  // end input
+		}
 
 		// --------------------------------------------------------------------------------------------
 		case GBM_SELECTED:
@@ -605,7 +605,7 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 					if(TheLAN)
 						TheLAN->RequestChat(txtInput, LANAPIInterface::LANCHAT_EMOTE);
 					//add the gamespy chat request here
-			} //if ( controlID == buttonEmote )
+			}
 			for(Int i = 0; i < MAX_SLOTS; ++i)
 			{
 				AsciiString name;
@@ -664,7 +664,7 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 						TheLAN->RequestChat(txtInput, LANAPIInterface::LANCHAT_NORMAL);
 					//add the gamespy chat request here
 
-			}// if ( controlID == textEntryChatID )
+			}
 
 			break;
 		}
@@ -720,8 +720,10 @@ void PlayMovieAndBlock(AsciiString movieTitle)
 		videoBuffer = NULL;
 
 		if ( videoStream )
+		{
 			videoStream->close();
-		videoStream = NULL;
+			videoStream = NULL;
+		}
 
 		return;
 	}
@@ -758,11 +760,10 @@ void PlayMovieAndBlock(AsciiString movieTitle)
 	}
 	TheWritableGlobalData->m_loadScreenRender = FALSE;
 	movieWindow->winGetInstanceData()->setVideoBuffer(NULL);
-	if (videoBuffer)
-	{
-		delete videoBuffer;
-		videoBuffer = NULL;
-	}
+
+	delete videoBuffer;
+	videoBuffer = NULL;
+
 	if (videoStream)
 	{
 		videoStream->close();
@@ -2114,7 +2115,8 @@ enum
 	USA_ENEMY,		// Keep friends with friends, enemys with enemys
 	CHINA_ENEMY,
 	GLA_ENEMY,
-	MAX_RELATIONS // keep me last
+
+	MAX_RELATIONS
 };
 /**	Grab the single player info */
 //-------------------------------------------------------------------------------------------------

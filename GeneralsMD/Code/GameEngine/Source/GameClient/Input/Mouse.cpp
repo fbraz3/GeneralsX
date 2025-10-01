@@ -67,14 +67,6 @@ static inline Int getSafeModifierFlags() {
 // PUBLIC DATA ////////////////////////////////////////////////////////////////////////////////////
 Mouse *TheMouse = NULL;
 
-const char* const TheCursorCaptureModeNames[] = {
-	"None",
-	"InGame",
-	"Always",
-	"Auto",
-};
-static_assert(ARRAY_SIZE(TheCursorCaptureModeNames) == CursorCaptureMode_Count, "Incorrect array size");
-
 const char *const Mouse::RedrawModeName[] = {
 	"Mouse:Windows",
 	"Mouse:W3D",
@@ -84,7 +76,6 @@ const char *const Mouse::RedrawModeName[] = {
 
 const char *const Mouse::CursorCaptureBlockReasonNames[] = {
 	"CursorCaptureBlockReason_NoInit",
-	"CursorCaptureBlockReason_NoGame",
 	"CursorCaptureBlockReason_Paused",
 	"CursorCaptureBlockReason_Unfocused",
 };
@@ -166,7 +157,7 @@ void Mouse::moveMouse( Int x, Int y, Int relOrAbs )
 	else if( m_currMouse.pos.y < m_minY )
 		m_currMouse.pos.y = m_minY;
 
-}  // end moveMouse
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Get the current information for the mouse from the device */
@@ -198,7 +189,7 @@ void Mouse::updateMouseData( )
 
 		busy = FALSE;
 
-	}  // end if
+	}
 
 	if( index > 0 )
 		m_eventsThisFrame = index - 1;
@@ -208,7 +199,7 @@ void Mouse::updateMouseData( )
 	if( index != 0 )
 		m_deadInputFrame = m_inputFrame;
 
-}  // end updateMouseData
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Combine mouse events into the main mouse variables */
@@ -383,7 +374,7 @@ void Mouse::processMouseEvent( Int index )
 
 	m_prevMouse = m_currMouse;
 
-}  // end processMouseEvent
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Check for mouse drag */
@@ -412,7 +403,7 @@ void Mouse::checkForDrag( void )
 		m_currMouse.middleEvent = GWM_MIDDLE_DRAG;
 	}
 
-}  // end checkForDrag
+}
 
 
 //-------------------------------------------------------------------------------------------------
@@ -566,10 +557,10 @@ Mouse::Mouse( void )
 
 	m_cursorCaptureMode = CursorCaptureMode_Default;
 
-	m_captureBlockReasonBits = (1 << CursorCaptureBlockReason_NoInit) | (1 << CursorCaptureBlockReason_NoGame);
-	DEBUG_LOG(("Mouse::Mouse: m_blockCaptureReason=CursorCaptureBlockReason_NoInit|CursorCaptureBlockReason_NoGame"));
+	m_captureBlockReasonBits = (1 << CursorCaptureBlockReason_NoInit);
+	DEBUG_LOG(("Mouse::Mouse: m_blockCaptureReason=CursorCaptureBlockReason_NoInit"));
 
-}  // end Mouse
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -583,14 +574,14 @@ Mouse::~Mouse( void )
 		TheDisplayStringManager->freeDisplayString( m_cursorTextDisplayString );
 	m_cursorTextDisplayString = NULL;
 
-}  // end ~Mouse
+}
 
 /**Had to move this out of main init() because I need this data to properly initialize
 the Win32 version of the mouse (by preloading resources before D3D device is created).*/
 void Mouse::parseIni(void)
 {
 	INI ini;
-	ini.load( AsciiString( "Data\\INI\\Mouse.ini" ), INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( AsciiString( "Data\\INI\\Mouse" ), INI_LOAD_OVERWRITE, NULL );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -632,7 +623,7 @@ void Mouse::init( void )
 
 	initCapture();
 
-}  // end init
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Tell mouse system display resolution changed. */
@@ -662,22 +653,12 @@ void Mouse::mouseNotifyResolutionChange( void )
 
 	m_tooltipDisplayString->setWordWrap(120);
 
-}  // end reset
+}
 
 //-------------------------------------------------------------------------------------------------
 void Mouse::onGameModeChanged(GameMode prev, GameMode next)
 {
-	const Bool wasInteractiveGame = GameLogic::isInInteractiveGame(prev);
-	const Bool isInteractiveGame = GameLogic::isInInteractiveGame(next);
-
-	if (wasInteractiveGame && !isInteractiveGame)
-	{
-		blockCapture(CursorCaptureBlockReason_NoGame);
-	}
-	else if (!wasInteractiveGame && isInteractiveGame)
-	{
-		unblockCapture(CursorCaptureBlockReason_NoGame);
-	}
+	refreshCursorCapture();
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -707,7 +688,7 @@ void Mouse::reset( void )
 
 	blockCapture(CursorCaptureBlockReason_NoInit);
 
-}  // end reset
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Update the states of the mouse position and buttons */
@@ -721,7 +702,7 @@ void Mouse::update( void )
 	// update the mouse data
 	updateMouseData( );
 
-}  // end update
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Given the current state of this input device, turn the raw input
@@ -812,7 +793,7 @@ void Mouse::createStreamMessages( void )
 				msg->appendIntegerArgument( getSafeModifierFlags() );
 				break;
 
-		}  // end switch
+		}
 
 		msg = NULL;
 		switch( m_currMouse.middleEvent )
@@ -847,7 +828,7 @@ void Mouse::createStreamMessages( void )
 				msg->appendIntegerArgument( getSafeModifierFlags() );
 				break;
 
-		}  // end switch
+		}
 
 		msg = NULL;
 		switch( m_currMouse.rightEvent )
@@ -882,7 +863,7 @@ void Mouse::createStreamMessages( void )
 				msg->appendIntegerArgument( getSafeModifierFlags() );
 				break;
 
-		}  // end switch
+		}
 
 		// wheel pos
 		msg = NULL;
@@ -894,8 +875,8 @@ void Mouse::createStreamMessages( void )
 			msg->appendIntegerArgument( getSafeModifierFlags() );
 		}  // end if
 
-	}	// end for
-}  // end createStreamMessages
+	}
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Set the string to display at the cursor for the tooltip */
@@ -972,7 +953,7 @@ void Mouse::setCursorTooltip( UnicodeString tooltip, Int delay, const RGBColor *
 		m_tooltipBackColor = m_tooltipColorBackground;
 	}
 
-}  // end setCursorTooltip
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Set the text for the mouse cursor ... note that this is *NOT* the tooltip text we
@@ -996,7 +977,7 @@ void Mouse::setMouseText( UnicodeString text,
 	if( dropColor )
 		m_cursorTextDropColor = *dropColor;
 
-}  // end setMouseText
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Move the mouse to the position */
@@ -1007,7 +988,7 @@ void Mouse::setPosition( Int x, Int y )
 	m_currMouse.pos.x = x;
 	m_currMouse.pos.y = y;
 
-}  // end setPosition
+}
 
 //-------------------------------------------------------------------------------------------------
 /** This default implementation of SetMouseLimits will just set the limiting
@@ -1030,9 +1011,9 @@ void Mouse::setMouseLimits( void )
 		m_maxX = TheDisplay->getWidth();
 		m_maxY = TheDisplay->getHeight();
 
-	}  // end if
+	}
 
-}  // end setMouseLimits
+}
 
 // ------------------------------------------------------------------------------------------------
 void Mouse::setCursorCaptureMode(CursorCaptureMode mode)
@@ -1089,23 +1070,40 @@ void Mouse::initCapture()
 // ------------------------------------------------------------------------------------------------
 Bool Mouse::canCapture() const
 {
-	CONSTEXPR const CursorCaptureBlockReasonInt noGameBits = CursorCaptureBlockReason_NoGame | CursorCaptureBlockReason_Paused;
-
-	switch (m_cursorCaptureMode)
-	{
-	case CursorCaptureMode_None:
+	if (m_captureBlockReasonBits != 0)
 		return false;
-	case CursorCaptureMode_InGame:
-		return (m_captureBlockReasonBits == 0);
-	case CursorCaptureMode_Always:
-		return (m_captureBlockReasonBits & ~noGameBits) == 0;
-	case CursorCaptureMode_Auto:
-	default:
-		if (TheDisplay == NULL || TheDisplay->getWindowed())
-			return (m_captureBlockReasonBits == 0);
+
+	DEBUG_ASSERTCRASH(TheDisplay != NULL, ("The Display is NULL"));
+	const Bool inInteractiveGame = TheGameLogic && TheGameLogic->isInInteractiveGame();
+
+	if (TheDisplay->getWindowed())
+	{
+		if (inInteractiveGame)
+		{
+			if ((m_cursorCaptureMode & CursorCaptureMode_EnabledInWindowedGame) == 0)
+				return false;
+		}
 		else
-			return (m_captureBlockReasonBits & ~noGameBits) == 0;
+		{
+			if ((m_cursorCaptureMode & CursorCaptureMode_EnabledInWindowedMenu) == 0)
+				return false;
+		}
 	}
+	else
+	{
+		if (inInteractiveGame)
+		{
+			if ((m_cursorCaptureMode & CursorCaptureMode_EnabledInFullscreenGame) == 0)
+				return false;
+		}
+		else
+		{
+			if ((m_cursorCaptureMode & CursorCaptureMode_EnabledInFullscreenMenu) == 0)
+				return false;
+		}
+	}
+
+	return true;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -1224,10 +1222,10 @@ void Mouse::drawTooltip( void )
 			UnsignedInt now = timeGetTime();
 			m_highlightPos = (width*(now-m_highlightUpdateStart))/m_tooltipFillTime;
 		}
-	}  // end if
+	}
 
 
-}  // end drawTooltip
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Draw the cursor text at the mouse position.  Note that this is *NOT* the tooltip text */
@@ -1260,7 +1258,7 @@ void Mouse::drawCursorText( void )
 	y = m_currMouse.pos.y - height / 2;
 	m_cursorTextDisplayString->draw( x, y, color, dropColor );
 
-}  // end drawCursorText
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -1365,9 +1363,9 @@ void Mouse::setCursor( MouseCursor cursor )
 		else
 			setMouseText( UnicodeString( L"" ), NULL, NULL );
 
-	}  // end if
+	}
 
-}  // end setCursor
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Parse MouseCursor entry */

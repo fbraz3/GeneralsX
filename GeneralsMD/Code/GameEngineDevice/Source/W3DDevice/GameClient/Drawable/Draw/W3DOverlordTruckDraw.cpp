@@ -88,7 +88,7 @@ void W3DOverlordTruckDraw::doDrawModule(const Matrix3D* transformMtx)
 		riderDraw->setColorTintEnvelope( *getDrawable()->getColorTintEnvelope() );
 
 		riderDraw->notifyDrawableDependencyCleared();
-		riderDraw->draw( NULL );// What the hell?  This param isn't used for anything
+		riderDraw->draw();
 	}
 }
 
@@ -119,7 +119,7 @@ void W3DOverlordTruckDraw::crc( Xfer *xfer )
 	// extend base class
 	W3DTruckDraw::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -137,7 +137,7 @@ void W3DOverlordTruckDraw::xfer( Xfer *xfer )
 	// extend base class
 	W3DTruckDraw::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
@@ -148,4 +148,4 @@ void W3DOverlordTruckDraw::loadPostProcess( void )
 	// extend base class
 	W3DTruckDraw::loadPostProcess();
 
-}  // end loadPostProcess
+}

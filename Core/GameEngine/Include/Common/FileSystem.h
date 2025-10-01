@@ -54,6 +54,8 @@
 #include "Common/STLTypedefs.h"
 #include "Common/SubsystemInterface.h"
 
+#include <Utility/hash_map_adapter.h>
+
 //----------------------------------------------------------------------------
 //           Forward References
 //----------------------------------------------------------------------------
@@ -87,15 +89,17 @@ typedef FilenameList::iterator FilenameListIter;
 
 // LOAD_TEST_ASSETS automatically loads w3d assets from the TEST_W3D_DIR_PATH
 // without having to add an INI entry.
-///@todo this allows us to use the test art directory, it should be removed for FINAL release
+#if defined(RTS_DEBUG)
 #define LOAD_TEST_ASSETS 1
+#endif
+
 #ifdef LOAD_TEST_ASSETS
 	#define ROAD_DIRECTORY		"../TestArt/TestRoad/"
 	#define TEST_STRING				"***TESTING"
-// the following directories will be used to look for test art
-#define LOOK_FOR_TEST_ART
-#define TEST_W3D_DIR_PATH "../TestArt/"					///< .w3d files live here
-#define TEST_TGA_DIR_PATH "../TestArt/"		///< .tga texture files live here
+	// the following directories will be used to look for test art
+	#define LOOK_FOR_TEST_ART
+	#define TEST_W3D_DIR_PATH "../TestArt/"					///< .w3d files live here
+	#define TEST_TGA_DIR_PATH "../TestArt/"		///< .tga texture files live here
 #endif
 
 struct FileInfo {
@@ -115,7 +119,6 @@ struct FileInfo {
 	* created when FileSystem::Open() gets called.
 	*/
 //===============================
-#include <map>
 
 class FileSystem : public SubsystemInterface
 {
@@ -145,7 +148,11 @@ public:
 
 protected:
 #if ENABLE_FILESYSTEM_EXISTENCE_CACHE
-	mutable std::map<unsigned,bool> m_fileExist;
+	typedef std::hash_map<
+		rts::string_key<AsciiString>, bool,
+		rts::string_key_hash<AsciiString>,
+		rts::string_key_equal<AsciiString> > FileExistMap;
+	mutable FileExistMap m_fileExist;
 #endif
 };
 

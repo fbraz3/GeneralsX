@@ -70,8 +70,6 @@ typedef enum
 	MODE_RESIZE_LEFT,								///< resize dragging left vertical
 	MODE_KEYBOARD_MOVE,							///< moving windows with the Keyboard
 
-	MODE_NUM_MODES									///< keep this last!
-
 } EditMode;
 
 //-------------------------------------------------------------------------------------------------
@@ -86,7 +84,7 @@ typedef enum
 	STATUS_PART4,			/// change to meaningful name when decided what goes here
 	STATUS_MOUSE_COORDS,
 
-	STATUS_NUM_PARTS  ///< keep this last!
+	STATUS_NUM_PARTS
 
 } StatusPart;
 
@@ -102,8 +100,6 @@ typedef enum
 	CURSOR_SIZE_NWSE,
 	CURSOR_SIZE_WE,
 	CURSOR_WAIT,
-
-	CURSOR_NUM_CURSORS  // keep last
 
 } CursorType;
 
@@ -348,7 +344,7 @@ protected:
 	AsciiString m_layoutUpdateString;	 ///< layout update function name
 	AsciiString m_layoutShutdownString;///< layout shutdown function name
 
-};  // end GUIEdit
+};
 
 // INLINING ///////////////////////////////////////////////////////////////////////////////////////
 inline HWND GUIEdit::getWindowHandle( void ) { return m_appHWnd; }

@@ -96,8 +96,6 @@ public:
     WTS_INSIDE_FRUSTUM = 0, // On the screen (inside frustum of camera)
     WTS_OUTSIDE_FRUSTUM,    // Return is valid but off the screen (outside frustum of camera)
     WTS_INVALID,            // No transform possible
-
-    WTS_COUNT
   };
 
 public:
@@ -133,6 +131,7 @@ public:
 	virtual void setOrigin( Int x, Int y) { m_originX=x; m_originY=y;}				///< Sets location of top-left view corner on display
 	virtual void getOrigin( Int *x, Int *y) { *x=m_originX; *y=m_originY;}			///< Return location of top-left view corner on display
 
+	virtual void lockViewUntilFrame(UnsignedInt frame); ///< Locks the current view until the given frame is reached.
 	virtual void forceRedraw() = 0;
 
 	virtual void lookAt( const Coord3D *o );														///< Center the view on the given coordinate
@@ -182,12 +181,11 @@ public:
 	virtual const Coord3D& get3DCameraPosition() const = 0;							///< Returns the actual camera position
 
 	virtual Real getZoom() { return m_zoom; }
-	virtual void setZoom(Real z) { }
+	virtual void setZoom(Real z) { m_zoom = z; }
 	virtual Real getHeightAboveGround() { return m_heightAboveGround; }
-	virtual void setHeightAboveGround(Real z) { m_heightAboveGround = z; }
+	virtual void setHeightAboveGround(Real z);
 	virtual void zoom( Real height ); ///< Zoom in/out, closer to the ground, limit to min, or farther away from the ground, limit to max
-	virtual void setZoomToDefault( void ) { }														///< Set zoom to default value
-	virtual Real getMaxZoom( void ) { return m_maxZoom; }								///< return max zoom value
+	virtual void setZoomToDefault( void ) { m_zoom  = 1.0f; } ///< Set zoom to default value
 	virtual void setOkToAdjustHeight( Bool val ) { m_okToAdjustHeight = val; }	///< Set this to adjust camera height
 
 	// for debugging
@@ -258,6 +256,8 @@ protected:
 	UnsignedInt m_id;																						///< Rhe ID of this view
 	static UnsignedInt m_idNext;																///< Used for allocating view ID's for all views
 
+	UnsignedInt m_viewLockedUntilFrame;
+
 	Coord3D m_pos;																							///< Position of this view, in world coordinates
 	Int m_width, m_height;																			///< Dimensions of the view
 	Int m_originX, m_originY;																		///< Location of top/left view corner
@@ -265,10 +265,8 @@ protected:
 	Real m_angle;																								///< Angle at which view has been rotated about the Z axis
 	Real m_pitchAngle;																					///< Rotation of view direction around horizontal (X) axis
 
-	Real m_maxZoom;																							///< Largest zoom value (minimum actual zoom)
-	Real m_minZoom;																							///< Smallest zoom value (maximum actual zoom)
-	Real m_maxHeightAboveGround;
-	Real m_minHeightAboveGround;
+	Real m_maxHeightAboveGround;																///< Highest camera above ground value
+	Real m_minHeightAboveGround;																///< Lowest camera above ground value
 	Real m_zoom;																								///< Current zoom value
 	Real m_heightAboveGround;																		///< User's desired height above ground
 	Bool m_zoomLimited;																					///< Camera restricted in zoom height
@@ -278,7 +276,7 @@ protected:
 	Real m_terrainHeightUnderCamera;														///< Cached value for debugging
 
 	ObjectID m_cameraLock;																			///< if nonzero, id of object that the camera should follow
-	Drawable *m_cameraLockDrawable;															///< if nonzero, drawble of object that camera should follow.
+	Drawable *m_cameraLockDrawable;															///< if nonzero, drawable of object that camera should follow.
 	CameraLockType m_lockType;																	///< are we following or just tethering?
 	Real m_lockDist;																						///< how far can we be when tethered?
 
@@ -288,7 +286,7 @@ protected:
 	Bool m_okToAdjustHeight;																		///< Should we attempt to adjust camera height?
 	Bool m_snapImmediate;																				///< Should we immediately snap to the object we're following?
 
-	Coord2D m_guardBandBias; ///< Exttra beefy margins so huge thins can stay "on-screen"
+	Coord2D m_guardBandBias; ///< Extra beefy margins so huge thins can stay "on-screen"
 
 };
 

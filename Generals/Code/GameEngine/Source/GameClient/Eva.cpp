@@ -25,6 +25,7 @@
 // GameClient/Eva.cpp /////////////////////////////////////////////////////////////////////////////
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
+#include "GameClient/ControlBar.h"
 #include "GameClient/Eva.h"
 
 #include "Common/Player.h"
@@ -33,7 +34,7 @@
 
 
 //-------------------------------------------------------------------------------------------------
-const char *TheEvaMessageNames[] =
+static const char *const TheEvaMessageNames[] =
 {
 	"LOWPOWER",
 	"INSUFFICIENTFUNDS",
@@ -54,8 +55,8 @@ const char *TheEvaMessageNames[] =
 	"CASHSTOLEN",
 	"UPGRADECOMPLETE",
 	"BUILDINGBEINGSTOLEN",
-	"EVA_INVALID",
 };
+static_assert(ARRAY_SIZE(TheEvaMessageNames) == EVA_COUNT, "Incorrect array size");
 
 //------------------------------------------------------------------------------ INI::parseEvaEvent
 void INI::parseEvaEvent( INI* ini )
@@ -141,7 +142,6 @@ const ShouldPlayFunc Eva::s_shouldPlayFuncs[] =
 	Eva::shouldPlayGenericHandler,
 	Eva::shouldPlayGenericHandler,
 	Eva::shouldPlayGenericHandler,
-	NULL,
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -172,8 +172,7 @@ Eva::~Eva()
 {
 	EvaCheckInfoPtrVecIt it;
 	for (it = m_allCheckInfos.begin(); it != m_allCheckInfos.end(); ++it) {
-		if (*it)
-			deleteInstance(*it);
+		deleteInstance(*it);
 	}
 }
 
@@ -182,7 +181,7 @@ void Eva::init()
 {
 	// parse the INI here, etc.
 	INI ini;
-	ini.load( AsciiString( "Data\\INI\\Eva.ini" ), INI_LOAD_OVERWRITE, NULL);
+	ini.loadFileDirectory( AsciiString( "Data\\INI\\Eva" ), INI_LOAD_OVERWRITE, NULL);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -213,7 +212,7 @@ void Eva::update()
 		return;
 	}
 
-	m_localPlayer = ThePlayerList->getLocalPlayer();
+	m_localPlayer = TheControlBar->getCurrentlyViewedPlayer();
 	UnsignedInt frame = TheGameLogic->getFrame();
 
 	// Don't update for the first few frames. This way, we don't have to deal with our initial power
@@ -332,6 +331,8 @@ Bool Eva::messageShouldPlay(EvaMessage messageToTest, UnsignedInt currentFrame) 
 		return FALSE;
 	}
 
+	static_assert(ARRAY_SIZE(s_shouldPlayFuncs) == EVA_COUNT, "Incorrect array size");
+
 	m_messageBeingTested = messageToTest;
 	return s_shouldPlayFuncs[messageToTest](m_localPlayer);
 }
@@ -428,7 +429,7 @@ void Eva::processPlayingMessages(UnsignedInt currentFrame)
 	}
 
 	// We've got a winner!
-	AsciiString side = ThePlayerList->getLocalPlayer()->getSide();
+	AsciiString side = TheControlBar->getCurrentlyViewedPlayerSide();
 	Int numSides = storedIt->m_evaInfo->m_evaSideSounds.size();
 
 	for (Int i = 0; i < numSides; ++i) {

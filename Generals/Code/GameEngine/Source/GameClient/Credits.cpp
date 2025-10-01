@@ -76,7 +76,7 @@ const FieldParse CreditsManager::m_creditsFieldParseTable[] =
 	{ "Blank",							CreditsManager::parseBlank,					NULL,	NULL  },
 	{ "Text",								CreditsManager::parseText,					NULL,	NULL  },
 
-	{ NULL,										NULL,													NULL, 0 }  // keep this last
+	{ NULL,										NULL,													NULL, 0 }
 
 };
 
@@ -94,7 +94,7 @@ void INI::parseCredits( INI *ini )
 	// parse the ini definition
 	ini->initFromINI( TheCredits, TheCredits->getFieldParse() );
 
-}  // end parseCommandButtonDefinition
+}
 
 
 CreditsLine::CreditsLine()
@@ -155,7 +155,7 @@ void CreditsManager::load(void )
 {
 	INI ini;
 	// Read from INI all the ControlBarSchemes
-	ini.load( AsciiString( "Data\\INI\\Credits.ini" ), INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( AsciiString( "Data\\INI\\Credits" ), INI_LOAD_OVERWRITE, NULL );
 
 	if(m_scrollRatePerFrames <=0)
 		m_scrollRatePerFrames = 1;
