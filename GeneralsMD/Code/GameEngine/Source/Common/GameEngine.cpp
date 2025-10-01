@@ -177,7 +177,7 @@ void initSubsystem(
 	fflush(stdout);
 	
 	try {
-		TheSubsystemList->initSubsystem(sys, path1, path2, dirpath, pXfer, name);
+		TheSubsystemList->initSubsystem(sys, path1, path2, pXfer, name);
 		printf("initSubsystem - TheSubsystemList->initSubsystem completed successfully for %s\n", name.str());
 		fflush(stdout);
 	} catch (const std::exception& e) {
