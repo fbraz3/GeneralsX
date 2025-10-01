@@ -24,30 +24,69 @@ FrameRateLimit::FrameRateLimit()
 {
 	QueryPerformanceFrequency(&m_freq);
 	QueryPerformanceCounter(&m_start);
+	printf("FRAMERATE INIT: Frequency = %lld, Start = %lld\n", m_freq.QuadPart, m_start.QuadPart);
+	fflush(stdout);
 }
 
 Real FrameRateLimit::wait(UnsignedInt maxFps)
 {
+	static int callCount = 0;
+	
+	// CRITICAL FIX: Prevent division by zero - treat 0 as 30 FPS default
+	if (maxFps == 0) {
+		if (callCount < 5) {
+			printf("FRAMERATE WAIT WARNING: maxFps is 0, using default 30 FPS\n");
+			fflush(stdout);
+		}
+		maxFps = 30; // Use sensible default instead of uncapped
+	}
+	
 	LARGE_INTEGER tick;
 	QueryPerformanceCounter(&tick);
 	double elapsedSeconds = static_cast<double>(tick.QuadPart - m_start.QuadPart) / m_freq.QuadPart;
 	const double targetSeconds = 1.0 / maxFps;
 	const double sleepSeconds = targetSeconds - elapsedSeconds - 0.002; // leave ~2ms for spin wait
 
+	if (callCount < 1) {
+		printf("FRAMERATE WAIT[%d]: maxFps=%u, elapsed=%.6f, target=%.6f, sleep=%.6f\n", 
+			callCount, maxFps, elapsedSeconds, targetSeconds, sleepSeconds);
+		printf("  tick=%lld, start=%lld, diff=%lld, freq=%lld\n",
+			tick.QuadPart, m_start.QuadPart, tick.QuadPart - m_start.QuadPart, m_freq.QuadPart);
+		fflush(stdout);
+		callCount++;
+	}
+
 	if (sleepSeconds > 0.0)
 	{
 		// Non busy wait with Munkee sleep
 		DWORD dwMilliseconds = static_cast<DWORD>(sleepSeconds * 1000);
+		if (callCount < 2) {
+			printf("  Sleeping for %u ms\n", dwMilliseconds);
+			fflush(stdout);
+		}
 		Sleep(dwMilliseconds);
 	}
 
 	// Busy wait for remaining time
+	int spinCount = 0;
 	do
 	{
 		QueryPerformanceCounter(&tick);
 		elapsedSeconds = static_cast<double>(tick.QuadPart - m_start.QuadPart) / m_freq.QuadPart;
+		spinCount++;
+		if (callCount < 2 && spinCount > 100000) {
+			printf("  WARNING: Spin wait exceeded 100k iterations! elapsed=%.6f, target=%.6f\n",
+				elapsedSeconds, targetSeconds);
+			fflush(stdout);
+			break; // Emergency exit
+		}
 	}
 	while (elapsedSeconds < targetSeconds);
+
+	if (callCount < 2) {
+		printf("  Spin iterations: %d, final elapsed=%.6f\n", spinCount, elapsedSeconds);
+		fflush(stdout);
+	}
 
 	m_start = tick;
 	return (Real)elapsedSeconds;

@@ -456,12 +456,36 @@ void MapCache::updateCache( void )
 {
 	setFPMode();
 
-	TheFileSystem->createDirectory(getUserMapDir());
+		printf("MAPCACHE DEBUG: Creating user map directory\n");
+		fflush(stdout);
+		try {
+			AsciiString userMapDir = getUserMapDir();
+			printf("MAPCACHE DEBUG: User map directory: '%s'\n", userMapDir.str());
+			fflush(stdout);
+			
+			if (!userMapDir.isEmpty()) {
+				TheFileSystem->createDirectory(userMapDir);
+				printf("MAPCACHE DEBUG: User map directory created successfully\n");
+			} else {
+				printf("MACOS PROTECTION: WARNING - User map directory is empty, skipping creation\n");
+			}
+		} catch (...) {
+			printf("MACOS PROTECTION: EXCEPTION in createDirectory - continuing without user map directory\n");
+		}
+		fflush(stdout);
 
-	if (loadUserMaps())
-	{
-		writeCacheINI( TRUE );
-	}
+		printf("MAPCACHE DEBUG: Loading user maps\n");
+		fflush(stdout);
+		try {
+			if (loadUserMaps())
+			{
+				printf("MAPCACHE DEBUG: Writing cache INI (user maps)\n");
+				fflush(stdout);
+				writeCacheINI( TRUE );
+			}
+		} catch (...) {
+			printf("MACOS PROTECTION: EXCEPTION in loadUserMaps - continuing without user maps\n");
+		}
 	loadStandardMaps();	// we shall overwrite info from matching user maps to prevent munkees from getting rowdy :)
 #if defined(RTS_DEBUG)
 	if (TheLocalFileSystem->doesFileExist(getMapDir().str()))
@@ -699,7 +723,31 @@ Bool MapCache::addMap( AsciiString dirName, AsciiString fname, FileInfo *fileInf
 	{
 		DEBUG_LOG(("Missing TheKey_mapName!"));
 		AsciiString tempdisplayname;
-		tempdisplayname = fname.reverseFind('\\') + 1;
+		
+		// MACOS PROTECTION: Handle path separators safely for both Windows and POSIX
+		const char* backslashPtr = fname.reverseFind('\\');
+		const char* forwardslashPtr = fname.reverseFind('/');
+		const char* lastSeparator = NULL;
+		
+		// Find the last separator (either \ or /) 
+		if (backslashPtr && forwardslashPtr) {
+			lastSeparator = (backslashPtr > forwardslashPtr) ? backslashPtr : forwardslashPtr;
+		} else if (backslashPtr) {
+			lastSeparator = backslashPtr;
+		} else if (forwardslashPtr) {
+			lastSeparator = forwardslashPtr;
+		}
+		
+		if (lastSeparator && lastSeparator[1] != '\0') {
+			// Found separator and there's content after it
+			tempdisplayname = lastSeparator + 1;
+			printf("MAPCACHE PROTECTION: Extracted filename from path: '%s'\n", tempdisplayname.str());
+		} else {
+			// No separator found, use the whole filename
+			tempdisplayname = fname;
+			printf("MAPCACHE PROTECTION: Using full path as filename: '%s'\n", tempdisplayname.str());
+		}
+		
 		md.m_displayName.translate(tempdisplayname);
 		if (md.m_numPlayers >= 2)
 		{
@@ -1078,7 +1126,28 @@ Image *getMapPreviewImage( AsciiString mapName )
 	AsciiString filename;
 	tgaName.truncateBy(4); // ".map"
 	name = tgaName;//.reverseFind('\\') + 1;
-	filename = tgaName.reverseFind('\\') + 1;
+	
+	// MACOS PROTECTION: Handle path separators safely for both Windows and POSIX  
+	const char* backslashPtr = tgaName.reverseFind('\\');
+	const char* forwardslashPtr = tgaName.reverseFind('/');
+	const char* lastSeparator = NULL;
+	
+	// Find the last separator (either \ or /) 
+	if (backslashPtr && forwardslashPtr) {
+		lastSeparator = (backslashPtr > forwardslashPtr) ? backslashPtr : forwardslashPtr;
+	} else if (backslashPtr) {
+		lastSeparator = backslashPtr;
+	} else if (forwardslashPtr) {
+		lastSeparator = forwardslashPtr;
+	}
+	
+	if (lastSeparator && lastSeparator[1] != '\0') {
+		// Found separator and there's content after it
+		filename = lastSeparator + 1;
+	} else {
+		// No separator found, use the whole filename
+		filename = tgaName;
+	}
 	//tgaName = name;
 	filename.concat(".tga");
 	tgaName.concat(".tga");

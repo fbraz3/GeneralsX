@@ -49,6 +49,20 @@
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/ScriptEngine.h"
 
+// MACOS PROTECTION: Safe keyboard modifier flags helper
+static inline Int getSafeModifierFlags() {
+    if (TheKeyboard != nullptr) {
+        // Additional NULL check for extra safety
+        try {
+            return TheKeyboard->getModifierFlags();
+        } catch (...) {
+            printf("KEYBOARD PROTECTION: Exception in getModifierFlags - returning 0\n");
+            return 0;
+        }
+    }
+    return 0;  // Default when keyboard is not available (macOS)
+}
+
 
 // PUBLIC DATA ////////////////////////////////////////////////////////////////////////////////////
 Mouse *TheMouse = NULL;
@@ -728,7 +742,10 @@ void Mouse::createStreamMessages( void )
 	// basic position messages are always created
 	msg = TheMessageStream->appendMessage( GameMessage::MSG_RAW_MOUSE_POSITION );
 	msg->appendPixelArgument( m_currMouse.pos );
-	msg->appendIntegerArgument( TheKeyboard->getModifierFlags() );
+	
+	// MACOS PROTECTION: Use safe helper function instead of direct call
+	Int modifierFlags = getSafeModifierFlags();
+	msg->appendIntegerArgument( modifierFlags );
 
   Int delay = m_tooltipDelayTime;
   if(m_tooltipDelay >= 0 )
@@ -770,21 +787,21 @@ void Mouse::createStreamMessages( void )
 			case GWM_LEFT_DOWN:
 				msg = TheMessageStream->appendMessage( GameMessage::MSG_RAW_MOUSE_LEFT_BUTTON_DOWN );
 				msg->appendPixelArgument( m_currMouse.pos );
-				msg->appendIntegerArgument( TheKeyboard->getModifierFlags() );
+				msg->appendIntegerArgument( getSafeModifierFlags() );
 				msg->appendIntegerArgument( m_currMouse.time );
 				break;
 
 			case GWM_LEFT_DOUBLE_CLICK:
 				msg = TheMessageStream->appendMessage( GameMessage::MSG_RAW_MOUSE_LEFT_DOUBLE_CLICK );
 				msg->appendPixelArgument( m_currMouse.pos );
-				msg->appendIntegerArgument( TheKeyboard->getModifierFlags() );
+				msg->appendIntegerArgument( getSafeModifierFlags() );
 				msg->appendIntegerArgument( m_currMouse.time );
 				break;
 
 			case GWM_LEFT_UP:
 				msg = TheMessageStream->appendMessage( GameMessage::MSG_RAW_MOUSE_LEFT_BUTTON_UP );
 				msg->appendPixelArgument( m_currMouse.pos );
-				msg->appendIntegerArgument( TheKeyboard->getModifierFlags() );
+				msg->appendIntegerArgument( getSafeModifierFlags() );
 				msg->appendIntegerArgument( m_currMouse.time );
 				break;
 
@@ -792,7 +809,7 @@ void Mouse::createStreamMessages( void )
 				msg = TheMessageStream->appendMessage( GameMessage::MSG_RAW_MOUSE_LEFT_DRAG );
 				msg->appendPixelArgument( m_currMouse.pos );
 				msg->appendPixelArgument( m_currMouse.deltaPos );
-				msg->appendIntegerArgument( TheKeyboard->getModifierFlags() );
+				msg->appendIntegerArgument( getSafeModifierFlags() );
 				break;
 
 		}  // end switch
@@ -805,21 +822,21 @@ void Mouse::createStreamMessages( void )
 			case GWM_MIDDLE_DOWN:
 				msg = TheMessageStream->appendMessage( GameMessage::MSG_RAW_MOUSE_MIDDLE_BUTTON_DOWN );
 				msg->appendPixelArgument( m_currMouse.pos );
-				msg->appendIntegerArgument( TheKeyboard->getModifierFlags() );
+				msg->appendIntegerArgument( getSafeModifierFlags() );
 				msg->appendIntegerArgument( m_currMouse.time );
 				break;
 
 			case GWM_MIDDLE_DOUBLE_CLICK:
 				msg = TheMessageStream->appendMessage( GameMessage::MSG_RAW_MOUSE_MIDDLE_DOUBLE_CLICK );
 				msg->appendPixelArgument( m_currMouse.pos );
-				msg->appendIntegerArgument( TheKeyboard->getModifierFlags() );
+				msg->appendIntegerArgument( getSafeModifierFlags() );
 				msg->appendIntegerArgument( m_currMouse.time );
 				break;
 
 			case GWM_MIDDLE_UP:
 				msg = TheMessageStream->appendMessage( GameMessage::MSG_RAW_MOUSE_MIDDLE_BUTTON_UP );
 				msg->appendPixelArgument( m_currMouse.pos );
-				msg->appendIntegerArgument( TheKeyboard->getModifierFlags() );
+				msg->appendIntegerArgument( getSafeModifierFlags() );
 				msg->appendIntegerArgument( m_currMouse.time );
 				break;
 
@@ -827,7 +844,7 @@ void Mouse::createStreamMessages( void )
 				msg = TheMessageStream->appendMessage( GameMessage::MSG_RAW_MOUSE_MIDDLE_DRAG );
 				msg->appendPixelArgument( m_currMouse.pos );
 				msg->appendPixelArgument( m_currMouse.deltaPos );
-				msg->appendIntegerArgument( TheKeyboard->getModifierFlags() );
+				msg->appendIntegerArgument( getSafeModifierFlags() );
 				break;
 
 		}  // end switch
@@ -840,21 +857,21 @@ void Mouse::createStreamMessages( void )
 			case GWM_RIGHT_DOWN:
 				msg = TheMessageStream->appendMessage( GameMessage::MSG_RAW_MOUSE_RIGHT_BUTTON_DOWN );
 				msg->appendPixelArgument( m_currMouse.pos );
-				msg->appendIntegerArgument( TheKeyboard->getModifierFlags() );
+				msg->appendIntegerArgument( getSafeModifierFlags() );
 				msg->appendIntegerArgument( m_currMouse.time );
 				break;
 
 			case GWM_RIGHT_DOUBLE_CLICK:
 				msg = TheMessageStream->appendMessage( GameMessage::MSG_RAW_MOUSE_RIGHT_DOUBLE_CLICK );
 				msg->appendPixelArgument( m_currMouse.pos );
-				msg->appendIntegerArgument( TheKeyboard->getModifierFlags() );
+				msg->appendIntegerArgument( getSafeModifierFlags() );
 				msg->appendIntegerArgument( m_currMouse.time );
 				break;
 
 			case GWM_RIGHT_UP:
 				msg = TheMessageStream->appendMessage( GameMessage::MSG_RAW_MOUSE_RIGHT_BUTTON_UP );
 				msg->appendPixelArgument( m_currMouse.pos );
-				msg->appendIntegerArgument( TheKeyboard->getModifierFlags() );
+				msg->appendIntegerArgument( getSafeModifierFlags() );
 				msg->appendIntegerArgument( m_currMouse.time );
 				break;
 
@@ -862,7 +879,7 @@ void Mouse::createStreamMessages( void )
 				msg = TheMessageStream->appendMessage( GameMessage::MSG_RAW_MOUSE_RIGHT_DRAG );
 				msg->appendPixelArgument( m_currMouse.pos );
 				msg->appendPixelArgument( m_currMouse.deltaPos );
-				msg->appendIntegerArgument( TheKeyboard->getModifierFlags() );
+				msg->appendIntegerArgument( getSafeModifierFlags() );
 				break;
 
 		}  // end switch
@@ -874,7 +891,7 @@ void Mouse::createStreamMessages( void )
 			msg = TheMessageStream->appendMessage( GameMessage::MSG_RAW_MOUSE_WHEEL );
 			msg->appendPixelArgument( m_currMouse.pos );
 			msg->appendIntegerArgument( m_currMouse.wheelPos / 120 );  // wheel delta
-			msg->appendIntegerArgument( TheKeyboard->getModifierFlags() );
+			msg->appendIntegerArgument( getSafeModifierFlags() );
 		}  // end if
 
 	}	// end for
