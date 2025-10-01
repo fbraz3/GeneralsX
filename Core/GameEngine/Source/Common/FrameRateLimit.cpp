@@ -144,9 +144,9 @@ UnsignedInt LogicTimeScaleFpsPreset::getNextFpsValue(UnsignedInt value)
 
 UnsignedInt LogicTimeScaleFpsPreset::getPrevFpsValue(UnsignedInt value)
 {
-	if (value - StepFpsValue < LOGICFRAMES_PER_SECOND)
+	if (value - StepFpsValue < MinFpsValue)
 	{
-		return LOGICFRAMES_PER_SECOND;
+		return MinFpsValue;
 	}
 	else
 	{

@@ -109,7 +109,7 @@ static void successQuitCallback( void )
 
 	// Clean up game data.  No crashy-crash for you!
 	if (TheGameLogic->isInGame())
-		TheMessageStream->appendMessage( GameMessage::MSG_CLEAR_GAME_DATA );
+		TheGameLogic->exitGame();
 }
 
 static void successNoQuitCallback( void )
@@ -262,13 +262,11 @@ void DownloadMenuInit( WindowLayout *layout, void *userData )
 	progressBarMunkee = TheWindowManager->winGetWindowFromId( parent, progressBarMunkeeID );
 
 	DEBUG_ASSERTCRASH(!TheDownloadManager, ("Download manager already exists"));
-	if (TheDownloadManager)
-	{
-		delete TheDownloadManager;
-	}
+
+	delete TheDownloadManager;
 	TheDownloadManager = NEW DownloadManagerMunkee;
 
-}  // end DownloadMenuInit
+}
 
 //-------------------------------------------------------------------------------------------------
 /** menu shutdown method */
@@ -276,11 +274,9 @@ void DownloadMenuInit( WindowLayout *layout, void *userData )
 void DownloadMenuShutdown( WindowLayout *layout, void *userData )
 {
 	DEBUG_ASSERTCRASH(TheDownloadManager, ("No download manager"));
-	if (TheDownloadManager)
-	{
-		delete TheDownloadManager;
-		TheDownloadManager = NULL;
-	}
+
+	delete TheDownloadManager;
+	TheDownloadManager = NULL;
 
 	staticTextSize = NULL;
 	staticTextTime = NULL;
@@ -289,7 +285,7 @@ void DownloadMenuShutdown( WindowLayout *layout, void *userData )
 	progressBarMunkee = NULL;
 	parent = NULL;
 
-}  // end DownloadMenuShutdown
+}
 
 //-------------------------------------------------------------------------------------------------
 /** menu update method */
@@ -322,7 +318,7 @@ void DownloadMenuUpdate( WindowLayout *layout, void *userData )
 		GadgetStaticTextSetText(staticTextTime, timeString);
 	}
 
-}  // end DownloadMenuUpdate
+}
 
 //-------------------------------------------------------------------------------------------------
 /** menu input callback */
@@ -360,22 +356,22 @@ WindowMsgHandledType DownloadMenuInput( GameWindow *window, UnsignedInt msg,
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
 																								(WindowMsgData)button, buttonID );
 
-					}  // end if
+					}
 
 					// don't let key fall through anywhere else
 					return MSG_HANDLED;
 
-				}  // end escape
+				}
 
-			}  // end switch( key )
+			}
 
-		}  // end char
+		}
 
-	}  // end switch( msg )
+	}
 
 	return MSG_IGNORED;
 
-}  // end DownloadMenuInput
+}
 
 //-------------------------------------------------------------------------------------------------
 /** menu window system callback */
@@ -393,14 +389,14 @@ WindowMsgHandledType DownloadMenuSystem( GameWindow *window, UnsignedInt msg,
 
 			break;
 
-		}  // end create
+		}
     //---------------------------------------------------------------------------------------------
 		case GWM_DESTROY:
 		{
 
 			break;
 
-		}  // end case
+		}
 
     //----------------------------------------------------------------------------------------------
     case GWM_INPUT_FOCUS:
@@ -412,7 +408,7 @@ WindowMsgHandledType DownloadMenuSystem( GameWindow *window, UnsignedInt msg,
 
 			break;
 
-		}  // end input
+		}
     //---------------------------------------------------------------------------------------------
 		case GBM_SELECTED:
 		{
@@ -423,17 +419,17 @@ WindowMsgHandledType DownloadMenuSystem( GameWindow *window, UnsignedInt msg,
 			{
 				HandleCanceledDownload();
 				closeDownloadWindow();
-			}  // end if
+			}
 
 			break;
 
-		}  // end selected
+		}
 
 		default:
 			return MSG_IGNORED;
 
-	}  // end switch
+	}
 
 	return MSG_HANDLED;
 
-} // end DownloadMenuSystem
+}

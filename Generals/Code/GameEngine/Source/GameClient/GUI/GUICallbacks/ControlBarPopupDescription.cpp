@@ -114,7 +114,7 @@ void ControlBarPopupDescriptionUpdateFunc( WindowLayout *layout, void *param )
 	{
 		Bool wasFinished = theAnimateWindowManager->isFinished();
 		theAnimateWindowManager->update();
-		if (theAnimateWindowManager && theAnimateWindowManager->isFinished() && !wasFinished && theAnimateWindowManager->isReversed())
+		if (theAnimateWindowManager->isFinished() && !wasFinished && theAnimateWindowManager->isReversed())
 		{
 			delete theAnimateWindowManager;
 			theAnimateWindowManager = NULL;
@@ -321,7 +321,7 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 							}
 						}
 					}
-				} //End overcharge special case
+				}
 
 				//Special case: When building units, the CanMakeType determines reasons for not being able to buy stuff.
 				else if( thingTemplate )
@@ -642,8 +642,8 @@ void ControlBar::deleteBuildTooltipLayout( void )
 //	m_buildToolTipLayout->destroyWindows();
 //	deleteInstance(m_buildToolTipLayout);
 //	m_buildToolTipLayout = NULL;
-	if(theAnimateWindowManager)
-		delete theAnimateWindowManager;
+
+	delete theAnimateWindowManager;
 	theAnimateWindowManager = NULL;
 
 }

@@ -454,8 +454,7 @@ void ChallengeMenuUpdate( WindowLayout *layout, void *userData )
 //-------------------------------------------------------------------------------------------------
 void ChallengeMenuShutdown( WindowLayout *layout, void *userData )
 {
-	if(wndVideoManager)
-		delete wndVideoManager;
+	delete wndVideoManager;
 	wndVideoManager = NULL;
 
 	lastButtonIndex = -1;
@@ -473,8 +472,7 @@ void ChallengeMenuShutdown( WindowLayout *layout, void *userData )
 	TheTransitionHandler->reverse("ChallengeMenuFade");
 	isShuttingDown = TRUE;
 
-	if(TheChallengeGameInfo)
-		delete TheChallengeGameInfo;
+	delete TheChallengeGameInfo;
 	TheChallengeGameInfo = NULL;
 
 	TheAudio->removeAudioEvent( lastSelectionSound );
@@ -515,18 +513,18 @@ WindowMsgHandledType ChallengeMenuInput( GameWindow *window, UnsignedInt msg, Wi
 
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED, (WindowMsgData)buttonBack, buttonBackID );
 
-					}  // end if
+					}
 
 					// don't let key fall through anywhere else
 					return MSG_HANDLED;
 
-				}  // end escape
+				}
 
-			}  // end switch( key )
+			}
 
-		}  // end char
+		}
 
-	}  // end switch( msg )
+	}
 
 	return MSG_IGNORED;
 

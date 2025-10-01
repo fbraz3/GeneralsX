@@ -201,46 +201,35 @@ void BaseHeightMapRenderObjClass::drawScorches(void)
 BaseHeightMapRenderObjClass::~BaseHeightMapRenderObjClass(void)
 {
 	freeMapResources();
-	if (m_treeBuffer) {
-		delete m_treeBuffer;
- 		m_treeBuffer = NULL;
-	}
-	if (m_propBuffer) {
-		delete m_propBuffer;
- 		m_propBuffer = NULL;
-	}
-	if (m_bibBuffer) {
-		delete m_bibBuffer;
- 		m_bibBuffer = NULL;
-	}
-#ifdef DO_ROADS
-	if (m_roadBuffer) {
-		delete m_roadBuffer;
- 		m_roadBuffer = NULL;
-	}
-#endif
-	if (m_bridgeBuffer) {
-		delete m_bridgeBuffer;
-	}
 
-	if( m_waypointBuffer )
-	{
-		delete m_waypointBuffer;
-		m_waypointBuffer = NULL;
-	}
-	if (m_shroud) {
-		delete m_shroud;
-		m_shroud = NULL;
-	}
-	if (m_shoreLineTilePositions)	{
-		delete [] m_shoreLineTilePositions;
-		m_shoreLineTilePositions = NULL;
-	}
-	if (m_shoreLineSortInfos)
-	{
-		delete [] m_shoreLineSortInfos;
-		m_shoreLineSortInfos = NULL;
-	}
+	delete m_treeBuffer;
+	m_treeBuffer = NULL;
+
+	delete m_propBuffer;
+	m_propBuffer = NULL;
+
+	delete m_bibBuffer;
+	m_bibBuffer = NULL;
+
+#ifdef DO_ROADS
+	delete m_roadBuffer;
+	m_roadBuffer = NULL;
+#endif
+
+	delete m_bridgeBuffer;
+	m_bridgeBuffer = NULL;
+
+	delete m_waypointBuffer;
+	m_waypointBuffer = NULL;
+
+	delete m_shroud;
+	m_shroud = NULL;
+
+	delete [] m_shoreLineTilePositions;
+	m_shoreLineTilePositions = NULL;
+
+	delete [] m_shoreLineSortInfos;
+	m_shoreLineSortInfos = NULL;
 }
 
 //=============================================================================
@@ -1514,8 +1503,7 @@ void BaseHeightMapRenderObjClass::recordShoreLineSortInfos(void)
 	//Check if we need to allocate memory
 	if (!m_shoreLineSortInfos || shoreLineSortInfosSize > m_shoreLineSortInfosSize)
 	{
-		if (m_shoreLineSortInfos)
-			delete [] m_shoreLineSortInfos;	//old buffer was too small.
+		delete [] m_shoreLineSortInfos;	//old buffer was too small.
 
 		//Find the major map axis (having the most tiles).
 		m_shoreLineSortInfosSize = shoreLineSortInfosSize;
@@ -2602,7 +2590,7 @@ void BaseHeightMapRenderObjClass::renderShoreLines(CameraClass *pCamera)
 					indexCount +=6;
 				}
 			}
-		}//lock and fill ib/vb
+		}
 
 		if (indexCount > 0 && vertexCount > 0)
 		{
@@ -2614,7 +2602,7 @@ void BaseHeightMapRenderObjClass::renderShoreLines(CameraClass *pCamera)
 
 		vertexCount=0;
 		indexCount=0;
-	}//for all shore tiles
+	}
 
 	//Disable writes to destination alpha
 	DX8Wrapper::Set_DX8_Render_State(D3DRS_COLORWRITEENABLE,D3DCOLORWRITEENABLE_BLUE|D3DCOLORWRITEENABLE_GREEN|D3DCOLORWRITEENABLE_RED);
@@ -2814,9 +2802,9 @@ void BaseHeightMapRenderObjClass::renderShoreLinesSorted(CameraClass *pCamera)
 						vertexCount +=4;
 						indexCount +=6;
 						shoreInfo++;	//advance to next tile.
-					}//looping over tiles in column
+					}
 					lastRenderedTile=0;
-				}//looping over all visible columns.
+				}
 flushVertexBuffer0:
 				drawStartX = x;	//record how far we've moved so far
 				isDone = x >= drawEdgeX;
@@ -2935,14 +2923,14 @@ flushVertexBuffer0:
 						vertexCount +=4;
 						indexCount +=6;
 						shoreInfo++;	//advance to next tile.
-					}//looping over tiles in row
+					}
 					lastRenderedTile=0;
-				}//looping over all visible rows.
+				}
 flushVertexBuffer1:
 				drawStartY = y;	//record how far we've moved so far
 				isDone = y >= drawEdgeY;
 			}
-		}//lock and fill ib/vb
+		}
 
 		if (indexCount > 0 && vertexCount > 0)
 		{
@@ -2954,7 +2942,7 @@ flushVertexBuffer1:
 
 		vertexCount=0;
 		indexCount=0;
-	}//for all shore tiles
+	}
 
 	//Disable writes to destination alpha
 	DX8Wrapper::Set_DX8_Render_State(D3DRS_COLORWRITEENABLE,D3DCOLORWRITEENABLE_BLUE|D3DCOLORWRITEENABLE_GREEN|D3DCOLORWRITEENABLE_RED);
@@ -2992,7 +2980,7 @@ void BaseHeightMapRenderObjClass::renderTrees(CameraClass * camera)
 void BaseHeightMapRenderObjClass::crc( Xfer *xfer )
 {
 	// empty. jba [8/11/2003]
-}  // end CRC
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer
@@ -3011,7 +2999,7 @@ void BaseHeightMapRenderObjClass::xfer( Xfer *xfer )
 	xfer->xferSnapshot( m_propBuffer );
 
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
@@ -3019,5 +3007,10 @@ void BaseHeightMapRenderObjClass::xfer( Xfer *xfer )
 void BaseHeightMapRenderObjClass::loadPostProcess( void )
 {
 	// empty. jba [8/11/2003]
-}  // end loadPostProcess
+}
 
+//=============================================================================
+Bool BaseHeightMapRenderObjClass::useCloud()
+{
+	return TheGlobalData->m_useCloudMap && TheGlobalData->m_timeOfDay != TIME_OF_DAY_NIGHT;
+}

@@ -43,15 +43,14 @@ View::View( void )
 {
 	//Added By Sadullah Nader
 	//Initialization(s) inserted
+	m_viewLockedUntilFrame = 0u;
 	m_currentHeightAboveGround = 0.0f;
 	m_defaultAngle = 0.0f;
 	m_defaultPitchAngle = 0.0f;
 	m_heightAboveGround = 0.0f;
 	m_lockDist = 0.0f;
 	m_maxHeightAboveGround = 0.0f;
-	m_maxZoom = 0.0f;
 	m_minHeightAboveGround = 0.0f;
-	m_minZoom = 0.0f;
 	m_next = NULL;
 	m_okToAdjustHeight = TRUE;
 	m_originX = 0;
@@ -99,9 +98,7 @@ void View::init( void )
 	m_cameraLockDrawable = NULL;
 	m_zoomLimited = TRUE;
 
-	m_maxZoom = 1.3f;
-	m_minZoom = 0.2f;
-	m_zoom = m_maxZoom;
+	m_zoom = 1.0f;
 	m_maxHeightAboveGround = TheGlobalData->m_maxCameraHeight;
 	m_minHeightAboveGround = TheGlobalData->m_minCameraHeight;
 	m_okToAdjustHeight = FALSE;
@@ -114,6 +111,8 @@ void View::reset( void )
 {
 	// Only fixing the reported bug.  Who knows what side effects resetting the rest could have.
 	m_zoomLimited = TRUE;
+
+	m_viewLockedUntilFrame = 0u;
 }
 
 /**
@@ -128,6 +127,11 @@ View *View::prependViewToList( View *list )
 void View::zoom( Real height )
 {
 	setHeightAboveGround(getHeightAboveGround() + height);
+}
+
+void View::lockViewUntilFrame(UnsignedInt frame)
+{
+	m_viewLockedUntilFrame = frame;
 }
 
 /**
@@ -166,14 +170,8 @@ void View::setAngle( Real angle )
  */
 void View::setPitch( Real angle )
 {
-	m_pitchAngle = angle;
-
-	Real limit = PI/5.0f;
-
-	if (m_pitchAngle < -limit)
-		m_pitchAngle = -limit;
-	else if (m_pitchAngle > limit)
-		m_pitchAngle = limit;
+	constexpr Real limit = PI/5.0f;
+	m_pitchAngle = clamp(-limit, angle, limit);
 }
 
 /**
@@ -183,6 +181,19 @@ void View::setAngleAndPitchToDefault( void )
 {
 	m_angle = m_defaultAngle;
 	m_pitchAngle = m_defaultPitchAngle;
+}
+
+void View::setHeightAboveGround(Real z)
+{
+	// if our zoom is limited, we will stay within a predefined distance from the terrain
+	if( m_zoomLimited )
+	{
+		m_heightAboveGround = clamp(m_minHeightAboveGround, z, m_maxHeightAboveGround);
+	}
+	else
+	{
+		m_heightAboveGround = z;
+	}
 }
 
 /**
@@ -247,7 +258,7 @@ void View::getScreenCornerWorldPointsAtZ( Coord3D *topLeft, Coord3D *topRight,
 	screenToWorldAtZ( &screenBottomLeft, bottomLeft, z );
 	screenToWorldAtZ( &screenBottomRight, bottomRight, z );
 
-}  // end getScreenCornerWorldPointsAtZ
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method for a view */
@@ -273,4 +284,4 @@ void View::xfer( Xfer *xfer )
 	xfer->xferReal( &viewPos.z );
 	lookAt( &viewPos );
 
-}  // end xfer
+}

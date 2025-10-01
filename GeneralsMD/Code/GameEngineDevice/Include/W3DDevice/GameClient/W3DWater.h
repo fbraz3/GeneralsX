@@ -73,7 +73,6 @@ public:
 		WATER_TYPE_1_FB_REFLECTION,		//legacy frame buffer reflection (non translucent)
 		WATER_TYPE_2_PVSHADER,		//pixel/vertex shader, texture reflection
 		WATER_TYPE_3_GRIDMESH,		//3D Mesh based water
-		WATER_TYPE_MAX		// end of enumeration
 	};
 
 	WaterRenderObjClass(void);
@@ -169,7 +168,7 @@ protected:
 	Int m_numIndices;				///<number of indices in D3D index buffer
 	LPDIRECT3DTEXTURE8 m_pBumpTexture[NUM_BUMP_FRAMES]; ///<animation frames
 	LPDIRECT3DTEXTURE8 m_pBumpTexture2[NUM_BUMP_FRAMES]; ///<animation frames
-	Int					m_iBumpFrame;	///<current animation frame
+	Real				m_fBumpFrame;	///<current animation frame
 	Real				m_fBumpScale;	///<scales bump map uv perturbation
 	TextureClass * m_pReflectionTexture;	///<render target for reflection
 	RenderObjClass	*m_skyBox;		///<box around level

@@ -35,6 +35,7 @@
 #include "Common/PlayerList.h"
 #include "Common/Recorder.h"
 #include "Common/StatsCollector.h"
+#include "Common/UserPreferences.h"
 #include "GameLogic/Object.h"
 #include "GameLogic/PartitionManager.h"
 #include "GameClient/Display.h"
@@ -72,15 +73,15 @@ static Bool scrollDir[4] = { false, false, false, false };
 // The multiplier of 2 was logically chosen because originally the Scroll Factor did practically not affect the RMB scroll speed
 // and because the default Scroll Factor is/was 0.5, it needs to be doubled to get to a neutral 1x multiplier.
 
-CONSTEXPR const Real SCROLL_MULTIPLIER = 2.0f;
-CONSTEXPR const Real SCROLL_AMT = 100.0f * SCROLL_MULTIPLIER;
+constexpr const Real SCROLL_MULTIPLIER = 2.0f;
+constexpr const Real SCROLL_AMT = 100.0f * SCROLL_MULTIPLIER;
 
 static const Int edgeScrollSize = 3;
 
 static Mouse::MouseCursor prevCursor = Mouse::ARROW;
 
 //-----------------------------------------------------------------------------
-void LookAtTranslator::setScrolling(Int x)
+void LookAtTranslator::setScrolling(ScrollType scrollType)
 {
 	if (!TheInGameUI->getInputEnabled())
 		return;
@@ -89,7 +90,7 @@ void LookAtTranslator::setScrolling(Int x)
 	m_isScrolling = true;
 	TheInGameUI->setScrolling( TRUE );
 	TheTacticalView->setMouseLock( TRUE );
-	m_scrollType = x;
+	m_scrollType = scrollType;
 	if(TheStatsCollector)
 		TheStatsCollector->startScrollTime();
 }
@@ -103,10 +104,30 @@ void LookAtTranslator::stopScrolling( void )
 	TheMouse->setCursor(prevCursor);
 	m_scrollType = SCROLL_NONE;
 
-	// if we have a stats collectore increment the stats
+	// increment the stats if we have a stats collector
 	if(TheStatsCollector)
 		TheStatsCollector->endScrollTime();
 
+}
+
+//-----------------------------------------------------------------------------
+Bool LookAtTranslator::canScrollAtScreenEdge() const
+{
+	if (!TheMouse->isCursorCaptured())
+		return false;
+
+	if (TheDisplay->getWindowed())
+	{
+		if ((m_screenEdgeScrollMode & ScreenEdgeScrollMode_EnabledInWindowedApp) == 0)
+			return false;
+	}
+	else
+	{
+		if ((m_screenEdgeScrollMode & ScreenEdgeScrollMode_EnabledInFullscreenApp) == 0)
+			return false;
+	}
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -121,11 +142,14 @@ LookAtTranslator::LookAtTranslator() :
 	m_scrollType(SCROLL_NONE)
 {
 	//Added By Sadullah Nader
-	//Initializations misssing and needed
+	//Initializations missing and needed
 	m_anchor.x = m_anchor.y = 0;
 	m_currentPos.x = m_currentPos.y = 0;
 	m_originalAnchor.x = m_originalAnchor.y = 0;
 	//
+
+	OptionPreferences prefs;
+	m_screenEdgeScrollMode = prefs.getScreenEdgeScrollMode();
 
 	DEBUG_ASSERTCRASH(!TheLookAtTranslator, ("Already have a LookAtTranslator - why do you need two?"));
 	TheLookAtTranslator = this;
@@ -161,6 +185,11 @@ Bool LookAtTranslator::hasMouseMovedRecently( void )
 void LookAtTranslator::setCurrentPos( const ICoord2D& pos )
 {
 	m_currentPos = pos;
+}
+
+void LookAtTranslator::setScreenEdgeScrollMode(ScreenEdgeScrollMode mode)
+{
+	m_screenEdgeScrollMode = mode;
 }
 
 //-----------------------------------------------------------------------------
@@ -308,8 +337,7 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 				break;
 			}
 
-			// TheSuperHackers @tweak Ayumi/xezon 26/07/2025 Enables edge scrolling in windowed mode.
-			if (TheMouse->isCursorCaptured())
+			if (canScrollAtScreenEdge())
 			{
 				if (m_isScrolling)
 				{
@@ -371,19 +399,15 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 
 			Int spin = msg->getArgument( 1 )->integer;
 
-			// TheSuperHackers @tweak The camera zoom is now decoupled from the render update.
-			const Real fpsRatio = (Real)BaseFps / TheGameEngine->getUpdateFps();
-			const Real zoomHeight = (Real)View::ZoomHeightPerSecond * fpsRatio;
-
 			if (spin > 0)
 			{
 				for ( ; spin > 0; spin--)
-					TheTacticalView->zoom( -zoomHeight );
+					TheTacticalView->zoom( -View::ZoomHeightPerSecond );
 			}
 			else
 			{
 				for ( ;spin < 0; spin++ )
-					TheTacticalView->zoom( +zoomHeight );
+					TheTacticalView->zoom( +View::ZoomHeightPerSecond );
 			}
 
 			break;
@@ -671,24 +695,24 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 							done = true;
 							break;
 						}
-					} // if airborne found
+					}
 
 					// if we're back to the first, quit
 					if (d == first)
 						break;
-				} // while
-			}	// end plane lock
+				}
+			}
 
 			disp = DESTROY_MESSAGE;
 			break;
 		}
 #endif // #if defined(RTS_DEBUG)
 
-	}  // end switch
+	}
 
 	return disp;
 
-}  // end LookAtTranslator
+}
 
 void LookAtTranslator::resetModes()
 {

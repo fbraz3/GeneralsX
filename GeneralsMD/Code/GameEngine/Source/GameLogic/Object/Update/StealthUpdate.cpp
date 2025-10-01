@@ -317,8 +317,10 @@ Bool StealthUpdate::allowedToStealth( Object *stealthOwner ) const
 
 	if( flags & STEALTH_NOT_WHILE_TAKING_DAMAGE && self->getBodyModule()->getLastDamageTimestamp() >= now - 1 )
 	{
+#if RETAIL_COMPATIBLE_BUG
 		//Only if it's not healing damage.
 		if( self->getBodyModule()->getLastDamageInfo()->in.m_damageType != DAMAGE_HEALING )
+#endif
 		{
 			//Can't stealth if we just took damage in the last frame or two.
 			if( self->getBodyModule()->getLastDamageTimestamp() != 0xffffffff )
@@ -605,7 +607,7 @@ UpdateSleepTime StealthUpdate::update( void )
 		if( wasHidden && draw )
 			draw->setDrawableHidden( TRUE );
 
-	}  // end if
+	}
 
 	Object *self = getObject();
 	Object *stealthOwner = calcStealthOwner();
@@ -1130,7 +1132,7 @@ void StealthUpdate::crc( Xfer *xfer )
 	// extend base class
 	UpdateModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -1183,11 +1185,11 @@ void StealthUpdate::xfer( Xfer *xfer )
 				DEBUG_CRASH(( "StealthUpdate::xfer - Unknown template '%s'", name.str() ));
 				throw SC_INVALID_DATA;
 
-			}  // end if
+			}
 
-		}  // end if
+		}
 
-	}  // end if
+	}
 
 	// disguise transition frames
 	xfer->xferUnsignedInt( &m_disguiseTransitionFrames );
@@ -1206,7 +1208,7 @@ void StealthUpdate::xfer( Xfer *xfer )
 		xfer->xferUnsignedInt( &m_framesGranted );
 	}
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
@@ -1227,4 +1229,4 @@ void StealthUpdate::loadPostProcess( void )
 	if( isDisguised() )
 		m_xferRestoreDisguise = TRUE;
 
-}  // end loadPostProcess
+}

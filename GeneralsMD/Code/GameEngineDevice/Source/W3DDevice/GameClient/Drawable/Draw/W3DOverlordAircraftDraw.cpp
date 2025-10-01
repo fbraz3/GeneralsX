@@ -101,7 +101,7 @@ void W3DOverlordAircraftDraw::doDrawModule(const Matrix3D* transformMtx)
         riderDraw->setColorTintEnvelope( *env );
 
       riderDraw->notifyDrawableDependencyCleared();
-		  riderDraw->draw( NULL );// What the hell?  This param isn't used for anything
+      riderDraw->draw();
     }
     DEBUG_ASSERTCRASH( riderDraw, ("OverlordAircraftDraw finds no rider's drawable") );
 
@@ -135,7 +135,7 @@ void W3DOverlordAircraftDraw::crc( Xfer *xfer )
 	// extend base class
 	W3DModelDraw::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -153,7 +153,7 @@ void W3DOverlordAircraftDraw::xfer( Xfer *xfer )
 	// extend base class
 	W3DModelDraw::xfer( xfer );
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
@@ -164,4 +164,4 @@ void W3DOverlordAircraftDraw::loadPostProcess( void )
 	// extend base class
 	W3DModelDraw::loadPostProcess();
 
-}  // end loadPostProcess
+}

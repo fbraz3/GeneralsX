@@ -166,6 +166,8 @@ const char* DAZZLE_INI_FILENAME="DAZZLE.INI";
 **
 ***********************************************************************************/
 
+float														WW3D::LogicFrameTimeMs = 1000.0f / WWSyncPerSecond; // initialized to something to avoid division by zero on first use
+float															WW3D::FractionalSyncMs = 0.0f;
 unsigned int											WW3D::SyncTime = 0;
 unsigned int											WW3D::PreviousSyncTime = 0;
 bool														WW3D::IsSortingEnabled = true;
@@ -1165,6 +1167,12 @@ unsigned int WW3D::Get_Last_Frame_Vertex_Count(void)
 	return Debug_Statistics::Get_DX8_Vertices();
 }
 
+void WW3D::Update_Logic_Frame_Time(float milliseconds)
+{
+	LogicFrameTimeMs = milliseconds;
+	FractionalSyncMs += milliseconds;
+}
+
 
 /***********************************************************************************************
  * WW3D::Sync -- Time sychronization                                                           *
@@ -1178,12 +1186,17 @@ unsigned int WW3D::Get_Last_Frame_Vertex_Count(void)
  * HISTORY:                                                                                    *
  *   3/24/98    GTH : Created.                                                                 *
  *=============================================================================================*/
-void WW3D::Sync(unsigned int sync_time)
+void WW3D::Sync(bool step)
 {
 	PreviousSyncTime = SyncTime;
-   SyncTime = sync_time;
-}
 
+	if (step)
+	{
+		unsigned int integralSyncMs = (unsigned int)FractionalSyncMs;
+		FractionalSyncMs -= integralSyncMs;
+		SyncTime += integralSyncMs;
+	}
+}
 
 /***********************************************************************************************
  * WW3D::Set_Ext_Swap_Interval -- Sets the swap interval the device should aim sync for.       *

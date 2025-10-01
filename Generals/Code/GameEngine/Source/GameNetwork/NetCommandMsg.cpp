@@ -161,7 +161,7 @@ static Int indexFromMask(UnsignedInt mask)
 		player = ThePlayerList->getNthPlayer( i );
 		if( player && player->getPlayerMask() == mask )
 			return i;
-	}  // end for i
+	}
 
 	return -1;
 }
@@ -840,10 +840,8 @@ NetWrapperCommandMsg::NetWrapperCommandMsg() : NetCommandMsg() {
 }
 
 NetWrapperCommandMsg::~NetWrapperCommandMsg() {
-	if (m_data != NULL) {
-		delete m_data;
-		m_data = NULL;
-	}
+	delete m_data;
+	m_data = NULL;
 }
 
 UnsignedByte * NetWrapperCommandMsg::getData() {
@@ -852,11 +850,7 @@ UnsignedByte * NetWrapperCommandMsg::getData() {
 
 void NetWrapperCommandMsg::setData(UnsignedByte *data, UnsignedInt dataLength)
 {
-	if (m_data != NULL) {
-		delete m_data;
-		m_data = NULL;
-	}
-
+	delete m_data;
 	m_data = NEW UnsignedByte[dataLength];	// pool[]ify
 	memcpy(m_data, data, dataLength);
 	m_dataLength = dataLength;
@@ -917,10 +911,8 @@ NetFileCommandMsg::NetFileCommandMsg() : NetCommandMsg() {
 }
 
 NetFileCommandMsg::~NetFileCommandMsg() {
-	if (m_data != NULL) {
-		delete[] m_data;
-		m_data = NULL;
-	}
+	delete[] m_data;
+	m_data = NULL;
 }
 
 AsciiString NetFileCommandMsg::getRealFilename()

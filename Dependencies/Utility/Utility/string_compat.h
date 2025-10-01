@@ -31,3 +31,4 @@ typedef char* LPSTR;
 #define stricmp strcasecmp
 #define strnicmp strncasecmp
 #define strcmpi strcasecmp
+

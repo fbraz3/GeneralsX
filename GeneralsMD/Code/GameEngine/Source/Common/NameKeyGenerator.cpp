@@ -42,7 +42,7 @@ NameKeyGenerator::NameKeyGenerator()
 	for (Int i = 0; i < SOCKET_COUNT; ++i)
 		m_sockets[i] = NULL;
 
-}  // end NameKeyGenerator
+}
 
 //-------------------------------------------------------------------------------------------------
 NameKeyGenerator::~NameKeyGenerator()
@@ -51,7 +51,7 @@ NameKeyGenerator::~NameKeyGenerator()
 	// free all system data
 	freeSockets();
 
-}  // end ~NameKeyGenerator
+}
 
 //-------------------------------------------------------------------------------------------------
 void NameKeyGenerator::init()
@@ -62,7 +62,7 @@ void NameKeyGenerator::init()
 	freeSockets();
 	m_nextID = 1;
 
-}  // end init
+}
 
 //-------------------------------------------------------------------------------------------------
 void NameKeyGenerator::reset()
@@ -70,7 +70,7 @@ void NameKeyGenerator::reset()
 	freeSockets();
 	m_nextID = 1;
 
-}  // end reset
+}
 
 //-------------------------------------------------------------------------------------------------
 void NameKeyGenerator::freeSockets()
@@ -86,7 +86,7 @@ void NameKeyGenerator::freeSockets()
 		m_sockets[i] = NULL;
 	}
 
-}  // end freeSockets
+}
 
 /* ------------------------------------------------------------------------ */
 inline UnsignedInt calcHashForString(const char* p)
@@ -123,7 +123,48 @@ AsciiString NameKeyGenerator::keyToName(NameKeyType key)
 }
 
 //-------------------------------------------------------------------------------------------------
-NameKeyType NameKeyGenerator::nameToKey(const char* nameString)
+#if RTS_ZEROHOUR && RETAIL_COMPATIBLE_CRC
+// TheSuperHackers @info xezon 04/09/2025 This key reservation is required for CRC compatibility,
+// because the name keys are somehow CRC relevant. It was originally used by the file exist cache
+// of the file system in Zero Hour.
+Bool NameKeyGenerator::addReservedKey()
+{
+	switch (m_nextID)
+	{
+	case 97: nameToLowercaseKeyImpl("Data\\English\\Language9x.ini"); return true;
+	case 98: nameToLowercaseKeyImpl("Data\\Audio\\Tracks\\English\\GLA_02.mp3"); return true;
+	case 99: nameToLowercaseKeyImpl("Data\\Audio\\Tracks\\GLA_02.mp3"); return true;
+	}
+	return false;
+}
+#endif
+
+//-------------------------------------------------------------------------------------------------
+NameKeyType NameKeyGenerator::nameToKey(const char* name)
+{
+	const NameKeyType key = nameToKeyImpl(name);
+
+#if RTS_ZEROHOUR && RETAIL_COMPATIBLE_CRC
+	while (addReservedKey());
+#endif
+
+	return key;
+}
+
+//-------------------------------------------------------------------------------------------------
+NameKeyType NameKeyGenerator::nameToLowercaseKey(const char *name)
+{
+	const NameKeyType key = nameToLowercaseKeyImpl(name);
+
+#if RTS_ZEROHOUR && RETAIL_COMPATIBLE_CRC
+	while (addReservedKey());
+#endif
+
+	return key;
+}
+
+//-------------------------------------------------------------------------------------------------
+NameKeyType NameKeyGenerator::nameToKeyImpl(const char* nameString)
 {
 	Bucket *b;
 
@@ -168,10 +209,10 @@ NameKeyType NameKeyGenerator::nameToKey(const char* nameString)
 
 	return result;
 
-}  // end nameToKey
+}
 
 //-------------------------------------------------------------------------------------------------
-NameKeyType NameKeyGenerator::nameToLowercaseKey(const char* nameString)
+NameKeyType NameKeyGenerator::nameToLowercaseKeyImpl(const char* nameString)
 {
 	Bucket *b;
 
@@ -216,7 +257,7 @@ NameKeyType NameKeyGenerator::nameToLowercaseKey(const char* nameString)
 
 	return result;
 
-}  // end nameToLowercaseKey
+}
 
 //-------------------------------------------------------------------------------------------------
 // Get a string out of the INI. Store it into a NameKeyType

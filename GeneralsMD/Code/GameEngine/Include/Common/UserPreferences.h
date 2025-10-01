@@ -39,7 +39,8 @@
 #include "Common/STLTypedefs.h"
 
 class Money;
-enum CursorCaptureMode CPP_11(: Int);
+typedef UnsignedInt CursorCaptureMode;
+typedef UnsignedInt ScreenEdgeScrollMode;
 
 //-----------------------------------------------------------------------------
 // PUBLIC TYPES ///////////////////////////////////////////////////////////////
@@ -95,7 +96,16 @@ public:
 	Bool getRetaliationModeEnabled();					// convenience function
 	Bool getDoubleClickAttackMoveEnabled(void);	// convenience function
 	Real getScrollFactor(void);								// convenience function
+	Bool getDrawScrollAnchor(void);
+	Bool getMoveScrollAnchor(void);
+	Bool getCursorCaptureEnabledInWindowedGame() const;
+	Bool getCursorCaptureEnabledInWindowedMenu() const;
+	Bool getCursorCaptureEnabledInFullscreenGame() const;
+	Bool getCursorCaptureEnabledInFullscreenMenu() const;
 	CursorCaptureMode getCursorCaptureMode() const;
+	Bool getScreenEdgeScrollEnabledInWindowedApp() const;
+	Bool getScreenEdgeScrollEnabledInFullscreenApp() const;
+	ScreenEdgeScrollMode getScreenEdgeScrollMode() const;
 	Bool getSendDelay(void);									// convenience function
 	Int getFirewallBehavior(void);						// convenience function
 	Short getFirewallPortAllocationDelta(void);	// convenience function
@@ -133,8 +143,12 @@ public:
 	Int	 getCampaignDifficulty(void);
 	void setCampaignDifficulty( Int diff );
 
+	Int getNetworkLatencyFontSize(void);
+	Int getRenderFpsFontSize(void);
 	Int getSystemTimeFontSize(void);
 	Int getGameTimeFontSize(void);
+
+	Real getResolutionFontAdjustment(void);
 };
 
 //-----------------------------------------------------------------------------

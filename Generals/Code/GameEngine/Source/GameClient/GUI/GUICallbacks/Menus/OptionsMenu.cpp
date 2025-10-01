@@ -44,6 +44,7 @@
 #include "GameClient/ClientInstance.h"
 #include "GameClient/GameClient.h"
 #include "GameClient/InGameUI.h"
+#include "GameClient/LookAtXlat.h"
 #include "GameClient/WindowLayout.h"
 #include "GameClient/Gadget.h"
 #include "GameClient/GadgetCheckBox.h"
@@ -62,6 +63,7 @@
 #include "GameClient/IMEManager.h"
 #include "GameClient/ShellHooks.h"
 #include "GameClient/GUICallbacks.h"
+#include "GameClient/GlobalLanguage.h"
 #include "GameNetwork/FirewallHelper.h"
 #include "GameNetwork/IPEnumeration.h"
 #include "GameNetwork/GameSpyOverlay.h"
@@ -212,8 +214,6 @@ enum Detail CPP_11(: Int)
 	MEDIUMDETAIL,
 	LOWDETAIL,
 	CUSTOMDETAIL,
-
-	DETAIL,
 };
 
 
@@ -346,21 +346,119 @@ Real OptionPreferences::getScrollFactor(void)
 	return factor/100.0f;
 }
 
+Bool OptionPreferences::getDrawScrollAnchor(void)
+{
+	OptionPreferences::const_iterator it = find("DrawScrollAnchor");
+	// TheSuperHackers @info this default is based on the same variable within InGameUi.ini
+	if (it == end())
+		return FALSE;
+
+	if (stricmp(it->second.str(), "yes") == 0) {
+		return TRUE;
+	}
+	return FALSE;
+}
+
+Bool OptionPreferences::getMoveScrollAnchor(void)
+{
+	OptionPreferences::const_iterator it = find("MoveScrollAnchor");
+	// TheSuperHackers @info this default is based on the same variable within InGameUi.ini
+	if (it == end())
+		return TRUE;
+
+	if (stricmp(it->second.str(), "yes") == 0) {
+		return TRUE;
+	}
+	return FALSE;
+}
+
+Bool OptionPreferences::getCursorCaptureEnabledInWindowedGame() const
+{
+	OptionPreferences::const_iterator it = find("CursorCaptureEnabledInWindowedGame");
+	if (it == end())
+		return (CursorCaptureMode_Default & CursorCaptureMode_EnabledInWindowedGame) != 0;
+
+	if (stricmp(it->second.str(), "yes") == 0)
+		return TRUE;
+
+	return FALSE;
+}
+
+Bool OptionPreferences::getCursorCaptureEnabledInWindowedMenu() const
+{
+	OptionPreferences::const_iterator it = find("CursorCaptureEnabledInWindowedMenu");
+	if (it == end())
+		return (CursorCaptureMode_Default & CursorCaptureMode_EnabledInWindowedMenu) != 0;
+
+	if (stricmp(it->second.str(), "yes") == 0)
+		return TRUE;
+
+	return FALSE;
+}
+
+Bool OptionPreferences::getCursorCaptureEnabledInFullscreenGame() const
+{
+	OptionPreferences::const_iterator it = find("CursorCaptureEnabledInFullscreenGame");
+	if (it == end())
+		return (CursorCaptureMode_Default & CursorCaptureMode_EnabledInFullscreenGame) != 0;
+
+	if (stricmp(it->second.str(), "yes") == 0)
+		return TRUE;
+
+	return FALSE;
+}
+
+Bool OptionPreferences::getCursorCaptureEnabledInFullscreenMenu() const
+{
+	OptionPreferences::const_iterator it = find("CursorCaptureEnabledInFullscreenMenu");
+	if (it == end())
+		return (CursorCaptureMode_Default & CursorCaptureMode_EnabledInFullscreenMenu) != 0;
+
+	if (stricmp(it->second.str(), "yes") == 0)
+		return TRUE;
+
+	return FALSE;
+}
+
 CursorCaptureMode OptionPreferences::getCursorCaptureMode() const
 {
-	CursorCaptureMode mode = CursorCaptureMode_Default;
-	OptionPreferences::const_iterator it = find("CursorCaptureMode");
-	if (it != end())
-	{
-		for (Int i = 0; i < CursorCaptureMode_Count; ++i)
-		{
-			if (stricmp(it->second.str(), TheCursorCaptureModeNames[i]) == 0)
-			{
-				mode = static_cast<CursorCaptureMode>(i);
-				break;
-			}
-		}
-	}
+	CursorCaptureMode mode = 0;
+	mode |= getCursorCaptureEnabledInWindowedGame() ? CursorCaptureMode_EnabledInWindowedGame : 0;
+	mode |= getCursorCaptureEnabledInWindowedMenu() ? CursorCaptureMode_EnabledInWindowedMenu : 0;
+	mode |= getCursorCaptureEnabledInFullscreenGame() ? CursorCaptureMode_EnabledInFullscreenGame : 0;
+	mode |= getCursorCaptureEnabledInFullscreenMenu() ? CursorCaptureMode_EnabledInFullscreenMenu : 0;
+	return mode;
+}
+
+Bool OptionPreferences::getScreenEdgeScrollEnabledInWindowedApp() const
+{
+	OptionPreferences::const_iterator it = find("ScreenEdgeScrollEnabledInWindowedApp");
+	if (it == end())
+		return (ScreenEdgeScrollMode_Default & ScreenEdgeScrollMode_EnabledInWindowedApp) != 0;
+
+	if (stricmp(it->second.str(), "yes") == 0)
+		return TRUE;
+
+	return FALSE;
+}
+
+Bool OptionPreferences::getScreenEdgeScrollEnabledInFullscreenApp() const
+{
+	OptionPreferences::const_iterator it = find("ScreenEdgeScrollEnabledInFullscreenApp");
+	if (it == end())
+		return (ScreenEdgeScrollMode_Default & ScreenEdgeScrollMode_EnabledInFullscreenApp) != 0;
+
+	if (stricmp(it->second.str(), "yes") == 0)
+		return TRUE;
+
+	return FALSE;
+}
+
+ScreenEdgeScrollMode OptionPreferences::getScreenEdgeScrollMode() const
+{
+	ScreenEdgeScrollMode mode = 0;
+	mode |= getScreenEdgeScrollEnabledInWindowedApp() ? ScreenEdgeScrollMode_EnabledInWindowedApp : 0;
+	mode |= getScreenEdgeScrollEnabledInFullscreenApp() ? ScreenEdgeScrollMode_EnabledInFullscreenApp : 0;
 	return mode;
 }
 
@@ -756,6 +854,34 @@ Real OptionPreferences::getMoneyTransactionVolume(void) const
 	return volume;
 }
 
+Int OptionPreferences::getNetworkLatencyFontSize(void)
+{
+	OptionPreferences::const_iterator it = find("NetworkLatencyFontSize");
+	if (it == end())
+		return 8;
+
+	Int fontSize = atoi(it->second.str());
+	if (fontSize < 0)
+	{
+		fontSize = 0;
+	}
+	return fontSize;
+}
+
+Int OptionPreferences::getRenderFpsFontSize(void)
+{
+	OptionPreferences::const_iterator it = find("RenderFpsFontSize");
+	if (it == end())
+		return 8;
+
+	Int fontSize = atoi(it->second.str());
+	if (fontSize < 0)
+	{
+		fontSize = 0;
+	}
+	return fontSize;
+}
+
 Int OptionPreferences::getSystemTimeFontSize(void)
 {
 	OptionPreferences::const_iterator it = find("SystemTimeFontSize");
@@ -782,6 +908,20 @@ Int OptionPreferences::getGameTimeFontSize(void)
 		fontSize = 0;
 	}
 	return fontSize;
+}
+
+Real OptionPreferences::getResolutionFontAdjustment(void)
+{
+	OptionPreferences::const_iterator it = find("ResolutionFontAdjustment");
+	if (it == end())
+		return -1.0f;
+
+	Real fontScale = (Real)atof(it->second.str()) / 100.0f;
+	if (fontScale < 0.0f)
+	{
+		fontScale = -1.0f;
+	}
+	return fontScale;
 }
 
 static OptionPreferences *pref = NULL;
@@ -1161,8 +1301,19 @@ static void saveOptions( void )
 	// TheSuperHackers @todo Add combo box ?
 	{
 		CursorCaptureMode mode = pref->getCursorCaptureMode();
-		(*pref)["CursorCaptureMode"] = TheCursorCaptureModeNames[mode];
+		(*pref)["CursorCaptureEnabledInWindowedGame"] = (mode & CursorCaptureMode_EnabledInWindowedGame) ? "yes" : "no";
+		(*pref)["CursorCaptureEnabledInWindowedMenu"] = (mode & CursorCaptureMode_EnabledInWindowedMenu) ? "yes" : "no";
+		(*pref)["CursorCaptureEnabledInFullscreenGame"] = (mode & CursorCaptureMode_EnabledInFullscreenGame) ? "yes" : "no";
+		(*pref)["CursorCaptureEnabledInFullscreenMenu"] = (mode & CursorCaptureMode_EnabledInFullscreenMenu) ? "yes" : "no";
 		TheMouse->setCursorCaptureMode(mode);
+	}
+
+	// TheSuperHackers @todo Add combo box ?
+	{
+		ScreenEdgeScrollMode mode = pref->getScreenEdgeScrollMode();
+		(*pref)["ScreenEdgeScrollEnabledInWindowedApp"] = (mode & ScreenEdgeScrollMode_EnabledInWindowedApp) ? "yes" : "no";
+		(*pref)["ScreenEdgeScrollEnabledInFullscreenApp"] = (mode & ScreenEdgeScrollMode_EnabledInFullscreenApp) ? "yes" : "no";
+		TheLookAtTranslator->setScreenEdgeScrollMode(mode);
 	}
 
 	//-------------------------------------------------------------------------------------------------
@@ -1175,6 +1326,24 @@ static void saveOptions( void )
 		AsciiString prefString;
 		prefString.format("%d", val);
 		(*pref)["ScrollFactor"] = prefString;
+	}
+
+	//-------------------------------------------------------------------------------------------------
+	// draw scroll anchor
+	{
+		if( TheInGameUI->getDrawRMBScrollAnchor() )
+				(*pref)["DrawScrollAnchor"] = "yes";
+		else
+				(*pref)["DrawScrollAnchor"] = "no";
+	}
+
+	//-------------------------------------------------------------------------------------------------
+	// move scroll anchor
+	{
+		if( TheInGameUI->getMoveRMBScrollAnchor() )
+				(*pref)["MoveScrollAnchor"] = "yes";
+		else
+				(*pref)["MoveScrollAnchor"] = "no";
 	}
 
 	//-------------------------------------------------------------------------------------------------
@@ -1273,6 +1442,28 @@ static void saveOptions( void )
  	}
 
 	//-------------------------------------------------------------------------------------------------
+	// Set Network Latency Font Size
+	val = pref->getNetworkLatencyFontSize();
+	if (val >= 0)
+	{
+		AsciiString prefString;
+		prefString.format("%d", val);
+		(*pref)["NetworkLatencyFontSize"] = prefString;
+		TheInGameUI->refreshNetworkLatencyResources();
+	}
+
+	//-------------------------------------------------------------------------------------------------
+	// Set Render FPS Font Size
+	val = pref->getRenderFpsFontSize();
+	if (val >= 0)
+	{
+		AsciiString prefString;
+		prefString.format("%d", val);
+		(*pref)["RenderFpsFontSize"] = prefString;
+		TheInGameUI->refreshRenderFpsResources();
+	}
+
+	//-------------------------------------------------------------------------------------------------
 	// Set System Time Font Size
 	val = pref->getSystemTimeFontSize(); // TheSuperHackers @todo replace with options input when applicable
 	if (val >= 0)
@@ -1292,6 +1483,17 @@ static void saveOptions( void )
 		prefString.format("%d", val);
 		(*pref)["GameTimeFontSize"] = prefString;
 		TheInGameUI->refreshGameTimeResources();
+	}
+
+	//-------------------------------------------------------------------------------------------------
+	// Set User Font Scaling Percentage
+	val = pref->getResolutionFontAdjustment() * 100.0f; // TheSuperHackers @todo replace with options input when applicable
+	if (val >= 0 || val == -100)
+	{
+		AsciiString prefString;
+		prefString.format("%d", REAL_TO_INT( val ) );
+		(*pref)["ResolutionFontAdjustment"] = prefString;
+		TheGlobalLanguageData->m_userResolutionFontSizeAdjustment = (Real)val / 100.0f;
 	}
 
 	//-------------------------------------------------------------------------------------------------
@@ -1785,7 +1987,7 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	//set scroll options
 	AsciiString test = (*pref)["DrawScrollAnchor"];
 	DEBUG_LOG(("DrawScrollAnchor == [%s]", test.str()));
-	if (test == "Yes" || (test.isEmpty() && TheInGameUI->getDrawRMBScrollAnchor()))
+	if (test == "yes" || (test.isEmpty() && TheInGameUI->getDrawRMBScrollAnchor()))
 	{
 		GadgetCheckBoxSetChecked( checkDrawAnchor, true);
 		TheInGameUI->setDrawRMBScrollAnchor(true);
@@ -1797,7 +1999,7 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	}
 	test = (*pref)["MoveScrollAnchor"];
 	DEBUG_LOG(("MoveScrollAnchor == [%s]", test.str()));
-	if (test == "Yes" || (test.isEmpty() && TheInGameUI->getMoveRMBScrollAnchor()))
+	if (test == "yes" || (test.isEmpty() && TheInGameUI->getMoveRMBScrollAnchor()))
 	{
 		GadgetCheckBoxSetChecked( checkMoveAnchor, true);
 		TheInGameUI->setMoveRMBScrollAnchor(true);
@@ -1889,7 +2091,7 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 
 	TheWindowManager->winSetModal(parent);
 	ignoreSelected = FALSE;
-}  // end OptionsMenuInit
+}
 
 //-------------------------------------------------------------------------------------------------
 /** options menu shutdown method */
@@ -1913,7 +2115,7 @@ void OptionsMenuShutdown( WindowLayout *layout, void *userData )
 	TheShell->shutdownComplete( layout );
 */
 
-}  // end OptionsMenuShutdown
+}
 
 //-------------------------------------------------------------------------------------------------
 /** options menu update method */
@@ -1921,7 +2123,7 @@ void OptionsMenuShutdown( WindowLayout *layout, void *userData )
 void OptionsMenuUpdate( WindowLayout *layout, void *userData )
 {
 
-}  // end OptionsMenuUpdate
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Options menu input callback */
@@ -1959,22 +2161,22 @@ WindowMsgHandledType OptionsMenuInput( GameWindow *window, UnsignedInt msg,
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
 																								(WindowMsgData)button, buttonID );
 
-					}  // end if
+					}
 
 					// don't let key fall through anywhere else
 					return MSG_HANDLED;
 
-				}  // end escape
+				}
 
-			}  // end switch( key )
+			}
 
-		}  // end char
+		}
 
-	}  // end switch( msg )
+	}
 
 	return MSG_IGNORED;
 
-}  // end OptionsMenuInput
+}
 
 //-------------------------------------------------------------------------------------------------
 /** options menu window system callback */
@@ -2003,7 +2205,7 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 
 			break;
 
-		}  // end create
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GWM_DESTROY:
@@ -2011,7 +2213,7 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 
 			break;
 
-		}  // end case
+		}
 
 		// --------------------------------------------------------------------------------------------
 		case GWM_INPUT_FOCUS:
@@ -2023,7 +2225,7 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 
 			return MSG_HANDLED;
 
-		}  // end input
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GCM_SELECTED:
@@ -2057,11 +2259,9 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 			{
 				// go back one screen
 				//TheShell->pop();
-				if (pref)
-				{
-					delete pref;
-					pref = NULL;
-				}
+
+				delete pref;
+				pref = NULL;
 
 				comboBoxLANIP = NULL;
 				comboBoxOnlineIP = NULL;
@@ -2073,7 +2273,7 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 					DestroyOptionsLayout();
 				}
 
-			}  // end if
+			}
 			else if (controlID == buttonAccept )
 			{
 				saveOptions();
@@ -2126,12 +2326,12 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
         if( GadgetCheckBoxIsChecked( control ) )
         {
           	TheInGameUI->setDrawRMBScrollAnchor(true);
-          	(*pref)["DrawScrollAnchor"] = "Yes";
+          	(*pref)["DrawScrollAnchor"] = "yes";
         }
 				else
         {
           	TheInGameUI->setDrawRMBScrollAnchor(false);
-          	(*pref)["DrawScrollAnchor"] = "No";
+          	(*pref)["DrawScrollAnchor"] = "no";
         }
       }
 			else if(controlID == checkMoveAnchorID )
@@ -2139,12 +2339,12 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
         if( GadgetCheckBoxIsChecked( control ) )
         {
           	TheInGameUI->setMoveRMBScrollAnchor(true);
-          	(*pref)["MoveScrollAnchor"] = "Yes";
+          	(*pref)["MoveScrollAnchor"] = "yes";
         }
 				else
         {
           	TheInGameUI->setMoveRMBScrollAnchor(false);
-          	(*pref)["MoveScrollAnchor"] = "No";
+          	(*pref)["MoveScrollAnchor"] = "no";
         }
       }
 			else if(controlID == checkSaveCameraID )
@@ -2187,13 +2387,13 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 			}
 			break;
 
-		}  // end selected
+		}
 
 		default:
 			return MSG_IGNORED;
 
-	}  // end switch
+	}
 
 	return MSG_HANDLED;
 
-}  // end OptionsMenuSystem
+}

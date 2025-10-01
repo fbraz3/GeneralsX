@@ -83,7 +83,7 @@ enum LocomotorSetType CPP_11(: Int)
 	LOCOMOTORSET_SUPERSONIC,	// set used for high-speed attacks
 	LOCOMOTORSET_SLUGGISH,		// set used for abnormally slow (but not damaged) speeds
 
-	LOCOMOTORSET_COUNT	///< keep last, please
+	LOCOMOTORSET_COUNT
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -96,7 +96,7 @@ enum GuardTargetType CPP_11(: Int)
 };
 
 #ifdef DEFINE_LOCOMOTORSET_NAMES
-static const char *TheLocomotorSetNames[] =
+static const char *const TheLocomotorSetNames[] =
 {
 	"SET_NORMAL",
 	"SET_NORMAL_UPGRADED",
@@ -109,6 +109,7 @@ static const char *TheLocomotorSetNames[] =
 
 	NULL
 };
+static_assert(ARRAY_SIZE(TheLocomotorSetNames) == LOCOMOTORSET_COUNT + 1, "Incorrect array size");
 #endif
 
 enum AutoAcquireStates CPP_11(: Int)
@@ -121,7 +122,7 @@ enum AutoAcquireStates CPP_11(: Int)
 };
 
 #ifdef DEFINE_AUTOACQUIRE_NAMES
-static const char *TheAutoAcquireEnemiesNames[] =
+static const char *const TheAutoAcquireEnemiesNames[] =
 {
 	"YES",
 	"STEALTHED",

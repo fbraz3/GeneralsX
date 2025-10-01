@@ -89,7 +89,6 @@ Animatable3DObjClass::Animatable3DObjClass(const char * htree_name) :
   ModeAnim.Motion=NULL;
 	ModeAnim.Frame=0.0f;
 	ModeAnim.PrevFrame=0.0f;
-	ModeAnim.LastSyncTime=WW3D::Get_Sync_Time();
 	ModeAnim.frameRateMultiplier=1.0;	// 020607 srj -- added
 	ModeAnim.animDirection=1.0;	// 020607 srj -- added
 	ModeInterp.Motion0=NULL;
@@ -145,7 +144,6 @@ Animatable3DObjClass::Animatable3DObjClass(const Animatable3DObjClass & src) :
 	ModeAnim.Motion=NULL;
 	ModeAnim.Frame=0.0f;
 	ModeAnim.PrevFrame=0.0f;
-	ModeAnim.LastSyncTime=WW3D::Get_Sync_Time();
 	ModeAnim.frameRateMultiplier=1.0;	// 020607 srj -- added
 	ModeAnim.animDirection=1.0;	// 020607 srj -- added
 	ModeInterp.Motion0=NULL;
@@ -177,9 +175,7 @@ Animatable3DObjClass::~Animatable3DObjClass(void)
 {
 	Release();
 
-	if (HTree) {
-		delete HTree;
-	}
+	delete HTree;
 }
 
 
@@ -199,9 +195,6 @@ Animatable3DObjClass & Animatable3DObjClass::operator = (const Animatable3DObjCl
 {
 	if (&that != this) {
 		Release();
-		if (HTree) {
-			delete HTree;
-		}
 
 		CompositeRenderObjClass::operator = (that);
 
@@ -210,7 +203,6 @@ Animatable3DObjClass & Animatable3DObjClass::operator = (const Animatable3DObjCl
 		ModeAnim.Motion = NULL;
 		ModeAnim.Frame = 0.0f;
 		ModeAnim.PrevFrame = 0.0f;
-		ModeAnim.LastSyncTime = WW3D::Get_Sync_Time();
 		ModeAnim.frameRateMultiplier=1.0;	// 020607 srj -- added
 		ModeAnim.animDirection=1.0;	// 020607 srj -- added
 		ModeInterp.Motion0 = NULL;
@@ -222,6 +214,7 @@ Animatable3DObjClass & Animatable3DObjClass::operator = (const Animatable3DObjCl
 		ModeInterp.Percentage = 0.0f;
 		ModeCombo.AnimCombo = NULL;
 
+		delete HTree;
 		HTree = W3DNEW HTreeClass(*that.HTree);
 	}
 	return *this;
@@ -293,12 +286,6 @@ void Animatable3DObjClass::Render(RenderInfoClass & rinfo)
 		return;
 	}
 
-	if ( CurMotionMode == SINGLE_ANIM ) {
-		if ( ModeAnim.AnimMode != ANIM_MODE_MANUAL ) {
-			Single_Anim_Progress();
-		}
-	}
-
 	if (!Is_Hierarchy_Valid() || Are_Sub_Object_Transforms_Dirty()) {
 		Update_Sub_Object_Transforms();
 	}
@@ -319,12 +306,6 @@ void Animatable3DObjClass::Render(RenderInfoClass & rinfo)
 void Animatable3DObjClass::Special_Render(SpecialRenderInfoClass & rinfo)
 {
 	if (HTree == NULL) return;
-
-	if ( CurMotionMode == SINGLE_ANIM ) {
-		if ( ModeAnim.AnimMode != ANIM_MODE_MANUAL ) {
-			Single_Anim_Progress();
-		}
-	}
 
 	if (!Is_Hierarchy_Valid()) {
 		Update_Sub_Object_Transforms();
@@ -480,7 +461,6 @@ void Animatable3DObjClass::Set_Animation(HAnimClass * motion, float frame, int m
 		ModeAnim.Motion = motion;
 		ModeAnim.PrevFrame = ModeAnim.Frame;
 		ModeAnim.Frame = frame;
-		ModeAnim.LastSyncTime = WW3D::Get_Sync_Time();
 		ModeAnim.frameRateMultiplier=1.0;	// 020607 srj -- added
 		ModeAnim.animDirection=1.0;	// 020607 srj -- added
 
@@ -781,7 +761,7 @@ void Animatable3DObjClass::Control_Bone(int bindex,const Matrix3D & objtm,bool w
 void Animatable3DObjClass::Update_Sub_Object_Transforms(void)
 {
 	/*
-	** The RenderObj impementation will cause our 'container'
+	** The RenderObj implementation will cause our 'container'
 	** to update if we are not valid yet
 	*/
 	CompositeRenderObjClass::Update_Sub_Object_Transforms();
@@ -953,27 +933,30 @@ float Animatable3DObjClass::Compute_Current_Frame(float *newDirection) const
 			//	Compute the current frame based on elapsed time.
 			//
 			if (ModeAnim.AnimMode != ANIM_MODE_MANUAL) {
-				float sync_time_diff = WW3D::Get_Sync_Time() - ModeAnim.LastSyncTime;
-				float delta = ModeAnim.Motion->Get_Frame_Rate() * ModeAnim.frameRateMultiplier * ModeAnim.animDirection * sync_time_diff * 0.001f;
+				// TheSuperHackers @tweak The animation render update is now decoupled from the logic step.
+				const float frametime = WW3D::Get_Logic_Frame_Time_Seconds();
+				const float delta = ModeAnim.Motion->Get_Frame_Rate() * ModeAnim.frameRateMultiplier * ModeAnim.animDirection * frametime;
 				frame += delta;
 
 				//
 				//	Wrap the frame
 				//
+				const int numFrames = ModeAnim.Motion->Get_Num_Frames() - 1;
+
 				switch (ModeAnim.AnimMode)
 				{
 					case ANIM_MODE_ONCE:
-						if (frame >= ModeAnim.Motion->Get_Num_Frames() - 1) {
-							frame = ModeAnim.Motion->Get_Num_Frames() - 1;
+						if (frame >= numFrames) {
+							frame = numFrames;
 						}
 						break;
 					case ANIM_MODE_LOOP:
-						if ( frame >= ModeAnim.Motion->Get_Num_Frames() - 1 ) {
-							frame -= ModeAnim.Motion->Get_Num_Frames() - 1;
-						}
-						// If it is still too far out, reset
-						if ( frame >= ModeAnim.Motion->Get_Num_Frames() - 1 ) {
-							frame = 0;
+						if ( frame >= numFrames ) {
+							frame -= numFrames;
+							// If it is still too far out, reset
+							if ( frame >= numFrames ) {
+								frame = 0;
+							}
 						}
 						break;
 					case ANIM_MODE_ONCE_BACKWARDS:	//play animation one time but backwards
@@ -983,22 +966,22 @@ float Animatable3DObjClass::Compute_Current_Frame(float *newDirection) const
 						break;
 					case ANIM_MODE_LOOP_BACKWARDS:	//play animation backwards in a loop
 						if ( frame < 0 ) {
-							frame += ModeAnim.Motion->Get_Num_Frames() - 1;
-						}
-						// If it is still too far out, reset
-						if ( frame < 0 ) {
-							frame = ModeAnim.Motion->Get_Num_Frames() - 1;
+							frame += numFrames;
+							// If it is still too far out, reset
+							if ( frame < 0 ) {
+								frame = numFrames;
+							}
 						}
 						break;
 					case ANIM_MODE_LOOP_PINGPONG:
 						if (ModeAnim.animDirection >= 1.0f)
 						{	//playing forwards, reverse direction
-							if (frame >= (ModeAnim.Motion->Get_Num_Frames() - 1))
+							if (frame >= numFrames)
 							{	//step backwards in animation by excess time
-								frame = (ModeAnim.Motion->Get_Num_Frames() - 1)*2 - frame;
+								frame = numFrames * 2 - frame;
 								// If it is still too far out, reset
-								if ( frame >= ModeAnim.Motion->Get_Num_Frames() - 1 )
-									frame = (ModeAnim.Motion->Get_Num_Frames() - 1);
+								if ( frame >= numFrames - 1 )
+									frame = numFrames;
 								direction = ModeAnim.animDirection * -1.0f;
 							}
 						}
@@ -1008,7 +991,7 @@ float Animatable3DObjClass::Compute_Current_Frame(float *newDirection) const
 							{	//step forwards in animation by excess time
 								frame = -frame;
 								// If it is still too far out, reset
-								if ( frame >= ModeAnim.Motion->Get_Num_Frames() - 1 )
+								if ( frame >= numFrames )
 										frame = 0;
 								direction = ModeAnim.animDirection * -1.0f;
 							}
@@ -1047,19 +1030,11 @@ void Animatable3DObjClass::Single_Anim_Progress (void)
 		//
 		// Update the frame number and sync time
 		//
-		float oldprev = ModeAnim.PrevFrame;
 		ModeAnim.PrevFrame		= ModeAnim.Frame;
 		ModeAnim.Frame				= Compute_Current_Frame(&ModeAnim.animDirection);
-		ModeAnim.LastSyncTime	= WW3D::Get_Sync_Time();
 
-		if (ModeAnim.Frame == ModeAnim.PrevFrame) {
-			// This function was somehow called twice per frame.
-			// Since ModeAnim.Frame hasn't changed, reset the ModeAnim.PrevFrame.
-			// If you don't do this sounds won't be triggered properly because Frame and PrevFrame will be the same.
-			ModeAnim.PrevFrame = oldprev;
-		}
 		//
-		// Force the heirarchy to be recalculated
+		// Force the hierarchy to be recalculated
 		//
 		Set_Hierarchy_Valid (false);
 	}
@@ -1127,9 +1102,7 @@ void Animatable3DObjClass::Set_HTree(HTreeClass * new_htree)
 	WWASSERT(new_htree->Num_Pivots() == HTree->Num_Pivots());
 
 	// just assign it...
-	if (HTree != NULL) {
-		delete HTree;
-	}
+	delete HTree;
 	HTree = W3DNEW HTreeClass(*new_htree);
 }
 

@@ -236,9 +236,9 @@ W3DLaserDraw::W3DLaserDraw( Thing *thing, const ModuleData* moduleData ) :
 			}
 
 
-		}  // end for i
+		}
 
-	} //end segment loop
+	}
 
 }
 
@@ -258,7 +258,7 @@ W3DLaserDraw::~W3DLaserDraw( void )
 		// delete line
 		REF_PTR_RELEASE( m_line3D[ i ] );
 
-	}  // end for i
+	}
 
 	delete [] m_line3D;
 	// TheSuperHackers @fix Mauller 11/03/2025 Free reference counted material
@@ -458,7 +458,7 @@ void W3DLaserDraw::crc( Xfer *xfer )
 	// extend base class
 	DrawModule::crc( xfer );
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -479,7 +479,7 @@ void W3DLaserDraw::xfer( Xfer *xfer )
 	// Kris says there is no data to save for these, go ask him.
 	// m_selfDirty is not saved, is runtime only
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
@@ -492,4 +492,4 @@ void W3DLaserDraw::loadPostProcess( void )
 
 	m_selfDirty = true;	// so we update the first time after reload
 
-}  // end loadPostProcess
+}

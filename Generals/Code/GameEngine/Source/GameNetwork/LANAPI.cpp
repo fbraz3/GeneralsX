@@ -92,8 +92,7 @@ LANAPI::LANAPI( void ) : m_transport(NULL)
 LANAPI::~LANAPI( void )
 {
 	reset();
-	if (m_transport)
-		delete m_transport;
+	delete m_transport;
 }
 
 void LANAPI::init( void )
@@ -425,7 +424,7 @@ void LANAPI::update( void )
 			// Mark it as read
 			m_transport->m_inBuffer[i].length = 0;
 		}
-	} // End message handling
+	}
 	if(LANbuttonPushed)
 		return;
 	// Send out periodic I'm Here messages
@@ -1024,7 +1023,7 @@ void LANAPI::RequestSlotList( void )
 	sendMessage(&reply);
 
 	OnSlotList(LANAPIInterface::RET_OK, m_currentGame);
-} // void LANAPI::RequestSlotList( void )
+}
 */
 void LANAPI::RequestSetName( UnicodeString newName )
 {

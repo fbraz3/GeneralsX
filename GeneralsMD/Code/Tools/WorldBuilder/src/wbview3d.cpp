@@ -454,19 +454,15 @@ WbView3d::~WbView3d()
 // ----------------------------------------------------------------------------
 void WbView3d::shutdownWW3D(void)
 {
-	if (m_intersector) {
-		delete m_intersector;
-		m_intersector = NULL;
-	}
+	delete m_intersector;
+	m_intersector = NULL;
 
-	if (m_layer) {
-		delete m_layer;
-		m_layer = NULL;
-	}
-	if (m_buildLayer) {
-		delete m_buildLayer;
-		m_buildLayer = NULL;
-	}
+	delete m_layer;
+	m_layer = NULL;
+
+	delete m_buildLayer;
+	m_buildLayer = NULL;
+
 	if (m3DFont) {
 		m3DFont->Release();
 		m3DFont = NULL;
@@ -1069,7 +1065,7 @@ void WbView3d::updateFenceListObjects(MapObject *pObject)
 
 				renderObj = m_assetManager->Create_Render_Obj( modelName.str(), scale, 0);
 
-			}  // end if
+			}
 		}
 
 		if (renderObj) {
@@ -1209,7 +1205,7 @@ void WbView3d::invalBuildListItemInView(BuildListInfo *pBuildToInval)
 						shadowInfo.m_offsetY=tTemplate->getShadowOffsetY();
 						shadowObj=TheW3DShadowManager->addShadow(renderObj, &shadowInfo);
 					}
-				}  // end if
+				}
 			}
 			if (renderObj) {
 				pBuild->setRenderObj(renderObj);
@@ -1308,15 +1304,18 @@ AsciiString WbView3d::getModelNameAndScale(MapObject *pMapObj, Real *scale, Body
 			break;
 	}
 
-	AsciiString modelName("No Model Name");
+	AsciiString modelName;
 	*scale = 1.0f;
-	Int i;
+
+#ifdef LOAD_TEST_ASSETS
 	char buffer[ _MAX_PATH ];
+
 	if (strncmp(TEST_STRING, pMapObj->getName().str(), strlen(TEST_STRING)) == 0)
 	{
 		/* Handle test art models here */
 		strcpy(buffer, pMapObj->getName().str());
 
+		Int i;
 		for (i=0; buffer[i]; i++) {
 			if (buffer[i] == '/') {
 				i++;
@@ -1325,7 +1324,9 @@ AsciiString WbView3d::getModelNameAndScale(MapObject *pMapObj, Real *scale, Body
 		}
 		modelName = buffer+i;
 	}
-	else
+#endif
+
+	if (modelName.isEmpty())
 	{
 		modelName = "No Model Name"; // must be this while GDF exists (it's the default)
 		const ThingTemplate *tTemplate;
@@ -1338,8 +1339,8 @@ AsciiString WbView3d::getModelNameAndScale(MapObject *pMapObj, Real *scale, Body
 			modelName = getBestModelName(tTemplate, state);
 			*scale = tTemplate->getAssetScale();
 
-		}  // end if
-	}  // end else
+		}
+	}
 	return modelName;
 }
 
@@ -1486,7 +1487,7 @@ void WbView3d::invalObjectInView(MapObject *pMapObjIn)
 						shadowObj=TheW3DShadowManager->addShadow(renderObj, &shadowInfo);
 					}
 				}
-			}  // end if
+			}
 		}
 
 		if (renderObj && !(pMapObj->getFlags() & FLAG_DONT_RENDER)) {
@@ -1756,7 +1757,7 @@ Bool WbView3d::viewToDocCoords(CPoint curPt, Coord3D *newPt, Bool constrain)
 			intersection = castResult.ContactPoint;
 			m_curTrackingZ = intersection.Z;
 			result = true;
-		}  // end if
+		}
 	}
 	if (!result) {
 		intersection.X = Vector3::Find_X_At_Z(m_curTrackingZ, rayLocation, rayDirectionPt);
@@ -2619,7 +2620,7 @@ void WbView3d::drawLabels(HDC hdc)
 				DeleteObject(pen);	//delete new pen
 			}
 #endif	//DRAW_LIGHT_DIRECTION_RAYS
-		}//end for
+		}
 	}
 	else
 	{	if (!m_doLightFeedback)

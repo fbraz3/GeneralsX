@@ -70,10 +70,10 @@ enum StructureTopplePhaseType CPP_11(: Int)
 	STPHASE_DELAY,
 	STPHASE_FINAL,
 
-	ST_PHASE_COUNT	// keep last
+	ST_PHASE_COUNT
 };
 
-static const char *TheStructureTopplePhaseNames[] =
+static const char *const TheStructureTopplePhaseNames[] =
 {
 	"INITIAL",
 	"DELAY",
@@ -81,6 +81,7 @@ static const char *TheStructureTopplePhaseNames[] =
 
 	NULL
 };
+static_assert(ARRAY_SIZE(TheStructureTopplePhaseNames) == ST_PHASE_COUNT + 1, "Incorrect array size");
 
 //-------------------------------------------------------------------------------------------------
 class StructureToppleUpdateModuleData : public UpdateModuleData

@@ -366,7 +366,7 @@ static void populateGroupRoomListbox(GameWindow *lb)
 	GadgetComboBoxSetSelectedPos(lb, indexToSelect);
 }
 
-static const char *rankNames[] = {
+static const char *const rankNames[] = {
 	"Private",
 	"Corporal",
 	"Sergeant",
@@ -378,6 +378,8 @@ static const char *rankNames[] = {
 	"Brigadier",
 	"Commander",
 };
+static_assert(ARRAY_SIZE(rankNames) == MAX_RANKS, "Incorrect array size");
+
 
 const Image* LookupSmallRankImage(Int side, Int rankPoints)
 {
@@ -703,7 +705,7 @@ void WOLLobbyMenuInit( WindowLayout *layout, void *userData )
 	if(win)
 		win->winHide(TRUE);
 	DontShowMainMenu = TRUE;
-} // WOLLobbyMenuInit
+}
 
 //-------------------------------------------------------------------------------------------------
 /** This is called when a shutdown is complete for this menu */
@@ -726,7 +728,7 @@ static void shutdownComplete( WindowLayout *layout )
 
 	nextScreen = NULL;
 
-}  // end if
+}
 
 //-------------------------------------------------------------------------------------------------
 /** WOL Lobby Menu shutdown method */
@@ -771,7 +773,7 @@ void WOLLobbyMenuShutdown( WindowLayout *layout, void *userData )
 		shutdownComplete( layout );
 		return;
 
-	}  //end if
+	}
 
 	TheShell->reverseAnimatewindow();
 	DontShowMainMenu = FALSE;
@@ -779,7 +781,7 @@ void WOLLobbyMenuShutdown( WindowLayout *layout, void *userData )
 	RaiseGSMessageBox();
 	TheTransitionHandler->reverse("WOLCustomLobbyFade");
 
-}  // WOLLobbyMenuShutdown
+}
 
 static void fillPlayerInfo(const PeerResponse *resp, PlayerInfo *info)
 {
@@ -1307,7 +1309,7 @@ void WOLLobbyMenuUpdate( WindowLayout * layout, void *userData)
 	refreshGameList();
 #endif
 	}
-}// WOLLobbyMenuUpdate
+}
 
 //-------------------------------------------------------------------------------------------------
 /** WOL Lobby Menu input callback */
@@ -1342,21 +1344,21 @@ WindowMsgHandledType WOLLobbyMenuInput( GameWindow *window, UnsignedInt msg,
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
 																							(WindowMsgData)buttonBack, buttonBackID );
 
-					}  // end if
+					}
 
 					// don't let key fall through anywhere else
 					return MSG_HANDLED;
 
-				}  // end escape
+				}
 
-			}  // end switch( key )
+			}
 
-		}  // end char
+		}
 
-	}  // end switch( msg )
+	}
 
 	return MSG_IGNORED;
-}// WOLLobbyMenuInput
+}
 
 //static void doSliderTrack(GameWindow *control, Int val)
 //{
@@ -1427,13 +1429,13 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 //				sliderChatAdjustID = NAMEKEY("WOLCustomLobby.wnd:SliderChatAdjust");
 
 				break;
-			} // case GWM_DESTROY:
+			}
 
 		//---------------------------------------------------------------------------------------------
 		case GWM_DESTROY:
 			{
 				break;
-			} // case GWM_DESTROY:
+			}
 
 		//---------------------------------------------------------------------------------------------
 		case GWM_INPUT_FOCUS:
@@ -1443,7 +1445,7 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 					*(Bool *)mData2 = TRUE;
 
 				return MSG_HANDLED;
-			}//case GWM_INPUT_FOCUS:
+			}
 
 		//---------------------------------------------------------------------------------------------
 		case GLM_SELECTED:
@@ -1480,7 +1482,7 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 					{
 						RefreshGameInfoListBox(GetGameListBox(), GetGameInfoListBox());
 					}
-				} //if ( controlID == GetGameListBoxID() )
+				}
 
 				break;
 			}
@@ -1511,7 +1513,7 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 					nextScreen = "Menus/WOLWelcomeMenu.wnd";
 					TheShell->pop();
 
-				} //if ( controlID == buttonBack )
+				}
 				else if ( controlID == buttonRefreshID )
 				{
 					// Added 2/17/03 added the game refresh button
@@ -1633,7 +1635,7 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 				}
 
 				break;
-			}// case GBM_SELECTED:
+			}
 
 		//---------------------------------------------------------------------------------------------
 		case GCM_SELECTED:
@@ -1670,7 +1672,7 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 						}
 					}
 				}
-			} // case GCM_SELECTED
+			}
 			break;
 
 		//---------------------------------------------------------------------------------------------
@@ -1695,7 +1697,7 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 					}
 				}
 				break;
-			}// case GLM_DOUBLE_CLICKED:
+			}
 
 		//---------------------------------------------------------------------------------------------
 		case GLM_RIGHT_CLICKED:
@@ -1852,7 +1854,7 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 		default:
 			return MSG_IGNORED;
 
-	}//Switch
+	}
 
 	return MSG_HANDLED;
-}// WOLLobbyMenuSystem
+}

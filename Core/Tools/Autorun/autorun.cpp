@@ -252,7 +252,7 @@ enum
 	IDS_MAIN_WINDOW,
 
 
-	IDS_COUNT // keep this last
+	IDS_COUNT
 };
 */
 
@@ -1138,10 +1138,9 @@ LRESULT MainWindow::Window_Proc( HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM
 
 			decision = DialogBox( Main::hInstance, _TEXT( "BitmapDialog" ), hWnd, Dialog_Box_Proc );
 
-			if ( Args ) {
-				delete( Args );
-				Args = NULL;
-			}
+			delete( Args );
+			Args = NULL;
+
 			Stop_Sound_Playing();
 
 			MoveWindow(	hWnd, 0, 0, 0, 0, TRUE );
@@ -1760,7 +1759,7 @@ unsigned int MainWindow::Run_OpenFile(int cd_drive, const char *filename, bool w
 				TranslateMessage( &msg );
 				DispatchMessage( &msg );
 
-			}  // end while
+			}
 
 			DWORD exitCode;
 			GetExitCodeProcess(hProcess, &exitCode);
@@ -2216,11 +2215,7 @@ void MainWindow::Create_Buttons( HWND hWnd, RECT *dlg_rect )
 
 	for ( i = 0; i < NUM_BUTTONS; i++ ) {
 
-		if ( ButtonList[i] )
-		{
-			delete( ButtonList[i] );
-		}
-
+		delete( ButtonList[i] );
 		ButtonList[i]			= NULL;
 		ButtonSizes[i].left		= x_pos; 				// X position.
 		ButtonSizes[i].top 		= y_pos;				// Y position.
@@ -3410,7 +3405,7 @@ BOOL CALLBACK  Dialog_Box_Proc( HWND window_handle, UINT message, WPARAM w_param
 										hButtonBitmap = 0;
 									}
 
-								} // END OF DRAW BITMAPS
+								}
 
 #if(0)
 								TTFontClass *fontptr = ButtonList[i]->Return_Font_Ptr();
@@ -3495,9 +3490,9 @@ BOOL CALLBACK  Dialog_Box_Proc( HWND window_handle, UINT message, WPARAM w_param
 
 
 
-							} // end of if button
+							}
 
-						}	// For each button...
+						}
 
 						//---------------------------------------------------------------
 						// Used in debugging -- draw rect around where buttons are.
@@ -3553,7 +3548,7 @@ BOOL CALLBACK  Dialog_Box_Proc( HWND window_handle, UINT message, WPARAM w_param
 						DeleteDC( buttonDC );
 						DeleteDC( licenseDC );
 
-					} // end of bitmaps
+					}
 
 					//===================================================================
 					// Draw a solid colored background.
@@ -3976,10 +3971,8 @@ BOOL CALLBACK  Dialog_Box_Proc( HWND window_handle, UINT message, WPARAM w_param
 				if( end_dialog ) {
 
 					for ( i = 0; i < NUM_BUTTONS; i++ ) {
-						if ( ButtonList[i] ) {
-							delete( ButtonList[i] );
-							ButtonList[i] = NULL;
-						}
+						delete( ButtonList[i] );
+						ButtonList[i] = NULL;
 					}
 					if ( hpal ) {
 						DeleteObject( hpal );
@@ -4018,10 +4011,8 @@ BOOL CALLBACK  Dialog_Box_Proc( HWND window_handle, UINT message, WPARAM w_param
 				#if(BACKGROUND_BITMAP)
 
 					for ( i = 0; i < NUM_BUTTONS; i++ ) {
-						if ( ButtonList[i] ) {
-							delete( ButtonList[i] );
-							ButtonList[i] = NULL;
-						}
+						delete( ButtonList[i] );
+						ButtonList[i] = NULL;
 					}
 					if ( hpal ) {
 						DeleteObject( hpal );
@@ -4049,10 +4040,9 @@ BOOL CALLBACK  Dialog_Box_Proc( HWND window_handle, UINT message, WPARAM w_param
 				//-----------------------------------------------------------------------
 				// Delete the arguments.
 				//-----------------------------------------------------------------------
-				if ( Args ) {
-					delete( Args );
-					Args = NULL;
-				}
+				delete( Args );
+				Args = NULL;
+
 				KillTimer( window_handle, timer_id );
 				EndDialog( window_handle, w_param );
 			}
@@ -4360,7 +4350,7 @@ BOOL CALLBACK  Dialog_Box_Proc( HWND window_handle, UINT message, WPARAM w_param
 									ButtonList[i]->Set_State( DrawButton::FOCUS_STATE );
 //									Msg( __LINE__, TEXT(__FILE__), TEXT("WM_MOUSEMOVE -- %s[FOCUS_STATE]."), ButtonList[i]->Return_Normal_Bitmap());
 								}
-							}	// end of if
+							}
 
 							//-----------------------------------------------------------
 							// Get the area of the button, and post it for updating.
@@ -4380,10 +4370,10 @@ BOOL CALLBACK  Dialog_Box_Proc( HWND window_handle, UINT message, WPARAM w_param
 							done = 1;
 						}
 
-					}	// end of if
+					}
 					i++;
 
-				}	// end of for
+				}
 
 
 			#if( USE_MOUSE_MOVES )

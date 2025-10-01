@@ -63,7 +63,7 @@ const FieldParse ControlBarResizer::m_controlBarResizerParseTable[] =
 {
 	{ "AltPosition",		INI::parseICoord2D,						NULL, offsetof( ResizerWindow, m_altPos ) },
 	{ "AltSize",				INI::parseICoord2D,						NULL, offsetof( ResizerWindow, m_altSize ) },
-	{ NULL,										NULL,													NULL, 0 }  // keep this last
+	{ NULL,										NULL,													NULL, 0 }
 
 };
 //-----------------------------------------------------------------------------
@@ -103,7 +103,7 @@ void ControlBarResizer::init( void )
 {
 	INI ini;
 	// Read from INI all the ControlBarSchemes
-	ini.load( AsciiString( "Data\\INI\\ControlBarResizer.ini" ), INI_LOAD_OVERWRITE, NULL );
+	ini.loadFileDirectory( AsciiString( "Data\\INI\\ControlBarResizer" ), INI_LOAD_OVERWRITE, NULL );
 
 }
 
@@ -236,7 +236,7 @@ void INI::parseControlBarResizerDefinition( INI* ini )
 //	// parse the ini definition
 //	ini->initFromINI( rWin, resizer->getFieldParse());
 //
-}  // end parseMappedImage
+}
 
 
 //-----------------------------------------------------------------------------

@@ -63,13 +63,14 @@
 #include "GameLogic/Module/ContainModule.h"
 
 
-const char *TheAcademyClassificationTypeNames[] =
+const char *const TheAcademyClassificationTypeNames[] =
 {
 	"ACT_NONE",
 	"ACT_UPGRADE_RADAR",
 	"ACT_SUPERPOWER",
 	NULL
 };
+static_assert(ARRAY_SIZE(TheAcademyClassificationTypeNames) == ACT_COUNT + 1, "Incorrect array size");
 
 #define FRAMES_BETWEEN_UPDATES 30
 
@@ -1106,7 +1107,7 @@ Bool AcademyStats::calculateAcademyAdvice( AcademyAdviceInfo *info )
 void AcademyStats::crc( Xfer *xfer )
 {
 
-}  // end crc
+}
 
 //------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -1253,7 +1254,7 @@ void AcademyStats::xfer( Xfer *xfer )
 	//35) Did the player ever create a "Firestorm" with his MiGs or Inferno Cannons?
 	xfer->xferUnsignedInt( &m_firestormsCreated );
 
-}  // end xfer
+}
 
 //------------------------------------------------------------------------------------------------
 // Load post process
@@ -1261,4 +1262,4 @@ void AcademyStats::xfer( Xfer *xfer )
 void AcademyStats::loadPostProcess( void )
 {
 
-}  // end loadPostProcess
+}

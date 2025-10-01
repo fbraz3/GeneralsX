@@ -33,15 +33,29 @@
 #include "GameClient/InGameUI.h"
 
 //-----------------------------------------------------------------------------
+// TheSuperHackers @feature The Screen Edge Scrolling can now be enabled or
+// disabled depending on the App being Windowed or Fullscreen.
+typedef UnsignedInt ScreenEdgeScrollMode;
+enum ScreenEdgeScrollMode_ CPP_11(: ScreenEdgeScrollMode)
+{
+	ScreenEdgeScrollMode_EnabledInWindowedApp = 1<<0, // Scroll when touching the edge while the app is windowed
+	ScreenEdgeScrollMode_EnabledInFullscreenApp = 1<<1, // Scroll when touching the edge while the app is fullscreen
+
+	ScreenEdgeScrollMode_Default = ScreenEdgeScrollMode_EnabledInFullscreenApp, // Default based on original game behavior
+};
+
+//-----------------------------------------------------------------------------
 class LookAtTranslator : public GameMessageTranslator
 {
 public:
 	LookAtTranslator();
 	~LookAtTranslator();
+
 	virtual GameMessageDisposition translateGameMessage(const GameMessage *msg);
 	virtual const ICoord2D* getRMBScrollAnchor(void); // get m_anchor ICoord2D if we're RMB scrolling
 	Bool hasMouseMovedRecently( void );
 	void setCurrentPos( const ICoord2D& pos );
+	void setScreenEdgeScrollMode(ScreenEdgeScrollMode mode);
 
 	void resetModes(); //Used when disabling input, so when we reenable it we aren't stuck in a mode.
 
@@ -50,7 +64,7 @@ private:
 	{
 		MAX_VIEW_LOCS = 8
 	};
-	enum
+	enum ScrollType
 	{
 		SCROLL_NONE = 0,
 		SCROLL_RMB,
@@ -67,10 +81,13 @@ private:
 	UnsignedInt m_timestamp;				// set when button goes down
 	DrawableID m_lastPlaneID;
 	ViewLocation m_viewLocation[ MAX_VIEW_LOCS ];
-	Int m_scrollType;
-	void setScrolling( Int );
-	void stopScrolling( void );
+	ScrollType m_scrollType;
+	ScreenEdgeScrollMode m_screenEdgeScrollMode;
 	UnsignedInt m_lastMouseMoveFrame;
+
+	void setScrolling( ScrollType scrollType );
+	void stopScrolling( void );
+	Bool canScrollAtScreenEdge() const;
 };
 
 extern LookAtTranslator *TheLookAtTranslator;

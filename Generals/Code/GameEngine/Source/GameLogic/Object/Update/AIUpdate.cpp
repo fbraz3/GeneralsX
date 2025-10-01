@@ -95,8 +95,7 @@ AIUpdateModuleData::~AIUpdateModuleData()
 		if (m_turretData[i])
 		{
 			TurretAIData* td = const_cast<TurretAIData*>(m_turretData[i]);
-			if (td)
-				deleteInstance(td);
+			deleteInstance(td);
 		}
 	}
 }
@@ -638,8 +637,7 @@ AIUpdateInterface::~AIUpdateInterface( void )
 
 	for (int i = 0; i < MAX_TURRETS; i++)
 	{
-		if (m_turretAI[i])
-			deleteInstance(m_turretAI[i]);
+		deleteInstance(m_turretAI[i]);
 		m_turretAI[i] = NULL;
 	}
 	m_stateMachine = NULL;
@@ -1978,10 +1976,9 @@ Bool AIUpdateInterface::computeAttackPath( PathfindServicesInterface *pathServic
 void AIUpdateInterface::destroyPath( void )
 {
 	// destroy previous path
-	if (m_path)
-		deleteInstance(m_path);
-
+	deleteInstance(m_path);
 	m_path = NULL;
+
 	m_waitingForPath = FALSE; // we no longer need it.
 	//CRCDEBUG_LOG(("AIUpdateInterface::destroyPath() - m_isAttackPath = FALSE for object %d", getObject()->getID()));
 	m_isAttackPath = FALSE;
@@ -2048,7 +2045,7 @@ Bool AIUpdateInterface::isPathAvailable( const Coord3D *destination ) const
 
 	return TheAI->pathfinder()->quickDoesPathExist( m_locomotorSet, myPos, destination );
 
-}  // end isPathAvailable
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Is there a path (computed using the less accurate but quick method )
@@ -2065,7 +2062,7 @@ Bool AIUpdateInterface::isQuickPathAvailable( const Coord3D *destination ) const
 
 	return TheAI->pathfinder()->quickDoesPathExist( m_locomotorSet, myPos, destination );
 
-}  // end isQuickPathAvailable
+}
 
 
 
@@ -2536,7 +2533,7 @@ void AIUpdateInterface::joinTeam( void )
 		getStateMachine()->setState( state );
 	}
 
-}  // end joinTeam
+}
 
 //-------------------------------------------------------------------------------------------------
 Bool AIUpdateInterface::isAllowedToRespondToAiCommands(const AICommandParms* parms) const
@@ -4447,7 +4444,7 @@ void AIUpdateInterface::evaluateMoraleBonus( void )
 		if( hui && hui->isInHorde() )
 			horde = TRUE;
 
-	}  // end for
+	}
 
 	// do we have nationalism
 	///@todo Find a better way to represent nationalism without hardcoding here (CBD)
@@ -4478,7 +4475,7 @@ void AIUpdateInterface::evaluateMoraleBonus( void )
 		{
 			us->setWeaponBonusCondition( WEAPONBONUSCONDITION_HORDE );
 
-		}  // end if
+		}
 		else
 			us->clearWeaponBonusCondition( WEAPONBONUSCONDITION_HORDE );
 
@@ -4488,7 +4485,7 @@ void AIUpdateInterface::evaluateMoraleBonus( void )
 		else
 			us->clearWeaponBonusCondition( WEAPONBONUSCONDITION_NATIONALISM );
 
-	}  // end if
+	}
 #ifdef ALLOW_DEMORALIZE
 	else
 	{
@@ -4507,7 +4504,7 @@ void AIUpdateInterface::evaluateMoraleBonus( void )
 		// we cannot have nationalism bonus condition
 		us->clearWeaponBonusCondition( WEAPONBONUSCONDITION_NATIONALISM );
 
-	}  // end else
+	}
 #endif
 
 /*
@@ -4517,7 +4514,7 @@ void AIUpdateInterface::evaluateMoraleBonus( void )
 	TheInGameUI->message( msg );
 */
 
-}  // end evaluateMoraleBonus
+}
 
 #ifdef ALLOW_DEMORALIZE
 // ------------------------------------------------------------------------------------------------
@@ -4537,7 +4534,7 @@ void AIUpdateInterface::setDemoralized( UnsignedInt durationInFrames )
 		// evaluate demoralization, nationalism, and horde effect as they are all intertwined
 		evaluateMoraleBonus();
 
-	}  // end if
+	}
 
 }
 #endif
@@ -4735,7 +4732,7 @@ void AIUpdateInterface::crc( Xfer *x )
 
 	CRCGEN_LOG(("AIUpdateInterface::crc() end - %8.8X", ((XferCRC *)x)->getCRC()));
 
-}  // end crc
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
@@ -4958,7 +4955,7 @@ void AIUpdateInterface::xfer( Xfer *xfer )
 		xfer->xferInt(&repulsorCountdown);
 	}
 
-}  // end xfer
+}
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */
@@ -4995,7 +4992,7 @@ void AIUpdateInterface::loadPostProcess( void )
 		}
 	}
 
-}  // end loadPostProcess
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------

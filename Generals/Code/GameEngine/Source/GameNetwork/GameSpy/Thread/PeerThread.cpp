@@ -504,7 +504,6 @@ enum CallbackType
 	CALLBACK_RECVMESSAGE,
 	CALLBACK_RECVREQUEST,
 	CALLBACK_RECVSTATUS,
-	CALLBACK_MAX
 };
 
 void connectCallbackWrapper( PEER peer, PEERBool success, int failureReason, void *param )
@@ -560,8 +559,7 @@ void GameSpyPeerMessageQueue::startThread( void )
 
 void GameSpyPeerMessageQueue::endThread( void )
 {
-	if (m_thread)
-		delete m_thread;
+	delete m_thread;
 	m_thread = NULL;
 }
 

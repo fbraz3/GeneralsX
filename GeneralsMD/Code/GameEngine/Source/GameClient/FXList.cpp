@@ -423,6 +423,8 @@ protected:
 			{ "CINE_INSANE",  View::SHAKE_CINE_INSANE },
 			{ 0, 0 }
 		};
+		static_assert(ARRAY_SIZE(shakeTypeNames) == View::SHAKE_COUNT + 1, "Incorrect array size");
+
 		*(Int *)store = INI::scanLookupList(ini->getNextToken(), shakeTypeNames);
 	}
 
@@ -487,6 +489,8 @@ protected:
 			{ "RANDOM",					-1 },
 			{ 0, 0 }
 		};
+		static_assert(ARRAY_SIZE(scorchTypeNames) == SCORCH_COUNT + 2, "Incorrect array size");
+
 		*(Int *)store = INI::scanLookupList(ini->getNextToken(), scorchTypeNames);
 	}
 
@@ -772,7 +776,7 @@ static const FieldParse TheFXListFieldParse[] =
 	{ "TerrainScorch",							TerrainScorchFXNugget::parse, 0, 0},
 	{ "ParticleSystem",							ParticleSystemFXNugget::parse, 0, 0},
 	{ "FXListAtBonePos",						FXListAtBonePosFXNugget::parse, 0, 0},
-	{ NULL, NULL, 0, 0 }  // keep this last
+	{ NULL, NULL, 0, 0 }
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -791,8 +795,7 @@ void FXList::clear()
 {
 	for (FXNuggetList::iterator it = m_nuggets.begin(); it != m_nuggets.end(); ++it)
 	{
-		if (*it)
-			deleteInstance(*it);
+		deleteInstance(*it);
 	}
 	m_nuggets.clear();
 }

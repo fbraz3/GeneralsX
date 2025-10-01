@@ -47,8 +47,8 @@
 #include "Common/CRCDebug.h"
 #include "Common/version.h"
 
-CONSTEXPR const char s_genrep[] = "GENREP";
-CONSTEXPR const UnsignedInt replayBufferBytes = 8192;
+constexpr const char s_genrep[] = "GENREP";
+constexpr const UnsignedInt replayBufferBytes = 8192;
 
 Int REPLAY_CRC_INTERVAL = 100;
 
@@ -477,7 +477,7 @@ void RecorderClass::stopPlayback() {
 
 	if (!m_doingAnalysis)
 	{
-		TheMessageStream->appendMessage(GameMessage::MSG_CLEAR_GAME_DATA);
+		TheGameLogic->exitGame();
 	}
 }
 
@@ -1242,7 +1242,7 @@ Bool RecorderClass::playbackFile(AsciiString filename)
 
 	Int rankPoints = 0;
 	m_file->read(&rankPoints, sizeof(rankPoints));
-	
+
 	Int maxFPS = 0;
 	m_file->read(&maxFPS, sizeof(maxFPS));
 

@@ -102,7 +102,7 @@ static void closeSaveMenu( GameWindow *window )
 	if( layout )
 		layout->hide( TRUE );
 
-}  // end closeSaveMenu
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Initialize the SaveLoad menu */
@@ -151,7 +151,7 @@ void PopupReplayInit( WindowLayout *layout, void *userData )
 		control->winEnable( FALSE );
 	}
 
-}  // end SaveLoadMenuInit
+}
 
 //-------------------------------------------------------------------------------------------------
 /** SaveLoad menu shutdown method */
@@ -160,7 +160,7 @@ void PopupReplayShutdown( WindowLayout *layout, void *userData )
 {
 	parent = NULL;
 
-}  // end SaveLoadMenuShutdown
+}
 
 //-------------------------------------------------------------------------------------------------
 /** SaveLoad menu update method */
@@ -184,7 +184,7 @@ void PopupReplayUpdate( WindowLayout *layout, void *userData )
 			s_fileSavePopupStartTime = 0;
 		}
 	}
-}  // end SaveLoadMenuUpdate
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -216,18 +216,18 @@ WindowMsgHandledType PopupReplayInput( GameWindow *window, UnsignedInt msg, Wind
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
 																								(WindowMsgData)button, buttonBackKey );
 
-					}  // end if
+					}
 
 					// don't let key fall through anywhere else
 					return MSG_HANDLED;
 
-				}  // end escape
+				}
 
-			}  // end switch( key )
+			}
 
-		}  // end char
+		}
 
-	}  // end switch( msg )
+	}
 
 	return MSG_IGNORED;
 }
@@ -386,14 +386,14 @@ WindowMsgHandledType PopupReplaySystem( GameWindow *window, UnsignedInt msg,
 
 			break;
 
-		}  // end create
+		}
     //---------------------------------------------------------------------------------------------
 		case GWM_DESTROY:
 		{
 
 			break;
 
-		}  // end case
+		}
 
     //----------------------------------------------------------------------------------------------
     case GWM_INPUT_FOCUS:
@@ -405,7 +405,7 @@ WindowMsgHandledType PopupReplaySystem( GameWindow *window, UnsignedInt msg,
 
 			break;
 
-		}  // end input
+		}
 
 		// --------------------------------------------------------------------------------------------
 		case GLM_SELECTED:
@@ -434,7 +434,7 @@ WindowMsgHandledType PopupReplaySystem( GameWindow *window, UnsignedInt msg,
 
 			break;
 
-		}  // end selected
+		}
 
     //---------------------------------------------------------------------------------------------
 		case GEM_EDIT_DONE:
@@ -454,7 +454,7 @@ WindowMsgHandledType PopupReplaySystem( GameWindow *window, UnsignedInt msg,
 
 			break;
 
-		}  // end selected
+		}
     //---------------------------------------------------------------------------------------------
 		case GBM_SELECTED:
 		{
@@ -481,11 +481,11 @@ WindowMsgHandledType PopupReplaySystem( GameWindow *window, UnsignedInt msg,
 				closeSaveMenu( window );
 				ScoreScreenEnableControls(TRUE);
 
-			}  // end if
+			}
 
 			break;
 
-		}  // end selected
+		}
 
 		case GEM_UPDATE_TEXT:
 		{
@@ -516,7 +516,7 @@ WindowMsgHandledType PopupReplaySystem( GameWindow *window, UnsignedInt msg,
 		default:
 			return MSG_IGNORED;
 
-	}  // end switch
+	}
 
 	return MSG_HANDLED;
 

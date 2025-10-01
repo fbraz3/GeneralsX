@@ -118,6 +118,10 @@ protected:
 
 public:
 
+	typedef Char value_type;
+	typedef value_type* pointer;
+	typedef const value_type* const_pointer;
+
 	enum
 	{
 		MAX_FORMAT_BUF_LEN = 2048,		///< max total len of string created by format/format_va
@@ -152,6 +156,12 @@ public:
 		always wanted, anyhow.
 	*/
 	AsciiString(const char* s);
+
+	/**
+		Constructs an AsciiString with the given string and length.
+		The length must not be larger than the actual string length.
+	*/
+	AsciiString(const char* s, int len);
 
 	/**
 		Destructor. Not too exciting... clean up the works and such.
@@ -205,11 +215,19 @@ public:
 		refcount.)
 	*/
 	void set(const AsciiString& stringSrc);
+
 	/**
 		Replace the contents of self with the given string.
 		Note that a copy of the string is made; the input ptr is not saved.
 	*/
 	void set(const char* s);
+
+	/**
+		Replace the contents of self with the given string and length.
+		Note that a copy of the string is made; the input ptr is not saved.
+		The length must not be larger than the actual string length.
+	*/
+	void set(const char* s, int len);
 
 	/**
 		replace contents of self with the given string. Note the

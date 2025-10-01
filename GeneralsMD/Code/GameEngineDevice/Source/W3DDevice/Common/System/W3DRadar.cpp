@@ -40,6 +40,7 @@
 #include "GameLogic/Object.h"
 
 #include "GameClient/Color.h"
+#include "GameClient/ControlBar.h"
 #include "GameClient/Display.h"
 #include "GameClient/GameClient.h"
 #include "GameClient/GameWindow.h"
@@ -83,9 +84,9 @@ static WW3DFormat findFormat(const WW3DFormat formats[])
 
 			return formats[ i ];
 
-		}  // end if
+		}
 
-	}  // end for i
+	}
 	DEBUG_CRASH(("WW3DRadar: No appropriate texture format") );
 	return WW3D_FORMAT_UNKNOWN;
 }
@@ -127,7 +128,7 @@ void W3DRadar::initializeTextureFormats( void )
 	// find a format for the shroud texture
 	m_shroudTextureFormat = findFormat(shroudFormats);
 
-}  // end initializeTextureFormats
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Delete resources used specifically in this W3D radar implemetation */
@@ -141,8 +142,8 @@ void W3DRadar::deleteResources( void )
 	if( m_terrainTexture )
 		m_terrainTexture->Release_Ref();
 	m_terrainTexture = NULL;
-	if( m_terrainImage )
-		deleteInstance(m_terrainImage);
+
+	deleteInstance(m_terrainImage);
 	m_terrainImage = NULL;
 
 	//
@@ -151,8 +152,8 @@ void W3DRadar::deleteResources( void )
 	if( m_overlayTexture )
 		m_overlayTexture->Release_Ref();
 	m_overlayTexture = NULL;
-	if( m_overlayImage )
-		deleteInstance(m_overlayImage);
+
+	deleteInstance(m_overlayImage);
 	m_overlayImage = NULL;
 
 	//
@@ -161,11 +162,11 @@ void W3DRadar::deleteResources( void )
 	if( m_shroudTexture )
 		m_shroudTexture->Release_Ref();
 	m_shroudTexture = NULL;
-	if( m_shroudImage )
-		deleteInstance(m_shroudImage);
+
+	deleteInstance(m_shroudImage);
 	m_shroudImage = NULL;
 
-}  // end deleteResources
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Reconstruct the view box given the current camera settings */
@@ -201,16 +202,16 @@ void W3DRadar::reconstructViewBox( void )
 			m_viewBox[ i ].x = 0;
 			m_viewBox[ i ].y = 0;
 
-		}  // end if
+		}
 		else
 		{
 
 			m_viewBox[ i ].x = radar[ i ].x - radar[ i - 1 ].x;
 			m_viewBox[ i ].y = radar[ i ].y - radar[ i - 1 ].y;
 
-		}  // end else
+		}
 
-	}  // end for i
+	}
 
 	//
 	// save the camera settings for this view box, we will need to make it again only
@@ -222,7 +223,7 @@ void W3DRadar::reconstructViewBox( void )
 	m_viewZoom = TheTacticalView->getZoom();
 	m_reconstructViewBox = FALSE;
 
-}  // end reconstructViewBox
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Convert radar position to actual pixel coord */
@@ -240,7 +241,7 @@ void W3DRadar::radarToPixel( const ICoord2D *radar, ICoord2D *pixel,
 	// note the "inverted" y here to orient the way our world looks with +x=right and -y=down
 	pixel->y = ((RADAR_CELL_HEIGHT - 1 - radar->y) * radarHeight / RADAR_CELL_HEIGHT) + radarUpperLeftY;
 
-}  // end radarToPixel
+}
 
 
 //-------------------------------------------------------------------------------------------------
@@ -359,7 +360,7 @@ void W3DRadar::drawViewBox( Int pixelX, Int pixelY, Int width, Int height )
 		TheDisplay->drawLine( clipStart.x, clipStart.y, clipEnd.x, clipEnd.y,
 													lineWidth, bottomColor, topColor );
 
-}  // end drawViewBox
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -434,7 +435,7 @@ void W3DRadar::drawSingleBeaconEvent( Int pixelX, Int pixelY, Int width, Int hei
 		a = REAL_TO_UNSIGNEDBYTE( (Real)a * (1.0f - (Real)(currentFrame - event->fadeFrame) /
 																								(Real)(event->dieFrame - event->fadeFrame) ) );
 
-	}  // end if
+	}
 	startColor = GameMakeColor( r, g, b, a );
 
 	// color 2 ------------------
@@ -448,7 +449,7 @@ void W3DRadar::drawSingleBeaconEvent( Int pixelX, Int pixelY, Int width, Int hei
 		a = REAL_TO_UNSIGNEDBYTE( (Real)a * (1.0f - (Real)(currentFrame - event->fadeFrame) /
 																								(Real)(event->dieFrame - event->fadeFrame) ) );
 
-	}  // end if
+	}
 	endColor = GameMakeColor( r, g, b, a );
 
 	// draw the lines
@@ -533,7 +534,7 @@ void W3DRadar::drawSingleGenericEvent( Int pixelX, Int pixelY, Int width, Int he
 		a = REAL_TO_UNSIGNEDBYTE( (Real)a * (1.0f - (Real)(currentFrame - event->fadeFrame) /
 																								(Real)(event->dieFrame - event->fadeFrame) ) );
 
-	}  // end if
+	}
 	startColor = GameMakeColor( r, g, b, a );
 
 	// color 2 ------------------
@@ -547,7 +548,7 @@ void W3DRadar::drawSingleGenericEvent( Int pixelX, Int pixelY, Int width, Int he
 		a = REAL_TO_UNSIGNEDBYTE( (Real)a * (1.0f - (Real)(currentFrame - event->fadeFrame) /
 																								(Real)(event->dieFrame - event->fadeFrame) ) );
 
-	}  // end if
+	}
 	endColor = GameMakeColor( r, g, b, a );
 
 	// draw the lines
@@ -579,7 +580,7 @@ void W3DRadar::drawEvents( Int pixelX, Int pixelY, Int width, Int height )
 				static AudioEventRTS eventSound("RadarEvent");
 				TheAudio->addAudioEvent( &eventSound );
 
-			}  // end if
+			}
 
 			m_event[ i ].soundPlayed = TRUE;
 
@@ -588,11 +589,11 @@ void W3DRadar::drawEvents( Int pixelX, Int pixelY, Int width, Int height )
 			else
 				drawSingleGenericEvent( pixelX, pixelY, width, height, i );
 
-		}  // end if
+		}
 
-	}  // end for i
+	}
 
-}  // end drawEvents
+}
 
 
 //-------------------------------------------------------------------------------------------------
@@ -690,7 +691,7 @@ void W3DRadar::renderObjectList( const RadarObject *listHead, TextureClass *text
 		// Now it twinkles for any stealthed object, whether locally controlled or neutral-observier-viewed
 		if( obj->testStatus( OBJECT_STATUS_STEALTHED ) )
 		{
-      if ( ThePlayerList->getLocalPlayer()->getRelationship(obj->getTeam()) == ENEMIES )
+      if ( TheControlBar->getCurrentlyViewedPlayerRelationship(obj->getTeam()) == ENEMIES )
         if( !obj->testStatus( OBJECT_STATUS_DETECTED ) && !obj->testStatus( OBJECT_STATUS_DISGUISED ) )
 				  skip = TRUE;
 
@@ -710,7 +711,7 @@ void W3DRadar::renderObjectList( const RadarObject *listHead, TextureClass *text
 				a = REAL_TO_UNSIGNEDBYTE( (alphaScale * (255.0f - minAlpha)) + minAlpha );
 			c = GameMakeColor( r, g, b, a );
 
-		}  // end if
+		}
 
 
 
@@ -731,10 +732,10 @@ void W3DRadar::renderObjectList( const RadarObject *listHead, TextureClass *text
 		if( legalRadarPoint( radarPoint.x, radarPoint.y ) )
 			surface->DrawPixel( radarPoint.x, radarPoint.y, c );
 
-	}  // end for
+	}
 	REF_PTR_RELEASE(surface);
 
-}  // end renderObjectList
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Shade the color passed in using the height parameter to lighten and darken it.  Colors
@@ -774,7 +775,7 @@ void W3DRadar::interpolateColorForHeight( RGBColor *color,
 		colorTarget.green = color->green + (1.0f - color->green) * howBright;
 		colorTarget.blue = color->blue + (1.0f - color->blue) * howBright;
 
-	}  // end if
+	}
 	else  // interpolate darker
 	{
 
@@ -786,7 +787,7 @@ void W3DRadar::interpolateColorForHeight( RGBColor *color,
 		colorTarget.green = color->green + (0.0f - color->green) * howDark;
 		colorTarget.blue = color->blue + (0.0f - color->blue) * howDark;
 
-	}  // end else
+	}
 
 	// interpolate toward the target color
 	color->red = color->red + (colorTarget.red - color->red) * t;
@@ -807,7 +808,7 @@ void W3DRadar::interpolateColorForHeight( RGBColor *color,
 	if( color->blue > 1.0f )
 		color->blue = 1.0f;
 
-}  // end interpolateColorForHeight
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS /////////////////////////////////////////////////////////////////////////////////
@@ -842,9 +843,9 @@ W3DRadar::W3DRadar( void )
 		m_viewBox[ i ].x = 0;
 		m_viewBox[ i ].y = 0;
 
-	}  // end for
+	}
 
-}  // end W3DRadar
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -854,7 +855,7 @@ W3DRadar::~W3DRadar( void )
 	// delete resources used for the W3D radar
 	deleteResources();
 
-}  // end ~W3DRadar
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -952,7 +953,7 @@ void W3DRadar::init( void )
 	size.y = m_textureHeight;
 	m_shroudImage->setImageSize( &size );
 
-}  // end init
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Reset the radar to the initial empty state ready for new data */
@@ -986,7 +987,7 @@ void W3DRadar::reset( void )
 	//gs Dude, it's called CLEARshroud.  It needs to clear the shroud.
 	clearShroud();
 
-}  // end reset
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Update */
@@ -997,7 +998,7 @@ void W3DRadar::update( void )
 	// extend base class
 	Radar::update();
 
-}  // end update
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -1049,7 +1050,7 @@ void W3DRadar::newMap( TerrainLogic *terrain )
 	// build terrain texture
 	buildTerrainTexture( terrain );
 
-}  // end newMap
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -1103,9 +1104,9 @@ void W3DRadar::buildTerrainTexture( TerrainLogic *terrain )
 					if( body->getDamageState() != BODY_RUBBLE )
 						workingBridge = TRUE;
 
-				}  // end if
+				}
 
-			}  // end if
+			}
 
 			// create a color based on the Z height of the map
 			Real waterZ;
@@ -1152,15 +1153,15 @@ void W3DRadar::buildTerrainTexture( TerrainLogic *terrain )
 									sampleColor.blue += color.blue;
 									samples++;
 
-								}  // end if
+								}
 
-							}  // end if
+							}
 
-						}  // end for i
+						}
 
-					}  // end if
+					}
 
-				}  // end for j
+				}
 
 				// prevent divide by zeros
 				if( samples == 0 )
@@ -1171,7 +1172,7 @@ void W3DRadar::buildTerrainTexture( TerrainLogic *terrain )
 				color.green = sampleColor.green / (Real)samples;
 				color.blue = sampleColor.blue / (Real)samples;
 
-			}  // end if
+			}
 			else  // regular terrain ...
 			{
 				const Int samplesAway = 1;  // how many "tiles" from the center tile we will sample away
@@ -1225,7 +1226,7 @@ void W3DRadar::buildTerrainTexture( TerrainLogic *terrain )
 																						 getTerrainAverageZ(),
 																						 m_mapExtent.hi.z, m_mapExtent.lo.z );
 
-								}  // end if
+								}
 								else
 								{
 
@@ -1236,7 +1237,7 @@ void W3DRadar::buildTerrainTexture( TerrainLogic *terrain )
 									interpolateColorForHeight( &color, worldPoint.z, getTerrainAverageZ(),
 																						 m_mapExtent.hi.z, m_mapExtent.lo.z );
 
-								}  // end else
+								}
 
 								// add color to our samples
 								sampleColor.red += color.red;
@@ -1244,13 +1245,13 @@ void W3DRadar::buildTerrainTexture( TerrainLogic *terrain )
 								sampleColor.blue += color.blue;
 								samples++;
 
-							}  // end if
+							}
 
-						}  // end for i
+						}
 
-					}  // end if
+					}
 
-				}  // end for j
+				}
 
 				// prevent divide by zeros
 				if( samples == 0 )
@@ -1261,7 +1262,7 @@ void W3DRadar::buildTerrainTexture( TerrainLogic *terrain )
 				color.green = sampleColor.green / (Real)samples;
 				color.blue = sampleColor.blue / (Real)samples;
 
-			}  // end else
+			}
 
 			//
 			// draw the pixel for the terrain at this point, note that because of the orientation
@@ -1277,14 +1278,14 @@ void W3DRadar::buildTerrainTexture( TerrainLogic *terrain )
 																							 color.blue * 255,
 																							 255 ) );
 
-		}  // end for x
+		}
 
-	}  // end for y
+	}
 
 	// all done with the surface
 	REF_PTR_RELEASE(surface);
 
-}  // end buildTerrainTexture
+}
 
 // ------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -1413,7 +1414,7 @@ void W3DRadar::draw( Int pixelX, Int pixelY, Int width, Int height )
 		TheDisplay->drawLine(pixelX, ul.y, pixelX + width, ul.y, 1, lineColor);
 		TheDisplay->drawLine(pixelX, lr.y + 1, pixelX + width, lr.y + 1, 1, lineColor);
 
-	}  // end if
+	}
 	else
 	{
 
@@ -1423,7 +1424,7 @@ void W3DRadar::draw( Int pixelX, Int pixelY, Int width, Int height )
 		TheDisplay->drawLine(ul.x, pixelY, ul.x, pixelY + height, 1, lineColor);
 		TheDisplay->drawLine(lr.x + 1, pixelY, lr.x + 1, pixelY + height, 1, lineColor);
 
-	}  // end else
+	}
 
 	// draw the terrain texture
 	TheDisplay->drawImage( m_terrainImage, ul.x, ul.y, lr.x, lr.y );
@@ -1441,7 +1442,7 @@ void W3DRadar::draw( Int pixelX, Int pixelY, Int width, Int height )
 		renderObjectList( getObjectList(), m_overlayTexture );
 		renderObjectList( getLocalObjectList(), m_overlayTexture, TRUE );
 
-	}  // end if
+	}
 
 	// draw the overlay image
  	TheDisplay->drawImage( m_overlayImage, ul.x, ul.y, lr.x, lr.y );
@@ -1474,7 +1475,7 @@ void W3DRadar::draw( Int pixelX, Int pixelY, Int width, Int height )
 	// draw the view region on top of the radar reconstructing if necessary
 	drawViewBox( ul.x, ul.y, scaledWidth, scaledHeight );
 
-}  // end draw
+}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -1487,7 +1488,7 @@ void W3DRadar::refreshTerrain( TerrainLogic *terrain )
 	// rebuild the entire terrain texture
 	buildTerrainTexture( terrain );
 
-}  // end refreshTerrain
+}
 
 
 
@@ -1594,7 +1595,7 @@ void W3DRadar::refreshTerrain( TerrainLogic *terrain )
 				a = REAL_TO_UNSIGNEDBYTE( (alphaScale * (255.0f - minAlpha)) + minAlpha );
 			c = GameMakeColor( r, g, b, a );
 
-		}  // end if
+		}
 
 
 
@@ -1618,10 +1619,10 @@ void W3DRadar::refreshTerrain( TerrainLogic *terrain )
 
 
 
-	}  // end for
+	}
 	REF_PTR_RELEASE(surface);
 
-}  // end renderObjectList
+}
 
 
  *
