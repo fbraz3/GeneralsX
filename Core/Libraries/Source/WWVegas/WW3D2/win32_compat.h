@@ -332,6 +332,7 @@ typedef struct {
 } CANDIDATEFORM, *LPCANDIDATEFORM;
 
 typedef DWORD* LPDWORD;
+typedef void* LPSECURITY_ATTRIBUTES;  // Security attributes placeholder
 
 typedef struct {
     DWORD dwSize;
@@ -2157,9 +2158,6 @@ inline UINT SetErrorMode(UINT uMode) {
 #define IDYES    6
 #define IDNO     7
 
-// Security attributes placeholder
-typedef void* LPSECURITY_ATTRIBUTES;
-
 // Additional Windows API functions for SaveGame and GameEngine (only if not already defined)
 #ifndef MESSAGEBOX_DEFINED
 #define MESSAGEBOX_DEFINED
@@ -2220,8 +2218,9 @@ public:
 // char g_LastErrorDump[4096];
 
 // Forward declaration for WebBrowser class
-class WebBrowser;
-extern WebBrowser* TheWebBrowser;
+// Note: TheWebBrowser declaration moved to WebBrowser.h to avoid conflicts with CComObject<WebBrowser>
+// class WebBrowser;
+// extern WebBrowser* TheWebBrowser;
 
 // Forward declaration for StringClass (defined in wwstring.h)
 class StringClass;

@@ -1,3 +1,70 @@
+# Phase 24.2 – Generals Base Game Port Status
+
+Date: 2025-01-XX
+
+## 🎯 Zero Hour Priority - Generals Secondary Status
+
+**Primary Target**: GeneralsMD (Zero Hour) - ✅ **SUCCESSFULLY COMPILING** (13MB ARM64 executable)
+**Secondary Target**: Generals (Base Game) - 🔄 **IN PROGRESS** (6 remaining errors)
+
+## Generals Compilation Status
+
+### Compilation Progress
+- **Current State**: 220 warnings, 6 errors
+- **Build Target**: `g_generals` (Original Command & Conquer Generals)
+- **Platform**: macOS ARM64 (Apple Silicon)
+- **Status**: 99% complete, only Win32 API compatibility issues remain
+
+### Remaining Errors (All in ClientInstance.cpp)
+```
+Generals/Code/GameEngine/Source/GameClient/ClientInstance.cpp:
+- Line 55: error: use of undeclared identifier 'CreateMutex'
+- Line 56: error: use of undeclared identifier 'GetLastError'  
+- Line 60: error: use of undeclared identifier 'CloseHandle'
+- Line 70: error: use of undeclared identifier 'CreateMutex'
+- Line 71: error: use of undeclared identifier 'GetLastError'
+- Line 75: error: use of undeclared identifier 'CloseHandle'
+```
+
+### Successfully Resolved Issues
+- ✅ W3DFunctionLexicon.cpp: Added `(void*)` cast for `W3DMainMenuInit` function pointer
+- ✅ WorldHeightMap.h: Added forward declarations for `TerrainTextureClass`, `AlphaTerrainTextureClass`
+- ✅ win32_compat.h: Commented conflicting `TheWebBrowser` declaration (line 2224)
+
+### Next Steps for Generals
+
+1. **Integrate pthread mutex implementations** from existing compatibility layer:
+   - Core/Libraries/Source/WWVegas/WW3D2/threading.h already has pthread_mutex_t wrappers
+   - Core/Libraries/Source/WWVegas/WW3D2/windows.h already has CreateMutex/GetLastError/CloseHandle stubs
+   - Need to ensure proper includes in ClientInstance.cpp
+
+2. **Verify mutex usage patterns** in ClientInstance.cpp:
+   - Check if mutex operations are single-instance checks
+   - Consider if macOS needs different approach (NSDistributedNotificationCenter, etc.)
+
+3. **Compare with Zero Hour implementation**:
+   - Check if GeneralsMD/Code has similar ClientInstance.cpp usage
+   - Determine if Zero Hour uses different approach
+
+## ✅ Completed Tasks (This Session)
+
+1. Fixed upstream merge compatibility issues
+2. Created macOS platform stubs (MacOSDisplay.cpp)
+3. Created OpenAL audio manager stubs (replacing MilesAudioManager)
+4. Fixed GameText.h missing includes
+5. Successfully compiled Zero Hour (generalszh) for ARM64
+6. Fixed Generals forward declaration issues
+7. Fixed Generals function pointer casting
+
+## 🔄 Priority: Return to Zero Hour Execution
+
+**Next Phase**: Test Zero Hour executable runtime behavior
+- Location: `build/macos-arm64/GeneralsMD/generalszh` (13MB ARM64)
+- Priority: Execute and debug Zero Hour before completing Generals port
+- Generals compilation can be completed after Zero Hour runtime validation
+
+---
+
 # Phase 24.1 – 3D Asset Loading Crash (INPUT SUBSYSTEM SUCCESS!)
 
 Date: 2025-09-30
