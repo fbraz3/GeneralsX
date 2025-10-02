@@ -90,6 +90,8 @@ class OutputStream;
 class DataChunkInput;
 struct DataChunkInfo;
 class AlphaEdgeTextureClass;
+class TerrainTextureClass;
+class AlphaTerrainTextureClass;
 
 class WorldHeightMap : public RefCountClass
 {

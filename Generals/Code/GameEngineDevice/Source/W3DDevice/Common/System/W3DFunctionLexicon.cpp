@@ -103,7 +103,7 @@ static FunctionLexicon::TableEntry gameWinDrawTable [] =
 static FunctionLexicon::TableEntry layoutInitTable [] =
 {
 
-	{ NAMEKEY_INVALID, "W3DMainMenuInit",								W3DMainMenuInit },
+	{ NAMEKEY_INVALID, "W3DMainMenuInit",								(void*)W3DMainMenuInit },
 
 	{ NAMEKEY_INVALID, NULL,														NULL },
 
