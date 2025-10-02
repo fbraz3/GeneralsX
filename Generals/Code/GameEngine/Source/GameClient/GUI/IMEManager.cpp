@@ -47,7 +47,9 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
 
+#ifdef _WIN32
 #include "mbstring.h"
+#endif
 
 #include "Common/Debug.h"
 #include "Common/Language.h"

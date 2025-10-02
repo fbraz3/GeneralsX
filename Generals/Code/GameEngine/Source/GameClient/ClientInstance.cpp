@@ -22,7 +22,11 @@
 
 namespace rts
 {
+#ifdef _WIN32
 HANDLE ClientInstance::s_mutexHandle = NULL;
+#else
+void* ClientInstance::s_mutexHandle = NULL;
+#endif
 UnsignedInt ClientInstance::s_instanceIndex = 0;
 
 #if defined(RTS_MULTI_INSTANCE)
@@ -31,6 +35,7 @@ Bool ClientInstance::s_isMultiInstance = true;
 Bool ClientInstance::s_isMultiInstance = false;
 #endif
 
+#ifdef _WIN32
 bool ClientInstance::initialize()
 {
 	if (isInitialized())
@@ -83,6 +88,19 @@ bool ClientInstance::initialize()
 
 	return true;
 }
+#else
+bool ClientInstance::initialize()
+{
+	// macOS version - simplified instance management without Windows mutexes
+	if (isInitialized())
+	{
+		return true;
+	}
+	
+	s_mutexHandle = (void*)1; // dummy handle to indicate initialized
+	return true;
+}
+#endif
 
 bool ClientInstance::isInitialized()
 {

@@ -280,6 +280,7 @@ void reallySaveReplay(void)
 
 	if (TheLocalFileSystem->doesFileExist(filename.str()))
 	{
+#ifdef _WIN32
 		if(DeleteFile(filename.str()) == 0)
 		{
 			wchar_t buffer[1024];
@@ -302,9 +303,32 @@ void reallySaveReplay(void)
 			PopulateReplayFileListbox(listboxGames);
 			return;
 		}
+#else
+		// macOS: use POSIX unlink instead of DeleteFile
+		if(unlink(filename.str()) != 0)
+		{
+			UnicodeString errorStr;
+			errorStr.format(L"Failed to delete file: %hs", strerror(errno));
+			if(messageBoxWin)
+			{
+				TheWindowManager->winUnsetModal(messageBoxWin);
+				messageBoxWin = NULL;
+			}
+			MessageBoxOk(TheGameText->fetch("GUI:Error"),errorStr, NULL);
+
+			// get the listbox that will have the save games in it
+			GameWindow *listboxGames = TheWindowManager->winGetWindowFromId( parent, listboxGamesKey );
+			DEBUG_ASSERTCRASH( listboxGames != NULL, ("reallySaveReplay - Unable to find games listbox") );
+
+			// populate the listbox with the save games on disk
+			PopulateReplayFileListbox(listboxGames);
+			return;
+		}
+#endif
 	}
 
 	// copy the replay to the right place
+#ifdef _WIN32
 	if(CopyFile(oldFilename.str(),filename.str(), FALSE) == 0)
 	{
 		wchar_t buffer[1024];
@@ -318,6 +342,44 @@ void reallySaveReplay(void)
 			messageBoxWin = NULL;
 		}
 		MessageBoxOk(TheGameText->fetch("GUI:Error"),errorStr, NULL);
+#else
+	// macOS: use POSIX file copy (read/write)
+	FILE* src = fopen(oldFilename.str(), "rb");
+	FILE* dst = src ? fopen(filename.str(), "wb") : NULL;
+	bool copyFailed = !src || !dst;
+	
+	if(src && dst)
+	{
+		char buffer[8192];
+		size_t bytes;
+		while((bytes = fread(buffer, 1, sizeof(buffer), src)) > 0)
+		{
+			if(fwrite(buffer, 1, bytes, dst) != bytes)
+			{
+				copyFailed = true;
+				break;
+			}
+		}
+		fclose(src);
+		fclose(dst);
+	}
+	else
+	{
+		if(src) fclose(src);
+		if(dst) fclose(dst);
+	}
+	
+	if(copyFailed)
+	{
+		UnicodeString errorStr;
+		errorStr.format(L"Failed to copy file: %hs", strerror(errno));
+		if(messageBoxWin)
+		{
+			TheWindowManager->winUnsetModal(messageBoxWin);
+			messageBoxWin = NULL;
+		}
+		MessageBoxOk(TheGameText->fetch("GUI:Error"),errorStr, NULL);
+#endif
 		return;
 	}
 
