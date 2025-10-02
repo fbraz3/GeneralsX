@@ -708,6 +708,7 @@ void deleteReplay( void )
 	filename = TheRecorder->getReplayDir();
 	translate.translate(GetReplayFilenameFromListbox(listboxReplayFiles, selected));
 	filename.concat(translate);
+#ifdef _WIN32
 	if(DeleteFile(filename.str()) == 0)
 	{
 		char buffer[1024];
@@ -717,6 +718,15 @@ void deleteReplay( void )
 		errorStr.translate(translate);
 		MessageBoxOk(TheGameText->fetch("GUI:Error"),errorStr, NULL);
 	}
+#else
+	// macOS: use POSIX unlink
+	if(unlink(filename.str()) != 0)
+	{
+		UnicodeString errorStr;
+		errorStr.format(L"Failed to delete replay: %hs", strerror(errno));
+		MessageBoxOk(TheGameText->fetch("GUI:Error"),errorStr, NULL);
+	}
+#endif
 	//Load the listbox shiznit
 	GadgetListBoxReset(listboxReplayFiles);
 	PopulateReplayFileListbox(listboxReplayFiles);
@@ -738,6 +748,7 @@ void copyReplay( void )
 	translate.translate(GetReplayFilenameFromListbox(listboxReplayFiles, selected));
 	filename.concat(translate);
 
+#ifdef _WIN32
 	char path[1024];
 	LPITEMIDLIST pidl;
 	SHGetSpecialFolderLocation(NULL, CSIDL_DESKTOPDIRECTORY, &pidl);
@@ -753,6 +764,52 @@ void copyReplay( void )
 		UnicodeString errorStr;
 		errorStr.set(buffer);
 		errorStr.trim();
+#else
+	// macOS: use home directory Desktop folder
+	const char* home = getenv("HOME");
+	AsciiString newFilename;
+	if(home)
+	{
+		newFilename.set(home);
+		newFilename.concat("/Desktop/");
+	}
+	else
+	{
+		newFilename.set("/tmp/");
+	}
+	newFilename.concat(translate);
+	
+	// Copy file using POSIX
+	FILE* src = fopen(filename.str(), "rb");
+	FILE* dst = src ? fopen(newFilename.str(), "wb") : NULL;
+	bool copyFailed = !src || !dst;
+	
+	if(src && dst)
+	{
+		char buffer[8192];
+		size_t bytes;
+		while((bytes = fread(buffer, 1, sizeof(buffer), src)) > 0)
+		{
+			if(fwrite(buffer, 1, bytes, dst) != bytes)
+			{
+				copyFailed = true;
+				break;
+			}
+		}
+		fclose(src);
+		fclose(dst);
+	}
+	else
+	{
+		if(src) fclose(src);
+		if(dst) fclose(dst);
+	}
+	
+	if(copyFailed)
+	{
+		UnicodeString errorStr;
+		errorStr.format(L"Failed to copy replay to desktop: %hs", strerror(errno));
+#endif
 		MessageBoxOk(TheGameText->fetch("GUI:Error"),errorStr, NULL);
 	}
 

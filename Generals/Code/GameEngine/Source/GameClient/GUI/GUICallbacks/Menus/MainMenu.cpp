@@ -1419,12 +1419,17 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 			}
 			else if( controlID == worldBuilderID )
 			{
+#ifdef _WIN32
 #if defined RTS_DEBUG
 				if(_spawnl(_P_NOWAIT,"WorldBuilderD.exe","WorldBuilderD.exe", NULL) < 0)
 					MessageBoxOk(TheGameText->fetch("GUI:WorldBuilder"), TheGameText->fetch("GUI:WorldBuilderLoadFailed"),NULL);
 #else
 				if(_spawnl(_P_NOWAIT,"WorldBuilder.exe","WorldBuilder.exe", NULL) < 0)
 					MessageBoxOk(TheGameText->fetch("GUI:WorldBuilder"), TheGameText->fetch("GUI:WorldBuilderLoadFailed"),NULL);
+#endif
+#else
+				// macOS: WorldBuilder not supported yet
+				MessageBoxOk(TheGameText->fetch("GUI:WorldBuilder"), TheGameText->fetch("GUI:WorldBuilderLoadFailed"),NULL);
 #endif
 			}
 			else if( controlID == getUpdateID )

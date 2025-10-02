@@ -119,24 +119,10 @@ static GameWinSystemFunc		systemFunc = NULL;
 static GameWinInputFunc		inputFunc = NULL;
 static GameWinTooltipFunc	tooltipFunc = NULL;
 static GameWinDrawFunc			drawFunc = NULL;
-
-// Lazy initialization functions to avoid global constructor issues
-static AsciiString& getSystemString() {
-	static AsciiString theSystemString;
-	return theSystemString;
-}
-static AsciiString& getInputString() {
-	static AsciiString theInputString;
-	return theInputString;
-}
-static AsciiString& getTooltipString() {
-	static AsciiString theTooltipString;
-	return theTooltipString;
-}
-static AsciiString& getDrawString() {
-	static AsciiString theDrawString;
-	return theDrawString;
-}
+static AsciiString theSystemString;
+static AsciiString theInputString;
+static AsciiString theTooltipString;
+static AsciiString theDrawString;
 
 // default visual properties
 static Color defEnabledColor		= 0;
@@ -718,8 +704,8 @@ static Bool parseSystemCallback( const char *token, WinInstanceData *instData,
 
 	// save a pointer of the function address
 	DEBUG_ASSERTCRASH( TheNameKeyGenerator && TheFunctionLexicon, ("Invalid singletons") );
-	getSystemString() = c;
-	NameKeyType key = TheNameKeyGenerator->nameToKey( getSystemString() );
+	theSystemString = c;
+	NameKeyType key = TheNameKeyGenerator->nameToKey( theSystemString );
 	systemFunc = TheFunctionLexicon->gameWinSystemFunc( key );
 
 	return TRUE;
@@ -2117,7 +2103,7 @@ static GameWindow *createWindow( char *type,
 		if( editData )
 		{
 
-			editData->systemCallbackString = getSystemString();
+			editData->systemCallbackString = theSystemString;
 			editData->inputCallbackString = theInputString;
 			editData->tooltipCallbackString = theTooltipString;
 			editData->drawCallbackString = theDrawString;
@@ -2340,10 +2326,10 @@ static GameWindow *parseWindow( File *inFile, char *buffer )
 	inputFunc = NULL;
 	tooltipFunc = NULL;
 	drawFunc = NULL;
-	getSystemString().clear();
-	getInputString().clear();
-	getTooltipString().clear();
-	getDrawString().clear();
+	theSystemString.clear();
+	theInputString.clear();
+	theTooltipString.clear();
+	theDrawString.clear();
 
 	// get the size of the parent, or if no parent present the screen
 	if( parent )
@@ -2676,10 +2662,10 @@ is freed by the string destructor but we do it here to make the
 memory leak detection code happy.*/
 void GameWindowManager::freeStaticStrings(void)
 {
-	getSystemString().clear();
-	getInputString().clear();
-	getTooltipString().clear();
-	getDrawString().clear();
+	theSystemString.clear();
+	theInputString.clear();
+	theTooltipString.clear();
+	theDrawString.clear();
 }
 
 WindowLayoutInfo::WindowLayoutInfo() :
