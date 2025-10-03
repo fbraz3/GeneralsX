@@ -59,17 +59,15 @@ Immediate next steps (short and actionable):
 
 ## 🎯 Secondary Target: Generals Base Game
 
-**Status**: 🔄 **IN PROGRESS** (6 remaining errors)
-- **Priority**: Lower priority, focus on Zero Hour enhancements first
-- **Completion**: 99% complete, only Win32 mutex API compatibility issues
+**Status (2025-10-03)**: ✅ **Build SUCCESS** (compiles on macOS ARM64) · 🔄 **Runtime PENDING** (not yet functional like Zero Hour)
+- **Priority**: Lower priority than Zero Hour visual/input bring-up, but track runtime parity.
+- **Notes**: Previous compile errors (mutex API) are no longer blocking the build. Next focus is runtime wiring (display/input) and any platform stubs still required.
 
-### Generals Remaining Work
-```
-Generals/Code/GameEngine/Source/GameClient/ClientInstance.cpp:
-- Lines 55, 56, 60, 70, 71, 75: Win32 mutex functions (CreateMutex, GetLastError, CloseHandle)
-```
-
-**Strategy**: Complete after Zero Hour graphics/input implementation
+### Generals Next Steps (Runtime)
+- Implement the same minimal OpenGL window/context path exercised by Zero Hour (reuse W3DDisplay flow once available).
+- Ensure keyboard/mouse event routing mirrors Zero Hour’s headless fallback → native events path.
+- Validate early subsystems initialize equivalently under the base game (guard INI parsing and AsciiString protections remain active).
+- Keep logs concise; surface only anomalies with W3D PROTECTION prefix.
 
 ## Generals Compilation Status
 

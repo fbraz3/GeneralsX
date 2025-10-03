@@ -15,6 +15,10 @@ Runtime validation (macOS ARM64):
 - ✅ Font pipeline stable: Store_GDI_Char macOS fallback working; Blit_Char has NULL-pointer guards validated during InGameUI/ControlBar text processing (e.g., "GUI:DeleteBeacon").
 - ✅ Map systems remain stable (MapCache protections intact; 146 map files observed during scanning in prior runs).
 
+Base game (Generals) status:
+- ✅ Build: Generals target compiles successfully on macOS ARM64.
+- 🔄 Runtime: Not yet functional like Zero Hour; focus remains on bringing up OpenGL window + input parity.
+
 Immediate next focus (carry-over from Phase 25.0):
 - Implement OpenGL window/context creation in W3DDisplay path (evaluate GLFW/SDL2; no code changes yet).
 - Introduce keyboard/mouse input wiring for macOS (headless guards remain as fallback).
