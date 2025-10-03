@@ -37,6 +37,26 @@ Process 71673 exited with status = 0 (0x00000000)
 - **Assets**: 19 .BIG archive files loaded
 - **Cross-platform**: OpenAL audio, macOS display stubs, pthread threading
 
+## 2025-10-03 — Consolidation + Next Concrete Actions
+
+Status recap:
+- ✅ Stable end-to-end execution preserved (no crashes, clean exit).
+- ✅ Font pipeline: macOS fallback confirmed; Blit_Char null-guards effective under UI text.
+- ✅ Map systems: MapCache protections maintained; large scans pass without fatal issues.
+
+Immediate next steps (short and actionable):
+1) OpenGL window bring-up (no rendering yet):
+  - Integrate a minimal window/context in W3DDisplay path (GLFW or SDL2).
+  - Show a cleared color each frame to validate swap.
+2) Input wiring (macOS):
+  - Replace headless keyboard/mouse with platform events; keep headless as fallback.
+3) Guardrail verification:
+  - Ensure INI Universal Protection, AsciiString validation, and font Blit_Char null-guards remain active and quiet in normal runs.
+4) Logging hygiene:
+  - Keep logs concise; only W3D PROTECTION lines on anomalies.
+5) References cross-check:
+  - Revisit jmarshall-win64-modern for UI/font code parity if new issues appear during on-screen init.
+
 ## 🎯 Secondary Target: Generals Base Game
 
 **Status**: 🔄 **IN PROGRESS** (6 remaining errors)
