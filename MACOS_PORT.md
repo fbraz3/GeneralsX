@@ -2,11 +2,28 @@
 
 **Project Name**: 🎯 **GeneralsX** (formerly Command & Conquer: Generals)
 
-**Port Status**: 🎉 **Phase 23.5: MapCache Crashes COMPLETELY RESOLVED** 🎯
+**Port Status**: 🎉 **Phase 25.0 – Zero Hour Successfully Executes on macOS** 🎯
 
-**Date**: January 25, 2025
+**Date**: October 3, 2025
 
-**Status**: 🚀 **MAJOR BREAKTHROUGH** - MapCache addMap() crashes fully resolved! Engine now advances cleanly through all MapCache operations and reaches INI parsing phase (`Data\INI\GameLOD.ini`). This represents progression through multiple additional subsystems that were previously unreachable.
+**Status**: 🚀 **MAJOR BREAKTHROUGH MAINTAINED** – Zero Hour executes end-to-end on macOS ARM64 with clean shutdown (exit code 0). Focus shifts to implementing actual OpenGL window + input (replacing stubs) while preserving the stable runtime achieved.
+
+## Latest Update (October 3, 2025)
+
+Runtime validation (macOS ARM64):
+- ✅ Multiple runs confirm full engine initialization → main loop → clean exit (no segfaults).
+- ✅ Font pipeline stable: Store_GDI_Char macOS fallback working; Blit_Char has NULL-pointer guards validated during InGameUI/ControlBar text processing (e.g., "GUI:DeleteBeacon").
+- ✅ Map systems remain stable (MapCache protections intact; 146 map files observed during scanning in prior runs).
+
+Immediate next focus (carry-over from Phase 25.0):
+- Implement OpenGL window/context creation in W3DDisplay path (evaluate GLFW/SDL2; no code changes yet).
+- Introduce keyboard/mouse input wiring for macOS (headless guards remain as fallback).
+- Keep DX8 mock layer as-is while enabling a basic on-screen clear to validate context.
+
+Acceptance checkpoints for next iteration:
+- A window opens on macOS with a cleared background each frame (no rendering yet).
+- Event loop processes input without crashing; headless path still safe.
+- Existing runtime protections (INI, AsciiString, font guards) remain silent in logs under normal conditions.
 
 ## Critical Success: MapCache Resolution (January 25, 2025)
 
