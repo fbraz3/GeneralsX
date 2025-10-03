@@ -91,12 +91,12 @@ The game requires original Command & Conquer: Generals/Zero Hour assets to run p
 
 ```bash
 # Create directory for assets
-mkdir -p $HOME/Downloads/generals
+mkdir -p $HOME/GeneralsX/GeneralsMD
 
 # Copy the executable (Zero Hour recommended)
-cp ./build/linux/GeneralsMD/GeneralsXZH $HOME/Downloads/generals/
+cp ./build/linux/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/
 
-# Copy original game assets to $HOME/Downloads/generals/
+# Copy original game assets to $HOME/GeneralsX/GeneralsMD/
 # Required: Data/, Maps/, etc. from original installation
 # Zero Hour assets recommended for best compatibility
 ```
@@ -104,10 +104,10 @@ cp ./build/linux/GeneralsMD/GeneralsXZH $HOME/Downloads/generals/
 ### Running the Game
 ```bash
 # Run in directory with assets
-cd $HOME/Downloads/generals && ./GeneralsXZH
+cd $HOME/GeneralsX/GeneralsMD && ./GeneralsXZH
 
 # Alternative: Original Generals
-cd $HOME/Downloads/generals && ./generals
+cd $HOME/GeneralsX/GeneralsMD && ./generals
 ```
 
 ## 🐛 Debug and Development
@@ -115,10 +115,10 @@ cd $HOME/Downloads/generals && ./generals
 ### Debugging with GDB
 ```bash
 # Use GDB for crash investigation
-cd $HOME/Downloads/generals && gdb ./GeneralsXZH
+cd $HOME/GeneralsX/GeneralsMD && gdb ./GeneralsXZH
 
 # Direct execution with debug output
-cd $HOME/Downloads/generals && ./GeneralsXZH
+cd $HOME/GeneralsX/GeneralsMD && ./GeneralsXZH
 ```
 
 ### Alternative Build Configurations

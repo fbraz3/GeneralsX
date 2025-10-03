@@ -8,7 +8,7 @@ Date: 2025-10-01
 
 ### Execution Results
 ```bash
-$ cd $HOME/Downloads/generals && timeout 30s ./GeneralsXZH
+$ cd $HOME/GeneralsX/GeneralsMD && timeout 30s ./GeneralsXZH
 # Complete initialization sequence:
 ✅ WinMain initialization
 ✅ ClientInstance initialized  
@@ -641,7 +641,7 @@ static const FieldParse dataFieldParse[] = {
 **Action Steps**:
 ```bash
 # Test full game initialization without timeout to see how far it progresses
-cd $HOME/Downloads/generals && ./GeneralsXZH 2>&1 | head -100
+cd $HOME/GeneralsX/GeneralsMD && ./GeneralsXZH 2>&1 | head -100
 # Monitor for next potential failure point in engine initialization
 # Document progress beyond TheThingFactory resolution
 ```
@@ -702,7 +702,7 @@ grep -r "^static.*AsciiString\|^AsciiString.*static" --include="*.cpp" Core/ Gen
 **Abordagem de Teste**:
 ```bash
 # Executar com saída detalhada para verificar inicialização das bibliotecas
-cd $HOME/Downloads/generals && MILES_DEBUG=1 BINK_DEBUG=1 ./GeneralsXZH
+cd $HOME/GeneralsX/GeneralsMD && MILES_DEBUG=1 BINK_DEBUG=1 ./GeneralsXZH
 
 # Verificar símbolos relacionados a Miles e Bink no executável
 nm -gU GeneralsXZH | grep -i "miles\|bink"
@@ -730,8 +730,8 @@ cmake --build build/vc6 --target GeneralsXZH -j 4
 ### Asset Setup (Required for Testing)
 ```bash
 # Create testing environment
-mkdir -p $HOME/Downloads/generals
-cp ./build/vc6/GeneralsMD/GeneralsXZH $HOME/Downloads/generals/
+mkdir -p $HOME/GeneralsX/GeneralsMD
+cp ./build/vc6/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/
 
 # Copy game assets (required for proper initialization)
 # Assets needed: Data/, Maps/, INI/, Music/, etc.
@@ -748,7 +748,7 @@ quit
 EOF
 
 # Direct execution (shows printf output)
-cd $HOME/Downloads/generals && ./GeneralsXZH
+cd $HOME/GeneralsX/GeneralsMD && ./GeneralsXZH
 
 # Background compilation
 cmake --build build/vc6 --target GeneralsXZH -j 4 &
@@ -843,7 +843,7 @@ cd /Users/felipebraz/PhpstormProjects/pessoal/GeneralsGameCode
 
 # Verify current debugging is working
 cmake --build build/vc6 --target GeneralsXZH -j 4
-cd $HOME/Downloads/generals && ./GeneralsXZH 2>&1 | tail -50
+cd $HOME/GeneralsX/GeneralsMD && ./GeneralsXZH 2>&1 | tail -50
 
 # Begin BitFlags investigation
 # Focus on anyIntersectionWith() implementation and condition state validation

@@ -295,8 +295,8 @@ Next steps for this phase:
 
 How to reproduce locally (macOS ARM64):
 - Build: cmake --preset macos-arm64 && cmake --build build/macos-arm64 --target GeneralsXZH -j 4
-- Deploy/sign: cp build/macos-arm64/GeneralsMD/GeneralsXZH $HOME/Downloads/generals/ && codesign --force --deep --sign - $HOME/Downloads/generals/GeneralsXZH
-- Run: cd $HOME/Downloads/generals && ./GeneralsXZH
+- Deploy/sign: cp build/macos-arm64/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/ && codesign --force --deep --sign - $HOME/GeneralsX/GeneralsMD/GeneralsXZH
+- Run: cd $HOME/GeneralsX/GeneralsMD && ./GeneralsXZH
 
 
 **🎉 PHASE 22.7 - INI PARSER END TOKEN EXCEPTION INVESTIGATION (December 30, 2024)**: ✅ **COMPLETE SUCCESS!** End token parsing exceptions fully resolved
@@ -430,7 +430,7 @@ if (vectorSize > 100000) { // Detect massive corruption
 
 3. **Enhanced Debugging Tools** ✅
    - **LLDB Script**: Enhanced with automatic termination, no more manual "exit" commands
-   - **Asset Testing**: Maintains $HOME/Downloads/generals environment for proper testing
+   - **Asset Testing**: Maintains $HOME/GeneralsX/GeneralsMD environment for proper testing
 
 **Current Status**: Game compiles successfully, links correctly, but crashes during startup with "Technical Difficulties" error - this appears to be a different issue unrelated to our memory corruption fixes.
 
@@ -459,7 +459,7 @@ if (vectorSize > 100000) { // Detect massive corruption
    - **Files**: Win32GameEngine.h in both Generals and GeneralsMD
 
 3. **Debugging Infrastructure** ✅
-   - **Asset Environment**: Established $HOME/Downloads/generals with game assets for proper testing
+   - **Asset Environment**: Established $HOME/GeneralsX/GeneralsMD with game assets for proper testing
    - **LLDB Integration**: Created debug_script.lldb for systematic crash investigation
    - **Documentation**: Updated copilot-instructions.md with debugging workflows
 
