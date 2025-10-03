@@ -29,7 +29,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include "WWVegas/WW3D2/network.h"  // For WSA functions on POSIX
+#include "network.h"  // For WSA functions on POSIX
 #endif
 
 #include "Common/crc.h"
