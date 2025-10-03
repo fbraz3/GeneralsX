@@ -66,11 +66,13 @@ W3DDebrisDraw::W3DDebrisDraw(Thing *thing, const ModuleData* moduleData) : DrawM
 //-------------------------------------------------------------------------------------------------
 W3DDebrisDraw::~W3DDebrisDraw(void)
 {
+#ifdef _WIN32
 	if (TheW3DShadowManager && m_shadow)
 	{
 		TheW3DShadowManager->removeShadow(m_shadow);
 		m_shadow = NULL;
 	}
+#endif // _WIN32
 	if (m_renderObject)
 	{
 		if (W3DDisplay::m_3DScene != NULL)
@@ -131,15 +133,19 @@ void W3DDebrisDraw::setModelName(AsciiString name, Color color, ShadowType t)
 			shadowInfo.m_type = t;
 			shadowInfo.m_sizeX=0;
 			shadowInfo.m_sizeY=0;
+#ifdef _WIN32
   		m_shadow = TheW3DShadowManager->addShadow(m_renderObject, &shadowInfo);
+#endif // _WIN32
 		}
 		else
 		{
+#ifdef _WIN32
 			if (TheW3DShadowManager && m_shadow)
 			{
 				TheW3DShadowManager->removeShadow(m_shadow);
 				m_shadow = NULL;
 			}
+#endif // _WIN32
 		}
 
 		// save the model name and color

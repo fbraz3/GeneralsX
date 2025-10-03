@@ -16,6 +16,8 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef _WIN32
+
 ////////////////////////////////////////////////////////////////////////////////
 //																																						//
 //  (c) 2001-2003 Electronic Arts Inc.																				//
@@ -72,5 +74,7 @@ protected:
 };
 
 extern W3DShadowManager *TheW3DShadowManager;
+
+#endif // _WIN32
 
 #endif	//__W3DSHADOW_H_

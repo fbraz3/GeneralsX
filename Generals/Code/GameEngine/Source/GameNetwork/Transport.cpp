@@ -25,6 +25,13 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
 
+#ifndef _WIN32
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include "network.h"  // For WSA functions on POSIX
+#endif
+
 #include "Common/crc.h"
 #include "GameNetwork/Transport.h"
 #include "GameNetwork/NetworkInterface.h"
@@ -350,7 +357,11 @@ Bool Transport::doRecv()
 				{
 					// Empty slot; use it
 					m_inBuffer[i].length = incomingMessage.length;
+#ifdef _WIN32
 					m_inBuffer[i].addr = ntohl(from.sin_addr.S_un.S_addr);
+#else
+					m_inBuffer[i].addr = ntohl(from.sin_addr.s_addr);
+#endif
 					m_inBuffer[i].port = ntohs(from.sin_port);
 					memcpy(&m_inBuffer[i], buf, len);
 					break;

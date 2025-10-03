@@ -28,7 +28,30 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
 
+#ifdef _WIN32
 #include <winsock.h>	// This one has to be here. Prevents collisions with windsock2.h
+#else
+// POSIX networking headers for macOS/Linux
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <unistd.h>
+#include <errno.h>
+
+// Define Windows-specific types and macros for POSIX
+#define WSADATA int
+#define WORD unsigned short
+#define MAKEWORD(a,b) 0
+#define WSAStartup(a,b) 0
+#define WSACleanup() 0
+#define WSAGetLastError() errno
+#define HOSTENT struct hostent
+#define VOID void
+
+// ICMP ping functionality is not implemented on POSIX (stub)
+// lpfnIcmpCreateFile removed - POSIX stub
+#endif
 
 #include "GameNetwork/GameSpy/PingThread.h"
 #include "mutex.h"

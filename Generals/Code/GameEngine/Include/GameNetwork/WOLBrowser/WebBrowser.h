@@ -134,5 +134,9 @@ class WebBrowser :
 #endif
 	};
 
+#ifdef _WIN32
 extern CComObject<WebBrowser> *TheWebBrowser;
+#else
+extern WebBrowser *TheWebBrowser;
+#endif
 #endif // __WEBBROWSER_H__

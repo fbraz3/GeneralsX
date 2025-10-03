@@ -16,6 +16,7 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef _WIN32
 ;////////////////////////////////////////////////////////////////////////////////
 ;//																																						 //
 ;//  (c) 2001-2003 Electronic Arts Inc.																				 //
@@ -2438,3 +2439,5 @@ int W3DShadowTextureManager::createTexture(RenderObjClass *robj, const char *nam
 Error:
 	return 1;
 }
+
+#endif // _WIN32

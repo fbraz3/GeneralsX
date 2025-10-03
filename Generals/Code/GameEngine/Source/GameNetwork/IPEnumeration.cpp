@@ -24,6 +24,17 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
 
+#ifndef _WIN32
+// POSIX networking headers for macOS/Linux
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <unistd.h>
+// Include network.h for WSA function stubs
+#include "network.h"
+#endif // !_WIN32
+
 #include "GameNetwork/IPEnumeration.h"
 #include "GameNetwork/networkutil.h"
 #include "GameClient/ClientInstance.h"

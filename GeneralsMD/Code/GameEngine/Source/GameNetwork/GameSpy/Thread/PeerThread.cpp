@@ -31,6 +31,15 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
 
+#ifndef _WIN32
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/select.h>
+#include <unistd.h>
+#include "WWVegas/WW3D2/network.h"  // For WSA function stubs
+#endif
+
 #include "Common/Registry.h"
 #include "Common/UserPreferences.h"
 #include "Common/version.h"

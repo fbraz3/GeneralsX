@@ -655,8 +655,14 @@ void W3DDisplay::init( void )
 		{
 			SortingRendererClass::SetMinVertexBufferSize(1);
 		}
+#ifdef _WIN32
 		if (WW3D::Init( ApplicationHWnd ) != WW3D_ERROR_OK)
 			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
+#else
+		// TODO: Initialize W3D for non-Windows platforms
+		if (WW3D::Init( NULL ) != WW3D_ERROR_OK)
+			throw ERROR_INVALID_D3D;	//failed to initialize graphics
+#endif
 
 		WW3D::Set_Prelit_Mode( WW3D::PRELIT_MODE_LIGHTMAP_MULTI_PASS );
 		WW3D::Set_Collision_Box_Display_Mask(0x00);	///<set to 0xff to make collision boxes visible
@@ -1227,6 +1233,7 @@ void W3DDisplay::gatherDebugStats( void )
 
 		// display the keyboard modifier and mouse states.
 		unibuffer.format( L"States: " );
+#ifdef _WIN32
 		if( TheKeyboard->isShift() )
 		{
 			unibuffer.concat( L"Shift(" );
@@ -1266,6 +1273,7 @@ void W3DDisplay::gatherDebugStats( void )
 			}
 			unibuffer.concat( L") " );
 		}
+#endif
 
 		const MouseIO *mouseStatus = TheMouse->getMouseStatus();
 
@@ -1763,8 +1771,10 @@ AGAIN:
 
 			//Can't render into textures while rendering to screen so these textures need to be updated
 			//before we enter main rendering loop.
+#ifdef _WIN32
 			if (TheW3DProjectedShadowManager)
 				TheW3DProjectedShadowManager->updateRenderTargetTextures();
+#endif
 		}
 
 		Debug_Statistics::End_Statistics();	//record number of polygons rendered in RenderTargetTextures.
@@ -2831,6 +2841,7 @@ void W3DDisplay::setShroudLevel( Int x, Int y, CellShroudStatus setting )
 
 //=============================================================================
 ///Utility function to dump data into a .BMP file
+#ifdef _WIN32
 static void CreateBMPFile(LPTSTR pszFile, char *image, Int width, Int height)
 {
 	HANDLE hf;                  // file handle
@@ -2905,8 +2916,10 @@ static void CreateBMPFile(LPTSTR pszFile, char *image, Int width, Int height)
 	// Free memory.
 	LocalFree( (HLOCAL) pbmi);
 }
+#endif // _WIN32
 
 ///Save Screen Capture to a file
+#ifdef _WIN32
 void W3DDisplay::takeScreenShot(void)
 {
 	char leafname[256];
@@ -3043,6 +3056,13 @@ void W3DDisplay::takeScreenShot(void)
 	ufileName.translate(leafname);
 	TheInGameUI->message(TheGameText->fetch("GUI:ScreenCapture"), ufileName.str());
 }
+#else
+void W3DDisplay::takeScreenShot(void)
+{
+	// Screenshot functionality not implemented for non-Windows platforms
+	TheInGameUI->message(TheGameText->fetch("GUI:ScreenCapture"), L"Not available on this platform");
+}
+#endif
 
 /** Start/Stop capturing an AVI movie*/
 void W3DDisplay::toggleMovieCapture(void)

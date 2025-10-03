@@ -177,8 +177,10 @@ void W3DGameClient::setTimeOfDay( TimeOfDay tod )
 	//tell cloud/water plane to update its lighting/texture
 	if (TheWaterRenderObj)
 		TheWaterRenderObj->setTimeOfDay(tod);
+#ifdef _WIN32
 	if (TheW3DShadowManager)
 		TheW3DShadowManager->setTimeOfDay(tod);
+#endif
 
 	//tell the display to update its lighting
 	TheDisplay->setTimeOfDay( tod );

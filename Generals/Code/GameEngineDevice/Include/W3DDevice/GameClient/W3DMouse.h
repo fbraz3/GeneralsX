@@ -51,7 +51,11 @@
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
+#ifdef _WIN32
 #include "Win32Device/GameClient/Win32Mouse.h"
+#else
+#include "GameClient/Mouse.h"
+#endif
 
 // FORWARD REFERENCES /////////////////////////////////////////////////////////
 class CameraClass;
@@ -62,7 +66,11 @@ class SurfaceClass;
 // W3DMouse -----------------------------------------------------------------
 /** Mouse interface for when using only the Win32 messages and W3D for cursor */
 //-----------------------------------------------------------------------------
+#ifdef _WIN32
 class W3DMouse : public Win32Mouse
+#else
+class W3DMouse : public Mouse
+#endif
 {
 
 public:
@@ -73,12 +81,22 @@ public:
 	virtual void init( void );		///< init mouse, extend this functionality, do not replace
 	virtual void reset( void );		///< reset the system
 
+#ifdef _WIN32
 	virtual void setCursor( MouseCursor cursor );		///< set mouse cursor
 	virtual void draw( void );		///< draw the cursor or refresh the image
 	virtual void setRedrawMode(RedrawMode mode);	///<set cursor drawing method.
+#else
+	virtual void setCursor( Mouse::MouseCursor cursor );		///< set mouse cursor
+	virtual void draw( void );		///< draw the cursor or refresh the image
+	virtual void setRedrawMode(Mouse::RedrawMode mode);	///<set cursor drawing method.
+#endif
 
 private:
+#ifdef _WIN32
 	MouseCursor m_currentD3DCursor;	///< keep track of last cursor image sent to D3D.
+#else
+	Mouse::MouseCursor m_currentD3DCursor;	///< keep track of last cursor image sent to D3D.
+#endif
 	SurfaceClass *m_currentD3DSurface[MAX_2D_CURSOR_ANIM_FRAMES];
 	ICoord2D m_currentHotSpot;
 	Int	m_currentFrames;	///< total number of frames in current 2D cursor animation.
@@ -90,16 +108,29 @@ private:
 ///@todo: remove the textures if we only need surfaces
 	void initD3DAssets(void);		///< load textures for mouse cursors, etc.
 	void freeD3DAssets(void);		///< unload textures used by mouse cursors.
+#ifdef _WIN32
 	Bool loadD3DCursorTextures(MouseCursor cursor);	///<load the textures/animation for given cursor.
 	Bool releaseD3DCursorTextures(MouseCursor cursor);	///<release loaded textures for cursor.
+#else
+	Bool loadD3DCursorTextures(Mouse::MouseCursor cursor);	///<load the textures/animation for given cursor.
+	Bool releaseD3DCursorTextures(Mouse::MouseCursor cursor);	///<release loaded textures for cursor.
+#endif
 
 	// W3D animated model cursor
 	CameraClass *m_camera;								///< our camera
+#ifdef _WIN32
 	MouseCursor m_currentW3DCursor;
+#else
+	Mouse::MouseCursor m_currentW3DCursor;
+#endif
 	void initW3DAssets(void);		///< load models for mouse cursors, etc.
 	void freeW3DAssets(void);		///< unload models used by mouse cursors.
 
+#ifdef _WIN32
 	MouseCursor m_currentPolygonCursor;
+#else
+	Mouse::MouseCursor m_currentPolygonCursor;
+#endif
 	void initPolygonAssets(void);		///< load images for cursor polygon.
 	void freePolygonAssets(void);		///< free images for cursor polygon.
 

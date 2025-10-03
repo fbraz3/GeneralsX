@@ -53,6 +53,10 @@
 //
 //-----------------------------------------------------------------------------
 
+#ifdef _WIN32
+// W3DShaderManager implementation is Win32/DirectX specific
+// TODO: Implement cross-platform shader management
+
 #include "dx8wrapper.h"
 #include "assetmgr.h"
 #include "Lib/BaseType.h"
@@ -2908,3 +2912,5 @@ Real W3DShaderManager::GetCPUBenchTime(void)
 	QueryPerformanceCounter((LARGE_INTEGER *)&endTime64);
 	return ((double)(endTime64-startTime64)/(double)(freq64));
 }
+
+#endif // _WIN32

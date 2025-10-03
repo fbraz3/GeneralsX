@@ -47,6 +47,19 @@
 
 #include "Common/MiniLog.h"
 
+// Define SOCKET_ERROR for non-Windows platforms if not already defined
+#ifndef _WIN32
+#ifndef SOCKET_ERROR
+#define SOCKET_ERROR -1
+#endif
+#ifndef INVALID_SOCKET
+#define INVALID_SOCKET -1
+#endif
+#ifndef SOCKET
+#define SOCKET int
+#endif
+#endif
+
 
 // enable this for trying to track down why SBServers are losing their keyvals  -MDC 2/20/2003
 #undef SERVER_DEBUGGING
@@ -1118,7 +1131,11 @@ void checkQR2Queries( PEER peer, SOCKET sock )
 {
 	static char indata[INBUF_LEN];
 	struct sockaddr_in saddr;
+#ifdef _WIN32
 	int saddrlen = sizeof(struct sockaddr_in);
+#else
+	socklen_t saddrlen = sizeof(struct sockaddr_in);
+#endif
 	fd_set set;
 	struct timeval timeout = {0,0};
 	int error;

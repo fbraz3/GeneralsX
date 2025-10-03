@@ -25,6 +25,13 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
 
+#ifndef _WIN32
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include "WWVegas/WW3D2/network.h"  // For WSA functions on POSIX
+#endif
+
 #include "Common/crc.h"
 #include "GameNetwork/Transport.h"
 #include "GameNetwork/NetworkInterface.h"
@@ -323,7 +330,7 @@ Bool Transport::doRecv()
 		}
 
 		// Something there; stick it somewhere
-//		DEBUG_LOG(("Saw %d bytes from %d:%d", len, ntohl(from.sin_addr.S_un.S_addr), ntohs(from.sin_port)));
+//		DEBUG_LOG(("Saw %d bytes from %d:%d", len, ntohl(from.sin_addr.s_addr), ntohs(from.sin_port)));
 		m_incomingPackets[m_statisticsSlot]++;
 		m_incomingBytes[m_statisticsSlot] += len;
 

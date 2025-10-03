@@ -22,6 +22,8 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <stdlib.h>
+#ifdef _WIN32
+
 #include <windows.h>
 #include <assert.h>
 
@@ -511,3 +513,5 @@ void DirectInputMouse::releaseCapture( void )
 	ReleaseCapture();
 
 }
+
+#endif // _WIN32

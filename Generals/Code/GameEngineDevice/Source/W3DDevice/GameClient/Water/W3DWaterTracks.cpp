@@ -38,6 +38,10 @@
 //
 // Created:   Mark Wilczynski, July 2001
 //
+
+#ifdef _WIN32
+// W3DWaterTracks implementation is Win32/DirectX specific
+// TODO: Implement cross-platform water track rendering
 // Desc:      Draw waves and splash marks on water surface.  System allows for
 //			  some simple animation : dynamic uv coordinates, scaling, scrolling,
 //			  and alpha.
@@ -1281,3 +1285,5 @@ static void TestWaterUpdate(void)
 		}
 	}
 }
+
+#endif // _WIN32

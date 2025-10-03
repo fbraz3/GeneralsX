@@ -47,6 +47,10 @@
 #include "mutex.h"
 #include "thread.h"
 
+#ifdef _WIN32
+// W3DMouse implementation is Win32/DirectX specific
+// TODO: Implement cross-platform mouse handling
+
 
 //Since there can't be more than 1 mouse, might as well keep these static.
 static CriticalSectionClass mutex;
@@ -113,7 +117,9 @@ W3DMouse::~W3DMouse( void )
 	if (m_pDev)
 	{
 		m_pDev->ShowCursor(FALSE);	//kill DX8 cursor
+#ifdef _WIN32
 		Win32Mouse::setCursor(ARROW); //enable default windows cursor
+#endif // _WIN32
 	}
 
 	freeD3DAssets();
@@ -332,7 +338,9 @@ void W3DMouse::init( void )
 {
 
 	//check if system already initialized and texture assets loaded.
+#ifdef _WIN32
 	Win32Mouse::init();
+#endif // _WIN32
 	setCursor(ARROW);	//set default starting cursor image
 
 	WWASSERT(!thread.Is_Running());
@@ -352,7 +360,9 @@ void W3DMouse::reset( void )
 {
 
 	// extend
+#ifdef _WIN32
 	Win32Mouse::reset();
+#endif // _WIN32
 
 }
 
@@ -372,7 +382,9 @@ void W3DMouse::setCursor( MouseCursor cursor )
 		m_currentPolygonCursor=NONE;
 		setCursorDirection(cursor);
 		if (m_drawing)	//only allow cursor to change when drawing the cursor (once per frame) to fix flickering.
+#ifdef _WIN32
 			Win32Mouse::setCursor(cursor);
+#endif // _WIN32
 		m_currentCursor = cursor;
 		return;
 	}
@@ -387,7 +399,9 @@ void W3DMouse::setCursor( MouseCursor cursor )
 	//make sure Windows didn't reset our cursor
 	if (m_currentRedrawMode == RM_DX8)
 	{
+#ifdef _WIN32
 		SetCursor(NULL);	//Kill Windows Cursor
+#endif // _WIN32
 
 		LPDIRECT3DDEVICE8 m_pDev=DX8Wrapper::_Get_D3D_Device8();
 		Bool doImageChange=FALSE;
@@ -423,7 +437,9 @@ void W3DMouse::setCursor( MouseCursor cursor )
 	}
 	else if (m_currentRedrawMode == RM_POLYGON)
 	{
+#ifdef _WIN32
 		SetCursor(NULL);	//Kill Windows Cursor
+#endif // _WIN32
 		m_currentD3DCursor=NONE;
 		m_currentW3DCursor=NONE;
 		m_currentPolygonCursor = cursor;
@@ -431,7 +447,9 @@ void W3DMouse::setCursor( MouseCursor cursor )
 	}
 	else if (m_currentRedrawMode == RM_W3D)
 	{
+#ifdef _WIN32
 		SetCursor(NULL);	//Kill Windows Cursor
+#endif // _WIN32
 		m_currentD3DCursor=NONE;
 		m_currentPolygonCursor=NONE;
 		if (cursor != m_currentW3DCursor)
@@ -491,11 +509,13 @@ void W3DMouse::draw(void)
 
 			if (TheDisplay && !TheDisplay->getWindowed())
 			{	//if we're full-screen, need to manually move cursor image
+#ifdef _WIN32
 				POINT ptCursor;
 
 				GetCursorPos( &ptCursor );
 				ScreenToClient( ApplicationHWnd, &ptCursor );
 				m_pDev->SetCursorPosition( ptCursor.x, ptCursor.y, D3DCURSOR_IMMEDIATE_UPDATE);
+#endif // _WIN32
 			}
 			//Check if animated cursor and new frame
 			if (m_currentFrames > 1)
@@ -689,3 +709,5 @@ void W3DMouse::setCursorDirection(MouseCursor cursor)
 	else
 		m_directionFrame = 0;
 }
+
+#endif // _WIN32

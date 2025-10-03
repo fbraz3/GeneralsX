@@ -670,9 +670,11 @@ Bool WorldHeightMap::ParseLightingDataChunk(DataChunkInput &file, DataChunkInfo 
 		}
 		if (!file.atEndOfChunk()) {
 			UnsignedInt shadowColor = file.readInt();
+#ifdef _WIN32
 			if (TheW3DShadowManager) {
 				TheW3DShadowManager->setShadowColor(shadowColor);
 			}
+#endif // _WIN32
 		}
 	DEBUG_ASSERTCRASH(file.atEndOfChunk(), ("Unexpected data left over."));
 	return true;

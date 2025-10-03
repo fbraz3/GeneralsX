@@ -46,6 +46,7 @@
 #ifndef _WIN32DEVICE_COMMON_WIN32CDMANAGER_H_
 #define _WIN32DEVICE_COMMON_WIN32CDMANAGER_H_
 
+#ifdef _WIN32
 
 //----------------------------------------------------------------------------
 //           Includes
@@ -105,5 +106,5 @@ class Win32CDManager : public CDManager
 //           Inlining
 //----------------------------------------------------------------------------
 
-
+#endif // _WIN32
 #endif // _WIN32DEVICE_COMMON_WIN32CDMANAGER_H_

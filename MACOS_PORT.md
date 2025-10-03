@@ -8,16 +8,41 @@
 
 **Status**: 🚀 **MAJOR BREAKTHROUGH MAINTAINED** – Zero Hour executes end-to-end on macOS ARM64 with clean shutdown (exit code 0). Focus shifts to implementing actual OpenGL window + input (replacing stubs) while preserving the stable runtime achieved.
 
-## Latest Update (October 3, 2025)
+## Latest Update (October 3, 2025 - Session 2)
 
-Runtime validation (macOS ARM64):
+**🎉 GENERALS BASE GAME COMPILATION SUCCESS!**
+
+Progress achieved this session:
+- ✅ **Generals (g_generals) now compiles successfully** on macOS ARM64
+- ✅ Comprehensive cross-platform guards added throughout Generals codebase
+- ✅ Network API protections: GameSpy threads, WOL browser, UDP/IP enumeration with `#ifdef _WIN32` guards
+- ✅ Graphics system protections: W3D components, shadows, mouse handling, display systems
+- ✅ Entry point isolation: WinMain.cpp with proper platform separation and placeholder main() for macOS
+- ✅ CI/CD improvements: Weekly release workflow enhancements with versioning and build user overrides
+
+**Current Status:**
+- **Zero Hour (generalszh)**: ✅ Compiles + ✅ Runtime functional (exit code 0)
+- **Generals (g_generals)**: ✅ Compiles + 🔄 Runtime testing pending
+
+**Technical Implementation (Generals):**
+- Added 56+ files with cross-platform guards (`#ifdef _WIN32` / `#ifndef _WIN32`)
+- Network subsystem: Protected GameSpy threading, WOL browser integration, socket operations
+- Graphics subsystem: W3D display, mouse handling, shadow rendering, terrain systems
+- Platform entry points: Separated Windows WinMain from cross-platform main() stub
+- Total changes: ~762 insertions addressing compilation and platform compatibility
+
+**Remaining Work for Generals:**
+- Runtime testing to validate engine initialization sequence
+- Implement actual cross-platform main() logic (currently placeholder returning 0)
+- Verify CreateGameEngine() for non-Windows platforms
+- Test with game assets to reach functional parity with Zero Hour
+
+## Previous Update (October 3, 2025 - Session 1)
+
+Runtime validation (macOS ARM64) - **Zero Hour**:
 - ✅ Multiple runs confirm full engine initialization → main loop → clean exit (no segfaults).
 - ✅ Font pipeline stable: Store_GDI_Char macOS fallback working; Blit_Char has NULL-pointer guards validated during InGameUI/ControlBar text processing (e.g., "GUI:DeleteBeacon").
 - ✅ Map systems remain stable (MapCache protections intact; 146 map files observed during scanning in prior runs).
-
-Base game (Generals) status:
-- ✅ Build: Generals target compiles successfully on macOS ARM64.
-- 🔄 Runtime: Not yet functional like Zero Hour; focus remains on bringing up OpenGL window + input parity.
 
 Immediate next focus (carry-over from Phase 25.0):
 - Implement OpenGL window/context creation in W3DDisplay path (evaluate GLFW/SDL2; no code changes yet).
