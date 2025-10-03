@@ -49,6 +49,7 @@
 #ifndef __WIN32DIKEYBOARD_H_
 #define __WIN32DIKEYBOARD_H_
 
+#ifdef _WIN32
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #ifndef DIRECTINPUT_VERSION
 #	define DIRECTINPUT_VERSION	0x800
@@ -102,5 +103,6 @@ protected:
 
 // EXTERNALS //////////////////////////////////////////////////////////////////
 
+#endif // _WIN32
 #endif // __WIN32DIKEYBOARD_H_
 

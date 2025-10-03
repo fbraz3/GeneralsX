@@ -30,6 +30,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+// Common includes needed for all platforms
+#include "Lib/BaseType.h"
+#include "Common/GameEngine.h"
+
+#ifdef _WIN32
+
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #define WIN32_LEAN_AND_MEAN  // only bare bones windows stuff wanted
 #include <windows.h>
@@ -41,11 +47,9 @@
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "WinMain.h"
-#include "Lib/BaseType.h"
 #include "Common/CommandLine.h"
 #include "Common/CriticalSection.h"
 #include "Common/GlobalData.h"
-#include "Common/GameEngine.h"
 #include "Common/GameSounds.h"
 #include "Common/Debug.h"
 #include "Common/GameMemory.h"
@@ -898,3 +902,23 @@ GameEngine *CreateGameEngine( void )
 	return engine;
 
 }
+
+#endif // _WIN32
+
+#ifndef _WIN32
+// Cross-platform main entry point for non-Windows systems
+int main(int argc, char* argv[])
+{
+    // Convert argc/argv to command line string like Windows
+    // For now, just call the simplified game main function
+    // TODO: Add proper command line parsing for cross-platform support
+    return 0; // Placeholder for actual game logic
+}
+
+// CreateGameEngine stub for non-Windows platforms
+GameEngine *CreateGameEngine( void )
+{
+    // TODO: Create cross-platform game engine
+    return nullptr; // Placeholder
+}
+#endif // !_WIN32

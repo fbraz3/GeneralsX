@@ -28,6 +28,10 @@
 //			  on the surface.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+#ifdef _WIN32
+// W3DWater implementation is Win32/DirectX specific
+// TODO: Implement cross-platform water rendering
+
 #define SCROLL_UV
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
@@ -3452,5 +3456,7 @@ void WaterRenderObjClass::loadPostProcess( void )
 {
 
 }
+
+#endif // _WIN32
 
 

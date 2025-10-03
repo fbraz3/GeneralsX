@@ -1127,9 +1127,11 @@ void RTS3DScene::Customized_Render( RenderInfoClass &rinfo )
 
 	//Tell shadow manager to render shadows at the end of this frame
 	//Don't draw shadows if there is no terrain present.
+#ifdef _WIN32
 	if (TheW3DShadowManager && terrainObject && !ShaderClass::Is_Backface_Culling_Inverted() &&
 		Get_Extra_Pass_Polygon_Mode() == EXTRA_PASS_DISABLE)
 		TheW3DShadowManager->queueShadows(TRUE);
+#endif // _WIN32
 
 	// only render particles once per frame
 	if (terrainObject != NULL && TheParticleSystemManager != NULL &&
@@ -1167,6 +1169,7 @@ Int playerIndexToColorIndex(Int playerIndex)
 	return result;
 }
 
+#ifdef _WIN32
 /**Utility function used to render a full screen quad with the specified color and
 stencil mask*/
 void renderStenciledPlayerColor( UnsignedInt color, UnsignedInt stencilRef, Bool clear=FALSE)
@@ -1263,6 +1266,15 @@ void renderStenciledPlayerColor( UnsignedInt color, UnsignedInt stencilRef, Bool
 		DX8Wrapper::Set_DX8_Render_State(D3DRS_COLORWRITEENABLE,oldColorWriteEnable);
 
 }
+#else
+/**Utility function used to render a full screen quad with the specified color and
+stencil mask*/
+void renderStenciledPlayerColor( UnsignedInt color, UnsignedInt stencilRef, Bool clear=FALSE)
+{
+	// DirectX-specific rendering function - not available on non-Windows platforms
+	// TODO: Implement OpenGL equivalent when graphics system is ported
+}
+#endif // _WIN32
 
 #define MAX_VISIBLE_OCCLUDED_PLAYER_OBJECTS	512 //maximum number of occluded objects permitted per player
 void RTS3DScene::flushOccludedObjectsIntoStencil(RenderInfoClass & rinfo)
@@ -1289,7 +1301,9 @@ void RTS3DScene::flushOccludedObjectsIntoStencil(RenderInfoClass & rinfo)
 	}
 
 	//Assume no player colors are visible and all stencil bits are free for use by shadows.
+#ifdef _WIN32
 	TheW3DShadowManager->setStencilShadowMask(0);
+#endif // _WIN32
 
 	Int localPlayerIndex = ThePlayerList ? ThePlayerList->getLocalPlayer()->getPlayerIndex() : 0;
 
@@ -1413,14 +1427,18 @@ void RTS3DScene::flushOccludedObjectsIntoStencil(RenderInfoClass & rinfo)
 			usedPlayerColorBits |= stencilRef;	//keep track of all bits used for occlusion/player colors.
 		}
 
+#ifdef _WIN32
 		TheW3DShadowManager->setStencilShadowMask(usedPlayerColorBits);
+#endif // _WIN32
 		if (numVisiblePlayerColors >= 8 && TheGlobalData->m_useShadowVolumes)
 		{	//for cases where we have 8 or more visible players, we're only left with 3 bits to store
 			//stencil shadows.  That's probably not enough since it will only allow 7 overlapping shadows.
 			//So we clear the stencil buffer, leaving only the MSB set on any occluded player pixels so that
 			//shadow code knows not to overwrite these pixels.
 			renderStenciledPlayerColor(0,0, TRUE);
+#ifdef _WIN32
 			TheW3DShadowManager->setStencilShadowMask(0x80808080);	//msb indicates occluded player pixels so ignore it when filling screen with shadow
+#endif // _WIN32
 		}
 
 		DX8Wrapper::Set_DX8_Render_State(D3DRS_STENCILENABLE, FALSE );
@@ -1465,7 +1483,9 @@ void RTS3DScene::flushOccludedObjects(RenderInfoClass & rinfo)
 	RenderObjClass *robj;
 	Drawable *draw;
 
+#ifdef _WIN32
 	TheW3DShadowManager->setStencilShadowMask(0);
+#endif // _WIN32
 
 	if (m_occludedObjectsCount)
 	{
@@ -1523,7 +1543,9 @@ void RTS3DScene::flushOccludedObjects(RenderInfoClass & rinfo)
 		TheDX8MeshRenderer.Flush();
 		m_occludedObjectsCount = 0;
 		DX8Wrapper::Set_DX8_Render_State(D3DRS_STENCILENABLE, FALSE );
+#ifdef _WIN32
 		TheW3DShadowManager->setStencilShadowMask(0x80808080);	//upper MSB always contains flag indicating occluded player color.
+#endif // _WIN32
 	}
 
 	//Reset scene ambient because we sometimes mess around with it to make objects

@@ -81,8 +81,10 @@ W3DTerrainVisual::~W3DTerrainVisual()
 	delete TheTerrainTracksRenderObjClassSystem;
 	TheTerrainTracksRenderObjClassSystem=NULL;
 
+#ifdef _WIN32
 	delete TheW3DShadowManager;
 	TheW3DShadowManager=NULL;
+#endif // _WIN32
 
 	REF_PTR_RELEASE( m_waterRenderObject );
 	TheWaterRenderObj=NULL;
@@ -110,8 +112,10 @@ void W3DTerrainVisual::init( void )
 		TheTerrainTracksRenderObjClassSystem->init(W3DDisplay::m_3DScene);
 
 		// initialize object shadow drawing system
+#ifdef _WIN32
 		TheW3DShadowManager = NEW W3DShadowManager;
  		TheW3DShadowManager->init();
+#endif // _WIN32
 
 		// create a water plane render object
 		TheWaterRenderObj=m_waterRenderObject = NEW_REF( WaterRenderObjClass, () );
@@ -170,8 +174,10 @@ void W3DTerrainVisual::reset( void )
 
 	m_terrainRenderObject->reset();
 
+#ifdef _WIN32
 	if (TheW3DShadowManager)
 		TheW3DShadowManager->Reset();
+#endif // _WIN32
 
 	if (TheTerrainTracksRenderObjClassSystem)
 		TheTerrainTracksRenderObjClassSystem->Reset();

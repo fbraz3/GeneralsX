@@ -29,6 +29,8 @@
 //   the game application, it creates all the devices we will use for the game
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+#ifdef _WIN32
+
 #include <windows.h>
 #include "Win32Device/Common/Win32GameEngine.h"
 #include "Common/PerfTimer.h"
@@ -160,4 +162,6 @@ void Win32GameEngine::serviceWindowsOS( void )
 	}
 
 }
+
+#endif // _WIN32
 

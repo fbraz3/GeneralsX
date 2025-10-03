@@ -16,6 +16,8 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef _WIN32
+
 ////////////////////////////////////////////////////////////////////////////////
 //																																						//
 //  (c) 2001-2003 Electronic Arts Inc.																				//
@@ -3903,3 +3905,5 @@ W3DShadowGeometry * W3DShadowGeometryManagerIterator::Get_Current_Geom( void )
 {
 	return (W3DShadowGeometry *)Get_Current();
 }
+
+#endif // _WIN32

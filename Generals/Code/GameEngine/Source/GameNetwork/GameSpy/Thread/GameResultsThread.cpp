@@ -28,7 +28,84 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
 
+#ifdef _WIN32
 #include <winsock.h>	// This one has to be here. Prevents collisions with winsock2.h
+#else
+// POSIX networking headers for macOS/Linux
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <unistd.h>
+#include <errno.h>
+
+// Define Windows-specific types and macros for POSIX
+#define SOCKET int
+#define INVALID_SOCKET -1
+#define SOCKET_ERROR -1
+#define closesocket(s) close(s)
+#define WSADATA int
+#define WORD unsigned short
+#define MAKEWORD(a,b) 0
+#define WSAStartup(a,b) 0
+#define WSACleanup() 0
+#define WSAGetLastError() errno
+#define HOSTENT struct hostent
+
+// Map Windows socket error codes to POSIX errno values
+#define WSABASEERR 10000
+#define WSAEINTR EINTR
+#define WSAEBADF EBADF
+#define WSAEACCES EACCES
+#define WSAEFAULT EFAULT
+#define WSAEINVAL EINVAL
+#define WSAEMFILE EMFILE
+#define WSAEWOULDBLOCK EWOULDBLOCK
+#define WSAEINPROGRESS EINPROGRESS
+#define WSAEALREADY EALREADY
+#define WSAENOTSOCK ENOTSOCK
+#define WSAEDESTADDRREQ EDESTADDRREQ
+#define WSAEMSGSIZE EMSGSIZE
+#define WSAEPROTOTYPE EPROTOTYPE
+#define WSAENOPROTOOPT ENOPROTOOPT
+#define WSAEPROTONOSUPPORT EPROTONOSUPPORT
+#define WSAESOCKTNOSUPPORT 10044  // No POSIX equivalent
+#define WSAEOPNOTSUPP EOPNOTSUPP
+#define WSAEPFNOSUPPORT 10046  // No POSIX equivalent
+#define WSAEAFNOSUPPORT EAFNOSUPPORT
+#define WSAEADDRINUSE EADDRINUSE
+#define WSAEADDRNOTAVAIL EADDRNOTAVAIL
+#define WSAENETDOWN 10050  // No POSIX equivalent
+#define WSAENETUNREACH ENETUNREACH
+#define WSAENETRESET 10052  // No POSIX equivalent
+#define WSAECONNABORTED ECONNABORTED
+#define WSAECONNRESET ECONNRESET
+#define WSAENOBUFS ENOBUFS
+#define WSAEISCONN EISCONN
+#define WSAENOTCONN ENOTCONN
+#define WSAESHUTDOWN 10058  // No POSIX equivalent
+#define WSAETOOMANYREFS 10059  // No POSIX equivalent
+#define WSAETIMEDOUT ETIMEDOUT
+#define WSAECONNREFUSED ECONNREFUSED
+#define WSAELOOP ELOOP
+#define WSAENAMETOOLONG ENAMETOOLONG
+#define WSAEHOSTDOWN EHOSTDOWN
+#define WSAEHOSTUNREACH EHOSTUNREACH
+#define WSAENOTEMPTY ENOTEMPTY
+#define WSAEPROCLIM 10067  // No POSIX equivalent
+#define WSAEUSERS 10068  // No POSIX equivalent
+#define WSAEDQUOT EDQUOT
+#define WSAESTALE ESTALE
+#define WSAEREMOTE 10071  // No POSIX equivalent
+#define WSAEDISCON 10101  // No POSIX equivalent
+#define WSASYSNOTREADY 10091  // No POSIX equivalent
+#define WSAVERNOTSUPPORTED 10092  // No POSIX equivalent
+#define WSANOTINITIALISED 10093  // No POSIX equivalent
+#define WSAHOST_NOT_FOUND HOST_NOT_FOUND
+#define WSATRY_AGAIN TRY_AGAIN
+#define WSANO_RECOVERY NO_RECOVERY
+#define WSANO_DATA NO_DATA
+#endif
 
 #include "GameNetwork/GameSpy/GameResultsThread.h"
 #include "mutex.h"
@@ -288,10 +365,10 @@ void GameResultsThreadClass::Thread_Function()
 
 //-------------------------------------------------------------------------
 
-#define CASE(x) case (x): return #x;
-
 static const char *getWSAErrorString( Int error )
 {
+#ifdef _WIN32
+	#define CASE(x) case (x): return #x;
 	switch (error)
 	{
 		CASE(WSABASEERR)
@@ -349,9 +426,12 @@ static const char *getWSAErrorString( Int error )
 		default:
 			return "Not a Winsock error";
 	}
+	#undef CASE
+#else
+	// On POSIX, just use strerror() for errno values
+	return strerror(error);
+#endif
 }
-
-#undef CASE
 
 //-------------------------------------------------------------------------
 

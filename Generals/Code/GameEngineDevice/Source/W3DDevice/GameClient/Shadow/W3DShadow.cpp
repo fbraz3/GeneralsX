@@ -16,6 +16,8 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef _WIN32
+
 ////////////////////////////////////////////////////////////////////////////////
 //																																						//
 //  (c) 2001-2003 Electronic Arts Inc.																				//
@@ -249,3 +251,5 @@ void W3DShadowManager::setTimeOfDay(TimeOfDay tod)
 
 	setLightPosition(0, lightRay.X, lightRay.Y, lightRay.Z);
 }
+
+#endif // _WIN32

@@ -16,6 +16,8 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef _WIN32
+
 ////////////////////////////////////////////////////////////////////////////////
 //																																						//
 //  (c) 2001-2003 Electronic Arts Inc.																				//
@@ -190,5 +192,7 @@ class W3DVolumetricShadow	: public Shadow
 		Int	  m_numIndicesPerMesh[MAX_SHADOW_CASTER_MESHES];	///<silhouette indices from each mesh.
 
 };
+
+#endif // _WIN32
 
 #endif	//__W3DVOLUMETRICSHADOW_H_

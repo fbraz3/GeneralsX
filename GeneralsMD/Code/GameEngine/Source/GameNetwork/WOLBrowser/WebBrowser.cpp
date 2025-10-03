@@ -69,6 +69,11 @@ OLEInitializer g_OLEInitializer;
 CComModule _Module;
 
 CComObject<WebBrowser> * TheWebBrowser = NULL;
+#else
+// Browser functionality disabled on non-Windows platforms
+#include "GameNetwork/WOLBrowser/WebBrowser.h"
+WebBrowser * TheWebBrowser = NULL;
+#endif
 
 
 /******************************************************************************
@@ -87,8 +92,11 @@ CComObject<WebBrowser> * TheWebBrowser = NULL;
 *
 ******************************************************************************/
 
-WebBrowser::WebBrowser() :
+WebBrowser::WebBrowser()
+#ifdef _WIN32
+		:
 		mRefCount(1)
+#endif
 {
 	DEBUG_LOG(("Instantiating embedded WebBrowser"));
 	m_urlList = NULL;
@@ -148,6 +156,8 @@ WebBrowserURL::WebBrowserURL()
 WebBrowserURL::~WebBrowserURL()
 {
 }
+
+#ifdef _WIN32
 /******************************************************************************
 *
 * NAME
@@ -308,6 +318,38 @@ STDMETHODIMP WebBrowser::TestMethod(Int num1)
 {
 	DEBUG_LOG(("WebBrowser::TestMethod - num1 = %d", num1));
 	return S_OK;
+}
+
+#else
+// Non-Windows platform implementations (stubs)
+
+void WebBrowser::init()
+{
+	m_urlList = NULL;
+	// Browser initialization disabled on non-Windows platforms
+	DEBUG_LOG(("WebBrowser::init - Browser functionality disabled on non-Windows platforms"));
+}
+
+void WebBrowser::reset()
+{
+	// Stub implementation
+}
+
+void WebBrowser::update( void )
+{
+	// Stub implementation
+}
+
+WebBrowserURL * WebBrowser::findURL(AsciiString tag)
+{
+	// Return null for non-Windows platforms
+	return NULL;
+}
+
+WebBrowserURL * WebBrowser::makeNewURL(AsciiString tag)
+{
+	// Return null for non-Windows platforms  
+	return NULL;
 }
 
 #endif // _WIN32

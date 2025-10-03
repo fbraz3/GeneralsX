@@ -16,6 +16,8 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef _WIN32
+
 ////////////////////////////////////////////////////////////////////////////////
 //																																						//
 //  (c) 2001-2003 Electronic Arts Inc.																				//
@@ -138,3 +140,4 @@ class W3DProjectedShadow	: public Shadow
 };
 
 #endif	//__W3D_PROJECTED_SHADOW_H_
+#endif	// _WIN32

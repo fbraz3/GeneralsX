@@ -73,10 +73,21 @@ GameSpyGameSlot::GameSpyGameSlot()
 ** Function definitions for the MIB-II entry points.
 */
 
+#ifdef _WIN32
 BOOL (__stdcall *SnmpExtensionInitPtr)(IN DWORD dwUpTimeReference, OUT HANDLE *phSubagentTrapEvent, OUT AsnObjectIdentifier *pFirstSupportedRegion);
 BOOL (__stdcall *SnmpExtensionQueryPtr)(IN BYTE bPduType, IN OUT RFC1157VarBindList *pVarBindList, OUT AsnInteger32 *pErrorStatus, OUT AsnInteger32 *pErrorIndex);
 LPVOID (__stdcall *SnmpUtilMemAllocPtr)(IN DWORD bytes);
 VOID (__stdcall *SnmpUtilMemFreePtr)(IN LPVOID pMem);
+#else
+// POSIX stubs - SNMP not supported
+typedef void* AsnObjectIdentifier;
+typedef void* RFC1157VarBindList;
+typedef long AsnInteger32;
+typedef long AsnInteger;
+typedef void* SnmpVarBindList;
+typedef int VOID;
+#define SNMP_PDU_GETNEXT 0
+#endif
 
 typedef struct tConnInfoStruct {
 	unsigned int State;
@@ -102,6 +113,10 @@ typedef struct tConnInfoStruct {
  *=============================================================================================*/
 Bool GetLocalChatConnectionAddress(AsciiString serverName, UnsignedShort serverPort, UnsignedInt& localIP)
 {
+#ifndef _WIN32
+	// POSIX stub - SNMP not supported, return false
+	return false;
+#else
 	//return false;
 	/*
 	** Local defines.
@@ -433,6 +448,7 @@ Bool GetLocalChatConnectionAddress(AsciiString serverName, UnsignedShort serverP
 	FreeLibrary(snmpapi_dll);
 	FreeLibrary(mib_ii_dll);
 	return(found);
+#endif
 }
 
 // GameSpyGameSlot ----------------------------------------

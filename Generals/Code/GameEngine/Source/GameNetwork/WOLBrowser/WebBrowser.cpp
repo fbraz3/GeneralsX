@@ -51,6 +51,7 @@
 	* OLEInitializer class - Init and shutdown OLE & COM as a global
 	* object.  Scary, nasty stuff, COM.  /me shivers.
 	*/
+#ifdef _WIN32
 class OLEInitializer
 {
 public:
@@ -68,6 +69,10 @@ OLEInitializer g_OLEInitializer;
 CComModule _Module;
 
 CComObject<WebBrowser> * TheWebBrowser = NULL;
+#else
+// Browser functionality disabled on non-Windows platforms
+WebBrowser * TheWebBrowser = NULL;
+#endif
 
 
 /******************************************************************************
@@ -86,8 +91,11 @@ CComObject<WebBrowser> * TheWebBrowser = NULL;
 *
 ******************************************************************************/
 
-WebBrowser::WebBrowser() :
+WebBrowser::WebBrowser()
+#ifdef _WIN32
+		:
 		mRefCount(1)
+#endif
 {
 	DEBUG_LOG(("Instantiating embedded WebBrowser"));
 	m_urlList = NULL;
@@ -147,6 +155,8 @@ WebBrowserURL::WebBrowserURL()
 WebBrowserURL::~WebBrowserURL()
 {
 }
+
+#ifdef _WIN32
 /******************************************************************************
 *
 * NAME
@@ -218,6 +228,8 @@ WebBrowserURL * WebBrowser::makeNewURL(AsciiString tag)
 	return newURL;
 }
 
+#endif // _WIN32
+
 /******************************************************************************
 *
 * NAME
@@ -232,6 +244,7 @@ WebBrowserURL * WebBrowser::makeNewURL(AsciiString tag)
 *
 ******************************************************************************/
 
+#ifdef _WIN32
 STDMETHODIMP WebBrowser::QueryInterface(REFIID iid, void** ppv) IUNKNOWN_NOEXCEPT
 {
 	*ppv = NULL;
@@ -308,3 +321,36 @@ STDMETHODIMP WebBrowser::TestMethod(Int num1)
 	DEBUG_LOG(("WebBrowser::TestMethod - num1 = %d", num1));
 	return S_OK;
 }
+#else
+// Non-Windows platform implementations (stubs)
+
+void WebBrowser::init()
+{
+	m_urlList = NULL;
+	// Browser initialization disabled on non-Windows platforms
+	DEBUG_LOG(("WebBrowser::init - Browser functionality disabled on non-Windows platforms"));
+}
+
+void WebBrowser::reset()
+{
+	// Stub implementation
+}
+
+void WebBrowser::update( void )
+{
+	// Stub implementation
+}
+
+WebBrowserURL * WebBrowser::findURL(AsciiString tag)
+{
+	// Return null for non-Windows platforms
+	return NULL;
+}
+
+WebBrowserURL * WebBrowser::makeNewURL(AsciiString tag)
+{
+	// Return null for non-Windows platforms  
+	return NULL;
+}
+
+#endif // _WIN32

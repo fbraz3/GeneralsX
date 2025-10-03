@@ -1914,6 +1914,7 @@ void W3DModelDraw::allocateShadows(void)
 	const ThingTemplate *tmplate=getDrawable()->getTemplate();
 
 	//Check if we don't already have a shadow but need one for this type of model.
+#ifdef _WIN32
 	if (m_shadow == NULL && m_renderObject && TheW3DShadowManager && tmplate->getShadowType() != SHADOW_NONE)
 	{
 		Shadow::ShadowTypeInfo shadowInfo;
@@ -1933,6 +1934,7 @@ void W3DModelDraw::allocateShadows(void)
 				m_shadow->enableShadowRender(FALSE);
 		}
 	}
+#endif // _WIN32
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -3104,6 +3106,7 @@ void W3DModelDraw::setModelState(const ModelConditionInfo* newState)
 		}
 
 		// set up shadows
+#ifdef _WIN32
 		if (m_renderObject && TheW3DShadowManager && tmplate->getShadowType() != SHADOW_NONE)
 		{
 			Shadow::ShadowTypeInfo shadowInfo;
@@ -3124,6 +3127,7 @@ void W3DModelDraw::setModelState(const ModelConditionInfo* newState)
 				m_shadow->enableShadowRender(m_shadowEnabled);
 			}
 		}
+#endif // _WIN32
 
 		if( m_renderObject )
 		{

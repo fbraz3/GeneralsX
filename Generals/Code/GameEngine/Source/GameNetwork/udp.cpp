@@ -30,6 +30,14 @@
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file int the GameEngine
 
+#ifndef _WIN32
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include "network.h"  // For networking functions on non-Windows
+#endif
+
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "Common/GameEngine.h"
 //#include "GameNetwork/NetworkInterface.h"
@@ -265,7 +273,11 @@ Int UDP::Write(const unsigned char *msg,UnsignedInt len,UnsignedInt IP,UnsignedS
 Int UDP::Read(unsigned char *msg,UnsignedInt len,sockaddr_in *from)
 {
   Int retval;
+#ifdef _WIN32
   int    alen=sizeof(sockaddr_in);
+#else
+  socklen_t alen=sizeof(sockaddr_in);
+#endif
 
   if (from!=NULL)
   {
@@ -479,7 +491,12 @@ Int UDP::SetOutputBuffer(UnsignedInt bytes)
 
 int UDP::GetInputBuffer(void)
 {
+#ifdef _WIN32
    int retval,arg=0,len=sizeof(int);
+#else
+   int retval,arg=0;
+   socklen_t len=sizeof(int);
+#endif
 
    retval=getsockopt(fd,SOL_SOCKET,SO_RCVBUF,
      (char *)&arg,&len);
@@ -489,7 +506,12 @@ int UDP::GetInputBuffer(void)
 
 int UDP::GetOutputBuffer(void)
 {
+#ifdef _WIN32
    int retval,arg=0,len=sizeof(int);
+#else
+   int retval,arg=0;
+   socklen_t len=sizeof(int);
+#endif
 
    retval=getsockopt(fd,SOL_SOCKET,SO_SNDBUF,
      (char *)&arg,&len);

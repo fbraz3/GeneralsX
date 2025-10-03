@@ -1479,8 +1479,10 @@ void HeightMapRenderObjClass::ReleaseResources(void)
 		TheWaterRenderObj->ReleaseResources();
 	if (TheTerrainTracksRenderObjClassSystem)
 		TheTerrainTracksRenderObjClassSystem->ReleaseResources();
+#ifdef _WIN32
 	if (TheW3DShadowManager)
 		TheW3DShadowManager->ReleaseResources();
+#endif // _WIN32
 	if (m_shroud)
 	{	m_shroud->reset();
 		m_shroud->ReleaseResources();
@@ -1510,8 +1512,10 @@ void HeightMapRenderObjClass::ReAcquireResources(void)
 	if (TheTerrainTracksRenderObjClassSystem)
 		TheTerrainTracksRenderObjClassSystem->ReAcquireResources();
 
+#ifdef _WIN32
 	if (TheW3DShadowManager)
 		TheW3DShadowManager->ReAcquireResources();
+#endif // _WIN32
 	if (m_shroud)
 		m_shroud->ReAcquireResources();
 

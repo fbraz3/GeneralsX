@@ -27,6 +27,10 @@
 // Desc:      Code to support rendering of shrouded units/terrain.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+#ifdef _WIN32
+// W3DShroud implementation is Win32/DirectX specific
+// TODO: Implement cross-platform shroud rendering
+
 #include "Lib/BaseType.h"
 #include "camera.h"
 #include "simplevec.h"
@@ -798,3 +802,5 @@ void W3DMaskMaterialPassClass::UnInstall_Materials(void) const
 	if (m_allowUninstall)
 		W3DShaderManager::resetShader(W3DShaderManager::ST_MASK_TEXTURE);
 }
+
+#endif // _WIN32

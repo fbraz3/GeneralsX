@@ -148,6 +148,7 @@ static Bool hasWriteAccess()
 
 	remove(filename);
 
+#ifdef _WIN32
 	int handle = _open( filename, _O_CREAT | _O_RDWR, _S_IREAD | _S_IWRITE);
 	if (handle == -1)
 	{
@@ -155,6 +156,15 @@ static Bool hasWriteAccess()
 	}
 
 	_close(handle);
+#else
+	int handle = open(filename, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+	if (handle == -1)
+	{
+		return false;
+	}
+
+	close(handle);
+#endif
 	remove(filename);
 
 	unsigned int val;
@@ -727,12 +737,19 @@ int asyncGethostbyname(char * szName)
 	{
 		/* Kick off gethostname thread */
 		s_asyncDNSThreadDone = FALSE;
+#ifdef _WIN32
 		s_asyncDNSThreadHandle = CreateThread( NULL, 0, asyncGethostbynameThreadFunc, szName, 0, &threadid );
 
 		if( s_asyncDNSThreadHandle == NULL )
 		{
 			return( LOOKUP_FAILED );
 		}
+#else
+		// POSIX thread creation - not implemented for async DNS
+		// For now, perform synchronous lookup
+		asyncGethostbynameThreadFunc(szName);
+		s_asyncDNSThreadDone = TRUE;
+#endif
 		stat = 1;
 	}
 	if( stat == 1 )

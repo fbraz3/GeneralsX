@@ -93,7 +93,9 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/BuildVersion.h
 )
 endif()
 
-target_link_options(g_generals PRIVATE "/NODEFAULTLIB:libci.lib")
+if(WIN32)
+    target_link_options(g_generals PRIVATE "/NODEFAULTLIB:libci.lib")
+endif()
 
 target_include_directories(g_generals PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
