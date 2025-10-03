@@ -13,7 +13,7 @@
 **🎉 GENERALS BASE GAME COMPILATION SUCCESS!**
 
 Progress achieved this session:
-- ✅ **Generals (g_generals) now compiles successfully** on macOS ARM64
+- ✅ **Generals (GeneralsX) now compiles successfully** on macOS ARM64
 - ✅ Comprehensive cross-platform guards added throughout Generals codebase
 - ✅ Network API protections: GameSpy threads, WOL browser, UDP/IP enumeration with `#ifdef _WIN32` guards
 - ✅ Graphics system protections: W3D components, shadows, mouse handling, display systems
@@ -21,8 +21,8 @@ Progress achieved this session:
 - ✅ CI/CD improvements: Weekly release workflow enhancements with versioning and build user overrides
 
 **Current Status:**
-- **Zero Hour (generalszh)**: ✅ Compiles + ✅ Runtime functional (exit code 0)
-- **Generals (g_generals)**: ✅ Compiles + 🔄 Runtime testing pending
+- **Zero Hour (GeneralsXZH)**: ✅ Compiles + ✅ Runtime functional (exit code 0)
+- **Generals (GeneralsX)**: ✅ Compiles + 🔄 Runtime testing pending
 
 **Technical Implementation (Generals):**
 - Added 56+ files with cross-platform guards (`#ifdef _WIN32` / `#ifndef _WIN32`)
@@ -281,7 +281,7 @@ Key changes this phase:
 - WeaponTemplate::parseShotDelay hardened with null/format guards and safe defaults; this removed a crash after RadiusDamageAffects in Weapon.ini.
 
 Validation on macOS ARM64:
-- Rebuilt z_generals target; deployed and ran the instrumented binary.
+- Rebuilt GeneralsXZH target; deployed and ran the instrumented binary.
 - Data\INI\Default\Object.ini completes under protection logic.
 - Data\INI\Object\airforcegeneral.ini progresses significantly: multiple unknown or unsupported constructs are skipped or resynced cleanly. Examples from logs include safe resync after Draw/DefaultConditionState/Texture/Locomotor blocks and skipping numerous ConditionState/ArmorSet/WeaponSet/Behavior blocks. No crash observed; loader continues to subsequent sections.
 
@@ -294,9 +294,9 @@ Next steps for this phase:
 - Keep logs concise and actionable: maintain pre-parse and resync notices; suppress redundant messages where safe.
 
 How to reproduce locally (macOS ARM64):
-- Build: cmake --preset macos-arm64 && cmake --build build/macos-arm64 --target z_generals -j 4
-- Deploy/sign: cp build/macos-arm64/GeneralsMD/generalszh $HOME/Downloads/generals/ && codesign --force --deep --sign - $HOME/Downloads/generals/generalszh
-- Run: cd $HOME/Downloads/generals && ./generalszh
+- Build: cmake --preset macos-arm64 && cmake --build build/macos-arm64 --target GeneralsXZH -j 4
+- Deploy/sign: cp build/macos-arm64/GeneralsMD/GeneralsXZH $HOME/Downloads/generals/ && codesign --force --deep --sign - $HOME/Downloads/generals/GeneralsXZH
+- Run: cd $HOME/Downloads/generals && ./GeneralsXZH
 
 
 **🎉 PHASE 22.7 - INI PARSER END TOKEN EXCEPTION INVESTIGATION (December 30, 2024)**: ✅ **COMPLETE SUCCESS!** End token parsing exceptions fully resolved
@@ -465,11 +465,11 @@ if (vectorSize > 100000) { // Detect massive corruption
 
 **Breakthrough Achievement**: From segmentation fault to **STABLE RUNTIME EXECUTION** with comprehensive memory corruption protection!
 
-**🎉 PREVIOUS MILESTONE (September 19, 2025)**: **PHASE 18 - FIRST EXECUTABLE GENERATION SUCCESS!** ✅ Achieved **100% COMPILATION AND LINKING SUCCESS** with the first working `generalszh` executable!
+**🎉 PREVIOUS MILESTONE (September 19, 2025)**: **PHASE 18 - FIRST EXECUTABLE GENERATION SUCCESS!** ✅ Achieved **100% COMPILATION AND LINKING SUCCESS** with the first working `GeneralsXZH` executable!
 
 **🚀 PHASE 18 COMPLETE SUCCESS (September 19, 2025)**:
 
-- ✅ **FIRST EXECUTABLE GENERATED**: Successfully built `generalszh` (14.6 MB) executable!
+- ✅ **FIRST EXECUTABLE GENERATED**: Successfully built `GeneralsXZH` (14.6 MB) executable!
 - ✅ **ZERO COMPILATION ERRORS**: All 822+ source files compile successfully!
 - ✅ **ZERO LINKING ERRORS**: All symbol conflicts resolved with cross-platform stubs!
 - ✅ **Complete Cross-Platform Compatibility**: Full macOS x86_64 native executable
@@ -492,7 +492,7 @@ if (vectorSize > 100000) { // Detect massive corruption
 3. **Final Build Success** ✅
    - **Compile Stage**: All 822 source files processed successfully
    - **Link Stage**: All libraries linked without errors
-   - **Output**: `generalszh` executable generated (14,597,232 bytes)
+   - **Output**: `GeneralsXZH` executable generated (14,597,232 bytes)
    - **Permissions**: Full executable permissions set
 
 **Historic Achievement**: From initial port attempt to **FIRST WORKING EXECUTABLE** in systematic progression through 18 development phases!
@@ -563,11 +563,11 @@ if (vectorSize > 100000) { // Detect massive corruption
 
 |--------|--------|----------------|-------------------|- ✅ **Type Definitions**: LPDWORD, LPCOMPOSITIONFORM, LPCANDIDATEFORM for complete IME API coverage
 
-| **g_generals** | 5 | DirectX type conflicts | 4-6 hours |- ✅ **COMPILATION BREAKTHROUGH**: From 614 files with fatal errors to successful compilation with only 72 warnings
+| **GeneralsX** | 5 | DirectX type conflicts | 4-6 hours |- ✅ **COMPILATION BREAKTHROUGH**: From 614 files with fatal errors to successful compilation with only 72 warnings
 
-| **z_generals** | 4 | Process APIs + Debug isolation | 6-8 hours |- ✅ **ERROR ELIMINATION**: ALL critical blocking errors resolved - compilation proceeding through 800+ files
+| **GeneralsXZH** | 4 | Process APIs + Debug isolation | 6-8 hours |- ✅ **ERROR ELIMINATION**: ALL critical blocking errors resolved - compilation proceeding through 800+ files
 
-| **generalszh** | 23 | Debug components isolation | 8-12 hours |- ✅ **Libraries Building**: Multiple core libraries successfully compiling (libresources.a, libwwmath.a, etc.)
+| **GeneralsXZH** | 23 | Debug components isolation | 8-12 hours |- ✅ **Libraries Building**: Multiple core libraries successfully compiling (libresources.a, libwwmath.a, etc.)
 
 
 
@@ -807,7 +807,7 @@ The macOS port has achieved major milestones by successfully compiling all core 
 
 - Extended DirectX 8 interfaces and methods- ✅ **Core Libraries Success**: Multiple WW libraries now compile without errors (core_wwlib, core_wwmath, core_wwdebug)
 
-- Game-specific DirectX functionality- ✅ **Error Reduction**: Significant progress from 74 errors to 36 errors in generalszh target compilation
+- Game-specific DirectX functionality- ✅ **Error Reduction**: Significant progress from 74 errors to 36 errors in GeneralsXZH target compilation
 
 - Original Generals compatibility layer- ✅ **Windows.h Compatibility**: Enhanced compatibility layer to replace Windows.h includes in debug and multimedia headers
 
@@ -861,7 +861,7 @@ The macOS port has achieved major milestones by successfully compiling all core 
 
 2. Resolve Set_Render_Target function signature mismatches- ✅ **Multi-layer DirectX Architecture**: Perfect coordination between Core void* definitions and Generals casting
 
-3. Test g_generals compilation to zero errors
+3. Test GeneralsX compilation to zero errors
 
 **Windows API Compatibility Layer Enhancement**:
 
@@ -885,7 +885,7 @@ The macOS port has achieved major milestones by successfully compiling all core 
 
 2. Create SECURITY_ATTRIBUTES compatibility structure- **IniParser**: Lightweight INI file parser supporting standard format with comments and quoted values
 
-3. Test z_generals compilation to zero errors- **Registry Compatibility Layer**: Windows Registry API functions mapped to ConfigManager backend
+3. Test GeneralsXZH compilation to zero errors- **Registry Compatibility Layer**: Windows Registry API functions mapped to ConfigManager backend
 
 - **Cross-Platform Paths**: Platform-specific configuration and game data location resolution
 
@@ -895,7 +895,7 @@ The macOS port has achieved major milestones by successfully compiling all core 
 
 **Morning (2-3 hours)**:- **File Locations**:
 
-1. Resolve remaining generalszh compilation issues  - **macOS**: `~/Library/Application Support/CNC_Generals`, `~/Library/Application Support/CNC_GeneralsZH`
+1. Resolve remaining GeneralsXZH compilation issues  - **macOS**: `~/Library/Application Support/CNC_Generals`, `~/Library/Application Support/CNC_GeneralsZH`
 
 2. Final testing of all three executable targets  - **Linux**: `~/Games/CNC_Generals`, `~/Games/CNC_GeneralsZH`
 
@@ -903,9 +903,9 @@ The macOS port has achieved major milestones by successfully compiling all core 
 
 - **Configuration Files**:
 
-**Afternoon (2-3 hours)**:  - **macOS/Linux**: `~/.config/cncgenerals.conf`, `~/.config/cncgeneralszh.conf`
+**Afternoon (2-3 hours)**:  - **macOS/Linux**: `~/.config/cncgenerals.conf`, `~/.config/cncGeneralsXZH.conf`
 
-1. Documentation updates and final validation  - **Windows**: `%APPDATA%\CNC\cncgenerals.conf`, `%APPDATA%\CNC\cncgeneralszh.conf`
+1. Documentation updates and final validation  - **Windows**: `%APPDATA%\CNC\cncgenerals.conf`, `%APPDATA%\CNC\cncGeneralsXZH.conf`
 
 2. Performance testing and optimization
 
@@ -923,7 +923,7 @@ The macOS port has achieved major milestones by successfully compiling all core 
 
 **Primary Goals**:
 
-1. **Zero Compilation Errors**: All three targets (g_generals, z_generals, generalszh) compile successfully**Compilation Success**:
+1. **Zero Compilation Errors**: All three targets (GeneralsX, GeneralsXZH, GeneralsXZH) compile successfully**Compilation Success**:
 
 2. **Executable Generation**: Working .exe files created for all game variants- ✅ **[47/110] Files Compiled**: Successfully advanced compilation to 47 out of 110 files
 
@@ -1273,14 +1273,14 @@ The macOS port of Command & Conquer: Generals has achieved extraordinary success
 - **Priority**: Medium - Advanced engine features depend on this
 
 **Phase 6: Integration Testing (Days 6-7)** 🔵 **VALIDATION**
-- **Executable Compilation**: End-to-end `g_generals` and `z_generals` compilation
+- **Executable Compilation**: End-to-end `GeneralsX` and `GeneralsXZH` compilation
 - **Basic Functionality**: Window creation, DirectX initialization, asset loading
 - **Implementation Strategy**: Incremental testing of each subsystem
 - **Files Affected**: Main executable targets, game initialization code
 - **Priority**: Validation - Ensuring minimum viable version actually runs
 
 ### 🎯 Success Criteria for Minimum Viable Version
-1. **Clean Compilation**: `g_generals` and `z_generals` executables compile with 0 errors
+1. **Clean Compilation**: `GeneralsX` and `GeneralsXZH` executables compile with 0 errors
 2. **Window Creation**: Game creates main window without crashing
 3. **DirectX Initialization**: Graphics system initializes using our compatibility layer
 4. **Asset Loading**: Basic texture and model loading works
@@ -1712,17 +1712,17 @@ mkdir build && cd build
 cmake -DENABLE_OPENGL=ON -DRTS_BUILD_GENERALS=ON ..
 
 # Build the project
-ninja g_generals
+ninja GeneralsX
 ```
 
 ### Current Build Status
 ```bash
 # Check compilation progress (as of August 29, 2025)
-ninja g_generals 2>&1 | grep -E "(Failed|failed|error|Error)" | wc -l
+ninja GeneralsX 2>&1 | grep -E "(Failed|failed|error|Error)" | wc -l
 # Current result: 50 errors (down from 300+)
 
 # View successful compilation count
-ninja g_generals 2>&1 | grep "Building CXX" | wc -l  
+ninja GeneralsX 2>&1 | grep "Building CXX" | wc -l  
 # Current result: 90%+ of files compiling successfully
 
 # Core WW3D2 module specific progress
@@ -1942,7 +1942,7 @@ FTP.CPP:467:15: error: incomplete type 'in_addr' in network operations
 ### Phase 5: Integration & Testing (Days 5-7) 🔵 **VALIDATION**
 
 **Success Criteria**:
-- **Clean Compilation**: `ninja -C build/vc6 g_generals` and `z_generals` with 0 errors
+- **Clean Compilation**: `ninja -C build/vc6 GeneralsX` and `GeneralsXZH` with 0 errors
 - **Basic Functionality**: Window creation, DirectX/OpenGL initialization, configuration file access
 - **Minimal Game Loop**: Main menu display, settings functionality, basic map loading
 
@@ -2125,7 +2125,7 @@ Thu 12 Sep 2025 14:07:00 -03: Phase 5 Audio & Multimedia APIs implementation com
 ### Next Steps Required
 1. **Resolve remaining DirectX function gaps**: Additional D3DX mathematical functions
 2. **Windows API extension**: Complete missing Windows API function implementations
-3. **Executable linking**: Address final compilation errors for z_generals target
+3. **Executable linking**: Address final compilation errors for GeneralsXZH target
 4. **OpenGL transition preparation**: Framework ready for DirectX→OpenGL graphics migration
 
 Thu 12 Sep 2025 18:30:00 -03: Phase 6 DirectX Graphics compatibility layer implementation advanced significantly
@@ -2178,7 +2178,7 @@ Thu 12 Sep 2025 22:30:00 -03: **CONTINUED EXPANSION** - Phase 6 compilation prog
 ```bash
 # Successfully using native ARM64 compilation
 cmake --preset vc6 -DCMAKE_OSX_ARCHITECTURES=arm64
-cmake --build build/vc6 --target z_generals -j 4
+cmake --build build/vc6 --target GeneralsXZH -j 4
 ```
 
 #### Vector Corruption Protection (Working Perfectly)

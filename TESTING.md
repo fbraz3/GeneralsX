@@ -56,7 +56,7 @@ Test with replays locally:
 
 2. **Run Test:**
    ```bat
-   START /B /W generalszh.exe -jobs 4 -headless -replay subfolder/*.rep > replay_check.log
+   START /B /W GeneralsXZH.exe -jobs 4 -headless -replay subfolder/*.rep > replay_check.log
    echo %errorlevel%
    PAUSE
    ```
@@ -85,7 +85,7 @@ msbuild genzh.sln
 #### Performance Testing
 ```bash
 # Run with performance monitoring
-generalszh.exe -jobs 4 -benchmark > performance.log
+GeneralsXZH.exe -jobs 4 -benchmark > performance.log
 ```
 
 ### macOS Testing
@@ -152,7 +152,7 @@ ninja  # ✅ All core libraries compile successfully
 
 # Generals configuration (FINAL INTEGRATION)
 cmake -DENABLE_OPENGL=ON -DRTS_BUILD_GENERALS=ON ..
-ninja g_generals  # 🔄 DirectX layer coordination in progress
+ninja GeneralsX  # 🔄 DirectX layer coordination in progress
 cmake -DENABLE_OPENGL=ON -DRTS_BUILD_CORE_TOOLS=ON ..
 ```
 
@@ -161,7 +161,7 @@ cmake -DENABLE_OPENGL=ON -DRTS_BUILD_CORE_TOOLS=ON ..
 #### Standard Build Testing
 ```bash
 # Linux build with parallel processing
-make g_generals -j$(nproc)
+make GeneralsX -j$(nproc)
 
 # OpenGL-specific Linux build
 cmake -DENABLE_OPENGL=ON -DDEFAULT_TO_OPENGL=ON ..

@@ -56,18 +56,18 @@ cmake --preset linux
 
 ## 🏗️ Building
 
-### 🎯 Primary Target: Zero Hour (z_generals)
+### 🎯 Primary Target: Zero Hour (GeneralsXZH)
 ```bash
 # Build the main Zero Hour executable
-cmake --build build/linux --target z_generals -j 4
+cmake --build build/linux --target GeneralsXZH -j 4
 
-# Executable will be created at: build/linux/GeneralsMD/generalszh
+# Executable will be created at: build/linux/GeneralsMD/GeneralsXZH
 ```
 
-### 🎮 Secondary Target: Original Generals (g_generals)
+### 🎮 Secondary Target: Original Generals (GeneralsX)
 ```bash
 # Build the original Generals executable
-cmake --build build/linux --target g_generals -j 4
+cmake --build build/linux --target GeneralsX -j 4
 
 # Executable will be created at: build/linux/Generals/generals
 ```
@@ -81,7 +81,7 @@ cmake --build build/linux --target ww3d2 wwlib wwmath -j 4
 ### ⚡ Performance Build Optimization
 ```bash
 # Use dynamic core allocation (recommended)
-cmake --build build/linux --target z_generals -j $(nproc --ignore=1)
+cmake --build build/linux --target GeneralsXZH -j $(nproc --ignore=1)
 ```
 
 ## 🎮 Runtime Setup
@@ -94,7 +94,7 @@ The game requires original Command & Conquer: Generals/Zero Hour assets to run p
 mkdir -p $HOME/Downloads/generals
 
 # Copy the executable (Zero Hour recommended)
-cp ./build/linux/GeneralsMD/generalszh $HOME/Downloads/generals/
+cp ./build/linux/GeneralsMD/GeneralsXZH $HOME/Downloads/generals/
 
 # Copy original game assets to $HOME/Downloads/generals/
 # Required: Data/, Maps/, etc. from original installation
@@ -104,7 +104,7 @@ cp ./build/linux/GeneralsMD/generalszh $HOME/Downloads/generals/
 ### Running the Game
 ```bash
 # Run in directory with assets
-cd $HOME/Downloads/generals && ./generalszh
+cd $HOME/Downloads/generals && ./GeneralsXZH
 
 # Alternative: Original Generals
 cd $HOME/Downloads/generals && ./generals
@@ -115,10 +115,10 @@ cd $HOME/Downloads/generals && ./generals
 ### Debugging with GDB
 ```bash
 # Use GDB for crash investigation
-cd $HOME/Downloads/generals && gdb ./generalszh
+cd $HOME/Downloads/generals && gdb ./GeneralsXZH
 
 # Direct execution with debug output
-cd $HOME/Downloads/generals && ./generalszh
+cd $HOME/Downloads/generals && ./GeneralsXZH
 ```
 
 ### Alternative Build Configurations
@@ -127,14 +127,14 @@ cd $HOME/Downloads/generals && ./generalszh
 ```bash
 # For development with debug symbols
 cmake --preset linux -DRTS_BUILD_OPTION_DEBUG=ON
-cmake --build build/linux --target z_generals -j 4
+cmake --build build/linux --target GeneralsXZH -j 4
 ```
 
 #### Release Build (Default)
 ```bash
 # For optimized performance
 cmake --preset linux -DRTS_BUILD_OPTION_DEBUG=OFF
-cmake --build build/linux --target z_generals -j 4
+cmake --build build/linux --target GeneralsXZH -j 4
 ```
 
 ## ⚡ Performance Tips
@@ -148,7 +148,7 @@ cmake --build build/linux --target z_generals -j 4
 ### Parallel Compilation
 ```bash
 # Use all cores except one to avoid system overload
-cmake --build build/linux --target z_generals -j $(nproc --ignore=1)
+cmake --build build/linux --target GeneralsXZH -j $(nproc --ignore=1)
 ```
 
 ### Build Cleanup
@@ -213,7 +213,7 @@ clang --version  # Should be 13+ or later
 # Clean and rebuild
 rm -rf build/linux
 cmake --preset linux
-cmake --build build/linux --target z_generals -j 4
+cmake --build build/linux --target GeneralsXZH -j 4
 ```
 
 #### Missing graphics libraries
@@ -231,11 +231,11 @@ sudo pacman -S mesa glu
 ### Performance Issues
 ```bash
 # Verify 64-bit executable
-file build/linux/GeneralsMD/generalszh
+file build/linux/GeneralsMD/GeneralsXZH
 # Should show: ELF 64-bit LSB executable, x86-64
 
 # Check system resources
-htop  # or: top -p $(pgrep generalszh)
+htop  # or: top -p $(pgrep GeneralsXZH)
 ```
 
 ### Support

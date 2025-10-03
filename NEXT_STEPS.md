@@ -8,7 +8,7 @@ Date: 2025-10-01
 
 ### Execution Results
 ```bash
-$ cd $HOME/Downloads/generals && timeout 30s ./generalszh
+$ cd $HOME/Downloads/generals && timeout 30s ./GeneralsXZH
 # Complete initialization sequence:
 ✅ WinMain initialization
 ✅ ClientInstance initialized  
@@ -39,13 +39,13 @@ Process 71673 exited with status = 0 (0x00000000)
 
 ## 2025-10-03 — Session 2: Generals Base Game Compilation Success! 🎉
 
-**MAJOR ACHIEVEMENT**: Generals (g_generals) now compiles successfully on macOS ARM64!
+**MAJOR ACHIEVEMENT**: Generals (GeneralsX) now compiles successfully on macOS ARM64!
 
 ### What Changed This Session
 
 **Compilation Success:**
 - ✅ All previous compilation errors resolved
-- ✅ g_generals target builds without errors
+- ✅ GeneralsX target builds without errors
 - ✅ Comprehensive cross-platform guards implemented across 56+ files
 
 **Technical Implementation:**
@@ -77,18 +77,18 @@ Process 71673 exited with status = 0 (0x00000000)
 
 | Target | Compilation | Runtime | Priority |
 |--------|-------------|---------|----------|
-| **Zero Hour (generalszh)** | ✅ Success | ✅ Functional | Primary |
-| **Generals (g_generals)** | ✅ Success | 🔄 Pending | Secondary |
+| **Zero Hour (GeneralsXZH)** | ✅ Success | ✅ Functional | Primary |
+| **Generals (GeneralsX)** | ✅ Success | 🔄 Pending | Secondary |
 
 ### Next Steps for Generals Runtime
 
 1. **Test compilation output:**
    ```bash
    # Build Generals
-   cmake --build build/macos-arm64 --target g_generals -j 4
+   cmake --build build/macos-arm64 --target GeneralsX -j 4
    
    # Check binary
-   file build/macos-arm64/Generals/g_generals
+   file build/macos-arm64/Generals/GeneralsX
    ```
 
 2. **Implement actual main() logic:**
@@ -153,7 +153,7 @@ Generals/Code/GameEngine/Source/GameClient/ClientInstance.cpp:
 
 ### Compilation Progress
 - **Current State**: 220 warnings, 6 errors
-- **Build Target**: `g_generals` (Original Command & Conquer Generals)
+- **Build Target**: `GeneralsX` (Original Command & Conquer Generals)
 - **Platform**: macOS ARM64 (Apple Silicon)
 - **Status**: 99% complete, only Win32 API compatibility issues remain
 
@@ -194,7 +194,7 @@ Generals/Code/GameEngine/Source/GameClient/ClientInstance.cpp:
 2. ✅ Created macOS platform stubs (MacOSDisplay.cpp)
 3. ✅ Created OpenAL audio manager stubs (replacing MilesAudioManager)
 4. ✅ Fixed GameText.h missing includes
-5. ✅ Successfully compiled Zero Hour (generalszh) for ARM64 (13MB)
+5. ✅ Successfully compiled Zero Hour (GeneralsXZH) for ARM64 (13MB)
 6. ✅ Fixed Generals forward declaration issues
 7. ✅ Fixed Generals function pointer casting
 8. ✅ **VERIFIED ZERO HOUR EXECUTION** - Complete initialization to shutdown
@@ -641,7 +641,7 @@ static const FieldParse dataFieldParse[] = {
 **Action Steps**:
 ```bash
 # Test full game initialization without timeout to see how far it progresses
-cd $HOME/Downloads/generals && ./generalszh 2>&1 | head -100
+cd $HOME/Downloads/generals && ./GeneralsXZH 2>&1 | head -100
 # Monitor for next potential failure point in engine initialization
 # Document progress beyond TheThingFactory resolution
 ```
@@ -702,17 +702,17 @@ grep -r "^static.*AsciiString\|^AsciiString.*static" --include="*.cpp" Core/ Gen
 **Abordagem de Teste**:
 ```bash
 # Executar com saída detalhada para verificar inicialização das bibliotecas
-cd $HOME/Downloads/generals && MILES_DEBUG=1 BINK_DEBUG=1 ./generalszh
+cd $HOME/Downloads/generals && MILES_DEBUG=1 BINK_DEBUG=1 ./GeneralsXZH
 
 # Verificar símbolos relacionados a Miles e Bink no executável
-nm -gU generalszh | grep -i "miles\|bink"
+nm -gU GeneralsXZH | grep -i "miles\|bink"
 ```
 
 # Search for global UnicodeString variables
 grep -r "^static.*UnicodeString\|^UnicodeString.*static" --include="*.cpp" Core/ GeneralsMD/ Generals/
 
 # Validate compilation after each conversion
-cmake --build build/vc6 --target z_generals -j 4
+cmake --build build/vc6 --target GeneralsXZH -j 4
 ```
 
 ### 3. Root Cause Investigation (Medium Priority)
@@ -731,7 +731,7 @@ cmake --build build/vc6 --target z_generals -j 4
 ```bash
 # Create testing environment
 mkdir -p $HOME/Downloads/generals
-cp ./build/vc6/GeneralsMD/generalszh $HOME/Downloads/generals/
+cp ./build/vc6/GeneralsMD/GeneralsXZH $HOME/Downloads/generals/
 
 # Copy game assets (required for proper initialization)
 # Assets needed: Data/, Maps/, INI/, Music/, etc.
@@ -748,10 +748,10 @@ quit
 EOF
 
 # Direct execution (shows printf output)
-cd $HOME/Downloads/generals && ./generalszh
+cd $HOME/Downloads/generals && ./GeneralsXZH
 
 # Background compilation
-cmake --build build/vc6 --target z_generals -j 4 &
+cmake --build build/vc6 --target GeneralsXZH -j 4 &
 ```
 
 ## 📁 Modified Files Status
@@ -842,8 +842,8 @@ cmake --build build/vc6 --target z_generals -j 4 &
 cd /Users/felipebraz/PhpstormProjects/pessoal/GeneralsGameCode
 
 # Verify current debugging is working
-cmake --build build/vc6 --target z_generals -j 4
-cd $HOME/Downloads/generals && ./generalszh 2>&1 | tail -50
+cmake --build build/vc6 --target GeneralsXZH -j 4
+cd $HOME/Downloads/generals && ./GeneralsXZH 2>&1 | tail -50
 
 # Begin BitFlags investigation
 # Focus on anyIntersectionWith() implementation and condition state validation
@@ -894,7 +894,7 @@ cd $HOME/Downloads/generals && ./generalszh 2>&1 | tail -50
 1. **Implement Registry Function Stubs** - Cross-platform configuration access
 2. **Create Win32Mouse Compatibility Layer** - Mouse input abstraction  
 3. **Add Debug System Stubs** - Stack trace and error handling
-4. **Generate First Executable** - Build successful `generalszh` executable on macOS
+4. **Generate First Executable** - Build successful `GeneralsXZH` executable on macOS
 5. **Basic Runtime Testing** - Verify executable launches and basic functionality
 
 **EXPECTED RESULT**: **ZERO COMPILATION ERRORS** and functional GeneralsX executable for macOS!
@@ -914,7 +914,7 @@ cd $HOME/Downloads/generals && ./generalszh 2>&1 | tail -50
 **Priority**: HIGH
 **Timeline**: 2-3 days
 **Tasks**:
-- [ ] Analyze linker requirements for z_generals executable
+- [ ] Analyze linker requirements for GeneralsXZH executable
 - [ ] Resolve external library dependencies
 - [ ] Handle symbol conflicts between Generals/GeneralsMD versions
 - [ ] Link graphics libraries (OpenGL framework integration)
@@ -932,7 +932,7 @@ cd $HOME/Downloads/generals && ./generalszh 2>&1 | tail -50
 
 ### 9.1 Basic Executable Launch
 **Criteria for Success**:
-- [ ] z_generals executable launches without crashing
+- [ ] GeneralsXZH executable launches without crashing
 - [ ] Game initializes core systems (audio, graphics, config)
 - [ ] Main menu displays correctly
 - [ ] Configuration files load from INI format
@@ -966,7 +966,7 @@ cd $HOME/Downloads/generals && ./generalszh 2>&1 | tail -50
 
 ### Medium-Term Goals (1-2 Weeks)
 1. **Successful Executable Generation**:
-   - Link all compiled objects into z_generals binary
+   - Link all compiled objects into GeneralsXZH binary
    - Resolve runtime library dependencies
    - Create distribution package
 
@@ -990,7 +990,7 @@ cd $HOME/Downloads/generals && ./generalszh 2>&1 | tail -50
 
 ### Technical Milestones
 - [ ] **Zero compilation errors**: Clean build across all targets
-- [ ] **Executable generation**: z_generals binary created successfully  
+- [ ] **Executable generation**: GeneralsXZH binary created successfully  
 - [ ] **Launch success**: Game starts and displays main menu
 - [ ] **Core functionality**: Maps load, units move, audio plays
 - [ ] **Stability**: 30+ minutes gameplay without crashes
@@ -1010,40 +1010,40 @@ cd $HOME/Downloads/generals && ./generalszh 2>&1 | tail -50
 ### Current Status Commands
 ```bash
 # Main compilation attempt
-cmake --build build/vc6 --target z_generals
+cmake --build build/vc6 --target GeneralsXZH
 
 # Count remaining errors
-cmake --build build/vc6 --target z_generals 2>&1 | grep -c "error:"
+cmake --build build/vc6 --target GeneralsXZH 2>&1 | grep -c "error:"
 
 # Count warnings (non-blocking)
-cmake --build build/vc6 --target z_generals 2>&1 | grep -c "warning:"
+cmake --build build/vc6 --target GeneralsXZH 2>&1 | grep -c "warning:"
 
 # Show first 10 errors for analysis
-cmake --build build/vc6 --target z_generals 2>&1 | grep -E "(error:|Error:|ERROR:)" | head -10
+cmake --build build/vc6 --target GeneralsXZH 2>&1 | grep -E "(error:|Error:|ERROR:)" | head -10
 
 # Monitor compilation progress
-cmake --build build/vc6 --target z_generals 2>&1 | grep -E "\[[0-9]+/[0-9]+\]" | tail -10
+cmake --build build/vc6 --target GeneralsXZH 2>&1 | grep -E "\[[0-9]+/[0-9]+\]" | tail -10
 
 # Check generated object files
 find build/vc6 -name "*.o" -o -name "*.a" | wc -l
 
 # Look for any executables created
-find build/vc6 -name "z_generals*" -o -name "*generals*" | grep -v CMakeFiles
+find build/vc6 -name "GeneralsXZH*" -o -name "*generals*" | grep -v CMakeFiles
 ```
 
 ### Specific Error Analysis
 ```bash
 # PartitionManager specific errors
-cmake --build build/vc6 --target z_generals 2>&1 | grep -A5 -B5 "PartitionManager.cpp"
+cmake --build build/vc6 --target GeneralsXZH 2>&1 | grep -A5 -B5 "PartitionManager.cpp"
 
 # IME-related issues
-cmake --build build/vc6 --target z_generals 2>&1 | grep -A5 -B5 "IME"
+cmake --build build/vc6 --target GeneralsXZH 2>&1 | grep -A5 -B5 "IME"
 
 # Pointer cast problems
-cmake --build build/vc6 --target z_generals 2>&1 | grep -A3 "cast from pointer"
+cmake --build build/vc6 --target GeneralsXZH 2>&1 | grep -A3 "cast from pointer"
 
 # Missing function/method errors
-cmake --build build/vc6 --target z_generals 2>&1 | grep -A3 "no member named"
+cmake --build build/vc6 --target GeneralsXZH 2>&1 | grep -A3 "no member named"
 ```
 
 ## 🧩 Technical Architecture Summary
@@ -1063,7 +1063,7 @@ cmake --build build/vc6 --target z_generals 2>&1 | grep -A3 "no member named"
 
 ### Build System Architecture
 - **Primary Build Tool**: CMake with Ninja backend
-- **Target Executable**: z_generals (Zero Hour)
+- **Target Executable**: GeneralsXZH (Zero Hour)
 - **Core Libraries**: 865 object/archive files successfully building
 - **Preset Used**: `vc6` (Visual C++ 6 compatibility mode for retail compatibility)
 
@@ -1130,7 +1130,7 @@ This macOS port represents a **groundbreaking achievement** in the C&C Generals 
 
 ## Expected Next Phase Outcomes
 
-### Target: z_generals Executable Compilation Success
+### Target: GeneralsXZH Executable Compilation Success
 - **Files**: 691 total files in target
 - **Current**: 11 files building before failure
 - **Goal**: Complete compilation chain from source → executable

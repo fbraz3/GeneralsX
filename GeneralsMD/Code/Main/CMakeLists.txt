@@ -1,13 +1,13 @@
-add_executable(z_generals WIN32)
+add_executable(GeneralsXZH WIN32)
 
-# Use a binary name that doesn't conflict with original game.
+# Use a binary name that matches our branding
 if("${CMAKE_SYSTEM}" MATCHES "Windows")
-    set_target_properties(z_generals PROPERTIES OUTPUT_NAME generalszh)
+    set_target_properties(GeneralsXZH PROPERTIES OUTPUT_NAME GeneralsXZH)
 else()
-    set_target_properties(z_generals PROPERTIES OUTPUT_NAME generalszh)
+    set_target_properties(GeneralsXZH PROPERTIES OUTPUT_NAME GeneralsXZH)
 endif()
 
-target_link_libraries(z_generals PRIVATE
+target_link_libraries(GeneralsXZH PRIVATE
     ${CMAKE_SOURCE_DIR}/libbinkstub.a
     $<$<PLATFORM_ID:Windows>:comctl32>
     core_debug
@@ -86,15 +86,15 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/BuildVersion.h
 )
 
 if(WIN32)
-    target_link_options(z_generals PRIVATE "/NODEFAULTLIB:libci.lib")
+    target_link_options(GeneralsXZH PRIVATE "/NODEFAULTLIB:libci.lib")
 endif()
 
-target_include_directories(z_generals PRIVATE
+target_include_directories(GeneralsXZH PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-target_sources(z_generals PRIVATE
+target_sources(GeneralsXZH PRIVATE
     WinMain.cpp
     WinMain.h
 )
@@ -102,12 +102,12 @@ target_sources(z_generals PRIVATE
 if(WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows")
     # VS2005 and later adds default manifest, we need to turn it off to prevent conflict with custom manifest
     if(NOT IS_VS6_BUILD)
-        target_link_options(z_generals PRIVATE
+        target_link_options(GeneralsXZH PRIVATE
             "/MANIFEST:NO"
         )
     endif()
 
-    target_sources(z_generals PRIVATE
+    target_sources(GeneralsXZH PRIVATE
         RTS.RC
     )
 endif()
