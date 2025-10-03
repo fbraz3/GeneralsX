@@ -10,8 +10,8 @@
 ### Primary Build Workflow (macOS ARM64)
 ```bash
 cmake --preset macos-arm64
-cmake --build build/macos-arm64 --target z_generals -j 4  # Zero Hour (primary)
-cmake --build build/macos-arm64 --target g_generals -j 4  # Original (secondary)
+cmake --build build/macos-arm64 --target GeneralsXZH -j 4  # Zero Hour (primary)
+cmake --build build/macos-arm64 --target GeneralsX -j 4  # Original (secondary)
 ```
 
 ### Cross-Platform Alternatives
@@ -25,14 +25,14 @@ cmake --build build/macos-arm64 --target g_generals -j 4  # Original (secondary)
 ```bash
 # Setup assets directory with original game files
 mkdir -p $HOME/Downloads/generals
-cp ./build/macos-arm64/GeneralsMD/generalszh $HOME/Downloads/generals/
+cp ./build/macos-arm64/GeneralsMD/GeneralsXZH $HOME/Downloads/generals/
 # Copy original game assets (Data/, Maps/) to $HOME/Downloads/generals/
 
 # Run with debug output  
-cd $HOME/Downloads/generals && ./generalszh
+cd $HOME/Downloads/generals && ./GeneralsXZH
 
 # Debug with LLDB when crashes occur
-cd $HOME/Downloads/generals && lldb ./generalszh
+cd $HOME/Downloads/generals && lldb ./GeneralsXZH
 ```
 
 ## Architecture Overview

@@ -151,7 +151,7 @@ Key requirements:
 git clone https://github.com/fbraz3/GeneralsX.git
 cd GeneralsX
 cmake --preset vc6
-cmake --build build/vc6 --target z_generals -j 4
+cmake --build build/vc6 --target GeneralsXZH -j 4
 ```
 
 ### Linux

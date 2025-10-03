@@ -1,13 +1,13 @@
-add_executable(g_generals WIN32)
+add_executable(GeneralsX WIN32)
 
-# Use a binary name that doesn't conflict with original game.
+# Use a binary name that matches our branding
 if("${CMAKE_SYSTEM}" MATCHES "Windows")
-    set_target_properties(g_generals PROPERTIES OUTPUT_NAME generalsv)
+    set_target_properties(GeneralsX PROPERTIES OUTPUT_NAME GeneralsX)
 else()
-    set_target_properties(g_generals PROPERTIES OUTPUT_NAME generalsv)
+    set_target_properties(GeneralsX PROPERTIES OUTPUT_NAME GeneralsX)
 endif()
 
-target_link_libraries(g_generals PRIVATE
+target_link_libraries(GeneralsX PRIVATE
     binkstub
     $<$<PLATFORM_ID:Windows>:comctl32>
     $<$<PLATFORM_ID:Windows>:d3d8>
@@ -94,16 +94,16 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/BuildVersion.h
 endif()
 
 if(WIN32)
-    target_link_options(g_generals PRIVATE "/NODEFAULTLIB:libci.lib")
+    target_link_options(GeneralsX PRIVATE "/NODEFAULTLIB:libci.lib")
 endif()
 
-target_include_directories(g_generals PRIVATE
+target_include_directories(GeneralsX PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_BINARY_DIR}/Code/Libraries
 )
 
-target_sources(g_generals PRIVATE
+target_sources(GeneralsX PRIVATE
     WinMain.cpp
     WinMain.h
 )
@@ -111,12 +111,12 @@ target_sources(g_generals PRIVATE
 if(WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows")
     # VS2005 and later adds default manifest, we need to turn it off to prevent conflict with custom manifest
     if(NOT IS_VS6_BUILD)
-        target_link_options(g_generals PRIVATE
+        target_link_options(GeneralsX PRIVATE
             "/MANIFEST:NO"
         )
     endif()
 
-    target_sources(g_generals PRIVATE
+    target_sources(GeneralsX PRIVATE
         RTS.RC
     )
 endif()

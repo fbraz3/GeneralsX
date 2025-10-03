@@ -56,21 +56,21 @@ cmake --preset vc6
 
 ## 🏗️ Building
 
-### 🎯 Primary Target: Zero Hour (z_generals)
+### 🎯 Primary Target: Zero Hour (GeneralsXZH)
 ```bash
 # Build the main Zero Hour executable (ARM64 native recommended)
-cmake --build build/macos-arm64 --target z_generals -j 4
+cmake --build build/macos-arm64 --target GeneralsXZH -j 4
 
-# Executable will be created at: build/macos-arm64/GeneralsMD/generalszh
+# Executable will be created at: build/macos-arm64/GeneralsMD/GeneralsXZH
 ```
 
-### 🎮 Secondary Target: Original Generals (g_generals)
+### 🎮 Secondary Target: Original Generals (GeneralsX)
 ```bash
 # Build the original Generals executable
-cmake --build build/macos-arm64 --target g_generals -j 4
+cmake --build build/macos-arm64 --target GeneralsX -j 4
 
 # For Intel Macs:
-cmake --build build/macos-x64 --target g_generals -j 4
+cmake --build build/macos-x64 --target GeneralsX -j 4
 
 # Executables will be created at:
 # ARM64: build/macos-arm64/Generals/generals
@@ -90,7 +90,7 @@ cmake --build build/macos-x64 --target ww3d2 wwlib wwmath -j 4
 ### ⚡ Performance Build Optimization
 ```bash
 # Use dynamic core allocation (recommended)
-cmake --build build/macos-arm64 --target z_generals -j $(sysctl -n hw.ncpu | awk '{print int($1/2)}')
+cmake --build build/macos-arm64 --target GeneralsXZH -j $(sysctl -n hw.ncpu | awk '{print int($1/2)}')
 ```
 
 ## 🎮 Runtime Setup
@@ -104,10 +104,10 @@ mkdir -p $HOME/Downloads/generals
 
 # Copy the executable (Zero Hour recommended)
 # ARM64:
-cp ./build/macos-arm64/GeneralsMD/generalszh $HOME/Downloads/generals/
+cp ./build/macos-arm64/GeneralsMD/GeneralsXZH $HOME/Downloads/generals/
 
 # Intel x64:
-cp ./build/macos-x64/GeneralsMD/generalszh $HOME/Downloads/generals/
+cp ./build/macos-x64/GeneralsMD/GeneralsXZH $HOME/Downloads/generals/
 
 # Copy original game assets to $HOME/Downloads/generals/
 # Required: Data/, Maps/, etc. from original installation
@@ -120,7 +120,7 @@ cp ./build/macos-x64/GeneralsMD/generalszh $HOME/Downloads/generals/
 
 ```bash
 # Run Zero Hour (ARM64 native execution) ✅ VERIFIED WORKING
-cd $HOME/Downloads/generals && ./generalszh
+cd $HOME/Downloads/generals && ./GeneralsXZH
 
 # Expected output:
 # - Complete initialization (WinMain → GameEngine → Subsystems)
@@ -130,10 +130,10 @@ cd $HOME/Downloads/generals && ./generalszh
 # - Clean exit with code 0
 
 # With timeout for testing (30 seconds)
-cd $HOME/Downloads/generals && timeout 30s ./generalszh
+cd $HOME/Downloads/generals && timeout 30s ./GeneralsXZH
 
 # With LLDB for debugging
-cd $HOME/Downloads/generals && lldb -o run -o quit ./generalszh
+cd $HOME/Downloads/generals && lldb -o run -o quit ./GeneralsXZH
 
 # Alternative: Original Generals (⚠️ Not yet working - 6 errors remaining)
 cd $HOME/Downloads/generals && ./generals
@@ -155,10 +155,10 @@ cd $HOME/Downloads/generals && ./generals
 ### Debugging with LLDB (ARM64 Native)
 ```bash
 # Use automatic debug script for crash investigation
-cd $HOME/Downloads/generals && lldb -s $REPO_PATH/scripts/debug_script.lldb generalszh
+cd $HOME/Downloads/generals && lldb -s $REPO_PATH/scripts/debug_script.lldb GeneralsXZH
 
 # Direct execution with debug output
-cd $HOME/Downloads/generals && ./generalszh
+cd $HOME/Downloads/generals && ./GeneralsXZH
 ```
 
 ### Alternative Build Configurations
@@ -167,28 +167,28 @@ cd $HOME/Downloads/generals && ./generalszh
 ```bash
 # For development with debug symbols (ARM64)
 cmake --preset macos-arm64 -DRTS_BUILD_OPTION_DEBUG=ON
-cmake --build build/macos-arm64 --target z_generals -j 4
+cmake --build build/macos-arm64 --target GeneralsXZH -j 4
 ```
 
 #### Intel x64 Debug Build
 ```bash
 # For development with debug symbols (Intel)
 cmake --preset macos-x64 -DRTS_BUILD_OPTION_DEBUG=ON
-cmake --build build/macos-x64 --target z_generals -j 4
+cmake --build build/macos-x64 --target GeneralsXZH -j 4
 ```
 
 #### ARM64 Native Release Build (Default)
 ```bash
 # For optimized performance (ARM64)
 cmake --preset macos-arm64 -DRTS_BUILD_OPTION_DEBUG=OFF
-cmake --build build/macos-arm64 --target z_generals -j 4
+cmake --build build/macos-arm64 --target GeneralsXZH -j 4
 ```
 
 #### Intel x64 Release Build
 ```bash
 # For optimized performance (Intel)
 cmake --preset macos-x64 -DRTS_BUILD_OPTION_DEBUG=OFF
-cmake --build build/macos-x64 --target z_generals -j 4
+cmake --build build/macos-x64 --target GeneralsXZH -j 4
 ```
 
 ## ⚡ Performance Tips
@@ -203,7 +203,7 @@ cmake --build build/macos-x64 --target z_generals -j 4
 ```bash
 # Use half of available cores to avoid system overload
 # For 8-core M1: -j 4, For 10-core M1 Pro: -j 5, For M1 Max: -j 8
-cmake --build build/macos-arm64 --target z_generals -j $(sysctl -n hw.ncpu | awk '{print int($1/2)}')
+cmake --build build/macos-arm64 --target GeneralsXZH -j $(sysctl -n hw.ncpu | awk '{print int($1/2)}')
 ```
 
 ### Build Cleanup
@@ -265,12 +265,12 @@ brew update && brew upgrade cmake
 # ARM64:
 rm -rf build/macos-arm64
 cmake --preset macos-arm64
-cmake --build build/macos-arm64 --target z_generals -j 4
+cmake --build build/macos-arm64 --target GeneralsXZH -j 4
 
 # Intel x64:
 rm -rf build/macos-x64
 cmake --preset macos-x64
-cmake --build build/macos-x64 --target z_generals -j 4
+cmake --build build/macos-x64 --target GeneralsXZH -j 4
 ```
 
 #### Linking errors
@@ -278,7 +278,7 @@ cmake --build build/macos-x64 --target z_generals -j 4
 # Clean and rebuild
 rm -rf build/macos-arm64
 cmake --preset macos-arm64
-cmake --build build/macos-arm64 --target z_generals -j 4
+cmake --build build/macos-arm64 --target GeneralsXZH -j 4
 ```
 
 #### Runtime crash or "Unknown exception in field parser"
@@ -288,25 +288,25 @@ ls $HOME/Downloads/generals/Data/
 ls $HOME/Downloads/generals/Maps/
 
 # Run with debug output
-cd $HOME/Downloads/generals && ./generalszh
+cd $HOME/Downloads/generals && ./GeneralsXZH
 
 # Use LLDB for crash investigation
-cd $HOME/Downloads/generals && lldb -s $REPO_PATH/scripts/debug_script.lldb generalszh
+cd $HOME/Downloads/generals && lldb -s $REPO_PATH/scripts/debug_script.lldb GeneralsXZH
 ```
 
 ### Performance Issues
 ```bash
 # Verify architecture execution
 # ARM64:
-file build/macos-arm64/GeneralsMD/generalszh
+file build/macos-arm64/GeneralsMD/GeneralsXZH
 # Should show: Mach-O 64-bit executable arm64
 
 # Intel x64:
-file build/macos-x64/GeneralsMD/generalszh
+file build/macos-x64/GeneralsMD/GeneralsXZH
 # Should show: Mach-O 64-bit executable x86_64
 
 # Check system resources
-top -pid $(pgrep generalszh)
+top -pid $(pgrep GeneralsXZH)
 ```
 
 ### Support

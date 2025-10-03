@@ -28,8 +28,8 @@ This project is a fork of the Command & Conquer Generals source code and its exp
 - `linux` - Linux 64-bit (x86_64)
 
 # Build Targets
-- `z_generals` - Zero Hour expansion executable (PRIMARY TARGET - recommended)
-- `g_generals` - Original Generals base game executable (SECONDARY TARGET)
+- `GeneralsXZH` - Zero Hour expansion executable (PRIMARY TARGET - recommended)
+- `GeneralsX` - Original Generals base game executable (SECONDARY TARGET)
 - `ww3d2` - Core 3D graphics library
 - `wwlib` - Core Windows compatibility library  
 - `wwmath` - Core mathematics library
@@ -45,13 +45,13 @@ This project is a fork of the Command & Conquer Generals source code and its exp
 8. For game expansion (zero hour), there is a crash log in `$HOME/Documents/Command\ and\ Conquer\ Generals\ Zero\ Hour\ Data/ReleaseCrashInfo.txt` that can be used to debug runtime issues.
 9. When compiling the project, try to use half of the available CPU cores to avoid overloading the system.
 10. For understanding the game asset structure and debugging INI-related issues, refer to `BIG_FILES_REFERENCE.md` which contains complete documentation of .big file contents and their relationships to INI files.
-11. **Primary build workflow**: Use `cmake --preset macos-arm64` for ARM64 native compilation on Apple Silicon, then `cmake --build build/macos-arm64 --target z_generals -j 4` for Zero Hour target.
+11. **Primary build workflow**: Use `cmake --preset macos-arm64` for ARM64 native compilation on Apple Silicon, then `cmake --build build/macos-arm64 --target GeneralsXZH -j 4` for Zero Hour target.
 12. **Platform-specific workflows**: 
-    - **macOS ARM64**: `cmake --preset macos-arm64` → `cmake --build build/macos-arm64 --target z_generals -j 4`
-    - **macOS Intel**: `cmake --preset macos-x64` → `cmake --build build/macos-x64 --target z_generals -j 4`
-    - **Linux**: `cmake --preset linux` → `cmake --build build/linux --target z_generals -j 4`
-    - **Windows**: `cmake --preset vc6` → `cmake --build build/vc6 --target z_generals -j 4`
-13. **Target priority**: `z_generals` (Zero Hour) is the primary stable target, `g_generals` (Original Generals) is secondary. Core libraries (`ww3d2`, `wwlib`, `wwmath`) can be tested independently.
+    - **macOS ARM64**: `cmake --preset macos-arm64` → `cmake --build build/macos-arm64 --target GeneralsXZH -j 4`
+    - **macOS Intel**: `cmake --preset macos-x64` → `cmake --build build/macos-x64 --target GeneralsXZH -j 4`
+    - **Linux**: `cmake --preset linux` → `cmake --build build/linux --target GeneralsXZH -j 4`
+    - **Windows**: `cmake --preset vc6` → `cmake --build build/vc6 --target GeneralsXZH -j 4`
+13. **Target priority**: `GeneralsXZH` (Zero Hour) is the primary stable target, `GeneralsX` (Original Generals) is secondary. Core libraries (`ww3d2`, `wwlib`, `wwmath`) can be tested independently.
 
 # Reference Repositories (Git Submodules)
 The project includes reference repositories as git submodules for comparative analysis and solution discovery:
