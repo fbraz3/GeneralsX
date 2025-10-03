@@ -35,7 +35,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include "WWVegas/WW3D2/network.h"  // For networking functions on non-Windows
+#include "network.h"  // For networking functions on non-Windows
 #endif
 
 // USER INCLUDES //////////////////////////////////////////////////////////////

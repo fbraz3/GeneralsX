@@ -32,7 +32,7 @@
 #include <netdb.h>
 #include <unistd.h>
 // Include network.h for WSA function stubs
-#include "WWVegas/WW3D2/network.h"
+#include "network.h"
 #endif
 
 #include "GameNetwork/IPEnumeration.h"
