@@ -23,16 +23,27 @@ cmake --build build/macos-arm64 --target GeneralsX -j 4  # Original (secondary)
 
 ### Runtime Testing & Debugging
 ```bash
-# Setup assets directory with original game files
-mkdir -p $HOME/Downloads/generals
-cp ./build/macos-arm64/GeneralsMD/GeneralsXZH $HOME/Downloads/generals/
-# Copy original game assets (Data/, Maps/) to $HOME/Downloads/generals/
+# Setup assets directories with original game files
+mkdir -p $HOME/GeneralsX/Generals
+mkdir -p $HOME/GeneralsX/GeneralsMD
 
-# Run with debug output  
-cd $HOME/Downloads/generals && ./GeneralsXZH
+# Deploy Zero Hour (primary target)
+cp ./build/macos-arm64/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/
+# Copy original Zero Hour game assets (Data/, Maps/) to $HOME/GeneralsX/GeneralsMD/
+
+# Deploy Generals (secondary target)
+cp ./build/macos-arm64/Generals/GeneralsX $HOME/GeneralsX/Generals/
+# Copy original Generals game assets (Data/, Maps/) to $HOME/GeneralsX/Generals/
+
+# Run Zero Hour with debug output  
+cd $HOME/GeneralsX/GeneralsMD && ./GeneralsXZH
+
+# Run Generals with debug output
+cd $HOME/GeneralsX/Generals && ./GeneralsX
 
 # Debug with LLDB when crashes occur
-cd $HOME/Downloads/generals && lldb ./GeneralsXZH
+cd $HOME/GeneralsX/GeneralsMD && lldb ./GeneralsXZH
+cd $HOME/GeneralsX/Generals && lldb ./GeneralsX
 ```
 
 ## Architecture Overview

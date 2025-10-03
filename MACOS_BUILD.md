@@ -100,16 +100,16 @@ The game requires original Command & Conquer: Generals/Zero Hour assets to run p
 
 ```bash
 # Create directory for assets
-mkdir -p $HOME/Downloads/generals
+mkdir -p $HOME/GeneralsX/GeneralsMD
 
 # Copy the executable (Zero Hour recommended)
 # ARM64:
-cp ./build/macos-arm64/GeneralsMD/GeneralsXZH $HOME/Downloads/generals/
+cp ./build/macos-arm64/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/
 
 # Intel x64:
-cp ./build/macos-x64/GeneralsMD/GeneralsXZH $HOME/Downloads/generals/
+cp ./build/macos-x64/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/
 
-# Copy original game assets to $HOME/Downloads/generals/
+# Copy original game assets to $HOME/GeneralsX/GeneralsMD/
 # Required: Data/, Maps/, etc. from original installation
 # Zero Hour assets recommended for best compatibility
 ```
@@ -120,7 +120,7 @@ cp ./build/macos-x64/GeneralsMD/GeneralsXZH $HOME/Downloads/generals/
 
 ```bash
 # Run Zero Hour (ARM64 native execution) ✅ VERIFIED WORKING
-cd $HOME/Downloads/generals && ./GeneralsXZH
+cd $HOME/GeneralsX/GeneralsMD && ./GeneralsXZH
 
 # Expected output:
 # - Complete initialization (WinMain → GameEngine → Subsystems)
@@ -130,13 +130,13 @@ cd $HOME/Downloads/generals && ./GeneralsXZH
 # - Clean exit with code 0
 
 # With timeout for testing (30 seconds)
-cd $HOME/Downloads/generals && timeout 30s ./GeneralsXZH
+cd $HOME/GeneralsX/GeneralsMD && timeout 30s ./GeneralsXZH
 
 # With LLDB for debugging
-cd $HOME/Downloads/generals && lldb -o run -o quit ./GeneralsXZH
+cd $HOME/GeneralsX/GeneralsMD && lldb -o run -o quit ./GeneralsXZH
 
 # Alternative: Original Generals (⚠️ Not yet working - 6 errors remaining)
-cd $HOME/Downloads/generals && ./generals
+cd $HOME/GeneralsX/GeneralsMD && ./generals
 ```
 
 **Execution Verification**:
@@ -155,10 +155,10 @@ cd $HOME/Downloads/generals && ./generals
 ### Debugging with LLDB (ARM64 Native)
 ```bash
 # Use automatic debug script for crash investigation
-cd $HOME/Downloads/generals && lldb -s $REPO_PATH/scripts/debug_script.lldb GeneralsXZH
+cd $HOME/GeneralsX/GeneralsMD && lldb -s $REPO_PATH/scripts/debug_script.lldb GeneralsXZH
 
 # Direct execution with debug output
-cd $HOME/Downloads/generals && ./GeneralsXZH
+cd $HOME/GeneralsX/GeneralsMD && ./GeneralsXZH
 ```
 
 ### Alternative Build Configurations
@@ -284,14 +284,14 @@ cmake --build build/macos-arm64 --target GeneralsXZH -j 4
 #### Runtime crash or "Unknown exception in field parser"
 ```bash
 # Check if assets are in correct location
-ls $HOME/Downloads/generals/Data/
-ls $HOME/Downloads/generals/Maps/
+ls $HOME/GeneralsX/GeneralsMD/Data/
+ls $HOME/GeneralsX/GeneralsMD/Maps/
 
 # Run with debug output
-cd $HOME/Downloads/generals && ./GeneralsXZH
+cd $HOME/GeneralsX/GeneralsMD && ./GeneralsXZH
 
 # Use LLDB for crash investigation
-cd $HOME/Downloads/generals && lldb -s $REPO_PATH/scripts/debug_script.lldb GeneralsXZH
+cd $HOME/GeneralsX/GeneralsMD && lldb -s $REPO_PATH/scripts/debug_script.lldb GeneralsXZH
 ```
 
 ### Performance Issues
