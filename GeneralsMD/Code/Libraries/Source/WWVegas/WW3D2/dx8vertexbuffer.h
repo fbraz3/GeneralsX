@@ -232,6 +232,8 @@ public:
 #else
 	// Phase 27.2.1: OpenGL vertex buffer accessor
 	GLuint Get_GL_Vertex_Buffer() { return GLVertexBuffer; }
+	// Stub for legacy DirectX8-only code paths (never called in OpenGL rendering)
+	void* Get_DX8_Vertex_Buffer() { WWASSERT(0 && "Get_DX8_Vertex_Buffer called in OpenGL build"); return nullptr; }
 #endif
 
 	void Copy(const Vector3* loc, unsigned first_vertex, unsigned count);
@@ -241,13 +243,17 @@ public:
 	void Copy(const Vector3* loc, const Vector3* norm, const Vector2* uv, const Vector4* diffuse, unsigned first_vertex, unsigned count);
 	void Copy(const Vector3* loc, const Vector2* uv, const Vector4* diffuse, unsigned first_vertex, unsigned count);
 
+	// Phase 27.2.1: OpenGL vertex data access (public for lock/unlock from outside class hierarchy)
+#ifndef _WIN32
+	void* GLVertexData;  // CPU-side copy for lock/unlock emulation
+#endif
+
 protected:
 #ifdef _WIN32
 	IDirect3DVertexBuffer8*		VertexBuffer;
 #else
 	// Phase 27.2.1: OpenGL vertex buffer object
 	GLuint GLVertexBuffer;
-	void* GLVertexData;  // CPU-side copy for lock/unlock emulation
 #endif
 
 	void Create_Vertex_Buffer(UsageType usage);

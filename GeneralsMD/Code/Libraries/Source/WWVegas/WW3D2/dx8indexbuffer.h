@@ -49,6 +49,10 @@
 #include "sphere.h"
 #include "d3d8.h"
 
+#ifndef _WIN32
+#include <glad/glad.h>
+#endif
+
 class DX8Wrapper;
 class SortingRendererClass;
 class DX8IndexBufferClass;
@@ -179,10 +183,21 @@ public:
 	void Copy(unsigned int* indices,unsigned start_index,unsigned index_count);
 	void Copy(unsigned short* indices,unsigned start_index,unsigned index_count);
 
+#ifdef _WIN32
 	inline IDirect3DIndexBuffer8* Get_DX8_Index_Buffer()	{ return index_buffer; }
+#else
+	inline GLuint Get_GL_Index_Buffer() { return GLIndexBuffer; }
+	// Stub for legacy DirectX8-only code paths (never called in OpenGL rendering)
+	inline void* Get_DX8_Index_Buffer() { WWASSERT(0 && "Get_DX8_Index_Buffer called in OpenGL build"); return nullptr; }
+	void* GLIndexData;			// CPU-side index buffer for Lock/Unlock emulation (public for external lock access)
+#endif
 
 private:
+#ifdef _WIN32
 	IDirect3DIndexBuffer8*	index_buffer;		// actual dx8 index buffer
+#else
+	GLuint GLIndexBuffer;		// OpenGL element array buffer object
+#endif
 };
 
 

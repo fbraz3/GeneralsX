@@ -1,10 +1,14 @@
 /*
-**	Command & Conquer Generals(tm)
+**	Command & Conquer Generals Zero Hour(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
 **	it under the terms of the GNU General Public License as published by
-**	the Free Software Foundation, either version 3 of the License, or
+**	the Free		DX8_ErrorCode(static_cast<DX8IndexBufferClass*>(index_buffer)->Get_DX8_Index_Buffer()->Lock(
+			start_index*sizeof(unsigned short),
+			index_range*sizeof(unsigned short),
+			(void**)&indices,
+			0));ware Foundation, either version 3 of the License, or
 **	(at your option) any later version.
 **
 **	This program is distributed in the hope that it will be useful,
@@ -28,9 +32,9 @@
  *                                                                                             *
  *                      $Author:: Jani_p                                                      $*
  *                                                                                             *
- *                     $Modtime:: 7/10/01 1:30p                                               $*
+ *                     $Modtime:: 11/09/01 3:12p                                              $*
  *                                                                                             *
- *                    $Revision:: 22                                                          $*
+ *                    $Revision:: 26                                                          $*
  *                                                                                             *
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
@@ -43,6 +47,12 @@
 #include "dx8caps.h"
 #include "sphere.h"
 #include "thread.h"
+#include "wwmemlog.h"
+
+#ifndef _WIN32
+#include <glad/glad.h>
+#include <cstring>
+#endif
 
 #define DEFAULT_IB_SIZE 5000
 
@@ -189,16 +199,20 @@ IndexBufferClass::WriteLockClass::WriteLockClass(IndexBufferClass* index_buffer_
 	index_buffer->Add_Ref();
 	switch (index_buffer->Type()) {
 	case BUFFER_TYPE_DX8:
+#ifdef _WIN32
+		DX8_Assert();
+		DX8_ErrorCode(static_cast<DX8IndexBufferClass*>(index_buffer)->Get_DX8_Index_Buffer()->Lock(
+			0,
+			index_buffer->Get_Index_Count()*sizeof(WORD),
+			(void**)&indices,
+			flags));
+#else
+		// OpenGL: Return CPU-side buffer pointer for writing
 		{
-			DX8_Assert();
-			unsigned char* temp_ptr = nullptr;
-			DX8_ErrorCode(static_cast<DX8IndexBufferClass*>(index_buffer)->Get_DX8_Index_Buffer()->Lock(
-				0,
-				index_buffer->Get_Index_Count()*sizeof(WORD),
-				&temp_ptr,
-				flags));
-			indices = reinterpret_cast<unsigned short*>(temp_ptr);
+			DX8IndexBufferClass* ib = static_cast<DX8IndexBufferClass*>(index_buffer);
+			indices = static_cast<unsigned short*>(ib->GLIndexData);
 		}
+#endif
 		break;
 	case BUFFER_TYPE_SORTING:
 		indices=static_cast<SortingIndexBufferClass*>(index_buffer)->index_buffer;
@@ -219,8 +233,30 @@ IndexBufferClass::WriteLockClass::~WriteLockClass()
 	DX8_THREAD_ASSERT();
 	switch (index_buffer->Type()) {
 	case BUFFER_TYPE_DX8:
+#ifdef _WIN32
 		DX8_Assert();
 		DX8_ErrorCode(static_cast<DX8IndexBufferClass*>(index_buffer)->index_buffer->Unlock());
+#else
+		// OpenGL: Upload entire buffer to GPU
+		{
+			DX8IndexBufferClass* ib = static_cast<DX8IndexBufferClass*>(index_buffer);
+			unsigned buffer_size = index_buffer->Get_Index_Count() * sizeof(unsigned short);
+			
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->Get_GL_Index_Buffer());
+			glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, buffer_size, ib->GLIndexData);
+			
+#ifdef INDEX_BUFFER_LOG
+			GLenum err = glGetError();
+			if (err != GL_NO_ERROR) {
+				WWDEBUG_SAY(("OpenGL: WriteLock buffer upload failed (error 0x%x)", err));
+			} else {
+				WWDEBUG_SAY(("OpenGL: WriteLock uploaded %u bytes to IBO %u", buffer_size, ib->Get_GL_Index_Buffer()));
+			}
+#endif
+			
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		}
+#endif
 		break;
 	case BUFFER_TYPE_SORTING:
 		break;
@@ -244,12 +280,21 @@ IndexBufferClass::AppendLockClass::AppendLockClass(IndexBufferClass* index_buffe
 	index_buffer->Add_Ref();
 	switch (index_buffer->Type()) {
 	case BUFFER_TYPE_DX8:
+#ifdef _WIN32
 		DX8_Assert();
 		DX8_ErrorCode(static_cast<DX8IndexBufferClass*>(index_buffer)->index_buffer->Lock(
 			start_index*sizeof(unsigned short),
 			index_range*sizeof(unsigned short),
-			(unsigned char**)&indices,
+			(void**)&indices,
 			0));
+#else
+		// OpenGL: Calculate offset into CPU-side buffer
+		{
+			DX8IndexBufferClass* ib = static_cast<DX8IndexBufferClass*>(index_buffer);
+			unsigned short* base_ptr = static_cast<unsigned short*>(ib->GLIndexData);
+			indices = base_ptr + start_index;
+		}
+#endif
 		break;
 	case BUFFER_TYPE_SORTING:
 		indices=static_cast<SortingIndexBufferClass*>(index_buffer)->index_buffer+start_index;
@@ -267,8 +312,31 @@ IndexBufferClass::AppendLockClass::~AppendLockClass()
 	DX8_THREAD_ASSERT();
 	switch (index_buffer->Type()) {
 	case BUFFER_TYPE_DX8:
+#ifdef _WIN32
 		DX8_Assert();
 		DX8_ErrorCode(static_cast<DX8IndexBufferClass*>(index_buffer)->index_buffer->Unlock());
+#else
+		// OpenGL: Upload entire buffer to GPU
+		// Note: DirectX supports partial locks, but for simplicity we upload the full buffer
+		{
+			DX8IndexBufferClass* ib = static_cast<DX8IndexBufferClass*>(index_buffer);
+			unsigned buffer_size = index_buffer->Get_Index_Count() * sizeof(unsigned short);
+			
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->Get_GL_Index_Buffer());
+			glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, buffer_size, ib->GLIndexData);
+			
+#ifdef INDEX_BUFFER_LOG
+			GLenum err = glGetError();
+			if (err != GL_NO_ERROR) {
+				WWDEBUG_SAY(("OpenGL: AppendLock buffer upload failed (error 0x%x)", err));
+			} else {
+				WWDEBUG_SAY(("OpenGL: AppendLock uploaded %u bytes to IBO %u", buffer_size, ib->Get_GL_Index_Buffer()));
+			}
+#endif
+			
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		}
+#endif
 		break;
 	case BUFFER_TYPE_SORTING:
 		break;
@@ -288,28 +356,119 @@ IndexBufferClass::AppendLockClass::~AppendLockClass()
 DX8IndexBufferClass::DX8IndexBufferClass(unsigned short index_count_,UsageType usage)
 	:
 	IndexBufferClass(BUFFER_TYPE_DX8,index_count_)
+#ifdef _WIN32
+#else
+	,GLIndexBuffer(0)
+	,GLIndexData(NULL)
+#endif
 {
 	DX8_THREAD_ASSERT();
 	WWASSERT(index_count);
+
+#ifdef _WIN32
 	unsigned usage_flags=
 		D3DUSAGE_WRITEONLY|
 		((usage&USAGE_DYNAMIC) ? D3DUSAGE_DYNAMIC : 0)|
 		((usage&USAGE_NPATCHES) ? D3DUSAGE_NPATCHES : 0)|
 		((usage&USAGE_SOFTWAREPROCESSING) ? D3DUSAGE_SOFTWAREPROCESSING : 0);
+	if (!DX8Wrapper::Get_Current_Caps()->Support_TnL()) {
+		usage_flags|=D3DUSAGE_SOFTWAREPROCESSING;
+	}
 
-	DX8CALL(CreateIndexBuffer(
+	HRESULT ret=DX8Wrapper::_Get_D3D_Device8()->CreateIndexBuffer(
 		sizeof(WORD)*index_count,
 		usage_flags,
 		D3DFMT_INDEX16,
 		(usage&USAGE_DYNAMIC) ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED,
-		&index_buffer));
+		&index_buffer);
+
+	if (SUCCEEDED(ret)) {
+		return;
+	}
+
+	WWDEBUG_SAY(("Index buffer creation failed, trying to release assets..."));
+
+	// Vertex buffer creation failed, so try releasing least used textures and flushing the mesh cache.
+
+	// Free all textures that haven't been used in the last 5 seconds
+	TextureClass::Invalidate_Old_Unused_Textures(5000);
+
+	// Invalidate the mesh cache
+	WW3D::_Invalidate_Mesh_Cache();
+
+	// Try again...
+	ret=DX8Wrapper::_Get_D3D_Device8()->CreateIndexBuffer(
+		sizeof(WORD)*index_count,
+		usage_flags,
+		D3DFMT_INDEX16,
+		(usage&USAGE_DYNAMIC) ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED,
+		&index_buffer);
+
+	if (SUCCEEDED(ret)) {
+		WWDEBUG_SAY(("...Index buffer creation succesful"));
+	}
+
+	// If it still fails it is fatal
+	DX8_ErrorCode(ret);
+#else
+	// OpenGL implementation: Create Element Array Buffer (index buffer)
+	glGenBuffers(1, &GLIndexBuffer);
+	
+	unsigned buffer_size = sizeof(unsigned short) * index_count;
+	GLIndexData = malloc(buffer_size);
+	
+	if (!GLIndexData) {
+		WWDEBUG_SAY(("OpenGL: Failed to allocate CPU-side index buffer (%u bytes)", buffer_size));
+		GLIndexBuffer = 0;
+		return;
+	}
+	
+	memset(GLIndexData, 0, buffer_size);
+	
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GLIndexBuffer);
+	
+	// Map usage flags to OpenGL usage hints
+	GLenum gl_usage = (usage & USAGE_DYNAMIC) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW;
+	
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, buffer_size, NULL, gl_usage);
+	
+	GLenum err = glGetError();
+	if (err != GL_NO_ERROR) {
+		WWDEBUG_SAY(("OpenGL: Index buffer creation failed (error 0x%x)", err));
+	}
+#ifdef INDEX_BUFFER_LOG
+	else {
+		WWDEBUG_SAY(("OpenGL: Created index buffer %u, %d indices, %u bytes, usage %s", 
+			GLIndexBuffer, index_count, buffer_size, 
+			(usage & USAGE_DYNAMIC) ? "DYNAMIC" : "STATIC"));
+	}
+#endif
+	
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+#endif
 }
 
 // ----------------------------------------------------------------------------
 
 DX8IndexBufferClass::~DX8IndexBufferClass()
 {
+#ifdef _WIN32
 	index_buffer->Release();
+#else
+	// OpenGL cleanup
+	if (GLIndexBuffer != 0) {
+		glDeleteBuffers(1, &GLIndexBuffer);
+		GLIndexBuffer = 0;
+#ifdef INDEX_BUFFER_LOG
+		WWDEBUG_SAY(("OpenGL: Deleted index buffer"));
+#endif
+	}
+	
+	if (GLIndexData != NULL) {
+		free(GLIndexData);
+		GLIndexData = NULL;
+	}
+#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -322,6 +481,7 @@ SortingIndexBufferClass::SortingIndexBufferClass(unsigned short index_count_)
 	:
 	IndexBufferClass(BUFFER_TYPE_SORTING,index_count_)
 {
+	WWMEMLOG(MEM_RENDERER);
 	WWASSERT(index_count);
 
 	index_buffer=W3DNEWARRAY unsigned short[index_count];
@@ -397,19 +557,24 @@ DynamicIBAccessClass::WriteLockClass::WriteLockClass(DynamicIBAccessClass* ib_ac
 	DynamicIBAccess->IndexBuffer->Add_Ref();
 	switch (DynamicIBAccess->Get_Type()) {
 	case BUFFER_TYPE_DYNAMIC_DX8:
-		{
-			WWASSERT(DynamicIBAccess);
+		WWASSERT(DynamicIBAccess);
 //		WWASSERT(!dynamic_dx8_index_buffer->Engine_Refs());
-			DX8_Assert();
-			unsigned char* temp_ptr = nullptr;
-			DX8_ErrorCode(
-				static_cast<DX8IndexBufferClass*>(DynamicIBAccess->IndexBuffer)->Get_DX8_Index_Buffer()->Lock(
-				DynamicIBAccess->IndexBufferOffset*sizeof(WORD),
-				DynamicIBAccess->Get_Index_Count()*sizeof(WORD),
-				&temp_ptr,
-				!DynamicIBAccess->IndexBufferOffset ? D3DLOCK_DISCARD : D3DLOCK_NOOVERWRITE));
-			Indices = reinterpret_cast<unsigned short*>(temp_ptr);
+#ifdef _WIN32
+		DX8_Assert();
+		DX8_ErrorCode(
+			static_cast<DX8IndexBufferClass*>(DynamicIBAccess->IndexBuffer)->Get_DX8_Index_Buffer()->Lock(
+			DynamicIBAccess->IndexBufferOffset*sizeof(WORD),
+			DynamicIBAccess->Get_Index_Count()*sizeof(WORD),
+			(void**)&Indices,
+			!DynamicIBAccess->IndexBufferOffset ? D3DLOCK_DISCARD : D3DLOCK_NOOVERWRITE));
+#else
+		// Phase 27.2.2: OpenGL dynamic index buffer lock (CPU-side with offset)
+		{
+			DX8IndexBufferClass* ib = static_cast<DX8IndexBufferClass*>(DynamicIBAccess->IndexBuffer);
+			unsigned short* base_ptr = static_cast<unsigned short*>(ib->GLIndexData);
+			Indices = base_ptr + DynamicIBAccess->IndexBufferOffset;
 		}
+#endif
 		break;
 	case BUFFER_TYPE_DYNAMIC_SORTING:
 		Indices=static_cast<SortingIndexBufferClass*>(DynamicIBAccess->IndexBuffer)->index_buffer;
@@ -426,8 +591,20 @@ DynamicIBAccessClass::WriteLockClass::~WriteLockClass()
 	DX8_THREAD_ASSERT();
 	switch (DynamicIBAccess->Get_Type()) {
 	case BUFFER_TYPE_DYNAMIC_DX8:
+#ifdef _WIN32
 		DX8_Assert();
 		DX8_ErrorCode(static_cast<DX8IndexBufferClass*>(DynamicIBAccess->IndexBuffer)->Get_DX8_Index_Buffer()->Unlock());
+#else
+		// Phase 27.2.2: OpenGL dynamic index buffer unlock (upload to GPU)
+		{
+			DX8IndexBufferClass* ib = static_cast<DX8IndexBufferClass*>(DynamicIBAccess->IndexBuffer);
+			unsigned buffer_size = DynamicIBAccess->IndexBuffer->Get_Index_Count() * sizeof(unsigned short);
+			
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->Get_GL_Index_Buffer());
+			glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, buffer_size, ib->GLIndexData);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		}
+#endif
 		break;
 	case BUFFER_TYPE_DYNAMIC_SORTING:
 		break;
@@ -446,6 +623,7 @@ DynamicIBAccessClass::WriteLockClass::~WriteLockClass()
 
 void DynamicIBAccessClass::Allocate_DX8_Dynamic_Buffer()
 {
+	WWMEMLOG(MEM_RENDERER);
 	WWASSERT(!_DynamicDX8IndexBufferInUse);
 	_DynamicDX8IndexBufferInUse=true;
 
@@ -481,6 +659,7 @@ void DynamicIBAccessClass::Allocate_DX8_Dynamic_Buffer()
 
 void DynamicIBAccessClass::Allocate_Sorting_Dynamic_Buffer()
 {
+	WWMEMLOG(MEM_RENDERER);
 	WWASSERT(!_DynamicSortingIndexArrayInUse);
 	_DynamicSortingIndexArrayInUse=true;
 

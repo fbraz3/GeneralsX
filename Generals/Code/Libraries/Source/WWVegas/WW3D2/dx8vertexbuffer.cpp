@@ -91,7 +91,7 @@ VertexBufferClass::VertexBufferClass(unsigned type_, unsigned FVF, unsigned shor
 	WWASSERT(VertexCount);
 	WWASSERT(type==BUFFER_TYPE_DX8 || type==BUFFER_TYPE_SORTING);
 	WWASSERT((FVF!=0 && vertex_size==0) || (FVF==0 && vertex_size!=0));
-	fvf_info=W3DNEW FVFInfoClass(FVF,vertex_size);
+	fvf_info=W3DNEW FVFInfoClass(FVF);  // Generals uses single-parameter constructor
 
 	_VertexBufferCount++;
 	_VertexBufferTotalVertices+=VertexCount;
@@ -189,17 +189,19 @@ VertexBufferClass::WriteLockClass::WriteLockClass(VertexBufferClass* VertexBuffe
 			flags));	//flags
 #else
 		// Phase 27.2.1: OpenGL vertex buffer lock (CPU-side emulation)
-		DX8VertexBufferClass* vb = static_cast<DX8VertexBufferClass*>(VertexBuffer);
-		Vertices = vb->GLVertexData;
-		WWASSERT(Vertices != NULL);
+		{
+			DX8VertexBufferClass* vb = static_cast<DX8VertexBufferClass*>(VertexBuffer);
+			Vertices = vb->GLVertexData;
+			WWASSERT(Vertices != NULL);
 #ifdef VERTEX_BUFFER_LOG
-		StringClass fvf_name;
-		VertexBuffer->FVF_Info().Get_FVF_Name(fvf_name);
-		printf("Phase 27.2.1: GL VBO Lock - VBO id=%u, size=%u bytes, fvf=%s\n",
-			vb->Get_GL_Vertex_Buffer(),
-			VertexBuffer->Get_Vertex_Count() * VertexBuffer->FVF_Info().Get_FVF_Size(),
-			fvf_name.Peek_Buffer());
+			StringClass fvf_name;
+			VertexBuffer->FVF_Info().Get_FVF_Name(fvf_name);
+			printf("Phase 27.2.1: GL VBO Lock - VBO id=%u, size=%u bytes, fvf=%s\n",
+				vb->Get_GL_Vertex_Buffer(),
+				VertexBuffer->Get_Vertex_Count() * VertexBuffer->FVF_Info().Get_FVF_Size(),
+				fvf_name.Peek_Buffer());
 #endif
+		}
 #endif
 		break;
 	case BUFFER_TYPE_SORTING:
@@ -293,21 +295,23 @@ VertexBufferClass::AppendLockClass::AppendLockClass(VertexBufferClass* VertexBuf
 			0));	// Default (no) flags
 #else
 		// Phase 27.2.1: OpenGL vertex buffer append lock (partial buffer access)
-		DX8VertexBufferClass* vb = static_cast<DX8VertexBufferClass*>(VertexBuffer);
-		unsigned fvf_size = VertexBuffer->FVF_Info().Get_FVF_Size();
-		unsigned char* base_ptr = static_cast<unsigned char*>(vb->GLVertexData);
-		Vertices = base_ptr + (start_index * fvf_size);
-		WWASSERT(Vertices != NULL);
+		{
+			DX8VertexBufferClass* vb = static_cast<DX8VertexBufferClass*>(VertexBuffer);
+			unsigned fvf_size = VertexBuffer->FVF_Info().Get_FVF_Size();
+			unsigned char* base_ptr = static_cast<unsigned char*>(vb->GLVertexData);
+			Vertices = base_ptr + (start_index * fvf_size);
+			WWASSERT(Vertices != NULL);
 #ifdef VERTEX_BUFFER_LOG
-		StringClass fvf_name;
-		VertexBuffer->FVF_Info().Get_FVF_Name(fvf_name);
-		printf("Phase 27.2.1: GL VBO AppendLock - VBO id=%u, start=%u, range=%u, fvf_size=%u, fvf=%s\n",
-			vb->Get_GL_Vertex_Buffer(),
-			start_index,
-			index_range,
-			fvf_size,
-			fvf_name.Peek_Buffer());
+			StringClass fvf_name;
+			VertexBuffer->FVF_Info().Get_FVF_Name(fvf_name);
+			printf("Phase 27.2.1: GL VBO AppendLock - VBO id=%u, start=%u, range=%u, fvf_size=%u, fvf=%s\n",
+				vb->Get_GL_Vertex_Buffer(),
+				start_index,
+				index_range,
+				fvf_size,
+				fvf_name.Peek_Buffer());
 #endif
+		}
 #endif
 		break;
 	case BUFFER_TYPE_SORTING:
@@ -1031,6 +1035,7 @@ DynamicVBAccessClass::WriteLockClass::WriteLockClass(DynamicVBAccessClass* dynam
 		WWASSERT(_DynamicDX8VertexBuffer);
 //		WWASSERT(!_DynamicDX8VertexBuffer->Engine_Refs());
 
+#ifdef _WIN32
 		DX8_Assert();
 		// Lock with discard contents if the buffer offset is zero
 		DX8_ErrorCode(static_cast<DX8VertexBufferClass*>(DynamicVBAccess->VertexBuffer)->Get_DX8_Vertex_Buffer()->Lock(
@@ -1038,6 +1043,22 @@ DynamicVBAccessClass::WriteLockClass::WriteLockClass(DynamicVBAccessClass* dynam
 			DynamicVBAccess->Get_Vertex_Count()*DynamicVBAccess->VertexBuffer->FVF_Info().Get_FVF_Size(),
 			(void**)&Vertices,
 			D3DLOCK_NOSYSLOCK | (!DynamicVBAccess->VertexBufferOffset ? D3DLOCK_DISCARD : D3DLOCK_NOOVERWRITE)));
+#else
+		// Phase 27.2.1: OpenGL dynamic vertex buffer lock (CPU-side emulation with offset)
+		{
+			DX8VertexBufferClass* vb = static_cast<DX8VertexBufferClass*>(DynamicVBAccess->VertexBuffer);
+			unsigned fvf_size = _DynamicDX8VertexBuffer->FVF_Info().Get_FVF_Size();
+			unsigned offset_bytes = DynamicVBAccess->VertexBufferOffset * fvf_size;
+			Vertices = static_cast<VertexFormatXYZNDUV2*>((void*)((char*)vb->GLVertexData + offset_bytes));
+			WWASSERT(Vertices != NULL);
+#ifdef VERTEX_BUFFER_LOG
+			printf("Phase 27.2.1: GL Dynamic VBO Lock - VBO id=%u, offset=%u, size=%u bytes\n",
+				vb->Get_GL_Vertex_Buffer(),
+				offset_bytes,
+				DynamicVBAccess->Get_Vertex_Count() * fvf_size);
+#endif
+		}
+#endif
 		break;
 	case BUFFER_TYPE_DYNAMIC_SORTING:
 		Vertices=static_cast<SortingVertexBufferClass*>(DynamicVBAccess->VertexBuffer)->VertexBuffer;
@@ -1063,8 +1084,25 @@ DynamicVBAccessClass::WriteLockClass::~WriteLockClass()
 		WWDEBUG_SAY(("DynamicVertexBuffer->Unlock()"));
 */
 #endif
+#ifdef _WIN32
 		DX8_Assert();
 		DX8_ErrorCode(static_cast<DX8VertexBufferClass*>(DynamicVBAccess->VertexBuffer)->Get_DX8_Vertex_Buffer()->Unlock());
+#else
+		// Phase 27.2.1: OpenGL dynamic vertex buffer unlock (upload CPU data to GPU)
+		{
+			DX8VertexBufferClass* vb = static_cast<DX8VertexBufferClass*>(DynamicVBAccess->VertexBuffer);
+			unsigned fvf_size = vb->FVF_Info().Get_FVF_Size();
+			unsigned offset_bytes = DynamicVBAccess->VertexBufferOffset * fvf_size;
+			unsigned size_bytes = DynamicVBAccess->Get_Vertex_Count() * fvf_size;
+
+			glBindBuffer(GL_ARRAY_BUFFER, vb->Get_GL_Vertex_Buffer());
+			glBufferSubData(GL_ARRAY_BUFFER, offset_bytes, size_bytes, Vertices);
+#ifdef VERTEX_BUFFER_LOG
+			printf("Phase 27.2.1: GL Dynamic VBO Unlock - VBO id=%u, uploaded %u bytes at offset %u\n",
+				vb->Get_GL_Vertex_Buffer(), size_bytes, offset_bytes);
+#endif
+		}
+#endif
 		break;
 	case BUFFER_TYPE_DYNAMIC_SORTING:
 		break;
