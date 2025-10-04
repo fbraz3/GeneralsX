@@ -45,6 +45,8 @@
 
 **Total Tasks**: 25 detailed implementation tasks organized in 5 parts
 
+**Current Progress**: 6/25 tasks complete (24%) + Task 27.2.1 in progress (70% complete)
+
 ---
 
 ## Implementation Breakdown
@@ -117,6 +119,20 @@ View the complete task list with implementation details using the TODO managemen
 - **Buffer Swap**: SDL_GL_SwapWindow for frame presentation
 - **Status**: ✅ Compiles successfully, validates SDL2/OpenGL stack
 - **Next**: Remove early return once Part 2 DirectX→OpenGL translation begins
+
+#### 🔄 Task 27.2.1: OpenGL Vertex Buffer Abstraction (In Progress - 70%)
+- **Files Modified**: GeneralsMD/dx8vertexbuffer.h, GeneralsMD/dx8vertexbuffer.cpp
+- **Implementation**:
+  - ✅ Added GLuint GLVertexBuffer and void* GLVertexData members
+  - ✅ Implemented Create_Vertex_Buffer() with glGenBuffers/glBufferData
+  - ✅ Added destructor cleanup with glDeleteBuffers
+  - ✅ Implemented WriteLockClass Lock/Unlock with CPU-side emulation
+  - ⏳ TODO: Complete AppendLockClass OpenGL implementation
+  - ⏳ TODO: Apply changes to Generals base game
+- **OpenGL APIs Used**: glGenBuffers, glBindBuffer, glBufferData, glBufferSubData, glDeleteBuffers
+- **Design Pattern**: CPU-side buffer (GLVertexData) emulates DirectX Lock/Unlock behavior
+- **Compilation**: ✅ Successful (14MB ARM64 executable)
+- **Git Commit**: 91fd5db0
 
 ---
 
@@ -202,6 +218,7 @@ Xcode Instruments (macOS)
 ---
 
 **Last Updated**: October 4, 2025  
-**Status**: Phase 27.1 - Window Setup COMPLETE (6/6 tasks - 100%)  
-**Current State**: Early return restored in draw() for isolated SDL2/OpenGL testing  
-**Next Milestone**: Begin Part 2 - DirectX→OpenGL Translation Layer (Task 27.2.1)
+**Status**: Phase 27.2 - DirectX→OpenGL Translation Layer IN PROGRESS  
+**Current Task**: Task 27.2.1 - OpenGL Vertex Buffer Abstraction (70% complete)  
+**Current State**: VBO creation, destruction, and WriteLockClass implemented  
+**Next Steps**: Complete AppendLockClass, apply to Generals base, continue with IndexBuffer (Task 27.2.2)
