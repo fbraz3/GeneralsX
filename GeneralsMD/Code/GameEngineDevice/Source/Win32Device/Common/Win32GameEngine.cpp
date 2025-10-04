@@ -29,6 +29,10 @@
 //   the game application, it creates all the devices we will use for the game
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+#ifndef _WIN32
+#include <SDL2/SDL.h>
+#endif
+
 #include <windows.h>
 #include "Win32Device/Common/Win32GameEngine.h"
 #include "Common/PerfTimer.h"
@@ -132,8 +136,10 @@ void Win32GameEngine::update( void )
 //-------------------------------------------------------------------------------------------------
 void Win32GameEngine::serviceWindowsOS( void )
 {
+#ifdef _WIN32
+	// Windows platform: Use traditional Windows message loop
 	MSG msg;
-  Int returnValue;
+	Int returnValue;
 
 	//
 	// see if we have any messages to process, a NULL window handle tells the
@@ -164,6 +170,64 @@ void Win32GameEngine::serviceWindowsOS( void )
 		TheMessageTime = 0;
 
 	}
-
+#else
+	// Phase 27.1.5: SDL2 event loop for cross-platform support (macOS/Linux)
+	SDL_Event event;
+	
+	// Poll all pending SDL events
+	while (SDL_PollEvent(&event)) {
+		switch (event.type) {
+			case SDL_QUIT:
+				// User closed the window or system quit
+				printf("Phase 27.1.5: SDL_QUIT event received - setting quitting flag\n");
+				setQuitting(true);
+				break;
+				
+			case SDL_WINDOWEVENT:
+				switch (event.window.event) {
+					case SDL_WINDOWEVENT_CLOSE:
+						printf("Phase 27.1.5: SDL_WINDOWEVENT_CLOSE - setting quitting flag\n");
+						setQuitting(true);
+						break;
+						
+					case SDL_WINDOWEVENT_FOCUS_GAINED:
+						// Window gained focus
+						setIsActive(true);
+						break;
+						
+					case SDL_WINDOWEVENT_FOCUS_LOST:
+						// Window lost focus
+						setIsActive(false);
+						break;
+						
+					case SDL_WINDOWEVENT_MINIMIZED:
+						setIsActive(false);
+						break;
+						
+					case SDL_WINDOWEVENT_RESTORED:
+						setIsActive(true);
+						break;
+				}
+				break;
+				
+			case SDL_KEYDOWN:
+			case SDL_KEYUP:
+				// Keyboard events - will be handled by input system
+				// For now, just pass through (input handling is in separate system)
+				break;
+				
+			case SDL_MOUSEMOTION:
+			case SDL_MOUSEBUTTONDOWN:
+			case SDL_MOUSEBUTTONUP:
+			case SDL_MOUSEWHEEL:
+				// Mouse events - will be handled by mouse input system
+				break;
+				
+			default:
+				// Other events can be safely ignored for now
+				break;
+		}
+	}
+#endif
 }
 
