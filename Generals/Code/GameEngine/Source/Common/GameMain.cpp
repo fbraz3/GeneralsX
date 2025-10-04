@@ -37,10 +37,15 @@
  */
 Int GameMain()
 {
+	printf("GameMain - Starting game engine initialization\n");
 	int exitcode = 0;
 	// initialize the game engine using factory function
+	printf("GameMain - Creating game engine...\n");
 	TheGameEngine = CreateGameEngine();
+	printf("GameMain - Game engine created successfully\n");
+	printf("GameMain - About to call TheGameEngine->init()\n");
 	TheGameEngine->init();
+	printf("GameMain - TheGameEngine->init() completed successfully\n");
 
 	if (!TheGlobalData->m_simulateReplays.empty())
 	{
@@ -49,13 +54,17 @@ Int GameMain()
 	else
 	{
 		// run it
+		printf("GameMain - About to call TheGameEngine->execute()\n");
 		TheGameEngine->execute();
 	}
+	printf("GameMain - TheGameEngine->execute() completed\n");
 
 	// since execute() returned, we are exiting the game
+	printf("GameMain - Deleting game engine\n");
 	delete TheGameEngine;
 	TheGameEngine = NULL;
 
+	printf("GameMain - Returning exit code: %d\n", exitcode);
 	return exitcode;
 }
 

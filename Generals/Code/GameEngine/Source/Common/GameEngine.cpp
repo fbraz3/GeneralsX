@@ -166,8 +166,24 @@ void initSubsystem(
 	const char* path1 = NULL,
 	const char* path2 = NULL)
 {
+	printf("initSubsystem - Entered for subsystem: %s\n", name.str());
 	sysref = sys;
-	TheSubsystemList->initSubsystem(sys, path1, path2, pXfer, name);
+	printf("initSubsystem - sysref assigned for %s\n", name.str());
+	printf("initSubsystem - About to call TheSubsystemList->initSubsystem for %s\n", name.str());
+	printf("initSubsystem - Parameters: path1=%s, path2=%s\n", 
+		path1 ? path1 : "NULL", path2 ? path2 : "NULL");
+	try {
+		TheSubsystemList->initSubsystem(sys, path1, path2, pXfer, name);
+		printf("initSubsystem - TheSubsystemList->initSubsystem completed successfully for %s\n", name.str());
+	} catch (const std::exception& e) {
+		printf("initSubsystem - std::exception caught for %s: %s\n", name.str(), e.what());
+		throw;
+	} catch (...) {
+		printf("initSubsystem - Unknown exception caught for %s\n", name.str());
+		throw;
+	}
+
+	printf("initSubsystem - Completed for %s\n", name.str());
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -459,9 +475,13 @@ Real GameEngine::getLogicTimeStepMilliseconds(LogicTimeQueryFlags flags)
  */
 void GameEngine::init()
 {
+	printf("GameEngine::init() - METHOD ENTRY POINT\n");
 	try {
+		printf("GameEngine::init() - Starting initialization\n");
+		printf("GameEngine::init() - Inside try block\n");
 		//create an INI object to use for loading stuff
 		INI ini;
+		printf("GameEngine::init() - INI object created\n");
 
 		if (TheVersion)
 		{
@@ -477,15 +497,20 @@ void GameEngine::init()
 			DEBUG_LOG(("================================================================================"));
 		}
 
+		printf("GameEngine::init() - Creating SubsystemList\n");
 		TheSubsystemList = MSGNEW("GameEngineSubsystem") SubsystemInterfaceList;
 
+		printf("GameEngine::init() - Adding subsystem\n");
 		TheSubsystemList->addSubsystem(this);
 
+		printf("GameEngine::init() - Initializing random number system\n");
 		// initialize the random number system
 		InitRandom();
 
+		printf("GameEngine::init() - Creating file system\n");
 		// Create the low-level file system interface
 		TheFileSystem = createFileSystem();
+		printf("GameEngine::init() - File system created\n");
 
 		// not part of the subsystem list, because it should normally never be reset!
 		TheNameKeyGenerator = MSGNEW("GameEngineSubsystem") NameKeyGenerator;
@@ -498,8 +523,12 @@ void GameEngine::init()
 		XferCRC xferCRC;
 		xferCRC.open("lightCRC");
 
+		printf("GameEngine::init() - About to initialize TheLocalFileSystem\n");
 		initSubsystem(TheLocalFileSystem, "TheLocalFileSystem", createLocalFileSystem(), NULL);
+		printf("GameEngine::init() - TheLocalFileSystem initialized\n");
+		printf("GameEngine::init() - About to initialize TheArchiveFileSystem\n");
 		initSubsystem(TheArchiveFileSystem, "TheArchiveFileSystem", createArchiveFileSystem(), NULL); // this MUST come after TheLocalFileSystem creation
+		printf("GameEngine::init() - TheArchiveFileSystem initialized\n");
 
 		DEBUG_ASSERTCRASH(TheWritableGlobalData,("TheWritableGlobalData expected to be created"));
 		initSubsystem(TheWritableGlobalData, "TheWritableGlobalData", TheWritableGlobalData, &xferCRC, "Data\\INI\\Default\\GameData", "Data\\INI\\GameData");
@@ -877,12 +906,15 @@ extern HWND ApplicationHWnd;
  */
 void GameEngine::execute( void )
 {
+	printf("GameEngine::execute() - ENTRY POINT - About to create FrameRateLimit\n");
 	FrameRateLimit* frameRateLimit = new FrameRateLimit();
+	printf("GameEngine::execute() - FrameRateLimit created successfully\n");
 
 #if defined(RTS_DEBUG)
 	DWORD startTime = timeGetTime() / 1000;
 #endif
 
+	printf("GameEngine::execute() - About to enter main loop (while !m_quitting)\n");
 	// pretty basic for now
 	while( !m_quitting )
 	{

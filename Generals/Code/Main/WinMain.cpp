@@ -799,11 +799,13 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			_CrtSetDbgFlag( tmpFlag );
 		#endif
 
-
+		printf("WinMain - Starting initialization...\n");
 
 		// install debug callbacks
 	//	WWDebug_Install_Message_Handler(WWDebug_Message_Callback);
 	//	WWDebug_Install_Assert_Handler(WWAssert_Callback);
+
+		printf("WinMain - Critical sections initialized\n");
 
  		// [SKB: Jun 24 2003 @ 1:50pm] :
 		// Force to be loaded from a file, not a resource so same exe can be used in germany and retail.
@@ -837,8 +839,10 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 		// TheSuperHackers @refactor The instance mutex now lives in its own class.
 
+		printf("WinMain - About to initialize ClientInstance\n");
 		if (!rts::ClientInstance::initialize())
 		{
+			printf("WinMain - ClientInstance initialization failed, another instance running\n");
 			HWND ccwindow = FindWindow(rts::ClientInstance::getFirstInstanceName(), NULL);
 			if (ccwindow)
 			{
@@ -855,8 +859,12 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		DEBUG_LOG(("Create Generals Mutex okay."));
 		DEBUG_LOG(("CRC message is %d", GameMessage::MSG_LOGIC_CRC));
 
+		printf("WinMain - ClientInstance initialized successfully\n");
+
 		// run the game main loop
+		printf("WinMain - About to call GameMain()\n");
 		exitcode = GameMain();
+		printf("WinMain - GameMain() returned with exit code: %d\n", exitcode);
 
 		delete TheVersion;
 		TheVersion = NULL;
