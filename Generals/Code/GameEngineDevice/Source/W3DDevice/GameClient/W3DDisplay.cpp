@@ -39,6 +39,16 @@ static void drawFramerateBar(void);
 #include <io.h>
 #include <time.h>
 
+// Phase 27.1.3: SDL2 and OpenGL support for cross-platform graphics
+#ifndef _WIN32
+#include <SDL2/SDL.h>
+#include <glad/glad.h>
+
+// SDL2 global variables for window and OpenGL context management
+static SDL_Window* g_SDLWindow = nullptr;
+static SDL_GLContext g_GLContext = nullptr;
+#endif
+
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "Common/ThingFactory.h"
 #include "Common/GameEngine.h"
@@ -414,7 +424,28 @@ W3DDisplay::~W3DDisplay()
 	m_assetManager->Free_Assets();
 	delete m_assetManager;
 	if (!TheGlobalData->m_headless)
+	{
+		// Phase 27.1.4: Clean up SDL2 and OpenGL resources on non-Windows platforms
+#ifndef _WIN32
+		printf("Phase 27.1.4: Cleaning up SDL2 and OpenGL resources...\n");
+		
+		if (g_GLContext) {
+			SDL_GL_DeleteContext(g_GLContext);
+			g_GLContext = nullptr;
+			printf("  OpenGL context destroyed\n");
+		}
+		
+		if (g_SDLWindow) {
+			SDL_DestroyWindow(g_SDLWindow);
+			g_SDLWindow = nullptr;
+			printf("  SDL2 window destroyed\n");
+		}
+		
+		SDL_Quit();
+		printf("Phase 27.1.4: SDL2 shutdown complete\n");
+#endif
 		WW3D::Shutdown();
+	}
 	WWMath::Shutdown();
 	if (!TheGlobalData->m_headless)
 		DX8WebBrowser::Shutdown();
@@ -655,13 +686,95 @@ void W3DDisplay::init( void )
 		{
 			SortingRendererClass::SetMinVertexBufferSize(1);
 		}
-#ifdef _WIN32
+
+		// Phase 27.1.3: Initialize SDL2 and OpenGL on non-Windows platforms
+#ifndef _WIN32
+		printf("Phase 27.1.3: Initializing SDL2 windowing system...\n");
+		
+		// Initialize SDL2 video subsystem
+		if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+			printf("FATAL: SDL2 initialization failed: %s\n", SDL_GetError());
+			throw ERROR_INVALID_D3D; // Reuse error code for initialization failure
+		}
+		
+		// Configure OpenGL 3.3 Core Profile attributes BEFORE window creation
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+		
+		// Get resolution from global data (will be set later, use defaults for now)
+		Int windowWidth = TheGlobalData->m_xResolution > 0 ? TheGlobalData->m_xResolution : 800;
+		Int windowHeight = TheGlobalData->m_yResolution > 0 ? TheGlobalData->m_yResolution : 600;
+		
+		// Create SDL2 window with OpenGL support
+		Uint32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
+		if (TheGlobalData->m_windowed) {
+			windowFlags |= SDL_WINDOW_RESIZABLE;
+		} else {
+			windowFlags |= SDL_WINDOW_FULLSCREEN;
+		}
+		
+		g_SDLWindow = SDL_CreateWindow(
+			"Command & Conquer: Generals",
+			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+			windowWidth, windowHeight,
+			windowFlags
+		);
+		
+		if (!g_SDLWindow) {
+			printf("FATAL: SDL2 window creation failed: %s\n", SDL_GetError());
+			SDL_Quit();
+			throw ERROR_INVALID_D3D;
+		}
+		
+		// Create OpenGL context
+		g_GLContext = SDL_GL_CreateContext(g_SDLWindow);
+		if (!g_GLContext) {
+			printf("FATAL: OpenGL context creation failed: %s\n", SDL_GetError());
+			SDL_DestroyWindow(g_SDLWindow);
+			SDL_Quit();
+			throw ERROR_INVALID_D3D;
+		}
+		
+		// Make context current
+		SDL_GL_MakeCurrent(g_SDLWindow, g_GLContext);
+		
+		// Initialize GLAD OpenGL function loader
+		if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
+			printf("FATAL: GLAD OpenGL loader initialization failed\n");
+			SDL_GL_DeleteContext(g_GLContext);
+			SDL_DestroyWindow(g_SDLWindow);
+			SDL_Quit();
+			throw ERROR_INVALID_D3D;
+		}
+		
+		// Log successful OpenGL initialization
+		const GLubyte* glVersion = glGetString(GL_VERSION);
+		const GLubyte* glRenderer = glGetString(GL_RENDERER);
+		const GLubyte* glVendor = glGetString(GL_VENDOR);
+		printf("Phase 27.1.3: OpenGL initialization successful!\n");
+		printf("  OpenGL Version: %s\n", glVersion);
+		printf("  Renderer: %s\n", glRenderer);
+		printf("  Vendor: %s\n", glVendor);
+		
+		// Enable V-Sync (1 = enabled, 0 = disabled, -1 = adaptive)
+		SDL_GL_SetSwapInterval(1);
+		
+		// Set ApplicationHWnd to SDL window for compatibility with existing code
+		ApplicationHWnd = (HWND)g_SDLWindow;
+		
+		printf("Phase 27.1.3: SDL2 window created (%dx%d, %s)\n", 
+			windowWidth, windowHeight, 
+			TheGlobalData->m_windowed ? "windowed" : "fullscreen");
+		
+		if (WW3D::Init( ApplicationHWnd ) != WW3D_ERROR_OK)
+			throw ERROR_INVALID_D3D;	//failed to initialize graphics
+#else
 		if (WW3D::Init( ApplicationHWnd ) != WW3D_ERROR_OK)
 			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
-#else
-		// TODO: Initialize W3D for non-Windows platforms
-		if (WW3D::Init( NULL ) != WW3D_ERROR_OK)
-			throw ERROR_INVALID_D3D;	//failed to initialize graphics
 #endif
 
 		WW3D::Set_Prelit_Mode( WW3D::PRELIT_MODE_LIGHTMAP_MULTI_PASS );
