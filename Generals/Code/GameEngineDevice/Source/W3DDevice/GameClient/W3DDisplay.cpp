@@ -1750,8 +1750,8 @@ void W3DDisplay::draw( void )
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		SDL_GL_SwapWindow(g_SDLWindow);
 		
-		// Early return for now - just show the clear color
-		// TODO Phase 27.2: Implement full DirectX->OpenGL rendering pipeline
+		// Early return until DirectX->OpenGL translation is complete (Part 2)
+		// This prevents crashes from unimplemented DirectX calls
 		return;
 	}
 #endif
@@ -2018,6 +2018,13 @@ AGAIN:
 #endif
 				// render is all done!
 				WW3D::End_Render();
+				
+#ifndef _WIN32
+				// Phase 27.1.6: Swap OpenGL buffers to present the frame
+				if (g_SDLWindow && g_GLContext) {
+					SDL_GL_SwapWindow(g_SDLWindow);
+				}
+#endif
 			}
 			else
 			{
