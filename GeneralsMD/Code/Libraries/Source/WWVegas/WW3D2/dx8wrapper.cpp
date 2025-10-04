@@ -2067,6 +2067,8 @@ void DX8Wrapper::Set_Index_Buffer(const DynamicIBAccessClass& iba_,unsigned shor
 //
 // ----------------------------------------------------------------------------
 
+// Phase 27.2.2: DirectX8-only function - wraps sorting vertex/index buffers to dynamic DX8 buffers
+#ifdef _WIN32
 void DX8Wrapper::Draw_Sorting_IB_VB(
 	unsigned primitive_type,
 	unsigned short start_index,
@@ -2144,6 +2146,7 @@ void DX8Wrapper::Draw_Sorting_IB_VB(
 
 	DX8_RECORD_RENDER(polygon_count,vertex_count,render_state.shader);
 }
+#endif // _WIN32
 
 // ----------------------------------------------------------------------------
 //
@@ -2275,7 +2278,12 @@ void DX8Wrapper::Draw(
 			break;
 		case BUFFER_TYPE_SORTING:
 		case BUFFER_TYPE_DYNAMIC_SORTING:
+#ifdef _WIN32
 			Draw_Sorting_IB_VB(primitive_type,start_index,polygon_count,min_vertex_index,vertex_count);
+#else
+			// Phase 27.2.2: Sorting buffers only supported in DirectX8 builds
+			WWASSERT_PRINT(0, "Sorting vertex/index buffers not supported in OpenGL builds");
+#endif
 			break;
 		case BUFFER_TYPE_INVALID:
 			WWASSERT(0);
@@ -2431,6 +2439,7 @@ void DX8Wrapper::Apply_Render_State_Changes()
 		SNAPSHOT_SAY(("DX8 - apply vb change"));
 		for (i=0;i<MAX_VERTEX_STREAMS;++i) {
 			if (render_state.vertex_buffers[i]) {
+#ifdef _WIN32
 				switch (render_state.vertex_buffer_types[i]) {//->Type()) {
 				case BUFFER_TYPE_DX8:
 				case BUFFER_TYPE_DYNAMIC_DX8:
@@ -2453,15 +2462,21 @@ void DX8Wrapper::Apply_Render_State_Changes()
 				default:
 					WWASSERT(0);
 				}
+#else
+				// Phase 27.2.2: OpenGL vertex buffer binding handled elsewhere
+#endif
 			} else {
+#ifdef _WIN32
 				DX8CALL(SetStreamSource(i,NULL,0));
 				DX8_RECORD_VERTEX_BUFFER_CHANGE();
+#endif
 			}
 		}
 	}
 	if (render_state_changed&INDEX_BUFFER_CHANGED) {
 		SNAPSHOT_SAY(("DX8 - apply ib change"));
 		if (render_state.index_buffer) {
+#ifdef _WIN32
 			switch (render_state.index_buffer_type) {//->Type()) {
 			case BUFFER_TYPE_DX8:
 			case BUFFER_TYPE_DYNAMIC_DX8:
@@ -2476,12 +2491,17 @@ void DX8Wrapper::Apply_Render_State_Changes()
 			default:
 				WWASSERT(0);
 			}
+#else
+			// Phase 27.2.2: OpenGL index buffer binding handled elsewhere
+#endif
 		}
 		else {
+#ifdef _WIN32
 			DX8CALL(SetIndices(
 				NULL,
 				0));
 			DX8_RECORD_INDEX_BUFFER_CHANGE();
+#endif
 		}
 	}
 
