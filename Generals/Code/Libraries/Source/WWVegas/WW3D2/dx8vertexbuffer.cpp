@@ -1,5 +1,5 @@
 /*
-**	Command & Conquer Generals(tm)
+**	Command & Conquer Generals Zero Hour(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -26,12 +26,13 @@
  *                                                                                             *
  *              Original Author:: Jani Penttinen                                               *
  *                                                                                             *
- *                      $Author:: Jani_p                                                      $*
+ *                      $Author:: Kenny Mitchell                                               *
  *                                                                                             *
- *                     $Modtime:: 7/10/01 1:33p                                               $*
+ *                     $Modtime:: 06/26/02 5:06p                                             $*
  *                                                                                             *
- *                    $Revision:: 34                                                          $*
+ *                    $Revision:: 39                                                          $*
  *                                                                                             *
+ * 06/26/02 KM VB Vertex format size update for shaders                                       *
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -43,7 +44,15 @@
 #include "dx8fvf.h"
 #include "dx8caps.h"
 #include "thread.h"
+#include "wwmemlog.h"
+
+#ifdef _WIN32
 #include <d3dx8core.h>
+#else
+// Phase 27.2.1: OpenGL includes for vertex buffer implementation
+#include <glad/glad.h>
+#include <cstring>  // for memcpy
+#endif
 
 #define DEFAULT_VB_SIZE 5000
 
@@ -72,15 +81,17 @@ static int _VertexBufferTotalSize;
 //
 // ----------------------------------------------------------------------------
 
-VertexBufferClass::VertexBufferClass(unsigned type_, unsigned FVF, unsigned short vertex_count_)
+VertexBufferClass::VertexBufferClass(unsigned type_, unsigned FVF, unsigned short vertex_count_, unsigned vertex_size)
 	:
 	VertexCount(vertex_count_),
 	type(type_),
 	engine_refs(0)
 {
+	WWMEMLOG(MEM_RENDERER);
 	WWASSERT(VertexCount);
 	WWASSERT(type==BUFFER_TYPE_DX8 || type==BUFFER_TYPE_SORTING);
-	fvf_info=W3DNEW FVFInfoClass(FVF);
+	WWASSERT((FVF!=0 && vertex_size==0) || (FVF==0 && vertex_size!=0));
+	fvf_info=W3DNEW FVFInfoClass(FVF,vertex_size);
 
 	_VertexBufferCount++;
 	_VertexBufferTotalVertices+=VertexCount;
@@ -159,6 +170,7 @@ VertexBufferClass::WriteLockClass::WriteLockClass(VertexBufferClass* VertexBuffe
 	VertexBuffer->Add_Ref();
 	switch (VertexBuffer->Type()) {
 	case BUFFER_TYPE_DX8:
+#ifdef _WIN32
 #ifdef VERTEX_BUFFER_LOG
 		{
 		StringClass fvf_name;
@@ -173,8 +185,22 @@ VertexBufferClass::WriteLockClass::WriteLockClass(VertexBufferClass* VertexBuffe
 		DX8_ErrorCode(static_cast<DX8VertexBufferClass*>(VertexBuffer)->Get_DX8_Vertex_Buffer()->Lock(
 			0,
 			0,
-			(unsigned char**)&Vertices,
+			(void**)&Vertices,
 			flags));	//flags
+#else
+		// Phase 27.2.1: OpenGL vertex buffer lock (CPU-side emulation)
+		DX8VertexBufferClass* vb = static_cast<DX8VertexBufferClass*>(VertexBuffer);
+		Vertices = vb->GLVertexData;
+		WWASSERT(Vertices != NULL);
+#ifdef VERTEX_BUFFER_LOG
+		StringClass fvf_name;
+		VertexBuffer->FVF_Info().Get_FVF_Name(fvf_name);
+		printf("Phase 27.2.1: GL VBO Lock - VBO id=%u, size=%u bytes, fvf=%s\n",
+			vb->Get_GL_Vertex_Buffer(),
+			VertexBuffer->Get_Vertex_Count() * VertexBuffer->FVF_Info().Get_FVF_Size(),
+			fvf_name.Peek_Buffer());
+#endif
+#endif
 		break;
 	case BUFFER_TYPE_SORTING:
 		Vertices=static_cast<SortingVertexBufferClass*>(VertexBuffer)->VertexBuffer;
@@ -192,11 +218,34 @@ VertexBufferClass::WriteLockClass::~WriteLockClass()
 	DX8_THREAD_ASSERT();
 	switch (VertexBuffer->Type()) {
 	case BUFFER_TYPE_DX8:
+#ifdef _WIN32
 #ifdef VERTEX_BUFFER_LOG
 		WWDEBUG_SAY(("VertexBuffer->Unlock()"));
 #endif
 		DX8_Assert();
 		DX8_ErrorCode(static_cast<DX8VertexBufferClass*>(VertexBuffer)->Get_DX8_Vertex_Buffer()->Unlock());
+#else
+		// Phase 27.2.1: OpenGL vertex buffer unlock (upload CPU data to GPU)
+		{
+			DX8VertexBufferClass* vb = static_cast<DX8VertexBufferClass*>(VertexBuffer);
+			unsigned buffer_size = VertexBuffer->Get_Vertex_Count() * VertexBuffer->FVF_Info().Get_FVF_Size();
+			
+			glBindBuffer(GL_ARRAY_BUFFER, vb->Get_GL_Vertex_Buffer());
+			glBufferSubData(GL_ARRAY_BUFFER, 0, buffer_size, vb->GLVertexData);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			
+#ifdef VERTEX_BUFFER_LOG
+			printf("Phase 27.2.1: GL VBO Unlock - Uploaded %u bytes to VBO id=%u\n",
+				buffer_size, vb->Get_GL_Vertex_Buffer());
+#endif
+			
+			// Check for errors
+			GLenum error = glGetError();
+			if (error != GL_NO_ERROR) {
+				printf("ERROR Phase 27.2.1: GL VBO Unlock failed with error 0x%X\n", error);
+			}
+		}
+#endif
 		break;
 	case BUFFER_TYPE_SORTING:
 		break;
@@ -224,6 +273,7 @@ VertexBufferClass::AppendLockClass::AppendLockClass(VertexBufferClass* VertexBuf
 	VertexBuffer->Add_Ref();
 	switch (VertexBuffer->Type()) {
 	case BUFFER_TYPE_DX8:
+#ifdef _WIN32
 #ifdef VERTEX_BUFFER_LOG
 		{
 		StringClass fvf_name;
@@ -239,8 +289,26 @@ VertexBufferClass::AppendLockClass::AppendLockClass(VertexBufferClass* VertexBuf
 		DX8_ErrorCode(static_cast<DX8VertexBufferClass*>(VertexBuffer)->Get_DX8_Vertex_Buffer()->Lock(
 			start_index*VertexBuffer->FVF_Info().Get_FVF_Size(),
 			index_range*VertexBuffer->FVF_Info().Get_FVF_Size(),
-			(unsigned char**)&Vertices,
+			(void**)&Vertices,
 			0));	// Default (no) flags
+#else
+		// Phase 27.2.1: OpenGL vertex buffer append lock (partial buffer access)
+		DX8VertexBufferClass* vb = static_cast<DX8VertexBufferClass*>(VertexBuffer);
+		unsigned fvf_size = VertexBuffer->FVF_Info().Get_FVF_Size();
+		unsigned char* base_ptr = static_cast<unsigned char*>(vb->GLVertexData);
+		Vertices = base_ptr + (start_index * fvf_size);
+		WWASSERT(Vertices != NULL);
+#ifdef VERTEX_BUFFER_LOG
+		StringClass fvf_name;
+		VertexBuffer->FVF_Info().Get_FVF_Name(fvf_name);
+		printf("Phase 27.2.1: GL VBO AppendLock - VBO id=%u, start=%u, range=%u, fvf_size=%u, fvf=%s\n",
+			vb->Get_GL_Vertex_Buffer(),
+			start_index,
+			index_range,
+			fvf_size,
+			fvf_name.Peek_Buffer());
+#endif
+#endif
 		break;
 	case BUFFER_TYPE_SORTING:
 		Vertices=static_cast<SortingVertexBufferClass*>(VertexBuffer)->VertexBuffer+start_index;
@@ -258,11 +326,36 @@ VertexBufferClass::AppendLockClass::~AppendLockClass()
 	DX8_THREAD_ASSERT();
 	switch (VertexBuffer->Type()) {
 	case BUFFER_TYPE_DX8:
+#ifdef _WIN32
 		DX8_Assert();
 #ifdef VERTEX_BUFFER_LOG
 		WWDEBUG_SAY(("VertexBuffer->Unlock()"));
 #endif
 		DX8_ErrorCode(static_cast<DX8VertexBufferClass*>(VertexBuffer)->Get_DX8_Vertex_Buffer()->Unlock());
+#else
+		// Phase 27.2.1: OpenGL vertex buffer append unlock
+		// Note: We upload the entire buffer since we modified CPU-side memory
+		// OpenGL doesn't have partial lock like DirectX, so we do full buffer update
+		{
+			DX8VertexBufferClass* vb = static_cast<DX8VertexBufferClass*>(VertexBuffer);
+			unsigned buffer_size = VertexBuffer->Get_Vertex_Count() * VertexBuffer->FVF_Info().Get_FVF_Size();
+			
+			glBindBuffer(GL_ARRAY_BUFFER, vb->Get_GL_Vertex_Buffer());
+			glBufferSubData(GL_ARRAY_BUFFER, 0, buffer_size, vb->GLVertexData);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			
+#ifdef VERTEX_BUFFER_LOG
+			printf("Phase 27.2.1: GL VBO AppendUnlock - Uploaded %u bytes to VBO id=%u\n",
+				buffer_size, vb->Get_GL_Vertex_Buffer());
+#endif
+			
+			// Check for errors
+			GLenum error = glGetError();
+			if (error != GL_NO_ERROR) {
+				printf("ERROR Phase 27.2.1: GL VBO AppendUnlock failed with error 0x%X\n", error);
+			}
+		}
+#endif
 		break;
 	case BUFFER_TYPE_SORTING:
 		break;
@@ -283,6 +376,7 @@ SortingVertexBufferClass::SortingVertexBufferClass(unsigned short VertexCount)
 	:
 	VertexBufferClass(BUFFER_TYPE_SORTING, dynamic_fvf_type, VertexCount)
 {
+	WWMEMLOG(MEM_RENDERER);
 	VertexBuffer=W3DNEWARRAY VertexFormatXYZNDUV2[VertexCount];
 }
 
@@ -302,10 +396,16 @@ SortingVertexBufferClass::~SortingVertexBufferClass()
 
 //	bool dynamic=false,bool softwarevp=false);
 
-DX8VertexBufferClass::DX8VertexBufferClass(unsigned FVF, unsigned short vertex_count_, UsageType usage)
+DX8VertexBufferClass::DX8VertexBufferClass(unsigned FVF, unsigned short vertex_count_, UsageType usage, unsigned vertex_size)
 	:
-	VertexBufferClass(BUFFER_TYPE_DX8, FVF, vertex_count_),
-	VertexBuffer(NULL)
+	VertexBufferClass(BUFFER_TYPE_DX8, FVF, vertex_count_, vertex_size)
+#ifdef _WIN32
+	, VertexBuffer(NULL)
+#else
+	// Phase 27.2.1: Initialize OpenGL members
+	, GLVertexBuffer(0)
+	, GLVertexData(NULL)
+#endif
 {
 	Create_Vertex_Buffer(usage);
 }
@@ -319,8 +419,12 @@ DX8VertexBufferClass::DX8VertexBufferClass(
 	unsigned short VertexCount,
 	UsageType usage)
 	:
-	VertexBufferClass(BUFFER_TYPE_DX8, D3DFVF_XYZ|D3DFVF_TEX1|D3DFVF_NORMAL, VertexCount),
-	VertexBuffer(NULL)
+	VertexBufferClass(BUFFER_TYPE_DX8, D3DFVF_XYZ|D3DFVF_TEX1|D3DFVF_NORMAL, VertexCount)
+#ifdef _WIN32
+	, VertexBuffer(NULL)
+#else
+	, GLVertexBuffer(0), GLVertexData(NULL)
+#endif
 {
 	WWASSERT(vertices);
 	WWASSERT(normals);
@@ -340,8 +444,12 @@ DX8VertexBufferClass::DX8VertexBufferClass(
 	unsigned short VertexCount,
 	UsageType usage)
 	:
-	VertexBufferClass(BUFFER_TYPE_DX8, D3DFVF_XYZ|D3DFVF_TEX1|D3DFVF_NORMAL|D3DFVF_DIFFUSE, VertexCount),
-	VertexBuffer(NULL)
+	VertexBufferClass(BUFFER_TYPE_DX8, D3DFVF_XYZ|D3DFVF_TEX1|D3DFVF_NORMAL|D3DFVF_DIFFUSE, VertexCount)
+#ifdef _WIN32
+	, VertexBuffer(NULL)
+#else
+	, GLVertexBuffer(0), GLVertexData(NULL)
+#endif
 {
 	WWASSERT(vertices);
 	WWASSERT(normals);
@@ -361,8 +469,12 @@ DX8VertexBufferClass::DX8VertexBufferClass(
 	unsigned short VertexCount,
 	UsageType usage)
 	:
-	VertexBufferClass(BUFFER_TYPE_DX8, D3DFVF_XYZ|D3DFVF_TEX1|D3DFVF_DIFFUSE, VertexCount),
-	VertexBuffer(NULL)
+	VertexBufferClass(BUFFER_TYPE_DX8, D3DFVF_XYZ|D3DFVF_TEX1|D3DFVF_DIFFUSE, VertexCount)
+#ifdef _WIN32
+	, VertexBuffer(NULL)
+#else
+	, GLVertexBuffer(0), GLVertexData(NULL)
+#endif
 {
 	WWASSERT(vertices);
 	WWASSERT(tex_coords);
@@ -380,8 +492,12 @@ DX8VertexBufferClass::DX8VertexBufferClass(
 	unsigned short VertexCount,
 	UsageType usage)
 	:
-	VertexBufferClass(BUFFER_TYPE_DX8, D3DFVF_XYZ|D3DFVF_TEX1, VertexCount),
-	VertexBuffer(NULL)
+	VertexBufferClass(BUFFER_TYPE_DX8, D3DFVF_XYZ|D3DFVF_TEX1, VertexCount)
+#ifdef _WIN32
+	, VertexBuffer(NULL)
+#else
+	, GLVertexBuffer(0), GLVertexData(NULL)
+#endif
 {
 	WWASSERT(vertices);
 	WWASSERT(tex_coords);
@@ -399,7 +515,25 @@ DX8VertexBufferClass::~DX8VertexBufferClass()
 	_DX8VertexBufferCount--;
 	WWDEBUG_SAY(("Current vertex buffer count: %d",_DX8VertexBufferCount));
 #endif
+
+#ifdef _WIN32
 	VertexBuffer->Release();
+#else
+	// Phase 27.2.1: OpenGL vertex buffer cleanup
+	if (GLVertexBuffer != 0) {
+		glDeleteBuffers(1, &GLVertexBuffer);
+		GLVertexBuffer = 0;
+	}
+	if (GLVertexData != NULL) {
+		free(GLVertexData);
+		GLVertexData = NULL;
+	}
+#ifdef VERTEX_BUFFER_LOG
+	printf("Phase 27.2.1: Destroyed OpenGL VBO\n");
+	_DX8VertexBufferCount--;
+	printf("Current OpenGL vertex buffer count: %d\n", _DX8VertexBufferCount);
+#endif
+#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -411,6 +545,8 @@ DX8VertexBufferClass::~DX8VertexBufferClass()
 void DX8VertexBufferClass::Create_Vertex_Buffer(UsageType usage)
 {
 	DX8_THREAD_ASSERT();
+	
+#ifdef _WIN32
 	WWASSERT(!VertexBuffer);
 
 #ifdef VERTEX_BUFFER_LOG
@@ -419,10 +555,10 @@ void DX8VertexBufferClass::Create_Vertex_Buffer(UsageType usage)
 	WWDEBUG_SAY(("CreateVertexBuffer(fvfsize=%d, vertex_count=%d, D3DUSAGE_WRITEONLY|%s|%s, fvf: %s, %s)",
 		FVF_Info().Get_FVF_Size(),
 		VertexCount,
-		usage&USAGE_DYNAMIC ? "D3DUSAGE_DYNAMIC" : "-",
-		usage&USAGE_SOFTWAREPROCESSING ? "D3DUSAGE_SOFTWAREPROCESSING" : "-",
+		(usage&USAGE_DYNAMIC) ? "D3DUSAGE_DYNAMIC" : "-",
+		(usage&USAGE_SOFTWAREPROCESSING) ? "D3DUSAGE_SOFTWAREPROCESSING" : "-",
 		fvf_name,
-		dynamic ? "D3DPOOL_DEFAULT" : "D3DPOOL_MANAGED"));
+		(usage&USAGE_DYNAMIC) ? "D3DPOOL_DEFAULT" : "D3DPOOL_MANAGED"));
 	_DX8VertexBufferCount++;
 	WWDEBUG_SAY(("Current vertex buffer count: %d",_DX8VertexBufferCount));
 #endif
@@ -432,6 +568,9 @@ void DX8VertexBufferClass::Create_Vertex_Buffer(UsageType usage)
 		((usage&USAGE_DYNAMIC) ? D3DUSAGE_DYNAMIC : 0)|
 		((usage&USAGE_NPATCHES) ? D3DUSAGE_NPATCHES : 0)|
 		((usage&USAGE_SOFTWAREPROCESSING) ? D3DUSAGE_SOFTWAREPROCESSING : 0);
+	if (!DX8Wrapper::Get_Current_Caps()->Support_TnL()) {
+		usage_flags|=D3DUSAGE_SOFTWAREPROCESSING;
+	}
 
 	// New Code
 	if (!DX8Wrapper::Get_Current_Caps()->Support_TnL()) {
@@ -450,8 +589,10 @@ void DX8VertexBufferClass::Create_Vertex_Buffer(UsageType usage)
 
 	WWDEBUG_SAY(("Vertex buffer creation failed, trying to release assets..."));
 
-	// Vertex buffer creation failed.  Must be out of memory. Try releasing all our D3D assets and re-creating
-	// them.
+	// Vertex buffer creation failed, so try releasing least used textures and flushing the mesh cache.
+
+	// Free all textures that haven't been used in the last 5 seconds
+	TextureClass::Invalidate_Old_Unused_Textures(5000);
 
 	// Invalidate the mesh cache
 	WW3D::_Invalidate_Mesh_Cache();
@@ -482,6 +623,54 @@ void DX8VertexBufferClass::Create_Vertex_Buffer(UsageType usage)
 		(usage&USAGE_DYNAMIC) ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED,
 		&VertexBuffer));
 	*/
+#else
+	// Phase 27.2.1: OpenGL vertex buffer creation
+	WWASSERT(GLVertexBuffer == 0);
+	WWASSERT(GLVertexData == NULL);
+	
+	// Generate OpenGL Vertex Buffer Object
+	glGenBuffers(1, &GLVertexBuffer);
+	WWASSERT(GLVertexBuffer != 0);
+	
+	// Allocate CPU-side memory for lock/unlock emulation
+	unsigned buffer_size = FVF_Info().Get_FVF_Size() * VertexCount;
+	GLVertexData = malloc(buffer_size);
+	WWASSERT(GLVertexData != NULL);
+	
+	// Bind and allocate GPU memory
+	glBindBuffer(GL_ARRAY_BUFFER, GLVertexBuffer);
+	
+	// Map usage types to OpenGL hints
+	GLenum gl_usage = GL_STATIC_DRAW;  // Default
+	if (usage & USAGE_DYNAMIC) {
+		gl_usage = GL_DYNAMIC_DRAW;
+	}
+	
+	// Allocate buffer (NULL data for now, will be filled via Lock/Unlock)
+	glBufferData(GL_ARRAY_BUFFER, buffer_size, NULL, gl_usage);
+	
+	// Unbind for safety
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	
+#ifdef VERTEX_BUFFER_LOG
+	StringClass fvf_name;
+	FVF_Info().Get_FVF_Name(fvf_name);
+	printf("Phase 27.2.1: Created OpenGL VBO id=%u, size=%u bytes, usage=%s, fvf=%s\n",
+		GLVertexBuffer,
+		buffer_size,
+		(usage & USAGE_DYNAMIC) ? "DYNAMIC" : "STATIC",
+		fvf_name.Peek_Buffer());
+	_DX8VertexBufferCount++;
+	printf("Current OpenGL vertex buffer count: %d\n", _DX8VertexBufferCount);
+#endif
+	
+	// Check for OpenGL errors
+	GLenum error = glGetError();
+	if (error != GL_NO_ERROR) {
+		printf("ERROR Phase 27.2.1: OpenGL VBO creation failed with error 0x%X\n", error);
+		WWASSERT(0);  // Fatal error
+	}
+#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -758,6 +947,7 @@ void DynamicVBAccessClass::_Deinit()
 
 void DynamicVBAccessClass::Allocate_DX8_Dynamic_Buffer()
 {
+	WWMEMLOG(MEM_RENDERER);
 	WWASSERT(!_DynamicDX8VertexBufferInUse);
 	_DynamicDX8VertexBufferInUse=true;
 
@@ -794,6 +984,7 @@ void DynamicVBAccessClass::Allocate_DX8_Dynamic_Buffer()
 
 void DynamicVBAccessClass::Allocate_Sorting_Dynamic_Buffer()
 {
+	WWMEMLOG(MEM_RENDERER);
 	WWASSERT(!_DynamicSortingVertexArrayInUse);
 	_DynamicSortingVertexArrayInUse=true;
 
@@ -824,7 +1015,7 @@ DynamicVBAccessClass::WriteLockClass::WriteLockClass(DynamicVBAccessClass* dynam
 	switch (DynamicVBAccess->Get_Type()) {
 	case BUFFER_TYPE_DYNAMIC_DX8:
 #ifdef VERTEX_BUFFER_LOG
-		{
+/*		{
 		WWASSERT(!dx8_lock);
 		dx8_lock++;
 		StringClass fvf_name;
@@ -835,6 +1026,7 @@ DynamicVBAccessClass::WriteLockClass::WriteLockClass(DynamicVBAccessClass* dynam
 			DynamicVBAccess->VertexBuffer->FVF_Info().Get_FVF_Size(),
 			fvf_name));
 		}
+*/
 #endif
 		WWASSERT(_DynamicDX8VertexBuffer);
 //		WWASSERT(!_DynamicDX8VertexBuffer->Engine_Refs());
@@ -844,7 +1036,7 @@ DynamicVBAccessClass::WriteLockClass::WriteLockClass(DynamicVBAccessClass* dynam
 		DX8_ErrorCode(static_cast<DX8VertexBufferClass*>(DynamicVBAccess->VertexBuffer)->Get_DX8_Vertex_Buffer()->Lock(
 			DynamicVBAccess->VertexBufferOffset*_DynamicDX8VertexBuffer->FVF_Info().Get_FVF_Size(),
 			DynamicVBAccess->Get_Vertex_Count()*DynamicVBAccess->VertexBuffer->FVF_Info().Get_FVF_Size(),
-			(unsigned char**)&Vertices,
+			(void**)&Vertices,
 			D3DLOCK_NOSYSLOCK | (!DynamicVBAccess->VertexBufferOffset ? D3DLOCK_DISCARD : D3DLOCK_NOOVERWRITE)));
 		break;
 	case BUFFER_TYPE_DYNAMIC_SORTING:
@@ -866,9 +1058,10 @@ DynamicVBAccessClass::WriteLockClass::~WriteLockClass()
 	switch (DynamicVBAccess->Get_Type()) {
 	case BUFFER_TYPE_DYNAMIC_DX8:
 #ifdef VERTEX_BUFFER_LOG
-		dx8_lock--;
+/*		dx8_lock--;
 		WWASSERT(!dx8_lock);
 		WWDEBUG_SAY(("DynamicVertexBuffer->Unlock()"));
+*/
 #endif
 		DX8_Assert();
 		DX8_ErrorCode(static_cast<DX8VertexBufferClass*>(DynamicVBAccess->VertexBuffer)->Get_DX8_Vertex_Buffer()->Unlock());

@@ -273,6 +273,7 @@ VertexBufferClass::AppendLockClass::AppendLockClass(VertexBufferClass* VertexBuf
 	VertexBuffer->Add_Ref();
 	switch (VertexBuffer->Type()) {
 	case BUFFER_TYPE_DX8:
+#ifdef _WIN32
 #ifdef VERTEX_BUFFER_LOG
 		{
 		StringClass fvf_name;
@@ -290,6 +291,24 @@ VertexBufferClass::AppendLockClass::AppendLockClass(VertexBufferClass* VertexBuf
 			index_range*VertexBuffer->FVF_Info().Get_FVF_Size(),
 			(void**)&Vertices,
 			0));	// Default (no) flags
+#else
+		// Phase 27.2.1: OpenGL vertex buffer append lock (partial buffer access)
+		DX8VertexBufferClass* vb = static_cast<DX8VertexBufferClass*>(VertexBuffer);
+		unsigned fvf_size = VertexBuffer->FVF_Info().Get_FVF_Size();
+		unsigned char* base_ptr = static_cast<unsigned char*>(vb->GLVertexData);
+		Vertices = base_ptr + (start_index * fvf_size);
+		WWASSERT(Vertices != NULL);
+#ifdef VERTEX_BUFFER_LOG
+		StringClass fvf_name;
+		VertexBuffer->FVF_Info().Get_FVF_Name(fvf_name);
+		printf("Phase 27.2.1: GL VBO AppendLock - VBO id=%u, start=%u, range=%u, fvf_size=%u, fvf=%s\n",
+			vb->Get_GL_Vertex_Buffer(),
+			start_index,
+			index_range,
+			fvf_size,
+			fvf_name.Peek_Buffer());
+#endif
+#endif
 		break;
 	case BUFFER_TYPE_SORTING:
 		Vertices=static_cast<SortingVertexBufferClass*>(VertexBuffer)->VertexBuffer+start_index;
@@ -307,11 +326,36 @@ VertexBufferClass::AppendLockClass::~AppendLockClass()
 	DX8_THREAD_ASSERT();
 	switch (VertexBuffer->Type()) {
 	case BUFFER_TYPE_DX8:
+#ifdef _WIN32
 		DX8_Assert();
 #ifdef VERTEX_BUFFER_LOG
 		WWDEBUG_SAY(("VertexBuffer->Unlock()"));
 #endif
 		DX8_ErrorCode(static_cast<DX8VertexBufferClass*>(VertexBuffer)->Get_DX8_Vertex_Buffer()->Unlock());
+#else
+		// Phase 27.2.1: OpenGL vertex buffer append unlock
+		// Note: We upload the entire buffer since we modified CPU-side memory
+		// OpenGL doesn't have partial lock like DirectX, so we do full buffer update
+		{
+			DX8VertexBufferClass* vb = static_cast<DX8VertexBufferClass*>(VertexBuffer);
+			unsigned buffer_size = VertexBuffer->Get_Vertex_Count() * VertexBuffer->FVF_Info().Get_FVF_Size();
+			
+			glBindBuffer(GL_ARRAY_BUFFER, vb->Get_GL_Vertex_Buffer());
+			glBufferSubData(GL_ARRAY_BUFFER, 0, buffer_size, vb->GLVertexData);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			
+#ifdef VERTEX_BUFFER_LOG
+			printf("Phase 27.2.1: GL VBO AppendUnlock - Uploaded %u bytes to VBO id=%u\n",
+				buffer_size, vb->Get_GL_Vertex_Buffer());
+#endif
+			
+			// Check for errors
+			GLenum error = glGetError();
+			if (error != GL_NO_ERROR) {
+				printf("ERROR Phase 27.2.1: GL VBO AppendUnlock failed with error 0x%X\n", error);
+			}
+		}
+#endif
 		break;
 	case BUFFER_TYPE_SORTING:
 		break;

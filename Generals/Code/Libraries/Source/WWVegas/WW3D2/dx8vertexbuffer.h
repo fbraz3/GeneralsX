@@ -1,5 +1,5 @@
 /*
-**	Command & Conquer Generals(tm)
+**	Command & Conquer Generals Zero Hour(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -26,12 +26,13 @@
  *                                                                                             *
  *              Original Author:: Jani Penttinen                                               *
  *                                                                                             *
- *                      $Author:: Jani_p                                                      $*
+ *                      $Author:: Kenny Mitchell                                               *
  *                                                                                             *
- *                     $Modtime:: 7/09/01 8:15p                                               $*
+ *                     $Modtime:: 06/26/02 5:06p                                             $*
  *                                                                                             *
- *                    $Revision:: 25                                                          $*
+ *                    $Revision:: 26                                                          $*
  *                                                                                             *
+ * 06/26/02 KM VB Vertex format size update for shaders                                       *
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -47,6 +48,10 @@
 #include "wwdebug.h"
 #include "refcount.h"
 #include "dx8fvf.h"
+
+#ifndef _WIN32
+#include <glad/glad.h>  // Phase 27.2.1: OpenGL vertex buffer support
+#endif
 
 const unsigned dynamic_fvf_type=D3DFVF_XYZ|D3DFVF_NORMAL|D3DFVF_TEX2|D3DFVF_DIFFUSE;
 
@@ -84,7 +89,7 @@ class VertexBufferClass : public W3DMPO, public RefCountClass
 	//W3DMPO_GLUE(VertexBufferClass)
 
 protected:
-	VertexBufferClass(unsigned type, unsigned FVF, unsigned short VertexCount);
+	VertexBufferClass(unsigned type, unsigned FVF, unsigned short VertexCount, unsigned vertex_size=0);
 	virtual ~VertexBufferClass();
 public:
 
@@ -216,13 +221,18 @@ public:
 		USAGE_NPATCHES=4
 	};
 
-	DX8VertexBufferClass(unsigned FVF, unsigned short VertexCount, UsageType usage=USAGE_DEFAULT);
+	DX8VertexBufferClass(unsigned FVF, unsigned short VertexCount, UsageType usage=USAGE_DEFAULT, unsigned vertex_size=0); // Vertex size not used with FVF formats
 	DX8VertexBufferClass(const Vector3* vertices, const Vector3* normals, const Vector2* tex_coords, unsigned short VertexCount,UsageType usage=USAGE_DEFAULT);
 	DX8VertexBufferClass(const Vector3* vertices, const Vector3* normals, const Vector4* diffuse, const Vector2* tex_coords, unsigned short VertexCount,UsageType usage=USAGE_DEFAULT);
 	DX8VertexBufferClass(const Vector3* vertices, const Vector4* diffuse, const Vector2* tex_coords, unsigned short VertexCount,UsageType usage=USAGE_DEFAULT);
 	DX8VertexBufferClass(const Vector3* vertices, const Vector2* tex_coords, unsigned short VertexCount,UsageType usage=USAGE_DEFAULT);
 
+#ifdef _WIN32
 	IDirect3DVertexBuffer8* Get_DX8_Vertex_Buffer() { return VertexBuffer; }
+#else
+	// Phase 27.2.1: OpenGL vertex buffer accessor
+	GLuint Get_GL_Vertex_Buffer() { return GLVertexBuffer; }
+#endif
 
 	void Copy(const Vector3* loc, unsigned first_vertex, unsigned count);
 	void Copy(const Vector3* loc, const Vector2* uv, unsigned first_vertex, unsigned count);
@@ -232,7 +242,13 @@ public:
 	void Copy(const Vector3* loc, const Vector2* uv, const Vector4* diffuse, unsigned first_vertex, unsigned count);
 
 protected:
+#ifdef _WIN32
 	IDirect3DVertexBuffer8*		VertexBuffer;
+#else
+	// Phase 27.2.1: OpenGL vertex buffer object
+	GLuint GLVertexBuffer;
+	void* GLVertexData;  // CPU-side copy for lock/unlock emulation
+#endif
 
 	void Create_Vertex_Buffer(UsageType usage);
 };
