@@ -1062,17 +1062,15 @@ void GameEngine::init()
 	#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
-		if (TheGlobalData->m_buildMapCache)
-		{
-			// just quit, since the map cache has already updated
-			//populateMapListbox(NULL, true, true);
-			m_quitting = TRUE;
-		}
+	if (TheGlobalData->m_buildMapCache)
+	{
+		// just quit, since the map cache has already updated
+		//populateMapListbox(NULL, true, true);
+		m_quitting = TRUE;
+	}
 
-		// load the initial shell screen
-		//TheShell->push( AsciiString("Menus/MainMenu.wnd") );
-
-		// This allows us to run a map from the command line
+	// load the initial shell screen
+	//TheShell->push( AsciiString("Menus/MainMenu.wnd") );		// This allows us to run a map from the command line
 		if (TheGlobalData->m_initialFile.isEmpty() == FALSE)
 		{
 			AsciiString fname = TheGlobalData->m_initialFile;
@@ -1328,17 +1326,8 @@ void GameEngine::execute( void )
 #endif
 
 	// pretty basic for now
-	printf("GameEngine::execute() - About to enter main loop (while !m_quitting)\n");
-	fflush(stdout);
-	int loopCount = 0;
 	while( !m_quitting )
 	{
-		if (loopCount < 3) {
-			printf("GameEngine::execute() - Loop iteration %d\n", loopCount);
-			fflush(stdout);
-		}
-		loopCount++;
-
 		//if (TheGlobalData->m_vTune)
 		{
 #ifdef PERF_TIMERS
