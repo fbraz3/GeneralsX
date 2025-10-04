@@ -37,7 +37,7 @@
 #include <arpa/inet.h>
 #include <sys/select.h>
 #include <unistd.h>
-#include "WWVegas/WW3D2/network.h"  // For WSA function stubs
+#include "network.h"  // For WSA function stubs
 #endif
 
 #include "Common/Registry.h"
