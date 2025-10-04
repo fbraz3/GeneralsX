@@ -65,14 +65,27 @@ View the complete task list with implementation details using the TODO managemen
 
 ### Completion Metrics
 
-| Part | Tasks | Estimated Time | Status |
-|------|-------|----------------|--------|
-| 27.1 - Window Setup | 6 | 3-5 days | ⏳ Not Started |
-| 27.2 - D3D8→OpenGL | 8 | 5-7 days | ⏳ Not Started |
-| 27.3 - W3D Rendering | 8 | 7-10 days | ⏳ Not Started |
-| 27.4 - Particles | 2 | 2-3 days | ⏳ Not Started |
-| 27.5 - Integration | 1 | 1-2 days | ⏳ Not Started |
-| **TOTAL** | **25 tasks** | **18-27 days** | **0% Complete** |
+| Part | Tasks | Completed | Estimated Time | Status |
+|------|-------|-----------|----------------|--------|
+| 27.1 - Window Setup | 6 | 2/6 | 3-5 days | 🔄 **IN PROGRESS** |
+| 27.2 - D3D8→OpenGL | 8 | 0/8 | 5-7 days | ⏳ Not Started |
+| 27.3 - W3D Rendering | 8 | 0/8 | 7-10 days | ⏳ Not Started |
+| 27.4 - Particles | 2 | 0/2 | 2-3 days | ⏳ Not Started |
+| 27.5 - Integration | 1 | 0/1 | 1-2 days | ⏳ Not Started |
+| **TOTAL** | **25 tasks** | **2/25** | **18-27 days** | **8% Complete** |
+
+### Recent Achievements (October 4, 2025)
+
+#### ✅ Task 27.1.1: Framework Selection Complete
+- **Decision**: SDL2 chosen over GLFW
+- **Rationale**: More robust cross-platform support, integrated audio/input handling, better game development ecosystem
+
+#### ✅ Task 27.1.2: SDL2/GLAD Dependencies Complete
+- **SDL2 2.32.10**: Installed via Homebrew (`/usr/local/Cellar/sdl2/2.32.10`)
+- **GLAD OpenGL Loader**: Generated for OpenGL 3.3 Core Profile
+- **Build Integration**: CMakeLists.txt modified to link SDL2::SDL2 and glad (2.0MB static library)
+- **Validation**: ✅ CMake configuration successful, GLAD compilation verified
+- **Git Commit**: aba77114 - "feat(graphics): Add SDL2 and GLAD OpenGL loader to macOS build system"
 
 ---
 
@@ -133,16 +146,24 @@ Xcode Instruments (macOS)
 
 ## Immediate Action Required
 
-**NEXT TASK**: Begin Task 27.1.1 - Evaluate and choose window framework (SDL2 recommended)
+**CURRENT TASK**: Task 27.1.3 - Implement SDL2 window creation in W3DDisplay::Init()
 
-**Decision Point**: SDL2 vs GLFW for windowing system
-- **Recommendation**: SDL2 (better cross-platform support, integrated audio, input handling)
+**Dependencies Met**: ✅ SDL2 installed, ✅ GLAD integrated, ✅ Build system configured
 
-**Estimated Start Date**: October 4, 2025  
-**Target Completion**: November 1, 2025 (Phase 27 complete)
+**Next Implementation**:
+1. Modify `Core/Libraries/Source/WWVegas/WW3D2/W3DDisplay.cpp`
+2. Add SDL2 initialization: `SDL_Init(SDL_INIT_VIDEO)`
+3. Configure OpenGL attributes: version 3.3 Core Profile
+4. Create window: `SDL_CreateWindow()` with OpenGL flags
+5. Create OpenGL context: `SDL_GL_CreateContext()`
+6. Initialize GLAD: `gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)`
+
+**Estimated Time**: 2-4 hours (MEDIUM complexity)
+
+**Target Completion**: October 4, 2025 (same day completion possible)
 
 ---
 
 **Last Updated**: October 4, 2025  
-**Status**: Phase 27.0 - Graphics Implementation Ready to Begin  
-**Next Milestone**: OpenGL window functional (Task 27.1.6)
+**Status**: Phase 27.1 - Window Setup In Progress (2/6 tasks complete)  
+**Next Milestone**: OpenGL window functional with glClear() test (Task 27.1.6)
