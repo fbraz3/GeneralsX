@@ -1871,6 +1871,19 @@ void W3DDisplay::draw( void )
 {
 	//USE_PERF_TIMER(W3DDisplay_draw)
 
+#ifndef _WIN32
+	// Phase 27.1.6: OpenGL rendering test - validate SDL2/OpenGL stack works
+	if (g_SDLWindow && g_GLContext) {
+		glClearColor(0.2f, 0.3f, 0.4f, 1.0f); // Blue-gray background
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		SDL_GL_SwapWindow(g_SDLWindow);
+		
+		// Early return for now - just show the clear color
+		// TODO Phase 27.2: Implement full DirectX->OpenGL rendering pipeline
+		return;
+	}
+#endif
+
 	extern HWND ApplicationHWnd;
 	#ifdef _WIN32
 	if (ApplicationHWnd && ::IsIconic(ApplicationHWnd)) {
