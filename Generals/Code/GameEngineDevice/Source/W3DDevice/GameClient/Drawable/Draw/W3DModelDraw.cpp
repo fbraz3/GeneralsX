@@ -1446,10 +1446,6 @@ static Bool doesStateExist(const ModelConditionVector& v, const ModelConditionFl
 		printf("W3D PROTECTION: Unknown top-level exception in doesStateExist\n");
 		return false;
 	}
-};
-		fflush(stdout);
-		return false;
-	}
 }
 
 //-------------------------------------------------------------------------------------------------
