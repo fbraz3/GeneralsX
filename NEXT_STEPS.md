@@ -67,12 +67,12 @@ View the complete task list with implementation details using the TODO managemen
 
 | Part | Tasks | Completed | Estimated Time | Status |
 |------|-------|-----------|----------------|--------|
-| 27.1 - Window Setup | 6 | 4/6 | 3-5 days | 🔄 **IN PROGRESS** |
+| 27.1 - Window Setup | 6 | **6/6** | 3-5 days | ✅ **COMPLETE** |
 | 27.2 - D3D8→OpenGL | 8 | 0/8 | 5-7 days | ⏳ Not Started |
 | 27.3 - W3D Rendering | 8 | 0/8 | 7-10 days | ⏳ Not Started |
 | 27.4 - Particles | 2 | 0/2 | 2-3 days | ⏳ Not Started |
 | 27.5 - Integration | 1 | 0/1 | 1-2 days | ⏳ Not Started |
-| **TOTAL** | **25 tasks** | **4/25** | **18-27 days** | **16% Complete** |
+| **TOTAL** | **25 tasks** | **6/25** | **18-27 days** | **24% Complete** |
 
 ### Recent Achievements (October 4, 2025)
 
@@ -98,6 +98,18 @@ View the complete task list with implementation details using the TODO managemen
 - **Destructor Code**: SDL_GL_DeleteContext, SDL_DestroyWindow, SDL_Quit
 - **Memory Safety**: Proper resource cleanup with NULL pointer checks
 - **Logging**: Phase 27.1.4 debug messages for shutdown verification
+
+#### ✅ Task 27.1.5: SDL Event Loop Complete
+- **Files Modified**: GeneralsMD/Win32GameEngine.cpp, Generals/Win32GameEngine.cpp
+- **Implementation**: Replaced Windows PeekMessage/GetMessage with SDL_PollEvent()
+- **Event Handling**: 
+  - SDL_QUIT → setQuitting(true)
+  - SDL_WINDOWEVENT_CLOSE → setQuitting(true)
+  - SDL_WINDOWEVENT_FOCUS_GAINED/LOST → setIsActive()
+  - SDL_WINDOWEVENT_MINIMIZED/RESTORED → setIsActive()
+  - Keyboard/mouse events → pass-through to existing input system
+- **Platform Compatibility**: Preserves Windows codepath with #ifdef _WIN32
+- **Compilation**: ✅ Successful ARM64 build
 
 #### ✅ Task 27.1.6: OpenGL Rendering Test Complete
 - **Implementation**: glClearColor + glClear in W3DDisplay::draw()
@@ -165,23 +177,26 @@ Xcode Instruments (macOS)
 
 ## Immediate Action Required
 
-**CURRENT TASK**: Task 27.1.5 - Implement SDL event loop in GameEngine main loop
+**CURRENT STATUS**: ✅ Part 1 (Window Setup) COMPLETE - All 6 tasks finished!
 
-**Completed**: ✅ Tasks 27.1.1, 27.1.2, 27.1.3, 27.1.4, 27.1.6 (4/6 window setup tasks)
+**MILESTONE ACHIEVED**: SDL2 window system with OpenGL 3.3 Core rendering fully operational
 
-**Next Implementation**:
-1. Modify `Core/GameEngine/Source/GameEngine.cpp`
-2. Replace Windows message loop with `SDL_PollEvent()`
-3. Handle events: SDL_QUIT, SDL_WINDOWEVENT, SDL_KEYDOWN/UP, SDL_MOUSEMOTION
-4. Map SDL input events to game input system
-5. Maintain compatibility with existing input handling
+**Completed Components**:
+- ✅ SDL2 framework integration
+- ✅ GLAD OpenGL loader
+- ✅ Window creation and management
+- ✅ Resource cleanup
+- ✅ Event loop (quit, focus, minimize/restore)
+- ✅ OpenGL rendering test (blue-gray clear screen)
 
-**Estimated Time**: 3-5 hours (MEDIUM complexity)
+**NEXT PHASE**: Part 2 - DirectX 8 → OpenGL Translation Layer (8 tasks, 5-7 days)
 
-**Alternative Path**: Begin Part 2 (DirectX→OpenGL Translation) and defer event loop
+**Recommended Starting Point**: Task 27.2.1 - Create OpenGL vertex buffer abstraction
+
+**Alternative**: Can now run the executable to see SDL2 window with blue-gray background!
 
 ---
 
 **Last Updated**: October 4, 2025  
-**Status**: Phase 27.1 - Window Setup In Progress (4/6 tasks complete - 67%)  
+**Status**: Phase 27.1 - Window Setup COMPLETE (6/6 tasks - 100%)  
 **Next Milestone**: OpenGL window functional with glClear() test (Task 27.1.6)
