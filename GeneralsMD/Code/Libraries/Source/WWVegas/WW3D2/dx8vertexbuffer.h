@@ -49,6 +49,10 @@
 #include "refcount.h"
 #include "dx8fvf.h"
 
+#ifndef _WIN32
+#include <glad/glad.h>  // Phase 27.2.1: OpenGL vertex buffer support
+#endif
+
 const unsigned dynamic_fvf_type=D3DFVF_XYZ|D3DFVF_NORMAL|D3DFVF_TEX2|D3DFVF_DIFFUSE;
 
 class DX8Wrapper;
@@ -223,7 +227,12 @@ public:
 	DX8VertexBufferClass(const Vector3* vertices, const Vector4* diffuse, const Vector2* tex_coords, unsigned short VertexCount,UsageType usage=USAGE_DEFAULT);
 	DX8VertexBufferClass(const Vector3* vertices, const Vector2* tex_coords, unsigned short VertexCount,UsageType usage=USAGE_DEFAULT);
 
+#ifdef _WIN32
 	IDirect3DVertexBuffer8* Get_DX8_Vertex_Buffer() { return VertexBuffer; }
+#else
+	// Phase 27.2.1: OpenGL vertex buffer accessor
+	GLuint Get_GL_Vertex_Buffer() { return GLVertexBuffer; }
+#endif
 
 	void Copy(const Vector3* loc, unsigned first_vertex, unsigned count);
 	void Copy(const Vector3* loc, const Vector2* uv, unsigned first_vertex, unsigned count);
@@ -233,7 +242,13 @@ public:
 	void Copy(const Vector3* loc, const Vector2* uv, const Vector4* diffuse, unsigned first_vertex, unsigned count);
 
 protected:
+#ifdef _WIN32
 	IDirect3DVertexBuffer8*		VertexBuffer;
+#else
+	// Phase 27.2.1: OpenGL vertex buffer object
+	GLuint GLVertexBuffer;
+	void* GLVertexData;  // CPU-side copy for lock/unlock emulation
+#endif
 
 	void Create_Vertex_Buffer(UsageType usage);
 };
