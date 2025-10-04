@@ -2,13 +2,44 @@
 
 **Project Name**: 🎯 **GeneralsX** (formerly Command & Conquer: Generals)
 
-**Port Status**: 🎉 **Phase 25.0 – Zero Hour Successfully Executes on macOS** 🎯
+**Port Status**: 🎉 **Phase 25.1 – Asset Directory Standardization + Compilation Verification** 🎯
 
 **Date**: October 3, 2025
 
-**Status**: 🚀 **MAJOR BREAKTHROUGH MAINTAINED** – Zero Hour executes end-to-end on macOS ARM64 with clean shutdown (exit code 0). Focus shifts to implementing actual OpenGL window + input (replacing stubs) while preserving the stable runtime achieved.
+**Status**: 🚀 **INFRASTRUCTURE IMPROVEMENT** – Standardized asset directories for both games ($HOME/GeneralsX/{Generals,GeneralsMD}). Verifying executable generation with correct names (GeneralsX/GeneralsXZH) and testing full workflow end-to-end.
 
-## Latest Update (October 3, 2025 - Session 2)
+## Latest Update (October 3, 2025 - Session 3)
+
+**🔧 ASSET DIRECTORY STANDARDIZATION + COMPILATION VERIFICATION**
+
+Progress achieved this session:
+- ✅ **Asset directories standardized** across documentation
+  - `$HOME/GeneralsX/Generals/` → Command & Conquer Generals (base game)
+  - `$HOME/GeneralsX/GeneralsMD/` → Zero Hour expansion
+- ✅ **Executable naming standardized** throughout project:
+  - GeneralsX (base game) - formerly g_generals
+  - GeneralsXZH (Zero Hour) - formerly z_generals  
+- ✅ **PeerThread.cpp include path fixed**: Changed `WWVegas/WW3D2/network.h` → `network.h`
+- 🔄 **Active compilations** for verification:
+  - GeneralsXZH (Zero Hour): In progress (21+ files compiled)
+  - GeneralsX (Generals): In progress (4+ files compiled)
+
+**Current Status:**
+- **Zero Hour (GeneralsXZH)**: ✅ Previously compiled + ✅ Runtime functional → 🔄 Recompiling after include fix
+- **Generals (GeneralsX)**: ✅ Previously compiled → 🔄 Recompiling for verification
+
+**Technical Implementation:**
+- Documentation updates: 6 markdown files updated with new asset directory structure
+- Include path correction in GameSpy networking thread code
+- Parallel compilation testing to verify both executables generate correctly
+
+**Next Steps:**
+- Complete compilation verification for both executables
+- Deploy executables to standardized asset directories
+- Run GeneralsX with base game assets to validate full workflow
+- Document any runtime issues discovered
+
+## Previous Update (October 3, 2025 - Session 2)
 
 **🎉 GENERALS BASE GAME COMPILATION SUCCESS!**
 
