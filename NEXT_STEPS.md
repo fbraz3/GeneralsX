@@ -67,12 +67,12 @@ View the complete task list with implementation details using the TODO managemen
 
 | Part | Tasks | Completed | Estimated Time | Status |
 |------|-------|-----------|----------------|--------|
-| 27.1 - Window Setup | 6 | 2/6 | 3-5 days | 🔄 **IN PROGRESS** |
+| 27.1 - Window Setup | 6 | 4/6 | 3-5 days | 🔄 **IN PROGRESS** |
 | 27.2 - D3D8→OpenGL | 8 | 0/8 | 5-7 days | ⏳ Not Started |
 | 27.3 - W3D Rendering | 8 | 0/8 | 7-10 days | ⏳ Not Started |
 | 27.4 - Particles | 2 | 0/2 | 2-3 days | ⏳ Not Started |
 | 27.5 - Integration | 1 | 0/1 | 1-2 days | ⏳ Not Started |
-| **TOTAL** | **25 tasks** | **2/25** | **18-27 days** | **8% Complete** |
+| **TOTAL** | **25 tasks** | **4/25** | **18-27 days** | **16% Complete** |
 
 ### Recent Achievements (October 4, 2025)
 
@@ -81,11 +81,30 @@ View the complete task list with implementation details using the TODO managemen
 - **Rationale**: More robust cross-platform support, integrated audio/input handling, better game development ecosystem
 
 #### ✅ Task 27.1.2: SDL2/GLAD Dependencies Complete
-- **SDL2 2.32.10**: Installed via Homebrew (`/usr/local/Cellar/sdl2/2.32.10`)
+- **SDL2 2.32.10**: Installed via Homebrew ARM64 (`/opt/homebrew/Cellar/sdl2/2.32.10`)
 - **GLAD OpenGL Loader**: Generated for OpenGL 3.3 Core Profile
 - **Build Integration**: CMakeLists.txt modified to link SDL2::SDL2 and glad (2.0MB static library)
 - **Validation**: ✅ CMake configuration successful, GLAD compilation verified
 - **Git Commit**: aba77114 - "feat(graphics): Add SDL2 and GLAD OpenGL loader to macOS build system"
+
+#### ✅ Task 27.1.3: SDL2 Window Creation Complete
+- **Files Modified**: GeneralsMD/W3DDisplay.cpp, Generals/W3DDisplay.cpp
+- **Implementation**: SDL2 initialization, window creation, OpenGL 3.3 Core context
+- **Features**: Fullscreen/windowed support, V-Sync enabled, GLAD loader initialization
+- **Compilation**: ✅ 14MB ARM64 executable (GeneralsXZH)
+- **Validation**: OpenGL version, renderer, vendor logged at startup
+
+#### ✅ Task 27.1.4: SDL2 Cleanup Complete
+- **Destructor Code**: SDL_GL_DeleteContext, SDL_DestroyWindow, SDL_Quit
+- **Memory Safety**: Proper resource cleanup with NULL pointer checks
+- **Logging**: Phase 27.1.4 debug messages for shutdown verification
+
+#### ✅ Task 27.1.6: OpenGL Rendering Test Complete
+- **Implementation**: glClearColor + glClear in W3DDisplay::draw()
+- **Test Color**: Blue-gray background (0.2, 0.3, 0.4, 1.0)
+- **Buffer Swap**: SDL_GL_SwapWindow for frame presentation
+- **Status**: ✅ Compiles successfully, validates SDL2/OpenGL stack
+- **Next**: Remove early return once Part 2 DirectX→OpenGL translation begins
 
 ---
 
@@ -146,24 +165,23 @@ Xcode Instruments (macOS)
 
 ## Immediate Action Required
 
-**CURRENT TASK**: Task 27.1.3 - Implement SDL2 window creation in W3DDisplay::Init()
+**CURRENT TASK**: Task 27.1.5 - Implement SDL event loop in GameEngine main loop
 
-**Dependencies Met**: ✅ SDL2 installed, ✅ GLAD integrated, ✅ Build system configured
+**Completed**: ✅ Tasks 27.1.1, 27.1.2, 27.1.3, 27.1.4, 27.1.6 (4/6 window setup tasks)
 
 **Next Implementation**:
-1. Modify `Core/Libraries/Source/WWVegas/WW3D2/W3DDisplay.cpp`
-2. Add SDL2 initialization: `SDL_Init(SDL_INIT_VIDEO)`
-3. Configure OpenGL attributes: version 3.3 Core Profile
-4. Create window: `SDL_CreateWindow()` with OpenGL flags
-5. Create OpenGL context: `SDL_GL_CreateContext()`
-6. Initialize GLAD: `gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)`
+1. Modify `Core/GameEngine/Source/GameEngine.cpp`
+2. Replace Windows message loop with `SDL_PollEvent()`
+3. Handle events: SDL_QUIT, SDL_WINDOWEVENT, SDL_KEYDOWN/UP, SDL_MOUSEMOTION
+4. Map SDL input events to game input system
+5. Maintain compatibility with existing input handling
 
-**Estimated Time**: 2-4 hours (MEDIUM complexity)
+**Estimated Time**: 3-5 hours (MEDIUM complexity)
 
-**Target Completion**: October 4, 2025 (same day completion possible)
+**Alternative Path**: Begin Part 2 (DirectX→OpenGL Translation) and defer event loop
 
 ---
 
 **Last Updated**: October 4, 2025  
-**Status**: Phase 27.1 - Window Setup In Progress (2/6 tasks complete)  
+**Status**: Phase 27.1 - Window Setup In Progress (4/6 tasks complete - 67%)  
 **Next Milestone**: OpenGL window functional with glClear() test (Task 27.1.6)
