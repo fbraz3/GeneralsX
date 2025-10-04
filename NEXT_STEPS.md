@@ -122,6 +122,10 @@ View the complete task list with implementation details using the TODO managemen
 
 ## Next Steps After Phase 27
 
+**NOTE**: Part 1 (Window Setup) testing revealed that the executable requires full DirectX→OpenGL translation to run properly. The early return in `draw()` has been restored to allow isolated SDL2/OpenGL validation until Part 2 is complete.
+
+**Testing Strategy**: Window rendering test will be re-enabled after Part 2 DirectX→OpenGL translation layer is implemented. For now, Part 1 serves as isolated validation that SDL2/OpenGL initialization works correctly.
+
 ### Phase 28: Input System (1-2 weeks)
 - Keyboard input handling
 - Mouse input and camera control
@@ -199,4 +203,5 @@ Xcode Instruments (macOS)
 
 **Last Updated**: October 4, 2025  
 **Status**: Phase 27.1 - Window Setup COMPLETE (6/6 tasks - 100%)  
-**Next Milestone**: OpenGL window functional with glClear() test (Task 27.1.6)
+**Current State**: Early return restored in draw() for isolated SDL2/OpenGL testing  
+**Next Milestone**: Begin Part 2 - DirectX→OpenGL Translation Layer (Task 27.2.1)
