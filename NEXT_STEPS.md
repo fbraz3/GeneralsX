@@ -70,11 +70,11 @@ View the complete task list with implementation details using the TODO managemen
 | Part | Tasks | Completed | Estimated Time | Status |
 |------|-------|-----------|----------------|--------|
 | 27.1 - Window Setup | 6 | **6/6** | 3-5 days | ✅ **COMPLETE** |
-| 27.2 - D3D8→OpenGL | 8 | 0/8 | 5-7 days | ⏳ Not Started |
+| 27.2 - D3D8→OpenGL | 8 | **1/8** | 5-7 days | 🔄 **IN PROGRESS** |
 | 27.3 - W3D Rendering | 8 | 0/8 | 7-10 days | ⏳ Not Started |
 | 27.4 - Particles | 2 | 0/2 | 2-3 days | ⏳ Not Started |
 | 27.5 - Integration | 1 | 0/1 | 1-2 days | ⏳ Not Started |
-| **TOTAL** | **25 tasks** | **6/25** | **18-27 days** | **24% Complete** |
+| **TOTAL** | **25 tasks** | **7/25** | **18-27 days** | **28% Complete** |
 
 ### Recent Achievements (October 4, 2025)
 
@@ -120,19 +120,23 @@ View the complete task list with implementation details using the TODO managemen
 - **Status**: ✅ Compiles successfully, validates SDL2/OpenGL stack
 - **Next**: Remove early return once Part 2 DirectX→OpenGL translation begins
 
-#### 🔄 Task 27.2.1: OpenGL Vertex Buffer Abstraction (In Progress - 70%)
-- **Files Modified**: GeneralsMD/dx8vertexbuffer.h, GeneralsMD/dx8vertexbuffer.cpp
+#### ✅ Task 27.2.1: OpenGL Vertex Buffer Abstraction Complete (100%)
+- **Files Modified**: 
+  - GeneralsMD/dx8vertexbuffer.h
+  - GeneralsMD/dx8vertexbuffer.cpp
+  - Generals/dx8vertexbuffer.h
+  - Generals/dx8vertexbuffer.cpp
 - **Implementation**:
   - ✅ Added GLuint GLVertexBuffer and void* GLVertexData members
   - ✅ Implemented Create_Vertex_Buffer() with glGenBuffers/glBufferData
   - ✅ Added destructor cleanup with glDeleteBuffers
   - ✅ Implemented WriteLockClass Lock/Unlock with CPU-side emulation
-  - ⏳ TODO: Complete AppendLockClass OpenGL implementation
-  - ⏳ TODO: Apply changes to Generals base game
+  - ✅ Implemented AppendLockClass Lock/Unlock with offset calculations
+  - ✅ Applied to both GeneralsMD (Zero Hour) and Generals (base game)
 - **OpenGL APIs Used**: glGenBuffers, glBindBuffer, glBufferData, glBufferSubData, glDeleteBuffers
 - **Design Pattern**: CPU-side buffer (GLVertexData) emulates DirectX Lock/Unlock behavior
-- **Compilation**: ✅ Successful (14MB ARM64 executable)
-- **Git Commit**: 91fd5db0
+- **Compilation**: ✅ Both targets successful (14MB ARM64 executables)
+- **Git Commit**: eb1268a3
 
 ---
 
@@ -197,28 +201,24 @@ Xcode Instruments (macOS)
 
 ## Immediate Action Required
 
-**CURRENT STATUS**: ✅ Part 1 (Window Setup) COMPLETE - All 6 tasks finished!
+**CURRENT STATUS**: ✅ Task 27.2.1 COMPLETE - OpenGL Vertex Buffer Abstraction finished!
 
-**MILESTONE ACHIEVED**: SDL2 window system with OpenGL 3.3 Core rendering fully operational
+**MILESTONE ACHIEVED**: DirectX8 vertex buffers now fully abstracted to OpenGL VBOs
 
 **Completed Components**:
-- ✅ SDL2 framework integration
-- ✅ GLAD OpenGL loader
-- ✅ Window creation and management
-- ✅ Resource cleanup
-- ✅ Event loop (quit, focus, minimize/restore)
-- ✅ OpenGL rendering test (blue-gray clear screen)
+- ✅ VBO creation with glGenBuffers/glBufferData
+- ✅ CPU-side buffer for Lock/Unlock emulation
+- ✅ WriteLockClass full buffer access
+- ✅ AppendLockClass partial buffer access with offsets
+- ✅ Proper cleanup with glDeleteBuffers
+- ✅ Applied to both Zero Hour and Generals targets
 
-**NEXT PHASE**: Part 2 - DirectX 8 → OpenGL Translation Layer (8 tasks, 5-7 days)
-
-**Recommended Starting Point**: Task 27.2.1 - Create OpenGL vertex buffer abstraction
-
-**Alternative**: Can now run the executable to see SDL2 window with blue-gray background!
+**NEXT TASK**: Task 27.2.2 - Create OpenGL index buffer abstraction (3-4 hours, MEDIUM complexity)
 
 ---
 
 **Last Updated**: October 4, 2025  
 **Status**: Phase 27.2 - DirectX→OpenGL Translation Layer IN PROGRESS  
-**Current Task**: Task 27.2.1 - OpenGL Vertex Buffer Abstraction (70% complete)  
-**Current State**: VBO creation, destruction, and WriteLockClass implemented  
-**Next Steps**: Complete AppendLockClass, apply to Generals base, continue with IndexBuffer (Task 27.2.2)
+**Current Task**: Task 27.2.2 - OpenGL Index Buffer Abstraction (next)  
+**Completed**: 7/25 tasks (28% complete)  
+**Previous Success**: Task 27.2.1 - Vertex Buffer Abstraction (100% complete, both targets compile)
