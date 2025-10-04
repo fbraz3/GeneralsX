@@ -45,7 +45,7 @@
 
 **Total Tasks**: 25 detailed implementation tasks organized in 5 parts
 
-**Current Progress**: 6/25 tasks complete (24%) + Task 27.2.1 in progress (70% complete)
+**Current Progress**: 8/25 tasks complete (32%) - Tasks 27.2.1 and 27.2.2 just completed
 
 ---
 
@@ -70,11 +70,11 @@ View the complete task list with implementation details using the TODO managemen
 | Part | Tasks | Completed | Estimated Time | Status |
 |------|-------|-----------|----------------|--------|
 | 27.1 - Window Setup | 6 | **6/6** | 3-5 days | ✅ **COMPLETE** |
-| 27.2 - D3D8→OpenGL | 8 | **1/8** | 5-7 days | 🔄 **IN PROGRESS** |
+| 27.2 - D3D8→OpenGL | 8 | **2/8** | 5-7 days | 🔄 **IN PROGRESS** |
 | 27.3 - W3D Rendering | 8 | 0/8 | 7-10 days | ⏳ Not Started |
 | 27.4 - Particles | 2 | 0/2 | 2-3 days | ⏳ Not Started |
 | 27.5 - Integration | 1 | 0/1 | 1-2 days | ⏳ Not Started |
-| **TOTAL** | **25 tasks** | **7/25** | **18-27 days** | **28% Complete** |
+| **TOTAL** | **25 tasks** | **8/25** | **18-27 days** | **32% Complete** |
 
 ### Recent Achievements (October 4, 2025)
 
@@ -122,21 +122,46 @@ View the complete task list with implementation details using the TODO managemen
 
 #### ✅ Task 27.2.1: OpenGL Vertex Buffer Abstraction Complete (100%)
 - **Files Modified**: 
-  - GeneralsMD/dx8vertexbuffer.h
-  - GeneralsMD/dx8vertexbuffer.cpp
-  - Generals/dx8vertexbuffer.h
-  - Generals/dx8vertexbuffer.cpp
+  - GeneralsMD/dx8vertexbuffer.h/cpp, dx8wrapper.cpp
+  - Generals/dx8vertexbuffer.h/cpp, dx8wrapper.cpp
 - **Implementation**:
   - ✅ Added GLuint GLVertexBuffer and void* GLVertexData members
   - ✅ Implemented Create_Vertex_Buffer() with glGenBuffers/glBufferData
   - ✅ Added destructor cleanup with glDeleteBuffers
   - ✅ Implemented WriteLockClass Lock/Unlock with CPU-side emulation
   - ✅ Implemented AppendLockClass Lock/Unlock with offset calculations
+  - ✅ **DynamicVBAccessClass OpenGL support** - dynamic vertex buffers with offset-based locking
+  - ✅ Fixed 4 switch statement scoping errors (added {} blocks around variable declarations)
+  - ✅ Made GLVertexData public for external lock class access
+  - ✅ Fixed type cast (VertexFormatXYZNDUV2* conversion)
+  - ✅ Fixed FVFInfoClass constructor call (Generals uses single-parameter constructor)
   - ✅ Applied to both GeneralsMD (Zero Hour) and Generals (base game)
 - **OpenGL APIs Used**: glGenBuffers, glBindBuffer, glBufferData, glBufferSubData, glDeleteBuffers
 - **Design Pattern**: CPU-side buffer (GLVertexData) emulates DirectX Lock/Unlock behavior
 - **Compilation**: ✅ Both targets successful (14MB ARM64 executables)
-- **Git Commit**: eb1268a3
+- **Git Commit**: be6202c0 - "feat(graphics): complete Tasks 27.2.1 and 27.2.2"
+
+#### ✅ Task 27.2.2: OpenGL Index Buffer Abstraction Complete (100%)
+- **Files Modified**:
+  - GeneralsMD/dx8indexbuffer.h/cpp, dx8wrapper.cpp
+  - Generals/dx8indexbuffer.h/cpp, dx8wrapper.cpp
+- **Implementation**:
+  - ✅ Added GLuint GLIndexBuffer and void* GLIndexData members
+  - ✅ Implemented Create_Index_Buffer() with glGenBuffers/glBufferData(GL_ELEMENT_ARRAY_BUFFER)
+  - ✅ Added destructor cleanup with glDeleteBuffers
+  - ✅ Implemented WriteLockClass Lock/Unlock with CPU-side emulation
+  - ✅ Implemented AppendLockClass Lock/Unlock with offset calculations
+  - ✅ **DynamicIBAccessClass OpenGL support** - dynamic index buffers with offset-based locking
+  - ✅ Fixed 4 switch statement scoping errors (added {} blocks around variable declarations)
+  - ✅ Made GLIndexData public for external lock class access
+  - ✅ Added stub Get_DX8_Vertex_Buffer/Get_DX8_Index_Buffer for legacy code compatibility
+  - ✅ **Cross-platform Protection**: Added #ifdef _WIN32 guards to DirectX8-only code paths
+    - Protected Draw_Sorting_IB_VB function (DirectX8-only sorting buffer wrapper)
+    - Protected SetStreamSource/SetIndices calls in render state application
+- **OpenGL APIs Used**: glGenBuffers, glBindBuffer(GL_ELEMENT_ARRAY_BUFFER), glBufferData, glBufferSubData, glDeleteBuffers
+- **Design Pattern**: Dual-backend with CPU-side emulation (GLIndexData) and GPU buffer (GLIndexBuffer)
+- **Impact**: Resolved 19 of 23 compilation errors (83%) - remaining 4 errors unrelated to buffer tasks
+- **Git Commit**: be6202c0 - "feat(graphics): complete Tasks 27.2.1 and 27.2.2"
 
 ---
 
