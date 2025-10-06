@@ -31,6 +31,11 @@
 // W3DShroud implementation is Win32/DirectX specific
 // TODO: Implement cross-platform shroud rendering
 
+#ifndef _WIN32
+#include <glad/glad.h>  // CRITICAL: GLAD must be included FIRST to avoid OpenGL header conflicts
+#endif
+
+
 #include "Lib/BaseType.h"
 #include "camera.h"
 #include "simplevec.h"

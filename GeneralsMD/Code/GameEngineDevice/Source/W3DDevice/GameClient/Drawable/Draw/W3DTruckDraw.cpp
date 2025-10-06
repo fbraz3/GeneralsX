@@ -26,6 +26,11 @@
 // Draw Trucks.  Actually, this draws rocket buggies.
 // Author: John Ahlquist, March 2002
 
+#ifndef _WIN32
+#include <glad/glad.h>  // CRITICAL: GLAD must be included FIRST to avoid OpenGL header conflicts
+#endif
+
+
 #include <stdlib.h>
 #include <math.h>
 

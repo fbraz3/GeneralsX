@@ -27,6 +27,11 @@
 // Desc:    Display string Manager for W3D
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+#ifndef _WIN32
+#include <glad/glad.h>  // CRITICAL: GLAD must be included FIRST to avoid OpenGL header conflicts
+#endif
+
+
 #include <stdlib.h>
 
 #include "Common/Debug.h"

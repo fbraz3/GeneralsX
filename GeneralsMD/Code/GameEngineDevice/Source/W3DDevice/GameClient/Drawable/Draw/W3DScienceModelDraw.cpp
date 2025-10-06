@@ -27,6 +27,11 @@
 // Desc: Draw module just like Model, except it only draws if the local player has the specified science
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+#ifndef _WIN32
+#include <glad/glad.h>  // CRITICAL: GLAD must be included FIRST to avoid OpenGL header conflicts
+#endif
+
+
 #include "W3DDevice/GameClient/Module/W3DScienceModelDraw.h"
 
 #include "Common/Player.h"

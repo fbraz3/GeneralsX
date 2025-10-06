@@ -28,6 +28,11 @@
 
 #define INSTANTIATE_WELL_KNOWN_KEYS
 
+#ifndef _WIN32
+#include <glad/glad.h>  // CRITICAL: GLAD must be included FIRST to avoid OpenGL header conflicts
+#endif
+
+
 #include "windows.h"
 #include "stdlib.h"
 #include <string.h>

@@ -25,6 +25,11 @@
 // W3DDynamicLight.cpp
 // Class to handle dynamic lights.
 // Author: John Ahlquist, April 2001
+#ifndef _WIN32
+#include <glad/glad.h>  // CRITICAL: GLAD must be included FIRST to avoid OpenGL header conflicts
+#endif
+
+
 #include <stdlib.h>
 
 #include "W3DDevice/GameClient/W3DDynamicLight.h"
