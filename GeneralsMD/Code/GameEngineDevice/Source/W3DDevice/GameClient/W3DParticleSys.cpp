@@ -1,3 +1,8 @@
+// Phase 27.2 OpenGL compatibility - GLAD must be included first
+#ifndef _WIN32
+#include <glad/glad.h>
+#endif
+
 /*
 **	Command & Conquer Generals Zero Hour(tm)
 **	Copyright 2025 Electronic Arts Inc.

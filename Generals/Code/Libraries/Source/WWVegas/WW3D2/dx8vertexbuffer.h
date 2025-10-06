@@ -44,14 +44,15 @@
 #ifndef DX8VERTEXBUFFER_H
 #define DX8VERTEXBUFFER_H
 
+// Phase 27.2.1: CRITICAL - GLAD must be included FIRST before any header that might include OpenGL
+#ifndef _WIN32
+#include <glad/glad.h>
+#endif
+
 #include "always.h"
 #include "wwdebug.h"
 #include "refcount.h"
 #include "dx8fvf.h"
-
-#ifndef _WIN32
-#include <glad/glad.h>  // Phase 27.2.1: OpenGL vertex buffer support
-#endif
 
 const unsigned dynamic_fvf_type=D3DFVF_XYZ|D3DFVF_NORMAL|D3DFVF_TEX2|D3DFVF_DIFFUSE;
 
@@ -232,8 +233,8 @@ public:
 #else
 	// Phase 27.2.1: OpenGL vertex buffer accessor
 	GLuint Get_GL_Vertex_Buffer() { return GLVertexBuffer; }
-	// Stub for legacy DirectX8-only code paths (never called in OpenGL rendering)
-	void* Get_DX8_Vertex_Buffer() { WWASSERT(0 && "Get_DX8_Vertex_Buffer called in OpenGL build"); return nullptr; }
+	// Stub for legacy DirectX8-only code paths (returns nullptr, type compatible for comparisons)
+	IDirect3DVertexBuffer8* Get_DX8_Vertex_Buffer() { return nullptr; }
 #endif
 
 	void Copy(const Vector3* loc, unsigned first_vertex, unsigned count);

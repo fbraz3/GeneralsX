@@ -1325,6 +1325,9 @@ void GameEngine::execute( void )
 	DWORD startTime = timeGetTime() / 1000;
 #endif
 
+	// Debug counter for limiting startup logs (Phase 27.2 debugging)
+	int loopCount = 0;
+
 	// pretty basic for now
 	while( !m_quitting )
 	{
@@ -1443,6 +1446,8 @@ void GameEngine::execute( void )
 		}
 #endif
 
+		// Increment loop counter for debug logging (Phase 27.2 debugging)
+		loopCount++;
 	}
 
 	delete frameRateLimit;

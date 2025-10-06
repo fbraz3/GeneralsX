@@ -41,8 +41,8 @@ static void drawFramerateBar(void);
 
 // Phase 27.1.3: SDL2 and OpenGL support for cross-platform graphics
 #ifndef _WIN32
+#include <glad/glad.h>  // CRITICAL: GLAD must be included BEFORE SDL2 to avoid OpenGL header conflicts
 #include <SDL2/SDL.h>
-#include <glad/glad.h>
 
 // SDL2 global variables for window and OpenGL context management
 static SDL_Window* g_SDLWindow = nullptr;

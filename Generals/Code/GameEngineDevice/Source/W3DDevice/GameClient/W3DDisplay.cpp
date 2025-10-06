@@ -41,8 +41,8 @@ static void drawFramerateBar(void);
 
 // Phase 27.1.3: SDL2 and OpenGL support for cross-platform graphics
 #ifndef _WIN32
+#include <glad/glad.h>  // CRITICAL: GLAD must be included BEFORE SDL2 to avoid OpenGL header conflicts
 #include <SDL2/SDL.h>
-#include <glad/glad.h>
 
 // SDL2 global variables for window and OpenGL context management
 static SDL_Window* g_SDLWindow = nullptr;
@@ -763,16 +763,22 @@ void W3DDisplay::init( void )
 		// Enable V-Sync (1 = enabled, 0 = disabled, -1 = adaptive)
 		SDL_GL_SetSwapInterval(1);
 		
+#ifdef _WIN32
 		// Set ApplicationHWnd to SDL window for compatibility with existing code
 		ApplicationHWnd = (HWND)g_SDLWindow;
+#endif
 		
 		printf("Phase 27.1.3: SDL2 window created (%dx%d, %s)\n", 
 			windowWidth, windowHeight, 
 			TheGlobalData->m_windowed ? "windowed" : "fullscreen");
 		
+#ifdef _WIN32
 		if (WW3D::Init( ApplicationHWnd ) != WW3D_ERROR_OK)
 			throw ERROR_INVALID_D3D;	//failed to initialize graphics
 #else
+		// Phase 27.1.3: OpenGL - skip DirectX initialization
+		printf("Phase 27.1.3: Skipping WW3D::Init() in OpenGL build\n");
+#endif
 		if (WW3D::Init( ApplicationHWnd ) != WW3D_ERROR_OK)
 			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
 #endif

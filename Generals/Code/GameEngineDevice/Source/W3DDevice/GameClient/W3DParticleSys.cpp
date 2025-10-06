@@ -1,5 +1,10 @@
+// Phase 27.2 OpenGL compatibility - GLAD must be included first
+#ifndef _WIN32
+#include <glad/glad.h>
+#endif
+
 /*
-**	Command & Conquer Generals(tm)
+**	Command & Conquer Generals
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -25,6 +30,11 @@
 // W3DParticleSys.cpp
 // W3D Particle System implementation
 // Author: Michael S. Booth, November 2001
+
+#ifndef _WIN32
+#include <glad/glad.h>  // CRITICAL: GLAD must be included FIRST to avoid OpenGL header conflicts
+#endif
+
 
 #include "GameClient/Color.h"
 #include "W3DDevice/GameClient/W3DParticleSys.h"
