@@ -2510,6 +2510,116 @@ void DX8Wrapper::Apply_Render_State_Changes()
 	SNAPSHOT_SAY(("DX8Wrapper::Apply_Render_State_Changes() - finished"));
 }
 
+// Phase 27.2.3: OpenGL texture creation helper function
+#ifndef _WIN32
+/*!
+ * Create an OpenGL texture with specified dimensions and format
+ * Returns GLuint texture ID (0 on failure)
+ */
+unsigned int DX8Wrapper::_Create_GL_Texture
+(
+	unsigned int width,
+	unsigned int height,
+	WW3DFormat format,
+	MipCountType mip_level_count,
+	bool rendertarget
+)
+{
+	GLuint gl_texture = 0;
+	
+	// Generate OpenGL texture
+	glGenTextures(1, &gl_texture);
+	if (gl_texture == 0) {
+		printf("Phase 27.2.3 ERROR: glGenTextures failed!\n");
+		return 0;
+	}
+	
+	// Bind texture for configuration
+	glBindTexture(GL_TEXTURE_2D, gl_texture);
+	
+	// Set texture filtering
+	if (mip_level_count > MIP_LEVELS_1) {
+		// Mipmaps enabled - use trilinear filtering
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	} else {
+		// No mipmaps - use bilinear filtering
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
+	
+	// Set wrapping mode (default to repeat)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	
+	// Convert WW3DFormat to OpenGL format
+	GLenum gl_internal_format = GL_RGBA8;
+	GLenum gl_format = GL_RGBA;
+	GLenum gl_type = GL_UNSIGNED_BYTE;
+	
+	switch (format) {
+		case WW3D_FORMAT_A8R8G8B8:
+		case WW3D_FORMAT_X8R8G8B8:
+			gl_internal_format = GL_RGBA8;
+			gl_format = GL_BGRA;  // DirectX uses BGRA order
+			gl_type = GL_UNSIGNED_BYTE;
+			break;
+		case WW3D_FORMAT_R8G8B8:
+			gl_internal_format = GL_RGB8;
+			gl_format = GL_RGB;
+			gl_type = GL_UNSIGNED_BYTE;
+			break;
+		case WW3D_FORMAT_A1R5G5B5:
+			gl_internal_format = GL_RGB5_A1;
+			gl_format = GL_BGRA;
+			gl_type = GL_UNSIGNED_SHORT_1_5_5_5_REV;
+			break;
+		case WW3D_FORMAT_R5G6B5:
+			gl_internal_format = GL_RGB565;
+			gl_format = GL_RGB;
+			gl_type = GL_UNSIGNED_SHORT_5_6_5;
+			break;
+		case WW3D_FORMAT_DXT1:
+			gl_internal_format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+			break;
+		case WW3D_FORMAT_DXT3:
+			gl_internal_format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+			break;
+		case WW3D_FORMAT_DXT5:
+			gl_internal_format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+			break;
+		default:
+			printf("Phase 27.2.3 WARNING: Unsupported texture format %d, using RGBA8\n", format);
+			gl_internal_format = GL_RGBA8;
+			gl_format = GL_RGBA;
+			gl_type = GL_UNSIGNED_BYTE;
+			break;
+	}
+	
+	// Allocate texture storage (no data yet, will be filled later via Lock/Unlock or Load)
+	// For compressed formats, we'll use glCompressedTexImage2D later when we have data
+	if (format != WW3D_FORMAT_DXT1 && format != WW3D_FORMAT_DXT3 && format != WW3D_FORMAT_DXT5) {
+		glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type, NULL);
+	}
+	
+	// Check for errors
+	GLenum error = glGetError();
+	if (error != GL_NO_ERROR) {
+		printf("Phase 27.2.3 ERROR: glTexImage2D failed with error 0x%x\n", error);
+		glDeleteTextures(1, &gl_texture);
+		return 0;
+	}
+	
+	printf("Phase 27.2.3: Created OpenGL texture %u (%dx%d, format %d, mips %d)\n", 
+		gl_texture, width, height, format, mip_level_count);
+	
+	// Unbind texture
+	glBindTexture(GL_TEXTURE_2D, 0);
+	
+	return gl_texture;
+}
+#endif // _WIN32
+
 IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
 (
 	unsigned int width,

@@ -232,6 +232,11 @@ protected:
 	int Width;
 	int Height;
 
+	// Phase 27.2.3: OpenGL texture object (cross-platform)
+#ifndef _WIN32
+	unsigned int GLTexture;  // GLuint for OpenGL texture ID - must be protected for derived class access
+#endif
+
 private:
 
 	// Direct3D texture object

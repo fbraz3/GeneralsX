@@ -406,6 +406,18 @@ public:
 	static IDirect3DTexture8 * _Create_DX8_Texture(const char *filename, MipCountType mip_level_count);
 	static IDirect3DTexture8 * _Create_DX8_Texture(IDirect3DSurface8 *surface, MipCountType mip_level_count);
 
+	// Phase 27.2.3: OpenGL texture creation
+#ifndef _WIN32
+	static unsigned int _Create_GL_Texture
+	(
+		unsigned int width,
+		unsigned int height,
+		WW3DFormat format,
+		MipCountType mip_level_count,
+		bool rendertarget=false
+	);
+#endif
+
 	static IDirect3DSurface8 * _Create_DX8_Surface(unsigned int width, unsigned int height, WW3DFormat format);
 	static IDirect3DSurface8 * _Create_DX8_Surface(const char *filename);
 	static IDirect3DSurface8 * _Get_DX8_Front_Buffer();
