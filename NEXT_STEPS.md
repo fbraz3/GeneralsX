@@ -1,9 +1,9 @@
 # GeneralsX - Graphics Implementation Roadmap
 
 **Project**: GeneralsX (Command & Conquer: Generals Zero Hour macOS Port)  
-**Last Updated**: October 4, 2025  
+**Last Updated**: October 6, 2025  
 **Current Phase**: Phase 27 - Graphics Engine Implementation  
-**Status**: Ready to begin OpenGL integration
+**Status**: Compilation errors resolved - both targets build successfully
 
 ---
 
@@ -163,6 +163,28 @@ View the complete task list with implementation details using the TODO managemen
 - **Impact**: Resolved 19 of 23 compilation errors (83%) - remaining 4 errors unrelated to buffer tasks
 - **Git Commit**: be6202c0 - "feat(graphics): complete Tasks 27.2.1 and 27.2.2"
 
+#### ✅ Compilation Error Resolution Complete (October 6, 2025)
+- **Errors Fixed**: 23 compilation errors resolved across both targets
+- **OpenGL Header Conflicts**:
+  - ✅ Added GLAD includes to WinMain.cpp, W3DParticleSys.cpp, W3DDisplay.cpp, Win32GameEngine.cpp
+  - ✅ Moved GLAD to absolute top of .cpp files (before all other includes)
+  - ✅ Pattern: `#ifndef _WIN32 #include <glad/glad.h> #endif` prevents Windows conflicts
+- **W3DDisplay.cpp Fixes**:
+  - ✅ Fixed unterminated `#ifndef _WIN32` directive (missing #endif on line 773)
+  - ✅ Removed duplicate `WW3D::Init(ApplicationHWnd)` call
+  - ✅ Protected Windows-specific ApplicationHWnd usage with #ifdef guards
+- **Win32GameEngine Fixes**:
+  - ✅ Copied working implementation from GeneralsMD
+  - ✅ Removed incorrect #ifdef _WIN32 wrapper from Win32GameEngine.h header
+  - ✅ Fixed include structure (GLAD before SDL2, windows.h stub compatibility)
+- **Compilation Times** (macOS ARM64, 4 parallel jobs):
+  - GeneralsXZH: ~20 minutes (14MB executable)
+  - GeneralsX: ~20 minutes (17KB executable)
+- **Recommendation**: IDE timeout should be 25-30 minutes for safe compilation
+- **Git Commits**: 
+  - 904ce238 - "fix(opengl): resolve OpenGL header conflicts and compilation errors"
+  - c0521670 - "fix(opengl): resolve GeneralsX compilation issues with Win32GameEngine"
+
 ---
 
 ## Next Steps After Phase 27
@@ -242,8 +264,9 @@ Xcode Instruments (macOS)
 
 ---
 
-**Last Updated**: October 4, 2025  
+**Last Updated**: October 6, 2025  
 **Status**: Phase 27.2 - DirectX→OpenGL Translation Layer IN PROGRESS  
-**Current Task**: Task 27.2.2 - OpenGL Index Buffer Abstraction (next)  
-**Completed**: 7/25 tasks (28% complete)  
-**Previous Success**: Task 27.2.1 - Vertex Buffer Abstraction (100% complete, both targets compile)
+**Current Task**: Task 27.2.3 - Texture Creation and Binding (next)  
+**Completed**: 8/25 tasks (32% complete)  
+**Build Status**: ✅ Both GeneralsXZH and GeneralsX compile successfully (ARM64)  
+**Compilation Time**: ~20 minutes per target (4 parallel jobs, recommend 25-30min IDE timeout)
