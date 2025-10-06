@@ -39,6 +39,11 @@
  *   FileListTextureClass::Load_Frame_Surface -- Load source texture                           *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+// Phase 27.2.3: OpenGL texture support - GLAD must be included first
+#ifndef _WIN32
+#include <glad/glad.h>
+#endif
+
 #include "texture.h"
 
 #include <d3d8.h>
@@ -86,6 +91,9 @@ TextureBaseClass::TextureBaseClass
 )
 :	MipLevelCount(mip_level_count),
 	D3DTexture(NULL),
+#ifndef _WIN32
+	GLTexture(0),  // Phase 27.2.3: Initialize OpenGL texture ID to 0
+#endif
 	Initialized(false),
    Name(""),
 	FullPath(""),
@@ -125,6 +133,14 @@ TextureBaseClass::~TextureBaseClass(void)
 		D3DTexture->Release();
 		D3DTexture = NULL;
 	}
+
+	// Phase 27.2.3: Cleanup OpenGL texture
+#ifndef _WIN32
+	if (GLTexture != 0) {
+		glDeleteTextures(1, &GLTexture);
+		GLTexture = 0;
+	}
+#endif
 
 	DX8TextureManagerClass::Remove(this);
 }
@@ -629,6 +645,8 @@ TextureClass::TextureClass
 	default: WWASSERT(0);
 	}
 
+#ifdef _WIN32
+	// Windows: Use DirectX8 texture creation
 	Poke_Texture
 	(
 		DX8Wrapper::_Create_DX8_Texture
@@ -641,6 +659,23 @@ TextureClass::TextureClass
 			rendertarget
 		)
 	);
+#else
+	// Phase 27.2.3: macOS/Linux - Use OpenGL texture creation
+	GLTexture = DX8Wrapper::_Create_GL_Texture
+	(
+		width,
+		height,
+		format,
+		mip_level_count,
+		rendertarget
+	);
+	
+	// Create a dummy D3D texture pointer (NULL) for compatibility
+	Poke_Texture(NULL);
+	
+	printf("Phase 27.2.3: TextureClass constructor - GL texture %u created (%dx%d, format %d)\n",
+		GLTexture, width, height, format);
+#endif
 
 	if (pool==POOL_DEFAULT)
 	{
@@ -966,11 +1001,29 @@ void TextureClass::Apply(unsigned int stage)
 	// Set texture itself
 	if (WW3D::Is_Texturing_Enabled())
 	{
+#ifdef _WIN32
+		// Windows: Use DirectX8 texture binding
 		DX8Wrapper::Set_DX8_Texture(stage, Peek_D3D_Base_Texture());
+#else
+		// Phase 27.2.3: macOS/Linux - Use OpenGL texture binding
+		if (GLTexture != 0) {
+			glActiveTexture(GL_TEXTURE0 + stage);
+			glBindTexture(GL_TEXTURE_2D, GLTexture);
+			// printf("Phase 27.2.3: Applied GL texture %u to stage %u\n", GLTexture, stage);
+		} else {
+			printf("Phase 27.2.3 WARNING: Attempting to apply NULL GL texture!\n");
+		}
+#endif
 	}
 	else
 	{
+#ifdef _WIN32
 		DX8Wrapper::Set_DX8_Texture(stage, NULL);
+#else
+		// Phase 27.2.3: Unbind texture on OpenGL
+		glActiveTexture(GL_TEXTURE0 + stage);
+		glBindTexture(GL_TEXTURE_2D, 0);
+#endif
 	}
 
 	Filter.Apply(stage);

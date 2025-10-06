@@ -45,7 +45,7 @@
 
 **Total Tasks**: 25 detailed implementation tasks organized in 5 parts
 
-**Current Progress**: 8/25 tasks complete (32%) - Tasks 27.2.1 and 27.2.2 just completed
+**Current Progress**: 8/25 tasks complete (32%) - Task 27.2.3 in progress (OpenGL texture infrastructure implemented, file loading pending)
 
 ---
 
@@ -70,7 +70,7 @@ View the complete task list with implementation details using the TODO managemen
 | Part | Tasks | Completed | Estimated Time | Status |
 |------|-------|-----------|----------------|--------|
 | 27.1 - Window Setup | 6 | **6/6** | 3-5 days | ✅ **COMPLETE** |
-| 27.2 - D3D8→OpenGL | 8 | **2/8** | 5-7 days | 🔄 **IN PROGRESS** |
+| 27.2 - D3D8→OpenGL | 8 | **2.5/8** | 5-7 days | 🔄 **IN PROGRESS** |
 | 27.3 - W3D Rendering | 8 | 0/8 | 7-10 days | ⏳ Not Started |
 | 27.4 - Particles | 2 | 0/2 | 2-3 days | ⏳ Not Started |
 | 27.5 - Integration | 1 | 0/1 | 1-2 days | ⏳ Not Started |
@@ -247,6 +247,66 @@ Xcode Instruments (macOS)
 ---
 
 ## Immediate Action Required
+
+**CURRENT TASK**: Task 27.2.3 - OpenGL Texture Creation and Binding (50% complete)
+
+### Phase 27.2.3 Progress (October 6, 2025)
+
+#### ✅ Completed Components
+1. **GLTexture Member Addition**:
+   - Added `unsigned int GLTexture` to TextureBaseClass (protected section)
+   - Initialized to 0 in constructor
+   - Proper cleanup with glDeleteTextures in destructor
+
+2. **OpenGL Texture Creation Function**:
+   - Implemented `DX8Wrapper::_Create_GL_Texture()` in dx8wrapper.cpp (110 lines)
+   - Format conversion: WW3DFormat → OpenGL internal formats
+   - Supported formats: RGBA8, RGB8, RGB565, RGB5_A1, DXT1, DXT3, DXT5
+   - Texture filtering: GL_LINEAR (mag), GL_LINEAR_MIPMAP_LINEAR (min with mipmaps)
+   - Wrapping mode: GL_REPEAT default
+   - Error checking with glGetError
+
+3. **Texture Binding Implementation**:
+   - Modified TextureClass::Apply() to use glActiveTexture + glBindTexture
+   - Multi-texturing support (texture stage parameter)
+   - Platform-specific: OpenGL on macOS/Linux, DirectX on Windows
+
+4. **Build Success**:
+   - Compilation time: **22:04 minutes** (within 25-30 minute target)
+   - Executable size: 14MB ARM64
+   - Fixed access control issue (GLTexture moved to protected section)
+
+#### ⏳ Remaining Components (3-5 hours)
+1. **File Loading (DDS/TGA)** - 2-3 hours:
+   - Implement DDS header parsing
+   - Implement TGA header parsing
+   - Use glCompressedTexImage2D for DDS compressed formats
+   - Use glTexImage2D for TGA uncompressed data
+
+2. **Mipmap Generation** - 1 hour:
+   - Call glGenerateMipmap after texture upload
+   - Verify mipmap chain creation
+
+3. **Runtime Testing & Validation** - 1 hour:
+   - Test texture creation during game initialization
+   - Verify texture binding during rendering
+   - Check debug logs for "Phase 27.2.3" messages
+   - Investigate current runtime crash (may be texture-related)
+
+4. **Apply to Generals Base Game** - 30 minutes:
+   - Copy changes to Generals/* equivalents
+   - Compile GeneralsX target
+   - Verify both executables
+
+#### 🐛 Known Issues
+- **Runtime Crash**: Game crashes during initialization after INI parsing
+  - Exit code: 1 (uncaught exception)
+  - Likely cause: Textures being loaded without file data (DDS/TGA loader not implemented)
+  - Resolution: Complete file loading implementation before runtime testing
+
+---
+
+## Next Steps After 27.2.3
 
 **CURRENT STATUS**: ✅ Task 27.2.1 COMPLETE - OpenGL Vertex Buffer Abstraction finished!
 
