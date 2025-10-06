@@ -28,6 +28,11 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+#ifndef _WIN32
+#include <glad/glad.h>  // CRITICAL: GLAD must be included FIRST to avoid OpenGL header conflicts
+#endif
+
+
 #include "Common/GameMemory.h"
 #include "WW3D2/dx8wrapper.h"
 #include "WW3D2/rendobj.h"

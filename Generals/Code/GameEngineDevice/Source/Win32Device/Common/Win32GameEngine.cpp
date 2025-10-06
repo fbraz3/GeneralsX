@@ -29,7 +29,10 @@
 //   the game application, it creates all the devices we will use for the game
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef _WIN32
+#ifndef _WIN32
+#include <glad/glad.h>  // CRITICAL: GLAD must be included BEFORE SDL2
+#include <SDL2/SDL.h>
+#endif
 
 #include <windows.h>
 #include "Win32Device/Common/Win32GameEngine.h"
@@ -38,17 +41,6 @@
 #include "GameNetwork/LANAPICallbacks.h"
 
 extern DWORD TheMessageTime;
-
-#else
-// Phase 27.1.5: SDL2 includes for non-Windows platforms
-#include <glad/glad.h>  // CRITICAL: GLAD must be included BEFORE SDL2
-#include <SDL2/SDL.h>
-#include "Win32Device/Common/Win32GameEngine.h"
-#include "Common/PerfTimer.h"
-#include "GameNetwork/LANAPICallbacks.h"
-
-extern DWORD TheMessageTime;
-#endif
 
 //-------------------------------------------------------------------------------------------------
 /** Constructor for Win32GameEngine */
@@ -124,6 +116,12 @@ void Win32GameEngine::update( void )
 				break; // keep running.
 			}
 		}
+
+    // When we are alt-tabbed out... the MilesAudioManager seems to go into a coma sometimes
+    // and not regain focus properly when we come back. This seems to wake it up nicely.
+    AudioAffect aa = (AudioAffect)0x10;
+		TheAudio->setVolume(TheAudio->getVolume( aa ), aa );
+
 	}
 
 	// allow windows to perform regular windows maintenance stuff like msgs
@@ -233,6 +231,4 @@ void Win32GameEngine::serviceWindowsOS( void )
 	}
 #endif
 }
-
-#endif // _WIN32
 

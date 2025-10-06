@@ -40,6 +40,11 @@
 // for now we maintain old legacy files
 // #define MAINTAIN_LEGACY_FILES
 
+#ifndef _WIN32
+#include <glad/glad.h>  // CRITICAL: GLAD must be included FIRST to avoid OpenGL header conflicts
+#endif
+
+
 #include "Common/Debug.h"
 #include "Common/file.h"
 #include "Common/FileSystem.h"

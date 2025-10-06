@@ -27,6 +27,10 @@
 // Author: Mark Wilczynski, June 2003
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+#ifndef _WIN32
+#include <glad/glad.h>  // CRITICAL: GLAD must be included FIRST to avoid OpenGL header conflicts
+#endif
+
 #include "Lib/BaseType.h"
 #include "always.h"
 #include "W3DDevice/GameClient/W3DSmudge.h"

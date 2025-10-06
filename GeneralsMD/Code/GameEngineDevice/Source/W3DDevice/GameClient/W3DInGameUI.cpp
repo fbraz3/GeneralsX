@@ -27,6 +27,10 @@
 // Desct:	 In game user interface implementation for W3D
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+#ifndef _WIN32
+#include <glad/glad.h>  // CRITICAL: GLAD must be included FIRST to avoid OpenGL header conflicts
+#endif
+
 #include <stdlib.h>
 
 #include "Common/GlobalData.h"

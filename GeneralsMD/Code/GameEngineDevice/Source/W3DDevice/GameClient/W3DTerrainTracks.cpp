@@ -43,6 +43,10 @@
 //			  moves.
 //-----------------------------------------------------------------------------
 
+#ifndef _WIN32
+#include <glad/glad.h>  // CRITICAL: GLAD must be included FIRST to avoid OpenGL header conflicts
+#endif
+
 #include "W3DDevice/GameClient/W3DTerrainTracks.h"
 #include "W3DDevice/GameClient/HeightMap.h"
 #include "Common/PerfTimer.h"

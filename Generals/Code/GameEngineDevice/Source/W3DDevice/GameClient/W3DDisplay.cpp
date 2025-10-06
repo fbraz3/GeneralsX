@@ -771,6 +771,8 @@ void W3DDisplay::init( void )
 		printf("Phase 27.1.3: SDL2 window created (%dx%d, %s)\n", 
 			windowWidth, windowHeight, 
 			TheGlobalData->m_windowed ? "windowed" : "fullscreen");
+
+#endif // _WIN32
 		
 #ifdef _WIN32
 		if (WW3D::Init( ApplicationHWnd ) != WW3D_ERROR_OK)
@@ -778,9 +780,6 @@ void W3DDisplay::init( void )
 #else
 		// Phase 27.1.3: OpenGL - skip DirectX initialization
 		printf("Phase 27.1.3: Skipping WW3D::Init() in OpenGL build\n");
-#endif
-		if (WW3D::Init( ApplicationHWnd ) != WW3D_ERROR_OK)
-			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
 #endif
 
 		WW3D::Set_Prelit_Mode( WW3D::PRELIT_MODE_LIGHTMAP_MULTI_PASS );

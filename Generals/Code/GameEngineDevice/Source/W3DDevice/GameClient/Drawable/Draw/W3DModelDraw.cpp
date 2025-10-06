@@ -29,6 +29,11 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 
+// Phase 27.2: CRITICAL - GLAD must be the VERY FIRST OpenGL-related include
+#ifndef _WIN32
+#include <glad/glad.h>
+#endif
+
 #define DEFINE_W3DANIMMODE_NAMES
 #define DEFINE_WEAPONSLOTTYPE_NAMES
 

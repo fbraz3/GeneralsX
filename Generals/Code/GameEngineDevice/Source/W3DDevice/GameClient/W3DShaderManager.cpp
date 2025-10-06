@@ -57,6 +57,11 @@
 // W3DShaderManager implementation is Win32/DirectX specific
 // TODO: Implement cross-platform shader management
 
+#ifndef _WIN32
+#include <glad/glad.h>  // CRITICAL: GLAD must be included FIRST to avoid OpenGL header conflicts
+#endif
+
+
 #include "dx8wrapper.h"
 #include "assetmgr.h"
 #include "Lib/BaseType.h"
