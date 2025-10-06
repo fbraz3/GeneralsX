@@ -41,6 +41,7 @@ extern DWORD TheMessageTime;
 
 #else
 // Phase 27.1.5: SDL2 includes for non-Windows platforms
+#include <glad/glad.h>  // CRITICAL: GLAD must be included BEFORE SDL2
 #include <SDL2/SDL.h>
 #include "Win32Device/Common/Win32GameEngine.h"
 #include "Common/PerfTimer.h"
