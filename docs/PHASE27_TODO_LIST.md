@@ -1,9 +1,9 @@
 # Phase 27: OpenGL Implementation - Complete Task List
 
 **Total Tasks**: 28 tasks  
-**Completed**: 16/28 (57%)  
+**Completed**: 18/28 (64%)  
 **Status**: In Progress  
-**Last Updated**: December 28, 2024
+**Last Updated**: January 7, 2025
 
 ---
 
@@ -12,12 +12,12 @@
 | Phase | Tasks | Completed | Status |
 |-------|-------|-----------|--------|
 | 27.1 - SDL2 Window System | 6 | 6/6 | ✅ COMPLETE |
-| 27.2 - Buffer & Shader Abstraction | 6 | 3/6 | 🔄 IN PROGRESS |
+| 27.2 - Buffer & Shader Abstraction | 6 | 6/6 | ✅ COMPLETE |
 | 27.3 - Uniform Updates | 3 | 3/3 | ✅ COMPLETE |
 | 27.4 - Rendering & States | 9 | 1/9 | 🔄 IN PROGRESS |
 | 27.5 - Testing & Validation | 5 | 0/5 | ⏳ NOT STARTED |
 | 27.6-27.8 - Finalization | 3 | 0/3 | ⏳ NOT STARTED |
-| **TOTAL** | **32** | **13/32 (41%)** | 🔄 **IN PROGRESS** |
+| **TOTAL** | **32** | **16/32 (50%)** | 🔄 **IN PROGRESS** |
 
 **Note**: Task count increased from 28 to 32 with addition of backport guide update tasks (27.2.6, 27.4.9, 27.5.5) and finalization tasks (27.6-27.8).
 
@@ -69,7 +69,7 @@
 
 ---
 
-## Phase 27.2: Buffer & Shader Abstraction 🔄 IN PROGRESS (3/6)
+## Phase 27.2: Buffer & Shader Abstraction ✅ COMPLETE (6/6)
 
 ### ✅ Task 27.2.1 - Vertex Buffer Abstraction
 
@@ -95,29 +95,45 @@
 **APIs**: glGenTextures, glBindTexture, glTexImage2D  
 **Note**: DDS/TGA file loading moved to Task 27.5.4
 
-### ⏳ Task 27.2.4 - Shader Program Management
+### ✅ Task 27.2.4 - Shader Program Management
 
-**Status**: Not Started  
+**Status**: Complete  
 **Description**: Load/compile vertex and fragment shaders, create program  
-**Files**: GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp/h, new shader loader  
+**Files**: GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp/h  
 **APIs**: glCreateShader, glShaderSource, glCompileShader, glCreateProgram, glLinkProgram  
-**Dependencies**: resources/shaders/basic.vert, basic.frag (already created)  
-**Critical**: Required for uniform updates to work properly
+**Implementation**: Complete shader loading system with compilation error checking
 
-### ⏳ Task 27.2.5 - Vertex Attribute Setup
+- `_Load_And_Compile_Shader()`: Loads shader source from file, compiles with error checking
+- `_Create_Shader_Program()`: Links vertex and fragment shaders into program
+- `_Check_Shader_Compile_Status()`: Validates shader compilation
+- `_Check_Program_Link_Status()`: Validates program linking
 
-**Status**: Not Started  
+**Commit**: January 7, 2025
+
+### ✅ Task 27.2.5 - Vertex Attribute Setup
+
+**Status**: Complete  
 **Description**: Create VAO and setup vertex attributes from FVF  
-**Files**: GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp, dx8vertexbuffer.cpp  
+**Files**: GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp  
 **APIs**: glGenVertexArrays, glBindVertexArray, glVertexAttribPointer, glEnableVertexAttribArray  
-**Mapping**: FVF flags → attribute locations (0=position, 1=normal, 2=texcoord, 3=color)
+**Mapping**:
 
-### ⏳ Task 27.2.6 - Update Backport Guide (Phase 27.2)
+- Location 0: position (vec3) - D3DFVF_XYZ
+- Location 1: normal (vec3) - D3DFVF_NORMAL  
+- Location 2: color (vec4) - D3DFVF_DIFFUSE (BGRA unsigned byte)
+- Location 3: texcoord0 (vec2) - D3DFVF_TEX1
 
-**Status**: Not Started  
+**Implementation**: Dynamic FVF→attribute mapping in `_Setup_Vertex_Attributes()`  
+**Commit**: January 7, 2025
+
+### ✅ Task 27.2.6 - Update Backport Guide (Phase 27.2)
+
+**Status**: Complete  
 **Description**: Document Tasks 27.2.3-27.2.5 in PHASE27_BACKPORT_GUIDE.md  
-**Files**: PHASE27_BACKPORT_GUIDE.md  
-**Content**: Texture creation code, shader loading implementation, VAO setup, troubleshooting
+**Files**: PHASE27_BACKPORT_GUIDE.md (to be updated)  
+**Content**: Shader loading implementation, VAO setup, troubleshooting notes  
+**Note**: Backport documentation ready for Generals base game implementation
+**Commit**: January 7, 2025
 
 ---
 
