@@ -341,6 +341,20 @@ void SurfaceClass::Unlock(void)
  *=============================================================================================*/
 void SurfaceClass::Clear()
 {
+#ifndef _WIN32
+	// Phase 27 CRITICAL FIX: Handle null this pointer (OpenGL compatibility)
+	if ((void*)this == nullptr) {
+		printf("Phase 27 SURFACE FIX: Clear called on nullptr SurfaceClass\n");
+		return;
+	}
+	
+	// Phase 27 CRITICAL FIX: OpenGL surfaces don't have D3DSurface
+	if (D3DSurface == nullptr) {
+		printf("Phase 27 SURFACE FIX: Clear called on OpenGL surface (no D3DSurface)\n");
+		return;
+	}
+#endif
+
 	SurfaceDescription sd;
 	Get_Description(sd);
 
@@ -858,6 +872,20 @@ void SurfaceClass::Detach (void)
  *=============================================================================================*/
 void SurfaceClass::DrawPixel(const unsigned int x,const unsigned int y, unsigned int color)
 {
+#ifndef _WIN32
+	// Phase 27 CRITICAL FIX: Handle null this pointer (OpenGL compatibility)
+	if ((void*)this == nullptr) {
+		printf("Phase 27 SURFACE FIX: DrawPixel called on nullptr SurfaceClass\n");
+		return;
+	}
+	
+	// Phase 27 CRITICAL FIX: OpenGL surfaces don't have D3DSurface
+	if (D3DSurface == nullptr) {
+		printf("Phase 27 SURFACE FIX: DrawPixel called on OpenGL surface (no D3DSurface)\n");
+		return;
+	}
+#endif
+
 	SurfaceDescription sd;
 	Get_Description(sd);
 
@@ -912,6 +940,20 @@ void SurfaceClass::DrawPixel(const unsigned int x,const unsigned int y, unsigned
  *=============================================================================================*/
 void SurfaceClass::DrawHLine(const unsigned int y,const unsigned int x1, const unsigned int x2, unsigned int color)
 {
+#ifndef _WIN32
+	// Phase 27 CRITICAL FIX: Handle null this pointer (OpenGL compatibility)
+	if ((void*)this == nullptr) {
+		printf("Phase 27 SURFACE FIX: DrawHLine called on nullptr SurfaceClass\n");
+		return;
+	}
+	
+	// Phase 27 CRITICAL FIX: OpenGL surfaces don't have D3DSurface
+	if (D3DSurface == nullptr) {
+		printf("Phase 27 SURFACE FIX: DrawHLine called on OpenGL surface (no D3DSurface)\n");
+		return;
+	}
+#endif
+
 	SurfaceDescription sd;
 	Get_Description(sd);
 
