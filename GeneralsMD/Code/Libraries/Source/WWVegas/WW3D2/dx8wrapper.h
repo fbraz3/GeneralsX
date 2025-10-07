@@ -1100,17 +1100,61 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 			}
 			break;
 
+		// Phase 27.4.4: Alpha testing (shader-based)
+		case D3DRS_ALPHATESTENABLE:
+		{
+			// Update uAlphaTestEnabled uniform
+			if (GL_Shader_Program != 0) {
+				glUseProgram(GL_Shader_Program);
+				GLint loc = glGetUniformLocation(GL_Shader_Program, "uAlphaTestEnabled");
+				if (loc != -1) {
+					glUniform1i(loc, value ? 1 : 0);
+					printf("Phase 27.4.4: Alpha test %s\n", value ? "enabled" : "disabled");
+				}
+			}
+			break;
+		}
+		
+		case D3DRS_ALPHAREF:
+		{
+			// Update uAlphaRef uniform (D3D uses 0-255, shader uses 0.0-1.0)
+			if (GL_Shader_Program != 0) {
+				glUseProgram(GL_Shader_Program);
+				GLint loc = glGetUniformLocation(GL_Shader_Program, "uAlphaRef");
+				if (loc != -1) {
+					float alpha_ref = value / 255.0f;
+					glUniform1f(loc, alpha_ref);
+					printf("Phase 27.4.4: Alpha reference set to %.3f (D3D value: %u)\n", alpha_ref, value);
+				}
+			}
+			break;
+		}
+		
+		case D3DRS_ALPHAFUNC:
+		{
+			// Update uAlphaTestFunc uniform (D3DCMP_*)
+			if (GL_Shader_Program != 0) {
+				glUseProgram(GL_Shader_Program);
+				GLint loc = glGetUniformLocation(GL_Shader_Program, "uAlphaTestFunc");
+				if (loc != -1) {
+					glUniform1i(loc, value);
+					const char* func_names[] = {"", "NEVER", "LESS", "EQUAL", "LESSEQUAL", 
+						"GREATER", "NOTEQUAL", "GREATEREQUAL", "ALWAYS"};
+					const char* func_name = (value >= 1 && value <= 8) ? func_names[value] : "UNKNOWN";
+					printf("Phase 27.4.4: Alpha test func set to %s (value: %u)\n", func_name, value);
+				}
+			}
+			break;
+		}
+		
 		// States that don't need immediate OpenGL translation (handled elsewhere or not applicable)
 		case D3DRS_FOGENABLE:
 		case D3DRS_FOGCOLOR:
 		case D3DRS_FOGSTART:
 		case D3DRS_FOGEND:
 		case D3DRS_FOGDENSITY:
-		case D3DRS_ALPHATESTENABLE:
-		case D3DRS_ALPHAREF:
-		case D3DRS_ALPHAFUNC:
-			// These are handled in shaders (Phase 27.4.4, 27.4.5)
-			printf("Phase 27.4.2: Render state %d stored for shader use (value: %u)\n", state, value);
+			// These are handled in shaders (Phase 27.4.5)
+			printf("Phase 27.4.5: Fog render state %d stored for shader use (value: %u)\n", state, value);
 			break;
 
 		default:
