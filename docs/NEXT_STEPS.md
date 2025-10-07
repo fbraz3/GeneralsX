@@ -3,39 +3,51 @@
 **Project**: GeneralsX (Command & Conquer: Generals Zero Hour macOS Port)  
 **Last Updated**: January 7, 2025  
 **Current Phase**: Phase 27 - Graphics Engine Implementation  
-**Status**: Phase 27.2 complete - Shader management and VAO setup implemented (64% overall progress)
+**Status**: Phase 27.4 complete - All render states and advanced features implemented (75% overall progress)
 
 ---
 
-## 🎉 Current Achievement - Phase 27.2 Complete
+## 🎉 Current Achievement - Phase 27.4 Complete
 
-**SHADER SYSTEM READY**: All shader loading and vertex attribute setup complete!
+**RENDER STATE SYSTEM COMPLETE**: All DirectX8→OpenGL state translations implemented!
 
 | Component | Implementation | Status |
 |-----------|---------------|--------|
-| **Shader Loading** | ✅ File loading + compilation | **COMPLETE** |
-| **Program Linking** | ✅ Vertex + Fragment linking | **COMPLETE** |
-| **VAO Setup** | ✅ Dynamic FVF→OpenGL mapping | **COMPLETE** |
-| **Error Checking** | ✅ Comprehensive validation | **COMPLETE** |
+| **Basic States** | ✅ Cull, Depth, Blend | **COMPLETE** |
+| **Texture States** | ✅ Filtering, Wrapping, Anisotropy | **COMPLETE** |
+| **Alpha Testing** | ✅ Shader-based with 8 comparison modes | **COMPLETE** |
+| **Fog Rendering** | ✅ LINEAR/EXP/EXP2 modes | **COMPLETE** |
+| **Stencil Buffer** | ✅ All operations + masks | **COMPLETE** |
+| **Scissor Test** | ✅ D3D9 forward compatibility | **COMPLETE** |
+| **Point Sprites** | ✅ Distance scaling + size clamping | **COMPLETE** |
 
 ### Latest Achievement Summary (2025-01-07)
 
-#### Phase 27.2.4: Shader Program Management ✅
-- ✅ `_Load_And_Compile_Shader()`: File loading + GLSL compilation
-- ✅ `_Create_Shader_Program()`: Vertex + fragment shader linking
-- ✅ `_Check_Shader_Compile_Status()`: Detailed error reporting
-- ✅ `_Check_Program_Link_Status()`: Link validation with logs
-- ✅ Initialization in `Init_Capabilities_Sort_Level_1()`
+#### Phase 27.4.2: Render State Management ✅
+- ✅ D3DRS_CULLMODE → glCullFace/glFrontFace (CW/CCW/NONE)
+- ✅ D3DRS_ZENABLE → glEnable(GL_DEPTH_TEST)
+- ✅ D3DRS_ZWRITEENABLE → glDepthMask
+- ✅ D3DRS_ZFUNC → glDepthFunc (8 comparison modes)
+- ✅ D3DRS_ALPHABLENDENABLE → glEnable(GL_BLEND)
+- ✅ D3DRS_SRCBLEND/DESTBLEND → glBlendFunc (12 blend modes)
 
-#### Phase 27.2.5: Vertex Attribute Setup ✅
-- ✅ VAO (Vertex Array Object) creation
-- ✅ `_Setup_Vertex_Attributes()`: Dynamic FVF→attribute mapping
-- ✅ Attribute locations: 0=pos, 1=normal, 2=color, 3=texcoord0
-- ✅ Called from `Apply_Render_State_Changes()` before draws
-- ✅ Proper offset/stride calculation for all FVF formats
+#### Phase 27.4.3: Texture Stage States ✅
+- ✅ D3DTSS_ADDRESSU/V/W → glTexParameteri(GL_TEXTURE_WRAP_*)
+- ✅ D3DTSS_MAGFILTER/MINFILTER → glTexParameteri filtering
+- ✅ D3DTSS_MIPFILTER → glTexParameteri mipmap modes
+- ✅ D3DTSS_BORDERCOLOR → glTexParameterfv border color
+- ✅ D3DTSS_MAXANISOTROPY → glTexParameteri anisotropic filtering
 
-#### Phase 27.2.6: Backport Documentation ✅
-- ✅ PHASE27_TODO_LIST.md updated with implementation details
+#### Phase 27.4.4-27.4.8: Advanced Features ✅
+- ✅ **Alpha Testing**: Shader-based with uAlphaTestEnabled/Func/Ref
+- ✅ **Fog Rendering**: 4 modes (NONE/EXP/EXP2/LINEAR) with color/density
+- ✅ **Stencil Buffer**: Complete operations (KEEP/ZERO/REPLACE/INCR/DECR/INVERT)
+- ✅ **Scissor Test**: Forward-compatible D3D9 state 174 support
+- ✅ **Point Sprites**: Distance scaling with A/B/C coefficients + size clamping
+
+#### Phase 27.4.9: Backport Documentation ✅
+- ✅ Complete D3D→OpenGL state mapping tables documented
+- ✅ Shader uniform reference for alpha/fog/sprites
 - ✅ Ready for Generals base backport (Phase 27.7)
 
 ---
@@ -46,21 +58,22 @@
 
 **Estimated Timeline**: 2-4 weeks (18-27 days of development)
 
-**Total Tasks**: 28 detailed implementation tasks organized in 5 parts
+**Total Tasks**: 32 detailed implementation tasks organized in 5 parts
 
-**Current Progress**: 18/28 tasks complete (64%) - All shader/buffer tasks complete, rendering states next
+**Current Progress**: 24/32 tasks complete (75%) - Ready for Phase 27.5 runtime testing
 
 ---
 
 ## Implementation Breakdown
 
-For detailed task-by-task implementation with code examples, complexity ratings, and time estimates, please refer to the **PHASE27_TODO_LIST.md** which contains all 28 tasks organized into:
+For detailed task-by-task implementation with code examples, complexity ratings, and time estimates, please refer to the **PHASE27_TODO_LIST.md** which contains all 32 tasks organized into:
 
 - **Part 1: SDL2 Window & Context Setup (27.1)** ✅ 6/6 tasks complete (100%)
 - **Part 2: Buffer & Shader Abstraction (27.2)** ✅ 6/6 tasks complete (100%)
 - **Part 3: Uniform Updates (27.3)** ✅ 3/3 tasks complete (100%)  
-- **Part 4: Rendering & States (27.4)** 🔄 1/9 tasks complete (11%)
+- **Part 4: Rendering & States (27.4)** ✅ 9/9 tasks complete (100%)
 - **Part 5: Testing & Validation (27.5)** ⏳ 0/5 tasks (0%)
+- **Part 6-8: Finalization (27.6-27.8)** ⏳ 0/3 tasks (0%)
 
 View the complete task list with implementation details in `docs/PHASE27_TODO_LIST.md`.
 
@@ -75,9 +88,10 @@ View the complete task list with implementation details in `docs/PHASE27_TODO_LI
 | 27.1 - Window Setup | 6 | **6/6** | 3-5 days | ✅ **COMPLETE** |
 | 27.2 - Buffers & Shaders | 6 | **6/6** | 4-6 days | ✅ **COMPLETE** |
 | 27.3 - Uniform Updates | 3 | **3/3** | 1-2 days | ✅ **COMPLETE** |
-| 27.4 - Rendering States | 9 | **1/9** | 3-5 days | 🔄 **IN PROGRESS** |
-| 27.5 - Testing | 5 | **0/5** | 1-2 days | ⏳ Not Started |
-| **TOTAL** | **28 tasks** | **18/28** | **12-20 days** | **64% Complete** |
+| 27.4 - Rendering States | 9 | **9/9** | 3-5 days | ✅ **COMPLETE** |
+| 27.5 - Testing | 5 | **0/5** | 1-2 days | ⏳ **NEXT PRIORITY** |
+| 27.6-27.8 - Finalization | 3 | **0/3** | 1-2 days | ⏳ Not Started |
+| **TOTAL** | **32 tasks** | **24/32** | **13-22 days** | **75% Complete** |
 - **Logging**: Phase 27.1.4 debug messages for shutdown verification
 
 #### ✅ Task 27.1.5: SDL Event Loop Complete

@@ -1,7 +1,7 @@
 # Phase 27: OpenGL Implementation - Complete Task List
 
-**Total Tasks**: 28 tasks  
-**Completed**: 18/28 (64%)  
+**Total Tasks**: 32 tasks  
+**Completed**: 24/32 (75%)  
 **Status**: In Progress  
 **Last Updated**: January 7, 2025
 
@@ -14,10 +14,10 @@
 | 27.1 - SDL2 Window System | 6 | 6/6 | ✅ COMPLETE |
 | 27.2 - Buffer & Shader Abstraction | 6 | 6/6 | ✅ COMPLETE |
 | 27.3 - Uniform Updates | 3 | 3/3 | ✅ COMPLETE |
-| 27.4 - Rendering & States | 9 | 1/9 | 🔄 IN PROGRESS |
+| 27.4 - Rendering & States | 9 | 9/9 | ✅ COMPLETE |
 | 27.5 - Testing & Validation | 5 | 0/5 | ⏳ NOT STARTED |
 | 27.6-27.8 - Finalization | 3 | 0/3 | ⏳ NOT STARTED |
-| **TOTAL** | **32** | **16/32 (50%)** | 🔄 **IN PROGRESS** |
+| **TOTAL** | **32** | **24/32 (75%)** | 🔄 **IN PROGRESS** |
 
 **Note**: Task count increased from 28 to 32 with addition of backport guide update tasks (27.2.6, 27.4.9, 27.5.5) and finalization tasks (27.6-27.8).
 
@@ -167,7 +167,7 @@
 
 ---
 
-## Phase 27.4: Rendering & States 🔄 IN PROGRESS (1/9)
+## Phase 27.4: Rendering & States ✅ COMPLETE (9/9)
 
 ### ✅ Task 27.4.1 - Primitive Draw Calls
 
@@ -179,71 +179,135 @@
 **Commit**: 4ff9651f  
 **Build**: 23:26
 
-### ⏳ Task 27.4.2 - Render State Management
+### ✅ Task 27.4.2 - Render State Management
 
-**Status**: Not Started  
+**Status**: Complete  
 **Description**: Map critical D3D render states to OpenGL  
-**Files**: GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp/h  
-**States**:
+**Files**: GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h (lines 1000-1125)  
+**States Implemented**:
 
-- D3DRS_CULLMODE → glCullFace/glFrontFace
-- D3DRS_ZENABLE → glDepthFunc/glEnable(GL_DEPTH_TEST)
-- D3DRS_ALPHABLENDENABLE → glBlendFunc/glEnable(GL_BLEND)
-- D3DRS_SRCBLEND/DESTBLEND → glBlendFunc parameters
+- D3DRS_CULLMODE → glCullFace/glFrontFace (D3DCULL_NONE/CW/CCW)
+- D3DRS_ZENABLE → glEnable(GL_DEPTH_TEST) (D3DZB_TRUE/USEW)
+- D3DRS_ZWRITEENABLE → glDepthMask
+- D3DRS_ZFUNC → glDepthFunc (8 comparison modes)
+- D3DRS_ALPHABLENDENABLE → glEnable(GL_BLEND)
+- D3DRS_SRCBLEND/DESTBLEND → glBlendFunc (12 blend modes)
 
-### ⏳ Task 27.4.3 - Texture Stage States
+**Implementation**: Complete D3D→OpenGL render state mapping in `Set_DX8_Render_State()`  
+**Commit**: January 7, 2025
 
-**Status**: Not Started  
-**Description**: Map D3D texture stage states to OpenGL sampler uniforms  
-**Files**: GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp  
-**States**: D3DTSS_COLOROP, D3DTSS_ALPHAOP (texture combine modes)
+### ✅ Task 27.4.3 - Texture Stage States
 
-### ⏳ Task 27.4.4 - Alpha Testing
+**Status**: Complete  
+**Description**: Map D3D texture stage states to OpenGL sampler parameters  
+**Files**: GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h (lines 1538-1695)  
+**States Implemented**:
 
-**Status**: Not Started  
+- D3DTSS_COLOROP/ALPHAOP → Stored for shader (texture combine modes)
+- D3DTSS_ADDRESSU/V/W → glTexParameteri(GL_TEXTURE_WRAP_S/T/R)
+- D3DTSS_MAGFILTER/MINFILTER → glTexParameteri(GL_TEXTURE_MAG/MIN_FILTER)
+- D3DTSS_MIPFILTER → glTexParameteri(GL_TEXTURE_MIN_FILTER with mipmap)
+- D3DTSS_BORDERCOLOR → glTexParameterfv(GL_TEXTURE_BORDER_COLOR)
+- D3DTSS_MAXANISOTROPY → glTexParameteri(GL_TEXTURE_MAX_ANISOTROPY_EXT)
+
+**Implementation**: Complete texture stage state management in `Set_DX8_Texture_Stage_State()`  
+**Commit**: January 7, 2025
+
+### ✅ Task 27.4.4 - Alpha Testing
+
+**Status**: Complete  
 **Description**: Shader-based alpha testing with discard  
-**Files**: dx8wrapper.cpp, resources/shaders/basic.frag  
+**Files**: GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h (lines 1128-1149)  
 **Uniforms**: uAlphaTestEnabled, uAlphaTestFunc, uAlphaRef  
-**States**: D3DRS_ALPHATESTENABLE, D3DRS_ALPHAFUNC, D3DRS_ALPHAREF
+**States Implemented**:
 
-### ⏳ Task 27.4.5 - Fog Rendering
+- D3DRS_ALPHATESTENABLE → uAlphaTestEnabled uniform (0/1)
+- D3DRS_ALPHAREF → uAlphaRef uniform (0-255 mapped to 0.0-1.0)
+- D3DRS_ALPHAFUNC → uAlphaTestFunc uniform (D3DCMP_* constants)
 
-**Status**: Not Started  
+**Implementation**: Shader-based alpha test with 8 comparison functions  
+**Commit**: January 7, 2025
+
+### ✅ Task 27.4.5 - Fog Rendering
+
+**Status**: Complete  
 **Description**: Shader-based fog (linear/exp/exp2 modes)  
-**Files**: dx8wrapper.cpp, resources/shaders/basic.frag  
-**Uniforms**: uFogEnabled, uFogColor, uFogStart, uFogEnd, uFogDensity  
-**States**: D3DRS_FOGENABLE, D3DRS_FOGCOLOR, D3DRS_FOGSTART, D3DRS_FOGEND
+**Files**: GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h (lines 1152-1243)  
+**Uniforms**: uFogEnabled, uFogColor, uFogStart, uFogEnd, uFogDensity, uFogMode  
+**States Implemented**:
 
-### ⏳ Task 27.4.6 - Stencil Buffer Operations
+- D3DRS_FOGENABLE → uFogEnabled uniform (0/1)
+- D3DRS_FOGCOLOR → uFogColor uniform (D3DCOLOR ARGB → RGB float)
+- D3DRS_FOGSTART → uFogStart uniform (float)
+- D3DRS_FOGEND → uFogEnd uniform (float)
+- D3DRS_FOGDENSITY → uFogDensity uniform (float)
+- D3DRS_FOGTABLEMODE/FOGVERTEXMODE → uFogMode uniform (NONE/EXP/EXP2/LINEAR)
 
-**Status**: Not Started  
+**Implementation**: Complete fog system with 4 fog modes (NONE, EXP, EXP2, LINEAR)  
+**Commit**: January 7, 2025
+
+### ✅ Task 27.4.6 - Stencil Buffer Operations
+
+**Status**: Complete  
 **Description**: Map D3D stencil states to OpenGL  
-**Files**: dx8wrapper.cpp  
-**APIs**: glStencilFunc, glStencilOp, glEnable(GL_STENCIL_TEST)  
-**States**: D3DRS_STENCILENABLE, D3DRS_STENCILFUNC, D3DRS_STENCILPASS/FAIL/ZFAIL
+**Files**: GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h (lines 1246-1355)  
+**APIs**: glStencilFunc, glStencilOp, glStencilMask, glEnable(GL_STENCIL_TEST)  
+**States Implemented**:
 
-### ⏳ Task 27.4.7 - Scissor Test
+- D3DRS_STENCILENABLE → glEnable/glDisable(GL_STENCIL_TEST)
+- D3DRS_STENCILFUNC → glStencilFunc (8 comparison functions)
+- D3DRS_STENCILREF → glStencilFunc reference value
+- D3DRS_STENCILMASK → glStencilFunc read mask
+- D3DRS_STENCILWRITEMASK → glStencilMask
+- D3DRS_STENCILFAIL/ZFAIL/PASS → glStencilOp (9 operations)
 
-**Status**: Not Started  
+**Implementation**: Complete stencil buffer support with all D3D operations  
+**Commit**: January 7, 2025
+
+### ✅ Task 27.4.7 - Scissor Test
+
+**Status**: Complete  
 **Description**: Viewport clipping with scissor test  
-**Files**: dx8wrapper.cpp  
-**APIs**: glScissor, glEnable(GL_SCISSOR_TEST)  
-**States**: D3DRS_SCISSORTESTENABLE
+**Files**: GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h (lines 1358-1372)  
+**APIs**: glEnable(GL_SCISSOR_TEST), glScissor  
+**States Implemented**:
 
-### ⏳ Task 27.4.8 - Point Sprites
+- State 174 (D3DRS_SCISSORTESTENABLE) → glEnable/glDisable(GL_SCISSOR_TEST)
 
-**Status**: Not Started  
+**Note**: D3D8 doesn't officially support scissor test (D3D9 feature). Implementation provided for forward compatibility and custom render targets.  
+**Commit**: January 7, 2025
+
+### ✅ Task 27.4.8 - Point Sprites
+
+**Status**: Complete  
 **Description**: Point sprite rendering for particles  
-**Files**: dx8wrapper.cpp, vertex shader  
-**APIs**: gl_PointSize in vertex shader or geometry shader  
-**States**: D3DRS_POINTSPRITEENABLE, D3DRS_POINTSIZE, D3DRS_POINTSCALEENABLE
+**Files**: GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h (lines 1375-1482)  
+**APIs**: glEnable(GL_PROGRAM_POINT_SIZE), shader uniforms  
+**States Implemented**:
 
-### ⏳ Task 27.4.9 - Update Backport Guide (Phase 27.4)
+- D3DRS_POINTSPRITEENABLE (156) → uPointSpriteEnabled uniform + GL_PROGRAM_POINT_SIZE
+- D3DRS_POINTSIZE (154) → uPointSize uniform (float)
+- D3DRS_POINTSCALEENABLE (157) → uPointScaleEnabled uniform
+- D3DRS_POINTSCALE_A/B/C (158-160) → uPointScaleA/B/C uniforms
+- D3DRS_POINTSIZE_MIN/MAX (155, 166) → uPointSizeMin/Max uniforms
 
-**Status**: Not Started  
+**Implementation**: Complete point sprite system with distance-based scaling  
+**Commit**: January 7, 2025
+
+### ✅ Task 27.4.9 - Update Backport Guide (Phase 27.4)
+
+**Status**: Complete  
 **Description**: Document Tasks 27.4.2-27.4.8 in PHASE27_BACKPORT_GUIDE.md  
-**Files**: PHASE27_BACKPORT_GUIDE.md  
-**Content**: Render state mapping tables, shader code for alpha/fog/sprites, troubleshooting
+**Files**: docs/PHASE27_BACKPORT_GUIDE.md  
+**Content**:
+
+- Render state mapping tables (cullmode, depth, blending, alpha, fog, stencil, scissor, point sprites)
+- Complete D3D→OpenGL state conversion reference
+- Shader uniform documentation for alpha test, fog, and point sprites
+- Troubleshooting guide for render state issues
+
+**Note**: Backport guide ready for Generals base game implementation  
+**Commit**: January 7, 2025
 
 ---
 
@@ -387,17 +451,18 @@ This ensures the backport guide is always ready for the Generals base backport (
 
 ## Progress Tracking
 
-**Completed Phases**: 27.1 (100%), 27.3 (100%)  
-**In Progress**: 27.2 (50%), 27.4 (11%)  
-**Pending**: 27.5 (0%), 27.6-27.8 (0%)
+**Completed Phases**: 27.1 (100%), 27.2 (100%), 27.3 (100%), 27.4 (100%)  
+**In Progress**: 27.5 (0%)  
+**Pending**: 27.6-27.8 (0%)
 
 **Next Immediate Tasks**:
 
-1. Task 27.2.4 - Shader Program Management (CRITICAL)
-2. Task 27.2.5 - Vertex Attribute Setup
-3. Task 27.2.6 - Update Backport Guide
+1. Task 27.5.1 - Basic Runtime Testing (CRITICAL)
+2. Task 27.5.2 - Shader Debugging
+3. Task 27.5.4 - Texture File Loading
+4. Task 27.5.3 - Performance Baseline
 
-**Estimated Time to Phase 27 Completion**: 2-3 weeks of focused development
+**Estimated Time to Phase 27 Completion**: 1-2 weeks of focused development
 
 ---
 
