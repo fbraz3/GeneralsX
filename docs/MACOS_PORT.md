@@ -2,34 +2,62 @@
 
 **Project Name**: 🎯 **GeneralsX** (formerly Command & Conquer: Generals)
 
-**Port Status**: 🎉 **Phase 27 – OpenGL Graphics Implementation (57% Complete)** 🚀
+**Port Status**: 🎉 **Phase 27 – OpenGL Graphics Implementation (64% Complete)** 🚀
 
-**Date**: December 28, 2024
+**Date**: January 7, 2025
 
-**Status**: 🔄 **IN PROGRESS** – Phase 27 Graphics Engine implementation ongoing. 16/28 tasks complete. Uniform updates and primitive draw calls implemented. DirectX8→OpenGL translation layer partially functional.
+**Status**: 🔄 **IN PROGRESS** – Phase 27 Graphics Engine implementation ongoing. 18/28 tasks complete. Shader management and vertex attribute setup complete. DirectX8→OpenGL translation layer 64% functional.
 
-## Latest Update (December 28, 2024 - Phase 27: Graphics Implementation)
+## Latest Update (January 7, 2025 - Phase 27: Shader & VAO Implementation)
 
-**🚀 PHASE 27 PROGRESS: DirectX8→OpenGL Translation (57% Complete)**
+**🚀 PHASE 27 PROGRESS: DirectX8→OpenGL Translation (64% Complete)**
 
 ### Phase 27 Achievement Summary
 
 | Phase | Tasks | Completed | Status |
 |-------|-------|-----------|--------|
 | 27.1 - Window Setup | 6 | 6/6 (100%) | ✅ **COMPLETE** |
-| 27.2 - D3D8→OpenGL Buffers | 8 | 5/8 (63%) | 🔄 **IN PROGRESS** |
+| 27.2 - D3D8→OpenGL Buffers | 6 | 6/6 (100%) | ✅ **COMPLETE** |
 | 27.3 - Uniform Updates | 3 | 3/3 (100%) | ✅ **COMPLETE** |
-| 27.4 - Rendering | 8 | 1/8 (13%) | 🔄 **IN PROGRESS** |
-| 27.5 - Testing | 3 | 0/3 (0%) | ⏳ **NOT STARTED** |
-| **TOTAL** | **28** | **16/28 (57%)** | 🔄 **IN PROGRESS** |
+| 27.4 - Rendering | 9 | 1/9 (11%) | 🔄 **IN PROGRESS** |
+| 27.5 - Testing | 5 | 0/5 (0%) | ⏳ **NOT STARTED** |
+| **TOTAL** | **28** | **18/28 (64%)** | 🔄 **IN PROGRESS** |
 
-### Recent Achievements (December 28, 2024)
+### Recent Achievements (January 7, 2025)
 
-#### ✅ Phase 27.3: Uniform Updates Complete (Tasks 27.3.1-27.3.3)
+#### ✅ Phase 27.2: Buffer & Shader Abstraction Complete (Tasks 27.2.4-27.2.6)
 
 **Files Modified**:
-- `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h`
-- `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp`
+
+- `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h` (declarations)
+- `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp` (implementations)
+- `docs/PHASE27_TODO_LIST.md` (progress tracking)
+
+**Implementations**:
+
+1. **Task 27.2.4: Shader Program Management** ✅
+   - `_Load_And_Compile_Shader()`: Loads shader source from file, compiles with error checking
+   - `_Create_Shader_Program()`: Links vertex and fragment shaders into program  
+   - `_Check_Shader_Compile_Status()`: Validates shader compilation with detailed error messages
+   - `_Check_Program_Link_Status()`: Validates program linking with error reporting
+   - Shaders initialized during DX8Wrapper::Init_Capabilities_Sort_Level_1()
+   - Complete error handling and logging system implemented
+
+2. **Task 27.2.5: Vertex Attribute Setup** ✅
+   - VAO (Vertex Array Object) creation in Init_Capabilities_Sort_Level_1()
+   - `_Setup_Vertex_Attributes()`: Dynamic FVF→OpenGL attribute mapping
+   - Attribute location mapping:
+     - Location 0: position (vec3) - D3DFVF_XYZ
+     - Location 1: normal (vec3) - D3DFVF_NORMAL
+     - Location 2: color (vec4 BGRA) - D3DFVF_DIFFUSE
+     - Location 3: texcoord0 (vec2) - D3DFVF_TEX1
+   - Called from Apply_Render_State_Changes() before draw calls
+   - Proper offset calculation and stride handling
+
+3. **Task 27.2.6: Backport Documentation** ✅
+   - PHASE27_TODO_LIST.md updated with completion status
+   - Implementation details documented for future Generals base backport
+   - Ready for Phase 27.7 backport execution
 
 **Implementations**:
 
