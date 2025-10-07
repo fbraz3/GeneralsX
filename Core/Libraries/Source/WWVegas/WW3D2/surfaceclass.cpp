@@ -253,6 +253,27 @@ SurfaceClass::~SurfaceClass(void)
 
 void SurfaceClass::Get_Description(SurfaceDescription &surface_desc)
 {
+#ifndef _WIN32
+	// Phase 27 CRITICAL FIX: Handle null this pointer (OpenGL compatibility)
+	// IMPORTANT: Checking 'this' inside a member function is undefined behavior in C++,
+	// but in practice it works and prevents crashes when called on nullptr
+	if ((void*)this == nullptr) {
+		printf("Phase 27 SURFACE FIX: Get_Description called on nullptr SurfaceClass\n");
+		surface_desc.Format = WW3D_FORMAT_UNKNOWN;
+		surface_desc.Height = 0;
+		surface_desc.Width = 0;
+		return;
+	}
+	
+	// Phase 27 CRITICAL FIX: OpenGL surfaces don't have D3DSurface
+	if (D3DSurface == nullptr) {
+		printf("Phase 27 SURFACE FIX: Get_Description called on OpenGL surface (no D3DSurface)\n");
+		surface_desc.Format = SurfaceFormat;
+		surface_desc.Height = 0;  // Dummy values - OpenGL handles dimensions internally
+		surface_desc.Width = 0;
+		return;
+	}
+#endif
 	D3DSURFACE_DESC d3d_desc;
 	::ZeroMemory(&d3d_desc, sizeof(D3DSURFACE_DESC));
 	DX8_ErrorCode(D3DSurface->GetDesc(&d3d_desc));
@@ -263,6 +284,21 @@ void SurfaceClass::Get_Description(SurfaceDescription &surface_desc)
 
 void * SurfaceClass::Lock(int * pitch)
 {
+#ifndef _WIN32
+	// Phase 27 CRITICAL FIX: Handle null this pointer
+	if ((void*)this == nullptr) {
+		printf("Phase 27 SURFACE FIX: Lock called on nullptr SurfaceClass\n");
+		if (pitch) *pitch = 0;
+		return nullptr;
+	}
+	
+	// Phase 27 CRITICAL FIX: OpenGL surfaces don't have D3DSurface
+	if (D3DSurface == nullptr) {
+		printf("Phase 27 SURFACE FIX: Lock called on OpenGL surface (no D3DSurface)\n");
+		if (pitch) *pitch = 0;
+		return nullptr;  // OpenGL textures use glTexImage2D, not Lock/Unlock
+	}
+#endif
 	D3DLOCKED_RECT lock_rect;
 	::ZeroMemory(&lock_rect, sizeof(D3DLOCKED_RECT));
 	DX8_ErrorCode(D3DSurface->LockRect(&lock_rect, 0, 0));
@@ -272,6 +308,19 @@ void * SurfaceClass::Lock(int * pitch)
 
 void SurfaceClass::Unlock(void)
 {
+#ifndef _WIN32
+	// Phase 27 CRITICAL FIX: Handle null this pointer
+	if ((void*)this == nullptr) {
+		printf("Phase 27 SURFACE FIX: Unlock called on nullptr SurfaceClass\n");
+		return;
+	}
+	
+	// Phase 27 CRITICAL FIX: OpenGL surfaces don't have D3DSurface
+	if (D3DSurface == nullptr) {
+		printf("Phase 27 SURFACE FIX: Unlock called on OpenGL surface (no D3DSurface)\n");
+		return;  // OpenGL textures use glTexImage2D, not Lock/Unlock
+	}
+#endif
 	DX8_ErrorCode(D3DSurface->UnlockRect());
 }
 
