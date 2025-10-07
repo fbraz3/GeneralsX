@@ -22,6 +22,14 @@ uniform bool uAlphaTestEnabled;  // Enable/disable alpha testing
 uniform int uAlphaTestFunc;      // Alpha comparison function (D3DCMP_*)
 uniform float uAlphaRef;         // Alpha reference value (0.0 - 1.0)
 
+// Phase 27.4.5: Fog uniforms
+uniform bool uFogEnabled;        // Enable/disable fog
+uniform vec3 uFogColor;          // Fog color (RGB)
+uniform float uFogStart;         // Fog start distance (linear mode)
+uniform float uFogEnd;           // Fog end distance (linear mode)
+uniform float uFogDensity;       // Fog density (exp/exp2 modes)
+uniform int uFogMode;            // Fog mode: 0=none, 1=exp, 2=exp2, 3=linear
+
 // Output color
 out vec4 FragColor;
 
@@ -83,6 +91,42 @@ void main()
         if (!alphaTestPass) {
             discard;
         }
+    }
+    
+    // Phase 27.4.5: Fog calculation
+    if (uFogEnabled) {
+        // Calculate distance from camera (using world position)
+        // For now, use simple Z-distance (can be enhanced with camera position uniform)
+        float fogDistance = length(vWorldPos);
+        float fogFactor = 1.0;
+        
+        // D3DFOG modes:
+        // 0 = D3DFOG_NONE (no fog)
+        // 1 = D3DFOG_EXP (exponential fog)
+        // 2 = D3DFOG_EXP2 (exponential squared fog)
+        // 3 = D3DFOG_LINEAR (linear fog)
+        
+        if (uFogMode == 1) {
+            // Exponential fog: factor = exp(-density * distance)
+            fogFactor = exp(-uFogDensity * fogDistance);
+        }
+        else if (uFogMode == 2) {
+            // Exponential squared fog: factor = exp(-(density * distance)^2)
+            float fogAmount = uFogDensity * fogDistance;
+            fogFactor = exp(-fogAmount * fogAmount);
+        }
+        else if (uFogMode == 3) {
+            // Linear fog: factor = (end - distance) / (end - start)
+            fogFactor = (uFogEnd - fogDistance) / (uFogEnd - uFogStart);
+        }
+        
+        // Clamp fog factor to [0, 1]
+        fogFactor = clamp(fogFactor, 0.0, 1.0);
+        
+        // Mix base color with fog color
+        // fogFactor = 1.0 means no fog (full object color)
+        // fogFactor = 0.0 means full fog (full fog color)
+        baseColor.rgb = mix(uFogColor, baseColor.rgb, fogFactor);
     }
     
     // Output final color
