@@ -127,6 +127,14 @@ DWORD								DX8Wrapper::Pixel_Shader								= 0;
 Vector4							DX8Wrapper::Vertex_Shader_Constants[MAX_VERTEX_SHADER_CONSTANTS];
 Vector4							DX8Wrapper::Pixel_Shader_Constants[MAX_PIXEL_SHADER_CONSTANTS];
 
+// Phase 27.2.4: OpenGL shader program initialization
+#ifndef _WIN32
+unsigned int					DX8Wrapper::GL_Shader_Program							= 0;
+unsigned int					DX8Wrapper::GL_Vertex_Shader							= 0;
+unsigned int					DX8Wrapper::GL_Fragment_Shader						= 0;
+unsigned int					DX8Wrapper::GL_VAO											= 0;
+#endif
+
 LightEnvironmentClass*		DX8Wrapper::Light_Environment							= NULL;
 RenderInfoClass*				DX8Wrapper::Render_Info									= NULL;
 
@@ -450,6 +458,66 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Inits(void)
 	TextureLoader::Init();
 
 	Set_Default_Global_Render_States();
+
+#ifndef _WIN32
+	// Phase 27.2.4: Initialize OpenGL shader program
+	printf("Phase 27.2.4: Loading and compiling OpenGL shaders...\n");
+	
+	// Load and compile vertex shader
+	GL_Vertex_Shader = _Load_And_Compile_Shader("resources/shaders/basic.vert", GL_VERTEX_SHADER);
+	if (GL_Vertex_Shader == 0) {
+		printf("Phase 27.2.4 ERROR: Failed to load vertex shader!\n");
+		return;
+	}
+	
+	// Load and compile fragment shader  
+	GL_Fragment_Shader = _Load_And_Compile_Shader("resources/shaders/basic.frag", GL_FRAGMENT_SHADER);
+	if (GL_Fragment_Shader == 0) {
+		printf("Phase 27.2.4 ERROR: Failed to load fragment shader!\n");
+		glDeleteShader(GL_Vertex_Shader);
+		GL_Vertex_Shader = 0;
+		return;
+	}
+	
+	// Create and link shader program
+	GL_Shader_Program = _Create_Shader_Program(GL_Vertex_Shader, GL_Fragment_Shader);
+	if (GL_Shader_Program == 0) {
+		printf("Phase 27.2.4 ERROR: Failed to create shader program!\n");
+		glDeleteShader(GL_Vertex_Shader);
+		glDeleteShader(GL_Fragment_Shader);
+		GL_Vertex_Shader = 0;
+		GL_Fragment_Shader = 0;
+		return;
+	}
+	
+	// Clean up individual shaders (they're now part of the program)
+	glDeleteShader(GL_Vertex_Shader);
+	glDeleteShader(GL_Fragment_Shader);
+	GL_Vertex_Shader = 0;
+	GL_Fragment_Shader = 0;
+	
+	printf("Phase 27.2.4: OpenGL shader program initialized successfully (ID: %u)\n", GL_Shader_Program);
+	
+	// Phase 27.2.5: Create Vertex Array Object (VAO) for vertex attribute setup
+	printf("Phase 27.2.5: Creating Vertex Array Object (VAO)...\n");
+	glGenVertexArrays(1, &GL_VAO);
+	if (GL_VAO == 0) {
+		printf("Phase 27.2.5 ERROR: Failed to create VAO!\n");
+		return;
+	}
+	
+	// Bind VAO to configure vertex attributes
+	glBindVertexArray(GL_VAO);
+	
+	// Note: Vertex attributes will be configured dynamically in Apply_Render_State_Changes()
+	// based on the FVF format of the current vertex buffer. This allows supporting multiple
+	// vertex formats (XYZ, XYZN, XYZNUV1, XYZNDUV1, etc.) at runtime.
+	
+	// Unbind VAO for now (will be bound again before draw calls)
+	glBindVertexArray(0);
+	
+	printf("Phase 27.2.5: VAO created successfully (ID: %u)\n", GL_VAO);
+#endif
 }
 
 inline DWORD F2DW(float f) { return *((unsigned*)&f); }
@@ -551,6 +619,22 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Shutdowns(void)
 	SHD_SHUTDOWN;
 	TheDX8MeshRenderer.Shutdown();
 	MissingTexture::_Deinit();
+
+#ifndef _WIN32
+	// Phase 27.2.4: Cleanup OpenGL shader program
+	if (GL_Shader_Program != 0) {
+		printf("Phase 27.2.4: Deleting OpenGL shader program (ID: %u)\n", GL_Shader_Program);
+		glDeleteProgram(GL_Shader_Program);
+		GL_Shader_Program = 0;
+	}
+	
+	// Phase 27.2.5: Cleanup VAO
+	if (GL_VAO != 0) {
+		printf("Phase 27.2.5: Deleting VAO (ID: %u)\n", GL_VAO);
+		glDeleteVertexArrays(1, &GL_VAO);
+		GL_VAO = 0;
+	}
+#endif
 
 	delete CurrentCaps;
 	CurrentCaps=NULL;
@@ -2252,12 +2336,65 @@ void DX8Wrapper::Draw(
 				}*/
 				DX8_RECORD_RENDER(polygon_count,vertex_count,render_state.shader);
 				DX8_RECORD_DRAW_CALLS();
+#ifdef _WIN32
 				DX8CALL(DrawIndexedPrimitive(
 					(D3DPRIMITIVETYPE)primitive_type,
 					min_vertex_index,
 					vertex_count,
 					start_index+render_state.iba_offset,
 					polygon_count));
+#else
+				// Phase 27.4.1: OpenGL indexed primitive rendering
+				// Map D3D primitive types to OpenGL
+				GLenum gl_primitive_type = GL_TRIANGLES;
+				unsigned index_count = polygon_count * 3; // Default for triangle list
+				
+				switch (primitive_type) {
+				case D3DPT_TRIANGLELIST:
+					gl_primitive_type = GL_TRIANGLES;
+					index_count = polygon_count * 3;
+					break;
+				case D3DPT_TRIANGLESTRIP:
+					gl_primitive_type = GL_TRIANGLE_STRIP;
+					index_count = polygon_count + 2;
+					break;
+				case D3DPT_TRIANGLEFAN:
+					gl_primitive_type = GL_TRIANGLE_FAN;
+					index_count = polygon_count + 2;
+					break;
+				case D3DPT_LINELIST:
+					gl_primitive_type = GL_LINES;
+					index_count = polygon_count * 2;
+					break;
+				case D3DPT_LINESTRIP:
+					gl_primitive_type = GL_LINE_STRIP;
+					index_count = polygon_count + 1;
+					break;
+				case D3DPT_POINTLIST:
+					gl_primitive_type = GL_POINTS;
+					index_count = polygon_count;
+					break;
+				default:
+					printf("Phase 27.4.1 WARNING: Unknown primitive type %d, defaulting to TRIANGLES\n", primitive_type);
+					break;
+				}
+				
+				// Render with glDrawElements using index buffer
+				// Index offset is in bytes: (start_index + iba_offset) * sizeof(unsigned short)
+				GLsizei offset_bytes = (start_index + render_state.iba_offset) * sizeof(unsigned short);
+				
+				printf("Phase 27.4.1: glDrawElements(type=%d, count=%u, offset=%d, verts=%u)\n", 
+					primitive_type, index_count, offset_bytes, vertex_count);
+				
+				glDrawElements(gl_primitive_type, index_count, GL_UNSIGNED_SHORT, 
+					(const void*)(uintptr_t)offset_bytes);
+				
+				// Check for OpenGL errors
+				GLenum error = glGetError();
+				if (error != GL_NO_ERROR) {
+					printf("Phase 27.4.1 ERROR: glDrawElements failed with error 0x%04X\n", error);
+				}
+#endif
 			}
 			break;
 		case BUFFER_TYPE_SORTING:
@@ -2429,11 +2566,45 @@ void DX8Wrapper::Apply_Render_State_Changes()
 
 	if (render_state_changed&WORLD_CHANGED) {
 		SNAPSHOT_SAY(("DX8 - apply world matrix"));
+#ifdef _WIN32
 		_Set_DX8_Transform(D3DTS_WORLD,render_state.world);
+#else
+		// Phase 27.3.1: Update World matrix uniform in OpenGL shader
+		if (GL_Shader_Program != 0) {
+			glUseProgram(GL_Shader_Program);
+			
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uWorldMatrix");
+			if (loc != -1) {
+				// D3D matrices are row-major, OpenGL expects column-major
+				// render_state.world is already transposed in Set_Transform()
+				// So we need to transpose it back for OpenGL (or use GL_TRUE in glUniformMatrix4fv)
+				glUniformMatrix4fv(loc, 1, GL_FALSE, (const float*)&render_state.world);
+				
+				printf("Phase 27.3.1: Updated uWorldMatrix uniform\n");
+			}
+		}
+#endif
 	}
 	if (render_state_changed&VIEW_CHANGED) {
 		SNAPSHOT_SAY(("DX8 - apply view matrix"));
+#ifdef _WIN32
 		_Set_DX8_Transform(D3DTS_VIEW,render_state.view);
+#else
+		// Phase 27.3.1: Update View matrix uniform in OpenGL shader
+		if (GL_Shader_Program != 0) {
+			glUseProgram(GL_Shader_Program);
+			
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uViewMatrix");
+			if (loc != -1) {
+				// D3D matrices are row-major, OpenGL expects column-major
+				// render_state.view is already transposed in Set_Transform()
+				// So we need to transpose it back for OpenGL (or use GL_TRUE in glUniformMatrix4fv)
+				glUniformMatrix4fv(loc, 1, GL_FALSE, (const float*)&render_state.view);
+				
+				printf("Phase 27.3.1: Updated uViewMatrix uniform\n");
+			}
+		}
+#endif
 	}
 	if (render_state_changed&VERTEX_BUFFER_CHANGED) {
 		SNAPSHOT_SAY(("DX8 - apply vb change"));
@@ -2463,12 +2634,44 @@ void DX8Wrapper::Apply_Render_State_Changes()
 					WWASSERT(0);
 				}
 #else
-				// Phase 27.2.2: OpenGL vertex buffer binding handled elsewhere
+				// Phase 27.2.5: OpenGL vertex buffer and attribute setup
+				switch (render_state.vertex_buffer_types[i]) {
+				case BUFFER_TYPE_DX8:
+				case BUFFER_TYPE_DYNAMIC_DX8:
+					{
+						// Bind VAO
+						glBindVertexArray(GL_VAO);
+						
+						// Bind VBO
+						DX8VertexBufferClass* vb = static_cast<DX8VertexBufferClass*>(render_state.vertex_buffers[i]);
+						glBindBuffer(GL_ARRAY_BUFFER, vb->Get_GL_Vertex_Buffer());
+						
+						// Setup vertex attributes based on FVF format
+						unsigned int fvf = render_state.vertex_buffers[i]->FVF_Info().Get_FVF();
+						unsigned int stride = render_state.vertex_buffers[i]->FVF_Info().Get_FVF_Size();
+						
+						if (fvf != 0) {
+							_Setup_Vertex_Attributes(fvf, stride);
+						}
+						
+						printf("Phase 27.2.5: Configured vertex attributes for FVF 0x%08x (stride %u)\n", fvf, stride);
+					}
+					break;
+				case BUFFER_TYPE_SORTING:
+				case BUFFER_TYPE_DYNAMIC_SORTING:
+					break;
+				default:
+					WWASSERT(0);
+				}
 #endif
 			} else {
 #ifdef _WIN32
 				DX8CALL(SetStreamSource(i,NULL,0));
 				DX8_RECORD_VERTEX_BUFFER_CHANGE();
+#else
+				// Unbind VAO and VBO
+				glBindVertexArray(0);
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
 #endif
 			}
 		}
@@ -2618,6 +2821,240 @@ unsigned int DX8Wrapper::_Create_GL_Texture
 	
 	return gl_texture;
 }
+
+// Phase 27.2.4: OpenGL shader program management functions
+
+/*!
+ * Load shader source from file and compile it
+ * Returns GLuint shader ID (0 on failure)
+ */
+unsigned int DX8Wrapper::_Load_And_Compile_Shader(const char *shader_path, unsigned int shader_type)
+{
+	// Read shader source from file
+	FILE *file = fopen(shader_path, "r");
+	if (!file) {
+		printf("Phase 27.2.4 ERROR: Failed to open shader file: %s\n", shader_path);
+		return 0;
+	}
+	
+	// Get file size
+	fseek(file, 0, SEEK_END);
+	long file_size = ftell(file);
+	fseek(file, 0, SEEK_SET);
+	
+	// Read file contents
+	char *shader_source = (char*)malloc(file_size + 1);
+	if (!shader_source) {
+		printf("Phase 27.2.4 ERROR: Failed to allocate memory for shader source\n");
+		fclose(file);
+		return 0;
+	}
+	
+	size_t bytes_read = fread(shader_source, 1, file_size, file);
+	shader_source[bytes_read] = '\0';
+	fclose(file);
+	
+	// Create shader
+	GLuint shader = glCreateShader(shader_type);
+	if (shader == 0) {
+		printf("Phase 27.2.4 ERROR: glCreateShader failed for %s\n", shader_path);
+		free(shader_source);
+		return 0;
+	}
+	
+	// Compile shader
+	const char *source_ptr = shader_source;
+	glShaderSource(shader, 1, &source_ptr, NULL);
+	glCompileShader(shader);
+	
+	// Check compilation status
+	const char *shader_type_name = (shader_type == GL_VERTEX_SHADER) ? "vertex" : "fragment";
+	if (!_Check_Shader_Compile_Status(shader, shader_type_name)) {
+		printf("Phase 27.2.4 ERROR: Shader compilation failed for %s\n", shader_path);
+		glDeleteShader(shader);
+		free(shader_source);
+		return 0;
+	}
+	
+	printf("Phase 27.2.4: Successfully compiled %s shader from %s (ID: %u)\n", 
+		shader_type_name, shader_path, shader);
+	
+	free(shader_source);
+	return shader;
+}
+
+/*!
+ * Create shader program by linking vertex and fragment shaders
+ * Returns GLuint program ID (0 on failure)
+ */
+unsigned int DX8Wrapper::_Create_Shader_Program(unsigned int vertex_shader, unsigned int fragment_shader)
+{
+	// Create program
+	GLuint program = glCreateProgram();
+	if (program == 0) {
+		printf("Phase 27.2.4 ERROR: glCreateProgram failed\n");
+		return 0;
+	}
+	
+	// Attach shaders
+	glAttachShader(program, vertex_shader);
+	glAttachShader(program, fragment_shader);
+	
+	// Link program
+	glLinkProgram(program);
+	
+	// Check link status
+	if (!_Check_Program_Link_Status(program)) {
+		printf("Phase 27.2.4 ERROR: Program linking failed\n");
+		glDeleteProgram(program);
+		return 0;
+	}
+	
+	// Detach shaders (they're now part of the program)
+	glDetachShader(program, vertex_shader);
+	glDetachShader(program, fragment_shader);
+	
+	printf("Phase 27.2.4: Successfully created shader program (ID: %u)\n", program);
+	
+	return program;
+}
+
+/*!
+ * Check shader compilation status and print errors
+ * Returns true if compilation succeeded
+ */
+bool DX8Wrapper::_Check_Shader_Compile_Status(unsigned int shader, const char *shader_name)
+{
+	GLint success = 0;
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+	
+	if (success == GL_FALSE) {
+		GLint log_length = 0;
+		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_length);
+		
+		if (log_length > 0) {
+			char *error_log = (char*)malloc(log_length);
+			glGetShaderInfoLog(shader, log_length, &log_length, error_log);
+			printf("Phase 27.2.4 SHADER COMPILE ERROR (%s):\n%s\n", shader_name, error_log);
+			free(error_log);
+		}
+		
+		return false;
+	}
+	
+	return true;
+}
+
+/*!
+ * Check program link status and print errors
+ * Returns true if linking succeeded
+ */
+bool DX8Wrapper::_Check_Program_Link_Status(unsigned int program)
+{
+	GLint success = 0;
+	glGetProgramiv(program, GL_LINK_STATUS, &success);
+	
+	if (success == GL_FALSE) {
+		GLint log_length = 0;
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_length);
+		
+		if (log_length > 0) {
+			char *error_log = (char*)malloc(log_length);
+			glGetProgramInfoLog(program, log_length, &log_length, error_log);
+			printf("Phase 27.2.4 PROGRAM LINK ERROR:\n%s\n", error_log);
+			free(error_log);
+		}
+		
+		return false;
+	}
+	
+	return true;
+}
+
+/*!
+ * Get uniform location in shader program
+ * Returns uniform location (-1 if not found)
+ */
+int DX8Wrapper::_Get_Uniform_Location(unsigned int program, const char *uniform_name)
+{
+	GLint location = glGetUniformLocation(program, uniform_name);
+	
+	if (location == -1) {
+		printf("Phase 27.2.4 WARNING: Uniform '%s' not found in program %u\n", uniform_name, program);
+	}
+	
+	return location;
+}
+
+// Phase 27.2.5: Vertex attribute setup based on FVF format
+/*!
+ * Configure OpenGL vertex attributes based on Direct3D8 FVF (Flexible Vertex Format)
+ * Maps D3D FVF to OpenGL attribute locations matching shader layout:
+ *   location 0: position (vec3)
+ *   location 1: normal (vec3)
+ *   location 2: color (vec4)
+ *   location 3: texcoord0 (vec2)
+ */
+void DX8Wrapper::_Setup_Vertex_Attributes(unsigned int fvf, unsigned int vertex_stride)
+{
+	// Disable all attributes first
+	for (int i = 0; i < 4; i++) {
+		glDisableVertexAttribArray(i);
+	}
+	
+	unsigned int offset = 0;
+	
+	// Position attribute (location 0) - required for all formats
+	if (fvf & D3DFVF_XYZ) {
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertex_stride, (void*)(uintptr_t)offset);
+		glEnableVertexAttribArray(0);
+		offset += 3 * sizeof(float);
+		
+		printf("Phase 27.2.5: Enabled position attribute (loc 0, offset %u)\n", offset - 3 * sizeof(float));
+	}
+	
+	// Normal attribute (location 1)
+	if (fvf & D3DFVF_NORMAL) {
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertex_stride, (void*)(uintptr_t)offset);
+		glEnableVertexAttribArray(1);
+		offset += 3 * sizeof(float);
+		
+		printf("Phase 27.2.5: Enabled normal attribute (loc 1, offset %u)\n", offset - 3 * sizeof(float));
+	}
+	
+	// Diffuse color attribute (location 2)
+	// D3D stores color as BGRA DWORD, OpenGL expects RGBA float[4]
+	if (fvf & D3DFVF_DIFFUSE) {
+		// Note: Using GL_UNSIGNED_BYTE with GL_TRUE normalization converts 0-255 to 0.0-1.0
+		// D3DCOLOR is BGRA order, so we need to use GL_BGRA format
+		glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, vertex_stride, (void*)(uintptr_t)offset);
+		glEnableVertexAttribArray(2);
+		offset += sizeof(unsigned int);  // D3DCOLOR is 4 bytes
+		
+		printf("Phase 27.2.5: Enabled diffuse color attribute (loc 2, offset %u)\n", offset - sizeof(unsigned int));
+	}
+	
+	// Texture coordinate 0 attribute (location 3)
+	// Check for at least 1 texture coordinate set
+	unsigned int tex_count = (fvf & D3DFVF_TEXCOUNT_MASK) >> D3DFVF_TEXCOUNT_SHIFT;
+	if (tex_count >= 1) {
+		glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, vertex_stride, (void*)(uintptr_t)offset);
+		glEnableVertexAttribArray(3);
+		offset += 2 * sizeof(float);
+		
+		printf("Phase 27.2.5: Enabled texcoord0 attribute (loc 3, offset %u)\n", offset - 2 * sizeof(float));
+	}
+	
+	// Note: We're only handling the first texture coordinate set for now
+	// Additional texture coordinates (texcoord1, etc.) can be added later as needed
+	
+	// Check for OpenGL errors
+	GLenum error = glGetError();
+	if (error != GL_NO_ERROR) {
+		printf("Phase 27.2.5 ERROR: OpenGL error during vertex attribute setup: 0x%x\n", error);
+	}
+}
+
 #endif // _WIN32
 
 IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
