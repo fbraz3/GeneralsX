@@ -2046,7 +2046,28 @@ void DX8Wrapper::Clear(bool clear_color, bool clear_z_stencil, const Vector3 &co
 void DX8Wrapper::Set_Viewport(CONST D3DVIEWPORT8* pViewport)
 {
 	DX8_THREAD_ASSERT();
+	
+#ifdef _WIN32
 	DX8CALL(SetViewport(pViewport));
+#else
+	// Phase 27.4.7: OpenGL viewport and scissor test setup
+	if (pViewport) {
+		// Set OpenGL viewport
+		glViewport(pViewport->X, pViewport->Y, pViewport->Width, pViewport->Height);
+		
+		// Set OpenGL depth range (D3D uses 0-1, OpenGL also uses 0-1)
+		glDepthRange(pViewport->MinZ, pViewport->MaxZ);
+		
+		// Phase 27.4.7: Initialize scissor rect to match viewport by default
+		// This provides compatibility with D3D8 behavior.
+		// Note: Scissor test must be explicitly enabled via render state 174 (D3DRS_SCISSORTESTENABLE)
+		glScissor(pViewport->X, pViewport->Y, pViewport->Width, pViewport->Height);
+		
+		printf("Phase 27.4.7: Viewport set to (%u, %u, %u x %u), depth [%.2f - %.2f]\n",
+			pViewport->X, pViewport->Y, pViewport->Width, pViewport->Height,
+			pViewport->MinZ, pViewport->MaxZ);
+	}
+#endif
 }
 
 // ----------------------------------------------------------------------------

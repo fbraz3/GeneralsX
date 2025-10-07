@@ -1352,6 +1352,23 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 				state_name, op_name, map_stencil_op(value));
 			break;
 		}
+		
+		// Phase 27.4.7: Scissor test (D3D9 feature, limited support in D3D8)
+		// Note: D3D8 doesn't have D3DRS_SCISSORTESTENABLE. In D3D9, this would be state 174.
+		// For D3D8 compatibility, we provide basic scissor support that can be enabled
+		// when the engine is upgraded to D3D9 or when custom render targets are used.
+		// The implementation below is prepared for future use.
+		case 174:  // D3DRS_SCISSORTESTENABLE (D3D9 constant, not in D3D8)
+		{
+			if (value) {
+				glEnable(GL_SCISSOR_TEST);
+				printf("Phase 27.4.7: Scissor test enabled (D3D9 extension)\n");
+			} else {
+				glDisable(GL_SCISSOR_TEST);
+				printf("Phase 27.4.7: Scissor test disabled (D3D9 extension)\n");
+			}
+			break;
+		}
 
 		default:
 			// Other states - store but don't translate yet
