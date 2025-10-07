@@ -1147,15 +1147,100 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 			break;
 		}
 		
-		// States that don't need immediate OpenGL translation (handled elsewhere or not applicable)
+		// Phase 27.4.5: Fog rendering (shader-based)
 		case D3DRS_FOGENABLE:
-		case D3DRS_FOGCOLOR:
-		case D3DRS_FOGSTART:
-		case D3DRS_FOGEND:
-		case D3DRS_FOGDENSITY:
-			// These are handled in shaders (Phase 27.4.5)
-			printf("Phase 27.4.5: Fog render state %d stored for shader use (value: %u)\n", state, value);
+		{
+			// Update uFogEnabled uniform
+			if (GL_Shader_Program != 0) {
+				glUseProgram(GL_Shader_Program);
+				GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogEnabled");
+				if (loc != -1) {
+					glUniform1i(loc, value ? 1 : 0);
+					printf("Phase 27.4.5: Fog %s\n", value ? "enabled" : "disabled");
+				}
+			}
 			break;
+		}
+		
+		case D3DRS_FOGCOLOR:
+		{
+			// Update uFogColor uniform (D3DCOLOR ARGB → RGB float)
+			if (GL_Shader_Program != 0) {
+				glUseProgram(GL_Shader_Program);
+				GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogColor");
+				if (loc != -1) {
+					float r = ((value >> 16) & 0xFF) / 255.0f;
+					float g = ((value >> 8) & 0xFF) / 255.0f;
+					float b = (value & 0xFF) / 255.0f;
+					glUniform3f(loc, r, g, b);
+					printf("Phase 27.4.5: Fog color set to RGB(%.2f, %.2f, %.2f)\n", r, g, b);
+				}
+			}
+			break;
+		}
+		
+		case D3DRS_FOGSTART:
+		{
+			// Update uFogStart uniform (D3D uses float in DWORD)
+			if (GL_Shader_Program != 0) {
+				glUseProgram(GL_Shader_Program);
+				GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogStart");
+				if (loc != -1) {
+					float fog_start = *reinterpret_cast<const float*>(&value);
+					glUniform1f(loc, fog_start);
+					printf("Phase 27.4.5: Fog start set to %.2f\n", fog_start);
+				}
+			}
+			break;
+		}
+		
+		case D3DRS_FOGEND:
+		{
+			// Update uFogEnd uniform (D3D uses float in DWORD)
+			if (GL_Shader_Program != 0) {
+				glUseProgram(GL_Shader_Program);
+				GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogEnd");
+				if (loc != -1) {
+					float fog_end = *reinterpret_cast<const float*>(&value);
+					glUniform1f(loc, fog_end);
+					printf("Phase 27.4.5: Fog end set to %.2f\n", fog_end);
+				}
+			}
+			break;
+		}
+		
+		case D3DRS_FOGDENSITY:
+		{
+			// Update uFogDensity uniform (D3D uses float in DWORD)
+			if (GL_Shader_Program != 0) {
+				glUseProgram(GL_Shader_Program);
+				GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogDensity");
+				if (loc != -1) {
+					float fog_density = *reinterpret_cast<const float*>(&value);
+					glUniform1f(loc, fog_density);
+					printf("Phase 27.4.5: Fog density set to %.4f\n", fog_density);
+				}
+			}
+			break;
+		}
+		
+		case D3DRS_FOGTABLEMODE:
+		case D3DRS_FOGVERTEXMODE:
+		{
+			// Update uFogMode uniform
+			// D3DFOG_NONE (0), D3DFOG_EXP (1), D3DFOG_EXP2 (2), D3DFOG_LINEAR (3)
+			if (GL_Shader_Program != 0) {
+				glUseProgram(GL_Shader_Program);
+				GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogMode");
+				if (loc != -1) {
+					glUniform1i(loc, value);
+					const char* fog_modes[] = {"NONE", "EXP", "EXP2", "LINEAR"};
+					const char* mode_name = (value <= 3) ? fog_modes[value] : "UNKNOWN";
+					printf("Phase 27.4.5: Fog mode set to %s (value: %u)\n", mode_name, value);
+				}
+			}
+			break;
+		}
 
 		default:
 			// Other states - store but don't translate yet
