@@ -12,6 +12,16 @@ uniform mat4 uWorldMatrix;      // D3DTS_WORLD
 uniform mat4 uViewMatrix;       // D3DTS_VIEW
 uniform mat4 uProjectionMatrix; // D3DTS_PROJECTION
 
+// Phase 27.4.8: Point sprite uniforms
+uniform bool uPointSpriteEnabled;       // D3DRS_POINTSPRITEENABLE
+uniform float uPointSize;               // D3DRS_POINTSIZE
+uniform bool uPointScaleEnabled;        // D3DRS_POINTSCALEENABLE
+uniform float uPointScaleA;             // D3DRS_POINTSCALE_A (constant)
+uniform float uPointScaleB;             // D3DRS_POINTSCALE_B (linear)
+uniform float uPointScaleC;             // D3DRS_POINTSCALE_C (quadratic)
+uniform float uPointSizeMin;            // D3DRS_POINTSIZE_MIN
+uniform float uPointSizeMax;            // D3DRS_POINTSIZE_MAX
+
 // Outputs to fragment shader
 out vec3 vNormal;
 out vec4 vColor;
@@ -33,4 +43,29 @@ void main()
     vColor = aColor;
     vTexCoord0 = aTexCoord0;
     vWorldPos = worldPos.xyz;
+    
+    // Phase 27.4.8: Point sprite size calculation
+    // D3D point sprite formula: size = sqrt(1/(A + B*dist + C*dist²))
+    // gl_PointSize controls point sprite rendering size
+    if (uPointSpriteEnabled) {
+        float pointSize = uPointSize;
+        
+        if (uPointScaleEnabled) {
+            // Calculate distance from camera to point in view space
+            float dist = length(viewPos.xyz);
+            
+            // D3D attenuation formula: screenSize = viewportHeight * size * sqrt(1/(A + B*d + C*d²))
+            // For simplicity, we calculate: size / sqrt(A + B*d + C*d²)
+            float attenuation = uPointScaleA + uPointScaleB * dist + uPointScaleC * dist * dist;
+            if (attenuation > 0.0) {
+                pointSize = pointSize / sqrt(attenuation);
+            }
+        }
+        
+        // Clamp to min/max range
+        pointSize = clamp(pointSize, uPointSizeMin, uPointSizeMax);
+        gl_PointSize = pointSize;
+    } else {
+        gl_PointSize = 1.0;  // Default point size
+    }
 }

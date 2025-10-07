@@ -1370,6 +1370,125 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 			break;
 		}
 
+
+	// Phase 27.4.8: Point sprite render states
+	case D3DRS_POINTSPRITEENABLE:  // 156
+	{
+		if (GL_Shader_Program != 0) {
+			glUseProgram(GL_Shader_Program);
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointSpriteEnabled");
+			if (loc != -1) {
+				glUniform1i(loc, value ? 1 : 0);
+				printf("Phase 27.4.8: Point sprite %s\n", value ? "enabled" : "disabled");
+			}
+			
+			// Enable OpenGL point sprite mode
+			if (value) {
+				glEnable(GL_PROGRAM_POINT_SIZE);  // Allow shader to control point size
+				printf("Phase 27.4.8: GL_PROGRAM_POINT_SIZE enabled\n");
+			} else {
+				glDisable(GL_PROGRAM_POINT_SIZE);
+			}
+		}
+		break;
+	}
+
+	case D3DRS_POINTSIZE:  // 154
+	{
+		if (GL_Shader_Program != 0) {
+			glUseProgram(GL_Shader_Program);
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointSize");
+			if (loc != -1) {
+				float pointSize = *reinterpret_cast<const float*>(&value);
+				glUniform1f(loc, pointSize);
+				printf("Phase 27.4.8: Point size set to %.2f\n", pointSize);
+			}
+		}
+		break;
+	}
+
+	case D3DRS_POINTSCALEENABLE:  // 157
+	{
+		if (GL_Shader_Program != 0) {
+			glUseProgram(GL_Shader_Program);
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointScaleEnabled");
+			if (loc != -1) {
+				glUniform1i(loc, value ? 1 : 0);
+				printf("Phase 27.4.8: Point scale %s\n", value ? "enabled" : "disabled");
+			}
+		}
+		break;
+	}
+
+	case D3DRS_POINTSCALE_A:  // 158
+	{
+		if (GL_Shader_Program != 0) {
+			glUseProgram(GL_Shader_Program);
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointScaleA");
+			if (loc != -1) {
+				float scaleA = *reinterpret_cast<const float*>(&value);
+				glUniform1f(loc, scaleA);
+				printf("Phase 27.4.8: Point scale A = %.4f\n", scaleA);
+			}
+		}
+		break;
+	}
+
+	case D3DRS_POINTSCALE_B:  // 159
+	{
+		if (GL_Shader_Program != 0) {
+			glUseProgram(GL_Shader_Program);
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointScaleB");
+			if (loc != -1) {
+				float scaleB = *reinterpret_cast<const float*>(&value);
+				glUniform1f(loc, scaleB);
+				printf("Phase 27.4.8: Point scale B = %.4f\n", scaleB);
+			}
+		}
+		break;
+	}
+
+	case D3DRS_POINTSCALE_C:  // 160
+	{
+		if (GL_Shader_Program != 0) {
+			glUseProgram(GL_Shader_Program);
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointScaleC");
+			if (loc != -1) {
+				float scaleC = *reinterpret_cast<const float*>(&value);
+				glUniform1f(loc, scaleC);
+				printf("Phase 27.4.8: Point scale C = %.4f\n", scaleC);
+			}
+		}
+		break;
+	}
+
+	case D3DRS_POINTSIZE_MIN:  // 155
+	{
+		if (GL_Shader_Program != 0) {
+			glUseProgram(GL_Shader_Program);
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointSizeMin");
+			if (loc != -1) {
+				float minSize = *reinterpret_cast<const float*>(&value);
+				glUniform1f(loc, minSize);
+				printf("Phase 27.4.8: Point size min = %.2f\n", minSize);
+			}
+		}
+		break;
+	}
+
+	case D3DRS_POINTSIZE_MAX:  // 166
+	{
+		if (GL_Shader_Program != 0) {
+			glUseProgram(GL_Shader_Program);
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointSizeMax");
+			if (loc != -1) {
+				float maxSize = *reinterpret_cast<const float*>(&value);
+				glUniform1f(loc, maxSize);
+				printf("Phase 27.4.8: Point size max = %.2f\n", maxSize);
+			}
+		}
+		break;
+	}
 		default:
 			// Other states - store but don't translate yet
 			break;
