@@ -120,7 +120,12 @@ diff -r Core/ references/fighter19-dxvk-port/Core/  # Compare compatibility laye
 - `Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h` - 200+ Windows API mappings
 - `NEXT_STEPS.md` - Current development status and crash analysis
 - `MACOS_BUILD.md` - Complete build instructions and troubleshooting
+- `MACOS_PORT.md` - Comprehensive port progress, Phase 27 achievements, backport strategy
 - `BIG_FILES_REFERENCE.md` - Asset structure and INI file locations in .BIG archives
+- `OPENGL_SUMMARY.md` - OpenGL 3.3 implementation details, SDL2 integration, code examples
+- `PHASE27_BACKPORT_GUIDE.md` - Complete backport guide (Zero Hour → Generals base) with 837 lines of implementation details
+- `resources/shaders/basic.vert` - OpenGL 3.3 vertex shader (transformations, lighting)
+- `resources/shaders/basic.frag` - OpenGL 3.3 fragment shader (texturing, color)
 
 ## INI File System (Game Configuration)
 
@@ -140,3 +145,110 @@ diff -r Core/ references/fighter19-dxvk-port/Core/  # Compare compatibility laye
 **Universal INI Protection System**: Comprehensive field parser exception handling enables engine continuation through hundreds of unknown exceptions while processing complex INI files. This breakthrough enabled progression from immediate GameLOD.ini crashes to advanced GameClient subsystem initialization.
 
 **ControlBar Resolution Success**: Early TheControlBar initialization in GameEngine::init() completely eliminated parseCommandSetDefinition crashes, unlocking major engine progression through 5+ additional subsystems.
+
+## Phase 27: OpenGL Graphics Implementation (Current Focus)
+
+**Status**: 16/28 tasks complete (57%) - DirectX8→OpenGL translation layer in progress
+
+**Architecture**: DirectX 8 API calls wrapped with `#ifdef _WIN32` → OpenGL 3.3 Core Profile on non-Windows platforms
+
+### Completed Implementations
+
+#### Phase 27.1: SDL2 Window System (6/6 tasks) ✅
+- SDL2 window creation with OpenGL 3.3 Core Profile context
+- GLAD OpenGL loader integration  
+- V-Sync support, fullscreen/windowed toggle
+- Files: `GeneralsMD/Code/GameEngine/Source/W3DDisplay.cpp`
+
+#### Phase 27.2: Buffer Abstraction (5/8 tasks) 🔄
+- OpenGL VBO (Vertex Buffer Object) implementation with `glGenBuffers`, `glBufferData`
+- OpenGL EBO (Element Buffer Object) for indices
+- Lock/Unlock emulation using CPU-side buffers (GLVertexData/GLIndexData)
+- WriteLockClass and AppendLockClass support
+- Files: `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8vertexbuffer.cpp/h`, `dx8indexbuffer.cpp/h`
+
+#### Phase 27.3: Uniform Updates (3/3 tasks) ✅
+- **Matrix Uniforms**: uWorldMatrix, uViewMatrix, uProjectionMatrix via `glUniformMatrix4fv()`
+- **Material Uniforms**: Material color logging with D3DMATERIAL8 array fix (`mat->Diffuse[0]` not `.r`)
+- **Lighting Uniforms**: uLightDirection, uLightColor, uAmbientColor, uUseLighting via `glUniform3f()`
+- Files: `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h/cpp`
+
+#### Phase 27.4.1: Primitive Draw Calls (1/8 tasks) ✅
+- `glDrawElements()` implementation replacing `DX8CALL(DrawIndexedPrimitive())`
+- Complete D3D primitive type mapping:
+  * D3DPT_TRIANGLELIST → GL_TRIANGLES (count = polygons × 3)
+  * D3DPT_TRIANGLESTRIP → GL_TRIANGLE_STRIP (count = polygons + 2)
+  * D3DPT_TRIANGLEFAN → GL_TRIANGLE_FAN (count = polygons + 2)
+  * D3DPT_LINELIST → GL_LINES (count = polygons × 2)
+  * D3DPT_LINESTRIP → GL_LINE_STRIP (count = polygons + 1)
+  * D3DPT_POINTLIST → GL_POINTS (count = polygons)
+- Proper index offset calculation: `(start_index + iba_offset) × sizeof(unsigned short)`
+- GL error checking with `glGetError()`
+- File: `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp`
+
+### Critical Phase 27 Patterns
+
+**D3DMATERIAL8 Color Access** (CRITICAL FIX):
+```cpp
+// WRONG: mat->Diffuse.r (does not compile)
+// CORRECT: mat->Diffuse[0] (D3DMATERIAL8 uses float[4] arrays)
+float r = mat->Diffuse[0];
+float g = mat->Diffuse[1];
+float b = mat->Diffuse[2];
+float a = mat->Diffuse[3];
+```
+
+**OpenGL Uniform Updates**:
+```cpp
+#ifndef _WIN32
+    if (GL_Shader_Program != 0) {
+        glUseProgram(GL_Shader_Program);
+        GLint loc = glGetUniformLocation(GL_Shader_Program, "uWorldMatrix");
+        if (loc != -1) {
+            glUniformMatrix4fv(loc, 1, GL_FALSE, (const float*)&render_state.world);
+        }
+    }
+#endif
+```
+
+**Primitive Draw Calls**:
+```cpp
+#ifndef _WIN32
+    GLenum gl_primitive_type = GL_TRIANGLES;
+    unsigned index_count = polygon_count * 3;
+    
+    switch (primitive_type) {
+    case D3DPT_TRIANGLELIST:
+        gl_primitive_type = GL_TRIANGLES;
+        index_count = polygon_count * 3;
+        break;
+    // ... other cases ...
+    }
+    
+    GLsizei offset_bytes = (start_index + render_state.iba_offset) * sizeof(unsigned short);
+    glDrawElements(gl_primitive_type, index_count, GL_UNSIGNED_SHORT, 
+        (const void*)(uintptr_t)offset_bytes);
+    
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+        printf("Phase 27.4.1 ERROR: glDrawElements failed with error 0x%04X\n", error);
+    }
+#endif
+```
+
+### Backport Strategy
+
+**Approach**: Implement all OpenGL features in **GeneralsMD (Zero Hour)** first, then backport to **Generals (base game)**.
+
+**Rationale**:
+1. Zero Hour has more complex graphics (generals, powers, particle effects)
+2. Testing in Zero Hour ensures robustness for edge cases
+3. Backport is straightforward: copy working code with minimal adjustments
+4. Generals base has simpler rendering, fewer compatibility issues
+
+**Documentation**: See `PHASE27_BACKPORT_GUIDE.md` for complete backport instructions with copy-paste ready code examples.
+
+### Pending Tasks
+- Task 27.2.3-27.2.5: Texture creation, shader management, vertex attributes
+- Task 27.4.2-27.4.8: Render states, texture stages, advanced features
+- Task 27.5.1-27.5.3: Runtime testing, debugging, performance baseline
