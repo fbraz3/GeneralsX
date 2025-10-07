@@ -39,12 +39,12 @@ This project is a fork of the Command & Conquer Generals source code and its exp
 2. The name of this project is "GeneralsX", please use this name in commit messages and pull requests.
 3. All tests must be moved into a dedicated `tests/` directory to improve project organization and maintainability.
 4. The game uses Windows Registry keys for configuration and settings storage. When porting to other platforms, these keys need to be replaced with equivalent configuration files or system settings.
-5. before finish a session, update the files `MACOS_PORT.md` and `NEXT_STEPS.md` with the progress made and the next steps to be taken.
+5. before finish a session, update the files `docs/MACOS_PORT.md` and `docs/NEXT_STEPS.md` with the progress made and the next steps to be taken.
 6. Commit and push changes before finish a session (and after changing markdown files from step 4).
 7. For game base (generals), there is a crash log in `$HOME/Documents/Command\ and\ Conquer\ Generals\ Data/ReleaseCrashInfo.txt` that can be used to debug runtime issues.
 8. For game expansion (zero hour), there is a crash log in `$HOME/Documents/Command\ and\ Conquer\ Generals\ Zero\ Hour\ Data/ReleaseCrashInfo.txt` that can be used to debug runtime issues.
 9. When compiling the project, try to use half of the available CPU cores to avoid overloading the system.
-10. For understanding the game asset structure and debugging INI-related issues, refer to `BIG_FILES_REFERENCE.md` which contains complete documentation of .big file contents and their relationships to INI files.
+10. For understanding the game asset structure and debugging INI-related issues, refer to `docs/BIG_FILES_REFERENCE.md` which contains complete documentation of .big file contents and their relationships to INI files.
 11. **Game Assets Location**: Use standardized directories for runtime testing:
     - **Generals (base game)**: `$HOME/GeneralsX/Generals/` - Copy original game assets (Data/, Maps/) here
     - **Zero Hour (expansion)**: `$HOME/GeneralsX/GeneralsMD/` - Copy Zero Hour assets (Data/, Maps/) here

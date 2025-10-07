@@ -118,12 +118,12 @@ diff -r Core/ references/fighter19-dxvk-port/Core/  # Compare compatibility laye
 
 ### Critical Files for AI Agents
 - `Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h` - 200+ Windows API mappings
-- `NEXT_STEPS.md` - Current development status and crash analysis
-- `MACOS_BUILD.md` - Complete build instructions and troubleshooting
-- `MACOS_PORT.md` - Comprehensive port progress, Phase 27 achievements, backport strategy
-- `BIG_FILES_REFERENCE.md` - Asset structure and INI file locations in .BIG archives
-- `OPENGL_SUMMARY.md` - OpenGL 3.3 implementation details, SDL2 integration, code examples
-- `PHASE27_BACKPORT_GUIDE.md` - Complete backport guide (Zero Hour → Generals base) with 837 lines of implementation details
+- `docs/NEXT_STEPS.md` - Current development status and crash analysis
+- `docs/MACOS_BUILD.md` - Complete build instructions and troubleshooting
+- `docs/MACOS_PORT.md` - Comprehensive port progress, Phase 27 achievements, backport strategy
+- `docs/BIG_FILES_REFERENCE.md` - Asset structure and INI file locations in .BIG archives
+- `docs/OPENGL_SUMMARY.md` - OpenGL 3.3 implementation details, SDL2 integration, code examples
+- `docs/PHASE27_BACKPORT_GUIDE.md` - Complete backport guide (Zero Hour → Generals base) with 837 lines of implementation details
 - `resources/shaders/basic.vert` - OpenGL 3.3 vertex shader (transformations, lighting)
 - `resources/shaders/basic.frag` - OpenGL 3.3 fragment shader (texturing, color)
 
@@ -145,6 +145,8 @@ diff -r Core/ references/fighter19-dxvk-port/Core/  # Compare compatibility laye
 **Universal INI Protection System**: Comprehensive field parser exception handling enables engine continuation through hundreds of unknown exceptions while processing complex INI files. This breakthrough enabled progression from immediate GameLOD.ini crashes to advanced GameClient subsystem initialization.
 
 **ControlBar Resolution Success**: Early TheControlBar initialization in GameEngine::init() completely eliminated parseCommandSetDefinition crashes, unlocking major engine progression through 5+ additional subsystems.
+
+**Documentation Structure**: All project documentation is organized in the `docs/` directory. Key files include build guides, port progress, OpenGL implementation details, and testing procedures.
 
 ## Phase 27: OpenGL Graphics Implementation (Current Focus)
 
@@ -246,7 +248,7 @@ float a = mat->Diffuse[3];
 3. Backport is straightforward: copy working code with minimal adjustments
 4. Generals base has simpler rendering, fewer compatibility issues
 
-**Documentation**: See `PHASE27_BACKPORT_GUIDE.md` for complete backport instructions with copy-paste ready code examples.
+**Documentation**: See `docs/PHASE27_BACKPORT_GUIDE.md` for complete backport instructions with copy-paste ready code examples.
 
 ### Pending Tasks
 - Task 27.2.3-27.2.5: Texture creation, shader management, vertex attributes
