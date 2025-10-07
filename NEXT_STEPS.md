@@ -1,9 +1,9 @@
 # GeneralsX - Graphics Implementation Roadmap
 
 **Project**: GeneralsX (Command & Conquer: Generals Zero Hour macOS Port)  
-**Last Updated**: October 6, 2025  
+**Last Updated**: December 28, 2024  
 **Current Phase**: Phase 27 - Graphics Engine Implementation  
-**Status**: Compilation errors resolved - both targets build successfully
+**Status**: Phase 27.3-27.4.1 complete - Uniform updates and draw calls implemented
 
 ---
 
@@ -45,7 +45,7 @@
 
 **Total Tasks**: 25 detailed implementation tasks organized in 5 parts
 
-**Current Progress**: 9/26 tasks complete (35%) - Task 27.2.3 completed, file loading deferred to 27.5.4
+**Current Progress**: 16/26 tasks complete (62%) - Tasks 27.3.1-27.3.3 and 27.4.1 completed
 
 ---
 
@@ -70,11 +70,11 @@ View the complete task list with implementation details using the TODO managemen
 | Part | Tasks | Completed | Estimated Time | Status |
 |------|-------|-----------|----------------|--------|
 | 27.1 - Window Setup | 6 | **6/6** | 3-5 days | ✅ **COMPLETE** |
-| 27.2 - D3D8→OpenGL | 8 | **3/8** | 5-7 days | 🔄 **IN PROGRESS** |
-| 27.3 - W3D Rendering | 8 | 0/8 | 7-10 days | ⏳ Not Started |
-| 27.4 - Particles | 2 | 0/2 | 2-3 days | ⏳ Not Started |
-| 27.5 - Integration | 1 | 0/1 | 1-2 days | ⏳ Not Started |
-| **TOTAL** | **26 tasks** | **9/26** | **18-27 days** | **35% Complete** |
+| 27.2 - D3D8→OpenGL | 8 | **5/8** | 5-7 days | 🔄 **IN PROGRESS** |
+| 27.3 - Uniform Updates | 3 | **3/3** | 1-2 days | ✅ **COMPLETE** |
+| 27.4 - Rendering | 8 | **1/8** | 3-5 days | 🔄 **IN PROGRESS** |
+| 27.5 - Testing | 3 | 0/3 | 1-2 days | ⏳ Not Started |
+| **TOTAL** | **28 tasks** | **16/28** | **13-21 days** | **57% Complete** |
 
 ### Recent Achievements (October 4, 2025)
 
@@ -184,6 +184,48 @@ View the complete task list with implementation details using the TODO managemen
 - **Git Commits**: 
   - 904ce238 - "fix(opengl): resolve OpenGL header conflicts and compilation errors"
   - c0521670 - "fix(opengl): resolve GeneralsX compilation issues with Win32GameEngine"
+
+#### ✅ Task 27.3.1-27.3.3: Uniform Updates Complete (December 28, 2024)
+
+- **Files Modified**:
+  - GeneralsMD/dx8wrapper.h - Set_DX8_Material(), Set_DX8_Light()
+  - GeneralsMD/dx8wrapper.cpp - Apply_Render_State_Changes()
+- **Implementation**:
+  - ✅ **Task 27.3.1**: Matrix uniform updates (uWorldMatrix, uViewMatrix, uProjectionMatrix)
+    - Added to WORLD_CHANGED section: glUniformMatrix4fv for world matrix
+    - Added to VIEW_CHANGED section: glUniformMatrix4fv for view matrix
+    - Added to Set_Projection_Transform_With_Z_Bias(): glUniformMatrix4fv for projection matrix
+  - ✅ **Task 27.3.2**: Material uniform updates
+    - Implemented logging in Set_DX8_Material() for material diffuse color
+    - Fixed D3DMATERIAL8 structure access: changed `.r/.g/.b/.a` to `[0][1][2][3]` array indices
+    - Structure uses `float Diffuse[4]` not `D3DCOLORVALUE Diffuse`
+  - ✅ **Task 27.3.3**: Lighting uniform updates
+    - Implemented in Set_DX8_Light() with uLightDirection, uLightColor, uAmbientColor, uUseLighting
+    - Support for directional lights (D3DLIGHT_DIRECTIONAL, index 0)
+    - Enable/disable lighting based on light presence
+- **OpenGL APIs Used**: glUniformMatrix4fv, glUniform3f, glUniform1i, glUseProgram, glGetUniformLocation
+- **Build Times**: 22:56 (Task 27.3.2-27.3.3), 21:39 (Task 27.3.1)
+- **Git Commit**: 4ff9651f - "feat(opengl): implement Phase 27.3-27.4.1 uniform updates and draw calls"
+
+#### ✅ Task 27.4.1: Primitive Draw Calls Complete (December 28, 2024)
+
+- **Files Modified**: GeneralsMD/dx8wrapper.cpp - Draw()
+- **Implementation**:
+  - ✅ Implemented glDrawElements for indexed primitive rendering
+  - ✅ D3D primitive type mapping:
+    - D3DPT_TRIANGLELIST → GL_TRIANGLES (index_count = polygon_count * 3)
+    - D3DPT_TRIANGLESTRIP → GL_TRIANGLE_STRIP (index_count = polygon_count + 2)
+    - D3DPT_TRIANGLEFAN → GL_TRIANGLE_FAN (index_count = polygon_count + 2)
+    - D3DPT_LINELIST → GL_LINES (index_count = polygon_count * 2)
+    - D3DPT_LINESTRIP → GL_LINE_STRIP (index_count = polygon_count + 1)
+    - D3DPT_POINTLIST → GL_POINTS (index_count = polygon_count)
+  - ✅ Proper index offset calculation: `(start_index + iba_offset) * sizeof(unsigned short)`
+  - ✅ GL error checking after draw calls with glGetError()
+  - ✅ Debug logging: primitive type, index count, offset, vertex count
+- **OpenGL APIs Used**: glDrawElements, glGetError
+- **Design Pattern**: Inline OpenGL calls replace DX8CALL macro in non-Windows builds
+- **Build Time**: 23:26 (797 files compiled)
+- **Git Commit**: 4ff9651f - "feat(opengl): implement Phase 27.3-27.4.1 uniform updates and draw calls"
 
 ---
 
