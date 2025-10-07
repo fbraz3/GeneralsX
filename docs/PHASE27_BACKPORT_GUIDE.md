@@ -2,9 +2,9 @@
 
 **Purpose**: This guide documents all Phase 27 OpenGL implementations in GeneralsMD (Zero Hour) to facilitate backporting to Generals (base game).
 
-**Status**: Phase 27 in progress (16/28 tasks complete - 57%)
+**Status**: Phase 27.4 complete (25/28 tasks - 89%)
 
-**Last Updated**: December 28, 2024
+**Last Updated**: October 7, 2025
 
 ---
 
@@ -609,6 +609,916 @@ void DX8Wrapper::Draw(
 - Copy entire `#else` block to Generals
 - No game-specific differences
 - Verify D3DPT_* constants are defined in both
+
+---
+
+### 8. Render State Management (Phase 27.4.2) ✅
+
+#### File Modified:
+- `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h`
+
+#### Implementation (Set_DX8_Render_State function):
+
+**Culling Mode** (D3DRS_CULLMODE):
+```cpp
+case D3DRS_CULLMODE:  // 22
+{
+	if (value == D3DCULL_NONE) {
+		glDisable(GL_CULL_FACE);
+		printf("Phase 27.4.2: Culling disabled\n");
+	} else {
+		glEnable(GL_CULL_FACE);
+		
+		// D3D default: cull clockwise (back faces)
+		// OpenGL default: cull counter-clockwise (back faces)
+		if (value == D3DCULL_CW) {
+			glCullFace(GL_BACK);
+			glFrontFace(GL_CCW);  // Counter-clockwise is front
+			printf("Phase 27.4.2: Cull clockwise (back faces)\n");
+		} else if (value == D3DCULL_CCW) {
+			glCullFace(GL_BACK);
+			glFrontFace(GL_CW);   // Clockwise is front
+			printf("Phase 27.4.2: Cull counter-clockwise (back faces)\n");
+		}
+	}
+	break;
+}
+```
+
+**Depth Testing** (D3DRS_ZENABLE, D3DRS_ZFUNC, D3DRS_ZWRITEENABLE):
+```cpp
+case D3DRS_ZENABLE:  // 7
+{
+	if (value) {
+		glEnable(GL_DEPTH_TEST);
+		printf("Phase 27.4.2: Depth test enabled\n");
+	} else {
+		glDisable(GL_DEPTH_TEST);
+		printf("Phase 27.4.2: Depth test disabled\n");
+	}
+	break;
+}
+
+case D3DRS_ZFUNC:  // 23
+{
+	GLenum depth_func = GL_LESS;
+	switch (value) {
+		case 1: depth_func = GL_NEVER; break;    // D3DCMP_NEVER
+		case 2: depth_func = GL_LESS; break;     // D3DCMP_LESS
+		case 3: depth_func = GL_EQUAL; break;    // D3DCMP_EQUAL
+		case 4: depth_func = GL_LEQUAL; break;   // D3DCMP_LESSEQUAL
+		case 5: depth_func = GL_GREATER; break;  // D3DCMP_GREATER
+		case 6: depth_func = GL_NOTEQUAL; break; // D3DCMP_NOTEQUAL
+		case 7: depth_func = GL_GEQUAL; break;   // D3DCMP_GREATEREQUAL
+		case 8: depth_func = GL_ALWAYS; break;   // D3DCMP_ALWAYS
+		default: depth_func = GL_LESS; break;
+	}
+	glDepthFunc(depth_func);
+	printf("Phase 27.4.2: Depth function set to 0x%04X\n", depth_func);
+	break;
+}
+
+case D3DRS_ZWRITEENABLE:  // 14
+{
+	glDepthMask(value ? GL_TRUE : GL_FALSE);
+	printf("Phase 27.4.2: Depth write %s\n", value ? "enabled" : "disabled");
+	break;
+}
+```
+
+**Alpha Blending** (D3DRS_ALPHABLENDENABLE, D3DRS_SRCBLEND, D3DRS_DESTBLEND):
+```cpp
+case D3DRS_ALPHABLENDENABLE:  // 27
+{
+	if (value) {
+		glEnable(GL_BLEND);
+		printf("Phase 27.4.2: Alpha blending enabled\n");
+	} else {
+		glDisable(GL_BLEND);
+		printf("Phase 27.4.2: Alpha blending disabled\n");
+	}
+	break;
+}
+
+case D3DRS_SRCBLEND:  // 19
+case D3DRS_DESTBLEND:  // 20
+{
+	// Map D3DBLEND to OpenGL blend factors
+	auto map_blend_factor = [](unsigned int d3d_blend) -> GLenum {
+		switch (d3d_blend) {
+			case 1: return GL_ZERO;             // D3DBLEND_ZERO
+			case 2: return GL_ONE;              // D3DBLEND_ONE
+			case 3: return GL_SRC_COLOR;        // D3DBLEND_SRCCOLOR
+			case 4: return GL_ONE_MINUS_SRC_COLOR; // D3DBLEND_INVSRCCOLOR
+			case 5: return GL_SRC_ALPHA;        // D3DBLEND_SRCALPHA
+			case 6: return GL_ONE_MINUS_SRC_ALPHA; // D3DBLEND_INVSRCALPHA
+			case 7: return GL_DST_ALPHA;        // D3DBLEND_DESTALPHA
+			case 8: return GL_ONE_MINUS_DST_ALPHA; // D3DBLEND_INVDESTALPHA
+			case 9: return GL_DST_COLOR;        // D3DBLEND_DESTCOLOR
+			case 10: return GL_ONE_MINUS_DST_COLOR; // D3DBLEND_INVDESTCOLOR
+			case 11: return GL_SRC_ALPHA_SATURATE; // D3DBLEND_SRCALPHASAT
+			default: return GL_ONE;
+		}
+	};
+	
+	GLenum src_factor = map_blend_factor(RenderStates[D3DRS_SRCBLEND]);
+	GLenum dst_factor = map_blend_factor(RenderStates[D3DRS_DESTBLEND]);
+	
+	glBlendFunc(src_factor, dst_factor);
+	printf("Phase 27.4.2: Blend function (src=0x%04X, dst=0x%04X)\n", src_factor, dst_factor);
+	break;
+}
+```
+
+#### D3D Blend Factor Constants:
+```cpp
+// Core/Libraries/Source/WWVegas/WW3D2/d3d8.h (lines 341-352)
+#define D3DBLEND_ZERO 1
+#define D3DBLEND_ONE 2
+#define D3DBLEND_SRCCOLOR 3
+#define D3DBLEND_INVSRCCOLOR 4
+#define D3DBLEND_SRCALPHA 5
+#define D3DBLEND_INVSRCALPHA 6
+#define D3DBLEND_DESTALPHA 7
+#define D3DBLEND_INVDESTALPHA 8
+#define D3DBLEND_DESTCOLOR 9
+#define D3DBLEND_INVDESTCOLOR 10
+#define D3DBLEND_SRCALPHASAT 11
+```
+
+#### Backport Notes:
+- Lambda function for blend factor mapping (C++11 feature)
+- RenderStates array must be accessible
+- All render state values are cached in RenderStates[] array
+- Copy entire render state switch cases to Generals
+
+---
+
+### 9. Texture Stage States (Phase 27.4.3) ✅
+
+#### File Modified:
+- `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h`
+
+#### Implementation (Set_DX8_Texture function):
+```cpp
+WWINLINE void DX8Wrapper::Set_DX8_Texture(unsigned stage, W3DTextureClass* texture)
+{
+#ifdef _WIN32
+	// DirectX 8 implementation
+	DX8TextureClass* dx8_texture = static_cast<DX8TextureClass*>(texture);
+	DX8CALL(SetTexture(stage, dx8_texture ? dx8_texture->Peek_D3D_Texture() : nullptr));
+#else
+	// Phase 27.4.3: OpenGL texture binding
+	if (GL_Shader_Program != 0) {
+		glUseProgram(GL_Shader_Program);
+		
+		if (texture) {
+			DX8TextureClass* dx8_texture = static_cast<DX8TextureClass*>(texture);
+			GLuint gl_texture = dx8_texture->Get_GL_Texture();
+			
+			// Activate texture unit and bind texture
+			glActiveTexture(GL_TEXTURE0 + stage);
+			glBindTexture(GL_TEXTURE_2D, gl_texture);
+			
+			// Update shader uniform for texture sampler
+			char uniform_name[32];
+			snprintf(uniform_name, sizeof(uniform_name), "uTexture%u", stage);
+			GLint loc = glGetUniformLocation(GL_Shader_Program, uniform_name);
+			if (loc != -1) {
+				glUniform1i(loc, stage);  // Texture unit index
+			}
+			
+			// Enable texture usage in shader
+			loc = glGetUniformLocation(GL_Shader_Program, "uUseTexture");
+			if (loc != -1) {
+				glUniform1i(loc, 1);
+			}
+			
+			printf("Phase 27.4.3: Texture bound (stage %u, GL ID %u)\n", stage, gl_texture);
+		} else {
+			// Unbind texture
+			glActiveTexture(GL_TEXTURE0 + stage);
+			glBindTexture(GL_TEXTURE_2D, 0);
+			
+			// Disable texture usage in shader
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uUseTexture");
+			if (loc != -1) {
+				glUniform1i(loc, 0);
+			}
+			
+			printf("Phase 27.4.3: Texture unbound (stage %u)\n", stage);
+		}
+	}
+#endif
+}
+```
+
+#### Shader Uniform Updates:
+- `uTexture0` - Texture sampler for stage 0
+- `uTexture1` - Texture sampler for stage 1 (if multitexturing)
+- `uUseTexture` - Boolean flag to enable/disable texture sampling
+
+#### Backport Notes:
+- DX8TextureClass must have `Get_GL_Texture()` method
+- Shader must declare `uniform sampler2D uTexture0;`
+- Multiple texture stages supported via `glActiveTexture(GL_TEXTURE0 + stage)`
+- Copy entire function to Generals
+
+---
+
+### 10. Alpha Testing (Phase 27.4.4) ✅
+
+#### Files Modified:
+- `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h`
+- `resources/shaders/basic.frag`
+
+#### Render State Implementation (dx8wrapper.h):
+```cpp
+case D3DRS_ALPHATESTENABLE:  // 15
+{
+	if (GL_Shader_Program != 0) {
+		glUseProgram(GL_Shader_Program);
+		GLint loc = glGetUniformLocation(GL_Shader_Program, "uAlphaTestEnabled");
+		if (loc != -1) {
+			glUniform1i(loc, value ? 1 : 0);
+			printf("Phase 27.4.4: Alpha test %s\n", value ? "enabled" : "disabled");
+		}
+	}
+	break;
+}
+
+case D3DRS_ALPHAFUNC:  // 25
+{
+	if (GL_Shader_Program != 0) {
+		glUseProgram(GL_Shader_Program);
+		GLint loc = glGetUniformLocation(GL_Shader_Program, "uAlphaTestFunc");
+		if (loc != -1) {
+			glUniform1i(loc, value);
+			printf("Phase 27.4.4: Alpha test function set to %u\n", value);
+		}
+	}
+	break;
+}
+
+case D3DRS_ALPHAREF:  // 24
+{
+	if (GL_Shader_Program != 0) {
+		glUseProgram(GL_Shader_Program);
+		GLint loc = glGetUniformLocation(GL_Shader_Program, "uAlphaRef");
+		if (loc != -1) {
+			float alpha_ref = value / 255.0f;  // D3D uses 0-255, shader uses 0.0-1.0
+			glUniform1f(loc, alpha_ref);
+			printf("Phase 27.4.4: Alpha reference value set to %.3f (%u/255)\n", alpha_ref, value);
+		}
+	}
+	break;
+}
+```
+
+#### Fragment Shader Implementation (basic.frag):
+```glsl
+// Phase 27.4.4: Alpha testing uniforms
+uniform bool uAlphaTestEnabled;
+uniform int uAlphaTestFunc;
+uniform float uAlphaRef;
+
+void main()
+{
+    vec4 baseColor;
+    
+    if (uUseTexture) {
+        baseColor = texture(uTexture, vTexCoord);
+    } else {
+        baseColor = vColor;
+    }
+    
+    // Apply lighting
+    vec3 litColor = baseColor.rgb * vLighting;
+    
+    // Phase 27.4.4: Alpha testing (shader-based)
+    if (uAlphaTestEnabled) {
+        bool alpha_pass = false;
+        
+        switch (uAlphaTestFunc) {
+            case 1: alpha_pass = false; break;                      // D3DCMP_NEVER
+            case 2: alpha_pass = (baseColor.a < uAlphaRef); break;  // D3DCMP_LESS
+            case 3: alpha_pass = (baseColor.a == uAlphaRef); break; // D3DCMP_EQUAL
+            case 4: alpha_pass = (baseColor.a <= uAlphaRef); break; // D3DCMP_LESSEQUAL
+            case 5: alpha_pass = (baseColor.a > uAlphaRef); break;  // D3DCMP_GREATER
+            case 6: alpha_pass = (baseColor.a != uAlphaRef); break; // D3DCMP_NOTEQUAL
+            case 7: alpha_pass = (baseColor.a >= uAlphaRef); break; // D3DCMP_GREATEREQUAL
+            case 8: alpha_pass = true; break;                       // D3DCMP_ALWAYS
+            default: alpha_pass = true; break;
+        }
+        
+        if (!alpha_pass) {
+            discard;  // Fragment is discarded (not rendered)
+        }
+    }
+    
+    FragColor = vec4(litColor, baseColor.a);
+}
+```
+
+#### Alpha Test Function Mapping:
+
+| D3DCMP Constant | Value | Condition | Description |
+|-----------------|-------|-----------|-------------|
+| D3DCMP_NEVER | 1 | false | Always fail |
+| D3DCMP_LESS | 2 | alpha < ref | Pass if less than reference |
+| D3DCMP_EQUAL | 3 | alpha == ref | Pass if equal to reference |
+| D3DCMP_LESSEQUAL | 4 | alpha <= ref | Pass if less or equal |
+| D3DCMP_GREATER | 5 | alpha > ref | Pass if greater than reference |
+| D3DCMP_NOTEQUAL | 6 | alpha != ref | Pass if not equal |
+| D3DCMP_GREATEREQUAL | 7 | alpha >= ref | Pass if greater or equal |
+| D3DCMP_ALWAYS | 8 | true | Always pass |
+
+#### Backport Notes:
+- OpenGL removed fixed-function alpha testing in Core Profile
+- Shader-based implementation required (using `discard`)
+- Alpha reference: D3D uses 0-255 integer, OpenGL shader uses 0.0-1.0 float
+- Copy both render state cases and shader code to Generals
+
+---
+
+### 11. Fog Rendering (Phase 27.4.5) ✅
+
+#### Files Modified:
+- `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h`
+- `resources/shaders/basic.frag`
+
+#### Render State Implementation (dx8wrapper.h):
+```cpp
+case D3DRS_FOGENABLE:  // 28
+{
+	if (GL_Shader_Program != 0) {
+		glUseProgram(GL_Shader_Program);
+		GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogEnabled");
+		if (loc != -1) {
+			glUniform1i(loc, value ? 1 : 0);
+			printf("Phase 27.4.5: Fog %s\n", value ? "enabled" : "disabled");
+		}
+	}
+	break;
+}
+
+case D3DRS_FOGCOLOR:  // 34
+{
+	if (GL_Shader_Program != 0) {
+		glUseProgram(GL_Shader_Program);
+		GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogColor");
+		if (loc != -1) {
+			// Extract RGB from D3DCOLOR (ARGB format)
+			float r = ((value >> 16) & 0xFF) / 255.0f;
+			float g = ((value >> 8) & 0xFF) / 255.0f;
+			float b = (value & 0xFF) / 255.0f;
+			glUniform3f(loc, r, g, b);
+			printf("Phase 27.4.5: Fog color (%.2f, %.2f, %.2f)\n", r, g, b);
+		}
+	}
+	break;
+}
+
+case D3DRS_FOGSTART:  // 36
+{
+	if (GL_Shader_Program != 0) {
+		glUseProgram(GL_Shader_Program);
+		GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogStart");
+		if (loc != -1) {
+			float fog_start = *reinterpret_cast<const float*>(&value);
+			glUniform1f(loc, fog_start);
+			printf("Phase 27.4.5: Fog start distance = %.2f\n", fog_start);
+		}
+	}
+	break;
+}
+
+case D3DRS_FOGEND:  // 37
+{
+	if (GL_Shader_Program != 0) {
+		glUseProgram(GL_Shader_Program);
+		GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogEnd");
+		if (loc != -1) {
+			float fog_end = *reinterpret_cast<const float*>(&value);
+			glUniform1f(loc, fog_end);
+			printf("Phase 27.4.5: Fog end distance = %.2f\n", fog_end);
+		}
+	}
+	break;
+}
+
+case D3DRS_FOGDENSITY:  // 38
+{
+	if (GL_Shader_Program != 0) {
+		glUseProgram(GL_Shader_Program);
+		GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogDensity");
+		if (loc != -1) {
+			float fog_density = *reinterpret_cast<const float*>(&value);
+			glUniform1f(loc, fog_density);
+			printf("Phase 27.4.5: Fog density = %.4f\n", fog_density);
+		}
+	}
+	break;
+}
+
+case D3DRS_FOGTABLEMODE:  // 35
+case D3DRS_FOGVERTEXMODE:  // 140
+{
+	if (GL_Shader_Program != 0) {
+		glUseProgram(GL_Shader_Program);
+		GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogMode");
+		if (loc != -1) {
+			glUniform1i(loc, value);
+			const char* mode_names[] = {"NONE", "EXP", "EXP2", "LINEAR"};
+			printf("Phase 27.4.5: Fog mode = %s (%u)\n", 
+				value <= 3 ? mode_names[value] : "UNKNOWN", value);
+		}
+	}
+	break;
+}
+```
+
+#### Fragment Shader Implementation (basic.frag):
+```glsl
+// Phase 27.4.5: Fog uniforms
+uniform bool uFogEnabled;
+uniform vec3 uFogColor;
+uniform float uFogStart;
+uniform float uFogEnd;
+uniform float uFogDensity;
+uniform int uFogMode;  // 0=NONE, 1=EXP, 2=EXP2, 3=LINEAR
+
+// Pass vWorldPos from vertex shader
+in vec3 vWorldPos;
+
+void main()
+{
+    // ... existing color calculation ...
+    
+    // Phase 27.4.5: Fog calculation
+    if (uFogEnabled) {
+        float fogDistance = length(vWorldPos);
+        float fogFactor = 1.0;
+        
+        if (uFogMode == 1) {
+            // Exponential fog: factor = exp(-density * distance)
+            fogFactor = exp(-uFogDensity * fogDistance);
+        }
+        else if (uFogMode == 2) {
+            // Exponential squared fog: factor = exp(-(density * distance)^2)
+            float fogAmount = uFogDensity * fogDistance;
+            fogFactor = exp(-fogAmount * fogAmount);
+        }
+        else if (uFogMode == 3) {
+            // Linear fog: factor = (end - distance) / (end - start)
+            fogFactor = (uFogEnd - fogDistance) / (uFogEnd - uFogStart);
+        }
+        
+        fogFactor = clamp(fogFactor, 0.0, 1.0);
+        
+        // Mix fog color with base color
+        // fogFactor = 1.0 means no fog (use base color)
+        // fogFactor = 0.0 means full fog (use fog color)
+        baseColor.rgb = mix(uFogColor, baseColor.rgb, fogFactor);
+    }
+    
+    FragColor = vec4(baseColor.rgb, baseColor.a);
+}
+```
+
+#### Fog Mode Constants:
+```cpp
+// Core/Libraries/Source/WWVegas/WW3D2/d3d8.h (lines 595-599)
+#define D3DFOG_NONE 0
+#define D3DFOG_EXP 1
+#define D3DFOG_EXP2 2
+#define D3DFOG_LINEAR 3
+```
+
+#### Fog Calculation Formulas:
+
+| Mode | D3D Value | Formula | Description |
+|------|-----------|---------|-------------|
+| NONE | 0 | factor = 1.0 | No fog |
+| EXP | 1 | factor = exp(-density × dist) | Exponential fog |
+| EXP2 | 2 | factor = exp(-(density × dist)²) | Exponential squared fog |
+| LINEAR | 3 | factor = (end - dist) / (end - start) | Linear fog |
+
+#### Backport Notes:
+- Float extraction from DWORD: `*reinterpret_cast<const float*>(&value)`
+- D3DCOLOR format: ARGB (Alpha-Red-Green-Blue) packed in 32-bit integer
+- Fog distance calculated from world position in view space
+- Copy both render states and shader code to Generals
+
+---
+
+### 12. Stencil Buffer Operations (Phase 27.4.6) ✅
+
+#### File Modified:
+- `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h`
+
+#### Implementation:
+```cpp
+case D3DRS_STENCILENABLE:  // 52
+{
+	if (value) {
+		glEnable(GL_STENCIL_TEST);
+		printf("Phase 27.4.6: Stencil test enabled\n");
+	} else {
+		glDisable(GL_STENCIL_TEST);
+		printf("Phase 27.4.6: Stencil test disabled\n");
+	}
+	break;
+}
+
+case D3DRS_STENCILFUNC:  // 56
+{
+	GLenum gl_func = GL_ALWAYS;
+	switch (value) {
+		case 1: gl_func = GL_NEVER; break;    // D3DCMP_NEVER
+		case 2: gl_func = GL_LESS; break;     // D3DCMP_LESS
+		case 3: gl_func = GL_EQUAL; break;    // D3DCMP_EQUAL
+		case 4: gl_func = GL_LEQUAL; break;   // D3DCMP_LESSEQUAL
+		case 5: gl_func = GL_GREATER; break;  // D3DCMP_GREATER
+		case 6: gl_func = GL_NOTEQUAL; break; // D3DCMP_NOTEQUAL
+		case 7: gl_func = GL_GEQUAL; break;   // D3DCMP_GREATEREQUAL
+		case 8: gl_func = GL_ALWAYS; break;   // D3DCMP_ALWAYS
+		default: gl_func = GL_ALWAYS; break;
+	}
+	
+	glStencilFunc(gl_func, 
+		RenderStates[D3DRS_STENCILREF], 
+		RenderStates[D3DRS_STENCILMASK]);
+	printf("Phase 27.4.6: Stencil function set (func=0x%04X)\n", gl_func);
+	break;
+}
+
+case D3DRS_STENCILREF:  // 57
+{
+	glStencilFunc(
+		GL_ALWAYS,  // Will be updated by D3DRS_STENCILFUNC
+		value,
+		RenderStates[D3DRS_STENCILMASK]);
+	printf("Phase 27.4.6: Stencil reference value = %u\n", value);
+	break;
+}
+
+case D3DRS_STENCILMASK:  // 58
+{
+	glStencilFunc(
+		GL_ALWAYS,  // Will be updated by D3DRS_STENCILFUNC
+		RenderStates[D3DRS_STENCILREF],
+		value);
+	printf("Phase 27.4.6: Stencil mask = 0x%08X\n", value);
+	break;
+}
+
+case D3DRS_STENCILWRITEMASK:  // 59
+{
+	glStencilMask(value);
+	printf("Phase 27.4.6: Stencil write mask = 0x%08X\n", value);
+	break;
+}
+
+case D3DRS_STENCILFAIL:  // 53
+case D3DRS_STENCILZFAIL:  // 54
+case D3DRS_STENCILPASS:  // 55
+{
+	// Map D3DSTENCILOP to OpenGL stencil operations
+	auto map_stencil_op = [](unsigned int d3d_op) -> GLenum {
+		switch (d3d_op) {
+			case 1: return GL_KEEP;      // D3DSTENCILOP_KEEP
+			case 2: return GL_ZERO;      // D3DSTENCILOP_ZERO
+			case 3: return GL_REPLACE;   // D3DSTENCILOP_REPLACE
+			case 4: return GL_INCR;      // D3DSTENCILOP_INCRSAT (clamped)
+			case 5: return GL_DECR;      // D3DSTENCILOP_DECRSAT (clamped)
+			case 6: return GL_INVERT;    // D3DSTENCILOP_INVERT
+			case 7: return GL_INCR_WRAP; // D3DSTENCILOP_INCR (wrapping)
+			case 8: return GL_DECR_WRAP; // D3DSTENCILOP_DECR (wrapping)
+			default: return GL_KEEP;
+		}
+	};
+	
+	GLenum sfail = map_stencil_op(RenderStates[D3DRS_STENCILFAIL]);
+	GLenum dpfail = map_stencil_op(RenderStates[D3DRS_STENCILZFAIL]);
+	GLenum dppass = map_stencil_op(RenderStates[D3DRS_STENCILPASS]);
+	
+	glStencilOp(sfail, dpfail, dppass);
+	printf("Phase 27.4.6: Stencil operations (fail=0x%04X, zfail=0x%04X, pass=0x%04X)\n",
+		sfail, dpfail, dppass);
+	break;
+}
+```
+
+#### Stencil Operation Mapping:
+
+| D3DSTENCILOP | Value | OpenGL | Description |
+|--------------|-------|--------|-------------|
+| KEEP | 1 | GL_KEEP | Keep current value |
+| ZERO | 2 | GL_ZERO | Set to 0 |
+| REPLACE | 3 | GL_REPLACE | Replace with ref value |
+| INCRSAT | 4 | GL_INCR | Increment (clamped) |
+| DECRSAT | 5 | GL_DECR | Decrement (clamped) |
+| INVERT | 6 | GL_INVERT | Bitwise invert |
+| INCR | 7 | GL_INCR_WRAP | Increment (wrapping) |
+| DECR | 8 | GL_DECR_WRAP | Decrement (wrapping) |
+
+#### Stencil Test Flow:
+1. **Stencil Test**: Compare stencil value with reference using `glStencilFunc(func, ref, mask)`
+2. **Test Failed**: Execute `sfail` operation
+3. **Test Passed, Depth Failed**: Execute `dpfail` operation
+4. **Test Passed, Depth Passed**: Execute `dppass` operation
+
+#### Backport Notes:
+- glStencilFunc requires 3 parameters: function, reference, mask
+- glStencilOp requires 3 parameters: fail operation, depth-fail operation, pass operation
+- RenderStates array caching required for interdependent values
+- Lambda function for stencil operation mapping
+- Copy entire stencil block to Generals
+
+---
+
+### 13. Scissor Test (Phase 27.4.7) ✅
+
+#### Files Modified:
+- `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h`
+- `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp`
+
+#### Render State Implementation (dx8wrapper.h):
+```cpp
+// Note: D3DRS_SCISSORTESTENABLE is state 174 (D3D9 constant, not in D3D8 spec)
+// For D3D8 compatibility, we provide basic scissor support that can be enabled
+// when the engine is upgraded to D3D9 or when custom render targets are used.
+// The implementation below is prepared for future use.
+case 174:  // D3DRS_SCISSORTESTENABLE (D3D9 constant, not in D3D8)
+{
+	if (value) {
+		glEnable(GL_SCISSOR_TEST);
+		printf("Phase 27.4.7: Scissor test enabled (D3D9 extension)\n");
+	} else {
+		glDisable(GL_SCISSOR_TEST);
+		printf("Phase 27.4.7: Scissor test disabled (D3D9 extension)\n");
+	}
+	break;
+}
+```
+
+#### Viewport Integration (dx8wrapper.cpp, Set_Viewport function):
+```cpp
+void DX8Wrapper::Set_Viewport(CONST D3DVIEWPORT8* pViewport)
+{
+#ifdef _WIN32
+	DX8CALL(SetViewport(pViewport));
+#else
+	// Phase 27.4.7: OpenGL viewport and scissor rect setup
+	if (pViewport) {
+		// Set viewport for rendering
+		glViewport(pViewport->X, pViewport->Y, pViewport->Width, pViewport->Height);
+		
+		// Set depth range
+		glDepthRange(pViewport->MinZ, pViewport->MaxZ);
+		
+		// Initialize scissor rect to match viewport by default
+		// This provides D3D8-like behavior where scissor rect follows viewport
+		glScissor(pViewport->X, pViewport->Y, pViewport->Width, pViewport->Height);
+		
+		printf("Phase 27.4.7: Viewport set to (%u, %u, %u x %u), depth [%.2f - %.2f]\n",
+			pViewport->X, pViewport->Y, pViewport->Width, pViewport->Height,
+			pViewport->MinZ, pViewport->MaxZ);
+	}
+#endif
+}
+```
+
+#### D3DVIEWPORT8 Structure:
+```cpp
+// Core/Libraries/Source/WWVegas/WW3D2/d3d8.h (lines 880-888)
+typedef struct {
+	DWORD X;
+	DWORD Y;
+	DWORD Width;
+	DWORD Height;
+	float MinZ;
+	float MaxZ;
+} D3DVIEWPORT8;
+```
+
+#### Backport Notes:
+- **D3D8 Limitation**: DirectX 8 doesn't have D3DRS_SCISSORTESTENABLE render state
+- **D3D9 Extension**: State 174 is from D3D9, included for forward compatibility
+- **Default Behavior**: Scissor rect automatically matches viewport dimensions
+- **Coordinate System**: No Y-inversion needed (both D3D and OpenGL use bottom-left origin for viewport)
+- Copy both render state case and Set_Viewport modifications to Generals
+
+---
+
+### 14. Point Sprites (Phase 27.4.8) ✅
+
+#### Files Modified:
+- `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h`
+- `resources/shaders/basic.vert`
+
+#### Render State Implementation (dx8wrapper.h):
+```cpp
+case D3DRS_POINTSPRITEENABLE:  // 156
+{
+	if (GL_Shader_Program != 0) {
+		glUseProgram(GL_Shader_Program);
+		GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointSpriteEnabled");
+		if (loc != -1) {
+			glUniform1i(loc, value ? 1 : 0);
+			printf("Phase 27.4.8: Point sprite %s\n", value ? "enabled" : "disabled");
+		}
+		
+		// Enable OpenGL point sprite mode
+		if (value) {
+			glEnable(GL_PROGRAM_POINT_SIZE);  // Allow shader to control point size
+			printf("Phase 27.4.8: GL_PROGRAM_POINT_SIZE enabled\n");
+		} else {
+			glDisable(GL_PROGRAM_POINT_SIZE);
+		}
+	}
+	break;
+}
+
+case D3DRS_POINTSIZE:  // 154
+{
+	if (GL_Shader_Program != 0) {
+		glUseProgram(GL_Shader_Program);
+		GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointSize");
+		if (loc != -1) {
+			float pointSize = *reinterpret_cast<const float*>(&value);
+			glUniform1f(loc, pointSize);
+			printf("Phase 27.4.8: Point size set to %.2f\n", pointSize);
+		}
+	}
+	break;
+}
+
+case D3DRS_POINTSCALEENABLE:  // 157
+{
+	if (GL_Shader_Program != 0) {
+		glUseProgram(GL_Shader_Program);
+		GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointScaleEnabled");
+		if (loc != -1) {
+			glUniform1i(loc, value ? 1 : 0);
+			printf("Phase 27.4.8: Point scale %s\n", value ? "enabled" : "disabled");
+		}
+	}
+	break;
+}
+
+case D3DRS_POINTSCALE_A:  // 158
+{
+	if (GL_Shader_Program != 0) {
+		glUseProgram(GL_Shader_Program);
+		GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointScaleA");
+		if (loc != -1) {
+			float scaleA = *reinterpret_cast<const float*>(&value);
+			glUniform1f(loc, scaleA);
+			printf("Phase 27.4.8: Point scale A = %.4f\n", scaleA);
+		}
+	}
+	break;
+}
+
+case D3DRS_POINTSCALE_B:  // 159
+{
+	if (GL_Shader_Program != 0) {
+		glUseProgram(GL_Shader_Program);
+		GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointScaleB");
+		if (loc != -1) {
+			float scaleB = *reinterpret_cast<const float*>(&value);
+			glUniform1f(loc, scaleB);
+			printf("Phase 27.4.8: Point scale B = %.4f\n", scaleB);
+		}
+	}
+	break;
+}
+
+case D3DRS_POINTSCALE_C:  // 160
+{
+	if (GL_Shader_Program != 0) {
+		glUseProgram(GL_Shader_Program);
+		GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointScaleC");
+		if (loc != -1) {
+			float scaleC = *reinterpret_cast<const float*>(&value);
+			glUniform1f(loc, scaleC);
+			printf("Phase 27.4.8: Point scale C = %.4f\n", scaleC);
+		}
+	}
+	break;
+}
+
+case D3DRS_POINTSIZE_MIN:  // 155
+{
+	if (GL_Shader_Program != 0) {
+		glUseProgram(GL_Shader_Program);
+		GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointSizeMin");
+		if (loc != -1) {
+			float minSize = *reinterpret_cast<const float*>(&value);
+			glUniform1f(loc, minSize);
+			printf("Phase 27.4.8: Point size min = %.2f\n", minSize);
+		}
+	}
+	break;
+}
+
+case D3DRS_POINTSIZE_MAX:  // 166
+{
+	if (GL_Shader_Program != 0) {
+		glUseProgram(GL_Shader_Program);
+		GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointSizeMax");
+		if (loc != -1) {
+			float maxSize = *reinterpret_cast<const float*>(&value);
+			glUniform1f(loc, maxSize);
+			printf("Phase 27.4.8: Point size max = %.2f\n", maxSize);
+		}
+	}
+	break;
+}
+```
+
+#### Vertex Shader Implementation (basic.vert):
+```glsl
+// Phase 27.4.8: Point sprite uniforms
+uniform bool uPointSpriteEnabled;       // D3DRS_POINTSPRITEENABLE
+uniform float uPointSize;               // D3DRS_POINTSIZE
+uniform bool uPointScaleEnabled;        // D3DRS_POINTSCALEENABLE
+uniform float uPointScaleA;             // D3DRS_POINTSCALE_A (constant)
+uniform float uPointScaleB;             // D3DRS_POINTSCALE_B (linear)
+uniform float uPointScaleC;             // D3DRS_POINTSCALE_C (quadratic)
+uniform float uPointSizeMin;            // D3DRS_POINTSIZE_MIN
+uniform float uPointSizeMax;            // D3DRS_POINTSIZE_MAX
+
+void main()
+{
+    // ... existing transformation code ...
+    
+    // Phase 27.4.8: Point sprite size calculation
+    // D3D point sprite formula: size = sqrt(1/(A + B*dist + C*dist²))
+    // gl_PointSize controls point sprite rendering size
+    if (uPointSpriteEnabled) {
+        float pointSize = uPointSize;
+        
+        if (uPointScaleEnabled) {
+            // Calculate distance from camera to point in view space
+            float dist = length(viewPos.xyz);
+            
+            // D3D attenuation formula: screenSize = viewportHeight * size * sqrt(1/(A + B*d + C*d²))
+            // For simplicity, we calculate: size / sqrt(A + B*d + C*d²)
+            float attenuation = uPointScaleA + uPointScaleB * dist + uPointScaleC * dist * dist;
+            if (attenuation > 0.0) {
+                pointSize = pointSize / sqrt(attenuation);
+            }
+        }
+        
+        // Clamp to min/max range
+        pointSize = clamp(pointSize, uPointSizeMin, uPointSizeMax);
+        gl_PointSize = pointSize;
+    } else {
+        gl_PointSize = 1.0;  // Default point size
+    }
+}
+```
+
+#### Point Size Attenuation Formula:
+
+**DirectX 8 Formula**:
+```
+screenSize = viewportHeight × size × sqrt(1 / (A + B×dist + C×dist²))
+```
+
+**Simplified OpenGL Shader Formula**:
+```
+pointSize = baseSize / sqrt(A + B×dist + C×dist²)
+```
+
+Where:
+- **A** (constant): Base attenuation factor
+- **B** (linear): Linear distance attenuation
+- **C** (quadratic): Quadratic distance attenuation
+- **dist**: Distance from camera to point (view space)
+
+#### Point Sprite Render States:
+
+| Render State | Value | Type | Description |
+|--------------|-------|------|-------------|
+| D3DRS_POINTSPRITEENABLE | 156 | BOOL | Enable/disable point sprites |
+| D3DRS_POINTSIZE | 154 | FLOAT | Base point size |
+| D3DRS_POINTSCALEENABLE | 157 | BOOL | Enable distance-based scaling |
+| D3DRS_POINTSCALE_A | 158 | FLOAT | Constant attenuation |
+| D3DRS_POINTSCALE_B | 159 | FLOAT | Linear attenuation |
+| D3DRS_POINTSCALE_C | 160 | FLOAT | Quadratic attenuation |
+| D3DRS_POINTSIZE_MIN | 155 | FLOAT | Minimum point size |
+| D3DRS_POINTSIZE_MAX | 166 | FLOAT | Maximum point size |
+
+#### Backport Notes:
+- GL_PROGRAM_POINT_SIZE must be enabled for shader-controlled point size
+- Point sprites automatically generate `gl_PointCoord` in fragment shader (0,0 to 1,1)
+- Distance calculation uses view space position: `length(viewPos.xyz)`
+- Float extraction: `*reinterpret_cast<const float*>(&value)`
+- Copy both render states and vertex shader code to Generals
 
 ---
 
@@ -1246,20 +2156,40 @@ target_link_libraries(GeneralsX PRIVATE glad)
 ## Summary
 
 **Total Files Modified**: 7 files
-**Total Lines Added**: ~500 lines (OpenGL code)
+**Total Lines Added**: ~2000 lines (OpenGL code)
 **Build Impact**: No performance regression expected
 **Testing Required**: Full runtime validation
 
-**Next Steps After Phase 27 Completion**:
-1. Complete remaining Phase 27 tasks (27.2.3-27.2.5, 27.4.2-27.4.8, 27.5.1-27.5.3)
-2. Validate Zero Hour OpenGL implementation
-3. Execute backport to Generals base using this guide
-4. Test Generals base separately
-5. Document any differences encountered
-6. Update this guide with lessons learned
+**Completed Phases**:
+- ✅ Phase 27.1: SDL2 Window System (6/6 tasks)
+- ✅ Phase 27.2: Buffer & Shader Abstraction (8/8 tasks)
+- ✅ Phase 27.3: Uniform Updates (3/3 tasks)
+- ✅ Phase 27.4.1-27.4.8: Rendering Pipeline (8/8 tasks)
+  - Primitive Draw Calls
+  - Render State Management (culling, depth, blending)
+  - Texture Stage States
+  - Alpha Testing (shader-based)
+  - Fog Rendering (shader-based, 3 modes)
+  - Stencil Buffer Operations
+  - Scissor Test
+  - Point Sprites (particle systems)
+
+**Pending Phases**:
+- ⏳ Phase 27.5: Testing & Validation (5 tasks)
+- ⏳ Phase 27.6-27.8: Documentation & Backport Execution (3 tasks)
+
+**Next Steps After Phase 27.4**:
+1. Runtime testing with actual game assets
+2. Shader debugging and optimization
+3. Performance baseline measurements
+4. Texture file loading (DDS/TGA)
+5. Execute backport to Generals base using this guide
+6. Validate Generals base separately
+7. Document any differences encountered
+8. Update this guide with lessons learned
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: December 28, 2024  
+**Document Version**: 2.0  
+**Last Updated**: October 7, 2025  
 **Author**: GeneralsX Development Team
