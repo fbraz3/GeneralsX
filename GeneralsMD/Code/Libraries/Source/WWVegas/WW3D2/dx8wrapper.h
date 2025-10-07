@@ -1241,6 +1241,117 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 			}
 			break;
 		}
+		
+		// Phase 27.4.6: Stencil buffer operations
+		case D3DRS_STENCILENABLE:
+		{
+			if (value) {
+				glEnable(GL_STENCIL_TEST);
+				printf("Phase 27.4.6: Stencil test enabled\n");
+			} else {
+				glDisable(GL_STENCIL_TEST);
+				printf("Phase 27.4.6: Stencil test disabled\n");
+			}
+			break;
+		}
+		
+		case D3DRS_STENCILFUNC:
+		{
+			// Map D3DCMP_* to GL comparison functions
+			GLenum gl_func = GL_ALWAYS;
+			switch (value) {
+				case 1: gl_func = GL_NEVER; break;     // D3DCMP_NEVER
+				case 2: gl_func = GL_LESS; break;      // D3DCMP_LESS
+				case 3: gl_func = GL_EQUAL; break;     // D3DCMP_EQUAL
+				case 4: gl_func = GL_LEQUAL; break;    // D3DCMP_LESSEQUAL
+				case 5: gl_func = GL_GREATER; break;   // D3DCMP_GREATER
+				case 6: gl_func = GL_NOTEQUAL; break;  // D3DCMP_NOTEQUAL
+				case 7: gl_func = GL_GEQUAL; break;    // D3DCMP_GREATEREQUAL
+				case 8: gl_func = GL_ALWAYS; break;    // D3DCMP_ALWAYS
+				default:
+					printf("Phase 27.4.6 WARNING: Unknown stencil func %u\n", value);
+					break;
+			}
+			
+			// Use stored ref and mask values
+			glStencilFunc(gl_func, RenderStates[D3DRS_STENCILREF], RenderStates[D3DRS_STENCILMASK]);
+			printf("Phase 27.4.6: Stencil func set to 0x%04X (D3D: %u)\n", gl_func, value);
+			break;
+		}
+		
+		case D3DRS_STENCILREF:
+		{
+			// Update stencil reference value
+			glStencilFunc(
+				GL_ALWAYS,  // Will be updated by D3DRS_STENCILFUNC
+				value,
+				RenderStates[D3DRS_STENCILMASK]
+			);
+			printf("Phase 27.4.6: Stencil ref set to %u\n", value);
+			break;
+		}
+		
+		case D3DRS_STENCILMASK:
+		{
+			// Update stencil read mask
+			glStencilFunc(
+				GL_ALWAYS,  // Will be updated by D3DRS_STENCILFUNC
+				RenderStates[D3DRS_STENCILREF],
+				value
+			);
+			printf("Phase 27.4.6: Stencil mask set to 0x%08X\n", value);
+			break;
+		}
+		
+		case D3DRS_STENCILWRITEMASK:
+		{
+			// Update stencil write mask
+			glStencilMask(value);
+			printf("Phase 27.4.6: Stencil write mask set to 0x%08X\n", value);
+			break;
+		}
+		
+		case D3DRS_STENCILFAIL:
+		case D3DRS_STENCILZFAIL:
+		case D3DRS_STENCILPASS:
+		{
+			// Lambda to map D3DSTENCILOP to GL stencil operation
+			auto map_stencil_op = [](unsigned int d3d_op) -> GLenum {
+				switch (d3d_op) {
+					case 1: return GL_KEEP;      // D3DSTENCILOP_KEEP
+					case 2: return GL_ZERO;      // D3DSTENCILOP_ZERO
+					case 3: return GL_REPLACE;   // D3DSTENCILOP_REPLACE
+					case 4: return GL_INCR;      // D3DSTENCILOP_INCRSAT (clamped)
+					case 5: return GL_DECR;      // D3DSTENCILOP_DECRSAT (clamped)
+					case 6: return GL_INVERT;    // D3DSTENCILOP_INVERT
+					case 7: return GL_INCR_WRAP; // D3DSTENCILOP_INCR (wrapping)
+					case 8: return GL_DECR_WRAP; // D3DSTENCILOP_DECR (wrapping)
+					default: return GL_KEEP;
+				}
+			};
+			
+			// Get current operations
+			GLenum sfail = map_stencil_op(RenderStates[D3DRS_STENCILFAIL]);
+			GLenum dpfail = map_stencil_op(RenderStates[D3DRS_STENCILZFAIL]);
+			GLenum dppass = map_stencil_op(RenderStates[D3DRS_STENCILPASS]);
+			
+			// Update the one that changed
+			if (state == D3DRS_STENCILFAIL) sfail = map_stencil_op(value);
+			else if (state == D3DRS_STENCILZFAIL) dpfail = map_stencil_op(value);
+			else if (state == D3DRS_STENCILPASS) dppass = map_stencil_op(value);
+			
+			glStencilOp(sfail, dpfail, dppass);
+			
+			const char* state_names[] = {"", "FAIL", "ZFAIL", "PASS"};
+			const char* op_names[] = {"", "KEEP", "ZERO", "REPLACE", "INCRSAT", "DECRSAT", "INVERT", "INCR", "DECR"};
+			const char* state_name = (state >= D3DRS_STENCILFAIL && state <= D3DRS_STENCILPASS) ? 
+				state_names[state - D3DRS_STENCILFAIL + 1] : "UNKNOWN";
+			const char* op_name = (value >= 1 && value <= 8) ? op_names[value] : "UNKNOWN";
+			
+			printf("Phase 27.4.6: Stencil %s operation set to %s (GL: 0x%04X)\n", 
+				state_name, op_name, map_stencil_op(value));
+			break;
+		}
 
 		default:
 			// Other states - store but don't translate yet
