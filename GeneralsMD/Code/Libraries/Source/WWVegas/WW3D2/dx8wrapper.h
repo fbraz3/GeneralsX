@@ -418,6 +418,20 @@ public:
 	);
 #endif
 
+	// Phase 27.2.4: OpenGL shader program management
+#ifndef _WIN32
+	static unsigned int _Load_And_Compile_Shader(const char *shader_path, unsigned int shader_type);
+	static unsigned int _Create_Shader_Program(unsigned int vertex_shader, unsigned int fragment_shader);
+	static bool _Check_Shader_Compile_Status(unsigned int shader, const char *shader_name);
+	static bool _Check_Program_Link_Status(unsigned int program);
+	static int _Get_Uniform_Location(unsigned int program, const char *uniform_name);
+#endif
+
+	// Phase 27.2.5: Vertex attribute setup
+#ifndef _WIN32
+	static void _Setup_Vertex_Attributes(unsigned int fvf, unsigned int vertex_stride);
+#endif
+
 	static IDirect3DSurface8 * _Create_DX8_Surface(unsigned int width, unsigned int height, WW3DFormat format);
 	static IDirect3DSurface8 * _Create_DX8_Surface(const char *filename);
 	static IDirect3DSurface8 * _Get_DX8_Front_Buffer();
@@ -667,6 +681,14 @@ protected:
 	static Vector4							Vertex_Shader_Constants[MAX_VERTEX_SHADER_CONSTANTS];
 	static Vector4							Pixel_Shader_Constants[MAX_PIXEL_SHADER_CONSTANTS];
 
+	// Phase 27.2.4: OpenGL shader program state
+#ifndef _WIN32
+	static unsigned int					GL_Shader_Program;
+	static unsigned int					GL_Vertex_Shader;
+	static unsigned int					GL_Fragment_Shader;
+	static unsigned int					GL_VAO;  // Vertex Array Object for vertex attribute setup
+#endif
+
 	static LightEnvironmentClass*		Light_Environment;
 	static RenderInfoClass*				Render_Info;
 
@@ -863,22 +885,91 @@ WWINLINE void DX8Wrapper::Set_DX8_Material(const D3DMATERIAL8* mat)
 	DX8_RECORD_MATERIAL_CHANGE();
 	WWASSERT(mat);
 	SNAPSHOT_SAY(("DX8 - SetMaterial"));
+#ifdef _WIN32
 	DX8CALL(SetMaterial(mat));
+#else
+	// Phase 27.3.2: Update material uniforms in OpenGL shader
+	// Note: Our basic shader doesn't currently use material properties,
+	// but we can add them here for future expansion
+	// The shader currently uses vertex colors instead of material colors
+	if (GL_Shader_Program != 0 && mat != NULL) {
+		glUseProgram(GL_Shader_Program);
+		
+		// For now, we'll just log that materials are being set
+		// Future shaders can use these uniforms: uMaterialAmbient, uMaterialDiffuse, etc.
+		// mat->Diffuse is float[4] with RGBA values
+		printf("Phase 27.3.2: Material set (diffuse: %.2f,%.2f,%.2f,%.2f)\n", 
+			mat->Diffuse[0], mat->Diffuse[1], mat->Diffuse[2], mat->Diffuse[3]);
+	}
+#endif
 }
 
 WWINLINE void DX8Wrapper::Set_DX8_Light(int index, D3DLIGHT8* light)
 {
 	if (light) {
 		DX8_RECORD_LIGHT_CHANGE();
+#ifdef _WIN32
 		DX8CALL(SetLight(index,light));
 		DX8CALL(LightEnable(index,TRUE));
+#else
+		// Phase 27.3.3: Update lighting uniforms in OpenGL shader
+		if (GL_Shader_Program != 0) {
+			glUseProgram(GL_Shader_Program);
+			
+			// For now, we only support one directional light (index 0)
+			// Our basic shader has: uLightDirection, uLightColor, uAmbientColor
+			if (index == 0 && light->Type == D3DLIGHT_DIRECTIONAL) {
+				// Light direction
+				GLint loc = glGetUniformLocation(GL_Shader_Program, "uLightDirection");
+				if (loc != -1) {
+					glUniform3f(loc, light->Direction.x, light->Direction.y, light->Direction.z);
+					printf("Phase 27.3.3: Updated uLightDirection (%.2f, %.2f, %.2f)\n",
+						light->Direction.x, light->Direction.y, light->Direction.z);
+				}
+				
+				// Light diffuse color
+				loc = glGetUniformLocation(GL_Shader_Program, "uLightColor");
+				if (loc != -1) {
+					glUniform3f(loc, light->Diffuse.r, light->Diffuse.g, light->Diffuse.b);
+					printf("Phase 27.3.3: Updated uLightColor (%.2f, %.2f, %.2f)\n",
+						light->Diffuse.r, light->Diffuse.g, light->Diffuse.b);
+				}
+				
+				// Ambient color
+				loc = glGetUniformLocation(GL_Shader_Program, "uAmbientColor");
+				if (loc != -1) {
+					glUniform3f(loc, light->Ambient.r, light->Ambient.g, light->Ambient.b);
+					printf("Phase 27.3.3: Updated uAmbientColor (%.2f, %.2f, %.2f)\n",
+						light->Ambient.r, light->Ambient.g, light->Ambient.b);
+				}
+				
+				// Enable lighting uniform
+				loc = glGetUniformLocation(GL_Shader_Program, "uUseLighting");
+				if (loc != -1) {
+					glUniform1i(loc, 1);
+				}
+			}
+		}
+#endif
 		CurrentDX8LightEnables[index]=true;
 		SNAPSHOT_SAY(("DX8 - SetLight %d",index));
 	}
 	else if (CurrentDX8LightEnables[index]) {
 		DX8_RECORD_LIGHT_CHANGE();
 		CurrentDX8LightEnables[index]=false;
+#ifdef _WIN32
 		DX8CALL(LightEnable(index,FALSE));
+#else
+		// Phase 27.3.3: Disable lighting in OpenGL shader
+		if (GL_Shader_Program != 0 && index == 0) {
+			glUseProgram(GL_Shader_Program);
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uUseLighting");
+			if (loc != -1) {
+				glUniform1i(loc, 0);
+				printf("Phase 27.3.3: Disabled lighting\n");
+			}
+		}
+#endif
 		SNAPSHOT_SAY(("DX8 - DisableLight %d",index));
 	}
 }
@@ -1231,6 +1322,7 @@ WWINLINE void DX8Wrapper::Set_Projection_Transform_With_Z_Bias(const Matrix4x4& 
 	ZNear=znear;
 	ProjectionMatrix=matrix.Transpose();
 
+#ifdef _WIN32
 	if (!Get_Current_Caps()->Support_ZBias() && ZNear!=ZFar) {
 		Matrix4x4 tmp=ProjectionMatrix;
 		float tmp_zbias=ZBias;
@@ -1242,6 +1334,22 @@ WWINLINE void DX8Wrapper::Set_Projection_Transform_With_Z_Bias(const Matrix4x4& 
 	else {
 		DX8CALL(SetTransform(D3DTS_PROJECTION,(D3DMATRIX*)&ProjectionMatrix));
 	}
+#else
+	// Phase 27.3.1: Update Projection matrix uniform in OpenGL shader
+	if (GL_Shader_Program != 0) {
+		glUseProgram(GL_Shader_Program);
+		
+		GLint loc = glGetUniformLocation(GL_Shader_Program, "uProjectionMatrix");
+		if (loc != -1) {
+			// D3D matrices are row-major, OpenGL expects column-major
+			// ProjectionMatrix is already transposed above
+			// So we need to transpose it back for OpenGL (or use GL_TRUE in glUniformMatrix4fv)
+			glUniformMatrix4fv(loc, 1, GL_FALSE, (const float*)&ProjectionMatrix);
+			
+			printf("Phase 27.3.1: Updated uProjectionMatrix uniform (znear=%f, zfar=%f)\n", znear, zfar);
+		}
+	}
+#endif
 }
 
 WWINLINE void DX8Wrapper::Set_DX8_ZBias(int zbias)
