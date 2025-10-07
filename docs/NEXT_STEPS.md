@@ -1,39 +1,42 @@
 # GeneralsX - Graphics Implementation Roadmap
 
 **Project**: GeneralsX (Command & Conquer: Generals Zero Hour macOS Port)  
-**Last Updated**: December 28, 2024  
+**Last Updated**: January 7, 2025  
 **Current Phase**: Phase 27 - Graphics Engine Implementation  
-**Status**: Phase 27.3-27.4.1 complete - Uniform updates and draw calls implemented
+**Status**: Phase 27.2 complete - Shader management and VAO setup implemented (64% overall progress)
 
 ---
 
-## 🎉 Current Achievement - Phase 26.0 Complete
+## 🎉 Current Achievement - Phase 27.2 Complete
 
-**DUAL EXECUTABLE SUCCESS**: Both games compile and execute with exit code 0!
+**SHADER SYSTEM READY**: All shader loading and vertex attribute setup complete!
 
-| Target | Compilation | Runtime | Debug Logs | Status |
-|--------|-------------|---------|------------|--------|
-| **Zero Hour (GeneralsXZH)** | ✅ 797 files | ✅ Exit 0 | ✅ Complete | **PRODUCTION** |
-| **Generals Base (GeneralsX)** | ✅ 759 files | ✅ Exit 0 | ✅ Complete | **PRODUCTION** |
+| Component | Implementation | Status |
+|-----------|---------------|--------|
+| **Shader Loading** | ✅ File loading + compilation | **COMPLETE** |
+| **Program Linking** | ✅ Vertex + Fragment linking | **COMPLETE** |
+| **VAO Setup** | ✅ Dynamic FVF→OpenGL mapping | **COMPLETE** |
+| **Error Checking** | ✅ Comprehensive validation | **COMPLETE** |
 
-### Wave 3 Achievement Summary (2025-10-04)
+### Latest Achievement Summary (2025-01-07)
 
-#### Wave 1: Testing & Documentation ✅
-- ✅ GeneralsZH compilation verified (797 files, 129 warnings)
-- ✅ GeneralsZH execution tested (exit code 0, all subsystems initialized)
-- ✅ NEXT_STEPS.md updated with Phase 25.4 results
-- ✅ Git commit: Documentation changes (7192268a)
+#### Phase 27.2.4: Shader Program Management ✅
+- ✅ `_Load_And_Compile_Shader()`: File loading + GLSL compilation
+- ✅ `_Create_Shader_Program()`: Vertex + fragment shader linking
+- ✅ `_Check_Shader_Compile_Status()`: Detailed error reporting
+- ✅ `_Check_Program_Link_Status()`: Link validation with logs
+- ✅ Initialization in `Init_Capabilities_Sort_Level_1()`
 
-#### Wave 2: Debug Log Consistency ✅
-- ✅ Added matching debug logs to Generals base (4 files modified)
-- ✅ W3DModelDraw.cpp logging pattern standardization
-- ✅ Git commit: Logging improvements (1c26fd9f)
+#### Phase 27.2.5: Vertex Attribute Setup ✅
+- ✅ VAO (Vertex Array Object) creation
+- ✅ `_Setup_Vertex_Attributes()`: Dynamic FVF→attribute mapping
+- ✅ Attribute locations: 0=pos, 1=normal, 2=color, 3=texcoord0
+- ✅ Called from `Apply_Render_State_Changes()` before draws
+- ✅ Proper offset/stride calculation for all FVF formats
 
-#### Wave 3: Generals Compilation & Execution ✅
-- ✅ Syntax error fixed (W3DModelDraw.cpp orphaned code removed)
-- ✅ Compilation success (759/759 files)
-- ✅ Deployment (17KB ARM64 executable)
-- ✅ Ready for graphics implementation
+#### Phase 27.2.6: Backport Documentation ✅
+- ✅ PHASE27_TODO_LIST.md updated with implementation details
+- ✅ Ready for Generals base backport (Phase 27.7)
 
 ---
 
@@ -43,23 +46,23 @@
 
 **Estimated Timeline**: 2-4 weeks (18-27 days of development)
 
-**Total Tasks**: 25 detailed implementation tasks organized in 5 parts
+**Total Tasks**: 28 detailed implementation tasks organized in 5 parts
 
-**Current Progress**: 16/26 tasks complete (62%) - Tasks 27.3.1-27.3.3 and 27.4.1 completed
+**Current Progress**: 18/28 tasks complete (64%) - All shader/buffer tasks complete, rendering states next
 
 ---
 
 ## Implementation Breakdown
 
-For detailed task-by-task implementation with code examples, complexity ratings, and time estimates, please refer to the **TODO List** system which contains all 25 tasks organized into:
+For detailed task-by-task implementation with code examples, complexity ratings, and time estimates, please refer to the **PHASE27_TODO_LIST.md** which contains all 28 tasks organized into:
 
-- **Part 1: OpenGL Window & Context Setup (27.1)** - 6 tasks, 3-5 days
-- **Part 2: DirectX 8 → OpenGL Translation Layer (27.2)** - 8 tasks, 5-7 days  
-- **Part 3: W3D Asset Rendering (27.3)** - 8 tasks, 7-10 days
-- **Part 4: Particle Systems (27.4)** - 2 tasks, 2-3 days
-- **Part 5: Integration Testing (27.5)** - 1 task, 1-2 days
+- **Part 1: SDL2 Window & Context Setup (27.1)** ✅ 6/6 tasks complete (100%)
+- **Part 2: Buffer & Shader Abstraction (27.2)** ✅ 6/6 tasks complete (100%)
+- **Part 3: Uniform Updates (27.3)** ✅ 3/3 tasks complete (100%)  
+- **Part 4: Rendering & States (27.4)** 🔄 1/9 tasks complete (11%)
+- **Part 5: Testing & Validation (27.5)** ⏳ 0/5 tasks (0%)
 
-View the complete task list with implementation details using the TODO management system.
+View the complete task list with implementation details in `docs/PHASE27_TODO_LIST.md`.
 
 ---
 
@@ -70,35 +73,11 @@ View the complete task list with implementation details using the TODO managemen
 | Part | Tasks | Completed | Estimated Time | Status |
 |------|-------|-----------|----------------|--------|
 | 27.1 - Window Setup | 6 | **6/6** | 3-5 days | ✅ **COMPLETE** |
-| 27.2 - D3D8→OpenGL | 8 | **5/8** | 5-7 days | 🔄 **IN PROGRESS** |
+| 27.2 - Buffers & Shaders | 6 | **6/6** | 4-6 days | ✅ **COMPLETE** |
 | 27.3 - Uniform Updates | 3 | **3/3** | 1-2 days | ✅ **COMPLETE** |
-| 27.4 - Rendering | 8 | **1/8** | 3-5 days | 🔄 **IN PROGRESS** |
-| 27.5 - Testing | 3 | 0/3 | 1-2 days | ⏳ Not Started |
-| **TOTAL** | **28 tasks** | **16/28** | **13-21 days** | **57% Complete** |
-
-### Recent Achievements (October 4, 2025)
-
-#### ✅ Task 27.1.1: Framework Selection Complete
-- **Decision**: SDL2 chosen over GLFW
-- **Rationale**: More robust cross-platform support, integrated audio/input handling, better game development ecosystem
-
-#### ✅ Task 27.1.2: SDL2/GLAD Dependencies Complete
-- **SDL2 2.32.10**: Installed via Homebrew ARM64 (`/opt/homebrew/Cellar/sdl2/2.32.10`)
-- **GLAD OpenGL Loader**: Generated for OpenGL 3.3 Core Profile
-- **Build Integration**: CMakeLists.txt modified to link SDL2::SDL2 and glad (2.0MB static library)
-- **Validation**: ✅ CMake configuration successful, GLAD compilation verified
-- **Git Commit**: aba77114 - "feat(graphics): Add SDL2 and GLAD OpenGL loader to macOS build system"
-
-#### ✅ Task 27.1.3: SDL2 Window Creation Complete
-- **Files Modified**: GeneralsMD/W3DDisplay.cpp, Generals/W3DDisplay.cpp
-- **Implementation**: SDL2 initialization, window creation, OpenGL 3.3 Core context
-- **Features**: Fullscreen/windowed support, V-Sync enabled, GLAD loader initialization
-- **Compilation**: ✅ 14MB ARM64 executable (GeneralsXZH)
-- **Validation**: OpenGL version, renderer, vendor logged at startup
-
-#### ✅ Task 27.1.4: SDL2 Cleanup Complete
-- **Destructor Code**: SDL_GL_DeleteContext, SDL_DestroyWindow, SDL_Quit
-- **Memory Safety**: Proper resource cleanup with NULL pointer checks
+| 27.4 - Rendering States | 9 | **1/9** | 3-5 days | 🔄 **IN PROGRESS** |
+| 27.5 - Testing | 5 | **0/5** | 1-2 days | ⏳ Not Started |
+| **TOTAL** | **28 tasks** | **18/28** | **12-20 days** | **64% Complete** |
 - **Logging**: Phase 27.1.4 debug messages for shutdown verification
 
 #### ✅ Task 27.1.5: SDL Event Loop Complete
