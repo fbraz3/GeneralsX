@@ -124,6 +124,7 @@ diff -r Core/ references/fighter19-dxvk-port/Core/  # Compare compatibility laye
 - `docs/BIG_FILES_REFERENCE.md` - Asset structure and INI file locations in .BIG archives
 - `docs/OPENGL_SUMMARY.md` - OpenGL 3.3 implementation details, SDL2 integration, code examples
 - `docs/PHASE27_BACKPORT_GUIDE.md` - Complete backport guide (Zero Hour → Generals base) with 837 lines of implementation details
+- `docs/PHASE27_TODO_LIST.md` - Phase 27 task tracking with completion status, dependencies, and progress monitoring
 - `resources/shaders/basic.vert` - OpenGL 3.3 vertex shader (transformations, lighting)
 - `resources/shaders/basic.frag` - OpenGL 3.3 fragment shader (texturing, color)
 
