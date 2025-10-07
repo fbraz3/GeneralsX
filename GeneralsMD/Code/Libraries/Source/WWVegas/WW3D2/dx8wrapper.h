@@ -990,8 +990,134 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 #endif
 
 	RenderStates[state]=value;
+
+#ifdef _WIN32
 	DX8CALL(SetRenderState( state, value ));
 	DX8_RECORD_RENDER_STATE_CHANGE();
+#else
+	// Phase 27.4.2: OpenGL render state management
+	switch (state) {
+		case D3DRS_CULLMODE:
+			// Face culling
+			if (value == D3DCULL_NONE) {
+				glDisable(GL_CULL_FACE);
+				printf("Phase 27.4.2: Disabled face culling\n");
+			} else {
+				glEnable(GL_CULL_FACE);
+				// D3D: CW = clockwise, CCW = counter-clockwise
+				// OpenGL: GL_CW = clockwise, GL_CCW = counter-clockwise (default)
+				// D3DCULL_CW culls clockwise faces, D3DCULL_CCW culls counter-clockwise
+				if (value == D3DCULL_CW) {
+					glCullFace(GL_FRONT);  // D3D culls CW (front faces in D3D default)
+					glFrontFace(GL_CW);    // Define CW as front-facing
+					printf("Phase 27.4.2: Cull mode CW (cull front faces)\n");
+				} else if (value == D3DCULL_CCW) {
+					glCullFace(GL_BACK);   // D3D culls CCW (back faces in D3D default)
+					glFrontFace(GL_CCW);   // Define CCW as front-facing  
+					printf("Phase 27.4.2: Cull mode CCW (cull back faces)\n");
+				}
+			}
+			break;
+
+		case D3DRS_ZENABLE:
+			// Depth testing
+			if (value == D3DZB_TRUE || value == D3DZB_USEW) {
+				glEnable(GL_DEPTH_TEST);
+				printf("Phase 27.4.2: Enabled depth testing\n");
+			} else {
+				glDisable(GL_DEPTH_TEST);
+				printf("Phase 27.4.2: Disabled depth testing\n");
+			}
+			break;
+
+		case D3DRS_ZWRITEENABLE:
+			// Depth write mask
+			glDepthMask(value ? GL_TRUE : GL_FALSE);
+			printf("Phase 27.4.2: Depth write %s\n", value ? "enabled" : "disabled");
+			break;
+
+		case D3DRS_ZFUNC:
+			// Depth comparison function
+			{
+				GLenum gl_func = GL_LEQUAL;  // Default
+				switch (value) {
+					case D3DCMP_NEVER:        gl_func = GL_NEVER; break;
+					case D3DCMP_LESS:         gl_func = GL_LESS; break;
+					case D3DCMP_EQUAL:        gl_func = GL_EQUAL; break;
+					case D3DCMP_LESSEQUAL:    gl_func = GL_LEQUAL; break;
+					case D3DCMP_GREATER:      gl_func = GL_GREATER; break;
+					case D3DCMP_NOTEQUAL:     gl_func = GL_NOTEQUAL; break;
+					case D3DCMP_GREATEREQUAL: gl_func = GL_GEQUAL; break;
+					case D3DCMP_ALWAYS:       gl_func = GL_ALWAYS; break;
+				}
+				glDepthFunc(gl_func);
+				printf("Phase 27.4.2: Depth func set to 0x%x\n", gl_func);
+			}
+			break;
+
+		case D3DRS_ALPHABLENDENABLE:
+			// Alpha blending
+			if (value) {
+				glEnable(GL_BLEND);
+				printf("Phase 27.4.2: Enabled alpha blending\n");
+			} else {
+				glDisable(GL_BLEND);
+				printf("Phase 27.4.2: Disabled alpha blending\n");
+			}
+			break;
+
+		case D3DRS_SRCBLEND:
+		case D3DRS_DESTBLEND:
+			// Blend function - need both SRC and DEST to set glBlendFunc
+			{
+				GLenum src_blend = GL_ONE;
+				GLenum dest_blend = GL_ZERO;
+				
+				// Map D3D blend modes to OpenGL
+				auto map_blend = [](unsigned int d3d_blend) -> GLenum {
+					switch (d3d_blend) {
+						case D3DBLEND_ZERO:           return GL_ZERO;
+						case D3DBLEND_ONE:            return GL_ONE;
+						case D3DBLEND_SRCCOLOR:       return GL_SRC_COLOR;
+						case D3DBLEND_INVSRCCOLOR:    return GL_ONE_MINUS_SRC_COLOR;
+						case D3DBLEND_SRCALPHA:       return GL_SRC_ALPHA;
+						case D3DBLEND_INVSRCALPHA:    return GL_ONE_MINUS_SRC_ALPHA;
+						case D3DBLEND_DESTALPHA:      return GL_DST_ALPHA;
+						case D3DBLEND_INVDESTALPHA:   return GL_ONE_MINUS_DST_ALPHA;
+						case D3DBLEND_DESTCOLOR:      return GL_DST_COLOR;
+						case D3DBLEND_INVDESTCOLOR:   return GL_ONE_MINUS_DST_COLOR;
+						case D3DBLEND_SRCALPHASAT:    return GL_SRC_ALPHA_SATURATE;
+						default:                      return GL_ONE;
+					}
+				};
+				
+				// Get current blend modes from RenderStates array
+				src_blend = map_blend(RenderStates[D3DRS_SRCBLEND]);
+				dest_blend = map_blend(RenderStates[D3DRS_DESTBLEND]);
+				
+				glBlendFunc(src_blend, dest_blend);
+				printf("Phase 27.4.2: Blend func set (src: 0x%x, dest: 0x%x)\n", src_blend, dest_blend);
+			}
+			break;
+
+		// States that don't need immediate OpenGL translation (handled elsewhere or not applicable)
+		case D3DRS_FOGENABLE:
+		case D3DRS_FOGCOLOR:
+		case D3DRS_FOGSTART:
+		case D3DRS_FOGEND:
+		case D3DRS_FOGDENSITY:
+		case D3DRS_ALPHATESTENABLE:
+		case D3DRS_ALPHAREF:
+		case D3DRS_ALPHAFUNC:
+			// These are handled in shaders (Phase 27.4.4, 27.4.5)
+			printf("Phase 27.4.2: Render state %d stored for shader use (value: %u)\n", state, value);
+			break;
+
+		default:
+			// Other states - store but don't translate yet
+			break;
+	}
+#endif
 }
 
 WWINLINE void DX8Wrapper::Set_DX8_Clip_Plane(DWORD Index, CONST float* pPlane)
