@@ -451,10 +451,10 @@ build-matrix:
 
 ## 📚 Related Documentation
 
-- **[OPENGL_TESTING.md](./OPENGL_TESTING.md)** - OpenGL-specific testing procedures and results
-- **[OPENGL_COMPLETE.md](OPENGL_SUMMARY.md)** - Complete OpenGL implementation documentation
-- **[MACOS_PORT.md](./MACOS_PORT.md)** - macOS porting progress and platform-specific details
-- **[tests/README.md](./tests/README.md)** - Test suite directory index
+- **[OPENGL_TESTING.md](OPENGL_TESTING.md)** - OpenGL-specific testing procedures and results
+- **[OPENGL_SUMMARY.md](OPENGL_SUMMARY.md)** - Complete OpenGL implementation documentation
+- **[MACOS_PORT.md](MACOS_PORT.md)** - macOS porting progress and platform-specific details
+- **[tests/README.md](../tests/README.md)** - Test suite directory index
 
 ---
 

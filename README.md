@@ -71,8 +71,8 @@ This project transforms the Windows-exclusive Command & Conquer: Generals into a
 
 | Platform | Status | Graphics API | Build System | Documentation |
 |----------|--------|--------------|--------------|---------------|
-| **macOS** | 🟡 Runtime Debugging (Map systems) | OpenGL | CMake/Ninja ✅ | [MACOS_BUILD.md](MACOS_BUILD.md) |
-| **Linux** | � Planned Q1 2026 | OpenGL | CMake/Ninja ✅ | [LINUX_BUILD.md](LINUX_BUILD.md) |
+| **macOS** | 🟡 Runtime Debugging (Map systems) | OpenGL | CMake/Ninja ✅ | [docs/MACOS_BUILD.md](docs/MACOS_BUILD.md) |
+| **Linux** | � Planned Q1 2026 | OpenGL | CMake/Ninja ✅ | [docs/LINUX_BUILD.md](docs/LINUX_BUILD.md) |
 | **Windows** | ✅ Enhanced | DirectX 8 + OpenGL | CMake/Ninja ✅ | Windows-native |
 
 ### 🎮 Features
@@ -139,7 +139,7 @@ For **stable releases and official builds**, visit:
 
 ### macOS
 Comprehensive build instructions for macOS development:
-**[📖 macOS Build Guide](MACOS_BUILD.md)**
+**[📖 macOS Build Guide](docs/MACOS_BUILD.md)**
 
 Key requirements:
 - Xcode Command Line Tools
@@ -156,7 +156,7 @@ cmake --build build/vc6 --target GeneralsXZH -j 4
 
 ### Linux
 Linux port is under development:
-**[📖 Linux Build Guide](LINUX_BUILD.md)**
+**[📖 Linux Build Guide](docs/LINUX_BUILD.md)**
 
 Timeline: Q1 2026 based on macOS foundation
 
@@ -165,12 +165,16 @@ Windows builds are maintained through the official TheSuperHackers repository wi
 
 ### 📖 Documentation
 
-- **[MACOS_BUILD.md](MACOS_BUILD.md)** - Complete macOS build instructions and troubleshooting
-- **[LINUX_BUILD.md](LINUX_BUILD.md)** - Linux port status and contribution guidelines
-- **[MACOS_PORT.md](MACOS_PORT.md)** - Detailed technical progress and implementation notes
-- **[NEXT_STEPS.md](NEXT_STEPS.md)** - Current development phase and upcoming work
+Complete documentation is available in the **[docs/](docs/)** directory:
+
+- **[docs/MACOS_BUILD.md](docs/MACOS_BUILD.md)** - Complete macOS build instructions and troubleshooting
+- **[docs/LINUX_BUILD.md](docs/LINUX_BUILD.md)** - Linux port status and contribution guidelines
+- **[docs/MACOS_PORT.md](docs/MACOS_PORT.md)** - Detailed technical progress and implementation notes
+- **[docs/NEXT_STEPS.md](docs/NEXT_STEPS.md)** - Current development phase and upcoming work
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Guidelines for contributing to cross-platform development
-- **[TESTING.md](TESTING.md)** - Cross-platform testing procedures and validation
+- **[docs/TESTING.md](docs/TESTING.md)** - Cross-platform testing procedures and validation
+
+See **[docs/README.md](docs/README.md)** for complete documentation index.
 
 ### 🎯 Roadmap
 
@@ -214,7 +218,7 @@ This is a future initiative to leverage multi-core CPUs while preserving determi
 - Evolve to moderate threading (AI batches, object updates with partitioning)
 - Consider advanced loop decoupling (producer–consumer) once stable
 
-Read the full analysis and phased plan in MULTITHREADING_ANALYSIS.md.
+Read the full analysis and phased plan in docs/MULTITHREADING_ANALYSIS.md.
 
 ---
 
@@ -242,8 +246,8 @@ Contributions are welcome! We're particularly interested in:
 - **Cross-Platform Testing** - Validate functionality across systems
 
 **How to Contribute**:
-1. Check current issues and [NEXT_STEPS.md](NEXT_STEPS.md)
-2. Read platform-specific build guides ([macOS](MACOS_BUILD.md), [Linux](LINUX_BUILD.md))
+1. Check current issues and [docs/NEXT_STEPS.md](docs/NEXT_STEPS.md)
+2. Read platform-specific build guides ([macOS](docs/MACOS_BUILD.md), [Linux](docs/LINUX_BUILD.md))
 3. Follow [CONTRIBUTING.md](CONTRIBUTING.md) guidelines
 4. Submit issues or pull requests with detailed information
 
