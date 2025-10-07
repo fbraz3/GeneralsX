@@ -2,13 +2,116 @@
 
 **Project Name**: 🎯 **GeneralsX** (formerly Command & Conquer: Generals)
 
-**Port Status**: 🎉 **Phase 26.0 – DUAL EXECUTABLE SUCCESS: Both Games Compile & Run!** 🚀
+**Port Status**: 🎉 **Phase 27 – OpenGL Graphics Implementation (57% Complete)** 🚀
 
-**Date**: October 4, 2025
+**Date**: December 28, 2024
 
-**Status**: ✅ **PRODUCTION READY** – Both GeneralsX and GeneralsXZH compile successfully and execute with full subsystem initialization. Clean exit code 0 on both targets. Foundation complete for graphics and audio implementation.
+**Status**: 🔄 **IN PROGRESS** – Phase 27 Graphics Engine implementation ongoing. 16/28 tasks complete. Uniform updates and primitive draw calls implemented. DirectX8→OpenGL translation layer partially functional.
 
-## Latest Update (October 4, 2025 - Session 3: Wave 1-3 Complete)
+## Latest Update (December 28, 2024 - Phase 27: Graphics Implementation)
+
+**🚀 PHASE 27 PROGRESS: DirectX8→OpenGL Translation (57% Complete)**
+
+### Phase 27 Achievement Summary
+
+| Phase | Tasks | Completed | Status |
+|-------|-------|-----------|--------|
+| 27.1 - Window Setup | 6 | 6/6 (100%) | ✅ **COMPLETE** |
+| 27.2 - D3D8→OpenGL Buffers | 8 | 5/8 (63%) | 🔄 **IN PROGRESS** |
+| 27.3 - Uniform Updates | 3 | 3/3 (100%) | ✅ **COMPLETE** |
+| 27.4 - Rendering | 8 | 1/8 (13%) | 🔄 **IN PROGRESS** |
+| 27.5 - Testing | 3 | 0/3 (0%) | ⏳ **NOT STARTED** |
+| **TOTAL** | **28** | **16/28 (57%)** | 🔄 **IN PROGRESS** |
+
+### Recent Achievements (December 28, 2024)
+
+#### ✅ Phase 27.3: Uniform Updates Complete (Tasks 27.3.1-27.3.3)
+
+**Files Modified**:
+- `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h`
+- `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp`
+
+**Implementations**:
+
+1. **Task 27.3.1: Matrix Uniforms** ✅
+   - Added `glUniformMatrix4fv()` calls in `Apply_Render_State_Changes()`
+   - WORLD_CHANGED section: Updates `uWorldMatrix` uniform
+   - VIEW_CHANGED section: Updates `uViewMatrix` uniform
+   - Added projection matrix update in `Set_Projection_Transform_With_Z_Bias()`
+   - Matrix data passed directly from render state: `(const float*)&render_state.world`
+
+2. **Task 27.3.2: Material Uniforms** ✅
+   - Implemented material logging in `Set_DX8_Material()`
+   - **Critical fix**: D3DMATERIAL8 structure uses `float[4]` arrays, not color structs
+   - Changed color access from `.r/.g/.b/.a` to `[0][1][2][3]` array indices
+   - Future-ready for full material uniform expansion (uMaterialAmbient, uMaterialDiffuse, etc.)
+
+3. **Task 27.3.3: Lighting Uniforms** ✅
+   - Implemented in `Set_DX8_Light()` with complete lighting support
+   - Uniforms: `uLightDirection`, `uLightColor`, `uAmbientColor`, `uUseLighting`
+   - Supports directional lights (D3DLIGHT_DIRECTIONAL, index 0)
+   - Enable/disable lighting based on light presence
+   - Light direction: `glUniform3f(loc, light->Direction.x, .y, .z)`
+   - Diffuse color: `glUniform3f(loc, light->Diffuse.r, .g, .b)`
+   - Ambient color: `glUniform3f(loc, light->Ambient.r, .g, .b)`
+
+**OpenGL APIs Used**: `glUniformMatrix4fv`, `glUniform3f`, `glUniform1i`, `glUseProgram`, `glGetUniformLocation`
+
+**Build Time**: 22:56 (797 files compiled, 0 errors, warnings only)
+
+#### ✅ Phase 27.4.1: Primitive Draw Calls Complete
+
+**File Modified**: `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp`
+
+**Implementation**:
+- Replaced `DX8CALL(DrawIndexedPrimitive())` with native OpenGL `glDrawElements()`
+- Complete D3D primitive type mapping to OpenGL:
+
+| D3D Primitive Type | OpenGL Type | Index Count Formula |
+|-------------------|-------------|---------------------|
+| D3DPT_TRIANGLELIST | GL_TRIANGLES | polygon_count × 3 |
+| D3DPT_TRIANGLESTRIP | GL_TRIANGLE_STRIP | polygon_count + 2 |
+| D3DPT_TRIANGLEFAN | GL_TRIANGLE_FAN | polygon_count + 2 |
+| D3DPT_LINELIST | GL_LINES | polygon_count × 2 |
+| D3DPT_LINESTRIP | GL_LINE_STRIP | polygon_count + 1 |
+| D3DPT_POINTLIST | GL_POINTS | polygon_count |
+
+**Key Features**:
+- Proper index offset calculation: `(start_index + iba_offset) * sizeof(unsigned short)`
+- GL error checking after each draw call with `glGetError()`
+- Debug logging: primitive type, index count, offset, vertex count
+- Inline OpenGL calls replace DX8CALL macro in non-Windows builds
+
+**OpenGL APIs Used**: `glDrawElements`, `glGetError`
+
+**Build Time**: 23:26 (797 files compiled, 0 errors)
+
+**Git Commits**:
+- `4ff9651f` - feat(opengl): implement Phase 27.3-27.4.1 uniform updates and draw calls
+- `ae40f803` - docs(phase27): update NEXT_STEPS.md with Phase 27.3-27.4.1 achievements
+
+### Implementation Strategy for Generals Base Backport
+
+**Current Approach**: All OpenGL implementations are being done in **GeneralsMD (Zero Hour)** first, then will be backported to **Generals (base game)**.
+
+**Backport Checklist** (to be executed after Phase 27 completion):
+1. ✅ Copy OpenGL shader files from `resources/shaders/` (basic.vert, basic.frag)
+2. ✅ Copy SDL2 window creation code from `W3DDisplay.cpp`
+3. ✅ Copy vertex/index buffer abstractions from `dx8vertexbuffer.cpp/h` and `dx8indexbuffer.cpp/h`
+4. ✅ Copy uniform update code from `dx8wrapper.h/cpp`
+5. ✅ Copy primitive draw call implementations from `dx8wrapper.cpp`
+6. ✅ Verify compilation on Generals base target
+7. ✅ Test runtime execution
+
+**Benefits of This Approach**:
+- Zero Hour has more complex graphics features (generals, powers, effects)
+- Testing in Zero Hour ensures robustness
+- Backport is straightforward: copy working code with minimal adjustments
+- Generals base has simpler rendering, fewer edge cases
+
+---
+
+## Previous Update (October 4, 2025 - Session 3: Wave 1-3 Complete)
 
 **🎉 BOTH EXECUTABLES NOW FULLY OPERATIONAL!**
 
