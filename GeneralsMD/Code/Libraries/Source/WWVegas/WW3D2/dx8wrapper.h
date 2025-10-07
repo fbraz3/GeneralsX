@@ -1128,7 +1128,10 @@ WWINLINE void DX8Wrapper::Set_DX8_Clip_Plane(DWORD Index, CONST float* pPlane)
 WWINLINE void DX8Wrapper::Set_DX8_Texture_Stage_State(unsigned stage, D3DTEXTURESTAGESTATETYPE state, unsigned value)
 {
   	if (stage >= MAX_TEXTURE_STAGES)
-  	{	DX8CALL(SetTextureStageState( stage, state, value ));
+  	{	
+#ifdef _WIN32
+		DX8CALL(SetTextureStageState( stage, state, value ));
+#endif
   		return;
   	}
 
@@ -1146,7 +1149,175 @@ WWINLINE void DX8Wrapper::Set_DX8_Texture_Stage_State(unsigned stage, D3DTEXTURE
 #endif
 
 	TextureStageStates[stage][(unsigned int)state]=value;
+	
+#ifdef _WIN32
 	DX8CALL(SetTextureStageState( stage, state, value ));
+#else
+	// Phase 27.4.3: OpenGL texture stage state management
+	// Note: In OpenGL 3.3 Core Profile, texture combiners are handled in fragment shader
+	// We store these states for potential shader uniform updates
+	
+	switch (state) {
+		// Texture operations (stored for shader use)
+		case D3DTSS_COLOROP:
+		case D3DTSS_ALPHAOP:
+			printf("Phase 27.4.3: Texture stage %u operation state %d = %u (stored for shader)\n", 
+				stage, state, value);
+			// These will be used to configure fragment shader texture combiners
+			// D3DTOP_DISABLE (1), D3DTOP_SELECTARG1 (2), D3DTOP_MODULATE (4), etc.
+			break;
+			
+		case D3DTSS_COLORARG1:
+		case D3DTSS_COLORARG2:
+		case D3DTSS_COLORARG0:
+		case D3DTSS_ALPHAARG1:
+		case D3DTSS_ALPHAARG2:
+		case D3DTSS_ALPHAARG0:
+			// Texture arguments (D3DTA_DIFFUSE, D3DTA_TEXTURE, D3DTA_CURRENT, etc.)
+			printf("Phase 27.4.3: Texture stage %u argument state %d = %u (stored for shader)\n", 
+				stage, state, value);
+			break;
+		
+		// Texture filtering and addressing (can be mapped to OpenGL sampler states)
+		case D3DTSS_ADDRESSU:
+		case D3DTSS_ADDRESSV:
+		case D3DTSS_ADDRESSW:
+		{
+			// Map D3D texture address modes to OpenGL wrap modes
+			// D3DTADDRESS_WRAP (1) → GL_REPEAT
+			// D3DTADDRESS_CLAMP (3) → GL_CLAMP_TO_EDGE
+			// D3DTADDRESS_MIRROR (2) → GL_MIRRORED_REPEAT
+			// D3DTADDRESS_BORDER (4) → GL_CLAMP_TO_BORDER
+			
+			GLenum gl_wrap_mode = GL_REPEAT;
+			switch (value) {
+				case 1: gl_wrap_mode = GL_REPEAT; break;           // D3DTADDRESS_WRAP
+				case 2: gl_wrap_mode = GL_MIRRORED_REPEAT; break;  // D3DTADDRESS_MIRROR
+				case 3: gl_wrap_mode = GL_CLAMP_TO_EDGE; break;    // D3DTADDRESS_CLAMP
+				case 4: gl_wrap_mode = GL_CLAMP_TO_BORDER; break;  // D3DTADDRESS_BORDER
+				default: 
+					printf("Phase 27.4.3 WARNING: Unknown texture address mode %u\n", value);
+					break;
+			}
+			
+			// Apply to active texture unit
+			if (Textures[stage] != nullptr) {
+				glActiveTexture(GL_TEXTURE0 + stage);
+				
+				GLenum gl_wrap_param = (state == D3DTSS_ADDRESSU) ? GL_TEXTURE_WRAP_S :
+				                       (state == D3DTSS_ADDRESSV) ? GL_TEXTURE_WRAP_T :
+				                       GL_TEXTURE_WRAP_R;
+				
+				glTexParameteri(GL_TEXTURE_2D, gl_wrap_param, gl_wrap_mode);
+				
+				printf("Phase 27.4.3: Texture stage %u wrap mode set: %s = 0x%04X\n", 
+					stage, 
+					(state == D3DTSS_ADDRESSU) ? "WRAP_S" : 
+					(state == D3DTSS_ADDRESSV) ? "WRAP_T" : "WRAP_R",
+					gl_wrap_mode);
+			}
+			break;
+		}
+		
+		case D3DTSS_MAGFILTER:
+		case D3DTSS_MINFILTER:
+		{
+			// Map D3D texture filters to OpenGL
+			// D3DTEXF_POINT (1) → GL_NEAREST
+			// D3DTEXF_LINEAR (2) → GL_LINEAR
+			
+			GLenum gl_filter = (value == 1) ? GL_NEAREST : GL_LINEAR;
+			
+			if (Textures[stage] != nullptr) {
+				glActiveTexture(GL_TEXTURE0 + stage);
+				GLenum gl_filter_param = (state == D3DTSS_MAGFILTER) ? GL_TEXTURE_MAG_FILTER : GL_TEXTURE_MIN_FILTER;
+				glTexParameteri(GL_TEXTURE_2D, gl_filter_param, gl_filter);
+				
+				printf("Phase 27.4.3: Texture stage %u filter set: %s = 0x%04X\n", 
+					stage,
+					(state == D3DTSS_MAGFILTER) ? "MAG_FILTER" : "MIN_FILTER",
+					gl_filter);
+			}
+			break;
+		}
+		
+		case D3DTSS_MIPFILTER:
+		{
+			// Mipmap filtering
+			// D3DTEXF_NONE (0) → GL_LINEAR (no mipmap)
+			// D3DTEXF_POINT (1) → GL_LINEAR_MIPMAP_NEAREST
+			// D3DTEXF_LINEAR (2) → GL_LINEAR_MIPMAP_LINEAR
+			
+			if (Textures[stage] != nullptr) {
+				glActiveTexture(GL_TEXTURE0 + stage);
+				GLenum gl_mip_filter = GL_LINEAR;
+				
+				if (value == 1) gl_mip_filter = GL_LINEAR_MIPMAP_NEAREST;
+				else if (value == 2) gl_mip_filter = GL_LINEAR_MIPMAP_LINEAR;
+				
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_mip_filter);
+				
+				printf("Phase 27.4.3: Texture stage %u mipmap filter set: 0x%04X\n", stage, gl_mip_filter);
+			}
+			break;
+		}
+		
+		case D3DTSS_BORDERCOLOR:
+		{
+			// Border color for GL_CLAMP_TO_BORDER
+			if (Textures[stage] != nullptr) {
+				glActiveTexture(GL_TEXTURE0 + stage);
+				
+				// Extract ARGB components from D3DCOLOR
+				float border_color[4] = {
+					((value >> 16) & 0xFF) / 255.0f,  // R
+					((value >> 8) & 0xFF) / 255.0f,   // G
+					(value & 0xFF) / 255.0f,          // B
+					((value >> 24) & 0xFF) / 255.0f   // A
+				};
+				
+				glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
+				
+				printf("Phase 27.4.3: Texture stage %u border color set: ARGB(%.2f, %.2f, %.2f, %.2f)\n", 
+					stage, border_color[3], border_color[0], border_color[1], border_color[2]);
+			}
+			break;
+		}
+		
+		case D3DTSS_MAXANISOTROPY:
+		{
+			// Anisotropic filtering level
+			if (Textures[stage] != nullptr) {
+				glActiveTexture(GL_TEXTURE0 + stage);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, value);
+				printf("Phase 27.4.3: Texture stage %u max anisotropy set: %u\n", stage, value);
+			}
+			break;
+		}
+		
+		case D3DTSS_TEXCOORDINDEX:
+		case D3DTSS_TEXTURETRANSFORMFLAGS:
+		case D3DTSS_BUMPENVMAT00:
+		case D3DTSS_BUMPENVMAT01:
+		case D3DTSS_BUMPENVMAT10:
+		case D3DTSS_BUMPENVMAT11:
+		case D3DTSS_BUMPENVLSCALE:
+		case D3DTSS_BUMPENVLOFFSET:
+		case D3DTSS_RESULTARG:
+		case D3DTSS_CONSTANT:
+		case D3DTSS_MIPMAPLODBIAS:
+		case D3DTSS_MAXMIPLEVEL:
+			// Advanced states - store but don't translate yet
+			printf("Phase 27.4.3: Texture stage %u advanced state %d = %u (stored)\n", stage, state, value);
+			break;
+			
+		default:
+			// Unknown state
+			printf("Phase 27.4.3 WARNING: Unknown texture stage state %d = %u\n", state, value);
+			break;
+	}
+#endif
+	
 	DX8_RECORD_TEXTURE_STAGE_STATE_CHANGE();
 }
 
