@@ -623,6 +623,14 @@ void W3DRadar::renderObjectList( const RadarObject *listHead, TextureClass *text
 	// get surface for texture to render into
 	SurfaceClass *surface = texture->Get_Surface_Level();
 
+	// Phase 27 CRITICAL FIX: OpenGL textures may not have surfaces - skip if null
+	if (surface == nullptr) {
+#ifndef _WIN32
+		printf("Phase 27 W3DRADAR FIX: renderObjectList() - texture has no surface (OpenGL compatibility)\n");
+#endif
+		return;
+	}
+
 	// loop through all objects and draw
 	ICoord2D radarPoint;
 
@@ -1298,6 +1306,14 @@ void W3DRadar::clearShroud()
 
 	SurfaceClass *surface = m_shroudTexture->Get_Surface_Level();
 
+	// Phase 27 CRITICAL FIX: OpenGL textures may not have surfaces - skip if null
+	if (surface == nullptr) {
+#ifndef _WIN32
+		printf("Phase 27 W3DRADAR FIX: clearShroud() - m_shroudTexture has no surface (OpenGL compatibility)\n");
+#endif
+		return;
+	}
+
 	// fill to clear, shroud will make black.  Don't want to make something black that logic can't clear
 	unsigned int color = GameMakeColor( 0, 0, 0, 0 );
 	for( Int y = 0; y < m_textureHeight; y++ )
@@ -1321,6 +1337,15 @@ void W3DRadar::setShroudLevel(Int shroudX, Int shroudY, CellShroudStatus setting
 		return;
 
 	SurfaceClass* surface = m_shroudTexture->Get_Surface_Level();
+	
+	// Phase 27 CRITICAL FIX: OpenGL textures may not have surfaces - skip if null
+	if (surface == nullptr) {
+#ifndef _WIN32
+		printf("Phase 27 W3DRADAR FIX: setShroudLevel() - m_shroudTexture has no surface (OpenGL compatibility)\n");
+#endif
+		return;
+	}
+
 	DEBUG_ASSERTCRASH( surface, ("W3DRadar: Can't get surface for Shroud texture") );
 
 	Int mapMinX = shroudX * shroud->getCellWidth();
@@ -1435,12 +1460,20 @@ void W3DRadar::draw( Int pixelX, Int pixelY, Int width, Int height )
 
 		// reset the overlay texture
 		SurfaceClass *surface = m_overlayTexture->Get_Surface_Level();
-		surface->Clear();
-		REF_PTR_RELEASE(surface);
+		
+		// Phase 27 CRITICAL FIX: OpenGL textures may not have surfaces - skip if null
+		if (surface == nullptr) {
+#ifndef _WIN32
+			printf("Phase 27 W3DRADAR FIX: render() overlay refresh - m_overlayTexture has no surface (OpenGL compatibility)\n");
+#endif
+		} else {
+			surface->Clear();
+			REF_PTR_RELEASE(surface);
 
-		// rebuild the object overlay
-		renderObjectList( getObjectList(), m_overlayTexture );
-		renderObjectList( getLocalObjectList(), m_overlayTexture, TRUE );
+			// rebuild the object overlay
+			renderObjectList( getObjectList(), m_overlayTexture );
+			renderObjectList( getLocalObjectList(), m_overlayTexture, TRUE );
+		}
 
 	}
 
