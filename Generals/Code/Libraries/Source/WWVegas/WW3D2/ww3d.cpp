@@ -1,5 +1,5 @@
 /*
-**	Command & Conquer Generals(tm)
+**	Command & Conquer Generals Zero Hour(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -119,6 +119,7 @@
 #include "animatedsoundmgr.h"
 #include "static_sort_list.h"
 
+#include "shdlib.h"
 
 #ifndef _UNIX
 #include "framgrab.h"
@@ -253,14 +254,6 @@ void WW3D::Set_NPatches_Level(unsigned level)
 	NPatchesLevel = level;
 }
 
-void WW3D::Set_Thumbnail_Enabled (bool b)
-{
-	if (ThumbnailEnabled!=b) {
-		ThumbnailEnabled = b;
-		_Invalidate_Textures();
-	}
-}
-
 /***********************************************************************************************
  * WW3D::Init -- Initialize the WW3D Library                                                   *
  *                                                                                             *
@@ -285,9 +278,12 @@ WW3DErrorType WW3D::Init(void *hwnd, char *defaultpal, bool lite)
 	*/
 	Init_D3D_To_WW3_Conversion();
 	WWDEBUG_SAY(("Init DX8Wrapper"));
+	printf("WW3D::Init - About to initialize DX8Wrapper\n");
 	if (!DX8Wrapper::Init(_Hwnd, lite)) {
+		printf("WW3D::Init - DX8Wrapper::Init failed!\n");
 		return(WW3D_ERROR_INITIALIZATION_FAILED);
 	}
+	printf("WW3D::Init - DX8Wrapper initialized successfully\n");
 	WWDEBUG_SAY(("Allocate Debug Resources"));
 	Allocate_Debug_Resources();
 
@@ -780,7 +776,7 @@ void WW3D::Set_Texture_Filter(int texture_filter)
 	if (texture_filter<0) texture_filter=0;
 	if (texture_filter>TextureFilterClass::TEXTURE_FILTER_ANISOTROPIC) texture_filter=TextureFilterClass::TEXTURE_FILTER_ANISOTROPIC;
 	TextureFilter=texture_filter;
-	TextureFilterClass::_Init_Filters();
+	TextureFilterClass::_Init_Filters((TextureFilterClass::TextureFilterMode)TextureFilter);
 }
 
 
@@ -831,7 +827,7 @@ WW3DErrorType WW3D::Begin_Render(bool clear,bool clearz,const Vector3 & color, f
 	LastFrameMemoryFrees=WWMemoryLogClass::Get_Free_Count();
 	WWMemoryLogClass::Reset_Counters();
 
-	TextureLoader::Update();
+	TextureLoader::Update(network_callback);
 //	TextureClass::_Reset_Time_Stamp();
 	DynamicVBAccessClass::_Reset(true);
 	DynamicIBAccessClass::_Reset(true);
@@ -1061,10 +1057,12 @@ WW3DErrorType WW3D::Render(
  *                                                                                             *
  * HISTORY:                                                                                    *
  *   4/17/2001  gth : Created.                                                                 *
+ * 07/01/02 KM Scalable shader library integration				                               *
  *=============================================================================================*/
 void WW3D::Flush(RenderInfoClass & rinfo)
 {
 	TheDX8MeshRenderer.Flush();
+	SHD_FLUSH;
 	WW3D::Render_And_Clear_Static_Sort_Lists(rinfo);	//draws things like water
 
 	SortingRendererClass::Flush();
@@ -1368,8 +1366,8 @@ void WW3D::Make_Screen_Shot( const char * filename_base , const float gamma, con
 	SurfaceClass::SurfaceDescription surfaceDesc;
 	surface->Get_Description(surfaceDesc);
 
-	SurfaceClass* surfaceCopy = NEW_REF(SurfaceClass, ((CORE_IDirect3DSurface8*)DX8Wrapper::_Create_DX8_Surface(surfaceDesc.Width, surfaceDesc.Height, surfaceDesc.Format)));
-	DX8Wrapper::_Copy_DX8_Rects((IDirect3DSurface8*)surface->Peek_D3D_Surface(), NULL, 0, (IDirect3DSurface8*)surfaceCopy->Peek_D3D_Surface(), NULL);
+	SurfaceClass* surfaceCopy = NEW_REF(SurfaceClass, (DX8Wrapper::_Create_DX8_Surface(surfaceDesc.Width, surfaceDesc.Height, surfaceDesc.Format)));
+	DX8Wrapper::_Copy_DX8_Rects(surface->Peek_D3D_Surface(), NULL, 0, surfaceCopy->Peek_D3D_Surface(), NULL);
 
 	surface->Release_Ref();
 	surface = NULL;
@@ -1718,8 +1716,8 @@ void WW3D::Update_Movie_Capture( void )
 	SurfaceClass::SurfaceDescription surfaceDesc;
 	surface->Get_Description(surfaceDesc);
 
-	SurfaceClass* surfaceCopy = NEW_REF(SurfaceClass, ((CORE_IDirect3DSurface8*)DX8Wrapper::_Create_DX8_Surface(surfaceDesc.Width, surfaceDesc.Height, surfaceDesc.Format)));
-	DX8Wrapper::_Copy_DX8_Rects((IDirect3DSurface8*)surface->Peek_D3D_Surface(), NULL, 0, (IDirect3DSurface8*)surfaceCopy->Peek_D3D_Surface(), NULL);
+	SurfaceClass* surfaceCopy = NEW_REF(SurfaceClass, (DX8Wrapper::_Create_DX8_Surface(surfaceDesc.Width, surfaceDesc.Height, surfaceDesc.Format)));
+	DX8Wrapper::_Copy_DX8_Rects(surface->Peek_D3D_Surface(), NULL, 0, surfaceCopy->Peek_D3D_Surface(), NULL);
 
 	surface->Release_Ref();
 	surface = NULL;

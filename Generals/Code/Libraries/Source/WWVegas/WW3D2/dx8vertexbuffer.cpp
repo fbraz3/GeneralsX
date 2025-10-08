@@ -91,7 +91,7 @@ VertexBufferClass::VertexBufferClass(unsigned type_, unsigned FVF, unsigned shor
 	WWASSERT(VertexCount);
 	WWASSERT(type==BUFFER_TYPE_DX8 || type==BUFFER_TYPE_SORTING);
 	WWASSERT((FVF!=0 && vertex_size==0) || (FVF==0 && vertex_size!=0));
-	fvf_info=W3DNEW FVFInfoClass(FVF);  // Generals uses single-parameter constructor
+	fvf_info=W3DNEW FVFInfoClass(FVF,vertex_size);
 
 	_VertexBufferCount++;
 	_VertexBufferTotalVertices+=VertexCount;

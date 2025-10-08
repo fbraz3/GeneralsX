@@ -60,10 +60,10 @@ This project is a fork of the Command & Conquer Generals source code and its exp
 15. For compiling, set the cmake output to a log file in /tmp dir (or equivalent in Windows environment) in foreground to analyze warnings and errors later:
 ```bash
 # Example for macOS ARM64 - GeneralsXZH
-cmake --build build/macos-arm64 --target GeneralsXZH -j 4 >> /tmp/generalsxzh_build.log.txt 2>&1
+cmake --build build/macos-arm64 --target GeneralsXZH -j 4 2>&1 | tee /tmp/generalsxzh_build.log.txt
 
 # Example for macOS ARM64 - GeneralsX
-cmake --build build/macos-arm64 --target GeneralsX -j 4 >> /tmp/generalsx_build.log.txt 2>&1
+cmake --build build/macos-arm64 --target GeneralsX -j 4 2>&1 | tee /tmp/generalsx_build.log.txt
 ```
 
 # Reference Repositories (Git Submodules)

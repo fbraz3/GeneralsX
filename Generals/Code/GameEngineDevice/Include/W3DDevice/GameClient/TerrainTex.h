@@ -1,5 +1,5 @@
 /*
-**	Command & Conquer Generals(tm)
+**	Command & Conquer Generals Zero Hour(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -47,16 +47,19 @@ class TerrainTextureClass : public TextureClass
 	W3DMPO_GLUE(TerrainTextureClass)
 protected:
 	virtual void Apply(unsigned int stage);
-	int update256(WorldHeightMap *htMap);///< Sets the pixels, and returns the actual height of the texture.
 
 public:
 		/// Create texture for a height map.
-		TerrainTextureClass(int height, MipCountType mipLevelCount = MIP_LEVELS_3 );
+		TerrainTextureClass(int height);
+
+		/// Create texture for a height map.
+		TerrainTextureClass(int height, int width);
 
 		// just use default destructor. ~TerrainTextureClass(void);
 public:
 	int update(WorldHeightMap *htMap); ///< Sets the pixels, and returns the actual height of the texture.
-
+	Bool updateFlat(WorldHeightMap *htMap, Int xCell, Int yCell, Int cellWidth, Int pixelsPerCell); ///< Sets the pixels.
+	void setLOD(Int LOD);
 };
 
 

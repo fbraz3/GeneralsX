@@ -1,5 +1,5 @@
 /*
-**	Command & Conquer Generals(tm)
+**	Command & Conquer Generals Zero Hour(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -22,16 +22,19 @@
  *                                                                                             *
  *                 Project Name : ww3d                                                         *
  *                                                                                             *
- *                     $Archive:: /VSS_Sync/ww3d2/dx8wrapper.h                                $*
+ *                     $Archive:: /Commando/Code/ww3d2/dx8wrapper.h                           $*
  *                                                                                             *
  *              Original Author:: Jani Penttinen                                               *
  *                                                                                             *
- *                      $Author:: Vss_sync                                                    $*
+ *                       Author : Kenny Mitchell                                               *
  *                                                                                             *
- *                     $Modtime:: 8/29/01 7:29p                                               $*
+ *                     $Modtime:: 08/05/02 2:40p                                              $*
  *                                                                                             *
- *                    $Revision:: 76                                                          $*
+ *                    $Revision:: 92                                                          $*
  *                                                                                             *
+ * 06/26/02 KM Matrix name change to avoid MAX conflicts                                       *
+ * 06/27/02 KM Render to shadow buffer texture support														*
+ * 08/05/02 KM Texture class redesign
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -70,7 +73,7 @@
 #define	VALUE_NAME_RENDER_DEVICE_WINDOWED			"RenderDeviceWindowed"
 #define	VALUE_NAME_RENDER_DEVICE_TEXTURE_DEPTH		"RenderDeviceTextureDepth"
 
-const unsigned MAX_TEXTURE_STAGES=2;
+const unsigned MAX_TEXTURE_STAGES=8;
 const unsigned MAX_VERTEX_STREAMS=2;
 const unsigned MAX_VERTEX_SHADER_CONSTANTS=96;
 const unsigned MAX_PIXEL_SHADER_CONSTANTS=8;
@@ -97,8 +100,10 @@ class DynamicVBAccessClass;
 class IndexBufferClass;
 class DynamicIBAccessClass;
 class TextureClass;
+class ZTextureClass;
 class LightClass;
 class SurfaceClass;
+class DX8Caps;
 
 #define DX8_RECORD_MATRIX_CHANGE()				matrix_changes++
 #define DX8_RECORD_MATERIAL_CHANGE()			material_changes++
@@ -178,14 +183,15 @@ struct RenderStateStruct
 	TextureBaseClass * Textures[MAX_TEXTURE_STAGES];
 	D3DLIGHT8 Lights[4];
 	bool LightEnable[4];
+  //unsigned lightsHash;
 	Matrix4x4 world;
 	Matrix4x4 view;
-	unsigned vertex_buffer_type;
+	unsigned vertex_buffer_types[MAX_VERTEX_STREAMS];
 	unsigned index_buffer_type;
 	unsigned short vba_offset;
 	unsigned short vba_count;
 	unsigned short iba_offset;
-	VertexBufferClass* vertex_buffer;
+	VertexBufferClass* vertex_buffers[MAX_VERTEX_STREAMS];
 	IndexBufferClass* index_buffer;
 	unsigned short index_base_offset;
 
@@ -278,7 +284,7 @@ public:
 
 	static void	Set_Viewport(CONST D3DVIEWPORT8* pViewport);
 
-	static void Set_Vertex_Buffer(const VertexBufferClass* vb);
+	static void Set_Vertex_Buffer(const VertexBufferClass* vb, unsigned stream=0);
 	static void Set_Vertex_Buffer(const DynamicVBAccessClass& vba);
 	static void Set_Index_Buffer(const IndexBufferClass* ib,unsigned short index_base_offset);
 	static void Set_Index_Buffer(const DynamicIBAccessClass& iba,unsigned short index_base_offset);
@@ -293,6 +299,9 @@ public:
 	static void Set_Gamma(float gamma,float bright,float contrast,bool calibrate=true,bool uselimit=true);
 
 	// Set_ and Get_Transform() functions take the matrix in Westwood convention format.
+
+	static void Set_DX8_ZBias(int zbias);
+	static void Set_Projection_Transform_With_Z_Bias(const Matrix4x4& matrix,float znear, float zfar);	// pointer to 16 matrices
 
 	static void Set_Transform(D3DTRANSFORMSTATETYPE transform,const Matrix4x4& m);
 	static void Set_Transform(D3DTRANSFORMSTATETYPE transform,const Matrix3D& m);
@@ -354,6 +363,37 @@ public:
 	** Resources
 	*/
 
+	static IDirect3DVolumeTexture8* _Create_DX8_Volume_Texture
+	(
+		unsigned int width,
+		unsigned int height,
+		unsigned int depth,
+		WW3DFormat format,
+		MipCountType mip_level_count,
+		D3DPOOL pool=D3DPOOL_MANAGED
+	);
+
+	static IDirect3DCubeTexture8* _Create_DX8_Cube_Texture
+	(
+		unsigned int width,
+		unsigned int height,
+		WW3DFormat format,
+		MipCountType mip_level_count,
+		D3DPOOL pool=D3DPOOL_MANAGED,
+		bool rendertarget=false
+	);
+
+
+	static IDirect3DTexture8* _Create_DX8_ZTexture
+	(
+		unsigned int width,
+		unsigned int height,
+		WW3DZFormat zformat,
+		MipCountType mip_level_count,
+		D3DPOOL pool=D3DPOOL_MANAGED
+	);
+
+
 	static IDirect3DTexture8 * _Create_DX8_Texture
 	(
 		unsigned int width,
@@ -365,6 +405,39 @@ public:
 	);
 	static IDirect3DTexture8 * _Create_DX8_Texture(const char *filename, MipCountType mip_level_count);
 	static IDirect3DTexture8 * _Create_DX8_Texture(IDirect3DSurface8 *surface, MipCountType mip_level_count);
+
+	// Phase 27.2.3: OpenGL texture creation
+#ifndef _WIN32
+	static unsigned int _Create_GL_Texture
+	(
+		unsigned int width,
+		unsigned int height,
+		WW3DFormat format,
+		MipCountType mip_level_count,
+		bool rendertarget=false
+	);
+#endif
+
+	// Phase 27.2.4: OpenGL shader program management
+#ifndef _WIN32
+	static unsigned int _Load_And_Compile_Shader(const char *shader_path, unsigned int shader_type);
+	static unsigned int _Create_Shader_Program(unsigned int vertex_shader, unsigned int fragment_shader);
+	static bool _Check_Shader_Compile_Status(unsigned int shader, const char *shader_name);
+	static bool _Check_Program_Link_Status(unsigned int program);
+	static int _Get_Uniform_Location(unsigned int program, const char *uniform_name);
+#endif
+
+	// Phase 27.2.5: Vertex attribute setup
+#ifndef _WIN32
+	static void _Setup_Vertex_Attributes(unsigned int fvf, unsigned int vertex_stride);
+#endif
+
+	// Phase 27.5.2: OpenGL error checking and debugging
+#ifndef _WIN32
+	static void _Check_GL_Error(const char *operation);
+	static void _Enable_GL_Debug_Output();
+	static int _Get_Uniform_Location_Safe(unsigned int program, const char *uniform_name, bool log_if_missing = true);
+#endif
 
 	static IDirect3DSurface8 * _Create_DX8_Surface(unsigned int width, unsigned int height, WW3DFormat format);
 	static IDirect3DSurface8 * _Create_DX8_Surface(const char *filename);
@@ -441,14 +514,31 @@ public:
 	static IDirect3DSwapChain8 *	Create_Additional_Swap_Chain (HWND render_window);
 
 	/*
-	** Render target interface
+	** Render target interface. If render target format is WW3D_FORMAT_UNKNOWN, current display format is used.
 	*/
-	static TextureClass *	Create_Render_Target (int width, int height, bool alpha=false);
+	static TextureClass *	Create_Render_Target (int width, int height, WW3DFormat format = WW3D_FORMAT_UNKNOWN);
 
-	static void					Set_Render_Target (TextureBaseClass * texture);
-	static void					Set_Render_Target (IDirect3DSurface8 *render_target);
+	static void					Set_Render_Target (IDirect3DSurface8 *render_target, bool use_default_depth_buffer = false);
+	static void					Set_Render_Target (IDirect3DSurface8* render_target, IDirect3DSurface8* dpeth_buffer);
+
 	static void					Set_Render_Target (IDirect3DSwapChain8 *swap_chain);
 	static bool					Is_Render_To_Texture(void) { return IsRenderToTexture; }
+
+	// for depth map support KJM V
+	static void Create_Render_Target
+	(
+		int width,
+		int height,
+		WW3DFormat format,
+		WW3DZFormat zformat,
+		TextureClass** target,
+		ZTextureClass** depth_buffer
+	);
+	static void					Set_Render_Target_With_Z (TextureClass * texture, ZTextureClass* ztexture=NULL);
+
+	static void Set_Shadow_Map(int idx, ZTextureClass* ztex) { Shadow_Map[idx]=ztex; }
+	static ZTextureClass* Get_Shadow_Map(int idx) { return Shadow_Map[idx]; }
+	// for depth map support KJM ^
 
 	// shader system udpates KJM v
 	static void Apply_Default_State();
@@ -598,10 +688,21 @@ protected:
 	static Vector4							Vertex_Shader_Constants[MAX_VERTEX_SHADER_CONSTANTS];
 	static Vector4							Pixel_Shader_Constants[MAX_PIXEL_SHADER_CONSTANTS];
 
+	// Phase 27.2.4: OpenGL shader program state
+#ifndef _WIN32
+	static unsigned int					GL_Shader_Program;
+	static unsigned int					GL_Vertex_Shader;
+	static unsigned int					GL_Fragment_Shader;
+	static unsigned int					GL_VAO;  // Vertex Array Object for vertex attribute setup
+#endif
+
 	static LightEnvironmentClass*		Light_Environment;
 	static RenderInfoClass*				Render_Info;
 
 	static DWORD							Vertex_Processing_Behavior;
+
+	static ZTextureClass*				Shadow_Map[MAX_SHADOW_MAPS];
+
 	static Vector3							Ambient_Color;
 	// shader system updates KJM ^
 
@@ -636,7 +737,10 @@ protected:
 	static IDirect3DDevice8 *			D3DDevice;				//d3ddevice8;
 
 	static IDirect3DSurface8 *			CurrentRenderTarget;
+	static IDirect3DSurface8 *			CurrentDepthBuffer;
 	static IDirect3DSurface8 *			DefaultRenderTarget;
+	static IDirect3DSurface8 *			DefaultDepthBuffer;
+
 	static unsigned							DrawPolygonLowBoundLimit;
 
 	static bool								IsRenderToTexture;
@@ -788,22 +892,91 @@ WWINLINE void DX8Wrapper::Set_DX8_Material(const D3DMATERIAL8* mat)
 	DX8_RECORD_MATERIAL_CHANGE();
 	WWASSERT(mat);
 	SNAPSHOT_SAY(("DX8 - SetMaterial"));
+#ifdef _WIN32
 	DX8CALL(SetMaterial(mat));
+#else
+	// Phase 27.3.2: Update material uniforms in OpenGL shader
+	// Note: Our basic shader doesn't currently use material properties,
+	// but we can add them here for future expansion
+	// The shader currently uses vertex colors instead of material colors
+	if (GL_Shader_Program != 0 && mat != NULL) {
+		glUseProgram(GL_Shader_Program);
+		
+		// For now, we'll just log that materials are being set
+		// Future shaders can use these uniforms: uMaterialAmbient, uMaterialDiffuse, etc.
+		// mat->Diffuse is float[4] with RGBA values
+		printf("Phase 27.3.2: Material set (diffuse: %.2f,%.2f,%.2f,%.2f)\n", 
+			mat->Diffuse[0], mat->Diffuse[1], mat->Diffuse[2], mat->Diffuse[3]);
+	}
+#endif
 }
 
 WWINLINE void DX8Wrapper::Set_DX8_Light(int index, D3DLIGHT8* light)
 {
 	if (light) {
 		DX8_RECORD_LIGHT_CHANGE();
+#ifdef _WIN32
 		DX8CALL(SetLight(index,light));
 		DX8CALL(LightEnable(index,TRUE));
+#else
+		// Phase 27.3.3: Update lighting uniforms in OpenGL shader
+		if (GL_Shader_Program != 0) {
+			glUseProgram(GL_Shader_Program);
+			
+			// For now, we only support one directional light (index 0)
+			// Our basic shader has: uLightDirection, uLightColor, uAmbientColor
+			if (index == 0 && light->Type == D3DLIGHT_DIRECTIONAL) {
+				// Light direction
+				GLint loc = glGetUniformLocation(GL_Shader_Program, "uLightDirection");
+				if (loc != -1) {
+					glUniform3f(loc, light->Direction.x, light->Direction.y, light->Direction.z);
+					printf("Phase 27.3.3: Updated uLightDirection (%.2f, %.2f, %.2f)\n",
+						light->Direction.x, light->Direction.y, light->Direction.z);
+				}
+				
+				// Light diffuse color
+				loc = glGetUniformLocation(GL_Shader_Program, "uLightColor");
+				if (loc != -1) {
+					glUniform3f(loc, light->Diffuse.r, light->Diffuse.g, light->Diffuse.b);
+					printf("Phase 27.3.3: Updated uLightColor (%.2f, %.2f, %.2f)\n",
+						light->Diffuse.r, light->Diffuse.g, light->Diffuse.b);
+				}
+				
+				// Ambient color
+				loc = glGetUniformLocation(GL_Shader_Program, "uAmbientColor");
+				if (loc != -1) {
+					glUniform3f(loc, light->Ambient.r, light->Ambient.g, light->Ambient.b);
+					printf("Phase 27.3.3: Updated uAmbientColor (%.2f, %.2f, %.2f)\n",
+						light->Ambient.r, light->Ambient.g, light->Ambient.b);
+				}
+				
+				// Enable lighting uniform
+				loc = glGetUniformLocation(GL_Shader_Program, "uUseLighting");
+				if (loc != -1) {
+					glUniform1i(loc, 1);
+				}
+			}
+		}
+#endif
 		CurrentDX8LightEnables[index]=true;
 		SNAPSHOT_SAY(("DX8 - SetLight %d",index));
 	}
 	else if (CurrentDX8LightEnables[index]) {
 		DX8_RECORD_LIGHT_CHANGE();
 		CurrentDX8LightEnables[index]=false;
+#ifdef _WIN32
 		DX8CALL(LightEnable(index,FALSE));
+#else
+		// Phase 27.3.3: Disable lighting in OpenGL shader
+		if (GL_Shader_Program != 0 && index == 0) {
+			glUseProgram(GL_Shader_Program);
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uUseLighting");
+			if (loc != -1) {
+				glUniform1i(loc, 0);
+				printf("Phase 27.3.3: Disabled lighting\n");
+			}
+		}
+#endif
 		SNAPSHOT_SAY(("DX8 - DisableLight %d",index));
 	}
 }
@@ -824,8 +997,510 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 #endif
 
 	RenderStates[state]=value;
+
+#ifdef _WIN32
 	DX8CALL(SetRenderState( state, value ));
 	DX8_RECORD_RENDER_STATE_CHANGE();
+#else
+	// Phase 27.4.2: OpenGL render state management
+	switch (state) {
+		case D3DRS_CULLMODE:
+			// Face culling
+			if (value == D3DCULL_NONE) {
+				glDisable(GL_CULL_FACE);
+				printf("Phase 27.4.2: Disabled face culling\n");
+			} else {
+				glEnable(GL_CULL_FACE);
+				// D3D: CW = clockwise, CCW = counter-clockwise
+				// OpenGL: GL_CW = clockwise, GL_CCW = counter-clockwise (default)
+				// D3DCULL_CW culls clockwise faces, D3DCULL_CCW culls counter-clockwise
+				if (value == D3DCULL_CW) {
+					glCullFace(GL_FRONT);  // D3D culls CW (front faces in D3D default)
+					glFrontFace(GL_CW);    // Define CW as front-facing
+					printf("Phase 27.4.2: Cull mode CW (cull front faces)\n");
+				} else if (value == D3DCULL_CCW) {
+					glCullFace(GL_BACK);   // D3D culls CCW (back faces in D3D default)
+					glFrontFace(GL_CCW);   // Define CCW as front-facing  
+					printf("Phase 27.4.2: Cull mode CCW (cull back faces)\n");
+				}
+			}
+			break;
+
+		case D3DRS_ZENABLE:
+			// Depth testing
+			if (value == D3DZB_TRUE || value == D3DZB_USEW) {
+				glEnable(GL_DEPTH_TEST);
+				printf("Phase 27.4.2: Enabled depth testing\n");
+			} else {
+				glDisable(GL_DEPTH_TEST);
+				printf("Phase 27.4.2: Disabled depth testing\n");
+			}
+			break;
+
+		case D3DRS_ZWRITEENABLE:
+			// Depth write mask
+			glDepthMask(value ? GL_TRUE : GL_FALSE);
+			printf("Phase 27.4.2: Depth write %s\n", value ? "enabled" : "disabled");
+			break;
+
+		case D3DRS_ZFUNC:
+			// Depth comparison function
+			{
+				GLenum gl_func = GL_LEQUAL;  // Default
+				switch (value) {
+					case D3DCMP_NEVER:        gl_func = GL_NEVER; break;
+					case D3DCMP_LESS:         gl_func = GL_LESS; break;
+					case D3DCMP_EQUAL:        gl_func = GL_EQUAL; break;
+					case D3DCMP_LESSEQUAL:    gl_func = GL_LEQUAL; break;
+					case D3DCMP_GREATER:      gl_func = GL_GREATER; break;
+					case D3DCMP_NOTEQUAL:     gl_func = GL_NOTEQUAL; break;
+					case D3DCMP_GREATEREQUAL: gl_func = GL_GEQUAL; break;
+					case D3DCMP_ALWAYS:       gl_func = GL_ALWAYS; break;
+				}
+				glDepthFunc(gl_func);
+				printf("Phase 27.4.2: Depth func set to 0x%x\n", gl_func);
+			}
+			break;
+
+		case D3DRS_ALPHABLENDENABLE:
+			// Alpha blending
+			if (value) {
+				glEnable(GL_BLEND);
+				printf("Phase 27.4.2: Enabled alpha blending\n");
+			} else {
+				glDisable(GL_BLEND);
+				printf("Phase 27.4.2: Disabled alpha blending\n");
+			}
+			break;
+
+		case D3DRS_SRCBLEND:
+		case D3DRS_DESTBLEND:
+			// Blend function - need both SRC and DEST to set glBlendFunc
+			{
+				GLenum src_blend = GL_ONE;
+				GLenum dest_blend = GL_ZERO;
+				
+				// Map D3D blend modes to OpenGL
+				auto map_blend = [](unsigned int d3d_blend) -> GLenum {
+					switch (d3d_blend) {
+						case D3DBLEND_ZERO:           return GL_ZERO;
+						case D3DBLEND_ONE:            return GL_ONE;
+						case D3DBLEND_SRCCOLOR:       return GL_SRC_COLOR;
+						case D3DBLEND_INVSRCCOLOR:    return GL_ONE_MINUS_SRC_COLOR;
+						case D3DBLEND_SRCALPHA:       return GL_SRC_ALPHA;
+						case D3DBLEND_INVSRCALPHA:    return GL_ONE_MINUS_SRC_ALPHA;
+						case D3DBLEND_DESTALPHA:      return GL_DST_ALPHA;
+						case D3DBLEND_INVDESTALPHA:   return GL_ONE_MINUS_DST_ALPHA;
+						case D3DBLEND_DESTCOLOR:      return GL_DST_COLOR;
+						case D3DBLEND_INVDESTCOLOR:   return GL_ONE_MINUS_DST_COLOR;
+						case D3DBLEND_SRCALPHASAT:    return GL_SRC_ALPHA_SATURATE;
+						default:                      return GL_ONE;
+					}
+				};
+				
+				// Get current blend modes from RenderStates array
+				src_blend = map_blend(RenderStates[D3DRS_SRCBLEND]);
+				dest_blend = map_blend(RenderStates[D3DRS_DESTBLEND]);
+				
+				glBlendFunc(src_blend, dest_blend);
+				printf("Phase 27.4.2: Blend func set (src: 0x%x, dest: 0x%x)\n", src_blend, dest_blend);
+			}
+			break;
+
+		// Phase 27.4.4: Alpha testing (shader-based)
+		case D3DRS_ALPHATESTENABLE:
+		{
+			// Update uAlphaTestEnabled uniform
+			if (GL_Shader_Program != 0) {
+				glUseProgram(GL_Shader_Program);
+				GLint loc = glGetUniformLocation(GL_Shader_Program, "uAlphaTestEnabled");
+				if (loc != -1) {
+					glUniform1i(loc, value ? 1 : 0);
+					printf("Phase 27.4.4: Alpha test %s\n", value ? "enabled" : "disabled");
+				}
+			}
+			break;
+		}
+		
+		case D3DRS_ALPHAREF:
+		{
+			// Update uAlphaRef uniform (D3D uses 0-255, shader uses 0.0-1.0)
+			if (GL_Shader_Program != 0) {
+				glUseProgram(GL_Shader_Program);
+				GLint loc = glGetUniformLocation(GL_Shader_Program, "uAlphaRef");
+				if (loc != -1) {
+					float alpha_ref = value / 255.0f;
+					glUniform1f(loc, alpha_ref);
+					printf("Phase 27.4.4: Alpha reference set to %.3f (D3D value: %u)\n", alpha_ref, value);
+				}
+			}
+			break;
+		}
+		
+		case D3DRS_ALPHAFUNC:
+		{
+			// Update uAlphaTestFunc uniform (D3DCMP_*)
+			if (GL_Shader_Program != 0) {
+				glUseProgram(GL_Shader_Program);
+				GLint loc = glGetUniformLocation(GL_Shader_Program, "uAlphaTestFunc");
+				if (loc != -1) {
+					glUniform1i(loc, value);
+					const char* func_names[] = {"", "NEVER", "LESS", "EQUAL", "LESSEQUAL", 
+						"GREATER", "NOTEQUAL", "GREATEREQUAL", "ALWAYS"};
+					const char* func_name = (value >= 1 && value <= 8) ? func_names[value] : "UNKNOWN";
+					printf("Phase 27.4.4: Alpha test func set to %s (value: %u)\n", func_name, value);
+				}
+			}
+			break;
+		}
+		
+		// Phase 27.4.5: Fog rendering (shader-based)
+		case D3DRS_FOGENABLE:
+		{
+			// Update uFogEnabled uniform
+			if (GL_Shader_Program != 0) {
+				glUseProgram(GL_Shader_Program);
+				GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogEnabled");
+				if (loc != -1) {
+					glUniform1i(loc, value ? 1 : 0);
+					printf("Phase 27.4.5: Fog %s\n", value ? "enabled" : "disabled");
+				}
+			}
+			break;
+		}
+		
+		case D3DRS_FOGCOLOR:
+		{
+			// Update uFogColor uniform (D3DCOLOR ARGB → RGB float)
+			if (GL_Shader_Program != 0) {
+				glUseProgram(GL_Shader_Program);
+				GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogColor");
+				if (loc != -1) {
+					float r = ((value >> 16) & 0xFF) / 255.0f;
+					float g = ((value >> 8) & 0xFF) / 255.0f;
+					float b = (value & 0xFF) / 255.0f;
+					glUniform3f(loc, r, g, b);
+					printf("Phase 27.4.5: Fog color set to RGB(%.2f, %.2f, %.2f)\n", r, g, b);
+				}
+			}
+			break;
+		}
+		
+		case D3DRS_FOGSTART:
+		{
+			// Update uFogStart uniform (D3D uses float in DWORD)
+			if (GL_Shader_Program != 0) {
+				glUseProgram(GL_Shader_Program);
+				GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogStart");
+				if (loc != -1) {
+					float fog_start = *reinterpret_cast<const float*>(&value);
+					glUniform1f(loc, fog_start);
+					printf("Phase 27.4.5: Fog start set to %.2f\n", fog_start);
+				}
+			}
+			break;
+		}
+		
+		case D3DRS_FOGEND:
+		{
+			// Update uFogEnd uniform (D3D uses float in DWORD)
+			if (GL_Shader_Program != 0) {
+				glUseProgram(GL_Shader_Program);
+				GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogEnd");
+				if (loc != -1) {
+					float fog_end = *reinterpret_cast<const float*>(&value);
+					glUniform1f(loc, fog_end);
+					printf("Phase 27.4.5: Fog end set to %.2f\n", fog_end);
+				}
+			}
+			break;
+		}
+		
+		case D3DRS_FOGDENSITY:
+		{
+			// Update uFogDensity uniform (D3D uses float in DWORD)
+			if (GL_Shader_Program != 0) {
+				glUseProgram(GL_Shader_Program);
+				GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogDensity");
+				if (loc != -1) {
+					float fog_density = *reinterpret_cast<const float*>(&value);
+					glUniform1f(loc, fog_density);
+					printf("Phase 27.4.5: Fog density set to %.4f\n", fog_density);
+				}
+			}
+			break;
+		}
+		
+		case D3DRS_FOGTABLEMODE:
+		case D3DRS_FOGVERTEXMODE:
+		{
+			// Update uFogMode uniform
+			// D3DFOG_NONE (0), D3DFOG_EXP (1), D3DFOG_EXP2 (2), D3DFOG_LINEAR (3)
+			if (GL_Shader_Program != 0) {
+				glUseProgram(GL_Shader_Program);
+				GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogMode");
+				if (loc != -1) {
+					glUniform1i(loc, value);
+					const char* fog_modes[] = {"NONE", "EXP", "EXP2", "LINEAR"};
+					const char* mode_name = (value <= 3) ? fog_modes[value] : "UNKNOWN";
+					printf("Phase 27.4.5: Fog mode set to %s (value: %u)\n", mode_name, value);
+				}
+			}
+			break;
+		}
+		
+		// Phase 27.4.6: Stencil buffer operations
+		case D3DRS_STENCILENABLE:
+		{
+			if (value) {
+				glEnable(GL_STENCIL_TEST);
+				printf("Phase 27.4.6: Stencil test enabled\n");
+			} else {
+				glDisable(GL_STENCIL_TEST);
+				printf("Phase 27.4.6: Stencil test disabled\n");
+			}
+			break;
+		}
+		
+		case D3DRS_STENCILFUNC:
+		{
+			// Map D3DCMP_* to GL comparison functions
+			GLenum gl_func = GL_ALWAYS;
+			switch (value) {
+				case 1: gl_func = GL_NEVER; break;     // D3DCMP_NEVER
+				case 2: gl_func = GL_LESS; break;      // D3DCMP_LESS
+				case 3: gl_func = GL_EQUAL; break;     // D3DCMP_EQUAL
+				case 4: gl_func = GL_LEQUAL; break;    // D3DCMP_LESSEQUAL
+				case 5: gl_func = GL_GREATER; break;   // D3DCMP_GREATER
+				case 6: gl_func = GL_NOTEQUAL; break;  // D3DCMP_NOTEQUAL
+				case 7: gl_func = GL_GEQUAL; break;    // D3DCMP_GREATEREQUAL
+				case 8: gl_func = GL_ALWAYS; break;    // D3DCMP_ALWAYS
+				default:
+					printf("Phase 27.4.6 WARNING: Unknown stencil func %u\n", value);
+					break;
+			}
+			
+			// Use stored ref and mask values
+			glStencilFunc(gl_func, RenderStates[D3DRS_STENCILREF], RenderStates[D3DRS_STENCILMASK]);
+			printf("Phase 27.4.6: Stencil func set to 0x%04X (D3D: %u)\n", gl_func, value);
+			break;
+		}
+		
+		case D3DRS_STENCILREF:
+		{
+			// Update stencil reference value
+			glStencilFunc(
+				GL_ALWAYS,  // Will be updated by D3DRS_STENCILFUNC
+				value,
+				RenderStates[D3DRS_STENCILMASK]
+			);
+			printf("Phase 27.4.6: Stencil ref set to %u\n", value);
+			break;
+		}
+		
+		case D3DRS_STENCILMASK:
+		{
+			// Update stencil read mask
+			glStencilFunc(
+				GL_ALWAYS,  // Will be updated by D3DRS_STENCILFUNC
+				RenderStates[D3DRS_STENCILREF],
+				value
+			);
+			printf("Phase 27.4.6: Stencil mask set to 0x%08X\n", value);
+			break;
+		}
+		
+		case D3DRS_STENCILWRITEMASK:
+		{
+			// Update stencil write mask
+			glStencilMask(value);
+			printf("Phase 27.4.6: Stencil write mask set to 0x%08X\n", value);
+			break;
+		}
+		
+		case D3DRS_STENCILFAIL:
+		case D3DRS_STENCILZFAIL:
+		case D3DRS_STENCILPASS:
+		{
+			// Lambda to map D3DSTENCILOP to GL stencil operation
+			auto map_stencil_op = [](unsigned int d3d_op) -> GLenum {
+				switch (d3d_op) {
+					case 1: return GL_KEEP;      // D3DSTENCILOP_KEEP
+					case 2: return GL_ZERO;      // D3DSTENCILOP_ZERO
+					case 3: return GL_REPLACE;   // D3DSTENCILOP_REPLACE
+					case 4: return GL_INCR;      // D3DSTENCILOP_INCRSAT (clamped)
+					case 5: return GL_DECR;      // D3DSTENCILOP_DECRSAT (clamped)
+					case 6: return GL_INVERT;    // D3DSTENCILOP_INVERT
+					case 7: return GL_INCR_WRAP; // D3DSTENCILOP_INCR (wrapping)
+					case 8: return GL_DECR_WRAP; // D3DSTENCILOP_DECR (wrapping)
+					default: return GL_KEEP;
+				}
+			};
+			
+			// Get current operations
+			GLenum sfail = map_stencil_op(RenderStates[D3DRS_STENCILFAIL]);
+			GLenum dpfail = map_stencil_op(RenderStates[D3DRS_STENCILZFAIL]);
+			GLenum dppass = map_stencil_op(RenderStates[D3DRS_STENCILPASS]);
+			
+			// Update the one that changed
+			if (state == D3DRS_STENCILFAIL) sfail = map_stencil_op(value);
+			else if (state == D3DRS_STENCILZFAIL) dpfail = map_stencil_op(value);
+			else if (state == D3DRS_STENCILPASS) dppass = map_stencil_op(value);
+			
+			glStencilOp(sfail, dpfail, dppass);
+			
+			const char* state_names[] = {"", "FAIL", "ZFAIL", "PASS"};
+			const char* op_names[] = {"", "KEEP", "ZERO", "REPLACE", "INCRSAT", "DECRSAT", "INVERT", "INCR", "DECR"};
+			const char* state_name = (state >= D3DRS_STENCILFAIL && state <= D3DRS_STENCILPASS) ? 
+				state_names[state - D3DRS_STENCILFAIL + 1] : "UNKNOWN";
+			const char* op_name = (value >= 1 && value <= 8) ? op_names[value] : "UNKNOWN";
+			
+			printf("Phase 27.4.6: Stencil %s operation set to %s (GL: 0x%04X)\n", 
+				state_name, op_name, map_stencil_op(value));
+			break;
+		}
+		
+		// Phase 27.4.7: Scissor test (D3D9 feature, limited support in D3D8)
+		// Note: D3D8 doesn't have D3DRS_SCISSORTESTENABLE. In D3D9, this would be state 174.
+		// For D3D8 compatibility, we provide basic scissor support that can be enabled
+		// when the engine is upgraded to D3D9 or when custom render targets are used.
+		// The implementation below is prepared for future use.
+		case 174:  // D3DRS_SCISSORTESTENABLE (D3D9 constant, not in D3D8)
+		{
+			if (value) {
+				glEnable(GL_SCISSOR_TEST);
+				printf("Phase 27.4.7: Scissor test enabled (D3D9 extension)\n");
+			} else {
+				glDisable(GL_SCISSOR_TEST);
+				printf("Phase 27.4.7: Scissor test disabled (D3D9 extension)\n");
+			}
+			break;
+		}
+
+
+	// Phase 27.4.8: Point sprite render states
+	case D3DRS_POINTSPRITEENABLE:  // 156
+	{
+		if (GL_Shader_Program != 0) {
+			glUseProgram(GL_Shader_Program);
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointSpriteEnabled");
+			if (loc != -1) {
+				glUniform1i(loc, value ? 1 : 0);
+				printf("Phase 27.4.8: Point sprite %s\n", value ? "enabled" : "disabled");
+			}
+			
+			// Enable OpenGL point sprite mode
+			if (value) {
+				glEnable(GL_PROGRAM_POINT_SIZE);  // Allow shader to control point size
+				printf("Phase 27.4.8: GL_PROGRAM_POINT_SIZE enabled\n");
+			} else {
+				glDisable(GL_PROGRAM_POINT_SIZE);
+			}
+		}
+		break;
+	}
+
+	case D3DRS_POINTSIZE:  // 154
+	{
+		if (GL_Shader_Program != 0) {
+			glUseProgram(GL_Shader_Program);
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointSize");
+			if (loc != -1) {
+				float pointSize = *reinterpret_cast<const float*>(&value);
+				glUniform1f(loc, pointSize);
+				printf("Phase 27.4.8: Point size set to %.2f\n", pointSize);
+			}
+		}
+		break;
+	}
+
+	case D3DRS_POINTSCALEENABLE:  // 157
+	{
+		if (GL_Shader_Program != 0) {
+			glUseProgram(GL_Shader_Program);
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointScaleEnabled");
+			if (loc != -1) {
+				glUniform1i(loc, value ? 1 : 0);
+				printf("Phase 27.4.8: Point scale %s\n", value ? "enabled" : "disabled");
+			}
+		}
+		break;
+	}
+
+	case D3DRS_POINTSCALE_A:  // 158
+	{
+		if (GL_Shader_Program != 0) {
+			glUseProgram(GL_Shader_Program);
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointScaleA");
+			if (loc != -1) {
+				float scaleA = *reinterpret_cast<const float*>(&value);
+				glUniform1f(loc, scaleA);
+				printf("Phase 27.4.8: Point scale A = %.4f\n", scaleA);
+			}
+		}
+		break;
+	}
+
+	case D3DRS_POINTSCALE_B:  // 159
+	{
+		if (GL_Shader_Program != 0) {
+			glUseProgram(GL_Shader_Program);
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointScaleB");
+			if (loc != -1) {
+				float scaleB = *reinterpret_cast<const float*>(&value);
+				glUniform1f(loc, scaleB);
+				printf("Phase 27.4.8: Point scale B = %.4f\n", scaleB);
+			}
+		}
+		break;
+	}
+
+	case D3DRS_POINTSCALE_C:  // 160
+	{
+		if (GL_Shader_Program != 0) {
+			glUseProgram(GL_Shader_Program);
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointScaleC");
+			if (loc != -1) {
+				float scaleC = *reinterpret_cast<const float*>(&value);
+				glUniform1f(loc, scaleC);
+				printf("Phase 27.4.8: Point scale C = %.4f\n", scaleC);
+			}
+		}
+		break;
+	}
+
+	case D3DRS_POINTSIZE_MIN:  // 155
+	{
+		if (GL_Shader_Program != 0) {
+			glUseProgram(GL_Shader_Program);
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointSizeMin");
+			if (loc != -1) {
+				float minSize = *reinterpret_cast<const float*>(&value);
+				glUniform1f(loc, minSize);
+				printf("Phase 27.4.8: Point size min = %.2f\n", minSize);
+			}
+		}
+		break;
+	}
+
+	case D3DRS_POINTSIZE_MAX:  // 166
+	{
+		if (GL_Shader_Program != 0) {
+			glUseProgram(GL_Shader_Program);
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uPointSizeMax");
+			if (loc != -1) {
+				float maxSize = *reinterpret_cast<const float*>(&value);
+				glUniform1f(loc, maxSize);
+				printf("Phase 27.4.8: Point size max = %.2f\n", maxSize);
+			}
+		}
+		break;
+	}
+		default:
+			// Other states - store but don't translate yet
+			break;
+	}
+#endif
 }
 
 WWINLINE void DX8Wrapper::Set_DX8_Clip_Plane(DWORD Index, CONST float* pPlane)
@@ -836,7 +1511,10 @@ WWINLINE void DX8Wrapper::Set_DX8_Clip_Plane(DWORD Index, CONST float* pPlane)
 WWINLINE void DX8Wrapper::Set_DX8_Texture_Stage_State(unsigned stage, D3DTEXTURESTAGESTATETYPE state, unsigned value)
 {
   	if (stage >= MAX_TEXTURE_STAGES)
-  	{	DX8CALL(SetTextureStageState( stage, state, value ));
+  	{	
+#ifdef _WIN32
+		DX8CALL(SetTextureStageState( stage, state, value ));
+#endif
   		return;
   	}
 
@@ -854,7 +1532,175 @@ WWINLINE void DX8Wrapper::Set_DX8_Texture_Stage_State(unsigned stage, D3DTEXTURE
 #endif
 
 	TextureStageStates[stage][(unsigned int)state]=value;
+	
+#ifdef _WIN32
 	DX8CALL(SetTextureStageState( stage, state, value ));
+#else
+	// Phase 27.4.3: OpenGL texture stage state management
+	// Note: In OpenGL 3.3 Core Profile, texture combiners are handled in fragment shader
+	// We store these states for potential shader uniform updates
+	
+	switch (state) {
+		// Texture operations (stored for shader use)
+		case D3DTSS_COLOROP:
+		case D3DTSS_ALPHAOP:
+			printf("Phase 27.4.3: Texture stage %u operation state %d = %u (stored for shader)\n", 
+				stage, state, value);
+			// These will be used to configure fragment shader texture combiners
+			// D3DTOP_DISABLE (1), D3DTOP_SELECTARG1 (2), D3DTOP_MODULATE (4), etc.
+			break;
+			
+		case D3DTSS_COLORARG1:
+		case D3DTSS_COLORARG2:
+		case D3DTSS_COLORARG0:
+		case D3DTSS_ALPHAARG1:
+		case D3DTSS_ALPHAARG2:
+		case D3DTSS_ALPHAARG0:
+			// Texture arguments (D3DTA_DIFFUSE, D3DTA_TEXTURE, D3DTA_CURRENT, etc.)
+			printf("Phase 27.4.3: Texture stage %u argument state %d = %u (stored for shader)\n", 
+				stage, state, value);
+			break;
+		
+		// Texture filtering and addressing (can be mapped to OpenGL sampler states)
+		case D3DTSS_ADDRESSU:
+		case D3DTSS_ADDRESSV:
+		case D3DTSS_ADDRESSW:
+		{
+			// Map D3D texture address modes to OpenGL wrap modes
+			// D3DTADDRESS_WRAP (1) → GL_REPEAT
+			// D3DTADDRESS_CLAMP (3) → GL_CLAMP_TO_EDGE
+			// D3DTADDRESS_MIRROR (2) → GL_MIRRORED_REPEAT
+			// D3DTADDRESS_BORDER (4) → GL_CLAMP_TO_BORDER
+			
+			GLenum gl_wrap_mode = GL_REPEAT;
+			switch (value) {
+				case 1: gl_wrap_mode = GL_REPEAT; break;           // D3DTADDRESS_WRAP
+				case 2: gl_wrap_mode = GL_MIRRORED_REPEAT; break;  // D3DTADDRESS_MIRROR
+				case 3: gl_wrap_mode = GL_CLAMP_TO_EDGE; break;    // D3DTADDRESS_CLAMP
+				case 4: gl_wrap_mode = GL_CLAMP_TO_BORDER; break;  // D3DTADDRESS_BORDER
+				default: 
+					printf("Phase 27.4.3 WARNING: Unknown texture address mode %u\n", value);
+					break;
+			}
+			
+			// Apply to active texture unit
+			if (Textures[stage] != nullptr) {
+				glActiveTexture(GL_TEXTURE0 + stage);
+				
+				GLenum gl_wrap_param = (state == D3DTSS_ADDRESSU) ? GL_TEXTURE_WRAP_S :
+				                       (state == D3DTSS_ADDRESSV) ? GL_TEXTURE_WRAP_T :
+				                       GL_TEXTURE_WRAP_R;
+				
+				glTexParameteri(GL_TEXTURE_2D, gl_wrap_param, gl_wrap_mode);
+				
+				printf("Phase 27.4.3: Texture stage %u wrap mode set: %s = 0x%04X\n", 
+					stage, 
+					(state == D3DTSS_ADDRESSU) ? "WRAP_S" : 
+					(state == D3DTSS_ADDRESSV) ? "WRAP_T" : "WRAP_R",
+					gl_wrap_mode);
+			}
+			break;
+		}
+		
+		case D3DTSS_MAGFILTER:
+		case D3DTSS_MINFILTER:
+		{
+			// Map D3D texture filters to OpenGL
+			// D3DTEXF_POINT (1) → GL_NEAREST
+			// D3DTEXF_LINEAR (2) → GL_LINEAR
+			
+			GLenum gl_filter = (value == 1) ? GL_NEAREST : GL_LINEAR;
+			
+			if (Textures[stage] != nullptr) {
+				glActiveTexture(GL_TEXTURE0 + stage);
+				GLenum gl_filter_param = (state == D3DTSS_MAGFILTER) ? GL_TEXTURE_MAG_FILTER : GL_TEXTURE_MIN_FILTER;
+				glTexParameteri(GL_TEXTURE_2D, gl_filter_param, gl_filter);
+				
+				printf("Phase 27.4.3: Texture stage %u filter set: %s = 0x%04X\n", 
+					stage,
+					(state == D3DTSS_MAGFILTER) ? "MAG_FILTER" : "MIN_FILTER",
+					gl_filter);
+			}
+			break;
+		}
+		
+		case D3DTSS_MIPFILTER:
+		{
+			// Mipmap filtering
+			// D3DTEXF_NONE (0) → GL_LINEAR (no mipmap)
+			// D3DTEXF_POINT (1) → GL_LINEAR_MIPMAP_NEAREST
+			// D3DTEXF_LINEAR (2) → GL_LINEAR_MIPMAP_LINEAR
+			
+			if (Textures[stage] != nullptr) {
+				glActiveTexture(GL_TEXTURE0 + stage);
+				GLenum gl_mip_filter = GL_LINEAR;
+				
+				if (value == 1) gl_mip_filter = GL_LINEAR_MIPMAP_NEAREST;
+				else if (value == 2) gl_mip_filter = GL_LINEAR_MIPMAP_LINEAR;
+				
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_mip_filter);
+				
+				printf("Phase 27.4.3: Texture stage %u mipmap filter set: 0x%04X\n", stage, gl_mip_filter);
+			}
+			break;
+		}
+		
+		case D3DTSS_BORDERCOLOR:
+		{
+			// Border color for GL_CLAMP_TO_BORDER
+			if (Textures[stage] != nullptr) {
+				glActiveTexture(GL_TEXTURE0 + stage);
+				
+				// Extract ARGB components from D3DCOLOR
+				float border_color[4] = {
+					((value >> 16) & 0xFF) / 255.0f,  // R
+					((value >> 8) & 0xFF) / 255.0f,   // G
+					(value & 0xFF) / 255.0f,          // B
+					((value >> 24) & 0xFF) / 255.0f   // A
+				};
+				
+				glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
+				
+				printf("Phase 27.4.3: Texture stage %u border color set: ARGB(%.2f, %.2f, %.2f, %.2f)\n", 
+					stage, border_color[3], border_color[0], border_color[1], border_color[2]);
+			}
+			break;
+		}
+		
+		case D3DTSS_MAXANISOTROPY:
+		{
+			// Anisotropic filtering level
+			if (Textures[stage] != nullptr) {
+				glActiveTexture(GL_TEXTURE0 + stage);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, value);
+				printf("Phase 27.4.3: Texture stage %u max anisotropy set: %u\n", stage, value);
+			}
+			break;
+		}
+		
+		case D3DTSS_TEXCOORDINDEX:
+		case D3DTSS_TEXTURETRANSFORMFLAGS:
+		case D3DTSS_BUMPENVMAT00:
+		case D3DTSS_BUMPENVMAT01:
+		case D3DTSS_BUMPENVMAT10:
+		case D3DTSS_BUMPENVMAT11:
+		case D3DTSS_BUMPENVLSCALE:
+		case D3DTSS_BUMPENVLOFFSET:
+		case D3DTSS_RESULTARG:
+		case D3DTSS_CONSTANT:
+		case D3DTSS_MIPMAPLODBIAS:
+		case D3DTSS_MAXMIPLEVEL:
+			// Advanced states - store but don't translate yet
+			printf("Phase 27.4.3: Texture stage %u advanced state %d = %u (stored)\n", stage, state, value);
+			break;
+			
+		default:
+			// Unknown state
+			printf("Phase 27.4.3 WARNING: Unknown texture stage state %d = %u\n", state, value);
+			break;
+	}
+#endif
+	
 	DX8_RECORD_TEXTURE_STAGE_STATE_CHANGE();
 }
 
@@ -1123,9 +1969,18 @@ WWINLINE void DX8Wrapper::Set_Texture(unsigned stage,TextureBaseClass* texture)
 
 WWINLINE void DX8Wrapper::Set_Material(const VertexMaterialClass* material)
 {
-	if (material==render_state.material) return;
+/*	if (material && render_state.material &&
+		// !stricmp(material->Get_Name(),render_state.material->Get_Name())) {
+		material->Get_CRC()!=render_state.material->Get_CRC()) {
+		return;
+	}
+*/
+//	if (material==render_state.material) {
+//		return;
+//	}
 	REF_PTR_SET(render_state.material,const_cast<VertexMaterialClass*>(material));
 	render_state_changed|=MATERIAL_CHANGED;
+	SNAPSHOT_SAY(("DX8Wrapper::Set_Material(%s)",material ? material->Get_Name() : "NULL"));
 }
 
 WWINLINE void DX8Wrapper::Set_Shader(const ShaderClass& shader)
@@ -1141,6 +1996,61 @@ WWINLINE void DX8Wrapper::Set_Shader(const ShaderClass& shader)
 	SNAPSHOT_SAY(("DX8Wrapper::Set_Shader(%s)",shader.Get_Description(str).str()));
 }
 
+WWINLINE void DX8Wrapper::Set_Projection_Transform_With_Z_Bias(const Matrix4x4& matrix, float znear, float zfar)
+{
+	ZFar=zfar;
+	ZNear=znear;
+	ProjectionMatrix=matrix.Transpose();
+
+#ifdef _WIN32
+	if (!Get_Current_Caps()->Support_ZBias() && ZNear!=ZFar) {
+		Matrix4x4 tmp=ProjectionMatrix;
+		float tmp_zbias=ZBias;
+		tmp_zbias*=(1.0f/16.0f);
+		tmp_zbias*=1.0f / (ZFar - ZNear);
+		tmp[2][2]-=tmp_zbias*tmp[3][2];
+		DX8CALL(SetTransform(D3DTS_PROJECTION,(D3DMATRIX*)&tmp));
+	}
+	else {
+		DX8CALL(SetTransform(D3DTS_PROJECTION,(D3DMATRIX*)&ProjectionMatrix));
+	}
+#else
+	// Phase 27.3.1: Update Projection matrix uniform in OpenGL shader
+	if (GL_Shader_Program != 0) {
+		glUseProgram(GL_Shader_Program);
+		
+		GLint loc = glGetUniformLocation(GL_Shader_Program, "uProjectionMatrix");
+		if (loc != -1) {
+			// D3D matrices are row-major, OpenGL expects column-major
+			// ProjectionMatrix is already transposed above
+			// So we need to transpose it back for OpenGL (or use GL_TRUE in glUniformMatrix4fv)
+			glUniformMatrix4fv(loc, 1, GL_FALSE, (const float*)&ProjectionMatrix);
+			
+			printf("Phase 27.3.1: Updated uProjectionMatrix uniform (znear=%f, zfar=%f)\n", znear, zfar);
+		}
+	}
+#endif
+}
+
+WWINLINE void DX8Wrapper::Set_DX8_ZBias(int zbias)
+{
+	if (zbias==ZBias) return;
+	if (zbias>15) zbias=15;
+	if (zbias<0) zbias=0;
+	ZBias=zbias;
+
+	if (!Get_Current_Caps()->Support_ZBias() && ZNear!=ZFar) {
+		Matrix4x4 tmp=ProjectionMatrix;
+		float tmp_zbias=ZBias;
+		tmp_zbias*=(1.0f/16.0f);
+		tmp_zbias*=1.0f / (ZFar - ZNear);
+		tmp[2][2]-=tmp_zbias*tmp[3][2];
+		DX8CALL(SetTransform(D3DTS_PROJECTION,(D3DMATRIX*)&tmp));
+	}
+	else {
+		Set_DX8_Render_State (D3DRS_ZBIAS, ZBias);
+	}
+}
 
 WWINLINE void DX8Wrapper::Set_Transform(D3DTRANSFORMSTATETYPE transform,const Matrix4x4& m)
 {
@@ -1251,12 +2161,18 @@ WWINLINE bool DX8Wrapper::Is_Light_Enabled(unsigned index)
 
 WWINLINE void DX8Wrapper::Set_Render_State(const RenderStateStruct& state)
 {
+	int i;
+
 	if (render_state.index_buffer) {
 		render_state.index_buffer->Release_Engine_Ref();
 	}
 
-	if (render_state.vertex_buffer) {
-		render_state.vertex_buffer->Release_Engine_Ref();
+	for (i=0;i<MAX_VERTEX_STREAMS;++i)
+	{
+		if (render_state.vertex_buffers[i])
+		{
+			render_state.vertex_buffers[i]->Release_Engine_Ref();
+		}
 	}
 
 	render_state=state;
@@ -1266,52 +2182,97 @@ WWINLINE void DX8Wrapper::Set_Render_State(const RenderStateStruct& state)
 		render_state.index_buffer->Add_Engine_Ref();
 	}
 
-	if (render_state.vertex_buffer) {
-		render_state.vertex_buffer->Add_Engine_Ref();
+	for (i=0;i<MAX_VERTEX_STREAMS;++i)
+	{
+		if (render_state.vertex_buffers[i])
+		{
+			render_state.vertex_buffers[i]->Add_Engine_Ref();
+		}
 	}
 }
 
 WWINLINE void DX8Wrapper::Release_Render_State()
 {
+	int i;
+
 	if (render_state.index_buffer) {
 		render_state.index_buffer->Release_Engine_Ref();
 	}
 
-	if (render_state.vertex_buffer) {
-		render_state.vertex_buffer->Release_Engine_Ref();
+	for (i=0;i<MAX_VERTEX_STREAMS;++i) {
+		if (render_state.vertex_buffers[i]) {
+			render_state.vertex_buffers[i]->Release_Engine_Ref();
+		}
 	}
 
-	REF_PTR_RELEASE(render_state.vertex_buffer);
+	for (i=0;i<MAX_VERTEX_STREAMS;++i) {
+		REF_PTR_RELEASE(render_state.vertex_buffers[i]);
+	}
 	REF_PTR_RELEASE(render_state.index_buffer);
 	REF_PTR_RELEASE(render_state.material);
-	for (unsigned i=0;i<MAX_TEXTURE_STAGES;++i) REF_PTR_RELEASE(render_state.Textures[i]);
+
+
+	for (i=0;i<MAX_TEXTURE_STAGES;++i)
+	{
+		REF_PTR_RELEASE(render_state.Textures[i]);
+	}
 }
 
 
 WWINLINE RenderStateStruct::RenderStateStruct()
 	:
 	material(0),
-	vertex_buffer(0),
 	index_buffer(0)
 {
-	for (unsigned i=0;i<MAX_TEXTURE_STAGES;++i) Textures[i]=0;
+	unsigned i;
+	for (i=0;i<MAX_VERTEX_STREAMS;++i) vertex_buffers[i]=0;
+	for (i=0;i<MAX_TEXTURE_STAGES;++i) Textures[i]=0;
+  //lightsHash = (unsigned)this;
 }
 
 WWINLINE RenderStateStruct::~RenderStateStruct()
 {
+	unsigned i;
 	REF_PTR_RELEASE(material);
-	REF_PTR_RELEASE(vertex_buffer);
+	for (i=0;i<MAX_VERTEX_STREAMS;++i) {
+		REF_PTR_RELEASE(vertex_buffers[i]);
+	}
 	REF_PTR_RELEASE(index_buffer);
-	for (unsigned i=0;i<MAX_TEXTURE_STAGES;++i) REF_PTR_RELEASE(Textures[i]);
+
+	for (i=0;i<MAX_TEXTURE_STAGES;++i)
+	{
+		REF_PTR_RELEASE(Textures[i]);
+	}
 }
 
 
+WWINLINE unsigned flimby( char* name, unsigned crib )
+{
+  unsigned lnt prevVer = 0x00000000;
+  unsigned D3D2_BASE_VEC nextVer = 0;
+  for( unsigned t = 0; t < crib; ++t )
+  {
+    (D3D2_BASE_VEC)nextVer += name[t];
+    (D3D2_BASE_VEC)nextVer %= 32;
+    (D3D2_BASE_VEC)nextVer-- ;
+    (lnt) prevVer ^=  ( 1 << (D3D2_BASE_VEC)prevVer );
+  }
+  return (lnt) prevVer;
+}
+
 WWINLINE RenderStateStruct& RenderStateStruct::operator= (const RenderStateStruct& src)
 {
+	unsigned i;
 	REF_PTR_SET(material,src.material);
-	REF_PTR_SET(vertex_buffer,src.vertex_buffer);
+	for (i=0;i<MAX_VERTEX_STREAMS;++i) {
+		REF_PTR_SET(vertex_buffers[i],src.vertex_buffers[i]);
+	}
 	REF_PTR_SET(index_buffer,src.index_buffer);
-	for (unsigned i=0;i<MAX_TEXTURE_STAGES;++i) REF_PTR_SET(Textures[i],src.Textures[i]);
+
+	for (i=0;i<MAX_TEXTURE_STAGES;++i)
+	{
+		REF_PTR_SET(Textures[i],src.Textures[i]);
+	}
 
 	LightEnable[0]=src.LightEnable[0];
 	LightEnable[1]=src.LightEnable[1];
@@ -1328,12 +2289,18 @@ WWINLINE RenderStateStruct& RenderStateStruct::operator= (const RenderStateStruc
 				}
 			}
 		}
+
+
+    //lightsHash = flimby((char*)(&Lights[0]), sizeof(D3DLIGHT8)-1 );
+
 	}
 
 	shader=src.shader;
 	world=src.world;
 	view=src.view;
-	vertex_buffer_type=src.vertex_buffer_type;
+	for (i=0;i<MAX_VERTEX_STREAMS;++i) {
+		vertex_buffer_types[i]=src.vertex_buffer_types[i];
+	}
 	index_buffer_type=src.index_buffer_type;
 	vba_offset=src.vba_offset;
 	vba_count=src.vba_count;

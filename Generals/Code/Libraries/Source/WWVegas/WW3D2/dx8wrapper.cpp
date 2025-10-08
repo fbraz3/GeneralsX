@@ -1,5 +1,5 @@
 /*
-**	Command & Conquer Generals(tm)
+**	Command & Conquer Generals Zero Hour(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -22,16 +22,20 @@
  *                                                                                             *
  *                 Project Name : WW3D                                                         *
  *                                                                                             *
- *                     $Archive:: /VSS_Sync/ww3d2/dx8wrapper.cpp                              $*
+ *                     $Archive:: /Commando/Code/ww3d2/dx8wrapper.cpp                         $*
  *                                                                                             *
  *              Original Author:: Jani Penttinen                                               *
  *                                                                                             *
- *                      $Author:: Vss_sync                                                    $*
+ *                      $Author:: Kenny Mitchell                                               *
  *                                                                                             *
- *                     $Modtime:: 8/29/01 7:29p                                               $*
+ *                     $Modtime:: 08/05/02 1:27p                                              $*
  *                                                                                             *
- *                    $Revision:: 134                                                         $*
+ *                    $Revision:: 170                                                         $*
  *                                                                                             *
+ * 06/26/02 KM Matrix name change to avoid MAX conflicts                                       *
+ * 06/27/02 KM Render to shadow buffer texture support														*
+ * 06/27/02 KM Shader system updates																				*
+ * 08/05/02 KM Texture class redesign
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  *   DX8Wrapper::_Update_Texture -- Copies a texture from system memory to video memory        *
@@ -82,6 +86,7 @@
 #include "bound.h"
 #include "dx8webbrowser.h"
 
+#include "shdlib.h"
 
 const int DEFAULT_RESOLUTION_WIDTH = 640;
 const int DEFAULT_RESOLUTION_HEIGHT = 480;
@@ -122,12 +127,23 @@ DWORD								DX8Wrapper::Pixel_Shader								= 0;
 Vector4							DX8Wrapper::Vertex_Shader_Constants[MAX_VERTEX_SHADER_CONSTANTS];
 Vector4							DX8Wrapper::Pixel_Shader_Constants[MAX_PIXEL_SHADER_CONSTANTS];
 
+// Phase 27.2.4: OpenGL shader program initialization
+#ifndef _WIN32
+unsigned int					DX8Wrapper::GL_Shader_Program							= 0;
+unsigned int					DX8Wrapper::GL_Vertex_Shader							= 0;
+unsigned int					DX8Wrapper::GL_Fragment_Shader						= 0;
+unsigned int					DX8Wrapper::GL_VAO											= 0;
+#endif
+
 LightEnvironmentClass*		DX8Wrapper::Light_Environment							= NULL;
 RenderInfoClass*				DX8Wrapper::Render_Info									= NULL;
 
 DWORD								DX8Wrapper::Vertex_Processing_Behavior				= 0;
+ZTextureClass*					DX8Wrapper::Shadow_Map[MAX_SHADOW_MAPS];
+
 Vector3							DX8Wrapper::Ambient_Color;
 // shader system additions KJM ^
+
 bool								DX8Wrapper::world_identity;
 unsigned							DX8Wrapper::RenderStates[256];
 unsigned							DX8Wrapper::TextureStageStates[MAX_TEXTURE_STAGES][32];
@@ -141,7 +157,9 @@ D3DCOLOR							DX8Wrapper::FogColor										= 0;
 IDirect3D8 *					DX8Wrapper::D3DInterface								= NULL;
 IDirect3DDevice8 *			DX8Wrapper::D3DDevice									= NULL;
 IDirect3DSurface8 *			DX8Wrapper::CurrentRenderTarget						= NULL;
+IDirect3DSurface8 *			DX8Wrapper::CurrentDepthBuffer						= NULL;
 IDirect3DSurface8 *			DX8Wrapper::DefaultRenderTarget						= NULL;
+IDirect3DSurface8 *			DX8Wrapper::DefaultDepthBuffer						= NULL;
 bool								DX8Wrapper::IsRenderToTexture							= false;
 
 unsigned							DX8Wrapper::matrix_changes								= 0;
@@ -185,6 +203,8 @@ static unsigned				last_frame_texture_stage_state_changes				= 0;
 static unsigned				last_frame_number_of_DX8_calls						= 0;
 static unsigned				last_frame_draw_calls									= 0;
 
+static D3DDISPLAYMODE DesktopMode;
+
 static D3DPRESENT_PARAMETERS								_PresentParameters;
 static DynamicVectorClass<StringClass>					_RenderDeviceNameTable;
 static DynamicVectorClass<StringClass>					_RenderDeviceShortNameTable;
@@ -199,6 +219,17 @@ DX8_CleanupHook	 *DX8Wrapper::m_pCleanupHook=NULL;
 #ifdef EXTENDED_STATS
 DX8_Stats	 DX8Wrapper::stats;
 #endif
+
+#ifdef __APPLE__
+/***********************************************************************************
+**
+** macOS Mock D3D8 Interfaces - Uses existing CORE implementations
+**
+***********************************************************************************/
+static CORE_IDirect3D8 g_mockD3D8Interface;
+static CORE_IDirect3DDevice8 g_mockD3DDevice;
+#endif
+
 /***********************************************************************************
 **
 ** DX8Wrapper Implementation
@@ -262,8 +293,15 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 {
 	WWASSERT(!IsInitted);
 
+	// zero memory
+	memset(Textures,0,sizeof(IDirect3DBaseTexture8*)*MAX_TEXTURE_STAGES);
+	memset(RenderStates,0,sizeof(unsigned)*256);
+	memset(TextureStageStates,0,sizeof(unsigned)*32*MAX_TEXTURE_STAGES);
 	memset(Vertex_Shader_Constants,0,sizeof(Vector4)*MAX_VERTEX_SHADER_CONSTANTS);
 	memset(Pixel_Shader_Constants,0,sizeof(Vector4)*MAX_PIXEL_SHADER_CONSTANTS);
+	memset(&render_state,0,sizeof(RenderStateStruct));
+	memset(Shadow_Map,0,sizeof(ZTextureClass*)*MAX_SHADOW_MAPS);
+
 	/*
 	** Initialize all variables!
 	*/
@@ -301,29 +339,51 @@ bool DX8Wrapper::Init(void * hwnd, bool lite)
 	Invalidate_Cached_Render_States();
 
 	if (!lite) {
+#ifdef _WIN32
 		D3D8Lib = LoadLibrary("D3D8.DLL");
 
 		if (D3D8Lib == NULL) return false;	// Return false at this point if init failed
 
 		Direct3DCreate8Ptr = (Direct3DCreate8Type) GetProcAddress(D3D8Lib, "Direct3DCreate8");
 		if (Direct3DCreate8Ptr == NULL) return false;
+#else
+		// On non-Windows platforms, we use OpenGL-based DirectX compatibility layer
+		// The D3D8.DLL loading is not needed as we use stub implementations
+		printf("DX8Wrapper::Init - macOS platform detected, using OpenGL compatibility layer\n");
+		D3D8Lib = NULL;
+		Direct3DCreate8Ptr = NULL;
+#endif
 
 		/*
 		** Create the D3D interface object
 		*/
 		WWDEBUG_SAY(("Create Direct3D8"));
+#ifdef _WIN32
 		D3DInterface = Direct3DCreate8Ptr(D3D_SDK_VERSION);		// TODO: handle failure cases...
 		if (D3DInterface == NULL) {
 			return(false);
 		}
+#else
+		// On non-Windows platforms, create a mock D3D interface for compatibility
+		// The actual rendering will be handled by OpenGL backend
+		printf("DX8Wrapper::Init - Creating mock D3D interface for macOS\n");
+		D3DInterface = &g_mockD3D8Interface; // Use existing CORE_IDirect3D8 mock
+#endif
 		IsInitted = true;
 
 		/*
 		** Enumerate the available devices
 		*/
 		WWDEBUG_SAY(("Enumerate devices"));
+#ifdef _WIN32
 		Enumerate_Devices();
+#else
+		// On non-Windows platforms, create mock device enumeration
+		// This will be handled by the OpenGL compatibility layer
+		printf("DX8Wrapper::Init - Skipping device enumeration on macOS\n");
+#endif
 		WWDEBUG_SAY(("DX8Wrapper Init completed"));
+		printf("DX8Wrapper::Init - Initialization completed successfully\n");
 	}
 
 	return(true);
@@ -384,9 +444,13 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Inits(void)
    /*
 	** Initalize any other subsystems inside of WW3D
 	*/
+	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - BEGIN\n");
+	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - About to init MissingTexture\n");
 	MissingTexture::_Init();
-	TextureFilterClass::_Init_Filters();
+	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - MissingTexture init complete\n");
+	TextureFilterClass::_Init_Filters((TextureFilterClass::TextureFilterMode)WW3D::Get_Texture_Filter());
 	TheDX8MeshRenderer.Init();
+	SHD_INIT;
 	BoxRenderObjClass::Init();
 	VertexMaterialClass::Init();
 	PointGroupClass::_Init(); // This needs the VertexMaterialClass to be initted
@@ -394,6 +458,78 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Inits(void)
 	TextureLoader::Init();
 
 	Set_Default_Global_Render_States();
+
+#ifndef _WIN32
+	// Phase 27.5.2: Enable OpenGL debug output for error reporting
+	printf("Phase 27.5.2: Initializing OpenGL debugging features...\n");
+	_Enable_GL_Debug_Output();
+	_Check_GL_Error("Enable debug output");
+	
+	// Phase 27.2.4: Initialize OpenGL shader program
+	printf("Phase 27.2.4: Loading and compiling OpenGL shaders...\n");
+	
+	// Load and compile vertex shader
+	GL_Vertex_Shader = _Load_And_Compile_Shader("resources/shaders/basic.vert", GL_VERTEX_SHADER);
+	_Check_GL_Error("Load vertex shader");
+	if (GL_Vertex_Shader == 0) {
+		printf("Phase 27.2.4 ERROR: Failed to load vertex shader!\n");
+		return;
+	}
+	
+	// Load and compile fragment shader  
+	GL_Fragment_Shader = _Load_And_Compile_Shader("resources/shaders/basic.frag", GL_FRAGMENT_SHADER);
+	_Check_GL_Error("Load fragment shader");
+	if (GL_Fragment_Shader == 0) {
+		printf("Phase 27.2.4 ERROR: Failed to load fragment shader!\n");
+		glDeleteShader(GL_Vertex_Shader);
+		GL_Vertex_Shader = 0;
+		return;
+	}
+	
+	// Create and link shader program
+	GL_Shader_Program = _Create_Shader_Program(GL_Vertex_Shader, GL_Fragment_Shader);
+	_Check_GL_Error("Create shader program");
+	if (GL_Shader_Program == 0) {
+		printf("Phase 27.2.4 ERROR: Failed to create shader program!\n");
+		glDeleteShader(GL_Vertex_Shader);
+		glDeleteShader(GL_Fragment_Shader);
+		GL_Vertex_Shader = 0;
+		GL_Fragment_Shader = 0;
+		return;
+	}
+	
+	// Clean up individual shaders (they're now part of the program)
+	glDeleteShader(GL_Vertex_Shader);
+	glDeleteShader(GL_Fragment_Shader);
+	GL_Vertex_Shader = 0;
+	GL_Fragment_Shader = 0;
+	
+	printf("Phase 27.2.4: OpenGL shader program initialized successfully (ID: %u)\n", GL_Shader_Program);
+	_Check_GL_Error("Shader program initialization");
+	
+	// Phase 27.2.5: Create Vertex Array Object (VAO) for vertex attribute setup
+	printf("Phase 27.2.5: Creating Vertex Array Object (VAO)...\n");
+	glGenVertexArrays(1, &GL_VAO);
+	_Check_GL_Error("glGenVertexArrays");
+	if (GL_VAO == 0) {
+		printf("Phase 27.2.5 ERROR: Failed to create VAO!\n");
+		return;
+	}
+	
+	// Bind VAO to configure vertex attributes
+	glBindVertexArray(GL_VAO);
+	_Check_GL_Error("glBindVertexArray");
+	
+	// Note: Vertex attributes will be configured dynamically in Apply_Render_State_Changes()
+	// based on the FVF format of the current vertex buffer. This allows supporting multiple
+	// vertex formats (XYZ, XYZN, XYZNUV1, XYZNDUV1, etc.) at runtime.
+	
+	// Unbind VAO for now (will be bound again before draw calls)
+	glBindVertexArray(0);
+	
+	printf("Phase 27.2.5: VAO created successfully (ID: %u)\n", GL_VAO);
+	_Check_GL_Error("VAO setup complete");
+#endif
 }
 
 inline DWORD F2DW(float f) { return *((unsigned*)&f); }
@@ -474,8 +610,10 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Shutdowns(void)
 	** Shutdown ww3d systems
 	*/
 	int i;
-	if (render_state.vertex_buffer) render_state.vertex_buffer->Release_Engine_Ref();
-	REF_PTR_RELEASE(render_state.vertex_buffer);
+	for (i=0;i<MAX_VERTEX_STREAMS;++i) {
+		if (render_state.vertex_buffers[i]) render_state.vertex_buffers[i]->Release_Engine_Ref();
+		REF_PTR_RELEASE(render_state.vertex_buffers[i]);
+	}
 	if (render_state.index_buffer) render_state.index_buffer->Release_Engine_Ref();
 	REF_PTR_RELEASE(render_state.index_buffer);
 	REF_PTR_RELEASE(render_state.material);
@@ -490,8 +628,25 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Shutdowns(void)
 	PointGroupClass::_Shutdown();
 	VertexMaterialClass::Shutdown();
 	BoxRenderObjClass::Shutdown();
+	SHD_SHUTDOWN;
 	TheDX8MeshRenderer.Shutdown();
 	MissingTexture::_Deinit();
+
+#ifndef _WIN32
+	// Phase 27.2.4: Cleanup OpenGL shader program
+	if (GL_Shader_Program != 0) {
+		printf("Phase 27.2.4: Deleting OpenGL shader program (ID: %u)\n", GL_Shader_Program);
+		glDeleteProgram(GL_Shader_Program);
+		GL_Shader_Program = 0;
+	}
+	
+	// Phase 27.2.5: Cleanup VAO
+	if (GL_VAO != 0) {
+		printf("Phase 27.2.5: Deleting VAO (ID: %u)\n", GL_VAO);
+		glDeleteVertexArrays(1, &GL_VAO);
+		GL_VAO = 0;
+	}
+#endif
 
 	delete CurrentCaps;
 	CurrentCaps=NULL;
@@ -501,6 +656,35 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Shutdowns(void)
 
 bool DX8Wrapper::Create_Device(void)
 {
+#ifdef __APPLE__
+	// On macOS, we use OpenGL backend - mock device creation
+	WWDEBUG_SAY(("Create_Device - macOS mock implementation"));
+	
+	// Mock successful device creation
+	WWASSERT(D3DDevice==NULL);
+	
+	// Create mock D3D device using CORE_IDirect3DDevice8
+	D3DDevice = &g_mockD3DDevice;
+	
+	// Initialize mock adapter identifier
+	::ZeroMemory(&CurrentAdapterIdentifier, sizeof(D3DADAPTER_IDENTIFIER8));
+	strcpy(CurrentAdapterIdentifier.Driver, "OpenGL");
+	strcpy(CurrentAdapterIdentifier.Description, "macOS OpenGL Compatibility Layer");
+	
+	// Set mock vertex processing behavior
+	Vertex_Processing_Behavior = D3DCREATE_HARDWARE_VERTEXPROCESSING;
+	
+	// Set mock display format for macOS
+	DisplayFormat = D3DFMT_X8R8G8B8; // 32-bit RGBA format
+	
+	// CRITICAL: Initialize all subsystems like the Windows version does
+	Do_Onetime_Device_Dependent_Inits();
+	
+	// Mock successful creation
+	WWDEBUG_SAY(("Create_Device - macOS mock device created successfully"));
+	return true;
+#endif
+
 	WWASSERT(D3DDevice==NULL);	// for now, once you've created a device, you're stuck with it!
 
 	D3DCAPS8 caps;
@@ -538,11 +722,20 @@ bool DX8Wrapper::Create_Device(void)
 		return false;
 	}
 
-	Vertex_Processing_Behavior=D3DCREATE_SOFTWARE_VERTEXPROCESSING;
-	if (caps.DevCaps&D3DDEVCAPS_HWTRANSFORMANDLIGHT)
+#ifndef _XBOX
+
+	Vertex_Processing_Behavior=(caps.DevCaps&D3DDEVCAPS_HWTRANSFORMANDLIGHT) ?
+		D3DCREATE_MIXED_VERTEXPROCESSING : D3DCREATE_SOFTWARE_VERTEXPROCESSING;
+
+	// enable this when all 'get' dx calls are removed KJM
+	/*if (caps.DevCaps&D3DDEVCAPS_PUREDEVICE)
 	{
-		Vertex_Processing_Behavior=D3DCREATE_MIXED_VERTEXPROCESSING;
-	}
+		Vertex_Processing_Behavior|=D3DCREATE_PUREDEVICE;
+	}*/
+
+#else // XBOX
+	Vertex_Processing_Behavior=D3DCREATE_PUREDEVICE;
+#endif // XBOX
 
 #ifdef CREATE_DX8_MULTI_THREADED
 	Vertex_Processing_Behavior|=D3DCREATE_MULTITHREADED;
@@ -570,7 +763,36 @@ bool DX8Wrapper::Create_Device(void)
 
 	if (FAILED(hr))
 	{
-		return false;
+		// The device selection may fail because the device lied that it supports 32 bit zbuffer with 16 bit
+		// display. This happens at least on Voodoo2.
+
+		if ((_PresentParameters.BackBufferFormat==D3DFMT_R5G6B5 ||
+			_PresentParameters.BackBufferFormat==D3DFMT_X1R5G5B5 ||
+			_PresentParameters.BackBufferFormat==D3DFMT_A1R5G5B5) &&
+			(_PresentParameters.AutoDepthStencilFormat==D3DFMT_D32 ||
+			_PresentParameters.AutoDepthStencilFormat==D3DFMT_D24S8 ||
+			_PresentParameters.AutoDepthStencilFormat==D3DFMT_D24X8))
+		{
+			_PresentParameters.AutoDepthStencilFormat=D3DFMT_D16;
+			hr = D3DInterface->CreateDevice
+			(
+				CurRenderDevice,
+				WW3D_DEVTYPE,
+				_Hwnd,
+				Vertex_Processing_Behavior,
+				&_PresentParameters,
+				&D3DDevice
+			);
+
+			if (FAILED(hr))
+			{
+				return false;
+			}
+        }
+		else
+		{
+				return false;
+		}
 	}
 
 	/*
@@ -586,7 +808,12 @@ bool DX8Wrapper::Reset_Device(bool reload_assets)
 	DX8_THREAD_ASSERT();
 	if ((IsInitted) && (D3DDevice != NULL)) {
 		// Release all non-MANAGED stuff
-		Set_Vertex_Buffer (NULL);
+		WW3D::_Invalidate_Textures();
+
+		for (unsigned i=0;i<MAX_VERTEX_STREAMS;++i)
+		{
+			Set_Vertex_Buffer (NULL,i);
+		}
 		Set_Index_Buffer (NULL, 0);
 		if (m_pCleanupHook) {
 			m_pCleanupHook->ReleaseResources();
@@ -594,6 +821,10 @@ bool DX8Wrapper::Reset_Device(bool reload_assets)
 		DynamicVBAccessClass::_Deinit();
 		DynamicIBAccessClass::_Deinit();
 		DX8TextureManagerClass::Release_Textures();
+		SHD_SHUTDOWN_SHADERS;
+
+		// Reset frame count to reflect the flipping chain being reset by Reset()
+		FrameCount = 0;
 
 		memset(Vertex_Shader_Constants,0,sizeof(Vector4)*MAX_VERTEX_SHADER_CONSTANTS);
 		memset(Pixel_Shader_Constants,0,sizeof(Vector4)*MAX_PIXEL_SHADER_CONSTANTS);
@@ -616,6 +847,7 @@ bool DX8Wrapper::Reset_Device(bool reload_assets)
 		}
 		Invalidate_Cached_Render_States();
 		Set_Default_Global_Render_States();
+		SHD_INIT_SHADERS;
 		WWDEBUG_SAY(("Device reset completed"));
 		return true;
 	}
@@ -639,8 +871,11 @@ void DX8Wrapper::Release_Device(void)
 		/*
 		** Release the current vertex and index buffers
 		*/
-		if (render_state.vertex_buffer) render_state.vertex_buffer->Release_Engine_Ref();
-		REF_PTR_RELEASE(render_state.vertex_buffer);
+		for (unsigned i=0;i<MAX_VERTEX_STREAMS;++i)
+		{
+			if (render_state.vertex_buffers[i]) render_state.vertex_buffers[i]->Release_Engine_Ref();
+			REF_PTR_RELEASE(render_state.vertex_buffers[i]);
+		}
 		if (render_state.index_buffer) render_state.index_buffer->Release_Engine_Ref();
 		REF_PTR_RELEASE(render_state.index_buffer);
 
@@ -672,13 +907,6 @@ void DX8Wrapper::Enumerate_Devices()
 		if (res == D3D_OK) {
 
 			/*
-			** Set up the device name
-			*/
-			StringClass device_name = id.Description;
-			_RenderDeviceNameTable.Add(device_name);
-			_RenderDeviceShortNameTable.Add(device_name);	// for now, just add the same name to the "pretty name table"
-
-			/*
 			** Set up the render device description
 			** TODO: Fill in more fields of the render device description?  (need some lookup tables)
 			*/
@@ -694,6 +922,11 @@ void DX8Wrapper::Enumerate_Devices()
 				LOWORD(id.DriverVersion.LowPart));
 
 			desc.set_driver_version(buf);
+
+			D3DInterface->GetDeviceCaps(adapter_index,WW3D_DEVTYPE,&desc.Caps);
+			D3DInterface->GetAdapterIdentifier(adapter_index,D3DENUM_NO_WHQL_LEVEL,&desc.AdapterIdentifier);
+
+			DX8Caps dx8caps(D3DInterface,desc.Caps,WW3D_FORMAT_UNKNOWN,desc.AdapterIdentifier);
 
 			/*
 			** Enumerate the resolutions
@@ -717,6 +950,11 @@ void DX8Wrapper::Enumerate_Devices()
 						case D3DFMT_X1R5G5B5:		bits = 16; break;
 					}
 
+					// Some cards fail in certain modes, DX8Caps keeps list of those.
+					if (!dx8caps.Is_Valid_Display_Format(d3dmode.Width,d3dmode.Height,D3DFormat_To_WW3DFormat(d3dmode.Format))) {
+						bits=0;
+					}
+
 					/*
 					** If we recognize the format, add it to the list
 					** TODO: should we handle more formats?  will any cards report more than 24 or 16 bit?
@@ -727,27 +965,39 @@ void DX8Wrapper::Enumerate_Devices()
 				}
 			}
 
-			/*
-			** Add the render device to our table
-			*/
-			_RenderDeviceDescriptionTable.Add(desc);
+			// IML: If the device has one or more valid resolutions add it to the device list.
+			// NOTE: Testing has shown that there are drivers with zero resolutions.
+			if (desc.Enumerate_Resolutions().Count() > 0) {
+
+				/*
+				** Set up the device name
+				*/
+				StringClass device_name(id.Description,true);
+				_RenderDeviceNameTable.Add(device_name);
+				_RenderDeviceShortNameTable.Add(device_name);	// for now, just add the same name to the "pretty name table"
+
+				/*
+				** Add the render device to our table
+				*/
+				_RenderDeviceDescriptionTable.Add(desc);
+			}
 		}
 	}
 }
 
 bool DX8Wrapper::Set_Any_Render_Device(void)
 {
-	// Try windowed first
+	// Then fullscreen
 	int dev_number = 0;
 	for (; dev_number < _RenderDeviceNameTable.Count(); dev_number++) {
-		if (Set_Render_Device(dev_number,-1,-1,-1,1,false)) {
+		if (Set_Render_Device(dev_number,-1,-1,-1,0,false)) {
 			return true;
 		}
 	}
 
-	// Then fullscreen
+	// Try windowed first
 	for (dev_number = 0; dev_number < _RenderDeviceNameTable.Count(); dev_number++) {
-		if (Set_Render_Device(dev_number,-1,-1,-1,0,false)) {
+		if (Set_Render_Device(dev_number,-1,-1,-1,1,false)) {
 			return true;
 		}
 	}
@@ -932,7 +1182,8 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 	_PresentParameters.BackBufferCount = IsWindowed ? 1 : 2;
 
 	_PresentParameters.MultiSampleType = D3DMULTISAMPLE_NONE;
-	_PresentParameters.SwapEffect = IsWindowed ? D3DSWAPEFFECT_DISCARD : D3DSWAPEFFECT_FLIP;		// Shouldn't this be D3DSWAPEFFECT_FLIP?
+	//I changed this to discard all the time (even when full-screen) since that the most efficient. 07-16-03 MW:
+	_PresentParameters.SwapEffect = D3DSWAPEFFECT_DISCARD;//IsWindowed ? D3DSWAPEFFECT_DISCARD : D3DSWAPEFFECT_FLIP;		// Shouldn't this be D3DSWAPEFFECT_FLIP?
 	_PresentParameters.hDeviceWindow = _Hwnd;
 	_PresentParameters.Windowed = IsWindowed;
 
@@ -953,7 +1204,8 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 		::ZeroMemory(&desktop_mode, sizeof(D3DDISPLAYMODE));
 		D3DInterface->GetAdapterDisplayMode( CurRenderDevice, &desktop_mode );
 
-		DisplayFormat=_PresentParameters.BackBufferFormat = desktop_mode.Format;
+		DisplayFormat = desktop_mode.Format;
+		_PresentParameters.BackBufferFormat = desktop_mode.Format;
 
 		// In windowed mode, define the bitdepth from desktop mode (as it can't be changed)
 		switch (_PresentParameters.BackBufferFormat) {
@@ -979,19 +1231,26 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 		/*
 		** Find a appropriate Z buffer
 		*/
-		if (!Find_Z_Mode(DisplayFormat,_PresentParameters.BackBufferFormat,(D3DFORMAT*)&_PresentParameters.AutoDepthStencilFormat))
+		D3DFORMAT tempBackBufferFormat = (D3DFORMAT)_PresentParameters.BackBufferFormat;
+		D3DFORMAT tempAutoDepthFormat = (D3DFORMAT)_PresentParameters.AutoDepthStencilFormat;
+		if (!Find_Z_Mode(DisplayFormat, tempBackBufferFormat, &tempAutoDepthFormat))
 		{
 			// If opening 32 bit mode failed, try 16 bit, even if the desktop happens to be 32 bit
 			if (BitDepth==32) {
 				BitDepth=16;
 				_PresentParameters.BackBufferFormat=D3DFMT_R5G6B5;
-				if (!Find_Z_Mode(_PresentParameters.BackBufferFormat,_PresentParameters.BackBufferFormat,(D3DFORMAT*)&_PresentParameters.AutoDepthStencilFormat)) {
+				tempBackBufferFormat = (D3DFORMAT)_PresentParameters.BackBufferFormat;
+				if (!Find_Z_Mode(tempBackBufferFormat, tempBackBufferFormat, &tempAutoDepthFormat)) {
 					_PresentParameters.AutoDepthStencilFormat=D3DFMT_UNKNOWN;
+				} else {
+					_PresentParameters.AutoDepthStencilFormat = tempAutoDepthFormat;
 				}
 			}
 			else {
 				_PresentParameters.AutoDepthStencilFormat=D3DFMT_UNKNOWN;
 			}
+		} else {
+			_PresentParameters.AutoDepthStencilFormat = tempAutoDepthFormat;
 		}
 
 	} else {
@@ -999,8 +1258,12 @@ bool DX8Wrapper::Set_Render_Device(int dev, int width, int height, int bits, int
 		/*
 		** Try to find a mode that matches the user's desired bit-depth.
 		*/
+		D3DFORMAT tempBackBuffer = (D3DFORMAT)_PresentParameters.BackBufferFormat;
+		D3DFORMAT tempAutoDepth = (D3DFORMAT)_PresentParameters.AutoDepthStencilFormat;
 		Find_Color_And_Z_Mode(ResolutionWidth,ResolutionHeight,BitDepth,&DisplayFormat,
-			&_PresentParameters.BackBufferFormat,(D3DFORMAT*)&_PresentParameters.AutoDepthStencilFormat);
+			&tempBackBuffer,&tempAutoDepth);
+		_PresentParameters.BackBufferFormat = tempBackBuffer;
+		_PresentParameters.AutoDepthStencilFormat = tempAutoDepth;
 	}
 
 	/*
@@ -1265,8 +1528,63 @@ bool DX8Wrapper::Registry_Load_Render_Device( const char * sub_key, bool resize_
 			TextureBitDepth=16;
 		}
 
+
+//		_RenderDeviceDescriptionTable.
+
+
 		if ( Set_Render_Device( name, width,height,depth,windowed, resize_window ) != true) {
-			return Set_Any_Render_Device();
+			if (depth==16) depth=32;
+			else depth=16;
+			if ( Set_Render_Device( name, width,height,depth,windowed, resize_window ) == true) {
+				return true;
+			}
+			if (depth==16) depth=32;
+			else depth=16;
+			// we'll test resolutions down, so if start is 640, increase to begin with...
+			if (width==640) {
+				width=1024;
+				height=768;
+			}
+			for(;;) {
+				if (width>2048) {
+					width=2048;
+					height=1536;
+				}
+				else if (width>1920) {
+					width=1920;
+					height=1440;
+				}
+				else if (width>1600) {
+					width=1600;
+					height=1200;
+				}
+				else if (width>1280) {
+					width=1280;
+					height=1024;
+				}
+				else if (width>1024) {
+					width=1024;
+					height=768;
+				}
+				else if (width>800) {
+					width=800;
+					height=600;
+				}
+				else if (width!=640) {
+					width=640;
+					height=480;
+				}
+				else {
+					return Set_Any_Render_Device();
+				}
+				for (int i=0;i<2;++i) {
+					if ( Set_Render_Device( name, width,height,depth,windowed, resize_window ) == true) {
+						return true;
+					}
+					if (depth==16) depth=32;
+					else depth=16;
+				}
+			}
 		}
 
 		return true;
@@ -1313,8 +1631,8 @@ bool DX8Wrapper::Find_Color_And_Z_Mode(int resx,int resy,int bitdepth,D3DFORMAT 
 
 	static D3DFORMAT _formats32[] =
 	{
-		(D3DFORMAT)D3DFMT_A8R8G8B8,
-		(D3DFORMAT)D3DFMT_X8R8G8B8,
+		D3DFMT_A8R8G8B8,
+		D3DFMT_X8R8G8B8,
 		(D3DFORMAT)D3DFMT_R8G8B8,
 	};
 
@@ -1326,10 +1644,10 @@ bool DX8Wrapper::Find_Color_And_Z_Mode(int resx,int resy,int bitdepth,D3DFORMAT 
 
 	if (BitDepth == 16) {
 		format_table = _formats16;
-		format_count = sizeof(_formats16) / sizeof(D3DFORMAT);
+		format_count = 3; // sizeof(_formats16) / sizeof(D3DFORMAT);
 	} else {
 		format_table = _formats32;
-		format_count = sizeof(_formats32) / sizeof(D3DFORMAT);
+		format_count = 3; // sizeof(_formats32) / sizeof(D3DFORMAT);
 	}
 
 	/*
@@ -1366,6 +1684,13 @@ bool DX8Wrapper::Find_Color_And_Z_Mode(int resx,int resy,int bitdepth,D3DFORMAT 
 // refresh rate
 bool DX8Wrapper::Find_Color_Mode(D3DFORMAT colorbuffer, int resx, int resy, UINT *mode)
 {
+#ifdef __APPLE__
+	// On macOS, we use OpenGL backend - mock mode finding for compatibility
+	WWDEBUG_SAY(("Find_Color_Mode - macOS mock implementation: accepting %dx%d", resx, resy));
+	if (mode) *mode = 0; // Default mode index
+	return true; // Always succeed on macOS
+#endif
+
 	UINT i,j,modemax;
 	UINT rx,ry;
 	D3DDISPLAYMODE dmode;
@@ -1470,6 +1795,12 @@ bool DX8Wrapper::Find_Z_Mode(D3DFORMAT colorbuffer,D3DFORMAT backbuffer, D3DFORM
 
 bool DX8Wrapper::Test_Z_Mode(D3DFORMAT colorbuffer,D3DFORMAT backbuffer, D3DFORMAT zmode)
 {
+#ifdef __APPLE__
+	// On macOS, we use OpenGL backend - mock Z-buffer format testing
+	WWDEBUG_SAY(("Test_Z_Mode - macOS mock implementation: accepting format %d", zmode));
+	return true; // Always succeed on macOS
+#endif
+
 	// See if we have this mode first
 	if (FAILED(D3DInterface->CheckDeviceFormat(D3DADAPTER_DEFAULT,WW3D_DEVTYPE,
 		colorbuffer,D3DUSAGE_DEPTHSTENCIL,D3DRTYPE_SURFACE,zmode)))
@@ -1679,13 +2010,40 @@ void DX8Wrapper::Flip_To_Primary(void)
 }
 
 
+//**********************************************************************************************
+//! Clear current render device
+/*! KM
+/* 5/17/02 KM Fixed support for render to texture with depth/stencil buffers
+*/
 void DX8Wrapper::Clear(bool clear_color, bool clear_z_stencil, const Vector3 &color, float dest_alpha, float z, unsigned int stencil)
 {
 	DX8_THREAD_ASSERT();
+
 	// If we try to clear a stencil buffer which is not there, the entire call will fail
-	bool has_stencil = (	_PresentParameters.AutoDepthStencilFormat == D3DFMT_D15S1 ||
+	// KJM fixed this to get format from back buffer (incase render to texture is used)
+	/*bool has_stencil = (	_PresentParameters.AutoDepthStencilFormat == D3DFMT_D15S1 ||
 								_PresentParameters.AutoDepthStencilFormat == D3DFMT_D24S8 ||
-								_PresentParameters.AutoDepthStencilFormat == D3DFMT_D24X4S4);
+								_PresentParameters.AutoDepthStencilFormat == D3DFMT_D24X4S4);*/
+	bool has_stencil=false;
+	IDirect3DSurface8* depthbuffer;
+
+	_Get_D3D_Device8()->GetDepthStencilSurface(&depthbuffer);
+	number_of_DX8_calls++;
+
+	if (depthbuffer)
+	{
+		D3DSURFACE_DESC desc;
+		depthbuffer->GetDesc(&desc);
+		has_stencil=
+		(
+			desc.Format==D3DFMT_D15S1 ||
+			desc.Format==D3DFMT_D24S8 ||
+			desc.Format==D3DFMT_D24X4S4
+		);
+
+		// release ref
+		depthbuffer->Release();
+	}
 
 	DWORD flags = 0;
 	if (clear_color) flags |= D3DCLEAR_TARGET;
@@ -1700,7 +2058,28 @@ void DX8Wrapper::Clear(bool clear_color, bool clear_z_stencil, const Vector3 &co
 void DX8Wrapper::Set_Viewport(CONST D3DVIEWPORT8* pViewport)
 {
 	DX8_THREAD_ASSERT();
+	
+#ifdef _WIN32
 	DX8CALL(SetViewport(pViewport));
+#else
+	// Phase 27.4.7: OpenGL viewport and scissor test setup
+	if (pViewport) {
+		// Set OpenGL viewport
+		glViewport(pViewport->X, pViewport->Y, pViewport->Width, pViewport->Height);
+		
+		// Set OpenGL depth range (D3D uses 0-1, OpenGL also uses 0-1)
+		glDepthRange(pViewport->MinZ, pViewport->MaxZ);
+		
+		// Phase 27.4.7: Initialize scissor rect to match viewport by default
+		// This provides compatibility with D3D8 behavior.
+		// Note: Scissor test must be explicitly enabled via render state 174 (D3DRS_SCISSORTESTENABLE)
+		glScissor(pViewport->X, pViewport->Y, pViewport->Width, pViewport->Height);
+		
+		printf("Phase 27.4.7: Viewport set to (%u, %u, %u x %u), depth [%.2f - %.2f]\n",
+			pViewport->X, pViewport->Y, pViewport->Width, pViewport->Height,
+			pViewport->MinZ, pViewport->MaxZ);
+	}
+#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -1711,20 +2090,20 @@ void DX8Wrapper::Set_Viewport(CONST D3DVIEWPORT8* pViewport)
 //
 // ----------------------------------------------------------------------------
 
-void DX8Wrapper::Set_Vertex_Buffer(const VertexBufferClass* vb)
+void DX8Wrapper::Set_Vertex_Buffer(const VertexBufferClass* vb, unsigned stream)
 {
 	render_state.vba_offset=0;
 	render_state.vba_count=0;
-	if (render_state.vertex_buffer) {
-		render_state.vertex_buffer->Release_Engine_Ref();
+	if (render_state.vertex_buffers[stream]) {
+		render_state.vertex_buffers[stream]->Release_Engine_Ref();
 	}
-	REF_PTR_SET(render_state.vertex_buffer,const_cast<VertexBufferClass*>(vb));
+	REF_PTR_SET(render_state.vertex_buffers[stream],const_cast<VertexBufferClass*>(vb));
 	if (vb) {
 		vb->Add_Engine_Ref();
-		render_state.vertex_buffer_type=vb->Type();
+		render_state.vertex_buffer_types[stream]=vb->Type();
 	}
 	else {
-		render_state.index_buffer_type=BUFFER_TYPE_INVALID;
+		render_state.vertex_buffer_types[stream]=BUFFER_TYPE_INVALID;
 	}
 	render_state_changed|=VERTEX_BUFFER_CHANGED;
 }
@@ -1763,14 +2142,18 @@ void DX8Wrapper::Set_Index_Buffer(const IndexBufferClass* ib,unsigned short inde
 
 void DX8Wrapper::Set_Vertex_Buffer(const DynamicVBAccessClass& vba_)
 {
-	if (render_state.vertex_buffer) render_state.vertex_buffer->Release_Engine_Ref();
+	// Release all streams (only one stream allowed in the legacy pipeline)
+	for (int i=1;i<MAX_VERTEX_STREAMS;++i) {
+		DX8Wrapper::Set_Vertex_Buffer(NULL, i);
+	}
 
+	if (render_state.vertex_buffers[0]) render_state.vertex_buffers[0]->Release_Engine_Ref();
 	DynamicVBAccessClass& vba=const_cast<DynamicVBAccessClass&>(vba_);
-	render_state.vertex_buffer_type=vba.Get_Type();
+	render_state.vertex_buffer_types[0]=vba.Get_Type();
 	render_state.vba_offset=vba.VertexBufferOffset;
 	render_state.vba_count=vba.Get_Vertex_Count();
-	REF_PTR_SET(render_state.vertex_buffer,vba.VertexBuffer);
-	render_state.vertex_buffer->Add_Engine_Ref();
+	REF_PTR_SET(render_state.vertex_buffers[0],vba.VertexBuffer);
+	render_state.vertex_buffers[0]->Add_Engine_Ref();
 	render_state_changed|=VERTEX_BUFFER_CHANGED;
 	render_state_changed|=INDEX_BUFFER_CHANGED;		// vba_offset changes so index buffer needs to be reset as well.
 }
@@ -1810,14 +2193,14 @@ void DX8Wrapper::Draw_Sorting_IB_VB(
 	unsigned short min_vertex_index,
 	unsigned short vertex_count)
 {
-	WWASSERT(render_state.vertex_buffer_type==BUFFER_TYPE_SORTING || render_state.vertex_buffer_type==BUFFER_TYPE_DYNAMIC_SORTING);
+	WWASSERT(render_state.vertex_buffer_types[0]==BUFFER_TYPE_SORTING || render_state.vertex_buffer_types[0]==BUFFER_TYPE_DYNAMIC_SORTING);
 	WWASSERT(render_state.index_buffer_type==BUFFER_TYPE_SORTING || render_state.index_buffer_type==BUFFER_TYPE_DYNAMIC_SORTING);
 
 	// Fill dynamic vertex buffer with sorting vertex buffer vertices
 	DynamicVBAccessClass dyn_vb_access(BUFFER_TYPE_DYNAMIC_DX8,dynamic_fvf_type,vertex_count);
 	{
 		DynamicVBAccessClass::WriteLockClass lock(&dyn_vb_access);
-		VertexFormatXYZNDUV2* src = static_cast<SortingVertexBufferClass*>(render_state.vertex_buffer)->VertexBuffer;
+		VertexFormatXYZNDUV2* src = static_cast<SortingVertexBufferClass*>(render_state.vertex_buffers[0])->VertexBuffer;
 		VertexFormatXYZNDUV2* dest= lock.Get_Formatted_Vertex_Array();
 		src += render_state.vba_offset + render_state.index_base_offset + min_vertex_index;
 		unsigned  size = dyn_vb_access.FVF_Info().Get_FVF_Size()*vertex_count/sizeof(unsigned);
@@ -1833,7 +2216,11 @@ void DX8Wrapper::Draw_Sorting_IB_VB(
 		0,
 		static_cast<DX8VertexBufferClass*>(dyn_vb_access.VertexBuffer)->Get_DX8_Vertex_Buffer(),
 		dyn_vb_access.FVF_Info().Get_FVF_Size()));
-	DX8CALL(SetVertexShader(dyn_vb_access.FVF_Info().Get_FVF()));
+	// If using FVF format VB, set the FVF as vertex shader (may not be needed here KM)
+	unsigned fvf=dyn_vb_access.FVF_Info().Get_FVF();
+	if (fvf!=0) {
+		DX8CALL(SetVertexShader(fvf));
+	}
 	DX8_RECORD_VERTEX_BUFFER_CHANGE();
 
 	unsigned index_count=0;
@@ -1956,10 +2343,10 @@ void DX8Wrapper::Draw(
 
 	if (vertex_count<3) {
 		min_vertex_index=0;
-		switch (render_state.vertex_buffer_type) {
+		switch (render_state.vertex_buffer_types[0]) {
 		case BUFFER_TYPE_DX8:
 		case BUFFER_TYPE_SORTING:
-			vertex_count=render_state.vertex_buffer->Get_Vertex_Count()-render_state.index_base_offset-render_state.vba_offset-min_vertex_index;
+			vertex_count=render_state.vertex_buffers[0]->Get_Vertex_Count()-render_state.index_base_offset-render_state.vba_offset-min_vertex_index;
 			break;
 		case BUFFER_TYPE_DYNAMIC_DX8:
 		case BUFFER_TYPE_DYNAMIC_SORTING:
@@ -1968,7 +2355,7 @@ void DX8Wrapper::Draw(
 		}
 	}
 
-	switch (render_state.vertex_buffer_type) {
+	switch (render_state.vertex_buffer_types[0]) {
 	case BUFFER_TYPE_DX8:
 	case BUFFER_TYPE_DYNAMIC_DX8:
 		switch (render_state.index_buffer_type) {
@@ -1982,12 +2369,65 @@ void DX8Wrapper::Draw(
 				}*/
 				DX8_RECORD_RENDER(polygon_count,vertex_count,render_state.shader);
 				DX8_RECORD_DRAW_CALLS();
+#ifdef _WIN32
 				DX8CALL(DrawIndexedPrimitive(
 					(D3DPRIMITIVETYPE)primitive_type,
 					min_vertex_index,
 					vertex_count,
 					start_index+render_state.iba_offset,
 					polygon_count));
+#else
+				// Phase 27.4.1: OpenGL indexed primitive rendering
+				// Map D3D primitive types to OpenGL
+				GLenum gl_primitive_type = GL_TRIANGLES;
+				unsigned index_count = polygon_count * 3; // Default for triangle list
+				
+				switch (primitive_type) {
+				case D3DPT_TRIANGLELIST:
+					gl_primitive_type = GL_TRIANGLES;
+					index_count = polygon_count * 3;
+					break;
+				case D3DPT_TRIANGLESTRIP:
+					gl_primitive_type = GL_TRIANGLE_STRIP;
+					index_count = polygon_count + 2;
+					break;
+				case D3DPT_TRIANGLEFAN:
+					gl_primitive_type = GL_TRIANGLE_FAN;
+					index_count = polygon_count + 2;
+					break;
+				case D3DPT_LINELIST:
+					gl_primitive_type = GL_LINES;
+					index_count = polygon_count * 2;
+					break;
+				case D3DPT_LINESTRIP:
+					gl_primitive_type = GL_LINE_STRIP;
+					index_count = polygon_count + 1;
+					break;
+				case D3DPT_POINTLIST:
+					gl_primitive_type = GL_POINTS;
+					index_count = polygon_count;
+					break;
+				default:
+					printf("Phase 27.4.1 WARNING: Unknown primitive type %d, defaulting to TRIANGLES\n", primitive_type);
+					break;
+				}
+				
+				// Render with glDrawElements using index buffer
+				// Index offset is in bytes: (start_index + iba_offset) * sizeof(unsigned short)
+				GLsizei offset_bytes = (start_index + render_state.iba_offset) * sizeof(unsigned short);
+				
+				printf("Phase 27.4.1: glDrawElements(type=%d, count=%u, offset=%d, verts=%u)\n", 
+					primitive_type, index_count, offset_bytes, vertex_count);
+				
+				glDrawElements(gl_primitive_type, index_count, GL_UNSIGNED_SHORT, 
+					(const void*)(uintptr_t)offset_bytes);
+				
+				// Check for OpenGL errors
+				GLenum error = glGetError();
+				if (error != GL_NO_ERROR) {
+					printf("Phase 27.4.1 ERROR: glDrawElements failed with error 0x%04X\n", error);
+				}
+#endif
 			}
 			break;
 		case BUFFER_TYPE_SORTING:
@@ -2099,7 +2539,7 @@ void DX8Wrapper::Apply_Render_State_Changes()
 	{
 		if (render_state_changed&mask)
 		{
-			SNAPSHOT_SAY(("DX8 - apply texture %d",i));
+			SNAPSHOT_SAY(("DX8 - apply texture %d (%s)",i,render_state.Textures[i] ? render_state.Textures[i]->Get_Full_Path().str() : "NULL"));
 
 			if (render_state.Textures[i])
 			{
@@ -2159,40 +2599,123 @@ void DX8Wrapper::Apply_Render_State_Changes()
 
 	if (render_state_changed&WORLD_CHANGED) {
 		SNAPSHOT_SAY(("DX8 - apply world matrix"));
+#ifdef _WIN32
 		_Set_DX8_Transform(D3DTS_WORLD,render_state.world);
+#else
+		// Phase 27.3.1: Update World matrix uniform in OpenGL shader
+		if (GL_Shader_Program != 0) {
+			glUseProgram(GL_Shader_Program);
+			_Check_GL_Error("Use shader program for world matrix");
+			
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uWorldMatrix");
+			if (loc != -1) {
+				// D3D matrices are row-major, OpenGL expects column-major
+				// render_state.world is already transposed in Set_Transform()
+				// So we need to transpose it back for OpenGL (or use GL_TRUE in glUniformMatrix4fv)
+				glUniformMatrix4fv(loc, 1, GL_FALSE, (const float*)&render_state.world);
+				_Check_GL_Error("Update uWorldMatrix uniform");
+				
+				printf("Phase 27.3.1: Updated uWorldMatrix uniform\n");
+			}
+		}
+#endif
 	}
 	if (render_state_changed&VIEW_CHANGED) {
 		SNAPSHOT_SAY(("DX8 - apply view matrix"));
+#ifdef _WIN32
 		_Set_DX8_Transform(D3DTS_VIEW,render_state.view);
+#else
+		// Phase 27.3.1: Update View matrix uniform in OpenGL shader
+		if (GL_Shader_Program != 0) {
+			glUseProgram(GL_Shader_Program);
+			_Check_GL_Error("Use shader program for view matrix");
+			
+			GLint loc = glGetUniformLocation(GL_Shader_Program, "uViewMatrix");
+			if (loc != -1) {
+				// D3D matrices are row-major, OpenGL expects column-major
+				// render_state.view is already transposed in Set_Transform()
+				// So we need to transpose it back for OpenGL (or use GL_TRUE in glUniformMatrix4fv)
+				glUniformMatrix4fv(loc, 1, GL_FALSE, (const float*)&render_state.view);
+				_Check_GL_Error("Update uViewMatrix uniform");
+				
+				printf("Phase 27.3.1: Updated uViewMatrix uniform\n");
+			}
+		}
+#endif
 	}
 	if (render_state_changed&VERTEX_BUFFER_CHANGED) {
 		SNAPSHOT_SAY(("DX8 - apply vb change"));
-		if (render_state.vertex_buffer) {
+		for (i=0;i<MAX_VERTEX_STREAMS;++i) {
+			if (render_state.vertex_buffers[i]) {
 #ifdef _WIN32
-			switch (render_state.vertex_buffer_type) {//->Type()) {
-			case BUFFER_TYPE_DX8:
-			case BUFFER_TYPE_DYNAMIC_DX8:
-				DX8CALL(SetStreamSource(
-					0,
-					static_cast<DX8VertexBufferClass*>(render_state.vertex_buffer)->Get_DX8_Vertex_Buffer(),
-					render_state.vertex_buffer->FVF_Info().Get_FVF_Size()));
-				DX8_RECORD_VERTEX_BUFFER_CHANGE();
-				DX8CALL(SetVertexShader(render_state.vertex_buffer->FVF_Info().Get_FVF()));
-				break;
-			case BUFFER_TYPE_SORTING:
-			case BUFFER_TYPE_DYNAMIC_SORTING:
-				break;
-			default:
-				WWASSERT(0);
-			}
+				switch (render_state.vertex_buffer_types[i]) {//->Type()) {
+				case BUFFER_TYPE_DX8:
+				case BUFFER_TYPE_DYNAMIC_DX8:
+					DX8CALL(SetStreamSource(
+						i,
+						static_cast<DX8VertexBufferClass*>(render_state.vertex_buffers[i])->Get_DX8_Vertex_Buffer(),
+						render_state.vertex_buffers[i]->FVF_Info().Get_FVF_Size()));
+					DX8_RECORD_VERTEX_BUFFER_CHANGE();
+					{
+						// If the VB format is FVF, set the FVF as a vertex shader
+						unsigned fvf=render_state.vertex_buffers[i]->FVF_Info().Get_FVF();
+						if (fvf!=0) {
+							Set_Vertex_Shader(fvf);
+						}
+					}
+					break;
+				case BUFFER_TYPE_SORTING:
+				case BUFFER_TYPE_DYNAMIC_SORTING:
+					break;
+				default:
+					WWASSERT(0);
+				}
 #else
-			// Phase 27.2.2: OpenGL vertex buffer binding handled elsewhere
+				// Phase 27.2.5: OpenGL vertex buffer and attribute setup
+				switch (render_state.vertex_buffer_types[i]) {
+				case BUFFER_TYPE_DX8:
+				case BUFFER_TYPE_DYNAMIC_DX8:
+					{
+						// Bind VAO
+						glBindVertexArray(GL_VAO);
+						_Check_GL_Error("Bind VAO");
+						
+						// Bind VBO
+						DX8VertexBufferClass* vb = static_cast<DX8VertexBufferClass*>(render_state.vertex_buffers[i]);
+						glBindBuffer(GL_ARRAY_BUFFER, vb->Get_GL_Vertex_Buffer());
+						_Check_GL_Error("Bind vertex buffer");
+						
+						// Setup vertex attributes based on FVF format
+						unsigned int fvf = render_state.vertex_buffers[i]->FVF_Info().Get_FVF();
+						unsigned int stride = render_state.vertex_buffers[i]->FVF_Info().Get_FVF_Size();
+						
+						if (fvf != 0) {
+							_Setup_Vertex_Attributes(fvf, stride);
+							_Check_GL_Error("Setup vertex attributes");
+						}
+						
+						printf("Phase 27.2.5: Configured vertex attributes for FVF 0x%08x (stride %u)\n", fvf, stride);
+					}
+					break;
+				case BUFFER_TYPE_SORTING:
+				case BUFFER_TYPE_DYNAMIC_SORTING:
+					break;
+				default:
+					WWASSERT(0);
+				}
 #endif
-		} else {
+			} else {
 #ifdef _WIN32
-			DX8CALL(SetStreamSource(0,NULL,0));
-			DX8_RECORD_VERTEX_BUFFER_CHANGE();
+				DX8CALL(SetStreamSource(i,NULL,0));
+				DX8_RECORD_VERTEX_BUFFER_CHANGE();
+#else
+				// Unbind VAO and VBO
+				glBindVertexArray(0);
+				_Check_GL_Error("Unbind VAO");
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+				_Check_GL_Error("Unbind vertex buffer");
 #endif
+			}
 		}
 	}
 	if (render_state_changed&INDEX_BUFFER_CHANGED) {
@@ -2232,6 +2755,446 @@ void DX8Wrapper::Apply_Render_State_Changes()
 	SNAPSHOT_SAY(("DX8Wrapper::Apply_Render_State_Changes() - finished"));
 }
 
+// Phase 27.2.3: OpenGL texture creation helper function
+#ifndef _WIN32
+/*!
+ * Create an OpenGL texture with specified dimensions and format
+ * Returns GLuint texture ID (0 on failure)
+ */
+unsigned int DX8Wrapper::_Create_GL_Texture
+(
+	unsigned int width,
+	unsigned int height,
+	WW3DFormat format,
+	MipCountType mip_level_count,
+	bool rendertarget
+)
+{
+	GLuint gl_texture = 0;
+	
+	// Generate OpenGL texture
+	glGenTextures(1, &gl_texture);
+	if (gl_texture == 0) {
+		printf("Phase 27.2.3 ERROR: glGenTextures failed!\n");
+		return 0;
+	}
+	
+	// Bind texture for configuration
+	glBindTexture(GL_TEXTURE_2D, gl_texture);
+	
+	// Set texture filtering
+	if (mip_level_count > MIP_LEVELS_1) {
+		// Mipmaps enabled - use trilinear filtering
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	} else {
+		// No mipmaps - use bilinear filtering
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
+	
+	// Set wrapping mode (default to repeat)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	
+	// Convert WW3DFormat to OpenGL format
+	GLenum gl_internal_format = GL_RGBA8;
+	GLenum gl_format = GL_RGBA;
+	GLenum gl_type = GL_UNSIGNED_BYTE;
+	
+	switch (format) {
+		case WW3D_FORMAT_A8R8G8B8:
+		case WW3D_FORMAT_X8R8G8B8:
+			gl_internal_format = GL_RGBA8;
+			gl_format = GL_BGRA;  // DirectX uses BGRA order
+			gl_type = GL_UNSIGNED_BYTE;
+			break;
+		case WW3D_FORMAT_R8G8B8:
+			gl_internal_format = GL_RGB8;
+			gl_format = GL_RGB;
+			gl_type = GL_UNSIGNED_BYTE;
+			break;
+		case WW3D_FORMAT_A1R5G5B5:
+			gl_internal_format = GL_RGB5_A1;
+			gl_format = GL_BGRA;
+			gl_type = GL_UNSIGNED_SHORT_1_5_5_5_REV;
+			break;
+		case WW3D_FORMAT_R5G6B5:
+			gl_internal_format = GL_RGB565;
+			gl_format = GL_RGB;
+			gl_type = GL_UNSIGNED_SHORT_5_6_5;
+			break;
+		case WW3D_FORMAT_DXT1:
+			gl_internal_format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+			break;
+		case WW3D_FORMAT_DXT3:
+			gl_internal_format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+			break;
+		case WW3D_FORMAT_DXT5:
+			gl_internal_format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+			break;
+		default:
+			printf("Phase 27.2.3 WARNING: Unsupported texture format %d, using RGBA8\n", format);
+			gl_internal_format = GL_RGBA8;
+			gl_format = GL_RGBA;
+			gl_type = GL_UNSIGNED_BYTE;
+			break;
+	}
+	
+	// Allocate texture storage (no data yet, will be filled later via Lock/Unlock or Load)
+	// For compressed formats, we'll use glCompressedTexImage2D later when we have data
+	if (format != WW3D_FORMAT_DXT1 && format != WW3D_FORMAT_DXT3 && format != WW3D_FORMAT_DXT5) {
+		glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0, gl_format, gl_type, NULL);
+	}
+	
+	// Check for errors
+	GLenum error = glGetError();
+	if (error != GL_NO_ERROR) {
+		printf("Phase 27.2.3 ERROR: glTexImage2D failed with error 0x%x\n", error);
+		glDeleteTextures(1, &gl_texture);
+		return 0;
+	}
+	
+	printf("Phase 27.2.3: Created OpenGL texture %u (%dx%d, format %d, mips %d)\n", 
+		gl_texture, width, height, format, mip_level_count);
+	
+	// Unbind texture
+	glBindTexture(GL_TEXTURE_2D, 0);
+	
+	return gl_texture;
+}
+
+// Phase 27.2.4: OpenGL shader program management functions
+
+/*!
+ * Load shader source from file and compile it
+ * Returns GLuint shader ID (0 on failure)
+ */
+unsigned int DX8Wrapper::_Load_And_Compile_Shader(const char *shader_path, unsigned int shader_type)
+{
+	// Read shader source from file
+	FILE *file = fopen(shader_path, "r");
+	if (!file) {
+		printf("Phase 27.2.4 ERROR: Failed to open shader file: %s\n", shader_path);
+		return 0;
+	}
+	
+	// Get file size
+	fseek(file, 0, SEEK_END);
+	long file_size = ftell(file);
+	fseek(file, 0, SEEK_SET);
+	
+	// Read file contents
+	char *shader_source = (char*)malloc(file_size + 1);
+	if (!shader_source) {
+		printf("Phase 27.2.4 ERROR: Failed to allocate memory for shader source\n");
+		fclose(file);
+		return 0;
+	}
+	
+	size_t bytes_read = fread(shader_source, 1, file_size, file);
+	shader_source[bytes_read] = '\0';
+	fclose(file);
+	
+	// Create shader
+	GLuint shader = glCreateShader(shader_type);
+	if (shader == 0) {
+		printf("Phase 27.2.4 ERROR: glCreateShader failed for %s\n", shader_path);
+		free(shader_source);
+		return 0;
+	}
+	
+	// Compile shader
+	const char *source_ptr = shader_source;
+	glShaderSource(shader, 1, &source_ptr, NULL);
+	glCompileShader(shader);
+	
+	// Check compilation status
+	const char *shader_type_name = (shader_type == GL_VERTEX_SHADER) ? "vertex" : "fragment";
+	if (!_Check_Shader_Compile_Status(shader, shader_type_name)) {
+		printf("Phase 27.2.4 ERROR: Shader compilation failed for %s\n", shader_path);
+		glDeleteShader(shader);
+		free(shader_source);
+		return 0;
+	}
+	
+	printf("Phase 27.2.4: Successfully compiled %s shader from %s (ID: %u)\n", 
+		shader_type_name, shader_path, shader);
+	
+	free(shader_source);
+	return shader;
+}
+
+/*!
+ * Create shader program by linking vertex and fragment shaders
+ * Returns GLuint program ID (0 on failure)
+ */
+unsigned int DX8Wrapper::_Create_Shader_Program(unsigned int vertex_shader, unsigned int fragment_shader)
+{
+	// Create program
+	GLuint program = glCreateProgram();
+	if (program == 0) {
+		printf("Phase 27.2.4 ERROR: glCreateProgram failed\n");
+		return 0;
+	}
+	
+	// Attach shaders
+	glAttachShader(program, vertex_shader);
+	glAttachShader(program, fragment_shader);
+	
+	// Link program
+	glLinkProgram(program);
+	
+	// Check link status
+	if (!_Check_Program_Link_Status(program)) {
+		printf("Phase 27.2.4 ERROR: Program linking failed\n");
+		glDeleteProgram(program);
+		return 0;
+	}
+	
+	// Detach shaders (they're now part of the program)
+	glDetachShader(program, vertex_shader);
+	glDetachShader(program, fragment_shader);
+	
+	printf("Phase 27.2.4: Successfully created shader program (ID: %u)\n", program);
+	
+	return program;
+}
+
+/*!
+ * Check shader compilation status and print errors
+ * Returns true if compilation succeeded
+ */
+bool DX8Wrapper::_Check_Shader_Compile_Status(unsigned int shader, const char *shader_name)
+{
+	GLint success = 0;
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+	
+	if (success == GL_FALSE) {
+		GLint log_length = 0;
+		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_length);
+		
+		if (log_length > 0) {
+			char *error_log = (char*)malloc(log_length);
+			glGetShaderInfoLog(shader, log_length, &log_length, error_log);
+			printf("Phase 27.2.4 SHADER COMPILE ERROR (%s):\n%s\n", shader_name, error_log);
+			free(error_log);
+		}
+		
+		return false;
+	}
+	
+	return true;
+}
+
+/*!
+ * Check program link status and print errors
+ * Returns true if linking succeeded
+ */
+bool DX8Wrapper::_Check_Program_Link_Status(unsigned int program)
+{
+	GLint success = 0;
+	glGetProgramiv(program, GL_LINK_STATUS, &success);
+	
+	if (success == GL_FALSE) {
+		GLint log_length = 0;
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_length);
+		
+		if (log_length > 0) {
+			char *error_log = (char*)malloc(log_length);
+			glGetProgramInfoLog(program, log_length, &log_length, error_log);
+			printf("Phase 27.2.4 PROGRAM LINK ERROR:\n%s\n", error_log);
+			free(error_log);
+		}
+		
+		return false;
+	}
+	
+	return true;
+}
+
+/*!
+ * Get uniform location in shader program
+ * Returns uniform location (-1 if not found)
+ */
+int DX8Wrapper::_Get_Uniform_Location(unsigned int program, const char *uniform_name)
+{
+	GLint location = glGetUniformLocation(program, uniform_name);
+	
+	if (location == -1) {
+		printf("Phase 27.2.4 WARNING: Uniform '%s' not found in program %u\n", uniform_name, program);
+	}
+	
+	return location;
+}
+
+// Phase 27.5.2: OpenGL error checking and debugging
+
+/*!
+ * Check for OpenGL errors and log them with operation context
+ * Should be called after critical OpenGL calls for debugging
+ */
+void DX8Wrapper::_Check_GL_Error(const char *operation)
+{
+	GLenum error = glGetError();
+	
+	if (error != GL_NO_ERROR) {
+		const char *error_string = "UNKNOWN";
+		
+		switch (error) {
+			case GL_INVALID_ENUM:      error_string = "GL_INVALID_ENUM"; break;
+			case GL_INVALID_VALUE:     error_string = "GL_INVALID_VALUE"; break;
+			case GL_INVALID_OPERATION: error_string = "GL_INVALID_OPERATION"; break;
+			case GL_OUT_OF_MEMORY:     error_string = "GL_OUT_OF_MEMORY"; break;
+			case GL_INVALID_FRAMEBUFFER_OPERATION: error_string = "GL_INVALID_FRAMEBUFFER_OPERATION"; break;
+		}
+		
+		printf("Phase 27.5.2 GL ERROR: %s (0x%04X) during operation: %s\n", 
+			error_string, error, operation ? operation : "unknown");
+	}
+}
+
+/*!
+ * Enable OpenGL debug output for advanced error reporting
+ * Requires OpenGL 4.3+ or ARB_debug_output extension
+ */
+void DX8Wrapper::_Enable_GL_Debug_Output()
+{
+#ifdef GL_DEBUG_OUTPUT
+	// Check if debug output is available
+	if (glDebugMessageCallback) {
+		printf("Phase 27.5.2: Enabling GL_DEBUG_OUTPUT for advanced error reporting\n");
+		
+		glEnable(GL_DEBUG_OUTPUT);
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);  // Synchronous for easier debugging
+		
+		// Set up debug callback
+		glDebugMessageCallback([](GLenum source, GLenum type, GLuint id, GLenum severity, 
+			GLsizei length, const GLchar* message, const void* userParam) {
+			
+			// Filter out low-severity notifications
+			if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
+				return;
+			}
+			
+			const char *severity_str = "UNKNOWN";
+			switch (severity) {
+				case GL_DEBUG_SEVERITY_HIGH:   severity_str = "HIGH"; break;
+				case GL_DEBUG_SEVERITY_MEDIUM: severity_str = "MEDIUM"; break;
+				case GL_DEBUG_SEVERITY_LOW:    severity_str = "LOW"; break;
+			}
+			
+			const char *type_str = "UNKNOWN";
+			switch (type) {
+				case GL_DEBUG_TYPE_ERROR:               type_str = "ERROR"; break;
+				case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: type_str = "DEPRECATED"; break;
+				case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  type_str = "UNDEFINED BEHAVIOR"; break;
+				case GL_DEBUG_TYPE_PORTABILITY:         type_str = "PORTABILITY"; break;
+				case GL_DEBUG_TYPE_PERFORMANCE:         type_str = "PERFORMANCE"; break;
+			}
+			
+			printf("Phase 27.5.2 GL DEBUG [%s] %s: %s (ID: %u)\n", 
+				severity_str, type_str, message, id);
+		}, nullptr);
+		
+		printf("Phase 27.5.2: GL_DEBUG_OUTPUT enabled successfully\n");
+	} else {
+		printf("Phase 27.5.2 WARNING: GL_DEBUG_OUTPUT not available on this platform\n");
+	}
+#else
+	printf("Phase 27.5.2 WARNING: GL_DEBUG_OUTPUT not supported (requires OpenGL 4.3+)\n");
+#endif
+}
+
+/*!
+ * Safe version of _Get_Uniform_Location with optional logging
+ * Returns -1 if uniform not found, with optional warning message
+ */
+int DX8Wrapper::_Get_Uniform_Location_Safe(unsigned int program, const char *uniform_name, bool log_if_missing)
+{
+	GLint location = glGetUniformLocation(program, uniform_name);
+	
+	if (location == -1 && log_if_missing) {
+		printf("Phase 27.5.2 INFO: Uniform '%s' not found in program %u (may be optimized out)\n", 
+			uniform_name, program);
+	}
+	
+	_Check_GL_Error("glGetUniformLocation");
+	
+	return location;
+}
+
+// Phase 27.2.5: Vertex attribute setup based on FVF format
+/*!
+ * Configure OpenGL vertex attributes based on Direct3D8 FVF (Flexible Vertex Format)
+ * Maps D3D FVF to OpenGL attribute locations matching shader layout:
+ *   location 0: position (vec3)
+ *   location 1: normal (vec3)
+ *   location 2: color (vec4)
+ *   location 3: texcoord0 (vec2)
+ */
+void DX8Wrapper::_Setup_Vertex_Attributes(unsigned int fvf, unsigned int vertex_stride)
+{
+	// Disable all attributes first
+	for (int i = 0; i < 4; i++) {
+		glDisableVertexAttribArray(i);
+	}
+	
+	unsigned int offset = 0;
+	
+	// Position attribute (location 0) - required for all formats
+	if (fvf & D3DFVF_XYZ) {
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertex_stride, (void*)(uintptr_t)offset);
+		glEnableVertexAttribArray(0);
+		offset += 3 * sizeof(float);
+		
+		printf("Phase 27.2.5: Enabled position attribute (loc 0, offset %u)\n", offset - 3 * sizeof(float));
+	}
+	
+	// Normal attribute (location 1)
+	if (fvf & D3DFVF_NORMAL) {
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertex_stride, (void*)(uintptr_t)offset);
+		glEnableVertexAttribArray(1);
+		offset += 3 * sizeof(float);
+		
+		printf("Phase 27.2.5: Enabled normal attribute (loc 1, offset %u)\n", offset - 3 * sizeof(float));
+	}
+	
+	// Diffuse color attribute (location 2)
+	// D3D stores color as BGRA DWORD, OpenGL expects RGBA float[4]
+	if (fvf & D3DFVF_DIFFUSE) {
+		// Note: Using GL_UNSIGNED_BYTE with GL_TRUE normalization converts 0-255 to 0.0-1.0
+		// D3DCOLOR is BGRA order, so we need to use GL_BGRA format
+		glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, vertex_stride, (void*)(uintptr_t)offset);
+		glEnableVertexAttribArray(2);
+		offset += sizeof(unsigned int);  // D3DCOLOR is 4 bytes
+		
+		printf("Phase 27.2.5: Enabled diffuse color attribute (loc 2, offset %u)\n", offset - sizeof(unsigned int));
+	}
+	
+	// Texture coordinate 0 attribute (location 3)
+	// Check for at least 1 texture coordinate set
+	unsigned int tex_count = (fvf & D3DFVF_TEXCOUNT_MASK) >> D3DFVF_TEXCOUNT_SHIFT;
+	if (tex_count >= 1) {
+		glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, vertex_stride, (void*)(uintptr_t)offset);
+		glEnableVertexAttribArray(3);
+		offset += 2 * sizeof(float);
+		
+		printf("Phase 27.2.5: Enabled texcoord0 attribute (loc 3, offset %u)\n", offset - 2 * sizeof(float));
+	}
+	
+	// Note: We're only handling the first texture coordinate set for now
+	// Additional texture coordinates (texcoord1, etc.) can be added later as needed
+	
+	// Check for OpenGL errors
+	GLenum error = glGetError();
+	if (error != GL_NO_ERROR) {
+		printf("Phase 27.2.5 ERROR: OpenGL error during vertex attribute setup: 0x%x\n", error);
+	}
+}
+
+#endif // _WIN32
+
 IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
 (
 	unsigned int width,
@@ -2255,7 +3218,7 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
 	// Render target may return NOTAVAILABLE, in
 	// which case we return NULL.
 	if (rendertarget) {
-		unsigned ret=D3DXCreateTexture(
+		unsigned ret=CORE_D3DXCreateTexture(
 			DX8Wrapper::_Get_D3D_Device8(),
 			width,
 			height,
@@ -2270,9 +3233,35 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
 			return NULL;
 		}
 
+		// If ran out of texture ram, try invalidating some textures and mesh cache.
 		if (ret==D3DERR_OUTOFVIDEOMEMORY) {
-			Non_Fatal_Log_DX8_ErrorCode(ret,__FILE__,__LINE__);
-			return NULL;
+			WWDEBUG_SAY(("Error: Out of memory while creating render target. Trying to release assets..."));
+			// Free all textures that haven't been used in the last 5 seconds
+			TextureClass::Invalidate_Old_Unused_Textures(5000);
+
+			// Invalidate the mesh cache
+			WW3D::_Invalidate_Mesh_Cache();
+
+			ret=CORE_D3DXCreateTexture(
+				DX8Wrapper::_Get_D3D_Device8(),
+				width,
+				height,
+				mip_level_count,
+				D3DUSAGE_RENDERTARGET,
+				WW3DFormat_To_D3DFormat(format),
+				pool,
+				&texture);
+
+			if (SUCCEEDED(ret)) {
+				WWDEBUG_SAY(("...Render target creation succesful."));
+			}
+			else {
+				WWDEBUG_SAY(("...Render target creation failed."));
+			}
+			if (ret==D3DERR_OUTOFVIDEOMEMORY) {
+				Non_Fatal_Log_DX8_ErrorCode(ret,__FILE__,__LINE__);
+				return NULL;
+			}
 		}
 
 		DX8_ErrorCode(ret);
@@ -2281,9 +3270,10 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
 		return texture;
 	}
 
-	// Don't allow any errors in non-render target
-	// texture creation.
-	DX8_ErrorCode(D3DXCreateTexture(
+	// We should never run out of video memory when allocating a non-rendertarget texture.
+	// However, it seems to happen sometimes when there are a lot of textures in memory and so
+	// if it happens we'll release assets and try again (anything is better than crashing).
+	unsigned ret=CORE_D3DXCreateTexture(
 		DX8Wrapper::_Get_D3D_Device8(),
 		width,
 		height,
@@ -2291,12 +3281,37 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
 		0,
 		WW3DFormat_To_D3DFormat(format),
 		pool,
-		&texture));
+		&texture);
 
-//	unsigned reduction=WW3D::Get_Texture_Reduction();
-//	unsigned level_count=texture->GetLevelCount();
-//	if (reduction>=level_count) reduction=level_count-1;
-//	texture->SetLOD(reduction);
+	// If ran out of texture ram, try invalidating some textures and mesh cache.
+	if (ret==D3DERR_OUTOFVIDEOMEMORY) {
+		WWDEBUG_SAY(("Error: Out of memory while creating texture. Trying to release assets..."));
+		// Free all textures that haven't been used in the last 5 seconds
+		TextureClass::Invalidate_Old_Unused_Textures(5000);
+
+		// Invalidate the mesh cache
+		WW3D::_Invalidate_Mesh_Cache();
+
+		ret=CORE_D3DXCreateTexture(
+			DX8Wrapper::_Get_D3D_Device8(),
+			width,
+			height,
+			mip_level_count,
+			0,
+			WW3DFormat_To_D3DFormat(format),
+			pool,
+			&texture);
+		if (SUCCEEDED(ret)) {
+			WWDEBUG_SAY(("...Texture creation succesful."));
+		}
+		else {
+			StringClass format_name(0,true);
+			Get_WW3D_Format_Name(format, format_name);
+			WWDEBUG_SAY(("...Texture creation failed. (%d x %d, format: %s, mips: %d",width,height,format_name.str(),mip_level_count));
+		}
+
+	}
+	DX8_ErrorCode(ret);
 
 	return texture;
 }
@@ -2316,7 +3331,7 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
 	// NOTE: It is possible to get the size and format of the original image file from this
 	// function as well, so if we later want to second-guess D3DX's format conversion decisions
 	// we can do so after this function is called..
-	unsigned result = D3DXCreateTextureFromFileExA(
+	unsigned result = CORE_D3DXCreateTextureFromFileExA(
 		_Get_D3D_Device8(),
 		filename,
 		D3DX_DEFAULT,
@@ -2333,7 +3348,7 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
 		&texture);
 
 	if (result != D3D_OK) {
-		return (IDirect3DTexture8*)MissingTexture::_Get_Missing_Texture();
+		return MissingTexture::_Get_Missing_Texture();
 	}
 
 	// Make sure texture wasn't paletted!
@@ -2341,7 +3356,7 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
 	texture->GetLevelDesc(0,&desc);
 	if (desc.Format==D3DFMT_P8) {
 		texture->Release();
-		return (IDirect3DTexture8*)MissingTexture::_Get_Missing_Texture();
+		return MissingTexture::_Get_Missing_Texture();
 	}
 	return texture;
 }
@@ -2368,18 +3383,317 @@ IDirect3DTexture8 * DX8Wrapper::_Create_DX8_Texture
 	// Copy the surface to the texture
 	IDirect3DSurface8 *tex_surface = NULL;
 	texture->GetSurfaceLevel(0, &tex_surface);
-	DX8_ErrorCode(D3DXLoadSurfaceFromSurface(tex_surface, NULL, NULL, surface, NULL, NULL, D3DX_FILTER_BOX, 0));
+	DX8_ErrorCode(CORE_D3DXLoadSurfaceFromSurface(tex_surface, NULL, NULL, surface, NULL, NULL, D3DX_FILTER_BOX, 0));
 	tex_surface->Release();
 
 	// Create mipmaps if needed
 	if (mip_level_count!=MIP_LEVELS_1)
 	{
-		DX8_ErrorCode(D3DXFilterTexture(texture, NULL, 0, D3DX_FILTER_BOX));
+		DX8_ErrorCode(CORE_D3DXFilterTexture(texture, NULL, 0, D3DX_FILTER_BOX));
 	}
 
 	return texture;
 
 }
+
+/*!
+ * KJM create depth stencil texture
+ */
+IDirect3DTexture8 * DX8Wrapper::_Create_DX8_ZTexture
+(
+	unsigned int width,
+	unsigned int height,
+	WW3DZFormat zformat,
+	MipCountType mip_level_count,
+	D3DPOOL pool
+)
+{
+	DX8_THREAD_ASSERT();
+	DX8_Assert();
+	IDirect3DTexture8* texture = NULL;
+
+	D3DFORMAT zfmt=WW3DZFormat_To_D3DFormat(zformat);
+
+	unsigned ret=DX8Wrapper::_Get_D3D_Device8()->CreateTexture
+	(
+		width,
+		height,
+		mip_level_count,
+		D3DUSAGE_DEPTHSTENCIL,
+		zfmt,
+		pool,
+		&texture
+	);
+
+	if (ret==D3DERR_NOTAVAILABLE)
+	{
+		Non_Fatal_Log_DX8_ErrorCode(ret,__FILE__,__LINE__);
+		return NULL;
+	}
+
+	// If ran out of texture ram, try invalidating some textures and mesh cache.
+	if (ret==D3DERR_OUTOFVIDEOMEMORY)
+	{
+		WWDEBUG_SAY(("Error: Out of memory while creating render target. Trying to release assets..."));
+		// Free all textures that haven't been used in the last 5 seconds
+		TextureClass::Invalidate_Old_Unused_Textures(5000);
+
+		// Invalidate the mesh cache
+		WW3D::_Invalidate_Mesh_Cache();
+
+		ret=DX8Wrapper::_Get_D3D_Device8()->CreateTexture
+		(
+			width,
+			height,
+			mip_level_count,
+			D3DUSAGE_DEPTHSTENCIL,
+			zfmt,
+			pool,
+			&texture
+		);
+
+		if (SUCCEEDED(ret))
+		{
+			WWDEBUG_SAY(("...Render target creation succesful."));
+		}
+		else
+		{
+			WWDEBUG_SAY(("...Render target creation failed."));
+		}
+		if (ret==D3DERR_OUTOFVIDEOMEMORY)
+		{
+			Non_Fatal_Log_DX8_ErrorCode(ret,__FILE__,__LINE__);
+			return NULL;
+		}
+	}
+
+	DX8_ErrorCode(ret);
+
+	texture->AddRef(); // don't release this texture
+
+	// Just return the texture, no reduction
+	// allowed for render targets.
+
+	return texture;
+}
+
+/*!
+ * KJM create cube map texture
+ */
+IDirect3DCubeTexture8* DX8Wrapper::_Create_DX8_Cube_Texture
+(
+	unsigned int width,
+	unsigned int height,
+	WW3DFormat format,
+	MipCountType mip_level_count,
+	D3DPOOL pool,
+	bool rendertarget
+)
+{
+	WWASSERT(width==height);
+	DX8_THREAD_ASSERT();
+	DX8_Assert();
+	IDirect3DCubeTexture8* texture=NULL;
+
+	// Paletted textures not supported!
+	WWASSERT(format!=D3DFMT_P8);
+
+	// NOTE: If 'format' is not supported as a texture format, this function will find the closest
+	// format that is supported and use that instead.
+
+	// Render target may return NOTAVAILABLE, in
+	// which case we return NULL.
+	if (rendertarget)
+	{
+		unsigned ret=CORE_D3DXCreateCubeTexture
+		(
+			DX8Wrapper::_Get_D3D_Device8(),
+			width,
+			mip_level_count,
+			D3DUSAGE_RENDERTARGET,
+			WW3DFormat_To_D3DFormat(format),
+			pool,
+			&texture
+		);
+
+		if (ret==D3DERR_NOTAVAILABLE)
+		{
+			Non_Fatal_Log_DX8_ErrorCode(ret,__FILE__,__LINE__);
+			return NULL;
+		}
+
+		// If ran out of texture ram, try invalidating some textures and mesh cache.
+		if (ret==D3DERR_OUTOFVIDEOMEMORY)
+		{
+			WWDEBUG_SAY(("Error: Out of memory while creating render target. Trying to release assets..."));
+			// Free all textures that haven't been used in the last 5 seconds
+			TextureClass::Invalidate_Old_Unused_Textures(5000);
+
+			// Invalidate the mesh cache
+			WW3D::_Invalidate_Mesh_Cache();
+
+			ret=CORE_D3DXCreateCubeTexture
+			(
+				DX8Wrapper::_Get_D3D_Device8(),
+				width,
+				mip_level_count,
+				D3DUSAGE_RENDERTARGET,
+				WW3DFormat_To_D3DFormat(format),
+				pool,
+				&texture
+			);
+
+			if (SUCCEEDED(ret))
+			{
+				WWDEBUG_SAY(("...Render target creation succesful."));
+			}
+			else
+			{
+				WWDEBUG_SAY(("...Render target creation failed."));
+			}
+			if (ret==D3DERR_OUTOFVIDEOMEMORY)
+			{
+				Non_Fatal_Log_DX8_ErrorCode(ret,__FILE__,__LINE__);
+				return NULL;
+			}
+		}
+
+		DX8_ErrorCode(ret);
+		// Just return the texture, no reduction
+		// allowed for render targets.
+		return texture;
+	}
+
+	// We should never run out of video memory when allocating a non-rendertarget texture.
+	// However, it seems to happen sometimes when there are a lot of textures in memory and so
+	// if it happens we'll release assets and try again (anything is better than crashing).
+	unsigned ret=CORE_D3DXCreateCubeTexture
+	(
+		DX8Wrapper::_Get_D3D_Device8(),
+		width,
+		mip_level_count,
+		0,
+		WW3DFormat_To_D3DFormat(format),
+		pool,
+		&texture
+	);
+
+	// If ran out of texture ram, try invalidating some textures and mesh cache.
+	if (ret==D3DERR_OUTOFVIDEOMEMORY)
+	{
+		WWDEBUG_SAY(("Error: Out of memory while creating texture. Trying to release assets..."));
+		// Free all textures that haven't been used in the last 5 seconds
+		TextureClass::Invalidate_Old_Unused_Textures(5000);
+
+		// Invalidate the mesh cache
+		WW3D::_Invalidate_Mesh_Cache();
+
+		ret=CORE_D3DXCreateCubeTexture
+		(
+			DX8Wrapper::_Get_D3D_Device8(),
+			width,
+			mip_level_count,
+			0,
+			WW3DFormat_To_D3DFormat(format),
+			pool,
+			&texture
+		);
+		if (SUCCEEDED(ret))
+		{
+			WWDEBUG_SAY(("...Texture creation succesful."));
+		}
+		else
+		{
+			StringClass format_name(0,true);
+			Get_WW3D_Format_Name(format, format_name);
+			WWDEBUG_SAY(("...Texture creation failed. (%d x %d, format: %s, mips: %d",width,height,format_name.str(),mip_level_count));
+		}
+
+	}
+	DX8_ErrorCode(ret);
+
+	return texture;
+}
+
+/*!
+ * KJM create volume texture
+ */
+IDirect3DVolumeTexture8* DX8Wrapper::_Create_DX8_Volume_Texture
+(
+	unsigned int width,
+	unsigned int height,
+	unsigned int depth,
+	WW3DFormat format,
+	MipCountType mip_level_count,
+	D3DPOOL pool
+)
+{
+	DX8_THREAD_ASSERT();
+	DX8_Assert();
+	IDirect3DVolumeTexture8* texture=NULL;
+
+	// Paletted textures not supported!
+	WWASSERT(format!=D3DFMT_P8);
+
+	// NOTE: If 'format' is not supported as a texture format, this function will find the closest
+	// format that is supported and use that instead.
+
+
+	// We should never run out of video memory when allocating a non-rendertarget texture.
+	// However, it seems to happen sometimes when there are a lot of textures in memory and so
+	// if it happens we'll release assets and try again (anything is better than crashing).
+	unsigned ret=CORE_D3DXCreateVolumeTexture
+	(
+		DX8Wrapper::_Get_D3D_Device8(),
+		width,
+		height,
+		depth,
+		mip_level_count,
+		0,
+		WW3DFormat_To_D3DFormat(format),
+		pool,
+		&texture
+	);
+
+	// If ran out of texture ram, try invalidating some textures and mesh cache.
+	if (ret==D3DERR_OUTOFVIDEOMEMORY)
+	{
+		WWDEBUG_SAY(("Error: Out of memory while creating texture. Trying to release assets..."));
+		// Free all textures that haven't been used in the last 5 seconds
+		TextureClass::Invalidate_Old_Unused_Textures(5000);
+
+		// Invalidate the mesh cache
+		WW3D::_Invalidate_Mesh_Cache();
+
+		ret=CORE_D3DXCreateVolumeTexture
+		(
+			DX8Wrapper::_Get_D3D_Device8(),
+			width,
+			height,
+			depth,
+			mip_level_count,
+			0,
+			WW3DFormat_To_D3DFormat(format),
+			pool,
+			&texture
+		);
+		if (SUCCEEDED(ret))
+		{
+			WWDEBUG_SAY(("...Texture creation succesful."));
+		}
+		else
+		{
+			StringClass format_name(0,true);
+			Get_WW3D_Format_Name(format, format_name);
+			WWDEBUG_SAY(("...Texture creation failed. (%d x %d, format: %s, mips: %d",width,height,format_name.str(),mip_level_count));
+		}
+
+	}
+	DX8_ErrorCode(ret);
+
+	return texture;
+}
+
 
 IDirect3DSurface8 * DX8Wrapper::_Create_DX8_Surface(unsigned int width, unsigned int height, WW3DFormat format)
 {
@@ -2434,12 +3748,12 @@ IDirect3DSurface8 * DX8Wrapper::_Create_DX8_Surface(const char *filename_)
 			}
 			file_auto_ptr myfile2(_TheFileFactory,compressed_name);
 			if (!myfile2->Is_Available())
-				return (IDirect3DSurface8*)MissingTexture::_Create_Missing_Surface();
+				return MissingTexture::_Create_Missing_Surface();
 		}
 	}
 
 	StringClass filename_string(filename_,true);
-	surface=(IDirect3DSurface8*)TextureLoader::Load_Surface_Immediate(
+	surface=TextureLoader::Load_Surface_Immediate(
 		filename_string,
 		WW3D_FORMAT_UNKNOWN,
 		true);
@@ -2564,13 +3878,18 @@ void DX8Wrapper::Set_Light(unsigned index,const LightClass &light)
 	Set_Light(index,&dlight);
 }
 
-// ----------------------------------------------------------------------------
-//
-// Set the light environment. This is a lighting model which used up to four
-// directional lights to produce the lighting.
-//
+//**********************************************************************************************
+//! Set the light environment. This is a lighting model which used up to four
+//! directional lights to produce the lighting.
+/*! 5/27/02 KJM Added shader light environment support
+*/
 void DX8Wrapper::Set_Light_Environment(LightEnvironmentClass* light_env)
 {
+	// Shader light environment support															*
+//	if (Light_Environment && light_env && (*Light_Environment)==(*light_env)) return;
+
+	Light_Environment=light_env;
+
 	if (light_env)
 	{
 		int light_count = light_env->Get_Light_Count();
@@ -2594,6 +3913,12 @@ void DX8Wrapper::Set_Light_Environment(LightEnvironmentClass* light_env)
 			(Vector3&)light.Diffuse=light_env->Get_Light_Diffuse(l);
 			Vector3 dir=-light_env->Get_Light_Direction(l);
 			light.Direction=(const D3DVECTOR&)(dir);
+
+			// (gth) TODO: put specular into LightEnvironment?  Much work to be done on lights :-)'
+			if (l==0) {
+				light.Specular.r = light.Specular.g = light.Specular.b = 1.0f;
+			}
+
 			if (light_env->isPointLight(l)) {
 				light.Type = D3DLIGHT_POINT;
 				(Vector3&)light.Diffuse=light_env->getPointDiffuse(l);
@@ -2605,7 +3930,14 @@ void DX8Wrapper::Set_Light_Environment(LightEnvironmentClass* light_env)
 				double a,b;
 				b = light_env->getPointOrad(l);
 				a = light_env->getPointIrad(l);
+
+//(gth) CNC3 Generals code for the attenuation factors is causing the lights to over-brighten
+//I'm changing the Attenuation0 parameter to 1.0 to avoid this problem.
+#if 0
 				light.Attenuation0=0.01f;
+#else
+				light.Attenuation0=1.0f;
+#endif
 				if (fabs(a-b)<1e-5)
 					// if the attenuation range is too small assume uniform with cutoff
 					light.Attenuation1=0.0f;
@@ -2653,9 +3985,20 @@ SurfaceClass * DX8Wrapper::_Get_DX8_Back_Buffer(unsigned int num)
 	IDirect3DSurface8 * bb;
 	SurfaceClass *surf=NULL;
 	DX8CALL(GetBackBuffer(num,D3DBACKBUFFER_TYPE_MONO,&bb));
+	if (bb == NULL) {
+		// Fallback: create a small image surface to avoid NULL deref on platforms with stubs
+		WWDEBUG_SAY(("DX8Wrapper::_Get_DX8_Back_Buffer - NULL back buffer, creating fallback surface"));
+		D3DDISPLAYMODE mode;
+		::ZeroMemory(&mode, sizeof(D3DDISPLAYMODE));
+		DX8CALL(GetDisplayMode(&mode));
+		if (mode.Width == 0 || mode.Height == 0) {
+			mode.Width = 640; mode.Height = 480; mode.Format = D3DFMT_A8R8G8B8;
+		}
+		DX8CALL(CreateImageSurface(mode.Width, mode.Height, mode.Format, &bb));
+	}
 	if (bb)
 	{
-		surf=NEW_REF(SurfaceClass,((CORE_IDirect3DSurface8*)bb));
+		surf=NEW_REF(SurfaceClass,(bb));
 		bb->Release();
 	}
 
@@ -2664,10 +4007,24 @@ SurfaceClass * DX8Wrapper::_Get_DX8_Back_Buffer(unsigned int num)
 
 
 TextureClass *
-DX8Wrapper::Create_Render_Target (int width, int height, bool alpha)
+DX8Wrapper::Create_Render_Target (int width, int height, WW3DFormat format)
 {
 	DX8_THREAD_ASSERT();
 	DX8_Assert();
+	number_of_DX8_calls++;
+
+	// Use the current display format if format isn't specified
+	if (format==WW3D_FORMAT_UNKNOWN) {
+		D3DDISPLAYMODE mode;
+		DX8CALL(GetDisplayMode(&mode));
+		format=D3DFormat_To_WW3DFormat(mode.Format);
+	}
+
+	// If render target format isn't supported return NULL
+	if (!Get_Current_Caps()->Support_Render_To_Texture_Format(format)) {
+		WWDEBUG_SAY(("DX8Wrapper - Render target format is not supported"));
+		return NULL;
+	}
 
 	//
 	//	Note: We're going to force the width and height to be powers of two and equal
@@ -2689,48 +4046,8 @@ DX8Wrapper::Create_Render_Target (int width, int height, bool alpha)
 	width = height = poweroftwosize;
 
 	//
-	//	Get the current format of the display
-	//
-	D3DDISPLAYMODE mode;
-	DX8CALL(GetDisplayMode(&mode));
-
-	// If the user requested a render-target texture and this device does not support that
-	// feature, return NULL
-	HRESULT hr;
-
-	if (alpha)
-	{
-			//user wants a texture with destination alpha channel - only 1 such format
-			//ever exists on current hardware	- D3DFMT_A8R8G8B8
-			hr = D3DInterface->CheckDeviceFormat(	D3DADAPTER_DEFAULT,
-																	WW3D_DEVTYPE,
-																	mode.Format,
-																	D3DUSAGE_RENDERTARGET,
-																	D3DRTYPE_TEXTURE,
-																	D3DFMT_A8R8G8B8 );
-			mode.Format=D3DFMT_A8R8G8B8;
-	}
-	else
-	{
-			hr = D3DInterface->CheckDeviceFormat(	D3DADAPTER_DEFAULT,
-																	WW3D_DEVTYPE,
-																	mode.Format,
-																	D3DUSAGE_RENDERTARGET,
-																	D3DRTYPE_TEXTURE,
-																	mode.Format );
-	}
-
-	number_of_DX8_calls++;
-	if (hr != D3D_OK) {
-		WWDEBUG_SAY(("DX8Wrapper - Driver cannot create render target!"));
-		return NULL;
-	}
-
-	//
 	//	Attempt to create the render target
 	//
-	DX8_Assert();
-	WW3DFormat format=D3DFormat_To_WW3DFormat(mode.Format);
 	TextureClass * tex = NEW_REF(TextureClass,(width,height,format,MIP_LEVELS_1,TextureClass::POOL_DEFAULT,true));
 
 	// 3dfx drivers are lying in the CheckDeviceFormat call and claiming
@@ -2744,16 +4061,121 @@ DX8Wrapper::Create_Render_Target (int width, int height, bool alpha)
 	return tex;
 }
 
-
-void
-DX8Wrapper::Set_Render_Target
-(TextureClass * texture)
+//**********************************************************************************************
+//! Create render target with associated depth stencil buffer
+/*! KJM
+*/
+void DX8Wrapper::Create_Render_Target
+(
+	int width,
+	int height,
+	WW3DFormat format,
+	WW3DZFormat zformat,
+	TextureClass** target,
+	ZTextureClass** depth_buffer
+)
 {
-	WWASSERT(texture != NULL);
-	SurfaceClass * surf = texture->Get_Surface_Level();
-	WWASSERT(surf != NULL);
-	Set_Render_Target((IDirect3DSurface8*)surf->Peek_D3D_Surface());
-	REF_PTR_RELEASE(surf);
+	DX8_THREAD_ASSERT();
+	DX8_Assert();
+	number_of_DX8_calls++;
+
+	// Use the current display format if format isn't specified
+	if (format==WW3D_FORMAT_UNKNOWN)
+	{
+		*target=NULL;
+		*depth_buffer=NULL;
+		return;
+/*		D3DDISPLAYMODE mode;
+		DX8CALL(GetDisplayMode(&mode));
+		format=D3DFormat_To_WW3DFormat(mode.Format);*/
+	}
+
+	// If render target format isn't supported return NULL
+	if (!Get_Current_Caps()->Support_Render_To_Texture_Format(format) ||
+		 !Get_Current_Caps()->Support_Depth_Stencil_Format(zformat))
+	{
+		WWDEBUG_SAY(("DX8Wrapper - Render target with depth format is not supported"));
+		return;
+	}
+
+	//	Note: We're going to force the width and height to be powers of two and equal
+	const D3DCAPS8& dx8caps=Get_Current_Caps()->Get_DX8_Caps();
+	float poweroftwosize = width;
+	if (height > 0 && height < width)
+	{
+		poweroftwosize = height;
+	}
+	poweroftwosize = ::Find_POT (poweroftwosize);
+
+	if (poweroftwosize>dx8caps.MaxTextureWidth)
+	{
+		poweroftwosize=dx8caps.MaxTextureWidth;
+	}
+
+	if (poweroftwosize>dx8caps.MaxTextureHeight)
+	{
+		poweroftwosize=dx8caps.MaxTextureHeight;
+	}
+
+	width = height = poweroftwosize;
+
+	//	Attempt to create the render target
+	TextureClass* tex=NEW_REF(TextureClass,(width,height,format,MIP_LEVELS_1,TextureClass::POOL_DEFAULT,true));
+
+	// 3dfx drivers are lying in the CheckDeviceFormat call and claiming
+	// that they support render targets!
+	if (tex->Peek_D3D_Base_Texture() == NULL)
+	{
+		WWDEBUG_SAY(("DX8Wrapper - Render target creation failed!"));
+		REF_PTR_RELEASE(tex);
+	}
+
+	*target=tex;
+
+	// attempt to create the depth stencil buffer
+	*depth_buffer=NEW_REF
+	(
+		ZTextureClass,
+		(
+			width,
+			height,
+			zformat,
+			MIP_LEVELS_1,
+			TextureClass::POOL_DEFAULT
+		)
+	);
+}
+
+/*!
+ * Set render target
+ * KM Added optional custom z target
+ */
+void DX8Wrapper::Set_Render_Target_With_Z
+(
+	TextureClass* texture,
+	ZTextureClass* ztexture
+)
+{
+	WWASSERT(texture!=NULL);
+	IDirect3DSurface8 * d3d_surf = texture->Get_D3D_Surface_Level();
+	WWASSERT(d3d_surf != NULL);
+
+	IDirect3DSurface8* d3d_zbuf=NULL;
+	if (ztexture!=NULL)
+	{
+
+		d3d_zbuf=ztexture->Get_D3D_Surface_Level();
+		WWASSERT(d3d_zbuf!=NULL);
+		Set_Render_Target(d3d_surf,d3d_zbuf);
+		d3d_zbuf->Release();
+	}
+	else
+	{
+		Set_Render_Target(d3d_surf,true);
+	}
+	d3d_surf->Release();
+
+	IsRenderToTexture = true;
 }
 
 void
@@ -2765,19 +4187,19 @@ DX8Wrapper::Set_Render_Target(IDirect3DSwapChain8 *swap_chain)
 	//
 	//	Get the back buffer for the swap chain
 	//
-	LPDIRECT3DSURFACE8 render_target = NULL;
-	swap_chain->GetBackBuffer (0, D3DBACKBUFFER_TYPE_MONO, (IDirect3DSurface8**)&render_target);
+	IDirect3DSurface8* render_target = nullptr;
+	swap_chain->GetBackBuffer (0, D3DBACKBUFFER_TYPE_MONO, &render_target);
 
 	//
 	//	Set this back buffer as the render targer
 	//
-	Set_Render_Target ((IDirect3DSurface8*)render_target);
+	Set_Render_Target (render_target, true);
 
 	//
 	//	Release our hold on the back buffer
 	//
 	if (render_target != NULL) {
-		((IDirect3DSurface8*)render_target)->Release ();
+		render_target->Release ();
 		render_target = NULL;
 	}
 
@@ -2787,31 +4209,36 @@ DX8Wrapper::Set_Render_Target(IDirect3DSwapChain8 *swap_chain)
 }
 
 void
-DX8Wrapper::Set_Render_Target(IDirect3DSurface8 *render_target)
+DX8Wrapper::Set_Render_Target(IDirect3DSurface8 *render_target, bool use_default_depth_buffer)
 {
+//#ifndef _XBOX
 	DX8_THREAD_ASSERT();
 	DX8_Assert();
-
-	//
-	//	We'll need the depth buffer later...
-	//
-	IDirect3DSurface8 *depth_buffer = NULL;
-	DX8CALL(GetDepthStencilSurface (&depth_buffer));
 
 	//
 	//	Should we restore the default render target set a new one?
 	//
 	if (render_target == NULL || render_target == DefaultRenderTarget)
 	{
+		// If there is currently a custom render target, default must NOT be NULL.
+		if (CurrentRenderTarget)
+		{
+			WWASSERT(DefaultRenderTarget!=NULL);
+		}
 
 		//
 		//	Restore the default render target
 		//
 		if (DefaultRenderTarget != NULL)
 		{
-			DX8CALL(SetRenderTarget (DefaultRenderTarget, depth_buffer));
+			DX8CALL(SetRenderTarget (DefaultRenderTarget, DefaultDepthBuffer));
 			DefaultRenderTarget->Release ();
 			DefaultRenderTarget = NULL;
+			if (DefaultDepthBuffer)
+			{
+				DefaultDepthBuffer->Release ();
+				DefaultDepthBuffer = NULL;
+			}
 		}
 
 		//
@@ -2823,9 +4250,25 @@ DX8Wrapper::Set_Render_Target(IDirect3DSurface8 *render_target)
 			CurrentRenderTarget = NULL;
 		}
 
+		if (CurrentDepthBuffer!=NULL)
+		{
+			CurrentDepthBuffer->Release();
+			CurrentDepthBuffer=NULL;
+		}
+
 	}
 	else if (render_target != CurrentRenderTarget)
 	{
+		WWASSERT(DefaultRenderTarget==NULL);
+
+		//
+		//	We'll need the depth buffer later...
+		//
+		if (DefaultDepthBuffer == NULL)
+		{
+//		IDirect3DSurface8 *depth_buffer = NULL;
+			DX8CALL(GetDepthStencilSurface (&DefaultDepthBuffer));
+		}
 
 		//
 		//	Get a pointer to the default render target (if necessary)
@@ -2844,6 +4287,12 @@ DX8Wrapper::Set_Render_Target(IDirect3DSurface8 *render_target)
 			CurrentRenderTarget = NULL;
 		}
 
+		if (CurrentDepthBuffer!=NULL)
+		{
+			CurrentDepthBuffer->Release();
+			CurrentDepthBuffer=NULL;
+		}
+
 		//
 		//	Keep a copy of the current render target (for housekeeping)
 		//
@@ -2856,20 +4305,142 @@ DX8Wrapper::Set_Render_Target(IDirect3DSurface8 *render_target)
 			//
 			//	Switch render targets
 			//
-			DX8CALL(SetRenderTarget (CurrentRenderTarget, depth_buffer));
+			if (use_default_depth_buffer)
+			{
+				DX8CALL(SetRenderTarget (CurrentRenderTarget, DefaultDepthBuffer));
+			}
+			else
+			{
+				DX8CALL(SetRenderTarget (CurrentRenderTarget, NULL));
+			}
 		}
 	}
 
 	//
 	//	Free our hold on the depth buffer
 	//
-	if (depth_buffer != NULL) {
-		depth_buffer->Release ();
-		depth_buffer = NULL;
-	}
+//	if (depth_buffer != NULL) {
+//		depth_buffer->Release ();
+//		depth_buffer = NULL;
+//	}
 
 	IsRenderToTexture = false;
 	return ;
+//#endif // XBOX
+}
+
+
+//**********************************************************************************************
+//! Set render target with depth stencil buffer
+/*! KJM
+*/
+void DX8Wrapper::Set_Render_Target
+(
+	IDirect3DSurface8* render_target,
+	IDirect3DSurface8* depth_buffer
+)
+{
+//#ifndef _XBOX
+	DX8_THREAD_ASSERT();
+	DX8_Assert();
+
+	//
+	//	Should we restore the default render target set a new one?
+	//
+	if (render_target == NULL || render_target == DefaultRenderTarget)
+	{
+		// If there is currently a custom render target, default must NOT be NULL.
+		if (CurrentRenderTarget)
+		{
+			WWASSERT(DefaultRenderTarget!=NULL);
+		}
+
+		//
+		//	Restore the default render target
+		//
+		if (DefaultRenderTarget != NULL)
+		{
+			DX8CALL(SetRenderTarget (DefaultRenderTarget, DefaultDepthBuffer));
+			DefaultRenderTarget->Release ();
+			DefaultRenderTarget = NULL;
+			if (DefaultDepthBuffer)
+			{
+				DefaultDepthBuffer->Release ();
+				DefaultDepthBuffer = NULL;
+			}
+		}
+
+		//
+		//	Release our hold on the "current" render target
+		//
+		if (CurrentRenderTarget != NULL)
+		{
+			CurrentRenderTarget->Release ();
+			CurrentRenderTarget = NULL;
+		}
+
+		if (CurrentDepthBuffer!=NULL)
+		{
+			CurrentDepthBuffer->Release();
+			CurrentDepthBuffer=NULL;
+		}
+	}
+	else if (render_target != CurrentRenderTarget)
+	{
+		WWASSERT(DefaultRenderTarget==NULL);
+
+		//
+		//	We'll need the depth buffer later...
+		//
+		if (DefaultDepthBuffer == NULL)
+		{
+//		IDirect3DSurface8 *depth_buffer = NULL;
+			DX8CALL(GetDepthStencilSurface (&DefaultDepthBuffer));
+		}
+
+		//
+		//	Get a pointer to the default render target (if necessary)
+		//
+		if (DefaultRenderTarget == NULL)
+		{
+			DX8CALL(GetRenderTarget (&DefaultRenderTarget));
+		}
+
+		//
+		//	Release our hold on the old "current" render target
+		//
+		if (CurrentRenderTarget != NULL)
+		{
+			CurrentRenderTarget->Release ();
+			CurrentRenderTarget = NULL;
+		}
+
+		if (CurrentDepthBuffer!=NULL)
+		{
+			CurrentDepthBuffer->Release();
+			CurrentDepthBuffer=NULL;
+		}
+
+		//
+		//	Keep a copy of the current render target (for housekeeping)
+		//
+		CurrentRenderTarget = render_target;
+		CurrentDepthBuffer = depth_buffer;
+		WWASSERT (CurrentRenderTarget != NULL);
+		if (CurrentRenderTarget != NULL)
+		{
+			CurrentRenderTarget->AddRef ();
+			CurrentDepthBuffer->AddRef();
+
+			//
+			//	Switch render targets
+			//
+			DX8CALL(SetRenderTarget (CurrentRenderTarget, CurrentDepthBuffer));
+		}
+	}
+
+	IsRenderToTexture=true;
+//#endif // XBOX
 }
 
 
@@ -2898,7 +4469,7 @@ DX8Wrapper::Create_Additional_Swap_Chain (HWND render_window)
 	//	Create the swap chain
 	//
 	IDirect3DSwapChain8 *swap_chain = NULL;
-	DX8CALL(CreateAdditionalSwapChain(&params, (void**)&swap_chain));
+	DX8CALL(CreateAdditionalSwapChain(&params, reinterpret_cast<void**>(&swap_chain)));
 	return swap_chain;
 }
 
@@ -2962,7 +4533,9 @@ void DX8Wrapper::Set_Gamma(float gamma,float bright,float contrast,bool calibrat
 		HDC hdc = GetDC(hwnd);
 		if (hdc)
 		{
+#ifdef _WIN32
 			SetDeviceGammaRamp (hdc, &ramp);
+#endif
 			ReleaseDC (hwnd, hdc);
 		}
 	}

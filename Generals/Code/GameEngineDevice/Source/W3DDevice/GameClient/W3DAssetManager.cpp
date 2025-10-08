@@ -1,5 +1,5 @@
 /*
-**	Command & Conquer Generals(tm)
+**	Command & Conquer Generals Zero Hour(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -43,11 +43,6 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#ifndef _WIN32
-#include <glad/glad.h>  // CRITICAL: GLAD must be included FIRST to avoid OpenGL header conflicts
-#endif
-
-
 #include <always.h>
 #include "W3DDevice/GameClient/W3DAssetManager.h"
 #include "proto.h"
@@ -73,6 +68,7 @@
 #include <stdio.h>
 #include "Common/PerfTimer.h"
 #include "Common/GlobalData.h"
+#include "Common/GameCommon.h"
 
 
 //---------------------------------------------------------------------
@@ -160,6 +156,33 @@ W3DAssetManager::~W3DAssetManager(void)
 #ifdef DUMP_PERF_STATS
 __int64 Total_Get_Texture_Time=0;
 #endif
+
+TextureClass *	W3DAssetManager::Get_Texture
+	(
+		const char * filename,
+		MipCountType mip_level_count,
+		WW3DFormat texture_format,
+		bool allow_compression,
+		TextureBaseClass::TexAssetType type,
+		bool allow_reduction
+	)
+{
+	//Just call the base implementation after adjusting reduction to deal
+	//with our special types.
+
+	if (filename && *filename && _strnicmp(filename,"ZHC",3) == 0)
+		allow_reduction = false;	//don't allow reduction on our infantry textures.
+
+	return WW3DAssetManager::Get_Texture(	filename,
+		mip_level_count,
+		texture_format,
+		allow_compression,
+		type,
+		allow_reduction
+	);
+}
+
+#if 0	//this function is obsolete in latest C&C3 drop.  Use the one above.
 //---------------------------------------------------------------------
 TextureClass *W3DAssetManager::Get_Texture(
 	const char * filename,
@@ -188,7 +211,7 @@ TextureClass *W3DAssetManager::Get_Texture(
 	}
 
 	StringClass lower_case_name(filename,true);
-	_strlwr(lower_case_name.Peek_Buffer());
+	_strlwr(lower_case_name.str());
 
 	/*
 	** See if the texture has already been loaded.
@@ -211,14 +234,14 @@ TextureClass *W3DAssetManager::Get_Texture(
 //			extern std::vector<std::string>	preloadTextureNamesGlobalHack;
 //			preloadTextureNamesGlobalHack.push_back(tex->Get_Texture_Name());
 //		}
-#if defined(RTS_DEBUG)
+#if defined(RTS_DEBUG) || defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
 		if (TheGlobalData->m_preloadReport)
 		{
 			//loading a new asset and app is requesting a log of all loaded assets.
 			FILE *logfile=fopen("PreloadedAssets.txt","a+");	//append to log
 			if (logfile)
 			{
-				fprintf(logfile,"TX: %s\n",tex->Get_Texture_Name().str());
+				fprintf(logfile,"TX: %s\n",tex->Get_Texture_Name());
 				fclose(logfile);
 			}
 		}
@@ -234,6 +257,8 @@ TextureClass *W3DAssetManager::Get_Texture(
 
 	return tex;
 }
+
+#endif
 
 //---------------------------------------------------------------------
 RenderObjClass * W3DAssetManager::Create_Render_Obj(const char* name)
@@ -633,7 +658,7 @@ TextureClass * W3DAssetManager::Recolor_Texture_One_Time(TextureClass *texture, 
 
 	// make sure texture is loaded
 	if (!texture->Is_Initialized())
-		TextureLoader::Request_High_Priority_Loading(texture, (MipCountType)texture->Get_Mip_Level_Count());
+		TextureLoader::Request_Foreground_Loading(texture);
 
 	SurfaceClass::SurfaceDescription desc;
 	SurfaceClass *newsurf, *oldsurf;
@@ -747,17 +772,17 @@ RenderObjClass * W3DAssetManager::Create_Render_Obj(
 		const char *mesh_name = strchr (name, '.');
 		if (mesh_name != NULL)
 		{
-			lstrcpyn(filename, name, ((int)mesh_name) - ((int)name) + 1);
+			lstrcpyn(filename, name, ((int)(uintptr_t)mesh_name) - ((int)(uintptr_t)name) + 1);
 			lstrcat(filename, ".w3d");
 		} else {
-			sprintf( filename, "%s.w3d", name);
+			snprintf( filename, sizeof(filename), "%s.w3d", name);
 		}
 
 		// If we can't find it, try the parent directory
 		if ( Load_3D_Assets( filename ) == false )
 		{
 			StringClass	new_filename = StringClass("..\\") + filename;
-			Load_3D_Assets( new_filename );
+			Load_3D_Assets(new_filename);
 		}
 
 		proto = Find_Prototype(name);		// try again
@@ -788,7 +813,11 @@ RenderObjClass * W3DAssetManager::Create_Render_Obj(
 		return NULL;
 	}
 
+	if (reallyscale)
+		rendobj->Scale(scale);	//this also makes it unique
+
 	Make_Unique(rendobj,reallyscale,reallycolor);
+
 	if (reallytexture)
 	{
 		TextureClass *oldTex = Get_Texture(oldTexture);
@@ -797,8 +826,6 @@ RenderObjClass * W3DAssetManager::Create_Render_Obj(
 		REF_PTR_RELEASE(newTex);
 		REF_PTR_RELEASE(oldTex);
 	}
-	if (reallyscale)
-		rendobj->Scale(scale);
 
 	if (reallycolor)
 		Recolor_Asset(rendobj,color);
@@ -1098,7 +1125,8 @@ void W3DAssetManager::Make_Mesh_Unique(RenderObjClass *robj, Bool geometry, Bool
 	{	//mesh has some house color applied so make those components unique to mesh.
 
 		//Create unique data for this mesh
-		mesh->Make_Unique();
+		if (!geometry)	//scaling geometry automatically makes it unique so not needed here.
+			mesh->Make_Unique();
 
 		MeshModelClass * model = mesh->Get_Model();
 
@@ -1108,12 +1136,6 @@ void W3DAssetManager::Make_Mesh_Unique(RenderObjClass *robj, Bool geometry, Bool
 			for (i=0; i<material->Vertex_Material_Count(); i++)
 				material->Peek_Vertex_Material(i)->Make_Unique();
 			REF_PTR_RELEASE(material);
-		}
-
-		if (geometry)
-		{
-			// make geometry unique
-			model->Make_Geometry_Unique();
 		}
 
 		REF_PTR_RELEASE(model);
@@ -1404,7 +1426,7 @@ RenderObjClass * W3DAssetManager::Create_Render_Obj(const char * name,float scal
 	return w3dproto->Create();
 }
 
-TextureClass * W3DAssetManager::Get_Texture_With_HSV_Shift(const char * filename, const Vector3 &hsv_shift, MipCountType mip_level_count)
+TextureClass * W3DAssetManager::Get_Texture_With_HSV_Shift(const char * filename, const Vector3 &hsv_shift, TextureClass::MipCountType mip_level_count)
 {
 	WWPROFILE( "W3DAssetManager::Get_Texture with HSV shift" );
 
@@ -1508,7 +1530,7 @@ TextureClass * W3DAssetManager::Recolor_Texture_One_Time(TextureClass *texture, 
 
 	// make sure texture is loaded
 	if (!texture->Is_Initialized())
-		TextureLoader::Request_High_Priority_Loading(texture, (MipCountType)texture->Get_Mip_Level_Count());
+		TextureLoader::Request_High_Priority_Loading(texture, (TextureClass::MipCountType)texture->Get_Mip_Level_Count());
 
 	SurfaceClass::SurfaceDescription desc;
 	SurfaceClass *newsurf, *oldsurf, *smallsurf;
@@ -1516,7 +1538,7 @@ TextureClass * W3DAssetManager::Recolor_Texture_One_Time(TextureClass *texture, 
 
 	// if texture is monochrome and no value shifting
 	// return NULL
-	smallsurf=texture->Get_Surface_Level((MipCountType)texture->Get_Mip_Level_Count()-1);
+	smallsurf=texture->Get_Surface_Level((TextureClass::MipCountType)texture->Get_Mip_Level_Count()-1);
 	if (hsv_shift.Z==0.0f && smallsurf->Is_Monochrome())
 	{
 		REF_PTR_RELEASE(smallsurf);
@@ -1529,7 +1551,7 @@ TextureClass * W3DAssetManager::Recolor_Texture_One_Time(TextureClass *texture, 
 	newsurf=NEW_REF(SurfaceClass,(desc.Width,desc.Height,desc.Format));
 	newsurf->Copy(0,0,0,0,desc.Width,desc.Height,oldsurf);
 	newsurf->Hue_Shift(hsv_shift);
-	TextureClass * newtex=NEW_REF(TextureClass,(newsurf,(MipCountType)texture->Get_Mip_Level_Count()));
+	TextureClass * newtex=NEW_REF(TextureClass,(newsurf,(TextureClass::MipCountType)texture->Get_Mip_Level_Count()));
 	newtex->Set_Mag_Filter(texture->Get_Mag_Filter());
 	newtex->Set_Min_Filter(texture->Get_Min_Filter());
 	newtex->Set_Mip_Mapping(texture->Get_Mip_Mapping());
