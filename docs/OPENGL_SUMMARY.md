@@ -31,19 +31,19 @@ All Phase 27.5 tasks completed successfully:
    - 0 GL errors reported during runtime
 
 3. ✅ **Performance Baseline** (Task 27.5.3)
-   - Comprehensive report: PHASE27_PERFORMANCE_BASELINE.md (280+ lines)
+   - Comprehensive report: PHASE27/PERFORMANCE_BASELINE.md (280+ lines)
    - Metrics: 10s init time, 14,471 lines/sec throughput
    - Timing breakdown: 60% MapCache, 20% BIG files, 20% other
    - OpenGL 4.1 Metal - 90.5 confirmed
    - Resource loading: 19 BIG archives, 146 multiplayer maps
 
 4. ✅ **Texture Loading Design** (Task 27.5.4)
-   - Design document: PHASE27_TEXTURE_LOADING_DESIGN.md
+   - Design document: PHASE27/TEXTURE_LOADING_DESIGN.md
    - Architecture fully documented
    - Implementation pragmatically deferred to Phase 28
 
 5. ✅ **Backport Guide Update** (Task 27.5.5)
-   - PHASE27_BACKPORT_GUIDE.md updated with 430+ lines
+   - PHASE27/OPENGL_BACKPORT_GUIDE.md updated with 430+ lines
    - All Phase 27.5 procedures documented
    - Complete code examples and troubleshooting
 
@@ -51,10 +51,10 @@ All Phase 27.5 tasks completed successfully:
 - `ee68dc65` - feat(opengl): complete Phase 27.5 testing and documentation
 
 **Phase 27.6: Final Documentation Update - IN PROGRESS** 🔄 (17%)
-- ✅ PHASE27_TODO_LIST.md corrected (26/32 tasks, 81%)
+- ✅ PHASE27/TODO_LIST.md corrected (26/32 tasks, 81%)
 - ✅ MACOS_PORT.md updated with Phase 27.5 complete status
 - 🔄 OPENGL_SUMMARY.md (this file - being updated now)
-- ⏳ NEXT_STEPS.md, copilot-instructions.md, PHASE27_COMPLETION_SUMMARY.md pending
+- ⏳ NEXT_STEPS.md, copilot-instructions.md, PHASE27/COMPLETION_SUMMARY.md pending
 
 ### Phase 27 Progress Breakdown
 
@@ -587,15 +587,15 @@ All configurations build successfully:
 ### Immediate Actions (Phase 27.6-27.8)
 
 1. **Phase 27.6: Final Documentation Update** 🔄 (In Progress - 50%)
-   - ✅ PHASE27_TODO_LIST.md updated
+   - ✅ PHASE27/TODO_LIST.md updated
    - ✅ MACOS_PORT.md updated
    - ✅ OPENGL_SUMMARY.md updated (this file)
    - ⏳ NEXT_STEPS.md pending
    - ⏳ copilot-instructions.md pending
-   - ⏳ PHASE27_COMPLETION_SUMMARY.md pending
+   - ⏳ PHASE27/COMPLETION_SUMMARY.md pending
 
 2. **Phase 27.7: Generals Base Backport Execution** ⏳ (Not Started)
-   - Follow PHASE27_BACKPORT_GUIDE.md instructions
+   - Follow PHASE27/OPENGL_BACKPORT_GUIDE.md instructions
    - Copy shaders, SDL2 code, buffer abstractions, uniforms, draw calls, render states
    - Compile Generals target independently
    - Runtime testing and validation
@@ -650,7 +650,7 @@ The implementation is **nearly production-ready** (81% complete) and provides a 
 
 ---
 
-**For testing procedures and detailed test reports, see:** `OPENGL_TESTING.md`, `PHASE27_PERFORMANCE_BASELINE.md`  
+**For testing procedures and detailed test reports, see:** `OPENGL_TESTING.md`, `PHASE27/PERFORMANCE_BASELINE.md`  
 **For macOS-specific porting details, see:** `MACOS_PORT.md`  
-**For backport instructions, see:** `PHASE27_BACKPORT_GUIDE.md`  
-**For task tracking, see:** `PHASE27_TODO_LIST.md`
+**For backport instructions, see:** `PHASE27/OPENGL_BACKPORT_GUIDE.md`  
+**For task tracking, see:** `PHASE27/TODO_LIST.md`

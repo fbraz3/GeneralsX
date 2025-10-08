@@ -129,8 +129,8 @@
 ### ✅ Task 27.2.6 - Update Backport Guide (Phase 27.2)
 
 **Status**: Complete  
-**Description**: Document Tasks 27.2.3-27.2.5 in PHASE27_BACKPORT_GUIDE.md  
-**Files**: PHASE27_BACKPORT_GUIDE.md (to be updated)  
+**Description**: Document Tasks 27.2.3-27.2.5 in OPENGL_BACKPORT_GUIDE.md  
+**Files**: OPENGL_BACKPORT_GUIDE.md (to be updated)  
 **Content**: Shader loading implementation, VAO setup, troubleshooting notes  
 **Note**: Backport documentation ready for Generals base game implementation
 **Commit**: January 7, 2025
@@ -297,8 +297,8 @@
 ### ✅ Task 27.4.9 - Update Backport Guide (Phase 27.4)
 
 **Status**: Complete  
-**Description**: Document Tasks 27.4.2-27.4.8 in PHASE27_BACKPORT_GUIDE.md  
-**Files**: docs/PHASE27_BACKPORT_GUIDE.md  
+**Description**: Document Tasks 27.4.2-27.4.8 in OPENGL_BACKPORT_GUIDE.md  
+**Files**: docs/OPENGL_BACKPORT_GUIDE.md  
 **Content**:
 
 - Render state mapping tables (cullmode, depth, blending, alpha, fog, stencil, scissor, point sprites)
@@ -359,7 +359,7 @@
 
 **Status**: Complete  
 **Description**: Measure and document performance metrics  
-**Document**: docs/PHASE27_PERFORMANCE_BASELINE.md  
+**Document**: docs/PERFORMANCE_BASELINE.md  
 **Metrics**:
 
 - Total execution time: ~10 seconds
@@ -381,7 +381,7 @@
 
 **Status**: Design Complete (Implementation Deferred to Phase 28)  
 **Description**: DDS and TGA file loading architecture  
-**Document**: docs/PHASE27_TEXTURE_LOADING_DESIGN.md  
+**Document**: docs/TEXTURE_LOADING_DESIGN.md  
 **Decision**: Full implementation deferred to Phase 28 (rendering system)  
 **Rationale**:
 
@@ -402,8 +402,8 @@
 ### ✅ Task 27.5.5 - Update Backport Guide (Phase 27.5)
 
 **Status**: Complete  
-**Description**: Document Tasks 27.5.1-27.5.4 in PHASE27_BACKPORT_GUIDE.md  
-**Files**: docs/PHASE27_BACKPORT_GUIDE.md  
+**Description**: Document Tasks 27.5.1-27.5.4 in OPENGL_BACKPORT_GUIDE.md  
+**Files**: docs/OPENGL_BACKPORT_GUIDE.md  
 **Content**: 
 
 - Runtime testing procedures with expected output
@@ -425,27 +425,27 @@
 **Description**: Update all documentation with Phase 27 completion  
 **Files**: 
 
-- PHASE27_TODO_LIST.md (this file)
+- TODO_LIST.md (this file)
 - MACOS_PORT.md
 - OPENGL_SUMMARY.md
 - NEXT_STEPS.md
 - .github/copilot-instructions.md
-- PHASE27_COMPLETION_SUMMARY.md (new)
+- COMPLETION_SUMMARY.md (new)
 
 **Content**: Performance metrics, known issues, limitations, implementation summary  
 **Progress**:
 
-- ✅ PHASE27_TODO_LIST.md corrected (26/32 tasks, 81%, Phase 27.5 complete)
+- ✅ TODO_LIST.md corrected (26/32 tasks, 81%, Phase 27.5 complete)
 - ⏳ MACOS_PORT.md update pending
 - ⏳ OPENGL_SUMMARY.md update pending
 - ⏳ NEXT_STEPS.md update pending
 - ⏳ copilot-instructions.md update pending
-- ⏳ PHASE27_COMPLETION_SUMMARY.md creation pending
+- ⏳ COMPLETION_SUMMARY.md creation pending
 
 ### ⏳ Task 27.7 - Generals Base Backport Execution
 
 **Status**: Not Started  
-**Description**: Execute complete backport using PHASE27_BACKPORT_GUIDE.md as a gide, you can also use the anothers PHASE27_*.md files to support your toughts and decisions.
+**Description**: Execute complete backport using OPENGL_BACKPORT_GUIDE.md as a gide, you can also use the anothers PHASE27/*.md files to support your toughts and decisions.
 **Process**:
 
 1. Copy shaders (basic.vert, basic.frag)
@@ -543,7 +543,7 @@ This ensures the backport guide is always ready for the Generals base backport (
   - Runtime validation: 0 GL errors during full engine execution
 
 - ✅ Task 27.5.3: Performance Baseline COMPLETE
-  - Comprehensive performance report created (PHASE27_PERFORMANCE_BASELINE.md)
+  - Comprehensive performance report created (PERFORMANCE_BASELINE.md)
   - Metrics: 10s init time, 14,471 lines/sec throughput
   - Timing breakdown: 60% MapCache, 20% BIG files, 20% other
   - OpenGL 4.1 Metal compatibility confirmed
@@ -551,18 +551,18 @@ This ensures the backport guide is always ready for the Generals base backport (
   - Error rate: 0 OpenGL errors, 1000+ INI exceptions handled
 
 - ✅ Task 27.5.4: Texture Loading (Design) COMPLETE
-  - Design document created (PHASE27_TEXTURE_LOADING_DESIGN.md)
+  - Design document created (TEXTURE_LOADING_DESIGN.md)
   - Architecture and API design documented
   - Implementation pragmatically deferred to Phase 28
   - Stub textures sufficient for Phase 27 infrastructure validation
 
 - ✅ Task 27.5.5: Update Backport Guide COMPLETE
-  - PHASE27_BACKPORT_GUIDE.md updated with 430+ lines
+  - OPENGL_BACKPORT_GUIDE.md updated with 430+ lines
   - All Phase 27.5 procedures documented with code examples
   - Complete backport instructions for testing and debugging features
 
 - 🔄 Task 27.6: Final Documentation Update IN PROGRESS
-  - PHASE27_TODO_LIST.md corrected (26/32 tasks, 81%, Phase 27.5 complete)
+  - TODO_LIST.md corrected (26/32 tasks, 81%, Phase 27.5 complete)
   - 5 documentation files pending update
 
 **Next Immediate Tasks**:

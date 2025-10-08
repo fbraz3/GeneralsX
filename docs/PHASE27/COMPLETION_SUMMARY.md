@@ -168,12 +168,12 @@ Phase 27 represents a **major milestone** in the GeneralsX project: the successf
 - `GL_PROGRAM_POINT_SIZE` enabled in shaders
 
 #### 27.4.9: Backport Documentation ✅
-- Complete D3D→OpenGL state mapping tables in `PHASE27_BACKPORT_GUIDE.md`
+- Complete D3D→OpenGL state mapping tables in `PHASE27/OPENGL_BACKPORT_GUIDE.md`
 - 837 lines of comprehensive backport instructions
 
 **Files Modified**:
 - `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h/cpp`
-- `docs/PHASE27_BACKPORT_GUIDE.md`
+- `docs/PHASE27/OPENGL_BACKPORT_GUIDE.md`
 
 **Impact**: Complete render state management operational, ready for complex rendering scenarios.
 
@@ -201,7 +201,7 @@ Phase 27 represents a **major milestone** in the GeneralsX project: the successf
 - **Runtime Validation**: 0 GL errors during full engine execution
 
 #### 27.5.3: Performance Baseline ✅
-- **Document**: `PHASE27_PERFORMANCE_BASELINE.md` (280+ lines)
+- **Document**: `PHASE27/PERFORMANCE_BASELINE.md` (280+ lines)
 - **Metrics**:
   - Total execution time: ~10 seconds
   - Log throughput: 14,471 lines/second
@@ -211,19 +211,19 @@ Phase 27 represents a **major milestone** in the GeneralsX project: the successf
   - Error rate: 0 OpenGL errors
 
 #### 27.5.4: Texture File Loading (Design) ✅
-- **Document**: `PHASE27_TEXTURE_LOADING_DESIGN.md`
+- **Document**: `PHASE27/TEXTURE_LOADING_DESIGN.md`
 - **Architecture**: TextureLoader class, DDS/TGA format specifications
 - **Decision**: Implementation pragmatically deferred to Phase 28 (rendering focus)
 - **Rationale**: Stub textures sufficient for Phase 27 infrastructure validation
 
 #### 27.5.5: Backport Guide Update ✅
-- **Document**: `PHASE27_BACKPORT_GUIDE.md` updated with 430+ lines
+- **Document**: `PHASE27/OPENGL_BACKPORT_GUIDE.md` updated with 430+ lines
 - **Content**: Runtime testing procedures, shader debugging, performance baseline, texture design
 
 **Files Created/Modified**:
-- `docs/PHASE27_PERFORMANCE_BASELINE.md` (NEW - 280+ lines)
-- `docs/PHASE27_TEXTURE_LOADING_DESIGN.md` (NEW)
-- `docs/PHASE27_BACKPORT_GUIDE.md` (UPDATED +430 lines)
+- `docs/PHASE27/PERFORMANCE_BASELINE.md` (NEW - 280+ lines)
+- `docs/PHASE27/TEXTURE_LOADING_DESIGN.md` (NEW)
+- `docs/PHASE27/OPENGL_BACKPORT_GUIDE.md` (UPDATED +430 lines)
 
 **Impact**: Complete testing and validation suite operational, performance baseline established.
 
@@ -236,12 +236,12 @@ Phase 27 represents a **major milestone** in the GeneralsX project: the successf
 **Status**: 83% Complete (5/6 files updated)
 
 **Updates**:
-1. ✅ `PHASE27_TODO_LIST.md` - Corrected to 26/32 tasks (81%)
+1. ✅ `PHASE27/TODO_LIST.md` - Corrected to 26/32 tasks (81%)
 2. ✅ `MACOS_PORT.md` - Phase 27.5 complete status added
 3. ✅ `OPENGL_SUMMARY.md` - Final implementations documented
 4. ✅ `NEXT_STEPS.md` - Post-Phase 27 roadmap complete
 5. ✅ `.github/copilot-instructions.md` - AI agent context updated
-6. 🔄 `PHASE27_COMPLETION_SUMMARY.md` - This document (being created)
+6. 🔄 `PHASE27/COMPLETION_SUMMARY.md` - This document (being created)
 
 ---
 
@@ -301,7 +301,7 @@ Phase 27 represents a **major milestone** in the GeneralsX project: the successf
 3. Backport is straightforward: copy working code
 4. Generals base has simpler rendering, fewer edge cases
 
-**Documentation**: `PHASE27_BACKPORT_GUIDE.md` provides step-by-step instructions (837 lines).
+**Documentation**: `PHASE27/OPENGL_BACKPORT_GUIDE.md` provides step-by-step instructions (837 lines).
 
 ---
 
@@ -358,9 +358,9 @@ Phase 27 represents a **major milestone** in the GeneralsX project: the successf
 
 ### Documentation Commits
 
-- Multiple updates to `PHASE27_TODO_LIST.md`, `MACOS_PORT.md`, `OPENGL_SUMMARY.md`
-- Creation of `PHASE27_PERFORMANCE_BASELINE.md`, `PHASE27_TEXTURE_LOADING_DESIGN.md`
-- Updates to `PHASE27_BACKPORT_GUIDE.md` (+430 lines Phase 27.5)
+- Multiple updates to `PHASE27/TODO_LIST.md`, `MACOS_PORT.md`, `OPENGL_SUMMARY.md`
+- Creation of `PHASE27/PERFORMANCE_BASELINE.md`, `PHASE27/TEXTURE_LOADING_DESIGN.md`
+- Updates to `PHASE27/OPENGL_BACKPORT_GUIDE.md` (+430 lines Phase 27.5)
 
 ---
 
@@ -369,7 +369,7 @@ Phase 27 represents a **major milestone** in the GeneralsX project: the successf
 ### Immediate: Phase 27 Finalization (3-5 hours)
 
 #### Phase 27.7: Backport to Generals Base ⏳
-- Follow `PHASE27_BACKPORT_GUIDE.md` systematically
+- Follow `PHASE27/OPENGL_BACKPORT_GUIDE.md` systematically
 - Copy shaders, SDL2 code, buffer abstractions, uniforms, draw calls, render states
 - Compile Generals target: `cmake --build build/macos-arm64 --target GeneralsX -j 4`
 - Runtime testing at `$HOME/GeneralsX/Generals/`
@@ -474,9 +474,9 @@ Phase 27 completion enables:
 **Status**: Phase 27.6 Final Documentation Update
 
 **For detailed technical information, see:**
-- `docs/PHASE27_TODO_LIST.md` - Complete task list with 32 tasks
-- `docs/PHASE27_BACKPORT_GUIDE.md` - Step-by-step backport instructions
-- `docs/PHASE27_PERFORMANCE_BASELINE.md` - Performance metrics and analysis
+- `docs/TODO_LIST.md` - Complete task list with 32 tasks
+- `docs/PHASE27/OPENGL_BACKPORT_GUIDE.md` - Step-by-step backport instructions
+- `docs/PHASE27/PERFORMANCE_BASELINE.md` - Performance metrics and analysis
 - `docs/OPENGL_SUMMARY.md` - OpenGL implementation details
 - `docs/MACOS_PORT.md` - Comprehensive port progress
 - `docs/NEXT_STEPS.md` - Future development roadmap

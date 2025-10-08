@@ -37,32 +37,32 @@
 - ✅ Runtime validation: 0 GL errors during full engine execution
 
 #### Phase 27.5.3: Performance Baseline ✅
-- ✅ Comprehensive report created (PHASE27_PERFORMANCE_BASELINE.md - 280+ lines)
+- ✅ Comprehensive report created (PHASE27/PERFORMANCE_BASELINE.md - 280+ lines)
 - ✅ Metrics: 10s init time, 14,471 lines/sec throughput
 - ✅ Timing breakdown: 60% MapCache, 20% BIG files, 20% other
 - ✅ OpenGL 4.1 Metal - 90.5 confirmed on macOS
 - ✅ Resource loading: 19 BIG archives, 146 multiplayer maps
 
 #### Phase 27.5.4: Texture File Loading (Design) ✅
-- ✅ Design document created (PHASE27_TEXTURE_LOADING_DESIGN.md)
+- ✅ Design document created (PHASE27/TEXTURE_LOADING_DESIGN.md)
 - ✅ Architecture fully documented (TextureLoader class, DDS/TGA formats)
 - ✅ Implementation pragmatically deferred to Phase 28
 - ✅ Stub textures sufficient for Phase 27 infrastructure validation
 
 #### Phase 27.5.5: Update Backport Guide ✅
-- ✅ PHASE27_BACKPORT_GUIDE.md updated with 430+ lines
+- ✅ PHASE27/OPENGL_BACKPORT_GUIDE.md updated with 430+ lines
 - ✅ All Phase 27.5 procedures documented with code examples
 - ✅ Complete runtime testing procedures and expected output
 - ✅ Shader debugging infrastructure integration guide
 - ✅ Performance baseline methodology documented
 
 #### Phase 27.6: Final Documentation Update 🔄 (In Progress - 50%)
-- ✅ PHASE27_TODO_LIST.md corrected (26/32 tasks, 81%)
+- ✅ PHASE27/TODO_LIST.md corrected (26/32 tasks, 81%)
 - ✅ MACOS_PORT.md updated with Phase 27.5 complete status
 - ✅ OPENGL_SUMMARY.md updated with final implementations
 - 🔄 NEXT_STEPS.md (this file - being updated now)
 - ⏳ .github/copilot-instructions.md pending
-- ⏳ PHASE27_COMPLETION_SUMMARY.md pending
+- ⏳ PHASE27/COMPLETION_SUMMARY.md pending
 
 **Git Commits**:
 - `ee68dc65` - feat(opengl): complete Phase 27.5 testing and documentation
@@ -83,7 +83,7 @@
 
 ## Implementation Breakdown
 
-For detailed task-by-task implementation with code examples, complexity ratings, and time estimates, please refer to the **PHASE27_TODO_LIST.md** which contains all 32 tasks organized into:
+For detailed task-by-task implementation with code examples, complexity ratings, and time estimates, please refer to the **PHASE27/TODO_LIST.md** which contains all 32 tasks organized into:
 
 - **Part 1: SDL2 Window & Context Setup (27.1)** ✅ 6/6 tasks complete (100%)
 - **Part 2: Buffer & Shader Abstraction (27.2)** ✅ 6/6 tasks complete (100%)
@@ -94,7 +94,7 @@ For detailed task-by-task implementation with code examples, complexity ratings,
 - **Part 7: Backport Execution (27.7)** ⏳ 0/1 tasks (0%)
 - **Part 8: Git Finalization (27.8)** ⏳ 0/1 tasks (0%)
 
-View the complete task list with implementation details in `docs/PHASE27_TODO_LIST.md`.
+View the complete task list with implementation details in `docs/PHASE27/TODO_LIST.md`.
 
 ---
 
@@ -363,14 +363,14 @@ Xcode Instruments (macOS)
 
 **Remaining Tasks**:
 1. ⏳ Update `.github/copilot-instructions.md` with Phase 27 complete status
-2. ⏳ Create `PHASE27_COMPLETION_SUMMARY.md` - comprehensive consolidation document
+2. ⏳ Create `PHASE27/COMPLETION_SUMMARY.md` - comprehensive consolidation document
 
 **Estimated Time**: 1-2 hours
 
 #### Phase 27.7: Generals Base Backport Execution ⏳ (Not Started)
 
 **Process**:
-1. Follow `PHASE27_BACKPORT_GUIDE.md` systematically
+1. Follow `PHASE27/OPENGL_BACKPORT_GUIDE.md` systematically
 2. Copy shaders from `resources/shaders/` (basic.vert, basic.frag)
 3. Copy SDL2 window code (W3DDisplay.cpp, Win32GameEngine.cpp)
 4. Copy buffer abstractions (dx8vertexbuffer, dx8indexbuffer)

@@ -2178,7 +2178,7 @@ target_link_libraries(GeneralsX PRIVATE glad)
 - ✅ Phase 27.5.1-27.5.3: Runtime Testing & Validation (3/5 tasks)
   - Basic Runtime Testing (144K+ log lines, exit code 0)
   - Shader Debugging Infrastructure (GL error checking)
-  - Performance Baseline (PHASE27_PERFORMANCE_BASELINE.md)
+  - Performance Baseline (PERFORMANCE_BASELINE.md)
 
 **Pending Phases**:
 - ⏳ Phase 27.5.4-27.5.5: Texture Loading & Documentation (2 tasks - deferred/in-progress)
@@ -2343,7 +2343,7 @@ _Check_GL_Error("Bind VAO for rendering");
 **Objective**: Establish performance metrics for current OpenGL implementation.
 
 #### Documentation Created:
-- `docs/PHASE27_PERFORMANCE_BASELINE.md` (comprehensive report)
+- `docs/PERFORMANCE_BASELINE.md` (comprehensive report)
 
 #### Key Metrics Established:
 
@@ -2389,7 +2389,7 @@ Main Loop Entry:      ~0.5s  (5%)
 **Rationale**: Texture loading requires extensive implementation (200+ lines per format for DDS/TGA). Current Phase 27 infrastructure can operate with stub textures. Full implementation scheduled for Phase 28 rendering work.
 
 #### Design Document:
-- `docs/PHASE27_TEXTURE_LOADING_DESIGN.md` (architecture and API design)
+- `PHASE27/TEXTURE_LOADING_DESIGN.md` (architecture and API design)
 
 #### Backport Impact:
 
