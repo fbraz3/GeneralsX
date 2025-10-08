@@ -1,5 +1,5 @@
 /*
-**	Command & Conquer Generals(tm)
+**	Command & Conquer Generals Zero Hour(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -37,18 +37,20 @@
 #define __W3DDISPLAY_H_
 
 #include "GameClient/Display.h"
-#include "WW3D2/lightenvironment.h"
 
-class VideoBuffer;
-class W3DDebugDisplay;
-class DisplayString;
-class W3DAssetManager;
-class LightClass;
-class Render2DClass;
+// Forward declarations
+class RTS3DInterfaceScene;
 class RTS3DScene;
 class RTS2DScene;
-class RTS3DInterfaceScene;
+class W3DAssetManager;
+class LightClass;
+class LightEnvironmentClass;
+class Render2DClass;
+class W3DDebugDisplay;
 
+// Include graphics abstraction layer
+#include "GraphicsAPI/GraphicsRenderer.h"
+#include "GraphicsAPI/W3DRendererAdapter.h"
 
 //=============================================================================
 /** W3D implementation of the game display which is responsible for creating
@@ -56,6 +58,10 @@ class RTS3DInterfaceScene;
 	*/
 class W3DDisplay : public Display
 {
+private:
+    // Graphics API management
+    GraphicsAPIType m_preferredAPI;
+    bool m_useOpenGL;
 
 public:
 	W3DDisplay();
@@ -130,6 +136,7 @@ public:
 	virtual void enableLetterBox(Bool enable);	///<forces letter-boxed display on/off
 
 	virtual Bool isLetterBoxFading(void);	///<returns true while letterbox fades in/out
+	virtual Bool isLetterBoxed(void);
 
 	virtual void clearShroud();
 	virtual void setShroudLevel(Int x, Int y, CellShroudStatus setting);
@@ -164,7 +171,7 @@ protected:
 	void updateAverageFPS(void);	///< figure out the average fps over the last 30 frames.
 
 	Byte m_initialized;												///< TRUE when system is initialized
-	LightClass *m_myLight[LightEnvironmentClass::MAX_LIGHTS];										///< light hack for now
+	LightClass *m_myLight[4];  // LightEnvironmentClass::MAX_LIGHTS = 4										///< light hack for now
 	Render2DClass *m_2DRender;								///< interface for common 2D functions
 	IRegion2D m_clipRegion;									///< the clipping region for images
 	Bool m_isClippedEnabled;	///<used by 2D drawing operations to define clip re

@@ -1,5 +1,5 @@
 /*
-**	Command & Conquer Generals(tm)
+**	Command & Conquer Generals Zero Hour(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -16,19 +16,42 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/***********************************************************************************************
+ ***              C O N F I D E N T I A L  ---  W E S T W O O D  S T U D I O S               ***
+ ***********************************************************************************************
+ *                                                                                             *
+ *                 Project Name : ww3d                                                         *
+ *                                                                                             *
+ *                     $Archive:: /Commando/Code/ww3d2/dx8fvf.h                               $*
+ *                                                                                             *
+ *              Original Author:: Jani Penttinen                                               *
+ *                                                                                             *
+ *                      $Author:: Kenny Mitchell                                               *
+ *                                                                                             *
+ *                     $Modtime:: 06/26/02 5:06p                                             $*
+ *                                                                                             *
+ *                    $Revision:: 7                                                          $*
+ *                                                                                             *
+ * 06/26/02 KM VB Vertex format update for shaders                                       *
+ * 07/17/02 KM VB Vertex format update for displacement mapping                               *
+ * 08/01/02 KM VB Vertex format update for cube mapping                               *
+ *---------------------------------------------------------------------------------------------*
+ * Functions:                                                                                  *
+ * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 #include "dx8fvf.h"
 #include "wwstring.h"
 #include <d3dx8core.h>
 
 static unsigned Get_FVF_Vertex_Size(unsigned FVF)
 {
-	return D3DXGetFVFVertexSize(FVF);
+	return CORE_D3DXGetFVFVertexSize(FVF);
 }
 
-FVFInfoClass::FVFInfoClass(unsigned FVF_)
+FVFInfoClass::FVFInfoClass(unsigned FVF_, unsigned vertex_size)
 	:
 	FVF(FVF_),
-	fvf_size(Get_FVF_Vertex_Size(FVF))
+	fvf_size(FVF!=0 ? Get_FVF_Vertex_Size(FVF) : vertex_size)
 {
 	location_offset=0;
 	blend_offset=location_offset;

@@ -1,5 +1,5 @@
 /*
-**	Command & Conquer Generals(tm)
+**	Command & Conquer Generals Zero Hour(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -264,7 +264,7 @@ class FVFInfoClass : public W3DMPO
 	unsigned							diffuse_offset;
 	unsigned							specular_offset;
 public:
-	FVFInfoClass(unsigned FVF);
+	FVFInfoClass(unsigned FVF, unsigned vertex_size=0);
 
 	inline unsigned Get_Location_Offset() const { return location_offset; }
 	inline unsigned Get_Normal_Offset() const { return normal_offset; }

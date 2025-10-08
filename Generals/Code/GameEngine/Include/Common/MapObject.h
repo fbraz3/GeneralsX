@@ -1,5 +1,5 @@
 /*
-**	Command & Conquer Generals(tm)
+**	Command & Conquer Generals Zero Hour(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -35,6 +35,19 @@
 #include "Common/Dict.h"
 #include "Common/GameMemory.h"
 #include "GameClient/TerrainRoads.h"
+
+
+
+class WorldHeightMapInterfaceClass
+{
+public:
+
+  virtual Int getBorderSize() = 0;
+  virtual Real getSeismicZVelocity(Int xIndex, Int yIndex) const = 0;
+  virtual void setSeismicZVelocity(Int xIndex, Int yIndex, Real value) = 0;
+  virtual Real getBilinearSampleSeismicZVelocity( Int x, Int y) = 0;
+
+};
 
 /** MapObject class
 Not ref counted.  Do not store pointers to this class.  */

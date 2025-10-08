@@ -1,5 +1,5 @@
 /*
-**	Command & Conquer Generals(tm)
+**	Command & Conquer Generals Zero Hour(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -26,6 +26,7 @@
 #endif
 
 #include "always.h"
+#include "d3d8.h"
 #include "ww3dformat.h"
 #include "wwstring.h"
 #include "vector3.h"
