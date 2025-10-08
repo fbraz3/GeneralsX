@@ -20,8 +20,8 @@ This directory contains all technical documentation for the GeneralsX cross-plat
 ### Graphics Implementation
 - **[OPENGL_SUMMARY.md](OPENGL_SUMMARY.md)** - OpenGL 3.3 implementation details, SDL2 integration, and code examples
 - **[OPENGL_TESTING.md](OPENGL_TESTING.md)** - OpenGL-specific testing procedures and validation results
-- **[PHASE27_BACKPORT_GUIDE.md](PHASE27_BACKPORT_GUIDE.md)** - Complete OpenGL backport guide (Zero Hour → Generals)
-- **[PHASE27_TODO_LIST.md](PHASE27_TODO_LIST.md)** - Phase 27 task tracking and progress monitoring
+- **[PHASE27/OPENGL_BACKPORT_GUIDE.md](PHASE27/OPENGL_BACKPORT_GUIDE.md)** - Complete OpenGL backport guide (Zero Hour → Generals)
+- **[PHASE27/TODO_LIST.md](PHASE27/TODO_LIST.md)** - Phase 27 task tracking and progress monitoring
 
 ### Testing & Validation
 - **[TESTING.md](TESTING.md)** - Cross-platform testing procedures, validation protocols, and test infrastructure
@@ -45,7 +45,7 @@ Working on the codebase:
 ### For Contributors
 Want to help? Check:
 1. [NEXT_STEPS.md](NEXT_STEPS.md) - Current priorities and blockers
-2. [PHASE27_TODO_LIST.md](PHASE27_TODO_LIST.md) - Specific graphics tasks
+2. [PHASE27/TODO_LIST.md](PHASE27/TODO_LIST.md) - Specific graphics tasks
 3. [CONTRIBUTING.md](../CONTRIBUTING.md) - Contribution process
 4. [REFERENCES.md](REFERENCES.md) - Reference implementations for solutions
 

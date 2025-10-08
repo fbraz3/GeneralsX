@@ -46,26 +46,26 @@
    - 0 GL errors reported during runtime
    
 3. ✅ **Task 27.5.3**: Performance Baseline
-   - Comprehensive report created (PHASE27_PERFORMANCE_BASELINE.md)
+   - Comprehensive report created (PHASE27/PERFORMANCE_BASELINE.md)
    - Metrics: 10s init time, 14,471 lines/sec throughput
    - Timing breakdown: 60% MapCache, 20% BIG files, 20% other
    - OpenGL 4.1 Metal - 90.5 confirmed
    - 19 BIG archives, 146 multiplayer maps loaded
    
 4. ✅ **Task 27.5.4**: Texture Loading Design
-   - Design document created (PHASE27_TEXTURE_LOADING_DESIGN.md)
+   - Design document created (PHASE27/TEXTURE_LOADING_DESIGN.md)
    - Architecture fully documented
    - Implementation pragmatically deferred to Phase 28
    
 5. ✅ **Task 27.5.5**: Backport Guide Update
-   - PHASE27_BACKPORT_GUIDE.md updated with 430+ lines
+   - PHASE27/OPENGL_BACKPORT_GUIDE.md updated with 430+ lines
    - All Phase 27.5 procedures documented
    - Complete code examples and troubleshooting
 
 **Documentation Created**:
-- `docs/PHASE27_PERFORMANCE_BASELINE.md` (280+ lines)
-- `docs/PHASE27_TEXTURE_LOADING_DESIGN.md` (design complete)
-- `docs/PHASE27_BACKPORT_GUIDE.md` (updated +430 lines)
+- `docs/PHASE27/PERFORMANCE_BASELINE.md` (280+ lines)
+- `docs/PHASE27/TEXTURE_LOADING_DESIGN.md` (design complete)
+- `docs/PHASE27/OPENGL_BACKPORT_GUIDE.md` (updated +430 lines)
 
 **Commits**:
 - `ee68dc65` - feat(opengl): complete Phase 27.5 testing and documentation
@@ -75,12 +75,12 @@
 **CURRENT TASK**: Updating all project documentation with Phase 27 completion status, achievements, and next steps.
 
 **Files Being Updated**:
-1. ✅ PHASE27_TODO_LIST.md (corrected to 26/32 tasks, 81%)
+1. ✅ PHASE27/TODO_LIST.md (corrected to 26/32 tasks, 81%)
 2. 🔄 MACOS_PORT.md (this file - adding Phase 27.5 complete status)
 3. ⏳ OPENGL_SUMMARY.md (pending - final implementation documentation)
 4. ⏳ NEXT_STEPS.md (pending - post-Phase 27 roadmap)
 5. ⏳ .github/copilot-instructions.md (pending - AI agent context update)
-6. ⏳ PHASE27_COMPLETION_SUMMARY.md (pending - consolidated report)
+6. ⏳ PHASE27/COMPLETION_SUMMARY.md (pending - consolidated report)
 
 **Progress**: 1/6 documentation files complete (17%)
 
@@ -92,7 +92,7 @@
 
 - `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h` (lines 435-439)
 - `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp` (lines 3011-3117, shader init 462-521, uniform updates 2615-2643, vertex buffers 2670-2693)
-- `docs/PHASE27_TODO_LIST.md` (progress tracking updated to 78%)
+- `docs/PHASE27/TODO_LIST.md` (progress tracking updated to 78%)
 
 **Implementations**:
 
@@ -222,8 +222,8 @@
 **Files Modified**:
 
 - `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h` (lines 1000-1695)
-- `docs/PHASE27_TODO_LIST.md` (progress tracking updated to 75%)
-- `docs/PHASE27_BACKPORT_GUIDE.md` (render state documentation ready)
+- `docs/PHASE27/TODO_LIST.md` (progress tracking updated to 75%)
+- `docs/PHASE27/OPENGL_BACKPORT_GUIDE.md` (render state documentation ready)
 
 **Implementations**:
 
@@ -318,7 +318,7 @@
 
 - `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h` (declarations)
 - `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp` (implementations)
-- `docs/PHASE27_TODO_LIST.md` (progress tracking)
+- `docs/PHASE27/TODO_LIST.md` (progress tracking)
 
 **Implementations**:
 
@@ -342,7 +342,7 @@
    - Proper offset calculation and stride handling
 
 3. **Task 27.2.6: Backport Documentation** ✅
-   - PHASE27_TODO_LIST.md updated with completion status
+   - PHASE27/TODO_LIST.md updated with completion status
    - Implementation details documented for future Generals base backport
    - Ready for Phase 27.7 backport execution
 

@@ -39,6 +39,8 @@ This project is a fork of the Command & Conquer Generals source code and its exp
 2. The name of this project is "GeneralsX", please use this name in commit messages and pull requests.
 3. All tests must be moved into a dedicated `tests/` directory to improve project organization and maintainability.
 4. **Documentation Organization**: All new markdown documentation files must be created in the `docs/` directory unless explicitly instructed otherwise. Only essential GitHub files (README.md, LICENSE.md, CONTRIBUTING.md, SECURITY.md) should remain in the repository root.
+4.1 The phases documentation files must have its own directory inside `docs/` named `docs/PHASEXX` where `XX` is the phase number (e.g., `docs/PHASE01`, `docs/PHASE02`, etc.)
+4.2 The phase documentation files must be named `PHASEXX/DESCRIPTION.md` where `XX` is the phase number and `DESCRIPTION` is a short description of the phase (e.g., `docs/PHASE01/INITIAL_REFACTOR.md`, `docs/PHASE02/OPENGL_IMPLEMENTATION.md`, etc.)
 5. The game uses Windows Registry keys for configuration and settings storage. When porting to other platforms, these keys need to be replaced with equivalent configuration files or system settings.
 6. before finish a session, update the files `docs/MACOS_PORT.md` and `docs/NEXT_STEPS.md` with the progress made and the next steps to be taken.
 7. Commit and push changes before finish a session (and after changing markdown files from step 6).
