@@ -464,21 +464,37 @@ This ensures the backport guide is always ready for the Generals base backport (
 
 ## Progress Tracking
 
-**Completed Phases**: 27.1 (100%), 27.2 (100%), 27.3 (100%), 27.4 (100%)  
-**In Progress**: 27.5 (0%)  
+**Completed Phases**: 27.1 (100%), 27.2 (100%), 27.3 (100%), 27.4 (100%), 27.5 (40%)  
+**In Progress**: 27.5 (40% - Runtime testing and shader debugging complete)  
 **Pending**: 27.6-27.8 (0%)
+
+**Latest Achievements** (October 7, 2025):
+
+- ✅ Task 27.5.1: Basic Runtime Testing COMPLETE
+  - Binary executes successfully with 144,712 log lines
+  - Full engine progression: BIG files → MapCache (146 maps) → GameEngine::init() → GameEngine::execute()
+  - SDL2 window created successfully (800x600, fullscreen mode)
+  - FrameRateLimit initialized and operational
+  - Clean shutdown with exit code 0 (success)
+  - Phase 27 SDL2/OpenGL infrastructure validated and operational
+
+- ✅ Task 27.5.2: Shader Debugging COMPLETE
+  - Error checking infrastructure integrated (3 debug functions, 15+ integration points)
+  - GL_DEBUG_OUTPUT callback system with severity filtering
+  - Safe uniform location retrieval with optional logging
+  - Systematic GL error checks at all critical points
+  - Compiled successfully (923/923 files)
 
 **Next Immediate Tasks**:
 
-1. Task 27.5.1 - Basic Runtime Testing (CRITICAL)
-2. Task 27.5.2 - Shader Debugging
-3. Task 27.5.4 - Texture File Loading
-4. Task 27.5.3 - Performance Baseline
+1. Task 27.5.3 - Performance Baseline (use runtime data for analysis)
+2. Task 27.5.4 - Texture File Loading (DDS/TGA, critical for rendering)
+3. Task 27.5.5 - Update Backport Guide (document Phase 27.5 techniques)
 
-**Estimated Time to Phase 27 Completion**: 1-2 weeks of focused development
+**Estimated Time to Phase 27 Completion**: 1 week of focused development
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: December 28, 2024  
+**Document Version**: 1.1  
+**Last Updated**: October 7, 2025  
 **Maintained By**: GeneralsX Development Team
