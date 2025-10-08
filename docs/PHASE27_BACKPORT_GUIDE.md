@@ -2174,22 +2174,258 @@ target_link_libraries(GeneralsX PRIVATE glad)
   - Scissor Test
   - Point Sprites (particle systems)
 
-**Pending Phases**:
-- ⏳ Phase 27.5: Testing & Validation (5 tasks)
-- ⏳ Phase 27.6-27.8: Documentation & Backport Execution (3 tasks)
+**Completed Phases (New)**:
+- ✅ Phase 27.5.1-27.5.3: Runtime Testing & Validation (3/5 tasks)
+  - Basic Runtime Testing (144K+ log lines, exit code 0)
+  - Shader Debugging Infrastructure (GL error checking)
+  - Performance Baseline (PHASE27_PERFORMANCE_BASELINE.md)
 
-**Next Steps After Phase 27.4**:
-1. Runtime testing with actual game assets
-2. Shader debugging and optimization
-3. Performance baseline measurements
-4. Texture file loading (DDS/TGA)
-5. Execute backport to Generals base using this guide
-6. Validate Generals base separately
-7. Document any differences encountered
-8. Update this guide with lessons learned
+**Pending Phases**:
+- ⏳ Phase 27.5.4-27.5.5: Texture Loading & Documentation (2 tasks - deferred/in-progress)
+- ⏳ Phase 27.6-27.8: Final Documentation & Backport Execution (3 tasks)
 
 ---
 
-**Document Version**: 2.0  
+## Phase 27.5: Testing & Validation (Tasks 27.5.1-27.5.5)
+
+### Task 27.5.1: Basic Runtime Testing ✅
+
+**Objective**: Validate that GeneralsXZH executes successfully with SDL2/OpenGL infrastructure.
+
+#### Test Procedure:
+
+1. **Build and Deploy**:
+   ```bash
+   cmake --build build/macos-arm64 --target GeneralsXZH -j 4
+   cp build/macos-arm64/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/
+   ```
+
+2. **Execute with Logging**:
+   ```bash
+   cd $HOME/GeneralsX/GeneralsMD
+   ./GeneralsXZH 2>&1 | tee /tmp/generalszh_runtime_test.log
+   ```
+
+3. **Verify Success Criteria**:
+   - Exit code should be 0 (no crashes)
+   - Log should show BIG file loading (19 archives expected)
+   - Map cache processing (146 maps expected for test data)
+   - GameEngine::init() completion
+   - SDL2 window creation
+   - GameEngine::execute() entry
+   - Clean shutdown messages
+
+#### Expected Output:
+
+```
+Win32BIGFileSystem::loadBigFilesFromDirectory - successfully loaded: ./ShadersZH.big
+...
+Phase 27.1.3: SDL2 window created (800x600, fullscreen)
+OpenGL Version: 4.1 Metal - 90.5
+...
+GameMain - TheGameEngine->init() completed successfully
+GameEngine::execute() - ENTRY POINT - About to create FrameRateLimit
+FRAMERATE INIT: Frequency = 1000000000, Start = 2222635901
+GameEngine::execute() - FrameRateLimit created successfully
+...
+Phase 27.1.4: Cleaning up SDL2 and OpenGL resources...
+GameMain - Returning exit code: 0
+```
+
+#### Backport Notes:
+
+- No code changes required for backport
+- Generals base uses same runtime testing procedure
+- Expected differences:
+  - Generals loads INI.big instead of INIZH.big
+  - Shader file is Shaders.big instead of ShadersZH.big
+  - Map count may differ (Generals has fewer stock maps)
+
+---
+
+### Task 27.5.2: Shader Debugging Infrastructure ✅
+
+**Objective**: Add comprehensive OpenGL error checking and debugging capabilities.
+
+#### Files Modified:
+- `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h` (lines 435-439)
+- `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp` (lines 3011-3117, integration points throughout)
+
+#### Implementation:
+
+**1. Error Checking Function** (dx8wrapper.cpp lines 3011-3055):
+
+```cpp
+static void _Check_GL_Error(const char* operation) {
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+        const char* errorStr = "UNKNOWN_ERROR";
+        switch (error) {
+            case GL_INVALID_ENUM: errorStr = "GL_INVALID_ENUM"; break;
+            case GL_INVALID_VALUE: errorStr = "GL_INVALID_VALUE"; break;
+            case GL_INVALID_OPERATION: errorStr = "GL_INVALID_OPERATION"; break;
+            case GL_OUT_OF_MEMORY: errorStr = "GL_OUT_OF_MEMORY"; break;
+            case GL_INVALID_FRAMEBUFFER_OPERATION: errorStr = "GL_INVALID_FRAMEBUFFER_OPERATION"; break;
+        }
+        printf("Phase 27.5.2 ERROR: %s failed with error: %s (0x%04X)\n", 
+               operation, errorStr, error);
+    }
+}
+```
+
+**2. Debug Output Callback** (dx8wrapper.cpp lines 3057-3086):
+
+```cpp
+static void _Enable_GL_Debug_Output() {
+#if defined(__APPLE__) || defined(__MACH__)
+    // macOS OpenGL 4.1 does not support GL_DEBUG_OUTPUT (requires 4.3+)
+    printf("Phase 27.5.2 WARNING: GL_DEBUG_OUTPUT not available on macOS (requires GL 4.3+, have 4.1)\n");
+#else
+    if (glDebugMessageCallback) {
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback([](GLenum source, GLenum type, GLuint id, 
+            GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+            if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) return;
+            printf("GL Debug: %s\n", message);
+        }, nullptr);
+    }
+#endif
+}
+```
+
+**3. Safe Uniform Location** (dx8wrapper.cpp lines 3088-3117):
+
+```cpp
+static GLint _Get_Uniform_Location_Safe(GLuint program, const char* name, bool log_if_missing = false) {
+    GLint location = glGetUniformLocation(program, name);
+    if (location == -1 && log_if_missing) {
+        printf("Phase 27.5.2 WARNING: Uniform '%s' not found in shader program %u\n", name, program);
+    }
+    return location;
+}
+```
+
+**4. Integration Points** (15+ locations):
+
+```cpp
+// Shader initialization (dx8wrapper.cpp ~line 515)
+_Enable_GL_Debug_Output();
+_Check_GL_Error("Enable GL debug output");
+
+// Matrix uniforms (Apply_Render_State_Changes, ~line 2625)
+glUniformMatrix4fv(loc, 1, GL_FALSE, (const float*)&render_state.world);
+_Check_GL_Error("Set uWorldMatrix uniform");
+
+// Vertex buffer operations (~line 2685)
+glBindVertexArray(GL_VAO);
+_Check_GL_Error("Bind VAO for rendering");
+```
+
+#### Backport Instructions:
+
+1. Copy all three helper functions to Generals base dx8wrapper.cpp (before any usage)
+2. Copy all `_Check_GL_Error()` calls from Zero Hour integration points
+3. Ensure macOS conditional compilation preserved (`#if defined(__APPLE__)`)
+4. Test compilation: `cmake --build build/macos-arm64 --target GeneralsX -j 4`
+
+#### Expected Results:
+
+- Compilation successful with no new errors
+- Runtime shows "Phase 27.5.2 WARNING" for GL_DEBUG_OUTPUT on macOS (expected)
+- No GL errors reported during normal execution
+- If GL errors occur, detailed error messages with operation context
+
+---
+
+### Task 27.5.3: Performance Baseline ✅
+
+**Objective**: Establish performance metrics for current OpenGL implementation.
+
+#### Documentation Created:
+- `docs/PHASE27_PERFORMANCE_BASELINE.md` (comprehensive report)
+
+#### Key Metrics Established:
+
+| Metric | Value | Notes |
+|--------|-------|-------|
+| **Execution Time** | ~10 seconds | Full initialization + shutdown |
+| **Log Throughput** | 14,471 lines/sec | 144,712 total lines |
+| **BIG Files Loaded** | 19 archives | All assets present |
+| **MapCache Entries** | 146 maps | Full multiplayer map set |
+| **INI Exceptions Handled** | 1000+ | Universal Protection operational |
+| **OpenGL Version** | 4.1 Metal - 90.5 | macOS compatibility layer |
+| **SDL2 Window Creation** | Success | 800x600 fullscreen |
+| **Exit Code** | 0 | Clean shutdown |
+| **GL Errors** | 0 | No errors detected |
+
+#### Timing Breakdown:
+
+```
+BIG File Loading:      ~2s  (20%)
+MapCache Processing:   ~6s  (60%)
+Engine Init:           ~1s  (10%)
+SDL2/OpenGL Setup:    ~0.5s  (5%)
+Main Loop Entry:      ~0.5s  (5%)
+```
+
+#### Backport Notes:
+
+- Run same testing procedure on Generals base
+- Expected minor timing differences due to fewer assets
+- Document baseline in same format for comparison
+- Key metrics to track:
+  - Initialization time
+  - Memory usage
+  - GL error count (should remain 0)
+  - Exit code stability
+
+---
+
+### Task 27.5.4: Texture File Loading (DEFERRED)
+
+**Status**: ⏸️ **Design Complete, Implementation Deferred to Phase 28**
+
+**Rationale**: Texture loading requires extensive implementation (200+ lines per format for DDS/TGA). Current Phase 27 infrastructure can operate with stub textures. Full implementation scheduled for Phase 28 rendering work.
+
+#### Design Document:
+- `docs/PHASE27_TEXTURE_LOADING_DESIGN.md` (architecture and API design)
+
+#### Backport Impact:
+
+- When implemented in Zero Hour, full backport will be required
+- Estimated effort: 2-3 hours for complete backport
+- No immediate action needed for current Phase 27 completion
+
+---
+
+### Task 27.5.5: Update Backport Guide (CURRENT)
+
+**Status**: ✅ **COMPLETE**
+
+This section completes the Phase 27.5 documentation in the backport guide.
+
+---
+
+## Next Steps After Phase 27.5
+
+1. **Phase 27.6**: Final Documentation Update
+   - Update all progress tracking documents
+   - Create Phase 27 completion summary
+   - Document known issues and limitations
+
+2. **Phase 27.7**: Generals Base Backport Execution
+   - Follow this guide to backport all Phase 27 features
+   - Test Generals base independently
+   - Document any unexpected differences
+
+3. **Phase 27.8**: Git Commits and GitHub Release
+   - Commit all Phase 27 changes with descriptive messages
+   - Create GitHub release/tag for Phase 27 milestone
+   - Prepare Phase 28 planning document
+
+---
+
+**Document Version**: 2.1  
 **Last Updated**: October 7, 2025  
 **Author**: GeneralsX Development Team
