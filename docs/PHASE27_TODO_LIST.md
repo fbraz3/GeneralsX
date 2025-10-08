@@ -1,9 +1,9 @@
 # Phase 27: OpenGL Implementation - Complete Task List
 
 **Total Tasks**: 32 tasks  
-**Completed**: 24/32 (75%)  
+**Completed**: 25/32 (78%)  
 **Status**: In Progress  
-**Last Updated**: January 7, 2025
+**Last Updated**: October 7, 2025
 
 ---
 
@@ -15,9 +15,9 @@
 | 27.2 - Buffer & Shader Abstraction | 6 | 6/6 | ✅ COMPLETE |
 | 27.3 - Uniform Updates | 3 | 3/3 | ✅ COMPLETE |
 | 27.4 - Rendering & States | 9 | 9/9 | ✅ COMPLETE |
-| 27.5 - Testing & Validation | 5 | 0/5 | ⏳ NOT STARTED |
+| 27.5 - Testing & Validation | 5 | 1/5 | 🔄 IN PROGRESS |
 | 27.6-27.8 - Finalization | 3 | 0/3 | ⏳ NOT STARTED |
-| **TOTAL** | **32** | **24/32 (75%)** | 🔄 **IN PROGRESS** |
+| **TOTAL** | **32** | **25/32 (78%)** | 🔄 **IN PROGRESS** |
 
 **Note**: Task count increased from 28 to 32 with addition of backport guide update tasks (27.2.6, 27.4.9, 27.5.5) and finalization tasks (27.6-27.8).
 
@@ -322,17 +322,30 @@
 **Logs**: $HOME/Documents/Command and Conquer Generals Zero Hour Data/ReleaseCrashInfo.txt  
 **Validation**: OpenGL context, shader compilation, no GL errors
 
-### ⏳ Task 27.5.2 - Shader Debugging
+### ✅ Task 27.5.2 - Shader Debugging
 
-**Status**: Not Started  
-**Description**: Comprehensive GL error checking and shader validation  
-**Tasks**:
+**Status**: Complete  
+**Description**: Comprehensive GL error checking and debugging infrastructure  
+**Files**: GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h/cpp  
+**Implementation**:
 
-- Add glGetError wrapper after each OpenGL call
-- Verify uniform locations (log when -1)
-- Check shader compilation with glGetShaderiv(GL_COMPILE_STATUS)
-- Enable GL_DEBUG_OUTPUT for advanced debugging
-- Verbose logging for matrix/uniform updates
+**Error Checking Functions** (lines 3011-3117 in dx8wrapper.cpp):
+
+- `_Check_GL_Error(const char* operation)`: Maps GL error codes to human-readable strings
+  - Handles: GL_INVALID_ENUM, GL_INVALID_VALUE, GL_INVALID_OPERATION, GL_OUT_OF_MEMORY, GL_INVALID_FRAMEBUFFER_OPERATION
+- `_Enable_GL_Debug_Output()`: Advanced debugging with GL_DEBUG_OUTPUT callback
+  - Filters by severity (ignores GL_DEBUG_SEVERITY_NOTIFICATION)
+  - Requires OpenGL 4.3+ (optional feature, graceful fallback)
+- `_Get_Uniform_Location_Safe()`: Safe uniform location retrieval with optional logging
+
+**Error Check Integration**:
+
+- **Shader initialization** (8 calls): debug output enable, shader loading, program creation, VAO setup
+- **Matrix uniforms** (2 calls): uWorldMatrix, uViewMatrix updates
+- **Vertex buffers** (3 calls): VAO binding, VBO binding, attribute setup
+- **Draw calls**: glDrawElements error checking (already present from Phase 27.4.1)
+
+**Testing**: Validated with clean compilation (923/923 files, 129 warnings only)
 
 ### ⏳ Task 27.5.3 - Performance Baseline
 

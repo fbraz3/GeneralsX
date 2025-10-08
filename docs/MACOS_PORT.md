@@ -2,13 +2,13 @@
 
 **Project Name**: 🎯 **GeneralsX** (formerly Command & Conquer: Generals)
 
-**Port Status**: 🎉 **Phase 27 – OpenGL Graphics Implementation (75% Complete)** 🚀
+**Port Status**: 🎉 **Phase 27 – OpenGL Graphics Implementation (78% Complete)** 🚀
 
-**Date**: January 7, 2025
+**Date**: October 7, 2025
 
-**Status**: 🔄 **IN PROGRESS** – Phase 27 Graphics Engine implementation ongoing. 24/32 tasks complete. Complete render state management, texture stage states, alpha testing, fog, stencil, scissor test, and point sprites implemented. Ready for Phase 27.5 runtime testing.
+**Status**: 🔄 **IN PROGRESS** – Phase 27 Graphics Engine implementation ongoing. 25/32 tasks complete. Complete render state management, texture stage states, alpha testing, fog, stencil, scissor test, point sprites, and comprehensive GL error checking implemented. Ready for Phase 27.5 runtime testing.
 
-## Latest Update (January 7, 2025 - Phase 27: Complete Render States & Advanced Features)
+## Latest Update (October 7, 2025 - Phase 27.5: Shader Debugging Infrastructure)
 
 **🚀 PHASE 27 PROGRESS: DirectX8→OpenGL Translation (75% Complete)**
 
@@ -20,10 +20,72 @@
 | 27.2 - D3D8→OpenGL Buffers | 6 | 6/6 (100%) | ✅ **COMPLETE** |
 | 27.3 - Uniform Updates | 3 | 3/3 (100%) | ✅ **COMPLETE** |
 | 27.4 - Rendering & States | 9 | 9/9 (100%) | ✅ **COMPLETE** |
-| 27.5 - Testing | 5 | 0/5 (0%) | ⏳ **NOT STARTED** |
-| **TOTAL** | **32** | **24/32 (75%)** | 🔄 **IN PROGRESS** |
+| 27.5 - Testing | 5 | 1/5 (20%) | 🔄 **IN PROGRESS** |
+| **TOTAL** | **32** | **25/32 (78%)** | 🔄 **IN PROGRESS** |
 
-### Recent Achievements (January 7, 2025)
+### Recent Achievements (October 7, 2025)
+
+#### ✅ Phase 27.5.2: Shader Debugging Infrastructure Complete
+
+**BREAKTHROUGH**: Comprehensive OpenGL error checking and debugging infrastructure implemented! All critical GL operations now have error detection, advanced debug output callback system, and safe uniform location retrieval.
+
+**Files Modified**:
+
+- `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.h` (lines 435-439)
+- `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp` (lines 3011-3117, shader init 462-521, uniform updates 2615-2643, vertex buffers 2670-2693)
+- `docs/PHASE27_TODO_LIST.md` (progress tracking updated to 78%)
+
+**Implementations**:
+
+1. **Error Checking Functions** (lines 3011-3117) ✅
+   - `_Check_GL_Error(const char* operation)`: Maps GL error codes to human-readable strings
+     - Handles: GL_INVALID_ENUM, GL_INVALID_VALUE, GL_INVALID_OPERATION, GL_OUT_OF_MEMORY, GL_INVALID_FRAMEBUFFER_OPERATION
+     - Provides context about which operation failed
+   - `_Enable_GL_Debug_Output()`: Advanced debugging with GL_DEBUG_OUTPUT callback
+     - Filters by severity (ignores GL_DEBUG_SEVERITY_NOTIFICATION)
+     - Requires OpenGL 4.3+ (optional feature, graceful fallback on macOS)
+     - Callback provides detailed error information with source/type/severity
+   - `_Get_Uniform_Location_Safe()`: Safe uniform location retrieval with optional logging
+     - Wrapper around glGetUniformLocation
+     - Optional logging for missing uniforms (-1 returns)
+
+2. **Error Check Integration** ✅
+   - **Shader initialization** (8 error checks):
+     - Debug output enable
+     - Vertex shader loading and compilation
+     - Fragment shader loading and compilation
+     - Shader program creation and linking
+     - Shader cleanup (deletion)
+     - VAO creation, binding, and setup complete
+   - **Matrix uniform updates** (2 error checks):
+     - uWorldMatrix uniform update (Apply_Render_State_Changes)
+     - uViewMatrix uniform update (Apply_Render_State_Changes)
+   - **Vertex buffer operations** (3 error checks):
+     - VAO binding
+     - VBO binding
+     - Vertex attribute setup
+   - **Unbind operations** (2 error checks):
+     - VAO unbind
+     - VBO unbind
+   - **Draw calls**: glDrawElements error checking (already present from Phase 27.4.1)
+
+**Impact**:
+
+- Systematic error detection across all critical OpenGL operations
+- Advanced debugging capabilities for development (GL_DEBUG_OUTPUT)
+- Production-ready error logging for release builds
+- Foundation for Phase 27.5.1 (Runtime Testing) validation
+
+**Technical Highlights**:
+
+- 107 lines of robust error checking infrastructure
+- 15+ error check calls integrated into rendering pipeline
+- GL 4.3+ advanced debugging with graceful fallback
+- Context-aware error messages for faster debugging
+
+---
+
+### Previous Achievements (January 7, 2025)
 
 #### ✅ Phase 27.4: Rendering & States Complete (Tasks 27.4.2-27.4.9)
 

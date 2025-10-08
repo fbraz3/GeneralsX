@@ -460,11 +460,17 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Inits(void)
 	Set_Default_Global_Render_States();
 
 #ifndef _WIN32
+	// Phase 27.5.2: Enable OpenGL debug output for error reporting
+	printf("Phase 27.5.2: Initializing OpenGL debugging features...\n");
+	_Enable_GL_Debug_Output();
+	_Check_GL_Error("Enable debug output");
+	
 	// Phase 27.2.4: Initialize OpenGL shader program
 	printf("Phase 27.2.4: Loading and compiling OpenGL shaders...\n");
 	
 	// Load and compile vertex shader
 	GL_Vertex_Shader = _Load_And_Compile_Shader("resources/shaders/basic.vert", GL_VERTEX_SHADER);
+	_Check_GL_Error("Load vertex shader");
 	if (GL_Vertex_Shader == 0) {
 		printf("Phase 27.2.4 ERROR: Failed to load vertex shader!\n");
 		return;
@@ -472,6 +478,7 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Inits(void)
 	
 	// Load and compile fragment shader  
 	GL_Fragment_Shader = _Load_And_Compile_Shader("resources/shaders/basic.frag", GL_FRAGMENT_SHADER);
+	_Check_GL_Error("Load fragment shader");
 	if (GL_Fragment_Shader == 0) {
 		printf("Phase 27.2.4 ERROR: Failed to load fragment shader!\n");
 		glDeleteShader(GL_Vertex_Shader);
@@ -481,6 +488,7 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Inits(void)
 	
 	// Create and link shader program
 	GL_Shader_Program = _Create_Shader_Program(GL_Vertex_Shader, GL_Fragment_Shader);
+	_Check_GL_Error("Create shader program");
 	if (GL_Shader_Program == 0) {
 		printf("Phase 27.2.4 ERROR: Failed to create shader program!\n");
 		glDeleteShader(GL_Vertex_Shader);
@@ -497,10 +505,12 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Inits(void)
 	GL_Fragment_Shader = 0;
 	
 	printf("Phase 27.2.4: OpenGL shader program initialized successfully (ID: %u)\n", GL_Shader_Program);
+	_Check_GL_Error("Shader program initialization");
 	
 	// Phase 27.2.5: Create Vertex Array Object (VAO) for vertex attribute setup
 	printf("Phase 27.2.5: Creating Vertex Array Object (VAO)...\n");
 	glGenVertexArrays(1, &GL_VAO);
+	_Check_GL_Error("glGenVertexArrays");
 	if (GL_VAO == 0) {
 		printf("Phase 27.2.5 ERROR: Failed to create VAO!\n");
 		return;
@@ -508,6 +518,7 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Inits(void)
 	
 	// Bind VAO to configure vertex attributes
 	glBindVertexArray(GL_VAO);
+	_Check_GL_Error("glBindVertexArray");
 	
 	// Note: Vertex attributes will be configured dynamically in Apply_Render_State_Changes()
 	// based on the FVF format of the current vertex buffer. This allows supporting multiple
@@ -517,6 +528,7 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Inits(void)
 	glBindVertexArray(0);
 	
 	printf("Phase 27.2.5: VAO created successfully (ID: %u)\n", GL_VAO);
+	_Check_GL_Error("VAO setup complete");
 #endif
 }
 
@@ -2593,6 +2605,7 @@ void DX8Wrapper::Apply_Render_State_Changes()
 		// Phase 27.3.1: Update World matrix uniform in OpenGL shader
 		if (GL_Shader_Program != 0) {
 			glUseProgram(GL_Shader_Program);
+			_Check_GL_Error("Use shader program for world matrix");
 			
 			GLint loc = glGetUniformLocation(GL_Shader_Program, "uWorldMatrix");
 			if (loc != -1) {
@@ -2600,6 +2613,7 @@ void DX8Wrapper::Apply_Render_State_Changes()
 				// render_state.world is already transposed in Set_Transform()
 				// So we need to transpose it back for OpenGL (or use GL_TRUE in glUniformMatrix4fv)
 				glUniformMatrix4fv(loc, 1, GL_FALSE, (const float*)&render_state.world);
+				_Check_GL_Error("Update uWorldMatrix uniform");
 				
 				printf("Phase 27.3.1: Updated uWorldMatrix uniform\n");
 			}
@@ -2614,6 +2628,7 @@ void DX8Wrapper::Apply_Render_State_Changes()
 		// Phase 27.3.1: Update View matrix uniform in OpenGL shader
 		if (GL_Shader_Program != 0) {
 			glUseProgram(GL_Shader_Program);
+			_Check_GL_Error("Use shader program for view matrix");
 			
 			GLint loc = glGetUniformLocation(GL_Shader_Program, "uViewMatrix");
 			if (loc != -1) {
@@ -2621,6 +2636,7 @@ void DX8Wrapper::Apply_Render_State_Changes()
 				// render_state.view is already transposed in Set_Transform()
 				// So we need to transpose it back for OpenGL (or use GL_TRUE in glUniformMatrix4fv)
 				glUniformMatrix4fv(loc, 1, GL_FALSE, (const float*)&render_state.view);
+				_Check_GL_Error("Update uViewMatrix uniform");
 				
 				printf("Phase 27.3.1: Updated uViewMatrix uniform\n");
 			}
@@ -2662,10 +2678,12 @@ void DX8Wrapper::Apply_Render_State_Changes()
 					{
 						// Bind VAO
 						glBindVertexArray(GL_VAO);
+						_Check_GL_Error("Bind VAO");
 						
 						// Bind VBO
 						DX8VertexBufferClass* vb = static_cast<DX8VertexBufferClass*>(render_state.vertex_buffers[i]);
 						glBindBuffer(GL_ARRAY_BUFFER, vb->Get_GL_Vertex_Buffer());
+						_Check_GL_Error("Bind vertex buffer");
 						
 						// Setup vertex attributes based on FVF format
 						unsigned int fvf = render_state.vertex_buffers[i]->FVF_Info().Get_FVF();
@@ -2673,6 +2691,7 @@ void DX8Wrapper::Apply_Render_State_Changes()
 						
 						if (fvf != 0) {
 							_Setup_Vertex_Attributes(fvf, stride);
+							_Check_GL_Error("Setup vertex attributes");
 						}
 						
 						printf("Phase 27.2.5: Configured vertex attributes for FVF 0x%08x (stride %u)\n", fvf, stride);
@@ -2692,7 +2711,9 @@ void DX8Wrapper::Apply_Render_State_Changes()
 #else
 				// Unbind VAO and VBO
 				glBindVertexArray(0);
+				_Check_GL_Error("Unbind VAO");
 				glBindBuffer(GL_ARRAY_BUFFER, 0);
+				_Check_GL_Error("Unbind vertex buffer");
 #endif
 			}
 		}
@@ -3003,6 +3024,102 @@ int DX8Wrapper::_Get_Uniform_Location(unsigned int program, const char *uniform_
 	if (location == -1) {
 		printf("Phase 27.2.4 WARNING: Uniform '%s' not found in program %u\n", uniform_name, program);
 	}
+	
+	return location;
+}
+
+// Phase 27.5.2: OpenGL error checking and debugging
+
+/*!
+ * Check for OpenGL errors and log them with operation context
+ * Should be called after critical OpenGL calls for debugging
+ */
+void DX8Wrapper::_Check_GL_Error(const char *operation)
+{
+	GLenum error = glGetError();
+	
+	if (error != GL_NO_ERROR) {
+		const char *error_string = "UNKNOWN";
+		
+		switch (error) {
+			case GL_INVALID_ENUM:      error_string = "GL_INVALID_ENUM"; break;
+			case GL_INVALID_VALUE:     error_string = "GL_INVALID_VALUE"; break;
+			case GL_INVALID_OPERATION: error_string = "GL_INVALID_OPERATION"; break;
+			case GL_OUT_OF_MEMORY:     error_string = "GL_OUT_OF_MEMORY"; break;
+			case GL_INVALID_FRAMEBUFFER_OPERATION: error_string = "GL_INVALID_FRAMEBUFFER_OPERATION"; break;
+		}
+		
+		printf("Phase 27.5.2 GL ERROR: %s (0x%04X) during operation: %s\n", 
+			error_string, error, operation ? operation : "unknown");
+	}
+}
+
+/*!
+ * Enable OpenGL debug output for advanced error reporting
+ * Requires OpenGL 4.3+ or ARB_debug_output extension
+ */
+void DX8Wrapper::_Enable_GL_Debug_Output()
+{
+#ifdef GL_DEBUG_OUTPUT
+	// Check if debug output is available
+	if (glDebugMessageCallback) {
+		printf("Phase 27.5.2: Enabling GL_DEBUG_OUTPUT for advanced error reporting\n");
+		
+		glEnable(GL_DEBUG_OUTPUT);
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);  // Synchronous for easier debugging
+		
+		// Set up debug callback
+		glDebugMessageCallback([](GLenum source, GLenum type, GLuint id, GLenum severity, 
+			GLsizei length, const GLchar* message, const void* userParam) {
+			
+			// Filter out low-severity notifications
+			if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
+				return;
+			}
+			
+			const char *severity_str = "UNKNOWN";
+			switch (severity) {
+				case GL_DEBUG_SEVERITY_HIGH:   severity_str = "HIGH"; break;
+				case GL_DEBUG_SEVERITY_MEDIUM: severity_str = "MEDIUM"; break;
+				case GL_DEBUG_SEVERITY_LOW:    severity_str = "LOW"; break;
+			}
+			
+			const char *type_str = "UNKNOWN";
+			switch (type) {
+				case GL_DEBUG_TYPE_ERROR:               type_str = "ERROR"; break;
+				case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: type_str = "DEPRECATED"; break;
+				case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  type_str = "UNDEFINED BEHAVIOR"; break;
+				case GL_DEBUG_TYPE_PORTABILITY:         type_str = "PORTABILITY"; break;
+				case GL_DEBUG_TYPE_PERFORMANCE:         type_str = "PERFORMANCE"; break;
+			}
+			
+			printf("Phase 27.5.2 GL DEBUG [%s] %s: %s (ID: %u)\n", 
+				severity_str, type_str, message, id);
+		}, nullptr);
+		
+		printf("Phase 27.5.2: GL_DEBUG_OUTPUT enabled successfully\n");
+	} else {
+		printf("Phase 27.5.2 WARNING: GL_DEBUG_OUTPUT not available on this platform\n");
+	}
+#else
+	printf("Phase 27.5.2 WARNING: GL_DEBUG_OUTPUT not supported (requires OpenGL 4.3+)\n");
+#endif
+}
+
+/*!
+ * Safe version of _Get_Uniform_Location with optional logging
+ * Returns -1 if uniform not found, with optional warning message
+ */
+int DX8Wrapper::_Get_Uniform_Location_Safe(unsigned int program, const char *uniform_name, bool log_if_missing)
+{
+	GLint location = glGetUniformLocation(program, uniform_name);
+	
+	if (location == -1 && log_if_missing) {
+		printf("Phase 27.5.2 INFO: Uniform '%s' not found in program %u (may be optimized out)\n", 
+			uniform_name, program);
+	}
+	
+	_Check_GL_Error("glGetUniformLocation");
 	
 	return location;
 }

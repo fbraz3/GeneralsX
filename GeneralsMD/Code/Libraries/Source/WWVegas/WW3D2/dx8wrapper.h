@@ -432,6 +432,13 @@ public:
 	static void _Setup_Vertex_Attributes(unsigned int fvf, unsigned int vertex_stride);
 #endif
 
+	// Phase 27.5.2: OpenGL error checking and debugging
+#ifndef _WIN32
+	static void _Check_GL_Error(const char *operation);
+	static void _Enable_GL_Debug_Output();
+	static int _Get_Uniform_Location_Safe(unsigned int program, const char *uniform_name, bool log_if_missing = true);
+#endif
+
 	static IDirect3DSurface8 * _Create_DX8_Surface(unsigned int width, unsigned int height, WW3DFormat format);
 	static IDirect3DSurface8 * _Create_DX8_Surface(const char *filename);
 	static IDirect3DSurface8 * _Get_DX8_Front_Buffer();
