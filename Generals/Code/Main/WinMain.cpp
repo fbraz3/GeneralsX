@@ -753,12 +753,15 @@ static LONG WINAPI UnHandledExceptionFilter( struct _EXCEPTION_POINTERS* e_info 
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 
+#endif // _WIN32 - Windows-specific exception handling
+
 // WinMain ====================================================================
-/** Application entry point */
+/** Application entry point - Cross-platform */
 //=============================================================================
 Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
                       LPSTR lpCmdLine, Int nCmdShow )
 {
+#ifdef _WIN32
 	Int exitcode = 1;
 	try {
 
@@ -897,14 +900,20 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	TheMemoryPoolCriticalSection = NULL;
 
 	return exitcode;
-
+#else
+	// TODO: Implement cross-platform game initialization
+	printf("WinMain called on non-Windows platform - not yet implemented\n");
+	return 1;
+#endif // _WIN32
 }
 
+
 // CreateGameEngine ===========================================================
-/** Create the Win32 game engine we're going to use */
+/** Create the game engine - cross-platform */
 //=============================================================================
 GameEngine *CreateGameEngine( void )
 {
+#ifdef _WIN32
 	Win32GameEngine *engine;
 
 	engine = NEW Win32GameEngine;
@@ -913,25 +922,26 @@ GameEngine *CreateGameEngine( void )
 	engine->setIsActive(isWinMainActive);
 
 	return engine;
-
+#else
+	// TODO: Create cross-platform game engine implementation
+	return nullptr;
+#endif
 }
 
-#endif // _WIN32
-
+// Cross-platform main entry point wrapper
 #ifndef _WIN32
-// Cross-platform main entry point for non-Windows systems
+#include <string>
+
 int main(int argc, char* argv[])
 {
-    // Convert argc/argv to command line string like Windows
-    // For now, just call the simplified game main function
-    // TODO: Add proper command line parsing for cross-platform support
-    return 0; // Placeholder for actual game logic
-}
-
-// CreateGameEngine stub for non-Windows platforms
-GameEngine *CreateGameEngine( void )
-{
-    // TODO: Create cross-platform game engine
-    return nullptr; // Placeholder
+	// Convert command line arguments to Windows-style command line
+	std::string cmdLine;
+	for (int i = 1; i < argc; ++i) {
+		if (i > 1) cmdLine += " ";
+		cmdLine += argv[i];
+	}
+	
+	// Call WinMain with macOS/Linux parameters
+	return static_cast<int>(WinMain(nullptr, nullptr, const_cast<LPSTR>(cmdLine.c_str()), 1));
 }
 #endif // !_WIN32

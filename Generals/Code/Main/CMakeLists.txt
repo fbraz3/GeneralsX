@@ -8,20 +8,24 @@ else()
 endif()
 
 target_link_libraries(GeneralsX PRIVATE
-    binkstub
+    # TEMPORARIAMENTE COMENTADO: binkstub é x86_64, incompatível com ARM64
+    # $<$<PLATFORM_ID:Darwin>:${CMAKE_SOURCE_DIR}/libbinkstub.a>
+    # $<$<PLATFORM_ID:Windows>:binkstub>
     $<$<PLATFORM_ID:Windows>:comctl32>
+    core_debug
+    core_profile
     $<$<PLATFORM_ID:Windows>:d3d8>
     $<$<PLATFORM_ID:Windows>:d3dx8>
     $<$<PLATFORM_ID:Windows>:dbghelplib>
     $<$<PLATFORM_ID:Windows>:dinput8>
     $<$<PLATFORM_ID:Windows>:dxguid>
-    g_gameengine
-    g_gameenginedevice
-    gi_always
     $<$<PLATFORM_ID:Windows>:imm32>
     $<$<PLATFORM_ID:Windows>:milesstub>
     $<$<PLATFORM_ID:Windows>:vfw32>
     $<$<PLATFORM_ID:Windows>:winmm>
+    g_gameengine
+    g_gameenginedevice
+    gi_always
 )
 
 # Set build information variables with default values that can be overridden
