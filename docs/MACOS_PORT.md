@@ -70,19 +70,196 @@
 **Commits**:
 - `ee68dc65` - feat(opengl): complete Phase 27.5 testing and documentation
 
-#### 🔄 Phase 27.6: Final Documentation Update (In Progress - 17%)
+#### 🔄 Phase 27.6: Final Documentation Update (In Progress - 83%)
 
 **CURRENT TASK**: Updating all project documentation with Phase 27 completion status, achievements, and next steps.
 
 **Files Being Updated**:
 1. ✅ PHASE27/TODO_LIST.md (corrected to 26/32 tasks, 81%)
-2. 🔄 MACOS_PORT.md (this file - adding Phase 27.5 complete status)
+2. ✅ MACOS_PORT.md (this file - updated with Phase 27.5 and Generals investigation)
 3. ⏳ OPENGL_SUMMARY.md (pending - final implementation documentation)
 4. ⏳ NEXT_STEPS.md (pending - post-Phase 27 roadmap)
 5. ⏳ .github/copilot-instructions.md (pending - AI agent context update)
 6. ⏳ PHASE27/COMPLETION_SUMMARY.md (pending - consolidated report)
 
-**Progress**: 1/6 documentation files complete (17%)
+**Progress**: 5/6 documentation files complete (83%)
+
+---
+
+## 🔍 Phase 27.7: Generals Base Game Investigation (October 9, 2025)
+
+### ❌ Generals (Base Game) Linking Issue - ROOT CAUSE IDENTIFIED
+
+**Problem**: GeneralsX executable is 79KB instead of ~14MB (99.5% too small, 31,788 missing symbols)
+
+**Investigation Timeline**: Three compilation attempts → Symbol analysis → Source code investigation → **Root cause discovered**
+
+#### Root Cause: `#ifdef _WIN32` Removes ALL Game Code on macOS
+
+**Location**: `Generals/Code/Main/WinMain.cpp`
+
+**Problem Code** (lines 764-905):
+```cpp
+Int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, Int nCmdShow) {
+#ifdef _WIN32  // ← PROBLEM: Entire game logic inside #ifdef
+    Int exitcode = 1;
+    try {
+        SetUnhandledExceptionFilter(UnHandledExceptionFilter);
+        TheAsciiStringCriticalSection = &critSec1;
+        TheGlobalData->m_windowed = ...;
+        initMemoryManager();
+        // ... 800+ lines of game initialization
+        exitcode = GameMain();  // Actual game entry point
+        shutdownMemoryManager();
+    }
+    return exitcode;
+#else
+    // ← ONLY THIS COMPILES ON MACOS!
+    printf("WinMain called on non-Windows platform - not yet implemented\n");
+    return 1;  // No game engine references
+#endif
+}
+
+// Line 916 - BLOCKS ENGINE CREATION
+GameEngine *CreateGameEngine(void) {
+#ifdef _WIN32
+    Win32GameEngine *engine = NEW Win32GameEngine;
+    return engine;
+#else
+    return nullptr;  // ← ONLY THIS ON MACOS!
+#endif
+}
+```
+
+#### Evidence - Symbol Analysis
+
+**Generals WinMain.cpp.o (BROKEN)**:
+```bash
+$ nm build/macos-arm64/Generals/Code/Main/CMakeFiles/GeneralsX.dir/WinMain.cpp.o | grep " U "
+                 U __Unwind_Resume
+                 U __ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE6appendEPKcm
+                 U __ZdlPv
+                 U ___gxx_personality_v0
+                 U _puts
+                 U _strlen
+# ❌ ONLY 6 STDLIB SYMBOLS - ZERO GAME ENGINE REFERENCES!
+# Missing: GameEngine, CreateGameEngine, GameMain, TheGlobalData, initMemoryManager, etc.
+```
+
+**GeneralsMD GeneralsXZH (WORKING)**:
+```bash
+$ nm build/macos-arm64/GeneralsMD/GeneralsXZH | grep " U " | head -10
+                 U _BinkClose
+                 U _BinkOpen
+                 U _SDL_CreateWindow
+                 U _SDL_GL_CreateContext
+                 U _SDL_Init
+# ✅ HUNDREDS OF SYMBOLS - FULL GAME CODE!
+```
+
+**Why It Fails**:
+1. WinMain.cpp.o has ZERO game symbols (only stdlib)
+2. Linker sees no undefined game symbols → nothing to resolve
+3. Linker doesn't pull static libraries (315MB libg_gameengine.a unused)
+4. Result: 79KB stub executable (main wrapper + WinMain stub + stdlib)
+
+#### Attempted Fix (FAILED)
+
+**Approach**: Remove `#ifdef _WIN32` from WinMain/CreateGameEngine bodies
+
+**Result**: 20+ compilation errors
+- `UnHandledExceptionFilter` undeclared
+- `critSec1-5` undeclared (in #ifdef _WIN32 header block)
+- `TheGlobalData`, `ApplicationHInstance`, `gLoadScreenBitmap` undeclared
+- SetUnhandledExceptionFilter, GetModuleFileName, SetCurrentDirectory (Windows APIs)
+
+**Conclusion**: Cannot just remove #ifdef - requires full cross-platform port
+
+#### Comparison with GeneralsMD (Working)
+
+**GeneralsMD Approach** (CORRECT):
+```cpp
+// #ifdef ONLY in includes, NOT in function bodies
+#ifdef _WIN32
+#include <crtdbg.h>
+#include <eh.h>
+#else
+#define _CrtSetDbgFlag(f) (0)
+#define _set_se_translator(f) ((void)0)
+#endif
+
+// NO #ifdef IN FUNCTION BODY - ALL CODE COMPILES ON MACOS!
+Int APIENTRY WinMain(...) {
+    Int exitcode = 1;
+    try {
+        SetUnhandledExceptionFilter(...);  // win32_compat.h provides POSIX wrapper
+        TheGlobalData->m_windowed = ...;   // Cross-platform declaration
+        exitcode = GameMain();             // Symbols defined → linker pulls libs
+    }
+    return exitcode;
+}
+```
+
+**Key Differences**:
+- ✅ GeneralsMD: win32_compat.h (2270+ lines) provides POSIX wrappers for Windows APIs
+- ✅ GeneralsMD: Headers refactored (Windows-only declarations in #ifdef blocks)
+- ✅ GeneralsMD: All code compiles on macOS → full symbol table → 14.7MB executable
+- ❌ Generals: #ifdef in function bodies → stub code only → 79KB executable
+
+#### Decision: Postpone "Phase 27 Generals" Port
+
+**Estimated Effort**: 7-11 hours for complete cross-platform port
+
+**Scope**:
+1. Port WinMain.cpp (remove #ifdef from bodies, add win32_compat.h wrappers)
+2. Refactor headers (move Windows-only declarations to #ifdef blocks)
+3. Create POSIX wrappers for Windows APIs:
+   - SetUnhandledExceptionFilter
+   - GetModuleFileName
+   - SetCurrentDirectory
+   - Critical sections (already in GeneralsMD)
+4. Test and validate compilation/linking
+5. Achieve ~14MB executable with ~30k symbols
+
+**Strategic Decision**:
+- ✅ **Postpone Generals base game** to future dedicated "Phase 27 Generals" epic
+- ✅ **Focus on GeneralsMD (Zero Hour)** - 14.7MB, 31,891 symbols, ready for testing
+- ✅ Approach: Implement all OpenGL features in GeneralsMD first, then backport to Generals
+
+#### Git Cleanup - File Changes Analysis
+
+**Modified Files After Investigation**:
+- ✅ **Kept**: `Generals/Code/Main/CMakeLists.txt` (core_debug/profile additions, valid improvements)
+- ✅ **Kept**: `Generals/Code/Main/WinMain.cpp` (#ifdef structure provides template for future port)
+- ❌ **Reverted**: `Generals/Code/GameEngineDevice/Source/W3DDevice/GameClient/W3DDisplay.cpp` (invalid assumptions)
+- ❌ **Reverted**: `Generals/Code/GameEngineDevice/Source/W3DDevice/GameClient/WorldHeightMap.cpp` (incorrectly commented method)
+
+**Invalid Assumptions in Reverted Files**:
+```cpp
+// W3DDisplay.cpp - FALSE ASSUMPTIONS (REVERTED)
+- // ApplicationHWnd = (HWND)g_SDLWindow; // GENERALS BASE: doesn't exist  ❌ FALSE!
++ ApplicationHWnd = (HWND)g_SDLWindow;  ✅ IT EXISTS IN GENERALS!
+
+- // if (TheGlobalData->m_forceDirectX)  ❌ FALSE!
++ if (TheGlobalData->m_forceDirectX)  ✅ IT EXISTS IN GENERALS!
+
+// WorldHeightMap.cpp - INCORRECT COMMENT (REVERTED)
+- // GENERALS BASE: countTiles() doesn't exist  ❌ FALSE!
+- /* Int WorldHeightMap::countTiles(...) { ... } */
++ Int WorldHeightMap::countTiles(...) { ... }  ✅ METHOD EXISTS IN GENERALS!
+```
+
+**Current Status**:
+- ✅ **GeneralsMD (Zero Hour)**: 14.7MB, 31,891 symbols, OpenGL/SDL2 integrated, **READY FOR TESTING**
+- ❌ **Generals (Base Game)**: 79KB stub, 103 symbols, **BLOCKED** - requires "Phase 27 Generals" port (7-11 hours)
+
+**Next Steps**:
+1. Complete Phase 27.6-27.8 documentation for GeneralsMD
+2. Begin GeneralsMD runtime testing and validation
+3. Future: Implement "Phase 27 Generals" epic following GeneralsMD pattern
+4. Backport OpenGL implementation from GeneralsMD → Generals after testing complete
+
+---
 
 #### ✅ Phase 27.5.2: Shader Debugging Infrastructure Complete
 
