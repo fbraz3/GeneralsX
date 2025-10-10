@@ -6,6 +6,25 @@ option(ENABLE_OPENGL "Enable OpenGL renderer support" ON)
 option(ENABLE_DIRECTX "Enable DirectX 8 renderer support" ON)
 option(DEFAULT_TO_OPENGL "Use OpenGL as default renderer" OFF)
 
+# SDL2 is required for cross-platform window/input management
+if(NOT WIN32)
+    find_package(SDL2 REQUIRED)
+    if(SDL2_FOUND)
+        message(STATUS "Phase 27.1.2: SDL2 found - ${SDL2_LIBRARIES}")
+        # Create SDL2::SDL2 imported target if not already created
+        if(NOT TARGET SDL2::SDL2)
+            add_library(SDL2::SDL2 UNKNOWN IMPORTED)
+            set_target_properties(SDL2::SDL2 PROPERTIES
+                IMPORTED_LOCATION "${SDL2_LIBRARIES}"
+                INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIRS}"
+            )
+        endif()
+        message(STATUS "    ${SDL2_LIBRARIES}")
+    else()
+        message(FATAL_ERROR "SDL2 not found - required for non-Windows platforms")
+    endif()
+endif()
+
 # Detect platform and configure appropriate OpenGL
 if(ENABLE_OPENGL)
     if(WIN32)

@@ -167,7 +167,8 @@
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_OSX_ARCHITECTURES": "arm64",
-                "RTS_FLAGS": "-Wall"
+                "RTS_FLAGS": "-Wall",
+                "SDL2_DIR": "/opt/homebrew/opt/sdl2/lib/cmake/SDL2"
             }
         },
         {

@@ -8,7 +8,7 @@ else()
 endif()
 
 target_link_libraries(GeneralsXZH PRIVATE
-    ${CMAKE_SOURCE_DIR}/libbinkstub.a
+    $<$<PLATFORM_ID:Windows>:${CMAKE_SOURCE_DIR}/libbinkstub.a>
     $<$<PLATFORM_ID:Windows>:comctl32>
     core_debug
     core_profile
@@ -21,6 +21,7 @@ target_link_libraries(GeneralsXZH PRIVATE
     $<$<PLATFORM_ID:Windows>:milesstub>
     $<$<PLATFORM_ID:Windows>:vfw32>
     $<$<PLATFORM_ID:Windows>:winmm>
+    $<$<NOT:$<PLATFORM_ID:Windows>>:SDL2::SDL2>
     z_gameengine
     z_gameenginedevice
     zi_always
