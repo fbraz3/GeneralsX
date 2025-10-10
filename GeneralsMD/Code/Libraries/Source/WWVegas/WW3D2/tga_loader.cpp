@@ -3,6 +3,8 @@
  * @brief TGA texture loader implementation
  */
 
+#ifndef _WIN32  // OpenGL backend only
+
 #include "tga_loader.h"
 #include <cstdio>
 #include <cstdlib>
@@ -310,3 +312,5 @@ TGAData* LoadTGA(const char* file_path) {
     
     return tga;
 }
+
+#endif  // !_WIN32

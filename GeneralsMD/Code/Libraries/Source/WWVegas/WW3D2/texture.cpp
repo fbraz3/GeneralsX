@@ -42,6 +42,7 @@
 // Phase 27.2.3: OpenGL texture support - GLAD must be included first
 #ifndef _WIN32
 #include <glad/glad.h>
+#include "texture_cache.h"  // Phase 28.5: Texture cache integration
 #endif
 
 #include "texture.h"
@@ -134,10 +135,13 @@ TextureBaseClass::~TextureBaseClass(void)
 		D3DTexture = NULL;
 	}
 
-	// Phase 27.2.3: Cleanup OpenGL texture
+	// Phase 28.5: Release OpenGL texture from cache
 #ifndef _WIN32
 	if (GLTexture != 0) {
-		glDeleteTextures(1, &GLTexture);
+		StringClass path = Get_Full_Path();  // Non-const copy for Peek_Buffer()
+		if (!path.Is_Empty()) {
+			TextureCache::Get_Instance()->Release_Texture(path.Peek_Buffer());
+		}
 		GLTexture = 0;
 	}
 #endif
@@ -1005,13 +1009,30 @@ void TextureClass::Apply(unsigned int stage)
 		// Windows: Use DirectX8 texture binding
 		DX8Wrapper::Set_DX8_Texture(stage, Peek_D3D_Base_Texture());
 #else
-		// Phase 27.2.3: macOS/Linux - Use OpenGL texture binding
+		// Phase 28.5: macOS/Linux - Load texture from cache if not already loaded
+		if (GLTexture == 0) {
+			// Try to load texture from file using cache system
+			StringClass path = Get_Full_Path();  // Non-const copy for Peek_Buffer()
+			if (!path.Is_Empty()) {
+				printf("Phase 28.5: Loading texture from cache: %s\n", path.Peek_Buffer());
+				GLTexture = TextureCache::Get_Instance()->Get_Texture(path.Peek_Buffer());
+				if (GLTexture != 0) {
+					printf("Phase 28.5: Texture loaded from cache (ID: %u)\n", GLTexture);
+				} else {
+					printf("Phase 28.5 WARNING: Failed to load texture from cache: %s\n", path.Peek_Buffer());
+				}
+			} else {
+				printf("Phase 28.5 WARNING: Texture has no file path!\n");
+			}
+		}
+		
+		// Apply texture if available
 		if (GLTexture != 0) {
 			glActiveTexture(GL_TEXTURE0 + stage);
 			glBindTexture(GL_TEXTURE_2D, GLTexture);
-			// printf("Phase 27.2.3: Applied GL texture %u to stage %u\n", GLTexture, stage);
+			// printf("Phase 28.5: Applied GL texture %u to stage %u\n", GLTexture, stage);
 		} else {
-			printf("Phase 27.2.3 WARNING: Attempting to apply NULL GL texture!\n");
+			printf("Phase 28.5 WARNING: Attempting to apply NULL GL texture!\n");
 		}
 #endif
 	}
@@ -1020,7 +1041,7 @@ void TextureClass::Apply(unsigned int stage)
 #ifdef _WIN32
 		DX8Wrapper::Set_DX8_Texture(stage, NULL);
 #else
-		// Phase 27.2.3: Unbind texture on OpenGL
+		// Phase 28.5: Unbind texture on OpenGL
 		glActiveTexture(GL_TEXTURE0 + stage);
 		glBindTexture(GL_TEXTURE_2D, 0);
 #endif
