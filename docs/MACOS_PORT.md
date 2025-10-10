@@ -2,13 +2,75 @@
 
 **Project Name**: 🎯 **GeneralsX** (formerly Command & Conquer: Generals)
 
-**Port Status**: 🎉 **Phase 27 – OpenGL Graphics Implementation (81% Complete)** 🚀
+**Port Status**: 🎉 **Phase 28 – Texture System Implementation (56% Complete)** 🚀
 
-**Date**: October 7, 2025
+**Date**: October 10, 2025
 
-**Status**: 🔄 **IN PROGRESS** – Phase 27 Graphics Engine implementation ongoing. 26/32 tasks complete (81%). All Phase 27.1-27.5 complete: SDL2 window system, OpenGL buffers, uniform updates, render states, runtime testing, shader debugging, and performance baseline established. Ready for Phase 27.6-27.8 finalization (documentation, backport, git release).
+**Status**: 🔄 **IN PROGRESS** – Phase 28 Texture System implementation ongoing. 5/9 phases complete (56%). All Phase 28.1-28.5 complete: DDS loader, TGA loader, OpenGL upload pipeline, texture cache, and DX8 wrapper integration. Ready for Phase 28.6-28.9 runtime testing.
 
-## Latest Update (October 7, 2025 - Phase 27.5: Complete Testing & Validation Suite)
+## Latest Update (October 10, 2025 - Phase 28.5: DX8 Wrapper Integration)
+
+**🎉 PHASE 28.5 COMPLETE: Full Texture System Integration with DX8 Wrapper! (100%)**
+
+### Phase 28 Achievement Summary
+
+| Phase | Description | Status |
+|-------|-------------|--------|
+| 28.1 - DDS Loader | BC1/BC2/BC3 + RGB8/RGBA8, mipmap chains | ✅ **COMPLETE** |
+| 28.2 - TGA Loader | RLE/uncompressed, 24/32-bit, BGR→RGBA | ✅ **COMPLETE** |
+| 28.3 - Texture Upload | glTexImage2D, filtering, wrapping | ✅ **COMPLETE** |
+| 28.4 - Texture Cache | Reference counting, path normalization | ✅ **COMPLETE** |
+| 28.5 - DX8 Integration | TextureClass::Apply(), destructor hooks | ✅ **COMPLETE** |
+| 28.6 - Runtime Testing | Deploy, run, validate cache hits/misses | ⏳ **PENDING** |
+| 28.7 - UI Testing | Menu backgrounds, buttons, cursors | ⏳ **PENDING** |
+| 28.8 - Font Support | Atlas loading, Blit_Char integration | ⏳ **PENDING** |
+| 28.9 - Skirmish Test | 10+ min gameplay without crashes | ⏳ **PENDING** |
+| **TOTAL** | **9 Phases** | **5/9 (56%) COMPLETE** |
+
+### Recent Achievements (October 10, 2025)
+
+#### ✅ Phase 28.5: DX8 Wrapper Integration (100%)
+
+**BREAKTHROUGH**: Complete texture system integrated with DX8 wrapper! TextureClass::Apply() now uses TextureCache for all texture loading. Fixed all DDSData API mismatches, added platform protection, and achieved successful build with 0 errors.
+
+**Implementation Details**:
+
+1. ✅ **TextureClass::Apply() Integration**
+   - Modified to call TextureCache::Get_Texture() when GLTexture == 0
+   - Automatic texture loading from cache with reference counting
+   - Path extracted via Get_Full_Path() for cache lookup
+   
+2. ✅ **TextureClass Destructor Integration**
+   - Added TextureCache::Release_Texture() call
+   - Proper reference counting for automatic cleanup
+   - Memory leak prevention via RAII pattern
+   
+3. ✅ **Critical Bug Fixes**
+   - Fixed DDSData API mismatch (8 errors):
+     * `dds->pixels` → `dds->mip_data[0]`
+     * `dds->mip_count` → `dds->num_mipmaps`
+     * `DDSFormat::DXT1/DXT3/DXT5` → `DDS_FORMAT_DXT1/DXT3/DXT5`
+     * `DDSFormat::RGB8` → `DDS_FORMAT_RGB8`
+   - Added dds_loader.cpp, tga_loader.cpp to CMakeLists.txt
+   - Platform protection: All Phase 28 files wrapped with `#ifndef _WIN32`
+   
+4. ✅ **Build Success**
+   - Compilation: 0 errors, 129 pre-existing warnings
+   - Executable: 14MB ARM64 native macOS
+   - Exit code: 0
+   - Deployed to $HOME/GeneralsX/GeneralsMD/
+
+**Files Created** (Phase 28.1-28.5):
+- `dds_loader.cpp/.h` (260 lines) - DDS format parser
+- `tga_loader.cpp/.h` (315 lines) - TGA format parser
+- `texture_upload.cpp/.h` (250 lines) - OpenGL upload pipeline
+- `texture_cache.cpp/.h` (300 lines) - Singleton cache with refcounting
+
+**Next Steps**: Phase 28.6 - Runtime validation with actual game assets
+
+---
+
+## Previous Update (October 7, 2025 - Phase 27.5: Complete Testing & Validation Suite)
 
 **🎉 PHASE 27.5 COMPLETE: All Testing, Validation, and Documentation Finished! (100%)**
 
