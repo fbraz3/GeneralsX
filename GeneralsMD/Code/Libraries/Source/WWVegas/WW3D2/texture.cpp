@@ -967,6 +967,13 @@ void TextureClass::Apply_New_Surface
 */
 void TextureClass::Apply(unsigned int stage)
 {
+#ifndef _WIN32
+	static int apply_call_count = 0;
+	if (apply_call_count++ < 5) {
+		printf("Phase 28.7 DEBUG: TextureClass::Apply() called (stage=%u, call #%d)\n", stage, apply_call_count);
+	}
+#endif
+	
 	// Initialization needs to be done when texture is used if it hasn't been done before.
 	// XBOX always initializes textures at creation time.
 	if (!Initialized)
