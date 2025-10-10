@@ -22,6 +22,75 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
+# ============================================================================
+# Compilation Cache Configuration (ccache/sccache)
+# ============================================================================
+# Dramatically reduces rebuild times by caching compiled object files
+# - First build: ~3-4 minutes (no cache)
+# - Rebuild with changes: ~30-60 seconds (cache hit)
+# - Full rebuild from cache: ~1 minute
+#
+# Installation:
+#   macOS:   brew install ccache
+#   Linux:   apt-get install ccache / yum install ccache
+#   Windows: cargo install sccache (cross-platform Rust implementation)
+#
+# Configuration:
+#   ccache -M 10G  (set max cache size to 10GB)
+#   ccache -s      (show cache statistics)
+#   ccache -C      (clear cache if needed)
+# ============================================================================
+
+option(USE_CCACHE "Use ccache/sccache to speed up compilation" ON)
+
+if(USE_CCACHE)
+    # Try to find ccache first (native Unix tool)
+    find_program(CCACHE_PROGRAM ccache)
+    
+    # Fallback to sccache (cross-platform Rust implementation)
+    if(NOT CCACHE_PROGRAM)
+        find_program(CCACHE_PROGRAM sccache)
+    endif()
+    
+    if(CCACHE_PROGRAM)
+        message(STATUS "Found compilation cache: ${CCACHE_PROGRAM}")
+        
+        # Set compiler launchers for both C and C++
+        set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+        set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+        
+        # Get cache program name for statistics
+        get_filename_component(CACHE_NAME "${CCACHE_PROGRAM}" NAME)
+        
+        message(STATUS "✅ Compilation cache enabled: ${CACHE_NAME}")
+        message(STATUS "   - First build will populate cache (~3-4 min)")
+        message(STATUS "   - Subsequent rebuilds will be much faster (~30-60 sec)")
+        message(STATUS "   - Run '${CACHE_NAME} -s' to view cache statistics")
+        message(STATUS "   - Run '${CACHE_NAME} -M 10G' to set max cache size")
+        
+        # Recommended ccache/sccache configuration
+        if(CACHE_NAME STREQUAL "ccache")
+            message(STATUS "   💡 Recommended: export CCACHE_DIR=$HOME/.ccache (default)")
+            message(STATUS "   💡 Recommended: export CCACHE_MAXSIZE=10G")
+        elseif(CACHE_NAME STREQUAL "sccache")
+            message(STATUS "   💡 Recommended: export SCCACHE_DIR=$HOME/.sccache")
+            message(STATUS "   💡 Recommended: export SCCACHE_CACHE_SIZE=10G")
+        endif()
+    else()
+        message(STATUS "⚠️  Compilation cache not found (ccache/sccache)")
+        message(STATUS "   Install ccache for faster rebuilds:")
+        message(STATUS "   - macOS:   brew install ccache")
+        message(STATUS "   - Linux:   apt-get install ccache")
+        message(STATUS "   - Windows: cargo install sccache")
+        message(STATUS "   Continuing without cache (rebuilds will be slower)")
+    endif()
+else()
+    message(STATUS "ℹ️  Compilation cache disabled (USE_CCACHE=OFF)")
+    message(STATUS "   Enable with: cmake -DUSE_CCACHE=ON")
+endif()
+
+# ============================================================================
+
 include(FeatureSummary)
 include(CMakeDependentOption)
 

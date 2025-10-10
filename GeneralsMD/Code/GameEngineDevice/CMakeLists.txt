@@ -207,6 +207,7 @@ target_link_libraries(z_gameenginedevice PRIVATE
     corei_gameenginedevice_private
     zi_always
     zi_main
+    $<$<NOT:$<PLATFORM_ID:Windows>>:SDL2::SDL2>
 )
 
 target_link_libraries(z_gameenginedevice PUBLIC
