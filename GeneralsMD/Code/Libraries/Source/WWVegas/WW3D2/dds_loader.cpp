@@ -7,14 +7,14 @@
 // Created: October 9, 2025
 //============================================================================
 
+#ifndef _WIN32  // OpenGL backend only
+
 #include "dds_loader.h"
 #include <cstdio>
 #include <cstring>
 #include <algorithm>
 
-#ifndef _WIN32
 #include <glad/glad.h>
-#endif
 
 //============================================================================
 // Helper Functions
@@ -112,7 +112,6 @@ size_t CalculateCompressedSize(DDSFormat format, int width, int height) {
     return CalculateMipSize(format, width, height);
 }
 
-#ifndef _WIN32
 uint32_t GetGLInternalFormat(DDSFormat format) {
     switch (format) {
         case DDS_FORMAT_DXT1: return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
@@ -123,7 +122,6 @@ uint32_t GetGLInternalFormat(DDSFormat format) {
         default: return 0;
     }
 }
-#endif
 
 DDSData* LoadDDSFromMemory(const uint8_t* buffer, size_t buffer_size) {
     if (!buffer || buffer_size < 4 + sizeof(DDSHeader)) {
@@ -255,3 +253,5 @@ DDSData* LoadDDS(const char* file_path) {
     delete[] buffer;
     return dds;
 }
+
+#endif  // !_WIN32

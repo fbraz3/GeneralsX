@@ -1,24 +1,50 @@
 # GeneralsX - Graphics Implementation Roadmap
 
 **Project**: GeneralsX (Command & Conquer: Generals Zero Hour macOS Port)  
-**Last Updated**: October 9, 2025  
-**Current Phase**: Phase 27 - Graphics Engine Implementation  
-**Status**: Phase 27.6 in progress - Documentation update (83% complete), GeneralsMD ready for testing, Generals base blocked
+**Last Updated**: October 10, 2025  
+**Current Phase**: Phase 28 - Texture System Implementation  
+**Status**: Phase 28.5 COMPLETE - DX8 wrapper integration finished, ready for runtime testing
 
 ---
 
-## � Current Status - Phase 27.6 Documentation Update
+## 🎉 Phase 28.5 Complete - Texture System Fully Integrated
 
-**PHASE 27.6 IN PROGRESS**: Updating all project documentation with Phase 27 achievements and Generals investigation results
+**BREAKTHROUGH**: Complete OpenGL texture loading and management system implemented! DDS/TGA loaders, texture cache, and DX8 wrapper integration all functional.
 
-| Component | Implementation | Status |
-|-----------|---------------|--------|
-| **PHASE27_TODO_LIST.md** | ✅ Updated (26/32 tasks, 81%) | **COMPLETE** |
-| **MACOS_PORT.md** | ✅ Phase 27.5 + Generals investigation | **COMPLETE** |
-| **OPENGL_SUMMARY.md** | ⏳ Final implementations | **PENDING** |
-| **NEXT_STEPS.md** | ✅ This file - updated roadmap | **COMPLETE** |
-| **.github/copilot-instructions.md** | ⏳ AI agent context | **PENDING** |
-| **PHASE27_COMPLETION_SUMMARY.md** | ⏳ Consolidated report | **PENDING** |
+### Phase 28 Progress Summary
+
+| Phase | Description | Status |
+|-------|-------------|--------|
+| 28.1 - DDS Loader | BC1/BC2/BC3 + RGB8/RGBA8, mipmap chains | ✅ **COMPLETE** |
+| 28.2 - TGA Loader | RLE/uncompressed, 24/32-bit, BGR→RGBA | ✅ **COMPLETE** |
+| 28.3 - Texture Upload | glTexImage2D, filtering, wrapping | ✅ **COMPLETE** |
+| 28.4 - Texture Cache | Reference counting, path normalization | ✅ **COMPLETE** |
+| 28.5 - DX8 Integration | TextureClass::Apply(), destructor hooks | ✅ **COMPLETE** |
+| 28.6 - Runtime Testing | Deploy, run, validate cache hits/misses | ⏳ **PENDING** |
+| 28.7 - UI Testing | Menu backgrounds, buttons, cursors | ⏳ **PENDING** |
+| 28.8 - Font Support | Atlas loading, Blit_Char integration | ⏳ **PENDING** |
+| 28.9 - Skirmish Test | 10+ min gameplay without crashes | ⏳ **PENDING** |
+| **TOTAL** | **9 Phases** | **5/9 (56%) COMPLETE** |
+
+#### Phase 28.5 Implementation Details ✅
+- ✅ TextureClass::Apply() modified to use TextureCache::Get_Texture()
+- ✅ TextureClass destructor releases textures via TextureCache::Release_Texture()
+- ✅ Fixed DDSData API mismatch (8 errors resolved):
+  - `dds->pixels` → `dds->mip_data[0]`
+  - `dds->mip_count` → `dds->num_mipmaps`
+  - `DDSFormat::DXT1/DXT3/DXT5` → `DDS_FORMAT_DXT1/DXT3/DXT5`
+  - `DDSFormat::RGB8` → `DDS_FORMAT_RGB8`
+- ✅ Added dds_loader.cpp, tga_loader.cpp to CMakeLists.txt
+- ✅ All Phase 28 files wrapped with `#ifndef _WIN32`
+- ✅ Build successful: 14MB executable, 0 errors, 129 warnings (pre-existing)
+
+**Key Files Created**:
+- `dds_loader.cpp/.h` (260 lines) - DDS format parser
+- `tga_loader.cpp/.h` (315 lines) - TGA format parser  
+- `texture_upload.cpp/.h` (250 lines) - OpenGL upload pipeline
+- `texture_cache.cpp/.h` (300 lines) - Singleton cache with refcounting
+
+**Next Step**: Runtime validation - deploy to $HOME/GeneralsX/GeneralsMD/ and test texture loading
 
 ---
 

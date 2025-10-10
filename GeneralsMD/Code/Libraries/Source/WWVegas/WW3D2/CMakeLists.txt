@@ -206,6 +206,14 @@ set(WW3D2_SRC
     #textdraw.h
     texture.cpp
     texture.h
+    texture_cache.cpp
+    texture_cache.h
+    texture_upload.cpp
+    texture_upload.h
+    dds_loader.cpp
+    dds_loader.h
+    tga_loader.cpp
+    tga_loader.h
     texturefilter.cpp
     texturefilter.h
     textureloader.cpp

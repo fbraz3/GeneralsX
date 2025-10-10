@@ -49,6 +49,12 @@
 #include "always.h"
 #include "dllist.h"
 #include "d3d8.h"
+
+#ifndef _WIN32
+// Phase 28.5: OpenGL texture system integration
+#include <glad/glad.h>  // Must be included before texture_cache.h
+#include "texture_cache.h"
+#endif
 #include "matrix4.h"
 #include "statistics.h"
 #include "wwstring.h"
@@ -1707,7 +1713,14 @@ WWINLINE void DX8Wrapper::Set_DX8_Texture_Stage_State(unsigned stage, D3DTEXTURE
 WWINLINE void DX8Wrapper::Set_DX8_Texture(unsigned int stage, IDirect3DBaseTexture8* texture)
 {
   	if (stage >= MAX_TEXTURE_STAGES)
-  	{	DX8CALL(SetTexture(stage, texture));
+  	{	
+#ifdef _WIN32
+		DX8CALL(SetTexture(stage, texture));
+#else
+		// Phase 28.5: OpenGL texture binding for stages beyond MAX_TEXTURE_STAGES
+		// (Usually not used, but handle gracefully)
+		printf("TEXTURE WARNING: Texture stage %u beyond MAX_TEXTURE_STAGES, ignoring\n", stage);
+#endif
   		return;
   	}
 
@@ -1715,11 +1728,32 @@ WWINLINE void DX8Wrapper::Set_DX8_Texture(unsigned int stage, IDirect3DBaseTextu
 
 	SNAPSHOT_SAY(("DX8 - SetTexture(%x) ",texture));
 
+#ifdef _WIN32
 	if (Textures[stage]) Textures[stage]->Release();
 	Textures[stage] = texture;
 	if (Textures[stage]) Textures[stage]->AddRef();
 	DX8CALL(SetTexture(stage, texture));
 	DX8_RECORD_TEXTURE_CHANGE();
+#else
+	// Phase 28.5: OpenGL texture binding
+	// On OpenGL, we bind textures directly via glBindTexture
+	// The texture pointer from DirectX is a mock object that we ignore
+	
+	// For now, we don't bind anything here - the actual binding happens
+	// in the Apply() function when textures are loaded from files
+	// This is a stub to maintain API compatibility
+	
+	Textures[stage] = texture;  // Store for state tracking
+	
+	// If texture is NULL, unbind the texture unit
+	if (!texture) {
+		glActiveTexture(GL_TEXTURE0 + stage);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		printf("TEXTURE: Unbound texture from stage %u\n", stage);
+	}
+	
+	DX8_RECORD_TEXTURE_CHANGE();
+#endif
 }
 
 WWINLINE void DX8Wrapper::_Copy_DX8_Rects(
