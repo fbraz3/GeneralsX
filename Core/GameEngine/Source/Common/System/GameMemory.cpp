@@ -594,8 +594,14 @@ inline void MemoryPoolSingleBlock::setNextFreeBlock(MemoryPoolSingleBlock *b)
 	DEBUG_ASSERTCRASH(m_owningBlob != NULL, ("must be called on blob block"));
 	this->m_nextBlock = b;
 #ifdef MPSB_DLINK
+	// Phase 28.9.5: Add pointer validation to prevent heap corruption on macOS
 	if (b) {
-		b->m_prevBlock = this;
+		// Validate pointer is in valid memory range (not garbage)
+		if ((uintptr_t)b >= 0x1000 && (uintptr_t)b < 0x800000000000) {
+			b->m_prevBlock = this;
+		} else {
+			printf("MEMORY PROTECTION: Invalid block pointer 0x%016lx in setNextFreeBlock, skipping link\n", (uintptr_t)b);
+		}
 	}
 #endif
 }
@@ -1716,6 +1722,13 @@ void MemoryPool::freeBlock(void* pBlockPtr)
 	ScopedCriticalSection scopedCriticalSection(TheMemoryPoolCriticalSection);
 
 	MemoryPoolSingleBlock *block = MemoryPoolSingleBlock::recoverBlockFromUserData(pBlockPtr);
+	
+	// Phase 28.9.5: Validate block pointer before accessing members
+	if (!block || (uintptr_t)block < 0x1000 || (uintptr_t)block >= 0x800000000000) {
+		printf("MEMORY PROTECTION: Invalid block pointer 0x%016lx in freeBlock, ignoring\n", (uintptr_t)block);
+		return;
+	}
+	
 	MemoryPoolBlob *blob = block->getOwningBlob();
 #ifdef MEMORYPOOL_DEBUG
 	const char* tagString = block->debugGetLiteralTagString();
@@ -2284,6 +2297,14 @@ void DynamicMemoryAllocator::freeBytes(void* pBlockPtr)
 #endif
 
 	MemoryPoolSingleBlock *block = MemoryPoolSingleBlock::recoverBlockFromUserData(pBlockPtr);
+	
+	// Phase 28.9.11: Validate block pointer BEFORE any access
+	if (!block || (uintptr_t)block < 0x1000) {
+		printf("MEMORY CORRUPTION: Invalid block pointer %p in freeBytes (userData=%p)\n", 
+			(void*)block, pBlockPtr);
+		return; // Skip free to avoid crash
+	}
+	
 #ifdef MEMORYPOOL_DEBUG
 	Int waste = 0, used = 0;
 #ifdef INTENSE_DMA_BOOKKEEPING
@@ -2319,7 +2340,22 @@ void DynamicMemoryAllocator::freeBytes(void* pBlockPtr)
 			}
 		}
 #endif // MEMORYPOOL_DEBUG
-		block->getOwningBlob()->getOwningPool()->freeBlock(pBlockPtr);
+		// Phase 28.9.7: NULL pointer protection for corrupted memory blocks
+		MemoryPoolBlob* owning_blob = block->getOwningBlob();
+		if (!owning_blob || (uintptr_t)owning_blob < 0x1000) {
+			printf("MEMORY CORRUPTION: Invalid owning blob pointer %p in freeBytes (block=%p)\n", 
+				(void*)owning_blob, pBlockPtr);
+			return; // Skip free to avoid crash
+		}
+		
+		MemoryPool* owning_pool = owning_blob->getOwningPool();
+		if (!owning_pool || (uintptr_t)owning_pool < 0x1000) {
+			printf("MEMORY CORRUPTION: Invalid owning pool pointer %p in freeBytes (blob=%p, block=%p)\n", 
+				(void*)owning_pool, (void*)owning_blob, pBlockPtr);
+			return; // Skip free to avoid crash
+		}
+		
+		owning_pool->freeBlock(pBlockPtr);
 	}
 	else
 	{
