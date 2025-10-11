@@ -3612,25 +3612,38 @@ void InGameUI::postWindowDraw( void )
 	Int hudOffsetX = 0;
 	Int hudOffsetY = 0;
 
+	// Phase 28.10.1b: Temporarily disabled - surface NULL issue in text rendering
+	#if 0
 	if (m_networkLatencyPointSize > 0 && TheGameLogic->isInMultiplayerGame())
 	{
 		drawNetworkLatency(hudOffsetX, hudOffsetY);
 	}
+	#endif
 
+	// Phase 28.10.1: Temporarily disabled to avoid Metal compiler crash during text rendering
+	// TODO: Re-enable after fixing shader compilation issues
+	#if 0
 	if (m_renderFpsPointSize > 0)
 	{
 		drawRenderFps(hudOffsetX, hudOffsetY);
 	}
+	#endif
 
+	// Phase 28.10.1b: Temporarily disabled - same surface NULL issue as FPS rendering
+	#if 0
 	if (m_systemTimePointSize > 0)
 	{
 		drawSystemTime(hudOffsetX, hudOffsetY);
 	}
+	#endif
 
+	// Phase 28.10.1b: Temporarily disabled - same surface NULL issue as FPS rendering
+	#if 0
 	if ( (m_gameTimePointSize > 0) && !TheGameLogic->isInShellGame() && TheGameLogic->isInGame() )
 	{
 		drawGameTime();
 	}
+	#endif
 }
 
 //-------------------------------------------------------------------------------------------------

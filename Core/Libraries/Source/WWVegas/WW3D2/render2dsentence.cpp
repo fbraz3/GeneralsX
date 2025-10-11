@@ -365,6 +365,12 @@ Render2DSentenceClass::Build_Textures (void)
 		PendingSurfaceStruct &surface_info = PendingSurfaces[index];
 		SurfaceClass *curr_surface = surface_info.Surface;
 
+		// Phase 28.10.1: NULL surface protection (prevent crash in Peek_D3D_Surface)
+		if (curr_surface == NULL || curr_surface->Peek_D3D_Surface() == NULL) {
+			printf("RENDER2D PROTECTION: Skipping NULL surface at index %d\n", index);
+			continue;
+		}
+
 		//
 		//	Get the dimensions of the surface
 		//

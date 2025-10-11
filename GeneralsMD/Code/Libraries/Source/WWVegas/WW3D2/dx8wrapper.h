@@ -274,6 +274,13 @@ public:
 	static bool Is_Device_Lost() { return IsDeviceLost; }
 	static bool Is_Initted(void) { return IsInitted; }
 
+#ifndef _WIN32
+	// Phase 28.9.2: Set OpenGL ready flag (must be called after GLAD initialization)
+	static void Set_OpenGL_Ready(bool ready);
+	static bool Is_OpenGL_Ready();
+	static void Initialize_OpenGL_Resources(); // Call this after Set_OpenGL_Ready(true)
+#endif
+
 	static bool Has_Stencil (void);
 	static void Get_Format_Name(unsigned int format, StringClass *tex_format);
 

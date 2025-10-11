@@ -59,7 +59,7 @@
 
 //#if defined(RTS_DEBUG) && !defined(MEMORYPOOL_DEBUG) && !defined(DISABLE_MEMORYPOOL_DEBUG)
 #if defined(RTS_DEBUG) && !defined(MEMORYPOOL_DEBUG) && !defined(DISABLE_MEMORYPOOL_DEBUG)
-	#define MEMORYPOOL_DEBUG
+//	#define MEMORYPOOL_DEBUG  // Phase 28.9: Disabled per jmarshall-win64-modern to prevent crashes
 #endif
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////

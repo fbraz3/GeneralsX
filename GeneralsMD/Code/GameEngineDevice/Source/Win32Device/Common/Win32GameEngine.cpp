@@ -175,8 +175,16 @@ void Win32GameEngine::serviceWindowsOS( void )
 	// Phase 27.1.5: SDL2 event loop for cross-platform support (macOS/Linux)
 	SDL_Event event;
 	
+	// Debug: Count events polled
+	static int event_count = 0;
+	
 	// Poll all pending SDL events
 	while (SDL_PollEvent(&event)) {
+		if (event_count < 10) {
+			printf("Phase 27.1.5 DEBUG: SDL event type=%d (count=%d)\n", event.type, event_count);
+		}
+		event_count++;
+		
 		switch (event.type) {
 			case SDL_QUIT:
 				// User closed the window or system quit

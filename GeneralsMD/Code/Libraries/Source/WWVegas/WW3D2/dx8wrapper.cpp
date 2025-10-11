@@ -88,6 +88,15 @@
 
 #include "shdlib.h"
 
+// Phase 28.9.2: SDL2 for OpenGL context checks
+#ifndef _WIN32
+#include <SDL2/SDL.h>
+#include <glad/glad.h>
+
+// Phase 28.9.2: Global flag to indicate OpenGL is fully ready (window + context + GLAD loaded)
+static bool g_openGLReady = false;
+#endif
+
 const int DEFAULT_RESOLUTION_WIDTH = 640;
 const int DEFAULT_RESOLUTION_HEIGHT = 480;
 const int DEFAULT_BIT_DEPTH = 32;
@@ -228,6 +237,111 @@ DX8_Stats	 DX8Wrapper::stats;
 ***********************************************************************************/
 static CORE_IDirect3D8 g_mockD3D8Interface;
 static CORE_IDirect3DDevice8 g_mockD3DDevice;
+#endif
+
+#ifndef _WIN32
+/***********************************************************************************
+**
+** Phase 28.9.2: OpenGL Ready State Management
+**
+***********************************************************************************/
+void DX8Wrapper::Set_OpenGL_Ready(bool ready)
+{
+	g_openGLReady = ready;
+	if (ready) {
+		printf("Phase 28.9.2: OpenGL marked as READY (window + context + GLAD initialized)\n");
+	} else {
+		printf("Phase 28.9.2: OpenGL marked as NOT READY\n");
+	}
+}
+
+bool DX8Wrapper::Is_OpenGL_Ready()
+{
+	return g_openGLReady;
+}
+
+// Phase 28.9.2: Initialize OpenGL resources (shaders, VAO) after OpenGL context is ready
+void DX8Wrapper::Initialize_OpenGL_Resources()
+{
+	if (!g_openGLReady) {
+		printf("Phase 28.9.2 ERROR: Cannot initialize OpenGL resources - OpenGL not ready!\n");
+		return;
+	}
+	
+	printf("Phase 28.9.2: Initializing OpenGL resources (shaders, VAO)...\n");
+	
+	// Phase 27.5.2: Enable OpenGL debug output for error reporting
+	// DISABLED: Metal shader compiler dumps binary bytecode to stdout on macOS
+	// printf("Phase 27.5.2: Initializing OpenGL debugging features...\n");
+	// _Enable_GL_Debug_Output();
+	// _Check_GL_Error("Enable debug output");
+	
+	// Phase 27.2.4: Initialize OpenGL shader program
+	printf("Phase 27.2.4: Loading and compiling OpenGL shaders...\n");
+	
+	// Load and compile vertex shader
+	GL_Vertex_Shader = _Load_And_Compile_Shader("resources/shaders/basic.vert", GL_VERTEX_SHADER);
+	_Check_GL_Error("Load vertex shader");
+	if (GL_Vertex_Shader == 0) {
+		printf("Phase 27.2.4 ERROR: Failed to load vertex shader!\n");
+		return;
+	}
+	
+	// Load and compile fragment shader  
+	GL_Fragment_Shader = _Load_And_Compile_Shader("resources/shaders/basic.frag", GL_FRAGMENT_SHADER);
+	_Check_GL_Error("Load fragment shader");
+	if (GL_Fragment_Shader == 0) {
+		printf("Phase 27.2.4 ERROR: Failed to load fragment shader!\n");
+		glDeleteShader(GL_Vertex_Shader);
+		GL_Vertex_Shader = 0;
+		return;
+	}
+	
+	// Create and link shader program
+	GL_Shader_Program = _Create_Shader_Program(GL_Vertex_Shader, GL_Fragment_Shader);
+	_Check_GL_Error("Create shader program");
+	if (GL_Shader_Program == 0) {
+		printf("Phase 27.2.4 ERROR: Failed to create shader program!\n");
+		glDeleteShader(GL_Vertex_Shader);
+		glDeleteShader(GL_Fragment_Shader);
+		GL_Vertex_Shader = 0;
+		GL_Fragment_Shader = 0;
+		return;
+	}
+	
+	// Clean up individual shaders (they're now part of the program)
+	glDeleteShader(GL_Vertex_Shader);
+	glDeleteShader(GL_Fragment_Shader);
+	GL_Vertex_Shader = 0;
+	GL_Fragment_Shader = 0;
+	
+	printf("Phase 27.2.4: OpenGL shader program initialized successfully (ID: %u)\n", GL_Shader_Program);
+	_Check_GL_Error("Shader program initialization");
+	
+	// Phase 27.2.5: Create Vertex Array Object (VAO) for vertex attribute setup
+	printf("Phase 27.2.5: Creating Vertex Array Object (VAO)...\n");
+	glGenVertexArrays(1, &GL_VAO);
+	_Check_GL_Error("glGenVertexArrays");
+	if (GL_VAO == 0) {
+		printf("Phase 27.2.5 ERROR: Failed to create VAO!\n");
+		return;
+	}
+	
+	// Bind VAO to configure vertex attributes
+	glBindVertexArray(GL_VAO);
+	_Check_GL_Error("glBindVertexArray");
+	
+	// Note: Vertex attributes will be configured dynamically in Apply_Render_State_Changes()
+	// based on the FVF format of the current vertex buffer. This allows supporting multiple
+	// vertex formats (XYZ, XYZN, XYZNUV1, XYZNDUV1, etc.) at runtime.
+	
+	// Unbind VAO for now (will be bound again before draw calls)
+	glBindVertexArray(0);
+	
+	printf("Phase 27.2.5: VAO created successfully (ID: %u)\n", GL_VAO);
+	printf("Phase 28.9.2: OpenGL resources initialized successfully\n");
+	_Check_GL_Error("VAO setup complete");
+}
 #endif
 
 /***********************************************************************************
@@ -460,10 +574,18 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Inits(void)
 	Set_Default_Global_Render_States();
 
 #ifndef _WIN32
+	// Phase 28.9.2: Only initialize OpenGL resources if OpenGL is fully ready
+	if (!g_openGLReady) {
+		printf("Phase 28.9.2: OpenGL not ready yet, skipping shader/VAO initialization\n");
+		printf("Phase 28.9.2: (Will be initialized later when OpenGL context is available)\n");
+		return;
+	}
+	
 	// Phase 27.5.2: Enable OpenGL debug output for error reporting
-	printf("Phase 27.5.2: Initializing OpenGL debugging features...\n");
-	_Enable_GL_Debug_Output();
-	_Check_GL_Error("Enable debug output");
+	// DISABLED: Metal shader compiler dumps binary bytecode to stdout on macOS
+	// printf("Phase 27.5.2: Initializing OpenGL debugging features...\n");
+	// _Enable_GL_Debug_Output();
+	// _Check_GL_Error("Enable debug output");
 	
 	// Phase 27.2.4: Initialize OpenGL shader program
 	printf("Phase 27.2.4: Loading and compiling OpenGL shaders...\n");
@@ -1912,6 +2034,14 @@ void DX8Wrapper::End_Scene(bool flip_frames)
 	DX8WebBrowser::Render(0);
 
 	if (flip_frames) {
+#ifndef _WIN32
+		// Phase 28.10: OpenGL buffer swap for frame presentation
+		extern SDL_Window* g_SDLWindow;
+		if (g_SDLWindow) {
+			SDL_GL_SwapWindow(g_SDLWindow);
+		}
+		FrameCount++;
+#else
 		DX8_Assert();
 		HRESULT hr;
 		{
@@ -1949,6 +2079,7 @@ void DX8Wrapper::End_Scene(bool flip_frames)
 		else {
 			DX8_ErrorCode(hr);
 		}
+#endif // _WIN32
 	}
 
 	// Each frame, release all of the buffers and textures.
@@ -2278,6 +2409,12 @@ void DX8Wrapper::Draw(
 	unsigned short min_vertex_index,
 	unsigned short vertex_count)
 {
+	// Phase 28.10.2: TEMPORARY - Disable all OpenGL drawing to isolate Metal compiler crashes
+	// TODO: Re-enable after shader system is fully functional
+#ifndef _WIN32
+	return;
+#endif
+
 	if (DrawPolygonLowBoundLimit && DrawPolygonLowBoundLimit>=polygon_count) return;
 
 	DX8_THREAD_ASSERT();
@@ -2412,12 +2549,42 @@ void DX8Wrapper::Draw(
 					break;
 				}
 				
-				// Render with glDrawElements using index buffer
-				// Index offset is in bytes: (start_index + iba_offset) * sizeof(unsigned short)
-				GLsizei offset_bytes = (start_index + render_state.iba_offset) * sizeof(unsigned short);
+			// Render with glDrawElements using index buffer
+			// Index offset is in bytes: (start_index + iba_offset) * sizeof(unsigned short)
+			GLsizei offset_bytes = (start_index + render_state.iba_offset) * sizeof(unsigned short);
+			
+			// Phase 28.9.2: Comprehensive safety checks before drawing
+			if (!g_openGLReady) {
+				printf("Phase 28.9.2 PROTECTION: OpenGL not fully initialized yet, skipping draw call\n");
+				return;
+			}
+			
+			if (!SDL_GL_GetCurrentContext()) {
+				printf("Phase 28.9.2 PROTECTION: No OpenGL context active, skipping draw call\n");
+				return;
+			}				GLint current_program = 0;
+				glGetIntegerv(GL_CURRENT_PROGRAM, &current_program);
+				if (current_program == 0) {
+					printf("Phase 28.9.2 PROTECTION: No shader program bound, skipping draw call\n");
+					return;
+				}
 				
-				printf("Phase 27.4.1: glDrawElements(type=%d, count=%u, offset=%d, verts=%u)\n", 
-					primitive_type, index_count, offset_bytes, vertex_count);
+				GLint current_vbo = 0;
+				glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &current_vbo);
+				if (current_vbo == 0) {
+					printf("Phase 28.9.2 PROTECTION: No VBO bound, skipping draw call\n");
+					return;
+				}
+				
+				GLint current_ibo = 0;
+				glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &current_ibo);
+				if (current_ibo == 0) {
+					printf("Phase 28.9.2 PROTECTION: No IBO bound, skipping draw call\n");
+					return;
+				}
+				
+				printf("Phase 27.4.1: glDrawElements(type=%d, count=%u, offset=%d, verts=%u, prog=%d, vbo=%d, ibo=%d)\n", 
+					primitive_type, index_count, offset_bytes, vertex_count, current_program, current_vbo, current_ibo);
 				
 				glDrawElements(gl_primitive_type, index_count, GL_UNSIGNED_SHORT, 
 					(const void*)(uintptr_t)offset_bytes);
@@ -2770,12 +2937,14 @@ unsigned int DX8Wrapper::_Create_GL_Texture
 	bool rendertarget
 )
 {
+#ifndef _WIN32
+	// Phase 28.10: Re-enable texture creation with OpenGL
 	GLuint gl_texture = 0;
 	
 	// Generate OpenGL texture
 	glGenTextures(1, &gl_texture);
 	if (gl_texture == 0) {
-		printf("Phase 27.2.3 ERROR: glGenTextures failed!\n");
+		printf("Phase 28.10 ERROR: glGenTextures failed!\n");
 		return 0;
 	}
 	
@@ -2862,6 +3031,7 @@ unsigned int DX8Wrapper::_Create_GL_Texture
 	glBindTexture(GL_TEXTURE_2D, 0);
 	
 	return gl_texture;
+#endif // _WIN32
 }
 
 // Phase 27.2.4: OpenGL shader program management functions
@@ -2977,7 +3147,9 @@ bool DX8Wrapper::_Check_Shader_Compile_Status(unsigned int shader, const char *s
 		if (log_length > 0) {
 			char *error_log = (char*)malloc(log_length);
 			glGetShaderInfoLog(shader, log_length, &log_length, error_log);
-			printf("Phase 27.2.4 SHADER COMPILE ERROR (%s):\n%s\n", shader_name, error_log);
+			// Phase 28.9.9: Disabled - Metal framework dumps binary bytecode to stdout
+			// printf("Phase 27.2.4 SHADER COMPILE ERROR (%s):\n%s\n", shader_name, error_log);
+			printf("Phase 28.9.9: Shader compilation failed for %s (log suppressed - Metal bytecode dump prevention)\n", shader_name);
 			free(error_log);
 		}
 		
@@ -3003,7 +3175,9 @@ bool DX8Wrapper::_Check_Program_Link_Status(unsigned int program)
 		if (log_length > 0) {
 			char *error_log = (char*)malloc(log_length);
 			glGetProgramInfoLog(program, log_length, &log_length, error_log);
-			printf("Phase 27.2.4 PROGRAM LINK ERROR:\n%s\n", error_log);
+			// Phase 28.9.9: Disabled - Metal framework dumps binary bytecode to stdout
+			// printf("Phase 27.2.4 PROGRAM LINK ERROR:\n%s\n", error_log);
+			printf("Phase 28.9.9: Program link failed (log suppressed - Metal bytecode dump prevention)\n");
 			free(error_log);
 		}
 		
@@ -3122,6 +3296,29 @@ int DX8Wrapper::_Get_Uniform_Location_Safe(unsigned int program, const char *uni
 	_Check_GL_Error("glGetUniformLocation");
 	
 	return location;
+}
+
+// Phase 27.5.2: OpenGL error checking helper
+/*!
+ * Check for OpenGL errors and print diagnostic information
+ * @param operation Description of the operation being checked
+ */
+void _Check_GL_Error(const char* operation)
+{
+#ifndef _WIN32
+	GLenum error = glGetError();
+	if (error != GL_NO_ERROR) {
+		const char* error_string = "UNKNOWN_ERROR";
+		switch (error) {
+			case GL_INVALID_ENUM: error_string = "GL_INVALID_ENUM"; break;
+			case GL_INVALID_VALUE: error_string = "GL_INVALID_VALUE"; break;
+			case GL_INVALID_OPERATION: error_string = "GL_INVALID_OPERATION"; break;
+			case GL_OUT_OF_MEMORY: error_string = "GL_OUT_OF_MEMORY"; break;
+			case GL_INVALID_FRAMEBUFFER_OPERATION: error_string = "GL_INVALID_FRAMEBUFFER_OPERATION"; break;
+		}
+		printf("GL ERROR in %s: %s (0x%04X)\n", operation, error_string, error);
+	}
+#endif
 }
 
 // Phase 27.2.5: Vertex attribute setup based on FVF format

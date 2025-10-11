@@ -866,9 +866,10 @@ static AsciiString removeExtension(const AsciiString& in)
 }
 
 // ------------------------------------------------------------------------------------------------
-const char* PORTABLE_SAVE				= "Save\\";
-const char* PORTABLE_MAPS				= "Maps\\";
-const char* PORTABLE_USER_MAPS	= "UserData\\Maps\\";
+// Phase 28.9.8: Fixed Windows path separators to Unix-style for cross-platform compatibility
+const char* PORTABLE_SAVE				= "Save/";
+const char* PORTABLE_MAPS				= "Maps/";
+const char* PORTABLE_USER_MAPS	= "UserData/Maps/";
 
 // ------------------------------------------------------------------------------------------------
 AsciiString GameState::realMapPathToPortableMapPath(const AsciiString& in) const
