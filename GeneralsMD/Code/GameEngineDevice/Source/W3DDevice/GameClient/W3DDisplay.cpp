@@ -44,9 +44,9 @@ static void drawFramerateBar(void);
 #include <glad/glad.h>  // CRITICAL: GLAD must be included BEFORE SDL2 to avoid OpenGL header conflicts
 #include <SDL2/SDL.h>
 
-// SDL2 global variables for window and OpenGL context management
-static SDL_Window* g_SDLWindow = nullptr;
-static SDL_GLContext g_GLContext = nullptr;
+// SDL2 global variables for window and OpenGL context management (shared with dx8wrapper.cpp)
+SDL_Window* g_SDLWindow = nullptr;
+SDL_GLContext g_GLContext = nullptr;
 #endif
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
@@ -743,25 +743,36 @@ void W3DDisplay::init( void )
 			SortingRendererClass::SetMinVertexBufferSize(1);
 		}
 
-		// Phase 27.1.3: Initialize SDL2 and OpenGL on non-Windows platforms
+	// Phase 27.1.3: Initialize SDL2 and OpenGL on non-Windows platforms
 #ifndef _WIN32
-		printf("Phase 27.1.3: Initializing SDL2 windowing system...\n");
-		
-		// Initialize SDL2 video subsystem
+	printf("Phase 27.1.3: Initializing SDL2 windowing system...\n");
+	
+	// Phase 28.9.3: This is the ONLY place where SDL2 should be initialized
+	// Early initialization in GameEngine.cpp was removed because it caused Cocoa infinite loop
+	if (!SDL_WasInit(SDL_INIT_VIDEO)) {
+		printf("Phase 27.1.3: Initializing SDL2 VIDEO subsystem...\n");
 		if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 			printf("FATAL: SDL2 initialization failed: %s\n", SDL_GetError());
 			throw ERROR_INVALID_D3D; // Reuse error code for initialization failure
 		}
-		
-		// Configure OpenGL 3.3 Core Profile attributes BEFORE window creation
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-		
-		// Get resolution from global data (will be set later, use defaults for now)
+		printf("Phase 28.9.3: SDL2 initialized successfully\n");
+	} else {
+		printf("Phase 28.9.3: WARNING - SDL2 already initialized (unexpected!)\n");
+	}
+	
+	// Phase 28.9.5: Use OpenGL 2.1 for better macOS compatibility
+	// OpenGL 3.3+ on macOS requires Core Profile which triggers Metal shader compilation issues
+	// OpenGL 2.1 is widely supported and avoids these problems
+	printf("Phase 28.9.5: Configuring OpenGL 2.1 for maximum macOS compatibility...\n");
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+	// No profile mask for OpenGL 2.1 (it predates profiles)
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+	
+	// Additional hints to ensure compatibility
+	SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);  // Prefer hardware acceleration		// Get resolution from global data (will be set later, use defaults for now)
 		Int windowWidth = TheGlobalData->m_xResolution > 0 ? TheGlobalData->m_xResolution : 800;
 		Int windowHeight = TheGlobalData->m_yResolution > 0 ? TheGlobalData->m_yResolution : 600;
 		
@@ -798,28 +809,33 @@ void W3DDisplay::init( void )
 		// Make context current
 		SDL_GL_MakeCurrent(g_SDLWindow, g_GLContext);
 		
-		// Initialize GLAD OpenGL function loader
-		if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
-			printf("FATAL: GLAD OpenGL loader initialization failed\n");
-			SDL_GL_DeleteContext(g_GLContext);
-			SDL_DestroyWindow(g_SDLWindow);
-			SDL_Quit();
-			throw ERROR_INVALID_D3D;
-		}
-		
-		// Log successful OpenGL initialization
-		const GLubyte* glVersion = glGetString(GL_VERSION);
-		const GLubyte* glRenderer = glGetString(GL_RENDERER);
-		const GLubyte* glVendor = glGetString(GL_VENDOR);
-		printf("Phase 27.1.3: OpenGL initialization successful!\n");
-		printf("  OpenGL Version: %s\n", glVersion);
-		printf("  Renderer: %s\n", glRenderer);
-		printf("  Vendor: %s\n", glVendor);
-		
-		// Enable V-Sync (1 = enabled, 0 = disabled, -1 = adaptive)
-		SDL_GL_SetSwapInterval(1);
-		
-		// Set ApplicationHWnd to SDL window for compatibility with existing code
+	// Initialize GLAD OpenGL function loader
+	if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
+		printf("FATAL: GLAD OpenGL loader initialization failed\n");
+		SDL_GL_DeleteContext(g_GLContext);
+		SDL_DestroyWindow(g_SDLWindow);
+		SDL_Quit();
+		throw ERROR_INVALID_D3D;
+	}
+	
+	// Log successful OpenGL initialization
+	const GLubyte* glVersion = glGetString(GL_VERSION);
+	const GLubyte* glRenderer = glGetString(GL_RENDERER);
+	const GLubyte* glVendor = glGetString(GL_VENDOR);
+	printf("Phase 27.1.3: OpenGL initialization successful!\n");
+	printf("  OpenGL Version: %s\n", glVersion);
+	printf("  Renderer: %s\n", glRenderer);
+	printf("  Vendor: %s\n", glVendor);
+	
+	// Phase 28.9.2: Mark OpenGL as fully ready (window + context + GLAD all initialized)
+	DX8Wrapper::Set_OpenGL_Ready(true);
+	
+	// Phase 28.9.2: Now that OpenGL is ready, initialize OpenGL resources (shaders, VAO)
+	printf("Phase 28.9.2: Calling Initialize_OpenGL_Resources() after OpenGL context ready...\n");
+	DX8Wrapper::Initialize_OpenGL_Resources();
+	
+	// Enable V-Sync (1 = enabled, 0 = disabled, -1 = adaptive)
+	SDL_GL_SetSwapInterval(1);		// Set ApplicationHWnd to SDL window for compatibility with existing code
 		ApplicationHWnd = (HWND)g_SDLWindow;
 		
 		printf("Phase 27.1.3: SDL2 window created (%dx%d, %s)\n", 
@@ -1872,15 +1888,11 @@ void W3DDisplay::draw( void )
 	//USE_PERF_TIMER(W3DDisplay_draw)
 
 #ifndef _WIN32
-	// Phase 27.1.6: OpenGL rendering test - validate SDL2/OpenGL stack works
+	// Phase 28.10: OpenGL rendering active - removed early return to enable rendering
 	if (g_SDLWindow && g_GLContext) {
 		glClearColor(0.2f, 0.3f, 0.4f, 1.0f); // Blue-gray background
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		SDL_GL_SwapWindow(g_SDLWindow);
-		
-		// Early return until DirectX->OpenGL translation is complete (Part 2)
-		// This prevents crashes from unimplemented DirectX calls
-		return;
+		// DO NOT return here - let rendering continue below
 	}
 #endif
 

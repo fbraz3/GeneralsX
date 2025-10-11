@@ -2360,8 +2360,17 @@ static GameWindow *parseWindow( File *inFile, char *buffer )
 	}
 	else
 	{
-		parentSize.x = TheDisplay->getWidth();
-		parentSize.y = TheDisplay->getHeight();
+		// Phase 28.9.4: Check if TheDisplay is initialized before accessing it
+		// During early INI parsing, TheDisplay may not exist yet
+		if (TheDisplay != NULL) {
+			parentSize.x = TheDisplay->getWidth();
+			parentSize.y = TheDisplay->getHeight();
+		} else {
+			// Use default resolution if Display not yet initialized
+			parentSize.x = 800;
+			parentSize.y = 600;
+			printf("Phase 28.9.4 WARNING: TheDisplay NULL in parseWindow, using defaults (800x600)\n");
+		}
 	}
 
 	// Initialize the instance data to the defaults

@@ -33,7 +33,7 @@ Your support helps with:
 This project transforms the Windows-exclusive Command & Conquer: Generals into a truly cross-platform game:
 
 - **🍎 macOS Native Support** - Full compatibility with Apple Silicon and Intel Macs
-- **🐧 Linux Distribution** - Native builds for major Linux distributions  
+- **🐧 Linux Distribution** - Native builds for major Linux distributions
 - **🪟 Windows Enhanced** - Improved stability and modern graphics support
 - **🎮 Unified Experience** - Consistent gameplay across all platforms
 - **🔧 Modern Architecture** - Updated from VC6/C++98 to modern C++20 standards

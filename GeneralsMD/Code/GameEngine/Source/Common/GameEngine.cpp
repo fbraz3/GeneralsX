@@ -108,6 +108,8 @@
 #include "GameNetwork/LANAPI.h"
 #include "GameNetwork/GameSpy/GameResultsThread.h"
 
+// Phase 28.9.3: SDL2 headers removed - initialization now done in W3DDisplay only
+
 #include "Common/version.h"
 
 
@@ -603,14 +605,15 @@ void GameEngine::init()
 	#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
-		initSubsystem(TheArchiveFileSystem, "TheArchiveFileSystem", createArchiveFileSystem(), NULL); // this MUST come after TheLocalFileSystem creation
-		printf("GameEngine::init() - TheArchiveFileSystem initialized\n");
-		fflush(stdout);
+	initSubsystem(TheArchiveFileSystem, "TheArchiveFileSystem", createArchiveFileSystem(), NULL); // this MUST come after TheLocalFileSystem creation
+	printf("GameEngine::init() - TheArchiveFileSystem initialized\n");
+	fflush(stdout);
 
-		printf("GameEngine::init() - IMMEDIATELY after TheArchiveFileSystem initialized\n");
-		fflush(stdout);
+	// Phase 28.9.3: SDL2 initialization removed from here - it will be done in W3DDisplay::init()
+	// when actually needed for window creation. Early init was causing Cocoa infinite loop on macOS.
 
-		printf("GameEngine::init() - About to enter second DUMP_PERF_STATS section\n");
+	printf("GameEngine::init() - IMMEDIATELY after TheArchiveFileSystem initialized\n");
+	fflush(stdout);		printf("GameEngine::init() - About to enter second DUMP_PERF_STATS section\n");
 		fflush(stdout);
 
     	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
@@ -775,8 +778,18 @@ void GameEngine::init()
 	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
 	#endif/////////////////////////////////////////////////////////////////////////////////////////////
 		initSubsystem(TheAudio,"TheAudio", TheGlobalData->m_headless ? NEW AudioManagerDummy : createAudioManager(), NULL);
+		printf("GameEngine::init() - AUDIO CHECK: isMusicAlreadyLoaded() = %s\n", 
+			TheAudio->isMusicAlreadyLoaded() ? "true" : "false");
+		fflush(stdout);
+		// Phase 28.9: Temporarily disable music requirement for graphics testing
+		// Original code: if (!TheAudio->isMusicAlreadyLoaded()) setQuitting(TRUE);
+		#ifdef REQUIRE_MUSIC_TO_START
 		if (!TheAudio->isMusicAlreadyLoaded())
 			setQuitting(TRUE);
+		#else
+		// Allow game to continue without music for OpenGL/texture testing
+		printf("GameEngine::init() - MUSIC BYPASS: Continuing without music for Phase 28 testing\n");
+		#endif
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////

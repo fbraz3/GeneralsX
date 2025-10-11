@@ -9,6 +9,12 @@
 #include <cstdio>
 #include <cstring>
 
+#ifdef __APPLE__
+#include <SDL2/SDL.h>
+#else
+#include <SDL.h>
+#endif
+
 // Extension constants (defined if not already present)
 #ifndef GL_TEXTURE_MAX_ANISOTROPY_EXT
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT 0x84FE
@@ -107,13 +113,22 @@ static void Apply_Texture_Parameters(const TextureUploadParams& params, bool has
  * @brief Create OpenGL texture from DDS data
  */
 GLuint Create_GL_Texture_From_DDS(const DDSData* dds, const TextureUploadParams& params) {
-    if (!dds || !dds->mip_data[0]) {
-        printf("TEXTURE ERROR: Invalid DDS data (null pointer)\n");
+    if (!dds) {
+        printf("TEXTURE ERROR: NULL DDSData passed to Create_GL_Texture_From_DDS\n");
         return 0;
     }
     
+    // CRITICAL: Verify we have a valid OpenGL context before making GL calls
+    #ifndef _WIN32
+    void* current_context = SDL_GL_GetCurrentContext();
+    if (!current_context) {
+        printf("TEXTURE ERROR: No OpenGL context active! Cannot upload DDS texture. Deferring upload...\n");
+        return 0; // Texture will be loaded on-demand when context is ready
+    }
+    #endif
+    
     if (dds->width == 0 || dds->height == 0) {
-        printf("TEXTURE ERROR: Invalid DDS dimensions %dx%d\n", dds->width, dds->height);
+        printf("TEXTURE ERROR: Invalid DDS dimensions %ux%u\n", dds->width, dds->height);
         return 0;
     }
     
@@ -134,7 +149,7 @@ GLuint Create_GL_Texture_From_DDS(const DDSData* dds, const TextureUploadParams&
                          dds->format == DDS_FORMAT_DXT3 || 
                          dds->format == DDS_FORMAT_DXT5);
     
-    printf("TEXTURE: Uploading DDS texture (ID %u): %dx%d, format %d, %d mipmap(s), compressed=%d\n",
+    printf("TEXTURE: Uploading DDS texture (ID %u): %ux%u, format %d, %d mipmap(s), compressed=%d\n",
            texture_id, dds->width, dds->height, (int)dds->format, dds->num_mipmaps, is_compressed);
     
     // Upload all mipmap levels
@@ -187,6 +202,15 @@ GLuint Create_GL_Texture_From_TGA(const TGAData* tga, const TextureUploadParams&
         printf("TEXTURE ERROR: Invalid TGA data (null pointer)\n");
         return 0;
     }
+    
+    // CRITICAL: Verify we have a valid OpenGL context before making GL calls
+    #ifndef _WIN32
+    void* current_context = SDL_GL_GetCurrentContext();
+    if (!current_context) {
+        printf("TEXTURE ERROR: No OpenGL context active! Cannot upload texture. Deferring upload...\n");
+        return 0; // Texture will be loaded on-demand when context is ready
+    }
+    #endif
     
     if (tga->width == 0 || tga->height == 0) {
         printf("TEXTURE ERROR: Invalid TGA dimensions %ux%u\n", tga->width, tga->height);

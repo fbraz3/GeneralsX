@@ -4,6 +4,18 @@
 
 **Port Status**: 🎉 **Phase 28 – Runtime Stability Achieved (78% Complete)** 🚀
 
+## Latest Update (October 11, 2025) — Metal Backend Plan
+
+Given recurring instability in the OpenGL→Metal translation path on macOS (AGXMetal shader compiler crashes and runtime GPU faults), we will proceed with a native Metal backend for macOS. The goal is to improve stability and performance while keeping DX8Wrapper as the cross-platform interface. See `docs/METAL_IMPLEMENTATION.md` for the detailed plan.
+
+Initial action items:
+
+- Add CMake linkage for Metal/MetalKit frameworks (Apple-only)
+- Create Metal wrapper scaffolding `Core/Libraries/Source/WWVegas/WW3D2/metalwrapper.cpp/h`
+- Integrate CAMetalLayer with the SDL2 window path
+- Implement a minimal Metal pipeline (clear/triangle) to validate context and presentation
+- Route DX8Wrapper calls to Metal under `USE_METAL` on macOS (preserve OpenGL for others)
+
 **Date**: October 10, 2025
 
 **Status**: ✅ **STABLE RUNTIME** – Phase 28.9 complete! Game runs stably with SDL2 window, OpenGL rendering, and graceful exit. Memory corruption eliminated. 7/9 phases complete (78%). Ready for UI testing and texture rendering.

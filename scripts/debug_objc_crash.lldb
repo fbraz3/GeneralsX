@@ -1,0 +1,53 @@
+# Debug script for Objective-C crash investigation
+# Usage: cd $HOME/GeneralsX/GeneralsMD && lldb -s /path/to/debug_objc_crash.lldb ./GeneralsXZH
+
+# Enable verbose exception handling
+settings set target.process.stop-on-sharedlibrary-events false
+
+# Breakpoint on Objective-C message send failures
+breakpoint set --name objc_msgSend
+breakpoint set --name lookUpImpOrForward
+
+# Breakpoint on SDL/OpenGL initialization
+breakpoint set --name SDL_Init
+breakpoint set --name SDL_CreateWindow
+breakpoint set --name SDL_GL_CreateContext
+breakpoint set --name gladLoadGLLoader
+
+# Add commands to show context
+breakpoint command add 1
+bt
+register read
+continue
+DONE
+
+breakpoint command add 2
+print "=== lookUpImpOrForward - examining crash ==="
+bt
+register read x8 x22
+frame info
+continue
+DONE
+
+breakpoint command add 3
+print "=== SDL_Init called ==="
+continue
+DONE
+
+breakpoint command add 4
+print "=== SDL_CreateWindow called ==="
+continue
+DONE
+
+breakpoint command add 5
+print "=== SDL_GL_CreateContext called ==="
+continue
+DONE
+
+breakpoint command add 6
+print "=== gladLoadGLLoader called ==="
+continue
+DONE
+
+# Run with windowed mode
+run -win
