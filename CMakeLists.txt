@@ -110,6 +110,9 @@ include(FetchContent)
 # Add OpenGL support
 include(cmake/opengl.cmake)
 
+# Add Metal support (macOS)
+include(cmake/metal.cmake)
+
 # Add OpenAL support for cross-platform audio (Phase 5)
 if(NOT WIN32)
     find_package(OpenAL REQUIRED)
