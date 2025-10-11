@@ -244,6 +244,13 @@ set(WW3D2_SRC
     multimedia_timers.cpp
 )
 
+if(APPLE)
+    list(APPEND WW3D2_SRC
+        metalwrapper.mm
+        metalwrapper.h
+    )
+endif()
+
 add_library(corei_ww3d2 INTERFACE)
 
 target_sources(corei_ww3d2 INTERFACE ${WW3D2_SRC})
@@ -258,6 +265,11 @@ target_link_libraries(corei_ww3d2 INTERFACE
     core_browserengine
     core_wwlib
 )
+
+if(APPLE)
+    # Link Metal frameworks
+    add_metal_support(corei_ww3d2)
+endif()
 
 # Add include directory for config_manager.h and other headers
 target_include_directories(corei_ww3d2 INTERFACE
