@@ -47,6 +47,10 @@ static void drawFramerateBar(void);
 // SDL2 global variables for window and OpenGL context management (shared with dx8wrapper.cpp)
 SDL_Window* g_SDLWindow = nullptr;
 SDL_GLContext g_GLContext = nullptr;
+
+#ifdef __APPLE__
+#include "metalwrapper.h"  // Metal backend for macOS
+#endif
 #endif
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
@@ -835,7 +839,25 @@ void W3DDisplay::init( void )
 	DX8Wrapper::Initialize_OpenGL_Resources();
 	
 	// Enable V-Sync (1 = enabled, 0 = disabled, -1 = adaptive)
-	SDL_GL_SetSwapInterval(1);		// Set ApplicationHWnd to SDL window for compatibility with existing code
+	SDL_GL_SetSwapInterval(1);
+	
+#ifdef __APPLE__
+	// Phase 29: Initialize Metal backend for macOS (experimental)
+	if (getenv("USE_METAL") != nullptr) {
+		printf("Phase 29: Initializing Metal backend...\n");
+		WW3D::MetalConfig config;
+		config.sdlWindow = g_SDLWindow;
+		config.width = windowWidth;
+		config.height = windowHeight;
+		config.vsync = true;
+		
+		if (WW3D::MetalWrapper::Initialize(config)) {
+			printf("Phase 29: Metal backend initialized successfully\n");
+		} else {
+			printf("Phase 29: Metal backend initialization failed, continuing with OpenGL\n");
+		}
+	}
+#endif		// Set ApplicationHWnd to SDL window for compatibility with existing code
 		ApplicationHWnd = (HWND)g_SDLWindow;
 		
 		printf("Phase 27.1.3: SDL2 window created (%dx%d, %s)\n", 
