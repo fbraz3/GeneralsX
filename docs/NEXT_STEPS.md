@@ -18,6 +18,11 @@ Immediate next actions:
 - Implement a minimal Metal pipeline (clear/triangle) to validate presentation
 - Route DX8Wrapper calls to Metal when `USE_METAL` is defined on macOS
 
+Status (October 12, 2025):
+- Build OK: GeneralsXZH compiles and links with the Metal code paths.
+- Runtime validation pending: Metal init logs did not appear because the run from the build directory lacks original game assets, and the engine exits early during INI loading.
+- Immediate next step: Deploy the binary to $HOME/GeneralsX/GeneralsMD/, copy original Zero Hour assets (Data/, Maps/), and run with USE_METAL=1 to validate the Metal path in W3DDisplay.
+
 ## 🎉 Phase 28.9.11 Complete - RUNTIME STABILITY ACHIEVED!
 
 **BREAKTHROUGH**: Memory corruption crash ELIMINATED! Game runs stably with SDL2 window, OpenGL rendering, and controlled exit (Ctrl+Q).

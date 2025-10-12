@@ -16,6 +16,14 @@ Initial action items:
 - Implement a minimal Metal pipeline (clear/triangle) to validate context and presentation
 - Route DX8Wrapper calls to Metal under `USE_METAL` on macOS (preserve OpenGL for others)
 
+### Quick Update (October 12, 2025) — Metal backend build verified
+- Build: PASS on macOS ARM64 (GeneralsXZH linked successfully with Metal code paths).
+- Runtime: Pending Metal validation because required game assets are not present when running from the build directory. The engine exits early during INI loading before reaching display initialization.
+- Next steps:
+  - Deploy the binary to $HOME/GeneralsX/GeneralsMD/.
+  - Copy original Zero Hour assets (Data/, Maps/) into that directory.
+  - Run with USE_METAL=1 to exercise the Metal initialization path in `W3DDisplay` and confirm the clear/triangle smoke test.
+
 **Date**: October 10, 2025
 
 **Status**: ✅ **STABLE RUNTIME** – Phase 28.9 complete! Game runs stably with SDL2 window, OpenGL rendering, and graceful exit. Memory corruption eliminated. 7/9 phases complete (78%). Ready for UI testing and texture rendering.

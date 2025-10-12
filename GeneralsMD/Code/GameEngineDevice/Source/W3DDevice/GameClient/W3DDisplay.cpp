@@ -50,6 +50,8 @@ SDL_GLContext g_GLContext = nullptr;
 
 #ifdef __APPLE__
 #include "metalwrapper.h"  // Metal backend for macOS
+using GX::MetalWrapper;
+using GX::MetalConfig;
 #endif
 #endif
 
@@ -845,13 +847,13 @@ void W3DDisplay::init( void )
 	// Phase 29: Initialize Metal backend for macOS (experimental)
 	if (getenv("USE_METAL") != nullptr) {
 		printf("Phase 29: Initializing Metal backend...\n");
-		WW3D::MetalConfig config;
+		MetalConfig config;
 		config.sdlWindow = g_SDLWindow;
 		config.width = windowWidth;
 		config.height = windowHeight;
 		config.vsync = true;
 		
-		if (WW3D::MetalWrapper::Initialize(config)) {
+		if (MetalWrapper::Initialize(config)) {
 			printf("Phase 29: Metal backend initialized successfully\n");
 		} else {
 			printf("Phase 29: Metal backend initialization failed, continuing with OpenGL\n");

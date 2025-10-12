@@ -43,6 +43,12 @@ endif()
 # Helper to link Metal frameworks to a target
 function(add_metal_support target_name)
     if(APPLE AND ENABLE_METAL)
-        target_link_libraries(${target_name} PRIVATE ${METAL_PLATFORM_LIBS})
+        # Link frameworks appropriately based on target type
+        get_target_property(_t ${target_name} TYPE)
+        if(_t STREQUAL "INTERFACE_LIBRARY")
+            target_link_libraries(${target_name} INTERFACE ${METAL_PLATFORM_LIBS})
+        else()
+            target_link_libraries(${target_name} PRIVATE ${METAL_PLATFORM_LIBS})
+        endif()
     endif()
 endfunction()

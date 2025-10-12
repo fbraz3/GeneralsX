@@ -8,7 +8,7 @@
 // Forward declarations to avoid heavy ObjC headers here.
 typedef struct objc_object* id;
 
-namespace WW3D {
+namespace GX {
 
 struct MetalConfig {
     void* sdlWindow; // SDL_Window*
@@ -27,6 +27,9 @@ public:
     static void EndFrame();
 
 private:
+    // Internal helper to create a very simple test pipeline (triangle)
+    static bool CreateSimplePipeline();
+
     static id s_device;         // MTLDevice
     static id s_commandQueue;   // MTLCommandQueue
     static id s_layer;          // CAMetalLayer
@@ -35,6 +38,6 @@ private:
     static id s_passDesc;       // MTLRenderPassDescriptor
 };
 
-} // namespace WW3D
+} // namespace GX
 
 #endif // __APPLE__
