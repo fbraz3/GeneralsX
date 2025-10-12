@@ -11,7 +11,7 @@
 
 #include <cstdio>
 
-namespace WW3D {
+namespace GX {
 
 // Static members
 id MetalWrapper::s_device = nil;
@@ -60,7 +60,7 @@ static CAMetalLayer* GetOrCreateLayer(void* sdlWindowPtr, int width, int height)
     return layer;
 }
 
-static bool CreateSimplePipeline() {
+bool MetalWrapper::CreateSimplePipeline() {
     // Simple vertex shader source
     NSString* vertexShaderSource = @R"(
     #include <metal_stdlib>
@@ -164,7 +164,7 @@ bool MetalWrapper::Initialize(const MetalConfig& cfg) {
                                                         options:MTLResourceStorageModeShared];
     
     // Create pipeline state
-    if (!CreateSimplePipeline()) {
+    if (!MetalWrapper::CreateSimplePipeline()) {
         std::printf("METAL: Failed to create rendering pipeline\n");
         return false;
     }
@@ -202,7 +202,7 @@ void MetalWrapper::BeginFrame(float r, float g, float b, float a) {
 
     // Create a simple pass descriptor that clears to the given color
     MTLRenderPassDescriptor* pass = [MTLRenderPassDescriptor renderPassDescriptor];
-    pass.colorAttachments[0].texture = [(id) [s_currentDrawable texture]];
+    pass.colorAttachments[0].texture = [(id<CAMetalDrawable>)s_currentDrawable texture];
     pass.colorAttachments[0].loadAction = MTLLoadActionClear;
     pass.colorAttachments[0].storeAction = MTLStoreActionStore;
     pass.colorAttachments[0].clearColor = MTLClearColorMake(r, g, b, a);
