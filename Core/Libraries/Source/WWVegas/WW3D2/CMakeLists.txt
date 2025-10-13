@@ -68,6 +68,8 @@ set(WW3D2_SRC
     ddsloader.h
     tgaloader.cpp
     tgaloader.h
+    texturecache.cpp
+    texturecache.h
     dynamesh.cpp
     dynamesh.h
     font3d.cpp

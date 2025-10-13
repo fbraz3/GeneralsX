@@ -434,6 +434,66 @@ id MetalWrapper::CreateTextureFromDDS(unsigned int width, unsigned int height,
     }
 }
 
+// Phase 28.3.2: Create texture from TGA (RGBA8 uncompressed)
+id MetalWrapper::CreateTextureFromTGA(unsigned int width, unsigned int height,
+                                       const void* data, unsigned int dataSize)
+{
+    @autoreleasepool {
+        if (!s_device) {
+            std::printf("METAL ERROR: Device not initialized (CreateTextureFromTGA)\n");
+            return nullptr;
+        }
+        
+        if (!data || dataSize == 0) {
+            std::printf("METAL ERROR: NULL data or zero size (CreateTextureFromTGA)\n");
+            return nullptr;
+        }
+        
+        // Validate data size (RGBA8 = 4 bytes per pixel)
+        unsigned int expected_size = width * height * 4;
+        if (dataSize != expected_size) {
+            std::printf("METAL WARNING: Data size mismatch (expected %u, got %u)\n",
+                expected_size, dataSize);
+        }
+        
+        // TGA loader always outputs RGBA8
+        MTLPixelFormat metalFormat = MTLPixelFormatRGBA8Unorm;
+        
+        // Create texture descriptor
+        MTLTextureDescriptor* descriptor = [MTLTextureDescriptor new];
+        descriptor.textureType = MTLTextureType2D;
+        descriptor.pixelFormat = metalFormat;
+        descriptor.width = width;
+        descriptor.height = height;
+        descriptor.mipmapLevelCount = 1; // TGA doesn't have mipmaps
+        descriptor.usage = MTLTextureUsageShaderRead;
+        
+        // Create texture
+        id<MTLDevice> device = (__bridge id<MTLDevice>)s_device;
+        id<MTLTexture> texture = [device newTextureWithDescriptor:descriptor];
+        
+        if (!texture) {
+            std::printf("METAL ERROR: Failed to create MTLTexture (TGA %ux%u)\n", width, height);
+            return nullptr;
+        }
+        
+        // Upload RGBA8 data (uncompressed)
+        MTLRegion region = MTLRegionMake2D(0, 0, width, height);
+        unsigned int bytesPerRow = width * 4; // RGBA8
+        
+        [texture replaceRegion:region
+                   mipmapLevel:0
+                     withBytes:data
+                   bytesPerRow:bytesPerRow];
+        
+        std::printf("METAL: Created TGA texture %ux%u (RGBA8, %u bytes, ID=%p)\n",
+            width, height, dataSize, (void*)texture);
+        
+        // Return retained reference (caller responsible for release)
+        return (__bridge_retained id)texture;
+    }
+}
+
 void MetalWrapper::DeleteTexture(id texture) {
     if (texture) {
         // Release bridged reference
