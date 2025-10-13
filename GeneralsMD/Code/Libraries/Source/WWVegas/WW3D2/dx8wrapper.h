@@ -54,6 +54,9 @@
 // Phase 28.5: OpenGL texture system integration
 #include <glad/glad.h>  // Must be included before texture_cache.h
 #include "texture_cache.h"
+
+// Phase 29.3: Global Metal backend flag (extern declaration)
+extern bool g_useMetalBackend;
 #endif
 #include "matrix4.h"
 #include "statistics.h"

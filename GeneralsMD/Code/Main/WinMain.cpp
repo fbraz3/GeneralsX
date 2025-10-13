@@ -790,6 +790,13 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 {
 	Int exitcode = 1;
 
+#ifndef _WIN32
+	// Phase 29.3: CRITICAL - Initialize Metal backend flag BEFORE any buffer allocations
+	extern bool g_useMetalBackend;
+	g_useMetalBackend = (getenv("USE_METAL") != nullptr);
+	printf("===== WinMain: Metal backend = %s =====\n", g_useMetalBackend ? "ENABLED" : "DISABLED");
+#endif
+
 #ifdef RTS_PROFILE
   Profile::StartRange("init");
 #endif
@@ -973,6 +980,11 @@ GameEngine *CreateGameEngine( void )
 // Cross-platform main function for non-Windows systems
 int main(int argc, char* argv[])
 {
+    // Phase 29.3: Check Metal environment variable at startup
+    const char* useMetal = getenv("USE_METAL");
+    printf("===== STARTUP: USE_METAL environment variable = %s =====\n", 
+        useMetal ? useMetal : "NOT SET");
+    
     // Convert command line arguments to Windows-style
     std::string cmdLine;
     for (int i = 1; i < argc; ++i) {

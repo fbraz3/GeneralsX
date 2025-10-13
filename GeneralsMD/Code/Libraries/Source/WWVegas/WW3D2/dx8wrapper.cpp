@@ -95,6 +95,14 @@
 
 // Phase 28.9.2: Global flag to indicate OpenGL is fully ready (window + context + GLAD loaded)
 static bool g_openGLReady = false;
+
+// Phase 29.3: Global Metal backend flag (initialized early in WinMain)
+bool g_useMetalBackend = false;
+
+// Phase 29: Metal backend for macOS
+#ifdef __APPLE__
+#include "metalwrapper.h"
+#endif
 #endif
 
 const int DEFAULT_RESOLUTION_WIDTH = 640;
@@ -2023,6 +2031,13 @@ void DX8Wrapper::Begin_Scene(void)
 
 	DX8CALL(BeginScene());
 
+#if defined(__APPLE__) && !defined(_WIN32)
+	// Phase 29.1: Metal BeginFrame with blue-gray clear color (0.2, 0.3, 0.5, 1.0)
+	if (getenv("USE_METAL") != nullptr) {
+		GX::MetalWrapper::BeginFrame(0.2f, 0.3f, 0.5f, 1.0f);
+	}
+#endif
+
 	DX8WebBrowser::Update();
 }
 
@@ -2035,11 +2050,24 @@ void DX8Wrapper::End_Scene(bool flip_frames)
 
 	if (flip_frames) {
 #ifndef _WIN32
-		// Phase 28.10: OpenGL buffer swap for frame presentation
+#if defined(__APPLE__)
+		// Phase 29.1: Metal EndFrame and present
+		if (getenv("USE_METAL") != nullptr) {
+			GX::MetalWrapper::EndFrame();
+		} else {
+			// Phase 28.10: OpenGL buffer swap for frame presentation
+			extern SDL_Window* g_SDLWindow;
+			if (g_SDLWindow) {
+				SDL_GL_SwapWindow(g_SDLWindow);
+			}
+		}
+#else
+		// Phase 28.10: OpenGL buffer swap for frame presentation (Linux)
 		extern SDL_Window* g_SDLWindow;
 		if (g_SDLWindow) {
 			SDL_GL_SwapWindow(g_SDLWindow);
 		}
+#endif
 		FrameCount++;
 #else
 		DX8_Assert();
@@ -2193,6 +2221,16 @@ void DX8Wrapper::Set_Viewport(CONST D3DVIEWPORT8* pViewport)
 #ifdef _WIN32
 	DX8CALL(SetViewport(pViewport));
 #else
+	// Phase 29.3: Metal backend protection
+	if (g_useMetalBackend) {
+		// Metal: Viewport will be set via MTLRenderPassDescriptor in Phase 30
+		if (pViewport) {
+			printf("Phase 29.3: Metal viewport stub (%u, %u, %u x %u)\n",
+				pViewport->X, pViewport->Y, pViewport->Width, pViewport->Height);
+		}
+		return;
+	}
+	
 	// Phase 27.4.7: OpenGL viewport and scissor test setup
 	if (pViewport) {
 		// Set OpenGL viewport
@@ -2514,6 +2552,13 @@ void DX8Wrapper::Draw(
 					start_index+render_state.iba_offset,
 					polygon_count));
 #else
+				// Phase 29.3: Metal backend protection - skip OpenGL rendering
+				if (g_useMetalBackend) {
+					// Metal: Rendering will be implemented with MTLRenderCommandEncoder in Phase 30
+					// For now, silently skip (no-op)
+					return;
+				}
+				
 				// Phase 27.4.1: OpenGL indexed primitive rendering
 				// Map D3D primitive types to OpenGL
 				GLenum gl_primitive_type = GL_TRIANGLES;
@@ -2938,6 +2983,19 @@ unsigned int DX8Wrapper::_Create_GL_Texture
 )
 {
 #ifndef _WIN32
+	// Phase 29.3: Metal backend protection - return stub texture ID
+	if (g_useMetalBackend) {
+		printf("Phase 29.3: Metal texture stub requested (%dx%d, format %d)\n", width, height, format);
+		return 1; // Fake texture ID for Metal stub (GPU implementation in Phase 30)
+	}
+	
+	// Phase 29.3: Validate dimensions (prevent 0x0 textures)
+	if (width == 0 || height == 0) {
+		printf("Phase 29.3 WARNING: Texture with zero dimensions (%dx%d), using 1x1 fallback\n", width, height);
+		width = (width == 0) ? 1 : width;
+		height = (height == 0) ? 1 : height;
+	}
+	
 	// Phase 28.10: Re-enable texture creation with OpenGL
 	GLuint gl_texture = 0;
 	

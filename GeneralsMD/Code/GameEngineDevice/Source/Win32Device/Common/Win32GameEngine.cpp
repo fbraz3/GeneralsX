@@ -219,13 +219,23 @@ void Win32GameEngine::serviceWindowsOS( void )
 				}
 				break;
 				
-			case SDL_KEYDOWN:
-			case SDL_KEYUP:
-				// Keyboard events - will be handled by input system
-				// For now, just pass through (input handling is in separate system)
-				break;
-				
-			case SDL_MOUSEMOTION:
+		case SDL_KEYDOWN:
+			// EMERGENCY EXIT: Allow ESC or Cmd+Q to exit fullscreen
+			if (event.key.keysym.sym == SDLK_ESCAPE) {
+				printf("EMERGENCY EXIT: ESC pressed - quitting immediately\n");
+				setQuitting(true);
+			}
+			// Cmd+Q on macOS (or Alt+F4 equivalent)
+			if (event.key.keysym.sym == SDLK_q && (event.key.keysym.mod & KMOD_GUI)) {
+				printf("EMERGENCY EXIT: Cmd+Q pressed - quitting immediately\n");
+				setQuitting(true);
+			}
+			// Keyboard events - will be handled by input system
+			break;
+			
+		case SDL_KEYUP:
+			// Keyboard events - will be handled by input system
+			break;			case SDL_MOUSEMOTION:
 			case SDL_MOUSEBUTTONDOWN:
 			case SDL_MOUSEBUTTONUP:
 			case SDL_MOUSEWHEEL:

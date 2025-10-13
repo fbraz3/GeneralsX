@@ -35,6 +35,38 @@ This project is a fork of the Command & Conquer Generals source code and its exp
 - `wwmath` - Core mathematics library
 
 # Project Specific Instructions
+
+## Compilation Guidelines
+
+- When compiling, use the `-j` flag with half the number of available CPU cores to avoid overloading the system.
+- use `tee` to log the output of the compilation process to a file for later analysis.
+- Command example:
+```bash
+# Example for macOS ARM64 - GeneralsXZH
+cmake --build build/macos-arm64 --target GeneralsXZH -j 4 2>&1 | tee /tmp/generalsxzh_build.log.txt
+
+# Example for macOS ARM64 - GeneralsX
+cmake --build build/macos-arm64 --target GeneralsX -j 4 2>&1 | tee /tmp/generalsx_build.log.txt
+```
+
+## Debugging Guidelines
+
+- For debugging purposes, do not use commands like `grep` or `tail` into a command run to avoid hanging the terminal if the command produces a lot of output - Instead, use `tee` to log the output to a file and then use `grep` on the log file.
+- Command example:
+```bash
+# Example for macOS ARM64 - GeneralsXZH
+cd $HOME/GeneralsX/GeneralsMD/ && USE_METAL=1 ./GeneralsXZH 2>&1 | tee /tmp/generalszh.log
+grep -i error /tmp/generalszh.log
+```
+- use `lldb` for debugging metal backend related crashes.
+- Command example:
+```bash
+# Example for macOS ARM64 - GeneralsXZH
+cd $HOME/GeneralsX/GeneralsMD/ && USE_METAL=1 lldb -o run -o bt -o quit ./GeneralsXZH 2>&1 |tee /tmp/generalszh_lldb.log
+```
+
+## General Instructions
+
 1. The main goal is to port the game to run on Windows, Linux, and macOS systems, starting by updating the graphics library to OpenGL, the extras and tools will be implemented afterwards.
 2. The name of this project is "GeneralsX", please use this name in commit messages and pull requests.
 3. All tests must be moved into a dedicated `tests/` directory to improve project organization and maintainability.
@@ -43,30 +75,21 @@ This project is a fork of the Command & Conquer Generals source code and its exp
 4.2 The phase documentation files must be named `PHASEXX/DESCRIPTION.md` where `XX` is the phase number and `DESCRIPTION` is a short description of the phase (e.g., `docs/PHASE01/INITIAL_REFACTOR.md`, `docs/PHASE02/OPENGL_IMPLEMENTATION.md`, etc.)
 5. The game uses Windows Registry keys for configuration and settings storage. When porting to other platforms, these keys need to be replaced with equivalent configuration files or system settings.
 6. before finish a session, update the files `docs/MACOS_PORT.md` and `docs/NEXT_STEPS.md` with the progress made and the next steps to be taken.
-7. Commit and push changes before finish a session (and after changing markdown files from step 6).
-8. For game base (generals), there is a crash log in `$HOME/Documents/Command\ and\ Conquer\ Generals\ Data/ReleaseCrashInfo.txt` that can be used to debug runtime issues.
-9. For game expansion (zero hour), there is a crash log in `$HOME/Documents/Command\ and\ Conquer\ Generals\ Zero\ Hour\ Data/ReleaseCrashInfo.txt` that can be used to debug runtime issues.
-10. When compiling the project, try to use half of the available CPU cores to avoid overloading the system.
-11. For understanding the game asset structure and debugging INI-related issues, refer to `docs/BIG_FILES_REFERENCE.md` which contains complete documentation of .big file contents and their relationships to INI files.
+7. For game base (generals), there is a crash log in `$HOME/Documents/Command\ and\ Conquer\ Generals\ Data/ReleaseCrashInfo.txt` that can be used to debug runtime issues.
+8. For game expansion (zero hour), there is a crash log in `$HOME/Documents/Command\ and\ Conquer\ Generals\ Zero\ Hour\ Data/ReleaseCrashInfo.txt` that can be used to debug runtime issues.
+9. When compiling the project, try to use half of the available CPU cores to avoid overloading the system.
+10. For understanding the game asset structure and debugging INI-related issues, refer to `docs/BIG_FILES_REFERENCE.md` which contains complete documentation of .big file contents and their relationships to INI files.
 11. **Game Assets Location**: Use standardized directories for runtime testing:
     - **Generals (base game)**: `$HOME/GeneralsX/Generals/` - Copy original game assets (Data/, Maps/) here
     - **Zero Hour (expansion)**: `$HOME/GeneralsX/GeneralsMD/` - Copy Zero Hour assets (Data/, Maps/) here
     - Deploy executables to their respective directories for testing
 12. **Primary build workflow**: Use `cmake --preset macos-arm64` for ARM64 native compilation on Apple Silicon, then `cmake --build build/macos-arm64 --target GeneralsXZH -j 4` for Zero Hour target.
 13. **Platform-specific workflows**: 
-    - **macOS ARM64**: `cmake --preset macos-arm64` → `cmake --build build/macos-arm64 --target GeneralsXZH -j 4`
-    - **macOS Intel**: `cmake --preset macos-x64` → `cmake --build build/macos-x64 --target GeneralsXZH -j 4`
-    - **Linux**: `cmake --preset linux` → `cmake --build build/linux --target GeneralsXZH -j 4`
-    - **Windows**: `cmake --preset vc6` → `cmake --build build/vc6 --target GeneralsXZH -j 4`
+    - **macOS ARM64**: `cmake --preset macos-arm64` → `cmake --build build/macos-arm64 --target GeneralsXZH -j 4 | tee /tmp/generalsxzh_build.log.txt`
+    - **macOS Intel**: `cmake --preset macos-x64` → `cmake --build build/macos-x64 --target GeneralsXZH -j 4 | tee /tmp/generalsx_build.log.txt`
+    - **Linux**: `cmake --preset linux` → `cmake --build build/linux --target GeneralsXZH -j 4 | tee /tmp/generalsxzh_build.log.txt`
+    - **Windows**: `cmake --preset vc6` → `cmake --build build/vc6 --target GeneralsXZH -j 4 | tee /tmp/generalsxzh_build.log.txt`
 14. **Target priority**: `GeneralsXZH` (Zero Hour) is the primary stable target, `GeneralsX` (Original Generals) is secondary. Core libraries (`ww3d2`, `wwlib`, `wwmath`) can be tested independently.
-15. For compiling, set the cmake output to a log file in /tmp dir (or equivalent in Windows environment) in foreground to analyze warnings and errors later:
-```bash
-# Example for macOS ARM64 - GeneralsXZH
-cmake --build build/macos-arm64 --target GeneralsXZH -j 4 2>&1 | tee /tmp/generalsxzh_build.log.txt
-
-# Example for macOS ARM64 - GeneralsX
-cmake --build build/macos-arm64 --target GeneralsX -j 4 2>&1 | tee /tmp/generalsx_build.log.txt
-```
 
 # Reference Repositories (Git Submodules)
 The project includes reference repositories as git submodules for comparative analysis and solution discovery:
@@ -115,5 +138,3 @@ cd references/dsalzner-linux-attempt/
 # Compare implementations
 diff -r GeneralsMD/Code/GameEngine/ references/jmarshall-win64-modern/GeneralsMD/Code/GameEngine/
 ```
-
-**Success Story**: The End token parsing issue (Phase 22.7) was resolved through comparative analysis of `jmarshall-win64-modern`, leading to a simple but effective solution that eliminated all INI parser exceptions.

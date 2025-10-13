@@ -383,6 +383,14 @@ Render2DSentenceClass::Build_Textures (void)
 		TextureClass *new_texture = W3DNEW TextureClass (desc.Width, desc.Width, WW3D_FORMAT_A4R4G4B4, MIP_LEVELS_1);
 		SurfaceClass *texture_surface = new_texture->Get_Surface_Level ();
 
+		// Phase 28.10.2: NULL texture_surface protection (prevent crash in Peek_D3D_Surface)
+		if (texture_surface == NULL || texture_surface->Peek_D3D_Surface() == NULL) {
+			printf("RENDER2D PROTECTION: Skipping NULL texture_surface for texture %p\n", new_texture);
+			REF_PTR_RELEASE (new_texture);
+			REF_PTR_RELEASE (curr_surface);
+			continue;
+		}
+
 		new_texture->Get_Filter().Set_U_Addr_Mode(TextureFilterClass::TEXTURE_ADDRESS_CLAMP);
 		new_texture->Get_Filter().Set_V_Addr_Mode(TextureFilterClass::TEXTURE_ADDRESS_CLAMP);
 		new_texture->Get_Filter().Set_Min_Filter(TextureFilterClass::FILTER_TYPE_NONE);
