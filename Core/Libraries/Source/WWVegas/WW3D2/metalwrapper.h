@@ -36,6 +36,13 @@ public:
     static void DrawPrimitives(unsigned int primitiveType, unsigned int startVertex, unsigned int vertexCount);
     static void DrawIndexedPrimitives(unsigned int primitiveType, unsigned int startIndex, unsigned int indexCount, id vertexBuffer, id indexBuffer);
 
+    // Phase 28.1: Texture Creation from DDS
+    // Supported formats: BC1/BC2/BC3 (DXT1/DXT3/DXT5), RGBA8, RGB8
+    static id CreateTextureFromDDS(unsigned int width, unsigned int height, 
+                                    unsigned int format, const void* data, 
+                                    unsigned int dataSize, unsigned int mipLevels = 1);
+    static void DeleteTexture(id texture);
+
 private:
     // Internal helper to create a very simple test pipeline (triangle)
     static bool CreateSimplePipeline();
