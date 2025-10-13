@@ -58,6 +58,9 @@
 #include "../../../../../../Core/Libraries/Source/WWVegas/WW3D2/metalwrapper.h"
 using namespace GX;
 #endif
+
+// Phase 29.4: Global backend selection flag
+extern bool g_useMetalBackend;
 #endif
 
 #define DEFAULT_IB_SIZE 5000
@@ -639,11 +642,36 @@ DynamicIBAccessClass::WriteLockClass::WriteLockClass(DynamicIBAccessClass* ib_ac
 			(void**)&Indices,
 			!DynamicIBAccess->IndexBufferOffset ? D3DLOCK_DISCARD : D3DLOCK_NOOVERWRITE));
 #else
-		// Phase 27.2.2: OpenGL dynamic index buffer lock (CPU-side with offset)
+		// Phase 27.2.2/30.3: Dynamic index buffer lock (CPU-side with offset)
+		// Phase 30.3: Support both OpenGL and Metal backends
 		{
 			DX8IndexBufferClass* ib = static_cast<DX8IndexBufferClass*>(DynamicIBAccess->IndexBuffer);
-			unsigned short* base_ptr = static_cast<unsigned short*>(ib->GLIndexData);
-			Indices = base_ptr + DynamicIBAccess->IndexBufferOffset;
+			
+#if defined(__APPLE__)
+			// Phase 30.3: Use Metal CPU-side buffer when Metal backend active
+			if (g_useMetalBackend) {
+				if (ib->MetalIndexData) {
+					unsigned short* base_ptr = static_cast<unsigned short*>(ib->MetalIndexData);
+					Indices = base_ptr + DynamicIBAccess->IndexBufferOffset;
+				} else {
+					printf("ERROR: MetalIndexData is NULL in WriteLockClass! Buffer not initialized.\n");
+					WWASSERT(0);
+					Indices = nullptr;
+				}
+			} else
+#endif
+			{
+				// OpenGL path
+				if (ib->GLIndexData) {
+					unsigned short* base_ptr = static_cast<unsigned short*>(ib->GLIndexData);
+					Indices = base_ptr + DynamicIBAccess->IndexBufferOffset;
+				} else {
+					printf("ERROR: GLIndexData is NULL in WriteLockClass! Buffer not initialized.\n");
+					WWASSERT(0);
+					Indices = nullptr;
+				}
+			}
+			WWASSERT(Indices != nullptr);
 		}
 #endif
 		break;

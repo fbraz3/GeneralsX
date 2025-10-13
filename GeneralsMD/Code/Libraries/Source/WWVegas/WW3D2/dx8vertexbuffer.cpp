@@ -58,6 +58,9 @@
 #include "../../../../../../Core/Libraries/Source/WWVegas/WW3D2/metalwrapper.h"
 using namespace GX;
 #endif
+
+// Phase 29.4: Global backend selection flag
+extern bool g_useMetalBackend;
 #endif
 
 #define DEFAULT_VB_SIZE 5000
@@ -1136,19 +1139,49 @@ DynamicVBAccessClass::WriteLockClass::WriteLockClass(DynamicVBAccessClass* dynam
 			(void**)&Vertices,
 			D3DLOCK_NOSYSLOCK | (!DynamicVBAccess->VertexBufferOffset ? D3DLOCK_DISCARD : D3DLOCK_NOOVERWRITE)));
 #else
-		// Phase 27.2.1: OpenGL dynamic vertex buffer lock (CPU-side emulation with offset)
+		// Phase 27.2.1/30.3: Dynamic vertex buffer lock (CPU-side emulation with offset)
+		// Phase 30.3: Support both OpenGL and Metal backends
 		{
 			DX8VertexBufferClass* vb = static_cast<DX8VertexBufferClass*>(DynamicVBAccess->VertexBuffer);
 			unsigned fvf_size = _DynamicDX8VertexBuffer->FVF_Info().Get_FVF_Size();
 			unsigned offset_bytes = DynamicVBAccess->VertexBufferOffset * fvf_size;
-			Vertices = static_cast<VertexFormatXYZNDUV2*>((void*)((char*)vb->GLVertexData + offset_bytes));
-			WWASSERT(Vertices != NULL);
+			
+#if defined(__APPLE__)
+			// Phase 30.3: Use Metal CPU-side buffer when Metal backend active
+			extern bool g_useMetalBackend;
+			if (g_useMetalBackend) {
+				if (vb->MetalVertexData) {
+					Vertices = static_cast<VertexFormatXYZNDUV2*>((void*)((char*)vb->MetalVertexData + offset_bytes));
 #ifdef VERTEX_BUFFER_LOG
-			printf("Phase 27.2.1: GL Dynamic VBO Lock - VBO id=%u, offset=%u, size=%u bytes\n",
-				vb->Get_GL_Vertex_Buffer(),
-				offset_bytes,
-				DynamicVBAccess->Get_Vertex_Count() * fvf_size);
+					printf("Phase 30.3: Metal Dynamic VB Lock - buffer %p, offset=%u, size=%u bytes\n",
+						vb->MetalVertexBuffer,
+						offset_bytes,
+						DynamicVBAccess->Get_Vertex_Count() * fvf_size);
 #endif
+				} else {
+					printf("ERROR: MetalVertexData is NULL in WriteLockClass! Buffer not initialized.\n");
+					WWASSERT(0);
+					Vertices = NULL;
+				}
+			} else
+#endif
+			{
+				// OpenGL path
+				if (vb->GLVertexData) {
+					Vertices = static_cast<VertexFormatXYZNDUV2*>((void*)((char*)vb->GLVertexData + offset_bytes));
+#ifdef VERTEX_BUFFER_LOG
+					printf("Phase 27.2.1: GL Dynamic VBO Lock - VBO id=%u, offset=%u, size=%u bytes\n",
+						vb->Get_GL_Vertex_Buffer(),
+						offset_bytes,
+						DynamicVBAccess->Get_Vertex_Count() * fvf_size);
+#endif
+				} else {
+					printf("ERROR: GLVertexData is NULL in WriteLockClass! Buffer not initialized.\n");
+					WWASSERT(0);
+					Vertices = NULL;
+				}
+			}
+			WWASSERT(Vertices != NULL);
 		}
 #endif
 		break;
