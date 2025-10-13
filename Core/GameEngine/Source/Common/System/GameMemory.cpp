@@ -909,6 +909,15 @@ void MemoryPoolSingleBlock::initBlock(Int logicalSize, MemoryPoolBlob *owningBlo
 	DEBUG_ASSERTCRASH(pUserData, ("null pUserData"));
 	if (!pUserData)
 		return NULL;
+	
+	// Phase 30.6: Validate pointer before any arithmetic
+	// Metal driver sometimes passes invalid pointers (e.g., 0x0000000c)
+	uintptr_t ptr_value = (uintptr_t)pUserData;
+	if (ptr_value < 0x10000) {
+		printf("MEMORY PROTECTION: Invalid pointer %p in recoverBlockFromUserData\n", pUserData);
+		return NULL;
+	}
+	
 	char* p = ((char*)pUserData) - sizeof(MemoryPoolSingleBlock);
 	#ifdef MEMORYPOOL_BOUNDINGWALL
 	p -= WALLSIZE;
@@ -2290,6 +2299,15 @@ void DynamicMemoryAllocator::freeBytes(void* pBlockPtr)
 	if (!pBlockPtr)
 		return;
 
+	// Phase 30.6: CRITICAL PROTECTION - Reject obviously invalid pointers
+	// Metal driver sometimes passes corrupted pointers (e.g., 0x0000000c)
+	// These are clearly not valid memory addresses and will crash in recoverBlockFromUserData
+	uintptr_t ptr_value = (uintptr_t)pBlockPtr;
+	if (ptr_value < 0x10000) {  // First 64KB is always invalid on modern systems
+		printf("MEMORY PROTECTION: Rejecting invalid pointer %p in freeBytes (likely Metal driver bug)\n", pBlockPtr);
+		return;
+	}
+
 	ScopedCriticalSection scopedCriticalSection(TheDmaCriticalSection);
 
 #ifdef MEMORYPOOL_CHECK_BLOCK_OWNERSHIP
@@ -3325,6 +3343,11 @@ void operator delete(void *p)
 	++theLinkTester;
 	preMainInitMemoryManager();
 	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator delete"));
+	// Phase 30.6: Reject obviously invalid pointers from Metal driver
+	if (p && (uintptr_t)p < 0x10000) {
+		printf("MEMORY PROTECTION: operator delete rejecting invalid pointer %p (likely Metal bug)\n", p);
+		return;
+	}
 	TheDynamicMemoryAllocator->freeBytes(p);
 }
 
@@ -3337,6 +3360,11 @@ void operator delete[](void *p)
 	++theLinkTester;
 	preMainInitMemoryManager();
 	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator delete"));
+	// Phase 30.6: Reject obviously invalid pointers from Metal driver
+	if (p && (uintptr_t)p < 0x10000) {
+		printf("MEMORY PROTECTION: operator delete[] rejecting invalid pointer %p (likely Metal bug)\n", p);
+		return;
+	}
 	TheDynamicMemoryAllocator->freeBytes(p);
 }
 
@@ -3365,6 +3393,11 @@ void operator delete(void * p, const char *, int)
 	++theLinkTester;
 	preMainInitMemoryManager();
 	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator delete"));
+	// Phase 30.6: Reject obviously invalid pointers from Metal driver
+	if (p && (uintptr_t)p < 0x10000) {
+		printf("MEMORY PROTECTION: operator delete(debug) rejecting invalid pointer %p (likely Metal bug)\n", p);
+		return;
+	}
 	TheDynamicMemoryAllocator->freeBytes(p);
 }
 
@@ -3393,6 +3426,11 @@ void operator delete[](void * p, const char *, int)
 	++theLinkTester;
 	preMainInitMemoryManager();
 	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator delete"));
+	// Phase 30.6: Reject obviously invalid pointers from Metal driver
+	if (p && (uintptr_t)p < 0x10000) {
+		printf("MEMORY PROTECTION: operator delete[](debug) rejecting invalid pointer %p (likely Metal bug)\n", p);
+		return;
+	}
 	TheDynamicMemoryAllocator->freeBytes(p);
 }
 
