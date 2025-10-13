@@ -877,7 +877,9 @@ void W3DDisplay::init( void )
 	
 #ifdef __APPLE__
 	// Phase 29: Initialize Metal backend for macOS (experimental)
-	if (getenv("USE_METAL") != nullptr) {
+	// Phase 29.5.1: Use g_useMetalBackend instead of getenv()
+	extern bool g_useMetalBackend;
+	if (g_useMetalBackend) {
 		printf("Phase 29: Initializing Metal backend...\n");
 		MetalConfig config;
 		config.sdlWindow = g_SDLWindow;
