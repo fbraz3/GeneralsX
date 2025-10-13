@@ -41,7 +41,9 @@ The Metal backend for GeneralsX has been successfully implemented and validated 
 
 ### ✅ 5. Runtime Validation
 
-- **Engine Integration**: Metal path successfully triggered via `USE_METAL=1` environment variable
+- **Engine Integration**: Metal backend automatically enabled on macOS (Phase 29.4)
+- **Platform Detection**: `__APPLE__` macro triggers Metal as default backend
+- **OpenGL Override**: Set `USE_OPENGL=1` to use OpenGL instead of Metal on macOS
 - **Initialization Sequence**: Complete device/queue/layer/pipeline creation
 - **Asset Environment**: Tested with original Zero Hour game assets in proper directory structure
 - **Error Handling**: Comprehensive error checking and fallback mechanisms

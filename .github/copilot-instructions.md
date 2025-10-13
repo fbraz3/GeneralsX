@@ -149,7 +149,42 @@ diff -r Core/ references/fighter19-dxvk-port/Core/  # Compare compatibility laye
 
 **Documentation Structure**: All project documentation is organized in the `docs/` directory. Key files include build guides, port progress, OpenGL implementation details, and testing procedures.
 
-## Phase 27: OpenGL Graphics Implementation (Current Focus)
+## Phase 29.4: Metal Backend as Default ✅ COMPLETE
+
+**Status**: Metal is now the default graphics backend on macOS (October 13, 2025)
+
+### Auto-Detection System
+```cpp
+// WinMain.cpp - Platform-based backend selection
+#ifdef __APPLE__
+    // macOS: Metal default, OpenGL opt-in with USE_OPENGL=1
+    g_useMetalBackend = (getenv("USE_OPENGL") == nullptr);
+#else
+    // Linux: OpenGL default, Metal opt-in with USE_METAL=1
+    g_useMetalBackend = (getenv("USE_METAL") != nullptr);
+#endif
+```
+
+### Runtime Commands
+```bash
+# macOS (Metal default) - No environment variable needed
+cd $HOME/GeneralsX/GeneralsMD && ./GeneralsXZH
+
+# macOS (OpenGL override) - For testing/debugging
+cd $HOME/GeneralsX/GeneralsMD && USE_OPENGL=1 ./GeneralsXZH
+
+# Linux (OpenGL default)
+cd $HOME/GeneralsX/GeneralsMD && ./GeneralsXZH
+```
+
+### Validation Results
+- ✅ Metal backend activates automatically on macOS
+- ✅ OpenGL override works with `USE_OPENGL=1`
+- ✅ Blue-gray screen + colored triangle rendering
+- ✅ Event loop responds to ESC key
+- ✅ Zero crashes during initialization/rendering
+
+## Phase 27: OpenGL Graphics Implementation (Complete)
 
 **Status**: 26/32 tasks complete (81%) - DirectX8→OpenGL translation layer nearly complete, finalization in progress
 

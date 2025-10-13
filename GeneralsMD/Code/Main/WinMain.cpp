@@ -791,10 +791,22 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	Int exitcode = 1;
 
 #ifndef _WIN32
-	// Phase 29.3: CRITICAL - Initialize Metal backend flag BEFORE any buffer allocations
+	// Phase 29.4: Metal backend auto-detection (default on macOS, opt-in elsewhere)
 	extern bool g_useMetalBackend;
-	g_useMetalBackend = (getenv("USE_METAL") != nullptr);
-	printf("===== WinMain: Metal backend = %s =====\n", g_useMetalBackend ? "ENABLED" : "DISABLED");
+	
+#ifdef __APPLE__
+	// macOS: Metal is the default backend (can be disabled with USE_OPENGL=1)
+	const char* use_opengl = getenv("USE_OPENGL");
+	g_useMetalBackend = (use_opengl == nullptr); // Metal unless OpenGL explicitly requested
+	printf("===== WinMain: macOS detected, backend = %s =====\n", 
+		g_useMetalBackend ? "METAL (default)" : "OPENGL (via USE_OPENGL=1)");
+#else
+	// Linux/other: OpenGL is default (Metal opt-in with USE_METAL=1)
+	const char* use_metal = getenv("USE_METAL");
+	g_useMetalBackend = (use_metal != nullptr);
+	printf("===== WinMain: Linux detected, backend = %s =====\n", 
+		g_useMetalBackend ? "METAL (via USE_METAL=1)" : "OPENGL (default)");
+#endif
 #endif
 
 #ifdef RTS_PROFILE
