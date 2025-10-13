@@ -333,6 +333,115 @@ void MetalWrapper::DrawIndexedPrimitives(unsigned int primitiveType, unsigned in
         primitiveType, startIndex, indexCount);
 }
 
+// Phase 28.1: Texture Creation from DDS
+id MetalWrapper::CreateTextureFromDDS(unsigned int width, unsigned int height, 
+                                      unsigned int format, const void* data, 
+                                      unsigned int dataSize, unsigned int mipLevels) {
+    @autoreleasepool {
+        if (!s_device) {
+            std::printf("METAL ERROR: CreateTextureFromDDS called before Initialize\n");
+            return nil;
+        }
+        
+        if (!data || dataSize == 0) {
+            std::printf("METAL ERROR: CreateTextureFromDDS - Invalid data (ptr=%p, size=%u)\n", 
+                data, dataSize);
+            return nil;
+        }
+        
+        // Map DDS format to Metal pixel format
+        MTLPixelFormat metalFormat;
+        bool isCompressed = false;
+        
+        switch (format) {
+            case 1: // DDS_FORMAT_BC1_RGBA
+                metalFormat = MTLPixelFormatBC1_RGBA;
+                isCompressed = true;
+                std::printf("METAL: Creating BC1 (DXT1) texture\n");
+                break;
+            case 2: // DDS_FORMAT_BC2_RGBA
+                metalFormat = MTLPixelFormatBC2_RGBA;
+                isCompressed = true;
+                std::printf("METAL: Creating BC2 (DXT3) texture\n");
+                break;
+            case 3: // DDS_FORMAT_BC3_RGBA
+                metalFormat = MTLPixelFormatBC3_RGBA;
+                isCompressed = true;
+                std::printf("METAL: Creating BC3 (DXT5) texture\n");
+                break;
+            case 4: // DDS_FORMAT_RGBA8_UNORM
+                metalFormat = MTLPixelFormatRGBA8Unorm;
+                std::printf("METAL: Creating RGBA8 Unorm texture\n");
+                break;
+            case 5: // DDS_FORMAT_RGB8_UNORM (convert to RGBA8)
+                metalFormat = MTLPixelFormatRGBA8Unorm;
+                std::printf("METAL: Creating RGB8→RGBA8 Unorm texture\n");
+                break;
+            default:
+                std::printf("METAL ERROR: Unknown DDS format: %u\n", format);
+                return nil;
+        }
+        
+        // Create texture descriptor
+        MTLTextureDescriptor* descriptor = [MTLTextureDescriptor new];
+        descriptor.textureType = MTLTextureType2D;
+        descriptor.pixelFormat = metalFormat;
+        descriptor.width = width;
+        descriptor.height = height;
+        descriptor.depth = 1;
+        descriptor.mipmapLevelCount = (mipLevels > 0) ? mipLevels : 1;
+        descriptor.arrayLength = 1;
+        descriptor.sampleCount = 1;
+        descriptor.usage = MTLTextureUsageShaderRead;
+        descriptor.storageMode = MTLStorageModePrivate;  // GPU-only for best performance
+        
+        // Create texture
+        id<MTLTexture> texture = [(__bridge id<MTLDevice>)s_device newTextureWithDescriptor:descriptor];
+        if (!texture) {
+            std::printf("METAL ERROR: Failed to create texture (%ux%u, format=%u)\n", 
+                width, height, format);
+            return nil;
+        }
+        
+        // Upload texture data
+        // For compressed formats, bytesPerRow and bytesPerImage are ignored
+        MTLRegion region = MTLRegionMake2D(0, 0, width, height);
+        
+        if (isCompressed) {
+            // Compressed format - Metal handles block alignment internally
+            [texture replaceRegion:region
+                       mipmapLevel:0
+                         withBytes:data
+                       bytesPerRow:0      // Ignored for compressed formats
+                     bytesPerImage:0];    // Ignored for 2D textures
+        } else {
+            // Uncompressed format - specify bytes per row
+            unsigned int bytesPerPixel = (format == 5) ? 3 : 4;  // RGB8 or RGBA8
+            unsigned int bytesPerRow = width * bytesPerPixel;
+            
+            [texture replaceRegion:region
+                       mipmapLevel:0
+                         withBytes:data
+                       bytesPerRow:bytesPerRow
+                     bytesPerImage:0];    // Ignored for 2D textures
+        }
+        
+        std::printf("METAL: Texture created successfully (ID=%p, %ux%u, format=%u, mipmaps=%u, size=%u bytes)\n",
+            (void*)texture, width, height, format, mipLevels, dataSize);
+        
+        // Return retained reference (caller responsible for release)
+        return (__bridge_retained id)texture;
+    }
+}
+
+void MetalWrapper::DeleteTexture(id texture) {
+    if (texture) {
+        // Release bridged reference
+        CFRelease((__bridge CFTypeRef)texture);
+        std::printf("METAL: Texture deleted (ID=%p)\n", (void*)texture);
+    }
+}
+
 } // namespace WW3D
 
 #endif // __APPLE__
