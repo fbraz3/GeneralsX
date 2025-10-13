@@ -101,6 +101,14 @@ static Bool isWinMainActive = false;
 
 static HBITMAP gLoadScreenBitmap = NULL;
 
+// Global variable to store command line on non-Windows platforms
+#ifndef _WIN32
+static std::string g_commandLine;
+char* GetCommandLineA_Global() {
+	return const_cast<char*>(g_commandLine.c_str());
+}
+#endif
+
 //#define DEBUG_WINDOWS_MESSAGES
 
 #ifdef DEBUG_WINDOWS_MESSAGES
@@ -790,25 +798,6 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 {
 	Int exitcode = 1;
 
-#ifndef _WIN32
-	// Phase 29.4: Metal backend auto-detection (default on macOS, opt-in elsewhere)
-	extern bool g_useMetalBackend;
-	
-#ifdef __APPLE__
-	// macOS: Metal is the default backend (can be disabled with USE_OPENGL=1)
-	const char* use_opengl = getenv("USE_OPENGL");
-	g_useMetalBackend = (use_opengl == nullptr); // Metal unless OpenGL explicitly requested
-	printf("===== WinMain: macOS detected, backend = %s =====\n", 
-		g_useMetalBackend ? "METAL (default)" : "OPENGL (via USE_OPENGL=1)");
-#else
-	// Linux/other: OpenGL is default (Metal opt-in with USE_METAL=1)
-	const char* use_metal = getenv("USE_METAL");
-	g_useMetalBackend = (use_metal != nullptr);
-	printf("===== WinMain: Linux detected, backend = %s =====\n", 
-		g_useMetalBackend ? "METAL (via USE_METAL=1)" : "OPENGL (default)");
-#endif
-#endif
-
 #ifdef RTS_PROFILE
   Profile::StartRange("init");
 #endif
@@ -890,6 +879,39 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 #endif
 
 		CommandLine::parseCommandLineForStartup();
+
+#ifndef _WIN32
+		// Phase 29.4: Metal backend auto-detection (default on macOS, opt-in elsewhere)
+		// Phase 29.5: Added support for -forceDirectX and -forceOpenGL command-line parameters
+		extern bool g_useMetalBackend;
+		
+		// Priority: command-line flags > environment variables > platform defaults
+		if (TheGlobalData && TheGlobalData->m_forceOpenGL) {
+			// -forceOpenGL parameter specified
+			g_useMetalBackend = false;
+			printf("===== WinMain: Backend = OPENGL (via -forceOpenGL parameter) =====\n");
+		}
+		else if (TheGlobalData && TheGlobalData->m_forceDirectX) {
+			// -forceDirectX parameter specified (treated as Metal on non-Windows)
+			g_useMetalBackend = true;
+			printf("===== WinMain: Backend = METAL (via -forceDirectX parameter) =====\n");
+		}
+		else {
+#ifdef __APPLE__
+			// macOS: Metal is the default backend (can be disabled with USE_OPENGL=1)
+			const char* use_opengl = getenv("USE_OPENGL");
+			g_useMetalBackend = (use_opengl == nullptr); // Metal unless OpenGL explicitly requested
+			printf("===== WinMain: macOS detected, backend = %s =====\n", 
+				g_useMetalBackend ? "METAL (default)" : "OPENGL (via USE_OPENGL=1)");
+#else
+			// Linux/other: OpenGL is default (Metal opt-in with USE_METAL=1)
+			const char* use_metal = getenv("USE_METAL");
+			g_useMetalBackend = (use_metal != nullptr);
+			printf("===== WinMain: Linux detected, backend = %s =====\n", 
+				g_useMetalBackend ? "METAL (via USE_METAL=1)" : "OPENGL (default)");
+#endif
+		}
+#endif
 
 		// register windows class and create application window
 		if(!TheGlobalData->m_headless && initializeAppWindows(hInstance, nCmdShow, TheGlobalData->m_windowed) == false)
@@ -997,14 +1019,14 @@ int main(int argc, char* argv[])
     printf("===== STARTUP: USE_METAL environment variable = %s =====\n", 
         useMetal ? useMetal : "NOT SET");
     
-    // Convert command line arguments to Windows-style
-    std::string cmdLine;
+    // Convert command line arguments to Windows-style and store in global variable
+    g_commandLine = argv[0]; // Start with program name
     for (int i = 1; i < argc; ++i) {
-        if (i > 1) cmdLine += " ";
-        cmdLine += argv[i];
+        g_commandLine += " ";
+        g_commandLine += argv[i];
     }
     
     // Call WinMain with appropriate parameters
-    return WinMain(nullptr, nullptr, const_cast<char*>(cmdLine.c_str()), 1);
+    return WinMain(nullptr, nullptr, const_cast<char*>(g_commandLine.c_str()), 1);
 }
 #endif

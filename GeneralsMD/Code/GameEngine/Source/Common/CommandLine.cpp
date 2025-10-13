@@ -398,6 +398,26 @@ Int parseNoShadows(char *args[], int)
 	return 1;
 }
 
+//=============================================================================
+//=============================================================================
+Int parseForceDirectX(char *args[], int)
+{
+	TheWritableGlobalData->m_forceDirectX = true;
+	TheWritableGlobalData->m_forceOpenGL = false;
+
+	return 1;
+}
+
+//=============================================================================
+//=============================================================================
+Int parseForceOpenGL(char *args[], int)
+{
+	TheWritableGlobalData->m_forceOpenGL = true;
+	TheWritableGlobalData->m_forceDirectX = false;
+
+	return 1;
+}
+
 Int parseMapName(char *args[], int num)
 {
 	if (num == 2)
@@ -1163,6 +1183,10 @@ static CommandLineParam paramsForStartup[] =
 	// (If you have 4 cores, call it with -jobs 4)
 	// If you do not call this, all replays will be simulated in sequence in the same process.
 	{ "-jobs", parseJobs },
+	
+	// Graphics backend selection (must be parsed early for WinMain backend selection)
+	{ "-forceDirectX", parseForceDirectX },
+	{ "-forceOpenGL", parseForceOpenGL },
 };
 
 // These Params are parsed during Engine Init before INI data is loaded
