@@ -48,6 +48,13 @@ public:
                                     const void* data, unsigned int dataSize);
     
     static void DeleteTexture(id texture);
+    
+    // Phase 28.3.3: Texture Binding
+    // Binds texture to fragment shader at specified slot (default slot 0)
+    static void BindTexture(id texture, unsigned int slot = 0);
+    
+    // Unbinds texture from fragment shader slot
+    static void UnbindTexture(unsigned int slot = 0);
 
 private:
     // Internal helper to create a very simple test pipeline (triangle)
