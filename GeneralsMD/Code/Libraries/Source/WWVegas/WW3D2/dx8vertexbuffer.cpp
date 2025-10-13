@@ -586,9 +586,11 @@ DX8VertexBufferClass::~DX8VertexBufferClass()
 #if defined(__APPLE__)
 	// Phase 30.1: Metal vertex buffer cleanup
 	if (MetalVertexBuffer != nullptr) {
+		printf("METAL: Releasing vertex buffer %p in destructor\n", MetalVertexBuffer);
 		MetalVertexBuffer = nullptr;  // ARC handles deallocation
 	}
 	if (MetalVertexData != NULL) {
+		printf("METAL: Freeing CPU-side vertex data %p\n", MetalVertexData);
 		free(MetalVertexData);
 		MetalVertexData = NULL;
 	}
