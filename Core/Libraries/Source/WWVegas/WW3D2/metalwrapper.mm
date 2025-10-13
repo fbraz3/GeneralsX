@@ -269,8 +269,24 @@ void MetalWrapper::UpdateBuffer(id buffer, const void* data, unsigned int size, 
     void* contents = [mtlBuffer contents];
     if (contents) {
         memcpy((char*)contents + offset, data, size);
-        std::printf("METAL: Updated buffer (size: %u, offset: %u)\n", size, offset);
+        std::printf("METAL: Updated buffer (size: %u, offset: %u)\\n", size, offset);
     }
+}
+
+// Phase 30.5: Draw Calls (stub implementation)
+void MetalWrapper::DrawPrimitives(unsigned int primitiveType, unsigned int startVertex, unsigned int vertexCount) {
+    // Stub: Full implementation requires FVF→Metal descriptor mapping (Phase 30.4)
+    // For now, continue using hardcoded triangle in BeginFrame
+    std::printf("METAL STUB: DrawPrimitives called (type: %u, start: %u, count: %u)\\n", 
+        primitiveType, startVertex, vertexCount);
+}
+
+void MetalWrapper::DrawIndexedPrimitives(unsigned int primitiveType, unsigned int startIndex, 
+    unsigned int indexCount, id vertexBuffer, id indexBuffer) {
+    // Stub: Full implementation requires FVF→Metal descriptor mapping (Phase 30.4)
+    // For now, continue using hardcoded triangle in BeginFrame
+    std::printf("METAL STUB: DrawIndexedPrimitives called (type: %u, start: %u, count: %u)\\n",
+        primitiveType, startIndex, indexCount);
 }
 
 } // namespace WW3D
