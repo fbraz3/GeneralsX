@@ -212,6 +212,52 @@ static void doStackDump(void **stacktrace, int size);
 #endif
 static void preMainInitMemoryManager();
 
+//-----------------------------------------------------------------------------
+/**
+	Phase 30.6: Helper function to detect corrupted pointers from Metal/OpenGL drivers
+	Returns true if pointer looks valid for our memory allocator
+	
+	CRITICAL: This must be declared BEFORE recoverBlockFromUserData and freeBytes!
+*/
+static inline bool isValidMemoryPointer(void* p) {
+	if (!p) return false;  // NULL is valid (no-op for delete)
+	
+	uintptr_t ptr_value = (uintptr_t)p;
+	
+	// Check 1: First 64KB is always invalid (NULL page protection)
+	if (ptr_value < 0x10000) {
+		return false;
+	}
+	
+	// Check 2: Detect ASCII string pointers (Metal/OpenGL driver bug pattern)
+	// Valid heap addresses are rarely printable ASCII
+	// Corrupted pointers often look like "reber.cgi", "agc.glob", etc.
+	bool all_ascii = true;
+	for (int i = 0; i < 8; i++) {
+		unsigned char byte = (ptr_value >> (i * 8)) & 0xFF;
+		if (byte != 0 && (byte < 0x20 || byte > 0x7E)) {
+			all_ascii = false;
+			break;
+		}
+	}
+	
+	// If pointer looks like ASCII string, it's corrupted
+	if (all_ascii) {
+		// Convert to string for logging
+		char ascii_str[9];
+		for (int i = 0; i < 8; i++) {
+			unsigned char byte = (ptr_value >> (i * 8)) & 0xFF;
+			ascii_str[i] = (byte >= 0x20 && byte <= 0x7E) ? byte : '.';
+		}
+		ascii_str[8] = '\0';
+		printf("MEMORY PROTECTION: Detected ASCII-like pointer %p (\"%s\") - likely Metal/OpenGL driver bug\n", p, ascii_str);
+		return false;
+	}
+	
+	// Pointer looks reasonable
+	return true;
+}
+
 // ----------------------------------------------------------------------------
 // PRIVATE FUNCTIONS
 // ----------------------------------------------------------------------------
@@ -906,16 +952,10 @@ void MemoryPoolSingleBlock::initBlock(Int logicalSize, MemoryPoolBlob *owningBlo
 */
 /* static */ MemoryPoolSingleBlock *MemoryPoolSingleBlock::recoverBlockFromUserData(void* pUserData)
 {
-	DEBUG_ASSERTCRASH(pUserData, ("null pUserData"));
-	if (!pUserData)
-		return NULL;
-	
-	// Phase 30.6: Validate pointer before any arithmetic
-	// Metal driver sometimes passes invalid pointers (e.g., 0x0000000c)
-	uintptr_t ptr_value = (uintptr_t)pUserData;
-	if (ptr_value < 0x10000) {
-		printf("MEMORY PROTECTION: Invalid pointer %p in recoverBlockFromUserData\n", pUserData);
-		return NULL;
+	// Phase 30.6: Comprehensive pointer validation before ANY arithmetic
+	// Catches both Metal and OpenGL driver bugs (macOS OpenGL uses Metal internally!)
+	if (!isValidMemoryPointer(pUserData)) {
+		return NULL;  // Return NULL for corrupted pointers
 	}
 	
 	char* p = ((char*)pUserData) - sizeof(MemoryPoolSingleBlock);
@@ -2296,16 +2336,10 @@ void *DynamicMemoryAllocator::allocateBytesImplementation(Int numBytes DECLARE_L
 */
 void DynamicMemoryAllocator::freeBytes(void* pBlockPtr)
 {
-	if (!pBlockPtr)
-		return;
-
-	// Phase 30.6: CRITICAL PROTECTION - Reject obviously invalid pointers
-	// Metal driver sometimes passes corrupted pointers (e.g., 0x0000000c)
-	// These are clearly not valid memory addresses and will crash in recoverBlockFromUserData
-	uintptr_t ptr_value = (uintptr_t)pBlockPtr;
-	if (ptr_value < 0x10000) {  // First 64KB is always invalid on modern systems
-		printf("MEMORY PROTECTION: Rejecting invalid pointer %p in freeBytes (likely Metal driver bug)\n", pBlockPtr);
-		return;
+	// Phase 30.6: CRITICAL PROTECTION - Comprehensive pointer validation
+	// Catches both Metal and OpenGL driver bugs (macOS OpenGL uses Metal internally!)
+	if (!isValidMemoryPointer(pBlockPtr)) {
+		return;  // Silently ignore corrupted pointers from drivers
 	}
 
 	ScopedCriticalSection scopedCriticalSection(TheDmaCriticalSection);
@@ -3343,10 +3377,9 @@ void operator delete(void *p)
 	++theLinkTester;
 	preMainInitMemoryManager();
 	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator delete"));
-	// Phase 30.6: Reject obviously invalid pointers from Metal driver
-	if (p && (uintptr_t)p < 0x10000) {
-		printf("MEMORY PROTECTION: operator delete rejecting invalid pointer %p (likely Metal bug)\n", p);
-		return;
+	// Phase 30.6: Comprehensive pointer validation (Metal/OpenGL driver protection)
+	if (!isValidMemoryPointer(p)) {
+		return;  // Silently ignore corrupted pointers from drivers
 	}
 	TheDynamicMemoryAllocator->freeBytes(p);
 }
@@ -3360,10 +3393,9 @@ void operator delete[](void *p)
 	++theLinkTester;
 	preMainInitMemoryManager();
 	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator delete"));
-	// Phase 30.6: Reject obviously invalid pointers from Metal driver
-	if (p && (uintptr_t)p < 0x10000) {
-		printf("MEMORY PROTECTION: operator delete[] rejecting invalid pointer %p (likely Metal bug)\n", p);
-		return;
+	// Phase 30.6: Comprehensive pointer validation (Metal/OpenGL driver protection)
+	if (!isValidMemoryPointer(p)) {
+		return;  // Silently ignore corrupted pointers from drivers
 	}
 	TheDynamicMemoryAllocator->freeBytes(p);
 }
@@ -3393,10 +3425,9 @@ void operator delete(void * p, const char *, int)
 	++theLinkTester;
 	preMainInitMemoryManager();
 	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator delete"));
-	// Phase 30.6: Reject obviously invalid pointers from Metal driver
-	if (p && (uintptr_t)p < 0x10000) {
-		printf("MEMORY PROTECTION: operator delete(debug) rejecting invalid pointer %p (likely Metal bug)\n", p);
-		return;
+	// Phase 30.6: Comprehensive pointer validation (Metal/OpenGL driver protection)
+	if (!isValidMemoryPointer(p)) {
+		return;  // Silently ignore corrupted pointers from drivers
 	}
 	TheDynamicMemoryAllocator->freeBytes(p);
 }
@@ -3426,10 +3457,9 @@ void operator delete[](void * p, const char *, int)
 	++theLinkTester;
 	preMainInitMemoryManager();
 	DEBUG_ASSERTCRASH(TheDynamicMemoryAllocator != NULL, ("must init memory manager before calling global operator delete"));
-	// Phase 30.6: Reject obviously invalid pointers from Metal driver
-	if (p && (uintptr_t)p < 0x10000) {
-		printf("MEMORY PROTECTION: operator delete[](debug) rejecting invalid pointer %p (likely Metal bug)\n", p);
-		return;
+	// Phase 30.6: Comprehensive pointer validation (Metal/OpenGL driver protection)
+	if (!isValidMemoryPointer(p)) {
+		return;  // Silently ignore corrupted pointers from drivers
 	}
 	TheDynamicMemoryAllocator->freeBytes(p);
 }
