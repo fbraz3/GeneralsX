@@ -70,6 +70,8 @@ set(WW3D2_SRC
     tgaloader.h
     texturecache.cpp
     texturecache.h
+    texturedquad.cpp
+    texturedquad.h
     dynamesh.cpp
     dynamesh.h
     font3d.cpp

@@ -27,14 +27,22 @@ public:
     static void EndFrame();
 
     // Phase 30.2: Buffer Management API
-    static id CreateVertexBuffer(const void* data, unsigned int size, bool dynamic = false);
-    static id CreateIndexBuffer(const void* data, unsigned int size, bool dynamic = false);
-    static void DeleteBuffer(id buffer);
-    static void UpdateBuffer(id buffer, const void* data, unsigned int size, unsigned int offset = 0);
-
-    // Phase 30.5: Draw Calls (stub implementation - full rendering in future phase)
-    static void DrawPrimitives(unsigned int primitiveType, unsigned int startVertex, unsigned int vertexCount);
-    static void DrawIndexedPrimitives(unsigned int primitiveType, unsigned int startIndex, unsigned int indexCount, id vertexBuffer, id indexBuffer);
+    static void* CreateVertexBuffer(unsigned int size, const void* data, bool dynamic = false);
+    static void* CreateIndexBuffer(unsigned int size, const void* data, bool dynamic = false);
+    static void DeleteVertexBuffer(void* buffer);
+    static void DeleteIndexBuffer(void* buffer);
+    static void UpdateVertexBuffer(void* buffer, const void* data, unsigned int size, unsigned int offset = 0);
+    static void UpdateIndexBuffer(void* buffer, const void* data, unsigned int size, unsigned int offset = 0);
+    
+    // Phase 30.3: Buffer Binding
+    static void SetVertexBuffer(void* buffer, unsigned int offset, unsigned int slot);
+    static void SetIndexBuffer(void* buffer, unsigned int offset);
+    
+    // Phase 30.5: Draw Calls
+    static void DrawPrimitive(unsigned int primitiveType, unsigned int startVertex, unsigned int vertexCount);
+    static void DrawIndexedPrimitive(unsigned int primitiveType, int baseVertexIndex, 
+                                     unsigned int minVertex, unsigned int numVertices,
+                                     unsigned int startIndex, unsigned int primitiveCount);
 
     // Phase 28.1: Texture Creation from DDS
     // Supported formats: BC1/BC2/BC3 (DXT1/DXT3/DXT5), RGBA8, RGB8
@@ -51,7 +59,7 @@ public:
     
     // Phase 28.3.3: Texture Binding
     // Binds texture to fragment shader at specified slot (default slot 0)
-    static void BindTexture(id texture, unsigned int slot = 0);
+    static void BindTexture(void* texture, unsigned int slot = 0);
     
     // Unbinds texture from fragment shader slot
     static void UnbindTexture(unsigned int slot = 0);

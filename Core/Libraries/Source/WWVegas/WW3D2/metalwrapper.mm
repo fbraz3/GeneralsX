@@ -218,14 +218,14 @@ void MetalWrapper::EndFrame() {
 }
 
 // Phase 30.2: Buffer Management Implementation
-id MetalWrapper::CreateVertexBuffer(const void* data, unsigned int size, bool dynamic) {
+void* MetalWrapper::CreateVertexBuffer(unsigned int size, const void* data, bool dynamic) {
     if (!s_device) {
         std::printf("METAL ERROR: CreateVertexBuffer - No device\n");
-        return nil;
+        return nullptr;
     }
     if (size == 0) {
         std::printf("METAL ERROR: CreateVertexBuffer - Zero size\n");
-        return nil;
+        return nullptr;
     }
     
     MTLResourceOptions options = dynamic ? MTLResourceStorageModeShared : MTLResourceStorageModeShared;
@@ -239,20 +239,21 @@ id MetalWrapper::CreateVertexBuffer(const void* data, unsigned int size, bool dy
     
     if (buffer) {
         std::printf("METAL: Created vertex buffer %p (size: %u, dynamic: %d)\n", buffer, size, dynamic);
+        return (__bridge_retained void*)buffer;
     } else {
         std::printf("METAL ERROR: Failed to create vertex buffer (size: %u)\n", size);
+        return nullptr;
     }
-    return buffer;
 }
 
-id MetalWrapper::CreateIndexBuffer(const void* data, unsigned int size, bool dynamic) {
+void* MetalWrapper::CreateIndexBuffer(unsigned int size, const void* data, bool dynamic) {
     if (!s_device) {
         std::printf("METAL ERROR: CreateIndexBuffer - No device\n");
-        return nil;
+        return nullptr;
     }
     if (size == 0) {
         std::printf("METAL ERROR: CreateIndexBuffer - Zero size\n");
-        return nil;
+        return nullptr;
     }
     
     MTLResourceOptions options = dynamic ? MTLResourceStorageModeShared : MTLResourceStorageModeShared;
@@ -266,43 +267,52 @@ id MetalWrapper::CreateIndexBuffer(const void* data, unsigned int size, bool dyn
     
     if (buffer) {
         std::printf("METAL: Created index buffer %p (size: %u, dynamic: %d)\n", buffer, size, dynamic);
+        return (__bridge_retained void*)buffer;
     } else {
         std::printf("METAL ERROR: Failed to create index buffer (size: %u)\n", size);
+        return nullptr;
     }
-    return buffer;
 }
 
-void MetalWrapper::DeleteBuffer(id buffer) {
+void MetalWrapper::DeleteVertexBuffer(void* buffer) {
     if (buffer) {
-        std::printf("METAL: Deleting buffer %p (ARC will handle deallocation)\n", buffer);
-        // ARC will handle deallocation when buffer is set to nil
-        // Note: This is a no-op in terms of immediate deallocation
-        // The actual buffer release happens when reference count reaches 0
-        buffer = nil;
+        std::printf("METAL: Deleting vertex buffer %p\n", buffer);
+        id<MTLBuffer> mtlBuffer = (__bridge_transfer id<MTLBuffer>)buffer;
+        mtlBuffer = nil; // ARC will handle deallocation
     } else {
-        std::printf("METAL WARNING: DeleteBuffer called with nil buffer\n");
+        std::printf("METAL WARNING: DeleteVertexBuffer called with null buffer\n");
     }
 }
 
-void MetalWrapper::UpdateBuffer(id buffer, const void* data, unsigned int size, unsigned int offset) {
+void MetalWrapper::DeleteIndexBuffer(void* buffer) {
+    if (buffer) {
+        std::printf("METAL: Deleting index buffer %p\n", buffer);
+        id<MTLBuffer> mtlBuffer = (__bridge_transfer id<MTLBuffer>)buffer;
+        mtlBuffer = nil; // ARC will handle deallocation
+    } else {
+        std::printf("METAL WARNING: DeleteIndexBuffer called with null buffer\n");
+    }
+}
+
+void MetalWrapper::UpdateVertexBuffer(void* buffer, const void* data, unsigned int size, unsigned int offset) {
     if (!buffer) {
-        std::printf("METAL ERROR: UpdateBuffer - Null buffer\n");
+        std::printf("METAL ERROR: UpdateVertexBuffer - Null buffer\n");
         return;
     }
     if (!data) {
-        std::printf("METAL ERROR: UpdateBuffer - Null data pointer\n");
+        std::printf("METAL ERROR: UpdateVertexBuffer - Null data pointer\n");
         return;
     }
     if (size == 0) {
-        std::printf("METAL ERROR: UpdateBuffer - Zero size\n");
+        std::printf("METAL ERROR: UpdateVertexBuffer - Zero size\n");
         return;
     }
     
-    id<MTLBuffer> mtlBuffer = (id<MTLBuffer>)buffer;
+    id<MTLBuffer> mtlBuffer = (__bridge id<MTLBuffer>)buffer;
     unsigned long bufferLength = [mtlBuffer length];
     
     if (offset + size > bufferLength) {
-        std::printf("METAL ERROR: UpdateBuffer - Out of bounds (offset: %u, size: %u, buffer length: %lu)\n", 
+        std::printf("METAL ERROR: UpdateVertexBuffer - Out of bounds (offset: %u, size: %u, buffer length: %lu)\n", 
             offset, size, bufferLength);
         return;
     }
@@ -310,27 +320,181 @@ void MetalWrapper::UpdateBuffer(id buffer, const void* data, unsigned int size, 
     void* contents = [mtlBuffer contents];
     if (contents) {
         memcpy((char*)contents + offset, data, size);
-        std::printf("METAL: Updated buffer %p (size: %u, offset: %u, total: %lu)\n", 
+        std::printf("METAL: Updated vertex buffer %p (size: %u, offset: %u, total: %lu)\n", 
             buffer, size, offset, bufferLength);
     } else {
-        std::printf("METAL ERROR: UpdateBuffer - Failed to get buffer contents\n");
+        std::printf("METAL ERROR: UpdateVertexBuffer - Failed to get buffer contents\n");
     }
 }
 
-// Phase 30.5: Draw Calls (stub implementation)
-void MetalWrapper::DrawPrimitives(unsigned int primitiveType, unsigned int startVertex, unsigned int vertexCount) {
-    // Stub: Full implementation requires FVF→Metal descriptor mapping (Phase 30.4)
-    // For now, continue using hardcoded triangle in BeginFrame
-    std::printf("METAL STUB: DrawPrimitives called (type: %u, start: %u, count: %u)\\n", 
+void MetalWrapper::UpdateIndexBuffer(void* buffer, const void* data, unsigned int size, unsigned int offset) {
+    if (!buffer) {
+        std::printf("METAL ERROR: UpdateIndexBuffer - Null buffer\n");
+        return;
+    }
+    if (!data) {
+        std::printf("METAL ERROR: UpdateIndexBuffer - Null data pointer\n");
+        return;
+    }
+    if (size == 0) {
+        std::printf("METAL ERROR: UpdateIndexBuffer - Zero size\n");
+        return;
+    }
+    
+    id<MTLBuffer> mtlBuffer = (__bridge id<MTLBuffer>)buffer;
+    unsigned long bufferLength = [mtlBuffer length];
+    
+    if (offset + size > bufferLength) {
+        std::printf("METAL ERROR: UpdateIndexBuffer - Out of bounds (offset: %u, size: %u, buffer length: %lu)\n", 
+            offset, size, bufferLength);
+        return;
+    }
+    
+    void* contents = [mtlBuffer contents];
+    if (contents) {
+        memcpy((char*)contents + offset, data, size);
+        std::printf("METAL: Updated index buffer %p (size: %u, offset: %u, total: %lu)\n", 
+            buffer, size, offset, bufferLength);
+    } else {
+        std::printf("METAL ERROR: UpdateIndexBuffer - Failed to get buffer contents\n");
+    }
+}
+
+// Phase 30.3: Buffer Binding
+static void* s_currentVertexBuffer = nullptr;
+static void* s_currentIndexBuffer = nullptr;
+static unsigned int s_currentVertexBufferOffset = 0;
+static unsigned int s_currentIndexBufferOffset = 0;
+
+void MetalWrapper::SetVertexBuffer(void* buffer, unsigned int offset, unsigned int slot) {
+    if (!s_renderEncoder) {
+        std::printf("METAL ERROR: SetVertexBuffer - No active render encoder\n");
+        return;
+    }
+    
+    if (!buffer) {
+        std::printf("METAL ERROR: SetVertexBuffer - Null buffer\n");
+        return;
+    }
+    
+    s_currentVertexBuffer = buffer;
+    s_currentVertexBufferOffset = offset;
+    
+    id<MTLBuffer> mtlBuffer = (__bridge id<MTLBuffer>)buffer;
+    [(id<MTLRenderCommandEncoder>)s_renderEncoder setVertexBuffer:mtlBuffer offset:offset atIndex:slot];
+    
+    std::printf("METAL: Set vertex buffer %p (offset: %u, slot: %u)\n", buffer, offset, slot);
+}
+
+void MetalWrapper::SetIndexBuffer(void* buffer, unsigned int offset) {
+    if (!buffer) {
+        std::printf("METAL ERROR: SetIndexBuffer - Null buffer\n");
+        return;
+    }
+    
+    s_currentIndexBuffer = buffer;
+    s_currentIndexBufferOffset = offset;
+    
+    std::printf("METAL: Set index buffer %p (offset: %u)\n", buffer, offset);
+}
+
+// Phase 30.5: Draw Calls
+void MetalWrapper::DrawPrimitive(unsigned int primitiveType, unsigned int startVertex, unsigned int vertexCount) {
+    if (!s_renderEncoder) {
+        std::printf("METAL ERROR: DrawPrimitive - No active render encoder\n");
+        return;
+    }
+    
+    // Map D3D primitive type to Metal primitive type
+    MTLPrimitiveType metalPrimitiveType = MTLPrimitiveTypeTriangle;
+    switch (primitiveType) {
+        case 1: // D3DPT_POINTLIST
+            metalPrimitiveType = MTLPrimitiveTypePoint;
+            break;
+        case 2: // D3DPT_LINELIST
+            metalPrimitiveType = MTLPrimitiveTypeLine;
+            break;
+        case 3: // D3DPT_LINESTRIP
+            metalPrimitiveType = MTLPrimitiveTypeLineStrip;
+            break;
+        case 4: // D3DPT_TRIANGLELIST
+            metalPrimitiveType = MTLPrimitiveTypeTriangle;
+            break;
+        case 5: // D3DPT_TRIANGLESTRIP
+            metalPrimitiveType = MTLPrimitiveTypeTriangleStrip;
+            break;
+        default:
+            std::printf("METAL WARNING: Unknown primitive type %u, using triangles\n", primitiveType);
+            break;
+    }
+    
+    [(id<MTLRenderCommandEncoder>)s_renderEncoder drawPrimitives:metalPrimitiveType 
+        vertexStart:startVertex vertexCount:vertexCount];
+    
+    std::printf("METAL: DrawPrimitive (type: %u, start: %u, count: %u)\n", 
         primitiveType, startVertex, vertexCount);
 }
 
-void MetalWrapper::DrawIndexedPrimitives(unsigned int primitiveType, unsigned int startIndex, 
-    unsigned int indexCount, id vertexBuffer, id indexBuffer) {
-    // Stub: Full implementation requires FVF→Metal descriptor mapping (Phase 30.4)
-    // For now, continue using hardcoded triangle in BeginFrame
-    std::printf("METAL STUB: DrawIndexedPrimitives called (type: %u, start: %u, count: %u)\\n",
-        primitiveType, startIndex, indexCount);
+void MetalWrapper::DrawIndexedPrimitive(unsigned int primitiveType, int baseVertexIndex,
+                                        unsigned int minVertex, unsigned int numVertices,
+                                        unsigned int startIndex, unsigned int primitiveCount) {
+    if (!s_renderEncoder) {
+        std::printf("METAL ERROR: DrawIndexedPrimitive - No active render encoder\n");
+        return;
+    }
+    
+    if (!s_currentIndexBuffer) {
+        std::printf("METAL ERROR: DrawIndexedPrimitive - No index buffer set\n");
+        return;
+    }
+    
+    // Map D3D primitive type to Metal primitive type
+    MTLPrimitiveType metalPrimitiveType = MTLPrimitiveTypeTriangle;
+    unsigned int indicesPerPrimitive = 3;
+    
+    switch (primitiveType) {
+        case 1: // D3DPT_POINTLIST
+            metalPrimitiveType = MTLPrimitiveTypePoint;
+            indicesPerPrimitive = 1;
+            break;
+        case 2: // D3DPT_LINELIST
+            metalPrimitiveType = MTLPrimitiveTypeLine;
+            indicesPerPrimitive = 2;
+            break;
+        case 3: // D3DPT_LINESTRIP
+            metalPrimitiveType = MTLPrimitiveTypeLineStrip;
+            indicesPerPrimitive = 1; // strip uses n+1 vertices
+            break;
+        case 4: // D3DPT_TRIANGLELIST
+            metalPrimitiveType = MTLPrimitiveTypeTriangle;
+            indicesPerPrimitive = 3;
+            break;
+        case 5: // D3DPT_TRIANGLESTRIP
+            metalPrimitiveType = MTLPrimitiveTypeTriangleStrip;
+            indicesPerPrimitive = 1; // strip uses n+2 vertices
+            break;
+        default:
+            std::printf("METAL WARNING: Unknown primitive type %u, using triangles\n", primitiveType);
+            break;
+    }
+    
+    unsigned int indexCount = primitiveCount * indicesPerPrimitive;
+    unsigned int indexOffset = startIndex + s_currentIndexBufferOffset;
+    
+    id<MTLBuffer> mtlIndexBuffer = (__bridge id<MTLBuffer>)s_currentIndexBuffer;
+    
+    [(id<MTLRenderCommandEncoder>)s_renderEncoder 
+        drawIndexedPrimitives:metalPrimitiveType
+        indexCount:indexCount
+        indexType:MTLIndexTypeUInt16
+        indexBuffer:mtlIndexBuffer
+        indexBufferOffset:indexOffset * sizeof(unsigned short)
+        instanceCount:1
+        baseVertex:baseVertexIndex
+        baseInstance:0];
+    
+    std::printf("METAL: DrawIndexedPrimitive (type: %u, primitives: %u, indices: %u, start: %u, base: %d)\n",
+        primitiveType, primitiveCount, indexCount, startIndex, baseVertexIndex);
 }
 
 // Phase 28.1: Texture Creation from DDS
@@ -503,7 +667,7 @@ void MetalWrapper::DeleteTexture(id texture) {
 }
 
 // Phase 28.3.3: Bind texture to fragment shader
-void MetalWrapper::BindTexture(id texture, unsigned int slot) {
+void MetalWrapper::BindTexture(void* texture, unsigned int slot) {
     @autoreleasepool {
         if (!s_renderEncoder) {
             std::printf("METAL WARNING: No active render encoder (BindTexture)\n");

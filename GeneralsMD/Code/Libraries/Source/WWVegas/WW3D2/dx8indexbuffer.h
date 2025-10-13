@@ -195,7 +195,7 @@ public:
 	inline GLuint Get_GL_Index_Buffer() { return GLIndexBuffer; }
 	// Phase 30.2: Metal index buffer accessor
 #if defined(__APPLE__)
-	inline id Get_Metal_Index_Buffer() { return MetalIndexBuffer; }
+	inline void* Get_Metal_Index_Buffer() { return MetalIndexBuffer; }
 #endif
 	// Stub for legacy DirectX8-only code paths (returns nullptr, type compatible for comparisons)
 	inline IDirect3DIndexBuffer8* Get_DX8_Index_Buffer() { return nullptr; }
@@ -215,7 +215,7 @@ private:
 	GLuint GLIndexBuffer;
 	// Phase 30.1: Metal index buffer object
 	#if defined(__APPLE__)
-	id MetalIndexBuffer;		// MTLBuffer stored as id (forward declared above)
+	void* MetalIndexBuffer;		// MTLBuffer stored as void* (opaque pointer)
 	#endif
 #endif
 };

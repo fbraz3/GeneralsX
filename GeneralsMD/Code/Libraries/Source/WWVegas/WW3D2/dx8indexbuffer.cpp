@@ -261,7 +261,7 @@ IndexBufferClass::WriteLockClass::~WriteLockClass()
 #if defined(__APPLE__)
 			if (g_useMetalBackend) {
 				// Metal: Upload CPU-side copy to GPU
-				MetalWrapper::UpdateBuffer(ib->Get_Metal_Index_Buffer(), ib->MetalIndexData, buffer_size, 0);
+				                                MetalWrapper::UpdateIndexBuffer(ib->Get_Metal_Index_Buffer(), ib->MetalIndexData, buffer_size, 0);
 #ifdef INDEX_BUFFER_LOG
 				printf("METAL: Index buffer unlock - Uploaded %u bytes to GPU\n", buffer_size);
 #endif
@@ -452,7 +452,7 @@ DX8IndexBufferClass::DX8IndexBufferClass(unsigned short index_count_,UsageType u
 		unsigned buffer_size = sizeof(unsigned short) * index_count;
 		bool is_dynamic = (usage & USAGE_DYNAMIC) != 0;
 		
-		MetalIndexBuffer = MetalWrapper::CreateIndexBuffer(nullptr, buffer_size, is_dynamic);
+		MetalIndexBuffer = MetalWrapper::CreateIndexBuffer(buffer_size, nullptr, is_dynamic);
 		if (!MetalIndexBuffer) {
 			printf("METAL: FATAL - Failed to create index buffer (%u bytes)\n", buffer_size);
 			return;
@@ -462,7 +462,7 @@ DX8IndexBufferClass::DX8IndexBufferClass(unsigned short index_count_,UsageType u
 		MetalIndexData = malloc(buffer_size);
 		if (!MetalIndexData) {
 			printf("METAL: FATAL - Failed to allocate CPU-side index data (%u bytes)\n", buffer_size);
-			MetalWrapper::DeleteBuffer(MetalIndexBuffer);
+			MetalWrapper::DeleteIndexBuffer(MetalIndexBuffer);
 			MetalIndexBuffer = nullptr;
 			return;
 		}

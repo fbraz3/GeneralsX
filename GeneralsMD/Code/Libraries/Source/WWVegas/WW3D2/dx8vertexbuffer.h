@@ -240,7 +240,7 @@ public:
 	GLuint Get_GL_Vertex_Buffer() { return GLVertexBuffer; }
 	// Phase 30.2: Metal vertex buffer accessor
 #if defined(__APPLE__)
-	id Get_Metal_Vertex_Buffer() { return MetalVertexBuffer; }
+	void* Get_Metal_Vertex_Buffer() { return MetalVertexBuffer; }
 #endif
 	// Stub for legacy DirectX8-only code paths (returns nullptr, type compatible for comparisons)
 	IDirect3DVertexBuffer8* Get_DX8_Vertex_Buffer() { return nullptr; }
@@ -270,7 +270,7 @@ protected:
 	GLuint GLVertexBuffer;
 	// Phase 30.1: Metal vertex buffer object
 	#if defined(__APPLE__)
-	id MetalVertexBuffer;  // MTLBuffer stored as id (forward declared above)
+	void* MetalVertexBuffer;  // MTLBuffer stored as void* (opaque pointer)
 	#endif
 #endif
 
