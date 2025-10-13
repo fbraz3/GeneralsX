@@ -2033,7 +2033,9 @@ void DX8Wrapper::Begin_Scene(void)
 
 #if defined(__APPLE__) && !defined(_WIN32)
 	// Phase 29.1: Metal BeginFrame with blue-gray clear color (0.2, 0.3, 0.5, 1.0)
-	if (getenv("USE_METAL") != nullptr) {
+	// Phase 29.5.1: Use g_useMetalBackend instead of getenv()
+	extern bool g_useMetalBackend;
+	if (g_useMetalBackend) {
 		GX::MetalWrapper::BeginFrame(0.2f, 0.3f, 0.5f, 1.0f);
 	}
 #endif
@@ -2052,7 +2054,9 @@ void DX8Wrapper::End_Scene(bool flip_frames)
 #ifndef _WIN32
 #if defined(__APPLE__)
 		// Phase 29.1: Metal EndFrame and present
-		if (getenv("USE_METAL") != nullptr) {
+		// Phase 29.5.1: Use g_useMetalBackend instead of getenv()
+		extern bool g_useMetalBackend;
+		if (g_useMetalBackend) {
 			GX::MetalWrapper::EndFrame();
 		} else {
 			// Phase 28.10: OpenGL buffer swap for frame presentation
