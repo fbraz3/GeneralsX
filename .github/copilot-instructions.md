@@ -149,11 +149,14 @@ diff -r Core/ references/fighter19-dxvk-port/Core/  # Compare compatibility laye
 
 **Documentation Structure**: All project documentation is organized in the `docs/` directory. Key files include build guides, port progress, OpenGL implementation details, and testing procedures.
 
-## Phase 29.4: Metal Backend as Default ✅ COMPLETE
+## Phase 29: Metal Backend Implementation ✅ COMPLETE
 
-**Status**: Metal is now the default graphics backend on macOS (October 13, 2025)
+**Status**: Phase 29.5.2 complete (January 13, 2025) - Full command-line parameter support and Metal initialization fixes
 
-### Auto-Detection System
+### Phase 29.4: Metal as Default ✅
+**Goal**: Make Metal the default backend on macOS without environment variables
+
+**Implementation**:
 ```cpp
 // WinMain.cpp - Platform-based backend selection
 #ifdef __APPLE__
@@ -165,24 +168,67 @@ diff -r Core/ references/fighter19-dxvk-port/Core/  # Compare compatibility laye
 #endif
 ```
 
-### Runtime Commands
-```bash
-# macOS (Metal default) - No environment variable needed
-cd $HOME/GeneralsX/GeneralsMD && ./GeneralsXZH
+**Results**: Metal activates automatically on macOS, OpenGL override works
 
-# macOS (OpenGL override) - For testing/debugging
-cd $HOME/GeneralsX/GeneralsMD && USE_OPENGL=1 ./GeneralsXZH
+### Phase 29.5: Command-Line Backend Selection ✅
+**Goal**: Add `-forceDirectX` and `-forceOpenGL` parameters for explicit backend control
 
-# Linux (OpenGL default)
-cd $HOME/GeneralsX/GeneralsMD && ./GeneralsXZH
+**Implementation** (3 sub-phases):
+1. **Phase 29.5.0**: Command-line parameter parsing in `CommandLine.cpp`
+   - `parseForceDirectX()` and `parseForceOpenGL()` functions
+   - Store in `GlobalData::m_forceDirectX` and `GlobalData::m_forceOpenGL`
+   - Moved to `paramsForStartup` for early processing
+
+2. **Phase 29.5.1**: Backend selection priority in `WinMain.cpp`
+   - Priority: command-line flags → environment variables → platform defaults
+   - Fixed `GetCommandLineA()` stub with `g_commandLine` global variable
+   - BeginFrame/EndFrame in `dx8wrapper.cpp` use `g_useMetalBackend`
+
+3. **Phase 29.5.2**: Metal initialization fix in `W3DDisplay.cpp` ✅
+   - **CRITICAL FIX**: Replace `getenv("USE_METAL")` with `g_useMetalBackend` 
+   - Located in `W3DDisplay::init_Display()` line 882
+   - Aligns with Phase 29.4 Metal-as-default approach
+   - Enables Metal initialization when backend selected via flags or defaults
+
+**Technical Pattern**:
+```cpp
+// W3DDisplay.cpp - FIXED implementation
+#ifdef __APPLE__
+    // Phase 29.5.2: Use g_useMetalBackend instead of getenv()
+    extern bool g_useMetalBackend;
+    if (g_useMetalBackend) {  // ✅ CORRECT
+        MetalWrapper::Initialize(config);
+    }
+#endif
 ```
 
-### Validation Results
-- ✅ Metal backend activates automatically on macOS
-- ✅ OpenGL override works with `USE_OPENGL=1`
-- ✅ Blue-gray screen + colored triangle rendering
-- ✅ Event loop responds to ESC key
-- ✅ Zero crashes during initialization/rendering
+### Runtime Commands
+```bash
+# macOS - Metal default (no parameters needed)
+cd $HOME/GeneralsX/GeneralsMD && ./GeneralsXZH
+
+# macOS - Force OpenGL (command-line parameter)
+cd $HOME/GeneralsX/GeneralsMD && ./GeneralsXZH -forceOpenGL
+
+# macOS - Force Metal explicitly (redundant but supported)
+cd $HOME/GeneralsX/GeneralsMD && ./GeneralsXZH -forceDirectX
+
+# macOS - OpenGL via environment variable (legacy support)
+cd $HOME/GeneralsX/GeneralsMD && USE_OPENGL=1 ./GeneralsXZH
+```
+
+### Validation Results (Phase 29.5 Complete)
+- ✅ Command-line parameters `-forceOpenGL` and `-forceDirectX` parsed correctly
+- ✅ Backend selection priority system working (flags → env vars → defaults)
+- ✅ `GetCommandLineA()` returns actual command-line arguments on macOS/Linux
+- ✅ BeginFrame/EndFrame check `g_useMetalBackend` (Phase 29.5.1)
+- ✅ Metal initialization checks `g_useMetalBackend` (Phase 29.5.2)
+- ✅ Zero compilation errors, clean ARM64 build
+
+### Commits
+- `dbe1e07f`: Phase 29.5 - Command-line parameter support
+- `dcaad904`: Phase 29.5.1 - BeginFrame/EndFrame Metal backend fix
+- `ea5aa543`: Phase 29.5.2 - W3DDisplay Metal initialization fix ✅ **LATEST**
 
 ## Phase 27: OpenGL Graphics Implementation (Complete)
 
