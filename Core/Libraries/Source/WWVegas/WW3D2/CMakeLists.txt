@@ -66,6 +66,8 @@ set(WW3D2_SRC
     #dx8wrapper.h
     ddsloader.cpp
     ddsloader.h
+    tgaloader.cpp
+    tgaloader.h
     dynamesh.cpp
     dynamesh.h
     font3d.cpp
