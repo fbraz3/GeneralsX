@@ -259,7 +259,7 @@ VertexBufferClass::WriteLockClass::~WriteLockClass()
 #if defined(__APPLE__)
 			if (g_useMetalBackend) {
 				// Phase 30.3: Metal unlock - upload CPU-side copy to GPU
-				MetalWrapper::UpdateBuffer(vb->Get_Metal_Vertex_Buffer(), vb->MetalVertexData, buffer_size, 0);
+				                                MetalWrapper::UpdateVertexBuffer(vb->Get_Metal_Vertex_Buffer(), vb->MetalVertexData, buffer_size, 0);
 #ifdef VERTEX_BUFFER_LOG
 				printf("METAL: Vertex buffer unlock - Uploaded %u bytes to GPU\n", buffer_size);
 #endif
@@ -702,7 +702,7 @@ void DX8VertexBufferClass::Create_Vertex_Buffer(UsageType usage)
 		unsigned buffer_size = FVF_Info().Get_FVF_Size() * VertexCount;
 		bool is_dynamic = (usage & USAGE_DYNAMIC) != 0;
 		
-		MetalVertexBuffer = MetalWrapper::CreateVertexBuffer(nullptr, buffer_size, is_dynamic);
+		                MetalVertexBuffer = MetalWrapper::CreateVertexBuffer(buffer_size, nullptr, is_dynamic);
 		if (!MetalVertexBuffer) {
 			printf("METAL: FATAL - Failed to create vertex buffer (%u bytes)\n", buffer_size);
 			return;
@@ -712,7 +712,7 @@ void DX8VertexBufferClass::Create_Vertex_Buffer(UsageType usage)
 		MetalVertexData = malloc(buffer_size);
 		if (!MetalVertexData) {
 			printf("METAL: FATAL - Failed to allocate CPU-side vertex data (%u bytes)\n", buffer_size);
-			MetalWrapper::DeleteBuffer(MetalVertexBuffer);
+			                        MetalWrapper::DeleteVertexBuffer(MetalVertexBuffer);
 			MetalVertexBuffer = nullptr;
 			return;
 		}
