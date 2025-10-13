@@ -32,6 +32,10 @@ public:
     static void DeleteBuffer(id buffer);
     static void UpdateBuffer(id buffer, const void* data, unsigned int size, unsigned int offset = 0);
 
+    // Phase 30.5: Draw Calls (stub implementation - full rendering in future phase)
+    static void DrawPrimitives(unsigned int primitiveType, unsigned int startVertex, unsigned int vertexCount);
+    static void DrawIndexedPrimitives(unsigned int primitiveType, unsigned int startIndex, unsigned int indexCount, id vertexBuffer, id indexBuffer);
+
 private:
     // Internal helper to create a very simple test pipeline (triangle)
     static bool CreateSimplePipeline();
