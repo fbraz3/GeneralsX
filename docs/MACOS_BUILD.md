@@ -211,21 +211,31 @@ cp ./build/macos-x64/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/
 
 ### Running the Game (ARM64 Native Performance) ✅ WORKING!
 
-**Status**: Zero Hour now executes successfully on macOS ARM64!
+**Status**: Zero Hour now executes successfully on macOS ARM64 with **Metal backend by default**!
 
 ```bash
-# Run Zero Hour (ARM64 native execution) ✅ VERIFIED WORKING
+# Run Zero Hour (ARM64 native + Metal backend) ✅ VERIFIED WORKING
 cd $HOME/GeneralsX/GeneralsMD && ./GeneralsXZH
 
+# Graphics Backend:
+# - macOS: Metal backend (default, native performance)
+# - Override to OpenGL: USE_OPENGL=1 ./GeneralsXZH
+# - Linux: OpenGL backend (default)
+
 # Expected output:
+# - Metal backend auto-detection on macOS
 # - Complete initialization (WinMain → GameEngine → Subsystems)
 # - 19 .BIG archive files loaded
-# - Font rendering with macOS fallback
+# - Metal rendering: Blue-gray screen with colored triangle
+# - Responds to ESC key for exit
 # - Main game loop execution
 # - Clean exit with code 0
 
 # With timeout for testing (30 seconds)
 cd $HOME/GeneralsX/GeneralsMD && timeout 30s ./GeneralsXZH
+
+# Force OpenGL backend (for testing/comparison)
+cd $HOME/GeneralsX/GeneralsMD && USE_OPENGL=1 ./GeneralsXZH
 
 # With LLDB for debugging
 cd $HOME/GeneralsX/GeneralsMD && lldb -o run -o quit ./GeneralsXZH
