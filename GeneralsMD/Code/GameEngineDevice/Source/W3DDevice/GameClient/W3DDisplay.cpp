@@ -753,6 +753,15 @@ void W3DDisplay::init( void )
 #ifndef _WIN32
 	printf("Phase 27.1.3: Initializing SDL2 windowing system...\n");
 	
+	// Phase 29.2: Check if Metal backend is requested
+	bool useMetal = false;
+#ifdef __APPLE__
+	useMetal = (getenv("USE_METAL") != nullptr);
+	if (useMetal) {
+		printf("Phase 29.2: Metal backend requested - skipping OpenGL initialization\n");
+	}
+#endif
+	
 	// Phase 28.9.3: This is the ONLY place where SDL2 should be initialized
 	// Early initialization in GameEngine.cpp was removed because it caused Cocoa infinite loop
 	if (!SDL_WasInit(SDL_INIT_VIDEO)) {
@@ -766,43 +775,63 @@ void W3DDisplay::init( void )
 		printf("Phase 28.9.3: WARNING - SDL2 already initialized (unexpected!)\n");
 	}
 	
-	// Phase 28.9.5: Use OpenGL 2.1 for better macOS compatibility
-	// OpenGL 3.3+ on macOS requires Core Profile which triggers Metal shader compilation issues
-	// OpenGL 2.1 is widely supported and avoids these problems
-	printf("Phase 28.9.5: Configuring OpenGL 2.1 for maximum macOS compatibility...\n");
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-	// No profile mask for OpenGL 2.1 (it predates profiles)
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-	
-	// Additional hints to ensure compatibility
-	SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);  // Prefer hardware acceleration		// Get resolution from global data (will be set later, use defaults for now)
+	// Phase 29.2: Only configure OpenGL if Metal is NOT active
+	if (!useMetal) {
+		// Phase 28.9.5: Use OpenGL 2.1 for better macOS compatibility
+		// OpenGL 3.3+ on macOS requires Core Profile which triggers Metal shader compilation issues
+		// OpenGL 2.1 is widely supported and avoids these problems
+		printf("Phase 28.9.5: Configuring OpenGL 2.1 for maximum macOS compatibility...\n");
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+		// No profile mask for OpenGL 2.1 (it predates profiles)
+		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+		
+		// Additional hints to ensure compatibility
+		SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);  // Prefer hardware acceleration
+	}
+		// Get resolution from global data (will be set later, use defaults for now)
 		Int windowWidth = TheGlobalData->m_xResolution > 0 ? TheGlobalData->m_xResolution : 800;
 		Int windowHeight = TheGlobalData->m_yResolution > 0 ? TheGlobalData->m_yResolution : 600;
 		
-		// Create SDL2 window with OpenGL support
-		Uint32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
-		if (TheGlobalData->m_windowed) {
-			windowFlags |= SDL_WINDOW_RESIZABLE;
-		} else {
-			windowFlags |= SDL_WINDOW_FULLSCREEN;
-		}
-		
-		g_SDLWindow = SDL_CreateWindow(
-			"Command & Conquer: Generals Zero Hour",
-			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-			windowWidth, windowHeight,
-			windowFlags
-		);
-		
-		if (!g_SDLWindow) {
-			printf("FATAL: SDL2 window creation failed: %s\n", SDL_GetError());
-			SDL_Quit();
-			throw ERROR_INVALID_D3D;
-		}
-		
+	// Phase 29.2: Create SDL2 window - use Metal or OpenGL depending on flag
+	Uint32 windowFlags = SDL_WINDOW_SHOWN;
+	if (!useMetal) {
+		windowFlags |= SDL_WINDOW_OPENGL;  // Only add OpenGL flag if not using Metal
+	}
+	
+	// SAFETY: Force windowed mode on macOS to prevent fullscreen lock
+	// User can manually toggle fullscreen with Cmd+F if needed
+	#ifdef __APPLE__
+	bool forceWindowed = true;
+	if (!TheGlobalData->m_windowed && forceWindowed) {
+		printf("SAFETY: Forcing windowed mode on macOS to prevent fullscreen lock (use -win flag or set in options)\n");
+		TheWritableGlobalData->m_windowed = true;
+	}
+	#endif
+	
+	if (TheGlobalData->m_windowed) {
+		windowFlags |= SDL_WINDOW_RESIZABLE;
+	} else {
+		windowFlags |= SDL_WINDOW_FULLSCREEN;
+	}
+	
+	g_SDLWindow = SDL_CreateWindow(
+		"Command & Conquer: Generals Zero Hour",
+		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+		windowWidth, windowHeight,
+		windowFlags
+	);
+	
+	if (!g_SDLWindow) {
+		printf("FATAL: SDL2 window creation failed: %s\n", SDL_GetError());
+		SDL_Quit();
+		throw ERROR_INVALID_D3D;
+	}
+	
+	// Phase 29.2: Only create OpenGL context if Metal is NOT active
+	if (!useMetal) {
 		// Create OpenGL context
 		g_GLContext = SDL_GL_CreateContext(g_SDLWindow);
 		if (!g_GLContext) {
@@ -815,33 +844,36 @@ void W3DDisplay::init( void )
 		// Make context current
 		SDL_GL_MakeCurrent(g_SDLWindow, g_GLContext);
 		
-	// Initialize GLAD OpenGL function loader
-	if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
-		printf("FATAL: GLAD OpenGL loader initialization failed\n");
-		SDL_GL_DeleteContext(g_GLContext);
-		SDL_DestroyWindow(g_SDLWindow);
-		SDL_Quit();
-		throw ERROR_INVALID_D3D;
+		// Initialize GLAD OpenGL function loader
+		if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
+			printf("FATAL: GLAD OpenGL loader initialization failed\n");
+			SDL_GL_DeleteContext(g_GLContext);
+			SDL_DestroyWindow(g_SDLWindow);
+			SDL_Quit();
+			throw ERROR_INVALID_D3D;
+		}
+		
+		// Log successful OpenGL initialization
+		const GLubyte* glVersion = glGetString(GL_VERSION);
+		const GLubyte* glRenderer = glGetString(GL_RENDERER);
+		const GLubyte* glVendor = glGetString(GL_VENDOR);
+		printf("Phase 27.1.3: OpenGL initialization successful!\n");
+		printf("  OpenGL Version: %s\n", glVersion);
+		printf("  Renderer: %s\n", glRenderer);
+		printf("  Vendor: %s\n", glVendor);
+		
+		// Phase 28.9.2: Mark OpenGL as fully ready (window + context + GLAD all initialized)
+		DX8Wrapper::Set_OpenGL_Ready(true);
+		
+		// Phase 28.9.2: Now that OpenGL is ready, initialize OpenGL resources (shaders, VAO)
+		printf("Phase 28.9.2: Calling Initialize_OpenGL_Resources() after OpenGL context ready...\n");
+		DX8Wrapper::Initialize_OpenGL_Resources();
+		
+		// Enable V-Sync (1 = enabled, 0 = disabled, -1 = adaptive)
+		SDL_GL_SetSwapInterval(1);
+	} else {
+		printf("Phase 29.2: Skipping OpenGL context creation (Metal backend active)\n");
 	}
-	
-	// Log successful OpenGL initialization
-	const GLubyte* glVersion = glGetString(GL_VERSION);
-	const GLubyte* glRenderer = glGetString(GL_RENDERER);
-	const GLubyte* glVendor = glGetString(GL_VENDOR);
-	printf("Phase 27.1.3: OpenGL initialization successful!\n");
-	printf("  OpenGL Version: %s\n", glVersion);
-	printf("  Renderer: %s\n", glRenderer);
-	printf("  Vendor: %s\n", glVendor);
-	
-	// Phase 28.9.2: Mark OpenGL as fully ready (window + context + GLAD all initialized)
-	DX8Wrapper::Set_OpenGL_Ready(true);
-	
-	// Phase 28.9.2: Now that OpenGL is ready, initialize OpenGL resources (shaders, VAO)
-	printf("Phase 28.9.2: Calling Initialize_OpenGL_Resources() after OpenGL context ready...\n");
-	DX8Wrapper::Initialize_OpenGL_Resources();
-	
-	// Enable V-Sync (1 = enabled, 0 = disabled, -1 = adaptive)
-	SDL_GL_SetSwapInterval(1);
 	
 #ifdef __APPLE__
 	// Phase 29: Initialize Metal backend for macOS (experimental)

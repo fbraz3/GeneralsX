@@ -237,8 +237,9 @@ IndexBufferClass::WriteLockClass::~WriteLockClass()
 		DX8_Assert();
 		DX8_ErrorCode(static_cast<DX8IndexBufferClass*>(index_buffer)->index_buffer->Unlock());
 #else
-		// OpenGL: Upload entire buffer to GPU
-		{
+		// Phase 29.3: Metal/OpenGL backend selection
+		if (!g_useMetalBackend) {
+			// OpenGL: Upload entire buffer to GPU
 			DX8IndexBufferClass* ib = static_cast<DX8IndexBufferClass*>(index_buffer);
 			unsigned buffer_size = index_buffer->Get_Index_Count() * sizeof(unsigned short);
 			
@@ -256,6 +257,7 @@ IndexBufferClass::WriteLockClass::~WriteLockClass()
 			
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		}
+		// Metal: CPU-side buffer, no GPU upload needed in Phase 29.3
 #endif
 		break;
 	case BUFFER_TYPE_SORTING:
@@ -317,8 +319,8 @@ IndexBufferClass::AppendLockClass::~AppendLockClass()
 		DX8_ErrorCode(static_cast<DX8IndexBufferClass*>(index_buffer)->index_buffer->Unlock());
 #else
 		// OpenGL: Upload entire buffer to GPU
-		// Note: DirectX supports partial locks, but for simplicity we upload the full buffer
-		{
+		// Phase 29.3: Skip OpenGL calls when Metal active (CPU buffer already updated)
+		if (!g_useMetalBackend) {
 			DX8IndexBufferClass* ib = static_cast<DX8IndexBufferClass*>(index_buffer);
 			unsigned buffer_size = index_buffer->Get_Index_Count() * sizeof(unsigned short);
 			
@@ -336,6 +338,7 @@ IndexBufferClass::AppendLockClass::~AppendLockClass()
 			
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		}
+		// Metal: CPU-side buffer already updated, no GPU upload needed in Phase 29.3
 #endif
 		break;
 	case BUFFER_TYPE_SORTING:
@@ -411,52 +414,71 @@ DX8IndexBufferClass::DX8IndexBufferClass(unsigned short index_count_,UsageType u
 	// If it still fails it is fatal
 	DX8_ErrorCode(ret);
 #else
-	// OpenGL implementation: Create Element Array Buffer (index buffer)
-	glGenBuffers(1, &GLIndexBuffer);
-	
-	unsigned buffer_size = sizeof(unsigned short) * index_count;
-	GLIndexData = malloc(buffer_size);
-	
-	if (!GLIndexData) {
-		WWDEBUG_SAY(("OpenGL: Failed to allocate CPU-side index buffer (%u bytes)", buffer_size));
-		GLIndexBuffer = 0;
-		return;
-	}
-	
-	memset(GLIndexData, 0, buffer_size);
-	
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GLIndexBuffer);
-	
-	// Map usage flags to OpenGL usage hints
-	GLenum gl_usage = (usage & USAGE_DYNAMIC) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW;
-	
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, buffer_size, NULL, gl_usage);
-	
-	GLenum err = glGetError();
-	if (err != GL_NO_ERROR) {
-		WWDEBUG_SAY(("OpenGL: Index buffer creation failed (error 0x%x)", err));
-	}
+	// Phase 29.3: Metal/OpenGL backend detection (using global flag)
+	if (g_useMetalBackend) {
+		// Phase 29.3: Metal CPU-side stub (GPU buffers in Phase 30)
+		printf("Phase 29.3: Creating Metal CPU-side index buffer (%d indices)\n", index_count);
+		
+		unsigned buffer_size = sizeof(unsigned short) * index_count;
+		GLIndexData = malloc(buffer_size);
+		
+		if (!GLIndexData) {
+			printf("Phase 29.3: FATAL - Failed to allocate index buffer (%u bytes)\n", buffer_size);
+			GLIndexBuffer = 0;
+			return;
+		}
+		
+		memset(GLIndexData, 0, buffer_size);
+		GLIndexBuffer = 1; // Fake handle for Metal stub
+		
+		printf("Phase 29.3: Metal index buffer created (CPU-side %u bytes)\n", buffer_size);
+	} else {
+		// OpenGL implementation: Create Element Array Buffer (index buffer)
+		glGenBuffers(1, &GLIndexBuffer);
+		
+		unsigned buffer_size = sizeof(unsigned short) * index_count;
+		GLIndexData = malloc(buffer_size);
+		
+		if (!GLIndexData) {
+			WWDEBUG_SAY(("OpenGL: Failed to allocate CPU-side index buffer (%u bytes)", buffer_size));
+			GLIndexBuffer = 0;
+			return;
+		}
+		
+		memset(GLIndexData, 0, buffer_size);
+		
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GLIndexBuffer);
+		
+		// Map usage flags to OpenGL usage hints
+		GLenum gl_usage = (usage & USAGE_DYNAMIC) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW;
+		
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, buffer_size, NULL, gl_usage);
+		
+		GLenum err = glGetError();
+		if (err != GL_NO_ERROR) {
+			WWDEBUG_SAY(("OpenGL: Index buffer creation failed (error 0x%x)", err));
+		}
 #ifdef INDEX_BUFFER_LOG
-	else {
+		else {
 		WWDEBUG_SAY(("OpenGL: Created index buffer %u, %d indices, %u bytes, usage %s", 
 			GLIndexBuffer, index_count, buffer_size, 
 			(usage & USAGE_DYNAMIC) ? "DYNAMIC" : "STATIC"));
 	}
 #endif
-	
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		
+		// Unbind buffer
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	}
 #endif
-}
-
-// ----------------------------------------------------------------------------
+}// ----------------------------------------------------------------------------
 
 DX8IndexBufferClass::~DX8IndexBufferClass()
 {
 #ifdef _WIN32
 	index_buffer->Release();
 #else
-	// OpenGL cleanup
-	if (GLIndexBuffer != 0) {
+	// Phase 29.3: Only call OpenGL functions if not using Metal
+	if (!g_useMetalBackend && GLIndexBuffer != 0) {
 		glDeleteBuffers(1, &GLIndexBuffer);
 		GLIndexBuffer = 0;
 #ifdef INDEX_BUFFER_LOG
@@ -596,7 +618,8 @@ DynamicIBAccessClass::WriteLockClass::~WriteLockClass()
 		DX8_ErrorCode(static_cast<DX8IndexBufferClass*>(DynamicIBAccess->IndexBuffer)->Get_DX8_Index_Buffer()->Unlock());
 #else
 		// Phase 27.2.2: OpenGL dynamic index buffer unlock (upload to GPU)
-		{
+		// Phase 29.3: Skip OpenGL calls when Metal active (CPU buffer already updated)
+		if (!g_useMetalBackend) {
 			DX8IndexBufferClass* ib = static_cast<DX8IndexBufferClass*>(DynamicIBAccess->IndexBuffer);
 			unsigned buffer_size = DynamicIBAccess->IndexBuffer->Get_Index_Count() * sizeof(unsigned short);
 			
@@ -604,6 +627,7 @@ DynamicIBAccessClass::WriteLockClass::~WriteLockClass()
 			glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, buffer_size, ib->GLIndexData);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		}
+		// Metal: CPU-side buffer already updated, no GPU upload needed in Phase 29.3
 #endif
 		break;
 	case BUFFER_TYPE_DYNAMIC_SORTING:

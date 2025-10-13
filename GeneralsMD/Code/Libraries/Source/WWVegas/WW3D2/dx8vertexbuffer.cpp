@@ -228,7 +228,8 @@ VertexBufferClass::WriteLockClass::~WriteLockClass()
 		DX8_ErrorCode(static_cast<DX8VertexBufferClass*>(VertexBuffer)->Get_DX8_Vertex_Buffer()->Unlock());
 #else
 		// Phase 27.2.1: OpenGL vertex buffer unlock (upload CPU data to GPU)
-		{
+		// Phase 29.3: Skip OpenGL calls when Metal active (CPU buffer already updated)
+		if (!g_useMetalBackend) {
 			DX8VertexBufferClass* vb = static_cast<DX8VertexBufferClass*>(VertexBuffer);
 			unsigned buffer_size = VertexBuffer->Get_Vertex_Count() * VertexBuffer->FVF_Info().Get_FVF_Size();
 			
@@ -247,6 +248,7 @@ VertexBufferClass::WriteLockClass::~WriteLockClass()
 				printf("ERROR Phase 27.2.1: GL VBO Unlock failed with error 0x%X\n", error);
 			}
 		}
+		// Metal: CPU-side buffer already updated, no GPU upload needed in Phase 29.3
 #endif
 		break;
 	case BUFFER_TYPE_SORTING:
@@ -338,9 +340,8 @@ VertexBufferClass::AppendLockClass::~AppendLockClass()
 		DX8_ErrorCode(static_cast<DX8VertexBufferClass*>(VertexBuffer)->Get_DX8_Vertex_Buffer()->Unlock());
 #else
 		// Phase 27.2.1: OpenGL vertex buffer append unlock
-		// Note: We upload the entire buffer since we modified CPU-side memory
-		// OpenGL doesn't have partial lock like DirectX, so we do full buffer update
-		{
+		// Phase 29.3: Skip OpenGL calls when Metal active (CPU buffer already updated)
+		if (!g_useMetalBackend) {
 			DX8VertexBufferClass* vb = static_cast<DX8VertexBufferClass*>(VertexBuffer);
 			unsigned buffer_size = VertexBuffer->Get_Vertex_Count() * VertexBuffer->FVF_Info().Get_FVF_Size();
 			
@@ -359,6 +360,7 @@ VertexBufferClass::AppendLockClass::~AppendLockClass()
 				printf("ERROR Phase 27.2.1: GL VBO AppendUnlock failed with error 0x%X\n", error);
 			}
 		}
+		// Metal: CPU-side buffer already updated, no GPU upload needed in Phase 29.3
 #endif
 		break;
 	case BUFFER_TYPE_SORTING:
@@ -523,8 +525,8 @@ DX8VertexBufferClass::~DX8VertexBufferClass()
 #ifdef _WIN32
 	VertexBuffer->Release();
 #else
-	// Phase 27.2.1: OpenGL vertex buffer cleanup
-	if (GLVertexBuffer != 0) {
+	// Phase 27.2.1/29.3: OpenGL vertex buffer cleanup (skip if using Metal)
+	if (!g_useMetalBackend && GLVertexBuffer != 0) {
 		glDeleteBuffers(1, &GLVertexBuffer);
 		GLVertexBuffer = 0;
 	}
@@ -628,51 +630,72 @@ void DX8VertexBufferClass::Create_Vertex_Buffer(UsageType usage)
 		&VertexBuffer));
 	*/
 #else
-	// Phase 27.2.1: OpenGL vertex buffer creation
-	WWASSERT(GLVertexBuffer == 0);
-	WWASSERT(GLVertexData == NULL);
-	
-	// Generate OpenGL Vertex Buffer Object
-	glGenBuffers(1, &GLVertexBuffer);
-	WWASSERT(GLVertexBuffer != 0);
-	
-	// Allocate CPU-side memory for lock/unlock emulation
-	unsigned buffer_size = FVF_Info().Get_FVF_Size() * VertexCount;
-	GLVertexData = malloc(buffer_size);
-	WWASSERT(GLVertexData != NULL);
-	
-	// Bind and allocate GPU memory
-	glBindBuffer(GL_ARRAY_BUFFER, GLVertexBuffer);
-	
-	// Map usage types to OpenGL hints
-	GLenum gl_usage = GL_STATIC_DRAW;  // Default
-	if (usage & USAGE_DYNAMIC) {
-		gl_usage = GL_DYNAMIC_DRAW;
-	}
-	
-	// Allocate buffer (NULL data for now, will be filled via Lock/Unlock)
-	glBufferData(GL_ARRAY_BUFFER, buffer_size, NULL, gl_usage);
-	
-	// Unbind for safety
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	
+	// Phase 29.3: Metal/OpenGL backend detection (using global flag)
+	if (g_useMetalBackend) {
+		// Phase 29.3: Metal CPU-side stub (GPU buffers in Phase 30)
+		unsigned buffer_size = FVF_Info().Get_FVF_Size() * VertexCount;
+		printf("Phase 29.3: Creating Metal CPU-side vertex buffer (%d vertices, %u bytes)\n", 
+			VertexCount, buffer_size);
+		
+		GLVertexData = malloc(buffer_size);
+		
+		if (!GLVertexData) {
+			printf("Phase 29.3: FATAL - Failed to allocate vertex buffer (%u bytes)\n", buffer_size);
+			GLVertexBuffer = 0;
+			return;
+		}
+		
+		memset(GLVertexData, 0, buffer_size);
+		GLVertexBuffer = 1; // Fake handle for Metal stub
+		
+		printf("Phase 29.3: Metal vertex buffer created (CPU-side %u bytes)\n", buffer_size);
+	} else {
+		// Phase 27.2.1: OpenGL vertex buffer creation
+		WWASSERT(GLVertexBuffer == 0);
+		WWASSERT(GLVertexData == NULL);
+		
+		// Generate OpenGL Vertex Buffer Object
+		glGenBuffers(1, &GLVertexBuffer);
+		WWASSERT(GLVertexBuffer != 0);
+		
+		// Allocate CPU-side memory for lock/unlock emulation
+		unsigned buffer_size = FVF_Info().Get_FVF_Size() * VertexCount;
+		GLVertexData = malloc(buffer_size);
+		WWASSERT(GLVertexData != NULL);
+		
+		// Bind and allocate GPU memory
+		glBindBuffer(GL_ARRAY_BUFFER, GLVertexBuffer);
+		
+		// Map usage types to OpenGL hints
+		GLenum gl_usage = GL_STATIC_DRAW;  // Default
+		if (usage & USAGE_DYNAMIC) {
+			gl_usage = GL_DYNAMIC_DRAW;
+		}
+		
+		// Allocate buffer (NULL data for now, will be filled via Lock/Unlock)
+		glBufferData(GL_ARRAY_BUFFER, buffer_size, NULL, gl_usage);
+		
+		// Unbind for safety
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		
+		// Check for OpenGL errors
+		GLenum error = glGetError();
+		if (error != GL_NO_ERROR) {
+			printf("ERROR Phase 27.2.1: OpenGL VBO creation failed with error 0x%X\n", error);
+			WWASSERT(0);  // Fatal error
+		}
+		
 #ifdef VERTEX_BUFFER_LOG
-	StringClass fvf_name;
-	FVF_Info().Get_FVF_Name(fvf_name);
-	printf("Phase 27.2.1: Created OpenGL VBO id=%u, size=%u bytes, usage=%s, fvf=%s\n",
-		GLVertexBuffer,
-		buffer_size,
-		(usage & USAGE_DYNAMIC) ? "DYNAMIC" : "STATIC",
-		fvf_name.Peek_Buffer());
-	_DX8VertexBufferCount++;
-	printf("Current OpenGL vertex buffer count: %d\n", _DX8VertexBufferCount);
+		StringClass fvf_name;
+		FVF_Info().Get_FVF_Name(fvf_name);
+		printf("Phase 27.2.1: Created OpenGL VBO id=%u, size=%u bytes, usage=%s, fvf=%s\n",
+			GLVertexBuffer,
+			buffer_size,
+			(usage & USAGE_DYNAMIC) ? "DYNAMIC" : "STATIC",
+			fvf_name.Peek_Buffer());
+		_DX8VertexBufferCount++;
+		printf("Current OpenGL vertex buffer count: %d\n", _DX8VertexBufferCount);
 #endif
-	
-	// Check for OpenGL errors
-	GLenum error = glGetError();
-	if (error != GL_NO_ERROR) {
-		printf("ERROR Phase 27.2.1: OpenGL VBO creation failed with error 0x%X\n", error);
-		WWASSERT(0);  // Fatal error
 	}
 #endif
 }
@@ -1089,7 +1112,8 @@ DynamicVBAccessClass::WriteLockClass::~WriteLockClass()
 		DX8_ErrorCode(static_cast<DX8VertexBufferClass*>(DynamicVBAccess->VertexBuffer)->Get_DX8_Vertex_Buffer()->Unlock());
 #else
 		// Phase 27.2.1: OpenGL dynamic vertex buffer unlock (upload CPU data to GPU)
-		{
+		// Phase 29.3: Skip OpenGL calls when Metal active (CPU buffer already updated)
+		if (!g_useMetalBackend) {
 			DX8VertexBufferClass* vb = static_cast<DX8VertexBufferClass*>(DynamicVBAccess->VertexBuffer);
 			unsigned fvf_size = vb->FVF_Info().Get_FVF_Size();
 			unsigned offset_bytes = DynamicVBAccess->VertexBufferOffset * fvf_size;
@@ -1102,6 +1126,7 @@ DynamicVBAccessClass::WriteLockClass::~WriteLockClass()
 				vb->Get_GL_Vertex_Buffer(), size_bytes, offset_bytes);
 #endif
 		}
+		// Metal: CPU-side buffer already updated, no GPU upload needed in Phase 29.3
 #endif
 		break;
 	case BUFFER_TYPE_DYNAMIC_SORTING:

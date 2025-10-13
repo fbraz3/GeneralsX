@@ -61,8 +61,8 @@ static CAMetalLayer* GetOrCreateLayer(void* sdlWindowPtr, int width, int height)
 }
 
 bool MetalWrapper::CreateSimplePipeline() {
-    // Simple vertex shader source
-    NSString* vertexShaderSource = @R"(
+    // Combined Metal shader source with shared struct definitions
+    NSString* shaderSource = @R"(
     #include <metal_stdlib>
     using namespace metal;
     
@@ -82,17 +82,6 @@ bool MetalWrapper::CreateSimplePipeline() {
         out.color = in.color;
         return out;
     }
-    )";
-    
-    // Simple fragment shader source
-    NSString* fragmentShaderSource = @R"(
-    #include <metal_stdlib>
-    using namespace metal;
-    
-    struct VertexOutput {
-        float4 position [[position]];
-        float4 color;
-    };
     
     fragment float4 fragment_main(VertexOutput in [[stage_in]]) {
         return in.color;
@@ -100,8 +89,7 @@ bool MetalWrapper::CreateSimplePipeline() {
     )";
     
     NSError* error = nil;
-    id<MTLLibrary> library = [(id<MTLDevice>)MetalWrapper::s_device newLibraryWithSource:
-        [NSString stringWithFormat:@"%@\n%@", vertexShaderSource, fragmentShaderSource] 
+    id<MTLLibrary> library = [(id<MTLDevice>)MetalWrapper::s_device newLibraryWithSource:shaderSource 
         options:nil error:&error];
     
     if (!library) {
