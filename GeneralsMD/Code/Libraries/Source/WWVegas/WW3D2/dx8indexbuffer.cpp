@@ -363,6 +363,11 @@ DX8IndexBufferClass::DX8IndexBufferClass(unsigned short index_count_,UsageType u
 #else
 	,GLIndexBuffer(0)
 	,GLIndexData(NULL)
+	// Phase 30.1: Initialize Metal members
+#if defined(__APPLE__)
+	,MetalIndexBuffer(nullptr)
+	,MetalIndexData(NULL)
+#endif
 #endif
 {
 	DX8_THREAD_ASSERT();
@@ -490,6 +495,17 @@ DX8IndexBufferClass::~DX8IndexBufferClass()
 		free(GLIndexData);
 		GLIndexData = NULL;
 	}
+
+#if defined(__APPLE__)
+	// Phase 30.1: Cleanup Metal index buffer resources
+	if (MetalIndexBuffer != nullptr) {
+		MetalIndexBuffer = nullptr;  // ARC handles deallocation
+	}
+	if (MetalIndexData != NULL) {
+		free(MetalIndexData);
+		MetalIndexData = NULL;
+	}
+#endif
 #endif
 }
 
