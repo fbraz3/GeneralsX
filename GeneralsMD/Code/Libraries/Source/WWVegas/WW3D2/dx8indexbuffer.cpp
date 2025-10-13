@@ -52,6 +52,12 @@
 #ifndef _WIN32
 #include <glad/glad.h>
 #include <cstring>
+
+#if defined(__APPLE__)
+// Phase 30.2: Metal wrapper for buffer management
+#include "../../../../../../Core/Libraries/Source/WWVegas/WW3D2/metalwrapper.h"
+using namespace GX;
+#endif
 #endif
 
 #define DEFAULT_IB_SIZE 5000
@@ -207,10 +213,17 @@ IndexBufferClass::WriteLockClass::WriteLockClass(IndexBufferClass* index_buffer_
 			(void**)&indices,
 			flags));
 #else
-		// OpenGL: Return CPU-side buffer pointer for writing
+		// Phase 30.3: Metal/OpenGL - Return CPU-side buffer pointer for writing
 		{
 			DX8IndexBufferClass* ib = static_cast<DX8IndexBufferClass*>(index_buffer);
-			indices = static_cast<unsigned short*>(ib->GLIndexData);
+#if defined(__APPLE__)
+			if (g_useMetalBackend) {
+				indices = static_cast<unsigned short*>(ib->MetalIndexData);
+			} else
+#endif
+			{
+				indices = static_cast<unsigned short*>(ib->GLIndexData);
+			}
 		}
 #endif
 		break;
@@ -237,14 +250,24 @@ IndexBufferClass::WriteLockClass::~WriteLockClass()
 		DX8_Assert();
 		DX8_ErrorCode(static_cast<DX8IndexBufferClass*>(index_buffer)->index_buffer->Unlock());
 #else
-		// Phase 29.3: Metal/OpenGL backend selection
-		if (!g_useMetalBackend) {
-			// OpenGL: Upload entire buffer to GPU
+		// Phase 30.3: Metal/OpenGL - Upload CPU-side buffer to GPU
+		{
 			DX8IndexBufferClass* ib = static_cast<DX8IndexBufferClass*>(index_buffer);
 			unsigned buffer_size = index_buffer->Get_Index_Count() * sizeof(unsigned short);
 			
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->Get_GL_Index_Buffer());
-			glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, buffer_size, ib->GLIndexData);
+#if defined(__APPLE__)
+			if (g_useMetalBackend) {
+				// Metal: Upload CPU-side copy to GPU
+				MetalWrapper::UpdateBuffer(ib->Get_Metal_Index_Buffer(), ib->MetalIndexData, buffer_size, 0);
+#ifdef INDEX_BUFFER_LOG
+				printf("METAL: Index buffer unlock - Uploaded %u bytes to GPU\n", buffer_size);
+#endif
+			} else
+#endif
+			{
+				// OpenGL: Upload entire buffer to GPU
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->Get_GL_Index_Buffer());
+				glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, buffer_size, ib->GLIndexData);
 			
 #ifdef INDEX_BUFFER_LOG
 			GLenum err = glGetError();
@@ -254,10 +277,10 @@ IndexBufferClass::WriteLockClass::~WriteLockClass()
 				WWDEBUG_SAY(("OpenGL: WriteLock uploaded %u bytes to IBO %u", buffer_size, ib->Get_GL_Index_Buffer()));
 			}
 #endif
-			
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+				
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+			}
 		}
-		// Metal: CPU-side buffer, no GPU upload needed in Phase 29.3
 #endif
 		break;
 	case BUFFER_TYPE_SORTING:
@@ -419,24 +442,32 @@ DX8IndexBufferClass::DX8IndexBufferClass(unsigned short index_count_,UsageType u
 	// If it still fails it is fatal
 	DX8_ErrorCode(ret);
 #else
-	// Phase 29.3: Metal/OpenGL backend detection (using global flag)
+	// Phase 30.2/30.3: Metal/OpenGL backend detection
 	if (g_useMetalBackend) {
-		// Phase 29.3: Metal CPU-side stub (GPU buffers in Phase 30)
-		printf("Phase 29.3: Creating Metal CPU-side index buffer (%d indices)\n", index_count);
-		
+#if defined(__APPLE__)
+		// Phase 30.2: Create Metal GPU index buffer
 		unsigned buffer_size = sizeof(unsigned short) * index_count;
-		GLIndexData = malloc(buffer_size);
+		bool is_dynamic = (usage & USAGE_DYNAMIC) != 0;
 		
-		if (!GLIndexData) {
-			printf("Phase 29.3: FATAL - Failed to allocate index buffer (%u bytes)\n", buffer_size);
-			GLIndexBuffer = 0;
+		MetalIndexBuffer = MetalWrapper::CreateIndexBuffer(nullptr, buffer_size, is_dynamic);
+		if (!MetalIndexBuffer) {
+			printf("METAL: FATAL - Failed to create index buffer (%u bytes)\n", buffer_size);
 			return;
 		}
 		
-		memset(GLIndexData, 0, buffer_size);
-		GLIndexBuffer = 1; // Fake handle for Metal stub
+		// Phase 30.3: Allocate CPU-side copy for Lock/Unlock emulation
+		MetalIndexData = malloc(buffer_size);
+		if (!MetalIndexData) {
+			printf("METAL: FATAL - Failed to allocate CPU-side index data (%u bytes)\n", buffer_size);
+			MetalWrapper::DeleteBuffer(MetalIndexBuffer);
+			MetalIndexBuffer = nullptr;
+			return;
+		}
 		
-		printf("Phase 29.3: Metal index buffer created (CPU-side %u bytes)\n", buffer_size);
+		memset(MetalIndexData, 0, buffer_size);
+		printf("METAL: Created index buffer (%d indices, %u bytes, dynamic: %d)\n", 
+			index_count, buffer_size, is_dynamic);
+#endif
 	} else {
 		// OpenGL implementation: Create Element Array Buffer (index buffer)
 		glGenBuffers(1, &GLIndexBuffer);

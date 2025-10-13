@@ -26,6 +26,12 @@ public:
     static void BeginFrame(float r, float g, float b, float a);
     static void EndFrame();
 
+    // Phase 30.2: Buffer Management API
+    static id CreateVertexBuffer(const void* data, unsigned int size, bool dynamic = false);
+    static id CreateIndexBuffer(const void* data, unsigned int size, bool dynamic = false);
+    static void DeleteBuffer(id buffer);
+    static void UpdateBuffer(id buffer, const void* data, unsigned int size, unsigned int offset = 0);
+
 private:
     // Internal helper to create a very simple test pipeline (triangle)
     static bool CreateSimplePipeline();

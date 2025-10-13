@@ -238,6 +238,10 @@ public:
 #else
 	// Phase 27.2.1: OpenGL vertex buffer accessor
 	GLuint Get_GL_Vertex_Buffer() { return GLVertexBuffer; }
+	// Phase 30.2: Metal vertex buffer accessor
+#if defined(__APPLE__)
+	id Get_Metal_Vertex_Buffer() { return MetalVertexBuffer; }
+#endif
 	// Stub for legacy DirectX8-only code paths (returns nullptr, type compatible for comparisons)
 	IDirect3DVertexBuffer8* Get_DX8_Vertex_Buffer() { return nullptr; }
 #endif
