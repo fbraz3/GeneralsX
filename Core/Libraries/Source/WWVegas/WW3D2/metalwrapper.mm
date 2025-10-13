@@ -219,7 +219,14 @@ void MetalWrapper::EndFrame() {
 
 // Phase 30.2: Buffer Management Implementation
 id MetalWrapper::CreateVertexBuffer(const void* data, unsigned int size, bool dynamic) {
-    if (!s_device || size == 0) return nil;
+    if (!s_device) {
+        std::printf("METAL ERROR: CreateVertexBuffer - No device\n");
+        return nil;
+    }
+    if (size == 0) {
+        std::printf("METAL ERROR: CreateVertexBuffer - Zero size\n");
+        return nil;
+    }
     
     MTLResourceOptions options = dynamic ? MTLResourceStorageModeShared : MTLResourceStorageModeShared;
     id<MTLBuffer> buffer = nil;
@@ -231,13 +238,22 @@ id MetalWrapper::CreateVertexBuffer(const void* data, unsigned int size, bool dy
     }
     
     if (buffer) {
-        std::printf("METAL: Created vertex buffer (size: %u, dynamic: %d)\n", size, dynamic);
+        std::printf("METAL: Created vertex buffer %p (size: %u, dynamic: %d)\n", buffer, size, dynamic);
+    } else {
+        std::printf("METAL ERROR: Failed to create vertex buffer (size: %u)\n", size);
     }
     return buffer;
 }
 
 id MetalWrapper::CreateIndexBuffer(const void* data, unsigned int size, bool dynamic) {
-    if (!s_device || size == 0) return nil;
+    if (!s_device) {
+        std::printf("METAL ERROR: CreateIndexBuffer - No device\n");
+        return nil;
+    }
+    if (size == 0) {
+        std::printf("METAL ERROR: CreateIndexBuffer - Zero size\n");
+        return nil;
+    }
     
     MTLResourceOptions options = dynamic ? MTLResourceStorageModeShared : MTLResourceStorageModeShared;
     id<MTLBuffer> buffer = nil;
@@ -249,27 +265,55 @@ id MetalWrapper::CreateIndexBuffer(const void* data, unsigned int size, bool dyn
     }
     
     if (buffer) {
-        std::printf("METAL: Created index buffer (size: %u, dynamic: %d)\n", size, dynamic);
+        std::printf("METAL: Created index buffer %p (size: %u, dynamic: %d)\n", buffer, size, dynamic);
+    } else {
+        std::printf("METAL ERROR: Failed to create index buffer (size: %u)\n", size);
     }
     return buffer;
 }
 
 void MetalWrapper::DeleteBuffer(id buffer) {
     if (buffer) {
+        std::printf("METAL: Deleting buffer %p (ARC will handle deallocation)\n", buffer);
         // ARC will handle deallocation when buffer is set to nil
+        // Note: This is a no-op in terms of immediate deallocation
+        // The actual buffer release happens when reference count reaches 0
         buffer = nil;
-        std::printf("METAL: Deleted buffer\n");
+    } else {
+        std::printf("METAL WARNING: DeleteBuffer called with nil buffer\n");
     }
 }
 
 void MetalWrapper::UpdateBuffer(id buffer, const void* data, unsigned int size, unsigned int offset) {
-    if (!buffer || !data || size == 0) return;
+    if (!buffer) {
+        std::printf("METAL ERROR: UpdateBuffer - Null buffer\n");
+        return;
+    }
+    if (!data) {
+        std::printf("METAL ERROR: UpdateBuffer - Null data pointer\n");
+        return;
+    }
+    if (size == 0) {
+        std::printf("METAL ERROR: UpdateBuffer - Zero size\n");
+        return;
+    }
     
     id<MTLBuffer> mtlBuffer = (id<MTLBuffer>)buffer;
+    unsigned long bufferLength = [mtlBuffer length];
+    
+    if (offset + size > bufferLength) {
+        std::printf("METAL ERROR: UpdateBuffer - Out of bounds (offset: %u, size: %u, buffer length: %lu)\n", 
+            offset, size, bufferLength);
+        return;
+    }
+    
     void* contents = [mtlBuffer contents];
     if (contents) {
         memcpy((char*)contents + offset, data, size);
-        std::printf("METAL: Updated buffer (size: %u, offset: %u)\\n", size, offset);
+        std::printf("METAL: Updated buffer %p (size: %u, offset: %u, total: %lu)\n", 
+            buffer, size, offset, bufferLength);
+    } else {
+        std::printf("METAL ERROR: UpdateBuffer - Failed to get buffer contents\n");
     }
 }
 

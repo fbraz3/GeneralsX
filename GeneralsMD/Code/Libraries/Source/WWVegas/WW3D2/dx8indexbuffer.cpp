@@ -530,9 +530,11 @@ DX8IndexBufferClass::~DX8IndexBufferClass()
 #if defined(__APPLE__)
 	// Phase 30.1: Cleanup Metal index buffer resources
 	if (MetalIndexBuffer != nullptr) {
+		printf("METAL: Releasing index buffer %p in destructor\n", MetalIndexBuffer);
 		MetalIndexBuffer = nullptr;  // ARC handles deallocation
 	}
 	if (MetalIndexData != NULL) {
+		printf("METAL: Freeing CPU-side index data %p\n", MetalIndexData);
 		free(MetalIndexData);
 		MetalIndexData = NULL;
 	}
