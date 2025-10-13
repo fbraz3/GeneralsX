@@ -411,6 +411,11 @@ DX8VertexBufferClass::DX8VertexBufferClass(unsigned FVF, unsigned short vertex_c
 	// Phase 27.2.1: Initialize OpenGL members
 	, GLVertexBuffer(0)
 	, GLVertexData(NULL)
+	// Phase 30.1: Initialize Metal members
+	#if defined(__APPLE__)
+	, MetalVertexBuffer(nullptr)
+	, MetalVertexData(NULL)
+	#endif
 #endif
 {
 	Create_Vertex_Buffer(usage);
@@ -430,6 +435,9 @@ DX8VertexBufferClass::DX8VertexBufferClass(
 	, VertexBuffer(NULL)
 #else
 	, GLVertexBuffer(0), GLVertexData(NULL)
+	#if defined(__APPLE__)
+	, MetalVertexBuffer(nullptr), MetalVertexData(NULL)
+	#endif
 #endif
 {
 	WWASSERT(vertices);
@@ -455,6 +463,9 @@ DX8VertexBufferClass::DX8VertexBufferClass(
 	, VertexBuffer(NULL)
 #else
 	, GLVertexBuffer(0), GLVertexData(NULL)
+	#if defined(__APPLE__)
+	, MetalVertexBuffer(nullptr), MetalVertexData(NULL)
+	#endif
 #endif
 {
 	WWASSERT(vertices);
@@ -480,6 +491,9 @@ DX8VertexBufferClass::DX8VertexBufferClass(
 	, VertexBuffer(NULL)
 #else
 	, GLVertexBuffer(0), GLVertexData(NULL)
+	#if defined(__APPLE__)
+	, MetalVertexBuffer(nullptr), MetalVertexData(NULL)
+	#endif
 #endif
 {
 	WWASSERT(vertices);
@@ -503,6 +517,9 @@ DX8VertexBufferClass::DX8VertexBufferClass(
 	, VertexBuffer(NULL)
 #else
 	, GLVertexBuffer(0), GLVertexData(NULL)
+	#if defined(__APPLE__)
+	, MetalVertexBuffer(nullptr), MetalVertexData(NULL)
+	#endif
 #endif
 {
 	WWASSERT(vertices);
@@ -534,11 +551,23 @@ DX8VertexBufferClass::~DX8VertexBufferClass()
 		free(GLVertexData);
 		GLVertexData = NULL;
 	}
+
+#if defined(__APPLE__)
+	// Phase 30.1: Metal vertex buffer cleanup
+	if (MetalVertexBuffer != nullptr) {
+		MetalVertexBuffer = nullptr;  // ARC handles deallocation
+	}
+	if (MetalVertexData != NULL) {
+		free(MetalVertexData);
+		MetalVertexData = NULL;
+	}
+#endif
+#endif
+
 #ifdef VERTEX_BUFFER_LOG
 	printf("Phase 27.2.1: Destroyed OpenGL VBO\n");
 	_DX8VertexBufferCount--;
 	printf("Current OpenGL vertex buffer count: %d\n", _DX8VertexBufferCount);
-#endif
 #endif
 }
 

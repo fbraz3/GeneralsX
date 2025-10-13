@@ -49,6 +49,11 @@
 #include <glad/glad.h>
 #endif
 
+// Phase 30.1: Metal forward declarations (avoid heavy ObjC headers)
+#if defined(__APPLE__) && !defined(_WIN32)
+typedef struct objc_object* id;  // MTLBuffer will be stored as id
+#endif
+
 #include "always.h"
 #include "wwdebug.h"
 #include "refcount.h"
@@ -245,8 +250,12 @@ public:
 	void Copy(const Vector3* loc, const Vector2* uv, const Vector4* diffuse, unsigned first_vertex, unsigned count);
 
 	// Phase 27.2.1: OpenGL vertex data access (public for lock/unlock from outside class hierarchy)
+	// Phase 30.1: Metal vertex data access (similar pattern to OpenGL)
 #ifndef _WIN32
-	void* GLVertexData;  // CPU-side copy for lock/unlock emulation
+	void* GLVertexData;  // CPU-side copy for lock/unlock emulation (OpenGL)
+	#if defined(__APPLE__)
+	void* MetalVertexData;  // CPU-side copy for Metal lock/unlock emulation
+	#endif
 #endif
 
 protected:
@@ -255,6 +264,10 @@ protected:
 #else
 	// Phase 27.2.1: OpenGL vertex buffer object
 	GLuint GLVertexBuffer;
+	// Phase 30.1: Metal vertex buffer object
+	#if defined(__APPLE__)
+	id MetalVertexBuffer;  // MTLBuffer stored as id (forward declared above)
+	#endif
 #endif
 
 	void Create_Vertex_Buffer(UsageType usage);

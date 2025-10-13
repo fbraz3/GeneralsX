@@ -48,6 +48,11 @@
 #include <glad/glad.h>
 #endif
 
+// Phase 30.1: Metal forward declarations (avoid heavy ObjC headers)
+#if defined(__APPLE__) && !defined(_WIN32)
+typedef struct objc_object* id;  // MTLBuffer will be stored as id
+#endif
+
 #include "always.h"
 #include "wwdebug.h"
 #include "refcount.h"
@@ -190,14 +195,24 @@ public:
 	inline GLuint Get_GL_Index_Buffer() { return GLIndexBuffer; }
 	// Stub for legacy DirectX8-only code paths (returns nullptr, type compatible for comparisons)
 	inline IDirect3DIndexBuffer8* Get_DX8_Index_Buffer() { return nullptr; }
-	void* GLIndexData;			// CPU-side index buffer for Lock/Unlock emulation (public for external lock access)
+	// Phase 27.2.2: OpenGL index data access
+	// Phase 30.1: Metal index data access
+	void* GLIndexData;			// CPU-side index buffer for Lock/Unlock emulation (OpenGL)
+	#if defined(__APPLE__)
+	void* MetalIndexData;		// CPU-side copy for Metal lock/unlock emulation
+	#endif
 #endif
 
 private:
 #ifdef _WIN32
 	IDirect3DIndexBuffer8*	index_buffer;		// actual dx8 index buffer
 #else
-	GLuint GLIndexBuffer;		// OpenGL element array buffer object
+	// Phase 27.2.2: OpenGL element array buffer object
+	GLuint GLIndexBuffer;
+	// Phase 30.1: Metal index buffer object
+	#if defined(__APPLE__)
+	id MetalIndexBuffer;		// MTLBuffer stored as id (forward declared above)
+	#endif
 #endif
 };
 
