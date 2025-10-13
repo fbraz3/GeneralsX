@@ -502,6 +502,57 @@ void MetalWrapper::DeleteTexture(id texture) {
     }
 }
 
+// Phase 28.3.3: Bind texture to fragment shader
+void MetalWrapper::BindTexture(id texture, unsigned int slot) {
+    @autoreleasepool {
+        if (!s_renderEncoder) {
+            std::printf("METAL WARNING: No active render encoder (BindTexture)\n");
+            return;
+        }
+        
+        if (!texture) {
+            std::printf("METAL WARNING: NULL texture (BindTexture slot %u)\n", slot);
+            return;
+        }
+        
+        id<MTLRenderCommandEncoder> encoder = (__bridge id<MTLRenderCommandEncoder>)s_renderEncoder;
+        id<MTLTexture> mtlTexture = (__bridge id<MTLTexture>)texture;
+        
+        // Bind texture to fragment shader at specified slot
+        [encoder setFragmentTexture:mtlTexture atIndex:slot];
+        
+        // Create sampler state (linear filtering, clamp to edge)
+        // TODO: Cache sampler state for performance
+        id<MTLDevice> device = (__bridge id<MTLDevice>)s_device;
+        MTLSamplerDescriptor* samplerDesc = [MTLSamplerDescriptor new];
+        samplerDesc.minFilter = MTLSamplerMinMagFilterLinear;
+        samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
+        samplerDesc.mipFilter = MTLSamplerMipFilterLinear;
+        samplerDesc.sAddressMode = MTLSamplerAddressModeClampToEdge;
+        samplerDesc.tAddressMode = MTLSamplerAddressModeClampToEdge;
+        id<MTLSamplerState> sampler = [device newSamplerStateWithDescriptor:samplerDesc];
+        
+        [encoder setFragmentSamplerState:sampler atIndex:slot];
+        
+        std::printf("METAL: Bound texture %p to slot %u\n", (void*)texture, slot);
+    }
+}
+
+// Phase 28.3.3: Unbind texture from fragment shader
+void MetalWrapper::UnbindTexture(unsigned int slot) {
+    @autoreleasepool {
+        if (!s_renderEncoder) {
+            return;
+        }
+        
+        id<MTLRenderCommandEncoder> encoder = (__bridge id<MTLRenderCommandEncoder>)s_renderEncoder;
+        [encoder setFragmentTexture:nil atIndex:slot];
+        [encoder setFragmentSamplerState:nil atIndex:slot];
+        
+        std::printf("METAL: Unbound texture from slot %u\n", slot);
+    }
+}
+
 } // namespace WW3D
 
 #endif // __APPLE__
