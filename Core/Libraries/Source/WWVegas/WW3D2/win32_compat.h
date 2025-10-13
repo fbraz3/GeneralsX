@@ -1665,10 +1665,18 @@ inline BOOL GetWindowRect(HWND hWnd, RECT* lpRect) {
 }
 
 // Additional Windows API functions
+#ifndef _WIN32
+extern char* GetCommandLineA_Global();
+#endif
+
 inline char* GetCommandLineA(void) {
-    // Stub implementation for getting command line
-    static char cmdline[] = "game.exe";
-    return cmdline;
+#ifdef _WIN32
+    // Windows implementation
+    return ::GetCommandLineA();
+#else
+    // macOS/Unix: Use global variable set by main()
+    return GetCommandLineA_Global();
+#endif
 }
 
 inline UINT GetDoubleClickTime(void) {
