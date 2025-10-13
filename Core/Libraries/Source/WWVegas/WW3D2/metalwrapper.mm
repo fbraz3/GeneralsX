@@ -217,6 +217,62 @@ void MetalWrapper::EndFrame() {
     s_currentDrawable = nil;
 }
 
+// Phase 30.2: Buffer Management Implementation
+id MetalWrapper::CreateVertexBuffer(const void* data, unsigned int size, bool dynamic) {
+    if (!s_device || size == 0) return nil;
+    
+    MTLResourceOptions options = dynamic ? MTLResourceStorageModeShared : MTLResourceStorageModeShared;
+    id<MTLBuffer> buffer = nil;
+    
+    if (data) {
+        buffer = [(id<MTLDevice>)s_device newBufferWithBytes:data length:size options:options];
+    } else {
+        buffer = [(id<MTLDevice>)s_device newBufferWithLength:size options:options];
+    }
+    
+    if (buffer) {
+        std::printf("METAL: Created vertex buffer (size: %u, dynamic: %d)\n", size, dynamic);
+    }
+    return buffer;
+}
+
+id MetalWrapper::CreateIndexBuffer(const void* data, unsigned int size, bool dynamic) {
+    if (!s_device || size == 0) return nil;
+    
+    MTLResourceOptions options = dynamic ? MTLResourceStorageModeShared : MTLResourceStorageModeShared;
+    id<MTLBuffer> buffer = nil;
+    
+    if (data) {
+        buffer = [(id<MTLDevice>)s_device newBufferWithBytes:data length:size options:options];
+    } else {
+        buffer = [(id<MTLDevice>)s_device newBufferWithLength:size options:options];
+    }
+    
+    if (buffer) {
+        std::printf("METAL: Created index buffer (size: %u, dynamic: %d)\n", size, dynamic);
+    }
+    return buffer;
+}
+
+void MetalWrapper::DeleteBuffer(id buffer) {
+    if (buffer) {
+        // ARC will handle deallocation when buffer is set to nil
+        buffer = nil;
+        std::printf("METAL: Deleted buffer\n");
+    }
+}
+
+void MetalWrapper::UpdateBuffer(id buffer, const void* data, unsigned int size, unsigned int offset) {
+    if (!buffer || !data || size == 0) return;
+    
+    id<MTLBuffer> mtlBuffer = (id<MTLBuffer>)buffer;
+    void* contents = [mtlBuffer contents];
+    if (contents) {
+        memcpy((char*)contents + offset, data, size);
+        std::printf("METAL: Updated buffer (size: %u, offset: %u)\n", size, offset);
+    }
+}
+
 } // namespace WW3D
 
 #endif // __APPLE__

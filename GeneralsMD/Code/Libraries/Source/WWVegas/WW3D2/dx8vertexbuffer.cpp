@@ -52,6 +52,12 @@
 // Phase 27.2.1: OpenGL includes for vertex buffer implementation
 #include <glad/glad.h>
 #include <cstring>  // for memcpy
+
+#if defined(__APPLE__)
+// Phase 30.2: Metal wrapper for buffer management
+#include "../../../../../../Core/Libraries/Source/WWVegas/WW3D2/metalwrapper.h"
+using namespace GX;
+#endif
 #endif
 
 #define DEFAULT_VB_SIZE 5000
@@ -188,19 +194,34 @@ VertexBufferClass::WriteLockClass::WriteLockClass(VertexBufferClass* VertexBuffe
 			(void**)&Vertices,
 			flags));	//flags
 #else
-		// Phase 27.2.1: OpenGL vertex buffer lock (CPU-side emulation)
+		// Phase 30.3: Metal/OpenGL vertex buffer lock (CPU-side emulation)
 		{
 			DX8VertexBufferClass* vb = static_cast<DX8VertexBufferClass*>(VertexBuffer);
-			Vertices = vb->GLVertexData;
-			WWASSERT(Vertices != NULL);
+			
+#if defined(__APPLE__)
+			if (g_useMetalBackend) {
+				// Phase 30.3: Metal lock - use CPU-side copy
+				Vertices = vb->MetalVertexData;
+				WWASSERT(Vertices != NULL);
 #ifdef VERTEX_BUFFER_LOG
-			StringClass fvf_name;
-			VertexBuffer->FVF_Info().Get_FVF_Name(fvf_name);
-			printf("Phase 27.2.1: GL VBO Lock - VBO id=%u, size=%u bytes, fvf=%s\n",
-				vb->Get_GL_Vertex_Buffer(),
-				VertexBuffer->Get_Vertex_Count() * VertexBuffer->FVF_Info().Get_FVF_Size(),
-				fvf_name.Peek_Buffer());
+				printf("METAL: Vertex buffer lock (size=%u bytes)\n",
+					VertexBuffer->Get_Vertex_Count() * VertexBuffer->FVF_Info().Get_FVF_Size());
 #endif
+			} else
+#endif
+			{
+				// Phase 27.2.1: OpenGL lock - use CPU-side copy
+				Vertices = vb->GLVertexData;
+				WWASSERT(Vertices != NULL);
+#ifdef VERTEX_BUFFER_LOG
+				StringClass fvf_name;
+				VertexBuffer->FVF_Info().Get_FVF_Name(fvf_name);
+				printf("Phase 27.2.1: GL VBO Lock - VBO id=%u, size=%u bytes, fvf=%s\n",
+					vb->Get_GL_Vertex_Buffer(),
+					VertexBuffer->Get_Vertex_Count() * VertexBuffer->FVF_Info().Get_FVF_Size(),
+					fvf_name.Peek_Buffer());
+#endif
+			}
 		}
 #endif
 		break;
@@ -227,28 +248,38 @@ VertexBufferClass::WriteLockClass::~WriteLockClass()
 		DX8_Assert();
 		DX8_ErrorCode(static_cast<DX8VertexBufferClass*>(VertexBuffer)->Get_DX8_Vertex_Buffer()->Unlock());
 #else
-		// Phase 27.2.1: OpenGL vertex buffer unlock (upload CPU data to GPU)
-		// Phase 29.3: Skip OpenGL calls when Metal active (CPU buffer already updated)
-		if (!g_useMetalBackend) {
+		// Phase 30.3: Metal/OpenGL vertex buffer unlock (upload CPU data to GPU)
+		{
 			DX8VertexBufferClass* vb = static_cast<DX8VertexBufferClass*>(VertexBuffer);
 			unsigned buffer_size = VertexBuffer->Get_Vertex_Count() * VertexBuffer->FVF_Info().Get_FVF_Size();
 			
-			glBindBuffer(GL_ARRAY_BUFFER, vb->Get_GL_Vertex_Buffer());
-			glBufferSubData(GL_ARRAY_BUFFER, 0, buffer_size, vb->GLVertexData);
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
-			
+#if defined(__APPLE__)
+			if (g_useMetalBackend) {
+				// Phase 30.3: Metal unlock - upload CPU-side copy to GPU
+				MetalWrapper::UpdateBuffer(vb->Get_Metal_Vertex_Buffer(), vb->MetalVertexData, buffer_size, 0);
 #ifdef VERTEX_BUFFER_LOG
-			printf("Phase 27.2.1: GL VBO Unlock - Uploaded %u bytes to VBO id=%u\n",
-				buffer_size, vb->Get_GL_Vertex_Buffer());
+				printf("METAL: Vertex buffer unlock - Uploaded %u bytes to GPU\n", buffer_size);
 #endif
-			
-			// Check for errors
-			GLenum error = glGetError();
-			if (error != GL_NO_ERROR) {
-				printf("ERROR Phase 27.2.1: GL VBO Unlock failed with error 0x%X\n", error);
+			} else
+#endif
+			{
+				// Phase 27.2.1: OpenGL unlock - upload CPU-side copy to GPU
+				glBindBuffer(GL_ARRAY_BUFFER, vb->Get_GL_Vertex_Buffer());
+				glBufferSubData(GL_ARRAY_BUFFER, 0, buffer_size, vb->GLVertexData);
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+				
+#ifdef VERTEX_BUFFER_LOG
+				printf("Phase 27.2.1: GL VBO Unlock - Uploaded %u bytes to VBO id=%u\n",
+					buffer_size, vb->Get_GL_Vertex_Buffer());
+#endif
+				
+				// Check for errors
+				GLenum error = glGetError();
+				if (error != GL_NO_ERROR) {
+					printf("ERROR Phase 27.2.1: GL VBO Unlock failed with error 0x%X\n", error);
+				}
 			}
 		}
-		// Metal: CPU-side buffer already updated, no GPU upload needed in Phase 29.3
 #endif
 		break;
 	case BUFFER_TYPE_SORTING:
@@ -659,25 +690,32 @@ void DX8VertexBufferClass::Create_Vertex_Buffer(UsageType usage)
 		&VertexBuffer));
 	*/
 #else
-	// Phase 29.3: Metal/OpenGL backend detection (using global flag)
+	// Phase 30.2/30.3: Metal/OpenGL backend detection
 	if (g_useMetalBackend) {
-		// Phase 29.3: Metal CPU-side stub (GPU buffers in Phase 30)
+#if defined(__APPLE__)
+		// Phase 30.2: Create Metal GPU buffer
 		unsigned buffer_size = FVF_Info().Get_FVF_Size() * VertexCount;
-		printf("Phase 29.3: Creating Metal CPU-side vertex buffer (%d vertices, %u bytes)\n", 
-			VertexCount, buffer_size);
+		bool is_dynamic = (usage & USAGE_DYNAMIC) != 0;
 		
-		GLVertexData = malloc(buffer_size);
-		
-		if (!GLVertexData) {
-			printf("Phase 29.3: FATAL - Failed to allocate vertex buffer (%u bytes)\n", buffer_size);
-			GLVertexBuffer = 0;
+		MetalVertexBuffer = MetalWrapper::CreateVertexBuffer(nullptr, buffer_size, is_dynamic);
+		if (!MetalVertexBuffer) {
+			printf("METAL: FATAL - Failed to create vertex buffer (%u bytes)\n", buffer_size);
 			return;
 		}
 		
-		memset(GLVertexData, 0, buffer_size);
-		GLVertexBuffer = 1; // Fake handle for Metal stub
+		// Phase 30.3: Allocate CPU-side copy for Lock/Unlock emulation
+		MetalVertexData = malloc(buffer_size);
+		if (!MetalVertexData) {
+			printf("METAL: FATAL - Failed to allocate CPU-side vertex data (%u bytes)\n", buffer_size);
+			MetalWrapper::DeleteBuffer(MetalVertexBuffer);
+			MetalVertexBuffer = nullptr;
+			return;
+		}
 		
-		printf("Phase 29.3: Metal vertex buffer created (CPU-side %u bytes)\n", buffer_size);
+		memset(MetalVertexData, 0, buffer_size);
+		printf("METAL: Created vertex buffer (%d vertices, %u bytes, dynamic: %d)\n", 
+			VertexCount, buffer_size, is_dynamic);
+#endif
 	} else {
 		// Phase 27.2.1: OpenGL vertex buffer creation
 		WWASSERT(GLVertexBuffer == 0);

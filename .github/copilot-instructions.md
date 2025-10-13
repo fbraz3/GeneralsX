@@ -8,8 +8,8 @@
 ### Primary Build Workflow (macOS ARM64)
 ```bash
 cmake --preset macos-arm64
-cmake --build build/macos-arm64 --target GeneralsXZH -j 4  # Zero Hour (primary)
-cmake --build build/macos-arm64 --target GeneralsX -j 4  # Original (secondary)
+cmake --build build/macos-arm64 --target GeneralsXZH -j 4 | tee /tmp/GeneralsXZH.log  # Zero Hour (primary)
+cmake --build build/macos-arm64 --target GeneralsX -j 4 | tee /tmp/GeneralsX.log  # Original (secondary)
 ```
 
 ### Cross-Platform Alternatives
