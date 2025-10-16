@@ -54,7 +54,7 @@ static CAMetalLayer* GetOrCreateLayer(void* sdlWindowPtr, int width, int height)
         SDL_Window* sdlWindow = (SDL_Window*)sdlWindowPtr;
         SDL_MetalView metalView = SDL_Metal_CreateView(sdlWindow);
         if (metalView) {
-            layer = (CAMetalLayer*)SDL_Metal_GetLayer(metalView);
+            layer = (__bridge CAMetalLayer*)SDL_Metal_GetLayer(metalView);
         }
     }
     if (!layer) {
@@ -143,7 +143,9 @@ bool MetalWrapper::CreateSimplePipeline() {
         
         // Sample base texture
         float4 texColor = diffuseTexture.sample(textureSampler, in.texcoord);
-        float4 finalColor = texColor * in.color;
+        
+        // DEBUG: Ignore vertex color, use white (1,1,1,1) to see pure texture
+        float4 finalColor = texColor * float4(1.0, 1.0, 1.0, 1.0);
         
         // Apply lighting if enabled
         if (uniforms.useLighting > 0.5) {
@@ -278,7 +280,7 @@ bool MetalWrapper::Initialize(const MetalConfig& cfg) {
         return false;
     }
 
-    s_layer = cfg.metalLayer ? (id)cfg.metalLayer : (id)GetOrCreateLayer(cfg.sdlWindow, cfg.width, cfg.height);
+    s_layer = cfg.metalLayer ? (__bridge id)cfg.metalLayer : (id)GetOrCreateLayer(cfg.sdlWindow, cfg.width, cfg.height);
     if (!s_layer) {
         std::printf("METAL: Failed to create CAMetalLayer\n");
         return false;
@@ -707,9 +709,9 @@ void MetalWrapper::DrawIndexedPrimitive(unsigned int primitiveType, int baseVert
 }
 
 // Phase 28.1: Texture Creation from DDS
-id MetalWrapper::CreateTextureFromDDS(unsigned int width, unsigned int height, 
-                                      unsigned int format, const void* data, 
-                                      unsigned int dataSize, unsigned int mipLevels) {
+void* MetalWrapper::CreateTextureFromDDS(unsigned int width, unsigned int height, 
+                                         unsigned int format, const void* data, 
+                                         unsigned int dataSize, unsigned int mipLevels) {
     @autoreleasepool {
         if (!s_device) {
             std::printf("METAL ERROR: CreateTextureFromDDS called before Initialize\n");
@@ -769,7 +771,8 @@ id MetalWrapper::CreateTextureFromDDS(unsigned int width, unsigned int height,
         descriptor.storageMode = MTLStorageModeShared;  // Shared mode for CPU upload
         
         // Create texture
-        id<MTLTexture> texture = [(__bridge id<MTLDevice>)s_device newTextureWithDescriptor:descriptor];
+        id<MTLDevice> device = (id<MTLDevice>)s_device;
+        id<MTLTexture> texture = [device newTextureWithDescriptor:descriptor];
         if (!texture) {
             std::printf("METAL ERROR: Failed to create texture (%ux%u, format=%u)\n", 
                 width, height, format);
@@ -777,33 +780,65 @@ id MetalWrapper::CreateTextureFromDDS(unsigned int width, unsigned int height,
         }
         
         // Upload texture data
-        MTLRegion region = MTLRegionMake2D(0, 0, width, height);
-        
         if (isCompressed) {
-            // Compressed format - calculate bytes per row based on block size
+            // Compressed format - BC1/BC2/BC3
             // BC1: 8 bytes per 4x4 block
             // BC2/BC3: 16 bytes per 4x4 block
             unsigned int blockSize = (format == 1) ? 8 : 16;  // BC1=8, BC2/BC3=16
             unsigned int blocksWide = (width + 3) / 4;  // Round up to block boundary
             unsigned int blocksHigh = (height + 3) / 4;
             unsigned int bytesPerRow = blocksWide * blockSize;
+            
+            // INVESTIGATION: Try different bytesPerRow alignments
+            // Metal may require alignment to specific boundaries for compressed textures
+            // Let's try texture width in bytes (non-compressed equivalent)
+            unsigned int bytesPerRowAlternative = width * 4;  // RGBA8 equivalent (4 bytes/pixel)
+            
             unsigned int expectedSize = bytesPerRow * blocksHigh;
             
             std::printf("METAL DEBUG BC3: width=%u, height=%u, blocksWide=%u, blocksHigh=%u\n",
                 width, height, blocksWide, blocksHigh);
-            std::printf("METAL DEBUG BC3: bytesPerRow=%u, expectedSize=%u, actualSize=%u\n",
-                bytesPerRow, expectedSize, dataSize);
+            std::printf("METAL DEBUG BC3: bytesPerRow=%u (calculated), bytesPerRowAlt=%u (RGBA8 equiv), expectedSize=%u, actualSize=%u\n",
+                bytesPerRow, bytesPerRowAlternative, expectedSize, dataSize);
+            
+            // For compressed textures, MTLRegion dimensions must be in PIXELS (not blocks)
+            // BUT they must be multiples of block size (4x4 for BC formats)
+            MTLRegion region = MTLRegionMake2D(0, 0, width, height);
+            
+            std::printf("METAL DEBUG BC3: region(x=%llu, y=%llu, w=%llu, h=%llu) [PIXELS]\n",
+                region.origin.x, region.origin.y, region.size.width, region.size.height);
             
             if (dataSize < expectedSize) {
                 std::printf("METAL WARNING: Data size mismatch! Expected %u bytes, got %u bytes\n",
                     expectedSize, dataSize);
             }
             
+            // DEBUG: Dump first 32 bytes of texture data to check for corruption
+            const unsigned char* bytes = (const unsigned char*)data;
+            std::printf("METAL DEBUG: First 32 bytes: ");
+            for (int i = 0; i < 32 && i < dataSize; i++) {
+                std::printf("%02X ", bytes[i]);
+            }
+            std::printf("\n");
+            
+            // DEBUG: Dump bytes at 50% mark (where orange starts)
+            if (dataSize >= 131072 + 32) {
+                std::printf("METAL DEBUG: Bytes at 50%% (131072): ");
+                for (int i = 0; i < 32; i++) {
+                    std::printf("%02X ", bytes[131072 + i]);
+                }
+                std::printf("\n");
+            }
+            
+            // Upload compressed texture data
             [texture replaceRegion:region
                        mipmapLevel:0
                          withBytes:data
                        bytesPerRow:bytesPerRow];
         } else {
+            // Uncompressed format - region in pixels
+            MTLRegion region = MTLRegionMake2D(0, 0, width, height);
+            
             // Uncompressed format - specify bytes per row
             unsigned int bytesPerPixel = (format == 5) ? 3 : 4;  // RGB8 or RGBA8
             unsigned int bytesPerRow = width * bytesPerPixel;
@@ -815,16 +850,16 @@ id MetalWrapper::CreateTextureFromDDS(unsigned int width, unsigned int height,
         }
         
         std::printf("METAL: Texture created successfully (ID=%p, %ux%u, format=%u, mipmaps=%u, size=%u bytes)\n",
-            (void*)texture, width, height, format, mipLevels, dataSize);
+            (__bridge void*)texture, width, height, format, mipLevels, dataSize);
         
-        // Return retained reference (caller responsible for release)
-        return (__bridge_retained id)texture;
+        // Return as void* with retained reference (caller responsible for CFRelease)
+        return (__bridge_retained void*)texture;
     }
 }
 
 // Phase 28.3.2: Create texture from TGA (RGBA8 uncompressed)
-id MetalWrapper::CreateTextureFromTGA(unsigned int width, unsigned int height,
-                                       const void* data, unsigned int dataSize)
+void* MetalWrapper::CreateTextureFromTGA(unsigned int width, unsigned int height,
+                                          const void* data, unsigned int dataSize)
 {
     @autoreleasepool {
         if (!s_device) {
@@ -857,7 +892,7 @@ id MetalWrapper::CreateTextureFromTGA(unsigned int width, unsigned int height,
         descriptor.usage = MTLTextureUsageShaderRead;
         
         // Create texture
-        id<MTLDevice> device = (__bridge id<MTLDevice>)s_device;
+        id<MTLDevice> device = (id<MTLDevice>)s_device;
         id<MTLTexture> texture = [device newTextureWithDescriptor:descriptor];
         
         if (!texture) {
@@ -875,18 +910,18 @@ id MetalWrapper::CreateTextureFromTGA(unsigned int width, unsigned int height,
                    bytesPerRow:bytesPerRow];
         
         std::printf("METAL: Created TGA texture %ux%u (RGBA8, %u bytes, ID=%p)\n",
-            width, height, dataSize, (void*)texture);
+            width, height, dataSize, (__bridge void*)texture);
         
-        // Return retained reference (caller responsible for release)
-        return (__bridge_retained id)texture;
+        // Return as void* with retained reference (caller responsible for CFRelease)
+        return (__bridge_retained void*)texture;
     }
 }
 
-void MetalWrapper::DeleteTexture(id texture) {
+void MetalWrapper::DeleteTexture(void* texture) {
     if (texture) {
-        // Release bridged reference
-        CFRelease((__bridge CFTypeRef)texture);
-        std::printf("METAL: Texture deleted (ID=%p)\n", (void*)texture);
+        // Release bridged reference (was created with __bridge_retained)
+        CFRelease(texture);
+        std::printf("METAL: Texture deleted (ID=%p)\n", texture);
     }
 }
 
@@ -903,7 +938,7 @@ void MetalWrapper::BindTexture(void* texture, unsigned int slot) {
             return;
         }
         
-        id<MTLRenderCommandEncoder> encoder = (__bridge id<MTLRenderCommandEncoder>)s_renderEncoder;
+        id<MTLRenderCommandEncoder> encoder = (id<MTLRenderCommandEncoder>)s_renderEncoder;
         id<MTLTexture> mtlTexture = (__bridge id<MTLTexture>)texture;
         
         // Bind texture to fragment shader at specified slot
@@ -911,7 +946,7 @@ void MetalWrapper::BindTexture(void* texture, unsigned int slot) {
         
         // Create sampler state (linear filtering, clamp to edge)
         // TODO: Cache sampler state for performance
-        id<MTLDevice> device = (__bridge id<MTLDevice>)s_device;
+        id<MTLDevice> device = (id<MTLDevice>)s_device;
         MTLSamplerDescriptor* samplerDesc = [MTLSamplerDescriptor new];
         samplerDesc.minFilter = MTLSamplerMinMagFilterLinear;
         samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
@@ -933,7 +968,7 @@ void MetalWrapper::UnbindTexture(unsigned int slot) {
             return;
         }
         
-        id<MTLRenderCommandEncoder> encoder = (__bridge id<MTLRenderCommandEncoder>)s_renderEncoder;
+        id<MTLRenderCommandEncoder> encoder = (id<MTLRenderCommandEncoder>)s_renderEncoder;
         [encoder setFragmentTexture:nil atIndex:slot];
         [encoder setFragmentSamplerState:nil atIndex:slot];
         
