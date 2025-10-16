@@ -320,22 +320,110 @@ cd $HOME/GeneralsX/GeneralsMD
 /tmp/test_textured_quad_render 2>&1 | grep "METAL ERROR\|METAL WARNING"
 ```
 
+## Novas Descobertas (16 de outubro de 2025)
+
+### Testes de Validação de Dados (test_bc3_raw_sampling.cpp)
+
+**Resultado**: Todos os dados BC3 estão válidos em todas as regiões do arquivo!
+
+```
+=== Test 1: Load BC3 and Dump Blocks ===
+✓ Loaded: 1024x256, format=3, size=262144 bytes, mipmaps=0
+  Blocks: 256x64 (bytesPerRow=4096)
+
+  First block (0,0) - 16 bytes:
+    FF FF 00 00 00 00 00 00 
+    B8 B4 1A AC 2A 3E DE 7F 
+  Middle-left block (0,32) - 16 bytes:
+    FF FF 00 00 00 00 00 00 
+    D9 DD 18 CD 29 2D FF FD 
+  Middle-right block (192,32) - 16 bytes [BUGGY AREA]:
+    FF FF 00 00 00 00 00 00 
+    03 FB E2 F2 AA AA AA AA 
+  Last block (255,63) - 16 bytes:
+    FF FF 00 00 00 00 00 00 
+    03 FB E2 F2 AA AA AA AA 
+```
+
+**Conclusão**: Dados na área "buggy" (bloco X=192, 75% da largura) são válidos. Não há corrupção de dados.
+
+### Análise de Posições UV
+
+```
+  UV (0.5, 0.5) → Block X=128, Y=32 (OK area)
+               → File offset: 133120 bytes
+               → First 8 bytes: FF FF 00 00 00 00 00 00 
+
+  UV (0.75, 0.5) → Block X=192, Y=32 [BUGGY AREA]
+               → File offset: 134144 bytes
+               → First 8 bytes: FF FF 00 00 00 00 00 00 
+
+  File 50% mark → Offset: 131072 bytes
+```
+
+**Observação**: Tanto UV 0.5 (área OK) quanto UV 0.75 (área buggy) têm dados válidos. O problema NÃO é nos dados do arquivo.
+
+### Referência DXVK (fighter19-dxvk-port)
+
+Verificado código de descompressão BC3 em `references/fighter19-dxvk-port/Generals/Code/Libraries/Source/WWVegas/WW3D2/ddsfile.cpp`:
+
+- **Estrutura de bloco BC3 confirmada**: 8 bytes alpha + 8 bytes color
+- **Layout**: Corresponde ao que estamos usando (correto)
+- **Decompressão manual**: Código de referência disponível para fallback
+
 ## Próximos Passos Recomendados
 
+### Prioridade CRÍTICA 🔥
+1. **Metal Frame Capture**: Usar Xcode Metal Debugger para inspecionar textura na GPU
+   - Abrir projeto em Xcode
+   - Ativar Metal Frame Capture
+   - Renderizar frame com textura BC3
+   - Inspecionar MTLTexture pixels diretamente na GPU
+   - **Objetivo**: Verificar se dados GPU-side estão corrompidos
+
+2. **Teste de Sampler State**: Verificar se `MTLSamplerDescriptor` tem configuração incorreta
+   - Tentar `MTLSamplerMinMagFilterNearest` (pixel-perfect)
+   - Testar `MTLSamplerAddressModeRepeat` vs `ClampToEdge`
+   - Verificar se `normalizedCoordinates` está ativo
+   - **Objetivo**: Isolar se problema é no filtro de textura
+
 ### Prioridade ALTA
-1. **Investigar shader sampling**: Verificar se `textureSampler` processa BC3 corretamente
-2. **Comparar com referências**: Checar implementações em `references/fighter19-dxvk-port/` e `references/dxgldotorg-dxgl/`
-3. **Testar texturas menores**: Criar BC3 de 64×64, 128×128 para isolar se problema é específico de tamanho
+3. **Descompressão Manual BC3→RGBA8**: Implementar converter em CPU como workaround
+   - Usar código de referência do fighter19-dxvk-port
+   - Converter BC3 para RGBA8 antes de upload
+   - Upload como `MTLPixelFormatRGBA8Unorm`
+   - **Objetivo**: Confirmar se problema é específico de BC3 comprimido
+
+4. **Teste com Texturas Menores**: Criar BC3 de 64×64, 128×128, 256×256
+   - Verificar se bug ocorre em todas as resoluções
+   - Testar se há threshold de tamanho (ex: > 512 pixels)
+   - **Objetivo**: Isolar se problema é relacionado a tamanho
 
 ### Prioridade MÉDIA
-4. **Verificar DDS loader**: Garantir que blocos BC3 são lidos na ordem correta
-5. **Consultar Metal documentation**: Procurar requisitos específicos de BC3 para ARM64
-6. **Adicionar validação Metal**: Usar Metal Frame Capture para inspecionar textura GPU-side
+5. **Testar BC1 (DXT1)**: Verificar se problema ocorre em outras compressões
+   - Converter defeated.dds para BC1 
+   - Testar rendering
+   - **Objetivo**: Isolar se problema é BC3-específico ou geral de compressed
+
+6. **Comparar com OpenGL Path**: Renderizar mesma textura via OpenGL (deprecated)
+   - Compilar com `USE_OPENGL=1`
+   - Verificar se bug persiste
+   - **Objetivo**: Confirmar se é problema Metal-específico
+
+7. **Consultar Apple Metal Documentation**: Procurar requisitos de BC3 para Apple Silicon
+   - Verificar se há limitações de resolução
+   - Checar se há requisitos de alinhamento específicos
+   - **Objetivo**: Encontrar documentação oficial sobre o problema
 
 ### Prioridade BAIXA
-7. **Testar outros formatos BC**: BC1, BC2 para isolar se problema é BC3-específico
-8. **Descomprimir manualmente**: Converter BC3→RGBA8 em CPU como workaround temporário
-9. **Comparar com OpenGL**: Testar mesma textura no path OpenGL (deprecated mas funcional)
+8. **Shader Debug Mode**: Implementar visualização de coordenadas UV
+   - Renderizar UVs como cores (R=U, G=V)
+   - Verificar se coordenadas estão corretas
+   - **Objetivo**: Confirmar que UV mapping está correto
+
+9. **Comparar Block Layout**: Verificar se Metal espera blocos em ordem diferente
+   - Testar reordenação de blocos (column-major vs row-major)
+   - **Objetivo**: Identificar possível problema de layout
 
 ## Arquivos Relacionados
 
