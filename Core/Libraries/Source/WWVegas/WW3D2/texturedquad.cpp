@@ -11,6 +11,17 @@
 
 namespace GX {
 
+// Static viewport size for screen-space to clip-space conversion
+static float s_viewport_width = 1280.0f;
+static float s_viewport_height = 768.0f;
+
+void TexturedQuad::SetViewportSize(float width, float height)
+{
+    s_viewport_width = width;
+    s_viewport_height = height;
+    printf("TexturedQuad: Viewport size set to %.0fx%.0f\n", width, height);
+}
+
 TexturedQuad::TexturedQuad()
     : m_texture(nullptr)
     , m_texture_path()
@@ -33,13 +44,20 @@ TexturedQuad::TexturedQuad()
     m_color[2] = 1.0f; // B
     m_color[3] = 1.0f; // A
     
-    // Initialize index buffer (two triangles: 0-1-2, 2-3-0)
-    m_indices[0] = 0;
-    m_indices[1] = 1;
-    m_indices[2] = 2;
-    m_indices[3] = 2;
-    m_indices[4] = 3;
-    m_indices[5] = 0;
+    // Initialize index buffer (two triangles with COUNTER-CLOCKWISE winding)
+    // Vertex layout:  0---1
+    //                 |  /|
+    //                 | / |
+    //                 |/  |
+    //                 3---2
+    // Triangle 1: 0→1→2 (top-left, top-right, bottom-right) - upper-right triangle
+    // Triangle 2: 0→2→3 (top-left, bottom-right, bottom-left) - lower-left triangle
+    m_indices[0] = 0;  // Triangle 1, vertex 1
+    m_indices[1] = 1;  // Triangle 1, vertex 2
+    m_indices[2] = 2;  // Triangle 1, vertex 3
+    m_indices[3] = 0;  // Triangle 2, vertex 1
+    m_indices[4] = 2;  // Triangle 2, vertex 2
+    m_indices[5] = 3;  // Triangle 2, vertex 3
     
     // Initialize vertices (will be updated in UpdateVertices())
     memset(m_vertices, 0, sizeof(m_vertices));
@@ -119,30 +137,49 @@ void TexturedQuad::SetUVs(float u0, float v0, float u1, float v1)
 
 void TexturedQuad::UpdateVertices()
 {
+    // Convert screen-space pixels to clip-space coordinates (-1 to +1)
+    // Screen space: (0,0) = top-left, (width, height) = bottom-right
+    // Clip space: (-1, 1) = top-left, (1, -1) = bottom-right
+    
+    float x_min = (m_x / s_viewport_width) * 2.0f - 1.0f;
+    float x_max = ((m_x + m_width) / s_viewport_width) * 2.0f - 1.0f;
+    float y_min = 1.0f - (m_y / s_viewport_height) * 2.0f;  // Flip Y (screen Y goes down)
+    float y_max = 1.0f - ((m_y + m_height) / s_viewport_height) * 2.0f;
+    
+    // DEBUG: Print first quad coordinates (only once per quad)
+    static int debug_count = 0;
+    if (debug_count < 4) {
+        printf("DEBUG QUAD %d: pos(%.0f,%.0f) size(%.0fx%.0f)\n", debug_count, m_x, m_y, m_width, m_height);
+        printf("  Clip-space bounds: (%.3f,%.3f) to (%.3f,%.3f)\n", x_min, y_min, x_max, y_max);
+        printf("  UVs: (%.2f,%.2f) to (%.2f,%.2f)\n", m_u0, m_v0, m_u1, m_v1);
+        printf("  Color: (%.2f, %.2f, %.2f, %.2f)\n", m_color[0], m_color[1], m_color[2], m_color[3]);
+        debug_count++;
+    }
+    
     // Vertex 0: Top-left
-    m_vertices[0].position[0] = m_x;
-    m_vertices[0].position[1] = m_y;
+    m_vertices[0].position[0] = x_min;
+    m_vertices[0].position[1] = y_min;
     m_vertices[0].position[2] = 0.0f;
     m_vertices[0].texcoord[0] = m_u0;
     m_vertices[0].texcoord[1] = m_v0;
     
     // Vertex 1: Top-right
-    m_vertices[1].position[0] = m_x + m_width;
-    m_vertices[1].position[1] = m_y;
+    m_vertices[1].position[0] = x_max;
+    m_vertices[1].position[1] = y_min;
     m_vertices[1].position[2] = 0.0f;
     m_vertices[1].texcoord[0] = m_u1;
     m_vertices[1].texcoord[1] = m_v0;
     
     // Vertex 2: Bottom-right
-    m_vertices[2].position[0] = m_x + m_width;
-    m_vertices[2].position[1] = m_y + m_height;
+    m_vertices[2].position[0] = x_max;
+    m_vertices[2].position[1] = y_max;
     m_vertices[2].position[2] = 0.0f;
     m_vertices[2].texcoord[0] = m_u1;
     m_vertices[2].texcoord[1] = m_v1;
     
     // Vertex 3: Bottom-left
-    m_vertices[3].position[0] = m_x;
-    m_vertices[3].position[1] = m_y + m_height;
+    m_vertices[3].position[0] = x_min;
+    m_vertices[3].position[1] = y_max;
     m_vertices[3].position[2] = 0.0f;
     m_vertices[3].texcoord[0] = m_u0;
     m_vertices[3].texcoord[1] = m_v1;
@@ -160,6 +197,19 @@ void TexturedQuad::UpdateVertices()
         m_vertices[i].color[1] = m_color[1];
         m_vertices[i].color[2] = m_color[2];
         m_vertices[i].color[3] = m_color[3];
+    }
+    
+    // DEBUG: Print all 4 vertex positions for first quad
+    static int vertex_debug_count = 0;
+    if (vertex_debug_count < 4) {
+        printf("  Vertex positions after UpdateVertices:\n");
+        for (int i = 0; i < 4; i++) {
+            printf("    v[%d]: pos(%.3f, %.3f, %.3f) color(%.2f, %.2f, %.2f, %.2f) uv(%.2f, %.2f)\n", 
+                i, m_vertices[i].position[0], m_vertices[i].position[1], m_vertices[i].position[2],
+                m_vertices[i].color[0], m_vertices[i].color[1], m_vertices[i].color[2], m_vertices[i].color[3],
+                m_vertices[i].texcoord[0], m_vertices[i].texcoord[1]);
+        }
+        vertex_debug_count++;
     }
     
     m_vertices_dirty = false;
@@ -233,7 +283,7 @@ void TexturedQuad::Render()
     
     // Draw indexed primitives (2 triangles = 6 indices)
     MetalWrapper::DrawIndexedPrimitive(
-        3,  // D3DPT_TRIANGLELIST
+        4,  // D3DPT_TRIANGLELIST (was 3 = LINESTRIP, causing invisible quads!)
         0,  // base_vertex_index
         0,  // min_vertex
         4,  // num_vertices
