@@ -1,4 +1,5 @@
 #include "metalwrapper.h"
+#include "bc3decompressor.h"  // Phase 28.4: BC3 decompression workaround
 
 #if defined(__APPLE__)
 
@@ -29,6 +30,9 @@ static id s_renderEncoder = nil;
 // Phase 28.4.3: Uniform buffer for shader parameters
 static MetalWrapper::ShaderUniforms s_currentUniforms;
 static bool s_uniformsDirty = true;
+
+// Phase 28.4: BC3 Bug Investigation - Sampler testing
+static bool s_useNearestFiltering = false;  // Toggle via environment variable
 
 // Simple triangle vertices for testing
 // Vertex structure for textured quads (MUST match TexturedVertex in texturedquad.h!)
@@ -781,6 +785,49 @@ void* MetalWrapper::CreateTextureFromDDS(unsigned int width, unsigned int height
         
         // Upload texture data
         if (isCompressed) {
+            // Phase 28.4: BC3 Bug Workaround - Decompress to RGBA8 if USE_BC3_DECOMPRESSION is set
+            if (format == 3 && getenv("USE_BC3_DECOMPRESSION")) {
+                std::printf("METAL: BC3 decompression workaround ENABLED\n");
+                
+                // Allocate output buffer for RGBA8
+                unsigned int rgba8Size = BC3Decompressor::GetDecompressedSize(width, height);
+                unsigned char* rgba8Data = new unsigned char[rgba8Size];
+                
+                // Decompress BC3 → RGBA8
+                if (!BC3Decompressor::Decompress((const unsigned char*)data, width, height, rgba8Data)) {
+                    std::printf("METAL ERROR: BC3 decompression failed\n");
+                    delete[] rgba8Data;
+                    return nil;
+                }
+                
+                // Re-create texture descriptor for RGBA8
+                descriptor.pixelFormat = MTLPixelFormatRGBA8Unorm;
+                texture = [device newTextureWithDescriptor:descriptor];
+                if (!texture) {
+                    std::printf("METAL ERROR: Failed to create RGBA8 texture after decompression\n");
+                    delete[] rgba8Data;
+                    return nil;
+                }
+                
+                // Upload decompressed RGBA8 data
+                MTLRegion region = MTLRegionMake2D(0, 0, width, height);
+                [texture replaceRegion:region
+                           mipmapLevel:0
+                             withBytes:rgba8Data
+                           bytesPerRow:width * 4];  // RGBA8 = 4 bytes per pixel
+                
+                std::printf("METAL: BC3→RGBA8 decompression successful (%ux%u)\n", width, height);
+                
+                delete[] rgba8Data;
+                
+                // Skip normal compressed upload
+                void* texPtr = (__bridge_retained void*)texture;
+                std::printf("METAL: Texture created successfully (ID=%p, %ux%u, format=%u [DECOMPRESSED], mipmaps=%u, size=%u bytes)\n",
+                    texPtr, width, height, format, (mipLevels > 0) ? mipLevels : 1, dataSize);
+                return texPtr;
+            }
+            
+            // Normal compressed upload path
             // Compressed format - BC1/BC2/BC3
             // BC1: 8 bytes per 4x4 block
             // BC2/BC3: 16 bytes per 4x4 block
@@ -944,15 +991,38 @@ void MetalWrapper::BindTexture(void* texture, unsigned int slot) {
         // Bind texture to fragment shader at specified slot
         [encoder setFragmentTexture:mtlTexture atIndex:slot];
         
-        // Create sampler state (linear filtering, clamp to edge)
-        // TODO: Cache sampler state for performance
+        // Create sampler state
+        // Phase 28.4: BC3 Bug Investigation - Test different sampler modes
+        // Set USE_NEAREST_FILTER=1 to test pixel-perfect sampling
         id<MTLDevice> device = (id<MTLDevice>)s_device;
         MTLSamplerDescriptor* samplerDesc = [MTLSamplerDescriptor new];
-        samplerDesc.minFilter = MTLSamplerMinMagFilterLinear;
-        samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
-        samplerDesc.mipFilter = MTLSamplerMipFilterLinear;
-        samplerDesc.sAddressMode = MTLSamplerAddressModeClampToEdge;
-        samplerDesc.tAddressMode = MTLSamplerAddressModeClampToEdge;
+        
+        if (getenv("USE_NEAREST_FILTER")) {
+            // Nearest (pixel-perfect) filtering
+            samplerDesc.minFilter = MTLSamplerMinMagFilterNearest;
+            samplerDesc.magFilter = MTLSamplerMinMagFilterNearest;
+            samplerDesc.mipFilter = MTLSamplerMipFilterNearest;
+            std::printf("METAL DEBUG: Using NEAREST filtering\n");
+        } else {
+            // Linear (smooth) filtering (default)
+            samplerDesc.minFilter = MTLSamplerMinMagFilterLinear;
+            samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
+            samplerDesc.mipFilter = MTLSamplerMipFilterLinear;
+        }
+        
+        // Test different address modes
+        if (getenv("USE_REPEAT_ADDRESS")) {
+            samplerDesc.sAddressMode = MTLSamplerAddressModeRepeat;
+            samplerDesc.tAddressMode = MTLSamplerAddressModeRepeat;
+            std::printf("METAL DEBUG: Using REPEAT address mode\n");
+        } else {
+            samplerDesc.sAddressMode = MTLSamplerAddressModeClampToEdge;
+            samplerDesc.tAddressMode = MTLSamplerAddressModeClampToEdge;
+        }
+        
+        // Normalized coordinates (should always be YES for standard textures)
+        samplerDesc.normalizedCoordinates = YES;
+        
         id<MTLSamplerState> sampler = [device newSamplerStateWithDescriptor:samplerDesc];
         
         [encoder setFragmentSamplerState:sampler atIndex:slot];
