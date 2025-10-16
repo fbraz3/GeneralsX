@@ -225,7 +225,7 @@ void TextureCache::ReleaseTexture(const char* filename) {
     // Free texture if refcount reaches 0
     if (it->second.refcount <= 0) {
         if (it->second.metal_texture) {
-            MetalWrapper::DeleteTexture((id)it->second.metal_texture);
+            MetalWrapper::DeleteTexture(it->second.metal_texture);
             printf("TextureCache: Freed texture '%s'\n", filename);
         }
         m_cache.erase(it);
@@ -254,7 +254,7 @@ void TextureCache::ClearCache() {
     
     for (auto& pair : m_cache) {
         if (pair.second.metal_texture) {
-            MetalWrapper::DeleteTexture((id)pair.second.metal_texture);
+            MetalWrapper::DeleteTexture(pair.second.metal_texture);
         }
     }
     

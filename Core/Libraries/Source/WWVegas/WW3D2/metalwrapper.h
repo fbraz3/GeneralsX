@@ -46,16 +46,16 @@ public:
 
     // Phase 28.1: Texture Creation from DDS
     // Supported formats: BC1/BC2/BC3 (DXT1/DXT3/DXT5), RGBA8, RGB8
-    static id CreateTextureFromDDS(unsigned int width, unsigned int height, 
-                                    unsigned int format, const void* data, 
-                                    unsigned int dataSize, unsigned int mipLevels = 1);
+    static void* CreateTextureFromDDS(unsigned int width, unsigned int height, 
+                                       unsigned int format, const void* data, 
+                                       unsigned int dataSize, unsigned int mipLevels = 1);
     
     // Phase 28.3.2: Texture Creation from TGA
     // Creates RGBA8 uncompressed texture (TGA data is already RGBA8)
-    static id CreateTextureFromTGA(unsigned int width, unsigned int height,
-                                    const void* data, unsigned int dataSize);
+    static void* CreateTextureFromTGA(unsigned int width, unsigned int height,
+                                       const void* data, unsigned int dataSize);
     
-    static void DeleteTexture(id texture);
+    static void DeleteTexture(void* texture);
     
     // Phase 28.3.3: Texture Binding
     // Binds texture to fragment shader at specified slot (default slot 0)
