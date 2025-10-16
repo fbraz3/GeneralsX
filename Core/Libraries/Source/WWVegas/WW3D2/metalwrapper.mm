@@ -26,16 +26,24 @@ static id s_vertexBuffer = nil;
 static id s_pipelineState = nil;
 static id s_renderEncoder = nil;
 
-// Simple triangle vertices for testing
-struct Vertex {
-    float position[3];
-    float color[4];
-};
+// Phase 28.4.3: Uniform buffer for shader parameters
+static MetalWrapper::ShaderUniforms s_currentUniforms;
+static bool s_uniformsDirty = true;
 
+// Simple triangle vertices for testing
+// Vertex structure for textured quads (MUST match TexturedVertex in texturedquad.h!)
+struct Vertex {
+    float position[3];   // 12 bytes, offset 0
+    float normal[3];     // 12 bytes, offset 12
+    float color[4];      // 16 bytes, offset 24
+    float texcoord[2];   // 8 bytes, offset 40
+};  // Total: 48 bytes
+
+// Simple test triangle (uses subset of Vertex structure)
 static const Vertex triangleVertices[] = {
-    { { 0.0f,  0.5f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f} },  // Top (red)
-    { {-0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f, 1.0f} },  // Bottom left (green)
-    { { 0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f, 1.0f} }   // Bottom right (blue)
+    { { 0.0f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, {0.5f, 0.0f} },  // Top (red)
+    { {-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f, 1.0f}, {0.0f, 1.0f} },  // Bottom left (green)
+    { { 0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f, 1.0f}, {1.0f, 1.0f} }   // Bottom right (blue)
 };
 
 static CAMetalLayer* GetOrCreateLayer(void* sdlWindowPtr, int width, int height) {
@@ -61,30 +69,136 @@ static CAMetalLayer* GetOrCreateLayer(void* sdlWindowPtr, int width, int height)
 }
 
 bool MetalWrapper::CreateSimplePipeline() {
-    // Combined Metal shader source with shared struct definitions
+    // Combined Metal shader source with shared struct definitions (matches basic.metal)
     NSString* shaderSource = @R"(
     #include <metal_stdlib>
     using namespace metal;
     
+    // Vertex input structure matching DirectX FVF layout
     struct VertexInput {
-        float3 position [[attribute(0)]];
-        float4 color    [[attribute(1)]];
+        float3 position [[attribute(0)]];   // D3DFVF_XYZ
+        float3 normal   [[attribute(1)]];   // D3DFVF_NORMAL  
+        float4 color    [[attribute(2)]];   // D3DFVF_DIFFUSE (BGRA → RGBA)
+        float2 texcoord [[attribute(3)]];   // D3DFVF_TEX1
     };
     
+    // Vertex output / fragment input
     struct VertexOutput {
         float4 position [[position]];
         float4 color;
+        float2 texcoord;
+        float3 worldPos;
+        float3 normal;
     };
     
-    vertex VertexOutput vertex_main(VertexInput in [[stage_in]]) {
+    // Uniform buffer structure matching DX8Wrapper uniforms
+    struct Uniforms {
+        float4x4 worldMatrix;
+        float4x4 viewMatrix;
+        float4x4 projectionMatrix;
+        float3 lightDirection;
+        float3 lightColor;
+        float3 ambientColor;
+        float useLighting;
+        // Material uniforms
+        float4 materialDiffuse;
+        float4 materialAmbient;
+        // Alpha test uniforms
+        float alphaRef;
+        float alphaTestEnabled;
+        int alphaTestFunc;
+        // Fog uniforms
+        float3 fogColor;
+        float fogStart;
+        float fogEnd;
+        float fogDensity;
+        int fogMode;
+        float fogEnabled;
+    };
+    
+    // Vertex shader - uniforms at buffer(1), vertex data at buffer(0)
+    vertex VertexOutput vertex_main(VertexInput in [[stage_in]],
+                                   constant Uniforms& uniforms [[buffer(1)]]) {
         VertexOutput out;
+        
+        // For 2D rendering: positions are already in clip-space, pass through directly
         out.position = float4(in.position, 1.0);
+        
+        // Pass through color and texture coordinates
         out.color = in.color;
+        out.texcoord = in.texcoord;
+        out.worldPos = in.position;
+        
+        // Pass through normal (not transformed for 2D)
+        out.normal = in.normal;
+        
         return out;
     }
     
-    fragment float4 fragment_main(VertexOutput in [[stage_in]]) {
-        return in.color;
+    // Fragment shader - uniforms at buffer(1)
+    fragment float4 fragment_main(VertexOutput in [[stage_in]],
+                                 constant Uniforms& uniforms [[buffer(1)]],
+                                 texture2d<float> diffuseTexture [[texture(0)]],
+                                 sampler textureSampler [[sampler(0)]]) {
+        
+        // Sample base texture
+        float4 texColor = diffuseTexture.sample(textureSampler, in.texcoord);
+        float4 finalColor = texColor * in.color;
+        
+        // Apply lighting if enabled
+        if (uniforms.useLighting > 0.5) {
+            // Simple directional lighting
+            float3 lightDir = normalize(-uniforms.lightDirection);
+            float NdotL = max(dot(in.normal, lightDir), 0.0);
+            
+            float3 lighting = uniforms.ambientColor + uniforms.lightColor * NdotL;
+            finalColor.rgb *= lighting;
+            
+            // Apply material properties
+            finalColor.rgb *= uniforms.materialDiffuse.rgb;
+        }
+        
+        // Alpha testing (if enabled)
+        if (uniforms.alphaTestEnabled > 0.5) {
+            float alpha = finalColor.a;
+            int func = uniforms.alphaTestFunc;
+            float ref = uniforms.alphaRef;
+            
+            bool pass = false;
+            if (func == 1) pass = false;                    // NEVER
+            else if (func == 2) pass = (alpha < ref);       // LESS
+            else if (func == 3) pass = (alpha == ref);      // EQUAL
+            else if (func == 4) pass = (alpha <= ref);      // LESSEQUAL
+            else if (func == 5) pass = (alpha > ref);       // GREATER
+            else if (func == 6) pass = (alpha != ref);      // NOTEQUAL
+            else if (func == 7) pass = (alpha >= ref);      // GREATEREQUAL
+            else if (func == 8) pass = true;                // ALWAYS
+            
+            if (!pass) discard_fragment();
+        }
+        
+        // Apply fog (if enabled)
+        if (uniforms.fogEnabled > 0.5) {
+            float distance = length(in.worldPos);
+            float fogFactor = 1.0;
+            
+            if (uniforms.fogMode == 1) {
+                // EXP fog
+                fogFactor = exp(-uniforms.fogDensity * distance);
+            } else if (uniforms.fogMode == 2) {
+                // EXP2 fog
+                float d = uniforms.fogDensity * distance;
+                fogFactor = exp(-d * d);
+            } else if (uniforms.fogMode == 3) {
+                // LINEAR fog
+                fogFactor = (uniforms.fogEnd - distance) / (uniforms.fogEnd - uniforms.fogStart);
+            }
+            
+            fogFactor = clamp(fogFactor, 0.0, 1.0);
+            finalColor.rgb = mix(uniforms.fogColor, finalColor.rgb, fogFactor);
+        }
+        
+        return finalColor;
     }
     )";
     
@@ -105,15 +219,42 @@ bool MetalWrapper::CreateSimplePipeline() {
     desc.fragmentFunction = fragmentFunction;
     desc.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     
-    // Vertex descriptor
+    // Enable alpha blending for transparent textures
+    desc.colorAttachments[0].blendingEnabled = YES;
+    desc.colorAttachments[0].sourceRGBBlendFactor = MTLBlendFactorSourceAlpha;
+    desc.colorAttachments[0].destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+    desc.colorAttachments[0].rgbBlendOperation = MTLBlendOperationAdd;
+    desc.colorAttachments[0].sourceAlphaBlendFactor = MTLBlendFactorOne;
+    desc.colorAttachments[0].destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+    desc.colorAttachments[0].alphaBlendOperation = MTLBlendOperationAdd;
+    
+    // Vertex descriptor - must match VertexInput in basic.metal
     MTLVertexDescriptor* vertexDesc = [[MTLVertexDescriptor alloc] init];
+    
+    // Attribute 0: position (float3) - offset 0
     vertexDesc.attributes[0].format = MTLVertexFormatFloat3;
     vertexDesc.attributes[0].offset = 0;
     vertexDesc.attributes[0].bufferIndex = 0;
-    vertexDesc.attributes[1].format = MTLVertexFormatFloat4;
-    vertexDesc.attributes[1].offset = 12; // sizeof(float) * 3
+    
+    // Attribute 1: normal (float3) - offset 12
+    vertexDesc.attributes[1].format = MTLVertexFormatFloat3;
+    vertexDesc.attributes[1].offset = 12;
     vertexDesc.attributes[1].bufferIndex = 0;
-    vertexDesc.layouts[0].stride = sizeof(Vertex);
+    
+    // Attribute 2: color (float4) - offset 24
+    vertexDesc.attributes[2].format = MTLVertexFormatFloat4;
+    vertexDesc.attributes[2].offset = 24;
+    vertexDesc.attributes[2].bufferIndex = 0;
+    
+    // Attribute 3: texcoord (float2) - offset 40
+    vertexDesc.attributes[3].format = MTLVertexFormatFloat2;
+    vertexDesc.attributes[3].offset = 40;
+    vertexDesc.attributes[3].bufferIndex = 0;
+    
+    // Buffer layout
+    vertexDesc.layouts[0].stride = sizeof(Vertex);  // 48 bytes total
+    vertexDesc.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
+    
     desc.vertexDescriptor = vertexDesc;
     
     s_pipelineState = [(id<MTLDevice>)MetalWrapper::s_device newRenderPipelineStateWithDescriptor:desc error:&error];
@@ -156,6 +297,10 @@ bool MetalWrapper::Initialize(const MetalConfig& cfg) {
         std::printf("METAL: Failed to create rendering pipeline\n");
         return false;
     }
+    
+    // CRITICAL: Initialize uniforms with default values (identity matrices)
+    SetDefaultUniforms();
+    std::printf("METAL: Default uniforms initialized (identity matrices)\n");
 
     std::printf("METAL: Initialized (device, queue, layer, triangle pipeline)\n");
     return true;
@@ -181,12 +326,25 @@ void MetalWrapper::Resize(int width, int height) {
 }
 
 void MetalWrapper::BeginFrame(float r, float g, float b, float a) {
-    if (!s_device || !s_commandQueue || !s_layer) return;
+    printf("METAL: BeginFrame() called (s_device=%p, s_commandQueue=%p, s_layer=%p)\n", 
+           s_device, s_commandQueue, s_layer);
+    
+    if (!s_device || !s_commandQueue || !s_layer) {
+        printf("METAL ERROR: BeginFrame() - Missing critical components (early return)\n");
+        return;
+    }
+    
     s_currentDrawable = [(CAMetalLayer*)s_layer nextDrawable];
-    if (!s_currentDrawable) return;
+    if (!s_currentDrawable) {
+        printf("METAL ERROR: BeginFrame() - Failed to get next drawable\n");
+        return;
+    }
 
     s_cmdBuffer = [(id<MTLCommandQueue>)s_commandQueue commandBuffer];
-    if (!s_cmdBuffer) return;
+    if (!s_cmdBuffer) {
+        printf("METAL ERROR: BeginFrame() - Failed to create command buffer\n");
+        return;
+    }
 
     // Create a simple pass descriptor that clears to the given color
     MTLRenderPassDescriptor* pass = [MTLRenderPassDescriptor renderPassDescriptor];
@@ -196,19 +354,61 @@ void MetalWrapper::BeginFrame(float r, float g, float b, float a) {
     pass.colorAttachments[0].clearColor = MTLClearColorMake(r, g, b, a);
     s_passDesc = pass;
     
-    // Begin render pass and draw triangle
-    if (s_pipelineState && s_vertexBuffer) {
-        s_renderEncoder = [(id<MTLCommandBuffer>)s_cmdBuffer renderCommandEncoderWithDescriptor:pass];
+    // Begin render pass - encoder stays active until EndFrame
+    s_renderEncoder = [(id<MTLCommandBuffer>)s_cmdBuffer renderCommandEncoderWithDescriptor:pass];
+    
+    // CRITICAL: Set pipeline state so encoder knows which shader to use
+    if (s_pipelineState) {
         [(id<MTLRenderCommandEncoder>)s_renderEncoder setRenderPipelineState:(id<MTLRenderPipelineState>)s_pipelineState];
-        [(id<MTLRenderCommandEncoder>)s_renderEncoder setVertexBuffer:(id<MTLBuffer>)s_vertexBuffer offset:0 atIndex:0];
-        [(id<MTLRenderCommandEncoder>)s_renderEncoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:3];
-        [(id<MTLRenderCommandEncoder>)s_renderEncoder endEncoding];
-        s_renderEncoder = nil;
+        printf("METAL: BeginFrame() - Pipeline state set on encoder\n");
+    } else {
+        printf("METAL ERROR: BeginFrame() - No pipeline state available!\n");
     }
+    
+    // CRITICAL: Set viewport to match drawable size
+    CGSize drawableSize = [(CAMetalLayer*)s_layer drawableSize];
+    MTLViewport viewport = {
+        0.0, 0.0,  // x, y origin (top-left)
+        drawableSize.width, drawableSize.height,  // width, height
+        0.0, 1.0   // znear, zfar
+    };
+    [(id<MTLRenderCommandEncoder>)s_renderEncoder setViewport:viewport];
+    printf("METAL: BeginFrame() - Viewport set (%.0fx%.0f)\n", drawableSize.width, drawableSize.height);
+    
+    // CRITICAL: Disable backface culling (render both sides)
+    [(id<MTLRenderCommandEncoder>)s_renderEncoder setCullMode:MTLCullModeNone];
+    printf("METAL: BeginFrame() - Cull mode disabled\n");
+    
+    // CRITICAL: Set front face winding order (counter-clockwise is Metal default)
+    [(id<MTLRenderCommandEncoder>)s_renderEncoder setFrontFacingWinding:MTLWindingCounterClockwise];
+    
+    // CRITICAL: Set triangle fill mode to FILL (not wireframe!)
+    [(id<MTLRenderCommandEncoder>)s_renderEncoder setTriangleFillMode:MTLTriangleFillModeFill];
+    printf("METAL: BeginFrame() - Triangle fill mode set to FILL\n");
+    
+    // Bind uniforms to shader at [[buffer(1)]] (buffer(0) is for vertex data)
+    [(id<MTLRenderCommandEncoder>)s_renderEncoder 
+        setVertexBytes:&s_currentUniforms
+        length:sizeof(ShaderUniforms)
+        atIndex:1];
+    [(id<MTLRenderCommandEncoder>)s_renderEncoder 
+        setFragmentBytes:&s_currentUniforms
+        length:sizeof(ShaderUniforms)
+        atIndex:1];
+    printf("METAL: BeginFrame() - Uniforms bound at index 1 (size: %zu bytes)\n", sizeof(ShaderUniforms));
+    
+    printf("METAL: BeginFrame() - Render encoder created (%p)\n", s_renderEncoder);
 }
 
 void MetalWrapper::EndFrame() {
     if (!s_cmdBuffer || !s_currentDrawable) return;
+
+    // End render encoder if still active
+    if (s_renderEncoder) {
+        [(id<MTLRenderCommandEncoder>)s_renderEncoder endEncoding];
+        printf("METAL: EndFrame() - Render encoder finalized\n");
+        s_renderEncoder = nil;
+    }
 
     // Present the drawable
     [(id<MTLCommandBuffer>)s_cmdBuffer presentDrawable:(id)s_currentDrawable];
@@ -483,6 +683,15 @@ void MetalWrapper::DrawIndexedPrimitive(unsigned int primitiveType, int baseVert
     
     id<MTLBuffer> mtlIndexBuffer = (__bridge id<MTLBuffer>)s_currentIndexBuffer;
     
+    // DEBUG: Print first few indices from buffer
+    static bool printed_indices = false;
+    if (!printed_indices) {
+        unsigned short* indices = (unsigned short*)[mtlIndexBuffer contents];
+        std::printf("METAL DEBUG: First 6 indices in buffer: [%u, %u, %u, %u, %u, %u]\n",
+            indices[0], indices[1], indices[2], indices[3], indices[4], indices[5]);
+        printed_indices = true;
+    }
+    
     [(id<MTLRenderCommandEncoder>)s_renderEncoder 
         drawIndexedPrimitives:metalPrimitiveType
         indexCount:indexCount
@@ -557,7 +766,7 @@ id MetalWrapper::CreateTextureFromDDS(unsigned int width, unsigned int height,
         descriptor.arrayLength = 1;
         descriptor.sampleCount = 1;
         descriptor.usage = MTLTextureUsageShaderRead;
-        descriptor.storageMode = MTLStorageModePrivate;  // GPU-only for best performance
+        descriptor.storageMode = MTLStorageModeShared;  // Shared mode for CPU upload
         
         // Create texture
         id<MTLTexture> texture = [(__bridge id<MTLDevice>)s_device newTextureWithDescriptor:descriptor];
@@ -568,16 +777,32 @@ id MetalWrapper::CreateTextureFromDDS(unsigned int width, unsigned int height,
         }
         
         // Upload texture data
-        // For compressed formats, bytesPerRow and bytesPerImage are ignored
         MTLRegion region = MTLRegionMake2D(0, 0, width, height);
         
         if (isCompressed) {
-            // Compressed format - Metal handles block alignment internally
+            // Compressed format - calculate bytes per row based on block size
+            // BC1: 8 bytes per 4x4 block
+            // BC2/BC3: 16 bytes per 4x4 block
+            unsigned int blockSize = (format == 1) ? 8 : 16;  // BC1=8, BC2/BC3=16
+            unsigned int blocksWide = (width + 3) / 4;  // Round up to block boundary
+            unsigned int blocksHigh = (height + 3) / 4;
+            unsigned int bytesPerRow = blocksWide * blockSize;
+            unsigned int expectedSize = bytesPerRow * blocksHigh;
+            
+            std::printf("METAL DEBUG BC3: width=%u, height=%u, blocksWide=%u, blocksHigh=%u\n",
+                width, height, blocksWide, blocksHigh);
+            std::printf("METAL DEBUG BC3: bytesPerRow=%u, expectedSize=%u, actualSize=%u\n",
+                bytesPerRow, expectedSize, dataSize);
+            
+            if (dataSize < expectedSize) {
+                std::printf("METAL WARNING: Data size mismatch! Expected %u bytes, got %u bytes\n",
+                    expectedSize, dataSize);
+            }
+            
             [texture replaceRegion:region
                        mipmapLevel:0
                          withBytes:data
-                       bytesPerRow:0      // Ignored for compressed formats
-                     bytesPerImage:0];    // Ignored for 2D textures
+                       bytesPerRow:bytesPerRow];
         } else {
             // Uncompressed format - specify bytes per row
             unsigned int bytesPerPixel = (format == 5) ? 3 : 4;  // RGB8 or RGBA8
@@ -586,8 +811,7 @@ id MetalWrapper::CreateTextureFromDDS(unsigned int width, unsigned int height,
             [texture replaceRegion:region
                        mipmapLevel:0
                          withBytes:data
-                       bytesPerRow:bytesPerRow
-                     bytesPerImage:0];    // Ignored for 2D textures
+                       bytesPerRow:bytesPerRow];
         }
         
         std::printf("METAL: Texture created successfully (ID=%p, %ux%u, format=%u, mipmaps=%u, size=%u bytes)\n",
@@ -717,6 +941,88 @@ void MetalWrapper::UnbindTexture(unsigned int slot) {
     }
 }
 
-} // namespace WW3D
+// Phase 28.4.3: Set identity matrices and default uniforms for 2D rendering
+void MetalWrapper::SetDefaultUniforms() {
+    // Initialize with identity matrices
+    for (int i = 0; i < 16; i++) {
+        s_currentUniforms.worldMatrix[i] = 0.0f;
+        s_currentUniforms.viewMatrix[i] = 0.0f;
+        s_currentUniforms.projectionMatrix[i] = 0.0f;
+    }
+    
+    // Set diagonal to 1 (identity matrix)
+    s_currentUniforms.worldMatrix[0] = 1.0f;
+    s_currentUniforms.worldMatrix[5] = 1.0f;
+    s_currentUniforms.worldMatrix[10] = 1.0f;
+    s_currentUniforms.worldMatrix[15] = 1.0f;
+    
+    s_currentUniforms.viewMatrix[0] = 1.0f;
+    s_currentUniforms.viewMatrix[5] = 1.0f;
+    s_currentUniforms.viewMatrix[10] = 1.0f;
+    s_currentUniforms.viewMatrix[15] = 1.0f;
+    
+    s_currentUniforms.projectionMatrix[0] = 1.0f;
+    s_currentUniforms.projectionMatrix[5] = 1.0f;
+    s_currentUniforms.projectionMatrix[10] = 1.0f;
+    s_currentUniforms.projectionMatrix[15] = 1.0f;
+    
+    // Light direction (pointing down-right)
+    s_currentUniforms.lightDirection[0] = 0.0f;
+    s_currentUniforms.lightDirection[1] = -1.0f;
+    s_currentUniforms.lightDirection[2] = 0.0f;
+    s_currentUniforms._pad0 = 0.0f;
+    
+    // Light colors
+    s_currentUniforms.lightColor[0] = 1.0f;
+    s_currentUniforms.lightColor[1] = 1.0f;
+    s_currentUniforms.lightColor[2] = 1.0f;
+    s_currentUniforms._pad1 = 0.0f;
+    
+    s_currentUniforms.ambientColor[0] = 1.0f;
+    s_currentUniforms.ambientColor[1] = 1.0f;
+    s_currentUniforms.ambientColor[2] = 1.0f;
+    
+    // Disable lighting for 2D rendering
+    s_currentUniforms.useLighting = 0.0f;
+    
+    // Material colors (white)
+    s_currentUniforms.materialDiffuse[0] = 1.0f;
+    s_currentUniforms.materialDiffuse[1] = 1.0f;
+    s_currentUniforms.materialDiffuse[2] = 1.0f;
+    s_currentUniforms.materialDiffuse[3] = 1.0f;
+    
+    s_currentUniforms.materialAmbient[0] = 1.0f;
+    s_currentUniforms.materialAmbient[1] = 1.0f;
+    s_currentUniforms.materialAmbient[2] = 1.0f;
+    s_currentUniforms.materialAmbient[3] = 1.0f;
+    
+    // Disable alpha testing
+    s_currentUniforms.alphaRef = 0.5f;
+    s_currentUniforms.alphaTestEnabled = 0.0f;
+    s_currentUniforms.alphaTestFunc = 8; // ALWAYS
+    s_currentUniforms._pad2 = 0.0f;
+    
+    // Disable fog
+    s_currentUniforms.fogColor[0] = 0.0f;
+    s_currentUniforms.fogColor[1] = 0.0f;
+    s_currentUniforms.fogColor[2] = 0.0f;
+    s_currentUniforms.fogStart = 0.0f;
+    s_currentUniforms.fogEnd = 1000.0f;
+    s_currentUniforms.fogDensity = 0.0f;
+    s_currentUniforms.fogMode = 0;
+    s_currentUniforms.fogEnabled = 0.0f;
+    
+    s_uniformsDirty = true;
+    
+    std::printf("METAL: Default uniforms set (identity matrices, lighting OFF)\n");
+}
+
+// Phase 28.4.3: Set custom uniforms
+void MetalWrapper::SetUniforms(const ShaderUniforms& uniforms) {
+    s_currentUniforms = uniforms;
+    s_uniformsDirty = true;
+}
+
+} // namespace GX
 
 #endif // __APPLE__

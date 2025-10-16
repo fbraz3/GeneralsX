@@ -63,6 +63,38 @@ public:
     
     // Unbinds texture from fragment shader slot
     static void UnbindTexture(unsigned int slot = 0);
+    
+    // Phase 28.4.3: Uniform Buffer Management
+    // Shader uniforms structure matching basic.metal
+    struct ShaderUniforms {
+        float worldMatrix[16];       // 4x4 matrix
+        float viewMatrix[16];        // 4x4 matrix
+        float projectionMatrix[16];  // 4x4 matrix
+        float lightDirection[3];     // vec3
+        float _pad0;                 // alignment
+        float lightColor[3];         // vec3
+        float _pad1;                 // alignment
+        float ambientColor[3];       // vec3
+        float useLighting;           // float (0=disabled, 1=enabled)
+        float materialDiffuse[4];    // vec4
+        float materialAmbient[4];    // vec4
+        float alphaRef;              // float
+        float alphaTestEnabled;      // float
+        int alphaTestFunc;           // int
+        float _pad2;                 // alignment
+        float fogColor[3];           // vec3
+        float fogStart;              // float
+        float fogEnd;                // float
+        float fogDensity;            // float
+        int fogMode;                 // int
+        float fogEnabled;            // float
+    };
+    
+    // Set identity matrices and default uniforms for 2D rendering
+    static void SetDefaultUniforms();
+    
+    // Set custom uniforms (advanced usage)
+    static void SetUniforms(const ShaderUniforms& uniforms);
 
 private:
     // Internal helper to create a very simple test pipeline (triangle)

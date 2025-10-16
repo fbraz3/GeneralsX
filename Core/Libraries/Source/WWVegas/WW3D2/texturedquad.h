@@ -118,6 +118,17 @@ public:
      */
     bool HasTexture() const { return m_texture != nullptr; }
     
+    /**
+     * @brief Set viewport size for screen-space to clip-space conversion
+     * 
+     * @param width Viewport width in pixels
+     * @param height Viewport height in pixels
+     * 
+     * Call once during initialization with window dimensions.
+     * Default is 1280x768.
+     */
+    static void SetViewportSize(float width, float height);
+    
 private:
     /**
      * @brief Update vertex buffer with current position/UVs/color
