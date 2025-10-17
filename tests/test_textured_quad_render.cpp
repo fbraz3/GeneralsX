@@ -30,6 +30,9 @@ const char* TEXTURE_DEFEATED = "Data/English/Art/Textures/defeated.dds";
 const char* TEXTURE_GAMEOVER = "Data/English/Art/Textures/GameOver.tga";
 const char* TEXTURE_WATER = "Data/WaterPlane/caust00.tga";
 
+// Test mode flag
+bool USE_MANUAL_TEST_PATTERN = (getenv("USE_MANUAL_PATTERN") != nullptr);
+
 /**
  * @brief Initialize SDL and Metal
  */
@@ -86,6 +89,59 @@ void ShutdownGraphics(SDL_Window* window) {
 }
 
 /**
+ * @brief Create test texture pattern: RED left / GREEN right
+ * @return Texture handle (pointer) or nullptr on failure
+ */
+void* CreateTestTexturePattern(unsigned int width, unsigned int height) {
+    printf("\n=== Creating Manual Test Pattern ===\n");
+    printf("Size: %ux%u\n", width, height);
+    printf("Pattern: LEFT RED (255,0,0) | RIGHT GREEN (0,255,0)\n");
+    
+    // Allocate RGBA8 data
+    unsigned int pixelCount = width * height;
+    unsigned int dataSize = pixelCount * 4;
+    unsigned char* pixelData = new unsigned char[dataSize];
+    
+    // Fill with pattern
+    for (unsigned int y = 0; y < height; y++) {
+        for (unsigned int x = 0; x < width; x++) {
+            unsigned int index = (y * width + x) * 4;
+            
+            if (x < width / 2) {
+                // LEFT HALF: RED
+                pixelData[index + 0] = 255;  // R
+                pixelData[index + 1] = 0;    // G
+                pixelData[index + 2] = 0;    // B
+                pixelData[index + 3] = 255;  // A
+            } else {
+                // RIGHT HALF: GREEN
+                pixelData[index + 0] = 0;    // R
+                pixelData[index + 1] = 255;  // G
+                pixelData[index + 2] = 0;    // B
+                pixelData[index + 3] = 255;  // A
+            }
+        }
+    }
+    
+    // Upload to Metal
+    void* texture = GX::MetalWrapper::CreateTextureFromTGA(
+        width, height,
+        pixelData,
+        dataSize
+    );
+    
+    delete[] pixelData;
+    
+    if (texture) {
+        printf("✓ Test texture created (ID=%p)\n", texture);
+    } else {
+        printf("✗ Failed to create test texture\n");
+    }
+    
+    return texture;
+}
+
+/**
  * @brief Test 1: Load textures from game assets
  */
 bool Test1_LoadTextures() {
@@ -131,6 +187,36 @@ bool Test1_LoadTextures() {
 bool Test2_CreateQuads(GX::TexturedQuad* quads, int count) {
     printf("\n=== Test 2: Create TexturedQuads ===\n");
     
+    // MANUAL TEST PATTERN MODE
+    if (USE_MANUAL_TEST_PATTERN) {
+        printf("\n*** MANUAL TEST PATTERN MODE ***\n");
+        printf("Creating 1024x256 texture: LEFT RED | RIGHT GREEN\n\n");
+        
+        void* testTexture = CreateTestTexturePattern(1024, 256);
+        if (!testTexture) {
+            printf("✗ FAILED: Test pattern creation\n");
+            return false;
+        }
+        
+        // Quad 1: Test pattern fullscreen
+        if (!quads[0].SetTextureHandle(testTexture)) {
+            printf("✗ FAILED: Quad 0 texture bind\n");
+            return false;
+        }
+        quads[0].SetPosition(50, 50, 1024, 256);
+        quads[0].SetColor(1.0f, 1.0f, 1.0f, 1.0f); // Fully opaque
+        printf("✓ Quad 0: Test pattern (50, 50, 1024x256)\n");
+        
+        printf("\n=== EXPECTED RESULT ===\n");
+        printf("LEFT side: PURE RED (255, 0, 0)\n");
+        printf("RIGHT side: PURE GREEN (0, 255, 0)\n");
+        printf("If RIGHT side is ORANGE: BUG CONFIRMED (sampling issue)\n");
+        printf("If RIGHT side is GREEN: BUG FIXED\n\n");
+        
+        return true;
+    }
+    
+    // NORMAL MODE: Load game textures
     // Quad 1: defeated.dds at top-left (full size)
     if (!quads[0].SetTexture(TEXTURE_DEFEATED)) {
         printf("✗ FAILED: Quad 0 texture load\n");

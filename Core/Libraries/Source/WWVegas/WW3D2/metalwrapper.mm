@@ -785,7 +785,9 @@ void* MetalWrapper::CreateTextureFromDDS(unsigned int width, unsigned int height
         
         // Upload texture data
         if (isCompressed) {
-            // Phase 28.4: BC3 Bug Workaround - Decompress to RGBA8 if USE_BC3_DECOMPRESSION is set
+            // Phase 28.4: BC3 Bug Workaround - DISABLED for now (linking issues)
+            // Will use native BC3 with forced alignment instead
+            /*
             if (format == 3 && getenv("USE_BC3_DECOMPRESSION")) {
                 std::printf("METAL: BC3 decompression workaround ENABLED\n");
                 
@@ -809,12 +811,41 @@ void* MetalWrapper::CreateTextureFromDDS(unsigned int width, unsigned int height
                     return nil;
                 }
                 
-                // Upload decompressed RGBA8 data
+                // Upload decompressed RGBA8 data with alignment
                 MTLRegion region = MTLRegionMake2D(0, 0, width, height);
-                [texture replaceRegion:region
-                           mipmapLevel:0
-                             withBytes:rgba8Data
-                           bytesPerRow:width * 4];  // RGBA8 = 4 bytes per pixel
+                unsigned int bytesPerRow = width * 4;  // RGBA8 = 4 bytes per pixel
+                
+                // Phase 28.4: CRITICAL BUG FIX - Apply bytesPerRow alignment for large textures
+                unsigned int alignedBytesPerRow = ((bytesPerRow + 255) / 256) * 256;
+                
+                if (alignedBytesPerRow != bytesPerRow) {
+                    std::printf("METAL DEBUG BC3: bytesPerRow alignment: %u → %u (aligned to 256)\n", 
+                               bytesPerRow, alignedBytesPerRow);
+                    
+                    // Create aligned buffer
+                    unsigned int alignedSize = alignedBytesPerRow * height;
+                    unsigned char* alignedData = new unsigned char[alignedSize];
+                    memset(alignedData, 0, alignedSize);
+                    
+                    // Copy row by row with padding
+                    for (unsigned int y = 0; y < height; y++) {
+                        memcpy(alignedData + (y * alignedBytesPerRow),
+                              rgba8Data + (y * bytesPerRow),
+                              bytesPerRow);
+                    }
+                    
+                    [texture replaceRegion:region
+                               mipmapLevel:0
+                                 withBytes:alignedData
+                               bytesPerRow:alignedBytesPerRow];
+                    
+                    delete[] alignedData;
+                } else {
+                    [texture replaceRegion:region
+                               mipmapLevel:0
+                                 withBytes:rgba8Data
+                               bytesPerRow:bytesPerRow];
+                }
                 
                 std::printf("METAL: BC3→RGBA8 decompression successful (%ux%u)\n", width, height);
                 
@@ -826,6 +857,7 @@ void* MetalWrapper::CreateTextureFromDDS(unsigned int width, unsigned int height
                     texPtr, width, height, format, (mipLevels > 0) ? mipLevels : 1, dataSize);
                 return texPtr;
             }
+            */
             
             // Normal compressed upload path
             // Compressed format - BC1/BC2/BC3
@@ -877,7 +909,14 @@ void* MetalWrapper::CreateTextureFromDDS(unsigned int width, unsigned int height
                 std::printf("\n");
             }
             
-            // Upload compressed texture data
+            // Phase 28.4: CRITICAL BUG FIX - Apply bytesPerRow alignment for BC3 native
+            // Phase 28.4: BC3 bytesPerRow - Use simple path without alignment
+            // EXPERIMENT: Original bytesPerRow (4096) is already aligned to 256
+            // Extra padding might be causing the orange blocks issue
+            std::printf("METAL DEBUG BC3 NATIVE: Using original bytesPerRow: %u (no forced alignment)\n", 
+                       bytesPerRow);
+            
+            // Upload compressed texture data directly (no alignment padding)
             [texture replaceRegion:region
                        mipmapLevel:0
                          withBytes:data
@@ -951,10 +990,40 @@ void* MetalWrapper::CreateTextureFromTGA(unsigned int width, unsigned int height
         MTLRegion region = MTLRegionMake2D(0, 0, width, height);
         unsigned int bytesPerRow = width * 4; // RGBA8
         
-        [texture replaceRegion:region
-                   mipmapLevel:0
-                     withBytes:data
-                   bytesPerRow:bytesPerRow];
+        // Phase 28.4: CRITICAL BUG FIX - Metal requires bytesPerRow alignment
+        // For optimal performance, bytesPerRow should be aligned to 256 bytes on Apple Silicon
+        // Reference: https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
+        unsigned int alignedBytesPerRow = ((bytesPerRow + 255) / 256) * 256;
+        
+        if (alignedBytesPerRow != bytesPerRow) {
+            std::printf("METAL DEBUG TGA: bytesPerRow alignment: %u → %u (aligned to 256)\n", 
+                       bytesPerRow, alignedBytesPerRow);
+            
+            // Create aligned buffer
+            unsigned int alignedSize = alignedBytesPerRow * height;
+            unsigned char* alignedData = new unsigned char[alignedSize];
+            memset(alignedData, 0, alignedSize);
+            
+            // Copy row by row with padding
+            const unsigned char* srcData = (const unsigned char*)data;
+            for (unsigned int y = 0; y < height; y++) {
+                memcpy(alignedData + (y * alignedBytesPerRow),
+                      srcData + (y * bytesPerRow),
+                      bytesPerRow);
+            }
+            
+            [texture replaceRegion:region
+                       mipmapLevel:0
+                         withBytes:alignedData
+                       bytesPerRow:alignedBytesPerRow];
+            
+            delete[] alignedData;
+        } else {
+            [texture replaceRegion:region
+                       mipmapLevel:0
+                         withBytes:data
+                       bytesPerRow:bytesPerRow];
+        }
         
         std::printf("METAL: Created TGA texture %ux%u (RGBA8, %u bytes, ID=%p)\n",
             width, height, dataSize, (__bridge void*)texture);

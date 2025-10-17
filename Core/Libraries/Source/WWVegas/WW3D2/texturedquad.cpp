@@ -108,6 +108,25 @@ bool TexturedQuad::SetTexture(const char* texture_path)
     return true;
 }
 
+bool TexturedQuad::SetTextureHandle(void* texture_handle)
+{
+    if (!texture_handle) {
+        printf("TexturedQuad::SetTextureHandle() - ERROR: NULL texture handle\n");
+        return false;
+    }
+    
+    // Release previous texture if it was loaded from cache
+    if (!m_texture_path.empty()) {
+        TextureCache::GetInstance()->ReleaseTexture(m_texture_path.c_str());
+        m_texture_path.clear();
+    }
+    
+    // Set texture directly (no caching)
+    m_texture = texture_handle;
+    printf("TexturedQuad::SetTextureHandle() - SUCCESS: Set texture handle %p\n", texture_handle);
+    return true;
+}
+
 void TexturedQuad::SetPosition(float x, float y, float width, float height)
 {
     m_x = x;

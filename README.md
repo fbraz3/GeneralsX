@@ -176,6 +176,15 @@ Complete documentation is available in the **[docs/](docs/)** directory:
 
 See **[docs/README.md](docs/README.md)** for complete documentation index.
 
+### 🐛 Known Issues
+
+For documented limitations and known bugs, see:
+**[📋 Known Issues Index](docs/known_issues/README.md)**
+
+Current known limitations:
+
+- **Wide Texture Rendering Bug** (macOS Metal) - 1024×256 textures render with orange blocks on right half. Affects 4 end-game screens only. [Details](docs/known_issues/WIDE_TEXTURE_RENDERING_BUG.md)
+
 ### 🎯 Roadmap
 
 **Phase 23.8 (Current): Map systems & UI stability**
