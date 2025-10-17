@@ -113,6 +113,29 @@ GLuint Create_GL_Texture_From_DDS(const DDSData* dds, const TextureUploadParams&
 GLuint Create_GL_Texture_From_TGA(const TGAData* tga, const TextureUploadParams& params = TextureUploadParams());
 
 /**
+ * @brief Upload texture from raw memory data (for VFS integration)
+ * 
+ * Creates Metal/OpenGL texture directly from pixel data in memory.
+ * Used when texture data comes from .big files (Virtual File System).
+ * 
+ * Supported formats:
+ * - GL_RGBA8 (32-bit RGBA uncompressed)
+ * - GL_RGB8 (24-bit RGB uncompressed)
+ * - GL_COMPRESSED_RGBA_S3TC_DXT1_EXT (BC1/DXT1)
+ * - GL_COMPRESSED_RGBA_S3TC_DXT3_EXT (BC2/DXT3)
+ * - GL_COMPRESSED_RGBA_S3TC_DXT5_EXT (BC3/DXT5)
+ * 
+ * @param pixel_data Raw pixel data in memory
+ * @param width Texture width in pixels
+ * @param height Texture height in pixels
+ * @param format OpenGL internal format (GL_RGBA8, GL_COMPRESSED_*, etc.)
+ * @param data_size Size of pixel_data in bytes
+ * @return OpenGL texture ID (0 on failure)
+ */
+GLuint Upload_Texture_From_Memory(const void* pixel_data, uint32_t width, uint32_t height,
+                                   GLenum format, size_t data_size);
+
+/**
  * @brief Delete OpenGL texture
  * 
  * Wrapper around glDeleteTextures for consistency.
