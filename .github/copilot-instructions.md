@@ -134,6 +134,65 @@ diff -r Core/ references/fighter19-dxvk-port/Core/  # Compare compatibility laye
 - `resources/shaders/basic.metal` - Metal shaders (vertex + fragment)
 - `resources/shaders/basic.vert/frag` - OpenGL shaders (Linux/Windows)
 
+## Critical Lessons Learned
+
+### 🚨 Phase 28.4: Texture Loading and Virtual File Systems (October 16, 2025)
+
+**Problem**: Attempted to load textures by filepath in `Begin_Compressed_Load()` / `Begin_Uncompressed_Load()` - ALL texture loads FAILED.
+
+**Root Cause**: 
+- Game assets (textures, sounds, etc.) are stored in `.big` archive files, NOT as loose files on disk
+- Functions like `Get_Texture_Information(filepath)` expect real filesystem access
+- Archives use a **Virtual File System (VFS)** that extracts data to memory on-demand
+- Texture loading happens in TWO phases:
+  1. **Begin_*_Load()**: Validates file exists and reads metadata → **Uses VFS, works with .big files**
+  2. **Load()**: Reads actual pixel data from memory → **Data already extracted from .big**
+
+**Wrong Approach** ❌:
+```cpp
+// In Begin_Compressed_Load() or Begin_Uncompressed_Load()
+if (g_useMetalBackend) {
+    const char* filepath = Texture->Get_Full_Path().Peek_Buffer();
+    GLuint tex_id = TextureCache::Get_Texture(filepath);  // FAILS - file doesn't exist on disk!
+}
+```
+
+**Correct Approach** ✅:
+```cpp
+// In TextureLoadTaskClass::Load() - AFTER VFS extraction
+if (g_useMetalBackend) {
+    // At this point, texture data is already in memory from .big file
+    void* pixel_data = /* extracted from locked surface */;
+    GLuint tex_id = TextureCache::LoadFromMemory(pixel_data, width, height, format);
+}
+```
+
+**Key Insights**:
+- **Never assume assets are filesystem files** - always check for VFS/archive systems
+- **Hook AFTER data extraction**, not during metadata phase
+- **TextureCache needs dual API**: `LoadFromFile()` for loose files, `LoadFromMemory()` for VFS data
+- **Phase 28.1-28.3 were correct** - they work with `test_textured_quad_render` because test uses loose files
+- **Phase 28.4 requires different integration point** - must intercept in `Load()` function, not `Begin_*_Load()`
+
+**Files to Study**:
+- `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/textureloader.cpp` - See `TextureLoadTaskClass::Load()` for data processing
+- `docs/BIG_FILES_REFERENCE.md` - Understanding .big file structure and VFS
+- VFS extracts to memory → `Load()` processes → This is where Metal/OpenGL texture creation happens
+
+**Debugging Pattern**:
+```cpp
+// Always add debug logs to understand data flow
+printf("DEBUG: Function called with filepath: %s\n", filepath);
+printf("DEBUG: Get_Texture_Information() result: %d\n", result);
+printf("DEBUG: Data pointer: %p, size: %zu\n", data, size);
+```
+
+**Next Steps for Texture Integration**:
+1. Find where `TextureLoadTaskClass::Load()` locks surfaces and reads pixel data
+2. Add `TextureCache::LoadFromMemory(void* data, int w, int h, format)` API
+3. Hook in `Load()` to redirect data → Metal texture creation via TextureCache
+4. Keep `Begin_*_Load()` validation logic unchanged (it works with VFS)
+
 ## INI File System (Game Configuration)
 
 ### .BIG File Structure (Critical for Debugging)
