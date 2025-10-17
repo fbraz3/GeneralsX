@@ -65,6 +65,37 @@ grep -i error /tmp/generalszh.log
 cd $HOME/GeneralsX/GeneralsMD/ && USE_METAL=1 lldb -o run -o bt -o quit ./GeneralsXZH 2>&1 |tee /tmp/generalszh_lldb.log
 ```
 
+### Debugging Best Practices (Lessons Learned)
+
+1. **Complete Log Capture is Essential**
+   - **DO NOT** use short timeouts (5-15 seconds) during initial testing - game initialization can take significant time
+   - **USE** `tee` to save logs to `logs/` directory for later analysis instead of `/tmp` (which may be cleared)
+   - **WAIT** for game to stabilize before assuming a crash occurred
+   - Example: Game may take 30+ seconds to load .big files, parse INI files, and initialize graphics
+
+2. **Grep Filtering Can Hide Progress**
+   - Repetitive logs (like BeginFrame/EndFrame cycles) may appear as infinite loops when filtered
+   - **VERIFY** process state with `ps aux` before assuming crash
+   - **CHECK** full unfiltered logs first, then apply targeted grep patterns
+   - Example: `grep -A 5 -B 5 "error\|fatal"` provides context around errors
+
+3. **Distinguish Real Crashes from Slow Initialization**
+   - **CHECK** if process is still running: `ps aux | grep GeneralsXZH`
+   - **VERIFY** CPU usage: High CPU = still processing, Low CPU = might be stuck
+   - **LOOK** for crash logs: `$HOME/Documents/Command and Conquer Generals Zero Hour Data/ReleaseCrashInfo.txt`
+   - **WAIT** for complete initialization before investigating "apparent" hangs
+
+4. **Memory Protection Systems Work**
+   - Phase 30.6 memory protections (`GameMemory.cpp::isValidMemoryPointer()`) successfully prevent driver bugs
+   - AGXMetal13_3 crash was resolved by validation checks, not workarounds
+   - Trust protection layers but verify with extensive testing
+
+5. **Persistent Log Directory**
+   - **USE** `logs/` directory in project root (gitignored) for all debug output
+   - **AVOID** `/tmp` logs that disappear between sessions
+   - **DOCUMENT** log purpose in filename: `metal_texture_test_20251017.log`
+   - **KEEP** logs for resolved bugs as reference for similar issues
+
 ## General Instructions
 
 1. The main goal is to port the game to run on Windows, Linux, and macOS systems, starting by updating the graphics library to OpenGL, the extras and tools will be implemented afterwards.
