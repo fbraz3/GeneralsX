@@ -1253,6 +1253,75 @@ void TextureLoadTaskClass::End_Load(void)
 {
 	WWASSERT(TextureLoader::Is_DX8_Thread());
 
+	// Phase 28.4: Metal/OpenGL texture integration from VFS memory
+	#ifndef _WIN32
+	if (g_useMetalBackend && Texture != NULL && MipLevelCount > 0) {
+		// Get texture cache instance
+		TextureCache* cache = TextureCache::Get_Instance();
+		if (cache) {
+			// Use the texture's full path as cache key
+			StringClass path = Texture->Get_Full_Path();
+			const char* cache_key = path.Peek_Buffer();
+			
+			// Get first mip level data (base level)
+			void* pixel_data = Get_Locked_Surface_Ptr(0);
+			if (pixel_data) {
+				// Get dimensions and format from class members
+				uint32_t tex_width = Width;
+				uint32_t tex_height = Height;
+				uint32_t pitch = Get_Locked_Surface_Pitch(0);
+				size_t data_size = pitch * tex_height;  // Estimate data size from pitch
+				
+				// Determine OpenGL format based on texture format
+				GLenum gl_format = GL_RGBA8;  // Default to RGBA8
+				bool is_compressed = false;
+				
+				// Check if texture is compressed (DDS formats)
+				if (Format == WW3D_FORMAT_DXT1) {
+					gl_format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+					is_compressed = true;
+					// DXT1: 8 bytes per 4x4 block
+					data_size = ((tex_width + 3) / 4) * ((tex_height + 3) / 4) * 8;
+				} else if (Format == WW3D_FORMAT_DXT3) {
+					gl_format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+					is_compressed = true;
+					// DXT3: 16 bytes per 4x4 block
+					data_size = ((tex_width + 3) / 4) * ((tex_height + 3) / 4) * 16;
+				} else if (Format == WW3D_FORMAT_DXT5) {
+					gl_format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+					is_compressed = true;
+					// DXT5: 16 bytes per 4x4 block
+					data_size = ((tex_width + 3) / 4) * ((tex_height + 3) / 4) * 16;
+				} else if (Format == WW3D_FORMAT_A8R8G8B8 || 
+				           Format == WW3D_FORMAT_X8R8G8B8) {
+					gl_format = GL_RGBA8;
+					data_size = tex_width * tex_height * 4;
+				} else if (Format == WW3D_FORMAT_R8G8B8) {
+					gl_format = GL_RGB8;
+					data_size = tex_width * tex_height * 3;
+				}
+				
+				// Upload to Metal/OpenGL via TextureCache
+				GLuint tex_id = cache->Load_From_Memory(cache_key, pixel_data, 
+				                                        tex_width, tex_height, 
+				                                        gl_format, data_size);
+				
+				if (tex_id != 0) {
+					// Store texture ID in D3DTexture pointer (cast for compatibility)
+					D3DTexture = reinterpret_cast<IDirect3DBaseTexture8*>(static_cast<uintptr_t>(tex_id));
+					
+					printf("PHASE 28.4: Texture loaded from memory: '%s' (ID %u, %ux%u, format 0x%04X)\n",
+					       cache_key, tex_id, tex_width, tex_height, gl_format);
+				} else {
+					printf("PHASE 28.4 ERROR: Failed to load texture from memory: '%s'\n", cache_key);
+				}
+			} else {
+				printf("PHASE 28.4 WARNING: No pixel data for texture '%s'\n", cache_key);
+			}
+		}
+	}
+	#endif
+
 	Unlock_Surfaces();
 	Apply(true);
 

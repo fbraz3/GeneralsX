@@ -175,6 +175,74 @@ GLuint TextureCache::Get_Texture(const char* file_path) {
 }
 
 /**
+ * @brief Load texture from raw memory data (for VFS integration)
+ */
+GLuint TextureCache::Load_From_Memory(const char* cache_key, const void* pixel_data,
+                                      uint32_t width, uint32_t height,
+                                      GLenum format, size_t data_size) {
+    if (!cache_key) {
+        printf("TEXTURE CACHE ERROR: NULL cache key in Load_From_Memory\n");
+        return 0;
+    }
+    
+    if (!pixel_data) {
+        printf("TEXTURE CACHE ERROR: NULL pixel data in Load_From_Memory\n");
+        return 0;
+    }
+    
+    if (width == 0 || height == 0) {
+        printf("TEXTURE CACHE ERROR: Invalid dimensions %ux%u in Load_From_Memory\n", width, height);
+        return 0;
+    }
+    
+    // Normalize path for case-insensitive lookup
+    std::string normalized = Normalize_Path(cache_key);
+    
+    // Check if already cached (VFS may request same texture multiple times)
+    auto it = m_cache.find(normalized);
+    if (it != m_cache.end()) {
+        // Cache hit - increment reference count
+        it->second.ref_count++;
+        m_cache_hit_count++;
+        
+        printf("TEXTURE CACHE HIT (Memory): '%s' (ID %u, refs %u)\n",
+               cache_key, it->second.texture_id, it->second.ref_count);
+        
+        return it->second.texture_id;
+    }
+    
+    // Cache miss - create from memory
+    m_cache_miss_count++;
+    
+    printf("TEXTURE CACHE MISS (Memory): Creating '%s' from memory (%ux%u, format 0x%04X)...\n",
+           cache_key, width, height, format);
+    
+    // Upload to GPU (Metal or OpenGL)
+    GLuint texture_id = Upload_Texture_From_Memory(pixel_data, width, height, format, data_size);
+    
+    if (texture_id == 0) {
+        printf("TEXTURE CACHE ERROR: Failed to upload texture '%s' from memory\n", cache_key);
+        return 0;
+    }
+    
+    // Add to cache
+    TextureEntry entry;
+    entry.texture_id = texture_id;
+    entry.width = width;
+    entry.height = height;
+    entry.ref_count = 1;  // Initial reference
+    entry.original_path = cache_key;
+    
+    m_cache[normalized] = entry;
+    m_load_count++;
+    
+    printf("TEXTURE CACHE: Cached (Memory) '%s' (ID %u, %ux%u, refs 1)\n",
+           cache_key, texture_id, width, height);
+    
+    return texture_id;
+}
+
+/**
  * @brief Release texture reference
  */
 void TextureCache::Release_Texture(const char* file_path) {

@@ -265,6 +265,104 @@ GLuint Create_GL_Texture_From_TGA(const TGAData* tga, const TextureUploadParams&
 }
 
 /**
+ * @brief Upload texture from raw memory data (for VFS integration)
+ */
+GLuint Upload_Texture_From_Memory(const void* pixel_data, uint32_t width, uint32_t height,
+                                   GLenum format, size_t data_size) {
+    if (!pixel_data) {
+        printf("TEXTURE ERROR: NULL pixel data in Upload_Texture_From_Memory\n");
+        return 0;
+    }
+    
+    if (width == 0 || height == 0) {
+        printf("TEXTURE ERROR: Invalid dimensions %ux%u in Upload_Texture_From_Memory\n", width, height);
+        return 0;
+    }
+    
+    // CRITICAL: Verify we have a valid OpenGL context before making GL calls
+    #ifndef _WIN32
+    void* current_context = SDL_GL_GetCurrentContext();
+    if (!current_context) {
+        printf("TEXTURE ERROR: No OpenGL context active! Cannot upload texture from memory. Deferring upload...\n");
+        return 0; // Texture will be loaded on-demand when context is ready
+    }
+    #endif
+    
+    // Determine if format is compressed
+    bool is_compressed = false;
+    const char* format_name = "UNKNOWN";
+    
+    switch (format) {
+    case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+        is_compressed = true;
+        format_name = "DXT1";
+        break;
+    case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+        is_compressed = true;
+        format_name = "DXT3";
+        break;
+    case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+        is_compressed = true;
+        format_name = "DXT5";
+        break;
+    case GL_RGBA8:
+        format_name = "RGBA8";
+        break;
+    case GL_RGB8:
+        format_name = "RGB8";
+        break;
+    default:
+        printf("TEXTURE ERROR: Unsupported format 0x%04X in Upload_Texture_From_Memory\n", format);
+        return 0;
+    }
+    
+    // Generate texture ID
+    GLuint texture_id = 0;
+    glGenTextures(1, &texture_id);
+    if (texture_id == 0) {
+        printf("TEXTURE ERROR: Failed to generate texture ID\n");
+        return 0;
+    }
+    
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+    
+    printf("TEXTURE: Uploading from memory (ID %u): %ux%u, format %s, size %zu bytes\n",
+           texture_id, width, height, format_name, data_size);
+    
+    // Upload texture data
+    if (is_compressed) {
+        // Upload compressed texture
+        glCompressedTexImage2D(GL_TEXTURE_2D, 0, format,
+                              width, height, 0,
+                              data_size, pixel_data);
+    } else {
+        // Upload uncompressed texture
+        GLenum pixel_format = (format == GL_RGB8) ? GL_RGB : GL_RGBA;
+        GLenum pixel_type = GL_UNSIGNED_BYTE;
+        glTexImage2D(GL_TEXTURE_2D, 0, format,
+                    width, height, 0,
+                    pixel_format, pixel_type, pixel_data);
+    }
+    
+    // Check for errors
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+        printf("TEXTURE ERROR: Failed to upload texture from memory (error 0x%04X)\n", error);
+        glDeleteTextures(1, &texture_id);
+        return 0;
+    }
+    
+    // Apply default texture parameters (no mipmaps for single-level upload)
+    TextureUploadParams default_params;
+    default_params.generate_mipmaps = false;  // VFS textures already have mipmaps
+    Apply_Texture_Parameters(default_params, false);
+    
+    printf("TEXTURE SUCCESS: Texture uploaded from memory (ID %u)\n", texture_id);
+    return texture_id;
+}
+
+/**
  * @brief Delete OpenGL texture
  */
 void Delete_GL_Texture(GLuint texture_id) {

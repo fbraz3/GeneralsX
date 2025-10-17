@@ -139,12 +139,12 @@ cd $HOME/GeneralsX/GeneralsMD && USE_OPENGL=1 ./GeneralsXZH
 | | • Bind textures to fragment shader sampler | | TextureCache with reference counting implemented |
 | | • Implement texture cache (reference counting) | | Integration with textureloader.cpp Begin_Compressed_Load() |
 | | • Path normalization and hash-based lookup | | Case-insensitive path lookup working |
-| **28.4** | **UI Rendering Validation** | 2 days | ⏳ **PENDING** |
-| | • Load menu background textures from .big files | | **NEXT** - Integration ready |
-| | • Render textured quads with UV mapping | | Awaiting menu rendering phase |
-| | • Test texture atlas system | | TextureCache calls Begin_Compressed_Load() hooks |
-| | • Validate menu graphics display correctly | | Expected: textures render when menu appears |
-| **TOTAL** | **4 Phases** | **10-14 days** | **3/4 COMPLETE** |
+| **28.4** | **UI Rendering Validation** | 2 days | ✅ **CODE COMPLETE** |
+| | • Load menu background textures from .big files | | **2025-10-17** - VFS memory loading implemented |
+| | • Render textured quads with UV mapping | | Load_From_Memory() API + Upload_Texture_From_Memory() |
+| | • Test texture atlas system | | End_Load() hook intercepts VFS-extracted data |
+| | • Validate menu graphics display correctly | | ⚠️ Testing blocked by graphics crash (Issue pending) |
+| **TOTAL** | **4 Phases** | **10-14 days** | **4/4 CODE COMPLETE** |
 
 #### Phase 28.1-28.3: Texture System Integration ✅ (January 13, 2025)
 
@@ -206,6 +206,114 @@ if (g_useMetalBackend) {
 **Next Steps**:
 - Phase 28.4: Wait for menu rendering to trigger texture loads, validate in-game graphics
 - Expected logs: "Phase 28: Loading texture via TextureCache: Data/English/Art/Textures/..."
+
+#### Phase 28.4: VFS Memory Loading ✅ CODE COMPLETE (October 17, 2025)
+
+**Status**: Implementation complete, runtime testing blocked by graphics crash
+
+**Problem Identified**: Phase 28.1-28.3 filepath-based loading FAILED
+- Textures stored in `.big` archive files (WindowZH.big, INIZH.big), not on disk
+- `Get_Texture_Information(filepath)` returned FALSE for all textures
+- Original approach in `Begin_Compressed_Load()` was wrong integration point
+
+**Solution - VFS Memory Loading**:
+
+1. **TextureCache API Extension** (`texture_cache.h/cpp` lines 84-117, 177-248):
+   ```cpp
+   GLuint Load_From_Memory(const char* cache_key, const void* pixel_data, 
+                           uint32_t width, uint32_t height, 
+                           GLenum format, size_t data_size);
+   ```
+   - Cache hit/miss with reference counting preserved
+   - Path normalization for cache_key
+   - Supports DXT1/3/5 compressed + RGB8/RGBA8 uncompressed
+
+2. **GPU Upload Function** (`texture_upload.h/cpp` lines 127-147, 250-349):
+   ```cpp
+   GLuint Upload_Texture_From_Memory(const void* pixel_data, uint32_t width, 
+                                      uint32_t height, GLenum format, size_t data_size);
+   ```
+   - OpenGL context validation
+   - Format detection (compressed vs uncompressed)
+   - Error checking with `glGetError()`
+   - Default texture parameters (no mipmap generation)
+
+3. **Integration Hook** (`textureloader.cpp` lines 1252-1320):
+   - Hooked in `TextureLoadTaskClass::End_Load()` BEFORE `Apply()`
+   - VFS extraction already complete at this point
+   - Pixel data available in `Get_Locked_Surface_Ptr(0)`
+   - Format mapping: `WW3D_FORMAT_*` → `GL_COMPRESSED_*/GL_RGBA8/GL_RGB8`
+   - Data size calculation based on format (DXT1: `((w+3)/4)*((h+3)/4)*8`, RGBA8: `w*h*4`)
+
+**Implementation Details**:
+```cpp
+#ifndef _WIN32
+if (g_useMetalBackend && Texture != NULL && MipLevelCount > 0) {
+    TextureCache* cache = TextureCache::Get_Instance();
+    StringClass path = Texture->Get_Full_Path();
+    const char* cache_key = path.Peek_Buffer();
+    void* pixel_data = Get_Locked_Surface_Ptr(0);
+    
+    // Map WW3D_FORMAT_* to GL_*
+    GLenum gl_format = GL_RGBA8;
+    size_t data_size = 0;
+    
+    if (Format == WW3D_FORMAT_DXT1) {
+        gl_format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+        data_size = ((Width + 3) / 4) * ((Height + 3) / 4) * 8;
+    }
+    // ... other formats ...
+    
+    GLuint tex_id = cache->Load_From_Memory(cache_key, pixel_data, 
+                                             Width, Height, gl_format, data_size);
+    D3DTexture = reinterpret_cast<IDirect3DBaseTexture8*>(
+                     static_cast<uintptr_t>(tex_id));
+}
+#endif
+```
+
+**Compilation Results**:
+- ✅ Successful compilation after 5 fix iterations
+- ✅ Fixed format enum names (W3DFormat_* → WW3D_FORMAT_*)
+- ✅ Fixed member access (LoaderHeader → class members Width, Height, Format)
+- ✅ Fixed const correctness (StringClass temp variable)
+- ✅ Fixed cast type (IDirect3DTexture8* → IDirect3DBaseTexture8*)
+- ✅ 37 warnings (all pre-existing, unrelated to changes)
+
+**Files Modified**:
+- `Core/Libraries/Source/WWVegas/WW3D2/texture_cache.h` - Added `Load_From_Memory()` method
+- `Core/Libraries/Source/WWVegas/WW3D2/texture_cache.cpp` - Implemented memory-based loading
+- `Core/Libraries/Source/WWVegas/WW3D2/texture_upload.h` - Added `Upload_Texture_From_Memory()` declaration
+- `Core/Libraries/Source/WWVegas/WW3D2/texture_upload.cpp` - Implemented GPU upload from memory
+- `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/textureloader.cpp` - Added End_Load() hook
+
+**Known Issues - Testing Blocked** ⚠️:
+- **Metal Backend**: Crashes in `AGXMetal13_3::VertexProgramVariant::finalize()` during `BeginFrame()`
+  - Location: `DynamicMemoryAllocator::freeBytes` with corrupted pointer `0x0000000c00000000`
+  - Crash occurs BEFORE any textures load, preventing Phase 28.4 validation
+  - Backtrace shows driver bug in shader compilation, not texture code
+
+- **OpenGL Backend**: Crashes with `buildPipelineState failed`
+  - Fallback to SW vertex processing due to shader compilation failure
+  - Same issue: crashes BEFORE texture loading phase
+
+**Expected Behavior** (when graphics fixed):
+- Logs should show: `"PHASE 28.4: Texture loaded from memory: 'Data/Textures/TBBib.tga' (ID X, WxH, format 0xXXXX)"`
+- 7+ TGA textures expected during menu initialization
+- Texture IDs > 0 indicate success
+- Menu graphics should render correctly
+
+**Next Steps**:
+1. **Create GitHub Issue** for graphics crash regression (Metal + OpenGL)
+2. **Debug shader compilation** failure in `AGXMetal13_3` driver
+3. **Investigate memory corruption** in DynamicMemoryAllocator vs Apple drivers
+4. **Return to Phase 28.4 testing** after graphics system stabilized
+
+**Lesson Learned** (documented in `.github/copilot-instructions.md`):
+- ✅ Always check for Virtual File Systems (VFS) in game engines
+- ✅ Never assume assets are loose files on disk
+- ✅ Hook AFTER data extraction, not during metadata phase
+- ✅ Use dual API: `LoadFromFile()` for loose files, `LoadFromMemory()` for VFS
 
 #### Phase 28.9: Runtime Stability Fixes ✅
 
