@@ -62,6 +62,12 @@
 #include "bitmaphandler.h"
 #include "wwprofile.h"
 
+// Phase 28.1-28.3: TextureCache integration for Metal backend
+#ifndef _WIN32
+#include "texture_cache.h"  // GeneralsMD version (OpenGL-based)
+extern bool g_useMetalBackend;  // Defined in dx8wrapper.cpp
+#endif
+
 bool TextureLoader::TextureLoadSuspended;
 int TextureLoader::TextureInactiveOverrideTime = 0;
 
@@ -1620,6 +1626,33 @@ bool TextureLoadTaskClass::Begin_Uncompressed_Load(void)
 		if (reducedMipCount != MIP_LEVELS_ALL)
 			reducedMipCount -= Reduction;
 	}
+
+#ifndef _WIN32
+	// Phase 28.1-28.3: Metal backend texture loading via TextureCache
+	if (g_useMetalBackend) {
+		// Get non-const StringClass reference to call Peek_Buffer()
+		StringClass& fullpath = const_cast<StringClass&>(Texture->Get_Full_Path());
+		const char* filepath = fullpath.Peek_Buffer();
+		
+		if (filepath && filepath[0] != '\0') {
+			printf("Phase 28: Loading texture via TextureCache: %s\n", filepath);
+			
+			// Load texture through TextureCache (returns GLuint, cast to void*)
+			TextureCache* cache = TextureCache::Get_Instance();
+			GLuint tex_id = cache->Get_Texture(filepath);
+			
+			if (tex_id != 0) {
+				// Store OpenGL/Metal texture ID as IDirect3DTexture8* (opaque pointer)
+				D3DTexture = reinterpret_cast<IDirect3DTexture8*>(static_cast<uintptr_t>(tex_id));
+				printf("Phase 28: Texture loaded successfully via Metal backend (ID: %u)\n", tex_id);
+				return true;
+			} else {
+				printf("Phase 28 WARNING: TextureCache failed to load '%s', falling back to stub\n", filepath);
+				// Fall through to create empty texture
+			}
+		}
+	}
+#endif
 
 	D3DTexture = DX8Wrapper::_Create_DX8_Texture
 	(
