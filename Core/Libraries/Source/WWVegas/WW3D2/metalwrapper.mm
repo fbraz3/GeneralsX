@@ -354,14 +354,24 @@ void MetalWrapper::BeginFrame(float r, float g, float b, float a) {
 
     // Create a simple pass descriptor that clears to the given color
     MTLRenderPassDescriptor* pass = [MTLRenderPassDescriptor renderPassDescriptor];
-    pass.colorAttachments[0].texture = [(id<CAMetalDrawable>)s_currentDrawable texture];
+    printf("METAL DEBUG: RenderPassDescriptor created (%p)\n", pass);
+    
+    id<MTLTexture> drawableTexture = [(id<CAMetalDrawable>)s_currentDrawable texture];
+    printf("METAL DEBUG: Drawable texture (%p), format: %lu\n", drawableTexture, (unsigned long)[drawableTexture pixelFormat]);
+    
+    pass.colorAttachments[0].texture = drawableTexture;
     pass.colorAttachments[0].loadAction = MTLLoadActionClear;
     pass.colorAttachments[0].storeAction = MTLStoreActionStore;
     pass.colorAttachments[0].clearColor = MTLClearColorMake(r, g, b, a);
     s_passDesc = pass;
     
+    printf("METAL DEBUG: About to create render encoder (cmdBuffer=%p, pass=%p)\n", s_cmdBuffer, pass);
+    printf("METAL DEBUG: Pipeline state before encoder: %p\n", s_pipelineState);
+    
     // Begin render pass - encoder stays active until EndFrame
     s_renderEncoder = [(id<MTLCommandBuffer>)s_cmdBuffer renderCommandEncoderWithDescriptor:pass];
+    
+    printf("METAL DEBUG: Render encoder created successfully (%p)\n", s_renderEncoder);
     
     // CRITICAL: Set pipeline state so encoder knows which shader to use
     if (s_pipelineState) {
