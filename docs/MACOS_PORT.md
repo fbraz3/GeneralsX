@@ -56,20 +56,74 @@ SDL2 → NSOpenGLContext → GLEngine → AppleMetalOpenGLRenderer
 
 **🎉 PHASE 28.9.11 COMPLETE: MEMORY CORRUPTION ELIMINATED - STABLE RUNTIME ACHIEVED**
 
-### Phase 28 Achievement Summary (Updated)
+### Phase 28 Achievement Summary (Updated January 13, 2025)
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| 28.1 - DDS Loader | BC1/BC2/BC3 + RGB8/RGBA8, mipmap chains | ✅ **COMPLETE** |
-| 28.2 - TGA Loader | RLE/uncompressed, 24/32-bit, BGR→RGBA | ✅ **COMPLETE** |
-| 28.3 - Texture Upload | glTexImage2D, filtering, wrapping | ✅ **COMPLETE** |
-| 28.4 - Texture Cache | Reference counting, path normalization | ✅ **COMPLETE** |
+| 28.1 - DDS Loader | BC1/BC2/BC3 + RGB8/RGBA8, mipmap chains | ✅ **COMPLETE** + **INTEGRATED** |
+| 28.2 - TGA Loader | RLE/uncompressed, 24/32-bit, BGR→RGBA | ✅ **COMPLETE** + **INTEGRATED** |
+| 28.3 - Texture Upload | MTLTexture creation, TextureCache singleton | ✅ **COMPLETE** + **INTEGRATED** |
+| 28.4 - Texture Cache | Reference counting, path normalization | ✅ **COMPLETE** + **INTEGRATED** |
 | 28.5 - DX8 Integration | TextureClass::Apply(), destructor hooks | ✅ **COMPLETE** |
 | 28.6 - Runtime Validation | Deploy, run, validate stability | ✅ **COMPLETE** |
-| 28.7 - UI Testing | Menu backgrounds, buttons, cursors | ⏳ **PENDING** |
+| 28.7 - UI Testing | Menu backgrounds, buttons, cursors | ⏳ **PENDING** - integration ready |
 | 28.8 - Font Support | Font atlas integration | ⏳ **PENDING** |
 | 28.9 - Stability Fixes | Memory protection, crash prevention | ✅ **COMPLETE** |
 | **TOTAL** | **9 Phases** | **7/9 (78%) COMPLETE** |
+
+#### ✅ Phase 28.1-28.3: Game Engine Integration (January 13, 2025)
+
+**MILESTONE**: Texture loading system successfully integrated with game engine's texture loading pipeline!
+
+**Integration Summary**:
+- **What Was Already Complete**: DDS/TGA loaders, Metal wrapper, TextureCache (all implemented in standalone tests)
+- **What Was Missing**: Game engine not calling TextureCache (only test harness was)
+- **Solution**: Hook `textureloader.cpp::Begin_Compressed_Load()` to redirect through TextureCache when Metal backend active
+
+**Implementation** (textureloader.cpp lines 1630-1652):
+```cpp
+#ifndef _WIN32
+if (g_useMetalBackend) {
+    StringClass& fullpath = const_cast<StringClass&>(Texture->Get_Full_Path());
+    const char* filepath = fullpath.Peek_Buffer();
+    
+    if (filepath && filepath[0] != '\0') {
+        printf("Phase 28: Loading texture via TextureCache: %s\n", filepath);
+        
+        TextureCache* cache = TextureCache::Get_Instance();
+        GLuint tex_id = cache->Get_Texture(filepath);
+        
+        if (tex_id != 0) {
+            D3DTexture = reinterpret_cast<IDirect3DTexture8*>(static_cast<uintptr_t>(tex_id));
+            printf("Phase 28: Texture loaded successfully via Metal backend (ID: %u)\n", tex_id);
+            return true;
+        }
+    }
+}
+#endif
+```
+
+**Technical Details**:
+- **Hook Location**: `Begin_Compressed_Load()` before `DX8Wrapper::_Create_DX8_Texture()` call
+- **Backend Check**: Uses `g_useMetalBackend` flag from dx8wrapper.cpp
+- **Texture ID Storage**: GLuint cast to `IDirect3DTexture8*` (opaque pointer for D3D compatibility layer)
+- **Fallback**: If TextureCache fails, continues with original stub texture creation
+
+**Validation**:
+- ✅ Compilation successful (36 warnings, 0 errors) - January 13, 2025
+- ✅ Metal backend initializes: "Phase 29: Metal backend initialized successfully"
+- ⏳ In-game texture loading: Awaiting menu rendering phase (textures loaded on demand)
+- ✅ Standalone test validated: defeated.dds (1024×256 BC3), GameOver.tga (1024×256 RGB8), caust00.tga (64×64 RGBA8)
+
+**Known Issues**:
+- Wide texture rendering bug (1024×256 BC3 textures): Orange blocks on 4/36 textures (11%)
+- Impact: 0% gameplay (documented in docs/known_issues/WIDE_TEXTURE_RENDERING_BUG.md)
+- Status: Accepted as known limitation, engine progression prioritized
+
+**Next Steps**:
+- Phase 28.7: Wait for menu rendering to trigger texture loads via Begin_Compressed_Load()
+- Expected logs: "Phase 28: Loading texture via TextureCache: Data/English/Art/Textures/..."
+- Validation: Menu background and UI elements should display with Metal-rendered textures
 
 ### Recent Achievements (October 10, 2025)
 
