@@ -702,24 +702,11 @@ Xcode Instruments (macOS)
 **Complexity**: MEDIUM-HIGH  
 **Dependencies**: Phase 27 complete (required)
 
----
-
-### Long-Term: Phase 29+ - Advanced Rendering (4-6 weeks)
-
 #### Phase 29: Advanced Shader Effects (2-3 weeks)
-
-- Normal mapping for terrain and models
-- Parallax mapping for depth effects
-- Environment mapping (reflections, skybox)
-- Shadow mapping (cascaded shadow maps)
-- Water rendering (reflection, refraction, caustics)
-
-#### Phase 30: Post-Processing Pipeline (1-2 weeks)
 
 - Bloom and HDR rendering
 - Screen-space ambient occlusion (SSAO)
 - Motion blur for fast-moving objects
-- Depth of field for cinematic effects
 - Color grading and tone mapping
 
 #### Phase 31: Performance Optimization (1 week)
@@ -728,9 +715,6 @@ Xcode Instruments (macOS)
 - Occlusion culling system
 - Level of detail (LOD) system
 - Batch rendering optimization
-- Multi-threading for resource loading
-
-#### Phase 32: Debugging & Tools (1 week)
 
 - Visual shader debugger
 - Frame time profiler integration

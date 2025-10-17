@@ -62,6 +62,17 @@ public:
     bool SetTexture(const char* texture_path);
     
     /**
+     * @brief Set texture directly from handle (for programmatic textures)
+     * 
+     * @param texture_handle Metal texture handle pointer
+     * @return true if successful, false if texture_handle is null
+     * 
+     * Use this when you have a manually-created texture (e.g. test patterns)
+     * instead of loading from a file path.
+     */
+    bool SetTextureHandle(void* texture_handle);
+    
+    /**
      * @brief Set quad position and size (screen space)
      * 
      * @param x Left position (pixels)
