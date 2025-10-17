@@ -207,18 +207,48 @@ if (g_useMetalBackend) {
 - Phase 28.4: Wait for menu rendering to trigger texture loads, validate in-game graphics
 - Expected logs: "Phase 28: Loading texture via TextureCache: Data/English/Art/Textures/..."
 
-#### Phase 28.4: VFS Memory Loading ✅ CODE COMPLETE (October 17, 2025)
+#### Phase 28.4: VFS Integration Discovery 🚨 CRITICAL (October 17, 2025)
 
-**Status**: Implementation complete, runtime testing blocked by graphics crash
+**Status**: ⚠️ **DESIGN FLAW IDENTIFIED** - Requires fundamental redesign
 
-**Problem Identified**: Phase 28.1-28.3 filepath-based loading FAILED
-- Textures stored in `.big` archive files (WindowZH.big, INIZH.big), not on disk
-- `Get_Texture_Information(filepath)` returned FALSE for all textures
-- Original approach in `Begin_Compressed_Load()` was wrong integration point
+**CRITICAL DISCOVERY - Complete VFS Analysis** (docs/PHASE28/CRITICAL_VFS_DISCOVERY.md):
 
-**Solution - VFS Memory Loading**:
+**Root Cause**:
+- Textures are **inside .big archives**, NOT loose files on filesystem
+- `DDSFileClass` and `Targa` use direct file I/O (fopen), NOT VFS
+- `Get_Texture_Information()` fails → `Begin_Load()` returns false → `Load()` NEVER CALLED
+- All 7 test textures apply "missing texture" fallback instead of loading
 
-1. **TextureCache API Extension** (`texture_cache.h/cpp` lines 84-117, 177-248):
+**Why Previous Implementations Failed**:
+1. **Original (End_Load)**: Integration point never reached when Begin_Load() fails
+2. **Current (Load)**: Function never called when validation fails
+
+**Texture Loading Pipeline**:
+```
+Finish_Load() → Begin_Load() → Get_Texture_Information() → FAILS (no physical file)
+                              → Apply_Missing_Texture()
+                              → Load() NEVER CALLED
+```
+
+**Proposed Solutions** (detailed analysis in CRITICAL_VFS_DISCOVERY.md):
+
+1. **Option 1: Fix VFS Integration** (CORRECT but complex - 2-3 days)
+   - Modify DDSFileClass/Targa to use Win32BIGFileSystem
+   - Implement File* based reading instead of fopen()
+   - Fixes root cause permanently
+
+2. **Option 2: Post-DirectX Interception** (PRAGMATIC - 1-2 days) **← RECOMMENDED**
+   - Intercept textures AFTER DirectX loads them
+   - Copy pixel data from DirectX to OpenGL/Metal
+   - Leverages existing working texture loading
+
+3. **Option 3: Thumbnail System** (ALTERNATIVE - 1-2 days + investigation)
+   - Use existing ThumbnailManagerClass which may handle VFS
+   - Requires investigation of thumbnail availability
+
+**DEPRECATED CODE** (removed from textureloader.cpp):
+
+1. **Load() Integration** (lines 1237-1336) - WRONG INTEGRATION POINT:
    ```cpp
    GLuint Load_From_Memory(const char* cache_key, const void* pixel_data, 
                            uint32_t width, uint32_t height, 
@@ -956,10 +986,50 @@ Xcode Instruments (macOS)
 
 ---
 
-**Last Updated**: October 7, 2025  
-**Status**: Phase 27.6 - Final Documentation Update IN PROGRESS (50%)  
-**Current Task**: Update documentation files with Phase 27 achievements  
-**Completed**: 26/32 tasks (81% complete)  
+---
+
+## 🚨 EXECUTIVE SUMMARY - Phase 28.4 Critical Discovery (October 17, 2025)
+
+**Current Status**: ⚠️ **BLOCKED** - Phase 28.4 requires fundamental redesign
+
+**Critical Issue Identified**:
+- Phase 28.4 integration in `Load()` function **NEVER EXECUTES**
+- Root cause: VFS (Virtual File System) architecture mismatch
+- Textures stored in `.big` archives, not physical files
+- `DDSFileClass`/`Targa` use `fopen()` → fail validation → `Load()` never called
+
+**Impact Assessment**:
+- **Phase 28.1-28.3**: ✅ Code complete and validated with test harness
+- **Phase 28.4**: ❌ Code complete but WRONG integration point
+- **Estimated Delay**: +2 days for redesign (Option 2 recommended)
+
+**Recommended Action**: Implement **Option 2: Post-DirectX Texture Interception**
+- **Rationale**: Leverages existing working DirectX texture loading
+- **Effort**: 1-2 days vs 2-3 days for VFS fix
+- **Risk**: Low - minimal changes to texture pipeline
+
+**Documentation**:
+- Complete analysis: `docs/PHASE28/CRITICAL_VFS_DISCOVERY.md` (260+ lines)
+- Lesson learned: Always check for VFS in game engines BEFORE integration
+
+**Next Steps**:
+1. Find DirectX texture finalization point (after `Apply(true)`)
+2. Implement Metal/OpenGL texture copy from DirectX VRAM
+3. Test with 7 textures from .big files
+4. Validate menu graphics rendering
+
+**Timeline Update**:
+- **Original Phase 28 Estimate**: 9-12 days
+- **Revised Estimate**: 11-14 days (+2 days for redesign)
+- **New ETA**: October 31, 2025
+
+---
+
+**Last Updated**: October 17, 2025  
+**Status**: Phase 28.4 - VFS DISCOVERY & REDESIGN REQUIRED  
+**Current Task**: Document VFS integration discovery and propose solutions  
+**Completed**: 26/32 tasks (81% Phase 27 complete)  
 **Build Status**: ✅ GeneralsXZH compiles successfully (ARM64, 923 files, 0 errors)  
-**Runtime Status**: ✅ Engine executes successfully (144,712 log lines, exit code 0, 0 GL errors)  
-**Next Milestone**: Phase 27 completion → Phase 28 texture system (estimated 2-3 weeks)
+**Runtime Status**: ⚠️ Engine executes but Phase 28.4 code NEVER REACHED  
+**Critical Discovery**: `docs/PHASE28/CRITICAL_VFS_DISCOVERY.md` created (260+ lines)  
+**Next Milestone**: Implement Option 2 Post-DirectX interception (estimated 1-2 days)

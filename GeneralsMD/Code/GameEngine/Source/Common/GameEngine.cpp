@@ -1279,18 +1279,33 @@ DECLARE_PERF_TIMER(GameEngine_update)
  */
 void GameEngine::update( void )
 {
+	printf("GAMEENGINE DEBUG: update() ENTRY - Starting subsystem updates\n");
+	fflush(stdout);
+	
 	USE_PERF_TIMER(GameEngine_update)
 	{
 		{
 			// VERIFY CRC needs to be in this code block.  Please to not pull TheGameLogic->update() inside this block.
+			printf("GAMEENGINE DEBUG: About to VERIFY_CRC\n");
+			fflush(stdout);
 			VERIFY_CRC
 
+			printf("GAMEENGINE DEBUG: About to call TheRadar->UPDATE()\n");
+			fflush(stdout);
 			TheRadar->UPDATE();
 
 			/// @todo Move audio init, update, etc, into GameClient update
 
+			printf("GAMEENGINE DEBUG: About to call TheAudio->UPDATE()\n");
+			fflush(stdout);
 			TheAudio->UPDATE();
+			
+			printf("GAMEENGINE DEBUG: About to call TheGameClient->UPDATE()\n");
+			fflush(stdout);
 			TheGameClient->UPDATE();
+			
+			printf("GAMEENGINE DEBUG: About to call TheMessageStream->propagateMessages()\n");
+			fflush(stdout);
 			TheMessageStream->propagateMessages();
 
 			if (TheNetwork != NULL)
