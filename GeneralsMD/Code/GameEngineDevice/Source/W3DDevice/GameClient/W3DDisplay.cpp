@@ -817,6 +817,8 @@ void W3DDisplay::init( void )
 		windowFlags |= SDL_WINDOW_FULLSCREEN;
 	}
 	
+	printf("W3DDisplay::init - About to create SDL window (%dx%d, flags=0x%X)...\n", windowWidth, windowHeight, windowFlags);
+	
 	g_SDLWindow = SDL_CreateWindow(
 		"Command & Conquer: Generals Zero Hour",
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -829,6 +831,8 @@ void W3DDisplay::init( void )
 		SDL_Quit();
 		throw ERROR_INVALID_D3D;
 	}
+	
+	printf("W3DDisplay::init - SDL window created successfully (handle=%p)\n", g_SDLWindow);
 	
 	// Phase 29.2: Only create OpenGL context if Metal is NOT active
 	if (!useMetal) {

@@ -58,3 +58,7 @@ cmake-build-*/
 .ninja_deps
 .ninja_log
 build.ninja
+
+# Logs directory
+/logs/*.log
+/logs/*.txt
