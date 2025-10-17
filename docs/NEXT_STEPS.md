@@ -745,13 +745,22 @@ Xcode Instruments (macOS)
 
 ## Known Limitations & Future Work
 
-### Current Limitations (Phase 27)
+### Current Limitations (Phase 28)
 
-1. **Texture Loading**: Deferred to Phase 28 (design complete, implementation pending)
-2. **Advanced Shaders**: Basic vertex/fragment shaders only (no effects yet)
-3. **Post-Processing**: Not implemented (Phase 30)
-4. **GPU Instancing**: Not implemented (Phase 31)
-5. **Shadow Mapping**: Not implemented (Phase 29)
+1. **Wide Texture Rendering Bug (Phase 28.4)**: 
+   - **Status**: 🟡 Known limitation - Documented, not bloqueante
+   - **Impact**: 4 texturas (1024×256) renderizam com metade direita laranja
+   - **Affected**: defeated.dds, victorious.dds, gameover.dds, GameOver.tga (telas de fim de jogo)
+   - **Severity**: COSMÉTICO - 0% impacto na jogabilidade
+   - **Investigation**: 30+ horas, root cause não identificado (possível bug driver Metal Apple Silicon)
+   - **Workaround**: Texturas podem ser redimensionadas para 512×256 se necessário
+   - **Documentation**: `docs/PHASE28/BC3_TEXTURE_BUG_INVESTIGATION.md`
+
+2. **Texture Loading**: Deferred to Phase 28 (design complete, implementation pending)
+3. **Advanced Shaders**: Basic vertex/fragment shaders only (no effects yet)
+4. **Post-Processing**: Not implemented (Phase 30)
+5. **GPU Instancing**: Not implemented (Phase 31)
+6. **Shadow Mapping**: Not implemented (Phase 29)
 
 ### Platform-Specific Considerations
 

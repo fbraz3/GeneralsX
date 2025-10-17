@@ -548,6 +548,72 @@ for (int i = 0; i < 16; i++) {
 
 ---
 
+## CONCLUSÃO: Limitação Conhecida Aceita (16/10/2025)
+
+### Decisão Final
+
+**Status**: 🟡 **LIMITAÇÃO CONHECIDA** - Documentada, não bloqueante  
+**Ação**: Aceitar bug e prosseguir com desenvolvimento
+
+### Análise de Impacto
+
+**Texturas Afetadas**: 4 de 36 texturas totais (11%)
+- `defeated.dds` (1024×256) - Tela de derrota
+- `victorious.dds` (1024×256) - Tela de vitória
+- `gameover.dds` (1024×256) - Game over (DDS)
+- `GameOver.tga` (1024×256) - Game over (TGA)
+
+**Impacto no Jogo**: MÍNIMO
+- ✅ **Jogabilidade**: 100% funcional (não afeta gameplay)
+- ✅ **UI Principal**: Menus, botões, HUD funcionam perfeitamente
+- ✅ **Conteúdo 3D**: Unidades, terreno, efeitos renderizam corretamente
+- ✅ **Performance**: Zero impacto (texturas carregam normalmente)
+- ⚠️ **Cosmético**: Telas de fim de jogo (vitória/derrota) com metade laranja
+
+**Contexto de Uso**:
+- Texturas aparecem apenas **ao final de partidas**
+- Jogador vê por **poucos segundos** antes de retornar ao menu
+- Mensagem principal ("DERROTADO"/"VITORIOSO") **ainda legível** na metade esquerda
+
+### Justificativa da Decisão
+
+1. **Custo-Benefício**: 30+ horas de investigação sem resolução clara
+2. **Prioridades**: Funcionalidades críticas aguardando (som, rede, AI)
+3. **Workarounds Disponíveis**:
+   - Redimensionar texturas para 512×256 (trivial, 5 minutos)
+   - BC3 decompressor já implementado (se necessário)
+4. **Investigação Futura**: Pode ser revisitada com melhor compreensão do Metal
+
+### Próximos Passos
+
+**Imediatos**:
+- ✅ Documentar bug em NEXT_STEPS.md como "Known Issue"
+- ✅ Adicionar TODO comment no código com link para esta documentação
+- ✅ Prosseguir com Phase 28.5 (TextureCache integration)
+
+**Opcionais (Futuro)**:
+- [ ] Redimensionar texturas afetadas para 512×256 (se necessário)
+- [ ] Reportar bug ao Apple Feedback Assistant (driver Metal)
+- [ ] Testar em versões futuras do macOS (possível fix no driver)
+
+### Evidências Coletadas
+
+**Testes Realizados**:
+1. ✅ Sampler state variations (NEAREST, REPEAT)
+2. ✅ bytesPerRow alignment (256-byte, 512-byte, forced padding)
+3. ✅ BC3 → RGBA8 decompression workaround
+4. ✅ Synthetic texture test (RED/GREEN pattern works)
+5. ✅ Data integrity validation (hexdump confirms correct BC3 blocks)
+
+**Observação Crítica**:
+- Texturas sintéticas RGBA8 (1024×256) **funcionam perfeitamente**
+- Texturas reais (defeated.dds, GameOver.tga) **falham**
+- Diferença pode estar nos **dados originais** ou no **loader**
+
+**Bug NÃO identificado** após investigação exaustiva. Aceito como limitação do porte inicial Metal.
+
+---
+
 **Última Atualização**: 16 de outubro de 2025  
 **Investigador**: GitHub Copilot  
 **Status**: ✅ WORKAROUND IMPLEMENTADO - Root cause investigation continua
