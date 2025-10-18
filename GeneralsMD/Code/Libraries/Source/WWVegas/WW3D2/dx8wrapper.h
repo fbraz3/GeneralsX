@@ -1333,6 +1333,12 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 				glDisable(GL_STENCIL_TEST);
 				printf("Phase 27.4.6: Stencil test disabled\n");
 			}
+			
+			#ifdef __APPLE__
+			if (g_useMetalBackend) {
+				GX::MetalWrapper::SetStencilEnabled(value != 0);
+			}
+			#endif
 			break;
 		}
 		
@@ -1357,6 +1363,12 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 			// Use stored ref and mask values
 			glStencilFunc(gl_func, RenderStates[D3DRS_STENCILREF], RenderStates[D3DRS_STENCILMASK]);
 			printf("Phase 27.4.6: Stencil func set to 0x%04X (D3D: %u)\n", gl_func, value);
+			
+			#ifdef __APPLE__
+			if (g_useMetalBackend) {
+				GX::MetalWrapper::SetStencilFunc(value, RenderStates[D3DRS_STENCILREF], RenderStates[D3DRS_STENCILMASK]);
+			}
+			#endif
 			break;
 		}
 		
@@ -1369,6 +1381,12 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 				RenderStates[D3DRS_STENCILMASK]
 			);
 			printf("Phase 27.4.6: Stencil ref set to %u\n", value);
+			
+			#ifdef __APPLE__
+			if (g_useMetalBackend) {
+				GX::MetalWrapper::SetStencilRef(value);
+			}
+			#endif
 			break;
 		}
 		
@@ -1381,6 +1399,12 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 				value
 			);
 			printf("Phase 27.4.6: Stencil mask set to 0x%08X\n", value);
+			
+			#ifdef __APPLE__
+			if (g_useMetalBackend) {
+				GX::MetalWrapper::SetStencilMask(value);
+			}
+			#endif
 			break;
 		}
 		
@@ -1389,6 +1413,12 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 			// Update stencil write mask
 			glStencilMask(value);
 			printf("Phase 27.4.6: Stencil write mask set to 0x%08X\n", value);
+			
+			#ifdef __APPLE__
+			if (g_useMetalBackend) {
+				GX::MetalWrapper::SetStencilWriteMask(value);
+			}
+			#endif
 			break;
 		}
 		
@@ -1431,6 +1461,22 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 			
 			printf("Phase 27.4.6: Stencil %s operation set to %s (GL: 0x%04X)\n", 
 				state_name, op_name, map_stencil_op(value));
+			
+			#ifdef __APPLE__
+			if (g_useMetalBackend) {
+				// Convert D3DSTENCILOP values (1-8) to pass to Metal
+				int sfail_d3d = RenderStates[D3DRS_STENCILFAIL];
+				int dpfail_d3d = RenderStates[D3DRS_STENCILZFAIL];
+				int dppass_d3d = RenderStates[D3DRS_STENCILPASS];
+				
+				// Update the one that changed
+				if (state == D3DRS_STENCILFAIL) sfail_d3d = value;
+				else if (state == D3DRS_STENCILZFAIL) dpfail_d3d = value;
+				else if (state == D3DRS_STENCILPASS) dppass_d3d = value;
+				
+				GX::MetalWrapper::SetStencilOp(sfail_d3d, dpfail_d3d, dppass_d3d);
+			}
+			#endif
 			break;
 		}
 		

@@ -121,6 +121,14 @@ public:
     // Phase 29.3: Alpha Test Uniform Updates
     static void SetAlphaTestEnabled(bool enabled);
     static void SetAlphaTestFunc(int func, float ref);
+    
+    // Phase 29.3: Stencil Buffer Operations
+    static void SetStencilEnabled(bool enabled);
+    static void SetStencilFunc(int func, unsigned int ref, unsigned int mask);
+    static void SetStencilRef(unsigned int ref);
+    static void SetStencilMask(unsigned int mask);
+    static void SetStencilWriteMask(unsigned int mask);
+    static void SetStencilOp(int sfail, int dpfail, int dppass);
 
 private:
     // Internal helper to create a very simple test pipeline (triangle)

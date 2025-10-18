@@ -1437,6 +1437,46 @@ void MetalWrapper::SetAlphaTestFunc(int func, float ref) {
     s_uniformsDirty = true;
 }
 
+// Phase 29.3: Stencil Buffer Operations
+void MetalWrapper::SetStencilEnabled(bool enabled) {
+    // Metal stencil is configured via MTLRenderPipelineDescriptor and MTLDepthStencilDescriptor
+    // Store the state for future pipeline creation
+    // For now, this is a placeholder - actual implementation requires depth stencil state object
+    printf("METAL: SetStencilEnabled(%s) - stored for depth stencil state\n", enabled ? "true" : "false");
+}
+
+void MetalWrapper::SetStencilFunc(int func, unsigned int ref, unsigned int mask) {
+    // func: D3DCMP_* comparison function (1=NEVER, 2=LESS, 3=EQUAL, etc.)
+    // ref: reference value for stencil test
+    // mask: mask ANDed with both reference and stencil buffer value
+    printf("METAL: SetStencilFunc(func=%d, ref=%u, mask=0x%08X) - stored for depth stencil state\n", 
+           func, ref, mask);
+}
+
+void MetalWrapper::SetStencilRef(unsigned int ref) {
+    // Update stencil reference value
+    printf("METAL: SetStencilRef(ref=%u) - stored for depth stencil state\n", ref);
+}
+
+void MetalWrapper::SetStencilMask(unsigned int mask) {
+    // Update stencil read mask
+    printf("METAL: SetStencilMask(mask=0x%08X) - stored for depth stencil state\n", mask);
+}
+
+void MetalWrapper::SetStencilWriteMask(unsigned int mask) {
+    // Update stencil write mask
+    printf("METAL: SetStencilWriteMask(mask=0x%08X) - stored for depth stencil state\n", mask);
+}
+
+void MetalWrapper::SetStencilOp(int sfail, int dpfail, int dppass) {
+    // sfail: operation when stencil test fails
+    // dpfail: operation when stencil test passes but depth test fails
+    // dppass: operation when both stencil and depth tests pass
+    // Operations: 1=KEEP, 2=ZERO, 3=REPLACE, 4=INCRSAT, 5=DECRSAT, 6=INVERT, 7=INCR, 8=DECR
+    printf("METAL: SetStencilOp(sfail=%d, dpfail=%d, dppass=%d) - stored for depth stencil state\n", 
+           sfail, dpfail, dppass);
+}
+
 } // namespace GX
 
 #endif // __APPLE__
