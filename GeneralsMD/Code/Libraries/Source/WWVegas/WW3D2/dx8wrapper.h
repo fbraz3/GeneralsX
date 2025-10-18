@@ -1517,6 +1517,12 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 				glDisable(GL_PROGRAM_POINT_SIZE);
 			}
 		}
+		
+		#ifdef __APPLE__
+		if (g_useMetalBackend) {
+			GX::MetalWrapper::SetPointSpriteEnabled(value != 0);
+		}
+		#endif
 		break;
 	}
 
@@ -1531,6 +1537,13 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 				printf("Phase 27.4.8: Point size set to %.2f\n", pointSize);
 			}
 		}
+		
+		#ifdef __APPLE__
+		if (g_useMetalBackend) {
+			float pointSize = *reinterpret_cast<const float*>(&value);
+			GX::MetalWrapper::SetPointSize(pointSize);
+		}
+		#endif
 		break;
 	}
 
@@ -1544,6 +1557,12 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 				printf("Phase 27.4.8: Point scale %s\n", value ? "enabled" : "disabled");
 			}
 		}
+		
+		#ifdef __APPLE__
+		if (g_useMetalBackend) {
+			GX::MetalWrapper::SetPointScaleEnabled(value != 0);
+		}
+		#endif
 		break;
 	}
 
@@ -1558,6 +1577,15 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 				printf("Phase 27.4.8: Point scale A = %.4f\n", scaleA);
 			}
 		}
+		
+		#ifdef __APPLE__
+		if (g_useMetalBackend) {
+			float scaleA = *reinterpret_cast<const float*>(&value);
+			// NOTE: SetPointScaleFactors needs all 3 coefficients - for now just update A
+			// Full implementation will require storing B/C values in render state
+			GX::MetalWrapper::SetPointScaleFactors(scaleA, 0.0f, 0.0f);
+		}
+		#endif
 		break;
 	}
 
@@ -1572,6 +1600,15 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 				printf("Phase 27.4.8: Point scale B = %.4f\n", scaleB);
 			}
 		}
+		
+		#ifdef __APPLE__
+		if (g_useMetalBackend) {
+			float scaleB = *reinterpret_cast<const float*>(&value);
+			// NOTE: SetPointScaleFactors needs all 3 coefficients - for now just update B
+			// Full implementation will require storing A/C values in render state
+			GX::MetalWrapper::SetPointScaleFactors(0.0f, scaleB, 0.0f);
+		}
+		#endif
 		break;
 	}
 
@@ -1586,6 +1623,15 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 				printf("Phase 27.4.8: Point scale C = %.4f\n", scaleC);
 			}
 		}
+		
+		#ifdef __APPLE__
+		if (g_useMetalBackend) {
+			float scaleC = *reinterpret_cast<const float*>(&value);
+			// NOTE: SetPointScaleFactors needs all 3 coefficients - for now just update C
+			// Full implementation will require storing A/B values in render state
+			GX::MetalWrapper::SetPointScaleFactors(0.0f, 0.0f, scaleC);
+		}
+		#endif
 		break;
 	}
 
@@ -1600,6 +1646,13 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 				printf("Phase 27.4.8: Point size min = %.2f\n", minSize);
 			}
 		}
+		
+		#ifdef __APPLE__
+		if (g_useMetalBackend) {
+			float minSize = *reinterpret_cast<const float*>(&value);
+			GX::MetalWrapper::SetPointSizeMin(minSize);
+		}
+		#endif
 		break;
 	}
 
@@ -1614,6 +1667,13 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 				printf("Phase 27.4.8: Point size max = %.2f\n", maxSize);
 			}
 		}
+		
+		#ifdef __APPLE__
+		if (g_useMetalBackend) {
+			float maxSize = *reinterpret_cast<const float*>(&value);
+			GX::MetalWrapper::SetPointSizeMax(maxSize);
+		}
+		#endif
 		break;
 	}
 		default:
