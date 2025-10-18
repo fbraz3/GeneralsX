@@ -934,10 +934,16 @@ void TextureClass::Apply_New_Surface
 	bool disable_auto_invalidation
 )
 {
-	// Phase 28.4 DEBUG: Always log to see if function is called
+	// Phase 28.5 VISIBILITY: LOUD logging to track function calls
 	static int total_calls = 0;
-	if (total_calls++ < 5) {
-		printf("DEBUG: Apply_New_Surface called (call #%d)\n", total_calls);
+	total_calls++;
+	if (total_calls <= 10) {
+		printf("\n");
+		printf("========================================\n");
+		printf("   TEXTURE LOAD DETECTED! Call #%d\n", total_calls);
+		printf("   Texture: %s\n", Get_Texture_Name().Peek_Buffer());
+		printf("========================================\n");
+		printf("\n");
 	}
 	
 	IDirect3DBaseTexture8* d3d_tex=Peek_D3D_Base_Texture();
@@ -1010,66 +1016,49 @@ void TextureClass::Apply_New_Surface
 					gl_internal_format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 					data_size = ((d3d_desc.Width + 3) / 4) * ((d3d_desc.Height + 3) / 4) * 16;
 					break;
-				default:
-					if (log_this_call) {
-						printf("PHASE 28.4 REDESIGN WARNING: Unsupported format %d\n", ww3d_format);
-					}
-					format_supported = false;
-					break;
-			}
-			
-			if (log_this_call) {
-				printf("PHASE 28.4 REDESIGN DEBUG: format_supported=%d, data_size=%zu, format=%d\n",
-				       format_supported, data_size, ww3d_format);
-			}
-			
-			if (format_supported && data_size > 0) {
-				// Get TextureCache instance
-				TextureCache* cache = TextureCache::Get_Instance();
-				
+			default:
 				if (log_this_call) {
-					printf("PHASE 28.4 REDESIGN DEBUG: TextureCache::Get_Instance() returned %p\n", cache);
+					printf("TEXTURE WARNING: Unsupported format %d\n", ww3d_format);
 				}
+				format_supported = false;
+				break;
+		}
+		
+		if (format_supported && data_size > 0) {
+			// Get TextureCache instance
+			TextureCache* cache = TextureCache::Get_Instance();
+			
+			if (cache != NULL) {
+				StringClass tex_name = this->Get_Texture_Name();
+				const char* texture_name = tex_name.Peek_Buffer();
 				
-				if (cache != NULL) {
-					StringClass tex_name = this->Get_Texture_Name();
-					const char* texture_name = tex_name.Peek_Buffer();
-					
+				// Load texture into Metal/OpenGL from DirectX memory
+				GLuint tex_id = cache->Load_From_Memory(
+					texture_name,
+					locked_rect.pBits,
+					d3d_desc.Width,
+					d3d_desc.Height,
+					gl_internal_format,
+					data_size
+				);
+				
+				if (tex_id != 0) {
+					GLTexture = tex_id;
 					if (log_this_call) {
-						printf("PHASE 28.4 REDESIGN DEBUG: About to call Load_From_Memory for '%s'\n", texture_name);
-					}
-					
-					// Load texture into Metal/OpenGL from DirectX memory
-					GLuint tex_id = cache->Load_From_Memory(
-						texture_name,
-						locked_rect.pBits,
-						d3d_desc.Width,
-						d3d_desc.Height,
-						gl_internal_format,
-						data_size
-					);
-					
-					if (log_this_call) {
-						printf("PHASE 28.4 REDESIGN DEBUG: Load_From_Memory returned tex_id=%u\n", tex_id);
-					}
-					
-					if (tex_id != 0) {
-						GLTexture = tex_id;
-						printf("PHASE 28.4 REDESIGN SUCCESS: Texture '%s' loaded (ID=%u, %ux%u, format=%d, %zu bytes)\n",
+						printf("TEXTURE: Loaded '%s' (ID=%u, %ux%u, format=%d, %zu bytes)\n",
 						       texture_name, tex_id, d3d_desc.Width, d3d_desc.Height, ww3d_format, data_size);
-					} else {
-						if (log_this_call) {
-							printf("PHASE 28.4 REDESIGN ERROR: Load_From_Memory failed for '%s'\n", texture_name);
-						}
 					}
 				} else {
 					if (log_this_call) {
-						printf("PHASE 28.4 REDESIGN ERROR: TextureCache::Get_Instance() returned NULL\n");
+						printf("TEXTURE ERROR: Load_From_Memory failed for '%s'\n", texture_name);
 					}
 				}
+			} else {
+				if (log_this_call) {
+					printf("TEXTURE ERROR: TextureCache::Get_Instance() returned NULL\n");
+				}
 			}
-			
-			surface->UnlockRect();
+		}			surface->UnlockRect();
 		} else {
 			if (log_this_call) {
 				printf("PHASE 28.4 REDESIGN ERROR: LockRect failed (HRESULT=0x%08X)\n", lock_result);
@@ -1089,13 +1078,6 @@ void TextureClass::Apply_New_Surface
 */
 void TextureClass::Apply(unsigned int stage)
 {
-#ifndef _WIN32
-	static int apply_call_count = 0;
-	if (apply_call_count++ < 5) {
-		printf("Phase 28.7 DEBUG: TextureClass::Apply() called (stage=%u, call #%d)\n", stage, apply_call_count);
-	}
-#endif
-	
 	// Initialization needs to be done when texture is used if it hasn't been done before.
 	// XBOX always initializes textures at creation time.
 	if (!Initialized)

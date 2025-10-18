@@ -803,21 +803,3 @@ void _Check_GL_Error(const char* operation) {
 2. Testing in Zero Hour ensures robustness for edge cases
 3. Backport is straightforward: copy working code with minimal adjustments
 4. Generals base has simpler rendering, fewer compatibility issues
-
-**Documentation**: See `docs/PHASE27_BACKPORT_GUIDE.md` for complete backport instructions with copy-paste ready code examples.
-
-### Performance Metrics (Phase 27.5.3)
-
-- **Total execution time**: ~10 seconds (BIG files → MapCache → GameEngine → execute loop)
-- **Initialization breakdown**: 60% MapCache, 20% BIG files, 20% other
-- **Resource loading**: 19 BIG archives, 146 multiplayer maps
-- **OpenGL version**: 4.1 Metal - 90.5 (macOS ARM64)
-- **Error rate**: 0 OpenGL errors during full engine execution
-- **Build stats**: 923/923 files (100%), 129 warnings (non-critical)
-
-### Next Steps
-
-- **Phase 27.6**: Final documentation update (83% complete)
-- **Phase 27.7**: Backport to Generals base game (estimated 2-3 hours)
-- **Phase 27.8**: Git finalization and GitHub release (estimated 1 hour)
-- **Phase 28**: Complete texture system (DDS/TGA loading, 2-3 weeks)

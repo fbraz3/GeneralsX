@@ -256,11 +256,7 @@ static CORE_IDirect3DDevice8 g_mockD3DDevice;
 void DX8Wrapper::Set_OpenGL_Ready(bool ready)
 {
 	g_openGLReady = ready;
-	if (ready) {
-		printf("Phase 28.9.2: OpenGL marked as READY (window + context + GLAD initialized)\n");
-	} else {
-		printf("Phase 28.9.2: OpenGL marked as NOT READY\n");
-	}
+	// OpenGL ready state changed - no log needed in production
 }
 
 bool DX8Wrapper::Is_OpenGL_Ready()
@@ -268,15 +264,15 @@ bool DX8Wrapper::Is_OpenGL_Ready()
 	return g_openGLReady;
 }
 
-// Phase 28.9.2: Initialize OpenGL resources (shaders, VAO) after OpenGL context is ready
+// Initialize OpenGL resources (shaders, VAO) after OpenGL context is ready
 void DX8Wrapper::Initialize_OpenGL_Resources()
 {
 	if (!g_openGLReady) {
-		printf("Phase 28.9.2 ERROR: Cannot initialize OpenGL resources - OpenGL not ready!\n");
+		printf("ERROR: Cannot initialize OpenGL resources - context not ready\n");
 		return;
 	}
 	
-	printf("Phase 28.9.2: Initializing OpenGL resources (shaders, VAO)...\n");
+	printf("Initializing OpenGL resources (shaders, VAO)...\n");
 	
 	// Phase 27.5.2: Enable OpenGL debug output for error reporting
 	// DISABLED: Metal shader compiler dumps binary bytecode to stdout on macOS
@@ -346,8 +342,8 @@ void DX8Wrapper::Initialize_OpenGL_Resources()
 	// Unbind VAO for now (will be bound again before draw calls)
 	glBindVertexArray(0);
 	
-	printf("Phase 27.2.5: VAO created successfully (ID: %u)\n", GL_VAO);
-	printf("Phase 28.9.2: OpenGL resources initialized successfully\n");
+	printf("OpenGL: VAO created (ID: %u)\n", GL_VAO);
+	printf("OpenGL: Resources initialized successfully\n");
 	_Check_GL_Error("VAO setup complete");
 }
 #endif
@@ -582,21 +578,14 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Inits(void)
 	Set_Default_Global_Render_States();
 
 #ifndef _WIN32
-	// Phase 28.9.2: Only initialize OpenGL resources if OpenGL is fully ready
+	// Only initialize OpenGL resources if OpenGL is fully ready
 	if (!g_openGLReady) {
-		printf("Phase 28.9.2: OpenGL not ready yet, skipping shader/VAO initialization\n");
-		printf("Phase 28.9.2: (Will be initialized later when OpenGL context is available)\n");
+		// Deferred initialization - will be done when OpenGL context is available
 		return;
 	}
 	
-	// Phase 27.5.2: Enable OpenGL debug output for error reporting
-	// DISABLED: Metal shader compiler dumps binary bytecode to stdout on macOS
-	// printf("Phase 27.5.2: Initializing OpenGL debugging features...\n");
-	// _Enable_GL_Debug_Output();
-	// _Check_GL_Error("Enable debug output");
-	
-	// Phase 27.2.4: Initialize OpenGL shader program
-	printf("Phase 27.2.4: Loading and compiling OpenGL shaders...\n");
+	// Initialize OpenGL shader program
+	printf("OpenGL: Loading and compiling shaders...\n");
 	
 	// Load and compile vertex shader
 	GL_Vertex_Shader = _Load_And_Compile_Shader("resources/shaders/basic.vert", GL_VERTEX_SHADER);
