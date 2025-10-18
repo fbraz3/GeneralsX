@@ -927,18 +927,15 @@ void TextureLoader::Process_Foreground_Load(TextureLoadTaskClass *task)
 
 	switch (task->Get_State()) {
 		case TextureLoadTaskClass::STATE_NONE:
-			printf("PHASE 28.4 DEBUG: Task state=STATE_NONE, calling Begin_Load_And_Queue\n");
 			Begin_Load_And_Queue(task);
 			break;
 
 		case TextureLoadTaskClass::STATE_LOAD_MIPMAP:
-			printf("PHASE 28.4 DEBUG: Task state=STATE_LOAD_MIPMAP, calling End_Load\n");
 			task->End_Load();
 			task->Destroy();
 			break;
 		
 		default:
-			printf("PHASE 28.4 DEBUG: Task state=%d (unexpected), not calling End_Load\n", task->Get_State());
 			break;
 	}
 }
@@ -1254,85 +1251,6 @@ bool TextureLoadTaskClass::Load(void)
 	if (!loaded) {
 		loaded = Load_Uncompressed_Mipmap();
 	}
-
-	// Phase 28.4: Metal/OpenGL texture integration from VFS memory
-	// MOVED FROM End_Load() - data is now in memory after Load_*_Mipmap()
-	#ifndef _WIN32
-	if (loaded && g_useMetalBackend && Texture != NULL && MipLevelCount > 0) {
-		TextureCache* cache = TextureCache::Get_Instance();
-		if (cache != NULL) {
-			// Get first mipmap level pixel data (already in memory from Load_*_Mipmap)
-			void* pixel_data = LockedSurfacePtr[0];
-			if (pixel_data != NULL) {
-				// Calculate texture size
-				size_t texture_size = Height * LockedSurfacePitch[0];
-				
-				// Generate cache key from texture path
-				StringClass full_path = Texture->Get_Full_Path();
-				const char* cache_key = full_path.Peek_Buffer();
-				
-				// Convert WW3D format to OpenGL format
-				GLenum gl_format = GL_RGBA;
-				GLenum gl_internal_format = GL_RGBA8;
-				GLenum gl_type = GL_UNSIGNED_BYTE;
-				bool is_compressed = false;
-				
-				switch (Format) {
-					case WW3D_FORMAT_A8R8G8B8:
-						gl_format = GL_BGRA;
-						gl_internal_format = GL_RGBA8;
-						gl_type = GL_UNSIGNED_BYTE;
-						break;
-					case WW3D_FORMAT_R8G8B8:
-						gl_format = GL_RGB;
-						gl_internal_format = GL_RGB8;
-						gl_type = GL_UNSIGNED_BYTE;
-						break;
-					case WW3D_FORMAT_DXT1:
-						gl_internal_format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-						is_compressed = true;
-						break;
-					case WW3D_FORMAT_DXT3:
-						gl_internal_format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-						is_compressed = true;
-						break;
-					case WW3D_FORMAT_DXT5:
-						gl_internal_format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-						is_compressed = true;
-						break;
-					default:
-						printf("PHASE 28.4 WARNING: Unsupported texture format %d for '%s'\n", Format, cache_key);
-						break;
-				}
-				
-				// Load texture from memory into Metal/OpenGL
-				GLuint tex_id = cache->Load_From_Memory(
-					cache_key,
-					pixel_data,
-					Width,
-					Height,
-					gl_format,
-					gl_internal_format,
-					gl_type,
-					is_compressed,
-					texture_size
-				);
-				
-				if (tex_id != 0) {
-					// Store OpenGL texture ID in D3DTexture pointer
-					// (reinterpret_cast to maintain compatibility with D3D8 code)
-					D3DTexture = reinterpret_cast<IDirect3DBaseTexture8*>(static_cast<uintptr_t>(tex_id));
-					printf("PHASE 28.4: Texture loaded from memory: '%s' (ID %u, %ux%u, format %d, %zu bytes)\n",
-					       cache_key, tex_id, Width, Height, Format, texture_size);
-				} else {
-					printf("PHASE 28.4 ERROR: Failed to load texture from memory: '%s'\n", cache_key);
-				}
-			} else {
-				printf("PHASE 28.4 ERROR: No pixel data for texture: '%s'\n", Texture->Get_Full_Path().Peek_Buffer());
-			}
-		}
-	}
-	#endif
 
 	State = STATE_LOAD_MIPMAP;
 

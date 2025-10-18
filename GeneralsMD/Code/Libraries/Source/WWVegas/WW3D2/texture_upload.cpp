@@ -1,9 +1,9 @@
 /**
  * @file texture_upload.cpp
- * @brief OpenGL texture upload implementation
+ * @brief OpenGL/Metal texture upload implementation
  */
 
-#ifndef _WIN32  // OpenGL backend only
+#ifndef _WIN32  // OpenGL/Metal backend only
 
 #include "texture_upload.h"
 #include <cstdio>
@@ -11,6 +11,7 @@
 
 #ifdef __APPLE__
 #include <SDL2/SDL.h>
+#include "metalwrapper.h"  // Phase 28.4 REDESIGN: Metal texture support
 #else
 #include <SDL.h>
 #endif
@@ -279,13 +280,45 @@ GLuint Upload_Texture_From_Memory(const void* pixel_data, uint32_t width, uint32
         return 0;
     }
     
-    // CRITICAL: Verify we have a valid OpenGL context before making GL calls
+    // CRITICAL: Verify we have a valid rendering context before making calls
     #ifndef _WIN32
-    void* current_context = SDL_GL_GetCurrentContext();
-    if (!current_context) {
-        printf("TEXTURE ERROR: No OpenGL context active! Cannot upload texture from memory. Deferring upload...\n");
-        return 0; // Texture will be loaded on-demand when context is ready
+    extern bool g_useMetalBackend;
+    
+    // Phase 28.4 REDESIGN: Use Metal backend when available
+    #ifdef __APPLE__
+    if (g_useMetalBackend) {
+        printf("TEXTURE (Metal): Uploading from memory: %ux%u, format 0x%04X, size %zu bytes\n",
+               width, height, format, data_size);
+        
+        // Use MetalWrapper to create texture
+        void* metal_texture = GX::MetalWrapper::CreateTextureFromMemory(width, height, format, pixel_data, data_size);
+        
+        if (!metal_texture) {
+            printf("TEXTURE ERROR (Metal): Failed to create texture from memory\n");
+            return 0;
+        }
+        
+        // Cast Metal texture pointer to GLuint for compatibility
+        // (GLuint is used as generic texture ID throughout codebase)
+        GLuint texture_id = (GLuint)(uintptr_t)metal_texture;
+        
+        printf("TEXTURE SUCCESS (Metal): Texture uploaded from memory (ID %u/%p)\n", 
+               texture_id, metal_texture);
+        
+        return texture_id;
     }
+    #endif
+    
+    // OpenGL path (Linux, Windows, or macOS with USE_OPENGL=1)
+    // Check for Metal OR OpenGL context
+    if (!g_useMetalBackend) {
+        void* current_context = SDL_GL_GetCurrentContext();
+        if (!current_context) {
+            printf("TEXTURE ERROR: No OpenGL context active! Cannot upload texture from memory. Deferring upload...\n");
+            return 0; // Texture will be loaded on-demand when context is ready
+        }
+    }
+    // For Metal backend, context validation is handled by MetalWrapper
     #endif
     
     // Determine if format is compressed

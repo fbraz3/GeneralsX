@@ -1043,6 +1043,136 @@ void* MetalWrapper::CreateTextureFromTGA(unsigned int width, unsigned int height
     }
 }
 
+// Phase 28.4 REDESIGN: Generic texture creation from memory
+// Converts GLenum format to MTLPixelFormat and creates texture
+void* MetalWrapper::CreateTextureFromMemory(unsigned int width, unsigned int height,
+                                             unsigned int glFormat, const void* data,
+                                             unsigned int dataSize) {
+    @autoreleasepool {
+        if (!s_device) {
+            std::printf("METAL ERROR: Device not initialized (CreateTextureFromMemory)\n");
+            return nullptr;
+        }
+        
+        if (!data || dataSize == 0) {
+            std::printf("METAL ERROR: NULL data or zero size (CreateTextureFromMemory)\n");
+            return nullptr;
+        }
+        
+        // Convert GLenum format to MTLPixelFormat
+        MTLPixelFormat metalFormat;
+        bool isCompressed = false;
+        const char* formatName = "UNKNOWN";
+        unsigned int bytesPerPixel = 4;
+        
+        switch (glFormat) {
+            case 0x83F1: // GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
+                metalFormat = MTLPixelFormatBC1_RGBA;
+                isCompressed = true;
+                formatName = "DXT1/BC1";
+                break;
+            case 0x83F2: // GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
+                metalFormat = MTLPixelFormatBC2_RGBA;
+                isCompressed = true;
+                formatName = "DXT3/BC2";
+                break;
+            case 0x83F3: // GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
+                metalFormat = MTLPixelFormatBC3_RGBA;
+                isCompressed = true;
+                formatName = "DXT5/BC3";
+                break;
+            case 0x8058: // GL_RGBA8
+                metalFormat = MTLPixelFormatRGBA8Unorm;
+                isCompressed = false;
+                formatName = "RGBA8";
+                bytesPerPixel = 4;
+                break;
+            case 0x8051: // GL_RGB8
+                // Metal doesn't have RGB8, use RGBA8 (caller must ensure data has alpha)
+                metalFormat = MTLPixelFormatRGBA8Unorm;
+                isCompressed = false;
+                formatName = "RGB8→RGBA8";
+                bytesPerPixel = 3; // Input is RGB, but Metal needs RGBA
+                std::printf("METAL WARNING: RGB8 format requires conversion to RGBA8\n");
+                break;
+            default:
+                std::printf("METAL ERROR: Unsupported GL format 0x%04X in CreateTextureFromMemory\n", glFormat);
+                return nullptr;
+        }
+        
+        std::printf("METAL: Creating texture from memory %ux%u (format=%s/0x%04X, %u bytes)\n",
+                   width, height, formatName, glFormat, dataSize);
+        
+        // Create texture descriptor
+        MTLTextureDescriptor* descriptor = [MTLTextureDescriptor new];
+        descriptor.textureType = MTLTextureType2D;
+        descriptor.pixelFormat = metalFormat;
+        descriptor.width = width;
+        descriptor.height = height;
+        descriptor.mipmapLevelCount = 1; // No mipmaps for now
+        descriptor.usage = MTLTextureUsageShaderRead;
+        
+        // Create texture
+        id<MTLDevice> device = (id<MTLDevice>)s_device;
+        id<MTLTexture> texture = [device newTextureWithDescriptor:descriptor];
+        
+        if (!texture) {
+            std::printf("METAL ERROR: Failed to create MTLTexture (%s %ux%u)\n", formatName, width, height);
+            return nullptr;
+        }
+        
+        // Upload data (compressed vs uncompressed)
+        MTLRegion region = MTLRegionMake2D(0, 0, width, height);
+        
+        if (isCompressed) {
+            // Compressed textures use direct upload
+            [texture replaceRegion:region
+                       mipmapLevel:0
+                         withBytes:data
+                       bytesPerRow:0]; // bytesPerRow=0 for compressed
+        } else {
+            // Uncompressed textures need bytesPerRow alignment
+            unsigned int bytesPerRow = width * bytesPerPixel;
+            unsigned int alignedBytesPerRow = ((bytesPerRow + 255) / 256) * 256;
+            
+            if (alignedBytesPerRow != bytesPerRow) {
+                std::printf("METAL DEBUG: bytesPerRow alignment: %u → %u (aligned to 256)\n", 
+                           bytesPerRow, alignedBytesPerRow);
+                
+                // Create aligned buffer
+                unsigned int alignedSize = alignedBytesPerRow * height;
+                unsigned char* alignedData = new unsigned char[alignedSize];
+                memset(alignedData, 0, alignedSize);
+                
+                // Copy row by row with padding
+                const unsigned char* srcData = (const unsigned char*)data;
+                for (unsigned int y = 0; y < height; y++) {
+                    memcpy(alignedData + (y * alignedBytesPerRow),
+                          srcData + (y * bytesPerRow),
+                          bytesPerRow);
+                }
+                
+                [texture replaceRegion:region
+                           mipmapLevel:0
+                             withBytes:alignedData
+                           bytesPerRow:alignedBytesPerRow];
+                
+                delete[] alignedData;
+            } else {
+                [texture replaceRegion:region
+                           mipmapLevel:0
+                             withBytes:data
+                           bytesPerRow:bytesPerRow];
+            }
+        }
+        
+        std::printf("METAL SUCCESS: Texture created from memory (ID=%p)\n", (__bridge void*)texture);
+        
+        // Return as void* with retained reference (caller responsible for CFRelease)
+        return (__bridge_retained void*)texture;
+    }
+}
+
 void MetalWrapper::DeleteTexture(void* texture) {
     if (texture) {
         // Release bridged reference (was created with __bridge_retained)
