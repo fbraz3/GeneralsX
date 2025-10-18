@@ -57,6 +57,11 @@
 
 // Phase 29.3: Global Metal backend flag (extern declaration)
 extern bool g_useMetalBackend;
+
+#ifdef __APPLE__
+// Phase 29.1-29.2: Metal backend API
+#include "metalwrapper.h"
+#endif
 #endif
 #include "matrix4.h"
 #include "statistics.h"
@@ -1190,71 +1195,109 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 				GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogEnabled");
 				if (loc != -1) {
 					glUniform1i(loc, value ? 1 : 0);
-					printf("Phase 27.4.5: Fog %s\n", value ? "enabled" : "disabled");
 				}
 			}
+			// Phase 29.2: Update Metal fog enabled
+			#ifdef __APPLE__
+			extern bool g_useMetalBackend;
+			if (g_useMetalBackend) {
+				GX::MetalWrapper::SetFogEnabled(value != 0);
+			}
+			#endif
 			break;
 		}
 		
 		case D3DRS_FOGCOLOR:
 		{
 			// Update uFogColor uniform (D3DCOLOR ARGB → RGB float)
+			float r = ((value >> 16) & 0xFF) / 255.0f;
+			float g = ((value >> 8) & 0xFF) / 255.0f;
+			float b = (value & 0xFF) / 255.0f;
+			
 			if (GL_Shader_Program != 0) {
 				glUseProgram(GL_Shader_Program);
 				GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogColor");
 				if (loc != -1) {
-					float r = ((value >> 16) & 0xFF) / 255.0f;
-					float g = ((value >> 8) & 0xFF) / 255.0f;
-					float b = (value & 0xFF) / 255.0f;
 					glUniform3f(loc, r, g, b);
-					printf("Phase 27.4.5: Fog color set to RGB(%.2f, %.2f, %.2f)\n", r, g, b);
 				}
 			}
+			// Phase 29.2: Update Metal fog color
+			#ifdef __APPLE__
+			extern bool g_useMetalBackend;
+			if (g_useMetalBackend) {
+				GX::MetalWrapper::SetFogColor(r, g, b);
+			}
+			#endif
 			break;
 		}
 		
 		case D3DRS_FOGSTART:
 		{
 			// Update uFogStart uniform (D3D uses float in DWORD)
+			float fog_start = *reinterpret_cast<const float*>(&value);
+			
 			if (GL_Shader_Program != 0) {
 				glUseProgram(GL_Shader_Program);
 				GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogStart");
 				if (loc != -1) {
-					float fog_start = *reinterpret_cast<const float*>(&value);
 					glUniform1f(loc, fog_start);
-					printf("Phase 27.4.5: Fog start set to %.2f\n", fog_start);
 				}
 			}
+			// Phase 29.2: Update Metal fog start (will update range with current end value)
+			#ifdef __APPLE__
+			extern bool g_useMetalBackend;
+			if (g_useMetalBackend) {
+				// Get current fog end value from render states
+				float fog_end = *reinterpret_cast<const float*>(&RenderStates[D3DRS_FOGEND]);
+				GX::MetalWrapper::SetFogRange(fog_start, fog_end);
+			}
+			#endif
 			break;
 		}
 		
 		case D3DRS_FOGEND:
 		{
 			// Update uFogEnd uniform (D3D uses float in DWORD)
+			float fog_end = *reinterpret_cast<const float*>(&value);
+			
 			if (GL_Shader_Program != 0) {
 				glUseProgram(GL_Shader_Program);
 				GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogEnd");
 				if (loc != -1) {
-					float fog_end = *reinterpret_cast<const float*>(&value);
 					glUniform1f(loc, fog_end);
-					printf("Phase 27.4.5: Fog end set to %.2f\n", fog_end);
 				}
 			}
+			// Phase 29.2: Update Metal fog end (will update range with current start value)
+			#ifdef __APPLE__
+			extern bool g_useMetalBackend;
+			if (g_useMetalBackend) {
+				// Get current fog start value from render states
+				float fog_start = *reinterpret_cast<const float*>(&RenderStates[D3DRS_FOGSTART]);
+				GX::MetalWrapper::SetFogRange(fog_start, fog_end);
+			}
+			#endif
 			break;
 		}
 		
 		case D3DRS_FOGDENSITY:
 		{
 			// Update uFogDensity uniform (D3D uses float in DWORD)
+			float fog_density = *reinterpret_cast<const float*>(&value);
+			
 			if (GL_Shader_Program != 0) {
 				glUseProgram(GL_Shader_Program);
 				GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogDensity");
 				if (loc != -1) {
-					float fog_density = *reinterpret_cast<const float*>(&value);
 					glUniform1f(loc, fog_density);
-					printf("Phase 27.4.5: Fog density set to %.4f\n", fog_density);
 				}
 			}
+			// Phase 29.2: Update Metal fog density
+			#ifdef __APPLE__
+			extern bool g_useMetalBackend;
+			if (g_useMetalBackend) {
+				GX::MetalWrapper::SetFogDensity(fog_density);
+			}
+			#endif
 			break;
 		}
 		
@@ -1268,11 +1311,15 @@ WWINLINE void DX8Wrapper::Set_DX8_Render_State(D3DRENDERSTATETYPE state, unsigne
 				GLint loc = glGetUniformLocation(GL_Shader_Program, "uFogMode");
 				if (loc != -1) {
 					glUniform1i(loc, value);
-					const char* fog_modes[] = {"NONE", "EXP", "EXP2", "LINEAR"};
-					const char* mode_name = (value <= 3) ? fog_modes[value] : "UNKNOWN";
-					printf("Phase 27.4.5: Fog mode set to %s (value: %u)\n", mode_name, value);
 				}
 			}
+			// Phase 29.2: Update Metal fog mode
+			#ifdef __APPLE__
+			extern bool g_useMetalBackend;
+			if (g_useMetalBackend) {
+				GX::MetalWrapper::SetFogMode(value);
+			}
+			#endif
 			break;
 		}
 		

@@ -941,7 +941,8 @@ void TextureClass::Apply_New_Surface
 		printf("\n");
 		printf("========================================\n");
 		printf("   TEXTURE LOAD DETECTED! Call #%d\n", total_calls);
-		printf("   Texture: %s\n", Get_Texture_Name().Peek_Buffer());
+		StringClass tex_name_debug = Get_Texture_Name();  // Non-const copy
+		printf("   Texture: %s\n", tex_name_debug.Peek_Buffer());
 		printf("========================================\n");
 		printf("\n");
 	}
