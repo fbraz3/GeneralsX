@@ -129,6 +129,14 @@ public:
     static void SetStencilMask(unsigned int mask);
     static void SetStencilWriteMask(unsigned int mask);
     static void SetStencilOp(int sfail, int dpfail, int dppass);
+    
+    // Phase 29.4: Point Sprite Operations
+    static void SetPointSpriteEnabled(bool enabled);
+    static void SetPointSize(float size);
+    static void SetPointScaleEnabled(bool enabled);
+    static void SetPointScaleFactors(float a, float b, float c);
+    static void SetPointSizeMin(float minSize);
+    static void SetPointSizeMax(float maxSize);
 
 private:
     // Internal helper to create a very simple test pipeline (triangle)

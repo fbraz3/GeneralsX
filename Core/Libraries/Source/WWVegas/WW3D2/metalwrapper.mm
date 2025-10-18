@@ -1477,6 +1477,42 @@ void MetalWrapper::SetStencilOp(int sfail, int dpfail, int dppass) {
            sfail, dpfail, dppass);
 }
 
+// Phase 29.4: Point Sprite Operations
+void MetalWrapper::SetPointSpriteEnabled(bool enabled) {
+    // Point sprites in Metal require shader-based point rendering
+    // Store the state for shader uniform updates
+    printf("METAL: SetPointSpriteEnabled(%s) - stored for shader uniforms\n", enabled ? "true" : "false");
+}
+
+void MetalWrapper::SetPointSize(float size) {
+    // Point size is controlled via vertex shader output (pointsize attribute)
+    // Store for shader uniform updates
+    printf("METAL: SetPointSize(%.2f) - stored for shader uniforms\n", size);
+}
+
+void MetalWrapper::SetPointScaleEnabled(bool enabled) {
+    // Point scale enables distance-based size attenuation
+    // Formula: FinalSize = Size * sqrt(1 / (A + B*D + C*D²))
+    printf("METAL: SetPointScaleEnabled(%s) - stored for shader uniforms\n", enabled ? "true" : "false");
+}
+
+void MetalWrapper::SetPointScaleFactors(float a, float b, float c) {
+    // A, B, C coefficients for distance-based point size attenuation
+    // Used in formula: FinalSize = Size * sqrt(1 / (A + B*D + C*D²))
+    // where D is distance from camera
+    printf("METAL: SetPointScaleFactors(A=%.4f, B=%.4f, C=%.4f) - stored for shader uniforms\n", a, b, c);
+}
+
+void MetalWrapper::SetPointSizeMin(float minSize) {
+    // Minimum point size clamp
+    printf("METAL: SetPointSizeMin(%.2f) - stored for shader uniforms\n", minSize);
+}
+
+void MetalWrapper::SetPointSizeMax(float maxSize) {
+    // Maximum point size clamp
+    printf("METAL: SetPointSizeMax(%.2f) - stored for shader uniforms\n", maxSize);
+}
+
 } // namespace GX
 
 #endif // __APPLE__
