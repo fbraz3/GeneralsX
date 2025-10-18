@@ -223,6 +223,143 @@ printf("PHASE 28.4 DEBUG: Begin_Load FAILED - applying missing texture\n");
 
 ---
 
+### ✅ Phase 28.4 RESOLUTION: Post-DirectX Texture Interception (October 17, 2025)
+
+**BREAKTHROUGH SUCCESS**: Option 2 fully operational! **7 textures loaded from DirectX to Metal!**
+
+**Solution**: Intercept AFTER DirectX loads textures from .big files via VFS
+
+**Integration Point**: `TextureClass::Apply_New_Surface()` in `texture.cpp`
+
+**Why This Works**:
+- DirectX has ALREADY loaded texture from .big via VFS
+- Lock DirectX surface with `D3DLOCK_READONLY` to access pixel data
+- Copy pixel data to Metal via `TextureCache::Load_From_Memory()`
+- Upload to Metal via `MetalWrapper::CreateTextureFromMemory()`
+
+**Implementation** (Commit 114f5f28):
+
+```cpp
+// texture.cpp - Apply_New_Surface() hook
+void TextureClass::Apply_New_Surface(IDirect3DBaseTexture8* d3d_texture, bool initialized) {
+    if (g_useMetalBackend && d3d_texture && Get_Texture_Type() == TEXTURE_TYPE_TEXTURE) {
+        IDirect3DTexture8* surface = static_cast<IDirect3DTexture8*>(d3d_texture);
+        
+        // Lock DirectX surface (READ-ONLY - data already loaded from .big)
+        D3DLOCKED_RECT locked_rect;
+        if (SUCCEEDED(surface->LockRect(0, &locked_rect, NULL, D3DLOCK_READONLY))) {
+            D3DSURFACE_DESC desc;
+            surface->GetLevelDesc(0, &desc);
+            
+            // Convert D3DFORMAT → GLenum
+            unsigned int gl_format = Convert_D3D_Format_To_GL(desc.Format);
+            unsigned int data_size = Calculate_Data_Size(desc.Width, desc.Height, gl_format);
+            
+            // Upload to Metal via TextureCache
+            TextureCache* cache = TextureCache::Get_Instance();
+            if (cache) {
+                GLuint tex_id = cache->Load_From_Memory(
+                    Get_Texture_Name(), locked_rect.pBits,
+                    desc.Width, desc.Height, gl_format, data_size
+                );
+                
+                if (tex_id != 0) {
+                    GLTexture = tex_id;  // SUCCESS!
+                    printf("PHASE 28.4: Metal texture created ID=%u\n", tex_id);
+                }
+            }
+            
+            surface->UnlockRect(0);
+        }
+    }
+}
+```
+
+**New MetalWrapper API**: `CreateTextureFromMemory()` (metalwrapper.mm - ~140 lines)
+
+```cpp
+void* MetalWrapper::CreateTextureFromMemory(unsigned int width, unsigned int height,
+                                             unsigned int glFormat, const void* data,
+                                             unsigned int dataSize) {
+    // Convert GLenum → MTLPixelFormat
+    MTLPixelFormat pixelFormat = ConvertGLFormatToMetal(glFormat);
+    
+    // Create MTLTextureDescriptor
+    MTLTextureDescriptor* descriptor = [MTLTextureDescriptor
+        texture2DDescriptorWithPixelFormat:pixelFormat
+        width:width height:height mipmapped:NO];
+    
+    // Create MTLTexture
+    id<MTLTexture> texture = [g_device newTextureWithDescriptor:descriptor];
+    
+    // Upload pixel data with BytesPerRow alignment
+    NSUInteger bytesPerRow = CalculateBytesPerRow(width, pixelFormat);
+    MTLRegion region = MTLRegionMake2D(0, 0, width, height);
+    [texture replaceRegion:region mipmapLevel:0 withBytes:data bytesPerRow:bytesPerRow];
+    
+    return (__bridge_retained void*)texture;
+}
+```
+
+**Critical Discovery**: TextureCache WAS Available
+
+- **Assumption**: `TextureCache::Get_Instance()` returns NULL ❌
+- **Reality**: TextureCache initialized at 0x4afb9ee80 ✅
+- **Actual Problem**: `Upload_Texture_From_Memory()` checking for OpenGL context
+- Metal backend has NO OpenGL context → always returned 0
+- **Fix**: Added Metal path in `texture_upload.cpp` (30+ lines)
+
+```cpp
+// texture_upload.cpp - Metal backend path
+#ifdef __APPLE__
+if (g_useMetalBackend) {
+    void* metal_texture = GX::MetalWrapper::CreateTextureFromMemory(
+        width, height, format, pixel_data, data_size
+    );
+    return (GLuint)(uintptr_t)metal_texture;
+}
+#endif
+```
+
+**7 Textures Loaded Successfully** (Commit 114f5f28):
+
+- TBBib.tga (ID=2906690560, 128×128 RGBA8, 65536 bytes)
+- TBRedBib.tga (ID=2906691200, 128×128 RGBA8, 65536 bytes)
+- exlaser.tga (ID=2906691840, 128×128 RGBA8, 65536 bytes)
+- tsmoonlarg.tga (ID=2906692480, 128×128 RGBA8, 65536 bytes)
+- noise0000.tga (ID=2906693120, 128×128 RGBA8, 65536 bytes)
+- twalphaedge.tga (ID=2906693760, 128×128 RGBA8, 65536 bytes)
+- watersurfacebubbles.tga (ID=2906694400, 128×128 RGBA8, 65536 bytes)
+
+**Files Modified** (Commit 114f5f28):
+
+- `texture.cpp` - Apply_New_Surface() hook (100+ lines)
+- `metalwrapper.h/mm` - CreateTextureFromMemory() API (140+ lines)
+- `texture_upload.cpp` - Metal backend path (30+ lines)
+- `textureloader.cpp` - Removed old VFS integration code
+
+**Key Lessons Learned**:
+
+1. ✅ DirectX surface locking works on macOS stub implementation
+2. ✅ TextureCache IS available during texture loading (not NULL)
+3. ✅ Upload_Texture_From_Memory() needed Metal backend support
+4. ✅ Post-DirectX interception more reliable than VFS integration
+5. ✅ Debugging assumptions can be wrong - verify with explicit logging
+
+**Next Steps**:
+
+- ⏳ Phase 28.5: Extended testing with DXT1/3/5 compressed formats
+- ⏳ Phase 28.6: Remove excessive debug logs
+- ⏳ Phase 28.7: Validate texture rendering in game menus
+
+**Documentation**:
+
+- `docs/PHASE28/CRITICAL_VFS_DISCOVERY.md` - Complete VFS analysis + Resolution section
+- `docs/NEXT_STEPS.md` - Phase 28.4 complete status
+- `docs/MACOS_PORT.md` - Updated with Option 2 success
+
+---
+
 ### 🚨 Phase 28.4 (Old): Texture Loading and Virtual File Systems (October 16, 2025)
 
 **NOTE**: This section is DEPRECATED - see Phase 28.4 VFS Discovery above for correct understanding
