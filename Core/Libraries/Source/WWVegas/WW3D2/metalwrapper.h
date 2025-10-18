@@ -55,6 +55,13 @@ public:
     static void* CreateTextureFromTGA(unsigned int width, unsigned int height,
                                        const void* data, unsigned int dataSize);
     
+    // Phase 28.4 REDESIGN: Generic Texture Creation from Memory
+    // Accepts GLenum format (GL_RGBA8, GL_RGB8, GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, etc.)
+    // Returns void* (id<MTLTexture>) or NULL on error
+    static void* CreateTextureFromMemory(unsigned int width, unsigned int height,
+                                          unsigned int glFormat, const void* data,
+                                          unsigned int dataSize);
+    
     static void DeleteTexture(void* texture);
     
     // Phase 28.3.3: Texture Binding

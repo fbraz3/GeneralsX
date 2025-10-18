@@ -934,6 +934,12 @@ void TextureClass::Apply_New_Surface
 	bool disable_auto_invalidation
 )
 {
+	// Phase 28.4 DEBUG: Always log to see if function is called
+	static int total_calls = 0;
+	if (total_calls++ < 5) {
+		printf("DEBUG: Apply_New_Surface called (call #%d)\n", total_calls);
+	}
+	
 	IDirect3DBaseTexture8* d3d_tex=Peek_D3D_Base_Texture();
 
 	if (d3d_tex) d3d_tex->Release();
@@ -945,6 +951,11 @@ void TextureClass::Apply_New_Surface
 	if (disable_auto_invalidation) InactivationTime = 0;
 
 	WWASSERT(d3d_texture);
+	
+	// Phase 28.4 REDESIGN: Post-DirectX Texture Interception (Option 2)
+	static int call_count = 0;
+	bool log_this_call = (call_count++ < 10);
+	
 	IDirect3DSurface8* surface;
 	DX8_ErrorCode(Peek_D3D_Texture()->GetSurfaceLevel(0,&surface));
 	D3DSURFACE_DESC d3d_desc;
@@ -956,6 +967,117 @@ void TextureClass::Apply_New_Surface
 		Width=d3d_desc.Width;
 		Height=d3d_desc.Height;
 	}
+	
+	#ifndef _WIN32
+	extern bool g_useMetalBackend;
+	
+	if (log_this_call) {
+		printf("PHASE 28.4 REDESIGN: Apply_New_Surface called (count=%d, g_useMetalBackend=%d, initialized=%d, width=%u, height=%u)\n",
+		       call_count, g_useMetalBackend, initialized, d3d_desc.Width, d3d_desc.Height);
+	}
+	
+	// Option 2: Copy texture from DirectX to Metal/OpenGL
+	if (g_useMetalBackend && initialized && d3d_desc.Width > 0 && d3d_desc.Height > 0) {
+		// Lock DirectX surface to read pixel data
+		D3DLOCKED_RECT locked_rect;
+		HRESULT lock_result = surface->LockRect(&locked_rect, NULL, D3DLOCK_READONLY);
+		
+		if (SUCCEEDED(lock_result) && locked_rect.pBits != NULL) {
+			// Convert D3D format to OpenGL format
+			WW3DFormat ww3d_format = D3DFormat_To_WW3DFormat(d3d_desc.Format);
+			GLenum gl_internal_format = GL_RGBA8;
+			size_t data_size = 0;
+			bool format_supported = true;
+			
+			switch (ww3d_format) {
+				case WW3D_FORMAT_A8R8G8B8:
+					gl_internal_format = GL_RGBA8;
+					data_size = d3d_desc.Width * d3d_desc.Height * 4;
+					break;
+				case WW3D_FORMAT_R8G8B8:
+					gl_internal_format = GL_RGB8;
+					data_size = d3d_desc.Width * d3d_desc.Height * 3;
+					break;
+				case WW3D_FORMAT_DXT1:
+					gl_internal_format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+					data_size = ((d3d_desc.Width + 3) / 4) * ((d3d_desc.Height + 3) / 4) * 8;
+					break;
+				case WW3D_FORMAT_DXT3:
+					gl_internal_format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+					data_size = ((d3d_desc.Width + 3) / 4) * ((d3d_desc.Height + 3) / 4) * 16;
+					break;
+				case WW3D_FORMAT_DXT5:
+					gl_internal_format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+					data_size = ((d3d_desc.Width + 3) / 4) * ((d3d_desc.Height + 3) / 4) * 16;
+					break;
+				default:
+					if (log_this_call) {
+						printf("PHASE 28.4 REDESIGN WARNING: Unsupported format %d\n", ww3d_format);
+					}
+					format_supported = false;
+					break;
+			}
+			
+			if (log_this_call) {
+				printf("PHASE 28.4 REDESIGN DEBUG: format_supported=%d, data_size=%zu, format=%d\n",
+				       format_supported, data_size, ww3d_format);
+			}
+			
+			if (format_supported && data_size > 0) {
+				// Get TextureCache instance
+				TextureCache* cache = TextureCache::Get_Instance();
+				
+				if (log_this_call) {
+					printf("PHASE 28.4 REDESIGN DEBUG: TextureCache::Get_Instance() returned %p\n", cache);
+				}
+				
+				if (cache != NULL) {
+					StringClass tex_name = this->Get_Texture_Name();
+					const char* texture_name = tex_name.Peek_Buffer();
+					
+					if (log_this_call) {
+						printf("PHASE 28.4 REDESIGN DEBUG: About to call Load_From_Memory for '%s'\n", texture_name);
+					}
+					
+					// Load texture into Metal/OpenGL from DirectX memory
+					GLuint tex_id = cache->Load_From_Memory(
+						texture_name,
+						locked_rect.pBits,
+						d3d_desc.Width,
+						d3d_desc.Height,
+						gl_internal_format,
+						data_size
+					);
+					
+					if (log_this_call) {
+						printf("PHASE 28.4 REDESIGN DEBUG: Load_From_Memory returned tex_id=%u\n", tex_id);
+					}
+					
+					if (tex_id != 0) {
+						GLTexture = tex_id;
+						printf("PHASE 28.4 REDESIGN SUCCESS: Texture '%s' loaded (ID=%u, %ux%u, format=%d, %zu bytes)\n",
+						       texture_name, tex_id, d3d_desc.Width, d3d_desc.Height, ww3d_format, data_size);
+					} else {
+						if (log_this_call) {
+							printf("PHASE 28.4 REDESIGN ERROR: Load_From_Memory failed for '%s'\n", texture_name);
+						}
+					}
+				} else {
+					if (log_this_call) {
+						printf("PHASE 28.4 REDESIGN ERROR: TextureCache::Get_Instance() returned NULL\n");
+					}
+				}
+			}
+			
+			surface->UnlockRect();
+		} else {
+			if (log_this_call) {
+				printf("PHASE 28.4 REDESIGN ERROR: LockRect failed (HRESULT=0x%08X)\n", lock_result);
+			}
+		}
+	}
+	#endif
+	
 	surface->Release();
 
 }
