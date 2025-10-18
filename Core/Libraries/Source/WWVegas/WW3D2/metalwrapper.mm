@@ -1337,6 +1337,106 @@ void MetalWrapper::SetUniforms(const ShaderUniforms& uniforms) {
     s_uniformsDirty = true;
 }
 
+/***********************************************************************************
+**
+** Phase 29.1: Lighting Uniform Updates
+**
+***********************************************************************************/
+
+void MetalWrapper::SetLightDirection(float x, float y, float z) {
+    s_currentUniforms.lightDirection[0] = x;
+    s_currentUniforms.lightDirection[1] = y;
+    s_currentUniforms.lightDirection[2] = z;
+    s_uniformsDirty = true;
+}
+
+void MetalWrapper::SetLightColor(float r, float g, float b) {
+    s_currentUniforms.lightColor[0] = r;
+    s_currentUniforms.lightColor[1] = g;
+    s_currentUniforms.lightColor[2] = b;
+    s_uniformsDirty = true;
+}
+
+void MetalWrapper::SetAmbientColor(float r, float g, float b) {
+    s_currentUniforms.ambientColor[0] = r;
+    s_currentUniforms.ambientColor[1] = g;
+    s_currentUniforms.ambientColor[2] = b;
+    s_uniformsDirty = true;
+}
+
+void MetalWrapper::SetUseLighting(bool enabled) {
+    s_currentUniforms.useLighting = enabled ? 1.0f : 0.0f;
+    s_uniformsDirty = true;
+}
+
+void MetalWrapper::SetMaterialDiffuse(float r, float g, float b, float a) {
+    s_currentUniforms.materialDiffuse[0] = r;
+    s_currentUniforms.materialDiffuse[1] = g;
+    s_currentUniforms.materialDiffuse[2] = b;
+    s_currentUniforms.materialDiffuse[3] = a;
+    s_uniformsDirty = true;
+}
+
+void MetalWrapper::SetMaterialAmbient(float r, float g, float b, float a) {
+    s_currentUniforms.materialAmbient[0] = r;
+    s_currentUniforms.materialAmbient[1] = g;
+    s_currentUniforms.materialAmbient[2] = b;
+    s_currentUniforms.materialAmbient[3] = a;
+    s_uniformsDirty = true;
+}
+
+/***********************************************************************************
+**
+** Phase 29.2: Fog Uniform Updates
+**
+***********************************************************************************/
+
+void MetalWrapper::SetFogColor(float r, float g, float b) {
+    s_currentUniforms.fogColor[0] = r;
+    s_currentUniforms.fogColor[1] = g;
+    s_currentUniforms.fogColor[2] = b;
+    s_uniformsDirty = true;
+}
+
+void MetalWrapper::SetFogRange(float start, float end) {
+    s_currentUniforms.fogStart = start;
+    s_currentUniforms.fogEnd = end;
+    s_uniformsDirty = true;
+}
+
+void MetalWrapper::SetFogDensity(float density) {
+    s_currentUniforms.fogDensity = density;
+    s_uniformsDirty = true;
+}
+
+void MetalWrapper::SetFogMode(int mode) {
+    // 0=NONE, 1=EXP, 2=EXP2, 3=LINEAR
+    s_currentUniforms.fogMode = mode;
+    s_uniformsDirty = true;
+}
+
+void MetalWrapper::SetFogEnabled(bool enabled) {
+    s_currentUniforms.fogEnabled = enabled ? 1.0f : 0.0f;
+    s_uniformsDirty = true;
+}
+
+/***********************************************************************************
+**
+** Phase 29.3: Alpha Test Uniform Updates
+**
+***********************************************************************************/
+
+void MetalWrapper::SetAlphaTestEnabled(bool enabled) {
+    s_currentUniforms.alphaTestEnabled = enabled ? 1.0f : 0.0f;
+    s_uniformsDirty = true;
+}
+
+void MetalWrapper::SetAlphaTestFunc(int func, float ref) {
+    s_currentUniforms.alphaTestFunc = func;
+    s_currentUniforms.alphaRef = ref;
+    s_uniformsDirty = true;
+}
+
 } // namespace GX
 
 #endif // __APPLE__
