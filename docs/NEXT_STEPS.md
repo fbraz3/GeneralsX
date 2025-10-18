@@ -1,9 +1,9 @@
 # GeneralsX - Graphics Implementation Roadmap
 
 **Project**: GeneralsX (Command & Conquer: Generals Zero Hour macOS Port)  
-**Last Updated**: October 13, 2025  
-**Current Phase**: Phase 28 - Texture System Implementation  
-**Status**: Phase 30 COMPLETE - Metal backend 100% operational, ready for texture loading
+**Last Updated**: October 18, 2025  
+**Current Phase**: Phase 29 - Lighting & Effects  
+**Status**: Phase 28.6 COMPLETE - Debug logs cleaned, Phase 30 Metal backend operational
 
 ---
 
@@ -333,9 +333,9 @@ PHASE 28.4 REDESIGN SUCCESS: Texture 'TBBib.tga' loaded (ID=2906690560, 128x128,
 - `textureloader.cpp` - Removed old VFS integration code
 
 **Next Steps**:
-- ⏳ Phase 28.5: Extended testing with DXT1/3/5 compressed formats
-- ⏳ Phase 28.6: Remove excessive debug logs
-- ⏳ Phase 28.7: Validate texture rendering in game menus
+- ✅ Phase 28.5: Extended testing - Infrastructure validated (October 17-18, 2025)
+- ✅ Phase 28.6: Debug log cleanup - Completed (October 18, 2025)
+- ⏳ Phase 28.7: Validate texture rendering in game menus (blocked - needs subsystems)
 
 **Phase 28.4 Status**: ✅ **COMPLETE** (October 17, 2025)
 
