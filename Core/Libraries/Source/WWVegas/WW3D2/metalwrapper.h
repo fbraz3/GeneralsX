@@ -102,6 +102,25 @@ public:
     
     // Set custom uniforms (advanced usage)
     static void SetUniforms(const ShaderUniforms& uniforms);
+    
+    // Phase 29.1: Lighting Uniform Updates
+    static void SetLightDirection(float x, float y, float z);
+    static void SetLightColor(float r, float g, float b);
+    static void SetAmbientColor(float r, float g, float b);
+    static void SetUseLighting(bool enabled);
+    static void SetMaterialDiffuse(float r, float g, float b, float a);
+    static void SetMaterialAmbient(float r, float g, float b, float a);
+    
+    // Phase 29.2: Fog Uniform Updates
+    static void SetFogColor(float r, float g, float b);
+    static void SetFogRange(float start, float end);
+    static void SetFogDensity(float density);
+    static void SetFogMode(int mode); // 0=NONE, 1=EXP, 2=EXP2, 3=LINEAR
+    static void SetFogEnabled(bool enabled);
+    
+    // Phase 29.3: Alpha Test Uniform Updates
+    static void SetAlphaTestEnabled(bool enabled);
+    static void SetAlphaTestFunc(int func, float ref);
 
 private:
     // Internal helper to create a very simple test pipeline (triangle)

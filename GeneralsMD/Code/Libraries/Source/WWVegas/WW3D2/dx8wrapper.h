@@ -946,24 +946,18 @@ WWINLINE void DX8Wrapper::Set_DX8_Light(int index, D3DLIGHT8* light)
 				GLint loc = glGetUniformLocation(GL_Shader_Program, "uLightDirection");
 				if (loc != -1) {
 					glUniform3f(loc, light->Direction.x, light->Direction.y, light->Direction.z);
-					printf("Phase 27.3.3: Updated uLightDirection (%.2f, %.2f, %.2f)\n",
-						light->Direction.x, light->Direction.y, light->Direction.z);
 				}
 				
 				// Light diffuse color
 				loc = glGetUniformLocation(GL_Shader_Program, "uLightColor");
 				if (loc != -1) {
 					glUniform3f(loc, light->Diffuse.r, light->Diffuse.g, light->Diffuse.b);
-					printf("Phase 27.3.3: Updated uLightColor (%.2f, %.2f, %.2f)\n",
-						light->Diffuse.r, light->Diffuse.g, light->Diffuse.b);
 				}
 				
 				// Ambient color
 				loc = glGetUniformLocation(GL_Shader_Program, "uAmbientColor");
 				if (loc != -1) {
 					glUniform3f(loc, light->Ambient.r, light->Ambient.g, light->Ambient.b);
-					printf("Phase 27.3.3: Updated uAmbientColor (%.2f, %.2f, %.2f)\n",
-						light->Ambient.r, light->Ambient.g, light->Ambient.b);
 				}
 				
 				// Enable lighting uniform
@@ -973,6 +967,17 @@ WWINLINE void DX8Wrapper::Set_DX8_Light(int index, D3DLIGHT8* light)
 				}
 			}
 		}
+		
+		// Phase 29.1: Update lighting uniforms in Metal backend
+		#ifdef __APPLE__
+		extern bool g_useMetalBackend;
+		if (g_useMetalBackend && index == 0 && light->Type == D3DLIGHT_DIRECTIONAL) {
+			GX::MetalWrapper::SetLightDirection(light->Direction.x, light->Direction.y, light->Direction.z);
+			GX::MetalWrapper::SetLightColor(light->Diffuse.r, light->Diffuse.g, light->Diffuse.b);
+			GX::MetalWrapper::SetAmbientColor(light->Ambient.r, light->Ambient.g, light->Ambient.b);
+			GX::MetalWrapper::SetUseLighting(true);
+		}
+		#endif
 #endif
 		CurrentDX8LightEnables[index]=true;
 		SNAPSHOT_SAY(("DX8 - SetLight %d",index));
@@ -989,9 +994,15 @@ WWINLINE void DX8Wrapper::Set_DX8_Light(int index, D3DLIGHT8* light)
 			GLint loc = glGetUniformLocation(GL_Shader_Program, "uUseLighting");
 			if (loc != -1) {
 				glUniform1i(loc, 0);
-				printf("Phase 27.3.3: Disabled lighting\n");
 			}
 		}
+		// Phase 29.1: Disable lighting in Metal backend
+		#ifdef __APPLE__
+		extern bool g_useMetalBackend;
+		if (g_useMetalBackend && index == 0) {
+			GX::MetalWrapper::SetUseLighting(false);
+		}
+		#endif
 #endif
 		SNAPSHOT_SAY(("DX8 - DisableLight %d",index));
 	}
