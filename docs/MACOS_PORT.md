@@ -2,9 +2,80 @@
 
 **Project Name**: 🎯 **GeneralsX** (formerly Command & Conquer: Generals)
 
-**Port Status**: 🎉 **Phase 30 – Metal Backend SUCCESS (100% Complete)** 🚀
+**Port Status**: 🎉 **Phase 28 – Texture Loading COMPLETE + Phase 30 – Metal Backend SUCCESS** 🚀
 
-## Latest Update (October 13, 2025) — Metal Backend Fully Operational ✅
+## Latest Update (October 17, 2025) — Phase 28.4 Post-DirectX Texture Interception ✅
+
+**MAJOR BREAKTHROUGH**: Phase 28.4 REDESIGN Option 2 fully operational! **7 textures successfully loaded from DirectX to Metal backend!**
+
+### Phase 28 Complete Summary (4/4 Phases DONE)
+
+| Phase | Description | Status | Completion Date |
+|-------|-------------|--------|-----------------|
+| 28.1 | DDS Texture Loader (BC1/BC2/BC3 + RGB8/RGBA8) | ✅ **COMPLETE** | January 13, 2025 |
+| 28.2 | TGA Texture Loader (RLE + uncompressed) | ✅ **COMPLETE** | January 13, 2025 |
+| 28.3 | Texture Upload & Binding (MTLTexture) | ✅ **COMPLETE** | January 13, 2025 |
+| 28.4 | Post-DirectX Texture Interception | ✅ **COMPLETE** | **October 17, 2025** |
+| **TOTAL** | **4 Phases** | **4/4 (100%) COMPLETE** | **Phase 28 DONE ✅** |
+
+### Phase 28.4 REDESIGN: Option 2 Success (October 17, 2025)
+
+**Problem Discovered**: Phase 28.4 VFS integration (Option 1) never executed
+
+- Texture loading pipeline stopped at `Begin_Load()` validation
+- `Get_Texture_Information()` failed for .big file textures (no physical files on disk)
+- `Load()` function never called - integration point unreachable
+- See `docs/PHASE28/CRITICAL_VFS_DISCOVERY.md` for complete analysis
+
+**Solution**: Option 2 - Intercept AFTER DirectX loads textures from .big files via VFS
+
+**Integration Point**: `TextureClass::Apply_New_Surface()` in `texture.cpp`
+
+- DirectX has already loaded texture from .big via VFS
+- Lock DirectX surface with `D3DLOCK_READONLY` to access pixel data
+- Copy pixel data to Metal via `TextureCache::Load_From_Memory()`
+- Upload to Metal via `MetalWrapper::CreateTextureFromMemory()`
+
+**7 Textures Loaded Successfully**:
+
+- TBBib.tga (ID=2906690560, 128×128 RGBA8)
+- TBRedBib.tga (ID=2906691200, 128×128 RGBA8)
+- exlaser.tga (ID=2906691840, 128×128 RGBA8)
+- tsmoonlarg.tga (ID=2906692480, 128×128 RGBA8)
+- noise0000.tga (ID=2906693120, 128×128 RGBA8)
+- twalphaedge.tga (ID=2906693760, 128×128 RGBA8)
+- watersurfacebubbles.tga (ID=2906694400, 128×128 RGBA8)
+
+**New MetalWrapper API**: `CreateTextureFromMemory()`
+
+- Converts GLenum format → MTLPixelFormat
+- Supports: RGBA8, RGB8, DXT1/3/5 (BC1/2/3)
+- BytesPerRow alignment (256 bytes for Apple Silicon)
+
+**Critical Discovery**: TextureCache WAS Available
+
+- Previous assumption: `Get_Instance()` returns NULL ❌
+- Reality: TextureCache initialized at 0x4afb9ee80 ✅
+- Actual problem: `Upload_Texture_From_Memory()` checking for OpenGL context
+- Metal backend has NO OpenGL context → always returned 0
+- Solution: Add Metal path using `GX::MetalWrapper::CreateTextureFromMemory()`
+
+**Files Modified** (Commit 114f5f28):
+
+- `texture.cpp` - Apply_New_Surface() hook (100+ lines)
+- `metalwrapper.h/mm` - CreateTextureFromMemory() API (140+ lines)
+- `texture_upload.cpp` - Metal backend path (30+ lines)
+- `textureloader.cpp` - Removed old VFS integration code
+
+**Next Steps**:
+
+- ⏳ Phase 28.5: Extended testing with DXT1/3/5 compressed formats
+- ⏳ Phase 28.6: Remove excessive debug logs
+- ⏳ Phase 28.7: Validate texture rendering in game menus
+
+---
+
+## Previous Update (October 13, 2025) — Metal Backend Fully Operational ✅
 
 **MAJOR BREAKTHROUGH**: Native Metal backend successfully implemented and validated on macOS ARM64!
 
