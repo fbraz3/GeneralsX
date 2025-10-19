@@ -1,5 +1,9 @@
 set(GAMEENGINEDEVICE_SRC
     Include/MilesAudioDevice/MilesAudioManager.h
+    Include/SDL2AudioDevice/SDL2AudioBackend.h
+    Include/SDL2AudioDevice/SDL2AudioMixer.h
+    Include/SDL2AudioDevice/SDL2MilesAudioSource.h
+    Include/SDL2AudioDevice/SDL2AudioStreamManager.h
     Include/VideoDevice/Bink/BinkVideoPlayer.h
 #    Include/W3DDevice/Common/W3DConvert.h
 #    Include/W3DDevice/Common/W3DFunctionLexicon.h
@@ -91,6 +95,10 @@ set(GAMEENGINEDEVICE_SRC
 #    Include/Win32Device/GameClient/Win32DIMouse.h
 #    Include/Win32Device/GameClient/Win32Mouse.h
 #    Source/MilesAudioDevice/MilesAudioManager.cpp
+    Source/SDL2AudioDevice/SDL2AudioBackend.cpp
+    Source/SDL2AudioDevice/SDL2AudioMixer.cpp
+    Source/SDL2AudioDevice/SDL2MilesAudioSource.cpp
+    Source/SDL2AudioDevice/SDL2AudioStreamManager.cpp
     Include/OpenALDevice/OpenALAudioManager.h
     Source/OpenALDevice/OpenALAudioManager.cpp
     Source/VideoDevice/Bink/BinkVideoPlayer.cpp
@@ -230,6 +238,7 @@ target_link_libraries(corei_gameenginedevice_public INTERFACE
     $<$<PLATFORM_ID:Windows>:d3d8lib>
     $<$<PLATFORM_ID:Windows>:Miles::Miles>
     $<$<NOT:$<PLATFORM_ID:Windows>>:Miles::Miles>
+    SDL2::SDL2
 )
 
 if(RTS_BUILD_OPTION_FFMPEG)

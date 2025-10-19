@@ -274,11 +274,14 @@ typedef void* HANDLE;
 #define E_INVALIDARG                  ((HRESULT)0x80070057L)
 #define E_OUTOFMEMORY                 ((HRESULT)0x8007000EL)
 
-// Audio types
+// Audio types (avoid redefinition if Miles Sound System already defined them)
+// Skip these definitions if Miles Sound System header was already included
+#ifndef MILES_SOUND_SYSTEM_TYPES_DEFINED
 typedef DWORD U32;
 typedef long S32;
 typedef void* LPWAVEFORMAT;
 typedef void* HTIMER;
+#endif
 
 // Miles Sound System compatibility stubs
 inline void AIL_lock() {
@@ -1544,9 +1547,8 @@ inline MMRESULT timeEndPeriod(UINT period) {
 #endif // MULTIMEDIA_TIMERS_DEFINED
 
 // WAVE format structures for audio compatibility
-#ifndef WAVE_FORMAT_DEFINED
-#define WAVE_FORMAT_DEFINED
-
+// Skip if Miles Sound System header was already included
+#ifndef MILES_SOUND_SYSTEM_TYPES_DEFINED
 #define WAVE_FORMAT_PCM         1
 #define WAVE_FORMAT_ADPCM       2
 #define WAVE_FORMAT_IEEE_FLOAT  3
@@ -1574,7 +1576,7 @@ typedef struct waveformatex_tag {
     WORD        cbSize;
 } WAVEFORMATEX, *PWAVEFORMATEX, *LPWAVEFORMATEX;
 
-#endif // WAVE_FORMAT_DEFINED
+#endif // MILES_SOUND_SYSTEM_TYPES_DEFINED
 
 // Audio device management
 #ifndef AUDIO_DEVICE_DEFINED

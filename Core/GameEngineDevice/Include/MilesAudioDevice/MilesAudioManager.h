@@ -22,6 +22,8 @@
 
 #include "Common/AsciiString.h"
 #include "Common/GameAudio.h"
+// Define sentinel macro before including Miles SDK to prevent typedef conflicts
+#define MILES_SOUND_SYSTEM_TYPES_DEFINED
 #include "mss/mss.h"
 
 class AudioEventRTS;
