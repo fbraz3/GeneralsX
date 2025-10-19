@@ -2,9 +2,120 @@
 
 **Project Name**: 🎯 **GeneralsX** (formerly Command & Conquer: Generals)
 
-**Port Status**: 🎉 **Phase 31 – Texture System COMPLETE** 🚀
+**Port Status**: 🎉 **Phase 32 – SDL2 Audio System COMPLETE** 🚀
 
-## Latest Update (October 19, 2025) — Phase 31 Integration Complete ✅
+## Latest Update (October 19, 2025) — Phase 32.3 3D Audio Positioning Complete ✅
+
+**ACHIEVEMENT**: Phase 32 SDL2 + Miles Sound System audio integration fully operational with 3D spatial audio support!
+
+### Phase 32 Complete Summary (3/3 Sub-phases DONE)
+
+| Phase | Description | Status | Completion Date |
+|-------|-------------|--------|-----------------|
+| 32.1 | SDL2 Audio Initialization & Callback System | ✅ **COMPLETE** | October 19, 2025 |
+| 32.2 | Miles Sound System Integration + MP3/WAV Playback | ✅ **COMPLETE** | October 19, 2025 |
+| 32.3 | 3D Audio Positioning (Spatial, Distance, Panning) | ✅ **COMPLETE** | **October 19, 2025** |
+| **TOTAL** | **3 Sub-phases** | **3/3 (100%) COMPLETE** | **Phase 32 DONE ✅** |
+
+### Phase 32.1: SDL2 Audio Initialization ✅
+
+**Implemented**: SDL2 audio subsystem with real-time mixing callback
+
+**Components**:
+- SDL2AudioBackend - Device initialization, sample rate config (44.1kHz), buffer management
+- SDL2AudioMixer - Multi-channel mixer with 5 independent channels (Music, SFX, Voice, Ambient, UI)
+- Audio callback system for real-time processing
+
+**Files Created**:
+- `SDL2AudioBackend.h/cpp` - SDL2 device management
+- `SDL2AudioMixer.h/cpp` - Audio mixing engine
+
+### Phase 32.2: Miles Sound System Integration ✅
+
+**Implemented**: Miles Sound System stub integration for MP3/WAV playback
+
+**Critical Fix**: Sentinel macro pattern for typedef conflict resolution
+
+- **Problem**: Miles SDK defines `LPWAVEFORMAT`, `HTIMER`, `WAVEFORMAT`, `PCMWAVEFORMAT` as actual structs
+- **Previous approach**: `#ifndef LPWAVEFORMAT` guards failed (checking typedef, not macro)
+- **Solution**: Define `MILES_SOUND_SYSTEM_TYPES_DEFINED` before including `mss.h`, check this macro in `win32_compat.h`
+
+**Components**:
+- MilesSampleSource - Sound effects (loaded into memory)
+- MilesStreamSource - Music/long audio (streamed from disk)
+- AudioFileLoader - MP3/WAV file loading via Miles API
+- Position-based playback detection (replaces missing `AIL_sample_status`/`AIL_stream_status`)
+
+**API Adaptations**:
+- `AIL_sample_status` → `AIL_sample_ms_position` (current >= total = finished)
+- `AIL_stream_status` → `AIL_stream_ms_position` + looping support
+- `AIL_set_stream_position` → `AIL_set_stream_ms_position`
+- Removed `AIL_open_digital_driver`/`AIL_close_digital_driver` (not in stub)
+
+**Files Created**:
+- `SDL2MilesAudioSource.h/cpp` - Miles integration layer
+- `SDL2MilesCompat.h` - Compatibility helpers
+- `SDL2AudioStreamManager.h/cpp` - Stream management with fade effects
+
+**Build Fix** (Commit 6d4130de):
+- win32_compat.h: Sentinel macro guards for Miles types
+- SDL2MilesAudioSource.h: Added `#define MILES_SOUND_SYSTEM_TYPES_DEFINED`
+- SDL2MilesCompat.h: Added sentinel macro
+- MilesAudioManager.h: Added sentinel macro
+
+### Phase 32.3: 3D Audio Positioning ✅
+
+**Implemented**: Spatial audio with distance attenuation and stereo panning
+
+**3D Audio Features**:
+
+1. **Spatial Position Tracking**:
+   - `set3DPosition(x, y, z)` - Set sound source position in world space
+   - `get3DPosition(x, y, z)` - Retrieve current position
+   - `setListenerPosition(x, y, z)` - Set camera/listener position
+   - `setListenerOrientation(x, y, z)` - Set camera forward vector
+
+2. **Distance Attenuation**:
+   - Formula: `attenuation = MIN_DISTANCE / (MIN_DISTANCE + ROLLOFF * (distance - MIN_DISTANCE))`
+   - Parameters:
+     * MIN_DISTANCE = 10.0 (full volume range)
+     * MAX_DISTANCE = 1000.0 (silent beyond this)
+     * ROLLOFF_FACTOR = 1.0 (linear falloff)
+   - Inverse distance model for realistic audio falloff
+
+3. **Stereo Panning**:
+   - Calculate listener's right vector via cross product with up vector
+   - Project sound position onto right axis
+   - Normalize to [-1.0, 1.0] range (-1 = left, 1 = right)
+   - Applied via Miles API: `AIL_set_sample_pan()` (-127 to 127)
+
+4. **Real-time Updates**:
+   - `updateSpatialAudio()` recalculates effects when position/listener changes
+   - Automatically applies volume attenuation and panning to Miles sample
+
+**Files Modified** (Commit 6d4130de):
+- `SDL2MilesAudioSource.h` - Added 3D position state and methods (14 new members)
+- `SDL2MilesAudioSource.cpp` - Implemented spatial calculations (140+ lines)
+  * `calculateDistanceAttenuation()` - Distance-based volume
+  * `calculateStereoPan()` - Left/right positioning
+  * `updateSpatialAudio()` - Apply effects to Miles sample
+
+**Doppler Effect**: Skipped (optional, low priority for Phase 32)
+
+**Integration Status**:
+- Build: ✅ 0 errors, 14M executable
+- Timestamp: 19:30 October 19, 2025
+- Commit: 6d4130de
+
+**Next Testing Phase**:
+- Menu music playback with fade in/out
+- Unit sounds with spatial positioning
+- Volume slider integration
+- In-game 3D audio testing
+
+---
+
+## Previous Update (October 19, 2025) — Phase 31 Integration Complete ✅
 
 **DISCOVERY**: Phase 31 DDS/TGA integration implemented, but **textures already loading via Phase 28.4!** In-game test confirms 7 textures operational through `Apply_New_Surface()` → `TextureCache` → Metal backend. Phase 31 code serves as backup for future DirectX deprecation.
 
