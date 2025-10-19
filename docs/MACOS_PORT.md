@@ -2,9 +2,13 @@
 
 **Project Name**: 🎯 **GeneralsX** (formerly Command & Conquer: Generals)
 
-**Port Status**: 🎉 **Phase 28 – Texture Loading COMPLETE + Phase 30 – Metal Backend SUCCESS** 🚀
+**Port Status**: 🎉 **Phase 31 – Texture System COMPLETE** 🚀
 
-## Latest Update (October 17, 2025) — Phase 28.4 Post-DirectX Texture Interception ✅
+## Latest Update (October 19, 2025) — Phase 31 Integration Complete ✅
+
+**DISCOVERY**: Phase 31 DDS/TGA integration implemented, but **textures already loading via Phase 28.4!** In-game test confirms 7 textures operational through `Apply_New_Surface()` → `TextureCache` → Metal backend. Phase 31 code serves as backup for future DirectX deprecation.
+
+## Previous Update (October 17, 2025) — Phase 28.4 Post-DirectX Texture Interception ✅
 
 **MAJOR BREAKTHROUGH**: Phase 28.4 REDESIGN Option 2 fully operational! **7 textures successfully loaded from DirectX to Metal backend!**
 
@@ -266,6 +270,82 @@ where D = distance from camera
 | **Stability** | ✅ **STABLE** | ❌ Driver bug |
 
 **RECOMMENDATION**: **Use Metal as primary backend for macOS** (set default in CMake or via USE_METAL=1)
+
+---
+
+## Phase 31: Texture System Integration (October 19, 2025) ✅
+
+**Status**: ✅ **COMPLETE** - Textures loading via Phase 28.4, Phase 31 code as backup
+
+### Summary
+
+Phase 31 implemented DDS/TGA loader integration with `textureloader.cpp`, but discovered **textures already work** through Phase 28.4 (`Apply_New_Surface()` → `TextureCache` → Metal backend). Phase 31 code serves as future-proof backup.
+
+### In-Game Results (120s test, ESC exit)
+
+```
+7 TGA textures loaded successfully:
+- TBBib.tga (128x128, GL_RGBA8, ID=2130220032)
+- TBRedBib.tga (128x128, GL_RGBA8, ID=2130220672)
+- exlaser.tga (128x128, GL_RGBA8, ID=2130221312)
+- tsmoonlarg.tga (128x128, GL_RGBA8, ID=2130221952)
+- noise0000.tga (128x128, GL_RGBA8, ID=2130222592)
+- twalphaedge.tga (128x128, GL_RGBA8, ID=2130223232)
+- watersurfacebubbles.tga (128x128, GL_RGBA8, ID=2130223872)
+
+Metal Backend Stability:
+- 3600+ BeginFrame/EndFrame cycles (30 FPS × 120s)
+- 0 crashes
+- Clean texture cache cleanup on exit
+```
+
+### Architecture Discovery
+
+**Active Path (Phase 28.4)**:
+```
+DirectX (legacy) loads from .big → Apply_New_Surface() → 
+TextureCache::Load_From_Memory() → MetalWrapper::CreateTextureFromMemory() → MTLTexture
+```
+
+**Implemented Path (Phase 31)** - NOT executed in-game:
+```
+textureloader.cpp::Load_Compressed_Mipmap() → DDSLoader::Load() → 
+MetalWrapper::CreateTextureFromDDS() → MTLTexture
+
+textureloader.cpp::Load_Uncompressed_Mipmap() → TGALoader::Load() → 
+MetalWrapper::CreateTextureFromTGA() → MTLTexture
+```
+
+**Why Phase 31 not called**: `Apply_New_Surface()` (Phase 28.4) intercepts BEFORE `Load_Compressed_Mipmap()` execution path.
+
+### Implementation Details
+
+**Modified Files**:
+- `textureloader.cpp` (GeneralsMD): +142/-43 lines (DDS/TGA integration with Metal backend guards)
+- `tgaloader.h` (Core): Renamed `TGAHeader` → `TGAFileHeader` (typedef conflict fix)
+- `tgaloader.cpp` (Core): Mass rename via sed
+
+**Unit Tests** (both passing):
+- `test_dds_loader`: defeated.dds (1024x256, BC3/DXT5, 262KB) ✅
+- `test_tga_loader`: caust19.tga (64x64, RGBA8, 16KB) ✅
+
+**Build**: 14MB GeneralsXZH executable, 0 errors, 46 warnings (normal)
+
+### Commit
+
+**e6c36d77**: `feat(texture): integrate DDSLoader and TGALoader with Metal backend`
+- Total: +835 additions, -43 deletions
+- Documentation: TEXTURE_SYSTEM_ANALYSIS.md, TEST_RESULTS.md, SESSION_SUMMARY.md, INTEGRATION_COMPLETE.md
+
+### Future Work
+
+- If Phase 28.4 removed (DirectX deprecation), enable Phase 31 by removing `Apply_New_Surface()` intercept
+- Performance comparison: Phase 28.4 (DirectX decode → Metal) vs Phase 31 (direct Metal)
+- .big VFS direct integration with DDSLoader/TGALoader (Phase 28.4 discovery showed why this failed)
+
+**See**: `docs/PHASE31/INTEGRATION_COMPLETE.md` for full technical analysis
+
+---
 
 ### Technical Analysis: Why Metal Works but OpenGL Doesn't
 
