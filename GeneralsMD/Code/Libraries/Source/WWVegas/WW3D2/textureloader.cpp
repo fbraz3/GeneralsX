@@ -62,9 +62,11 @@
 #include "bitmaphandler.h"
 #include "wwprofile.h"
 
-// Phase 28.1-28.3: TextureCache integration for Metal backend
+// Phase 31.1-31.2: Modern texture loaders for Metal backend
 #ifndef _WIN32
-#include "texture_cache.h"  // GeneralsMD version (OpenGL-based)
+#include "ddsloader.h"   // Phase 31.1: DDS BC1/BC2/BC3 support
+#include "tgaloader.h"   // Phase 31.2: TGA RGB/RGBA support
+#include "metalwrapper.h" // Phase 31.3: Metal texture creation
 extern bool g_useMetalBackend;  // Defined in dx8wrapper.cpp
 #endif
 
@@ -1640,32 +1642,8 @@ bool TextureLoadTaskClass::Begin_Uncompressed_Load(void)
 			reducedMipCount -= Reduction;
 	}
 
-#ifndef _WIN32
-	// Phase 28.1-28.3: Metal backend texture loading via TextureCache
-	if (g_useMetalBackend) {
-		// Get non-const StringClass reference to call Peek_Buffer()
-		StringClass& fullpath = const_cast<StringClass&>(Texture->Get_Full_Path());
-		const char* filepath = fullpath.Peek_Buffer();
-		
-		if (filepath && filepath[0] != '\0') {
-			printf("Phase 28: Loading texture via TextureCache: %s\n", filepath);
-			
-			// Load texture through TextureCache (returns GLuint, cast to void*)
-			TextureCache* cache = TextureCache::Get_Instance();
-			GLuint tex_id = cache->Get_Texture(filepath);
-			
-			if (tex_id != 0) {
-				// Store OpenGL/Metal texture ID as IDirect3DTexture8* (opaque pointer)
-				D3DTexture = reinterpret_cast<IDirect3DTexture8*>(static_cast<uintptr_t>(tex_id));
-				printf("Phase 28: Texture loaded successfully via Metal backend (ID: %u)\n", tex_id);
-				return true;
-			} else {
-				printf("Phase 28 WARNING: TextureCache failed to load '%s', falling back to stub\n", filepath);
-				// Fall through to create empty texture
-			}
-		}
-	}
-#endif
+	// Phase 31.1-31.2: TextureCache fallback removed - DDS/TGA loaders handle Metal backend
+	// Metal textures are created in Load_Compressed_Mipmap() and Load_Uncompressed_Mipmap()
 
 	D3DTexture = DX8Wrapper::_Create_DX8_Texture
 	(
@@ -1876,6 +1854,42 @@ void TextureLoadTaskClass::Unlock_Surfaces(void)
 
 bool TextureLoadTaskClass::Load_Compressed_Mipmap(void)
 {
+#ifndef _WIN32
+	// Phase 31.1: Metal backend - use modern DDSLoader instead of DDSFileClass
+	if (g_useMetalBackend) {
+		DDSTextureData ddsData;
+		// Get non-const StringClass to call Peek_Buffer()
+		StringClass& fullpath = const_cast<StringClass&>(Texture->Get_Full_Path());
+		const char* filepath = fullpath.Peek_Buffer();
+		
+		if (!DDSLoader::Load(filepath, &ddsData)) {
+			printf("Phase 31.1 ERROR: DDSLoader::Load failed for '%s'\n", filepath);
+			return false;
+		}
+		
+		// Create Metal texture directly from DDS data
+		void* metalTexture = GX::MetalWrapper::CreateTextureFromDDS(
+			ddsData.width, ddsData.height, ddsData.format,
+			ddsData.data, ddsData.dataSize, ddsData.mipMapCount);
+		
+		if (!metalTexture) {
+			printf("Phase 31.1 ERROR: MetalWrapper::CreateTextureFromDDS failed for '%s'\n", filepath);
+			DDSLoader::Free(&ddsData);
+			return false;
+		}
+		
+		// Store Metal texture as IDirect3DTexture8* (opaque pointer for Metal backend)
+		D3DTexture = reinterpret_cast<IDirect3DTexture8*>(metalTexture);
+		
+		printf("Phase 31.1: DDS texture loaded via Metal backend: %s (%ux%u, format=%d, mipmaps=%u)\n",
+			filepath, ddsData.width, ddsData.height, ddsData.format, ddsData.mipMapCount);
+		
+		DDSLoader::Free(&ddsData);
+		return true;
+	}
+#endif
+	
+	// Original DirectX path (Windows or non-Metal backends)
 	DDSFileClass dds_file(Texture->Get_Full_Path(), Get_Reduction());
 
 	// if we can't load from file, indicate rror.
@@ -1924,6 +1938,41 @@ bool TextureLoadTaskClass::Load_Uncompressed_Mipmap(void)
 		return false;
 	}
 
+#ifndef _WIN32
+	// Phase 31.2: Metal backend - use modern TGALoader instead of Targa
+	if (g_useMetalBackend) {
+		// Get non-const StringClass to call Peek_Buffer()
+		StringClass& fullpath = const_cast<StringClass&>(Texture->Get_Full_Path());
+		const char* filepath = fullpath.Peek_Buffer();
+		TGATextureData tgaData = TGALoader::Load(filepath);
+		
+		if (!tgaData.is_valid) {
+			printf("Phase 31.2 ERROR: TGALoader::Load failed for '%s'\n", filepath);
+			return false;
+		}
+		
+		// Create Metal texture directly from TGA data (already BGR→RGBA converted)
+		void* metalTexture = GX::MetalWrapper::CreateTextureFromTGA(
+			tgaData.width, tgaData.height, tgaData.data, tgaData.data_size);
+		
+		if (!metalTexture) {
+			printf("Phase 31.2 ERROR: MetalWrapper::CreateTextureFromTGA failed for '%s'\n", filepath);
+			TGALoader::Free(tgaData);
+			return false;
+		}
+		
+		// Store Metal texture as IDirect3DTexture8* (opaque pointer for Metal backend)
+		D3DTexture = reinterpret_cast<IDirect3DTexture8*>(metalTexture);
+		
+		printf("Phase 31.2: TGA texture loaded via Metal backend: %s (%ux%u, format=%d, RLE=%d)\n",
+			filepath, tgaData.width, tgaData.height, tgaData.format, tgaData.is_rle);
+		
+		TGALoader::Free(tgaData);
+		return true;
+	}
+#endif
+
+	// Original DirectX path (Windows or non-Metal backends)
 	Targa targa;
 	if (TARGA_ERROR_HANDLER(targa.Open(Texture->Get_Full_Path(), TGA_READMODE), Texture->Get_Full_Path())) {
 		return false;

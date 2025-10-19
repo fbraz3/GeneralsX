@@ -38,9 +38,12 @@
  * 
  * Packed structure matching on-disk layout.
  * All fields are little-endian.
+ * 
+ * Note: Renamed from TGAHeader to TGAFileHeader to avoid conflict with
+ * legacy TARGA.H typedef (Phase 31.2 fix)
  */
 #pragma pack(push, 1)
-struct TGAHeader {
+struct TGAFileHeader {
     unsigned char  id_length;          // Length of ID field (offset 0)
     unsigned char  color_map_type;     // 0 = no color map, 1 = has color map
     unsigned char  image_type;         // 2 = uncompressed RGB, 10 = RLE compressed RGB
@@ -138,26 +141,26 @@ private:
      * 
      * @param buffer Pointer to start of TGA file
      * @param buffer_size Size of buffer in bytes
-     * @param header Output TGAHeader struct
+     * @param header Output TGAFileHeader struct
      * @return True if header parsed successfully
      */
-    static bool ParseHeader(const unsigned char* buffer, unsigned int buffer_size, TGAHeader& header);
+    static bool ParseHeader(const unsigned char* buffer, unsigned int buffer_size, TGAFileHeader& header);
     
     /**
      * @brief Validate TGA header
      * 
-     * @param header TGAHeader struct to validate
+     * @param header TGAFileHeader struct to validate
      * @return True if header is valid
      */
-    static bool ValidateHeader(const TGAHeader& header);
+    static bool ValidateHeader(const TGAFileHeader& header);
     
     /**
      * @brief Determine pixel format from header
      * 
-     * @param header TGAHeader struct
+     * @param header TGAFileHeader struct
      * @return TGAFormat enum value
      */
-    static TGAFormat DetermineFormat(const TGAHeader& header);
+    static TGAFormat DetermineFormat(const TGAFileHeader& header);
     
     /**
      * @brief Decode uncompressed TGA image data
