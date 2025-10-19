@@ -10,30 +10,35 @@ Implement complete texture loading and rendering system for Metal backend, suppo
 ## Tasks
 
 ### Phase 31.1: DDS Texture Loader (3-4 days)
+
 - BC1/BC2/BC3 (DXT1/3/5) compressed format support
 - RGB8/RGBA8 uncompressed fallback
 - Mipmap level extraction
 - Header validation and error handling
 
 ### Phase 31.2: TGA Texture Loader (2 days)
+
 - RLE compressed TGA support
 - Uncompressed 24/32-bit TGA
 - Vertical flip handling
 - Color format conversion
 
 ### Phase 31.3: Texture Upload & Binding (2-3 days)
+
 - MTLTexture creation from DDS/TGA data
 - Texture cache system integration
 - Sampler state configuration
 - Texture coordinate handling
 
 ### Phase 31.4: UI Rendering Validation (2 days)
+
 - Menu background textures
 - Button and UI element rendering
 - Texture filtering verification
 - Performance optimization
 
 ### Phase 31.5: Testing & Documentation (1-2 days)
+
 - Test with game menu textures
 - Validate texture formats
 - Performance profiling

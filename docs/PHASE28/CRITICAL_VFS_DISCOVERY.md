@@ -1,6 +1,6 @@
 # Phase 28.4 Critical VFS Discovery
 
-**Date**: October 17, 2025  
+**Date**: October 17, 2025
 **Status**: Phase 28.4 design flaw identified - requires fundamental redesign
 
 ## Problem Summary
@@ -265,7 +265,7 @@ if (!thumb) {
 
 ## References
 
-- `docs/BIG_FILES_REFERENCE.md` - .big file structure
+- `../Misc/BIG_FILES_REFERENCE.md` - .big file structure
 - `Core/GameEngineDevice/Source/Win32Device/Common/Win32BIGFileSystem.cpp` - VFS implementation
 - `Core/GameEngineDevice/Source/Win32Device/Common/Win32BIGFile.cpp` - VFS file access
 
@@ -273,8 +273,8 @@ if (!thumb) {
 
 ## RESOLUTION: Option 2 Implementation Success ✅
 
-**Date**: October 17, 2025  
-**Commit**: 114f5f28  
+**Date**: October 17, 2025
+**Commit**: 114f5f28
 **Status**: Phase 28.4 COMPLETE - Option 2 Post-DirectX Interception WORKING
 
 ### The Breakthrough
@@ -292,15 +292,15 @@ void TextureClass::Apply_New_Surface(IDirect3DBaseTexture8* d3d_texture, bool in
     // Get DirectX surface and lock it
     IDirect3DSurface8* surface;
     d3d_texture->GetSurfaceLevel(0, &surface);
-    
+
     D3DLOCKED_RECT locked_rect;
     HRESULT lock_result = surface->LockRect(&locked_rect, NULL, D3DLOCK_READONLY);
-    
+
     if (SUCCEEDED(lock_result) && locked_rect.pBits != NULL) {
         // Convert format and upload to Metal
         WW3DFormat ww3d_format = D3DFormat_To_WW3DFormat(d3d_desc.Format);
         GLenum gl_format = Convert_To_GL_Format(ww3d_format);
-        
+
         TextureCache* cache = TextureCache::Get_Instance();
         GLuint tex_id = cache->Load_From_Memory(
             Get_Texture_Name(),
@@ -309,7 +309,7 @@ void TextureClass::Apply_New_Surface(IDirect3DBaseTexture8* d3d_texture, bool in
             gl_format,
             data_size
         );
-        
+
         GLTexture = tex_id; // Store Metal texture ID
         surface->UnlockRect();
     }
@@ -318,7 +318,7 @@ void TextureClass::Apply_New_Surface(IDirect3DBaseTexture8* d3d_texture, bool in
 
 ### Critical Discovery: TextureCache Availability
 
-**Previous Assumption**: TextureCache::Get_Instance() returns NULL  
+**Previous Assumption**: TextureCache::Get_Instance() returns NULL
 **Reality**: TextureCache IS initialized (0x4afb9ee80) ✅
 
 **Actual Problem**: `Upload_Texture_From_Memory()` was checking for OpenGL context:
@@ -449,6 +449,6 @@ PHASE 28.4 REDESIGN SUCCESS: Texture 'TBBib.tga' loaded (ID=2906690560, 128x128,
 
 ---
 
-**Status**: Awaiting decision on implementation approach (Option 1, 2, or 3)  
-**Next Action**: Implement Option 2 - Post-DirectX texture interception  
+**Status**: Awaiting decision on implementation approach (Option 1, 2, or 3)
+**Next Action**: Implement Option 2 - Post-DirectX texture interception
 **Priority**: HIGH - blocks Phase 28 completion

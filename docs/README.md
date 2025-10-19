@@ -14,12 +14,12 @@ This directory contains all technical documentation for the GeneralsX cross-plat
 - **[REFERENCES.md](REFERENCES.md)** - Reference repositories and comparative analysis resources
 
 ### Technical Documentation
-- **[BIG_FILES_REFERENCE.md](BIG_FILES_REFERENCE.md)** - Game asset structure, .BIG file contents, and INI file locations
-- **[MULTITHREADING_ANALYSIS.md](MULTITHREADING_ANALYSIS.md)** - Multi-core CPU optimization analysis and phased implementation plan
+- **[BIG_FILES_REFERENCE.md](Misc/BIG_FILES_REFERENCE.md)** - Game asset structure, .BIG file contents, and INI file locations
+- **[MULTITHREADING_ANALYSIS.md](Misc/MULTITHREADING_ANALYSIS.md)** - Multi-core CPU optimization analysis and phased implementation plan
 
 ### Graphics Implementation
-- **[OPENGL_SUMMARY.md](OPENGL_SUMMARY.md)** - OpenGL 3.3 implementation details, SDL2 integration, and code examples
-- **[OPENGL_TESTING.md](OPENGL_TESTING.md)** - OpenGL-specific testing procedures and validation results
+- **[OPENGL_SUMMARY.md](Misc/OPENGL_SUMMARY.md)** - OpenGL 3.3 implementation details, SDL2 integration, and code examples
+- **[OPENGL_TESTING.md](Misc/OPENGL_TESTING.md)** - OpenGL-specific testing procedures and validation results
 - **[PHASE27/OPENGL_BACKPORT_GUIDE.md](PHASE27/OPENGL_BACKPORT_GUIDE.md)** - Complete OpenGL backport guide (Zero Hour → Generals)
 - **[PHASE27/TODO_LIST.md](PHASE27/TODO_LIST.md)** - Phase 27 task tracking and progress monitoring
 
@@ -38,8 +38,8 @@ New to the project? Start here:
 ### For Developers
 Working on the codebase:
 1. [MACOS_PORT.md](MACOS_PORT.md) - Understand implemented solutions and patterns
-2. [BIG_FILES_REFERENCE.md](BIG_FILES_REFERENCE.md) - Navigate game assets and INI files
-3. [OPENGL_SUMMARY.md](OPENGL_SUMMARY.md) - Graphics implementation reference
+2. [BIG_FILES_REFERENCE.md](Misc/BIG_FILES_REFERENCE.md) - Navigate game assets and INI files
+3. [OPENGL_SUMMARY.md](Misc/OPENGL_SUMMARY.md) - Graphics implementation reference
 4. [TESTING.md](TESTING.md) - Validate your changes
 
 ### For Contributors

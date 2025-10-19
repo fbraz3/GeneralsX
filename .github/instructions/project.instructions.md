@@ -24,14 +24,14 @@ This project is a fork of the Command & Conquer Generals source code and its exp
 # Build Presets (Platform-Specific)
 - `vc6` - Windows 32-bit (Visual C++ 6 compatibility)
 - `macos-arm64` - **macOS Apple Silicon (ARM64) - PRIMARY TARGET**
-- `macos-x64` - macOS Intel (x86_64) 
+- `macos-x64` - macOS Intel (x86_64)
 - `linux` - Linux 64-bit (x86_64)
 
 # Build Targets
 - `GeneralsXZH` - Zero Hour expansion executable (PRIMARY TARGET - recommended)
 - `GeneralsX` - Original Generals base game executable (SECONDARY TARGET)
 - `ww3d2` - Core 3D graphics library
-- `wwlib` - Core Windows compatibility library  
+- `wwlib` - Core Windows compatibility library
 - `wwmath` - Core mathematics library
 
 # Project Specific Instructions
@@ -105,17 +105,17 @@ cd $HOME/GeneralsX/GeneralsMD/ && USE_METAL=1 lldb -o run -o bt -o quit ./Genera
 4.1 The phases documentation files must have its own directory inside `docs/` named `docs/PHASEXX` where `XX` is the phase number (e.g., `docs/PHASE01`, `docs/PHASE02`, etc.)
 4.2 The phase documentation files must be named `PHASEXX/DESCRIPTION.md` where `XX` is the phase number and `DESCRIPTION` is a short description of the phase (e.g., `docs/PHASE01/INITIAL_REFACTOR.md`, `docs/PHASE02/OPENGL_IMPLEMENTATION.md`, etc.)
 5. The game uses Windows Registry keys for configuration and settings storage. When porting to other platforms, these keys need to be replaced with equivalent configuration files or system settings.
-6. before finish a session, update the files `docs/MACOS_PORT.md` and `docs/NEXT_STEPS.md` with the progress made and the next steps to be taken.
+6. before finish a session, update the files `docs/MACOS_PORT.md` with the progress made.
 7. For game base (generals), there is a crash log in `$HOME/Documents/Command\ and\ Conquer\ Generals\ Data/ReleaseCrashInfo.txt` that can be used to debug runtime issues.
 8. For game expansion (zero hour), there is a crash log in `$HOME/Documents/Command\ and\ Conquer\ Generals\ Zero\ Hour\ Data/ReleaseCrashInfo.txt` that can be used to debug runtime issues.
 9. When compiling the project, try to use half of the available CPU cores to avoid overloading the system.
-10. For understanding the game asset structure and debugging INI-related issues, refer to `docs/BIG_FILES_REFERENCE.md` which contains complete documentation of .big file contents and their relationships to INI files.
+10. For understanding the game asset structure and debugging INI-related issues, refer to `docs/Misc/BIG_FILES_REFERENCE.md` which contains complete documentation of .big file contents and their relationships to INI files.
 11. **Game Assets Location**: Use standardized directories for runtime testing:
     - **Generals (base game)**: `$HOME/GeneralsX/Generals/` - Copy original game assets (Data/, Maps/) here
     - **Zero Hour (expansion)**: `$HOME/GeneralsX/GeneralsMD/` - Copy Zero Hour assets (Data/, Maps/) here
     - Deploy executables to their respective directories for testing
 12. **Primary build workflow**: Use `cmake --preset macos-arm64` for ARM64 native compilation on Apple Silicon, then `cmake --build build/macos-arm64 --target GeneralsXZH -j 4` for Zero Hour target.
-13. **Platform-specific workflows**: 
+13. **Platform-specific workflows**:
     - **macOS ARM64**: `cmake --preset macos-arm64` → `cmake --build build/macos-arm64 --target GeneralsXZH -j 4 | tee /tmp/generalsxzh_build.log.txt`
     - **macOS Intel**: `cmake --preset macos-x64` → `cmake --build build/macos-x64 --target GeneralsXZH -j 4 | tee /tmp/generalsx_build.log.txt`
     - **Linux**: `cmake --preset linux` → `cmake --build build/linux --target GeneralsXZH -j 4 | tee /tmp/generalsxzh_build.log.txt`
@@ -131,7 +131,7 @@ The project includes reference repositories as git submodules for comparative an
   - **Key success**: Provided the breakthrough End token parsing solution (Phase 22.7-22.8)
   - **Coverage**: Full Windows 64-bit port with modern toolchain compatibility
 
-- **`references/fighter19-dxvk-port/`** - Linux port with DXVK graphics integration  
+- **`references/fighter19-dxvk-port/`** - Linux port with DXVK graphics integration
   - **Primary use**: Graphics layer solutions (DirectX→Vulkan via DXVK), Linux compatibility
   - **Focus areas**: OpenGL/Vulkan rendering, graphics pipeline modernization
   - **Coverage**: Complete Linux port with advanced graphics compatibility
@@ -158,7 +158,7 @@ The project includes reference repositories as git submodules for comparative an
 # Initialize all reference repositories
 git submodule update --init --recursive
 
-# Update references to latest versions  
+# Update references to latest versions
 git submodule update --remote
 
 # Navigate to specific reference

@@ -170,7 +170,6 @@ Complete documentation is available in the **[docs/](docs/)** directory:
 - **[docs/MACOS_BUILD.md](docs/MACOS_BUILD.md)** - Complete macOS build instructions and troubleshooting
 - **[docs/LINUX_BUILD.md](docs/LINUX_BUILD.md)** - Linux port status and contribution guidelines
 - **[docs/MACOS_PORT.md](docs/MACOS_PORT.md)** - Detailed technical progress and implementation notes
-- **[docs/NEXT_STEPS.md](docs/NEXT_STEPS.md)** - Current development phase and upcoming work
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Guidelines for contributing to cross-platform development
 - **[docs/TESTING.md](docs/TESTING.md)** - Cross-platform testing procedures and validation
 
@@ -179,11 +178,11 @@ See **[docs/README.md](docs/README.md)** for complete documentation index.
 ### 🐛 Known Issues
 
 For documented limitations and known bugs, see:
-**[📋 Known Issues Index](docs/known_issues/README.md)**
+**[📋 Known Issues Index](docs/Known_Issues/README.md)**
 
 Current known limitations:
 
-- **Wide Texture Rendering Bug** (macOS Metal) - 1024×256 textures render with orange blocks on right half. Affects 4 end-game screens only. [Details](docs/known_issues/WIDE_TEXTURE_RENDERING_BUG.md)
+- **Wide Texture Rendering Bug** (macOS Metal) - 1024×256 textures render with orange blocks on right half. Affects 4 end-game screens only. [Details](docs/Known_Issues/WIDE_TEXTURE_RENDERING_BUG.md)
 
 ### 🎯 Roadmap
 
@@ -227,7 +226,7 @@ This is a future initiative to leverage multi-core CPUs while preserving determi
 - Evolve to moderate threading (AI batches, object updates with partitioning)
 - Consider advanced loop decoupling (producer–consumer) once stable
 
-Read the full analysis and phased plan in docs/MULTITHREADING_ANALYSIS.md.
+Read the full analysis and phased plan in docs/Misc/MULTITHREADING_ANALYSIS.md.
 
 ---
 
@@ -239,7 +238,7 @@ This repository represents the **experimental development branch** of cross-plat
 
 **For developers**: This repository continues as the **technical foundation** for cross-platform development, focusing on:
 - macOS/Linux compatibility research
-- Cross-platform API development  
+- Cross-platform API development
 - Experimental features and improvements
 - Technical documentation and methodology
 
@@ -255,7 +254,7 @@ Contributions are welcome! We're particularly interested in:
 - **Cross-Platform Testing** - Validate functionality across systems
 
 **How to Contribute**:
-1. Check current issues and [docs/NEXT_STEPS.md](docs/NEXT_STEPS.md)
+1. Check current issues and GitHub discussions
 2. Read platform-specific build guides ([macOS](docs/MACOS_BUILD.md), [Linux](docs/LINUX_BUILD.md))
 3. Follow [CONTRIBUTING.md](CONTRIBUTING.md) guidelines
 4. Submit issues or pull requests with detailed information

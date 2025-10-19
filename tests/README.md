@@ -9,11 +9,11 @@ This directory contains all automated tests for the project.
 
 This test directory is part of a comprehensive testing strategy:
 
-**General Testing:** [../TESTING_COMPLETE.md](../TESTING.md) - Covers all project testing including platform-specific procedures, build configurations, and CI/CD workflows
+**General Testing:** [../TESTING_COMPLETE.md](../docs/TESTING.md) - Covers all project testing including platform-specific procedures, build configurations, and CI/CD workflows
 
-**OpenGL Testing:** [../OPENGL_TESTING.md](../OPENGL_TESTING.md) - Detailed OpenGL testing procedures, results, troubleshooting, and development workflow
+**OpenGL Testing:** [../docs/Misc/OPENGL_TESTING.md](../docs/Misc/OPENGL_TESTING.md) - Detailed OpenGL testing procedures, results, troubleshooting, and development workflow
 
-**Implementation:** [../OPENGL_COMPLETE.md](../OPENGL_SUMMARY.md) - Complete OpenGL implementation guide and architecture
+**Implementation:** [../docs/Misc/OPENGL_SUMMARY.md](../docs/Misc/OPENGL_SUMMARY.md) - Complete OpenGL implementation guide and architecture
 
 ## 📁 Directory Structure
 
@@ -51,8 +51,8 @@ cd tests/opengl
 
 ## 📚 Documentation
 
-- **[TESTING_COMPLETE.md](../TESTING.md)** - Comprehensive testing guide for all platforms and configurations
-- **[OPENGL_TESTING.md](../OPENGL_TESTING.md)** - Detailed OpenGL testing procedures and results
+- **[TESTING_COMPLETE.md](../docs/TESTING.md)** - Comprehensive testing guide for all platforms and configurations
+- **[OPENGL_TESTING.md](../docs/Misc/OPENGL_TESTING.md)** - Detailed OpenGL testing procedures and results
 
 ---
 

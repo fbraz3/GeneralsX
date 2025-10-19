@@ -144,7 +144,7 @@ The text body continues with a description of the change in appropriate detail. 
 
 **Priority Areas for Contribution:**
 1. **DirectX Compatibility Layer Coordination** - Help resolve typedef conflicts between Core and Generals DirectX layers
-2. **OpenGL Integration** - Contribute to OpenGL rendering backend development  
+2. **OpenGL Integration** - Contribute to OpenGL rendering backend development
 3. **Platform Testing** - Help test and validate macOS builds across different macOS versions
 4. **Documentation** - Improve cross-platform build instructions and troubleshooting guides
 
@@ -155,9 +155,9 @@ The text body continues with a description of the change in appropriate detail. 
 - **Testing Requirements**: All macOS contributions must compile all core libraries (libww3d2.a, libwwlib.a, libwwmath.a) successfully
 
 **Resources for macOS Contributors:**
-- **[MACOS_PORT.md](./MACOS_PORT.md)** - Comprehensive macOS porting progress and technical details
-- **[TESTING.md](./TESTING.md)** - macOS testing procedures and validation steps
-- **[OPENGL_TESTING.md](./OPENGL_TESTING.md)** - OpenGL-specific testing for cross-platform graphics
+- **[MACOS_PORT.md](./docs/MACOS_PORT.md)** - Comprehensive macOS porting progress and technical details
+- **[TESTING.md](./docs/TESTING.md)** - macOS testing procedures and validation steps
+- **[Misc/OPENGL_TESTING.md](./docs/Misc/OPENGL_TESTING.md)** - OpenGL-specific testing for cross-platform graphics
 
 ### Linux and Other Platforms
 

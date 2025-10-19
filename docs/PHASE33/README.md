@@ -10,6 +10,7 @@ Validate and fix core game logic systems including UI interaction, input handlin
 ## Tasks
 
 ### Phase 33.1: UI Interactive System (4-5 days)
+
 - Menu navigation (mouse hover, click)
 - Button state management (normal, hover, pressed)
 - Text input fields
@@ -17,6 +18,7 @@ Validate and fix core game logic systems including UI interaction, input handlin
 - Dropdown menus
 
 ### Phase 33.2: Input System (3-4 days)
+
 - Mouse input handling (position, buttons, wheel)
 - Keyboard input (key press, release, modifiers)
 - Input event queue management
@@ -31,6 +33,7 @@ Validate and fix core game logic systems including UI interaction, input handlin
 - Resource gathering logic
 
 ### Phase 33.4: Pathfinding & Collision (3-4 days)
+
 - A* pathfinding algorithm validation
 - Obstacle avoidance
 - Unit collision detection
