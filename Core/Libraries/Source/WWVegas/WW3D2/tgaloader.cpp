@@ -34,10 +34,10 @@ void TGALoader::ConvertBGRtoRGBA(const unsigned char* src, unsigned char* dst, u
 }
 
 // Parse TGA header from buffer
-bool TGALoader::ParseHeader(const unsigned char* buffer, unsigned int buffer_size, TGAHeader& header) {
-    if (buffer_size < sizeof(TGAHeader)) {
+bool TGALoader::ParseHeader(const unsigned char* buffer, unsigned int buffer_size, TGAFileHeader& header) {
+    if (buffer_size < sizeof(TGAFileHeader)) {
         printf("TGA ERROR: Buffer too small for header (need %zu bytes, got %u)\n", 
-            sizeof(TGAHeader), buffer_size);
+            sizeof(TGAFileHeader), buffer_size);
         return false;
     }
     
@@ -59,7 +59,7 @@ bool TGALoader::ParseHeader(const unsigned char* buffer, unsigned int buffer_siz
 }
 
 // Validate TGA header
-bool TGALoader::ValidateHeader(const TGAHeader& header) {
+bool TGALoader::ValidateHeader(const TGAFileHeader& header) {
     // Check image type (only support uncompressed and RLE RGB/RGBA)
     if (header.image_type != TGA_TYPE_UNCOMPRESSED && header.image_type != TGA_TYPE_RLE) {
         printf("TGA ERROR: Unsupported image type %u (only types 2 and 10 supported)\n", 
@@ -90,7 +90,7 @@ bool TGALoader::ValidateHeader(const TGAHeader& header) {
 }
 
 // Determine pixel format from header
-TGAFormat TGALoader::DetermineFormat(const TGAHeader& header) {
+TGAFormat TGALoader::DetermineFormat(const TGAFileHeader& header) {
     if (header.pixel_depth == 24) {
         return TGA_FORMAT_RGB8;
     } else if (header.pixel_depth == 32) {
@@ -263,7 +263,7 @@ TGATextureData TGALoader::LoadFromMemory(const unsigned char* buffer, unsigned i
     }
     
     // Parse header
-    TGAHeader header;
+    TGAFileHeader header;
     if (!ParseHeader(buffer, buffer_size, header)) {
         return result;
     }
@@ -285,7 +285,7 @@ TGATextureData TGALoader::LoadFromMemory(const unsigned char* buffer, unsigned i
     bool is_top_down = (origin_bits == TGA_ORIGIN_TOP_LEFT || origin_bits == TGA_ORIGIN_TOP_RIGHT);
     
     // Calculate image data offset (header + ID field + color map)
-    unsigned int data_offset = sizeof(TGAHeader) + header.id_length;
+    unsigned int data_offset = sizeof(TGAFileHeader) + header.id_length;
     if (header.color_map_type != 0) {
         unsigned int color_map_bytes = header.color_map_length * ((header.color_map_depth + 7) / 8);
         data_offset += color_map_bytes;
