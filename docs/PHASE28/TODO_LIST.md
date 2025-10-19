@@ -1,6 +1,6 @@
 # Phase 28 - Detailed Task List
 
-**Last Updated**: October 9, 2025  
+**Last Updated**: October 9, 2025
 **Status**: In Progress (0/9 phases complete)
 
 ## Progress Overview
@@ -22,8 +22,8 @@ Overall                         [░░░░░░░░░░] 0%
 
 ## Phase 28.1: DDS Loader Implementation
 
-**Goal**: Parse DDS files with BC1/BC2/BC3 support  
-**Files**: `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dds_loader.cpp/h`  
+**Goal**: Parse DDS files with BC1/BC2/BC3 support
+**Files**: `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dds_loader.cpp/h`
 **Estimated Time**: 1-2 days
 
 ### Tasks
@@ -62,16 +62,16 @@ Overall                         [░░░░░░░░░░] 0%
   - [ ] Verify FourCC matches expected format
   - [ ] Print first 16 bytes of mip 0 data
 
-**Dependencies**: File I/O (`FileClass`), logging system  
-**Blockers**: None  
+**Dependencies**: File I/O (`FileClass`), logging system
+**Blockers**: None
 **Status**: Not Started
 
 ---
 
 ## Phase 28.2: TGA Loader Implementation
 
-**Goal**: Parse TGA files (24/32-bit, RLE support)  
-**Files**: `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/tga_loader.cpp/h`  
+**Goal**: Parse TGA files (24/32-bit, RLE support)
+**Files**: `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/tga_loader.cpp/h`
 **Estimated Time**: 1 day
 
 ### Tasks
@@ -108,16 +108,16 @@ Overall                         [░░░░░░░░░░] 0%
   - [ ] Check first pixel RGBA values
   - [ ] Test RLE decompression with known file
 
-**Dependencies**: File I/O (`FileClass`)  
-**Blockers**: None  
+**Dependencies**: File I/O (`FileClass`)
+**Blockers**: None
 **Status**: Not Started
 
 ---
 
 ## Phase 28.3: OpenGL Upload & Mipmaps
 
-**Goal**: Upload textures to GPU with filtering/wrapping  
-**Files**: `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp`  
+**Goal**: Upload textures to GPU with filtering/wrapping
+**Files**: `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp`
 **Estimated Time**: 1 day
 
 ### Tasks
@@ -152,16 +152,16 @@ Overall                         [░░░░░░░░░░] 0%
   - [ ] Query mip 0 dimensions: `glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH)`
   - [ ] Verify no GL errors
 
-**Dependencies**: DDS/TGA loaders (28.1, 28.2), GLAD  
-**Blockers**: None  
+**Dependencies**: DDS/TGA loaders (28.1, 28.2), GLAD
+**Blockers**: None
 **Status**: Not Started
 
 ---
 
 ## Phase 28.4: Texture Cache
 
-**Goal**: Manage texture lifetime and avoid duplicate loads  
-**Files**: `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/texture_cache.cpp/h`  
+**Goal**: Manage texture lifetime and avoid duplicate loads
+**Files**: `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/texture_cache.cpp/h`
 **Estimated Time**: 0.5 days
 
 ### Tasks
@@ -200,16 +200,16 @@ Overall                         [░░░░░░░░░░] 0%
   - [ ] Release once → refcount=1
   - [ ] Release twice → texture deleted
 
-**Dependencies**: DDS/TGA loaders, OpenGL upload (28.3)  
-**Blockers**: None  
+**Dependencies**: DDS/TGA loaders, OpenGL upload (28.3)
+**Blockers**: None
 **Status**: Not Started
 
 ---
 
 ## Phase 28.5: DX8 Wrapper Integration
 
-**Goal**: Connect SetTexture() to OpenGL texture binding  
-**Files**: `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp/h`  
+**Goal**: Connect SetTexture() to OpenGL texture binding
+**Files**: `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp/h`
 **Estimated Time**: 1 day
 
 ### Tasks
@@ -245,16 +245,16 @@ Overall                         [░░░░░░░░░░] 0%
   - [ ] Verify `glGetIntegerv(GL_TEXTURE_BINDING_2D)` returns correct ID
   - [ ] Delete texture → verify `glIsTexture()` returns false
 
-**Dependencies**: Texture cache (28.4), TextureClass API  
-**Blockers**: None  
+**Dependencies**: Texture cache (28.4), TextureClass API
+**Blockers**: None
 **Status**: Not Started
 
 ---
 
 ## Phase 28.6: Font Atlas Support
 
-**Goal**: Render text using texture atlas  
-**Files**: `GeneralsMD/Code/GameEngine/Source/GameClient/GameFont.cpp`  
+**Goal**: Render text using texture atlas
+**Files**: `GeneralsMD/Code/GameEngine/Source/GameClient/GameFont.cpp`
 **Estimated Time**: 1 day
 
 ### Tasks
@@ -285,16 +285,16 @@ Overall                         [░░░░░░░░░░] 0%
   - [ ] Verify glyphs are crisp (no blur)
   - [ ] Test color modulation (red, white)
 
-**Dependencies**: Texture cache (28.4), TGA loader (28.2)  
-**Blockers**: Font file format unknown (may need reverse-engineering)  
+**Dependencies**: Texture cache (28.4), TGA loader (28.2)
+**Blockers**: Font file format unknown (may need reverse-engineering)
 **Status**: Not Started
 
 ---
 
 ## Phase 28.7: UI Rendering Test
 
-**Goal**: Validate textures in main menu  
-**Files**: N/A (integration test)  
+**Goal**: Validate textures in main menu
+**Files**: N/A (integration test)
 **Estimated Time**: 0.5 days
 
 ### Tasks
@@ -325,16 +325,16 @@ Overall                         [░░░░░░░░░░] 0%
   - [ ] Target: > 60 FPS
   - [ ] Monitor GL errors in log
 
-**Dependencies**: All previous phases  
-**Blockers**: Need original game assets  
+**Dependencies**: All previous phases
+**Blockers**: Need original game assets
 **Status**: Not Started
 
 ---
 
 ## Phase 28.8: Skirmish Test
 
-**Goal**: Validate textures in gameplay  
-**Files**: N/A (integration test)  
+**Goal**: Validate textures in gameplay
+**Files**: N/A (integration test)
 **Estimated Time**: 1 day
 
 ### Tasks
@@ -370,8 +370,8 @@ Overall                         [░░░░░░░░░░] 0%
   - [ ] Build all unit types
   - [ ] Trigger particle effects (explosions)
 
-**Dependencies**: All previous phases  
-**Blockers**: Need original game assets  
+**Dependencies**: All previous phases
+**Blockers**: Need original game assets
 **Status**: Not Started
 
 ---
@@ -388,7 +388,7 @@ Overall                         [░░░░░░░░░░] 0%
 - [ ] Skirmish match runs for 10+ minutes without crashes
 - [ ] FPS targets met (menu > 60, game > 30)
 - [ ] No GL errors during normal operation
-- [ ] Documentation updated in `docs/NEXT_STEPS.md` and `docs/MACOS_PORT.md`
+- [ ] Documentation updated in `docs/MACOS_PORT.md`
 
 ### Definition of Done:
 - [ ] Code reviewed and merged to main
@@ -402,8 +402,8 @@ Overall                         [░░░░░░░░░░] 0%
 
 ## Notes
 
-**Current Blockers**: None  
-**Risks**: 
+**Current Blockers**: None
+**Risks**:
 - Font format may require reverse-engineering (low risk)
 - Some DDS files may use unsupported formats (medium risk - mitigated with fallback)
 - macOS case-sensitivity may cause texture not found (low risk - already handled)

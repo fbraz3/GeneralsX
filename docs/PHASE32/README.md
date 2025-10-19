@@ -10,18 +10,21 @@ Implement audio playback system using SDL2 and integrate with Miles Sound System
 ## Tasks
 
 ### Phase 32.1: SDL2 Audio Initialization (2 days)
+
 - SDL2 audio subsystem setup
 - Audio device enumeration
 - Sample rate and buffer configuration
 - Audio callback system
 
 ### Phase 32.2: Miles Sound System Integration (3 days)
+
 - Miles Sound System library integration
 - MP3/WAV playback support
 - Volume control and mixing
 - Audio stream management
 
 ### Phase 32.3: 3D Audio Positioning (2 days)
+
 - Spatial audio calculations
 - Distance attenuation
 - Stereo panning based on camera position

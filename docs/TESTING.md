@@ -12,7 +12,7 @@
 This document provides comprehensive testing procedures for the Command & Conquer: Generals project, covering:
 - General project testing (replay compatibility, builds)
 - Platform-specific testing (Windows, macOS, Linux)
-- Build configuration testing  
+- Build configuration testing
 - CI/CD procedures
 - **NEW: macOS Port Testing** - Core libraries compilation and compatibility validation
 
@@ -24,7 +24,7 @@ This document provides comprehensive testing procedures for the Command & Conque
 - ✅ **Debug System**: Complete debug framework working
 - 🔄 **Final Integration**: DirectX layer coordination in progress
 
-**For OpenGL-specific testing:** See [OPENGL_TESTING.md](./OPENGL_TESTING.md)
+**For OpenGL-specific testing:** See [OPENGL_TESTING.md](Misc/OPENGL_TESTING.md)
 **For macOS porting details:** See [MACOS_PORT.md](./MACOS_PORT.md)
 
 ### OpenGL Testing Integration
@@ -35,7 +35,7 @@ This document covers general project testing. For comprehensive OpenGL testing p
 - Detailed OpenGL progress reports and benchmarks
 - OpenGL development workflow and best practices
 
-**→ See the dedicated [OPENGL_TESTING.md](./OPENGL_TESTING.md) documentation.**
+**→ See the dedicated [OPENGL_TESTING.md](Misc/OPENGL_TESTING.md) documentation.**
 
 The OpenGL testing is tightly integrated with the general testing workflow but requires specialized procedures documented separately due to its complexity and platform-specific requirements.
 
@@ -97,7 +97,7 @@ GeneralsXZH.exe -jobs 4 -benchmark > performance.log
 # Test all core libraries compilation (ALL PASSING!)
 cd GeneralsGameCode/build/vc6
 cmake --build . --target ww3d2      # ✅ PASS (23MB)
-cmake --build . --target wwlib      # ✅ PASS (1.3MB)  
+cmake --build . --target wwlib      # ✅ PASS (1.3MB)
 cmake --build . --target wwmath     # ✅ PASS (2.3MB)
 
 # Check compilation status
@@ -137,7 +137,7 @@ grep -r "ProfileFuncLevel" Core/ | head -5
 # ✅ uint64_t/int64_t corrections successful
 
 # Test debug system (FULLY WORKING!)
-grep -r "__forceinline" Core/ | head -5  
+grep -r "__forceinline" Core/ | head -5
 # ✅ macOS inline compatibility successful
 ```
 
@@ -286,9 +286,9 @@ cd tests/opengl
 |---------------|---------|-------|-------|--------|---------------|
 | Replay Compatibility | ✅ PASS | 🔄 WIP | 🔄 WIP | Primary | This document |
 | Basic Compilation | ✅ PASS | ✅ PASS | ✅ PASS | Complete | This document |
-| OpenGL Rendering | ✅ PASS | ✅ PASS | ✅ PASS | Complete | [OPENGL_TESTING.md](./OPENGL_TESTING.md) |
+| OpenGL Rendering | ✅ PASS | ✅ PASS | ✅ PASS | Complete | [OPENGL_TESTING.md](Misc/OPENGL_TESTING.md) |
 | DirectX Compatibility | ✅ PASS | ✅ PASS | ➖ N/A | Complete | This document |
-| W3D Integration | ✅ PASS | 🔄 WIP | 🔄 WIP | Progress | [OPENGL_TESTING.md](./OPENGL_TESTING.md) |
+| W3D Integration | ✅ PASS | 🔄 WIP | 🔄 WIP | Progress | [OPENGL_TESTING.md](Misc/OPENGL_TESTING.md) |
 | Core Libraries | ✅ PASS | ✅ PASS | ✅ PASS | Complete | This document |
 | Tools Building | ✅ PASS | 🔄 WIP | 🔄 WIP | Progress | This document |
 
@@ -375,7 +375,7 @@ leaks ./test_executable
 - [ ] OpenGL context creation works on all platforms
 - [ ] W3D integration tests pass
 
-**→ For detailed OpenGL testing procedures, see [OPENGL_TESTING.md](./OPENGL_TESTING.md)**
+**→ For detailed OpenGL testing procedures, see [OPENGL_TESTING.md](Misc/OPENGL_TESTING.md)**
 
 #### Platform-Specific Testing
 
@@ -386,7 +386,7 @@ leaks ./test_executable
 - [x] **CMake properly detects macOS platform and applies compatibility headers** ✅ (Build system working)
 - [x] **Core libraries (core_wwlib) build successfully** ✅ (ALL CORE LIBRARIES COMPILED!)
 - [x] **libww3d2.a (23MB) builds successfully** ✅ (Complete 3D graphics engine)
-- [x] **libwwmath.a (2.3MB) builds successfully** ✅ (Mathematical operations) 
+- [x] **libwwmath.a (2.3MB) builds successfully** ✅ (Mathematical operations)
 - [x] **Profile system working with __forceinline compatibility** ✅ (Performance profiling functional)
 - [x] **Debug system working with proper macOS compatibility** ✅ (Debug framework operational)
 - [x] **Type system conflicts resolved with include guards** ✅ (DWORD, LARGE_INTEGER, GUID guards)
@@ -451,8 +451,8 @@ build-matrix:
 
 ## 📚 Related Documentation
 
-- **[OPENGL_TESTING.md](OPENGL_TESTING.md)** - OpenGL-specific testing procedures and results
-- **[OPENGL_SUMMARY.md](OPENGL_SUMMARY.md)** - Complete OpenGL implementation documentation
+- **[OPENGL_TESTING.md](Misc/OPENGL_TESTING.md)** - OpenGL-specific testing procedures and results
+- **[OPENGL_SUMMARY.md](Misc/OPENGL_SUMMARY.md)** - Complete OpenGL implementation documentation
 - **[MACOS_PORT.md](MACOS_PORT.md)** - macOS porting progress and platform-specific details
 - **[tests/README.md](../tests/README.md)** - Test suite directory index
 

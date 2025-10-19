@@ -1,8 +1,8 @@
 # Phase 29: Lighting & Effects - Roadmap
 
-**Project**: GeneralsX (Command & Conquer: Generals Zero Hour macOS Port)  
-**Start Date**: October 18, 2025  
-**Status**: Planning  
+**Project**: GeneralsX (Command & Conquer: Generals Zero Hour macOS Port)
+**Start Date**: October 18, 2025
+**Status**: Planning
 **Prerequisites**: Phase 27 (OpenGL Complete), Phase 28.6 (Debug Cleanup), Phase 30 (Metal Backend)
 
 ---
@@ -22,7 +22,7 @@ Validate and enhance lighting, fog, and advanced rendering effects already imple
 | **Point Sprites** | ✅ COMPLETE | ⏳ Pending | Distance scaling with A/B/C coefficients + size clamping |
 
 ### Key Discovery
-**Phase 27.4 already implemented all Phase 29 features for OpenGL!**  
+**Phase 27.4 already implemented all Phase 29 features for OpenGL!**
 - Fog rendering: `D3DRS_FOGENABLE`, `D3DRS_FOGCOLOR`, `D3DRS_FOGSTART`, `D3DRS_FOGEND`, `D3DRS_FOGDENSITY`
 - Lighting: `uLightDirection`, `uLightColor`, `uAmbientColor`, `uUseLighting` uniforms
 - Stencil: Full operations in `Set_DX8_Render_State()` switch cases
@@ -173,8 +173,8 @@ Port OpenGL point sprite distance scaling to Metal
 2. **Implement distance-based point size calculation**:
    ```metal
    float distance = length(viewPosition);
-   float attenuation = 1.0 / (uPointScaleFactors.x + 
-                              uPointScaleFactors.y * distance + 
+   float attenuation = 1.0 / (uPointScaleFactors.x +
+                              uPointScaleFactors.y * distance +
                               uPointScaleFactors.z * distance * distance);
    float pointSize = uPointSize * attenuation;
    pointSize = clamp(pointSize, uPointSizeMin, uPointSizeMax);
@@ -225,7 +225,7 @@ Validate all Phase 29 Metal features with runtime testing
 **Files to Create/Modify**:
 - `docs/PHASE29/COMPLETION_SUMMARY.md` - Phase 29 results
 - `docs/MACOS_PORT.md` - Update with Phase 29 status
-- `docs/NEXT_STEPS.md` - Mark Phase 29 complete
+- `docs/PHASE29/ROADMAP.md` - Mark Phase 29 complete in project documentation
 
 ---
 
@@ -294,4 +294,4 @@ Validate all Phase 29 Metal features with runtime testing
 
 ## Next Steps After Phase 29
 
-**Phase 30+**: Continue with audio, networking, and gameplay systems as documented in NEXT_STEPS.md
+**Phase 30+**: Continue with audio, networking, and gameplay systems as documented

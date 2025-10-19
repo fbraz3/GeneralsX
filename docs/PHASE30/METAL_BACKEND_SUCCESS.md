@@ -1,8 +1,8 @@
 # Phase 30: Metal Backend Implementation - COMPLETE ✅
 
-**Date**: October 13, 2025  
-**Status**: **100% COMPLETE** - Metal backend fully operational on macOS ARM64  
-**Commits**: 
+**Date**: October 13, 2025
+**Status**: **100% COMPLETE** - Metal backend fully operational on macOS ARM64
+**Commits**:
 - `fd25d525` - Memory protection against driver bugs
 - `ea5aa543` - Phase 29.5.2 W3DDisplay Metal initialization fix
 - `dcaad904` - Phase 29.5.1 BeginFrame/EndFrame Metal backend fix
@@ -38,7 +38,7 @@
 cd $HOME/GeneralsX/GeneralsMD && USE_METAL=1 ./GeneralsXZH
 ```
 
-**Result**: 
+**Result**:
 - ✅ **Blue screen with colored triangle**
 - ✅ Shader pipeline operational
 - ✅ MTLBuffer vertex/index buffers working
@@ -59,7 +59,7 @@ cd $HOME/GeneralsX/GeneralsMD && USE_METAL=1 ./GeneralsXZH
 cd $HOME/GeneralsX/GeneralsMD && USE_OPENGL=1 ./GeneralsXZH
 ```
 
-**Result**: 
+**Result**:
 - ❌ **Crash in AppleMetalOpenGLRenderer**
 - ❌ AGXMetal13_3 driver bug
 - ✅ Window opens successfully
@@ -139,15 +139,15 @@ Game Code → DX8Wrapper → OpenGL API → AppleMetalOpenGLRenderer → AGXMeta
 ```cpp
 static inline bool isValidMemoryPointer(void* p) {
     if (!p) return false;
-    
+
     uintptr_t ptr_value = (uintptr_t)p;
-    
+
     // Check 1: NULL page protection (first 64KB)
     if (ptr_value < 0x10000) {
         printf("MEMORY PROTECTION: Pointer %p below safe threshold\n", p);
         return false;
     }
-    
+
     // Check 2: ASCII string detection (driver bug signature)
     bool all_ascii = true;
     for (int i = 0; i < 8; i++) {
@@ -157,7 +157,7 @@ static inline bool isValidMemoryPointer(void* p) {
             break;
         }
     }
-    
+
     if (all_ascii) {
         // Convert pointer to ASCII for logging
         char ascii_str[9];
@@ -165,11 +165,11 @@ static inline bool isValidMemoryPointer(void* p) {
             ascii_str[i] = (char)((ptr_value >> (i * 8)) & 0xFF);
         }
         ascii_str[8] = '\0';
-        printf("MEMORY PROTECTION: Detected ASCII-like pointer %p (\"%s\")\n", 
+        printf("MEMORY PROTECTION: Detected ASCII-like pointer %p (\"%s\")\n",
             p, ascii_str);
         return false;
     }
-    
+
     return true;
 }
 ```
@@ -260,11 +260,11 @@ namespace MetalWrapper {
     void* CreateVertexBuffer(unsigned long size, const void* initial_data);
     void* CreateIndexBuffer(unsigned long size, const void* initial_data);
     void DeleteBuffer(void* buffer);
-    
+
     // Buffer updates
     void UpdateVertexBuffer(void* buffer, const void* data, unsigned long size);
     void UpdateIndexBuffer(void* buffer, const void* data, unsigned long size);
-    
+
     // Lock/Unlock helpers
     void* MapBuffer(void* buffer);
     void UnmapBuffer(void* buffer);
@@ -318,8 +318,8 @@ void DynamicVBAccessClass::WriteLockClass::Unlock() {
         if (g_useMetalBackend && metal_data) {
             // Upload CPU buffer to GPU
             MetalWrapper::UpdateVertexBuffer(
-                metal_data->metal_buffer, 
-                metal_data->cpu_copy, 
+                metal_data->metal_buffer,
+                metal_data->cpu_copy,
                 metal_data->size
             );
             metal_data->is_locked = false;
@@ -379,7 +379,7 @@ fragment float4 fragment_main(VertexOut in [[stage_in]]) {
 MTLVertexDescriptor* CreateVertexDescriptor(DWORD fvf) {
     MTLVertexDescriptor* desc = [MTLVertexDescriptor new];
     int offset = 0;
-    
+
     // Position (always present)
     if (fvf & (D3DFVF_XYZ | D3DFVF_XYZRHW)) {
         desc.attributes[0].format = MTLVertexFormatFloat3;
@@ -387,7 +387,7 @@ MTLVertexDescriptor* CreateVertexDescriptor(DWORD fvf) {
         desc.attributes[0].bufferIndex = 0;
         offset += 12;  // 3 floats
     }
-    
+
     // Color (if present)
     if (fvf & D3DFVF_DIFFUSE) {
         desc.attributes[1].format = MTLVertexFormatUChar4Normalized;
@@ -395,7 +395,7 @@ MTLVertexDescriptor* CreateVertexDescriptor(DWORD fvf) {
         desc.attributes[1].bufferIndex = 0;
         offset += 4;  // 1 DWORD
     }
-    
+
     // Texture coordinates (if present)
     if ((fvf & D3DFVF_TEXCOUNT_MASK) >= D3DFVF_TEX1) {
         desc.attributes[2].format = MTLVertexFormatFloat2;
@@ -403,10 +403,10 @@ MTLVertexDescriptor* CreateVertexDescriptor(DWORD fvf) {
         desc.attributes[2].bufferIndex = 0;
         offset += 8;  // 2 floats
     }
-    
+
     desc.layouts[0].stride = offset;
     desc.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
-    
+
     return desc;
 }
 ```
@@ -433,28 +433,28 @@ void BeginFrame(
 
 **Rendering Code** (`metalwrapper.mm`):
 ```cpp
-void BeginFrame(void* view, void* vb, void* ib, 
-    unsigned int vcount, unsigned int icount, unsigned int prim_type) 
+void BeginFrame(void* view, void* vb, void* ib,
+    unsigned int vcount, unsigned int icount, unsigned int prim_type)
 {
     @autoreleasepool {
         // Get command buffer
         id<MTLCommandBuffer> cmd_buffer = [g_command_queue commandBuffer];
-        
+
         // Setup render pass
         MTLRenderPassDescriptor* pass = view.currentRenderPassDescriptor;
-        id<MTLRenderCommandEncoder> encoder = 
+        id<MTLRenderCommandEncoder> encoder =
             [cmd_buffer renderCommandEncoderWithDescriptor:pass];
-        
+
         // Bind pipeline state
         [encoder setRenderPipelineState:g_pipeline_state];
-        
+
         // Bind buffers
         [encoder setVertexBuffer:(__bridge id<MTLBuffer>)vb offset:0 atIndex:0];
-        
+
         // Setup MVP matrix (identity for now)
         simd::float4x4 mvp = matrix_identity_float4x4;
         [encoder setVertexBytes:&mvp length:sizeof(mvp) atIndex:1];
-        
+
         // Draw call
         MTLPrimitiveType metal_prim = ConvertPrimitiveType(prim_type);
         [encoder drawIndexedPrimitives:metal_prim
@@ -462,7 +462,7 @@ void BeginFrame(void* view, void* vb, void* ib,
                              indexType:MTLIndexTypeUInt16
                            indexBuffer:(__bridge id<MTLBuffer>)ib
                      indexBufferOffset:0];
-        
+
         [encoder endEncoding];
         [cmd_buffer presentDrawable:view.currentDrawable];
         [cmd_buffer commit];
@@ -553,7 +553,7 @@ cd $HOME/GeneralsX/GeneralsMD && ./GeneralsXZH
 
 **Status**: ❌ UNFIXABLE (Apple driver bug)
 
-**Symptom**: 
+**Symptom**:
 - Crash in `AGXMetal13_3::VertexProgramVariant::finalize()`
 - Error: `EXC_BAD_ACCESS (code=1, address=0x4)`
 - Occurs during buffer swap in `AppleMetalOpenGLRenderer`
@@ -588,8 +588,8 @@ cd $HOME/GeneralsX/GeneralsMD && ./GeneralsXZH
 Title: AGXMetal13_3 crash in VertexProgramVariant::finalize() via OpenGL
 
 Description:
-When using OpenGL on macOS 13+ (Ventura), the AppleMetalOpenGLRenderer 
-translation layer crashes in AGXMetal13_3::VertexProgramVariant::finalize() 
+When using OpenGL on macOS 13+ (Ventura), the AppleMetalOpenGLRenderer
+translation layer crashes in AGXMetal13_3::VertexProgramVariant::finalize()
 with EXC_BAD_ACCESS at address 0x4 (NULL pointer dereference).
 
 This occurs during glSwapBuffers() when shader compilation is triggered.
@@ -624,7 +624,7 @@ With Metal backend stable, proceed to texture system implementation:
 - Handle mipmap chains
 - **Target**: 3-4 days
 
-### Phase 28.2: TGA Texture Loader  
+### Phase 28.2: TGA Texture Loader
 - Parse TGA uncompressed RGB/RGBA
 - Convert BGR→RGBA for Metal
 - Support RLE compression
@@ -653,13 +653,13 @@ With Metal backend stable, proceed to texture system implementation:
 1. **dbe1e07f** - Phase 29.5: Command-line parameter support
    - Added `-forceDirectX` and `-forceOpenGL` flags
    - Backend selection priority system
-   
+
 2. **dcaad904** - Phase 29.5.1: BeginFrame/EndFrame Metal backend fix
    - Fixed `g_useMetalBackend` checks in render loop
-   
+
 3. **ea5aa543** - Phase 29.5.2: W3DDisplay Metal initialization fix
    - Replaced `getenv("USE_METAL")` with `g_useMetalBackend`
-   
+
 4. **fd25d525** - fix(critical): Comprehensive memory protection (CURRENT)
    - ASCII string detection for corrupted driver pointers
    - Multi-layer validation in 6 functions
@@ -699,8 +699,8 @@ With Metal backend stable, proceed to texture system implementation:
 ## 📚 Related Documentation
 
 - `docs/METAL_IMPLEMENTATION.md` - Original Metal backend design
-- `docs/PHASE30/METAL_DRIVER_CRASH_FIX.md` - Memory protection details
-- `docs/OPENGL_SUMMARY.md` - OpenGL implementation (deprecated on macOS)
+- `docs/PHASE30/METAL_BACKEND_SUCCESS.md` - Metal backend implementation details
+- `docs/Misc/OPENGL_SUMMARY.md` - OpenGL implementation (deprecated on macOS)
 - `docs/MACOS_PORT.md` - Overall macOS port progress
 - `docs/NEXT_STEPS.md` - Roadmap to playable game
 
@@ -708,10 +708,10 @@ With Metal backend stable, proceed to texture system implementation:
 
 ## ✅ Phase 30 Sign-Off
 
-**Date**: October 13, 2025  
-**Status**: **COMPLETE** ✅  
-**Stability**: **100%** (Metal backend)  
-**Next Phase**: Phase 28 (Texture Loading)  
+**Date**: October 13, 2025
+**Status**: **COMPLETE** ✅
+**Stability**: **100%** (Metal backend)
+**Next Phase**: Phase 28 (Texture Loading)
 **Estimated Time to Menu Graphics**: 10-14 days
 
 **Validation Checklist**:

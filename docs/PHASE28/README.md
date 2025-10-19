@@ -1,6 +1,6 @@
 # Phase 28: Texture System Implementation (MVP Foundation)
 
-**Status**: In Progress (Started: October 9, 2025)  
+**Status**: In Progress (Started: October 9, 2025)
 **Goal**: Implement complete texture loading and rendering pipeline for OpenGL backend to enable playable game MVP
 
 ## Overview
@@ -45,7 +45,7 @@ Asset Files (DDS/TGA) → Parser → Decoder → OpenGL Upload → Cache → Bin
 ```cpp
 class TextureCache {
     std::unordered_map<std::string, TextureEntry> m_cache; // Lookup by normalized path
-    
+
     struct TextureEntry {
         GLuint gl_texture_id;
         int width, height;
@@ -95,20 +95,20 @@ GLuint Create_GL_Texture_From_DDS(const DDSData& dds) {
     GLuint tex_id;
     glGenTextures(1, &tex_id);
     glBindTexture(GL_TEXTURE_2D, tex_id);
-    
+
     // Upload compressed mips
     for (int i = 0; i < dds.num_mipmaps; i++) {
-        glCompressedTexImage2D(GL_TEXTURE_2D, i, 
+        glCompressedTexImage2D(GL_TEXTURE_2D, i,
             GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, // or DXT1/DXT3
             dds.mip_widths[i], dds.mip_heights[i], 0,
             dds.mip_sizes[i], dds.mip_data[i]);
     }
-    
+
     // Filtering & wrapping
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16.0f);
-    
+
     return tex_id;
 }
 #endif
@@ -137,10 +137,10 @@ GLuint Create_GL_Texture_From_DDS(const DDSData& dds) {
     if (stage < MAX_TEXTURE_STAGES && texture) {
         const char* texture_name = texture->Get_Name(); // Assume method exists
         GLuint gl_tex = g_TextureCache.GetTexture(texture_name);
-        
+
         glActiveTexture(GL_TEXTURE0 + stage);
         glBindTexture(GL_TEXTURE_2D, gl_tex);
-        
+
         GL_Current_Texture_Stages[stage] = gl_tex;
     }
 #endif
@@ -227,26 +227,26 @@ GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/
 ## Risks & Mitigations
 
 ### Risk 1: Unsupported DDS Formats
-**Impact**: High (blocks UI rendering)  
-**Mitigation**: 
+**Impact**: High (blocks UI rendering)
+**Mitigation**:
 - Implement BC1/BC2/BC3 (covers 95% of assets)
 - Log warnings for unsupported formats
 - Fallback to solid color or pink texture
 
 ### Risk 2: Case-Sensitive Paths (macOS)
-**Impact**: Medium (texture not found)  
+**Impact**: Medium (texture not found)
 **Mitigation**:
 - Normalize all paths to lowercase in cache
 - Use existing `FileSystem::Open()` with case-insensitive search
 
 ### Risk 3: Memory Leaks
-**Impact**: Medium (degrades performance over time)  
+**Impact**: Medium (degrades performance over time)
 **Mitigation**:
 - Refcount all textures
 - Automated tests: load 1000 textures → release → verify 0 leaks
 
 ### Risk 4: Mipmap Quality
-**Impact**: Low (visual artifacts)  
+**Impact**: Low (visual artifacts)
 **Mitigation**:
 - Use pre-generated mipmaps from DDS
 - If missing, `glGenerateMipmap()` with trilinear filter
@@ -279,4 +279,4 @@ GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/
 - [DDS File Format (Microsoft)](https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dx-graphics-dds)
 - [OpenGL S3TC Extension](https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_texture_compression_s3tc.txt)
 - [TGA Format Specification](http://www.paulbourke.net/dataformats/tga/)
-- Phase 27 Documentation: `docs/OPENGL_SUMMARY.md`
+- Phase 27 Documentation: `../Misc/OPENGL_SUMMARY.md`

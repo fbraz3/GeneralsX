@@ -1,7 +1,7 @@
 # Phase 28.4: Wide Texture Rendering Bug - Complete Investigation
 
-**Date**: October 15-16, 2025  
-**Status**: 🟡 Known Limitation - Accepted  
+**Date**: October 15-16, 2025
+**Status**: 🟡 Known Limitation - Accepted
 **Priority**: LOW - Non-blocking (cosmetic only)
 
 ## Executive Summary
@@ -82,21 +82,21 @@ METAL DEBUG: Bytes at 50% (131072): FF FF 00 00 00 00 00 00 D9 DD 18 CD 29 2D FF
 
 ```objectivec++
 // Phase 28.1: Texture Creation from DDS
-void* MetalWrapper::CreateTextureFromDDS(unsigned int width, unsigned int height, 
-                                         unsigned int format, const void* data, 
+void* MetalWrapper::CreateTextureFromDDS(unsigned int width, unsigned int height,
+                                         unsigned int format, const void* data,
                                          unsigned int dataSize, unsigned int mipLevels) {
     @autoreleasepool {
         // Format mapping
         MTLPixelFormat metalFormat;
         bool isCompressed = false;
-        
+
         switch (format) {
             case 3: // DDS_FORMAT_BC3_RGBA
                 metalFormat = MTLPixelFormatBC3_RGBA;
                 isCompressed = true;
                 break;
         }
-        
+
         // Create texture descriptor
         MTLTextureDescriptor* descriptor = [MTLTextureDescriptor new];
         descriptor.textureType = MTLTextureType2D;
@@ -106,24 +106,24 @@ void* MetalWrapper::CreateTextureFromDDS(unsigned int width, unsigned int height
         descriptor.mipmapLevelCount = (mipLevels > 0) ? mipLevels : 1;
         descriptor.usage = MTLTextureUsageShaderRead;
         descriptor.storageMode = MTLStorageModeShared;
-        
+
         id<MTLTexture> texture = [device newTextureWithDescriptor:descriptor];
-        
+
         if (isCompressed) {
             unsigned int blockSize = 16;  // BC3 = 16 bytes/block
             unsigned int blocksWide = (width + 3) / 4;   // 256
             unsigned int blocksHigh = (height + 3) / 4;  // 64
             unsigned int bytesPerRow = blocksWide * blockSize;  // 4096
-            
+
             // Region in PIXELS (per Apple documentation)
             MTLRegion region = MTLRegionMake2D(0, 0, width, height);
-            
+
             [texture replaceRegion:region
                        mipmapLevel:0
                          withBytes:data
                        bytesPerRow:bytesPerRow];
         }
-        
+
         return (__bridge_retained void*)texture;
     }
 }
@@ -180,7 +180,7 @@ MTLRegion region = MTLRegionMake2D(0, 0, blocksWide, blocksHigh);
 // Test 1: Pixel-perfect filtering
 USE_NEAREST_FILTER=1 ./test_textured_quad_render  // ❌ No effect
 
-// Test 2: Repeat address mode  
+// Test 2: Repeat address mode
 USE_REPEAT_ADDRESS=1 ./test_textured_quad_render  // ❌ No effect
 ```
 
@@ -227,7 +227,7 @@ for (int y = 0; y < 256; y++) {
         if (x < 512) {
             pixels[idx+0] = 255; pixels[idx+1] = 0; pixels[idx+2] = 0; // RED
         } else {
-            pixels[idx+0] = 0; pixels[idx+1] = 255; pixels[idx+2] = 0; // GREEN  
+            pixels[idx+0] = 0; pixels[idx+1] = 255; pixels[idx+2] = 0; // GREEN
         }
         pixels[idx+3] = 255; // Alpha
     }
@@ -335,7 +335,7 @@ $ find $HOME/GeneralsX/GeneralsMD/Data -name "*.dds" -o -name "*.tga" | \
   [ "$w" -ge 1024 ] && echo "{}: ${w}px"'
 
 Data/English/Art/Textures/defeated.dds: 1024px
-Data/English/Art/Textures/victorious.dds: 1024px  
+Data/English/Art/Textures/victorious.dds: 1024px
 Data/English/Art/Textures/gameover.dds: 1024px
 Data/English/Art/Textures/GameOver.tga: 1024px
 ```
@@ -421,7 +421,7 @@ Data/English/Art/Textures/GameOver.tga: 1024px
 
 ### Final Decision
 
-**Status**: 🟡 **KNOWN LIMITATION** - Documented, non-blocking  
+**Status**: 🟡 **KNOWN LIMITATION** - Documented, non-blocking
 **Action**: Accept bug and proceed with development
 
 ### Justification
@@ -502,7 +502,7 @@ cd $HOME/GeneralsX/GeneralsMD
 - `docs/known_issues/README.md` - Known issues index
 - `docs/PHASE28/PHASE28_TODO_LIST.md` - Phase 28 task list
 - `docs/MACOS_PORT.md` - Overall macOS port progress
-- `docs/NEXT_STEPS.md` - Project roadmap
+- `docs/PHASE30/README.md` - Project roadmap and phase overview
 
 ## References
 
@@ -524,6 +524,6 @@ cd $HOME/GeneralsX/GeneralsMD
 
 ---
 
-**Last Updated**: October 16, 2025  
-**Investigator**: GitHub Copilot  
+**Last Updated**: October 16, 2025
+**Investigator**: GitHub Copilot
 **Status**: ✅ WORKAROUND AVAILABLE - Root cause investigation continues
