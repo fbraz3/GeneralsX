@@ -176,6 +176,7 @@ protected:
     void startFade(OpenALPlayingAudio* audio, float duration = 1.0f);
     
     // Processing methods
+    void processRequestList(void);
     void processPlayingList(void);
     void processFadingList(void);
     void processStoppedList(void);

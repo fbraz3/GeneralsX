@@ -229,6 +229,15 @@ void OpenALAudioManager::reset()
 
 void OpenALAudioManager::update()
 {
+    // Call base class update (handles listener position, zoom volume, etc.)
+    AudioManager::update();
+    
+    // Update listener position for OpenAL
+    setDeviceListenerPosition();
+    
+    // Process all audio requests (play, stop, pause, etc.)
+    processRequestList();
+    
     // Process all audio lists
     processPlayingList();
     processFadingList();
@@ -705,16 +714,23 @@ void OpenALAudioManager::processRequest(AudioRequest* req) {
         return;
     }
 
+    printf("OpenALAudioManager::processRequest() - Request type: %d\n", req->m_request);
+
     switch (req->m_request) {
         case AR_Play:
             if (req->m_pendingEvent) {
+                printf("  - AR_Play: event='%s'\n", req->m_pendingEvent->getEventName().str());
                 playAudioEvent(req->m_pendingEvent);
+            } else {
+                printf("  - AR_Play: ERROR - pendingEvent is NULL!\n");
             }
             break;
         case AR_Pause:
+            printf("  - AR_Pause: handle=%u\n", req->m_handleToInteractOn);
             pauseAudioEvent(req->m_handleToInteractOn);
             break;
         case AR_Stop:
+            printf("  - AR_Stop: handle=%u\n", req->m_handleToInteractOn);
             stopAudioEvent(req->m_handleToInteractOn);
             break;
     }
@@ -869,6 +885,26 @@ void OpenALAudioManager::startFade(OpenALPlayingAudio* audio, float duration)
     
     // Move to fading list
     m_fadingAudio.push_back(audio);
+}
+
+//-------------------------------------------------------------------------------------------------
+void OpenALAudioManager::processRequestList(void)
+{
+    std::list<AudioRequest*>::iterator it;
+    for (it = m_audioRequests.begin(); it != m_audioRequests.end(); /* empty */) {
+        AudioRequest *req = (*it);
+        if (req == NULL) {
+            ++it;
+            continue;
+        }
+
+        // Process the request based on type
+        processRequest(req);
+        
+        // Release and remove the request
+        releaseAudioRequest(req);
+        it = m_audioRequests.erase(it);
+    }
 }
 
 void OpenALAudioManager::processPlayingList(void)
