@@ -104,6 +104,7 @@ cd $HOME/GeneralsX/GeneralsMD/ && USE_METAL=1 lldb -o run -o bt -o quit ./Genera
 4. **Documentation Organization**: All new markdown documentation files must be created in the `docs/` directory unless explicitly instructed otherwise. Only essential GitHub files (README.md, LICENSE.md, CONTRIBUTING.md, SECURITY.md) should remain in the repository root.
 4.1 The phases documentation files must have its own directory inside `docs/` named `docs/PHASEXX` where `XX` is the phase number (e.g., `docs/PHASE01`, `docs/PHASE02`, etc.)
 4.2 The phase documentation files must be named `PHASEXX/DESCRIPTION.md` where `XX` is the phase number and `DESCRIPTION` is a short description of the phase (e.g., `docs/PHASE01/INITIAL_REFACTOR.md`, `docs/PHASE02/OPENGL_IMPLEMENTATION.md`, etc.)
+4.3 **Build Instructions**: Platform-specific build instructions are in `docs/MACOS_BUILD_INSTRUCTIONS.md` and `docs/LINUX_BUILD_INSTRUCTIONS.md` (NOT `MACOS_BUILD.md` or `LINUX_BUILD.md`)
 5. The game uses Windows Registry keys for configuration and settings storage. When porting to other platforms, these keys need to be replaced with equivalent configuration files or system settings.
 6. before finish a session, update the technical development diary `docs/MACOS_PORT_DIARY.md` with the progress made.
 7. For game base (generals), there is a crash log in `$HOME/Documents/Command\ and\ Conquer\ Generals\ Data/ReleaseCrashInfo.txt` that can be used to debug runtime issues.

@@ -71,8 +71,8 @@ This project transforms the Windows-exclusive Command & Conquer: Generals into a
 
 | Platform | Status | Graphics API | Build System | Documentation |
 |----------|--------|--------------|--------------|---------------|
-| **macOS** | 🟡 Runtime Debugging (Map systems) | OpenGL | CMake/Ninja ✅ | [docs/MACOS_BUILD.md](docs/MACOS_BUILD.md) |
-| **Linux** | � Planned Q1 2026 | OpenGL | CMake/Ninja ✅ | [docs/LINUX_BUILD.md](docs/LINUX_BUILD.md) |
+| **macOS** | 🟡 Runtime Debugging (Map systems) | OpenGL | CMake/Ninja ✅ | [docs/MACOS_BUILD_INSTRUCTIONS.md](docs/MACOS_BUILD_INSTRUCTIONS.md) |
+| **Linux** | 📅 Planned Q1 2026 | OpenGL | CMake/Ninja ✅ | [docs/LINUX_BUILD_INSTRUCTIONS.md](docs/LINUX_BUILD_INSTRUCTIONS.md) |
 | **Windows** | ✅ Enhanced | DirectX 8 + OpenGL | CMake/Ninja ✅ | Windows-native |
 
 ### 🎮 Features
@@ -139,7 +139,7 @@ For **stable releases and official builds**, visit:
 
 ### macOS
 Comprehensive build instructions for macOS development:
-**[📖 macOS Build Guide](docs/MACOS_BUILD.md)**
+**[📖 macOS Build Guide](docs/MACOS_BUILD_INSTRUCTIONS.md)**
 
 Key requirements:
 - Xcode Command Line Tools
@@ -156,7 +156,7 @@ cmake --build build/vc6 --target GeneralsXZH -j 4
 
 ### Linux
 Linux port is under development:
-**[📖 Linux Build Guide](docs/LINUX_BUILD.md)**
+**[📖 Linux Build Guide](docs/LINUX_BUILD_INSTRUCTIONS.md)**
 
 Timeline: Q1 2026 based on macOS foundation
 
@@ -167,8 +167,8 @@ Windows builds are maintained through the official TheSuperHackers repository wi
 
 Complete documentation is available in the **[docs/](docs/)** directory:
 
-- **[docs/MACOS_BUILD.md](docs/MACOS_BUILD.md)** - Complete macOS build instructions and troubleshooting
-- **[docs/LINUX_BUILD.md](docs/LINUX_BUILD.md)** - Linux port status and contribution guidelines
+- **[docs/MACOS_BUILD_INSTRUCTIONS.md](docs/MACOS_BUILD_INSTRUCTIONS.md)** - Complete macOS build instructions and troubleshooting
+- **[docs/LINUX_BUILD_INSTRUCTIONS.md](docs/LINUX_BUILD_INSTRUCTIONS.md)** - Linux port status and contribution guidelines
 - **[docs/MACOS_PORT_DIARY.md](docs/MACOS_PORT_DIARY.md)** - Technical development diary with detailed phase progress and implementation notes
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Guidelines for contributing to cross-platform development
 - **[docs/TESTING.md](docs/TESTING.md)** - Cross-platform testing procedures and validation
@@ -255,7 +255,7 @@ Contributions are welcome! We're particularly interested in:
 
 **How to Contribute**:
 1. Check current issues and GitHub discussions
-2. Read platform-specific build guides ([macOS](docs/MACOS_BUILD.md), [Linux](docs/LINUX_BUILD.md))
+2. Read platform-specific build guides ([macOS](docs/MACOS_BUILD_INSTRUCTIONS.md), [Linux](docs/LINUX_BUILD_INSTRUCTIONS.md))
 3. Follow [CONTRIBUTING.md](CONTRIBUTING.md) guidelines
 4. Submit issues or pull requests with detailed information
 

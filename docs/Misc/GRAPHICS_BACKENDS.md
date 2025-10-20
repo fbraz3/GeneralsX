@@ -185,4 +185,4 @@ time USE_OPENGL=1 ./GeneralsXZH
 - **Metal Documentation**: [Apple Developer - Metal](https://developer.apple.com/metal/)
 - **OpenGL Documentation**: [Khronos OpenGL](https://www.khronos.org/opengl/)
 - **Implementation**: See `WinMain.cpp`, `dx8wrapper.cpp`, `metalwrapper.mm`
-- **Project Docs**: `docs/MACOS_BUILD.md`, `docs/METAL_BACKEND_SUCCESS.md`
+- **Project Docs**: `docs/MACOS_BUILD_INSTRUCTIONS.md`, `docs/METAL_BACKEND_SUCCESS.md`
