@@ -1,6 +1,6 @@
 /**
  * @file OpenALAudioManager.h
- * @brief OpenAL Audio Manager stub for cross-platform audio support
+ * @brief OpenAL Audio Manager for cross-platform audio support
  */
 
 #pragma once
@@ -9,13 +9,80 @@
 #define __OPENALAUDIOMANAGER_H_
 
 #include "Common/GameAudio.h"
+#include "Common/AsciiString.h"
+
+#ifdef __APPLE__
+    #include <OpenAL/al.h>
+    #include <OpenAL/alc.h>
+#else
+    #include <AL/al.h>
+    #include <AL/alc.h>
+#endif
+
+#include <list>
+#include <vector>
+
+#undef stopAudioEvent
+
+#define NUM_POOLED_SOURCES2D 32
+#define NUM_POOLED_SOURCES3D 128
+
+enum OpenALPlayingAudioType
+{
+    PAT_Sample,
+    PAT_3DSample,
+    PAT_Stream,
+    PAT_INVALID
+};
+
+enum OpenALPlayingStatus
+{
+    PS_Playing,
+    PS_Stopped,
+    PS_Paused
+};
+
+enum OpenALPlayingWhich
+{
+    PW_Attack,
+    PW_Sound,
+    PW_Decay,
+    PW_INVALID
+};
+
+struct OpenALPlayingAudio
+{
+    ALuint source;
+    ALuint buffer;
+    ALuint poolIndex;
+
+    OpenALPlayingAudioType m_type;
+    OpenALPlayingStatus m_status;
+    AudioEventRTS* m_audioEventRTS;
+    Bool m_requestStop;
+    Bool m_cleanupAudioEventRTS;
+    Int m_framesFaded;
+
+    OpenALPlayingAudio() :
+        source(0),
+        buffer(0),
+        poolIndex(0),
+        m_type(PAT_INVALID),
+        m_status(PS_Stopped),
+        m_audioEventRTS(NULL),
+        m_requestStop(false),
+        m_cleanupAudioEventRTS(true),
+        m_framesFaded(0)
+    {
+    }
+};
 
 /**
  * @class OpenALAudioManager
- * @brief Stub implementation of AudioManager using OpenAL
+ * @brief Full implementation of AudioManager using OpenAL
  * 
- * This is a minimal stub to allow compilation. Full implementation
- * should be copied from reference repository when audio functionality is needed.
+ * Ported from jmarshall-win64-modern reference implementation
+ * for cross-platform audio support (macOS/Linux/Windows)
  */
 class OpenALAudioManager : public AudioManager
 {
@@ -72,8 +139,67 @@ public:
     virtual void closeAnySamplesUsingFile(const void* fileToClose) override;
     virtual void setDeviceListenerPosition(void) override;
 
+protected:
+    void processRequest(AudioRequest* req);
+    void playAudioEvent(AudioEventRTS* event);
+    void stopAudioEvent(AudioHandle handle);
+    void pauseAudioEvent(AudioHandle handle);
+
+    OpenALPlayingAudio* allocatePlayingAudio(void);
+    void releasePlayingAudio(OpenALPlayingAudio* release);
+    
+    void recycleSource(ALuint poolIndex, bool is3D);
+    ALuint getFreeSource(ALuint& poolIndex, bool is3D);
+
+    const Coord3D* getCurrentPositionFromEvent(AudioEventRTS* event);
+
+    void playSample(AudioEventRTS* event, OpenALPlayingAudio* audio, bool isMusic = false);
+    bool playSample3D(AudioEventRTS* event, OpenALPlayingAudio* audio);
+    ALuint openFile(AudioEventRTS* eventToOpenFrom);
+    float getEffectiveVolume(AudioEventRTS* event) const;
+
+    void adjustPlayingVolume(OpenALPlayingAudio* audio);
+    void stopAllSpeech(void);
+    void stopAllAudioImmediately(void);
+    
+    // Processing methods
+    void processPlayingList(void);
+    void processFadingList(void);
+    void processStoppedList(void);
+
 private:
     Bool m_initialized;
+    bool m_volumeHasChanged;
+    
+    // OpenAL device and context
+    ALCdevice* device;
+    ALCcontext* context;
+    
+    // Source pools for 2D and 3D audio
+    ALuint m_sourcePool2D[NUM_POOLED_SOURCES2D];
+    bool m_sourceInUse2D[NUM_POOLED_SOURCES2D];
+    
+    ALuint m_sourcePool3D[NUM_POOLED_SOURCES3D];
+    bool m_sourceInUse3D[NUM_POOLED_SOURCES3D];
+    
+    // Dedicated music source
+    ALuint m_musicSource;
+    
+    // Buffer management
+    std::vector<ALuint> m_buffers;
+    
+    // Playing audio lists
+    std::list<OpenALPlayingAudio*> m_playingSounds;     // 2D sounds
+    std::list<OpenALPlayingAudio*> m_playing3DSounds;   // 3D positioned sounds
+    std::list<OpenALPlayingAudio*> m_playingStreams;    // Music and streaming audio
+    std::list<OpenALPlayingAudio*> m_fadingAudio;       // Audio in fade transition
+    std::list<OpenALPlayingAudio*> m_stoppedAudio;      // Completed audio for cleanup
+    
+    // Settings
+    void* m_digitalHandle;
+    AsciiString m_pref3DProvider;
+    AsciiString m_prefSpeaker;
+    UnsignedInt m_selectedSpeakerType;
 };
 
 #endif // __OPENALAUDIOMANAGER_H_
