@@ -115,7 +115,7 @@ find references/ -name "*.cpp" -o -name "*.h" | xargs grep -l "pthread\|POSIX\|u
 ## 📋 Documentation Standards
 
 ### When analyzing references:
-1. **Document findings** in relevant GeneralsX files (MACOS_PORT.md, NEXT_STEPS.md)
+1. **Document findings** in relevant GeneralsX files (MACOS_PORT_DIARY.md, NEXT_STEPS.md)
 2. **Create comparison notes** highlighting differences from our approach
 3. **Test solutions** in isolated branches before main integration
 4. **Credit sources** when implementing discovered solutions
