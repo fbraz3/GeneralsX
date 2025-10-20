@@ -16,6 +16,7 @@ This directory contains all technical documentation for the GeneralsX cross-plat
 ### Technical Documentation
 - **[BIG_FILES_REFERENCE.md](Misc/BIG_FILES_REFERENCE.md)** - Game asset structure, .BIG file contents, and INI file locations
 - **[MULTITHREADING_ANALYSIS.md](Misc/MULTITHREADING_ANALYSIS.md)** - Multi-core CPU optimization analysis and phased implementation plan
+- **[REFERENCE_REPOSITORIES.md](REFERENCE_REPOSITORIES.md)** - Reference repositories and comparative analysis resources
 
 ### Graphics Implementation
 - **[OPENGL_SUMMARY.md](Misc/OPENGL_SUMMARY.md)** - OpenGL 3.3 implementation details, SDL2 integration, and code examples
@@ -38,16 +39,16 @@ New to the project? Start here:
 ### For Developers
 Working on the codebase:
 1. [MACOS_PORT_DIARY.md](MACOS_PORT_DIARY.md) - Understand implemented solutions and patterns
-2. [BIG_FILES_REFERENCE.md](Misc/BIG_FILES_REFERENCE.md) - Navigate game assets and INI files
-3. [OPENGL_SUMMARY.md](Misc/OPENGL_SUMMARY.md) - Graphics implementation reference
-4. [TESTING.md](TESTING.md) - Validate your changes
+2. [Misc/BIG_FILES_REFERENCE.md](Misc/BIG_FILES_REFERENCE.md) - Game asset structure for debugging
+3. [TESTING.md](TESTING.md) - Cross-platform testing procedures
+4. [REFERENCE_REPOSITORIES.md](REFERENCE_REPOSITORIES.md) - Reference implementations for solutions
 
 ### For Contributors
 Want to help? Check:
 1. [NEXT_STEPS.md](NEXT_STEPS.md) - Current priorities and blockers
 2. [PHASE27/TODO_LIST.md](PHASE27/TODO_LIST.md) - Specific graphics tasks
 3. [CONTRIBUTING.md](../CONTRIBUTING.md) - Contribution process
-4. [REFERENCES.md](REFERENCES.md) - Reference implementations for solutions
+4. [REFERENCE_REPOSITORIES.md](REFERENCE_REPOSITORIES.md) - Reference implementations for solutions
 
 ## 📖 Documentation Standards
 

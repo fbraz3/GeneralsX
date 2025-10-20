@@ -2,7 +2,7 @@
 
 This document describes the reference repositories added as git submodules for comparative analysis and solution discovery.
 
-## 🎯 Purpose
+## Purpose
 
 These reference repositories are **temporarily** added as git submodules to:
 - Analyze solutions for persistent INI parsing exceptions (End token issues)
@@ -10,7 +10,7 @@ These reference repositories are **temporarily** added as git submodules to:
 - Study graphics pipeline implementations (DXVK, DirectX→OpenGL wrappers)
 - Discover alternative approaches to common porting challenges
 
-## 📚 Reference Repositories
+## Reference Repositories
 
 ### 1. Fighter19 - Linux Port with DXVK
 **Path**: `references/fighter19-dxvk-port`
@@ -69,7 +69,26 @@ grep -r "win32" --include="*.cpp" --include="*.h" .
 grep -r "POSIX" --include="*.cpp" --include="*.h" .
 ```
 
-## 🔍 Analysis Strategy
+### 4. DXGL - DirectDraw/Direct3D 7 to OpenGL Wrapper
+**Path**: `references/dxgldotorg-dxgl`
+**Repository**: https://github.com/dxgldotorg/dxgl
+**Focus**: DirectX 7 to OpenGL compatibility layer
+
+**Key Areas of Interest**:
+- DirectX→OpenGL wrapper techniques
+- Mock interface patterns for DirectX APIs
+- Device capability emulation
+- OpenGL rendering pipeline implementation
+
+**Analysis Commands**:
+```bash
+cd references/dxgldotorg-dxgl
+find . -name "*d3d*" -o -name "*directx*" | head -20
+grep -r "IDirect3D" --include="*.cpp" --include="*.h" .
+grep -r "OpenGL" --include="*.cpp" --include="*.h" .
+```
+
+## Analysis Strategy
 
 ### Phase 1: INI Parsing Solutions
 1. **Search for End token handling** in all references
@@ -89,7 +108,7 @@ grep -r "POSIX" --include="*.cpp" --include="*.h" .
 3. **Analyze modern graphics APIs** usage
 4. **Evaluate DXGL wrapper** potential (https://github.com/dxgldotorg/dxgl)
 
-## 🛠️ Quick Analysis Commands
+## Quick Analysis Commands
 
 ### Search for INI-related solutions
 ```bash
@@ -112,7 +131,7 @@ find references/ -name "*compat*" -o -name "*win32*" | head -20
 find references/ -name "*.cpp" -o -name "*.h" | xargs grep -l "pthread\|POSIX\|unistd"
 ```
 
-## 📋 Documentation Standards
+## Documentation Standards
 
 ### When analyzing references:
 1. **Document findings** in relevant GeneralsX files (MACOS_PORT_DIARY.md, NEXT_STEPS.md)
@@ -121,7 +140,7 @@ find references/ -name "*.cpp" -o -name "*.h" | xargs grep -l "pthread\|POSIX\|u
 4. **Credit sources** when implementing discovered solutions
 5. **Maintain licenses** and attribution requirements
 
-## ⚠️ Important Notes
+## Important Notes
 
 ### Temporary Nature
 - These submodules are **temporary research tools**
@@ -135,7 +154,7 @@ find references/ -name "*.cpp" -o -name "*.h" | xargs grep -l "pthread\|POSIX\|u
 - **Validate compatibility** with our ARM64 native approach
 - **Maintain our project's code quality standards**
 
-## 🎯 Expected Outcomes
+## Expected Outcomes
 
 1. **Resolution of End token exceptions** through proven solutions
 2. **Enhanced compatibility layer** based on successful implementations  
