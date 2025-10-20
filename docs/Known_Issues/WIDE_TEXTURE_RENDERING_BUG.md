@@ -498,8 +498,8 @@ cd $HOME/GeneralsX/GeneralsMD
 
 ### Documentation
 
-- `docs/known_issues/WIDE_TEXTURE_RENDERING_BUG.md` - This file
-- `docs/known_issues/README.md` - Known issues index
+- `docs/KNOWN_ISSUES/WIDE_TEXTURE_RENDERING_BUG.md` - This file
+- `docs/KNOWN_ISSUES/README.md` - Known issues index
 - `docs/PHASE28/PHASE28_TODO_LIST.md` - Phase 28 task list
 - `docs/MACOS_PORT.md` - Overall macOS port progress
 - `docs/PHASE30/README.md` - Project roadmap and phase overview

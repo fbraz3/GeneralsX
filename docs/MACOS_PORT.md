@@ -547,7 +547,7 @@ if (g_useMetalBackend) {
 
 **Known Issues**:
 - Wide texture rendering bug (1024×256 BC3 textures): Orange blocks on 4/36 textures (11%)
-- Impact: 0% gameplay (documented in docs/known_issues/WIDE_TEXTURE_RENDERING_BUG.md)
+- Impact: 0% gameplay (documented in docs/KNOWN_ISSUES/WIDE_TEXTURE_RENDERING_BUG.md)
 - Status: Accepted as known limitation, engine progression prioritized
 
 **Next Steps**:

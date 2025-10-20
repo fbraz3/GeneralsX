@@ -35,7 +35,9 @@ void OpenALAudioManager::update()
 
 void OpenALAudioManager::postProcessLoad()
 {
-    std::cerr << "OpenALAudioManager::postProcessLoad() - Stub implementation" << std::endl;
+    std::cerr << "OpenALAudioManager::postProcessLoad() - Calling AudioManager::init()" << std::endl;
+    // Call the parent class init() method to load audio INI files
+    AudioManager::init();
 }
 
 void OpenALAudioManager::stopAudio(AudioAffect which)
