@@ -16,6 +16,7 @@
 #include "Common/AudioHandleSpecialValues.h"
 #include "GameLogic/Object.h"
 #include <iostream>
+#include <chrono>
 
 // Constructor
 OpenALAudioManager::OpenALAudioManager() 
@@ -185,7 +186,45 @@ void* OpenALAudioManager::getDevice(void)
 
 void OpenALAudioManager::reset()
 {
-    std::cerr << "OpenALAudioManager::reset() - Stub implementation" << std::endl;
+    printf("OpenALAudioManager::reset() - Full implementation\n");
+    
+    // Stop all playing audio
+    stopAudio(AudioAffect_All);
+    
+    // Process all lists to ensure they're cleaned up
+    processPlayingList();
+    processFadingList();
+    processStoppedList();
+    
+    // Clear all tracking lists
+    m_playingSounds.clear();
+    m_playing3DSounds.clear();
+    m_fadingAudio.clear();
+    m_stoppedAudio.clear();
+    
+    // Reset all 2D sources
+    for (unsigned int i = 0; i < NUM_POOLED_SOURCES2D; ++i) {
+        if (m_sourcePool2D[i] != 0) {
+            alSourceStop(m_sourcePool2D[i]);
+            alSourcei(m_sourcePool2D[i], AL_BUFFER, 0);
+        }
+    }
+    
+    // Reset all 3D sources
+    for (unsigned int i = 0; i < NUM_POOLED_SOURCES3D; ++i) {
+        if (m_sourcePool3D[i] != 0) {
+            alSourceStop(m_sourcePool3D[i]);
+            alSourcei(m_sourcePool3D[i], AL_BUFFER, 0);
+        }
+    }
+    
+    // Reset music source
+    if (m_musicSource != 0) {
+        alSourceStop(m_musicSource);
+        alSourcei(m_musicSource, AL_BUFFER, 0);
+    }
+    
+    printf("OpenALAudioManager::reset() - Complete\n");
 }
 
 void OpenALAudioManager::update()
@@ -804,6 +843,34 @@ void OpenALAudioManager::stopAllAudioImmediately(void)
     m_stoppedAudio.clear();
 }
 
+void OpenALAudioManager::startFade(OpenALPlayingAudio* audio, float duration)
+{
+    if (!audio) return;
+    
+    // Get current time in seconds
+    static auto startTime = std::chrono::high_resolution_clock::now();
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float currentSeconds = std::chrono::duration<float>(currentTime - startTime).count();
+    
+    // Get current volume from OpenAL source
+    if (audio->source) {
+        ALfloat currentGain = 1.0f;
+        alGetSourcef(audio->source, AL_GAIN, &currentGain);
+        audio->m_originalVolume = currentGain;
+        audio->m_currentVolume = currentGain;
+    } else {
+        audio->m_originalVolume = 1.0f;
+        audio->m_currentVolume = 1.0f;
+    }
+    
+    // Set fade parameters
+    audio->m_fadeStartTime = currentSeconds;
+    audio->m_fadeDuration = duration;
+    
+    // Move to fading list
+    m_fadingAudio.push_back(audio);
+}
+
 void OpenALAudioManager::processPlayingList(void)
 {
     std::list<OpenALPlayingAudio*>::iterator it;
@@ -905,6 +972,11 @@ void OpenALAudioManager::processFadingList(void)
 {
     std::list<OpenALPlayingAudio*>::iterator it;
     OpenALPlayingAudio* playing;
+    
+    // Get current time in seconds (high precision)
+    static auto startTime = std::chrono::high_resolution_clock::now();
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float currentSeconds = std::chrono::duration<float>(currentTime - startTime).count();
 
     for (it = m_fadingAudio.begin(); it != m_fadingAudio.end(); /* empty */) {
         playing = (*it);
@@ -912,12 +984,34 @@ void OpenALAudioManager::processFadingList(void)
             it = m_fadingAudio.erase(it);
             continue;
         }
-
-        // TODO: Implement fading logic
-        // For now, just move to stopped list
-        playing->m_status = PS_Stopped;
-        m_stoppedAudio.push_back(playing);
-        it = m_fadingAudio.erase(it);
+        
+        // Calculate fade progress (0.0 = start, 1.0 = complete)
+        float elapsedTime = currentSeconds - playing->m_fadeStartTime;
+        float fadeProgress = elapsedTime / playing->m_fadeDuration;
+        
+        // Clamp to [0.0, 1.0]
+        if (fadeProgress < 0.0f) fadeProgress = 0.0f;
+        if (fadeProgress > 1.0f) fadeProgress = 1.0f;
+        
+        // Linear interpolation from original volume to 0
+        // Could use other curves: quadratic, exponential, etc.
+        float newVolume = playing->m_originalVolume * (1.0f - fadeProgress);
+        playing->m_currentVolume = newVolume;
+        
+        // Apply new volume to OpenAL source
+        if (playing->source) {
+            alSourcef(playing->source, AL_GAIN, newVolume);
+        }
+        
+        // Check if fade complete
+        if (fadeProgress >= 1.0f || newVolume <= 0.001f) {
+            // Fade complete - move to stopped list
+            playing->m_status = PS_Stopped;
+            m_stoppedAudio.push_back(playing);
+            it = m_fadingAudio.erase(it);
+        } else {
+            ++it;
+        }
     }
 }
 

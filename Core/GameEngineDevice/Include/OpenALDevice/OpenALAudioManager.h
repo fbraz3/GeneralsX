@@ -62,6 +62,12 @@ struct OpenALPlayingAudio
     Bool m_requestStop;
     Bool m_cleanupAudioEventRTS;
     Int m_framesFaded;
+    
+    // Volume fading support
+    float m_originalVolume;    // Volume before fading started
+    float m_currentVolume;     // Current volume during fade
+    float m_fadeStartTime;     // Time when fade started (in seconds)
+    float m_fadeDuration;      // Total fade duration (in seconds)
 
     OpenALPlayingAudio() :
         source(0),
@@ -72,7 +78,11 @@ struct OpenALPlayingAudio
         m_audioEventRTS(NULL),
         m_requestStop(false),
         m_cleanupAudioEventRTS(true),
-        m_framesFaded(0)
+        m_framesFaded(0),
+        m_originalVolume(1.0f),
+        m_currentVolume(1.0f),
+        m_fadeStartTime(0.0f),
+        m_fadeDuration(1.0f)  // Default 1 second fade
     {
     }
 };
@@ -161,6 +171,9 @@ protected:
     void adjustPlayingVolume(OpenALPlayingAudio* audio);
     void stopAllSpeech(void);
     void stopAllAudioImmediately(void);
+    
+    // Fading helper
+    void startFade(OpenALPlayingAudio* audio, float duration = 1.0f);
     
     // Processing methods
     void processPlayingList(void);
