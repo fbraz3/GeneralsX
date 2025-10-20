@@ -25,7 +25,7 @@ This document provides comprehensive testing procedures for the Command & Conque
 - 🔄 **Final Integration**: DirectX layer coordination in progress
 
 **For OpenGL-specific testing:** See [OPENGL_TESTING.md](Misc/OPENGL_TESTING.md)
-**For macOS porting details:** See [MACOS_PORT.md](./MACOS_PORT.md)
+**For macOS porting details:** See [MACOS_PORT_DIARY.md](./MACOS_PORT_DIARY.md)
 
 ### OpenGL Testing Integration
 
@@ -453,7 +453,7 @@ build-matrix:
 
 - **[OPENGL_TESTING.md](Misc/OPENGL_TESTING.md)** - OpenGL-specific testing procedures and results
 - **[OPENGL_SUMMARY.md](Misc/OPENGL_SUMMARY.md)** - Complete OpenGL implementation documentation
-- **[MACOS_PORT.md](MACOS_PORT.md)** - macOS porting progress and platform-specific details
+- **[MACOS_PORT_DIARY.md](MACOS_PORT_DIARY.md)** - macOS porting progress and platform-specific details
 - **[tests/README.md](../tests/README.md)** - Test suite directory index
 
 ---

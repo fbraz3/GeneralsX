@@ -1213,7 +1213,7 @@ The texture system (Phase 28.1-28.5) is **correctly implemented and integrated**
 
 **Files Being Updated**:
 1. ✅ PHASE27/TODO_LIST.md (corrected to 26/32 tasks, 81%)
-2. ✅ MACOS_PORT.md (this file - updated with Phase 27.5 and Generals investigation)
+2. ✅ MACOS_PORT_DIARY.md (this file - updated with Phase 27.5 and Generals investigation)
 3. ⏳ OPENGL_SUMMARY.md (pending - final implementation documentation)
 4. ⏳ NEXT_STEPS.md (pending - post-Phase 27 roadmap)
 5. ⏳ .github/copilot-instructions.md (pending - AI agent context update)
