@@ -166,13 +166,18 @@ bool isValidMemoryPointer(void* ptr, size_t minSize) {
 - Phase 28: Texture Loading (4 sub-phases - DDS/TGA loaders, DirectX interception)
 - Phase 29: Metal Render States (lighting, fog, stencil, point sprites)
 - Phase 30: Metal Backend Success
-- Phase 31-34: Game Logic, AI, Pathfinding
+- Phase 31: Texture System Integration
+- Phase 32: Audio Pipeline Investigation (COMPLETE - INI parsing, event system, lifecycle)
+- Phase 33: Game Logic & Gameplay Systems (Planned)
+- **Phase 34: OpenAL Audio Backend Implementation (Ready to start - October 2025)**
+- Phase 35: Multiplayer & Networking (Planned)
 
 ### Critical Reference Files
 - `docs/MACOS_PORT.md` - **UPDATE AFTER EVERY SESSION** (project requirement)
 - `docs/Misc/BIG_FILES_REFERENCE.md` - Asset structure (INI.big, INIZH.big contents)
 - `docs/Misc/GRAPHICS_BACKENDS.md` - Metal vs OpenGL runtime selection
 - `docs/Misc/CRITICAL_FIXES.md` - Emergency fixes (fullscreen lock, NULL crashes)
+- `docs/Misc/AUDIO_BACKEND_STATUS.md` - Audio system status (OpenAL stub vs real implementation)
 - `.github/instructions/project.instructions.md` - Compilation/debugging commands
 
 ## Reference Repositories (Git Submodules)
@@ -192,6 +197,8 @@ references/dxgldotorg-dxgl/
 ```
 
 **Pattern**: Stuck on DirectX render state mapping? Check `references/dxgldotorg-dxgl/` for proven D3D→OpenGL translations.
+
+**Audio Implementation**: For Phase 34 (OpenAL backend), refer to `references/jmarshall-win64-modern/Code/GameEngineDevice/Source/OpenALAudioDevice/` for complete working implementation.
 
 ## Testing Strategy
 
@@ -253,7 +260,7 @@ Refs: Phase 28.4 Post-DirectX Texture Interception
 
 **Rules**:
 - All messages in **English** (code/commits)
-- No commits between 09:00-18:00 on workdays (local time) unless explicitly asked
+- **Commit Time Restrictions**: Do NOT commit code during business hours on weekdays (Monday-Friday 09:00-18:00 local time). Weekends (Saturday-Sunday) allow commits at any time. This restriction can be overridden if explicitly requested by the user.
 
 ## When to Update Documentation
 
