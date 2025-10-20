@@ -5,8 +5,8 @@ This directory contains all technical documentation for the GeneralsX cross-plat
 ## 📚 Documentation Index
 
 ### Build & Setup Guides
-- **[MACOS_BUILD.md](MACOS_BUILD.md)** - Complete macOS build instructions, dependencies, and troubleshooting
-- **[LINUX_BUILD.md](LINUX_BUILD.md)** - Linux port status, build instructions, and contribution guidelines
+- **[MACOS_BUILD_INSTRUCTIONS.md](MACOS_BUILD_INSTRUCTIONS.md)** - Complete macOS build instructions, dependencies, and troubleshooting
+- **[LINUX_BUILD_INSTRUCTIONS.md](LINUX_BUILD_INSTRUCTIONS.md)** - Linux port status, build instructions, and contribution guidelines
 
 ### Project Progress & Planning
 - **[MACOS_PORT_DIARY.md](MACOS_PORT_DIARY.md)** - Technical development diary documenting comprehensive phase progress, achievements, and implementation details
@@ -31,7 +31,7 @@ This directory contains all technical documentation for the GeneralsX cross-plat
 ### Getting Started
 New to the project? Start here:
 1. Read the main [README.md](../README.md) for project overview
-2. Check [MACOS_BUILD.md](MACOS_BUILD.md) or [LINUX_BUILD.md](LINUX_BUILD.md) for your platform
+2. Check [MACOS_BUILD_INSTRUCTIONS.md](MACOS_BUILD_INSTRUCTIONS.md) or [LINUX_BUILD_INSTRUCTIONS.md](LINUX_BUILD_INSTRUCTIONS.md) for your platform
 3. Review [NEXT_STEPS.md](NEXT_STEPS.md) for current development status
 4. Read [CONTRIBUTING.md](../CONTRIBUTING.md) for contribution guidelines
 
