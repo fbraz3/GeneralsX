@@ -180,7 +180,7 @@ cmake --preset linux
 
 ## 📚 Additional Resources
 
-- **Progress Tracking**: [MACOS_PORT.md](MACOS_PORT.md)
+- **Progress Tracking**: [MACOS_PORT_DIARY.md](MACOS_PORT_DIARY.md) - Technical development diary
 - **Next Steps**: [NEXT_STEPS.md](NEXT_STEPS.md)
 - **macOS Guide**: [MACOS_BUILD.md](MACOS_BUILD.md)
 
@@ -251,7 +251,7 @@ For Linux port specific issues, check [Issues](https://github.com/fbraz3/General
 If you have Linux development experience and want to contribute to the port:
 
 1. **Fork** this repository
-2. **Analyze** the macOS port progress in `MACOS_PORT.md`
+2. **Analyze** the macOS port progress in technical diary `MACOS_PORT_DIARY.md`
 3. **Study** the compatibility layer in `Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h`
 4. **Open** an Issue describing your contribution proposal
 

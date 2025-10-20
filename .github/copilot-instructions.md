@@ -173,7 +173,7 @@ bool isValidMemoryPointer(void* ptr, size_t minSize) {
 - Phase 35: Multiplayer & Networking (Planned)
 
 ### Critical Reference Files
-- `docs/MACOS_PORT.md` - **UPDATE AFTER EVERY SESSION** (project requirement)
+- `docs/MACOS_PORT_DIARY.md` - **UPDATE AFTER EVERY SESSION** - Technical development diary (project requirement)
 - `docs/Misc/BIG_FILES_REFERENCE.md` - Asset structure (INI.big, INIZH.big contents)
 - `docs/Misc/GRAPHICS_BACKENDS.md` - Metal vs OpenGL runtime selection
 - `docs/Misc/CRITICAL_FIXES.md` - Emergency fixes (fullscreen lock, NULL crashes)
@@ -264,7 +264,7 @@ Refs: Phase 28.4 Post-DirectX Texture Interception
 
 ## When to Update Documentation
 
-**ALWAYS update** `docs/MACOS_PORT.md` at session end with:
+**ALWAYS update** `docs/MACOS_PORT_DIARY.md` (development diary) at session end with:
 - Phase progress (e.g., "Phase 28.4 complete - 7 textures loaded")
 - Critical discoveries (e.g., "VFS integration failed, switched to DirectX interception")
 - Commit hashes for reference

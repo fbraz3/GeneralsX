@@ -196,7 +196,7 @@ Event created successfully but OpenAL stub never plays it.
 
 ## Related Documentation
 
-- `docs/MACOS_PORT.md` - Main porting progress
+- `docs/MACOS_PORT_DIARY.md` - Main porting progress
 - `docs/PHASE32/AUDIO_PIPELINE_INVESTIGATION.md` - Current phase work
 - `docs/Misc/BIG_FILES_REFERENCE.md` - Asset structure (Music.big contents)
 - `references/jmarshall-win64-modern/` - Proven OpenAL implementation source

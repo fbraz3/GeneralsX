@@ -426,7 +426,7 @@
 **Files**: 
 
 - TODO_LIST.md (this file)
-- MACOS_PORT.md
+- MACOS_PORT_DIARY.md
 - OPENGL_SUMMARY.md
 - NEXT_STEPS.md
 - .github/copilot-instructions.md
@@ -436,7 +436,7 @@
 **Progress**:
 
 - ✅ TODO_LIST.md corrected (26/32 tasks, 81%, Phase 27.5 complete)
-- ⏳ MACOS_PORT.md update pending
+- ⏳ MACOS_PORT_DIARY.md update pending
 - ⏳ OPENGL_SUMMARY.md update pending
 - ⏳ NEXT_STEPS.md update pending
 - ⏳ copilot-instructions.md update pending

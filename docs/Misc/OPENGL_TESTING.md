@@ -312,4 +312,4 @@ perf record ./test_executable
 ---
 
 **For complete implementation details, see:** `OPENGL_COMPLETE.md`  
-**For macOS-specific testing, see:** `MACOS_PORT.md`
+**For macOS-specific testing, see:** `MACOS_PORT_DIARY.md`

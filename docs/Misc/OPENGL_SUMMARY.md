@@ -52,7 +52,7 @@ All Phase 27.5 tasks completed successfully:
 
 **Phase 27.6: Final Documentation Update - IN PROGRESS** 🔄 (17%)
 - ✅ PHASE27/TODO_LIST.md corrected (26/32 tasks, 81%)
-- ✅ MACOS_PORT.md updated with Phase 27.5 complete status
+- ✅ MACOS_PORT_DIARY.md updated with Phase 27.5 complete status
 - 🔄 OPENGL_SUMMARY.md (this file - being updated now)
 - ⏳ NEXT_STEPS.md, copilot-instructions.md, PHASE27/COMPLETION_SUMMARY.md pending
 
@@ -588,7 +588,7 @@ All configurations build successfully:
 
 1. **Phase 27.6: Final Documentation Update** 🔄 (In Progress - 50%)
    - ✅ PHASE27/TODO_LIST.md updated
-   - ✅ MACOS_PORT.md updated
+   - ✅ MACOS_PORT_DIARY.md updated
    - ✅ OPENGL_SUMMARY.md updated (this file)
    - ⏳ NEXT_STEPS.md pending
    - ⏳ copilot-instructions.md pending
@@ -651,6 +651,6 @@ The implementation is **nearly production-ready** (81% complete) and provides a 
 ---
 
 **For testing procedures and detailed test reports, see:** `OPENGL_TESTING.md`, `PHASE27/PERFORMANCE_BASELINE.md`  
-**For macOS-specific porting details, see:** `MACOS_PORT.md`  
+**For macOS-specific porting details, see:** `MACOS_PORT_DIARY.md`  
 **For backport instructions, see:** `PHASE27/OPENGL_BACKPORT_GUIDE.md`  
 **For task tracking, see:** `PHASE27/TODO_LIST.md`

@@ -237,7 +237,7 @@ Phase 27 represents a **major milestone** in the GeneralsX project: the successf
 
 **Updates**:
 1. ✅ `PHASE27/TODO_LIST.md` - Corrected to 26/32 tasks (81%)
-2. ✅ `MACOS_PORT.md` - Phase 27.5 complete status added
+2. ✅ `MACOS_PORT_DIARY.md` - Phase 27.5 complete status added
 3. ✅ `OPENGL_SUMMARY.md` - Final implementations documented
 4. ✅ `NEXT_STEPS.md` - Post-Phase 27 roadmap complete
 5. ✅ `.github/copilot-instructions.md` - AI agent context updated
@@ -358,7 +358,7 @@ Phase 27 represents a **major milestone** in the GeneralsX project: the successf
 
 ### Documentation Commits
 
-- Multiple updates to `PHASE27/TODO_LIST.md`, `MACOS_PORT.md`, `OPENGL_SUMMARY.md`
+- Multiple updates to `PHASE27/TODO_LIST.md`, `MACOS_PORT_DIARY.md`, `OPENGL_SUMMARY.md`
 - Creation of `PHASE27/PERFORMANCE_BASELINE.md`, `PHASE27/TEXTURE_LOADING_DESIGN.md`
 - Updates to `PHASE27/OPENGL_BACKPORT_GUIDE.md` (+430 lines Phase 27.5)
 
@@ -478,5 +478,5 @@ Phase 27 completion enables:
 - `docs/PHASE27/OPENGL_BACKPORT_GUIDE.md` - Step-by-step backport instructions
 - `docs/PHASE27/PERFORMANCE_BASELINE.md` - Performance metrics and analysis
 - `docs/OPENGL_SUMMARY.md` - OpenGL implementation details
-- `docs/MACOS_PORT.md` - Comprehensive port progress
+- `docs/MACOS_PORT_DIARY.md` - Comprehensive port progress
 - `docs/NEXT_STEPS.md` - Future development roadmap
