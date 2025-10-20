@@ -219,12 +219,12 @@ Validate all Phase 29 Metal features with runtime testing
    - Track uniform updates and render state changes
 
 4. **Documentation**:
-   - Update MACOS_PORT.md with Phase 29 progress
+   - Update MACOS_PORT_DIARY.md with Phase 29 progress
    - Create PHASE29/COMPLETION_SUMMARY.md
 
 **Files to Create/Modify**:
 - `docs/PHASE29/COMPLETION_SUMMARY.md` - Phase 29 results
-- `docs/MACOS_PORT.md` - Update with Phase 29 status
+- `docs/MACOS_PORT_DIARY.md` - Update with Phase 29 status
 - `docs/PHASE29/ROADMAP.md` - Mark Phase 29 complete in project documentation
 
 ---

@@ -701,7 +701,7 @@ With Metal backend stable, proceed to texture system implementation:
 - `docs/METAL_IMPLEMENTATION.md` - Original Metal backend design
 - `docs/PHASE30/METAL_BACKEND_SUCCESS.md` - Metal backend implementation details
 - `docs/Misc/OPENGL_SUMMARY.md` - OpenGL implementation (deprecated on macOS)
-- `docs/MACOS_PORT.md` - Overall macOS port progress
+- `docs/MACOS_PORT_DIARY.md` - Overall macOS port progress
 - `docs/NEXT_STEPS.md` - Roadmap to playable game
 
 ---

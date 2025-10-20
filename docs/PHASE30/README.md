@@ -75,7 +75,7 @@ cd $HOME/GeneralsX/GeneralsMD && USE_METAL=1 ./GeneralsXZH
 ## Documentation
 
 - **Main Report**: `docs/METAL_BACKEND_SUCCESS.md` (227 lines)
-- **Progress**: `docs/MACOS_PORT.md` - Phase 30 Complete Summary
+- **Progress**: `docs/MACOS_PORT_DIARY.md` - Phase 30 Complete Summary
 - **Roadmap**: `docs/NEXT_STEPS.md` - Phase 30 marked complete
 - **AI Instructions**: `.github/copilot-instructions.md` - Phase 30 patterns
 

@@ -351,7 +351,7 @@ cmake --preset macos-x64
 
 ## 📚 Additional Resources
 
-- **Progress Tracking**: [MACOS_PORT.md](MACOS_PORT.md)
+- **Progress Tracking**: [MACOS_PORT_DIARY.md](MACOS_PORT_DIARY.md) - Technical development diary with phase-by-phase progress
 - **Next Steps**: [NEXT_STEPS.md](NEXT_STEPS.md)
 
 ## 🆘 Troubleshooting

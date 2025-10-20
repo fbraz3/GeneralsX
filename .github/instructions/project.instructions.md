@@ -105,7 +105,7 @@ cd $HOME/GeneralsX/GeneralsMD/ && USE_METAL=1 lldb -o run -o bt -o quit ./Genera
 4.1 The phases documentation files must have its own directory inside `docs/` named `docs/PHASEXX` where `XX` is the phase number (e.g., `docs/PHASE01`, `docs/PHASE02`, etc.)
 4.2 The phase documentation files must be named `PHASEXX/DESCRIPTION.md` where `XX` is the phase number and `DESCRIPTION` is a short description of the phase (e.g., `docs/PHASE01/INITIAL_REFACTOR.md`, `docs/PHASE02/OPENGL_IMPLEMENTATION.md`, etc.)
 5. The game uses Windows Registry keys for configuration and settings storage. When porting to other platforms, these keys need to be replaced with equivalent configuration files or system settings.
-6. before finish a session, update the files `docs/MACOS_PORT.md` with the progress made.
+6. before finish a session, update the technical development diary `docs/MACOS_PORT_DIARY.md` with the progress made.
 7. For game base (generals), there is a crash log in `$HOME/Documents/Command\ and\ Conquer\ Generals\ Data/ReleaseCrashInfo.txt` that can be used to debug runtime issues.
 8. For game expansion (zero hour), there is a crash log in `$HOME/Documents/Command\ and\ Conquer\ Generals\ Zero\ Hour\ Data/ReleaseCrashInfo.txt` that can be used to debug runtime issues.
 9. When compiling the project, try to use half of the available CPU cores to avoid overloading the system.

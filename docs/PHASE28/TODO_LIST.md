@@ -388,7 +388,7 @@ Overall                         [░░░░░░░░░░] 0%
 - [ ] Skirmish match runs for 10+ minutes without crashes
 - [ ] FPS targets met (menu > 60, game > 30)
 - [ ] No GL errors during normal operation
-- [ ] Documentation updated in `docs/MACOS_PORT.md`
+- [ ] Documentation updated in `docs/MACOS_PORT_DIARY.md`
 
 ### Definition of Done:
 - [ ] Code reviewed and merged to main

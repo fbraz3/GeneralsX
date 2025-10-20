@@ -334,7 +334,7 @@ endif()
 ## Documentation Updates
 
 After completion, update:
-- `docs/MACOS_PORT.md` - Add Phase 33 completion status
+- `docs/MACOS_PORT_DIARY.md` - Add Phase 33 completion status
 - `docs/Misc/AUDIO_BACKEND_STATUS.md` - Mark as IMPLEMENTED
 - `README.md` - Update feature list (audio now working)
 - `.github/copilot-instructions.md` - Update audio backend status

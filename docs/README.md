@@ -9,7 +9,7 @@ This directory contains all technical documentation for the GeneralsX cross-plat
 - **[LINUX_BUILD.md](LINUX_BUILD.md)** - Linux port status, build instructions, and contribution guidelines
 
 ### Project Progress & Planning
-- **[MACOS_PORT.md](MACOS_PORT.md)** - Comprehensive technical progress, phase achievements, and implementation details
+- **[MACOS_PORT_DIARY.md](MACOS_PORT_DIARY.md)** - Technical development diary documenting comprehensive phase progress, achievements, and implementation details
 - **[NEXT_STEPS.md](NEXT_STEPS.md)** - Current development phase, upcoming tasks, and crash analysis
 - **[REFERENCES.md](REFERENCES.md)** - Reference repositories and comparative analysis resources
 
@@ -37,7 +37,7 @@ New to the project? Start here:
 
 ### For Developers
 Working on the codebase:
-1. [MACOS_PORT.md](MACOS_PORT.md) - Understand implemented solutions and patterns
+1. [MACOS_PORT_DIARY.md](MACOS_PORT_DIARY.md) - Understand implemented solutions and patterns
 2. [BIG_FILES_REFERENCE.md](Misc/BIG_FILES_REFERENCE.md) - Navigate game assets and INI files
 3. [OPENGL_SUMMARY.md](Misc/OPENGL_SUMMARY.md) - Graphics implementation reference
 4. [TESTING.md](TESTING.md) - Validate your changes
@@ -61,7 +61,7 @@ All documentation in this directory follows these standards:
 ## 🔄 Maintenance
 
 Documentation should be updated:
-- **Before finishing a session**: Update MACOS_PORT.md and NEXT_STEPS.md with progress
+- **Before finishing a session**: Update MACOS_PORT_DIARY.md and NEXT_STEPS.md with progress
 - **After major changes**: Update relevant technical guides
 - **When adding features**: Document new functionality and APIs
 - **When fixing bugs**: Update troubleshooting sections

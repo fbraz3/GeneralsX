@@ -169,7 +169,7 @@ Complete documentation is available in the **[docs/](docs/)** directory:
 
 - **[docs/MACOS_BUILD.md](docs/MACOS_BUILD.md)** - Complete macOS build instructions and troubleshooting
 - **[docs/LINUX_BUILD.md](docs/LINUX_BUILD.md)** - Linux port status and contribution guidelines
-- **[docs/MACOS_PORT.md](docs/MACOS_PORT.md)** - Detailed technical progress and implementation notes
+- **[docs/MACOS_PORT_DIARY.md](docs/MACOS_PORT_DIARY.md)** - Technical development diary with detailed phase progress and implementation notes
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Guidelines for contributing to cross-platform development
 - **[docs/TESTING.md](docs/TESTING.md)** - Cross-platform testing procedures and validation
 

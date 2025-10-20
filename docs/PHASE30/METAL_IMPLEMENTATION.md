@@ -49,7 +49,7 @@ Migrate GeneralsX’s graphics pipeline to use Metal natively on macOS, replacin
 
 ### Phase 7: Documentation updates
 
-- Update `docs/MACOS_PORT.md` and `docs/NEXT_STEPS.md`; optionally create `docs/PHASE28/METAL_IMPLEMENTATION.md` with implementation details.
+- Update `docs/MACOS_PORT_DIARY.md` and `docs/NEXT_STEPS.md`; optionally create `docs/PHASE28/METAL_IMPLEMENTATION.md` with implementation details.
 - Document functional differences and limitations between Metal and OpenGL.
 
 ## 4. Final considerations
