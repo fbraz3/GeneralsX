@@ -178,11 +178,11 @@ See **[docs/README.md](docs/README.md)** for complete documentation index.
 ### 🐛 Known Issues
 
 For documented limitations and known bugs, see:
-**[📋 Known Issues Index](docs/Known_Issues/README.md)**
+**[📋 Known Issues Index](docs/KNOWN_ISSUES/README.md)**
 
 Current known limitations:
 
-- **Wide Texture Rendering Bug** (macOS Metal) - 1024×256 textures render with orange blocks on right half. Affects 4 end-game screens only. [Details](docs/Known_Issues/WIDE_TEXTURE_RENDERING_BUG.md)
+- **Wide Texture Rendering Bug** (macOS Metal) - 1024×256 textures render with orange blocks on right half. Affects 4 end-game screens only. [Details](docs/KNOWN_ISSUES/WIDE_TEXTURE_RENDERING_BUG.md)
 
 ### 🎯 Roadmap
 

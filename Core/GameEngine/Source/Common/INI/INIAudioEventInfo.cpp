@@ -48,16 +48,22 @@ void INI::parseMusicTrackDefinition( INI* ini )
 	// read the name
 	const char* c = ini->getNextToken();
 	name.set( c );
+	
+	printf("parseMusicTrackDefinition() - Parsing track: '%s'\n", c ? c : "NULL");
 
 	track = TheAudio->newAudioEventInfo( name );
 	if (!track) {
+		printf("parseMusicTrackDefinition() - ERROR: Failed to create AudioEventInfo for '%s'\n", name.str());
 		return;
 	}
 
 	AudioEventInfo *defaultInfo = TheAudio->findAudioEventInfo("DefaultMusicTrack");
 	if (defaultInfo) {
+		printf("parseMusicTrackDefinition() - Found DefaultMusicTrack, copying defaults\n");
 		(*track) = (*defaultInfo);
 		TheAudio->addTrackName( name );
+	} else {
+		printf("parseMusicTrackDefinition() - WARNING: DefaultMusicTrack not found!\n");
 	}
 
 	track->m_audioName = name;
@@ -65,6 +71,11 @@ void INI::parseMusicTrackDefinition( INI* ini )
 
 	// parse the ini definition
 	ini->initFromINI( track, track->getFieldParse() );
+	
+	// Phase 32 DEBUG: Log filename after parsing
+	printf("parseMusicTrackDefinition() - Track '%s' parsed: filename='%s', volume=%.2f\n",
+	       name.str(), track->m_filename.str(), track->m_volume);
+	fflush(stdout);
 }
 
 //-------------------------------------------------------------------------------------------------

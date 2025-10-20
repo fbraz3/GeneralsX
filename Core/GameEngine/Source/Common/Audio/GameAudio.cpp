@@ -477,6 +477,10 @@ AudioHandle AudioManager::addAudioEvent(const AudioEventRTS *eventToAdd)
 	AudioType type = eventToAdd->getAudioEventInfo()->m_soundType;
 	if (type == AT_Music)
 	{
+		printf("AudioManager::addAudioEvent() - Adding MUSIC track: '%s' (handle=%u, filename='%s')\n", 
+		       audioEvent->getEventName().str(), 
+		       audioEvent->getPlayingHandle(),
+		       audioEvent->getFilename().str());
 		m_music->addAudioEvent(audioEvent);
 	}
 	else
@@ -954,6 +958,8 @@ Real AudioManager::getAudioLengthMS( const AudioEventRTS *event )
 //-------------------------------------------------------------------------------------------------
 Bool AudioManager::isMusicAlreadyLoaded(void) const
 {
+	printf("isMusicAlreadyLoaded() - Checking hash with %d entries\n", m_allAudioEventInfo.size());
+	
 	const AudioEventInfo *musicToLoad = NULL;
 	AudioEventInfoHash::const_iterator it;
 	for (it = m_allAudioEventInfo.begin(); it != m_allAudioEventInfo.end(); ++it) {
@@ -961,11 +967,15 @@ Bool AudioManager::isMusicAlreadyLoaded(void) const
 			const AudioEventInfo *aet = it->second;
 			if (aet->m_soundType == AT_Music) {
 				musicToLoad = aet;
+				printf("isMusicAlreadyLoaded() - Found music track: '%s' (type=%d)\n", 
+					   it->first.str(), aet->m_soundType);
+				break;  // Use first music track found
 			}
 		}
 	}
 
 	if (!musicToLoad) {
+		printf("isMusicAlreadyLoaded() - ERROR: No AT_Music entries found in hash\n");
 		return FALSE;
 	}
 
@@ -974,8 +984,12 @@ Bool AudioManager::isMusicAlreadyLoaded(void) const
 	aud.generateFilename();
 
 	AsciiString astr = aud.getFilename();
+	
+	printf("isMusicAlreadyLoaded() - Checking if file exists: '%s'\n", astr.str());
+	bool fileExists = TheFileSystem->doesFileExist(astr.str());
+	printf("isMusicAlreadyLoaded() - File exists: %s\n", fileExists ? "YES" : "NO");
 
-	return (TheFileSystem->doesFileExist(astr.str()));
+	return fileExists;
 }
 
 //-------------------------------------------------------------------------------------------------

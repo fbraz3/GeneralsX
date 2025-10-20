@@ -30,6 +30,7 @@
 
 #include "Common/ActionManager.h"
 #include "Common/AudioAffect.h"
+#include "Common/AudioEventRTS.h"
 #include "Common/BuildAssistant.h"
 #include "Common/CRCDebug.h"
 #include "Common/Radar.h"
@@ -777,19 +778,7 @@ void GameEngine::init()
   startTime64 = endTime64;//Reset the clock ////////////////////////////////////////////////////////
 	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
 	#endif/////////////////////////////////////////////////////////////////////////////////////////////
-		initSubsystem(TheAudio,"TheAudio", TheGlobalData->m_headless ? NEW AudioManagerDummy : createAudioManager(), NULL);
-		printf("GameEngine::init() - AUDIO CHECK: isMusicAlreadyLoaded() = %s\n", 
-			TheAudio->isMusicAlreadyLoaded() ? "true" : "false");
-		fflush(stdout);
-		// Phase 28.9: Temporarily disable music requirement for graphics testing
-		// Original code: if (!TheAudio->isMusicAlreadyLoaded()) setQuitting(TRUE);
-		#ifdef REQUIRE_MUSIC_TO_START
-		if (!TheAudio->isMusicAlreadyLoaded())
-			setQuitting(TRUE);
-		#else
-		// Allow game to continue without music for OpenGL/texture testing
-		printf("GameEngine::init() - MUSIC BYPASS: Continuing without music for Phase 28 testing\n");
-		#endif
+	initSubsystem(TheAudio,"TheAudio", TheGlobalData->m_headless ? NEW AudioManagerDummy : createAudioManager(), NULL);
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
@@ -1007,6 +996,39 @@ void GameEngine::init()
 		DEBUG_LOG(("INI CRC is 0x%8.8X", TheGlobalData->m_iniCRC));
 
 		TheSubsystemList->postProcessLoadAll();
+
+	// Phase 32: Verify music files were loaded successfully
+	// This check must occur AFTER postProcessLoadAll() because AudioManager::init() is called in postProcessLoad()
+	printf("GameEngine::init() - AUDIO CHECK: isMusicAlreadyLoaded() = %s\n", 
+		TheAudio->isMusicAlreadyLoaded() ? "true" : "false");
+	fflush(stdout);
+	
+	if (!TheAudio->isMusicAlreadyLoaded())
+	{
+		printf("GameEngine::init() - WARNING: No music files found, continuing anyway (Phase 32 development)\n");
+		// Original code would call: setQuitting(TRUE);
+		// TODO Phase 32: Restore strict music requirement after full audio implementation
+	}
+	else
+	{
+		// Phase 32 TEST: Auto-start Shell music for playback verification
+		printf("GameEngine::init() - TEST: Attempting to start 'Shell' menu music...\n");
+		fflush(stdout);
+		
+		// Keep event alive for audio playback (static prevents re-creation)
+		static AudioEventRTS* s_shellMusicTest = nullptr;
+		if (!s_shellMusicTest) {
+			s_shellMusicTest = new AudioEventRTS("Shell");
+			if (s_shellMusicTest) {
+				AudioHandle handle = TheAudio->addAudioEvent(s_shellMusicTest);
+				printf("GameEngine::init() - TEST: Shell music addAudioEvent returned handle=%u (event kept alive)\n", handle);
+				fflush(stdout);
+			} else {
+				printf("GameEngine::init() - TEST: Failed to create Shell AudioEventRTS\n");
+				fflush(stdout);
+			}
+		}
+	}
 
 		setFramesPerSecondLimit(TheGlobalData->m_framesPerSecondLimit);
 
