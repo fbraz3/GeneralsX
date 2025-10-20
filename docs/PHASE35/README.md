@@ -74,10 +74,10 @@ Implement multiplayer networking system with replay compatibility, starting with
 ## Dependencies
 
 - Phase 30: Metal Backend ✅ COMPLETE
-- Phase 31: Texture System (for UI)
-- Phase 32: Audio System (event routing)
-- Phase 33: Game Logic Validation (stable gameplay)
-- Phase 34: OpenAL Audio Backend (for network event sounds)
+- Phase 31: Texture System ✅ COMPLETE (for UI)
+- Phase 32: Audio Pipeline Investigation ✅ COMPLETE
+- Phase 33: OpenAL Audio Backend (for network event sounds)
+- Phase 34: Game Logic & Gameplay Systems (stable gameplay for multiplayer)
 
 ## Notes
 
