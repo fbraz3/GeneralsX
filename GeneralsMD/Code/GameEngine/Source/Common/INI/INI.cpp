@@ -1677,44 +1677,26 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 					INIFieldParseProc parse = findFieldParse(parseTableList.getNthFieldParse(ptIdx), field, offset, userData);
 					if (parse)
 					{
-						// UNIVERSAL End TOKEN PROTECTION: Handle all End token variations
-						char* trimmedField = strtok(strdup(field), " \t\r\n");
-						if (trimmedField && stricmp(trimmedField, "End") == 0) {
-							printf("INI::initFromINIMulti - UNIVERSAL PROTECTION: Skipping End token field parser (field='%s')\n", field);
-							fflush(stdout);
-							free(trimmedField);
-							found = true;
-							break;
-						}
-						if (trimmedField) free(trimmedField);
-
-							// parse this block and check for parse errors
-							void* storePtr = (char *)what + offset + parseTableList.getNthExtraOffset(ptIdx);
+						// parse this block and check for parse errors
 						try {
-								(*parse)( this, what, storePtr, userData );
-						} catch (const std::exception& e) {
-							printf("INI ERROR [LINE %d]: Exception in field parser for '%s': %s\n", 
-								   INI::getLineNum(), field, e.what());
-							DEBUG_CRASH( ("[LINE: %d - FILE: '%s'] Error reading field '%s' of block '%s'",
+
+						(*parse)( this, what, (char *)what + offset + parseTableList.getNthExtraOffset(ptIdx), userData );
+
+						} catch (...) {
+							DEBUG_CRASH( ("[LINE: %d - FILE: '%s'] Error reading field '%s' of block '%s'\n",
 																 INI::getLineNum(), INI::getFilename().str(), field, m_curBlockStart) );
+
 
 							char buff[1024];
 							sprintf(buff, "[LINE: %d - FILE: '%s'] Error reading field '%s'\n", INI::getLineNum(), INI::getFilename().str(), field);
 							throw INIException(buff);
-						} catch (...) {
-							printf("INI ERROR [LINE %d]: UNIVERSAL PROTECTION - Unknown exception in field parser for '%s' - CONTINUING\n", 
-								   INI::getLineNum(), field);
-							fflush(stdout);
-							// Continue execution instead of throwing exception
-							found = true;
-							break;
 						}
-
+						
 						found = true;
 						printf("INI::initFromINIMulti - Successfully parsed field: '%s'\n", field);
 						fflush(stdout);
 						break;
-
+						
 					}
 				}
 
