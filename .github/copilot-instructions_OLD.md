@@ -125,7 +125,7 @@ diff -r Core/ references/fighter19-dxvk-port/Core/  # Compare compatibility laye
 - `Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h` - 200+ Windows API mappings
 - `Core/Libraries/Source/WWVegas/WW3D2/metalwrapper.h/mm` - Metal backend implementation (Phase 30)
 - `docs/MACOS_BUILD.md` - Complete build instructions and troubleshooting
-- `docs/MACOS_PORT.md` - Comprehensive port progress, Phase 30 Metal success
+- `docs/MACOS_PORT_DIARY.md` - Comprehensive port progress, Phase 30 Metal success
 - `docs/PHASE30/METAL_BACKEND_SUCCESS.md` - Phase 30 complete report (650+ lines)
 - `docs/BIG_FILES_REFERENCE.md` - Asset structure and INI file locations in .BIG archives
 - `docs/OPENGL_SUMMARY.md` - OpenGL 3.3 implementation (deprecated on macOS)
@@ -353,7 +353,7 @@ if (g_useMetalBackend) {
 **Documentation**:
 
 - `docs/PHASE28/CRITICAL_VFS_DISCOVERY.md` - Complete VFS analysis + Resolution section
-- `docs/MACOS_PORT.md` - Updated with Option 2 success
+- `docs/MACOS_PORT_DIARY.md` - Updated with Option 2 success
 
 ---
 
@@ -574,7 +574,7 @@ With Metal backend stable, proceed to texture system:
 ### Documentation
 
 - `docs/PHASE30/METAL_BACKEND_SUCCESS.md` - Complete Phase 30 report (650+ lines)
-- `docs/MACOS_PORT.md` - Updated with Phase 30 results
+- `docs/MACOS_PORT_DIARY.md` - Updated with Phase 30 results
 
 ### Commits
 
@@ -717,7 +717,7 @@ cd $HOME/GeneralsX/GeneralsMD && USE_OPENGL=1 ./GeneralsXZH
 
 #### Phase 27.6: Final Documentation Update (In Progress - 83%)
 - ✅ PHASE27_TODO_LIST.md corrected (26/32 tasks, 81%)
-- ✅ MACOS_PORT.md updated with Phase 27.5 complete status
+- ✅ MACOS_PORT_DIARY.md updated with Phase 27.5 complete status
 - ✅ OPENGL_SUMMARY.md updated with final implementations
 - ✅ .github/copilot-instructions.md (this file - being updated now)
 - ⏳ PHASE27_COMPLETION_SUMMARY.md pending
