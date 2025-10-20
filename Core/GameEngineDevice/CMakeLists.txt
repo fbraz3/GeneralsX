@@ -100,7 +100,11 @@ set(GAMEENGINEDEVICE_SRC
     Source/SDL2AudioDevice/SDL2MilesAudioSource.cpp
     Source/SDL2AudioDevice/SDL2AudioStreamManager.cpp
     Include/OpenALDevice/OpenALAudioManager.h
+    Include/OpenALDevice/OpenALAudioLoader.h
+    Include/OpenALDevice/dr_mp3.h
+    Include/OpenALDevice/dr_wav.h
     Source/OpenALDevice/OpenALAudioManager.cpp
+    Source/OpenALDevice/OpenALAudioLoader.cpp
     Source/VideoDevice/Bink/BinkVideoPlayer.cpp
 #    Source/W3DDevice/Common/System/W3DFunctionLexicon.cpp
 #    Source/W3DDevice/Common/System/W3DRadar.cpp
@@ -239,6 +243,7 @@ target_link_libraries(corei_gameenginedevice_public INTERFACE
     $<$<PLATFORM_ID:Windows>:Miles::Miles>
     $<$<NOT:$<PLATFORM_ID:Windows>>:Miles::Miles>
     SDL2::SDL2
+    $<$<TARGET_EXISTS:OpenAL::OpenAL>:OpenAL::OpenAL>
 )
 
 if(RTS_BUILD_OPTION_FFMPEG)
