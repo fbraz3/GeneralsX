@@ -980,36 +980,47 @@ Bool AudioManager::isMusicAlreadyLoaded(void) const
 {
 	printf("isMusicAlreadyLoaded() - Checking hash with %d entries\n", m_allAudioEventInfo.size());
 	
-	const AudioEventInfo *musicToLoad = NULL;
+	// Phase 33: Iterate through ALL music tracks to find at least one that exists
+	// (handles incomplete music archives where some files are missing)
+	int musicTracksFound = 0;
+	int musicTracksChecked = 0;
 	AudioEventInfoHash::const_iterator it;
 	for (it = m_allAudioEventInfo.begin(); it != m_allAudioEventInfo.end(); ++it) {
 		if (it->second) {
 			const AudioEventInfo *aet = it->second;
 			if (aet->m_soundType == AT_Music) {
-				musicToLoad = aet;
-				printf("isMusicAlreadyLoaded() - Found music track: '%s' (type=%d)\n", 
-					   it->first.str(), aet->m_soundType);
-				break;  // Use first music track found
+				musicTracksFound++;
+				
+				// Test if this music file exists in VFS
+				AudioEventRTS aud;
+				aud.setAudioEventInfo(aet);
+				aud.generateFilename();
+				AsciiString astr = aud.getFilename();
+				
+				musicTracksChecked++;
+				if (musicTracksChecked <= 10) {  // Log first 10 attempts to avoid spam
+					printf("isMusicAlreadyLoaded() - [%d/%d] Testing '%s' (track: '%s'): ", 
+						   musicTracksChecked, musicTracksFound, astr.str(), it->first.str());
+				}
+				
+				if (TheFileSystem->doesFileExist(astr.str())) {
+					if (musicTracksChecked <= 10) {
+						printf("EXISTS\n");
+					}
+					printf("isMusicAlreadyLoaded() - SUCCESS: Found valid music file '%s' (track: '%s')\n", 
+						   astr.str(), it->first.str());
+					return TRUE;  // At least one music file exists
+				} else {
+					if (musicTracksChecked <= 10) {
+						printf("MISSING\n");
+					}
+				}
 			}
 		}
 	}
 
-	if (!musicToLoad) {
-		printf("isMusicAlreadyLoaded() - ERROR: No AT_Music entries found in hash\n");
-		return FALSE;
-	}
-
-	AudioEventRTS aud;
-	aud.setAudioEventInfo(musicToLoad);
-	aud.generateFilename();
-
-	AsciiString astr = aud.getFilename();
-	
-	printf("isMusicAlreadyLoaded() - Checking if file exists: '%s'\n", astr.str());
-	bool fileExists = TheFileSystem->doesFileExist(astr.str());
-	printf("isMusicAlreadyLoaded() - File exists: %s\n", fileExists ? "YES" : "NO");
-
-	return fileExists;
+	printf("isMusicAlreadyLoaded() - ERROR: Checked %d music tracks, none exist in VFS\n", musicTracksChecked);
+	return FALSE;
 }
 
 //-------------------------------------------------------------------------------------------------

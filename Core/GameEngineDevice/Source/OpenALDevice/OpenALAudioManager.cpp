@@ -111,13 +111,28 @@ void OpenALAudioManager::openDevice(void)
 {
     std::cerr << "OpenALAudioManager::openDevice() - Opening OpenAL device" << std::endl;
     
+    // Phase 33: List available devices
+    const ALCchar* deviceList = alcGetString(NULL, ALC_DEVICE_SPECIFIER);
+    if (deviceList) {
+        std::cerr << "OpenALAudioManager::openDevice() - Available OpenAL devices:" << std::endl;
+        const ALCchar* device_name = deviceList;
+        while (*device_name) {
+            std::cerr << "  - " << device_name << std::endl;
+            device_name += strlen(device_name) + 1;
+        }
+    }
+    
     // Open default audio device
     device = alcOpenDevice(NULL);
     if (!device) {
         std::cerr << "ERROR: Failed to open OpenAL device!" << std::endl;
         return;
     }
-    std::cerr << "OpenALAudioManager::openDevice() - Device opened successfully" << std::endl;
+    
+    // Phase 33: Show which device was opened
+    const ALCchar* defaultDevice = alcGetString(device, ALC_DEVICE_SPECIFIER);
+    std::cerr << "OpenALAudioManager::openDevice() - Device opened successfully: '" 
+              << (defaultDevice ? defaultDevice : "UNKNOWN") << "'" << std::endl;
     
     // Create audio context
     context = alcCreateContext(device, NULL);
@@ -537,6 +552,10 @@ void OpenALAudioManager::playSample(AudioEventRTS* event, OpenALPlayingAudio* au
     alSource3f(source, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
     alSourcei(source, AL_LOOPING, event->hasMoreLoops() ? AL_TRUE : AL_FALSE);
 
+    // Phase 33: Debug OpenAL source configuration
+    std::cerr << "OpenALAudioManager::playSample() - Source configured: volume=" << event->getVolume()
+              << ", looping=" << (event->hasMoreLoops() ? "YES" : "NO") << std::endl;
+
     // Check for OpenAL errors
     ALenum error = alGetError();
     if (error != AL_NO_ERROR) {
@@ -547,6 +566,16 @@ void OpenALAudioManager::playSample(AudioEventRTS* event, OpenALPlayingAudio* au
 
     // Play the source
     alSourcePlay(source);
+    
+    // Phase 33: Verify source is actually playing
+    ALint sourceState;
+    alGetSourcei(source, AL_SOURCE_STATE, &sourceState);
+    std::cerr << "OpenALAudioManager::playSample() - alSourcePlay() called, state=" 
+              << (sourceState == AL_PLAYING ? "AL_PLAYING" : 
+                  sourceState == AL_PAUSED ? "AL_PAUSED" : 
+                  sourceState == AL_STOPPED ? "AL_STOPPED" : "UNKNOWN")
+              << " (" << sourceState << ")" << std::endl;
+    
     error = alGetError();
     if (error != AL_NO_ERROR) {
         std::cerr << "ERROR: OpenAL source playback failed, error code: " << error << std::endl;
