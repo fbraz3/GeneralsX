@@ -290,12 +290,16 @@ extern const Char *g_csfFile;
 
 void GameTextManager::init( void )
 {
+	printf("GameTextManager::init() - METHOD ENTRY\n");
+	
 	AsciiString csfFile;
 	csfFile.format(g_csfFile, GetRegistryLanguage().str());
 	Int format;
 
+	printf("GameTextManager::init() - Checking initialization status\n");
 	if ( m_initialized )
 	{
+		printf("GameTextManager::init() - Already initialized, returning\n");
 		return;
 	}
 
@@ -310,49 +314,70 @@ void GameTextManager::init( void )
 	}
 #endif
 
+	printf("GameTextManager::init() - Trying to load STRING_FILE: '%s'\n", g_strFile);
+	printf("GameTextManager::init() - m_useStringFile = %d\n", m_useStringFile);
+	
 	if ( m_useStringFile && getStringCount( g_strFile, m_textCount ) )
 	{
+		printf("GameTextManager::init() - STRING_FILE loading succeeded, textCount=%d\n", m_textCount);
 		format = STRING_FILE;
-	}
-	else if ( getCSFInfo ( csfFile.str() ) )
-	{
-		format = CSF_FILE;
 	}
 	else
 	{
-		return;
+		printf("GameTextManager::init() - STRING_FILE failed, trying CSF_FILE: '%s'\n", csfFile.str());
+		if ( getCSFInfo ( csfFile.str() ) )
+		{
+			printf("GameTextManager::init() - CSF_FILE loading succeeded, textCount=%d\n", m_textCount);
+			format = CSF_FILE;
+		}
+		else
+		{
+			printf("GameTextManager::init() - BOTH STRING_FILE AND CSF_FILE FAILED - RETURNING WITHOUT INITIALIZATION\n");
+			return;
+		}
 	}
 
 	if( m_textCount == 0 )
 	{
+		printf("GameTextManager::init() - textCount is 0, returning\n");
 		return;
 	}
 
 	//Allocate StringInfo Array
+	printf("GameTextManager::init() - Allocating m_stringInfo array for %d strings\n", m_textCount);
 
 	m_stringInfo = NEW StringInfo[m_textCount];
 
 	if( m_stringInfo == NULL )
 	{
+		printf("GameTextManager::init() - FAILED TO ALLOCATE m_stringInfo\n");
 		deinit();
 		return;
 	}
+	
+	printf("GameTextManager::init() - m_stringInfo allocated successfully at %p\n", m_stringInfo);
 
 	if ( format == STRING_FILE )
 	{
+		printf("GameTextManager::init() - Calling parseStringFile()\n");
 		if( parseStringFile( g_strFile ) == FALSE )
 		{
+			printf("GameTextManager::init() - parseStringFile() FAILED\n");
 			deinit();
 			return;
 		}
+		printf("GameTextManager::init() - parseStringFile() succeeded\n");
 	}
 	else
 	{
+		printf("GameTextManager::init() - Calling parseCSF()\n");
 		if ( !parseCSF ( csfFile.str() ) )
 		{
+			printf("GameTextManager::init() - parseCSF() FAILED, calling deinit()\n");
 			deinit();
 			return;
 		}
+		printf("GameTextManager::init() - parseCSF() succeeded\n");
 	}
 
 	m_stringLUT = NEW StringLookUp[m_textCount];
@@ -885,6 +910,7 @@ Bool GameTextManager::getCSFInfo ( const Char *filename )
 
 Bool GameTextManager::parseCSF( const Char *filename )
 {
+	printf("GameTextManager::parseCSF() - METHOD ENTRY: filename='%s'\n", filename);
 	File *file;
 	Int id;
 	Int len;
@@ -896,6 +922,7 @@ Bool GameTextManager::parseCSF( const Char *filename )
 
 	if ( file == NULL )
 	{
+		printf("GameTextManager::parseCSF() - FAILED TO OPEN FILE\n");
 		return FALSE;
 	}
 
@@ -948,7 +975,8 @@ Bool GameTextManager::parseCSF( const Char *filename )
 
 			if ( len )
 			{
-				file->read ( m_tbuffer, len*sizeof(WideChar) );
+				// CSF format uses 2-byte WideChars (UTF-16), not sizeof(wchar_t) which is 4 on macOS/Linux
+				file->read ( m_tbuffer, len*2 );
 			}
 
 			if ( num == 0 )
@@ -996,12 +1024,15 @@ Bool GameTextManager::parseCSF( const Char *filename )
 	}
 
 	ok = TRUE;
+	printf("GameTextManager::parseCSF() - Successfully parsed all strings, listCount=%d\n", listCount);
 
 quit:
+	printf("GameTextManager::parseCSF() - QUIT label reached, ok=%d\n", ok);
 
 	file->close();
 	file = NULL;
 
+	printf("GameTextManager::parseCSF() - Returning %d\n", ok);
 	return ok;
 }
 
