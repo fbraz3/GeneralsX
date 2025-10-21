@@ -1048,18 +1048,14 @@ Vector2	Render2DSentenceClass::Build_Sentence_Not_Centered (const WCHAR *text, i
 	//	Loop over all the characters in the string
 	//
 	while (text != NULL) {
-#ifndef _WIN32
-		// macOS protection: Check for valid memory access
-		if ((uintptr_t)text < 0x1000) {
-			printf("FONT PROTECTION: Invalid text pointer %p in loop\n", text);
+		WCHAR ch = *text++;
+		
+		// CRITICAL: Stop immediately if we hit the NULL terminator
+		// This MUST be checked before any character processing to prevent reading garbage memory
+		if (ch == 0) {
 			break;
 		}
-		printf("FONT PROTECTION: About to read character at %p\n", text);
-#endif
-		WCHAR ch = *text++;
-#ifndef _WIN32
-		printf("FONT PROTECTION: Read character %d (0x%x) from %p\n", (int)ch, (int)ch, text-1);
-#endif
+		
 		dontBlit = false;
 		//
 		//	Determine how much horizontal space this character requires
@@ -1132,8 +1128,6 @@ Vector2	Render2DSentenceClass::Build_Sentence_Not_Centered (const WCHAR *text, i
 			} else if (ch == L'\n') {
 				Cursor.X = 0;
 				Cursor.Y += char_height;
-			} else if (ch == 0) {
-				break;
 			} else if (wordBiggerThenLine){ // we've entered this loop because we're greater then the wordwrap so we need to force a wordwrap
 				Cursor.X = 0;
 				Cursor.Y += char_height;
@@ -1280,6 +1274,25 @@ FontCharsClass::Get_Char_Data (WCHAR ch)
 {
 	const FontCharsClassCharDataStruct *retval = NULL;
 
+#ifndef _WIN32
+	// macOS CRITICAL: Validate Unicode character range
+	// Valid wchar_t on macOS: 0x0000 to 0x10FFFF (Unicode range)
+	// Values beyond this indicate memory corruption or encoding errors
+	if (ch > 0x10FFFF) {
+		// Return space character as safe fallback
+		if (ASCIICharArray[' '] != NULL) {
+			return ASCIICharArray[' '];
+		}
+		
+		// Emergency fallback
+		static FontCharsClassCharDataStruct emergency_char;
+		emergency_char.Value = ' ';
+		emergency_char.Width = 8;
+		emergency_char.Buffer = NULL;
+		return &emergency_char;
+	}
+#endif
+
 	if ( ch < 256 )
 	{
 		retval = ASCIICharArray[ch];
@@ -1299,6 +1312,21 @@ FontCharsClass::Get_Char_Data (WCHAR ch)
 	//
 	if ( retval == NULL ) {
 		retval = Store_GDI_Char( ch );
+	}
+
+	// CRITICAL: Check NULL before accessing - WWASSERT is empty in release builds
+	if ( retval == NULL ) {
+		printf("FontCharsClass::Get_Char_Data() - ERROR: NULL character data for wchar 0x%04X ('%lc')\n", (unsigned int)ch, (wint_t)ch);
+		// Return space character as fallback
+		if ( ch != L' ' ) {
+			return Get_Char_Data( L' ' );
+		}
+		// If even space is NULL, create emergency fallback to avoid crash
+		static FontCharsClassCharDataStruct emergency_char;
+		emergency_char.Value = ch;
+		emergency_char.Width = 8;  // Reasonable default width
+		emergency_char.Buffer = NULL;
+		return &emergency_char;
 	}
 
 	WWASSERT( retval->Value == ch );
