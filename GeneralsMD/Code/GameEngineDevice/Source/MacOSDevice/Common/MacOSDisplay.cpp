@@ -13,14 +13,27 @@
 
 /**
  * Display a warning message box (macOS stub implementation)
- * @return OSDBT_OK always (no actual dialog shown)
+ * 
+ * CRITICAL FIX (Phase 34.1): Changed return value from OSDBT_OK to OSDBT_CANCEL
+ * to prevent infinite loop in GameAudio CD loading fallback.
+ * 
+ * Root cause: GameAudio.cpp lines 232-253 has while(TRUE) loop that only breaks if:
+ * 1. Music files are found (isMusicAlreadyLoaded() returns TRUE), OR
+ * 2. User cancels via dialog box (OSDisplayWarningBox returns OSDBT_CANCEL)
+ * 
+ * On macOS without physical CD drive, music files are in .big archives and should
+ * be loaded via VFS, not CD. This stub returning OSDBT_CANCEL allows graceful exit
+ * from legacy CD loading mechanism.
+ * 
+ * @return OSDBT_CANCEL to allow loop exit (acts as user cancellation)
  */
 OSDisplayButtonType OSDisplayWarningBox(AsciiString p, AsciiString m, UnsignedInt buttonFlags, UnsignedInt otherFlags)
 {
     if (!TheGameText)
     {
         std::cerr << "Warning Box (No Text System): " << p.str() << " - " << m.str() << std::endl;
-        return OSDBT_ERROR;
+        std::cerr << "Returning OSDBT_CANCEL to prevent infinite loop in CD loading fallback" << std::endl;
+        return OSDBT_CANCEL;  // CRITICAL: Return CANCEL to break CD loading loop
     }
 
     UnicodeString promptStr = TheGameText->fetch(p);
@@ -32,8 +45,9 @@ OSDisplayButtonType OSDisplayWarningBox(AsciiString p, AsciiString m, UnsignedIn
     
     // Print to console for now (TODO: implement native macOS dialog)
     std::cerr << "Warning Box: " << promptA.str() << " - " << mesgA.str() << std::endl;
+    std::cerr << "Returning OSDBT_CANCEL to allow graceful CD loading fallback exit" << std::endl;
     
-    return OSDBT_OK;
+    return OSDBT_CANCEL;  // CRITICAL: Return CANCEL instead of OK to break infinite loop
 }
 
 /**

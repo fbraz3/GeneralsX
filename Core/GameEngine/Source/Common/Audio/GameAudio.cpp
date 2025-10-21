@@ -232,6 +232,14 @@ void AudioManager::init()
 	if (!TheGlobalData->m_headless && !isMusicAlreadyLoaded())
 	{
 		m_musicPlayingFromCD = TRUE;
+		
+		// PHASE 34.1 FIX: Add retry limit to prevent infinite loop
+		// Root cause: On macOS without physical CD, loadMusicFilesFromCD() does nothing,
+		// and OSDisplayWarningBox may not display properly, causing infinite loop.
+		// Solution: Limit attempts to 3 before giving up gracefully.
+		int cd_load_attempts = 0;
+		const int MAX_CD_LOAD_ATTEMPTS = 3;
+		
 		while (TRUE)
 		{
 			// @todo Unload any files from CD first. - jkmcd
@@ -241,6 +249,16 @@ void AudioManager::init()
 			{
 				break;
 			}
+			
+			// PHASE 34.1: Check retry limit to prevent infinite loop
+			cd_load_attempts++;
+			if (cd_load_attempts >= MAX_CD_LOAD_ATTEMPTS)
+			{
+				printf("GameAudio::initSubsystem - Failed to load music from CD after %d attempts, continuing without CD music\n", MAX_CD_LOAD_ATTEMPTS);
+				m_musicPlayingFromCD = FALSE;  // Mark as not playing from CD
+				break;  // Exit loop gracefully
+			}
+			
 			// We loop infinitely on the splash screen if we don't allow breaking out of this loop.
 //#if !defined( RTS_DEBUG )
 			else
@@ -249,6 +267,8 @@ void AudioManager::init()
 
 				if (OSDisplayWarningBox("GUI:InsertCDPrompt", "GUI:InsertCDMessage", OSDBT_OK | OSDBT_CANCEL, OSDOF_SYSTEMMODAL | OSDOF_EXCLAMATIONICON) == OSDBT_CANCEL) {
 					//TheGameEngine->setQuitting(TRUE);  // Can't do this to WorldBuilder
+					printf("GameAudio::initSubsystem - User cancelled CD loading, continuing without CD music\n");
+					m_musicPlayingFromCD = FALSE;  // Mark as not playing from CD
 					break;
 				}
 			}
