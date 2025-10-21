@@ -198,26 +198,67 @@ Bool ArchiveFileSystem::doesFileExist(const Char *filename) const
 
 	const ArchivedDirectoryInfo *dirInfo = &m_rootDirectory;
 
+	// Phase 33: Debug VFS music file lookup (increased limit to see more attempts)
+	static int debugCount = 0;
+	bool shouldDebug = (debugCount < 20 && (strstr(path.str(), "track") != nullptr || strstr(path.str(), ".mp3") != nullptr));
+	if (shouldDebug) {
+		printf("ArchiveFileSystem::doesFileExist() - [%d] Looking for: '%s'\n", debugCount++, filename);
+		printf("  -> Normalized path: '%s'\n", path.str());
+	}
+
 	path.nextToken(&token, "\\/");
 
+	int pathDepth = 0;
 	while (!token.find('.') || path.find('.'))
 	{
+		if (shouldDebug) {
+			printf("  -> [depth %d] Searching directory for token: '%s'\n", pathDepth++, token.str());
+		}
+		
 		ArchivedDirectoryInfoMap::const_iterator tempiter = dirInfo->m_directories.find(token);
 		if (tempiter != dirInfo->m_directories.end())
 		{
 			dirInfo = &tempiter->second;
+			if (shouldDebug) {
+				printf("     Found directory, descending (subdirs=%zu, files=%zu)\n", 
+					   dirInfo->m_directories.size(), dirInfo->m_files.size());
+			}
 			path.nextToken(&token, "\\/");
 		}
 		else
 		{
 			// the directory doesn't exist, so return false
+			if (shouldDebug) {
+				printf("     ERROR: Directory '%s' not found in VFS tree\n", token.str());
+				printf("     Available directories at this level:\n");
+				for (auto& dir : dirInfo->m_directories) {
+					printf("       - %s\n", dir.first.str());
+				}
+			}
 			return FALSE;
 		}
 	}
 
 	// token is the filename, and dirInfo is the directory that this file is in.
+	if (shouldDebug) {
+		printf("  -> Final filename token: '%s'\n", token.str());
+	}
+	
 	if (dirInfo->m_files.find(token) == dirInfo->m_files.end()) {
+		if (shouldDebug) {
+			printf("     ERROR: File '%s' not found in directory\n", token.str());
+			printf("     Available files (first 10):\n");
+			int count = 0;
+			for (auto& file : dirInfo->m_files) {
+				printf("       - %s\n", file.first.str());
+				if (++count >= 10) break;
+			}
+		}
 		return FALSE;
+	}
+	
+	if (shouldDebug) {
+		printf("     SUCCESS: File found in VFS\n");
 	}
 	return TRUE;
 }

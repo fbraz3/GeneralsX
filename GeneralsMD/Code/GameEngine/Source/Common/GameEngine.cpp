@@ -1030,14 +1030,21 @@ void GameEngine::init()
 		}
 	}
 
-		setFramesPerSecondLimit(TheGlobalData->m_framesPerSecondLimit);
+	setFramesPerSecondLimit(TheGlobalData->m_framesPerSecondLimit);
 
-		TheAudio->setOn(TheGlobalData->m_audioOn && TheGlobalData->m_musicOn, AudioAffect_Music);
-		TheAudio->setOn(TheGlobalData->m_audioOn && TheGlobalData->m_soundsOn, AudioAffect_Sound);
-		TheAudio->setOn(TheGlobalData->m_audioOn && TheGlobalData->m_sounds3DOn, AudioAffect_Sound3D);
-		TheAudio->setOn(TheGlobalData->m_audioOn && TheGlobalData->m_speechOn, AudioAffect_Speech);
+	// Phase 33: Debug audio enable/disable state
+	printf("GameEngine::init() - Audio settings: audioOn=%d, musicOn=%d, soundsOn=%d, sounds3DOn=%d, speechOn=%d\n",
+		   TheGlobalData->m_audioOn, TheGlobalData->m_musicOn, TheGlobalData->m_soundsOn,
+		   TheGlobalData->m_sounds3DOn, TheGlobalData->m_speechOn);
+	fflush(stdout);
 
-		// We're not in a network game yet, so set the network singleton to NULL.
+	TheAudio->setOn(TheGlobalData->m_audioOn && TheGlobalData->m_musicOn, AudioAffect_Music);
+	TheAudio->setOn(TheGlobalData->m_audioOn && TheGlobalData->m_soundsOn, AudioAffect_Sound);
+	TheAudio->setOn(TheGlobalData->m_audioOn && TheGlobalData->m_sounds3DOn, AudioAffect_Sound3D);
+	TheAudio->setOn(TheGlobalData->m_audioOn && TheGlobalData->m_speechOn, AudioAffect_Speech);
+	
+	printf("GameEngine::init() - Audio enable commands sent to TheAudio\n");
+	fflush(stdout);		// We're not in a network game yet, so set the network singleton to NULL.
 		TheNetwork = NULL;
 
 		//Create a default ini file for options if it doesn't already exist.
