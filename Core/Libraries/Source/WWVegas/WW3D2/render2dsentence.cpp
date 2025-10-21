@@ -1277,8 +1277,10 @@ FontCharsClass::Get_Char_Data (WCHAR ch)
 #ifndef _WIN32
 	// macOS CRITICAL: Validate Unicode character range
 	// Valid wchar_t on macOS: 0x0000 to 0x10FFFF (Unicode range)
-	// Values beyond this indicate memory corruption or encoding errors
-	if (ch > 0x10FFFF) {
+	// IMPORTANT: Cast to unsigned to catch negative values from signed wchar_t
+	// Example: -4522017 (0xFFBAFFFF) = invalid, should be rejected
+	uint32_t unsigned_ch = static_cast<uint32_t>(ch);
+	if (unsigned_ch > 0x10FFFF) {
 		// Return space character as safe fallback
 		if (ASCIICharArray[' '] != NULL) {
 			return ASCIICharArray[' '];
