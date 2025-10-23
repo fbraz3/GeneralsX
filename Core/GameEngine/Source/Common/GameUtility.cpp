@@ -112,6 +112,8 @@ PlayerIndex getObservedOrLocalPlayerIndex_Safe()
 
 void changeLocalPlayer(Player* player)
 {
+	DEBUG_ASSERTCRASH(player != NULL, ("Player is NULL"));
+
 	ThePlayerList->setLocalPlayer(player);
 	TheControlBar->setObserverLookAtPlayer(NULL);
 	TheControlBar->setObservedPlayer(NULL);
@@ -131,7 +133,11 @@ void changeObservedPlayer(Player* player)
 	if (canBeginObservePlayer || canEndObservePlayer)
 	{
 		TheControlBar->setObservedPlayer(player);
-		detail::changePlayerCommon(player);
+
+		Player *becomePlayer = player;
+		if (becomePlayer == NULL)
+			becomePlayer = ThePlayerList->findPlayerWithNameKey(TheNameKeyGenerator->nameToKey("ReplayObserver"));
+		detail::changePlayerCommon(becomePlayer);
 	}
 }
 
