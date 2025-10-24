@@ -1,5 +1,150 @@
 # Critical Lessons Learned
 
+## 🚨 Phase 34.3: Use-After-Free via Global State Storage (October 24, 2025)
+
+**CRITICAL DISCOVERY**: Storing local ARC-managed objects in global variables caused Metal driver crashes with address=0xffffffffffffffff
+
+**Problem**:
+
+- Game crashes during `renderCommandEncoderWithDescriptor:` call
+- Crash location: Inside Metal driver (AGXMetal13_3) hash table operations
+- Error: `EXC_BAD_ACCESS (code=1, address=0xffffffffffffffff)` (invalid pointer)
+- All validations passed but still crashed INSIDE Metal API call
+
+**Root Cause - Dangling Pointer Pattern**:
+
+```objectivec++
+// ❌ ANTI-PATTERN: Storing local ARC object in global variable
+void MetalWrapper::BeginFrame() {
+    MTLRenderPassDescriptor* pass = [MTLRenderPassDescriptor renderPassDescriptor];
+    // ... configure pass ...
+    s_passDesc = pass;  // ⚠️ DANGER: pass is local, will be freed when function returns!
+    
+    // Create encoder with local variable (still valid here)
+    s_renderEncoder = [(id<MTLCommandBuffer>)s_cmdBuffer renderCommandEncoderWithDescriptor:pass];
+    // ✅ Works first time
+}
+// pass is freed by ARC here, s_passDesc now points to freed memory!
+
+// Second call to BeginFrame()
+void MetalWrapper::BeginFrame() {
+    // s_passDesc still points to FREED memory from previous call
+    // Metal driver may try to access s_passDesc internally
+    // CRASH: address=0xffffffffffffffff in driver hash table
+}
+```
+
+**Why This Fails**:
+
+1. `MTLRenderPassDescriptor` is ARC-managed Objective-C object
+2. Local variable `pass` is released when function scope ends
+3. Global `s_passDesc` continues pointing to freed memory
+4. Metal driver internally caches or validates descriptor
+5. Second frame tries to use freed descriptor → driver crash
+6. **Silent corruption**: No warning, crashes deep in driver code
+
+**Evidence from Runtime Logs**:
+
+```
+METAL DEBUG: Validations passed, creating render encoder...
+Process 10469 stopped
+* thread #1, stop reason = EXC_BAD_ACCESS (code=1, address=0xffffffffffffffff)
+frame #0: AGXMetal13_3`std::__1::__hash_table<...>::__emplace_unique_key_args(...) + 812
+->  ldr    x8, [x9]  ; Load from corrupted address
+```
+
+**Solution - Don't Store ARC Objects Globally**:
+
+```objectivec++
+// ✅ CORRECT: Use local variable only, let ARC manage lifecycle
+void MetalWrapper::BeginFrame() {
+    MTLRenderPassDescriptor* pass = [MTLRenderPassDescriptor renderPassDescriptor];
+    // ... configure pass ...
+    // DON'T store in global: s_passDesc = pass;  ← REMOVED
+    
+    // Use local variable directly
+    s_renderEncoder = [(id<MTLCommandBuffer>)s_cmdBuffer renderCommandEncoderWithDescriptor:pass];
+    // pass will be retained by encoder, then released when encoder is destroyed
+}
+```
+
+**Validation - Runtime Testing**:
+
+✅ **Before Fix**: Crash on first BeginFrame after initialization
+```
+METAL DEBUG: Validations passed, creating render encoder...
+Process stopped: EXC_BAD_ACCESS (code=1, address=0xffffffffffffffff)
+```
+
+✅ **After Fix**: Multiple frames render successfully
+```
+METAL DEBUG: Render encoder created successfully (0xb5040c1e0)
+METAL: BeginFrame() - Pipeline state set on encoder
+[30 seconds of continuous rendering without crash]
+```
+
+**Discovery Method**:
+
+User recognized pattern from previous `LESSONS_LEARNED.md` Phase 33.9 (exception swallowing). Asked: "Colocamos muitos try/catches como proteção, isso já nos travou no passado. Poderia estar acontecendo novamente?"
+
+This led to examining ALL "protective code" additions that store state globally. Found `s_passDesc` storing local ARC object.
+
+**KEY LESSONS FOR METAL/OBJECTIVE-C**:
+
+- ✅ **Never store local ARC objects in globals** - ARC frees them when scope ends
+- ✅ **Global state should only hold retained objects** - Use `[obj retain]` if storage is necessary
+- ✅ **Prefer local variables** - Let ARC manage lifecycle automatically
+- ✅ **Metal crashes can be YOUR bug** - Driver crashes often caused by invalid input
+- ✅ **Pattern recognition from previous bugs** - User's insight saved hours of debugging
+- ✅ **"Protective code" can introduce bugs** - Each addition must be carefully reviewed
+- ✅ **address=0xffffffffffffffff = corrupted pointer** - Classic use-after-free signature
+
+**Code Review Checklist for Metal/ARC Code**:
+
+- [ ] Are local ARC objects stored in global variables? (❌ bad)
+- [ ] Do global variables outlive the objects they reference? (⚠️ dangerous)
+- [ ] Is object lifetime managed by ARC or manual retain/release? (must know)
+- [ ] Does code assume object persists after function return? (verify)
+- [ ] Are Metal objects properly retained if stored globally? (must retain)
+
+**Impact on Timeline**:
+
+- Phase 34.3 blocked for ~1 hour with driver crashes
+- User's pattern recognition identified issue class immediately
+- Fix applied and validated in 15 minutes
+- Revealed next issue: Metal texture upload not yet implemented
+
+**Files Modified**:
+
+- `Core/Libraries/Source/WWVegas/WW3D2/metalwrapper.h` (removed s_passDesc declaration)
+- `Core/Libraries/Source/WWVegas/WW3D2/metalwrapper.mm` (removed s_passDesc usage)
+- Removed global state storage: `s_passDesc = pass;`
+- Removed cleanup: `s_passDesc = nil;`
+
+**Similar Patterns to Avoid**:
+
+```objectivec++
+// ❌ BAD: Storing local drawable globally
+s_currentDrawable = [s_layer nextDrawable];  // This one IS retained properly
+
+// ❌ BAD: Storing local command buffer
+id<MTLCommandBuffer> cmd = [queue commandBuffer];
+s_globalCmd = cmd;  // Dangerous if cmd is released later
+
+// ✅ GOOD: Only store what you explicitly retain
+id<MTLTexture> tex = [device newTextureWithDescriptor:desc];
+s_globalTexture = tex;  // Safe because newTexture* returns retained object
+```
+
+**References**:
+
+- Previous similar bug: Phase 33.9 (exception swallowing causing silent data corruption)
+- Metal ARC documentation: Objects created with `new*` or `copy*` are retained
+- Apple Metal Best Practices: Avoid storing transient objects globally
+- Commit: [pending] - "fix(metal): remove s_passDesc global causing use-after-free"
+
+---
+
 ## 🚨 Phase 33.9: Blanket Exception Catching Anti-Pattern (October 20, 2025)
 
 **CRITICAL DISCOVERY**: Blanket `catch(...)` blocks swallowing exceptions without re-throwing caused silent data corruption across entire INI parsing system

@@ -214,7 +214,11 @@ void	VideoPlayer::update( void )
 
 	while ( stream )
 	{
+		printf("DEBUG: VideoPlayer::update - About to call stream->update() on stream=%p\n", stream);
+		fflush(stdout);
 		stream->update();
+		printf("DEBUG: VideoPlayer::update - stream->update() returned successfully\n");
+		fflush(stdout);
 		stream = stream->next();
 	}
 

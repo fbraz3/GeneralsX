@@ -164,6 +164,14 @@ public:
 	IDirect3DBaseTexture8 *Peek_D3D_Base_Texture() const;
 	void Set_D3D_Base_Texture(IDirect3DBaseTexture8* tex);
 
+#ifndef _WIN32
+	// Phase 34: OpenGL texture accessor for video buffer
+	unsigned int Get_GL_Texture() const { return GLTexture; }
+	
+	// Phase 34.2: Metal texture accessor for video buffer
+	void* Get_Metal_Texture() const { return MetalTexture; }
+#endif
+
 	PoolType Get_Pool() const { return Pool; }
 
 	bool Is_Missing_Texture();
@@ -235,6 +243,7 @@ protected:
 	// Phase 27.2.3: OpenGL texture object (cross-platform)
 #ifndef _WIN32
 	unsigned int GLTexture;  // GLuint for OpenGL texture ID - must be protected for derived class access
+	void* MetalTexture;      // id<MTLTexture> for Metal backend - opaque pointer to avoid ObjC++ in header
 #endif
 
 private:

@@ -147,7 +147,7 @@ private:
     static id s_layer;          // CAMetalLayer
     static id s_currentDrawable;// CAMetalDrawable
     static id s_cmdBuffer;      // MTLCommandBuffer
-    static id s_passDesc;       // MTLRenderPassDescriptor
+    // s_passDesc removed - was local variable causing use-after-free (LESSONS_LEARNED.md pattern)
 };
 
 } // namespace GX

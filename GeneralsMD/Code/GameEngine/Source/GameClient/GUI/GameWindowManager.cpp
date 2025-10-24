@@ -1267,38 +1267,53 @@ Int GameWindowManager::drawWindow( GameWindow *window )
 //-------------------------------------------------------------------------------------------------
 void GameWindowManager::winRepaint( void )
 {
+	printf("DEBUG: GameWindowManager::winRepaint() - entering (tail=%p)\n", m_windowTail);
 	GameWindow *window, *next;
 
 	// draw below windows
+	printf("DEBUG: Drawing BELOW windows...\n");
 	for( window = m_windowTail; window; window = next )
 	{
 		next = window->m_prev;
 
 		if( BitIsSet( window->m_status, WIN_STATUS_BELOW ) )
+		{
+			printf("DEBUG: Drawing BELOW window (status=%d)\n", window->m_status);
 			drawWindow( window );
+		}
 	}
 
 	// draw non-above and non-below windows
+	printf("DEBUG: Drawing NORMAL windows...\n");
 	for( window = m_windowTail; window; window = next )
 	{
 		next = window->m_prev;
 
 		if (BitIsSet( window->m_status, WIN_STATUS_ABOVE |
 																	 WIN_STATUS_BELOW ) == FALSE)
+		{
+			printf("DEBUG: Drawing NORMAL window (status=%d)\n", window->m_status);
 			drawWindow( window );
+		}
 	}
 
 	// draw above windows
+	printf("DEBUG: Drawing ABOVE windows...\n");
 	for( window = m_windowTail; window; window = next )
 	{
 		next = window->m_prev;
 
 		if( BitIsSet( window->m_status, WIN_STATUS_ABOVE ) )
+		{
+			printf("DEBUG: Drawing ABOVE window (status=%d)\n", window->m_status);
 			drawWindow( window );
+		}
 	}
 
 	if(TheTransitionHandler)
 		TheTransitionHandler->draw();
+		
+	printf("DEBUG: GameWindowManager::winRepaint() - exiting\n");
 }
 
 //-------------------------------------------------------------------------------------------------

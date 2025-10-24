@@ -741,11 +741,18 @@ void GameClient::init( void )
 	}
 
 	// create the video player
+	printf("GameClient::init() - DEBUG: About to create VideoPlayer\n");
 	TheVideoPlayer = createVideoPlayer();
 	if ( TheVideoPlayer )
 	{
+		printf("GameClient::init() - DEBUG: VideoPlayer created, calling init()\n");
 		TheVideoPlayer->init();
  		TheVideoPlayer->setName("TheVideoPlayer");
+		printf("GameClient::init() - DEBUG: VideoPlayer initialization completed successfully\n");
+	}
+	else
+	{
+		printf("GameClient::init() - WARNING: createVideoPlayer() returned NULL!\n");
 	}
 
 	// create the language filter.
@@ -853,9 +860,21 @@ void GameClient::update( void )
 	GameMessage *frameMsg = TheMessageStream->appendMessage( GameMessage::MSG_FRAME_TICK );
 	frameMsg->appendTimestampArgument( getFrame() );
 	static Bool playSizzle = FALSE;
+	static Bool firstUpdate = TRUE;
+	
+	// Phase 34.1 DEBUG: Log intro/movie state on first update
+	if(firstUpdate)
+	{
+		printf("DEBUG: GameClient::update() FIRST CALL - playIntro=%d, afterIntro=%d, playSizzle=%d\n",
+		       TheGlobalData->m_playIntro, TheGlobalData->m_afterIntro, TheGlobalData->m_playSizzle);
+		firstUpdate = FALSE;
+	}
+	
 	// We need to show the movie first.
 	if(TheGlobalData->m_playIntro && !TheDisplay->isMoviePlaying())
 	{
+		printf("DEBUG: Attempting to play intro movie (didMemPass=%d)\n", 
+		       TheGameLODManager ? TheGameLODManager->didMemPass() : -1);
 		if(TheGameLODManager && TheGameLODManager->didMemPass())
 			TheDisplay->playLogoMovie("EALogoMovie", 5000, 3000);
 		else
@@ -863,13 +882,17 @@ void GameClient::update( void )
 		TheWritableGlobalData->m_playIntro = FALSE;
 		TheWritableGlobalData->m_afterIntro = TRUE;
 		playSizzle = TRUE;
+		printf("DEBUG: Intro movie playback initiated - afterIntro set to TRUE\n");
 	}
 
 	//Initial Game Codition.  We must show the movie first and then we can display the shell
 	if(TheGlobalData->m_afterIntro && !TheDisplay->isMoviePlaying())
 	{
+		printf("DEBUG: afterIntro condition met - isMoviePlaying=%d, playSizzle=%d, m_playSizzle=%d\n",
+		       TheDisplay->isMoviePlaying(), playSizzle, TheGlobalData->m_playSizzle);
 		if( playSizzle && TheGlobalData->m_playSizzle )
 		{
+			printf("DEBUG: Attempting to play Sizzle movie\n");
 			TheWritableGlobalData->m_allowExitOutOfMovies = TRUE;
 			if(TheGameLODManager && TheGameLODManager->didMemPass())
 				TheDisplay->playMovie("Sizzle");
@@ -879,6 +902,7 @@ void GameClient::update( void )
 		}
 		else
 		{
+			printf("DEBUG: Skipping Sizzle - showing Shell now\n");
 			TheWritableGlobalData->m_breakTheMovie = TRUE;
 			TheWritableGlobalData->m_allowExitOutOfMovies = TRUE;
 
@@ -911,8 +935,11 @@ void GameClient::update( void )
 
 			}
 
+			printf("DEBUG: Calling TheShell->showShellMap(TRUE)\n");
 			TheShell->showShellMap(TRUE);
+			printf("DEBUG: Calling TheShell->showShell()\n");
 			TheShell->showShell();
+			printf("DEBUG: Shell displayed - setting afterIntro to FALSE\n");
 			TheWritableGlobalData->m_afterIntro = FALSE;
 		}
 	}

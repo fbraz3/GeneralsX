@@ -1,0 +1,14 @@
+# LLDB script to debug video playback crash
+# Usage: cd $HOME/GeneralsX/GeneralsMD && USE_METAL=1 lldb -s /path/to/debug_video_crash.lldb ./GeneralsXZH
+
+# Breakpoint on crash locations
+breakpoint set --name __pthread_kill --auto-continue true --command "bt"
+breakpoint set --name abort --auto-continue true --command "bt"
+
+# Run with environment
+env USE_METAL=1
+run
+
+# When stopped, print backtrace and quit
+bt
+quit

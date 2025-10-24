@@ -20,7 +20,7 @@ id MetalWrapper::s_commandQueue = nil;
 id MetalWrapper::s_layer = nil;
 id MetalWrapper::s_currentDrawable = nil;
 id MetalWrapper::s_cmdBuffer = nil;
-id MetalWrapper::s_passDesc = nil;
+// s_passDesc removed - local variable in BeginFrame(), not global state
 
 // Additional static members for minimal pipeline
 static id s_vertexBuffer = nil;
@@ -240,26 +240,26 @@ bool MetalWrapper::CreateSimplePipeline() {
     // Attribute 0: position (float3) - offset 0
     vertexDesc.attributes[0].format = MTLVertexFormatFloat3;
     vertexDesc.attributes[0].offset = 0;
-    vertexDesc.attributes[0].bufferIndex = 0;
+    vertexDesc.attributes[0].bufferIndex = 1;
     
     // Attribute 1: normal (float3) - offset 12
     vertexDesc.attributes[1].format = MTLVertexFormatFloat3;
     vertexDesc.attributes[1].offset = 12;
-    vertexDesc.attributes[1].bufferIndex = 0;
+    vertexDesc.attributes[1].bufferIndex = 1;
     
     // Attribute 2: color (float4) - offset 24
     vertexDesc.attributes[2].format = MTLVertexFormatFloat4;
     vertexDesc.attributes[2].offset = 24;
-    vertexDesc.attributes[2].bufferIndex = 0;
+    vertexDesc.attributes[2].bufferIndex = 1;
     
     // Attribute 3: texcoord (float2) - offset 40
     vertexDesc.attributes[3].format = MTLVertexFormatFloat2;
     vertexDesc.attributes[3].offset = 40;
-    vertexDesc.attributes[3].bufferIndex = 0;
+    vertexDesc.attributes[3].bufferIndex = 1;
     
-    // Buffer layout
-    vertexDesc.layouts[0].stride = sizeof(Vertex);  // 48 bytes total
-    vertexDesc.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
+    // Buffer layout at index 1 (vertex data, uniforms are at index 0)
+    vertexDesc.layouts[1].stride = sizeof(Vertex);  // 48 bytes total
+    vertexDesc.layouts[1].stepFunction = MTLVertexStepFunctionPerVertex;
     
     desc.vertexDescriptor = vertexDesc;
     
@@ -316,7 +316,7 @@ void MetalWrapper::Shutdown() {
     s_renderEncoder = nil;
     s_pipelineState = nil;
     s_vertexBuffer = nil;
-    s_passDesc = nil;
+    // s_passDesc removed - was causing use-after-free bugs
     s_cmdBuffer = nil;
     s_currentDrawable = nil;
     s_layer = nil;
@@ -340,17 +340,38 @@ void MetalWrapper::BeginFrame(float r, float g, float b, float a) {
         return;
     }
     
+    // CRITICAL: Check if previous frame wasn't properly ended
+    if (s_renderEncoder) {
+        printf("METAL WARNING: BeginFrame() called with active render encoder! Ending previous frame first.\n");
+        fflush(stdout);
+        EndFrame();
+    }
+    
+    if (s_cmdBuffer) {
+        printf("METAL WARNING: BeginFrame() called with uncommitted command buffer! Cleaning up.\n");
+        fflush(stdout);
+        s_cmdBuffer = nil;
+    }
+    
+    printf("METAL DEBUG: Getting next drawable from layer...\n");
+    fflush(stdout);
     s_currentDrawable = [(CAMetalLayer*)s_layer nextDrawable];
     if (!s_currentDrawable) {
         printf("METAL ERROR: BeginFrame() - Failed to get next drawable\n");
         return;
     }
+    printf("METAL DEBUG: Got drawable (%p)\n", s_currentDrawable);
+    fflush(stdout);
 
+    printf("METAL DEBUG: Creating command buffer...\n");
+    fflush(stdout);
     s_cmdBuffer = [(id<MTLCommandQueue>)s_commandQueue commandBuffer];
     if (!s_cmdBuffer) {
         printf("METAL ERROR: BeginFrame() - Failed to create command buffer\n");
         return;
     }
+    printf("METAL DEBUG: Command buffer created (%p)\n", s_cmdBuffer);
+    fflush(stdout);
 
     // Create a simple pass descriptor that clears to the given color
     MTLRenderPassDescriptor* pass = [MTLRenderPassDescriptor renderPassDescriptor];
@@ -363,15 +384,43 @@ void MetalWrapper::BeginFrame(float r, float g, float b, float a) {
     pass.colorAttachments[0].loadAction = MTLLoadActionClear;
     pass.colorAttachments[0].storeAction = MTLStoreActionStore;
     pass.colorAttachments[0].clearColor = MTLClearColorMake(r, g, b, a);
-    s_passDesc = pass;
+    // DON'T store pass in global variable - it's a local that will be released!
     
     printf("METAL DEBUG: About to create render encoder (cmdBuffer=%p, pass=%p)\n", s_cmdBuffer, pass);
     printf("METAL DEBUG: Pipeline state before encoder: %p\n", s_pipelineState);
     
+    // Validate command buffer state before creating encoder
+    if (!s_cmdBuffer) {
+        printf("METAL FATAL: cmdBuffer is NULL before encoder creation!\n");
+        return;
+    }
+    
+    // Validate render pass descriptor
+    if (!pass) {
+        printf("METAL FATAL: RenderPassDescriptor is NULL!\n");
+        return;
+    }
+    
+    // Validate texture attachment
+    if (!pass.colorAttachments[0].texture) {
+        printf("METAL FATAL: Color attachment texture is NULL!\n");
+        return;
+    }
+    
+    printf("METAL DEBUG: Validations passed, creating render encoder...\n");
+    fflush(stdout);
+    
     // Begin render pass - encoder stays active until EndFrame
+    // NOTE: This call may hang if there's a Metal driver issue or invalid state
     s_renderEncoder = [(id<MTLCommandBuffer>)s_cmdBuffer renderCommandEncoderWithDescriptor:pass];
     
     printf("METAL DEBUG: Render encoder created successfully (%p)\n", s_renderEncoder);
+    fflush(stdout);
+    
+    if (!s_renderEncoder) {
+        printf("METAL FATAL: Failed to create render encoder (returned nil)!\n");
+        return;
+    }
     
     // CRITICAL: Set pipeline state so encoder knows which shader to use
     if (s_pipelineState) {
@@ -402,16 +451,16 @@ void MetalWrapper::BeginFrame(float r, float g, float b, float a) {
     [(id<MTLRenderCommandEncoder>)s_renderEncoder setTriangleFillMode:MTLTriangleFillModeFill];
     printf("METAL: BeginFrame() - Triangle fill mode set to FILL\n");
     
-    // Bind uniforms to shader at [[buffer(1)]] (buffer(0) is for vertex data)
+    // Bind uniforms to shader at [[buffer(0)]] (matches shader definition)
     [(id<MTLRenderCommandEncoder>)s_renderEncoder 
         setVertexBytes:&s_currentUniforms
         length:sizeof(ShaderUniforms)
-        atIndex:1];
+        atIndex:0];
     [(id<MTLRenderCommandEncoder>)s_renderEncoder 
         setFragmentBytes:&s_currentUniforms
         length:sizeof(ShaderUniforms)
-        atIndex:1];
-    printf("METAL: BeginFrame() - Uniforms bound at index 1 (size: %zu bytes)\n", sizeof(ShaderUniforms));
+        atIndex:0];
+    printf("METAL: BeginFrame() - Uniforms bound at index 0 (size: %zu bytes)\n", sizeof(ShaderUniforms));
     
     printf("METAL: BeginFrame() - Render encoder created (%p)\n", s_renderEncoder);
 }
