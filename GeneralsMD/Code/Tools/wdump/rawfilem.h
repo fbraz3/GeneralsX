@@ -38,8 +38,7 @@
  *   RawFileMClass::Is_Open -- Checks to see if the file is open or not.                        *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#ifndef RAWFILEM_Hx
-#define RAWFILEM_Hx
+#pragma once
 
 #include	<errno.h>
 #include	<limits.h>
@@ -320,5 +319,3 @@ inline bool RawFileMClass::Is_Open(void) const
 {
 	return(Handle != INVALID_HANDLE_VALUE);
 }
-
-#endif

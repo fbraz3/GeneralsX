@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __KINDOF_H_
-#define __KINDOF_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Lib/BaseType.h"
 #include "Common/BitFlags.h"
@@ -219,6 +216,3 @@ inline void FLIP_KINDOFMASK(KindOfMaskType& m)
 extern KindOfMaskType KINDOFMASK_NONE;	// inits to all zeroes
 extern KindOfMaskType KINDOFMASK_FS;		// Initializes all FS types for faction structures.
 void initKindOfMasks();
-
-#endif	// __KINDOF_H_
-

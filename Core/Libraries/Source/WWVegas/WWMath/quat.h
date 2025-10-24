@@ -37,9 +37,6 @@
 
 #pragma once
 
-#ifndef QUAT_H
-#define QUAT_H
-
 #include "always.h"
 #include "wwmath.h"
 #include "matrix3.h"
@@ -307,9 +304,3 @@ WWINLINE Quaternion & Quaternion::operator = (const Quaternion & source)
 
   return *this;
 }
-
-
-#endif /* QUAT_H */
-
-
-

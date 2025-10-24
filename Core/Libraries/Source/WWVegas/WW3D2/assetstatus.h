@@ -18,9 +18,6 @@
 
 #pragma once
 
-#ifndef WW3D_ASSET_STATUS_H
-#define WW3D_ASSET_STATUS_H
-
 #include "always.h"
 #include "hashtemplate.h"
 
@@ -62,5 +59,3 @@ private:
 	void Add_To_Report(int index, const char* name);
 
 };
-
-#endif

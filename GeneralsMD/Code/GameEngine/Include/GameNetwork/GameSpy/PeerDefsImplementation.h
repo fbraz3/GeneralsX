@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef __PEERDEFSIMPLEMENTATION_H__
-#define __PEERDEFSIMPLEMENTATION_H__
-
 #include "GameNetwork/GameSpy/PeerDefs.h"
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
 
@@ -178,5 +175,3 @@ private:
 	std::set<Int> m_preorderPlayers;
 	Int m_additionalDisconnects;
 };
-
-#endif // __PEERDEFS_H__

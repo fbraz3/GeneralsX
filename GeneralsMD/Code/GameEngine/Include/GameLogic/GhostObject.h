@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef _GHOSTOBJECT_H_
-#define _GHOSTOBJECT_H_
-
 #include "Lib/BaseType.h"
 #include "Common/Snapshot.h"
 
@@ -113,5 +110,3 @@ inline Bool GhostObjectManager::trackAllPlayers() const
 
 // the singleton
 extern GhostObjectManager *TheGhostObjectManager;
-
-#endif // _GHOSTOBJECT_H_

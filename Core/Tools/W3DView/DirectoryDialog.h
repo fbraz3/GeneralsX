@@ -34,12 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-#ifndef __DIRECTORY_DIALOG_H
-#define __DIRECTORY_DIALOG_H
-
 
 /////////////////////////////////////////////////////////////////////////
 //
@@ -47,7 +42,3 @@
 //
 /////////////////////////////////////////////////////////////////////////
 bool Browse_For_Folder (HWND parent_wnd, LPCTSTR initial_path, CString &path);
-
-
-#endif //__DIRECTORY_DIALOG_H
-

@@ -16,10 +16,8 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#if !defined(AFX_GENERATEDLG_H__959D0D41_50A5_11D3_B9DA_006097B90D93__INCLUDED_)
-#define AFX_GENERATEDLG_H__959D0D41_50A5_11D3_B9DA_006097B90D93__INCLUDED_
-
 #pragma once
+
 // GenerateDlg.h : header file
 //
 
@@ -86,5 +84,3 @@ protected:
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_GENERATEDLG_H__959D0D41_50A5_11D3_B9DA_006097B90D93__INCLUDED_)

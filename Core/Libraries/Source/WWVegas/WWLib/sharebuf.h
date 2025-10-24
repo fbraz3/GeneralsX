@@ -33,10 +33,9 @@
  *-------------------------------------------------------------------------*
  * Functions:                                                              *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 #pragma once
 
-#ifndef SHAREBUF_H
-#define SHAREBUF_H
 #include "refcount.h"
 
 
@@ -142,6 +141,3 @@ void ShareBufferClass<T>::Clear(void)
 {
 	memset(Array,0,Count * sizeof(T));
 }
-
-
-#endif // SHAREBUF_H

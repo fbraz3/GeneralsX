@@ -26,10 +26,8 @@
 //
 // main Debug object (singleton)
 //////////////////////////////////////////////////////////////////////////////
-#pragma once
 
-#ifndef DEBUG_DEBUG_H // Include guard
-#define DEBUG_DEBUG_H
+#pragma once
 
 /**
   \class Debug debug.h <rts/debug.h>
@@ -1227,5 +1225,3 @@ private:
 const char *DebugGetDefaultCommands(void);
 
 ///@} end of debug_fn group
-
-#endif // DEBUG_DEBUG_H

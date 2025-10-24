@@ -20,9 +20,8 @@
 wtime                      Neal Kettler
 
 \****************************************************************************/
-#ifndef WTIME_HEADER
-#define WTIME_HEADER
 
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -124,5 +123,3 @@ class Wtime
     uint32    usec;    // microseconds (millionths of a second)
     bit8      sign;    // for time differences 0 = pos 1 = neg
 };
-
-#endif

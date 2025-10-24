@@ -34,12 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-
-#ifndef SAVELOAD_H
-#define SAVELOAD_H
 
 #include "always.h"
 #include "pointerremap.h"
@@ -215,7 +210,3 @@ protected:
 #define REQUEST_POINTER_REMAP(pp)					SaveLoadSystemClass::Request_Pointer_Remap(pp)
 #define REQUEST_REF_COUNTED_POINTER_REMAP(pp)	SaveLoadSystemClass::Request_Ref_Counted_Pointer_Remap(pp)
 #endif
-
-
-#endif //SAVELOAD_H
-

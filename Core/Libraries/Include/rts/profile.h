@@ -26,10 +26,7 @@
 //
 // Proxy header for profile module
 //////////////////////////////////////////////////////////////////////////////
+
 #  pragma once
-#ifndef PROXY_PROFILE_H // Include guard
-#define PROXY_PROFILE_H
 
 #include "../../Source/profile/profile.h"
-
-#endif // PROXY_PROFILE_H

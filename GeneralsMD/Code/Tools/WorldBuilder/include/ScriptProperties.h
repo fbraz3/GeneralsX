@@ -16,10 +16,8 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#if !defined(AFX_SCRIPTPROPERTIES_H__CE62125B_9FAB_4EF0_A8B5_36DD5393A2B0__INCLUDED_)
-#define AFX_SCRIPTPROPERTIES_H__CE62125B_9FAB_4EF0_A8B5_36DD5393A2B0__INCLUDED_
-
 #pragma once
+
 // ScriptProperties.h : header file
 //
 class Script;
@@ -83,5 +81,3 @@ protected:
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_SCRIPTPROPERTIES_H__CE62125B_9FAB_4EF0_A8B5_36DD5393A2B0__INCLUDED_)

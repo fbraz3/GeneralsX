@@ -34,11 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-#ifndef ROBJLIST_H
-#define ROBJLIST_H
 
 #ifndef ALWAYS_H
 #include "always.h"
@@ -59,7 +55,3 @@ typedef RefMultiListIterator<RenderObjClass>	RefRenderObjListIterator;
 
 typedef MultiListClass<RenderObjClass>			NonRefRenderObjListClass;
 typedef MultiListIterator<RenderObjClass>		NonRefRenderObjListIterator;
-
-#endif
-
-

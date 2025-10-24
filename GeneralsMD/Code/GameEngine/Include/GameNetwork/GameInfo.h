@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef __GAMEINFO_H__
-#define __GAMEINFO_H__
-
 #include "Common/Snapshot.h"
 #include "Common/Money.h"
 #include "GameNetwork/NetworkDefs.h"
@@ -306,5 +303,3 @@ public:
 
 extern SkirmishGameInfo *TheSkirmishGameInfo;
 extern SkirmishGameInfo *TheChallengeGameInfo;
-
-#endif // __GAMEINFO_H__

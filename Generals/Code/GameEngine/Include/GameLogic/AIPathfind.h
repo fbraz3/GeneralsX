@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef _PATHFIND_H_
-#define _PATHFIND_H_
-
 #include "Common/GameType.h"
 #include "Common/GameMemory.h"
 #include "Common/Snapshot.h"
@@ -980,6 +977,3 @@ inline Bool PathfindCell::isObstaclePresent( ObjectID objID ) const
 
 	return false;
 }
-
-
-#endif // _PATHFIND_H_

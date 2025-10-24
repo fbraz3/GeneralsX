@@ -20,10 +20,8 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_CHUNK_D_H__41C157F9_5631_11D1_8CDB_006097C6A583__INCLUDED_)
-#define AFX_CHUNK_D_H__41C157F9_5631_11D1_8CDB_006097C6A583__INCLUDED_
-
 #pragma once
+
 class ChunkItem;
 
 class ChunkType {
@@ -254,5 +252,3 @@ public:
 protected:
 	void Add_Chunk(ChunkLoadClass &cload, ChunkItem *Parent = 0); // add a chunk to the list of chunks maintained by ChunkData
 };
-
-#endif // !defined(AFX_CHUNK_D_H__41C157F9_5631_11D1_8CDB_006097C6A583__INCLUDED_)

@@ -34,11 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-#ifndef FRAMEGRAB_H
-#define FRAMEGRAB_H
 
 #ifndef ALWAYS_H
 #include "always.h"
@@ -111,5 +107,3 @@ protected:
 	void ConvertFrame(void *BitmapPointer);
 
 };
-
-#endif

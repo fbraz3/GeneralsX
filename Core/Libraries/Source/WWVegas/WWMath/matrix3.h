@@ -56,11 +56,7 @@
  *   Matrix3x3::Rotate_Z -- Post-multiplies the matrix with a rotation about Z                   *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-#ifndef Matrix3_H
-#define Matrix3_H
 
 #include "always.h"
 #include "vector3.h"
@@ -1026,5 +1022,3 @@ WWINLINE void Matrix3x3::Rotate_AABox_Extent(const Vector3 & extent,Vector3 * se
 		}
 	}
 }
-
-#endif /*Matrix3_H*/

@@ -26,10 +26,8 @@
 //
 // additional Doxygen module documentation
 //////////////////////////////////////////////////////////////////////////////
-#pragma once
 
-#ifndef PROFILE_DOC_H // Include guard
-#define PROFILE_DOC_H
+#pragma once
 
 // This generates a small main page for Doxygen if a module only
 // documentation is built.
@@ -191,5 +189,3 @@
   </tr></table>
 
 */
-
-#endif // PROFILE_DOC_H

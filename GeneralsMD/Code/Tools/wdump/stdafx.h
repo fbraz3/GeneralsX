@@ -21,9 +21,6 @@
 //      are changed infrequently
 //
 
-#if !defined(AFX_STDAFX_H__41C157E9_5631_11D1_8CDB_006097C6A583__INCLUDED_)
-#define AFX_STDAFX_H__41C157E9_5631_11D1_8CDB_006097C6A583__INCLUDED_
-
 #pragma once
 
 #define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
@@ -44,5 +41,3 @@
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_STDAFX_H__41C157E9_5631_11D1_8CDB_006097C6A583__INCLUDED_)

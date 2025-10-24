@@ -22,12 +22,7 @@
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
-
 #pragma once
-
-
-#ifndef __HEIGHTMAP_H_
-#define __HEIGHTMAP_H_
 
 #include "always.h"
 #include "rendobj.h"
@@ -122,5 +117,3 @@ protected:
 	void freeIndexVertexBuffers(void);
 	void renderExtraBlendTiles(void);	///< render 3-way blend tiles that have blend of 3 textures.
 };
-
-#endif  // end __HEIGHTMAP_H_

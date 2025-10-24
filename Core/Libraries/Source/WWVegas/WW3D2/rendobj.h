@@ -38,11 +38,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-#ifndef RENDOBJ_H
-#define RENDOBJ_H
 
 #include "always.h"
 #include "refcount.h"
@@ -651,7 +647,4 @@ static const char* const TheAnimModeNames[] =
 	NULL
 };
 static_assert(ARRAY_SIZE(TheAnimModeNames) == RenderObjClass::ANIM_MODE_COUNT + 1, "Incorrect array size");
-#endif
-
-
 #endif

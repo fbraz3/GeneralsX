@@ -35,10 +35,8 @@
  *---------------------------------------------------------------------------------------------------------------*
  * Functions:                                                                                                    *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#pragma once
 
-#ifndef STATIC_SORT_LIST_H
-#define STATIC_SORT_LIST_H
+#pragma once
 
 #include "robjlist.h"
 #include "w3d_file.h"
@@ -89,9 +87,3 @@ class DefaultStaticSortListClass : public StaticSortListClass
 		RefRenderObjListClass 	SortLists[MAX_SORT_LEVEL + 1];
 
 };
-
-
-
-
-#endif //STATIC_SORT_LIST_H
-

@@ -36,9 +36,6 @@
 
 #pragma once
 
-#ifndef __WWSTRING_H
-#define __WWSTRING_H
-
 #include "always.h"
 #include "mutex.h"
 #include "win.h"
@@ -776,6 +773,3 @@ StringClass::Store_Length (int length)
 
 	return ;
 }
-
-#endif //__WWSTRING_H
-

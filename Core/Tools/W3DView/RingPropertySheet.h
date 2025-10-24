@@ -34,11 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-#ifndef __RING_PROPERTY_SHEET_H
-#define __RING_PROPERTY_SHEET_H
 
 #include "RingColorPropPage.h"
 #include "RingGeneralPropPage.h"
@@ -118,5 +114,3 @@ private:
 };
 
 /////////////////////////////////////////////////////////////////////////////
-
-#endif //__RING_PROPERTY_SHEET_H

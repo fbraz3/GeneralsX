@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef _LOGIC_RANDOM_VALUE_H_
-#define _LOGIC_RANDOM_VALUE_H_
-
 #include "Lib/BaseType.h"
 
 // do NOT use these functions directly, rather use the macros below
@@ -92,5 +89,3 @@ protected:
 };
 
 //--------------------------------------------------------------------------------------------------------------
-
-#endif // _LOGIC_RANDOM_VALUE_H_

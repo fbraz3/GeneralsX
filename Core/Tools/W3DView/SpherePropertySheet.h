@@ -34,11 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-#ifndef __SPHERE_PROPERTY_SHEET_H
-#define __SPHERE_PROPERTY_SHEET_H
 
 #include "SphereColorPropPage.h"
 #include "SphereGeneralPropPage.h"
@@ -118,5 +114,3 @@ private:
 };
 
 /////////////////////////////////////////////////////////////////////////////
-
-#endif //__SPHERE_PROPERTY_SHEET_H

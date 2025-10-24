@@ -40,9 +40,6 @@
 
 #pragma once
 
-#ifndef MESHBUILD_H
-#define MESHBUILD_H
-
 #include	"always.h"
 #include "vector2.h"
 #include "vector3.h"
@@ -380,5 +377,3 @@ inline const MeshBuilderClass::MeshStatsStruct & MeshBuilderClass::Get_Mesh_Stat
 	assert(State == STATE_MESH_PROCESSED);
 	return Stats;
 }
-
-#endif

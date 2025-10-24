@@ -38,9 +38,6 @@
 
 #pragma once
 
-#ifndef DECALSYS_H
-#define DECALSYS_H
-
 #include "always.h"
 #include "matrix3d.h"
 #include "matrix4.h"
@@ -298,9 +295,3 @@ protected:
 	uint32											PoolCount;
 
 };
-
-
-
-
-#endif //DECALSYS_H
-

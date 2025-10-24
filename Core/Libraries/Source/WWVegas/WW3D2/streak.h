@@ -36,9 +36,6 @@
 
 #pragma once
 
-#ifndef STREAK_H
-#define STREAK_H
-
 #include "rendobj.h"
 #include "shader.h"
 #include "simplevec.h"
@@ -206,13 +203,3 @@ class StreakLineClass : public RenderObjClass
 	SegLineRendererClass		LineRenderer;
 	StreakRendererClass		StreakRenderer;//special, per-point alpha/color/size
 };
-
-
-
-
-
-
-
-
-
-#endif // SEGLINE_H

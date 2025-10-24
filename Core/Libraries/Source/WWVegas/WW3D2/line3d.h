@@ -36,9 +36,6 @@
 
 #pragma once
 
-#ifndef LINE3D_H
-#define LINE3D_H
-
 #include "always.h"
 #include "rendobj.h"
 #include "vector3.h"
@@ -118,5 +115,3 @@ class Line3DClass : public W3DMPO, public RenderObjClass
 		Vector4						Color;
 		char														SortLevel;
 };
-
-#endif

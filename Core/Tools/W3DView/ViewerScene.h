@@ -34,12 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-
-#ifndef __VIEWER_SCENE_H
-#define __VIEWER_SCENE_H
 
 #include "scene.h"
 #include "aabox.h"
@@ -111,6 +106,3 @@ class ViewerSceneClass : public SimpleSceneClass
 		RefRenderObjListClass	LineUpList;
 		RefRenderObjListClass	LightList;
 };
-
-
-#endif //__VIEWER_SCENE_H

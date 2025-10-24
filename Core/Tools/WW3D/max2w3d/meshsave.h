@@ -37,9 +37,6 @@
 
 #pragma once
 
-#ifndef MESHSAVE_H
-#define MESHSAVE_H
-
 #include "rawfile.h"	// have to include this before Max.h
 #include <max.h>
 #include "BITTYPE.H"
@@ -216,9 +213,3 @@ private:
 
 	friend class DamageClass;
 };
-
-
-
-
-
-#endif /*MESHSAVE_H*/

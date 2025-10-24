@@ -33,10 +33,8 @@
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#pragma once
 
-#ifndef PIPE_H
-#define PIPE_H
+#pragma once
 
 /*
 **	A "push through" pipe interface abstract class used for such purposes as compression
@@ -71,5 +69,3 @@ class Pipe
 		Pipe(Pipe & rvalue);
 		Pipe & operator = (Pipe const & pipe);
 };
-
-#endif

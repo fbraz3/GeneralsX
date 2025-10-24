@@ -43,9 +43,6 @@
 
 #pragma once
 
-#ifndef OBBOX_H
-#define OBBOX_H
-
 #include "always.h"
 #include "vector3.h"
 #include "matrix3.h"
@@ -265,5 +262,3 @@ inline bool OBBoxClass::operator!= (const OBBoxClass &src)
 {
 	return (Center != src.Center) || (Extent != src.Extent) || (Basis != src.Basis);
 }
-
-#endif

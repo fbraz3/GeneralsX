@@ -17,8 +17,6 @@
 */
 
 // 08/07/02 KM Texture class redesign (revisited)
-#ifndef TEXTURETHUMBNAIL_H
-#define TEXTURETHUMBNAIL_H
 
 #pragma once
 
@@ -124,5 +122,3 @@ public:
 };
 
 // ----------------------------------------------------------------------------
-
-#endif

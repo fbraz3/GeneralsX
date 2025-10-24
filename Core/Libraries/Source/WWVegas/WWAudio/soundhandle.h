@@ -36,9 +36,6 @@
 
 #pragma once
 
-#ifndef __SOUNDHANDLE_H
-#define __SOUNDHANDLE_H
-
 #include "WWAudio.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -122,6 +119,3 @@ protected:
 	///////////////////////////////////////////////////////////////////
 	SoundBufferClass *	Buffer;
 };
-
-
-#endif //__SOUNDHANDLE_H

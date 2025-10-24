@@ -33,11 +33,8 @@
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 #pragma once
-
-#ifndef LISTNODE_H
-#define LISTNODE_H
-
 
 /*
 ** Includes
@@ -319,6 +316,3 @@ public:
 	SECONDARY Get_Secondary() { return SecondaryValue; };
 	void Unlink() { Primary.Unlink(); Secondary.Unlink(); };
 };
-
-
-#endif

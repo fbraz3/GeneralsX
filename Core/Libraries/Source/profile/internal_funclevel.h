@@ -26,10 +26,8 @@
 //
 // Function level profiling (internal header)
 //////////////////////////////////////////////////////////////////////////////
-#pragma once
 
-#ifndef INTERNAL_FUNCLEVEL_H // Include guard
-#define INTERNAL_FUNCLEVEL_H
+#pragma once
 
 class ProfileFuncLevelTracer
 {
@@ -357,5 +355,3 @@ inline ProfileFuncLevelTracer::Function *ProfileFuncLevelTracer::FunctionMap::Fi
       return e->funcPtr;
   return NULL;
 }
-
-#endif // INTERNAL_FUNCLEVEL_H

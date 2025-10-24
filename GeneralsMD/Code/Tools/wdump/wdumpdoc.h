@@ -20,9 +20,6 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_WDUMPDOC_H__41C157ED_5631_11D1_8CDB_006097C6A583__INCLUDED_)
-#define AFX_WDUMPDOC_H__41C157ED_5631_11D1_8CDB_006097C6A583__INCLUDED_
-
 #pragma once
 
 #include "chunk_d.h"
@@ -77,5 +74,3 @@ protected:
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_WDUMPDOC_H__41C157ED_5631_11D1_8CDB_006097C6A583__INCLUDED_)

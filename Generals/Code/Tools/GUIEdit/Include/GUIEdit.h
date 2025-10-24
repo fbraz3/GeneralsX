@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __GUIEDIT_H_
-#define __GUIEDIT_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include <windows.h>
 #include <stdio.h>
@@ -374,6 +371,3 @@ inline AsciiString GUIEdit::getLayoutShutdown( void ) { return m_layoutShutdownS
 
 // EXTERNALS //////////////////////////////////////////////////////////////////////////////////////
 extern GUIEdit *TheEditor;  ///< editor application singleton
-
-#endif // __GUIEDIT_H_
-

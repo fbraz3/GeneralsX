@@ -38,9 +38,6 @@
 
 #pragma once
 
-#ifndef COLORSPACE_H
-#define COLORSPACE_H
-
 #include "dx8wrapper.h"
 #include <wwmath.h>
 
@@ -153,7 +150,3 @@ inline void Recolor(unsigned& rgba, const Vector3 &hsv_shift)
 	Recolor((Vector3&)rgba_v, hsv_shift);
 	rgba = DX8Wrapper::Convert_Color(rgba_v);
 }
-
-
-#endif
-

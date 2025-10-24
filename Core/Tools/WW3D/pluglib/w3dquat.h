@@ -37,9 +37,6 @@
 
 #pragma once
 
-#ifndef QUAT_H
-#define QUAT_H
-
 #include "always.h"
 #include "wwmath.h"
 #include "WWmatrix3.h"
@@ -253,8 +250,3 @@ inline bool Quaternion::Is_Valid(void) const
 				WWMath::Is_Valid_Float(Z) &&
 				WWMath::Is_Valid_Float(W) );
 }
-
-#endif /* QUAT_H */
-
-
-

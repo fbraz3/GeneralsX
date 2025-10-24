@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef _NETWORK_INTERFACE_H_
-#define _NETWORK_INTERFACE_H_
-
 #include "Common/MessageStream.h"
 #include "GameNetwork/ConnectionManager.h"
 #include "GameNetwork/User.h"
@@ -137,5 +134,3 @@ public:
  * a 32-bit unsigned integer.
  */
 UnsignedInt ResolveIP(AsciiString host);
-
-#endif // _NETWORK_INTERFACE_H_

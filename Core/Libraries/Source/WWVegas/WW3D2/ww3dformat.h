@@ -41,9 +41,6 @@
 
 #pragma once
 
-#ifndef WW3DFORMAT_H
-#define WW3DFORMAT_H
-
 #include "always.h"
 #include "wwstring.h"
 
@@ -203,5 +200,3 @@ void Get_WW3D_ZFormat_Name(WW3DZFormat format, StringClass& name);
 
 unsigned Get_Num_Depth_Bits(WW3DZFormat zformat);
 unsigned Get_Num_Stencil_Bits(WW3DZFormat zformat);
-
-#endif

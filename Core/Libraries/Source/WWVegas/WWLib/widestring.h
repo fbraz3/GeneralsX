@@ -36,9 +36,6 @@
 
 #pragma once
 
-#ifndef __WIDESTRING_H
-#define __WIDESTRING_H
-
 #include <string.h>
 #include <stdarg.h>
 #include "always.h"
@@ -776,6 +773,3 @@ WideStringClass::Convert_To (StringClass &string) const
 {
 	return (string.Copy_Wide (m_Buffer));
 }
-
-#endif //__WIDESTRING_H
-

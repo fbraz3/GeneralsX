@@ -38,9 +38,6 @@
 
 #pragma once
 
-#ifndef MESHDAM_H
-#define MESHDAM_H
-
 #include "always.h"
 #include "vector3.h"
 #include "bittype.h"
@@ -99,8 +96,6 @@ protected:
 	friend class MeshClass;
 };
 
-
-#endif
 
 
 #endif //0

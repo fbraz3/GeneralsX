@@ -36,11 +36,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-#ifndef __PARAMETER_H
-#define __PARAMETER_H
 
 #include "always.h"
 #include <string.h>
@@ -1153,7 +1149,3 @@ public:
 	// Copy methods
 	virtual void				Copy_Value (const ParameterClass &src);
 };
-
-
-#endif //__PARAMETER_H
-

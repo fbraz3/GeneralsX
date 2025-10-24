@@ -50,8 +50,7 @@
  *   DynamicVectorClass<T>::Uninitialized_Add -- Add an empty place to the vector.             *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#ifndef VECTOR_H
-#define VECTOR_H
+#pragma once
 
 #include	"noinit.h"
 #include	<assert.h>
@@ -1001,7 +1000,3 @@ bool Pointer_Vector_Remove(T const * ptr, VectorClass<T *> & vec)
 	}
 	return(false);
 }
-
-
-#endif
-

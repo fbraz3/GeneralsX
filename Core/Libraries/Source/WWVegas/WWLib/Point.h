@@ -33,10 +33,8 @@
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#pragma once
 
-#ifndef POINT_H
-#define POINT_H
+#pragma once
 
 template<class T> class TRect;
 
@@ -199,6 +197,3 @@ TPoint3D<T> const operator * (T lvalue, TPoint3D<T> const & rvalue)
 **	integer 3D points.
 */
 typedef TPoint3D<int> Point3D;
-
-
-#endif

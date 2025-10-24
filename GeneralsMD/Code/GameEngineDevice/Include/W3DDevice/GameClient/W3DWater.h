@@ -26,9 +26,6 @@
 
 #pragma once
 
-#ifndef __W3DWater_H_
-#define __W3DWater_H_
-
 #include "always.h"
 #include "rendobj.h"
 #include "w3d_file.h"
@@ -291,5 +288,3 @@ inline Bool WaterRenderObjClass::worldToGridSpace(Real worldX, Real worldY, Real
 }
 
 extern WaterRenderObjClass *TheWaterRenderObj; ///<global water rendering object
-
-#endif  // end __W3DWater_H_

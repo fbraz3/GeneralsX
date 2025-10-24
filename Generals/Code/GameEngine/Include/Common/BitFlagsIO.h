@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __BitFlagsIO_H_
-#define __BitFlagsIO_H_
-
 #include "Common/BitFlags.h"
 #include "Common/INI.h"
 #include "Common/Xfer.h"
@@ -229,5 +226,3 @@ void BitFlags<NUMBITS>::xfer(Xfer* xfer)
 	}
 
 }
-
-#endif

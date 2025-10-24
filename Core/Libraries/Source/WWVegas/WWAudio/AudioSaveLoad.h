@@ -34,11 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-#ifndef __AUDIO_SAVE_LOAD_H
-#define __AUDIO_SAVE_LOAD_H
 
 #include "saveloadsubsystem.h"
 #include "Vector.H"
@@ -119,8 +115,3 @@ protected:
 	//bool							Save_Micro_Chunks (ChunkSaveClass &csave);
 	//bool							Load_Micro_Chunks (ChunkLoadClass &cload);
 };
-
-
-#endif //__AUDIO_SAVE_LOAD_H
-
-

@@ -33,10 +33,8 @@
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#pragma once
 
-#ifndef TRECT_H
-#define TRECT_H
+#pragma once
 
 #include	"Point.h"
 
@@ -217,7 +215,3 @@ TPoint2D<T> const TPoint2D<T>::Bias_To(TRect<T> const & rect) const
 **	is composed of integers.
 */
 typedef TRect<int> Rect;
-
-
-#endif
-

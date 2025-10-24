@@ -26,10 +26,8 @@
 //
 // Debug command interface
 //////////////////////////////////////////////////////////////////////////////
-#pragma once
 
-#ifndef DEBUG_CMD_H // Include guard
-#define DEBUG_CMD_H
+#pragma once
 
 /**
   \interface DebugCmdInterface debug.h <rts/debug.h>
@@ -126,5 +124,3 @@ public:
 #endif
 
 ///@}
-
-#endif // DEBUG_CMD_H

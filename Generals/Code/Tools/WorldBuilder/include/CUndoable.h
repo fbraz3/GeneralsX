@@ -22,9 +22,6 @@
 
 #pragma once
 
-#ifndef CUNDOABLE_H
-#define CUNDOABLE_H
-
 #include "Lib/BaseType.h"
 #include "../../GameEngine/Include/Common/MapObject.h"
 #include "../../GameEngine/Include/Common/GameCommon.h"
@@ -388,6 +385,3 @@ public:
 		virtual void Do(void);
 		virtual void Undo(void);
 };
-
-
-#endif //CUNDOABLE_H

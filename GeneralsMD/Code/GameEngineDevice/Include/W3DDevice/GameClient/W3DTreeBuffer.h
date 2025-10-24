@@ -44,9 +44,6 @@
 
 #pragma once
 
-#ifndef __W3DTREE_BUFFER_H_
-#define __W3DTREE_BUFFER_H_
-
 //-----------------------------------------------------------------------------
 //           Includes
 //-----------------------------------------------------------------------------
@@ -286,5 +283,3 @@ protected:
 																			 UnsignedInt options );
 
 };
-
-#endif  // end __W3DTREE_BUFFER_H_

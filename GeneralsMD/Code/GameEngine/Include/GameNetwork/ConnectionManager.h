@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __CONNECTIONMANAGER_H
-#define __CONNECTIONMANAGER_H
-
 #include "GameNetwork/Connection.h"
 #include "GameNetwork/NetCommandList.h"
 #include "GameNetwork/Transport.h"
@@ -217,5 +214,3 @@ private:
 	FileProgressMap s_fileProgressMap[MAX_SLOTS];
 	// -----------------------------------------------------------------------------
 };
-
-#endif

@@ -33,10 +33,8 @@
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#pragma once
 
-#ifndef STRAW_H
-#define STRAW_H
+#pragma once
 
 /*
 **	This is a demand driven data carrier. It will retrieve the byte request by passing
@@ -69,6 +67,3 @@ class Straw
 		Straw(Straw & rvalue);
 		Straw & operator = (Straw const & pipe);
 };
-
-
-#endif

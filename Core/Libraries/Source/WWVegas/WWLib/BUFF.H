@@ -33,11 +33,8 @@
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 #pragma once
-
-#ifndef CCBUFF_H
-#define CCBUFF_H
-
 
 /*
 **	The "bool" integral type was defined by the C++ committee in
@@ -88,6 +85,3 @@ class Buffer {
 		*/
 		bool IsAllocated;
 };
-
-
-#endif

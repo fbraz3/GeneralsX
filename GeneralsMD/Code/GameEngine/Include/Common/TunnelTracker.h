@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef TUNNEL_TRACKER_H
-#define TUNNEL_TRACKER_H
-
 #include "Common/GameType.h"
 #include "Common/GameMemory.h"
 #include "Common/Snapshot.h"
@@ -95,5 +92,3 @@ private:
 	ObjectID		m_curNemesisID;							///< If we have team(s) guarding a tunnel network system, this is one of the current targets.
 	UnsignedInt m_nemesisTimestamp;					///< We only keep nemesis for a couple of seconds.
 };
-
-#endif

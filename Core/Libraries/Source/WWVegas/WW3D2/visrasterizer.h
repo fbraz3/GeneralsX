@@ -38,9 +38,6 @@
 
 #pragma once
 
-#ifndef VISRASTERIZER_H
-#define VISRASTERIZER_H
-
 #include "always.h"
 #include "matrix3d.h"
 #include "matrix4.h"
@@ -206,6 +203,3 @@ protected:
 
 	SimpleVecClass<Vector3>	TempVertexBuffer;
 };
-
-#endif //VISRASTERIZER_H
-

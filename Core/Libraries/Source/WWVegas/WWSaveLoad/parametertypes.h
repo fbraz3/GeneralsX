@@ -34,13 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-
-
-#ifndef __PARAMETER_TYPES_H
-#define __PARAMETER_TYPES_H
 
 #include "always.h"
 
@@ -61,7 +55,3 @@
 	TYPE_MODELFILENAME
 
 }	ParameterType;*/
-
-
-#endif //__PARAMETER_TYPES_H
-

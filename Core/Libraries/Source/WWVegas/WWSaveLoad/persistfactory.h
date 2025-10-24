@@ -34,14 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-
-
-
-#ifndef PERSISTFACTORY_H
-#define PERSISTFACTORY_H
 
 #include "always.h"
 #include "bittype.h"
@@ -136,6 +129,3 @@ SimplePersistFactoryClass<T,CHUNKID>::Save(ChunkSaveClass & csave,PersistClass *
 	obj->Save(csave);
 	csave.End_Chunk();
 }
-
-
-#endif

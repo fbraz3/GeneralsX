@@ -35,9 +35,6 @@
 
 #pragma once
 
-#ifndef REGISTRY_H
-#define REGISTRY_H
-
 #ifndef ALWAYS_H
 #include "always.h"
 #endif
@@ -121,5 +118,3 @@ private:
 	//
 	static bool IsLocked;
 };
-
-#endif // REGISTRY_H

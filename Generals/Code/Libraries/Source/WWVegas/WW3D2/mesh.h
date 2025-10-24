@@ -35,11 +35,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-#ifndef MESH_H
-#define MESH_H
 
 #include "always.h"
 #include "rendobj.h"
@@ -206,6 +202,3 @@ inline MeshModelClass * MeshClass::Peek_Model(void)
 // model. This is useful for stuff like making a RenderObjects' polys sort.
 //void Set_MeshModel_Flag(RenderObjClass *robj, MeshModelClass::FlagsType flag, int onoff);
 void Set_MeshModel_Flag(RenderObjClass *robj, int flag, int onoff);
-
-#endif /*MESH_H*/
-

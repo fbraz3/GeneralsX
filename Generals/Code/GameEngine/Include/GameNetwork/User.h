@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef __USER_H
-#define __USER_H
-
 #include "GameNetwork/NetworkDefs.h"
 #include "Common/UnicodeString.h"
 
@@ -58,5 +55,3 @@ private:
 	UnsignedInt m_ipaddr;
 };
 EMPTY_DTOR(User)
-
-#endif

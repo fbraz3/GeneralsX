@@ -33,10 +33,8 @@
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#pragma once
 
-#ifndef RGB_H
-#define RGB_H
+#pragma once
 
 class PaletteClass;
 class HSVClass;
@@ -89,5 +87,3 @@ class RGBClass
 };
 
 extern RGBClass const BlackColor;
-
-#endif

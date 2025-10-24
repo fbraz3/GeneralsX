@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef _PHYSICSUPDATE_H_
-#define _PHYSICSUPDATE_H_
-
 #include "Common/AudioEventRTS.h"
 #include "Common/GameAudio.h"
 #include "GameLogic/Module/BehaviorModule.h"
@@ -291,6 +288,3 @@ inline ObjectID PhysicsBehavior::getLastCollidee() const
 {
 	return m_lastCollidee;
 }
-
-#endif // _PHYSICSUPDATE_H_
-

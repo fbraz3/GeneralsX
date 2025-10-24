@@ -35,9 +35,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#ifndef GAMEMTL_H
-#define GAMEMTL_H
+#pragma once
 
 #include <max.h>
 #include "w3dmtl.h"
@@ -366,8 +364,3 @@ private:
 };
 
 Mtl * CreateGameMtl();
-
-#endif
-
-
-

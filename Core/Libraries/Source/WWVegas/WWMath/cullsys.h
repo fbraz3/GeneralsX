@@ -34,11 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-#ifndef CULLSYS_H
-#define CULLSYS_H
 
 #include "wwdebug.h"
 #include "stdlib.h"
@@ -194,6 +190,3 @@ protected:
 
 	friend class CullableClass;
 };
-
-
-#endif

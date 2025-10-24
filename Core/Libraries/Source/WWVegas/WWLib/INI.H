@@ -36,9 +36,6 @@
 
 #pragma once
 
-#ifndef INI_H
-#define INI_H
-
 #include <wchar.h>
 
 //#include	"listnode.h"
@@ -240,5 +237,3 @@ class INIClass {
 		*/
 		static bool KeepBlankEntries;
 };
-
-#endif

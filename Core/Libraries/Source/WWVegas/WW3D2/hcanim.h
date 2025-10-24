@@ -35,11 +35,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-#ifndef HCANIM_H
-#define HCANIM_H
 
 #include "always.h"
 #include "quat.h"
@@ -129,7 +125,3 @@ private:
 	void add_bit_channel(TimeCodedBitChannelClass * newchan);
 
 };
-
-
-#endif // hcanim.h
-

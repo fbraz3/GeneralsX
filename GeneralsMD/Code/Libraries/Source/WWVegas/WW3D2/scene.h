@@ -34,11 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-#ifndef SCENE_H
-#define SCENE_H
 
 #include "always.h"
 #include "refcount.h"
@@ -263,5 +259,3 @@ protected:
 	virtual void Customized_Render(RenderInfoClass & rinfo);
 	virtual void Post_Render_Processing(RenderInfoClass& rinfo);
 };
-
-#endif

@@ -36,12 +36,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-#ifndef DX8_POLYGON_RENDERER_H
-#define DX8_POLYGON_RENDERER_H
-
 
 #include "always.h"
 #include "meshmdl.h"
@@ -155,5 +150,3 @@ inline void DX8PolygonRendererClass::Render_Sorted(/*const Matrix3D & tm,*/int b
 		vertex_index_range);
 
 }
-
-#endif

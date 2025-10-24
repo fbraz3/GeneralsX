@@ -36,9 +36,6 @@
 
 #pragma once
 
-#ifndef __VIEWER_ASSETMGR_H
-#define __VIEWER_ASSETMGR_H
-
 #include "assetmgr.h"
 
 
@@ -87,6 +84,3 @@ private:
 	///////////////////////////////////////////////////
 	DynamicVectorClass<CString>	m_MissingTextureList;
 };
-
-
-#endif //__VIEWER_ASSETMGR_H

@@ -37,9 +37,6 @@
 
 #pragma once
 
-#ifndef W3DEXCLUSIONLIST_H
-#define W3DEXCLUSIONLIST_H
-
 #include "always.h"
 #include "Vector.H"
 #include "wwstring.h"
@@ -76,7 +73,3 @@ protected:
 	const DynamicVectorClass<StringClass> &	Names;
 	HashTemplateClass<StringClass,int>			NameHash;
 };
-
-
-
-#endif //EXCLUSIONLIST_H

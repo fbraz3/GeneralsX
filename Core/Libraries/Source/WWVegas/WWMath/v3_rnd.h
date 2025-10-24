@@ -33,10 +33,8 @@
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#pragma once
 
-#ifndef V3_RND_H
-#define V3_RND_H
+#pragma once
 
 #include "always.h"
 #include "vector3.h"
@@ -226,8 +224,3 @@ class Vector3SolidCylinderRandomizer : public Vector3Randomizer {
 		float	Extent;
 		float	Radius;
 };
-
-
-#endif
-
-

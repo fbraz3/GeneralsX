@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __BehaviorModule_H_
-#define __BehaviorModule_H_
-
 #include "Common/GameType.h"
 #include "Common/Module.h"
 
@@ -263,5 +260,3 @@ public:
 };
 
 //-------------------------------------------------------------------------------------------------
-
-#endif

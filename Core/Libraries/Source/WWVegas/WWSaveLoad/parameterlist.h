@@ -34,14 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-
-
-
-#ifndef __PARAMETER_LIST_H
-#define __PARAMETER_LIST_H
 
 #include "always.h"
 #include "Vector.H"
@@ -153,7 +146,3 @@ ParameterListClass::Free_Parameters (void)
 //	m_Parameters.Delete_All ();
 	return ;
 }
-
-
-#endif //__PARAMETER_LIST_H
-

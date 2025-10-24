@@ -48,10 +48,8 @@
  *   IndexClass<T>::~IndexClass -- Destructor for index handler object.                        *
  *   compfunc -- Support function for bsearch and bsort.                                       *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#pragma once
 
-#ifndef INDEX_H
-#define INDEX_H
+#pragma once
 
 #include	"BSEARCH.H"
 
@@ -721,8 +719,3 @@ typename IndexClass<INDEX, T>::NodeElement const * IndexClass<INDEX, T>::Search_
 	return(Binary_Search(IndexTable, IndexCount, node));
 //	return((NodeElement const *)bsearch(&node, &IndexTable[0], IndexCount, sizeof(IndexTable[0]), search_compfunc));
 }
-
-
-#endif
-
-

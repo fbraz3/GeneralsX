@@ -33,10 +33,8 @@
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#pragma once
 
-#ifndef GCD_LCM_H
-#define GCD_LCM_H
+#pragma once
 
 #include "always.h"
 
@@ -47,5 +45,3 @@ unsigned int Greatest_Common_Divisor(unsigned int a, unsigned int b);
 // The least common multiple (LCM) is the least integer of which given
 // positive integers are divisors.
 unsigned int Least_Common_Multiple(unsigned int a, unsigned int b);
-
-#endif // GCD_LCM_H

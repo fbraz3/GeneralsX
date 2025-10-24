@@ -27,8 +27,7 @@
 // IDispatch for a COM object with a type library.
 //
 
-#ifndef _FEBDISPATCH_H__
-#define _FEBDISPATCH_H__
+#pragma once
 
 #include <atlbase.h>
 extern CComModule _Module;
@@ -102,5 +101,3 @@ public:
 private:
 	ITypeInfo *m_ptinfo;
 };
-
-#endif

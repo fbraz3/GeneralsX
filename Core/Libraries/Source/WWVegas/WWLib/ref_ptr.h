@@ -34,11 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-#ifndef REF_PTR_H
-#define REF_PTR_H
 
 #ifndef ALWAYS_H
 #include "always.h"
@@ -450,5 +446,3 @@ RefCountPtr<Derived> Static_Cast(const RefCountPtr<Base> & base)
 {
 	return RefCountPtr<Derived>::Create_AddRef((Derived *)base.Peek());
 }
-
-#endif

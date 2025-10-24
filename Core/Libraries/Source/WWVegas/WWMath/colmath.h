@@ -36,9 +36,6 @@
 
 #pragma once
 
-#ifndef COLMATH_H
-#define COLMATH_H
-
 #ifndef ALWAYS_H
 #include "always.h"
 #endif
@@ -306,5 +303,3 @@ inline CollisionMath::OverlapType CollisionMath::eval_overlap_collision(const Ca
 #define TRACK_COLLISION_OBBOX_OBBOX
 #define TRACK_COLLISION_OBBOX_OBBOX_HIT
 #endif
-
-#endif // COLMATH_H

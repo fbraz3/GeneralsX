@@ -40,9 +40,6 @@
 
 #pragma once
 
-#ifndef __TEXTUREPAGE_H_
-#define __TEXTUREPAGE_H_
-
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #include <stdlib.h>
 
@@ -167,6 +164,3 @@ inline Int TexturePage::getWidth( void ) { return m_size.x; }
 inline Int TexturePage::getHeight( void ) { return m_size.y; }
 
 // EXTERNALS //////////////////////////////////////////////////////////////////
-
-#endif // __TEXTUREPAGE_H_
-

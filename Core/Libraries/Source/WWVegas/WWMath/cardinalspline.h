@@ -34,11 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-#ifndef CARDINALSPLINE_H
-#define CARDINALSPLINE_H
 
 #include "hermitespline.h"
 
@@ -96,7 +92,3 @@ protected:
 
 	DynamicVectorClass<float>	Tightness;
 };
-
-
-#endif
-

@@ -39,9 +39,6 @@
 
 #pragma once
 
-#ifndef TEXPROJECT_H
-#define TEXPROJECT_H
-
 #include "always.h"
 #include "matrix3d.h"
 #include "matrix4.h"
@@ -240,7 +237,3 @@ protected:
 */
 typedef RefMultiListClass<TexProjectClass>		TexProjListClass;
 typedef RefMultiListIterator<TexProjectClass>	TexProjListIterator;
-
-
-#endif
-

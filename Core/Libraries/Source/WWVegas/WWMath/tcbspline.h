@@ -34,11 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-#ifndef TCBSPLINE_H
-#define TCBSPLINE_H
 
 #include "hermitespline.h"
 
@@ -78,7 +74,3 @@ protected:
 
 	DynamicVectorClass<TCBClass> Params;
 };
-
-
-#endif
-

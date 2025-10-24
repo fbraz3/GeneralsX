@@ -34,11 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-#ifndef __SOUNDBUFFER_H
-#define __SOUNDBUFFER_H
 
 #pragma warning (push, 3)
 #include "mss.h"
@@ -173,6 +169,3 @@ class StreamSoundBufferClass : public SoundBufferClass
 		//	Protected member data
 		//////////////////////////////////////////////////////////////////////
 };
-
-
-#endif //__SOUNDBUFFER_H

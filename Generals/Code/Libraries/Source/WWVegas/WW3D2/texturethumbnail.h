@@ -16,9 +16,6 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef TEXTURETHUMBNAIL_H
-#define TEXTURETHUMBNAIL_H
-
 #pragma once
 
 #include "always.h"
@@ -49,5 +46,3 @@ public:
 };
 
 // ----------------------------------------------------------------------------
-
-#endif

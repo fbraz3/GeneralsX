@@ -39,9 +39,6 @@
 
 #pragma once
 
-#ifndef VERTEXMAPPER_H
-#define VERTEXMAPPER_H
-
 #include "refcount.h"
 #include "w3d_file.h"
 #include "w3derr.h"
@@ -570,5 +567,3 @@ public:
 ** Utility functions
 */
 void Reset_All_Texture_Mappers(RenderObjClass *robj, bool make_unique);
-
-#endif

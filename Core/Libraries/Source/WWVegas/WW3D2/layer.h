@@ -34,11 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-#ifndef LAYER_H
-#define LAYER_H
 
 #include "always.h"
 #include "LISTNODE.H"
@@ -91,8 +87,3 @@ public:
 };
 
 typedef List<LayerClass *> LayerListClass;
-
-
-#endif //LAYER_H
-
-

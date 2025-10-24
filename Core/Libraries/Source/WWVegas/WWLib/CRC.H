@@ -33,10 +33,8 @@
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#pragma once
 
-#ifndef CRC_H
-#define CRC_H
+#pragma once
 
 #include	<stdlib.h>
 
@@ -127,6 +125,3 @@ public:
 	// get the CRC of a null-terminated string
 	static unsigned long	String( const char *string, unsigned long crc = 0 );
 };
-
-#endif
-

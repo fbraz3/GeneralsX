@@ -34,8 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#ifndef __MESH_DEFORM_UNDO_H
-#define __MESH_DEFORM_UNDO_H
+#pragma once
 
 #include <max.h>
 #include "Vector.H"
@@ -150,6 +149,3 @@ class VertexColorRestoreClass : public VertexRestoreClass
 		virtual void	Copy_Vertex_State (DEFORM_LIST &list);
 		virtual void	Apply_Vertex_Data (DEFORM_LIST &list);
 };
-
-
-#endif //__MESH_DEFORM_UNDO_H

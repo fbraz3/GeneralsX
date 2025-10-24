@@ -26,10 +26,8 @@
 //
 // Debugging macros
 //////////////////////////////////////////////////////////////////////////////
-#pragma once
 
-#ifndef DEBUG_MACRO_H // Include guard
-#define DEBUG_MACRO_H
+#pragma once
 
 // I'm putting the documentation for the following macros
 // here because Doxygen otherwise includes the values of each macro
@@ -389,5 +387,3 @@ sourcefname.cpp (123) : Hello world
   be forgotten.
 */
 #define MESSAGE(a) message (__FILE__ "(" TOKEN_IT(__LINE__) ") : " a)
-
-#endif // DEBUG_MACRO_H

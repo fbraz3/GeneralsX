@@ -33,9 +33,6 @@
 
 #pragma once
 
-#ifndef __W3DSCENE_H_
-#define __W3DSCENE_H_
-
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
@@ -183,5 +180,3 @@ public:
 	/// customizable renderer for the RTS3DInterfaceScene
 	virtual void Customized_Render( RenderInfoClass &rinfo );
 };
-
-#endif  // end __W3DSCENE_H_

@@ -33,10 +33,8 @@
  *-------------------------------------------------------------------------*
  * Functions:                                                              *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#pragma once
 
-#ifndef PART_BUF_H
-#define PART_BUF_H
+#pragma once
 
 #include "rendobj.h"
 #include "pointgr.h"
@@ -461,6 +459,3 @@ class ParticleBufferClass : public RenderObjClass
 
 		unsigned char						CurrentGroupID;
 };
-
-#endif // PART_BUF_H
-

@@ -39,9 +39,6 @@
 
 #pragma once
 
-#ifndef COLMATHFRUSTUM_H
-#define COLMATHFRUSTUM_H
-
 #include "always.h"
 #include "aabox.h"
 #include "vector3.h"
@@ -99,5 +96,3 @@ CollisionMath::Overlap_Test(const FrustumClass & frustum,const AABoxClass & box,
 	}
 	return OVERLAPPED;
 }
-
-#endif

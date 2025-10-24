@@ -34,11 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-#ifndef MATINFO_H
-#define MATINFO_H
 
 #include "always.h"
 #include "wwdebug.h"
@@ -329,5 +325,3 @@ inline void	MaterialInfoClass::Replace_Texture(int index, TextureClass *newTextu
 {
 	REF_PTR_SET(Textures[index],newTexture);
 }
-
-#endif // MATINFO_H

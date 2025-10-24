@@ -45,9 +45,6 @@
 
 #pragma once
 
-#ifndef __DEBUG_H_
-#define __DEBUG_H_
-
 class AsciiString;
 
 #define NO_RELEASE_DEBUG_LOGGING
@@ -260,5 +257,3 @@ public:
 #endif
 
 // MACROS //////////////////////////////////////////////////////////////////
-
-#endif // __DEBUG_H_

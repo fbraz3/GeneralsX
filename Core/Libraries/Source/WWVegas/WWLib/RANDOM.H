@@ -34,10 +34,8 @@
  * Functions:                                                                                  *
  *   Pick_Random_Number -- Picks a random number between two values (inclusive).               *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#pragma once
 
-#ifndef RANDOM_H
-#define RANDOM_H
+#pragma once
 
 // "unreferenced inline function has been removed" Yea, so what?
 #pragma warning(disable : 4514)
@@ -264,5 +262,3 @@ int Pick_Random_Number(T & generator, int minval, int maxval)
 	*/
 	return(pick + minval);
 }
-
-#endif

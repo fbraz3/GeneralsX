@@ -34,10 +34,8 @@
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#pragma once
 
-#ifndef CHUNKIO_H
-#define CHUNKIO_H
+#pragma once
 
 #ifndef ALWAYS_H
 #include "always.h"
@@ -372,7 +370,3 @@ private:
 */
 #define OBSOLETE_MICRO_CHUNK(id) \
 	case (id): break;
-
-
-
-#endif // CHUNKIO_H

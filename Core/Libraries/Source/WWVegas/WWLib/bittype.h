@@ -34,10 +34,8 @@
  *-------------------------------------------------------------------------*
  * Functions:                                                              *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#pragma once
 
-#ifndef BITTYPE_H
-#define BITTYPE_H
+#pragma once
 
 typedef unsigned char	uint8;
 typedef unsigned short	uint16;
@@ -67,5 +65,3 @@ typedef unsigned short wchar_t;
 #define _WCHAR_T_DEFINED
 #endif
 #endif
-
-#endif //BITTYPE_H

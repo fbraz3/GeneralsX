@@ -26,10 +26,8 @@
 //
 // Function level profiling
 //////////////////////////////////////////////////////////////////////////////
-#pragma once
 
-#ifndef PROFILE_FUNCLEVEL_H // Include guard
-#define PROFILE_FUNCLEVEL_H
+#pragma once
 
 /**
   \brief The function level profiler.
@@ -218,5 +216,3 @@ private:
   */
   static ProfileFuncLevel Instance;
 };
-
-#endif // PROFILE_FUNCLEVEL_H

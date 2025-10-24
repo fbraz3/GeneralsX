@@ -34,12 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-
-#ifndef WW3DIDS_H
-#define WW3DIDS_H
 
 #include "saveloadids.h"
 
@@ -71,5 +66,3 @@ enum
 	WW3D_PERSIST_CHUNKID_LIGHT,
 	WW3D_PERSIST_CHUNKID_DAZZLE,
 };
-
-#endif

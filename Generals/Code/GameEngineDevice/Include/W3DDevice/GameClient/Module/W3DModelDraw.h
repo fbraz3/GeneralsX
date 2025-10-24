@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __W3DModelDraw_H_
-#define __W3DModelDraw_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Common/ModelState.h"
 #include "Common/DrawModule.h"
@@ -514,6 +511,3 @@ private:
 	void hideGarrisonFlags(Bool hide);
 #endif
 };
-
-#endif // __W3DModelDraw_H_
-

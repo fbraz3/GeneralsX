@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __SparseMatchFinder_H_
-#define __SparseMatchFinder_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Common/BitFlags.h"
 #include "Common/STLTypedefs.h"
@@ -245,6 +242,3 @@ public:
 	}
 
 };
-
-#endif // __SparseMatchFinder_H_
-

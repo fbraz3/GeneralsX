@@ -44,9 +44,6 @@
 
 #pragma once
 
-#ifndef __W3DTERRAIN_BUFFER_H_
-#define __W3DTERRAIN_BUFFER_H_
-
 //-----------------------------------------------------------------------------
 //           Includes
 //-----------------------------------------------------------------------------
@@ -124,5 +121,3 @@ protected:
 	Bool advanceLeft(ICoord2D &left, Int xOffset, Int yOffset, Int width);
 	Bool advanceRight(ICoord2D &left, Int xOffset, Int yOffset, Int width);
 };
-
-#endif  // end __W3DTERRAIN_BUFFER_H_

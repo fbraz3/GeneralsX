@@ -36,9 +36,6 @@
 
 #pragma once
 
-#ifndef __SOUND3DHANDLE_H
-#define __SOUND3DHANDLE_H
-
 #include "soundhandle.h"
 
 
@@ -105,6 +102,3 @@ protected:
 	///////////////////////////////////////////////////////////////////
 	H3DSAMPLE	SampleHandle;
 };
-
-
-#endif //__SOUND3DHANDLE_H

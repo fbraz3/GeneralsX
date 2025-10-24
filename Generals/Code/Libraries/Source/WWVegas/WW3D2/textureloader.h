@@ -16,9 +16,6 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef TEXTURELOADER_H
-#define TEXTURELOADER_H
-
 #pragma once
 
 #include "always.h"
@@ -134,7 +131,3 @@ public:
 
 	void Set_D3D_Texture(IDirect3DTexture8* texture);
 };
-
-#endif
-
-

@@ -22,11 +22,7 @@
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
-
 #pragma once
-
-#ifndef __BASE_HEIGHTMAP_H_
-#define __BASE_HEIGHTMAP_H_
 
 #include "always.h"
 #include "rendobj.h"
@@ -333,4 +329,3 @@ protected:
 };
 
 extern BaseHeightMapRenderObjClass *TheTerrainRenderObject;
-#endif  // end __FLAT_HEIGHTMAP_H_

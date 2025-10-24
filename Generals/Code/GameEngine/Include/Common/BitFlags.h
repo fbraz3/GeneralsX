@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __BitFlags_H_
-#define __BitFlags_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Common/STLTypedefs.h"
 
@@ -329,6 +326,3 @@ public:
 
 
 };
-
-#endif // __BitFlags_H_
-

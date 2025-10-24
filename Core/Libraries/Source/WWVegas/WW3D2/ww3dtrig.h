@@ -34,12 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-#ifndef WW3DTRIG_H
-#define WW3DTRIG_H
-
 
 /*
 ** The WW3D Library will check for debugging triggers using the following ID's
@@ -55,5 +50,3 @@ enum
 	WW3D_TRIGGER_SURFACE_CACHE_STATS =	0x101,		// display surface cache info in the debug window
 	WW3D_TRIGGER_PROCESS_STATS =			0x102			// render stats for last frame only
 };
-
-#endif

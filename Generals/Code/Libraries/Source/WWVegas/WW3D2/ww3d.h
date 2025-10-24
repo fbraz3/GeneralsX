@@ -34,11 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
 #pragma once
-
-#ifndef WW3D_H
-#define WW3D_H
 
 #include "always.h"
 #include "vector3.h"
@@ -472,7 +468,3 @@ struct RenderStatistics
       long     UserStat1;
       long     UserStat2;
 };
-
-
-
-#endif
