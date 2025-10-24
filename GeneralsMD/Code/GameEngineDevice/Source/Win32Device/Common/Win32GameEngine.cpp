@@ -220,11 +220,13 @@ void Win32GameEngine::serviceWindowsOS( void )
 				break;
 				
 		case SDL_KEYDOWN:
-			// EMERGENCY EXIT: Allow ESC or Cmd+Q to exit fullscreen
-			if (event.key.keysym.sym == SDLK_ESCAPE) {
-				printf("EMERGENCY EXIT: ESC pressed - quitting immediately\n");
-				setQuitting(true);
-			}
+		printf("DEBUG SDL_KEYDOWN: key=%d (ESC=%d), scancode=%d, mod=0x%x\n",
+		       event.key.keysym.sym, SDLK_ESCAPE, event.key.keysym.scancode, event.key.keysym.mod);
+		// EMERGENCY EXIT: Allow ESC or Cmd+Q to exit fullscreen
+		if (event.key.keysym.sym == SDLK_ESCAPE) {
+			printf("EMERGENCY EXIT: ESC pressed - quitting immediately\n");
+			setQuitting(true);
+		}
 			// Cmd+Q on macOS (or Alt+F4 equivalent)
 			if (event.key.keysym.sym == SDLK_q && (event.key.keysym.mod & KMOD_GUI)) {
 				printf("EMERGENCY EXIT: Cmd+Q pressed - quitting immediately\n");

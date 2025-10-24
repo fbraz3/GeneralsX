@@ -1,0 +1,7 @@
+# LLDB script to catch crash and show backtrace
+env USE_METAL=1
+run
+bt
+image list
+register read
+quit

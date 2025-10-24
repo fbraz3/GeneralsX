@@ -77,6 +77,11 @@ class W3DVideoBuffer : public VideoBuffer
 
 		TextureClass	*m_texture;
 		SurfaceClass	*m_surface;
+		
+#ifndef _WIN32
+		// Phase 34: Internal buffer for Metal/OpenGL backend (DirectX surface lock unavailable)
+		unsigned char	*m_lockedBuffer;
+#endif
 
 	public:
 

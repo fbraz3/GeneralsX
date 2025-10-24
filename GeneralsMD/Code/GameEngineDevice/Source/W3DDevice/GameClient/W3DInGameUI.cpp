@@ -391,6 +391,7 @@ void W3DInGameUI::reset( void )
 //-------------------------------------------------------------------------------------------------
 void W3DInGameUI::draw( void )
 {
+	printf("DEBUG: W3DInGameUI::draw() entered\n");
 	preDraw();
 
 	// draw selection region if drag selecting
@@ -435,7 +436,9 @@ void W3DInGameUI::draw( void )
 
 	postDraw();
 
+	printf("DEBUG: About to call TheWindowManager->winRepaint()\n");
 	TheWindowManager->winRepaint();
+	printf("DEBUG: TheWindowManager->winRepaint() completed\n");
 
 	postWindowDraw();
 

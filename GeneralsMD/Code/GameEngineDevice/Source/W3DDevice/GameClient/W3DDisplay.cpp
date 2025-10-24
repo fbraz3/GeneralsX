@@ -2139,12 +2139,25 @@ AGAIN:
 	    if ( (TheGameLogic->getFrame() % 30 == 1) || ( ! (!TheGameLogic->isGamePaused() && TheGlobalData->m_TiVOFastMode && TheGameLogic->isInReplayGame())) )
     #endif
 		{
-			//USE_PERF_TIMER(BigAssRenderLoop)
-			static Bool couldRender = true;
-			if ((TheGlobalData->m_breakTheMovie == FALSE) && (TheGlobalData->m_disableRender == false) && WW3D::Begin_Render( true, true, Vector3( 0.0f, 0.0f, 0.0f ), TheWaterTransparency->m_minWaterOpacity ) == WW3D_ERROR_OK)
-			{
-
-				if(TheGlobalData->m_loadScreenRender == TRUE)
+		//USE_PERF_TIMER(BigAssRenderLoop)
+		static Bool couldRender = true;
+		
+		// Phase 34.1 DEBUG: Check render conditions
+		printf("DEBUG: Render conditions - breakMovie=%d, disableRender=%d\n", 
+		       TheGlobalData->m_breakTheMovie, TheGlobalData->m_disableRender);
+		
+		Int renderResult = WW3D::Begin_Render(true, true, Vector3(0.0f, 0.0f, 0.0f), 
+		                                      TheWaterTransparency->m_minWaterOpacity);
+		printf("DEBUG: WW3D::Begin_Render() returned %d (WW3D_ERROR_OK=%d)\n", 
+		       renderResult, WW3D_ERROR_OK);
+		
+		printf("DEBUG: Render conditions - breakTheMovie=%d, disableRender=%d, renderResult=%d, videoStream=%p, videoBuffer=%p\n",
+		       TheGlobalData->m_breakTheMovie, TheGlobalData->m_disableRender, 
+		       renderResult, m_videoStream, m_videoBuffer);
+		
+		if ((TheGlobalData->m_breakTheMovie == FALSE) && (TheGlobalData->m_disableRender == false) && renderResult == WW3D_ERROR_OK)
+		{
+			printf("DEBUG: Entering main render block\n");				if(TheGlobalData->m_loadScreenRender == TRUE)
 				{
 					TheInGameUI->draw();
 					if( TheMouse )
@@ -2157,13 +2170,15 @@ AGAIN:
 				if (numRenderTargetPolygons || numRenderTargetVertices)
 					Debug_Statistics::Record_DX8_Polys_And_Vertices(numRenderTargetPolygons,numRenderTargetVertices,ShaderClass::_PresetOpaqueShader);
 
-				// draw all views of the world
-				drawViews();
+			// draw all views of the world
+			printf("DEBUG: About to call drawViews()\n");
+			drawViews();
+			printf("DEBUG: drawViews() completed\n");
 
-				// draw the user interface
-				TheInGameUI->DRAW();
-
-				// end of video example code
+			// draw the user interface
+			printf("DEBUG: About to call TheInGameUI->DRAW()\n");
+			TheInGameUI->DRAW();
+			printf("DEBUG: TheInGameUI->DRAW() completed\n");				// end of video example code
 
 				// draw the mouse
 				if( TheMouse )
@@ -2171,9 +2186,16 @@ AGAIN:
 
 				if ( m_videoStream && m_videoBuffer )
 				{
+					printf("DEBUG: About to call drawScaledVideoBuffer() - videoStream=%p, videoBuffer=%p\n",
+					       m_videoStream, m_videoBuffer);
+					fflush(stdout);
 					// TheSuperHackers @bugfix Mauller 20/07/2025 scale videos based on screen size so they are shown in their original aspect
 					drawScaledVideoBuffer( m_videoBuffer, m_videoStream );
+					printf("DEBUG: drawScaledVideoBuffer() RETURNED SUCCESSFULLY\n");
+					fflush(stdout);
 				}
+				printf("DEBUG: After video rendering block - continuing to copyright display\n");
+				fflush(stdout);
 				if( m_copyrightDisplayString )
 				{
 					Int x, y, dX, dY;
@@ -3064,6 +3086,9 @@ void W3DDisplay::drawImage( const Image *image, Int startX, Int startY,
 
 VideoBuffer*	W3DDisplay::createVideoBuffer( void )
 {
+	printf("DEBUG: W3DDisplay::createVideoBuffer() - ENTRY\n");
+	fflush(stdout);
+	
 	VideoBuffer::Type format = VideoBuffer::TYPE_UNKNOWN;
 
 	/// @todo query video player for supported formats - we assume bink formats here
@@ -3071,6 +3096,8 @@ VideoBuffer*	W3DDisplay::createVideoBuffer( void )
 	// first try to use the native format
 
 	WW3DFormat displayFormat = DX8Wrapper::getBackBufferFormat();
+	printf("DEBUG: createVideoBuffer() - Back buffer format: %d\n", (int)displayFormat);
+	fflush(stdout);
 
 	if ( DX8Wrapper::Get_Current_Caps()->Support_Texture_Format( displayFormat ))
 	{
@@ -3098,9 +3125,13 @@ VideoBuffer*	W3DDisplay::createVideoBuffer( void )
 		else
 		{
 			// card does not support any of the formats we need
+			printf("ERROR: createVideoBuffer() - Card does not support any required formats!\n");
+			fflush(stdout);
 			return NULL;
 		}
 	}
+	printf("DEBUG: createVideoBuffer() - Selected format: %d\n", (int)format);
+	fflush(stdout);
 	// on low mem machines, render every video in 16bit except for the EA Logo movie
 	if(!TheGlobalData->m_playIntro )//&& TheGameLODManager && (!TheGameLODManager->didMemPass() || W3DShaderManager::getChipset() == DC_GEFORCE2))
 		format = VideoBuffer::TYPE_R5G6B5;
@@ -3116,7 +3147,12 @@ VideoBuffer*	W3DDisplay::createVideoBuffer( void )
 
 void W3DDisplay::drawScaledVideoBuffer( VideoBuffer *buffer, VideoStreamInterface *stream )
 {
+	printf("DEBUG: drawScaledVideoBuffer ENTRY - buffer=%p, stream=%p\n", buffer, stream);
+	fflush(stdout);
+	
 	// TheSuperHackers @bugfix Mauller 20/07/2025 scale videos based on screen size so they are shown in their original aspect
+	printf("DEBUG: drawScaledVideoBuffer - Getting stream dimensions\n");
+	fflush(stdout);
 	Real videoAspect = (Real)stream->width() / (Real)stream->height();
 	Real displayAspect = (Real)getWidth() / (Real)getHeight();
 	Bool wideAspect = displayAspect >= videoAspect;
@@ -3145,7 +3181,12 @@ void W3DDisplay::drawScaledVideoBuffer( VideoBuffer *buffer, VideoStreamInterfac
 		endX = getWidth();
 	}
 
+	printf("DEBUG: drawScaledVideoBuffer - About to call drawVideoBuffer(startX=%d, startY=%d, endX=%d, endY=%d)\n",
+	       startX, startY, endX, endY);
+	fflush(stdout);
 	drawVideoBuffer( buffer, startX, startY, endX, endY );
+	printf("DEBUG: drawScaledVideoBuffer - drawVideoBuffer returned successfully\n");
+	fflush(stdout);
 }
 
 //============================================================================
@@ -3156,12 +3197,31 @@ void W3DDisplay::drawVideoBuffer( VideoBuffer *buffer, Int startX, Int startY, I
 {
 	W3DVideoBuffer *vbuffer = (W3DVideoBuffer*) buffer;
 
+	printf("DEBUG: drawVideoBuffer - ENTER (buffer=%p, vbuffer=%p)\n", buffer, vbuffer);
+	printf("DEBUG: drawVideoBuffer - m_2DRender=%p\n", m_2DRender);
+	
+	printf("DEBUG: drawVideoBuffer - Calling Reset()...\n");
 	m_2DRender->Reset();
+	printf("DEBUG: drawVideoBuffer - Reset() OK\n");
+	
+	printf("DEBUG: drawVideoBuffer - Calling Enable_Texturing(TRUE)...\n");
 	m_2DRender->Enable_Texturing( TRUE );
+	printf("DEBUG: drawVideoBuffer - Enable_Texturing() OK\n");
+	
+	printf("DEBUG: drawVideoBuffer - vbuffer->texture()=%p\n", vbuffer->texture());
+	printf("DEBUG: drawVideoBuffer - Calling Set_Texture()...\n");
 	m_2DRender->Set_Texture( vbuffer->texture() );
+	printf("DEBUG: drawVideoBuffer - Set_Texture() OK\n");
+	
+	printf("DEBUG: drawVideoBuffer - Calling Add_Quad(rect=[%d,%d,%d,%d])...\n", 
+	       startX, startY, endX, endY);
 	m_2DRender->Add_Quad( RectClass( startX, startY, endX, endY ),
 												vbuffer->Rect( 0, 0, 1, 1) );
+	printf("DEBUG: drawVideoBuffer - Add_Quad() OK\n");
+	
+	printf("DEBUG: drawVideoBuffer - Calling Render()...\n");
 	m_2DRender->Render();
+	printf("DEBUG: drawVideoBuffer - Render() OK\n");
 
 }
 

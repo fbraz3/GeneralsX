@@ -210,15 +210,22 @@ void Display::setHeight( UnsignedInt height )
 
 void Display::playLogoMovie( AsciiString movieName, Int minMovieLength, Int minCopyrightLength )
 {
+	printf("DEBUG: Display::playLogoMovie() called - movie='%s', minLength=%d, copyrightLength=%d\n",
+	       movieName.str(), minMovieLength, minCopyrightLength);
 
 	stopMovie();
 
+	printf("DEBUG: Calling TheVideoPlayer->open('%s')\n", movieName.str());
 	m_videoStream = TheVideoPlayer->open( movieName );
 
 	if ( m_videoStream == NULL )
 	{
+		printf("DEBUG: TheVideoPlayer->open() returned NULL - video not found or player failed\n");
 		return;
 	}
+	
+	printf("DEBUG: Video stream opened successfully - width=%d, height=%d\n",
+	       m_videoStream->width(), m_videoStream->height());
 
 	m_currentlyPlayingMovie = movieName;
 	m_movieHoldTime = minMovieLength;
@@ -226,14 +233,22 @@ void Display::playLogoMovie( AsciiString movieName, Int minMovieLength, Int minC
 	m_elapsedMovieTime = timeGetTime();  // we're using time get time becuase legal want's actual "Seconds"
 
 	m_videoBuffer = createVideoBuffer();
+	printf("DEBUG: playLogoMovie() - createVideoBuffer() returned: %p\n", m_videoBuffer);
+	fflush(stdout);
+	
 	if (	m_videoBuffer == NULL ||
 				!m_videoBuffer->allocate(	m_videoStream->width(),
 													m_videoStream->height())
 		)
 	{
+		printf("ERROR: playLogoMovie() - VideoBuffer creation/allocation FAILED (buffer=%p)\n", m_videoBuffer);
+		fflush(stdout);
 		stopMovie();
 		return;
 	}
+	printf("DEBUG: playLogoMovie() - VideoBuffer allocated successfully (%dx%d)\n",
+	       m_videoStream->width(), m_videoStream->height());
+	fflush(stdout);
 
 }
 
@@ -275,13 +290,22 @@ void Display::playMovie( AsciiString movieName)
 
 void Display::stopMovie( void )
 {
+	printf("DEBUG: stopMovie() called - m_videoBuffer=%p, m_videoStream=%p\n", m_videoBuffer, m_videoStream);
+	fflush(stdout);
+	
 	delete m_videoBuffer;
 	m_videoBuffer = NULL;
+	printf("DEBUG: stopMovie() - video buffer deleted\n");
+	fflush(stdout);
 
 	if ( m_videoStream )
 	{
+		printf("DEBUG: stopMovie() - closing video stream\n");
+		fflush(stdout);
 		m_videoStream->close();
 		m_videoStream = NULL;
+		printf("DEBUG: stopMovie() - video stream closed\n");
+		fflush(stdout);
 	}
 
 	if (!m_currentlyPlayingMovie.isEmpty()) {
@@ -295,6 +319,9 @@ void Display::stopMovie( void )
 	}
 	m_copyrightHoldTime = -1;
 	m_movieHoldTime = -1;
+	
+	printf("DEBUG: stopMovie() - exiting\n");
+	fflush(stdout);
 }
 
 //============================================================================

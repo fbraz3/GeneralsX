@@ -157,6 +157,17 @@ endif()
 add_subdirectory(Dependencies/Utility)
 add_subdirectory(resources)
 
+# Find FFmpeg globally if enabled (before adding subdirectories)
+if(RTS_BUILD_OPTION_FFMPEG)
+    find_package(FFMPEG REQUIRED)
+    if(FFMPEG_FOUND)
+        message(STATUS "✅ FFmpeg found globally: ${FFMPEG_LIBRARIES}")
+        # Make variables available to all subdirectories
+        set(FFMPEG_LIBRARIES ${FFMPEG_LIBRARIES} CACHE INTERNAL "")
+        set(FFMPEG_INCLUDE_DIRS ${FFMPEG_INCLUDE_DIRS} CACHE INTERNAL "")
+    endif()
+endif()
+
 add_subdirectory(Core)
 
 # Add main build targets

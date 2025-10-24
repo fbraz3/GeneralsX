@@ -25,6 +25,7 @@ target_link_libraries(GeneralsXZH PRIVATE
     z_gameengine
     z_gameenginedevice
     zi_always
+    $<$<BOOL:${RTS_BUILD_OPTION_FFMPEG}>:${FFMPEG_LIBRARIES}>
 )
 
 # Set build information variables with default values that can be overridden

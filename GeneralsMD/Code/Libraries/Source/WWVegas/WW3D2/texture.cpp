@@ -94,6 +94,7 @@ TextureBaseClass::TextureBaseClass
 	D3DTexture(NULL),
 #ifndef _WIN32
 	GLTexture(0),  // Phase 27.2.3: Initialize OpenGL texture ID to 0
+	MetalTexture(nullptr),  // Phase 34.2: Initialize Metal texture to nullptr
 #endif
 	Initialized(false),
    Name(""),
@@ -847,8 +848,14 @@ TextureClass::TextureClass(IDirect3DBaseTexture8* d3d_texture)
 		0,
 		((MipCountType)d3d_texture->GetLevelCount())
 	),
+	TextureFormat(WW3D_FORMAT_UNKNOWN),  // Phase 34.1: Initialize TextureFormat before use
 	Filter((MipCountType)d3d_texture->GetLevelCount())
 {
+	printf("DEBUG: TextureClass constructor - this=%p, d3d_texture=%p\n", this, d3d_texture);
+	printf("DEBUG: TextureClass constructor - sizeof(TextureClass)=%zu, sizeof(RefCountClass)=%zu\n", 
+	       sizeof(TextureClass), sizeof(RefCountClass));
+	printf("DEBUG: TextureClass constructor - vtable ptr=%p\n", *(void**)this);
+	
 	Initialized=true;
 	IsProcedural=true;
 	IsReducible=false;
