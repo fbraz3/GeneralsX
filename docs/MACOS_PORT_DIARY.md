@@ -2,10 +2,143 @@
 
 **Project Name**: 🎯 **GeneralsX** (formerly Command & Conquer: Generals)
 
-**Port Status**: 🎉 **Phase 35 – Code Cleanup & Protection Removal** 🚀  
-**Current Focus**: 🔧 **Phase 35.1 – Protection Code Inventory & Classification**
+**Port Status**: 🎉 **Phase 36 – Upstream Merge Preparation** 🚀  
+**Current Focus**: 🔧 **Phase 36.4 – Pre-Merge Migration Discovery**
 
-## Latest Update (October 24, 2025) — Phase 35: Code Cleanup Started ✅
+## Latest Update (October 25, 2025) — Phase 36.4: Critical Discovery - Pre-Merge Migration Blocker ⚠️
+
+**CRITICAL DISCOVERY**: Attempted pre-merge API migration and discovered architectural blocker - FramePacer class does not exist in our Phase 35 codebase, making pre-migration impossible.
+
+### Phase 36.4: Pre-Merge Migration Attempt - REVERTED ❌
+
+**Duration**: 2 hours (migration attempt + discovery + reversion + documentation)  
+**Goal**: Pre-migrate GameEngine→FramePacer API before upstream merge  
+**Result**: ⚠️ **IMPOSSIBLE** - FramePacer only exists in upstream
+
+**Git State**:
+- Branch: `main` (clean)
+- HEAD: `fac287ab` (3 commits ahead of origin/main)
+- Attempted branch: `feature/gameengine-api-migration` (created then deleted)
+
+**What We Tried**:
+
+1. ✅ Removed FPS methods from GameEngine.h
+2. ✅ Updated GameEngine.cpp to delegate to TheFramePacer
+3. ✅ Updated all 13 caller files with sed script
+4. ❌ **BUILD FAILED**: `fatal error: 'Common/FramePacer.h' file not found`
+
+**Build Error Sequence**:
+
+```bash
+# Build Attempt #1
+error: no member named 'getUpdateFps' in 'GameEngine'
+# Fixed: Updated W3DView.cpp
+
+# Build Attempt #2
+error: use of undeclared identifier 'TheFramePacer' (15 errors)
+# Attempted fix: Added #include "Common/FramePacer.h"
+
+# Build Attempt #3 - BLOCKER DISCOVERED
+fatal error: 'Common/FramePacer.h' file not found
+#include "Common/FramePacer.h"
+         ^~~~~~~~~~~~~~~~~~~~~
+```
+
+**Verification**:
+
+```bash
+grep -rn "extern.*TheFramePacer" GeneralsMD/Code/GameEngine/
+# Result: No matches found - FramePacer doesn't exist in our code
+```
+
+**Why Stub Solution Failed**:
+
+Creating a minimal FramePacer stub would require:
+- ❌ Implementing FramePacer class with 15+ methods
+- ❌ Creating TheFramePacer singleton initialization (where? when?)
+- ❌ Ensuring initialization happens BEFORE GameEngine uses it
+- ❌ Risk of initialization order bugs (static initialization fiasco)
+- ❌ Risk of behavioral differences from upstream implementation
+- ❌ Would be removed/replaced during merge anyway (zero benefit, high risk)
+
+**Files Modified (now reverted)**:
+
+- GameEngine.h/cpp (API removal, delegation to TheFramePacer)
+- CommandXlat.cpp, InGameUI.cpp, QuitMenu.cpp, W3DDisplay.cpp, W3DView.cpp
+- ScriptActions.cpp, ScriptEngine.cpp, GameLogicDispatch.cpp, GameLogic.cpp
+- LookAtXlat.cpp (discovered during testing)
+
+**Cleanup Actions**:
+
+```bash
+git reset --hard phase35-backup  # Reverted all migration changes
+git checkout main                # Switched to main branch
+git branch -D feature/gameengine-api-migration  # Deleted migration branch
+git status                       # Verified clean state
+```
+
+### Revised Strategy: Merge-Time Resolution ✅
+
+**Decision**: Revert all changes, merge upstream first, resolve conflicts during merge
+
+**Rationale**:
+
+- ✅ **Upstream brings correct FramePacer implementation**
+- ✅ **Merge conflicts will show exactly what needs changing**
+- ✅ **Build errors will guide us to missed files**
+- ✅ **No risk of incompatible stubs**
+- ✅ **Can reference upstream implementation during resolution**
+
+**Updated Workflow**:
+
+```bash
+# 1. Start merge (expect conflicts)
+git merge original/main --no-ff --no-commit
+
+# 2. For each conflict in our 13 files:
+#    - Check GAMEENGINE_API_MIGRATION.md for expected changes
+#    - Replace TheGameEngine->METHOD() with TheFramePacer->METHOD()
+#    - Accept upstream's FramePacer.h/cpp
+#    - Accept upstream's GameEngine.h (methods removed)
+
+# 3. Build after each batch of 5 files
+cmake --build build/macos-arm64 --target GeneralsXZH -j 4
+
+# 4. Fix any additional files revealed by compilation errors
+grep "error:.*getFramesPerSecondLimit\|setFramesPerSecondLimit" build.log
+
+# 5. Commit when all files compile
+git commit
+```
+
+**Documents Updated**:
+
+- ✅ `docs/PHASE36/GAMEENGINE_API_MIGRATION.md` - Added critical discovery section with blocker details
+- ✅ `docs/MACOS_PORT_DIARY.md` - Documented migration attempt and discovery
+
+### Lessons Learned 📚
+
+1. **Pre-migration requires complete infrastructure** - Cannot migrate to non-existent classes
+2. **Merge-time resolution is safer** - When upstream introduces new architecture
+3. **Analysis is still valuable** - Migration guide will accelerate conflict resolution
+4. **Build early, build often** - Would have discovered blocker sooner
+
+**Recommendation**: Documentation created is not wasted effort - it will serve as reference guide during merge conflict resolution in next session.
+
+**Next Session**: Execute direct merge with `git merge original/main --no-ff --no-commit`
+
+**Time Investment Summary**:
+- Phase 36.1 (Initial Analysis): 3 hours
+- Phase 36.2 (Critical Files): 2 hours  
+- Phase 36.3 (GameEngine Refactoring): 4 hours
+- **Phase 36.4 (Migration Attempt)**: 2 hours
+- **Total**: 11 hours (all analysis and documentation preserved for merge phase)
+
+---
+
+## October 24, 2025 - Phase 36 (Part 3): GameEngine→FramePacer Refactoring Analysis
+
+
 
 **MILESTONE**: Phase 35 (Code Cleanup & Protection Removal) officially begun! After identifying critical bugs caused by defensive programming patterns in Phase 33.9 (exception swallowing) and Phase 34.3 (global state corruption), we now systematically audit and remove high-risk protections that introduce bugs rather than prevent them.
 

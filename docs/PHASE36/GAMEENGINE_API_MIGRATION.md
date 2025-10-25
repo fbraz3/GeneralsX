@@ -419,6 +419,164 @@ git show original/main:GeneralsMD/Code/GameEngine/Source/Common/GameEngine.cpp |
 
 ---
 
-**Last Updated**: October 19, 2025  
-**Status**: Ready for implementation  
-**Next Step**: Create feature branch and begin migration
+**Last Updated**: October 25, 2025  
+**Status**: ⚠️ BLOCKER DISCOVERED - Cannot implement before merge  
+**Next Step**: Merge upstream first, then resolve API conflicts during merge
+
+## CRITICAL DISCOVERY (October 25, 2025)
+
+### Blocker: FramePacer Does Not Exist in Our Codebase
+
+**Problem**: The migration strategy assumed we could pre-migrate our code to use `TheFramePacer` before merging upstream. However, this is **impossible** because:
+
+1. **FramePacer.h/cpp do not exist** in our Phase 35 codebase
+2. **TheFramePacer singleton** requires initialization infrastructure not present
+3. **Creating a stub would be extremely risky** - wrong initialization order could cause subtle bugs
+4. **Build fails immediately** with `fatal error: 'Common/FramePacer.h' file not found`
+
+### Evidence from Implementation Attempt
+
+Attempted to:
+- ✅ Remove FPS methods from GameEngine.h (successful)
+- ✅ Update GameEngine.cpp to delegate to TheFramePacer (successful editing)
+- ✅ Update all 13 caller files with sed script (successful substitution)
+- ❌ **BUILD FAILED**: `fatal error: 'Common/FramePacer.h' file not found`
+
+Compilation errors:
+```
+GeneralsMD/Code/GameEngine/Source/Common/GameEngine.cpp:49:10: 
+fatal error: 'Common/FramePacer.h' file not found
+#include "Common/FramePacer.h"
+         ^~~~~~~~~~~~~~~~~~~~~
+```
+
+Even with include removed:
+```
+error: use of undeclared identifier 'TheFramePacer'
+TheFramePacer->setFramesPerSecondLimit(...)
+^
+```
+
+### Why Stub Solution Won't Work
+
+Creating a minimal FramePacer stub would require:
+1. Implementing FramePacer class with all 15+ methods
+2. Creating TheFramePacer singleton initialization (where? when?)
+3. Ensuring initialization happens BEFORE GameEngine uses it
+4. Risk of initialization order bugs (static initialization fiasco)
+5. Risk of behavioral differences from upstream implementation
+6. Would need to be removed/replaced during merge anyway
+
+**Risk vs Benefit**: High risk, zero benefit (merge will replace it anyway)
+
+## REVISED STRATEGY: Merge-Time Resolution
+
+### New Approach: Accept Conflicts, Resolve During Merge
+
+Instead of pre-migration, we will:
+
+1. **Start merge directly**: `git merge original/main --no-ff --no-commit`
+2. **Expect compilation failures** in the 13 identified files
+3. **Use this guide as reference** during conflict resolution
+4. **Resolve conflicts incrementally** with build validation every 5 files
+
+### Why This is Better
+
+✅ **No risk of creating incompatible stubs**  
+✅ **Upstream FramePacer comes with correct initialization**  
+✅ **Can see exact upstream implementation while resolving**  
+✅ **Conflicts will show us exactly what needs changing**  
+✅ **Build errors will guide us to missed files**  
+
+### Updated Merge Workflow
+
+```bash
+# 1. Start merge (expect conflicts)
+git merge original/main --no-ff --no-commit
+
+# 2. For each conflict in our 13 files:
+#    - Check this guide for expected changes
+#    - Replace TheGameEngine->METHOD() with TheFramePacer->METHOD()
+#    - Accept upstream's FramePacer.h/cpp
+#    - Accept upstream's GameEngine.h (methods removed)
+
+# 3. Build after each batch of 5 files
+cmake --build build/macos-arm64 --target GeneralsXZH -j 4
+
+# 4. Fix any additional files revealed by compilation errors
+grep "error:.*getFramesPerSecondLimit\|setFramesPerSecondLimit" build.log
+
+# 5. Commit when all files compile
+git commit
+```
+
+### Files Still Requiring Manual Updates (During Merge)
+
+The 13 files identified still need updates, but DURING merge, not before:
+
+**Core Engine** (2 files):
+- `GeneralsMD/Code/GameEngine/Source/Common/GameEngine.cpp` - Internal calls
+
+**Game Client** (5 files):
+- `GeneralsMD/Code/GameEngine/Source/GameClient/MessageStream/CommandXlat.cpp`
+- `GeneralsMD/Code/GameEngine/Source/GameClient/InGameUI.cpp`
+- `GeneralsMD/Code/GameEngine/Source/GameClient/GUI/GUICallbacks/Menus/QuitMenu.cpp`
+- `GeneralsMD/Code/GameEngineDevice/Source/W3DDevice/GameClient/W3DDisplay.cpp`
+- `GeneralsMD/Code/GameEngineDevice/Source/W3DDevice/GameClient/W3DView.cpp` (discovered during testing)
+
+**Game Logic** (4 files):
+- `GeneralsMD/Code/GameEngine/Source/GameLogic/ScriptEngine/ScriptActions.cpp`
+- `GeneralsMD/Code/GameEngine/Source/GameLogic/ScriptEngine/ScriptEngine.cpp`
+- `GeneralsMD/Code/GameEngine/Source/GameLogic/System/GameLogicDispatch.cpp`
+- `GeneralsMD/Code/GameEngine/Source/GameLogic/System/GameLogic.cpp`
+
+**Additional Files** (2 files discovered):
+- `GeneralsMD/Code/GameEngine/Source/GameClient/MessageStream/LookAtXlat.cpp` (uses getUpdateFps)
+
+### Quick Reference for Merge Conflict Resolution
+
+**Pattern 1: FPS Getters/Setters**
+```cpp
+// Before (conflict)
+TheGameEngine->getFramesPerSecondLimit()
+TheGameEngine->setFramesPerSecondLimit(fps)
+
+// After (resolution)
+TheFramePacer->getFramesPerSecondLimit()
+TheFramePacer->setFramesPerSecondLimit(fps)
+```
+
+**Pattern 2: Update Time**
+```cpp
+// Before
+TheGameEngine->getUpdateTime()
+TheGameEngine->getUpdateFps()
+
+// After
+TheFramePacer->getUpdateTime()
+TheFramePacer->getUpdateFps()
+```
+
+**Pattern 3: Logic Time Scale**
+```cpp
+// Before
+TheGameEngine->setLogicTimeScaleFps(fps)
+TheGameEngine->enableLogicTimeScale(enable)
+
+// After
+TheFramePacer->setLogicTimeScaleFps(fps)
+TheFramePacer->enableLogicTimeScale(enable)
+```
+
+### Lessons Learned
+
+1. **Pre-migration requires complete infrastructure** - can't migrate to non-existent classes
+2. **Merge-time resolution is safer** when upstream introduces new architecture
+3. **Analysis is still valuable** - this guide accelerates merge conflict resolution
+4. **Build early, build often** - would have discovered blocker sooner with earlier build
+
+---
+
+**Implementation Attempt**: October 25, 2025 (reverted)  
+**Discovery**: FramePacer cannot be stubbed safely  
+**Recommendation**: Merge first, resolve conflicts during merge using this guide
