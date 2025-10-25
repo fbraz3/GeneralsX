@@ -36,25 +36,15 @@
 
 #pragma once
 
-#ifndef ALWAYS_H
 #include "always.h"
-#endif
 
 #if defined (_MSC_VER)
 #pragma warning (push, 3)	// (gth) system headers complain at warning level 4...
 #endif
 
-#ifndef _WINDOWS_
 #include "windows.h"
-#endif
-
-#ifndef _INC_WINDOWSX
 #include "windowsx.h"
-#endif
-
-#ifndef _INC_VFW
 #include "vfw.h"
-#endif
 
 #if defined (_MSC_VER)
 #pragma warning (pop)
