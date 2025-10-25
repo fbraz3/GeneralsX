@@ -822,8 +822,67 @@ void GameEngine::init()
 	DEBUG_LOG(("%s", Buf));////////////////////////////////////////////////////////////////////////////
 	#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
-	// W3D PROTECTION: Initialize TheControlBar before TheThingFactory to avoid parseCommandSetDefinition crash
-	printf("GameEngine::init() - CRITICAL FIX: Initializing TheControlBar before INI parsing\n");
+	// Initialize TheUpgradeCenter BEFORE TheControlBar (CommandButton.ini needs it)
+	printf("GameEngine::init() - Initializing TheUpgradeCenter before TheControlBar\n");
+	fflush(stdout);
+	initSubsystem(TheUpgradeCenter,"TheUpgradeCenter", MSGNEW("GameEngineSubsystem") UpgradeCenter, &xferCRC, "Data\\INI\\Default\\Upgrade", "Data\\INI\\Upgrade");
+	printf("GameEngine::init() - TheUpgradeCenter initialized\n");
+	fflush(stdout);
+
+	// Initialize TheThingFactory BEFORE TheControlBar (CommandButton.ini line 2225 needs it: Object = AmericaCommandCenter)
+	printf("GameEngine::init() - Initializing TheThingFactory before TheControlBar\n");
+	fflush(stdout);
+	
+	try {
+		printf("W3D PROTECTION: TheThingFactory initialization starting - Critical phase\n");
+		fflush(stdout);
+		
+		// Create ThingFactory with extra protection
+		ThingFactory* thingFactory = nullptr;
+		try {
+			printf("W3D PROTECTION: Calling createThingFactory()\n");
+			fflush(stdout);
+			thingFactory = createThingFactory();
+			printf("W3D PROTECTION: createThingFactory() completed successfully\n");
+			fflush(stdout);
+		} catch (const std::exception& e) {
+			printf("W3D PROTECTION: Exception in createThingFactory(): %s\n", e.what());
+			fflush(stdout);
+			throw;
+		} catch (...) {
+			printf("W3D PROTECTION: Unknown exception in createThingFactory()\n");
+			fflush(stdout);
+			throw;
+		}
+		
+		if (!thingFactory) {
+			printf("W3D PROTECTION: createThingFactory() returned NULL pointer\n");
+			fflush(stdout);
+			throw std::runtime_error("createThingFactory returned NULL");
+		}
+		
+		printf("W3D PROTECTION: About to call initSubsystem with ThingFactory\n");
+		fflush(stdout);
+		
+		initSubsystem(TheThingFactory,"TheThingFactory", thingFactory, &xferCRC, "Data\\INI\\Default\\Object", "Data\\INI\\Object");
+		printf("GameEngine::init() - TheThingFactory initialized successfully\n");
+		fflush(stdout);
+	} catch (const std::exception& e) {
+		printf("GameEngine::init() - Exception during TheThingFactory init: %s\n", e.what());
+		fflush(stdout);
+		// Continue with degraded functionality instead of crashing
+		printf("W3D PROTECTION: Continuing without TheThingFactory - degraded mode\n");
+		fflush(stdout);
+	} catch (...) {
+		printf("GameEngine::init() - Unknown exception during TheThingFactory init\n");
+		fflush(stdout);
+		// Continue with degraded functionality instead of crashing
+		printf("W3D PROTECTION: Continuing without TheThingFactory - degraded mode (unknown exception)\n");
+		fflush(stdout);
+	}
+
+	// W3D PROTECTION: Initialize TheControlBar AFTER TheThingFactory and TheUpgradeCenter (CommandButton.ini needs both)
+	printf("GameEngine::init() - CRITICAL FIX: Initializing TheControlBar after dependencies\n");
 	fflush(stdout);
 	if (TheControlBar == NULL) {
 		printf("GameEngine::init() - Creating TheControlBar instance\n");
@@ -839,58 +898,6 @@ void GameEngine::init()
 		fflush(stdout);
 	}
 
-
-		printf("GameEngine::init() - About to initialize TheThingFactory\n");
-		fflush(stdout);
-		
-		try {
-			printf("W3D PROTECTION: TheThingFactory initialization starting - Critical phase\n");
-			fflush(stdout);
-			
-			// Create ThingFactory with extra protection
-			ThingFactory* thingFactory = nullptr;
-			try {
-				printf("W3D PROTECTION: Calling createThingFactory()\n");
-				fflush(stdout);
-				thingFactory = createThingFactory();
-				printf("W3D PROTECTION: createThingFactory() completed successfully\n");
-				fflush(stdout);
-			} catch (const std::exception& e) {
-				printf("W3D PROTECTION: Exception in createThingFactory(): %s\n", e.what());
-				fflush(stdout);
-				throw;
-			} catch (...) {
-				printf("W3D PROTECTION: Unknown exception in createThingFactory()\n");
-				fflush(stdout);
-				throw;
-			}
-			
-			if (!thingFactory) {
-				printf("W3D PROTECTION: createThingFactory() returned NULL pointer\n");
-				fflush(stdout);
-				throw std::runtime_error("createThingFactory returned NULL");
-			}
-			
-			printf("W3D PROTECTION: About to call initSubsystem with ThingFactory\n");
-			fflush(stdout);
-			
-			initSubsystem(TheThingFactory,"TheThingFactory", thingFactory, &xferCRC, "Data\\INI\\Default\\Object", "Data\\INI\\Object");
-			printf("GameEngine::init() - TheThingFactory initialized successfully\n");
-			fflush(stdout);
-		} catch (const std::exception& e) {
-			printf("GameEngine::init() - Exception during TheThingFactory init: %s\n", e.what());
-			fflush(stdout);
-			// Continue with degraded functionality instead of crashing
-			printf("W3D PROTECTION: Continuing without TheThingFactory - degraded mode\n");
-			fflush(stdout);
-		} catch (...) {
-			printf("GameEngine::init() - Unknown exception during TheThingFactory init\n");
-			fflush(stdout);
-			// Continue with degraded functionality instead of crashing
-			printf("W3D PROTECTION: Continuing without TheThingFactory - degraded mode (unknown exception)\n");
-			fflush(stdout);
-		}
-
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
 	sprintf(Buf,"----------------------------------------------------------------------------After TheThingFactory = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
@@ -899,7 +906,6 @@ void GameEngine::init()
 	#endif/////////////////////////////////////////////////////////////////////////////////////////////
 
 
-		initSubsystem(TheUpgradeCenter,"TheUpgradeCenter", MSGNEW("GameEngineSubsystem") UpgradeCenter, &xferCRC, "Data\\INI\\Default\\Upgrade", "Data\\INI\\Upgrade");
 		printf("GameEngine::init() - About to initialize TheGameClient\n");
 		initSubsystem(TheGameClient,"TheGameClient", createGameClient(), NULL);
 		printf("GameEngine::init() - TheGameClient initialized\n");
