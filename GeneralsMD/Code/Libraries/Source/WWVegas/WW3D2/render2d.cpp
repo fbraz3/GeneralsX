@@ -126,24 +126,7 @@ void	Render2DClass::Reset(void)
 
 void Render2DClass::Set_Texture(TextureClass* tex)
 {
-	printf("DEBUG: Set_Texture - tex=%p, this->Texture=%p\n", tex, Texture);
-	if (tex) {
-		printf("DEBUG: Set_Texture - tex pointer valid, checking vtable...\n");
-		// CRITICAL: Verify vtable is valid before calling virtual methods
-		void* vtable_ptr = *(void**)tex;
-		printf("DEBUG: Set_Texture - vtable ptr=%p\n", vtable_ptr);
-		
-		// Test if we can safely call Num_Refs() (non-virtual inline method)
-		int refs = tex->Num_Refs();
-		printf("DEBUG: Set_Texture - Current refs=%d (vtable OK if this prints)\n", refs);
-	}
-	if (Texture) {
-		printf("DEBUG: Set_Texture - About to release old Texture\n");
-	}
-	
 	REF_PTR_SET(Texture,tex);
-	
-	printf("DEBUG: Set_Texture - REF_PTR_SET completed successfully\n");
 }
 
 void Render2DClass::Set_Texture( const char * filename)
