@@ -38,6 +38,7 @@
 #include "Common/GameEngine.h"
 #include "Common/UserPreferences.h"
 #include "Common/GameLOD.h"
+#include "Common/Recorder.h"
 #include "Common/Registry.h"
 #include "Common/version.h"
 
@@ -317,6 +318,18 @@ void OptionPreferences::setOnlineIPAddress( UnsignedInt IP )
 	AsciiString tmp;
 	tmp.format("%d.%d.%d.%d", PRINTF_IP_AS_4_INTS(IP));
 	(*this)["GameSpyIPAddress"] = tmp;
+}
+
+Bool OptionPreferences::getArchiveReplaysEnabled() const
+{
+	OptionPreferences::const_iterator it = find("ArchiveReplays");
+	if (it == end())
+		return FALSE;
+
+	if (stricmp(it->second.str(), "yes") == 0) {
+		return TRUE;
+	}
+	return FALSE;
 }
 
 Bool OptionPreferences::getAlternateMouseModeEnabled(void)
@@ -1354,6 +1367,13 @@ static void saveOptions( void )
 		Bool enabled = pref->getPlayerObserverEnabled();
 		(*pref)["PlayerObserverEnabled"] = enabled ? "yes" : "no";
 		TheWritableGlobalData->m_enablePlayerObserver = enabled;
+	}
+
+	// TheSuperHackers @todo Add checkbox ?
+	{
+		Bool enabled = pref->getArchiveReplaysEnabled();
+		(*pref)["ArchiveReplays"] = enabled ? "yes" : "no";
+		TheRecorder->setArchiveEnabled(enabled);
 	}
 
 	//-------------------------------------------------------------------------------------------------
