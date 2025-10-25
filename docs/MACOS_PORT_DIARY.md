@@ -2,10 +2,174 @@
 
 **Project Name**: 🎯 **GeneralsX** (formerly Command & Conquer: Generals)
 
-**Port Status**: 🎉 **Phase 34 – Game Logic & Gameplay Systems** 🚀  
-**Current Focus**: 🔧 **Phase 34.1 – UI Interactive System Analysis**
+**Port Status**: 🎉 **Phase 35 – Code Cleanup & Protection Removal** 🚀  
+**Current Focus**: 🔧 **Phase 35.1 – Protection Code Inventory & Classification**
 
-## Latest Update (October 21, 2025) — Phase 34: Game Logic Validation Started ✅
+## Latest Update (October 24, 2025) — Phase 35: Code Cleanup Started ✅
+
+**MILESTONE**: Phase 35 (Code Cleanup & Protection Removal) officially begun! After identifying critical bugs caused by defensive programming patterns in Phase 33.9 (exception swallowing) and Phase 34.3 (global state corruption), we now systematically audit and remove high-risk protections that introduce bugs rather than prevent them.
+
+### Phase 35.1: Protection Code Inventory - COMPLETE ✅
+
+**Duration**: 1 day (planned 1-2 days)  
+**Goal**: Catalog all defensive programming additions and classify by risk level
+
+**Key Discovery**: Found **11 protection instances** across codebase:
+- 🔴 **HIGH RISK**: 3 instances (remove immediately)
+- 🟡 **MEDIUM RISK**: 5 instances (review carefully)
+- 🟢 **LOW RISK**: 3 instances (keep - legitimate safety)
+
+**Critical Findings**:
+
+1. **INI.cpp Exception Swallowing** (Lines 430-503) - 🔴 HIGH RISK
+   - Pattern: `catch(...) { /* resync to End */ continue; }`
+   - **Impact**: Silent data corruption - all field values read as 0/empty
+   - **Proven Bug**: Phase 33.9 audio INI values (DefaultSoundVolume, DefaultMusicVolume) read as zero
+   - **Action**: Remove and replace with jmarshall catch-add-context-rethrow pattern
+
+2. **MetalWrapper Global State** (metalwrapper.mm Lines 26-28) - � HIGH RISK (PARTIALLY RESOLVED)
+   - ✅ **s_passDesc removed** (October 24, 2025 - Phase 34.3)
+   - ⚠️ **Remaining globals need audit**: s_renderEncoder, s_currentDrawable, s_cmdBuffer
+   - **Proven Bug**: Phase 34.3 use-after-free crash (AGXMetal13_3 driver)
+   - **Action**: Audit lifetime management for remaining static ARC objects
+
+3. **Unknown Block Skip** (INI.cpp Lines 506-545) - 🔴 HIGH RISK
+   - Pattern: Skip unknown INI blocks with throttled warnings (only 50 shown)
+   - **Impact**: May hide legitimate content if block registry incomplete
+   - **Action**: Review against jmarshall reference for extensibility vs bug hiding
+
+4. **Vtable Validation** (render2d.cpp, texture.cpp) - 🟡 MEDIUM RISK
+   - Manual vtable pointer checks before virtual calls
+   - Debug logging in constructors
+   - **Action**: Determine if vtable corruption still occurring, remove debug code
+
+5. **Memory Pointer Validation** (GameMemory.cpp) - � MEDIUM RISK
+   - ASCII-like pointer detection (Metal/OpenGL driver workaround)
+   - **Status**: Working as designed (Phase 30.6)
+   - **Action**: Keep but consider optimization (debug-only or sampling)
+
+**Documents Created**:
+- ✅ `docs/PHASE35/PROTECTION_INVENTORY.md` - Complete catalog with classification, impact analysis, and removal plan
+
+**Search Patterns Used**:
+```bash
+# High-risk exception swallowing
+grep -rn "catch.*\.\.\..*continue" --include="*.cpp" --include="*.mm"
+grep -rn "UNIVERSAL PROTECTION" --include="*.cpp"
+
+# Medium-risk state management
+grep -rn "static.*=.*nil\|NULL" --include="*.mm"
+grep -rn "vtable\|vptr" --include="*.cpp"
+
+# Memory protection
+grep -rn "isValidMemoryPointer" --include="*.cpp"
+```
+
+**Comparison with Reference Repositories**:
+- **jmarshall-win64-modern**: Proper catch-add-context-rethrow pattern (no exception swallowing)
+- **fighter19-dxvk-port**: No defensive field initialization in MapCache
+- **dxgldotorg-dxgl**: DirectX→OpenGL mock patterns (relevant for vtable checks)
+
+**Removal Priority Matrix**:
+
+| Priority | Protection | File | Lines | Time | Risk |
+|----------|-----------|------|-------|------|------|
+| **1** | Exception swallowing | INI.cpp | 430-503 | 2h | MEDIUM |
+| **2** | Unknown block skip | INI.cpp | 506-545 | 1h | LOW |
+| **3** | Global ARC audit | metalwrapper.mm | 26-28 | 3h | HIGH |
+| **4** | Vtable validation | render2d.cpp | 131-138 | 1h | MEDIUM |
+| **5** | Constructor logging | texture.cpp | 857 | 15m | LOW |
+| **6** | Memory validation | GameMemory.cpp | 222-267 | 4h | LOW |
+
+**Total Estimated Time**: 11-13 hours (2 working days for Phase 35.2)
+
+### Testing Strategy Established
+
+**Pre-Removal Baseline**:
+```bash
+cd $HOME/GeneralsX/GeneralsMD
+USE_METAL=1 timeout 60 ./GeneralsXZH 2>&1 | tee logs/baseline.log
+
+# Key metrics:
+grep "DefaultSoundVolume" logs/baseline.log  # Should see value
+grep "METAL.*Frame" logs/baseline.log | wc -l  # Count frames
+grep "ERROR\|FATAL" logs/baseline.log  # Count errors
+```
+
+**Post-Removal Validation** (after EACH change):
+- Clean build: `rm -rf build/macos-arm64 && cmake --preset macos-arm64`
+- Compile: `cmake --build build/macos-arm64 --target GeneralsXZH -j 4`
+- Deploy: `cp build/.../GeneralsXZH $HOME/GeneralsX/GeneralsMD/`
+- Test: 60-second timeout validation
+- Compare: Diff metrics with baseline
+
+**Rollback Criteria**:
+- New crash within 30 seconds
+- INI values reading as zero
+- More than 5 new error messages
+- Frame count drops significantly
+
+### Next Steps (Phase 35.2)
+
+**Immediate Actions** (Priority 1-3):
+1. Remove INI.cpp exception swallowing (Lines 430-503)
+   - Replace with jmarshall catch-add-context-rethrow pattern
+   - Validate INI parsing returns correct values
+   - Test: `grep "DefaultSoundVolume" logs/*.log` should show non-zero value
+
+2. Review unknown block skip logic (Lines 506-545)
+   - Compare with jmarshall reference implementation
+   - Determine if extensibility feature or bug workaround
+   - Decision: Keep or remove based on analysis
+
+3. Audit MetalWrapper global state
+   - Verify lifetime management for s_renderEncoder, s_currentDrawable, s_cmdBuffer
+   - Test: 60-second Metal stability (should see 60+ BeginFrame/EndFrame pairs)
+   - Document safe global patterns vs dangerous patterns
+
+**Expected Timeline**:
+- Phase 35.2 (High-Risk Removal): 2-3 days
+- Phase 35.3 (Validation): 1-2 days
+- Phase 35.4 (Documentation): 1 day
+- **Total Phase 35**: 5-8 days
+
+**Success Criteria for Phase 35.1** ✅:
+- [x] All protective code cataloged in PROTECTION_INVENTORY.md
+- [x] Risk classifications assigned (RED/YELLOW/GREEN)
+- [x] Removal priority determined
+- [x] Estimated impact documented per protection
+- [x] Testing strategy established
+
+### Impact Analysis
+
+**Why This Matters**:
+1. **Bug Prevention**: Exception swallowing (Phase 33.9) caused silent data corruption
+2. **Crash Prevention**: Global state (Phase 34.3) caused Metal driver use-after-free
+3. **Code Quality**: Remove "why is this here?" confusion for future developers
+4. **Performance**: Reduce unnecessary validations in hot paths (render, memory)
+5. **Foundation**: Clean base for upcoming phases (audio, multiplayer)
+
+**Lessons from Previous Bugs**:
+- Phase 33.9: Exception swallowing prevents error detection, causes silent failures
+- Phase 34.3: Global storage of local ARC objects causes use-after-free
+- Pattern: "Protective code" often introduces worse bugs than it prevents
+
+**Strategic Value**:
+- Current stability allows incremental testing after each removal
+- Documentation (LESSONS_LEARNED.md) provides anti-pattern catalog
+- Reference repositories provide proven alternatives
+- Team has fresh understanding of anti-patterns from recent bug fixes
+
+### References
+
+- `docs/PHASE35/README.md` - Phase overview and objectives
+- `docs/PHASE35/PROTECTION_INVENTORY.md` - Complete catalog (created this session)
+- `docs/Misc/LESSONS_LEARNED.md` - Phase 33.9, Phase 34.3 anti-patterns
+- `references/jmarshall-win64-modern/` - Proven exception handling patterns
+
+---
+
+## Previous Update (October 21, 2025) — Phase 34: Game Logic Validation Started ✅
 
 **MILESTONE**: Phase 34 (Game Logic & Gameplay Systems) officially begun! After completing Phase 30 (Metal Backend), Phase 31 (Texture System), Phase 32 (Audio Investigation), and Phase 33 (OpenAL Implementation), we now focus on validating core gameplay systems work correctly on macOS.
 
