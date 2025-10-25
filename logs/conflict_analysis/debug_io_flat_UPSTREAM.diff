@@ -1,0 +1,47 @@
+diff --git a/Core/Libraries/Source/debug/debug_io_flat.cpp b/Core/Libraries/Source/debug/debug_io_flat.cpp
+index 1f1bc85d..80c6ff3a 100644
+--- a/Core/Libraries/Source/debug/debug_io_flat.cpp
++++ b/Core/Libraries/Source/debug/debug_io_flat.cpp
+@@ -27,7 +27,9 @@
+ // Debug I/O class flat (flat or split log file)
+ //////////////////////////////////////////////////////////////////////////////
+ #include "_pch.h"
++#include "stringex.h"
+ #include <stdlib.h>
++#include <WWCommon.h>
+ #include <new>      // needed for placement new prototype
+ 
+ DebugIOFlat::OutputStream::OutputStream(const char *filename, unsigned maxSize):
+@@ -93,7 +95,7 @@ void DebugIOFlat::OutputStream::Delete(const char *path)
+       if (++run)
+         wsprintf(help+strlen(help),"(%i)%s",run,ext);
+       else
+-        strcat(help,ext);
++        strlcat(help, ext, ARRAY_SIZE(help));
+       if (CopyFile(m_fileName,help,TRUE))
+         break;
+       if (GetLastError()!=ERROR_FILE_EXISTS)
+@@ -428,8 +430,7 @@ void DebugIOFlat::Execute(class Debug& dbg, const char *cmd, bool structuredCmd,
+     // copy <directory>
+     if (argn)
+     {
+-      strncpy(m_copyDir,argv[0],sizeof(m_copyDir)-1);
+-      m_copyDir[sizeof(m_copyDir)-1]=0;
++      strlcpy(m_copyDir,argv[0],sizeof(m_copyDir));
+     }
+   }
+   else if (!strcmp(cmd,"splitadd"))
+@@ -460,11 +461,8 @@ void DebugIOFlat::Execute(class Debug& dbg, const char *cmd, bool structuredCmd,
+       if (!cur->stringTypes)
+         cur->stringTypes=0xffffffff;
+ 
+-      strncpy(cur->items,argv[1],sizeof(cur->items)-1);
+-      cur->items[sizeof(cur->items)-1]=0;
+-
+-      strncpy(cur->name,argv[2],sizeof(cur->name)-1);
+-      cur->name[sizeof(cur->name)-1]=0;
++      strlcpy(cur->items,argv[1],sizeof(cur->items));
++      strlcpy(cur->name,argv[2],sizeof(cur->name));
+ 
+       // create our filename, search for stream with same filename
+       char fn[256];

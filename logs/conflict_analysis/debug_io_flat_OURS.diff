@@ -1,0 +1,148 @@
+diff --git a/Core/Libraries/Source/debug/debug_io_flat.cpp b/Core/Libraries/Source/debug/debug_io_flat.cpp
+index 80c6ff3a..cd8bd7bc 100644
+--- a/Core/Libraries/Source/debug/debug_io_flat.cpp
++++ b/Core/Libraries/Source/debug/debug_io_flat.cpp
+@@ -27,9 +27,12 @@
+ // Debug I/O class flat (flat or split log file)
+ //////////////////////////////////////////////////////////////////////////////
+ #include "_pch.h"
+-#include "stringex.h"
+ #include <stdlib.h>
+-#include <WWCommon.h>
++#ifndef _WIN32
++#include <fcntl.h>
++#include <unistd.h>
++#include <sys/stat.h>
++#endif
+ #include <new>      // needed for placement new prototype
+ 
+ DebugIOFlat::OutputStream::OutputStream(const char *filename, unsigned maxSize):
+@@ -43,9 +46,13 @@ DebugIOFlat::OutputStream::OutputStream(const char *filename, unsigned maxSize):
+   m_buffer=(char *)DebugAllocMemory(m_bufferSize);
+ 
+   if (!m_limitedFileSize)
++#ifdef _WIN32
+     m_fileHandle=CreateFile(m_fileName,GENERIC_WRITE,0,NULL,CREATE_ALWAYS,
+                             FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
+                             NULL);
++#else
++    m_fileHandle = (HANDLE)open(m_fileName, O_WRONLY | O_CREAT | O_TRUNC, 0644);
++#endif
+ }
+ 
+ DebugIOFlat::OutputStream::~OutputStream()
+@@ -61,7 +68,11 @@ void DebugIOFlat::OutputStream::Delete(const char *path)
+ {
+   Flush();
+   if (!m_limitedFileSize)
++#ifdef _WIN32
+     CloseHandle(m_fileHandle);
++#else
++    close((int)(intptr_t)m_fileHandle);
++#endif
+ 
+   if (path&&*path)
+   {
+@@ -93,13 +104,22 @@ void DebugIOFlat::OutputStream::Delete(const char *path)
+         help[ext-fileNameOnly+pathLen+(fileNameOnly-m_fileName)]=0;
+       }
+       if (++run)
++#ifdef _WIN32
+         wsprintf(help+strlen(help),"(%i)%s",run,ext);
++#else
++        snprintf(help+strlen(help), 256-(strlen(help)), "(%i)%s", run, ext);
++#endif
+       else
+-        strlcat(help, ext, ARRAY_SIZE(help));
++        strcat(help,ext);
++#ifdef _WIN32
+       if (CopyFile(m_fileName,help,TRUE))
+         break;
+       if (GetLastError()!=ERROR_FILE_EXISTS)
+         break;
++#else
++      // macOS: Simple file copy not implemented, just break
++      break;
++#endif
+     }
+   }
+ 
+@@ -171,13 +191,18 @@ void DebugIOFlat::OutputStream::Flush(void)
+   if (!m_limitedFileSize)
+   {
+     // simple flush to file
++#ifdef _WIN32
+     DWORD written;
+     WriteFile(m_fileHandle,m_buffer,m_bufferUsed,&written,NULL);
++#else
++    write((int)(intptr_t)m_fileHandle, m_buffer, m_bufferUsed);
++#endif
+     m_bufferUsed=0;
+   }
+   else
+   {
+     // create file, write ring buffer
++#ifdef _WIN32
+     m_fileHandle=CreateFile(m_fileName,GENERIC_WRITE,0,NULL,CREATE_ALWAYS,
+                             FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
+                             NULL);
+@@ -190,6 +215,19 @@ void DebugIOFlat::OutputStream::Flush(void)
+       WriteFile(m_fileHandle,m_buffer,m_nextChar,&written,NULL);
+     }
+     CloseHandle(m_fileHandle);
++#else
++    int fd = open(m_fileName, O_WRONLY | O_CREAT | O_TRUNC, 0644);
++    if (fd >= 0) {
++      if (m_bufferUsed<m_bufferSize)
++        write(fd, m_buffer, m_bufferUsed);
++      else
++      {
++        write(fd, m_buffer+m_nextChar, m_bufferUsed-m_nextChar);
++        write(fd, m_buffer, m_nextChar);
++      }
++      close(fd);
++    }
++#endif
+   }
+ }
+ 
+@@ -257,9 +295,15 @@ void DebugIOFlat::ExpandMagic(const char *src, const char *splitName, char *buf)
+           SYSTEMTIME systime;
+           GetLocalTime(&systime);
+ 
++#ifdef _WIN32
+           wsprintf(help,"%04i%02i%02i-%02i%02i-%02i",
+                    systime.wYear,systime.wMonth,systime.wDay,
+                    systime.wHour,systime.wMinute,systime.wSecond);
++#else
++          snprintf(help, sizeof(help), "%04i%02i%02i-%02i%02i-%02i",
++                   systime.wYear, systime.wMonth, systime.wDay,
++                   systime.wHour, systime.wMinute, systime.wSecond);
++#endif
+         }
+         break;
+       case 'n':
+@@ -430,7 +474,8 @@ void DebugIOFlat::Execute(class Debug& dbg, const char *cmd, bool structuredCmd,
+     // copy <directory>
+     if (argn)
+     {
+-      strlcpy(m_copyDir,argv[0],sizeof(m_copyDir));
++      strncpy(m_copyDir,argv[0],sizeof(m_copyDir)-1);
++      m_copyDir[sizeof(m_copyDir)-1]=0;
+     }
+   }
+   else if (!strcmp(cmd,"splitadd"))
+@@ -461,8 +506,11 @@ void DebugIOFlat::Execute(class Debug& dbg, const char *cmd, bool structuredCmd,
+       if (!cur->stringTypes)
+         cur->stringTypes=0xffffffff;
+ 
+-      strlcpy(cur->items,argv[1],sizeof(cur->items));
+-      strlcpy(cur->name,argv[2],sizeof(cur->name));
++      strncpy(cur->items,argv[1],sizeof(cur->items)-1);
++      cur->items[sizeof(cur->items)-1]=0;
++
++      strncpy(cur->name,argv[2],sizeof(cur->name)-1);
++      cur->name[sizeof(cur->name)-1]=0;
+ 
+       // create our filename, search for stream with same filename
+       char fn[256];
