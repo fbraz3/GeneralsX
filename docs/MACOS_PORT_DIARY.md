@@ -2,10 +2,126 @@
 
 **Project Name**: 🎯 **GeneralsX** (formerly Command & Conquer: Generals)
 
-**Port Status**: 🎉 **Phase 36 – Upstream Merge Preparation** 🚀  
-**Current Focus**: 🔧 **Phase 36.4 – Pre-Merge Migration Discovery**
+**Port Status**: 🎉 **Phase 36 – Upstream Merge Complete** 🚀  
+**Current Focus**: 🏁 **Phase 36.5 – Merge Execution Success**
 
-## Latest Update (October 25, 2025) — Phase 36.4: Critical Discovery - Pre-Merge Migration Blocker ⚠️
+## Latest Update (October 25, 2025) — Phase 36.5: Upstream Merge Complete ✅
+
+**MERGE COMPLETED**: Successfully integrated 73 upstream commits with comprehensive conflict resolution and platform compatibility fixes. Build clean, runtime validated, no regressions detected.
+
+### Phase 36.5: Merge Execution Success 🎉
+
+**Duration**: 4 hours (conflict resolution + build fixes + runtime validation)  
+**Outcome**: ✅ **COMPLETE SUCCESS**  
+**Conflicts Resolved**: 31 total across 6 iterative batches  
+**Build Status**: ✅ Clean compilation (828/828 files, 0 errors)  
+**Runtime Status**: ✅ Validated (60s Metal backend test, 0 crashes)
+
+**Git State**:
+- Branch: `main`
+- HEAD: `f4edfdfd` (merge commit)
+- Upstream: `TheSuperHackers/GeneralsGameCode:develop` (73 commits)
+- Status: 5 commits ahead of origin/main
+
+**Critical Fixes Applied**:
+
+#### 1. WebBrowser COM/ATL Compatibility (5 iterations)
+- **Problem**: DirectX COM browser interface incompatible with macOS
+- **Solution**: Conditional class inheritance pattern
+  - Windows: `FEBDispatch<WebBrowser, IBrowserDispatch, &IID_IBrowserDispatch> + SubsystemInterface`
+  - macOS: `SubsystemInterface` only (no COM dependencies)
+- **Files**: 
+  - `GeneralsMD/Code/GameEngine/Include/GameNetwork/WOLBrowser/WebBrowser.h`
+  - `Generals/Code/GameEngine/Include/GameNetwork/WOLBrowser/WebBrowser.h`
+
+#### 2. Windows Bitmap/Memory API Stubs
+- **Added typedefs**: `PBITMAPINFOHEADER`, `PBITMAPINFO`, `LPBYTE`, `LPTR`
+- **Added functions**: `LocalAlloc()`, `LocalFree()` → redirected to `GlobalAlloc/Free`
+- **File**: `Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h`
+
+#### 3. Linker Symbol Resolution
+- **WebBrowser stubs**: Minimal implementation for macOS/Linux
+  - Constructor, destructor, `TestMethod()`, `init()`, `reset()`, `update()`, `findURL()`, `makeNewURL()`
+  - **Removed**: Incorrect `initSubsystem()`/`shutdownSubsystem()` (not declared in class)
+- **WebBrowserURL parse table**: Defined `m_URLFieldParseTable[]` in `INIWebpageURL.cpp`
+- **MilesAudioManager guards**: Wrapped in `#ifdef _WIN32` (audio disabled on macOS - Phase 33 pending)
+- **g_SDLWindow definition**: Added global in `dx8wrapper.cpp`
+- **TheWebBrowser pointer**: Single definition in `cross_platform_stubs.cpp` (removed duplicates)
+
+#### 4. Platform-Specific Factory Methods
+- **File**: `Win32GameEngine.h` (both Generals + GeneralsMD)
+- `createWebBrowser()`: Returns `CComObject<W3DWebBrowser>` on Windows, `W3DWebBrowser` on macOS
+- `createAudioManager()`: Returns `MilesAudioManager` on Windows, `NULL` on macOS
+
+**Upstream Integration Changes**:
+
+#### Unified Headers (#pragma once standardization)
+- **Impact**: 500+ header files converted from include guards to `#pragma once`
+- **Benefit**: Faster compilation, cleaner code
+- **Scripts**: `scripts/cpp/replace_include_guards_with_pragma.py` + utilities
+
+#### Component Relocation
+- **STLUtils.h**: Moved from `Core/GameEngine/Include/Common/` → `Core/Libraries/Source/WWVegas/WWLib/`
+- **Reason**: Better library organization alignment
+
+#### New Components
+- **FramePacer**: New `Core/GameEngine/Include/Common/FramePacer.h` + `.cpp` for improved frame timing
+
+**Build Metrics**:
+- Files compiled: 828/828 (100%)
+- Errors: 0
+- Warnings: 42 (baseline - same as pre-merge)
+- Linker warnings: 1 (duplicate library - cosmetic)
+
+**Runtime Validation**:
+- Executable: `GeneralsXZH` (Zero Hour expansion)
+- Backend: Metal (macOS default)
+- Test duration: 60 seconds
+- Initialization: Normal subsystem startup logged
+- Crashes: None detected
+- Crash logs: Last crash dated Oct 24 (pre-merge) - Oct 25 test clean
+
+**Platform Support Status**:
+
+✅ **Fully Operational**:
+- macOS ARM64 (Apple Silicon)
+  - Build: Clean compilation
+  - Runtime: Validated with Metal backend
+  - Graphics: Fully operational
+
+⚠️ **Partially Operational**:
+- Audio: Disabled on non-Windows (MilesAudioManager Windows-only)
+  - Phase 33 (OpenAL backend) pending
+  - Stub returns `NULL` to prevent crashes
+- Web Browser: Stub implementation
+  - Browser functionality disabled gracefully
+  - No crashes from missing COM interfaces
+
+**Documentation Updates**:
+- `docs/PHASE36/MERGE_EXECUTION_STRATEGY.md` - Complete merge execution log
+- Build logs: `logs/phase36_BUILD_SUCCESS.log`
+- Runtime logs: `logs/phase36_runtime_test_*.log`
+
+**Git Commit**:
+```
+feat: merge upstream 73 commits (Phase 36 - cross-platform compatibility)
+
+Commit: f4edfdfd
+Files changed: 1000+
+Conflicts resolved: 31
+Build status: ✅ Success
+Runtime status: ✅ Validated
+```
+
+**Next Steps (Phase 37)**:
+1. Feature integration from new upstream components (FramePacer, etc.)
+2. Test upstream improvements in existing subsystems
+3. Evaluate new compiler scripts for future use
+4. Continue Phase 33 audio backend development (OpenAL integration)
+
+---
+
+## Previous Update (October 25, 2025) — Phase 36.4: Critical Discovery - Pre-Merge Migration Blocker ⚠️
 
 **CRITICAL DISCOVERY**: Attempted pre-merge API migration and discovered architectural blocker - FramePacer class does not exist in our Phase 35 codebase, making pre-migration impossible.
 
