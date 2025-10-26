@@ -34,13 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef NULL_H
-#define NULL_H
 
 #ifndef RENDOBJ_H
 #include "rendobj.h"
@@ -99,7 +93,3 @@ public:
 ** automatically install at creation time
 */
 extern NullLoaderClass _NullLoader;
-
-
-#endif
-

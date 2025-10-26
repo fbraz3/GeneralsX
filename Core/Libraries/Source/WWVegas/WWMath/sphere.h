@@ -48,13 +48,7 @@
  *   operator * -- Transform a sphere                                                          *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef SPHERE_H
-#define SPHERE_H
 
 #include "../WWLib/always.h"
 #include "vector3.h"
@@ -545,8 +539,3 @@ inline SphereClass operator * (const Matrix3D & m, const SphereClass & s)
 {
 	return Transform_Sphere(m,s);
 }
-
-
-
-#endif
-

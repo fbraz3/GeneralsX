@@ -33,12 +33,8 @@
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#if _MSC_VER >= 1000
-#pragma once
-#endif // _MSC_VER >= 1000
 
-#ifndef B64PIPE_H
-#define B64PIPE_H
+#pragma once
 
 #include	"PIPE.H"
 
@@ -89,5 +85,3 @@ class Base64Pipe : public Pipe
 		Base64Pipe(Base64Pipe & rvalue);
 		Base64Pipe & operator = (Base64Pipe const & pipe);
 };
-
-#endif

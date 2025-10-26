@@ -32,13 +32,7 @@
  *                                                                                             *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef AGGREGATE_DEF_H
-#define AGGREGATE_DEF_H
 
 #include "proto.h"
 #include "rendobj.h"
@@ -255,6 +249,3 @@ class AggregateLoaderClass : public PrototypeLoaderClass
 //	Global variables
 //
 extern AggregateLoaderClass	_AggregateLoader;
-
-
-#endif //__AGGREGATE_DEF_H

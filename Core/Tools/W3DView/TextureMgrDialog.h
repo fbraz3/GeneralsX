@@ -34,12 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if !defined(AFX_TEXTUREMGRDIALOG_H__3F61844D_CDEA_11D2_9FFC_00104B791122__INCLUDED_)
-#define AFX_TEXTUREMGRDIALOG_H__3F61844D_CDEA_11D2_9FFC_00104B791122__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 #include "Vector.H"
 #include "RendObj.H"
@@ -251,5 +246,3 @@ protected:
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_TEXTUREMGRDIALOG_H__3F61844D_CDEA_11D2_9FFC_00104B791122__INCLUDED_)

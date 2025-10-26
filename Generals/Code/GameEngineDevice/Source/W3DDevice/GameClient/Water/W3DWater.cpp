@@ -53,7 +53,7 @@
 #include "mesh.h"
 #include "matinfo.h"
 
-#include "Common/GameEngine.h"
+#include "Common/FramePacer.h"
 #include "Common/GameState.h"
 #include "Common/GlobalData.h"
 #include "Common/PerfTimer.h"
@@ -1191,7 +1191,7 @@ void WaterRenderObjClass::enableWaterGrid(Bool state)
 void WaterRenderObjClass::update( void )
 {
 	// TheSuperHackers @tweak The water movement time step is now decoupled from the render update.
-	const Real timeScale = TheGameEngine->getActualLogicTimeScaleOverFpsRatio();
+	const Real timeScale = TheFramePacer->getActualLogicTimeScaleOverFpsRatio();
 
 	{
 		constexpr const Real MagicOffset = 0.0125f * 33 / 5000; ///< the work of top Munkees; do not question it

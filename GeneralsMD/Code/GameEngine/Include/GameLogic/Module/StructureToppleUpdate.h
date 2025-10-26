@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __StructureToppleUpdate_H_
-#define __StructureToppleUpdate_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "GameLogic/Module/BehaviorModule.h"
 #include "GameLogic/Module/UpdateModule.h"
@@ -197,6 +194,3 @@ protected:
 	Real m_buildingHeight;
 
 };
-
-#endif // __StructureToppleUpdate_H_
-

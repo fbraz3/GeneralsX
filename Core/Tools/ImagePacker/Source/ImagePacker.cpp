@@ -44,8 +44,10 @@
 #include <stdio.h>
 #include <io.h>
 #include <assert.h>
+#include <WWCommon.h>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
+#include "stringex.h"
 #include "Common/Debug.h"
 #include "WWLib/TARGA.H"
 #include "Resource.h"
@@ -844,8 +846,7 @@ void ImagePacker::addImage( char *path )
 	strcpy( info->m_filenameOnly, c );
 
 	info->m_filenameOnlyNoExt = new char[ nameLen - 4 + 1 ];
-	strncpy( info->m_filenameOnlyNoExt, c, nameLen - 4 );
-	info->m_filenameOnlyNoExt[ nameLen - 4 ] = '\0';
+	strlcpy( info->m_filenameOnlyNoExt, c, nameLen - 4 + 1 );
 
 	// assign to array
 	m_imageList[ m_imageCount++ ] = info;
@@ -1186,8 +1187,8 @@ Bool ImagePacker::process( void )
 	CreateDirectory( m_outputDirectory, NULL );
 
 	// subdir of output directory based on output image name
-	strcat( m_outputDirectory, m_outputFile );
-	strcat( m_outputDirectory, "\\" );
+	strlcat(m_outputDirectory, m_outputFile, ARRAY_SIZE(m_outputDirectory));
+	strlcat(m_outputDirectory, "\\", ARRAY_SIZE(m_outputDirectory));
 
 	//
 	// check for existing images in the output directory ... if we have

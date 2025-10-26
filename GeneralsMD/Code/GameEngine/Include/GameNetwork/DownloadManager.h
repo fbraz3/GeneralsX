@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef __DOWNLOADMANAGER_H__
-#define __DOWNLOADMANAGER_H__
-
 #include "WWDownload/downloaddefs.h"
 #include "WWDownload/Download.h"
 
@@ -94,5 +91,3 @@ protected:
 };
 
 extern DownloadManager *TheDownloadManager;
-
-#endif // __DOWNLOADMANAGER_H__

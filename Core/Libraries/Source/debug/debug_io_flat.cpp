@@ -27,7 +27,9 @@
 // Debug I/O class flat (flat or split log file)
 //////////////////////////////////////////////////////////////////////////////
 #include "_pch.h"
+#include "stringex.h"
 #include <stdlib.h>
+#include <WWCommon.h>
 #ifndef _WIN32
 #include <fcntl.h>
 #include <unistd.h>
@@ -110,7 +112,7 @@ void DebugIOFlat::OutputStream::Delete(const char *path)
         snprintf(help+strlen(help), 256-(strlen(help)), "(%i)%s", run, ext);
 #endif
       else
-        strcat(help,ext);
+        strlcat(help, ext, ARRAY_SIZE(help));
 #ifdef _WIN32
       if (CopyFile(m_fileName,help,TRUE))
         break;
@@ -474,8 +476,7 @@ void DebugIOFlat::Execute(class Debug& dbg, const char *cmd, bool structuredCmd,
     // copy <directory>
     if (argn)
     {
-      strncpy(m_copyDir,argv[0],sizeof(m_copyDir)-1);
-      m_copyDir[sizeof(m_copyDir)-1]=0;
+      strlcpy(m_copyDir,argv[0],sizeof(m_copyDir));
     }
   }
   else if (!strcmp(cmd,"splitadd"))
@@ -506,11 +507,8 @@ void DebugIOFlat::Execute(class Debug& dbg, const char *cmd, bool structuredCmd,
       if (!cur->stringTypes)
         cur->stringTypes=0xffffffff;
 
-      strncpy(cur->items,argv[1],sizeof(cur->items)-1);
-      cur->items[sizeof(cur->items)-1]=0;
-
-      strncpy(cur->name,argv[2],sizeof(cur->name)-1);
-      cur->name[sizeof(cur->name)-1]=0;
+      strlcpy(cur->items,argv[1],sizeof(cur->items));
+      strlcpy(cur->name,argv[2],sizeof(cur->name));
 
       // create our filename, search for stream with same filename
       char fn[256];

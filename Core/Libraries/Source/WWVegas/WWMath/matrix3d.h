@@ -78,12 +78,7 @@
 
 #define NO_ALLOW_TEMPORARIES
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef MATRIX3D_H
-#define MATRIX3D_H
 
 #ifdef _UNIX
 #include "osdep.h"
@@ -1815,4 +1810,3 @@ class DynamicMatrix3D : public W3DMPO
 public:
 	Matrix3D Mat;
 };
-#endif /* MATRIX3D_H */

@@ -27,7 +27,9 @@
 // High level profiling
 //////////////////////////////////////////////////////////////////////////////
 #include "_pch.h"
+#include "stringex.h"
 #include <new>
+#include <WWCommon.h>
 #include <Utility/stdio_adapter.h>
 
 // our own fast critical section
@@ -91,9 +93,8 @@ ProfileHighLevel::Block::Block(const char *name)
   m_idTime=AddProfile(name,NULL,"msec",6,-4);
 
   char help[256];
-  strncpy(help,name,sizeof(help));
-  help[sizeof(help)-1-2]=0;
-  strcat(help,".c");
+  strlcpy(help, name, sizeof(help) - 2);
+  strlcat(help, ".c", sizeof(help));
   AddProfile(help,NULL,"calls",6,0).Increment();
 
   ProfileGetTime(m_start);

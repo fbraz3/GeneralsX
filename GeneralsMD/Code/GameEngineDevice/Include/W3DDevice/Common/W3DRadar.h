@@ -31,9 +31,6 @@
 
 #pragma once
 
-#ifndef __W3DRADAR_H_
-#define __W3DRADAR_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Common/Radar.h"
 #include "WW3D2/ww3dformat.h"
@@ -72,6 +69,7 @@ public:
 	virtual void setShroudLevel(Int x, Int y, CellShroudStatus setting);
 
 	virtual void refreshTerrain( TerrainLogic *terrain );
+	virtual void refreshObjects();
 
 protected:
 
@@ -85,6 +83,7 @@ protected:
 	void drawViewBox( Int pixelX, Int pixelY, Int width, Int height );  ///< draw view box
 	void buildTerrainTexture( TerrainLogic *terrain );	 ///< create the terrain texture of the radar
 	void drawIcons( Int pixelX, Int pixelY, Int width, Int height );	///< draw all of the radar icons
+	void updateObjectTexture(TextureClass *texture);
 	void renderObjectList( const RadarObject *listHead, TextureClass *texture, Bool calcHero = FALSE );			 ///< render an object list to the texture
 	void interpolateColorForHeight( RGBColor *color,
 																	Real height,
@@ -125,6 +124,3 @@ protected:
 
 	std::vector<const Object *> m_cachedHeroObjectList; //< cache of hero objects for drawing icons in radar overlay
 };
-
-
-#endif // __W3DRADAR_H_

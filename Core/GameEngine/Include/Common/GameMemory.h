@@ -45,9 +45,6 @@
 
 #pragma once
 
-#ifndef _GAME_MEMORY_H_
-#define _GAME_MEMORY_H_
-
 // Turn off memory pool checkpointing for now.
 #ifndef DISABLE_MEMORYPOOL_CHECKPOINTING
 	#define DISABLE_MEMORYPOOL_CHECKPOINTING 1
@@ -925,6 +922,3 @@ public:
 
 
 #define EMPTY_DTOR(CLASS) inline CLASS::~CLASS() { }
-
-
-#endif // _GAME_MEMORY_H_

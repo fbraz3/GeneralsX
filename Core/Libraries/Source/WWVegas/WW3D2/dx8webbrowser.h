@@ -30,8 +30,7 @@
 // $Header: $
 //******************************************************************************************
 
-#ifndef DX8_WEBBROWSER_H
-#define DX8_WEBBROWSER_H
+#pragma once
 
 #include "win32_compat.h"
 // Note: d3d8.h is included through win32_compat.h to avoid duplicate definitions
@@ -92,7 +91,5 @@ private:
 	// The window handle of the application.  This is initialized by Initialize().
 	static				HWND						hWnd;
 };
-
-#endif
 
 #endif

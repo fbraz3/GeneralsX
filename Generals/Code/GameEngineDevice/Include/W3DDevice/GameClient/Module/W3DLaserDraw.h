@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __W3DLASERDRAW_H_
-#define __W3DLASERDRAW_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Common/DrawModule.h"
 //#include "WW3D2/Line3D.h"
@@ -99,6 +96,3 @@ protected:
 	Bool m_selfDirty;								// not saved
 
 };
-
-#endif // __W3DLASERDRAW_H_
-

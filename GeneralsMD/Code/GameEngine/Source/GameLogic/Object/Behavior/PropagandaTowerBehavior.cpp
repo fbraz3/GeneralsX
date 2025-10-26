@@ -30,6 +30,7 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"
 #include "Common/GameState.h"
+#include "Common/GameUtility.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
 #include "Common/Upgrade.h"
@@ -40,6 +41,7 @@
 #include "GameLogic/Object.h"
 #include "GameLogic/PartitionManager.h"
 #include "GameLogic/Weapon.h"
+#include "GameLogic/Module/ContainModule.h"
 #include "GameLogic/Module/PropagandaTowerBehavior.h"
 #include "GameLogic/Module/BodyModule.h"
 
@@ -207,11 +209,13 @@ UpdateSleepTime PropagandaTowerBehavior::update( void )
 		}
 	}
 
-	if( self->getContainedBy()  &&  self->getContainedBy()->getContainedBy() )
+#if RETAIL_COMPATIBLE_CRC
+	if (self->getContainedBy() && self->getContainedBy()->getContainedBy())
+#else
+	// TheSuperHackers @bugfix If our container or any parent containers are enclosing, we turn the heck off.
+	if (self->getEnclosingContainedBy())
+#endif
 	{
-		// If our container is contained, we turn the heck off.  Seems like a weird specific check, but all of
-		// attacking is guarded by the same check in isPassengersAllowedToFire.  We similarly work in a container,
-		// but not in a double container.
 		removeAllInfluence();
 		return UPDATE_SLEEP_NONE;
 	}
@@ -432,7 +436,7 @@ void PropagandaTowerBehavior::doScan( void )
   Object *overlord = us->getContainedBy();
   if ( overlord )
   {
-	  if ( us->getControllingPlayer() != ThePlayerList->getLocalPlayer() )// daling with someone else's tower
+	  if ( us->getControllingPlayer() != rts::getObservedOrLocalPlayer() )// dealing with someone else's tower
     {
       if ( overlord->testStatus( OBJECT_STATUS_STEALTHED ) && !overlord->testStatus( OBJECT_STATUS_DETECTED ) )
         doFX = FALSE;// so they don't give up their position
@@ -458,11 +462,11 @@ void PropagandaTowerBehavior::doScan( void )
 
   }
 
-	if ( us->getControllingPlayer() != ThePlayerList->getLocalPlayer() )// daling with someone else's tower
+	if ( us->getControllingPlayer() != rts::getObservedOrLocalPlayer() )// dealing with someone else's tower
 	{
 		if ( us->testStatus( OBJECT_STATUS_STEALTHED ) && !us->testStatus( OBJECT_STATUS_DETECTED ) )
 		{
-			doFX = FALSE;// Certainly don't play if we ourselves are stelthed.
+			doFX = FALSE;// Certainly don't play if we ourselves are stealthed.
 		}
 	}
 

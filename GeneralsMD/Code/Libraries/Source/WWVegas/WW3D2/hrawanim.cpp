@@ -212,14 +212,14 @@ int HRawAnimClass::Load_W3D(ChunkLoadClass & cload)
 	}
 
 	strcpy(Name,aheader.HierarchyName);
-	strcat(Name,".");
-	strcat(Name,aheader.Name);
+	strlcat(Name, ".", ARRAY_SIZE(Name));
+	strlcat(Name, aheader.Name, ARRAY_SIZE(Name));
 
 	// TSS chasing crash bug 05/26/99
    WWASSERT(HierarchyName != NULL);
    WWASSERT(aheader.HierarchyName != NULL);
    WWASSERT(sizeof(HierarchyName) >= W3D_NAME_LEN);
-   strncpy(HierarchyName,aheader.HierarchyName,W3D_NAME_LEN);
+   strlcpy(HierarchyName,aheader.HierarchyName,W3D_NAME_LEN);
 
 	HTreeClass * base_pose = WW3DAssetManager::Get_Instance()->Get_HTree(HierarchyName);
 	if (base_pose == NULL) {

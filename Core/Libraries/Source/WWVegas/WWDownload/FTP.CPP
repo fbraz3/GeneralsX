@@ -70,8 +70,10 @@ inline void _splitpath(const char* path, char* drive, char* dir, char* fname, ch
 #include <time.h>
 #include <direct.h>
 #include <errno.h>
+#include <WWCommon.h>
 //#include "wlib/wstring.h"
 
+#include "stringex.h"
 #include "DownloadDebug.h"
 
 // umm... what?? BGC 3/27/03
@@ -174,7 +176,7 @@ static bool Use_Non_Blocking_Mode(void)
 	if ((regRetval!=ERROR_SUCCESS) || (type != REG_DWORD))
 		return(TRUE);
 
-	return(bool(value));
+	return bool(value);
 }
 
 
@@ -358,7 +360,7 @@ HRESULT  Cftp::ConnectToServer(LPCSTR szServerName)
 	char                buffer[ 256 ];
 	int                 iReply, error;
 
-	strncpy( m_szServerName, szServerName, 128 );
+	strlcpy( m_szServerName, szServerName, sizeof(m_szServerName));
 
 	if( m_iStatus == FTPSTAT_INIT )
 	{
@@ -521,8 +523,8 @@ HRESULT  Cftp::LoginToServer( LPCSTR szUserName, LPCSTR szPassword )
 	char command[ 256 ];
 	int iReply;
 
-	strncpy( m_szUserName, szUserName, 128 );
-	strncpy( m_szPassword, szPassword, 128 );
+	strlcpy( m_szUserName, szUserName, sizeof(m_szUserName));
+	strlcpy( m_szPassword, szPassword, sizeof(m_szPassword));
 
 	memset( command, 0, 256 );
 
@@ -712,7 +714,7 @@ HRESULT  Cftp::FindFile( LPCSTR szRemoteFileName, int * piSize )
 	_splitpath( szRemoteFileName, NULL, m_szRemoteFilePath+strlen(m_szRemoteFilePath),
 		m_szRemoteFileName, ext );
 
-	strcat( m_szRemoteFileName, ext );
+	strlcat(m_szRemoteFileName, ext, ARRAY_SIZE(m_szRemoteFileName));
 
 	for( i = 0; i < (int)strlen( m_szRemoteFilePath ); i++ )
 	{
@@ -1434,7 +1436,7 @@ HRESULT  Cftp::GetNextFileBlock( LPCSTR szLocalFileName, int * piTotalRead )
 
 	//char str[ 256 ];
 
-	strncpy( m_szLocalFileName, szLocalFileName, 256 );
+	strlcpy( m_szLocalFileName, szLocalFileName, sizeof(m_szLocalFileName));
 
 	// Open local file
 
@@ -1760,11 +1762,11 @@ HRESULT  Cftp::FileRecoveryPosition( LPCSTR szLocalFileName, LPCSTR szRegistryRo
 	strcpy( regkey, szRegistryRoot );
 	if( regkey[ strlen( regkey ) - 1 ] != '\\' )
 	{
-		strcat( regkey, "\\Download" );
+		strlcat(regkey, "\\Download", ARRAY_SIZE(regkey));
 	}
 	else
 	{
-		strcat( regkey, "Download" );
+		strlcat(regkey, "Download", ARRAY_SIZE(regkey));
 	}
 
 	if( RegOpenKeyEx( HKEY_LOCAL_MACHINE, (LPCTSTR)regkey,
@@ -1868,8 +1870,7 @@ bool Prepare_Directories(const char *rootdir, const char *filename)
 	const char *cptr=filename;
 	while(cptr=strchr(cptr,'\\'))
 	{
-		memset(tempstr,0,256);
-		strncpy(tempstr,filename,cptr-filename);
+		strlcpy(tempstr,filename,cptr-filename + 1);
 		sprintf(newdir,"%s\\%s",rootdir, tempstr);
 		if (!CreateDirectory(newdir, NULL))
 			return false;

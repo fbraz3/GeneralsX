@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef __VICTORYCONDITIONS_H__
-#define __VICTORYCONDITIONS_H__
-
 #include "Common/SubsystemInterface.h"
 #include "Lib/BaseType.h"
 
@@ -79,5 +76,3 @@ protected:
 VictoryConditionsInterface * createVictoryConditions( void );
 
 extern VictoryConditionsInterface *TheVictoryConditions;
-
-#endif // __VICTORYCONDITIONS_H__

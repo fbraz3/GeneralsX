@@ -35,13 +35,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef W3D_FILE_H
-#define W3D_FILE_H
 
 #include "always.h"
 #include "BITTYPE.H"
@@ -2076,6 +2070,3 @@ struct W3dSoundRObjHeaderStruct
 ** Include the obsolete structures and chunk ID's
 */
 #include "w3d_obsolete.h"
-
-
-#endif // W3D_FILE_H

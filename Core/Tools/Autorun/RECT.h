@@ -36,10 +36,8 @@
  *   Intersect -- Find the intersection between two rectangles.                                *
  *   Intersect -- Simple intersect between two rectangles.                                     *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#pragma once
 
-#ifndef RECT_H
-#define RECT_H
+#pragma once
 
 #include	<stddef.h>
 #include	"POINT.h"
@@ -303,6 +301,3 @@ TRect<T> const Intersect(TRect<T> const & rect1, TRect<T> const & rect2)
 typedef TRect<int> Rect;
 
 const Rect RECT_NONE(0,0,0,0);
-
-#endif
-

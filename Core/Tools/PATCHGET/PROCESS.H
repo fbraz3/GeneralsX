@@ -16,8 +16,7 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef PROCESS_HEADER
-#define PROCESS_HEADER
+#pragma once
 
 #include <windows.h>
 #include "WSTYPES.H"
@@ -42,5 +41,3 @@ bit8 Create_Process(Process &process);
 bit8 Wait_Process(Process &process, DWORD *exit_code=NULL);
 
 } // namespace patchget
-
-#endif

@@ -33,12 +33,8 @@
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#if _MSC_VER >= 1000
-#pragma once
-#endif // _MSC_VER >= 1000
 
-#ifndef ALWAYS_H
-#define ALWAYS_H
+#pragma once
 
 #include "WWCommon.h"
 #include "WWDefines.h"
@@ -49,7 +45,6 @@
 // TheSuperHackers @build feliwir 17/04/2025 include utility macros for cross-platform compatibility
 #include <Utility/compat.h>
 #include <Utility/stdint_adapter.h>
-#include <Utility/CppMacros.h>
 
 // Disable warning about exception handling not being enabled. It's used as part of STL - in a part of STL we don't use.
 #pragma warning(disable : 4530)
@@ -265,7 +260,4 @@ template <class T> T max(T a,T b)
 
 #ifndef size_of
 #define size_of(typ,id) sizeof(((typ*)0)->id)
-#endif
-
-
 #endif

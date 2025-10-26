@@ -1,5 +1,5 @@
 /*
-**	Command & Conquer Generals Zero Hour(tm)
+**	Command & Conquer Generals(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -34,38 +34,25 @@
 static void drawFramerateBar(void);
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
+#include <numeric>
 #include <stdlib.h>
 #include <windows.h>
 #include <io.h>
 #include <time.h>
 
-// Phase 27.1.3: SDL2 and OpenGL support for cross-platform graphics
-#ifndef _WIN32
-#include <glad/glad.h>  // CRITICAL: GLAD must be included BEFORE SDL2 to avoid OpenGL header conflicts
-#include <SDL2/SDL.h>
-
-// SDL2 global variables for window and OpenGL context management
-static SDL_Window* g_SDLWindow = nullptr;
-static SDL_GLContext g_GLContext = nullptr;
-#endif
-
 // USER INCLUDES //////////////////////////////////////////////////////////////
+#include "Common/FramePacer.h"
 #include "Common/ThingFactory.h"
-#include "Common/GameEngine.h"
 #include "Common/GlobalData.h"
 #include "Common/PerfTimer.h"
 #include "Common/FileSystem.h"
 #include "Common/LocalFileSystem.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
-
-#include "GraphicsAPI/W3DRendererAdapter.h"
-
 #include "Common/ThingTemplate.h"
 #include "Common/GameLOD.h"
 #include "Common/DrawModule.h"
 #include "GameLogic/AIPathfind.h"
-#include "GameLogic/Module/PhysicsUpdate.h"
 
 #include "GameClient/Drawable.h"
 #include "GameClient/GameText.h"
@@ -147,7 +134,7 @@ class StatDumpClass
 public:
 	StatDumpClass( const char *fname );
 	~StatDumpClass();
-	void dumpStats( Bool brief = FALSE, Bool flagSpikes = FALSE );
+	void dumpStats();
 
 protected:
 	FILE *m_fp;
@@ -197,63 +184,34 @@ static const char *getCurrentTimeString(void)
 //=============================================================================
 //Dump the stats
 //=============================================================================
-
-
-static Bool s_notFirstDump = FALSE;
-
-void StatDumpClass::dumpStats( Bool brief, Bool flagSpikes )
+void StatDumpClass::dumpStats()
 {
 	if( !m_fp )
 	{
 		return;
 	}
 
-
-  Bool beBrief = brief & s_notFirstDump;
-  s_notFirstDump = TRUE;
-
+	//static char buf[1024];
 	fprintf( m_fp, "----------------------------------------------------------------\n" );
 	fprintf( m_fp, "Performance Statistical Dump -- Frame %d\n", TheGameLogic->getFrame() );
-  if ( ! beBrief )
-  {
-	  //static char buf[1024];
-	  fprintf( m_fp, "Time:\t%s", getCurrentTimeString() );
-	  fprintf( m_fp, "Map:\t%s\n", TheGlobalData->m_mapName.str());
-	  fprintf( m_fp, "Side:\t%s\n", ThePlayerList->getLocalPlayer()->getSide().str());
-	  fprintf( m_fp, "----------------------------------------------------------------\n" );
-  }
+	fprintf( m_fp, "Time:\t%s", getCurrentTimeString() );
+	fprintf( m_fp, "Map:\t%s\n", TheGlobalData->m_mapName.str());
+	fprintf( m_fp, "Side:\t%s\n", ThePlayerList->getLocalPlayer()->getSide().str());
+	fprintf( m_fp, "----------------------------------------------------------------\n" );
 
 	//FPS
 	Real fps = TheDisplay->getAverageFPS();
 	fprintf( m_fp, "Average FPS: %.1f (%.5f msec)\n", fps, 1000.0f / fps );
-  if ( flagSpikes && fps<20.0f )
-  	fprintf( m_fp, "                                                                      FPS OUT OF TOLERANCE\n" );
-
 
 	//Rendering stats
-	fprintf( m_fp, "Draws: %d \nSkins: %d \nSortedPolys: %d \nSkinPolys: %d\n",(Int)Debug_Statistics::Get_Draw_Calls(),
+	fprintf( m_fp, "Draws: %d Skins: %d SortedPolys: %d SkinPolys: %d\n",(Int)Debug_Statistics::Get_Draw_Calls(),
 		(Int)Debug_Statistics::Get_DX8_Skin_Renders(),
 		(Int)Debug_Statistics::Get_Sorting_Polygons(), (Int)Debug_Statistics::Get_DX8_Skin_Polygons());
-
-	Int onScreenParticleCount = TheParticleSystemManager->getOnScreenParticleCount();
-
-  if ( flagSpikes )
-  {
-    if ( Debug_Statistics::Get_Draw_Calls()>2000 )
-  	  fprintf( m_fp, "                                                                      DRAWS OUT OF TOLERANCE(2000)\n" );
-    if ( Debug_Statistics::Get_Sorting_Polygons() > (onScreenParticleCount*2) + 300 )
-  	  fprintf( m_fp, "                                                                      NON-PARTICLE-SORTS OUT OF TOLERANCE(300)\n" );
-    if ( Debug_Statistics::Get_DX8_Skin_Renders()>100 )
-  	  fprintf( m_fp, "                                                                      SKINS OUT OF TOLERANCE(100)\n" );
-  }
-
 
 	//Object stats
 	UnsignedInt objCount = TheGameLogic->getObjectCount();
 	UnsignedInt objScreenCount = TheGameClient->getRenderedObjectCount();
 	fprintf( m_fp, "Objects: %d in world (%d onscreen)\n", objCount, objScreenCount );
-  if ( flagSpikes && objCount > 800 )
-  	fprintf( m_fp, "                                                                      OBJS OUT OF TOLERANCE(800)\n" );
 
 	//AI stats
 	UnsignedInt numAI, numMoving, numAttacking, numWaitingForPath, overallFailedPathfinds;
@@ -265,8 +223,6 @@ void StatDumpClass::dumpStats( Bool brief, Bool flagSpikes )
 	fprintf( m_fp, "    -attacking: %d\n", numAttacking );
 	fprintf( m_fp, "    -waiting for path: %d\n", numWaitingForPath );
 	fprintf( m_fp, "  Total failed pathfinds: %d\n", overallFailedPathfinds );
-  if ( flagSpikes && overallFailedPathfinds > 0 )
-  	fprintf( m_fp, "                                                                      FAILEDPATHFINDS OUT OF TOLERANCE(0)\n" );
 	fprintf( m_fp, "\n" );
 
 	// Script stats
@@ -275,10 +231,8 @@ void StatDumpClass::dumpStats( Bool brief, Bool flagSpikes )
 	fprintf( m_fp, "\n" );
 	fprintf( m_fp, "Script Engine Statistics:\n" );
 	fprintf( m_fp, "  Total time last frame: %.5f msec\n", timeLastFrame*1000 );
-	fprintf( m_fp, "    -Slowest 2 scripts      %s\n", slowScripts.str() );
+	fprintf( m_fp, "    -Slowest 2 scripts %s\n", slowScripts.str() );
 	fprintf( m_fp, "    -Slowest 2 script times %.5f msec, %.5f msec \n", slowScript1*1000, slowScript2*1000 );
-  if ( flagSpikes && slowScript1*1000 > 0.2f || slowScript2*1000 > 0.2f )
-  	fprintf( m_fp, "                                                                      SLOW SCRIPT OUT OF TOLERANCE(0.2)\n" );
 	fprintf( m_fp, "\n" );
 
 
@@ -298,13 +252,8 @@ void StatDumpClass::dumpStats( Bool brief, Bool flagSpikes )
 	//Particle system stats
 	fprintf( m_fp, "  Particle Systems: %d\n", TheParticleSystemManager->getParticleSystemCount() );
 	Int totalParticles = TheParticleSystemManager->getParticleCount();
+	Int onScreenParticleCount = TheParticleSystemManager->getOnScreenParticleCount();
 	fprintf( m_fp, "  Particles: %d in world (%d onscreen)\n", totalParticles, onScreenParticleCount );
-
-  if ( flagSpikes && totalParticles > TheGlobalData->m_maxParticleCount - 10 )
-  	fprintf( m_fp, "                                                                      PARTICLES OUT OF TOLERANCE(CAP-10)\n" );
-  if ( flagSpikes && onScreenParticleCount > TheGlobalData->m_maxParticleCount - 10 )
-  	fprintf( m_fp, "                                                                      ON_SCREEN_PARTICLES OUT OF TOLERANCE(CAP-10)\n" );
-
 
 	// polygons this frame
 	Int polyPerFrame = Debug_Statistics::Get_DX8_Polygons();
@@ -321,39 +270,28 @@ void StatDumpClass::dumpStats( Bool brief, Bool flagSpikes )
 	fprintf( m_fp, "  Video RAM: %d\n", Debug_Statistics::Get_Record_Texture_Size() - 1376256 );
 
 	// terrain stats
-	fprintf( m_fp, "  3-Way Blends: %d/%d, \n Shoreline Blends: %d/%d\n", TheTerrainRenderObject->getNumExtraBlendTiles(TRUE),TheTerrainRenderObject->getNumExtraBlendTiles(FALSE), TheTerrainRenderObject->getNumShoreLineTiles(TRUE),TheTerrainRenderObject->getNumShoreLineTiles(FALSE));
-  if ( flagSpikes && TheTerrainRenderObject->getNumExtraBlendTiles(TRUE) > 2000 )
-  	fprintf( m_fp, "                                                                      3-WAYS OUT OF TOLERANCE(2000)\n" );
-  if ( flagSpikes && TheTerrainRenderObject->getNumShoreLineTiles(TRUE) > 2000 )
-  	fprintf( m_fp, "                                                                      SHORELINES OUT OF TOLERANCE(2000)\n" );
+	fprintf( m_fp, "  3-Way Blends: %d, Shoreline Blends: %d\n", TheTerrainRenderObject->getNumExtraBlendTiles(), TheTerrainRenderObject->getNumShoreLineTiles() );
 
 	fprintf( m_fp, "\n" );
 
 #if defined(RTS_DEBUG)
-  if ( ! beBrief )
-  {
-    TheAudio->audioDebugDisplay( NULL, NULL, m_fp );
-	  fprintf( m_fp, "\n" );
-  }
+	TheAudio->audioDebugDisplay( NULL, NULL, m_fp );
+	fprintf( m_fp, "\n" );
 #endif
 
 #ifdef MEMORYPOOL_DEBUG
 	//Report memory usage.
 	TheMemoryPoolFactory->debugMemoryReport( REPORT_FACTORYINFO | REPORT_POOLINFO, 0, 0, m_fp );
 #else
-	fprintf( m_fp, "Memory Report -- unavailable \n(build doesn't have MEMORYPOOL_DEBUG defined)\n" );
+	fprintf( m_fp, "Memory Report -- unavailable (build doesn't have MEMORYPOOL_DEBUG defined)\n" );
 #endif
 	fprintf( m_fp, "\n" );
 
 	fprintf( m_fp, "%s", TheSubsystemList->dumpTimesForAll().str());
 
-  if ( ! beBrief )
-  {
-	  fprintf( m_fp, "----------------------------------------------------------------\n" );
-	  fprintf( m_fp, "END -- Frame %d\n", TheGameLogic->getFrame() );
-	  fprintf( m_fp, "----------------------------------------------------------------\n" );
-  }
-	fprintf( m_fp, "\n\n" );
+	fprintf( m_fp, "----------------------------------------------------------------\n" );
+	fprintf( m_fp, "END -- Frame %d\n", TheGameLogic->getFrame() );
+	fprintf( m_fp, "----------------------------------------------------------------\n\n\n" );
 	fflush(m_fp);
 }
 
@@ -408,10 +346,6 @@ W3DDisplay::W3DDisplay()
 	m_2DScene = NULL;
 	m_3DInterfaceScene = NULL;
 	m_averageFPS = TheGlobalData->m_framesPerSecondLimit;
-	
-	// Initialize graphics API preferences
-	m_preferredAPI = GraphicsAPIType::OPENGL; // Default to OpenGL
-	m_useOpenGL = false;
 #if defined(RTS_DEBUG)
 	m_timerAtCumuFPSStart = 0;
 #endif
@@ -427,7 +361,7 @@ W3DDisplay::W3DDisplay()
 	for (i = 0; i < DisplayStringCount; i++)
 		m_displayStrings[i] = NULL;
 
-}  // end W3DDisplay
+}
 
 // W3DDisplay::~W3DDisplay ====================================================
 /** */
@@ -457,7 +391,7 @@ W3DDisplay::~W3DDisplay()
 		delete m_2DRender;
 		m_2DRender = NULL;
 
-	}  // end if
+	}
 
 	//
 	// delete all our views now since they are W3D views and we need to
@@ -475,40 +409,20 @@ W3DDisplay::~W3DDisplay()
 
 	// shutdown
 	Debug_Statistics::Shutdown_Statistics();
+	TextureLoadTaskClass::shutdown();
 	if (!TheGlobalData->m_headless)
 		W3DShaderManager::shutdown();
 	m_assetManager->Free_Assets();
 	delete m_assetManager;
 	if (!TheGlobalData->m_headless)
-	{
-		// Phase 27.1.4: Clean up SDL2 and OpenGL resources on non-Windows platforms
-#ifndef _WIN32
-		printf("Phase 27.1.4: Cleaning up SDL2 and OpenGL resources...\n");
-		
-		if (g_GLContext) {
-			SDL_GL_DeleteContext(g_GLContext);
-			g_GLContext = nullptr;
-			printf("  OpenGL context destroyed\n");
-		}
-		
-		if (g_SDLWindow) {
-			SDL_DestroyWindow(g_SDLWindow);
-			g_SDLWindow = nullptr;
-			printf("  SDL2 window destroyed\n");
-		}
-		
-		SDL_Quit();
-		printf("Phase 27.1.4: SDL2 shutdown complete\n");
-#endif
 		WW3D::Shutdown();
-	}
 	WWMath::Shutdown();
 	if (!TheGlobalData->m_headless)
 		DX8WebBrowser::Shutdown();
 	delete TheW3DFileSystem;
 	TheW3DFileSystem = NULL;
 
-}  // end ~W3DDisplay
+}
 
 // TheSuperHackers @tweak valeronm 20/03/2025 No longer filters resolutions by a 4:3 aspect ratio.
 inline Bool isResolutionSupported(const ResolutionDescClass &res)
@@ -611,7 +525,7 @@ void W3DDisplay::setWidth( UnsignedInt width )
 	// of the screen with (width,height) at the lower right
 	m_2DRender->Set_Coordinate_Range( RectClass( 0, 0, getWidth(), getHeight() ) );
 
-}  // end set width
+}
 
 // W3DDisplay::setHeight ======================================================
 /** Set height of display */
@@ -626,7 +540,7 @@ void W3DDisplay::setHeight( UnsignedInt height )
 	// of the screen with (width,height) at the lower right
 	m_2DRender->Set_Coordinate_Range( RectClass( 0, 0, getWidth(), getHeight() ) );
 
-}  // end set height
+}
 
 // W3DDisplay::initAssets =====================================================
 /** */
@@ -634,7 +548,7 @@ void W3DDisplay::setHeight( UnsignedInt height )
 void W3DDisplay::initAssets( void )
 {
 
-}  // end initAssets
+}
 
 // W3DDisplay::init3DScene ====================================================
 /** */
@@ -642,7 +556,7 @@ void W3DDisplay::initAssets( void )
 void W3DDisplay::init3DScene( void )
 {
 
-}  // end init3DScene
+}
 
 // W3DDisplay::init2DScene ====================================================
 /** This is the 2D scene, you can use it to draw on a 2D plane over the
@@ -651,7 +565,7 @@ void W3DDisplay::init3DScene( void )
 void W3DDisplay::init2DScene( void )
 {
 
-}  // end init2DScene
+}
 
 // W3DDisplay::init ===========================================================
 /** Initialize or re-initialize the W3D display system.  Here we need to
@@ -673,7 +587,7 @@ void W3DDisplay::init( void )
 		/// @todo W3DDisplay needs RE-init logic!
 		return;
 
-	}  // end if
+	}
 	// Override the W3D File system
 	TheW3DFileSystem = NEW W3DFileSystem;
 
@@ -742,125 +656,14 @@ void W3DDisplay::init( void )
 		{
 			SortingRendererClass::SetMinVertexBufferSize(1);
 		}
-
-		// Phase 27.1.3: Initialize SDL2 and OpenGL on non-Windows platforms
-#ifndef _WIN32
-		printf("Phase 27.1.3: Initializing SDL2 windowing system...\n");
-		
-		// Initialize SDL2 video subsystem
-		if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-			printf("FATAL: SDL2 initialization failed: %s\n", SDL_GetError());
-			throw ERROR_INVALID_D3D; // Reuse error code for initialization failure
-		}
-		
-		// Configure OpenGL 3.3 Core Profile attributes BEFORE window creation
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-		
-		// Get resolution from global data (will be set later, use defaults for now)
-		Int windowWidth = TheGlobalData->m_xResolution > 0 ? TheGlobalData->m_xResolution : 800;
-		Int windowHeight = TheGlobalData->m_yResolution > 0 ? TheGlobalData->m_yResolution : 600;
-		
-		// Create SDL2 window with OpenGL support
-		Uint32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
-		if (TheGlobalData->m_windowed) {
-			windowFlags |= SDL_WINDOW_RESIZABLE;
-		} else {
-			windowFlags |= SDL_WINDOW_FULLSCREEN;
-		}
-		
-		g_SDLWindow = SDL_CreateWindow(
-			"Command & Conquer: Generals Zero Hour",
-			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-			windowWidth, windowHeight,
-			windowFlags
-		);
-		
-		if (!g_SDLWindow) {
-			printf("FATAL: SDL2 window creation failed: %s\n", SDL_GetError());
-			SDL_Quit();
-			throw ERROR_INVALID_D3D;
-		}
-		
-		// Create OpenGL context
-		g_GLContext = SDL_GL_CreateContext(g_SDLWindow);
-		if (!g_GLContext) {
-			printf("FATAL: OpenGL context creation failed: %s\n", SDL_GetError());
-			SDL_DestroyWindow(g_SDLWindow);
-			SDL_Quit();
-			throw ERROR_INVALID_D3D;
-		}
-		
-		// Make context current
-		SDL_GL_MakeCurrent(g_SDLWindow, g_GLContext);
-		
-		// Initialize GLAD OpenGL function loader
-		if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
-			printf("FATAL: GLAD OpenGL loader initialization failed\n");
-			SDL_GL_DeleteContext(g_GLContext);
-			SDL_DestroyWindow(g_SDLWindow);
-			SDL_Quit();
-			throw ERROR_INVALID_D3D;
-		}
-		
-		// Log successful OpenGL initialization
-		const GLubyte* glVersion = glGetString(GL_VERSION);
-		const GLubyte* glRenderer = glGetString(GL_RENDERER);
-		const GLubyte* glVendor = glGetString(GL_VENDOR);
-		printf("Phase 27.1.3: OpenGL initialization successful!\n");
-		printf("  OpenGL Version: %s\n", glVersion);
-		printf("  Renderer: %s\n", glRenderer);
-		printf("  Vendor: %s\n", glVendor);
-		
-		// Enable V-Sync (1 = enabled, 0 = disabled, -1 = adaptive)
-		SDL_GL_SetSwapInterval(1);
-		
-		// Set ApplicationHWnd to SDL window for compatibility with existing code
-		ApplicationHWnd = (HWND)g_SDLWindow;
-		
-		printf("Phase 27.1.3: SDL2 window created (%dx%d, %s)\n", 
-			windowWidth, windowHeight, 
-			TheGlobalData->m_windowed ? "windowed" : "fullscreen");
-#endif
-
 		if (WW3D::Init( ApplicationHWnd ) != WW3D_ERROR_OK)
 			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
-
-		// Initialize graphics abstraction layer
-		// Try to initialize OpenGL if available, fallback to DirectX
-		GraphicsAPIType preferredAPI = GraphicsAPIType::OPENGL;
-		
-		// Check if user prefers DirectX (from command line or config)
-#ifdef ENABLE_OPENGL
-		if (TheGlobalData->m_forceDirectX) {
-			preferredAPI = GraphicsAPIType::DIRECTX8;
-		}
-#else
-		preferredAPI = GraphicsAPIType::DIRECTX8;
-#endif
-		
-		if (W3DRendererAdapter::Initialize(preferredAPI)) {
-			m_useOpenGL = W3DRendererAdapter::IsUsingNewRenderer();
-			if (m_useOpenGL) {
-				DEBUG_LOG(("Graphics Renderer: Using OpenGL via abstraction layer"));
-			} else {
-				DEBUG_LOG(("Graphics Renderer: Using DirectX 8 (legacy path)"));
-			}
-		} else {
-			DEBUG_LOG(("Warning: Failed to initialize graphics abstraction layer, using DirectX 8 only"));
-			m_useOpenGL = false;
-		}
 
 		WW3D::Set_Prelit_Mode( WW3D::PRELIT_MODE_LIGHTMAP_MULTI_PASS );
 		WW3D::Set_Collision_Box_Display_Mask(0x00);	///<set to 0xff to make collision boxes visible
 		WW3D::Enable_Static_Sort_Lists(true);
 		WW3D::Set_Thumbnail_Enabled(false);
 		WW3D::Set_Screen_UV_Bias( TRUE );  ///< this makes text look good :)
-		WW3D::Set_Texture_Bitdepth(32);
 
 		setWindowed( TheGlobalData->m_windowed );
 
@@ -938,16 +741,14 @@ void W3DDisplay::init( void )
 
 		//Check if level was never set and default to setting most suitable for system.
 		if (TheGameLODManager->getStaticLODLevel() == STATIC_GAME_LOD_UNKNOWN)
-			TheGameLODManager->setStaticLODLevel(TheGameLODManager->findStaticLODLevel());
+		{
+			TheGameLODManager->setStaticLODLevel(TheGameLODManager->getRecommendedStaticLODLevel());
+		}
 		else
-		{	//Static LOD level was applied during GameLOD manager init except for texture reduction
+		{
+			//Static LOD level was applied during GameLOD manager init except for texture reduction
 			//which needs to be applied here.
-			Int txtReduction=TheWritableGlobalData->m_textureReductionFactor;
-			if (txtReduction > 0)
-			{		WW3D::Set_Texture_Reduction(txtReduction,32);
-					//Tell LOD manager that texture reduction was applied.
-					TheGameLODManager->setCurrentTextureReduction(txtReduction);
-			}
+			TheGameClient->setTextureLOD(TheWritableGlobalData->m_textureReductionFactor);
 		}
 
 		if (TheGlobalData->m_displayGamma != 1.0f)
@@ -994,7 +795,7 @@ void W3DDisplay::init( void )
 	{
 		m_debugDisplayCallback = StatDebugDisplay;
 	}
-}  // end init
+}
 
 // W3DDisplay::reset ===========================================================
 /** Reset the W3D display system.  Here we need to
@@ -1033,21 +834,16 @@ void W3DDisplay::reset( void )
 
 const UnsignedInt START_CUMU_FRAME = LOGICFRAMES_PER_SECOND / 2;	// skip first half-sec
 
-/** Update a moving average of the last 30 fps measurements.  Also try to filter out temporary spikes.
-	This code is designed to be used by the GameLOD sytems to determine the correct dynamic LOD setting.
-*/
 void W3DDisplay::updateAverageFPS(void)
 {
-	const Real MaximumFrameTimeCutoff = 0.5f;	//largest frame interval (seconds) we accept before ignoring it as a momentary "spike"
-	const Int FPS_HISTORY_SIZE = 30;	//keep track of the last 30 frames
+	constexpr const Int FPS_HISTORY_SIZE = 30;
 
 	static Int64 lastUpdateTime64 = 0;
 	static Int historyOffset = 0;
-	static Int numSamples = 0;
-	static double fpsHistory[FPS_HISTORY_SIZE];
+	static Real fpsHistory[FPS_HISTORY_SIZE] = {0};
 
-	Int64 freq64 = getPerformanceCounterFrequency();
-	Int64 time64 = getPerformanceCounter();
+	const Int64 freq64 = getPerformanceCounterFrequency();
+	const Int64 time64 = getPerformanceCounter();
 
 #if defined(RTS_DEBUG)
 	if (TheGameLogic->getFrame() == START_CUMU_FRAME)
@@ -1056,37 +852,21 @@ void W3DDisplay::updateAverageFPS(void)
 	}
 #endif
 
-	Int64 timeDiff = time64 - lastUpdateTime64;
+	const Int64 timeDiff = time64 - lastUpdateTime64;
 
 	// convert elapsed time to seconds
-	double elapsedSeconds = (double)timeDiff/(double)(freq64);
+	Real elapsedSeconds = (Real)timeDiff/(Real)freq64;
 
-	if (elapsedSeconds <= MaximumFrameTimeCutoff)	//make sure it's not a spike
-	{
-		// append new sameple to fps history.
-		if (historyOffset >= FPS_HISTORY_SIZE)
-			historyOffset = 0;
+	// append new sample to fps history.
+	if (historyOffset >= FPS_HISTORY_SIZE)
+		historyOffset = 0;
 
-		m_currentFPS = 1.0/elapsedSeconds;
-		fpsHistory[historyOffset++] = m_currentFPS;
-		numSamples++;
-		if (numSamples > FPS_HISTORY_SIZE)
-			numSamples = FPS_HISTORY_SIZE;
-	}
+	m_currentFPS = 1.0f/elapsedSeconds;
+	fpsHistory[historyOffset++] = m_currentFPS;
 
-	if (numSamples)
-	{
-		// determine average frame rate over our past history.
-		Real average=0;
-		for (Int i=0,j=historyOffset-1; i<numSamples; i++,j--)
-		{
-			if (j < 0)
-				j=FPS_HISTORY_SIZE-1;	// wrap around to front of buffer
-			average += fpsHistory[j];
-		}
-
-		m_averageFPS = average / (Real)numSamples;
-	}
+	// determine average frame rate over our past history.
+	const Real sum = std::accumulate(fpsHistory, fpsHistory + FPS_HISTORY_SIZE, 0.0f);
+	m_averageFPS = sum / FPS_HISTORY_SIZE;
 
 	lastUpdateTime64 = time64;
 }
@@ -1130,7 +910,7 @@ void W3DDisplay::gatherDebugStats( void )
 			}
 		}
 
-	}  // end if
+	}
 
 	if (m_benchmarkDisplayString == NULL)
 	{
@@ -1192,15 +972,15 @@ void W3DDisplay::gatherDebugStats( void )
 		double cumuFPS = (numFrames > 0 && cumuTime > 0.0) ? (numFrames / cumuTime) : 0.0;
 		double skinPolysPerFrame = Debug_Statistics::Get_DX8_Skin_Polygons();
 
-		Int LOD = TheGlobalData->m_terrainLOD;
+		//Int LOD = TheGlobalData->m_terrainLOD;
 		//unibuffer.format( L"FPS: %.2f, %.2fms mapLOD=%d [cumu FPS=%.2f] draws: %.2f sort: %.2f", fps, ms, LOD, cumuFPS, drawsPerFrame,sortPolysPerFrame);
 		if (TheGlobalData->m_useFpsLimit)
-				unibuffer.format( L"%.2f/%d FPS, ", fps, TheGameEngine->getFramesPerSecondLimit());
+				unibuffer.format( L"%.2f/%d FPS, ", fps, TheFramePacer->getFramesPerSecondLimit());
 		else
 				unibuffer.format( L"%.2f FPS, ", fps);
 
-		unibuffer2.format( L"%.2fms [cumuFPS=%.2f] draws: %d skins: %d sortP: %d skinP: %d LOD %d", ms, cumuFPS, (Int)drawsPerFrame,(Int)skinDrawsPerFrame,(Int)sortPolysPerFrame, (Int)skinPolysPerFrame, LOD);
-		unibuffer.concat(unibuffer2);
+				unibuffer2.format( L"%.2fms [cumuFPS=%.2f] draws: %d skins: %d sortP: %d skinP: %d", ms, cumuFPS, (Int)drawsPerFrame,(Int)skinDrawsPerFrame,(Int)sortPolysPerFrame, (Int)skinPolysPerFrame);
+				unibuffer.concat(unibuffer2);
 #else
 		//Int LOD = TheGlobalData->m_terrainLOD;
 		//unibuffer.format( L"FPS: %.2f, %.2fms mapLOD=%d draws: %.2f sort %.2f", fps, ms, LOD, drawsPerFrame,sortPolysPerFrame);
@@ -1389,10 +1169,8 @@ void W3DDisplay::gatherDebugStats( void )
 		s_sortedPolysSinceLastUpdate = 0;
 
 		// terrain stats
-		unibuffer.format( L"3-Way Blends: %d/%d, Shoreline Blends: %d/%d", TheTerrainRenderObject->getNumExtraBlendTiles(TRUE),
-			TheTerrainRenderObject->getNumExtraBlendTiles(FALSE),
-			TheTerrainRenderObject->getNumShoreLineTiles(TRUE),
-			TheTerrainRenderObject->getNumShoreLineTiles(FALSE));
+		unibuffer.format( L"3-Way Blends: %d, Shoreline Blends: %d", TheTerrainRenderObject->getNumExtraBlendTiles(),
+			TheTerrainRenderObject->getNumShoreLineTiles());
 		m_displayStrings[TerrainStats]->setText( unibuffer );
 
 		// misc debug info
@@ -1589,26 +1367,7 @@ void W3DDisplay::gatherDebugStats( void )
 												objectName.str(),
 												draw->getPosition()->x,
 												draw->getPosition()->y,
-												draw->getPosition()->z
-											);
-
-			const PhysicsBehavior *physics = obj->getPhysics();
-			PhysicsTurningType turnType = physics ? physics->getTurning() : TURN_NONE;
-
-			const DrawableLocoInfo *locoInfo = draw->getLocoInfo();
-			if( locoInfo )
-			{
-				unibuffer2.format( L"\nPhysics Info -- Turn: %d, Pitch(accel): %.3f(%.3f), Roll(accel): %.3f(%.3f)",
-													 turnType,
-													 locoInfo->m_accelerationPitch, locoInfo->m_accelerationPitchRate,
-													 locoInfo->m_accelerationRoll, locoInfo->m_accelerationRollRate );
-				unibuffer.concat( unibuffer2 );
-			}
-
-
-
-
-
+												draw->getPosition()->z );
 
 			// (gth) compute some stats about the rendering cost of this drawable
 #if defined(RTS_DEBUG)
@@ -1646,7 +1405,7 @@ void W3DDisplay::gatherDebugStats( void )
 
 			//Render ALL modelcondition statii
 
-		}  // end if
+		}
 		m_displayStrings[ SelectedInfo ]->setText( unibuffer );
 
 	}
@@ -1681,7 +1440,7 @@ void W3DDisplay::drawDebugStats( void )
 		y += h;
 	}
 
-}  // end drawDebugStats
+}
 
 // W3DDisplay::drawFPSStats =================================================
 /** Draw the FPS on the screen */
@@ -1725,7 +1484,7 @@ void W3DDisplay::drawCurrentDebugDisplay( void )
 			m_debugDisplayCallback( m_debugDisplay, m_debugDisplayUserData, NULL );
 		}
 	}
-}  // end drawCurrentDebugDisplay
+}
 
 // W3DDisplay::calculateTerrainLOD =================================================
 /** Calculates an adequately speedy terrain Level Of Detail. */
@@ -1825,39 +1584,9 @@ Int W3DDisplay::getLastFrameDrawCalls()
 	return Debug_Statistics::Get_Draw_Calls();
 }
 
-// TheSuperHackers @tweak xezon 12/08/2025 The WW3D Sync is no longer tied
-// to the render update, but is advanced separately for every fixed time step.
+//=============================================================================
 void W3DDisplay::step()
 {
-	// TheSuperHackers @info This will wrap in 1205 hours at 30 fps logic step.
-	static UnsignedInt syncTime = 0;
-
-	extern HWND ApplicationHWnd;
-	#ifdef _WIN32
-	if (ApplicationHWnd && ::IsIconic(ApplicationHWnd)) {
-#else
-	if (false) {
-#endif
-		return;
-	}
-
-	if (TheGlobalData->m_headless)
-		return;
-
-	Bool freezeTime = GameEngine::isTimeFrozen();
-
-	if (!freezeTime)
-	{
-		syncTime += (UnsignedInt)TheW3DFrameLengthInMsec;
-
-		if (TheScriptEngine->isTimeFast())
-		{
-			return;
-		}
-	}
-
-	WW3D::Sync( syncTime );
-
 	stepViews();
 }
 
@@ -1871,25 +1600,8 @@ void W3DDisplay::draw( void )
 {
 	//USE_PERF_TIMER(W3DDisplay_draw)
 
-#ifndef _WIN32
-	// Phase 27.1.6: OpenGL rendering test - validate SDL2/OpenGL stack works
-	if (g_SDLWindow && g_GLContext) {
-		glClearColor(0.2f, 0.3f, 0.4f, 1.0f); // Blue-gray background
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		SDL_GL_SwapWindow(g_SDLWindow);
-		
-		// Early return until DirectX->OpenGL translation is complete (Part 2)
-		// This prevents crashes from unimplemented DirectX calls
-		return;
-	}
-#endif
-
 	extern HWND ApplicationHWnd;
-	#ifdef _WIN32
 	if (ApplicationHWnd && ::IsIconic(ApplicationHWnd)) {
-#else
-	if (false) {
-#endif
 		return;
 	}
 
@@ -1918,19 +1630,9 @@ AGAIN:
 #ifdef DUMP_PERF_STATS
 	if( TheGlobalData->m_dumpPerformanceStatistics )
 	{
-		TheStatDump.dumpStats( FALSE, TRUE );
+		TheStatDump.dumpStats();
 		TheWritableGlobalData->m_dumpPerformanceStatistics = FALSE;
 	}
-  //The <= GAME_REPLAY essentially means, GAME_SINGLE_PLAYER || GAME_LAN || GAME_SKIRMISH || GAME_REPLAY
-  else if ( TheGlobalData->m_dumpStatsAtInterval && TheGameLogic->getGameMode() <= GAME_REPLAY )
-  {
-    Int interval = TheGlobalData->m_statsInterval;
-    if ( TheGameLogic->getFrame() > 0 && (TheGameLogic->getFrame() % interval) == 0 )
-    {
-  	  TheStatDump.dumpStats( TRUE, TRUE );
-    	TheInGameUI->message( UnicodeString( L"-stats is running, at interval: %d." ), TheGlobalData->m_statsInterval );
-    }
-  }
 #endif
 
 	// compute debug statistics for display later
@@ -1971,12 +1673,7 @@ AGAIN:
   	//
 	//PredictiveLODOptimizerClass::Optimize_LODs( 5000 );
 
-	Bool freezeTime = GameEngine::isTimeFrozen();
-
-	// hack to let client spin fast in network games but still do effects at the same pace. -MDC
-	static UnsignedInt lastFrame = ~0;
-	freezeTime = freezeTime || (TheNetwork != NULL && lastFrame == TheGameClient->getFrame());
-	lastFrame = TheGameClient->getFrame();
+	Bool freezeTime = TheFramePacer->isTimeFrozen() || TheFramePacer->isGameHalted();
 
 	/// @todo: I'm assuming the first view is our main 3D view.
 	W3DView *primaryW3DView=(W3DView *)getFirstView();
@@ -2012,6 +1709,11 @@ AGAIN:
 		}
 	}
 
+	WW3D::Update_Logic_Frame_Time(TheFramePacer->getLogicTimeStepMilliseconds());
+
+	// TheSuperHackers @info This binds the WW3D update to the logic update.
+	WW3D::Sync(TheGameLogic->hasUpdated());
+
 	static Int now;
 	now=timeGetTime();
 
@@ -2033,15 +1735,6 @@ AGAIN:
 			//trying to refresh the visible terrain geometry.
 //			if(TheGlobalData->m_loadScreenRender != TRUE)
 				updateViews();
-     		TheParticleSystemManager->update();//LORENZEN AND WILCZYNSKI MOVED THIS FROM ITS NATIVE POSITION, ABOVE
-                                           //FOR THE PURPOSE OF LETTING THE PARTICLE SYSTEM LOOK UP THE RENDER OBJECT"S
-                                           //TRANSFORM MATRIX, WHILE IT IS STILL VALID (HAVING DONE ITS CLIENT TRANSFORMS
-                                           //BUT NOT YET RESETTING TOT HE LOGICAL TRANSFORM)
-                                           //THE RESULT IS THAT PARTICLESYSTEMS LINKED TO BONES IN DRAWABLES.OBJECTS
-                                           //MOVE WITH THE CLIENT TRANSFORMS, NOW.
-                                           //REVOLUTIONARY!
-                                           //-LORENZEN
-
 
 			if (TheWaterRenderObj && TheGlobalData->m_waterType == 2)
 				TheWaterRenderObj->updateRenderTargetTextures(primaryW3DView->get3DCamera());	//do a render into each texture
@@ -2190,7 +1883,7 @@ AGAIN:
 		goto AGAIN;
 	}
 #endif
-}  // end draw
+}
 
 #define LETTER_BOX_FADE_TIME	1000.0f		///1000 ms.
 
@@ -2254,12 +1947,6 @@ Bool W3DDisplay::isLetterBoxFading(void)
 	return FALSE;
 }
 
-//WST 10/2/2002 added query function.  JSC Integrated 5/20/03
-Bool W3DDisplay::isLetterBoxed(void)
-{
-	return (m_letterBoxEnabled);
-}
-
 // W3DDisplay::createLightPulse ===============================================
 /** Create a "light pulse" which is a dynamic light that grows, decays
 	* and vanishes over several frames */
@@ -2287,20 +1974,12 @@ void W3DDisplay::createLightPulse( const Coord3D *pos, const RGBColor *color,
 	theDynamicLight->setDecayRange();
 	theDynamicLight->setDecayColor();
 	//theDynamicLight->setDonut(donut);
-	// (gth) CNC3 enable far attenuation.  C&C3 defaults to disabled.  Must enable to match Generals. MW 8-06-03
-	theDynamicLight->Set_Flag(LightClass::FAR_ATTENUATION,true);
 }
 
 void W3DDisplay::toggleLetterBox(void)
 {
 	m_letterBoxEnabled = !m_letterBoxEnabled;
 	m_letterBoxFadeStartTime = timeGetTime();
-
-	//WST  9/18/2002 This is not a script api to prevent cheat. JSC Integrated 5/20/03
-	if( TheTacticalView )
-	{
-		TheTacticalView->setZoomLimited( !m_letterBoxEnabled );
-	}
 }
 
 void W3DDisplay::enableLetterBox(Bool enable)
@@ -2311,12 +1990,6 @@ void W3DDisplay::enableLetterBox(Bool enable)
 		{	//letterbox mode not previously enabled
 			m_letterBoxEnabled = TRUE;
 			m_letterBoxFadeStartTime = timeGetTime();
-
-			//WST  9/18/2002 - This is not a script api to prevent cheat.  JSC Integrated 5/20/03
-			if( TheTacticalView )
-			{
-				TheTacticalView->setZoomLimited( 0 );
-			}
 		}
 	}
 	else
@@ -2325,12 +1998,6 @@ void W3DDisplay::enableLetterBox(Bool enable)
 		{	//letterbox mode no previously disabled
 			m_letterBoxEnabled = FALSE;
 			m_letterBoxFadeStartTime = timeGetTime();
-
-			//WST  9/18/2002. JSC Integrated 5/20/03
-			if( TheTacticalView )
-			{
-				TheTacticalView->setZoomLimited( 1 );
-			}
 		}
 	}
 }
@@ -2383,7 +2050,7 @@ void W3DDisplay::drawLine( Int startX, Int startY,
 												lineWidth, lineColor );
 	m_2DRender->Render();
 
-}  // end drawLine
+}
 
 // W3DDisplay::drawLine =======================================================
 /** draw a line on the display in pixel coordinates with the specified color */
@@ -2401,7 +2068,7 @@ void W3DDisplay::drawLine( Int startX, Int startY,
 												lineWidth, lineColor1, lineColor2 );
 	m_2DRender->Render();
 
-}  // end drawLine
+}
 
 
 // W3DDisplay::drawOpenRect ===================================================
@@ -2454,7 +2121,7 @@ void W3DDisplay::drawOpenRect( Int startX, Int startY, Int width, Int height,
 		m_2DRender->Render();
 	}
 
-}  // end drawOpenRect
+}
 
 // W3DDisplay::drawFillRect ===================================================
 //=============================================================================
@@ -2472,7 +2139,7 @@ void W3DDisplay::drawFillRect( Int startX, Int startY, Int width, Int height,
 	// render it now!
 	m_2DRender->Render();
 
-}  // end drawFillRect
+}
 
 void W3DDisplay::drawRectClock(Int startX, Int startY, Int width, Int height, Int percent, UnsignedInt color)
 {
@@ -2581,9 +2248,9 @@ void W3DDisplay::drawRectClock(Int startX, Int startY, Int width, Int height, In
 
 			// draw the part of triangle
 			Real percentDraw = (Real)(remain - 12)/ 13;
-			m_2DRender->Add_Tri(Vector2(startX, startY + height - (height/2 * percentDraw)),
-													Vector2(startX, startY + height),
-													Vector2(startX + width/2, startY + height/2),
+			m_2DRender->Add_Tri(Vector2(startX + width/2, startY + height/2),
+													Vector2(startX + width - (width/2 * percentDraw), startY + height),
+													Vector2(startX + width, startY + height),
 													Vector2(0,0),Vector2(0,0),Vector2(0,0),color);
 		}
 		else
@@ -2966,14 +2633,14 @@ void W3DDisplay::drawImage( const Image *image, Int startX, Int startY,
 												 Vector2( uv_rect.Left, uv_rect.Top ),
 												 color );
 
-	}  // end if
+	}
 	else
 	{
 
 		// just draw as normal
 		m_2DRender->Add_Quad( screen_rect, uv_rect, color );
 
-	}  // end else
+	}
 
 	m_2DRender->Render();
 
@@ -2982,7 +2649,7 @@ void W3DDisplay::drawImage( const Image *image, Int startX, Int startY,
 	if (doAlphaReset)
 		m_2DRender->Enable_Alpha(true);
 
-}  // end drawImage
+}
 
 //============================================================================
 // W3DDisplay::createVideoBuffer
@@ -3101,7 +2768,7 @@ void W3DDisplay::setClipRegion( IRegion2D *region )
 		m_clipRegion = *region;
 		m_isClippedEnabled = TRUE;
 
-}  // end setClipRegion
+}
 
 //=============================================================================
 /* we don't really need to override this call, since we will soon be called to
@@ -3137,15 +2804,11 @@ void W3DDisplay::setShroudLevel( Int x, Int y, CellShroudStatus setting )
 			TheTerrainRenderObject->getShroud()->setShroudLevel(x, y, (W3DShroudLevel)TheGlobalData->m_clearAlpha );
 		//Logic is saying shroud.  We can add alpha levels here in client if needed.
 		// W3DShroud is a 0-255 alpha byte.  Logic shroud is a double reference count.
-
-		TheTerrainRenderObject->notifyShroudChanged();
-
 	}
 }
 
 //=============================================================================
 ///Utility function to dump data into a .BMP file
-#ifdef _WIN32
 static void CreateBMPFile(LPTSTR pszFile, char *image, Int width, Int height)
 {
 	HANDLE hf;                  // file handle
@@ -3220,7 +2883,6 @@ static void CreateBMPFile(LPTSTR pszFile, char *image, Int width, Int height)
 	// Free memory.
 	LocalFree( (HLOCAL) pbmi);
 }
-#endif // _WIN32
 
 ///Save Screen Capture to a file
 void W3DDisplay::takeScreenShot(void)
@@ -3238,7 +2900,7 @@ void W3DDisplay::takeScreenShot(void)
 		sprintf( leafname, "%s%.3d.bmp", "sshot", frame_number++);
 #endif
 		strcpy(pathname, TheGlobalData->getPath_UserData().str());
-		strcat(pathname, leafname);
+		strlcat(pathname, leafname, ARRAY_SIZE(pathname));
 		if (_access( pathname, 0 ) == -1)
 			done = true;
 	}
@@ -3350,9 +3012,7 @@ void W3DDisplay::takeScreenShot(void)
 			ptr1++;
 			}
 	}
-#ifdef _WIN32
 	CreateBMPFile(pathname, image, width, height);
-#endif
 #endif
 
 	delete [] image;
@@ -3469,9 +3129,9 @@ void W3DDisplay::preloadModelAssets( AsciiString model )
 		nameWithExtension.format( "%s.w3d", model.str() );
 		m_assetManager->Load_3D_Assets( nameWithExtension.str() );
 
-	}  // end if
+	}
 
-}  // end preloadModelAssets
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Preload using the W3D asset manager the texture referenced by the string parameter */
@@ -3483,9 +3143,9 @@ void W3DDisplay::preloadTextureAssets( AsciiString texture )
 	{
 		TextureClass *theTexture = m_assetManager->Get_Texture( texture.str() );
 		theTexture->Release_Ref();//release reference
-	}  // end if
+	}
 
-}  // end preloadModelAssets
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -3560,6 +3220,7 @@ void W3DDisplay::dumpAssetUsage(const char* mapname)
 }
 #endif
 
+//-------------------------------------------------------------------------------------------------
 static void drawFramerateBar(void)
 {
 	static DWORD prevTime = timeGetTime();

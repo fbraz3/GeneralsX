@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef _CREATE_CRATE_DIE_H_
-#define _CREATE_CRATE_DIE_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Common/INI.h"
 #include "GameLogic/Module/DieModule.h"
@@ -96,5 +93,3 @@ private:
 
 	Object *createCrate( CrateTemplate const *currentCrateData );
 };
-
-#endif

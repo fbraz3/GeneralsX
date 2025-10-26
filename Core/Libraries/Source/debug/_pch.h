@@ -26,11 +26,8 @@
 //
 // Precompiled header (module internal)
 //////////////////////////////////////////////////////////////////////////////
-#ifdef _MSC_VER
-#  pragma once
-#endif
-#ifndef _PCH_H // Include guard
-#define _PCH_H
+
+#pragma once
 
 #include "debug.h"
 
@@ -46,5 +43,3 @@
 #include "internal.h"
 #include "internal_io.h"
 #include "internal_except.h"
-
-#endif // _PCH_H

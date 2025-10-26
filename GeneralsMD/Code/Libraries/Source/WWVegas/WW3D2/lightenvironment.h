@@ -37,12 +37,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef LIGHTENVIRONMENT_H
-#define LIGHTENVIRONMENT_H
 
 #include "always.h"
 #include "vector3.h"
@@ -178,7 +173,3 @@ protected:
 	InputLightStruct 	FillLight;						// Used to store the calculated fill light
 	float					FillIntensity;					// Used to determine how strong the fill light should be
 };
-
-
-#endif //LIGHTENVIRONMENT_H
-

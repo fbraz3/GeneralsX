@@ -30,9 +30,6 @@
 
 #pragma once
 
-#ifndef __BUILDASSISTANT_H_
-#define __BUILDASSISTANT_H_
-
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
 #include "Common/STLTypedefs.h"
 #include "Lib/BaseType.h"
@@ -215,6 +212,3 @@ protected:
 
 // EXTERN /////////////////////////////////////////////////////////////////////////////////////////
 extern BuildAssistant *TheBuildAssistant;
-
-#endif // __BUILDASSISTANT_H_
-

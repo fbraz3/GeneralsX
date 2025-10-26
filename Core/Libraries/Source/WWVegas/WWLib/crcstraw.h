@@ -34,8 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#ifndef CRCSTRAW_H
-#define CRCSTRAW_H
+#pragma once
 
 #include	"CRC.H"
 #include	"STRAW.H"
@@ -60,6 +59,3 @@ class CRCStraw : public Straw
 		CRCStraw(CRCStraw & rvalue);
 		CRCStraw & operator = (CRCStraw const & pipe);
 };
-
-
-#endif

@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef _GLOBALDATA_H_
-#define _GLOBALDATA_H_
-
 #include "Common/GameCommon.h"	// ensure we get DUMP_PERF_STATS, or not
 #include "Common/AsciiString.h"
 #include "Common/GameType.h"
@@ -412,6 +409,10 @@ public:
 	Bool m_saveCameraInReplay;
 	Bool m_useCameraInReplay;
 
+	// TheSuperHackers @feature xezon 09/09/2025 Enable the shroud and everything related for observing individual players in any game mode.
+	// Enabling this does have a performance cost because the ghost object manager must keep track of all relevant objects for all players.
+	Bool m_enablePlayerObserver;
+
 	// TheSuperHackers @feature L3-M 05/09/2025 allow the network latency counter and render fps counter font size to be set, a size of zero disables them
 	Int m_networkLatencyFontSize;
 	Int m_renderFpsFontSize;
@@ -598,6 +599,4 @@ extern GlobalData* TheWritableGlobalData;
 inline const GlobalData* const& TheGlobalData = TheWritableGlobalData;
 #else
 #define TheGlobalData ((const GlobalData*)TheWritableGlobalData)
-#endif
-
 #endif

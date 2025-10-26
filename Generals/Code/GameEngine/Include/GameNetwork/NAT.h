@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __NAT_H
-#define __NAT_H
-
 #include "Lib/BaseType.h"
 #include "GameNetwork/NetworkInterface.h"
 #include "GameNetwork/FirewallHelper.h"
@@ -158,5 +155,3 @@ protected:
 };
 
 extern NAT *TheNAT;
-
-#endif // #ifndef __NAT_H

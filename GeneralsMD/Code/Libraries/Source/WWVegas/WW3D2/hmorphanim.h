@@ -36,12 +36,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef HMORPHANIM_H
-#define HMORPHANIM_H
 
 #include "always.h"
 #include "hanim.h"
@@ -182,9 +177,3 @@ private:
 
 	friend class HMorphAnimClass;
 };
-
-
-
-#endif
-
-

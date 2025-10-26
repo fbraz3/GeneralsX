@@ -37,12 +37,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
-
-#ifndef DX8CAPS_H
-#define DX8CAPS_H
 
 #include "always.h"
 #include "ww3dformat.h"
@@ -319,6 +314,3 @@ private:
 	StringClass CapsLog;
 	StringClass CompactLog;
 };
-
-
-#endif

@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __GARRISONCONTAIN_H_
-#define __GARRISONCONTAIN_H_
-
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
 #include "GameLogic/Module/OpenContain.h"
 #include "Common/ModelState.h"
@@ -244,6 +241,3 @@ private:
   EvacDisposition m_evacDisposition;
 
 };
-
-#endif // __GARRISONCONTAIN_H_
-

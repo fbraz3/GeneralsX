@@ -30,9 +30,6 @@
 
 #pragma once
 
-#ifndef __USERPREFERENCES_H__
-#define __USERPREFERENCES_H__
-
 //-----------------------------------------------------------------------------
 // USER INCLUDES //////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
@@ -91,6 +88,7 @@ public:
 	void setOnlineIPAddress(AsciiString IP);	// convenience function
 	void setLANIPAddress(UnsignedInt IP);			// convenience function
 	void setOnlineIPAddress(UnsignedInt IP);	// convenience function
+	Bool getArchiveReplaysEnabled() const;		// convenience function
 	Bool getAlternateMouseModeEnabled(void);	// convenience function
 	Real getScrollFactor(void);								// convenience function
 	Bool getDrawScrollAnchor(void);
@@ -118,6 +116,7 @@ public:
 	Real getMoneyTransactionVolume(void) const;
 	Bool saveCameraInReplays(void);
 	Bool useCameraInReplays(void);
+	Bool getPlayerObserverEnabled() const;
 	Int	 getStaticGameDetail(void);	// detail level selected by the user.
 	Int	 getIdealStaticGameDetail(void);	// detail level detected for user.
  	Real getGammaValue(void);
@@ -166,5 +165,3 @@ public:
 	Int getNumRemoteIPs(void);					// convenience function
 	UnicodeString getRemoteIPEntry(Int i);	// convenience function
 };
-
-#endif // __USERPREFERENCES_H__

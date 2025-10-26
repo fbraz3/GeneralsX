@@ -34,12 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef __SOUNDHANDLE_H
-#define __SOUNDHANDLE_H
 
 #include "WWAudio.h"
 
@@ -124,6 +119,3 @@ protected:
 	///////////////////////////////////////////////////////////////////
 	SoundBufferClass *	Buffer;
 };
-
-
-#endif //__SOUNDHANDLE_H

@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef EXPERIENCE_TRACKER_H
-#define EXPERIENCE_TRACKER_H
-
 #include "Common/GameCommon.h"
 #include "Common/GameType.h"
 #include "Common/GameMemory.h"
@@ -58,6 +55,7 @@ public:
 	Bool canGainExpForLevel(Int levelsToGain) const;															///< return same value as gainExpForLevel, but don't change anything
 	void setExperienceAndLevel(Int experienceIn, Bool provideFeedback = TRUE );
 	void setExperienceSink( ObjectID sink );											///< My experience actually goes to this person (loose couple)
+	ObjectID getExperienceSink() const;
 
 	Real getExperienceScalar() const { return m_experienceScalar; }
 	void setExperienceScalar( Real scalar ) { m_experienceScalar = scalar; }
@@ -74,5 +72,3 @@ private:
 	ObjectID					m_experienceSink;										///< ID of object I have pledged my experience point gains to
 	Real							m_experienceScalar;									///< Scales any experience gained by this multiplier.
 };
-
-#endif

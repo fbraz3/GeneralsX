@@ -44,9 +44,6 @@
 
 #pragma once
 
-#ifndef __W3DPROP_BUFFER_H_
-#define __W3DPROP_BUFFER_H_
-
 //-----------------------------------------------------------------------------
 //           Includes
 //-----------------------------------------------------------------------------
@@ -149,5 +146,3 @@ protected:
 
 	void cull(CameraClass * camera);						 ///< Culls the props.
 };
-
-#endif  // end __W3DPROP_BUFFER_H_

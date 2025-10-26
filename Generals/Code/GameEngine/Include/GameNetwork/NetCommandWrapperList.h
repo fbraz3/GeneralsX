@@ -27,9 +27,6 @@
 
 #pragma once
 
-#ifndef __NETCOMMANDWRAPPERLIST_H
-#define __NETCOMMANDWRAPPERLIST_H
-
 #include "GameNetwork/NetCommandList.h"
 
 class NetCommandWrapperListNode : public MemoryPoolObject
@@ -79,5 +76,3 @@ protected:
 
 	NetCommandWrapperListNode *m_list;
 };
-
-#endif

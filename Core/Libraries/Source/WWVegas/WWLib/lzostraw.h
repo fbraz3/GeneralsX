@@ -34,9 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#ifndef LZOSTRAW_H
-#define LZOSTRAW_H
-
+#pragma once
 
 #include	"STRAW.H"
 
@@ -98,6 +96,3 @@ class LZOStraw : public Straw
 		LZOStraw(LZOStraw & rvalue);
 		LZOStraw & operator = (LZOStraw const & pipe);
 };
-
-
-#endif

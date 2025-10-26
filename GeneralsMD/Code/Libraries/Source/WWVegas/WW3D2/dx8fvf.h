@@ -39,13 +39,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef DX8_FVF_H
-#define DX8_FVF_H
 
 #include "always.h"
 #include <d3d8.h>
@@ -285,6 +279,3 @@ public:
 	inline void Set_FVF(unsigned fvf) const { FVF=fvf; }
 	inline void Set_FVF_Size(unsigned size) const { fvf_size=size; }
 };
-
-
-#endif

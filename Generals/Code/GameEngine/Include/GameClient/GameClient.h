@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef _GAME_INTERFACE_H_
-#define _GAME_INTERFACE_H_
-
 #include "Common/GameType.h"
 #include "Common/MessageStream.h"		// for GameMessageTranslator
 #include "Common/Snapshot.h"
@@ -114,6 +111,7 @@ public:
 																										CommandTranslator::CommandEvaluateType cmdType );
 	void addTextBearingDrawable( Drawable *tbd );
 	void flushTextBearingDrawables( void);
+	void updateFakeDrawables(void);
 
 	virtual void removeFromRayEffects( Drawable *draw );  ///< remove the drawable from the ray effect system if present
 	virtual void getRayEffectData( Drawable *draw, RayEffectData *effectData );  ///< get ray effect data for a drawable
@@ -138,7 +136,8 @@ public:
 
 	//---------------------------------------------------------------------------
 	virtual void setTeamColor( Int red, Int green, Int blue ) = 0;  ///< @todo superhack for demo, remove!!!
-	virtual void adjustLOD( Int adj ) = 0; ///< @todo hack for evaluation, remove.
+
+	virtual void setTextureLOD( Int level ) = 0;
 
 	virtual void releaseShadows(void);	///< frees all shadow resources used by this module - used by Options screen.
 	virtual void allocateShadows(void); ///< create shadow resources if not already present. Used by Options screen.
@@ -273,5 +272,3 @@ extern GameClient *TheGameClient;
 //					m_roadBuffer = NULL
 //					m_shroud = NULL
 //		TheRadar = RadarDummy
-
-#endif // _GAME_INTERFACE_H_

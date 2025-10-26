@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef __STAGINGROOMGAMEINFO_H__
-#define __STAGINGROOMGAMEINFO_H__
-
 #include "GameNetwork/GameInfo.h"
 #include "GameNetwork/Transport.h"
 
@@ -157,5 +154,3 @@ public:
 };
 
 extern GameSpyStagingRoom *TheGameSpyGame;
-
-#endif // __STAGINGROOMGAMEINFO_H__

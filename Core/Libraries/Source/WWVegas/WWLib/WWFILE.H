@@ -33,12 +33,8 @@
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#if _MSC_VER >= 1000
-#pragma once
-#endif // _MSC_VER >= 1000
 
-#ifndef WWFILE_Hx
-#define WWFILE_Hx
+#pragma once
 
 #define YEAR(dt)	(((dt & 0xFE000000) >> (9 + 16)) + 1980)
 #define MONTH(dt)	 ((dt & 0x01E00000) >> (5 + 16))
@@ -105,5 +101,3 @@ class FileClass
 		int Printf_Indented(unsigned depth, char *str, ...);
 
 };
-
-#endif

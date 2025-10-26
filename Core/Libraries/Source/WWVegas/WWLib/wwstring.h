@@ -34,12 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef __WWSTRING_H
-#define __WWSTRING_H
 
 #include "always.h"
 #include "mutex.h"
@@ -778,6 +773,3 @@ StringClass::Store_Length (int length)
 
 	return ;
 }
-
-#endif //__WWSTRING_H
-

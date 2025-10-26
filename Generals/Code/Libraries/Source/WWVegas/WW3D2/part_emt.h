@@ -33,12 +33,8 @@
  *-------------------------------------------------------------------------*
  * Functions:                                                              *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#if defined(_MSC_VER)
-#pragma once
-#endif
 
-#ifndef PART_EMT_H
-#define PART_EMT_H
+#pragma once
 
 #include "rendobj.h"
 #include "RANDOM.H"
@@ -339,7 +335,3 @@ class ParticleEmitterClass : public RenderObjClass
 		// all particle emitters.
 		static bool					DebugDisable;
 };
-
-#endif // PART_EMT_H
-
-

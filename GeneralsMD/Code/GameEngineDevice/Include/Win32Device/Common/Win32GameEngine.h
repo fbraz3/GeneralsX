@@ -32,19 +32,12 @@
 
 #pragma once
 
-#ifndef __WIN32GAMEENGINE_H_
-#define __WIN32GAMEENGINE_H_
-
 #include "Common/GameEngine.h"
 #include "GameLogic/GameLogic.h"
 #include "GameNetwork/NetworkInterface.h"
-#include "OpenALDevice/OpenALAudioManager.h"
+#include "MilesAudioDevice/MilesAudioManager.h"
 #include "Win32Device/Common/Win32BIGFileSystem.h"
-#ifdef _WIN32
 #include "Win32Device/Common/Win32LocalFileSystem.h"
-#else
-#include "StdDevice/Common/StdLocalFileSystem.h"
-#endif
 #include "W3DDevice/Common/W3DModuleFactory.h"
 #include "W3DDevice/GameLogic/W3DGameLogic.h"
 #include "W3DDevice/GameClient/W3DGameClient.h"
@@ -99,17 +92,11 @@ inline GameClient *Win32GameEngine::createGameClient( void ) { return NEW W3DGam
 inline ModuleFactory *Win32GameEngine::createModuleFactory( void ) { return NEW W3DModuleFactory; }
 inline ThingFactory *Win32GameEngine::createThingFactory( void ) { return NEW W3DThingFactory; }
 inline FunctionLexicon *Win32GameEngine::createFunctionLexicon( void ) { return NEW W3DFunctionLexicon; }
-#ifdef _WIN32
 inline LocalFileSystem *Win32GameEngine::createLocalFileSystem( void ) { return NEW Win32LocalFileSystem; }
-#else
-inline LocalFileSystem *Win32GameEngine::createLocalFileSystem( void ) { return NEW StdLocalFileSystem; }
-#endif
 inline ArchiveFileSystem *Win32GameEngine::createArchiveFileSystem( void ) { return NEW Win32BIGFileSystem; }
 inline ParticleSystemManager* Win32GameEngine::createParticleSystemManager( void ) { return NEW W3DParticleSystemManager; }
 
 inline NetworkInterface *Win32GameEngine::createNetwork( void ) { return NetworkInterface::createNetwork(); }
 inline Radar *Win32GameEngine::createRadar( void ) { return NEW W3DRadar; }
 inline WebBrowser *Win32GameEngine::createWebBrowser( void ) { return NEW CComObject<W3DWebBrowser>; }
-inline AudioManager *Win32GameEngine::createAudioManager( void ) { return NEW OpenALAudioManager; }
-
-#endif  // end __WIN32GAMEENGINE_H_
+inline AudioManager *Win32GameEngine::createAudioManager( void ) { return NEW MilesAudioManager; }

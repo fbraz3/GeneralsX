@@ -26,11 +26,8 @@
 //
 // Profiling module
 //////////////////////////////////////////////////////////////////////////////
-#ifdef _MSC_VER
-#  pragma once
-#endif
-#ifndef PROFILE_H // Include guard
-#define PROFILE_H
+
+#pragma once
 
 #include <cstdint>
 
@@ -209,5 +206,3 @@ private:
   /// CPU clock cycles/second
   static int64_t m_clockCycles;
 };
-
-#endif // PROFILE_H

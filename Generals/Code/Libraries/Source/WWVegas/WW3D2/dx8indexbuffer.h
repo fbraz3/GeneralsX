@@ -36,12 +36,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef DX8INDEXBUFFER_H
-#define DX8INDEXBUFFER_H
 
 // Phase 27.2.2: CRITICAL - GLAD must be included FIRST before any header that might include OpenGL
 #ifndef _WIN32
@@ -219,6 +214,3 @@ public:
 protected:
 	unsigned short* index_buffer;
 };
-
-#endif //DX8INDEXBUFFER_H
-

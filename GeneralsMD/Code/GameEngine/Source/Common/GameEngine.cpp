@@ -33,6 +33,7 @@
 #include "Common/AudioEventRTS.h"
 #include "Common/BuildAssistant.h"
 #include "Common/CRCDebug.h"
+#include "Common/FramePacer.h"
 #include "Common/Radar.h"
 #include "Common/PlayerTemplate.h"
 #include "Common/Team.h"
@@ -45,7 +46,6 @@
 #include "Common/ThingFactory.h"
 #include "Common/file.h"
 #include "Common/FileSystem.h"
-#include "Common/FrameRateLimit.h"
 #include "Common/ArchiveFileSystem.h"
 #include "Common/LocalFileSystem.h"
 #include "Common/CDManager.h"
@@ -278,19 +278,10 @@ static void updateWindowTitle()
 //-------------------------------------------------------------------------------------------------
 GameEngine::GameEngine( void )
 {
-	// Set the time slice size to 1 ms.
-	timeBeginPeriod(1);
-
 	// initialize to non garbage values
-	m_maxFPS = BaseFps;
-	m_logicTimeScaleFPS = LOGICFRAMES_PER_SECOND;
-	m_updateTime = 1.0f / BaseFps; // initialized to something to avoid division by zero on first use
 	m_logicTimeAccumulator = 0.0f;
 	m_quitting = FALSE;
 	m_isActive = FALSE;
-	m_enableLogicTimeScale = FALSE;
-	m_isTimeFrozen = FALSE;
-	m_isGameHalted = FALSE;
 
 #ifdef _WIN32
 	_Module.Init(NULL, ApplicationHInstance, NULL);
@@ -343,34 +334,6 @@ GameEngine::~GameEngine()
 #ifdef PERF_TIMERS
 	PerfGather::termPerfDump();
 #endif
-
-	// Restore the previous time slice for Windows.
-	timeEndPeriod(1);
-}
-
-//-------------------------------------------------------------------------------------------------
-void GameEngine::setFramesPerSecondLimit( Int fps )
-{
-	DEBUG_LOG(("GameEngine::setFramesPerSecondLimit() - setting max fps to %d (TheGlobalData->m_useFpsLimit == %d)", fps, TheGlobalData->m_useFpsLimit));
-	m_maxFPS = fps;
-}
-
-//-------------------------------------------------------------------------------------------------
-Int GameEngine::getFramesPerSecondLimit( void )
-{
-	return m_maxFPS;
-}
-
-//-------------------------------------------------------------------------------------------------
-Real GameEngine::getUpdateTime()
-{
-	return m_updateTime;
-}
-
-//-------------------------------------------------------------------------------------------------
-Real GameEngine::getUpdateFps()
-{
-	return 1.0f / m_updateTime;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -410,80 +373,6 @@ Bool GameEngine::isGameHalted()
 	}
 
 	return false;
-}
-
-//-------------------------------------------------------------------------------------------------
-void GameEngine::setLogicTimeScaleFps( Int fps )
-{
-	m_logicTimeScaleFPS = fps;
-}
-
-//-------------------------------------------------------------------------------------------------
-Int GameEngine::getLogicTimeScaleFps()
-{
-	return m_logicTimeScaleFPS;
-}
-
-//-------------------------------------------------------------------------------------------------
-void GameEngine::enableLogicTimeScale( Bool enable )
-{
-	m_enableLogicTimeScale = enable;
-}
-
-//-------------------------------------------------------------------------------------------------
-Bool GameEngine::isLogicTimeScaleEnabled()
-{
-	return m_enableLogicTimeScale;
-}
-
-//-------------------------------------------------------------------------------------------------
-Int GameEngine::getActualLogicTimeScaleFps(LogicTimeQueryFlags flags)
-{
-	if (m_isTimeFrozen && (flags & IgnoreFrozenTime) == 0)
-	{
-		return 0;
-	}
-
-	if (m_isGameHalted && (flags & IgnoreHaltedGame) == 0)
-	{
-		return 0;
-	}
-
-	if (TheNetwork != NULL)
-	{
-		return TheNetwork->getFrameRate();
-	}
-
-	if (isLogicTimeScaleEnabled())
-	{
-		return min(getLogicTimeScaleFps(), getFramesPerSecondLimit());
-	}
-
-	return getFramesPerSecondLimit();
-}
-
-//-------------------------------------------------------------------------------------------------
-Real GameEngine::getActualLogicTimeScaleRatio(LogicTimeQueryFlags flags)
-{
-	return (Real)getActualLogicTimeScaleFps(flags) / LOGICFRAMES_PER_SECONDS_REAL;
-}
-
-//-------------------------------------------------------------------------------------------------
-Real GameEngine::getActualLogicTimeScaleOverFpsRatio(LogicTimeQueryFlags flags)
-{
-	// TheSuperHackers @info Clamps ratio to min 1, because the logic
-	// frame rate is currently capped by the render frame rate.
-	return min(1.0f, (Real)getActualLogicTimeScaleFps(flags) / getUpdateFps());
-}
-
-Real GameEngine::getLogicTimeStepSeconds(LogicTimeQueryFlags flags)
-{
-	return SECONDS_PER_LOGICFRAME_REAL * getActualLogicTimeScaleOverFpsRatio(flags);
-}
-
-Real GameEngine::getLogicTimeStepMilliseconds(LogicTimeQueryFlags flags)
-{
-	return MSEC_PER_LOGICFRAME_REAL * getActualLogicTimeScaleOverFpsRatio(flags);
 }
 
 /** -----------------------------------------------------------------------------------------------
@@ -1001,7 +890,7 @@ void GameEngine::init()
 		TheWritableGlobalData->m_iniCRC = xferCRC.getCRC();
 		DEBUG_LOG(("INI CRC is 0x%8.8X", TheGlobalData->m_iniCRC));
 
-		TheSubsystemList->postProcessLoadAll();
+	TheSubsystemList->postProcessLoadAll();
 
 	// Phase 32: Verify music files were loaded successfully
 	// This check must occur AFTER postProcessLoadAll() because AudioManager::init() is called in postProcessLoad()
@@ -1036,9 +925,10 @@ void GameEngine::init()
 		}
 	}
 
-	setFramesPerSecondLimit(TheGlobalData->m_framesPerSecondLimit);
+	// Upstream: Use FramePacer for FPS management
+	TheFramePacer->setFramesPerSecondLimit(TheGlobalData->m_framesPerSecondLimit);
 
-	// Phase 33: Debug audio enable/disable state
+	setFramesPerSecondLimit(TheGlobalData->m_framesPerSecondLimit);	// Phase 33: Debug audio enable/disable state
 	printf("GameEngine::init() - Audio settings: audioOn=%d, musicOn=%d, soundsOn=%d, sounds3DOn=%d, speechOn=%d\n",
 		   TheGlobalData->m_audioOn, TheGlobalData->m_musicOn, TheGlobalData->m_soundsOn,
 		   TheGlobalData->m_sounds3DOn, TheGlobalData->m_speechOn);
@@ -1244,8 +1134,8 @@ Bool GameEngine::canUpdateGameLogic()
 	// Must be first.
 	TheGameLogic->preUpdate();
 
-	m_isTimeFrozen = isTimeFrozen();
-	m_isGameHalted = isGameHalted();
+	TheFramePacer->setTimeFrozen(isTimeFrozen());
+	TheFramePacer->setGameHalted(isGameHalted());
 
 	if (TheNetwork != NULL)
 	{
@@ -1257,6 +1147,7 @@ Bool GameEngine::canUpdateGameLogic()
 	}
 }
 
+/// -----------------------------------------------------------------------------------------------
 Bool GameEngine::canUpdateNetworkGameLogic()
 {
 	DEBUG_ASSERTCRASH(TheNetwork != NULL, ("TheNetwork is NULL"));
@@ -1264,7 +1155,7 @@ Bool GameEngine::canUpdateNetworkGameLogic()
 	if (TheNetwork->isFrameDataReady())
 	{
 		// Important: The Network is definitely no longer stalling.
-		m_isGameHalted = false;
+		TheFramePacer->setGameHalted(false);
 
 		return true;
 	}
@@ -1272,11 +1163,12 @@ Bool GameEngine::canUpdateNetworkGameLogic()
 	return false;
 }
 
+/// -----------------------------------------------------------------------------------------------
 Bool GameEngine::canUpdateRegularGameLogic()
 {
-	const Bool enabled = isLogicTimeScaleEnabled();
-	const Int logicTimeScaleFps = getLogicTimeScaleFps();
-	const Int maxRenderFps = getFramesPerSecondLimit();
+	const Bool enabled = TheFramePacer->isLogicTimeScaleEnabled();
+	const Int logicTimeScaleFps = TheFramePacer->getLogicTimeScaleFps();
+	const Int maxRenderFps = TheFramePacer->getFramesPerSecondLimit();
 
 #if defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
 	const Bool useFastMode = TheGlobalData->m_TiVOFastMode;
@@ -1294,7 +1186,7 @@ Bool GameEngine::canUpdateRegularGameLogic()
 		// TheSuperHackers @tweak xezon 06/08/2025
 		// The logic time step is now decoupled from the render update.
 		const Real targetFrameTime = 1.0f / logicTimeScaleFps;
-		m_logicTimeAccumulator += min(m_updateTime, targetFrameTime);
+		m_logicTimeAccumulator += min(TheFramePacer->getUpdateTime(), targetFrameTime);
 
 		if (m_logicTimeAccumulator >= targetFrameTime)
 		{
@@ -1352,8 +1244,8 @@ void GameEngine::update( void )
 		}
 
 		const Bool canUpdate = canUpdateGameLogic();
-		const Bool canUpdateLogic = canUpdate && !m_isGameHalted && !m_isTimeFrozen;
-		const Bool canUpdateScript = canUpdate && !m_isGameHalted;
+		const Bool canUpdateLogic = canUpdate && !TheFramePacer->isGameHalted() && !TheFramePacer->isTimeFrozen();
+		const Bool canUpdateScript = canUpdate && !TheFramePacer->isGameHalted();
 
 		if (canUpdateLogic)
 		{
@@ -1498,6 +1390,8 @@ void GameEngine::execute( void )
 				}
 			}
 
+			// Upstream: Also call FramePacer update for compatibility
+			TheFramePacer->update();
 		}
 
 #ifdef PERF_TIMERS
@@ -1512,8 +1406,6 @@ void GameEngine::execute( void )
 		// Increment loop counter for debug logging (Phase 27.2 debugging)
 		loopCount++;
 	}
-
-	delete frameRateLimit;
 }
 
 /** -----------------------------------------------------------------------------------------------

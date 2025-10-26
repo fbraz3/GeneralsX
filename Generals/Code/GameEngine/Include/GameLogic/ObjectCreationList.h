@@ -32,9 +32,6 @@
 
 #pragma once
 
-#ifndef _ObjectCreationList_H_
-#define _ObjectCreationList_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Common/GameMemory.h"
 
@@ -219,6 +216,3 @@ private:
 
 // EXTERNALS //////////////////////////////////////////////////////////////////////////////////////
 extern ObjectCreationListStore *TheObjectCreationListStore;
-
-#endif // _ObjectCreationList_H_
-

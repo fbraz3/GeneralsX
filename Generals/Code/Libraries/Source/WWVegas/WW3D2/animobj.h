@@ -38,12 +38,7 @@
  *   Animatable3DObjClass::Combo_Update -- Animation update for a combination of anims         *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef ANIMOBJ_H
-#define ANIMOBJ_H
 
 #include "always.h"
 #include "composite.h"
@@ -113,7 +108,7 @@ public:
 
 	//
 	//	Simple bone evaluation methods for when the caller doesn't want
-	// to update the heirarchy, but needs to know the transform of
+	// to update the hierarchy, but needs to know the transform of
 	// a bone at a given frame.
 	//
 	virtual bool					Simple_Evaluate_Bone(int boneindex, Matrix3D *tm) const;
@@ -153,14 +148,14 @@ protected:
 	void								Combo_Update(	const Matrix3D & root,
 															HAnimComboClass *anim);
 
-	// flag to kep track of whether the hierarchy tree transforms are currently valid
+	// flag to keep track of whether the hierarchy tree transforms are currently valid
 	bool								Is_Hierarchy_Valid(void) const				{ return IsTreeValid; }
 	void								Set_Hierarchy_Valid(bool onoff) const  	{ IsTreeValid = onoff; }
 
-	// Progress anims for single anim (loop and once)
+	// Progress animations for single anim (loop and once)
 	void								Single_Anim_Progress( void );
 
-	// Release any anims
+	// Release any animations
 	void								Release( void );
 
 protected:
@@ -190,6 +185,7 @@ protected:
 			float		  				Frame;
 			float						PrevFrame;
 			int						AnimMode;
+			int								LastSyncTime;
 			float							animDirection;
 			float							frameRateMultiplier;	// 020607 srj -- added
 		} ModeAnim;
@@ -323,7 +319,3 @@ inline void Animatable3DObjClass::Combo_Update( const Matrix3D & root, HAnimComb
 	}
 	Set_Hierarchy_Valid(true);
 }
-
-
-
-#endif //ANIMOBJ_H

@@ -22,11 +22,7 @@
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
-
 #pragma once
-
-#ifndef __NETCOMMANDREF_H
-#define __NETCOMMANDREF_H
 
 #include "GameNetwork/NetCommandMsg.h"
 #include "Common/GameMemory.h"
@@ -148,5 +144,3 @@ inline UnsignedByte NetCommandRef::getRelay() const
 {
 	return m_relay;
 }
-
-#endif // #ifndef __NETCOMMANDREF_H

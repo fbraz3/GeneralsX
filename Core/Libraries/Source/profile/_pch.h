@@ -26,11 +26,8 @@
 //
 // Precompiled header (module internal)
 //////////////////////////////////////////////////////////////////////////////
-#ifdef _MSC_VER
-#  pragma once
-#endif
-#ifndef _PCH_H // Include guard
-#define _PCH_H
+
+#pragma once
 
 #define WIN32_LEAN_AND_MEAN
 #define STRICT
@@ -43,5 +40,3 @@
 
 #include "profile.h"
 #include "internal.h"
-
-#endif // _PCH_H

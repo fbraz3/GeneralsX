@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef WorldHeightMap_H
-#define WorldHeightMap_H
-
 #include "Lib/BaseType.h"
 #include "WWLib/refcount.h"
 #include "WWMath/vector3.h"
@@ -322,5 +319,3 @@ protected:
 	void setCliffState(Int xIndex, Int yIndex, Bool state);
 
 };
-
-#endif

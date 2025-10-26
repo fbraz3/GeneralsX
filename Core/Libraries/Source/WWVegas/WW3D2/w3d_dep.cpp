@@ -534,9 +534,9 @@ static void Get_W3D_Name (const char *filename, char *w3d_name)
 
 	// Copy all characters from start to end (excluding 'end')
 	// into the w3d_name buffer. Then capitalize the string.
-	memset(w3d_name, 0, W3D_NAME_LEN);	// blank out the buffer
 	int num_chars = end - start;
-	strncpy(w3d_name, start, num_chars < W3D_NAME_LEN ? num_chars : W3D_NAME_LEN-1);
+	WWASSERT(num_chars <= W3D_NAME_LEN);
+	strlcpy(w3d_name, start, min(W3D_NAME_LEN, num_chars));
 	strupr(w3d_name);
 }
 
@@ -572,6 +572,6 @@ static const char * Make_W3D_Filename (const char *w3d_name)
 	if (dot)
 		*dot = 0;
 	strlwr(buffer);
-	strcat(buffer, ".w3d");
+	strlcat(buffer, ".w3d", ARRAY_SIZE(buffer));
 	return buffer;
 }

@@ -208,7 +208,7 @@ void BlendMaterial::addTerrain(const char *pPath, Int terrainNdx, HTREEITEM pare
 //	Int percent = (WorldHeightMapEdit::getTexClassNumTiles(terrainNdx)*100 + availableTiles/2) / availableTiles;
 
 	char label[_MAX_PATH];
-	sprintf(label, "%s", buffer);
+	snprintf(label, ARRAY_SIZE(label), "%s", buffer);
 
 
 	if( doAdd )
@@ -239,7 +239,7 @@ void BlendMaterial::updateTextures(void)
 	for (i=WorldHeightMapEdit::getNumTexClasses()-1; i>=0; i--) {
 		char path[_MAX_PATH];
 		AsciiString uiName = WorldHeightMapEdit::getTexClassUiName(i);
-		strncpy(path, uiName.str(), _MAX_PATH-2);
+		strlcpy(path, uiName.str(), _MAX_PATH);
 		addTerrain(path, i, TVI_ROOT);
 	}
 	m_updating = false;

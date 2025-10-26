@@ -34,12 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef COLLECT_H
-#define COLLECT_H
 
 #include "rendobj.h"
 #include "composite.h"
@@ -145,5 +140,3 @@ public:
 };
 
 extern CollectionLoaderClass _CollectionLoader;
-
-#endif

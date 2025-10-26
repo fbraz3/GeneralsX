@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __SCRIPTENGINE_H_
-#define __SCRIPTENGINE_H_
-
 #include "Common/GameType.h"
 #include "Common/GameMemory.h"
 #include "Common/STLTypedefs.h"
@@ -489,6 +486,3 @@ protected:
 };
 
 extern ScriptEngine *TheScriptEngine;   ///< singleton definition
-
-
-#endif  // end __SCRIPTENGINE_H_

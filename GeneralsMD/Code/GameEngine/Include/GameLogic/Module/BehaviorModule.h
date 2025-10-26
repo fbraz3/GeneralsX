@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __BehaviorModule_H_
-#define __BehaviorModule_H_
-
 #include "Common/GameType.h"
 #include "Common/Module.h"
 
@@ -213,6 +210,11 @@ enum RunwayReservationType CPP_11(: Int)
 	RESERVATION_LANDING,
 };
 
+enum
+{
+	InvalidRunway = -1,
+};
+
 //-------------------------------------------------------------------------------------------------
 class ParkingPlaceBehaviorInterface
 {
@@ -241,6 +243,7 @@ public:
 	virtual Bool reserveRunway(ObjectID id, Bool forLanding) = 0;
 	virtual void calcPPInfo( ObjectID id, PPInfo *info ) = 0;
 	virtual void releaseRunway(ObjectID id) = 0;
+	virtual Int getRunwayIndex(ObjectID id) = 0;
 	virtual Int getRunwayCount() const = 0;
 	virtual ObjectID getRunwayReservation( Int r, RunwayReservationType type = RESERVATION_TAKEOFF ) = 0;
 	virtual void transferRunwayReservationToNextInLineForTakeoff(ObjectID id) = 0;
@@ -279,5 +282,3 @@ public:
 };
 
 //-------------------------------------------------------------------------------------------------
-
-#endif

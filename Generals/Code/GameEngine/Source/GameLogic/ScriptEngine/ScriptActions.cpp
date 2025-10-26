@@ -31,8 +31,8 @@
 
 #include "Common/AudioAffect.h"
 #include "Common/AudioHandleSpecialValues.h"
+#include "Common/FramePacer.h"
 #include "Common/GameAudio.h"
-#include "Common/GameEngine.h"
 #include "Common/MapObject.h"							// For MAP_XY_FACTOR
 #include "Common/PartitionSolver.h"
 #include "Common/Player.h"
@@ -2874,7 +2874,7 @@ void ScriptActions::doTeamRadarCreateEvent(const AsciiString& teamName, Int even
 //-------------------------------------------------------------------------------------------------
 void ScriptActions::doRadarDisable(void)
 {
-	TheRadar->hide(true);
+	TheRadar->hide(ThePlayerList->getLocalPlayer()->getPlayerIndex(), true);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -2882,7 +2882,7 @@ void ScriptActions::doRadarDisable(void)
 //-------------------------------------------------------------------------------------------------
 void ScriptActions::doRadarEnable(void)
 {
-	TheRadar->hide(false);
+	TheRadar->hide(ThePlayerList->getLocalPlayer()->getPlayerIndex(), false);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -4789,7 +4789,7 @@ void ScriptActions::doDestroyAllContained(const AsciiString& unitName, Int damag
 //-------------------------------------------------------------------------------------------------
 void ScriptActions::doRadarForceEnable(void)
 {
-	TheRadar->forceOn(true);
+	TheRadar->forceOn(ThePlayerList->getLocalPlayer()->getPlayerIndex(), true);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -4797,7 +4797,7 @@ void ScriptActions::doRadarForceEnable(void)
 //-------------------------------------------------------------------------------------------------
 void ScriptActions::doRadarRevertNormal(void)
 {
-	TheRadar->forceOn(false);
+	TheRadar->forceOn(ThePlayerList->getLocalPlayer()->getPlayerIndex(), false);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -6583,11 +6583,11 @@ void ScriptActions::executeAction( ScriptAction *pAction )
 		case ScriptAction::SET_FPS_LIMIT:
 			if (!pAction->getParameter(0)->getInt())
 			{
-				TheGameEngine->setFramesPerSecondLimit(TheGlobalData->m_framesPerSecondLimit);
+				TheFramePacer->setFramesPerSecondLimit(TheGlobalData->m_framesPerSecondLimit);
 			}
 			else
 			{
-				TheGameEngine->setFramesPerSecondLimit(pAction->getParameter(0)->getInt());
+				TheFramePacer->setFramesPerSecondLimit(pAction->getParameter(0)->getInt());
 			}
 			// Setting the fps limit doesn't do much good if we don't use it.  jba.
 			TheWritableGlobalData->m_useFpsLimit = true;

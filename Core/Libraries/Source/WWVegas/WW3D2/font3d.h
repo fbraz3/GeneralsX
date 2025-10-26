@@ -32,13 +32,7 @@
  *                                                                                             *
  *---------------------------------------------------------------------------------------------*/
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef FONT3D_H
-#define FONT3D_H
 
 #include "always.h"
 #include "refcount.h"
@@ -218,6 +212,3 @@ private:
 
 	void					Build_Cached_Tables();
 };
-
-
-#endif

@@ -22,11 +22,7 @@
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
-
 #pragma once
-
-#ifndef __DISCONNECTMANAGER_H
-#define __DISCONNECTMANAGER_H
 
 #include "GameNetwork/NetCommandRef.h"
 #include "Lib/BaseType.h"
@@ -128,6 +124,3 @@ protected:
 	Int m_pingsRecieved;
 	UnsignedInt m_pingFrame;
 };
-
-
-#endif // #ifndef __DISCONNECTMANAGER_H

@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __ParkingPlaceBehavior_H_
-#define __ParkingPlaceBehavior_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "GameLogic/Module/BehaviorModule.h"
 #include "GameLogic/Module/DieModule.h"
@@ -130,8 +127,8 @@ public:
 	Bool reserveSpace(ObjectID id, Real parkingOffset, PPInfo* info);
 	void releaseSpace(ObjectID id);
 	Bool reserveRunway(ObjectID id, Bool forLanding);
-	Bool postponeRunwayReservation(UnsignedInt spaceIndex, Bool forLanding);
 	void releaseRunway(ObjectID id);
+	virtual Int getRunwayIndex(ObjectID id);
 	Int getRunwayCount() const { return m_runways.size(); }
 	ObjectID getRunwayReservation(Int r);
 	void transferRunwayReservationToNextInLineForTakeoff(ObjectID id);
@@ -191,6 +188,7 @@ private:
 	UnsignedInt										m_nextHealFrame;
 	Bool													m_gotInfo;
 
+	Bool postponeRunwayReservation(UnsignedInt spaceIndex, Bool forLanding);
 	void buildInfo();
 	void purgeDead();
 	void resetWakeFrame();
@@ -201,6 +199,3 @@ private:
 	Coord3D m_heliRallyPoint;
 	Bool m_heliRallyPointExists;				///< Only move to the rally point if this is true
 };
-
-#endif // __ParkingPlaceBehavior_H_
-

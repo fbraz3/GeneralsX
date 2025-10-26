@@ -34,14 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-
-#ifndef POINTERREMAP_H
-#define POINTERREMAP_H
 
 #ifdef _UNIX
 #include "osdep/osdep.h"
@@ -110,6 +103,3 @@ class PointerRemapClass
 		DynamicVectorClass<PtrRemapStruct>	PointerRequestTable;
 		DynamicVectorClass<PtrRemapStruct>	RefCountRequestTable;
 };
-
-
-#endif

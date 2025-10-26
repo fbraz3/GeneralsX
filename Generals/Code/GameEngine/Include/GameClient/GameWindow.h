@@ -46,9 +46,6 @@
 
 #pragma once
 
-#ifndef __GAMEWINDOW_H_
-#define __GAMEWINDOW_H_
-
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
@@ -502,6 +499,3 @@ extern void GameWinDefaultTooltip( GameWindow *window,
 
 extern const char *const WindowStatusNames[];
 extern const char *const WindowStyleNames[];
-
-#endif // __GAMEWINDOW_H_
-

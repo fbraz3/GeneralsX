@@ -34,13 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef HLOD_H
-#define HLOD_H
 
 #ifndef ANIMOBJ_H
 #include "animobj.h"
@@ -390,6 +384,3 @@ private:
 ** Instance of the loaders which the asset manager install
 */
 extern HLodLoaderClass			_HLodLoader;
-
-
-#endif

@@ -33,12 +33,8 @@
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#if _MSC_VER >= 1000
-#pragma once
-#endif // _MSC_VER >= 1000
 
-#ifndef B64STRAW_H
-#define B64STRAW_H
+#pragma once
 
 #include	"STRAW.H"
 
@@ -87,6 +83,3 @@ class Base64Straw : public Straw
 		Base64Straw(Base64Straw & rvalue);
 		Base64Straw & operator = (Base64Straw const & pipe);
 };
-
-
-#endif
