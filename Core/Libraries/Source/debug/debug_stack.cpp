@@ -27,6 +27,7 @@
 // Stack walker
 //////////////////////////////////////////////////////////////////////////////
 #include "_pch.h"
+#include "stringex.h"
 #include <cstdint>
 
 #ifdef _WIN32
@@ -253,8 +254,7 @@ void DebugStackwalk::Signature::GetSymbol(unsigned addr,
 
     char *p=strrchr(symbolBuffer,'\\'); // use filename only, strip off path
     p=p?p+1:symbolBuffer;
-    strncpy(bufMod,p,sizeMod);
-    bufMod[sizeMod-1]=0;
+    strlcpy(bufMod,p,sizeMod);
   }
   if (relMod)
     *relMod=addr-modBase;
@@ -269,8 +269,7 @@ void DebugStackwalk::Signature::GetSymbol(unsigned addr,
     DWORD displacement;
     if (gDbg._SymGetSymFromAddr((HANDLE)GetCurrentProcessId(),addr,&displacement,symPtr))
     {
-      strncpy(bufSym,symPtr->Name,sizeSym);
-      bufSym[sizeSym-1]=0;
+      strlcpy(bufSym,symPtr->Name,sizeSym);
       if (relSym)
         *relSym=displacement;
     }
@@ -291,8 +290,7 @@ void DebugStackwalk::Signature::GetSymbol(unsigned addr,
     {
       char *p=strrchr(line.FileName,'\\'); // use filename only, strip off path
       p=p?p+1:line.FileName;
-      strncpy(bufFile,p,sizeFile);
-      bufFile[sizeFile-1]=0;
+      strlcpy(bufFile,p,sizeFile);
       if (linePtr)
         *linePtr=line.LineNumber;
       if (relLine)

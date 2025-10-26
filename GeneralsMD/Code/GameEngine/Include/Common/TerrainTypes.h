@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __TERRAINTYPE_H_
-#define __TERRAINTYPE_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Common/GameMemory.h"
 #include "Common/SubsystemInterface.h"
@@ -243,6 +240,3 @@ protected:
 
 // EXTERNAL ///////////////////////////////////////////////////////////////////////////////////////
 extern TerrainTypeCollection *TheTerrainTypes;
-
-#endif // __TERRAINTYPE_H_
-

@@ -27,9 +27,6 @@
 
 #pragma once
 
-#ifndef _H_SelectionXlat
-#define _H_SelectionXlat
-
 #include "GameClient/InGameUI.h"
 
 class ThingTemplate;
@@ -75,5 +72,3 @@ public:
 
 Bool CanSelectDrawable( const Drawable *draw, Bool dragSelecting );
 extern SelectionTranslator *TheSelectionTranslator;
-
-#endif

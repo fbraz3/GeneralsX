@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef _MULTIPLAYERSETTINGS_H_
-#define _MULTIPLAYERSETTINGS_H_
-
 #include "GameClient/Color.h"
 #include "Common/Money.h"
 
@@ -143,5 +140,3 @@ private:
 
 // singleton
 extern MultiplayerSettings *TheMultiplayerSettings;
-
-#endif

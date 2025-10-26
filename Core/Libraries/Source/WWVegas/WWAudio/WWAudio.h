@@ -34,12 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef __WWAUDIO_H
-#define __WWAUDIO_H
 
 #include "always.h"
 #pragma warning (push, 3)
@@ -581,6 +576,3 @@ private:
 	float													m_EffectsLevel;
 	int													m_ReverbRoomType;
 };
-
-
-#endif //__WWAUDIO_H

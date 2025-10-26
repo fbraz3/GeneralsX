@@ -35,13 +35,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef HANIM_H
-#define HANIM_H
 
 #include "always.h"
 #include "quat.h"
@@ -265,5 +259,3 @@ protected:
 	DynamicVectorClass<HAnimComboDataClass *> HAnimComboData;
 
 };
-
-#endif

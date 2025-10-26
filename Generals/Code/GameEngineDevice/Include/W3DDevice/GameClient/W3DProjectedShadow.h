@@ -16,8 +16,6 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef _WIN32
-
 ////////////////////////////////////////////////////////////////////////////////
 //																																						//
 //  (c) 2001-2003 Electronic Arts Inc.																				//
@@ -32,10 +30,8 @@
 //
 //
 ///////////////////////////////////////////////////////////////////////////////
-#pragma once
 
-#ifndef __W3D_PROJECTED_SHADOW_H_
-#define __W3D_PROJECTED_SHADOW_H_
+#pragma once
 
 #include "GameClient/Shadow.h"
 
@@ -138,6 +134,3 @@ class W3DProjectedShadow	: public Shadow
 		Int		m_flags;			/// custom rendering flags
 		virtual void release(void)	{TheW3DProjectedShadowManager->removeShadow(this);}	///<release shadow from manager
 };
-
-#endif	//__W3D_PROJECTED_SHADOW_H_
-#endif	// _WIN32

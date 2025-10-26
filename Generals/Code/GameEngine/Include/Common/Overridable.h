@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef _OVERRIDABLE_H_
-#define _OVERRIDABLE_H_
-
 #include "Common/GameMemory.h"
 
 /*
@@ -124,6 +121,3 @@ __inline Overridable::~Overridable()
 {
 	deleteInstance(m_nextOverride);
 }
-
-
-#endif /* _OVERRIDABLE_H_ */

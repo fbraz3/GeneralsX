@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __THINGSORT_H_
-#define __THINGSORT_H_
-
 #include "GameCommon.h"
 
 //-------------------------------------------------------------------------------------------------
@@ -78,6 +75,3 @@ static const char *const EditorSortingNames[] =
 };
 static_assert(ARRAY_SIZE(EditorSortingNames) == ES_NUM_SORTING_TYPES + 1, "Incorrect array size");
 #endif
-
-#endif // __THINGSORT_H_
-

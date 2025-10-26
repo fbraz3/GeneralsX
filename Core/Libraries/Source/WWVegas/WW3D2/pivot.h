@@ -35,12 +35,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef PIVOT_H
-#define PIVOT_H
 
 #include "always.h"
 #include "vector3.h"
@@ -107,7 +102,3 @@ public:
 #endif
 
 };
-
-
-
-#endif

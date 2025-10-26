@@ -27,8 +27,6 @@
 // Author: Michael S. Booth, October 2000
 
 #pragma once
-#ifndef _OBJECT_H_
-#define _OBJECT_H_
 
 #include "Lib/BaseType.h"
 #include "ref_ptr.h"
@@ -416,6 +414,7 @@ public:
 	void friend_setPartitionData(PartitionData *pd) { m_partitionData = pd; }
 	PartitionData *friend_getPartitionData() const { return m_partitionData; }
 	const PartitionData *friend_getConstPartitionData() const { return m_partitionData; }
+	Bool hasGhostObject() const; ///< This object has a ghost object. This does not imply that a ghost snapshot is taken or active.
 
 	void onPartitionCellChange();///< We have moved a 'significant' amount, so do maintenence that can be considered 'cell-based'
 	void handlePartitionCellMaintenance();					///< Undo and redo all shroud actions.  Call when something has changed, like position or ownership or Death
@@ -446,6 +445,7 @@ public:
 	void onRemovedFrom( Object *removedFrom );
 	Int getTransportSlotCount() const;
 	void friend_setContainedBy( Object *containedBy ) { m_containedBy = containedBy; }
+	Object* getEnclosingContainedBy(); ///< Find the first enclosing container in the containment chain.
 
 	// Special Powers -------------------------------------------------------------------------------
 	SpecialPowerModuleInterface *getSpecialPowerModule( const SpecialPowerTemplate *specialPowerTemplate ) const;
@@ -829,5 +829,3 @@ AsciiString DebugDescribeObject(const Object *obj);
 #ifdef DEBUG_OBJECT_ID_EXISTS
 extern ObjectID TheObjectIDToDebug;
 #endif
-
-#endif // _OBJECT_H_

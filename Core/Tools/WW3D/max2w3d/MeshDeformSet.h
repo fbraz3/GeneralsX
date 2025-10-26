@@ -34,9 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#ifndef __MESH_DEFORM_SET_H
-#define __MESH_DEFORM_SET_H
+#pragma once
 
 #include <max.h>
 #include "Vector.H"
@@ -179,7 +177,3 @@ class MeshDeformSetClass
 		// List of key frames
 		KEY_FRAME_LIST		m_KeyFrames;
 };
-
-
-#endif //__MESH_DEFORM_DATA_H
-

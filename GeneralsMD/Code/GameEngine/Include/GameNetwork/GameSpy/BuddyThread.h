@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef __BUDDYTHREAD_H__
-#define __BUDDYTHREAD_H__
-
 #include "gamespy/gp/gp.h"
 
 #define MAX_BUDDY_CHAT_LEN 128
@@ -172,6 +169,3 @@ public:
 };
 
 extern GameSpyBuddyMessageQueueInterface *TheGameSpyBuddyMessageQueue;
-
-
-#endif // __BUDDYTHREAD_H__

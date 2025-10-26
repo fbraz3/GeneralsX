@@ -26,11 +26,8 @@
 //
 // Internal header: I/O classes
 //////////////////////////////////////////////////////////////////////////////
-#ifdef _MSC_VER
-#  pragma once
-#endif
-#ifndef INTERNAL_IO_H // Include guard
-#define INTERNAL_IO_H
+
+#pragma once
 
 /// \internal \brief con debug I/O class
 class DebugIOCon: public DebugIOInterface
@@ -252,5 +249,3 @@ public:
   static DebugIOInterface *Create(void);
   virtual void Delete(void);
 };
-
-#endif // INTERNAL_IO_H

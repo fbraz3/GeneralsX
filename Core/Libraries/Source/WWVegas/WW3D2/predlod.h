@@ -34,12 +34,7 @@
  * Functions:                                                              *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef PREDLOD_H
-#define PREDLOD_H
 
 // This file contains the classes which support predictive LOD management
 // similar to that outlined in "Adaptive Display Algorithm for Interactive
@@ -82,5 +77,3 @@ class PredictiveLODOptimizerClass {
 		static int VisibleObjArraySize;
 
 };
-
-#endif

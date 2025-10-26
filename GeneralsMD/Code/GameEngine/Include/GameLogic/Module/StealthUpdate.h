@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __STEALTH_UPDATE_H_
-#define __STEALTH_UPDATE_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "GameLogic/Module/UpdateModule.h"
 
@@ -180,7 +177,3 @@ private:
 	WeaponSetType					m_requiresWeaponSetType;
 
 };
-
-
-#endif
-

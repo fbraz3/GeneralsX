@@ -38,10 +38,8 @@
 //							James McNeill
 //
 //****************************************************************************
-#pragma once
 
-#ifndef WND_FILE_H
-#define WND_FILE_H
+#pragma once
 
 //------------------------------------------------------------------------------
 // include files...
@@ -212,5 +210,3 @@ class StandardFileClass
 	bool CD_File_Exists( char const *file_name );
 	// bool Find_File( char const *file_name );
 #endif
-
-#endif // WND_FILE_H

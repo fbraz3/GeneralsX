@@ -16,8 +16,7 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef UDP_HEADER
-#define UDP_HEADER
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -110,5 +109,3 @@ class UDP
   int              GetInputBuffer(void);
   int              GetOutputBuffer(void);
 };
-
-#endif

@@ -112,21 +112,29 @@ void LANAPI::init( void )
 
 	m_lastGameopt = "";
 
-	unsigned long bufSize = UNLEN + 1;
+#if TELL_COMPUTER_IDENTITY_IN_LAN_LOBBY
 	char userName[UNLEN + 1];
-	if (!GetUserName(userName, &bufSize))
+	DWORD bufSize = ARRAY_SIZE(userName);
+	if (GetUserNameA(userName, &bufSize))
 	{
-		strcpy(userName, "unknown");
+		m_userName.set(userName, bufSize - 1);
 	}
-	m_userName = userName;
+	else
+	{
+		m_userName = "unknown";
+	}
 
-	bufSize = MAX_COMPUTERNAME_LENGTH + 1;
 	char computerName[MAX_COMPUTERNAME_LENGTH + 1];
-	if (!GetComputerName(computerName, &bufSize))
+	bufSize = ARRAY_SIZE(computerName);
+	if (GetComputerNameA(computerName, &bufSize))
 	{
-		strcpy(computerName, "unknown");
+		m_hostName.set(computerName, bufSize - 1);
 	}
-	m_hostName = computerName;
+	else
+	{
+		m_hostName = "unknown";
+	}
+#endif
 }
 
 void LANAPI::reset( void )
@@ -445,11 +453,13 @@ void LANAPI::update( void )
 			}
 			else
 			{
+#if TELL_COMPUTER_IDENTITY_IN_LAN_LOBBY
 				AsciiString text;
 				text.format("User=%s", m_userName.str());
 				RequestGameOptions( text, true );
 				text.format("Host=%s", m_hostName.str());
 				RequestGameOptions( text, true );
+#endif
 				RequestGameOptions( "HELLO", false );
 			}
 		}
@@ -509,8 +519,7 @@ void LANAPI::update( void )
 			LANMessage msg;
 			fillInLANMessage( &msg );
 			msg.LANMessageType = LANMessage::MSG_REQUEST_GAME_LEAVE;
-			wcsncpy(msg.name, m_currentGame->getPlayerName(0).str(), g_lanPlayerNameLength);
-			msg.name[g_lanPlayerNameLength] = 0;
+			wcslcpy(msg.name, m_currentGame->getPlayerName(0).str(), ARRAY_SIZE(msg.name));
 			handleRequestGameLeave(&msg, m_currentGame->getIP(0));
 			UnicodeString text;
 			text = TheGameText->fetch("LAN:HostNotResponding");
@@ -528,8 +537,7 @@ void LANAPI::update( void )
 					UnicodeString theStr;
 					theStr.format(TheGameText->fetch("LAN:PlayerDropped"), m_currentGame->getPlayerName(p).str());
 					msg.LANMessageType = LANMessage::MSG_REQUEST_GAME_LEAVE;
-					wcsncpy(msg.name, m_currentGame->getPlayerName(p).str(), g_lanPlayerNameLength);
-					msg.name[g_lanPlayerNameLength] = 0;
+					wcslcpy(msg.name, m_currentGame->getPlayerName(p).str(), ARRAY_SIZE(msg.name));
 					handleRequestGameLeave(&msg, m_currentGame->getIP(p));
 					OnChat(UnicodeString::TheEmptyString, m_localIP, theStr, LANCHAT_SYSTEM);
 				}
@@ -632,8 +640,7 @@ void LANAPI::RequestGameJoin( LANGameInfo *game, UnsignedInt ip /* = 0 */ )
 
 	AsciiString s = "";
 	GetStringFromRegistry("\\ergc", "", s);
-	strncpy(msg.GameToJoin.serial, s.str(), g_maxSerialLength);
-	msg.GameToJoin.serial[g_maxSerialLength-1] = '\0';
+	strlcpy(msg.GameToJoin.serial, s.str(), ARRAY_SIZE(msg.GameToJoin.serial));
 
 	sendMessage(&msg, ip);
 
@@ -661,8 +668,7 @@ void LANAPI::RequestGameJoinDirectConnect(UnsignedInt ipaddress)
 	msg.LANMessageType = LANMessage::MSG_REQUEST_GAME_INFO;
 	fillInLANMessage(&msg);
 	msg.PlayerInfo.ip = GetLocalIP();
-	wcsncpy(msg.PlayerInfo.playerName, m_name.str(), m_name.getLength());
-	msg.PlayerInfo.playerName[m_name.getLength()] = 0;
+	wcslcpy(msg.PlayerInfo.playerName, m_name.str(), ARRAY_SIZE(msg.PlayerInfo.playerName));
 
 	sendMessage(&msg, ipaddress);
 
@@ -675,8 +681,7 @@ void LANAPI::RequestGameLeave( void )
 	LANMessage msg;
 	msg.LANMessageType = LANMessage::MSG_REQUEST_GAME_LEAVE;
 	fillInLANMessage( &msg );
-	wcsncpy(msg.GameToLeave.gameName, (m_currentGame)?m_currentGame->getName().str():L"", g_lanGameNameLength);
-	msg.GameToLeave.gameName[g_lanGameNameLength] = 0;
+	wcslcpy(msg.GameToLeave.gameName, (m_currentGame)?m_currentGame->getName().str():L"", ARRAY_SIZE(msg.GameToLeave.gameName));
 	sendMessage(&msg);
 	m_transport->update();  // Send immediately, before OnPlayerLeave below resets everything.
 
@@ -707,9 +712,8 @@ void LANAPI::RequestGameAnnounce( void )
 			reply.LANMessageType = LANMessage::MSG_GAME_ANNOUNCE;
 
 			AsciiString gameOpts = GameInfoToAsciiString(m_currentGame);
-			strncpy(reply.GameInfo.options,gameOpts.str(),m_lanMaxOptionsLength);
-			wcsncpy(reply.GameInfo.gameName, m_currentGame->getName().str(), g_lanGameNameLength);
-			reply.GameInfo.gameName[g_lanGameNameLength] = 0;
+			strlcpy(reply.GameInfo.options,gameOpts.str(), ARRAY_SIZE(reply.GameOptions.options));
+			wcslcpy(reply.GameInfo.gameName, m_currentGame->getName().str(), ARRAY_SIZE(reply.GameInfo.gameName));
 			reply.GameInfo.inProgress = m_currentGame->isGameInProgress();
 			reply.GameInfo.isDirectConnect = m_currentGame->getIsDirectConnect();
 
@@ -727,8 +731,7 @@ void LANAPI::RequestAccept( void )
 	fillInLANMessage( &msg );
 	msg.LANMessageType = LANMessage::MSG_SET_ACCEPT;
 	msg.Accept.isAccepted = true;
-	wcsncpy(msg.Accept.gameName, m_currentGame->getName().str(), g_lanGameNameLength);
-	msg.Accept.gameName[g_lanGameNameLength] = 0;
+	wcslcpy(msg.Accept.gameName, m_currentGame->getName().str(), ARRAY_SIZE(msg.Accept.gameName));
 	sendMessage(&msg);
 }
 
@@ -741,8 +744,7 @@ void LANAPI::RequestHasMap( void )
 	fillInLANMessage( &msg );
 	msg.LANMessageType = LANMessage::MSG_MAP_AVAILABILITY;
 	msg.MapStatus.hasMap = m_currentGame->getSlot(m_currentGame->getLocalSlotNum())->hasMap();
-	wcsncpy(msg.MapStatus.gameName, m_currentGame->getName().str(), g_lanGameNameLength);
-	msg.MapStatus.gameName[g_lanGameNameLength] = 0;
+	wcslcpy(msg.MapStatus.gameName, m_currentGame->getName().str(), ARRAY_SIZE(msg.MapStatus.gameName));
 	CRC mapNameCRC;
 //mapNameCRC.computeCRC(m_currentGame->getMap().str(), m_currentGame->getMap().getLength());
 	AsciiString portableMapName = TheGameState->realMapPathToPortableMapPath(m_currentGame->getMap());
@@ -779,12 +781,10 @@ void LANAPI::RequestChat( UnicodeString message, ChatType format )
 {
 	LANMessage msg;
 	fillInLANMessage( &msg );
-	wcsncpy(msg.Chat.gameName, (m_currentGame)?m_currentGame->getName().str():L"", g_lanGameNameLength);
-	msg.Chat.gameName[g_lanGameNameLength] = 0;
+	wcslcpy(msg.Chat.gameName, (m_currentGame)?m_currentGame->getName().str():L"", ARRAY_SIZE(msg.Chat.gameName));
 	msg.LANMessageType = LANMessage::MSG_CHAT;
 	msg.Chat.chatType = format;
-	wcsncpy(msg.Chat.message, message.str(), g_lanMaxChatLength);
-	msg.Chat.message[g_lanMaxChatLength] = 0;
+	wcslcpy(msg.Chat.message, message.str(), ARRAY_SIZE(msg.Chat.message));
 	sendMessage(&msg);
 
 	OnChat(m_name, m_localIP, message, format);
@@ -839,8 +839,7 @@ void LANAPI::RequestGameOptions( AsciiString gameOptions, Bool isPublic, Unsigne
 	LANMessage msg;
 	fillInLANMessage( &msg );
 	msg.LANMessageType = LANMessage::MSG_GAME_OPTIONS;
-	strncpy(msg.GameOptions.options, gameOptions.str(), m_lanMaxOptionsLength);
-	msg.GameOptions.options[m_lanMaxOptionsLength] = 0;
+	strlcpy(msg.GameOptions.options, gameOptions.str(), ARRAY_SIZE(msg.GameOptions.options));
 	sendMessage(&msg, ip);
 
 	m_lastGameopt = gameOptions;
@@ -934,8 +933,7 @@ void LANAPI::RequestGameCreate( UnicodeString gameName, Bool isDirectConnect )
 	//RequestSlotList();
 /*
 	LANMessage msg;
-	wcsncpy(msg.name, m_name.str(), g_lanPlayerNameLength);
-	msg.name[g_lanPlayerNameLength] = 0;
+	wcslcpy(msg.name, m_name.str(), ARRAY_SIZE(msg.name));
 	wcscpy(msg.GameInfo.gameName, myGame->getName().str());
 	for (player=0; player<MAX_SLOTS; ++player)
 	{
@@ -1006,18 +1004,15 @@ void LANAPI::RequestSlotList( void )
 
 	LANMessage reply;
 	reply.LANMessageType = LANMessage::MSG_GAME_ANNOUNCE;
-	wcsncpy(reply.name, m_name.str(), g_lanPlayerNameLength);
-	reply.name[g_lanPlayerNameLength] = 0;
+	wcslcpy(reply.name, m_name.str(), ARRAY_SIZE(reply.name));
 	int player;
 	for (player = 0; player < MAX_SLOTS; ++player)
 	{
-		wcsncpy(reply.GameInfo.name[player], m_currentGame->getPlayerName(player).str(), g_lanPlayerNameLength);
-		reply.GameInfo.name[player][g_lanPlayerNameLength] = 0;
+		wcslcpy(reply.GameInfo.name[player], m_currentGame->getPlayerName(player).str(), ARRAY_SIZE(reply.GameInfo.name[player]));
 		reply.GameInfo.ip[player] = m_currentGame->getIP(player);
 		reply.GameInfo.playerAccepted[player] = m_currentGame->getSlot(player)->isAccepted();
 	}
-	wcsncpy(reply.GameInfo.gameName, m_currentGame->getName().str(), g_lanGameNameLength);
-	reply.GameInfo.gameName[g_lanGameNameLength] = 0;
+	wcslcpy(reply.GameInfo.gameName, m_currentGame->getName().str(), ARRAY_SIZE(reply.GameInfo.gameName));
 	reply.GameInfo.inProgress = m_currentGame->isGameInProgress();
 
 	sendMessage(&reply);
@@ -1073,12 +1068,9 @@ void LANAPI::fillInLANMessage( LANMessage *msg )
 	if (!msg)
 		return;
 
-	wcsncpy(msg->name, m_name.str(), g_lanPlayerNameLength);
-	msg->name[g_lanPlayerNameLength] = 0;
-	strncpy(msg->userName, m_userName.str(), g_lanLoginNameLength);
-	msg->userName[g_lanLoginNameLength] = 0;
-	strncpy(msg->hostName, m_hostName.str(), g_lanHostNameLength);
-	msg->hostName[g_lanHostNameLength] = 0;
+	wcslcpy(msg->name, m_name.str(), ARRAY_SIZE(msg->name));
+	strlcpy(msg->userName, m_userName.str(), ARRAY_SIZE(msg->userName));
+	strlcpy(msg->hostName, m_hostName.str(), ARRAY_SIZE(msg->hostName));
 }
 
 void LANAPI::RequestLobbyLeave( Bool forced )

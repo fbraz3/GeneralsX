@@ -27,9 +27,6 @@
 
 #pragma once
 
-#ifndef _H_LookAtXlat
-#define _H_LookAtXlat
-
 #include "GameClient/InGameUI.h"
 
 //-----------------------------------------------------------------------------
@@ -91,5 +88,3 @@ private:
 };
 
 extern LookAtTranslator *TheLookAtTranslator;
-
-#endif

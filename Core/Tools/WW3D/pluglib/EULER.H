@@ -35,9 +35,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#ifndef EULER_H
-#define EULER_H
+#pragma once
 
 #include <max.h>
 
@@ -114,6 +112,3 @@ private:
 	int		Order;
 
 };
-
-
-#endif /*EULER_H*/

@@ -34,12 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef W3DMTL_H
-#define W3DMTL_H
 
 #include "always.h"
 #include "w3d_file.h"
@@ -307,7 +302,3 @@ private:
 	DynamicVectorClass < TexClass >							Textures;
 
 };
-
-
-
-#endif

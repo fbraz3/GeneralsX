@@ -30,9 +30,6 @@
 
 #pragma once
 
-#ifndef __SKIRMISHPREFERENCES_H__
-#define __SKIRMISHPREFERENCES_H__
-
 //-----------------------------------------------------------------------------
 // USER INCLUDES //////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
@@ -58,5 +55,3 @@ public:
 	AsciiString getPreferredMap(void);	// convenience function
 	Bool usesSystemMapDir(void);		// convenience function
 };
-
-#endif // __SKIRMISHPREFERENCES_H__

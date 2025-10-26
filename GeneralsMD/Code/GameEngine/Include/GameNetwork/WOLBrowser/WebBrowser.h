@@ -42,11 +42,7 @@
 
 #pragma once
 
-#ifndef __WEBBROWSER_H__
-#define __WEBBROWSER_H__
-
 #include "Common/SubsystemInterface.h"
-#ifdef _WIN32
 #include <atlbase.h>
 #include <windows.h>
 #include <Common/GameMemory.h>
@@ -126,35 +122,3 @@ class WebBrowser :
 	};
 
 extern CComObject<WebBrowser> *TheWebBrowser;
-#else
-// Stub definitions for non-Windows platforms
-#include <Lib/BaseType.h>
-
-// Forward declaration
-struct FieldParse;
-class GameWindow;
-
-class WebBrowserURL {
-public:
-    AsciiString m_url;
-    
-    WebBrowserURL() {}
-    ~WebBrowserURL() {}
-    
-    // Stub for getFieldParse method
-    const FieldParse* getFieldParse() { return nullptr; }
-};
-
-class WebBrowser {
-public:
-    WebBrowserURL* findURL(const AsciiString& tag) { return nullptr; }
-    WebBrowserURL* makeNewURL(const AsciiString& tag) { return nullptr; }
-    
-    // Stub implementations for browser window methods
-    virtual Bool createBrowserWindow(const char *tag, GameWindow *win) { return false; }
-    virtual void closeBrowserWindow(GameWindow *win) { /* stub */ }
-};
-
-extern WebBrowser *TheWebBrowser;
-#endif // _WIN32
-#endif // __WEBBROWSER_H__

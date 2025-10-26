@@ -63,12 +63,7 @@
  *   Vector3::Is_Valid -- Verifies that each component of this vector is a valid float         *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef VECTOR3_H
-#define VECTOR3_H
 
 #include "../WWLib/always.h"
 #include "wwmath.h"
@@ -934,6 +929,3 @@ WWINLINE unsigned long Vector3::Convert_To_ARGB( float alpha ) const
         (unsigned(Y*255.0f)<<8) |
         (unsigned(Z*255.0f));
 }
-
-#endif /* Vector3_H */
-

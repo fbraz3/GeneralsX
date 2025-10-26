@@ -30,9 +30,6 @@
 
 #pragma once
 
-#ifndef __CUSTOMMATCHPREFERENCES_H__
-#define __CUSTOMMATCHPREFERENCES_H__
-
 //-----------------------------------------------------------------------------
 // USER INCLUDES //////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
@@ -79,5 +76,3 @@ public:
 	void setDisallowNonAsianText( Bool val );
 
 };
-
-#endif // __CUSTOMMATCHPREFERENCES_H__

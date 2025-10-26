@@ -34,13 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef PROTO_H
-#define PROTO_H
 
 #include "always.h"
 #include <stdlib.h>
@@ -177,7 +171,3 @@ public:
 */
 extern MeshLoaderClass			_MeshLoader;
 extern HModelLoaderClass		_HModelLoader;
-
-
-
-#endif

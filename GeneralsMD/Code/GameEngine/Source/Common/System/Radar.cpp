@@ -32,6 +32,7 @@
 
 #include "Common/GameAudio.h"
 #include "Common/GameState.h"
+#include "Common/GameUtility.h"
 #include "Common/MiscAudio.h"
 #include "Common/Radar.h"
 #include "Common/Player.h"
@@ -213,8 +214,8 @@ Radar::Radar( void )
 	m_radarWindow = NULL;
 	m_objectList = NULL;
 	m_localObjectList = NULL;
-	m_radarHidden = false;
-	m_radarForceOn = false;
+	std::fill(m_radarHidden, m_radarHidden + ARRAY_SIZE(m_radarHidden), false);
+	std::fill(m_radarForceOn, m_radarForceOn + ARRAY_SIZE(m_radarForceOn), false);
 	m_terrainAverageZ = 0.0f;
 	m_waterAverageZ = 0.0f;
 	m_xSample = 0.0f;
@@ -290,8 +291,11 @@ void Radar::reset( void )
 	// clear all events
 	clearAllEvents();
 
+	// TheSuperHackers @todo Reset m_radarHidden?
+	//std::fill(m_radarHidden, m_radarHidden + ARRAY_SIZE(m_radarHidden), false);
+
 	// stop forcing the radar on
-	m_radarForceOn = false;
+	std::fill(m_radarForceOn, m_radarForceOn + ARRAY_SIZE(m_radarForceOn), false);
 
 }
 
@@ -424,6 +428,7 @@ RadarObjectType Radar::addObject( Object *obj )
 
 	// set color for this object on the radar
 	const Player *player = obj->getControllingPlayer();
+	Player *clientPlayer = rts::getObservedOrLocalPlayer();
 	Bool useIndicatorColor = true;
 
 	if( obj->isKindOf( KINDOF_DISGUISER ) )
@@ -436,7 +441,6 @@ RadarObjectType Radar::addObject( Object *obj )
 		{
 			if( update->isDisguised() )
 			{
-				Player *clientPlayer = ThePlayerList->getLocalPlayer();
 				Player *disguisedPlayer = ThePlayerList->getNthPlayer( update->getDisguisedPlayerIndex() );
 				if( player->getRelationship( clientPlayer->getDefaultTeam() ) != ALLIES && clientPlayer->isPlayerActive() )
 				{
@@ -454,7 +458,7 @@ RadarObjectType Radar::addObject( Object *obj )
 	{
 		// To handle Stealth garrison, ask containers what color they are drawing with to the local player.
 		// Local is okay because radar display is not synced.
-		player = obj->getContain()->getApparentControllingPlayer( ThePlayerList->getLocalPlayer() );
+		player = obj->getContain()->getApparentControllingPlayer( clientPlayer );
 		if( player )
 			useIndicatorColor = false;
 	}
@@ -1200,7 +1204,7 @@ void Radar::tryUnderAttackEvent( const Object *obj )
 		// UI feedback for being under attack (note that we display these messages and audio
 		// queues even if we don't have a radar)
 		//
-		Player *player = ThePlayerList->getLocalPlayer();
+		Player *player = rts::getObservedOrLocalPlayer();
 
 		// create a message for the attack event
 		if( obj->isKindOf( KINDOF_INFANTRY ) || obj->isKindOf( KINDOF_VEHICLE ) )
@@ -1231,7 +1235,7 @@ void Radar::tryUnderAttackEvent( const Object *obj )
 			// play EVA. If its our object, play Base under attack.
 			if (obj->getControllingPlayer()->isLocalPlayer())
 				TheEva->setShouldPlay(EVA_BaseUnderAttack);
-			else if (ThePlayerList->getLocalPlayer()->getRelationship(obj->getTeam()) == ALLIES)
+			else if (player->getRelationship(obj->getTeam()) == ALLIES)
 				TheEva->setShouldPlay(EVA_AllyUnderAttack);
 
 			// display message
@@ -1274,8 +1278,10 @@ void Radar::tryInfiltrationEvent( const Object *obj )
 		return;
 	}
 
+	Player *player = rts::getObservedOrLocalPlayer();
+
 	// We should only be warned against infiltrations that are taking place against us.
-	if( obj->getControllingPlayer() != ThePlayerList->getLocalPlayer() )
+	if( obj->getControllingPlayer() != player )
 		return;
 
 	// create the radar event
@@ -1287,7 +1293,6 @@ void Radar::tryInfiltrationEvent( const Object *obj )
 	// UI feedback for being under attack (note that we display these messages and audio
 	// queues even if we don't have a radar)
 	//
-	Player *player = ThePlayerList->getLocalPlayer();
 
 	// display message
 	TheInGameUI->message( "RADAR:Infiltration" );
@@ -1485,21 +1490,46 @@ static void xferRadarObjectList( Xfer *xfer, RadarObject **head )
 // ------------------------------------------------------------------------------------------------
 /** Xfer Method
 	* Version Info:
-	* 1: Initial version */
+	* 1: Initial version
+	* 2: TheSuperHackers @tweak Serialize m_radarHidden, m_radarForceOn for each player
+	*/
 // ------------------------------------------------------------------------------------------------
 void Radar::xfer( Xfer *xfer )
 {
 
 	// version
+#if RETAIL_COMPATIBLE_XFER_SAVE
 	XferVersion currentVersion = 1;
+#else
+	XferVersion currentVersion = 2;
+#endif
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
 
-	// radar hidden
-	xfer->xferBool( &m_radarHidden );
+	
+	if (version <= 1)
+	{
+		const Int localPlayerIndex = ThePlayerList->getLocalPlayer()->getPlayerIndex();
+		Bool value;
 
-	// radar force on
-	xfer->xferBool( &m_radarForceOn );
+		// radar hidden
+		value = m_radarHidden[localPlayerIndex];
+		xfer->xferBool( &value );
+		m_radarHidden[localPlayerIndex] = value;
+
+		// radar force on
+		value = m_radarForceOn[localPlayerIndex];
+		xfer->xferBool( &value );
+		m_radarForceOn[localPlayerIndex] = value;
+	}
+	else
+	{
+		static_assert(sizeof(m_radarHidden) == 16, "Increase version if size changes");
+		xfer->xferUser(&m_radarHidden, sizeof(m_radarHidden));
+
+		static_assert(sizeof(m_radarForceOn) == 16, "Increase version if size changes");
+		xfer->xferUser(&m_radarForceOn, sizeof(m_radarForceOn));
+	}
 
 	// save our local object list
 	xferRadarObjectList( xfer, &m_localObjectList );

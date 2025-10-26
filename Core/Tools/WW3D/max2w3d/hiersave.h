@@ -35,8 +35,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#ifndef HIERSAVE_H
-#define HIERSAVE_H
+#pragma once
 
 #include "always.h"
 
@@ -166,5 +165,3 @@ private:
 	Matrix3	fixup_matrix(const Matrix3 & src) const;
 	void	 	Free(void);
 };
-
-#endif /*HIERSAVE_H*/

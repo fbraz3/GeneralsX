@@ -35,12 +35,7 @@
  * Functions:                                                              *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef QUAT_H
-#define QUAT_H
 
 #include "../WWLib/always.h"
 #include "wwmath.h"
@@ -309,9 +304,3 @@ WWINLINE Quaternion & Quaternion::operator = (const Quaternion & source)
 
   return *this;
 }
-
-
-#endif /* QUAT_H */
-
-
-

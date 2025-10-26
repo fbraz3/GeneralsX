@@ -39,13 +39,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef TEXTURE_H
-#define TEXTURE_H
 
 #include "always.h"
 #include "d3d8.h"
@@ -493,5 +487,3 @@ protected:
 // Utility functions for loading and saving texture descriptions from/to W3D files
 TextureClass *Load_Texture(ChunkLoadClass & cload);
 void Save_Texture(TextureClass * texture, ChunkSaveClass & csave);
-
-#endif //TEXTURE_H

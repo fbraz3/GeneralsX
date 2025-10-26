@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __LocomotorSet_H_
-#define __LocomotorSet_H_
-
 // no, please do NOT include this.
 //#include "GameLogic/Locomotor.h"
 #include "Common/GameCommon.h"
@@ -110,5 +107,3 @@ public:
 	inline Bool isDownhillOnly( void ) const { return m_downhillOnly; };
 
 };
-
-#endif

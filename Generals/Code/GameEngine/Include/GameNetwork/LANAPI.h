@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef _LANAPI_H_
-#define _LANAPI_H_
-
 #include "GameNetwork/Transport.h"
 #include "GameNetwork/NetworkInterface.h"
 #include "GameNetwork/NetworkDefs.h"
@@ -413,6 +410,3 @@ struct LANMessage
 	};
 };
 #pragma pack(pop)
-
-
-#endif // _LANAPI_H_

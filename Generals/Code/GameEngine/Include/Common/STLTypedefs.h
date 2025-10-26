@@ -44,9 +44,6 @@
 
 #pragma once
 
-#ifndef __STLTYPEDEFS_H__
-#define __STLTYPEDEFS_H__
-
 //-----------------------------------------------------------------------------
 // srj sez: this must come first, first, first.
 #define _STLP_USE_NEWALLOC					1
@@ -58,7 +55,6 @@ class STLSpecialAlloc;
 #include "Common/UnicodeString.h"
 #include "Common/GameCommon.h"
 #include "Common/GameMemory.h"
-#include "Common/STLUtils.h"
 
 //-----------------------------------------------------------------------------
 
@@ -298,5 +294,3 @@ namespace rts
 	};
 
 } // namespace rts
-
-#endif /* __STLTYPEDEFS_H__ */

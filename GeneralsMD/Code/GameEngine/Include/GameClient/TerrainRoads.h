@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __TERRAINROADS_H_
-#define __TERRAINROADS_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Common/GameMemory.h"
 #include "Common/SubsystemInterface.h"
@@ -230,5 +227,3 @@ protected:
 
 // EXTERNAL ////////////////////////////////////////////////////////////////////////////////////////
 extern TerrainRoadCollection *TheTerrainRoads;
-
-#endif // __TERRAINROADS_H_

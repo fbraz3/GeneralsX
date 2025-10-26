@@ -36,12 +36,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef MATPASS_H
-#define MATPASS_H
 
 #ifndef REFCOUNT_H
 #include "refcount.h"
@@ -126,6 +121,3 @@ inline TextureClass * MaterialPassClass::Peek_Texture(int stage) const
 	WWASSERT(stage < MAX_TEX_STAGES);
 	return Texture[stage];
 }
-
-
-#endif // MATPASS_H

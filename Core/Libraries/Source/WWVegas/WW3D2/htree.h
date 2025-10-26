@@ -35,12 +35,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef HTREE_H
-#define HTREE_H
 
 #include "always.h"
 #include "pivot.h"
@@ -206,7 +201,3 @@ WWINLINE const Matrix3D & HTreeClass::Get_Transform(int pivot) const
 
 	return Pivot[pivot].Transform;
 }
-
-
-
-#endif

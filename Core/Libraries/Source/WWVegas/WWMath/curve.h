@@ -34,13 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef CURVE_H
-#define CURVE_H
 
 #ifndef ALWAYS_H
 #include "../WWLib/always.h"
@@ -174,6 +168,3 @@ public:
 	virtual bool								Save(ChunkSaveClass &csave);
 	virtual bool								Load(ChunkLoadClass &cload);
 };
-
-
-#endif //CURVE_H

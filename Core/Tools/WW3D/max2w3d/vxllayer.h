@@ -35,9 +35,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#ifndef VXLLAYER_H
-#define VXLLAYER_H
+#pragma once
 
 #include <max.h>
 
@@ -144,6 +142,3 @@ protected:
 	int		bitmap_width;
 	int		bitmap_height;
 };
-
-
-#endif /*VXLLAYER_H*/

@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef _TEAM_H_
-#define _TEAM_H_
-
 #include "Common/GameType.h"
 #include "Common/Snapshot.h"
 #include "Common/Thing.h"
@@ -756,5 +753,3 @@ const AsciiString& Team::getName(void) const
 
 
 // ------------------------------------------------------------------------
-
-#endif // _TEAM_H_

@@ -35,9 +35,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#ifndef VCHANNEL_H
-#define VCHANNEL_H
+#pragma once
 
 #ifndef ALWAYS_H
 #include "always.h"
@@ -136,5 +134,3 @@ private:
 	bool		SaveAdaptiveDelta(ChunkSaveClass & csave, BitChannelClass *binmov);
 
 };
-
-#endif /*VCHANNEL_H*/

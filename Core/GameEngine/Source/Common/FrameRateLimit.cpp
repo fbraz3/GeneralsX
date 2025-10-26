@@ -22,9 +22,13 @@
 
 FrameRateLimit::FrameRateLimit()
 {
-	QueryPerformanceFrequency(&m_freq);
-	QueryPerformanceCounter(&m_start);
-	printf("FRAMERATE INIT: Frequency = %lld, Start = %lld\n", m_freq.QuadPart, m_start.QuadPart);
+	LARGE_INTEGER freq;
+	LARGE_INTEGER start;
+	QueryPerformanceFrequency(&freq);
+	QueryPerformanceCounter(&start);
+	m_freq = freq.QuadPart;
+	m_start = start.QuadPart;
+	printf("FRAMERATE INIT: Frequency = %lld, Start = %lld\n", m_freq, m_start);
 	fflush(stdout);
 }
 
@@ -43,7 +47,7 @@ Real FrameRateLimit::wait(UnsignedInt maxFps)
 	
 	LARGE_INTEGER tick;
 	QueryPerformanceCounter(&tick);
-	double elapsedSeconds = static_cast<double>(tick.QuadPart - m_start.QuadPart) / m_freq.QuadPart;
+	double elapsedSeconds = static_cast<double>(tick.QuadPart - m_start) / m_freq;
 	const double targetSeconds = 1.0 / maxFps;
 	const double sleepSeconds = targetSeconds - elapsedSeconds - 0.002; // leave ~2ms for spin wait
 
@@ -72,6 +76,7 @@ Real FrameRateLimit::wait(UnsignedInt maxFps)
 	do
 	{
 		QueryPerformanceCounter(&tick);
+<<<<<<< HEAD
 		elapsedSeconds = static_cast<double>(tick.QuadPart - m_start.QuadPart) / m_freq.QuadPart;
 		spinCount++;
 		if (callCount < 2 && spinCount > 100000) {
@@ -88,7 +93,7 @@ Real FrameRateLimit::wait(UnsignedInt maxFps)
 		fflush(stdout);
 	}
 
-	m_start = tick;
+	m_start = tick.QuadPart;
 	return (Real)elapsedSeconds;
 }
 

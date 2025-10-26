@@ -28,6 +28,7 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "Common/FramePacer.h"
 #include "Common/GameEngine.h"
 #include "Common/ReplaySimulation.h"
 
@@ -42,6 +43,8 @@ Int GameMain()
 	
 	// initialize the game engine using factory function
 	printf("GameMain - Creating game engine...\n");
+	TheFramePacer = new FramePacer();
+	TheFramePacer->enableFramesPerSecondLimit(TRUE);
 	TheGameEngine = CreateGameEngine();
 	printf("GameMain - Game engine created successfully\n");
 	
@@ -64,6 +67,8 @@ Int GameMain()
 
 	// since execute() returned, we are exiting the game
 	printf("GameMain - Deleting game engine\n");
+	delete TheFramePacer;
+	TheFramePacer = NULL;
 	delete TheGameEngine;
 	TheGameEngine = NULL;
 

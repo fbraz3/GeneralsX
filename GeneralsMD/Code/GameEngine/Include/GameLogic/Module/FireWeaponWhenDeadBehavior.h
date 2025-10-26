@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __FireWeaponWhenDeadBehavior_H_
-#define __FireWeaponWhenDeadBehavior_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 
 #include "GameLogic/Module/BehaviorModule.h"
@@ -128,6 +125,3 @@ protected:
 	virtual Bool isSubObjectsUpgrade() { return false; }
 
 };
-
-#endif // __FireWeaponWhenDeadBehavior_H_
-

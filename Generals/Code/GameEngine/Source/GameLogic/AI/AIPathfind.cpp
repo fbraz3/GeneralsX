@@ -4204,25 +4204,27 @@ Locomotor* Pathfinder::chooseBestLocomotorForPosition(PathfindLayerEnum layer, L
 
 /*static*/ LocomotorSurfaceTypeMask Pathfinder::validLocomotorSurfacesForCellType(PathfindCell::CellType t)
 {
-	if (t == PathfindCell::CELL_OBSTACLE) {
-		return LOCOMOTORSURFACE_AIR;
+	switch (t)
+	{
+		case PathfindCell::CELL_CLEAR:
+			return LOCOMOTORSURFACE_GROUND | LOCOMOTORSURFACE_AIR;
+
+		case PathfindCell::CELL_WATER:
+			return LOCOMOTORSURFACE_WATER | LOCOMOTORSURFACE_AIR;
+
+		case PathfindCell::CELL_CLIFF:
+			return LOCOMOTORSURFACE_CLIFF | LOCOMOTORSURFACE_AIR;
+
+		case PathfindCell::CELL_RUBBLE:
+			return LOCOMOTORSURFACE_RUBBLE | LOCOMOTORSURFACE_AIR;
+
+		case PathfindCell::CELL_OBSTACLE:
+		case PathfindCell::CELL_IMPASSABLE:
+			return LOCOMOTORSURFACE_AIR;
+
+		default:
+			return NO_SURFACES;
 	}
-	if (t == PathfindCell::CELL_IMPASSABLE) {
-		return LOCOMOTORSURFACE_AIR;
-	}
-	if (t==PathfindCell::CELL_CLEAR) {
-		return LOCOMOTORSURFACE_GROUND | LOCOMOTORSURFACE_AIR;
-	}
-	if (t == PathfindCell::CELL_WATER) {
-		return LOCOMOTORSURFACE_WATER | LOCOMOTORSURFACE_AIR;
-	}
-	if (t == PathfindCell::CELL_RUBBLE) {
-		return LOCOMOTORSURFACE_RUBBLE | LOCOMOTORSURFACE_AIR;
-	}
-	if ( t == PathfindCell::CELL_CLIFF ) {
-		return LOCOMOTORSURFACE_CLIFF | LOCOMOTORSURFACE_AIR;
-	}
-	return NO_SURFACES;
 }
 
 //
@@ -4337,49 +4339,63 @@ Bool Pathfinder::checkDestination(const Object *obj, Int cellX, Int cellY, Pathf
 	for (i=cellX-iRadius; i<cellX+numCellsAbove; i++) {
 		for (j=cellY-iRadius; j<cellY+numCellsAbove; j++) {
 			PathfindCell	*cell = getCell(layer, i, j);
-			if (cell) {
-				if (checkForAircraft) {
-					if (!cell->isAircraftGoal()) continue;
-					if (cell->getGoalAircraft()==objID) continue;
-					return false;
-				}
-				if (cell->getType()==PathfindCell::CELL_OBSTACLE) {
-					if (cell->isObstaclePresent( ignoreId ))
-						continue;
-					return false;
-				}
-				if (cell->getFlags() == PathfindCell::NO_UNITS) {
-					continue;  // Nobody is here, so it's ok.
-				}
-				ObjectID goalUnitID = cell->getGoalUnit();
-				if (goalUnitID==objID) {
-					continue; // we got it.
-				} else if (ignoreId==goalUnitID) {
-					continue; // we are ignoring it.
-				} else if (goalUnitID!=INVALID_ID) {
-					if (obj==NULL) {
-						return false;
-					}
-					Object *unit = TheGameLogic->findObjectByID(goalUnitID);
-					if (unit) {
-						// order matters: we want to know if I consider it to be an ally, not vice versa
-						if (obj->getRelationship(unit) == ALLIES) {
-							return false; 	// Don't usurp your allies goals.  jba.
-						}
-						if (cell->getFlags()==PathfindCell::UNIT_PRESENT_FIXED) {
-							Bool canCrush = obj->canCrushOrSquish(unit, TEST_CRUSH_OR_SQUISH);
-							if (!canCrush) {
-								return false; // Don't move to an occupied cell.
-							}
-						}
-					}
-				}
-			} else {
+			if (!cell) {
 				return false; // off the map, so can't place here.
+			}
+
+			if (checkForAircraft) {
+				if (!cell->isAircraftGoal()) {
+					continue;
+				}
+				if (cell->getGoalAircraft() == objID) {
+					continue;
+				}
+				return false;
+			}
+
+			if (cell->getType()==PathfindCell::CELL_OBSTACLE) {
+				if (cell->isObstaclePresent( ignoreId ))
+					continue;
+				return false;
+			}
+
+			if (cell->getFlags() == PathfindCell::NO_UNITS) {
+				continue;  // Nobody is here, so it's ok.
+			}
+
+			ObjectID goalUnitID = cell->getGoalUnit();
+			if (goalUnitID == objID) {
+				continue; // we got it.
+			}
+
+			if (goalUnitID == ignoreId) {
+				continue; // we are ignoring it.
+			}
+
+			if (goalUnitID == INVALID_ID) {
+				continue;
+			}
+
+			if (!obj) {
+				return false;
+			}
+			Object *unit = TheGameLogic->findObjectByID(goalUnitID);
+			if (!unit) {
+				continue;
+			}
+
+			// order matters: we want to know if I consider it to be an ally, not vice versa
+			if (obj->getRelationship(unit) == ALLIES) {
+				return false; 	// Don't usurp your allies goals.  jba.
+			}
+			if (cell->getFlags()==PathfindCell::UNIT_PRESENT_FIXED) {
+				Bool canCrush = obj->canCrushOrSquish(unit, TEST_CRUSH_OR_SQUISH);
+				if (!canCrush) {
+					return false; // Don't move to an occupied cell.
+				}
 			}
 		}
 	}
-
 	return true;
 }
 
@@ -4399,7 +4415,10 @@ Bool Pathfinder::checkForMovement(const Object *obj, TCheckMovementInfo &info)
 	ObjectID		allies[maxAlly];
 	Int					numAlly = 0;
 
-	if (!obj) return true; // not object can move there.
+	if (!obj) {
+		return true; // not object can move there.
+	}
+
 	ObjectID ignoreId = INVALID_ID;
 	if (obj->getAIUpdateInterface()) {
 		ignoreId =  obj->getAIUpdateInterface()->getIgnoredObstacleID();
@@ -4412,81 +4431,86 @@ Bool Pathfinder::checkForMovement(const Object *obj, TCheckMovementInfo &info)
 	for (i=info.cell.x-info.radius; i<info.cell.x+numCellsAbove; i++) {
 		for (j=info.cell.y-info.radius; j<info.cell.y+numCellsAbove; j++) {
 			PathfindCell	*cell = getCell(info.layer,i, j);
-			if (cell) {
-				enum PathfindCell::CellFlags flags = cell->getFlags();
-				ObjectID posUnit = cell->getPosUnit();
-				if ((flags == PathfindCell::UNIT_GOAL) || (flags == PathfindCell::UNIT_GOAL_OTHER_MOVING)) {
-					info.allyGoal = true;
+			if (!cell) {
+				return false; // off the map, so can't move here.
+			}
+
+			PathfindCell::CellFlags flags = cell->getFlags();
+			if ((flags == PathfindCell::UNIT_GOAL) || (flags == PathfindCell::UNIT_GOAL_OTHER_MOVING)) {
+				info.allyGoal = true;
+			} else if (flags == PathfindCell::NO_UNITS) {
+				continue;  // Nobody is here, so it's ok.
+			}
+
+			ObjectID posUnit = cell->getPosUnit();
+			if (posUnit == obj->getID()) {
+				continue; // we got it.
+			}
+
+			if (posUnit == ignoreId) {
+				continue; // we are ignoring this one.
+			}
+
+			Bool check = false;
+			Object *unit = NULL;
+			if (flags == PathfindCell::UNIT_PRESENT_MOVING || flags == PathfindCell::UNIT_GOAL_OTHER_MOVING) {
+				unit = TheGameLogic->findObjectByID(posUnit);
+				// order matters: we want to know if I consider it to be an ally, not vice versa
+				if (unit && obj->getRelationship(unit) == ALLIES) {
+					info.allyMoving = true;
 				}
-				if (flags == PathfindCell::NO_UNITS) {
-					continue;  // Nobody is here, so it's ok.
-				} else if (posUnit==obj->getID()) {
-					continue; // we got it.
-				} else if (posUnit==ignoreId) {
-					continue; // we are ignoring this one.
-				}	else {
-					Bool check = false;
-					Object *unit = NULL;
-					if (flags==PathfindCell::UNIT_PRESENT_MOVING || flags==PathfindCell::UNIT_GOAL_OTHER_MOVING) {
-						unit = TheGameLogic->findObjectByID(posUnit);
-						// order matters: we want to know if I consider it to be an ally, not vice versa
-						if (unit && obj->getRelationship(unit) == ALLIES) {
-							info.allyMoving = true;
-						}
-						if (info.considerTransient) {
-							check = true;
-						}
-					}
-					if (flags == PathfindCell::UNIT_PRESENT_FIXED) {
-						check = true;
-						unit = TheGameLogic->findObjectByID(posUnit);
-					}
-					if (check && unit!=NULL) {
-						if (obj->getAIUpdateInterface() && obj->getAIUpdateInterface()->getIgnoredObstacleID()==unit->getID()) {
-							// Don't check if it's the ignored obstacle.
-							check = false;
-						}
-					}
-					if (check && unit) {
+				if (info.considerTransient) {
+					check = true;
+				}
+			}
+			if (flags == PathfindCell::UNIT_PRESENT_FIXED) {
+				check = true;
+				unit = TheGameLogic->findObjectByID(posUnit);
+			}
+			if (check && unit!=NULL) {
+				if (obj->getAIUpdateInterface() && obj->getAIUpdateInterface()->getIgnoredObstacleID()==unit->getID()) {
+					// Don't check if it's the ignored obstacle.
+					check = false;
+				}
+			}
+			if (!check || !unit) {
+				continue;
+			}
+
 #ifdef INFANTRY_MOVES_THROUGH_INFANTRY
-						if (obj->isKindOf(KINDOF_INFANTRY) && unit->isKindOf(KINDOF_INFANTRY)) {
-							// Infantry can run through infantry.
-							continue; //
-						}
+			if (obj->isKindOf(KINDOF_INFANTRY) && unit->isKindOf(KINDOF_INFANTRY)) {
+				// Infantry can run through infantry.
+				continue; //
+			}
 #endif
-						// See if it is an ally.
-						// order matters: we want to know if I consider it to be an ally, not vice versa
-						if (obj->getRelationship(unit) == ALLIES) {
-							if (!unit->getAIUpdateInterface()) {
-								return false; // can't path through not-idle units.
-							}
-							if (!unit->getAIUpdateInterface()->isIdle()) {
-								return false; // can't path through not-idle units.
-							}
-							Bool found = false;
-							Int k;
-							for (k=0; k<numAlly; k++) {
-								if (allies[k] == unit->getID()) {
-									found = true;
-								}
-							}
-							if (!found) {
-								info.allyFixedCount++;
-								if (numAlly < maxAlly) {
-									allies[numAlly] = unit->getID();
-									numAlly++;
-								}
-							}
-						}	else {
-							Bool canCrush = obj->canCrushOrSquish( unit, TEST_CRUSH_OR_SQUISH );
-							if (!canCrush) {
-								info.enemyFixed = true;
-							}
-						}
+			// See if it is an ally.
+			// order matters: we want to know if I consider it to be an ally, not vice versa
+			if (obj->getRelationship(unit) == ALLIES) {
+				if (!unit->getAIUpdateInterface()) {
+					return false; // can't path through not-idle units.
+				}
+				if (!unit->getAIUpdateInterface()->isIdle()) {
+					return false; // can't path through not-idle units.
+				}
+				Bool found = false;
+				Int k;
+				for (k=0; k<numAlly; k++) {
+					if (allies[k] == unit->getID()) {
+						found = true;
+					}
+				}
+				if (!found) {
+					info.allyFixedCount++;
+					if (numAlly < maxAlly) {
+						allies[numAlly] = unit->getID();
+						numAlly++;
 					}
 				}
 			} else {
-				return false; // off the map, so can't place here.
+				Bool canCrush = obj->canCrushOrSquish( unit, TEST_CRUSH_OR_SQUISH );
+				if (!canCrush) {
+					info.enemyFixed = true;
+				}
 			}
 		}
 	}
@@ -4536,37 +4560,41 @@ void Pathfinder::snapClosestGoalPosition(Object *obj, Coord3D *pos)
 
 	// Try adjusting by 1.
 	Int i,j;
-	for (i=cell.x-1; i<cell.x+2; i++) {
-		for (j=cell.y-1; j<cell.y+2; j++) {
+	for (i = cell.x - 1; i < cell.x + 2; i++) {
+		for (j = cell.y - 1; j < cell.y + 2; j++) {
 			if (checkDestination(obj, i, j, layer, iRadius, center)) {
-				adjustCoordToCell(i, j,  center, *pos, layer);
+				adjustCoordToCell(i, j, center, *pos, layer);
 				return;
 			}
 		}
 	}
-	if (iRadius==0) {
-		// Try to find an unoccupied cell.
-		for (i=cell.x-1; i<cell.x+2; i++) {
-			for (j=cell.y-1; j<cell.y+2; j++) {
-				PathfindCell	*newCell = getCell(layer,i, j);
-				if (newCell) {
-					if (newCell->getGoalUnit()==INVALID_ID || newCell->getGoalUnit()==obj->getID()) {
-						adjustCoordToCell(i, j,  center, *pos, layer);
-						return;
-					}
-				}
+
+	if (iRadius > 0)
+		return;
+
+	// Try to find an unoccupied cell.
+	for (i = cell.x - 1; i < cell.x + 2; i++) {
+		for (j = cell.y - 1; j < cell.y + 2; j++) {
+			PathfindCell* newCell = getCell(layer, i, j);
+			if (!newCell)
+				continue;
+
+			if (newCell->getGoalUnit() == INVALID_ID || newCell->getGoalUnit() == obj->getID()) {
+				adjustCoordToCell(i, j, center, *pos, layer);
+				return;
 			}
 		}
-		// Try to find an unoccupied cell.
-		for (i=cell.x-1; i<cell.x+2; i++) {
-			for (j=cell.y-1; j<cell.y+2; j++) {
-				PathfindCell	*newCell = getCell(layer,i, j);
-				if (newCell) {
-					if (newCell->getFlags()!=PathfindCell::UNIT_PRESENT_FIXED) {
-						adjustCoordToCell(i, j,  center, *pos, layer);
-						return;
-					}
-				}
+	}
+
+	for (i = cell.x - 1; i < cell.x + 2; i++) {
+		for (j = cell.y - 1; j < cell.y + 2; j++) {
+			PathfindCell* newCell = getCell(layer, i, j);
+			if (!newCell)
+				continue;
+
+			if (newCell->getFlags()!=PathfindCell::UNIT_PRESENT_FIXED) {
+				adjustCoordToCell(i, j, center, *pos, layer);
+				return;
 			}
 		}
 	}
@@ -5393,14 +5421,7 @@ struct ExamineCellsStruct
 			if ( (to->getLayer() == LAYER_GROUND) && !d->thePathfinder->m_zoneManager.isPassable(to_x, to_y) ) {
 				return 1;
 			}
-			Bool onList = false;
-			if (to->hasInfo()) {
-				if (to->getOpen() || to->getClosed())
-				{
-					// already on one of the lists
-					onList = true;
-				}
-			}
+
 			if (to->getPinched()) {
 				return 1; // abort.
 			}
@@ -5419,25 +5440,26 @@ struct ExamineCellsStruct
 			info.radius = d->radius;
 			info.considerTransient = false;
 			info.acceptableSurfaces = d->theLoco->getValidSurfaces();
-			if (!d->thePathfinder->checkForMovement(d->obj, info) || info.enemyFixed) {
+			if (!d->thePathfinder->checkForMovement(d->obj, info)) {
 				return 1; //abort.
 			}
+
 			if (info.enemyFixed) {
 				return 1; //abort.
 			}
-			ICoord2D newCellCoord;
-			newCellCoord.x = to_x;
-			newCellCoord.y = to_y;
+
+			if (info.allyFixedCount) {
+				return 1; //abort.
+			}
 
 			UnsignedInt newCostSoFar = from->getCostSoFar( ) + 0.5f*COST_ORTHOGONAL;
 			if (to->getType() == PathfindCell::CELL_CLIFF ) {
 				return 1;
 			}
-			if (info.allyFixedCount) {
-				return 1;
-			} else if (info.enemyFixed) {
-				return 1;
-			}
+
+			ICoord2D newCellCoord;
+			newCellCoord.x = to_x;
+			newCellCoord.y = to_y;
 
 			if (!to->allocateInfo(newCellCoord)) {
 				// Out of cells for pathing...
@@ -5446,15 +5468,17 @@ struct ExamineCellsStruct
 			to->setBlockedByAlly(false);
 			Int costRemaining = 0;
 			costRemaining = to->costToGoal( d->goalCell );
+
 			// check if this neighbor cell is already on the open (waiting to be tried)
 			// or closed (already tried) lists
-			if (onList)
+			if ( to->hasInfo() && (to->getOpen() || to->getClosed()) )
 			{
 				// already on one of the lists - if existing costSoFar is less,
 				// the new cell is on a longer path, so skip it
 				if (to->getCostSoFar() <= newCostSoFar)
 					return 0; // keep going.
 			}
+
 			to->setCostSoFar(newCostSoFar);
 			// keep track of path we're building - point back to cell we moved here from
 			to->setParentCell(from) ;
@@ -5829,30 +5853,14 @@ Path *Pathfinder::internalFindPath( Object *obj, const LocomotorSet& locomotorSe
 	// to ignore obstacle cells until it reaches a cell that is no longer
 	// classified as an obstacle.  At that point, the pathfind behaves normally.
 	//
-	if (parentCell->getType() == PathfindCell::CELL_OBSTACLE)	{
-		m_isTunneling = true;
-	}
-	else {
-		m_isTunneling = false;
-	}
+	m_isTunneling = parentCell->getType() == PathfindCell::CELL_OBSTACLE;
 
 	Int zone1, zone2;
 	Bool isCrusher = obj ? obj->getCrusherLevel() > 0 : false;
 	zone1 = m_zoneManager.getEffectiveZone(locomotorSet.getValidSurfaces(), isCrusher, parentCell->getZone());
 	zone2 =  m_zoneManager.getEffectiveZone(locomotorSet.getValidSurfaces(), isCrusher, goalCell->getZone());
 
-	if (layer==LAYER_WALL && zone1 == 0) {
-#if RETAIL_COMPATIBLE_PATHFINDING
-		if (s_useFixedPathfinding)
-#endif
-		{
-			goalCell->releaseInfo();
-			parentCell->releaseInfo();
-		}
-		return NULL;
-	}
-
-	if (destinationLayer==LAYER_WALL && zone2 == 0) {
+	if ( (layer==LAYER_WALL && zone1 == 0) || (destinationLayer==LAYER_WALL && zone2 == 0) ) {
 #if RETAIL_COMPATIBLE_PATHFINDING
 		if (s_useFixedPathfinding)
 #endif
@@ -5881,7 +5889,7 @@ Path *Pathfinder::internalFindPath( Object *obj, const LocomotorSet& locomotorSe
 	}
 
 	// sanity check - if destination is invalid, can't path there
-	if (validMovementPosition( isCrusher, destinationLayer, locomotorSet, to ) == false)	{
+	if (!validMovementPosition( isCrusher, destinationLayer, locomotorSet, to ))	{
 		m_isTunneling = false;
 		goalCell->releaseInfo();
 		parentCell->releaseInfo();
@@ -5889,7 +5897,7 @@ Path *Pathfinder::internalFindPath( Object *obj, const LocomotorSet& locomotorSe
 	}
 
 	// sanity check - if source is invalid, we have to cheat
-	if (validMovementPosition( isCrusher, layer, locomotorSet, from ) == false)	{
+	if (!validMovementPosition( isCrusher, layer, locomotorSet, from ))	{
 		// somehow we got to an impassable location.
 		m_isTunneling = true;
 	}
@@ -9547,10 +9555,14 @@ if (g_UT_startTiming) return false;
 #endif
 	if (!obj->isKindOf(KINDOF_DOZER) && !obj->isKindOf(KINDOF_HARVESTER)) {
 		// Harvesters & dozers want a clear path.
-		if (!path->getBlockedByAlly()) return FALSE; // Only move units if it is required.
+		if (!path->getBlockedByAlly()) {
+			return FALSE; // Only move units if it is required.
+		}
 	}
 	LatchRestore<Int> recursiveDepth(m_moveAlliesDepth, m_moveAlliesDepth+1);
-	if (m_moveAlliesDepth > 2) return false;
+	if (m_moveAlliesDepth > 2) {
+		return false;
+	}
 
 	Bool centerInCell;
 	Int radius;
@@ -9569,33 +9581,48 @@ if (g_UT_startTiming) return false;
 		for (i=curCell.x-radius; i<curCell.x+numCellsAbove; i++) {
 			for (j=curCell.y-radius; j<curCell.y+numCellsAbove; j++) {
 				PathfindCell	*cell = getCell(node->getLayer(), i, j);
-				if (cell) {
-					if (cell->getPosUnit()==INVALID_ID) {
+				if (!cell) {
+					continue; // Cell is not on the pathfinding grid
+				}
+
+				ObjectID unitId = cell->getPosUnit();
+				if (unitId==INVALID_ID) {
+					continue;
+				}
+
+				if (unitId==obj->getID()) {
+					continue;	// It's us.
+				}
+
+				if (unitId==ignoreId) {
+					continue;	 // It's the one we are ignoring.
+				}
+
+				Object *otherObj = TheGameLogic->findObjectByID(unitId);
+				if (!otherObj) {
+					continue;
+				}
+
+				if (obj->getRelationship(otherObj)!=ALLIES) {
+					continue;  // Only move allies.
+				}
+
+				if (obj->isKindOf(KINDOF_INFANTRY) && otherObj->isKindOf(KINDOF_INFANTRY)) {
+					continue;  // infantry can walk through other infantry, so just let them.
+				}
+				if (obj->isKindOf(KINDOF_INFANTRY) && !otherObj->isKindOf(KINDOF_INFANTRY)) {
+					// If this is a general clear operation, don't let infantry push vehicles.
+					if (!path->getBlockedByAlly()) {
 						continue;
 					}
-					if (cell->getPosUnit()==obj->getID()) {
-						continue;	// It's us.
-					}
-					if (cell->getPosUnit()==ignoreId) {
-						continue;	 // It's the one we are ignoring.
-					}
-					Object *otherObj = TheGameLogic->findObjectByID(cell->getPosUnit());
-					if (obj->getRelationship(otherObj)!=ALLIES) {
-						continue;  // Only move allies.
-					}
-					if (otherObj==NULL) continue;
-					if (obj->isKindOf(KINDOF_INFANTRY) && otherObj->isKindOf(KINDOF_INFANTRY)) {
-						continue;  // infantry can walk through other infantry, so just let them.
-					}
-					if (obj->isKindOf(KINDOF_INFANTRY) && !otherObj->isKindOf(KINDOF_INFANTRY)) {
-						// If this is a general clear operation, don't let infantry push vehicles.
-						if (!path->getBlockedByAlly()) continue;
-					}
-					if (otherObj && otherObj->getAI() && !otherObj->getAI()->isMoving()) {
-						//DEBUG_LOG(("Moving ally"));
-						otherObj->getAI()->aiMoveAwayFromUnit(obj, CMD_FROM_AI);
-					}
 				}
+
+				if (!otherObj->getAI() || otherObj->getAI()->isMoving()) {
+					continue;
+				}
+
+				//DEBUG_LOG(("Moving ally"));
+				otherObj->getAI()->aiMoveAwayFromUnit(obj, CMD_FROM_AI);
 			}
 		}
 	}
@@ -9610,7 +9637,9 @@ if (g_UT_startTiming) return false;
 Path *Pathfinder::getMoveAwayFromPath(Object* obj, Object *otherObj,
 											Path *pathToAvoid, Object *otherObj2, Path *pathToAvoid2)
 {
-	if (m_isMapReady == false) return NULL; // Should always be ok.
+	if (!m_isMapReady)
+		return NULL; // Should always be ok.
+
 #ifdef DEBUG_LOGGING
 	Int startTimeMS = ::GetTickCount();
 #endif
@@ -9641,11 +9670,12 @@ Path *Pathfinder::getMoveAwayFromPath(Object* obj, Object *otherObj,
 	}
 	worldToCell(&startPos, &startCellNdx);
 	PathfindCell *parentCell = getClippedCell( obj->getLayer(), obj->getPosition() );
-	if (parentCell == NULL)
+	if (!parentCell)
 		return NULL;
-	if (!obj->getAIUpdateInterface()) {
-		return NULL; // shouldn't happen, but can't move it without an ai.
-	}
+
+	if (!obj->getAIUpdateInterface()) // shouldn't happen, but can't move it without an ai.
+		return NULL; 
+
 	const LocomotorSet& locomotorSet = obj->getAIUpdateInterface()->getLocomotorSet();
 
 	m_isTunneling = false;
@@ -9700,12 +9730,7 @@ Path *Pathfinder::getMoveAwayFromPath(Object* obj, Object *otherObj,
 		bounds.hi.y = cellCenter.y+boxHalfWidth;
 		PathNode *node;
 		Bool overlap = false;
-		if (obj) {
-			if (bounds.lo.x<obj->getPosition()->x && bounds.hi.x>obj->getPosition()->x &&
-				bounds.lo.y<obj->getPosition()->y && bounds.hi.y>obj->getPosition()->y)	{
-					//overlap = true;
-				}
-		}
+
 		for( node = pathToAvoid->getFirstNode(); node && node->getNextOptimized(); node = node->getNextOptimized() )	{
 			Coord2D start, end;
 			start.x = node->getPosition()->x;
@@ -9717,12 +9742,7 @@ Path *Pathfinder::getMoveAwayFromPath(Object* obj, Object *otherObj,
 				break;
 			}
 		}
-		if (otherObj) {
-			if (bounds.lo.x<otherObj->getPosition()->x && bounds.hi.x>otherObj->getPosition()->x &&
-				bounds.lo.y<otherObj->getPosition()->y && bounds.hi.y>otherObj->getPosition()->y)	{
-					//overlap = true;
-				}
-		}
+
 		if (!overlap && pathToAvoid2) {
 			for( node = pathToAvoid2->getFirstNode(); node && node->getNextOptimized(); node = node->getNextOptimized() )	{
 				Coord2D start, end;
@@ -10021,7 +10041,8 @@ Path *Pathfinder::patchPath( const Object *obj, const LocomotorSet& locomotorSet
 Path *Pathfinder::findAttackPath( const Object *obj, const LocomotorSet& locomotorSet, const Coord3D *from,
 		const Object *victim, const Coord3D* victimPos, const Weapon *weapon )
 {
-	if (m_isMapReady == false) return NULL; // Should always be ok.
+	if (!m_isMapReady)
+		return NULL; // Should always be ok.
 
 	Bool isCrusher = obj ? obj->getCrusherLevel() > 0 : false;
 	Int radius;
@@ -10046,26 +10067,30 @@ Path *Pathfinder::findAttackPath( const Object *obj, const LocomotorSet& locomot
 			ICoord2D cellNdx;
 			worldToCell(&testPos, &cellNdx);
 			PathfindCell *aCell = getCell(obj->getLayer(), cellNdx.x, cellNdx.y);
-			if (aCell==NULL) break;
-			if (!validMovementPosition( isCrusher, locomotorSet.getValidSurfaces(), aCell )) {
+			if (!aCell)
 				break;
-			}
-			if (!checkDestination(obj, cellNdx.x, cellNdx.y, obj->getLayer(), radius, centerInCell)) {
+
+			if (!validMovementPosition(isCrusher, locomotorSet.getValidSurfaces(), aCell))
 				break;
+
+			if (!checkDestination(obj, cellNdx.x, cellNdx.y, obj->getLayer(), radius, centerInCell))
+				break;
+
+			if (!weapon->isGoalPosWithinAttackRange(obj, &testPos, victim, victimPos))
+				continue;
+
+			if (isAttackViewBlockedByObstacle(obj, testPos, victim, *victimPos))
+				continue;
+
+			// return path.
+			Path *path = newInstance(Path);
+			path->prependNode( &testPos, obj->getLayer() );
+			path->prependNode( &curPos, obj->getLayer() );
+			path->getFirstNode()->setNextOptimized(path->getFirstNode()->getNext());
+			if (TheGlobalData->m_debugAI==AI_DEBUG_PATHS) {
+				setDebugPath(path);
 			}
-			if (weapon->isGoalPosWithinAttackRange(obj, &testPos, victim, victimPos)) {
-				if (!isAttackViewBlockedByObstacle(obj, testPos, victim, *victimPos)) {
-					// return path.
-					Path *path = newInstance(Path);
-					path->prependNode( &testPos, obj->getLayer() );
-					path->prependNode( &curPos, obj->getLayer() );
-					path->getFirstNode()->setNextOptimized(path->getFirstNode()->getNext());
-					if (TheGlobalData->m_debugAI==AI_DEBUG_PATHS) {
-						setDebugPath(path);
-					}
-					return path;
-				}
-			}
+			return path;
 		}
 	}
 
@@ -10098,18 +10123,19 @@ Path *Pathfinder::findAttackPath( const Object *obj, const LocomotorSet& locomot
 		objPos.x += PATHFIND_CELL_SIZE_F/2.0f;
 		objPos.y += PATHFIND_CELL_SIZE_F/2.0f;
 	}
+
+	if (!obj->getAIUpdateInterface()) // shouldn't happen, but can't move without an ai.
+		return NULL;
+
 	worldToCell(&objPos, &startCellNdx);
 	PathfindCell *parentCell = getClippedCell( obj->getLayer(), &objPos );
-	if (parentCell == NULL)
+	if (!parentCell)
 		return NULL;
-	if (!obj->getAIUpdateInterface()) {
-		return NULL; // shouldn't happen, but can't move it without an ai.
-	}
-	const PathfindCell *startCell = parentCell;
 
-	if (!parentCell->allocateInfo(startCellNdx)) {
+	if (!parentCell->allocateInfo(startCellNdx))
 		return NULL;
-	}
+
+	const PathfindCell *startCell = parentCell;
 	parentCell->startPathfind(NULL);
 
 	// determine start cell
@@ -10118,7 +10144,7 @@ Path *Pathfinder::findAttackPath( const Object *obj, const LocomotorSet& locomot
 
 	// determine goal cell
 	PathfindCell *goalCell = getCell( LAYER_GROUND, victimCellNdx.x, victimCellNdx.y );
-	if (goalCell == NULL)
+	if (!goalCell)
 		return NULL;
 
  	if (!goalCell->allocateInfo(victimCellNdx)) {
@@ -10229,8 +10255,7 @@ Path *Pathfinder::findAttackPath( const Object *obj, const LocomotorSet& locomot
 				return path;
 			}
 		}
-		if (checkDestination(obj, parentCell->getXIndex(), parentCell->getYIndex(),
-																parentCell->getLayer(), radius, centerInCell)) {
+		if (checkDestination(obj, parentCell->getXIndex(), parentCell->getYIndex(), parentCell->getLayer(), radius, centerInCell)) {
 			if (validMovementPosition( isCrusher, locomotorSet.getValidSurfaces(), parentCell )) {
 				Real dx = IABS(victimCellNdx.x-parentCell->getXIndex());
 				Real dy = IABS(victimCellNdx.y-parentCell->getYIndex());

@@ -35,12 +35,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef MESHSAVE_H
-#define MESHSAVE_H
 
 #include "rawfile.h"	// have to include this before Max.h
 #include <max.h>
@@ -218,9 +213,3 @@ private:
 
 	friend class DamageClass;
 };
-
-
-
-
-
-#endif /*MESHSAVE_H*/

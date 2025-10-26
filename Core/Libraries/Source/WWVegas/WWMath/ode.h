@@ -35,13 +35,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef ODE_H
-#define ODE_H
 
 #include "../WWLib/always.h"
 #include "Vector.H"
@@ -129,6 +123,3 @@ public:
 	static void Runge_Kutta5_Integrate(ODESystemClass * odesys,float dt);
 
 };
-
-#endif
-

@@ -34,8 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#ifndef HSV_H
-#define HSV_H
+#pragma once
 
 class RGBClass;
 class HSVClass;
@@ -77,5 +76,3 @@ class HSVClass
 		unsigned char Saturation;
 		unsigned char Value;
 };
-
-#endif

@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef _AI_H_
-#define _AI_H_
-
 #include "Common/Snapshot.h"
 #include "Common/SubsystemInterface.h"
 #include "Common/GameMemory.h"
@@ -1014,6 +1011,3 @@ private:
 
 	mutable VecObjectID	m_lastRequestedIDList;			///< this is used so we can return by reference, saving a copy
 };
-
-
-#endif // _AI_H_

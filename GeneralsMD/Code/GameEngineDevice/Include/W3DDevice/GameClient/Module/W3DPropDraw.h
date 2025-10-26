@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __W3DPropDraw_H_
-#define __W3DPropDraw_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Common/DrawModule.h"
 #include "WW3D2/line3d.h"
@@ -75,6 +72,3 @@ protected:
 	Bool m_propAdded;
 
 };
-
-#endif // __W3DPropDraw_H_
-

@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef __LOBBYUTILS_H__
-#define __LOBBYUTILS_H__
-
 class GameWindow;
 
 GameWindow *GetGameListBox( void );
@@ -53,5 +50,3 @@ enum GameSortType CPP_11(: Int)
 
 Bool HandleSortButton( NameKeyType sortButton );
 void PopulateLobbyPlayerListbox(void);
-
-#endif // __LOBBYUTILS_H__

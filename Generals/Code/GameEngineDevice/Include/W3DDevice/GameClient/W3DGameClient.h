@@ -34,9 +34,6 @@
 
 #pragma once
 
-#ifndef __W3DGAMEINTERFACE_H_
-#define __W3DGAMEINTERFACE_H_
-
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
@@ -49,18 +46,14 @@
 #include "W3DDevice/GameClient/W3DGameFont.h"
 #include "W3DDevice/GameClient/W3DDisplayStringManager.h"
 #include "VideoDevice/Bink/BinkVideoPlayer.h"
-#ifdef _WIN32
 #include "Win32Device/GameClient/Win32DIKeyboard.h"
 #include "Win32Device/GameClient/Win32DIMouse.h"
 #include "Win32Device/GameClient/Win32Mouse.h"
-#endif
 #include "W3DDevice/GameClient/W3DMouse.h"
 
 class ThingTemplate;
 
-#ifdef _WIN32
 extern Win32Mouse *TheWin32Mouse;
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // PROTOTYPES /////////////////////////////////////////////////////////////////
@@ -92,7 +85,7 @@ public:
 
 	//---------------------------------------------------------------------------
 	virtual void setTeamColor( Int red, Int green, Int blue );  ///< @todo superhack for demo, remove!!!
-	virtual void adjustLOD( Int adj ); ///< @todo hack for evaluation, remove.
+	virtual void setTextureLOD( Int level );
 
 protected:
 
@@ -122,7 +115,6 @@ protected:
 
 };
 
-#ifdef _WIN32
 inline Keyboard *W3DGameClient::createKeyboard( void ) { return NEW DirectInputKeyboard; }
 inline Mouse *W3DGameClient::createMouse( void )
 {
@@ -131,10 +123,3 @@ inline Mouse *W3DGameClient::createMouse( void )
 	TheWin32Mouse = mouse;   ///< global cheat for the WndProc()
 	return mouse;
 }
-#else
-// Non-Windows platform implementations (stubs)
-inline Keyboard *W3DGameClient::createKeyboard( void ) { return NULL; }
-inline Mouse *W3DGameClient::createMouse( void ) { return NULL; }
-#endif
-
-#endif  // end __W3DGAMEINTERFACE_H_

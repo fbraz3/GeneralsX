@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef UNIT_CRATE_COLLIDE_H_
-#define UNIT_CRATE_COLLIDE_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Common/Module.h"
 #include "GameLogic/Module/CrateCollide.h"
@@ -84,5 +81,3 @@ public:
 protected:
 
 };
-
-#endif

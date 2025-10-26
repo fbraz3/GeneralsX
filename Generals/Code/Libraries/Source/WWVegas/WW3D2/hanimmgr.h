@@ -35,13 +35,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef HANIMMGR_H
-#define HANIMMGR_H
 
 #include "always.h"
 #include "hash.h"
@@ -113,5 +107,3 @@ public:
 	HAnimManagerIterator( HAnimManagerClass & manager ) : HashTableIteratorClass( *manager.AnimPtrTable ) {}
 	HAnimClass * Get_Current_Anim( void );
 };
-
-#endif

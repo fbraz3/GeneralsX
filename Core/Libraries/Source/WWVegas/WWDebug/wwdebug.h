@@ -34,12 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
-
-#ifndef WWDEBUG_H
-#define WWDEBUG_H
 
 // TheSuperHackers @todo Recover WWDEBUG?
 #ifdef WWDEBUG
@@ -176,6 +171,4 @@ void					WWDebug_DBWin32_Message_Handler( const char * message);
 #else
 #define WWDEBUG_PROFILE_START(x)
 #define WWDEBUG_PROFILE_STOP(x)
-#endif
-
 #endif

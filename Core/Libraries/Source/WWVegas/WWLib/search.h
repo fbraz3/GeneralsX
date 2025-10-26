@@ -49,8 +49,7 @@
  *   compfunc -- Support function for bsearch and bsort.                                       *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#ifndef SEARCH_H
-#define SEARCH_H
+#pragma once
 
 /*
 **	The "bool" integral type was defined by the C++ comittee in
@@ -692,8 +691,3 @@ IndexClass<T>::NodeElement const * IndexClass<T>::Search_For_Node(int id) const
 	node.ID = id;
 	return((NodeElement const *)bsearch(&node, &IndexTable[0], IndexCount, sizeof(IndexTable[0]), search_compfunc));
 }
-
-
-#endif
-
-

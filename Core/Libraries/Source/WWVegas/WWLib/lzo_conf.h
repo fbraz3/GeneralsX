@@ -65,9 +65,7 @@
    to change.
  */
 
-
-#ifndef __LZO_CONF_H
-#define __LZO_CONF_H
+#pragma once
 
 #ifndef __LZOCONF_H
 #  include "lzoconf.h"
@@ -296,9 +294,6 @@
 
 
 
-#endif /* already included */
-
 /*
 vi:ts=4
 */
-

@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __Locomotor_H_
-#define __Locomotor_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "Common/NameKeyGenerator.h"
 #include "Common/Override.h"
@@ -513,6 +510,3 @@ private:
 
 // EXTERNALS //////////////////////////////////////////////////////////////////////////////////////
 extern LocomotorStore *TheLocomotorStore;
-
-#endif // __Locomotor_H_
-

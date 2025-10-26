@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef __GAMEINFO_H__
-#define __GAMEINFO_H__
-
 #include "Common/Snapshot.h"
 #include "GameNetwork/NetworkDefs.h"
 #include "GameNetwork/FirewallHelper.h"
@@ -284,5 +281,3 @@ public:
 };
 
 extern SkirmishGameInfo *TheSkirmishGameInfo;
-
-#endif // __GAMEINFO_H__

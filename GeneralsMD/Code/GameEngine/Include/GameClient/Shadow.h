@@ -30,9 +30,6 @@
 
 #pragma once
 
-#ifndef __SHADOW_H_
-#define __SHADOW_H_
-
 //
 // skeleton definition of shadow types
 //
@@ -213,6 +210,3 @@ public:
 };
 
 extern ProjectedShadowManager *TheProjectedShadowManager;
-
-#endif // __SHADOW_H_
-

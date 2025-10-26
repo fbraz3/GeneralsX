@@ -37,12 +37,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef DX8VERTEXBUFFER_H
-#define DX8VERTEXBUFFER_H
 
 // Phase 27.2.1: CRITICAL - GLAD must be included FIRST before any header that might include OpenGL
 #ifndef _WIN32
@@ -299,6 +294,3 @@ protected:
 public:
 	SortingVertexBufferClass(unsigned short VertexCount);
 };
-
-
-#endif //DX8VERTEXBUFFER_H

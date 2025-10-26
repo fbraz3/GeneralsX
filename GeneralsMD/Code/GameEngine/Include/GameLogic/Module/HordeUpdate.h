@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __HordeUpdate_H_
-#define __HordeUpdate_H_
-
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "GameLogic/Module/UpdateModule.h"
 #include "Common/KindOf.h"
@@ -125,6 +122,3 @@ private:
 	Bool				m_hasFlag;
 
 };
-
-#endif // __HordeUpdate_H_
-

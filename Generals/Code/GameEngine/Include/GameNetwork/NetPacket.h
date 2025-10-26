@@ -32,14 +32,10 @@ for the data, but at least that wouldn't be repeating code, that would
 be specialized code.
 */
 
-
-
 #pragma once
 
-#ifndef __NETPACKET_H
-#define __NETPACKET_H
-
 #include "NetworkDefs.h"
+
 #include "GameNetwork/NetCommandList.h"
 #include "Common/MessageStream.h"
 #include "Common/GameMemory.h"
@@ -236,5 +232,3 @@ protected:
 	UnsignedByte		m_lastCommandType;
 	UnsignedByte		m_lastRelay;
 };
-
-#endif // __NETPACKET_H

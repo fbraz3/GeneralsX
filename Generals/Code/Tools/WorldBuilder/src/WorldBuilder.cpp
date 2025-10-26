@@ -33,6 +33,7 @@
 
 //#include <wsys/StdFileSystem.h>
 #include "W3DDevice/GameClient/W3DFileSystem.h"
+#include "Common/FramePacer.h"
 #include "Common/GlobalData.h"
 #include "WHeightMapEdit.h"
 //#include "Common/GameFileSystem.h"
@@ -338,6 +339,8 @@ BOOL CWorldBuilderApp::InitInstance()
 
 	initSubsystem(TheWritableGlobalData, new GlobalData(), "Data\\INI\\Default\\GameData", "Data\\INI\\GameData");
 
+	TheFramePacer = new FramePacer();
+
 #if defined(RTS_DEBUG)
 	ini.loadFileDirectory( AsciiString( "Data\\INI\\GameDataDebug" ), INI_LOAD_MULTIFILE, NULL );
 #endif
@@ -350,17 +353,17 @@ BOOL CWorldBuilderApp::InitInstance()
 	// srj sez: put INI into our user data folder, not the ap dir
 	free((void*)m_pszProfileName);
 	strcpy(buf, TheGlobalData->getPath_UserData().str());
-	strcat(buf, "WorldBuilder.ini");
+	strlcat(buf, "WorldBuilder.ini", ARRAY_SIZE(buf));
 #else
-	strcat(buf, "//");
-	strcat(buf, m_pszProfileName);
+	strlcat(buf, "//", ARRAY_SIZE(buf));
+	strlcat(buf, m_pszProfileName, ARRAY_SIZE(buf));
 	free((void*)m_pszProfileName);
 #endif
 	m_pszProfileName = (const char *)malloc(strlen(buf)+2);
 	strcpy((char*)m_pszProfileName, buf);
 
 	// ensure the user maps dir exists
-	sprintf(buf, "%sMaps\\", TheGlobalData->getPath_UserData().str());
+	snprintf(buf, ARRAY_SIZE(buf), "%sMaps\\", TheGlobalData->getPath_UserData().str());
 	CreateDirectory(buf, NULL);
 
 	// read the water settings from INI (must do prior to initing GameClient, apparently)
@@ -633,6 +636,9 @@ int CWorldBuilderApp::ExitInstance()
 	TheSubsystemListRecord.shutdownAll();
 
 	WorldHeightMapEdit::shutdown();
+
+	delete TheFramePacer;
+	TheFramePacer = NULL;
 
 	delete TheFileSystem;
 	TheFileSystem = NULL;

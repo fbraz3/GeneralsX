@@ -35,8 +35,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#ifndef __MESH_DEFORM_SAVE_SET_H
-#define __MESH_DEFORM_SAVE_SET_H
+#pragma once
 
 #include <max.h>
 #include "Vector.H"
@@ -134,5 +133,3 @@ public:
 		KEYFRAME *									m_CurrentKeyFrame;
 		unsigned int								m_Flags;
 };
-
-#endif //__MESH_DEFORM_SAVE_SET_H

@@ -22,11 +22,7 @@
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
-
 #pragma once
-
-#ifndef __FLAT_HEIGHTMAP_H_
-#define __FLAT_HEIGHTMAP_H_
 
 #include "always.h"
 #include "rendobj.h"
@@ -94,5 +90,3 @@ protected:
 	void releaseTiles(void);
 
 };
-
-#endif  // end __FLAT_HEIGHTMAP_H_

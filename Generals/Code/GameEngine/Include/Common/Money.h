@@ -44,9 +44,6 @@
 
 #pragma once
 
-#ifndef _MONEY_H_
-#define _MONEY_H_
-
 #include "Lib/BaseType.h"
 #include "Common/Debug.h"
 #include "Common/Snapshot.h"
@@ -106,6 +103,3 @@ private:
 	UnsignedInt m_money;	///< amount of money
 	Int m_playerIndex;	///< what is my player index?
 };
-
-#endif // _MONEY_H_
-

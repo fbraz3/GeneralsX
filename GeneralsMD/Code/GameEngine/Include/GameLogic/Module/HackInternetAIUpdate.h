@@ -28,9 +28,6 @@
 
 #pragma once
 
-#ifndef __HACK_INTERNET_AI_UPDATE_H
-#define __HACK_INTERNET_AI_UPDATE_H
-
 #include "Common/StateMachine.h"
 #include "GameLogic/Module/AIUpdate.h"
 
@@ -228,6 +225,3 @@ protected:
 	AICommandParmsStorage		m_pendingCommand;
 	Bool m_hasPendingCommand;
 };
-
-#endif
-

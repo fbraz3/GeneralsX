@@ -34,39 +34,21 @@
 static void drawFramerateBar(void);
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
+#include <numeric>
 #include <stdlib.h>
 #include <windows.h>
 #include <io.h>
 #include <time.h>
 
-// Phase 27.1.3: SDL2 and OpenGL support for cross-platform graphics
-#ifndef _WIN32
-#include <glad/glad.h>  // CRITICAL: GLAD must be included BEFORE SDL2 to avoid OpenGL header conflicts
-#include <SDL2/SDL.h>
-
-// SDL2 global variables for window and OpenGL context management (shared with dx8wrapper.cpp)
-SDL_Window* g_SDLWindow = nullptr;
-SDL_GLContext g_GLContext = nullptr;
-
-#ifdef __APPLE__
-#include "metalwrapper.h"  // Metal backend for macOS
-using GX::MetalWrapper;
-using GX::MetalConfig;
-#endif
-#endif
-
 // USER INCLUDES //////////////////////////////////////////////////////////////
+#include "Common/FramePacer.h"
 #include "Common/ThingFactory.h"
-#include "Common/GameEngine.h"
 #include "Common/GlobalData.h"
 #include "Common/PerfTimer.h"
 #include "Common/FileSystem.h"
 #include "Common/LocalFileSystem.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
-
-#include "GraphicsAPI/W3DRendererAdapter.h"
-
 #include "Common/ThingTemplate.h"
 #include "Common/GameLOD.h"
 #include "Common/DrawModule.h"
@@ -414,10 +396,6 @@ W3DDisplay::W3DDisplay()
 	m_2DScene = NULL;
 	m_3DInterfaceScene = NULL;
 	m_averageFPS = TheGlobalData->m_framesPerSecondLimit;
-	
-	// Initialize graphics API preferences
-	m_preferredAPI = GraphicsAPIType::OPENGL; // Default to OpenGL
-	m_useOpenGL = false;
 #if defined(RTS_DEBUG)
 	m_timerAtCumuFPSStart = 0;
 #endif
@@ -433,7 +411,7 @@ W3DDisplay::W3DDisplay()
 	for (i = 0; i < DisplayStringCount; i++)
 		m_displayStrings[i] = NULL;
 
-}  // end W3DDisplay
+}
 
 // W3DDisplay::~W3DDisplay ====================================================
 /** */
@@ -463,7 +441,7 @@ W3DDisplay::~W3DDisplay()
 		delete m_2DRender;
 		m_2DRender = NULL;
 
-	}  // end if
+	}
 
 	//
 	// delete all our views now since they are W3D views and we need to
@@ -486,35 +464,14 @@ W3DDisplay::~W3DDisplay()
 	m_assetManager->Free_Assets();
 	delete m_assetManager;
 	if (!TheGlobalData->m_headless)
-	{
-		// Phase 27.1.4: Clean up SDL2 and OpenGL resources on non-Windows platforms
-#ifndef _WIN32
-		printf("Phase 27.1.4: Cleaning up SDL2 and OpenGL resources...\n");
-		
-		if (g_GLContext) {
-			SDL_GL_DeleteContext(g_GLContext);
-			g_GLContext = nullptr;
-			printf("  OpenGL context destroyed\n");
-		}
-		
-		if (g_SDLWindow) {
-			SDL_DestroyWindow(g_SDLWindow);
-			g_SDLWindow = nullptr;
-			printf("  SDL2 window destroyed\n");
-		}
-		
-		SDL_Quit();
-		printf("Phase 27.1.4: SDL2 shutdown complete\n");
-#endif
 		WW3D::Shutdown();
-	}
 	WWMath::Shutdown();
 	if (!TheGlobalData->m_headless)
 		DX8WebBrowser::Shutdown();
 	delete TheW3DFileSystem;
 	TheW3DFileSystem = NULL;
 
-}  // end ~W3DDisplay
+}
 
 // TheSuperHackers @tweak valeronm 20/03/2025 No longer filters resolutions by a 4:3 aspect ratio.
 inline Bool isResolutionSupported(const ResolutionDescClass &res)
@@ -617,7 +574,7 @@ void W3DDisplay::setWidth( UnsignedInt width )
 	// of the screen with (width,height) at the lower right
 	m_2DRender->Set_Coordinate_Range( RectClass( 0, 0, getWidth(), getHeight() ) );
 
-}  // end set width
+}
 
 // W3DDisplay::setHeight ======================================================
 /** Set height of display */
@@ -632,7 +589,7 @@ void W3DDisplay::setHeight( UnsignedInt height )
 	// of the screen with (width,height) at the lower right
 	m_2DRender->Set_Coordinate_Range( RectClass( 0, 0, getWidth(), getHeight() ) );
 
-}  // end set height
+}
 
 // W3DDisplay::initAssets =====================================================
 /** */
@@ -640,7 +597,7 @@ void W3DDisplay::setHeight( UnsignedInt height )
 void W3DDisplay::initAssets( void )
 {
 
-}  // end initAssets
+}
 
 // W3DDisplay::init3DScene ====================================================
 /** */
@@ -648,7 +605,7 @@ void W3DDisplay::initAssets( void )
 void W3DDisplay::init3DScene( void )
 {
 
-}  // end init3DScene
+}
 
 // W3DDisplay::init2DScene ====================================================
 /** This is the 2D scene, you can use it to draw on a 2D plane over the
@@ -657,7 +614,7 @@ void W3DDisplay::init3DScene( void )
 void W3DDisplay::init2DScene( void )
 {
 
-}  // end init2DScene
+}
 
 // W3DDisplay::init ===========================================================
 /** Initialize or re-initialize the W3D display system.  Here we need to
@@ -679,7 +636,7 @@ void W3DDisplay::init( void )
 		/// @todo W3DDisplay needs RE-init logic!
 		return;
 
-	}  // end if
+	}
 	// Override the W3D File system
 	TheW3DFileSystem = NEW W3DFileSystem;
 
@@ -748,190 +705,8 @@ void W3DDisplay::init( void )
 		{
 			SortingRendererClass::SetMinVertexBufferSize(1);
 		}
-
-	// Phase 27.1.3: Initialize SDL2 and OpenGL on non-Windows platforms
-#ifndef _WIN32
-	printf("Phase 27.1.3: Initializing SDL2 windowing system...\n");
-	
-	// Phase 29.2: Check if Metal backend is requested
-	bool useMetal = false;
-#ifdef __APPLE__
-	useMetal = (getenv("USE_METAL") != nullptr);
-	if (useMetal) {
-		printf("Phase 29.2: Metal backend requested - skipping OpenGL initialization\n");
-	}
-#endif
-	
-	// Phase 28.9.3: This is the ONLY place where SDL2 should be initialized
-	// Early initialization in GameEngine.cpp was removed because it caused Cocoa infinite loop
-	if (!SDL_WasInit(SDL_INIT_VIDEO)) {
-		printf("Phase 27.1.3: Initializing SDL2 VIDEO subsystem...\n");
-		if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-			printf("FATAL: SDL2 initialization failed: %s\n", SDL_GetError());
-			throw ERROR_INVALID_D3D; // Reuse error code for initialization failure
-		}
-		printf("Phase 28.9.3: SDL2 initialized successfully\n");
-	} else {
-		printf("Phase 28.9.3: WARNING - SDL2 already initialized (unexpected!)\n");
-	}
-	
-	// Phase 29.2: Only configure OpenGL if Metal is NOT active
-	if (!useMetal) {
-		// Phase 28.9.5: Use OpenGL 2.1 for better macOS compatibility
-		// OpenGL 3.3+ on macOS requires Core Profile which triggers Metal shader compilation issues
-		// OpenGL 2.1 is widely supported and avoids these problems
-		printf("Phase 28.9.5: Configuring OpenGL 2.1 for maximum macOS compatibility...\n");
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-		// No profile mask for OpenGL 2.1 (it predates profiles)
-		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-		
-		// Additional hints to ensure compatibility
-		SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);  // Prefer hardware acceleration
-	}
-		// Get resolution from global data (will be set later, use defaults for now)
-		Int windowWidth = TheGlobalData->m_xResolution > 0 ? TheGlobalData->m_xResolution : 800;
-		Int windowHeight = TheGlobalData->m_yResolution > 0 ? TheGlobalData->m_yResolution : 600;
-		
-	// Phase 29.2: Create SDL2 window - use Metal or OpenGL depending on flag
-	Uint32 windowFlags = SDL_WINDOW_SHOWN;
-	if (!useMetal) {
-		windowFlags |= SDL_WINDOW_OPENGL;  // Only add OpenGL flag if not using Metal
-	}
-	
-	// SAFETY: Force windowed mode on macOS to prevent fullscreen lock
-	// User can manually toggle fullscreen with Cmd+F if needed
-	#ifdef __APPLE__
-	bool forceWindowed = true;
-	if (!TheGlobalData->m_windowed && forceWindowed) {
-		printf("SAFETY: Forcing windowed mode on macOS to prevent fullscreen lock (use -win flag or set in options)\n");
-		TheWritableGlobalData->m_windowed = true;
-	}
-	#endif
-	
-	if (TheGlobalData->m_windowed) {
-		windowFlags |= SDL_WINDOW_RESIZABLE;
-	} else {
-		windowFlags |= SDL_WINDOW_FULLSCREEN;
-	}
-	
-	printf("W3DDisplay::init - About to create SDL window (%dx%d, flags=0x%X)...\n", windowWidth, windowHeight, windowFlags);
-	
-	g_SDLWindow = SDL_CreateWindow(
-		"Command & Conquer: Generals Zero Hour",
-		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		windowWidth, windowHeight,
-		windowFlags
-	);
-	
-	if (!g_SDLWindow) {
-		printf("FATAL: SDL2 window creation failed: %s\n", SDL_GetError());
-		SDL_Quit();
-		throw ERROR_INVALID_D3D;
-	}
-	
-	printf("W3DDisplay::init - SDL window created successfully (handle=%p)\n", g_SDLWindow);
-	
-	// Phase 29.2: Only create OpenGL context if Metal is NOT active
-	if (!useMetal) {
-		// Create OpenGL context
-		g_GLContext = SDL_GL_CreateContext(g_SDLWindow);
-		if (!g_GLContext) {
-			printf("FATAL: OpenGL context creation failed: %s\n", SDL_GetError());
-			SDL_DestroyWindow(g_SDLWindow);
-			SDL_Quit();
-			throw ERROR_INVALID_D3D;
-		}
-		
-		// Make context current
-		SDL_GL_MakeCurrent(g_SDLWindow, g_GLContext);
-		
-		// Initialize GLAD OpenGL function loader
-		if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
-			printf("FATAL: GLAD OpenGL loader initialization failed\n");
-			SDL_GL_DeleteContext(g_GLContext);
-			SDL_DestroyWindow(g_SDLWindow);
-			SDL_Quit();
-			throw ERROR_INVALID_D3D;
-		}
-		
-		// Log successful OpenGL initialization
-		const GLubyte* glVersion = glGetString(GL_VERSION);
-		const GLubyte* glRenderer = glGetString(GL_RENDERER);
-		const GLubyte* glVendor = glGetString(GL_VENDOR);
-		printf("Phase 27.1.3: OpenGL initialization successful!\n");
-		printf("  OpenGL Version: %s\n", glVersion);
-		printf("  Renderer: %s\n", glRenderer);
-		printf("  Vendor: %s\n", glVendor);
-		
-		// Phase 28.9.2: Mark OpenGL as fully ready (window + context + GLAD all initialized)
-		DX8Wrapper::Set_OpenGL_Ready(true);
-		
-		// Phase 28.9.2: Now that OpenGL is ready, initialize OpenGL resources (shaders, VAO)
-		printf("Phase 28.9.2: Calling Initialize_OpenGL_Resources() after OpenGL context ready...\n");
-		DX8Wrapper::Initialize_OpenGL_Resources();
-		
-		// Enable V-Sync (1 = enabled, 0 = disabled, -1 = adaptive)
-		SDL_GL_SetSwapInterval(1);
-	} else {
-		printf("Phase 29.2: Skipping OpenGL context creation (Metal backend active)\n");
-	}
-	
-#ifdef __APPLE__
-	// Phase 29: Initialize Metal backend for macOS (experimental)
-	// Phase 29.5.1: Use g_useMetalBackend instead of getenv()
-	extern bool g_useMetalBackend;
-	if (g_useMetalBackend) {
-		printf("Phase 29: Initializing Metal backend...\n");
-		MetalConfig config;
-		config.sdlWindow = g_SDLWindow;
-		config.width = windowWidth;
-		config.height = windowHeight;
-		config.vsync = true;
-		
-		if (MetalWrapper::Initialize(config)) {
-			printf("Phase 29: Metal backend initialized successfully\n");
-		} else {
-			printf("Phase 29: Metal backend initialization failed, continuing with OpenGL\n");
-		}
-	}
-#endif		// Set ApplicationHWnd to SDL window for compatibility with existing code
-		ApplicationHWnd = (HWND)g_SDLWindow;
-		
-		printf("Phase 27.1.3: SDL2 window created (%dx%d, %s)\n", 
-			windowWidth, windowHeight, 
-			TheGlobalData->m_windowed ? "windowed" : "fullscreen");
-#endif
-
 		if (WW3D::Init( ApplicationHWnd ) != WW3D_ERROR_OK)
 			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
-
-		// Initialize graphics abstraction layer
-		// Try to initialize OpenGL if available, fallback to DirectX
-		GraphicsAPIType preferredAPI = GraphicsAPIType::OPENGL;
-		
-		// Check if user prefers DirectX (from command line or config)
-#ifdef ENABLE_OPENGL
-		if (TheGlobalData->m_forceDirectX) {
-			preferredAPI = GraphicsAPIType::DIRECTX8;
-		}
-#else
-		preferredAPI = GraphicsAPIType::DIRECTX8;
-#endif
-		
-		if (W3DRendererAdapter::Initialize(preferredAPI)) {
-			m_useOpenGL = W3DRendererAdapter::IsUsingNewRenderer();
-			if (m_useOpenGL) {
-				DEBUG_LOG(("Graphics Renderer: Using OpenGL via abstraction layer"));
-			} else {
-				DEBUG_LOG(("Graphics Renderer: Using DirectX 8 (legacy path)"));
-			}
-		} else {
-			DEBUG_LOG(("Warning: Failed to initialize graphics abstraction layer, using DirectX 8 only"));
-			m_useOpenGL = false;
-		}
 
 		WW3D::Set_Prelit_Mode( WW3D::PRELIT_MODE_LIGHTMAP_MULTI_PASS );
 		WW3D::Set_Collision_Box_Display_Mask(0x00);	///<set to 0xff to make collision boxes visible
@@ -1016,16 +791,14 @@ void W3DDisplay::init( void )
 
 		//Check if level was never set and default to setting most suitable for system.
 		if (TheGameLODManager->getStaticLODLevel() == STATIC_GAME_LOD_UNKNOWN)
-			TheGameLODManager->setStaticLODLevel(TheGameLODManager->findStaticLODLevel());
+		{
+			TheGameLODManager->setStaticLODLevel(TheGameLODManager->getRecommendedStaticLODLevel());
+		}
 		else
-		{	//Static LOD level was applied during GameLOD manager init except for texture reduction
+		{
+			//Static LOD level was applied during GameLOD manager init except for texture reduction
 			//which needs to be applied here.
-			Int txtReduction=TheWritableGlobalData->m_textureReductionFactor;
-			if (txtReduction > 0)
-			{		WW3D::Set_Texture_Reduction(txtReduction,32);
-					//Tell LOD manager that texture reduction was applied.
-					TheGameLODManager->setCurrentTextureReduction(txtReduction);
-			}
+			TheGameClient->setTextureLOD(TheWritableGlobalData->m_textureReductionFactor);
 		}
 
 		if (TheGlobalData->m_displayGamma != 1.0f)
@@ -1072,7 +845,7 @@ void W3DDisplay::init( void )
 	{
 		m_debugDisplayCallback = StatDebugDisplay;
 	}
-}  // end init
+}
 
 // W3DDisplay::reset ===========================================================
 /** Reset the W3D display system.  Here we need to
@@ -1111,21 +884,16 @@ void W3DDisplay::reset( void )
 
 const UnsignedInt START_CUMU_FRAME = LOGICFRAMES_PER_SECOND / 2;	// skip first half-sec
 
-/** Update a moving average of the last 30 fps measurements.  Also try to filter out temporary spikes.
-	This code is designed to be used by the GameLOD sytems to determine the correct dynamic LOD setting.
-*/
 void W3DDisplay::updateAverageFPS(void)
 {
-	const Real MaximumFrameTimeCutoff = 0.5f;	//largest frame interval (seconds) we accept before ignoring it as a momentary "spike"
-	const Int FPS_HISTORY_SIZE = 30;	//keep track of the last 30 frames
+	constexpr const Int FPS_HISTORY_SIZE = 30;
 
 	static Int64 lastUpdateTime64 = 0;
 	static Int historyOffset = 0;
-	static Int numSamples = 0;
-	static double fpsHistory[FPS_HISTORY_SIZE];
+	static Real fpsHistory[FPS_HISTORY_SIZE] = {0};
 
-	Int64 freq64 = getPerformanceCounterFrequency();
-	Int64 time64 = getPerformanceCounter();
+	const Int64 freq64 = getPerformanceCounterFrequency();
+	const Int64 time64 = getPerformanceCounter();
 
 #if defined(RTS_DEBUG)
 	if (TheGameLogic->getFrame() == START_CUMU_FRAME)
@@ -1134,37 +902,21 @@ void W3DDisplay::updateAverageFPS(void)
 	}
 #endif
 
-	Int64 timeDiff = time64 - lastUpdateTime64;
+	const Int64 timeDiff = time64 - lastUpdateTime64;
 
 	// convert elapsed time to seconds
-	double elapsedSeconds = (double)timeDiff/(double)(freq64);
+	Real elapsedSeconds = (Real)timeDiff/(Real)freq64;
 
-	if (elapsedSeconds <= MaximumFrameTimeCutoff)	//make sure it's not a spike
-	{
-		// append new sameple to fps history.
-		if (historyOffset >= FPS_HISTORY_SIZE)
-			historyOffset = 0;
+	// append new sample to fps history.
+	if (historyOffset >= FPS_HISTORY_SIZE)
+		historyOffset = 0;
 
-		m_currentFPS = 1.0/elapsedSeconds;
-		fpsHistory[historyOffset++] = m_currentFPS;
-		numSamples++;
-		if (numSamples > FPS_HISTORY_SIZE)
-			numSamples = FPS_HISTORY_SIZE;
-	}
+	m_currentFPS = 1.0f/elapsedSeconds;
+	fpsHistory[historyOffset++] = m_currentFPS;
 
-	if (numSamples)
-	{
-		// determine average frame rate over our past history.
-		Real average=0;
-		for (Int i=0,j=historyOffset-1; i<numSamples; i++,j--)
-		{
-			if (j < 0)
-				j=FPS_HISTORY_SIZE-1;	// wrap around to front of buffer
-			average += fpsHistory[j];
-		}
-
-		m_averageFPS = average / (Real)numSamples;
-	}
+	// determine average frame rate over our past history.
+	const Real sum = std::accumulate(fpsHistory, fpsHistory + FPS_HISTORY_SIZE, 0.0f);
+	m_averageFPS = sum / FPS_HISTORY_SIZE;
 
 	lastUpdateTime64 = time64;
 }
@@ -1208,7 +960,7 @@ void W3DDisplay::gatherDebugStats( void )
 			}
 		}
 
-	}  // end if
+	}
 
 	if (m_benchmarkDisplayString == NULL)
 	{
@@ -1273,7 +1025,7 @@ void W3DDisplay::gatherDebugStats( void )
 		Int LOD = TheGlobalData->m_terrainLOD;
 		//unibuffer.format( L"FPS: %.2f, %.2fms mapLOD=%d [cumu FPS=%.2f] draws: %.2f sort: %.2f", fps, ms, LOD, cumuFPS, drawsPerFrame,sortPolysPerFrame);
 		if (TheGlobalData->m_useFpsLimit)
-				unibuffer.format( L"%.2f/%d FPS, ", fps, TheGameEngine->getFramesPerSecondLimit());
+				unibuffer.format( L"%.2f/%d FPS, ", fps, TheFramePacer->getFramesPerSecondLimit());
 		else
 				unibuffer.format( L"%.2f FPS, ", fps);
 
@@ -1724,7 +1476,7 @@ void W3DDisplay::gatherDebugStats( void )
 
 			//Render ALL modelcondition statii
 
-		}  // end if
+		}
 		m_displayStrings[ SelectedInfo ]->setText( unibuffer );
 
 	}
@@ -1759,7 +1511,7 @@ void W3DDisplay::drawDebugStats( void )
 		y += h;
 	}
 
-}  // end drawDebugStats
+}
 
 // W3DDisplay::drawFPSStats =================================================
 /** Draw the FPS on the screen */
@@ -1803,7 +1555,7 @@ void W3DDisplay::drawCurrentDebugDisplay( void )
 			m_debugDisplayCallback( m_debugDisplay, m_debugDisplayUserData, NULL );
 		}
 	}
-}  // end drawCurrentDebugDisplay
+}
 
 // W3DDisplay::calculateTerrainLOD =================================================
 /** Calculates an adequately speedy terrain Level Of Detail. */
@@ -1903,39 +1655,9 @@ Int W3DDisplay::getLastFrameDrawCalls()
 	return Debug_Statistics::Get_Draw_Calls();
 }
 
-// TheSuperHackers @tweak xezon 12/08/2025 The WW3D Sync is no longer tied
-// to the render update, but is advanced separately for every fixed time step.
+//=============================================================================
 void W3DDisplay::step()
 {
-	// TheSuperHackers @info This will wrap in 1205 hours at 30 fps logic step.
-	static UnsignedInt syncTime = 0;
-
-	extern HWND ApplicationHWnd;
-	#ifdef _WIN32
-	if (ApplicationHWnd && ::IsIconic(ApplicationHWnd)) {
-#else
-	if (false) {
-#endif
-		return;
-	}
-
-	if (TheGlobalData->m_headless)
-		return;
-
-	Bool freezeTime = GameEngine::isTimeFrozen();
-
-	if (!freezeTime)
-	{
-		syncTime += (UnsignedInt)TheW3DFrameLengthInMsec;
-
-		if (TheScriptEngine->isTimeFast())
-		{
-			return;
-		}
-	}
-
-	WW3D::Sync( syncTime );
-
 	stepViews();
 }
 
@@ -1949,21 +1671,8 @@ void W3DDisplay::draw( void )
 {
 	//USE_PERF_TIMER(W3DDisplay_draw)
 
-#ifndef _WIN32
-	// Phase 28.10: OpenGL rendering active - removed early return to enable rendering
-	if (g_SDLWindow && g_GLContext) {
-		glClearColor(0.2f, 0.3f, 0.4f, 1.0f); // Blue-gray background
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		// DO NOT return here - let rendering continue below
-	}
-#endif
-
 	extern HWND ApplicationHWnd;
-	#ifdef _WIN32
 	if (ApplicationHWnd && ::IsIconic(ApplicationHWnd)) {
-#else
-	if (false) {
-#endif
 		return;
 	}
 
@@ -2045,12 +1754,7 @@ AGAIN:
   	//
 	//PredictiveLODOptimizerClass::Optimize_LODs( 5000 );
 
-	Bool freezeTime = GameEngine::isTimeFrozen();
-
-	// hack to let client spin fast in network games but still do effects at the same pace. -MDC
-	static UnsignedInt lastFrame = ~0;
-	freezeTime = freezeTime || (TheNetwork != NULL && lastFrame == TheGameClient->getFrame());
-	lastFrame = TheGameClient->getFrame();
+	Bool freezeTime = TheFramePacer->isTimeFrozen() || TheFramePacer->isGameHalted();
 
 	/// @todo: I'm assuming the first view is our main 3D view.
 	W3DView *primaryW3DView=(W3DView *)getFirstView();
@@ -2085,6 +1789,11 @@ AGAIN:
 			}
 		}
 	}
+
+	WW3D::Update_Logic_Frame_Time(TheFramePacer->getLogicTimeStepMilliseconds());
+
+	// TheSuperHackers @info This binds the WW3D update to the logic update.
+	WW3D::Sync(TheGameLogic->hasUpdated());
 
 	static Int now;
 	now=timeGetTime();
@@ -2139,25 +1848,12 @@ AGAIN:
 	    if ( (TheGameLogic->getFrame() % 30 == 1) || ( ! (!TheGameLogic->isGamePaused() && TheGlobalData->m_TiVOFastMode && TheGameLogic->isInReplayGame())) )
     #endif
 		{
-		//USE_PERF_TIMER(BigAssRenderLoop)
-		static Bool couldRender = true;
-		
-		// Phase 34.1 DEBUG: Check render conditions
-		printf("DEBUG: Render conditions - breakMovie=%d, disableRender=%d\n", 
-		       TheGlobalData->m_breakTheMovie, TheGlobalData->m_disableRender);
-		
-		Int renderResult = WW3D::Begin_Render(true, true, Vector3(0.0f, 0.0f, 0.0f), 
-		                                      TheWaterTransparency->m_minWaterOpacity);
-		printf("DEBUG: WW3D::Begin_Render() returned %d (WW3D_ERROR_OK=%d)\n", 
-		       renderResult, WW3D_ERROR_OK);
-		
-		printf("DEBUG: Render conditions - breakTheMovie=%d, disableRender=%d, renderResult=%d, videoStream=%p, videoBuffer=%p\n",
-		       TheGlobalData->m_breakTheMovie, TheGlobalData->m_disableRender, 
-		       renderResult, m_videoStream, m_videoBuffer);
-		
-		if ((TheGlobalData->m_breakTheMovie == FALSE) && (TheGlobalData->m_disableRender == false) && renderResult == WW3D_ERROR_OK)
-		{
-			printf("DEBUG: Entering main render block\n");				if(TheGlobalData->m_loadScreenRender == TRUE)
+			//USE_PERF_TIMER(BigAssRenderLoop)
+			static Bool couldRender = true;
+			if ((TheGlobalData->m_breakTheMovie == FALSE) && (TheGlobalData->m_disableRender == false) && WW3D::Begin_Render( true, true, Vector3( 0.0f, 0.0f, 0.0f ), TheWaterTransparency->m_minWaterOpacity ) == WW3D_ERROR_OK)
+			{
+
+				if(TheGlobalData->m_loadScreenRender == TRUE)
 				{
 					TheInGameUI->draw();
 					if( TheMouse )
@@ -2170,15 +1866,13 @@ AGAIN:
 				if (numRenderTargetPolygons || numRenderTargetVertices)
 					Debug_Statistics::Record_DX8_Polys_And_Vertices(numRenderTargetPolygons,numRenderTargetVertices,ShaderClass::_PresetOpaqueShader);
 
-			// draw all views of the world
-			printf("DEBUG: About to call drawViews()\n");
-			drawViews();
-			printf("DEBUG: drawViews() completed\n");
+				// draw all views of the world
+				drawViews();
 
-			// draw the user interface
-			printf("DEBUG: About to call TheInGameUI->DRAW()\n");
-			TheInGameUI->DRAW();
-			printf("DEBUG: TheInGameUI->DRAW() completed\n");				// end of video example code
+				// draw the user interface
+				TheInGameUI->DRAW();
+
+				// end of video example code
 
 				// draw the mouse
 				if( TheMouse )
@@ -2186,16 +1880,9 @@ AGAIN:
 
 				if ( m_videoStream && m_videoBuffer )
 				{
-					printf("DEBUG: About to call drawScaledVideoBuffer() - videoStream=%p, videoBuffer=%p\n",
-					       m_videoStream, m_videoBuffer);
-					fflush(stdout);
 					// TheSuperHackers @bugfix Mauller 20/07/2025 scale videos based on screen size so they are shown in their original aspect
 					drawScaledVideoBuffer( m_videoBuffer, m_videoStream );
-					printf("DEBUG: drawScaledVideoBuffer() RETURNED SUCCESSFULLY\n");
-					fflush(stdout);
 				}
-				printf("DEBUG: After video rendering block - continuing to copyright display\n");
-				fflush(stdout);
 				if( m_copyrightDisplayString )
 				{
 					Int x, y, dX, dY;
@@ -2286,7 +1973,7 @@ AGAIN:
 		goto AGAIN;
 	}
 #endif
-}  // end draw
+}
 
 #define LETTER_BOX_FADE_TIME	1000.0f		///1000 ms.
 
@@ -2479,7 +2166,7 @@ void W3DDisplay::drawLine( Int startX, Int startY,
 												lineWidth, lineColor );
 	m_2DRender->Render();
 
-}  // end drawLine
+}
 
 // W3DDisplay::drawLine =======================================================
 /** draw a line on the display in pixel coordinates with the specified color */
@@ -2497,7 +2184,7 @@ void W3DDisplay::drawLine( Int startX, Int startY,
 												lineWidth, lineColor1, lineColor2 );
 	m_2DRender->Render();
 
-}  // end drawLine
+}
 
 
 // W3DDisplay::drawOpenRect ===================================================
@@ -2550,7 +2237,7 @@ void W3DDisplay::drawOpenRect( Int startX, Int startY, Int width, Int height,
 		m_2DRender->Render();
 	}
 
-}  // end drawOpenRect
+}
 
 // W3DDisplay::drawFillRect ===================================================
 //=============================================================================
@@ -2568,7 +2255,7 @@ void W3DDisplay::drawFillRect( Int startX, Int startY, Int width, Int height,
 	// render it now!
 	m_2DRender->Render();
 
-}  // end drawFillRect
+}
 
 void W3DDisplay::drawRectClock(Int startX, Int startY, Int width, Int height, Int percent, UnsignedInt color)
 {
@@ -2677,9 +2364,9 @@ void W3DDisplay::drawRectClock(Int startX, Int startY, Int width, Int height, In
 
 			// draw the part of triangle
 			Real percentDraw = (Real)(remain - 12)/ 13;
-			m_2DRender->Add_Tri(Vector2(startX, startY + height - (height/2 * percentDraw)),
-													Vector2(startX, startY + height),
-													Vector2(startX + width/2, startY + height/2),
+			m_2DRender->Add_Tri(Vector2(startX + width/2, startY + height/2),
+													Vector2(startX + width - (width/2 * percentDraw), startY + height),
+													Vector2(startX + width, startY + height),
 													Vector2(0,0),Vector2(0,0),Vector2(0,0),color);
 		}
 		else
@@ -3062,14 +2749,14 @@ void W3DDisplay::drawImage( const Image *image, Int startX, Int startY,
 												 Vector2( uv_rect.Left, uv_rect.Top ),
 												 color );
 
-	}  // end if
+	}
 	else
 	{
 
 		// just draw as normal
 		m_2DRender->Add_Quad( screen_rect, uv_rect, color );
 
-	}  // end else
+	}
 
 	m_2DRender->Render();
 
@@ -3078,7 +2765,7 @@ void W3DDisplay::drawImage( const Image *image, Int startX, Int startY,
 	if (doAlphaReset)
 		m_2DRender->Enable_Alpha(true);
 
-}  // end drawImage
+}
 
 //============================================================================
 // W3DDisplay::createVideoBuffer
@@ -3086,9 +2773,6 @@ void W3DDisplay::drawImage( const Image *image, Int startX, Int startY,
 
 VideoBuffer*	W3DDisplay::createVideoBuffer( void )
 {
-	printf("DEBUG: W3DDisplay::createVideoBuffer() - ENTRY\n");
-	fflush(stdout);
-	
 	VideoBuffer::Type format = VideoBuffer::TYPE_UNKNOWN;
 
 	/// @todo query video player for supported formats - we assume bink formats here
@@ -3096,8 +2780,6 @@ VideoBuffer*	W3DDisplay::createVideoBuffer( void )
 	// first try to use the native format
 
 	WW3DFormat displayFormat = DX8Wrapper::getBackBufferFormat();
-	printf("DEBUG: createVideoBuffer() - Back buffer format: %d\n", (int)displayFormat);
-	fflush(stdout);
 
 	if ( DX8Wrapper::Get_Current_Caps()->Support_Texture_Format( displayFormat ))
 	{
@@ -3125,13 +2807,9 @@ VideoBuffer*	W3DDisplay::createVideoBuffer( void )
 		else
 		{
 			// card does not support any of the formats we need
-			printf("ERROR: createVideoBuffer() - Card does not support any required formats!\n");
-			fflush(stdout);
 			return NULL;
 		}
 	}
-	printf("DEBUG: createVideoBuffer() - Selected format: %d\n", (int)format);
-	fflush(stdout);
 	// on low mem machines, render every video in 16bit except for the EA Logo movie
 	if(!TheGlobalData->m_playIntro )//&& TheGameLODManager && (!TheGameLODManager->didMemPass() || W3DShaderManager::getChipset() == DC_GEFORCE2))
 		format = VideoBuffer::TYPE_R5G6B5;
@@ -3147,12 +2825,7 @@ VideoBuffer*	W3DDisplay::createVideoBuffer( void )
 
 void W3DDisplay::drawScaledVideoBuffer( VideoBuffer *buffer, VideoStreamInterface *stream )
 {
-	printf("DEBUG: drawScaledVideoBuffer ENTRY - buffer=%p, stream=%p\n", buffer, stream);
-	fflush(stdout);
-	
 	// TheSuperHackers @bugfix Mauller 20/07/2025 scale videos based on screen size so they are shown in their original aspect
-	printf("DEBUG: drawScaledVideoBuffer - Getting stream dimensions\n");
-	fflush(stdout);
 	Real videoAspect = (Real)stream->width() / (Real)stream->height();
 	Real displayAspect = (Real)getWidth() / (Real)getHeight();
 	Bool wideAspect = displayAspect >= videoAspect;
@@ -3181,12 +2854,7 @@ void W3DDisplay::drawScaledVideoBuffer( VideoBuffer *buffer, VideoStreamInterfac
 		endX = getWidth();
 	}
 
-	printf("DEBUG: drawScaledVideoBuffer - About to call drawVideoBuffer(startX=%d, startY=%d, endX=%d, endY=%d)\n",
-	       startX, startY, endX, endY);
-	fflush(stdout);
 	drawVideoBuffer( buffer, startX, startY, endX, endY );
-	printf("DEBUG: drawScaledVideoBuffer - drawVideoBuffer returned successfully\n");
-	fflush(stdout);
 }
 
 //============================================================================
@@ -3197,31 +2865,12 @@ void W3DDisplay::drawVideoBuffer( VideoBuffer *buffer, Int startX, Int startY, I
 {
 	W3DVideoBuffer *vbuffer = (W3DVideoBuffer*) buffer;
 
-	printf("DEBUG: drawVideoBuffer - ENTER (buffer=%p, vbuffer=%p)\n", buffer, vbuffer);
-	printf("DEBUG: drawVideoBuffer - m_2DRender=%p\n", m_2DRender);
-	
-	printf("DEBUG: drawVideoBuffer - Calling Reset()...\n");
 	m_2DRender->Reset();
-	printf("DEBUG: drawVideoBuffer - Reset() OK\n");
-	
-	printf("DEBUG: drawVideoBuffer - Calling Enable_Texturing(TRUE)...\n");
 	m_2DRender->Enable_Texturing( TRUE );
-	printf("DEBUG: drawVideoBuffer - Enable_Texturing() OK\n");
-	
-	printf("DEBUG: drawVideoBuffer - vbuffer->texture()=%p\n", vbuffer->texture());
-	printf("DEBUG: drawVideoBuffer - Calling Set_Texture()...\n");
 	m_2DRender->Set_Texture( vbuffer->texture() );
-	printf("DEBUG: drawVideoBuffer - Set_Texture() OK\n");
-	
-	printf("DEBUG: drawVideoBuffer - Calling Add_Quad(rect=[%d,%d,%d,%d])...\n", 
-	       startX, startY, endX, endY);
 	m_2DRender->Add_Quad( RectClass( startX, startY, endX, endY ),
 												vbuffer->Rect( 0, 0, 1, 1) );
-	printf("DEBUG: drawVideoBuffer - Add_Quad() OK\n");
-	
-	printf("DEBUG: drawVideoBuffer - Calling Render()...\n");
 	m_2DRender->Render();
-	printf("DEBUG: drawVideoBuffer - Render() OK\n");
 
 }
 
@@ -3235,7 +2884,7 @@ void W3DDisplay::setClipRegion( IRegion2D *region )
 		m_clipRegion = *region;
 		m_isClippedEnabled = TRUE;
 
-}  // end setClipRegion
+}
 
 //=============================================================================
 /* we don't really need to override this call, since we will soon be called to
@@ -3279,7 +2928,6 @@ void W3DDisplay::setShroudLevel( Int x, Int y, CellShroudStatus setting )
 
 //=============================================================================
 ///Utility function to dump data into a .BMP file
-#ifdef _WIN32
 static void CreateBMPFile(LPTSTR pszFile, char *image, Int width, Int height)
 {
 	HANDLE hf;                  // file handle
@@ -3354,7 +3002,6 @@ static void CreateBMPFile(LPTSTR pszFile, char *image, Int width, Int height)
 	// Free memory.
 	LocalFree( (HLOCAL) pbmi);
 }
-#endif // _WIN32
 
 ///Save Screen Capture to a file
 void W3DDisplay::takeScreenShot(void)
@@ -3372,7 +3019,7 @@ void W3DDisplay::takeScreenShot(void)
 		sprintf( leafname, "%s%.3d.bmp", "sshot", frame_number++);
 #endif
 		strcpy(pathname, TheGlobalData->getPath_UserData().str());
-		strcat(pathname, leafname);
+		strlcat(pathname, leafname, ARRAY_SIZE(pathname));
 		if (_access( pathname, 0 ) == -1)
 			done = true;
 	}
@@ -3484,9 +3131,7 @@ void W3DDisplay::takeScreenShot(void)
 			ptr1++;
 			}
 	}
-#ifdef _WIN32
 	CreateBMPFile(pathname, image, width, height);
-#endif
 #endif
 
 	delete [] image;
@@ -3603,9 +3248,9 @@ void W3DDisplay::preloadModelAssets( AsciiString model )
 		nameWithExtension.format( "%s.w3d", model.str() );
 		m_assetManager->Load_3D_Assets( nameWithExtension.str() );
 
-	}  // end if
+	}
 
-}  // end preloadModelAssets
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Preload using the W3D asset manager the texture referenced by the string parameter */
@@ -3617,9 +3262,9 @@ void W3DDisplay::preloadTextureAssets( AsciiString texture )
 	{
 		TextureClass *theTexture = m_assetManager->Get_Texture( texture.str() );
 		theTexture->Release_Ref();//release reference
-	}  // end if
+	}
 
-}  // end preloadModelAssets
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -3694,6 +3339,7 @@ void W3DDisplay::dumpAssetUsage(const char* mapname)
 }
 #endif
 
+//-------------------------------------------------------------------------------------------------
 static void drawFramerateBar(void)
 {
 	static DWORD prevTime = timeGetTime();

@@ -31,8 +31,7 @@
  * 	         Last Update : October 5, 2000   [MML]            			*
  *----------------------------------------------------------------------*/
 
-#ifndef  DRAWBUTTONS_H
-#define  DRAWBUTTONS_H
+#pragma once
 
 #include <tchar.h>
 #include <stdlib.h>
@@ -99,10 +98,3 @@ class DrawButton
 		char		PressedBitmap[ _MAX_FNAME ];
 		char		FocusBitmap  [ _MAX_FNAME ];
 };
-
-
-
-
-
-
-#endif

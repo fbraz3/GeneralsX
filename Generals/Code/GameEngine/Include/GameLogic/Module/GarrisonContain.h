@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __GARRISONCONTAIN_H_
-#define __GARRISONCONTAIN_H_
-
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
 #include "GameLogic/Module/OpenContain.h"
 #include "Common/ModelState.h"
@@ -211,6 +208,3 @@ private:
 	Bool		m_rallyValid;															///< TRUE when m_exitRallyPoint is valid
 
 };
-
-#endif // __GARRISONCONTAIN_H_
-

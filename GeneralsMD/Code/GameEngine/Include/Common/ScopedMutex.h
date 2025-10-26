@@ -23,71 +23,22 @@
 
 #pragma once
 
-#ifndef __SCOPEDMUTEX_H__
-#define __SCOPEDMUTEX_H__
-
-#ifdef _WIN32
-#include <windows.h>
-#else
-// Cross-platform mutex compatibility
-#include <pthread.h>
-typedef pthread_mutex_t* MUTEX_HANDLE;
-#ifndef DWORD
-typedef unsigned long DWORD;
-#endif
-#define WAIT_OBJECT_0 0
-
-inline DWORD WaitForSingleObject(MUTEX_HANDLE handle, DWORD timeout) {
-    // Simple pthread mutex lock (ignoring timeout for simplicity)
-    if (pthread_mutex_lock(handle) == 0) {
-        return WAIT_OBJECT_0;
-    }
-    return 1; // Error
-}
-
-inline void ReleaseMutex(MUTEX_HANDLE handle) {
-    pthread_mutex_unlock(handle);
-}
-#endif
-
 class ScopedMutex
 {
 	private:
-#ifdef _WIN32
 		HANDLE m_mutex;
-#else
-		pthread_mutex_t* m_mutex;
-#endif
 
 	public:
-#ifdef _WIN32
 		ScopedMutex(HANDLE mutex) : m_mutex(mutex)
-#else
-		ScopedMutex(HANDLE mutex) : m_mutex((pthread_mutex_t*)mutex)
-#endif
 		{
-#ifdef _WIN32
 			DWORD status = WaitForSingleObject(m_mutex, 500);
 			if (status != WAIT_OBJECT_0) {
 				DEBUG_LOG(("ScopedMutex WaitForSingleObject timed out - status %d", status));
 			}
-#else
-			if (m_mutex && pthread_mutex_lock(m_mutex) != 0) {
-				DEBUG_LOG(("ScopedMutex pthread_mutex_lock failed"));
-			}
-#endif
 		}
 
 		~ScopedMutex()
 		{
-#ifdef _WIN32
 			ReleaseMutex(m_mutex);
-#else
-			if (m_mutex) {
-				pthread_mutex_unlock(m_mutex);
-			}
-#endif
 		}
 };
-
-#endif /* __SCOPEDMUTEX_H__ */

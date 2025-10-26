@@ -35,13 +35,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-
-#ifndef ARGV_H
-#define ARGV_H
 
 #ifndef ALWAYS_H
 #include "always.h"
@@ -157,6 +151,3 @@ class ArgvClass
 		enum {MAX_ARGC = 256};
 		static char  *Argv[MAX_ARGC];
 };
-
-
-#endif

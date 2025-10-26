@@ -33,12 +33,8 @@
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#if _MSC_VER >= 1000
-#pragma once
-#endif // _MSC_VER >= 1000
 
-#ifndef XSTRAW_H
-#define XSTRAW_H
+#pragma once
 
 #include	"BUFF.H"
 #include	"STRAW.H"
@@ -87,6 +83,3 @@ class FileStraw : public Straw
 		FileStraw(FileStraw & rvalue);
 		FileStraw & operator = (FileStraw const & pipe);
 };
-
-
-#endif

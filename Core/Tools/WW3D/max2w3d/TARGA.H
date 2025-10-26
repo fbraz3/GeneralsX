@@ -16,8 +16,8 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _TARGA_H_
-#define _TARGA_H_
+#pragma once
+
 /****************************************************************************
 *
 *         C O N F I D E N T I A L --- W E S T W O O D   S T U D I O S
@@ -315,6 +315,3 @@ class Targa
 		int File_Read(void *buffer, int size);
 		int File_Write(void *buffer, int size);
 	};
-
-#endif /* _TARGA_H_ */
-

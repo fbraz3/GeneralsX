@@ -34,13 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef __SOUNDSCENE_H
-#define __SOUNDSCENE_H
 
 #include "aabtreecull.h"
 #include "gridcull.h"
@@ -224,6 +218,3 @@ class SoundSceneClass
 
 		bool								m_IsBatchMode;
 };
-
-
-#endif //__SOUNDSCENE_H

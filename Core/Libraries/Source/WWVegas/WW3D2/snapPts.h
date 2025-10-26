@@ -34,12 +34,7 @@
  * Functions:                                                                                  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#if defined(_MSC_VER)
 #pragma once
-#endif
-
-#ifndef SNAPPTS_H
-#define SNAPPTS_H
 
 #include "refcount.h"
 #include "Vector.H"
@@ -60,5 +55,3 @@ protected:
 	~SnapPointsClass(void) {}
 
 };
-
-#endif

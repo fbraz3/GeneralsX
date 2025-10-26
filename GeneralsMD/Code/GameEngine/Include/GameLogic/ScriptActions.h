@@ -29,9 +29,6 @@
 
 #pragma once
 
-#ifndef __SCRIPTACTIONS_H_
-#define __SCRIPTACTIONS_H_
-
 class ScriptAction;
 class GameWindow;
 class	Team;
@@ -391,8 +388,3 @@ protected:
   void doEnableObjectSound(const AsciiString& objectName, Bool enable);
 
 };
-
-
-#endif  // end __SCRIPTACTIONS_H_
-
-

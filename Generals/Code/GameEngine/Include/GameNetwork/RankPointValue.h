@@ -45,9 +45,6 @@
 
 #pragma once
 
-#ifndef __RANK_POINT_VALUE_H_
-#define __RANK_POINT_VALUE_H_
-
 //-----------------------------------------------------------------------------
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
@@ -101,5 +98,3 @@ Int CalculateRank( const PSPlayerStats& stats );
 Int GetFavoriteSide( const PSPlayerStats& stats );
 const Image* LookupSmallRankImage(Int side, Int rankPoints);
 extern RankPoints *TheRankPointValues;
-
-#endif // __RANK_POINT_VALUE_H_
