@@ -62,3 +62,7 @@ build.ninja
 # Logs directory
 /logs/*.log
 /logs/*.txt
+/logs/*.diff
+/logs/*.patch
+/logs/**/*.diff
+/logs/**/*.patch
