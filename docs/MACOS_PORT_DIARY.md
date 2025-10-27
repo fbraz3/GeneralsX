@@ -66,95 +66,95 @@ METAL: BeginFrame()
 EMERGENCY EXIT: ESC pressed - quitting immediately
 ```
 
-## Latest Update (October 26, 2025) — Phase 35.6: ROLLBACK COMPLETO ❌
+## Latest Update (October 26, 2025) — Phase 35.6: COMPLETE ROLLBACK ❌
 
-**CRITICAL CRASH**: Phase 35.6 causou crash instantâneo em produção - **ROLLBACK IMEDIATO EXECUTADO**
+**CRITICAL CRASH**: Phase 35.6 caused instant crash in production - **IMMEDIATE ROLLBACK EXECUTED**
 
-### Cronologia do Incidente
+### Incident Timeline
 
-**17:00-19:00**: Phase 35.6 implementada e deployed (otimização de proteções de memória)  
-**19:28**: Usuário executa jogo → **CRASH IMEDIATO** (<1 minuto de execução)  
-**19:33**: Rollback completo implementado, compilado e deployed  
+**17:00-19:00**: Phase 35.6 implemented and deployed (memory protection optimization)  
+**19:28**: User executes game → **INSTANT CRASH** (<1 minute of execution)  
+**19:33**: Complete rollback implemented, compiled, and deployed  
 
-### O Crash
+### The Crash
 
 ```
 Exception:      EXC_BAD_ACCESS at 0x6e646461001c0001 (ASCII-like pointer!)
 Crash Location: AsciiString::releaseBuffer() + 8 (Line 207)
-Root Cause:     Use-after-free em AsciiString::m_data
+Root Cause:     Use-after-free in AsciiString::m_data
 Call Stack:     StdBIGFileSystem::openArchiveFile() → AsciiString::operator=()
                 → ensureUniqueBufferOfSize() → releaseBuffer() → CRASH
 ```
 
-**Ponteiro Corrompido**: `0x6e646461001c0001`  
+**Corrupted Pointer**: `0x6e646461001c0001`  
 - Bytes `0x6e646461` = ASCII "addn" (little-endian)  
-- Bytes `0x001c0001` = Garbage/offset inválido  
-- **Conclusão**: `m_data` apontava para memória já liberada contendo lixo ASCII
+- Bytes `0x001c0001` = Garbage/invalid offset  
+- **Conclusion**: `m_data` pointed to already-freed memory containing ASCII garbage
 
-### Por Que a Phase 35.6 Estava ERRADA
+### Why Phase 35.6 Was WRONG
 
-**Premissa Falsa**:
-> "Validações triplas causam overhead → race conditions → segfaults intermitentes"
+**False Premise**:
+> "Triple validations cause overhead → race conditions → intermittent segfaults"
 
-**Realidade Comprovada pelo Crash**:
-1. **Proteções eram ESSENCIAIS**: Detectavam e preveniam crashes por ponteiros corruptos
-2. **Arquitetura mal compreendida**: `AsciiString` chama `freeBytes()` DIRETAMENTE, não via `operator delete`
-3. **"Single-point validation" era FALSA**: Múltiplos caminhos de execução requerem múltiplas proteções
+**Reality Proven by Crash**:
+1. **Protections were ESSENTIAL**: They detected and prevented crashes from corrupted pointers
+2. **Misunderstood architecture**: `AsciiString` calls `freeBytes()` DIRECTLY, not via `operator delete`
+3. **"Single-point validation" was FALSE**: Multiple execution paths require multiple protections
 
-**Call Chain Real** (AsciiString - SEM passar por operator delete):
+**Actual Call Chain** (AsciiString - WITHOUT passing through operator delete):
 ```
 AsciiString::releaseBuffer()
   ↓
-TheDynamicMemoryAllocator->freeBytes(m_data)  ← Phase 35.6 removeu validação aqui ❌
+TheDynamicMemoryAllocator->freeBytes(m_data)  ← Phase 35.6 removed validation here ❌
   ↓
-recoverBlockFromUserData(m_data)              ← Phase 35.6 removeu validação aqui ❌
+recoverBlockFromUserData(m_data)              ← Phase 35.6 removed validation here ❌
   ↓
-CRASH: aritmética de ponteiros com 0x6e646461001c0001
+CRASH: pointer arithmetic with 0x6e646461001c0001
 ```
 
-**Se proteções estivessem ativas** (Phase 30.6):
-- `freeBytes()` teria detectado ponteiro ASCII: `isValidMemoryPointer(0x6e646461001c0001) → false`
-- Return silencioso (sem crash)
+**If protections were active** (Phase 30.6):
+- `freeBytes()` would have detected ASCII pointer: `isValidMemoryPointer(0x6e646461001c0001) → false`
+- Silent return (no crash)
 - Log: `"MEMORY PROTECTION: Detected ASCII-like pointer..."`
-- Jogo continuaria rodando
+- Game would continue running
 
-### Mudanças Revertidas
+### Reverted Changes
 
-**✅ Restaurado 1**: Logging completo em `isValidMemoryPointer()`  
-- **Antes**: Printf apenas 1× a cada 100 detecções (rate-limiting)  
-- **Depois**: Printf TODAS as detecções (diagnóstico completo)  
+**✅ Restored 1**: Complete logging in `isValidMemoryPointer()`  
+- **Before**: Printf only 1× per 100 detections (rate-limiting)  
+- **After**: Printf ALL detections (complete diagnostics)  
 
-**✅ Restaurado 2**: Validação em `recoverBlockFromUserData()`  
-- **Antes**: Sem validação (confiava em caller)  
-- **Depois**: `if (!isValidMemoryPointer(pUserData)) return NULL;`  
+**✅ Restored 2**: Validation in `recoverBlockFromUserData()`  
+- **Before**: No validation (trusted caller)  
+- **After**: `if (!isValidMemoryPointer(pUserData)) return NULL;`  
 
-**✅ Restaurado 3**: Validação em `freeBytes()`  
-- **Antes**: Sem validação (confiava em operator delete)  
-- **Depois**: `if (!isValidMemoryPointer(pBlockPtr)) return;`  
+**✅ Restored 3**: Validation in `freeBytes()`  
+- **Before**: No validation (trusted operator delete)  
+- **After**: `if (!isValidMemoryPointer(pBlockPtr)) return;`  
 
-### Lições Aprendidas
+### Lessons Learned
 
-1. **Defense in Depth é ESSENCIAL**: "Validações redundantes" são na verdade camadas de proteção necessárias
-2. **Crash Logs > Hipóteses**: Evidência empírica provou que proteções PREVINEM crashes, não causam
-3. **C++ tem Múltiplos Caminhos**: Subsistemas chamam funções internas diretamente, bypassing "entry points"
-4. **Proteções são BARATAS**: Overhead de validação é insignificante comparado a crashes em produção
+1. **Defense in Depth is ESSENTIAL**: "Redundant validations" are actually necessary protection layers
+2. **Crash Logs > Hypotheses**: Empirical evidence proved that protections PREVENT crashes, not cause them
+3. **C++ Has Multiple Paths**: Subsystems call internal functions directly, bypassing "entry points"
+4. **Protections Are CHEAP**: Validation overhead is negligible compared to production crashes
 
-### Status Atual
+### Current Status
 
-**Build**: ✅ Compilado com sucesso (828/828 files)  
-**Deploy**: ✅ Executável deployed (19:33)  
-**Proteções**: ✅ TODAS restauradas (Phase 30.6 status)  
-**Performance**: ⚠️ Overhead aceito em troca de estabilidade  
+**Build**: ✅ Compiled successfully (828/828 files)  
+**Deploy**: ✅ Executable deployed (19:33)  
+**Protections**: ✅ ALL restored (Phase 30.6 status)  
+**Performance**: ⚠️ Overhead accepted in exchange for stability  
 
-**Próximo Passo**: ⏳ Usuário deve testar e confirmar que crash não ocorre mais
+**Next Steps**: ⏳ User must test and confirm that crash no longer occurs
 
 ---
 
-## Histórico: Phase 35.6 - Memory Protection Optimization ❌ (FAILED)
+## History: Phase 35.6 - Memory Protection Optimization ❌ (FAILED)
 
 **Duration**: 17:00-19:00 (2 hours implementation)  
 **Outcome**: ❌ **PRODUCTION CRASH** (<1min uptime)  
-**Rollback**: ✅ Executado às 19:33  
+**Rollback**: ✅ Executed at 19:33  
 
 **OPTIMIZATION COMPLETE**: Eliminated triple-validation in delete operators, reduced logging overhead by 99%, targeting intermittent segfault resolution.
 
@@ -5302,25 +5302,25 @@ error: add an explicit instantiation declaration to suppress this warning if 'Au
 2. Complete `switch` statements and fix out-of-order initializations.
 3. Ensure all subcommands execute successfully.
 
-## Fase 2 - Threading, File System e Network APIs
+## Phase 2 - Threading, File System and Network APIs
 
-### Resultados da Implementação da Fase 2
+### Phase 2 Implementation Results
 
-- **Status**: Implementação completa ✅
-- **APIs Implementadas**:
+- **Status**: Complete implementation ✅
+- **APIs Implemented**:
   - Threading API: pthread-based CreateThread, WaitForSingleObject, CreateMutex
   - File System API: POSIX-based CreateDirectory, DeleteFile, CreateFile, WriteFile, ReadFile
-  - Network API: Socket compatibility layer com namespace Win32Net para evitar conflitos
+  - Network API: Socket compatibility layer with Win32Net namespace to avoid conflicts
   - String API: strupr, strlwr, stricmp, strnicmp, BI_RGB constants
-- **Progresso de Compilação**: Avanço significativo observado durante testes
-- **Próximo**: Ajustar DirectX APIs restantes e estruturas D3DCAPS8
+- **Compilation Progress**: Significant progress observed during testing
+- **Next**: Adjust remaining DirectX APIs and D3DCAPS8 structures
 
-### Progresso Técnico
+### Technical Progress
 
-- Resolvidos conflitos de namespace em network.h usando namespace Win32Net
-- Implementadas APIs de string compatíveis com Windows
-- Threading API totalmente funcional com pthread backend
-- File system API com mapeamento POSIX completo
+- Resolved namespace conflicts in network.h using Win32Net namespace
+- Implemented Windows-compatible string APIs
+- Threading API fully functional with pthread backend
+- File system API with complete POSIX mapping
 
 Qui 11 Set 2025 21:07:34 -03: Fase 2 APIs implementadas com sucesso
 
@@ -5433,32 +5433,32 @@ Thu 12 Sep 2025 18:30:00 -03: Phase 6 DirectX Graphics compatibility layer imple
 Thu 12 Sep 2025 21:45:00 -03: **MAJOR BREAKTHROUGH** - Phase 6 compilation progress increased 674% from 11/691 to 74/708 files compiling successfully through comprehensive Windows API compatibility implementation
 Thu 12 Sep 2025 22:30:00 -03: **CONTINUED EXPANSION** - Phase 6 compilation progress advanced to 157/855 files (112% session increase) with header path resolution, function pointer casting fixes, and Windows API implementations; investigating 'unterminated conditional directive' error for final resolution
 
-## 🎮 Phase 19: Integração de Bibliotecas Profissionais TheSuperHackers (COMPLETO ✅)
+## 🎮 Phase 19: Integration of Professional TheSuperHackers Libraries (COMPLETE ✅)
 
-### Integração das Bibliotecas TheSuperHackers para Substituição de Stubs Proprietários
+### Integration of TheSuperHackers Libraries to Replace Proprietary Stubs
 
-- ✅ **bink-sdk-stub**: Biblioteca profissional de stubs para substituir implementação fragmentada do Bink Video SDK
-- ✅ **miles-sdk-stub**: Biblioteca profissional para simular a API Miles Sound System em plataformas não-Windows
-- ✅ **CMake Integration**: Configuração FetchContent para download e integração automática das bibliotecas
+- ✅ **bink-sdk-stub**: Professional stub library to replace fragmented Bink Video SDK implementation
+- ✅ **miles-sdk-stub**: Professional library to simulate Miles Sound System API on non-Windows platforms
+- ✅ **CMake Integration**: FetchContent configuration for automatic download and library integration
 
-### Resolução de Problemas Técnicos
+### Technical Problem Resolution
 
-- ✅ **Branch Correction**: Correção das referências de branch 'main' para 'master' nos repositórios TheSuperHackers
-- ✅ **Miles Alias**: Criação de alias `Miles::Miles` para target `milesstub` para compatibilidade com sistema de build
-- ✅ **Cross-Platform Inclusion**: Remoção de condicionais específicas para Windows para garantir disponibilidade multiplataforma
+- ✅ **Branch Correction**: Corrected branch references from 'main' to 'master' in TheSuperHackers repositories
+- ✅ **Miles Alias**: Created `Miles::Miles` alias for `milesstub` target for build system compatibility
+- ✅ **Cross-Platform Inclusion**: Removed Windows-specific conditionals to ensure multi-platform availability
 
-### Benefícios Técnicos
+### Technical Benefits
 
-- ✅ **API Consistency**: API completa e consistente com Miles e Bink originais para compatibilidade perfeita
-- ✅ **CMake Target System**: Integração limpa via CMake com targets nomeados `Bink::Bink` e `Miles::Miles`
-- ✅ **Error Reduction**: Eliminação de avisos de compilação relacionados a stubs de vídeo e áudio incompletos
-- ✅ **Build Success**: Compilação bem-sucedida do GeneralsZH com as novas bibliotecas integradas
+- ✅ **API Consistency**: Complete and consistent API with original Miles and Bink for perfect compatibility
+- ✅ **CMake Target System**: Clean integration via CMake with named targets `Bink::Bink` and `Miles::Miles`
+- ✅ **Error Reduction**: Elimination of compilation warnings related to incomplete video and audio stubs
+- ✅ **Build Success**: Successful compilation of GeneralsZH with new integrated libraries
 
-### Detalhes Técnicos
+### Technical Details
 
-- **Padrão de Implementação**: Substituição completa de stubs fragmentados por implementações profissionais
-- **Arquivos Modificados**: cmake/bink.cmake, cmake/miles.cmake e Core/GameEngineDevice/CMakeLists.txt
-- **Dependências Externas**: Adicionadas TheSuperHackers/bink-sdk-stub e TheSuperHackers/miles-sdk-stub
+- **Implementation Pattern**: Complete replacement of fragmented stubs with professional implementations
+- **Modified Files**: cmake/bink.cmake, cmake/miles.cmake and Core/GameEngineDevice/CMakeLists.txt
+- **External Dependencies**: Added TheSuperHackers/bink-sdk-stub and TheSuperHackers/miles-sdk-stub
 
 ---
 
@@ -5587,7 +5587,7 @@ Implement multiplayer networking system with replay compatibility. Focus on LAN 
 
 **Documentation**: See `docs/PHASE35/README.md` for detailed networking roadmap
 
-Seg 23 Set 2025 15:30:00 -03: Fase 19 - Integração de bibliotecas TheSuperHackers concluída com sucesso, melhorando a qualidade do código e compatibilidade
+Mon 23 Sep 2025 15:30:00 -03: Phase 19 - TheSuperHackers library integration completed successfully, improving code quality and compatibility
 
 ---
 
