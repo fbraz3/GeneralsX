@@ -928,7 +928,7 @@ void GameEngine::init()
 	// Upstream: Use FramePacer for FPS management
 	TheFramePacer->setFramesPerSecondLimit(TheGlobalData->m_framesPerSecondLimit);
 
-	setFramesPerSecondLimit(TheGlobalData->m_framesPerSecondLimit);	// Phase 33: Debug audio enable/disable state
+	// Phase 33: Debug audio enable/disable state
 	printf("GameEngine::init() - Audio settings: audioOn=%d, musicOn=%d, soundsOn=%d, sounds3DOn=%d, speechOn=%d\n",
 		   TheGlobalData->m_audioOn, TheGlobalData->m_musicOn, TheGlobalData->m_soundsOn,
 		   TheGlobalData->m_sounds3DOn, TheGlobalData->m_speechOn);
@@ -1371,23 +1371,21 @@ void GameEngine::execute( void )
 		#else	//always allow this cheat key if we're in a replay game.
 					allowFpsLimit &= !(!TheGameLogic->isGamePaused() && TheGlobalData->m_TiVOFastMode && TheGameLogic->isInReplayGame());
 		#endif
-					{
-						// TheSuperHackers @bugfix xezon 05/08/2025 Re-implements the frame rate limiter
-						// with higher resolution counters to cap the frame rate more accurately to the desired limit.
-						allowFpsLimit &= TheGlobalData->m_useFpsLimit;
-						const UnsignedInt maxFps = allowFpsLimit ? getFramesPerSecondLimit() : RenderFpsPreset::UncappedFpsValue;
-						if (loopCount < 3) {
-							printf("GameEngine::execute() - About to call wait(maxFps=%u)\n", maxFps);
-							fflush(stdout);
-						}
-						m_updateTime = frameRateLimit->wait(maxFps);
-						if (loopCount < 3) {
-							printf("GameEngine::execute() - wait() returned %f\n", m_updateTime);
-							fflush(stdout);
-						}
+				{
+					// TheSuperHackers @bugfix xezon 05/08/2025 Re-implements the frame rate limiter
+					// with higher resolution counters to cap the frame rate more accurately to the desired limit.
+					allowFpsLimit &= TheGlobalData->m_useFpsLimit;
+					const UnsignedInt maxFps = allowFpsLimit ? TheFramePacer->getFramesPerSecondLimit() : RenderFpsPreset::UncappedFpsValue;
+					if (loopCount < 3) {
+						printf("GameEngine::execute() - About to call wait(maxFps=%u)\n", maxFps);
+						fflush(stdout);
 					}
-
-				}
+					float updateTime = frameRateLimit->wait(maxFps);
+					if (loopCount < 3) {
+						printf("GameEngine::execute() - wait() returned %f\n", updateTime);
+						fflush(stdout);
+					}
+				}				}
 			}
 
 			// Upstream: Also call FramePacer update for compatibility

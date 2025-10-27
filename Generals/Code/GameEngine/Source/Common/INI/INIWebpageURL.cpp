@@ -120,4 +120,10 @@ void INI::parseWebpageURLDefinition( INI* ini )
 	}
 }
 
+// WebBrowserURL parse table definition
+const FieldParse WebBrowserURL::m_URLFieldParseTable[] = 
+{
+	{ "URL", &INI::parseAsciiString, NULL, offsetof(WebBrowserURL, m_url) },
+	{ NULL, NULL, NULL, 0 }
+};
 

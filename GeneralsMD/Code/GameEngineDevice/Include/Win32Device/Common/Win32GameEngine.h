@@ -33,11 +33,16 @@
 #pragma once
 
 #include "Common/GameEngine.h"
+#include "Common/GameAudio.h"
 #include "GameLogic/GameLogic.h"
 #include "GameNetwork/NetworkInterface.h"
 #include "MilesAudioDevice/MilesAudioManager.h"
 #include "Win32Device/Common/Win32BIGFileSystem.h"
 #include "Win32Device/Common/Win32LocalFileSystem.h"
+#ifndef _WIN32
+#include "StdDevice/Common/StdLocalFileSystem.h"
+#include "StdDevice/Common/StdBIGFileSystem.h"
+#endif
 #include "W3DDevice/Common/W3DModuleFactory.h"
 #include "W3DDevice/GameLogic/W3DGameLogic.h"
 #include "W3DDevice/GameClient/W3DGameClient.h"
@@ -92,11 +97,35 @@ inline GameClient *Win32GameEngine::createGameClient( void ) { return NEW W3DGam
 inline ModuleFactory *Win32GameEngine::createModuleFactory( void ) { return NEW W3DModuleFactory; }
 inline ThingFactory *Win32GameEngine::createThingFactory( void ) { return NEW W3DThingFactory; }
 inline FunctionLexicon *Win32GameEngine::createFunctionLexicon( void ) { return NEW W3DFunctionLexicon; }
-inline LocalFileSystem *Win32GameEngine::createLocalFileSystem( void ) { return NEW Win32LocalFileSystem; }
-inline ArchiveFileSystem *Win32GameEngine::createArchiveFileSystem( void ) { return NEW Win32BIGFileSystem; }
+inline LocalFileSystem *Win32GameEngine::createLocalFileSystem( void ) {
+#ifdef _WIN32
+    return NEW Win32LocalFileSystem;
+#else
+    return NEW StdLocalFileSystem;
+#endif
+}
+inline ArchiveFileSystem *Win32GameEngine::createArchiveFileSystem( void ) {
+#ifdef _WIN32
+    return NEW Win32BIGFileSystem;
+#else
+    return NEW StdBIGFileSystem;
+#endif
+}
 inline ParticleSystemManager* Win32GameEngine::createParticleSystemManager( void ) { return NEW W3DParticleSystemManager; }
 
 inline NetworkInterface *Win32GameEngine::createNetwork( void ) { return NetworkInterface::createNetwork(); }
 inline Radar *Win32GameEngine::createRadar( void ) { return NEW W3DRadar; }
-inline WebBrowser *Win32GameEngine::createWebBrowser( void ) { return NEW CComObject<W3DWebBrowser>; }
-inline AudioManager *Win32GameEngine::createAudioManager( void ) { return NEW MilesAudioManager; }
+inline WebBrowser *Win32GameEngine::createWebBrowser( void ) { 
+#ifdef _WIN32
+    return NEW CComObject<W3DWebBrowser>; 
+#else
+    return NEW W3DWebBrowser;
+#endif
+}
+inline AudioManager *Win32GameEngine::createAudioManager( void ) { 
+#ifdef _WIN32
+    return NEW MilesAudioManager; 
+#else
+    return NEW AudioManagerDummy; // Stub - audio disabled on non-Windows for now
+#endif
+}

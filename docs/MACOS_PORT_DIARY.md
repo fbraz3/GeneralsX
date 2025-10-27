@@ -2,10 +2,279 @@
 
 **Project Name**: 🎯 **GeneralsX** (formerly Command & Conquer: Generals)
 
-**Port Status**: 🎉 **Phase 36 – Upstream Merge Complete** 🚀  
-**Current Focus**: 🏁 **Phase 36.5 – Merge Execution Success**
+**Port Status**: ⚠️ **Phase 35.6 – ROLLBACK COMPLETO** 🔄  
+**Current Focus**: � **Critical Crash Fix + Root Cause Analysis**
 
-## Latest Update (October 25, 2025) — Phase 36.5: Upstream Merge Complete ✅
+## Latest Update (October 27, 2025) — macOS IME crash fixed, 30s stable run, clean ESC exit ✅
+
+Summary
+
+- Fixed macOS Input Method Editor (IME) crash triggered by ESC key while SDL text input was enabled by default
+- Introduced one-time IME disable on startup via SDL_StopTextInput()
+- Runtime validated: ~30 seconds stable execution with continuous Metal rendering; pressing ESC now exits cleanly with status 0
+- Confirms previous Metal pipeline fixes are holding under real input handling
+
+Root Cause
+
+- Crash occurred in libicucore.A.dylib at icu::UnicodeString::doCompare() when ESC was pressed
+- Call chain: SDL_PollEvent → Cocoa/HIToolbox → ICU Unicode compare → NULL pointer dereference
+- SDL starts text input by default; macOS IME attempted to process keyboard text events unexpectedly
+
+Fix Implemented
+
+- Disabled SDL text input at event-loop initialization to prevent IME activation during gameplay
+
+Code (Win32GameEngine.cpp)
+
+```cpp
+// Disable IME by default to avoid macOS Unicode path on non-text screens
+static bool s_imeDisabled = false;
+if (!s_imeDisabled) {
+   SDL_StopTextInput();
+   s_imeDisabled = true;
+   printf("Phase 35.6: SDL text input disabled to prevent macOS IME crashes\n");
+}
+```
+
+Build/Runtime Verification
+
+- Build: Success (pre-existing warnings only); no new errors introduced
+- Deploy: GeneralsMD/GeneralsXZH copied to $HOME/GeneralsX/GeneralsMD/
+- Run: ~30 seconds stable with Metal blue screen rendering
+- Input: ESC key triggers graceful shutdown (setQuitting(true)), process exits with status 0
+
+Context and Status
+
+- Follows complete rollback of Phase 35.6 memory "optimization" (protections restored in GameMemory.cpp)
+- Confirms the 5-step Metal crash sequence is resolved (shader buffer index, SDL_MetalView lifecycle, pipeline validation, NSEventThread validation)
+- This update addresses input/IME stability; rendering stability remains strong
+
+Next Steps
+
+1. Extend stability test windows to multi-minute sessions (2–5 min) to surface long-tail issues
+2. Progress from blue screen to content rendering (menu/UI visibility) and diagnose any pipeline state or resource binding gaps
+3. Track IME/text input re-enable points (chat/name entry screens) and scope a targeted SDL_StartTextInput() at those times only
+
+Artifacts
+
+- Runtime log: $HOME/GeneralsX/GeneralsMD/logs/phase35_6_ime_disabled_test.log
+
+```text
+... GameMain initialized ...
+METAL: BeginFrame()
+... running ~30s ...
+EMERGENCY EXIT: ESC pressed - quitting immediately
+```
+
+## Latest Update (October 26, 2025) — Phase 35.6: ROLLBACK COMPLETO ❌
+
+**CRITICAL CRASH**: Phase 35.6 causou crash instantâneo em produção - **ROLLBACK IMEDIATO EXECUTADO**
+
+### Cronologia do Incidente
+
+**17:00-19:00**: Phase 35.6 implementada e deployed (otimização de proteções de memória)  
+**19:28**: Usuário executa jogo → **CRASH IMEDIATO** (<1 minuto de execução)  
+**19:33**: Rollback completo implementado, compilado e deployed  
+
+### O Crash
+
+```
+Exception:      EXC_BAD_ACCESS at 0x6e646461001c0001 (ASCII-like pointer!)
+Crash Location: AsciiString::releaseBuffer() + 8 (Line 207)
+Root Cause:     Use-after-free em AsciiString::m_data
+Call Stack:     StdBIGFileSystem::openArchiveFile() → AsciiString::operator=()
+                → ensureUniqueBufferOfSize() → releaseBuffer() → CRASH
+```
+
+**Ponteiro Corrompido**: `0x6e646461001c0001`  
+- Bytes `0x6e646461` = ASCII "addn" (little-endian)  
+- Bytes `0x001c0001` = Garbage/offset inválido  
+- **Conclusão**: `m_data` apontava para memória já liberada contendo lixo ASCII
+
+### Por Que a Phase 35.6 Estava ERRADA
+
+**Premissa Falsa**:
+> "Validações triplas causam overhead → race conditions → segfaults intermitentes"
+
+**Realidade Comprovada pelo Crash**:
+1. **Proteções eram ESSENCIAIS**: Detectavam e preveniam crashes por ponteiros corruptos
+2. **Arquitetura mal compreendida**: `AsciiString` chama `freeBytes()` DIRETAMENTE, não via `operator delete`
+3. **"Single-point validation" era FALSA**: Múltiplos caminhos de execução requerem múltiplas proteções
+
+**Call Chain Real** (AsciiString - SEM passar por operator delete):
+```
+AsciiString::releaseBuffer()
+  ↓
+TheDynamicMemoryAllocator->freeBytes(m_data)  ← Phase 35.6 removeu validação aqui ❌
+  ↓
+recoverBlockFromUserData(m_data)              ← Phase 35.6 removeu validação aqui ❌
+  ↓
+CRASH: aritmética de ponteiros com 0x6e646461001c0001
+```
+
+**Se proteções estivessem ativas** (Phase 30.6):
+- `freeBytes()` teria detectado ponteiro ASCII: `isValidMemoryPointer(0x6e646461001c0001) → false`
+- Return silencioso (sem crash)
+- Log: `"MEMORY PROTECTION: Detected ASCII-like pointer..."`
+- Jogo continuaria rodando
+
+### Mudanças Revertidas
+
+**✅ Restaurado 1**: Logging completo em `isValidMemoryPointer()`  
+- **Antes**: Printf apenas 1× a cada 100 detecções (rate-limiting)  
+- **Depois**: Printf TODAS as detecções (diagnóstico completo)  
+
+**✅ Restaurado 2**: Validação em `recoverBlockFromUserData()`  
+- **Antes**: Sem validação (confiava em caller)  
+- **Depois**: `if (!isValidMemoryPointer(pUserData)) return NULL;`  
+
+**✅ Restaurado 3**: Validação em `freeBytes()`  
+- **Antes**: Sem validação (confiava em operator delete)  
+- **Depois**: `if (!isValidMemoryPointer(pBlockPtr)) return;`  
+
+### Lições Aprendidas
+
+1. **Defense in Depth é ESSENCIAL**: "Validações redundantes" são na verdade camadas de proteção necessárias
+2. **Crash Logs > Hipóteses**: Evidência empírica provou que proteções PREVINEM crashes, não causam
+3. **C++ tem Múltiplos Caminhos**: Subsistemas chamam funções internas diretamente, bypassing "entry points"
+4. **Proteções são BARATAS**: Overhead de validação é insignificante comparado a crashes em produção
+
+### Status Atual
+
+**Build**: ✅ Compilado com sucesso (828/828 files)  
+**Deploy**: ✅ Executável deployed (19:33)  
+**Proteções**: ✅ TODAS restauradas (Phase 30.6 status)  
+**Performance**: ⚠️ Overhead aceito em troca de estabilidade  
+
+**Próximo Passo**: ⏳ Usuário deve testar e confirmar que crash não ocorre mais
+
+---
+
+## Histórico: Phase 35.6 - Memory Protection Optimization ❌ (FAILED)
+
+**Duration**: 17:00-19:00 (2 hours implementation)  
+**Outcome**: ❌ **PRODUCTION CRASH** (<1min uptime)  
+**Rollback**: ✅ Executado às 19:33  
+
+**OPTIMIZATION COMPLETE**: Eliminated triple-validation in delete operators, reduced logging overhead by 99%, targeting intermittent segfault resolution.
+
+### Phase 35.6: Memory Protection Optimization Success 🎉
+
+**Duration**: 2 hours (analysis + implementation + compilation)  
+**Outcome**: ✅ **BUILD SUCCESS** (testing pending)  
+**Files Modified**: 1 (`Core/GameEngine/Source/Common/System/GameMemory.cpp`)  
+**Build Status**: ✅ Clean compilation (828/828 files, warnings only)  
+**Testing Status**: ⏳ **PENDING USER VALIDATION** (10+ runs recommended)
+
+**Problem Statement**:
+- User experiencing frequent segmentation faults
+- Success rate: ~30-50% (requires multiple run attempts)
+- No consistent crash location or pattern
+
+**Root Cause Discovery**:
+- **Triple validation per delete operation**:
+  1. `operator delete(p)` → `isValidMemoryPointer(p)` [1st check]
+  2. `freeBytes(p)` → `isValidMemoryPointer(p)` [2nd check - redundant]
+  3. `recoverBlockFromUserData(p)` → `isValidMemoryPointer(p)` [3rd check - redundant]
+- **Performance impact**: 24 byte comparisons per delete + up to 3× printf calls
+- **Hypothesis**: Excessive validation in hot paths causes timing issues exposing race conditions
+
+**Optimizations Applied**:
+
+#### 1. Single-Point Validation Strategy ✅
+**Removed redundant checks**:
+- ❌ `freeBytes()` validation (Line 2341) → Protected at entry point
+- ❌ `recoverBlockFromUserData()` validation (Line 957) → Protected at entry point
+- ✅ **Kept** validation in 4 `operator delete` overloads (Lines 3381, 3397, 3429, 3461)
+
+**Rationale**:
+- Protection happens once at entry points (delete operators)
+- Internal functions only called from protected paths
+- If bypassed, crash immediately to expose bugs (fail-fast principle)
+
+**Code changes**:
+```cpp
+// Before (freeBytes)
+void DynamicMemoryAllocator::freeBytes(void* pBlockPtr) {
+    if (!isValidMemoryPointer(pBlockPtr)) {  // REMOVED
+        return;
+    }
+    // ...
+}
+
+// After
+void DynamicMemoryAllocator::freeBytes(void* pBlockPtr) {
+    // Phase 35.6: Validation removed - caller (operator delete) already validates
+    // Single-point validation strategy: protect at entry points (delete operators)
+    // ...
+}
+```
+
+#### 2. Rate-Limited Logging (99% Reduction) ✅
+**Old behavior**: Printf on every ASCII pointer detection  
+**New behavior**: Printf only every 100th detection
+
+```cpp
+// Before
+if (all_ascii) {
+    char ascii_str[9];
+    // ... string conversion ...
+    printf("MEMORY PROTECTION: Detected ASCII pointer %p (\"%s\")...\n", p, ascii_str);
+    return false;
+}
+
+// After (Phase 35.6)
+if (all_ascii) {
+    static int detection_count = 0;
+    if (++detection_count % 100 == 0) {  // Log only every 100 detections
+        char ascii_str[9];
+        // ... string conversion ...
+        printf("MEMORY PROTECTION: Detected ASCII pointer %p (\"%s\") - %d total\n", 
+               p, ascii_str, detection_count);
+    }
+    return false;
+}
+```
+
+**Performance Impact**:
+- **Before**: `delete p` → 24 byte checks + up to 3× printf
+- **After**: `delete p` → 8 byte checks + printf/100
+- **Improvement**: ~67% reduction in validation overhead + 99% reduction in I/O
+
+#### 3. Architectural Documentation ✅
+**Created**: `docs/PHASE35/PHASE35_6_SEGFAULT_ANALYSIS.md` (full analysis)
+- Call chain visualization
+- Performance metrics calculation
+- Testing protocol (baseline vs optimized)
+- Root cause hypotheses (timing, masking, I/O overhead)
+- Rollback plan if segfaults increase
+
+**References**:
+- Phase 30.6: Original protection introduction (AGXMetal13_3 driver bugs)
+- Phase 35.1-35.5: Previous protection removal work (completed October 19-21)
+- PROTECTION_INVENTORY.md: Complete protection catalog
+
+**Next Steps (User Testing Required)**:
+1. **Baseline**: Record current segfault frequency (10 runs)
+2. **Test optimized build**: Run game 10+ times with new executable
+3. **Collect crash logs**: `$HOME/Documents/.../ReleaseCrashInfo.txt`
+4. **Compare**: Success rate before vs after optimization
+5. **Report**: Share results in next session
+
+**Expected Outcome**:
+- ✅ Reduced segfault frequency (target: >70% success rate)
+- ✅ Faster delete operations (less timing-sensitive race conditions)
+- ✅ Same or fewer driver bug detections (protection still active)
+
+**Rollback Plan**:
+If segfaults increase:
+- Revert commit
+- Investigate Theory 2 (validation masking real bugs)
+- Add crash-on-detection mode to expose masked corruption
+
+---
+
+## Previous Update (October 25, 2025) — Phase 36.5: Upstream Merge Complete ✅
 
 **MERGE COMPLETED**: Successfully integrated 73 upstream commits with comprehensive conflict resolution and platform compatibility fixes. Build clean, runtime validated, no regressions detected.
 

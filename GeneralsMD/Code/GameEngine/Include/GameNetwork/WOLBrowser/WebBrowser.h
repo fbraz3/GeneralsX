@@ -43,11 +43,22 @@
 #pragma once
 
 #include "Common/SubsystemInterface.h"
+#ifdef _WIN32
 #include <atlbase.h>
 #include <windows.h>
-#include <Common/GameMemory.h>
 #include "EABrowserDispatch/BrowserDispatch.h"
 #include "FEBDispatch.h"
+#else
+// Stub definitions for non-Windows platforms
+#define STDMETHOD(method) virtual HRESULT method
+#define STDMETHODCALLTYPE
+#define IUNKNOWN_NOEXCEPT
+typedef void* IBrowserDispatch;
+typedef void* REFIID;
+// Simplified stub: FEBDispatch just inherits SubsystemInterface
+template<typename T, typename I, typename IID> class FEBDispatch : public SubsystemInterface {};
+#endif
+#include <Common/GameMemory.h>
 #include <Lib/BaseType.h>
 
 class GameWindow;
@@ -74,9 +85,14 @@ public:
 
 
 
+#ifdef _WIN32
 class WebBrowser :
 		public FEBDispatch<WebBrowser, IBrowserDispatch, &IID_IBrowserDispatch>,
 		public SubsystemInterface
+#else
+class WebBrowser :
+		public SubsystemInterface
+#endif
 	{
 	public:
 		void init( void );
@@ -121,4 +137,8 @@ class WebBrowser :
 		STDMETHOD(TestMethod)(Int num1);
 	};
 
+#ifdef _WIN32
 extern CComObject<WebBrowser> *TheWebBrowser;
+#else
+extern WebBrowser *TheWebBrowser;
+#endif

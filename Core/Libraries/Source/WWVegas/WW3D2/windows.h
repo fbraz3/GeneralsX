@@ -3,6 +3,9 @@
 
 #ifndef _WIN32
 
+// Phase 36.6: GLAD must be included FIRST before any OpenGL headers
+#include <glad/glad.h>
+
 // Standard C libraries needed for compatibility functions
 #include <string.h>
 #include <strings.h>  // for strcasecmp

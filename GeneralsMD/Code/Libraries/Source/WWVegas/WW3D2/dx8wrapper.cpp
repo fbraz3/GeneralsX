@@ -57,6 +57,9 @@
 #include "dx8indexbuffer.h"
 #include "dx8renderer.h"
 #include "ww3d.h"
+#ifdef __APPLE__
+#include "metalwrapper.h"  // Phase 36.6: Metal backend initialization
+#endif
 #include "camera.h"
 #include "wwstring.h"
 #include "matrix4.h"
@@ -95,6 +98,9 @@
 
 // Phase 28.9.2: Global flag to indicate OpenGL is fully ready (window + context + GLAD loaded)
 static bool g_openGLReady = false;
+
+// Phase 36: Global SDL window pointer (initialized in WinMain or elsewhere)
+SDL_Window* g_SDLWindow = nullptr;
 
 // Phase 29.3: Global Metal backend flag (initialized early in WinMain)
 bool g_useMetalBackend = false;
@@ -795,6 +801,24 @@ bool DX8Wrapper::Create_Device(void)
 	
 	// Set mock display format for macOS
 	DisplayFormat = D3DFMT_X8R8G8B8; // 32-bit RGBA format
+	
+	// Phase 36.6: Initialize Metal backend BEFORE device-dependent inits
+	if (g_useMetalBackend) {
+		printf("DX8Wrapper::Create_Device - Initializing Metal backend...\n");
+		
+		GX::MetalConfig config;
+		config.sdlWindow = _Hwnd; // On macOS, _Hwnd is actually a SDL_Window*
+		config.width = 800;       // Default resolution
+		config.height = 600;
+		config.vsync = true;
+		
+		if (!GX::MetalWrapper::Initialize(config)) {
+			printf("DX8Wrapper::Create_Device - FATAL: Metal initialization failed!\n");
+			return false;
+		}
+		
+		printf("DX8Wrapper::Create_Device - Metal backend initialized successfully\n");
+	}
 	
 	// CRITICAL: Initialize all subsystems like the Windows version does
 	Do_Onetime_Device_Dependent_Inits();

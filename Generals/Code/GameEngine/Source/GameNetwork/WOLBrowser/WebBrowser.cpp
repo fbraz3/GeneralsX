@@ -323,6 +323,17 @@ STDMETHODIMP WebBrowser::TestMethod(Int num1)
 }
 #else
 // Non-Windows platform implementations (stubs)
+#include "GameNetwork/WOLBrowser/WebBrowser.h"
+
+WebBrowser::WebBrowser() : m_urlList(NULL) {}
+WebBrowser::~WebBrowser() {}
+
+HRESULT WebBrowser::TestMethod(Int num1)
+{
+	// Stub - browser functionality disabled on non-Windows
+	DEBUG_LOG(("WebBrowser::TestMethod - stub called (non-Windows)"));
+	return S_OK;
+}
 
 void WebBrowser::init()
 {
