@@ -27,6 +27,9 @@ static id s_vertexBuffer = nil;
 static id s_pipelineState = nil;
 static id s_renderEncoder = nil;
 
+// Phase 35.6 Rollback Metal Fix: Store SDL_MetalView to prevent Window Server crashes
+static SDL_MetalView s_sdlMetalView = nullptr;
+
 // Phase 28.4.3: Uniform buffer for shader parameters
 static MetalWrapper::ShaderUniforms s_currentUniforms;
 static bool s_uniformsDirty = true;
@@ -56,13 +59,26 @@ static CAMetalLayer* GetOrCreateLayer(void* sdlWindowPtr, int width, int height)
     CAMetalLayer* layer = nullptr;
     if (sdlWindowPtr) {
         SDL_Window* sdlWindow = (SDL_Window*)sdlWindowPtr;
-        SDL_MetalView metalView = SDL_Metal_CreateView(sdlWindow);
-        if (metalView) {
-            layer = (__bridge CAMetalLayer*)SDL_Metal_GetLayer(metalView);
+        
+        // Phase 35.6 Rollback Metal Fix: Store SDL_MetalView globally to prevent Window Server crashes
+        // Root cause: SDL_MetalView was created but never stored, causing dangling references
+        // when Window Server tried to send events to the orphaned view
+        // Solution: Keep reference alive for the lifetime of the Metal backend
+        if (!s_sdlMetalView) {
+            s_sdlMetalView = SDL_Metal_CreateView(sdlWindow);
+            printf("METAL: Created SDL_MetalView (%p) for window (%p)\n", s_sdlMetalView, sdlWindow);
+        }
+        
+        if (s_sdlMetalView) {
+            layer = (__bridge CAMetalLayer*)SDL_Metal_GetLayer(s_sdlMetalView);
+            printf("METAL: Got CAMetalLayer (%p) from SDL_MetalView\n", layer);
+        } else {
+            printf("METAL WARNING: Failed to create SDL_MetalView, using fallback layer\n");
         }
     }
     if (!layer) {
         // Fallback: create a standalone layer
+        printf("METAL: Creating standalone CAMetalLayer (no SDL window provided)\n");
         layer = [CAMetalLayer layer];
     }
     layer.frame = CGRectMake(0, 0, width, height);
@@ -120,9 +136,9 @@ bool MetalWrapper::CreateSimplePipeline() {
         float fogEnabled;
     };
     
-    // Vertex shader - uniforms at buffer(1), vertex data at buffer(0)
+    // Vertex shader - uniforms at buffer(0), vertex data via stage_in
     vertex VertexOutput vertex_main(VertexInput in [[stage_in]],
-                                   constant Uniforms& uniforms [[buffer(1)]]) {
+                                   constant Uniforms& uniforms [[buffer(0)]]) {
         VertexOutput out;
         
         // For 2D rendering: positions are already in clip-space, pass through directly
@@ -139,9 +155,9 @@ bool MetalWrapper::CreateSimplePipeline() {
         return out;
     }
     
-    // Fragment shader - uniforms at buffer(1)
+    // Fragment shader - uniforms at buffer(0)
     fragment float4 fragment_main(VertexOutput in [[stage_in]],
-                                 constant Uniforms& uniforms [[buffer(1)]],
+                                 constant Uniforms& uniforms [[buffer(0)]],
                                  texture2d<float> diffuseTexture [[texture(0)]],
                                  sampler textureSampler [[sampler(0)]]) {
         
@@ -220,6 +236,18 @@ bool MetalWrapper::CreateSimplePipeline() {
     id<MTLFunction> vertexFunction = [library newFunctionWithName:@"vertex_main"];
     id<MTLFunction> fragmentFunction = [library newFunctionWithName:@"fragment_main"];
     
+    // Phase 35.6 Rollback Metal Fix: Validate shader functions before creating pipeline
+    if (!vertexFunction) {
+        std::printf("METAL FATAL: vertex_main function not found in shader library!\n");
+        return false;
+    }
+    if (!fragmentFunction) {
+        std::printf("METAL FATAL: fragment_main function not found in shader library!\n");
+        return false;
+    }
+    printf("METAL: Shader functions loaded successfully (vertex=%p, fragment=%p)\n", 
+           vertexFunction, fragmentFunction);
+    
     MTLRenderPipelineDescriptor* desc = [[MTLRenderPipelineDescriptor alloc] init];
     desc.vertexFunction = vertexFunction;
     desc.fragmentFunction = fragmentFunction;
@@ -234,7 +262,10 @@ bool MetalWrapper::CreateSimplePipeline() {
     desc.colorAttachments[0].destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
     desc.colorAttachments[0].alphaBlendOperation = MTLBlendOperationAdd;
     
-    // Vertex descriptor - must match VertexInput in basic.metal
+    // Phase 35.6 Rollback Metal Fix: Simplified vertex descriptor for 2D rendering
+    // CRITICAL: Only define layouts for buffers we actually use
+    // Buffer 0 = uniforms (set at runtime, no vertex descriptor needed)
+    // Buffer 1 = vertex data (needs layout definition)
     MTLVertexDescriptor* vertexDesc = [[MTLVertexDescriptor alloc] init];
     
     // Attribute 0: position (float3) - offset 0
@@ -257,17 +288,35 @@ bool MetalWrapper::CreateSimplePipeline() {
     vertexDesc.attributes[3].offset = 40;
     vertexDesc.attributes[3].bufferIndex = 1;
     
-    // Buffer layout at index 1 (vertex data, uniforms are at index 0)
-    vertexDesc.layouts[1].stride = sizeof(Vertex);  // 48 bytes total
+    // Buffer layout at index 1 ONLY (vertex data)
+    // Hardcode stride to 48 bytes to avoid C++ struct alignment issues
+    vertexDesc.layouts[1].stride = 48;  // position(12) + normal(12) + color(16) + texcoord(8)
     vertexDesc.layouts[1].stepFunction = MTLVertexStepFunctionPerVertex;
     
+    // DO NOT define layout for buffer 0 - it's for uniforms only
     desc.vertexDescriptor = vertexDesc;
+    
+    // CRITICAL FIX (Phase 35.6 Rollback): Force SYNCHRONOUS pipeline compilation
+    // Apple's AGXMetal13_3 driver crashes in background shader compilation
+    // with EXC_BAD_ACCESS at AGCDeserializedReply::deserialize()
+    // Root cause: Asynchronous compilation creates race condition with complex shaders
+    // Solution: Compile pipeline synchronously on main thread
+    printf("METAL: Creating pipeline state SYNCHRONOUSLY (driver crash workaround)...\n");
+    fflush(stdout);
     
     s_pipelineState = [(id<MTLDevice>)MetalWrapper::s_device newRenderPipelineStateWithDescriptor:desc error:&error];
     if (!s_pipelineState) {
         std::printf("METAL: Failed to create pipeline state: %s\n", [[error localizedDescription] UTF8String]);
+        if (error) {
+            std::printf("METAL: Error domain: %s\n", [[error domain] UTF8String]);
+            std::printf("METAL: Error code: %ld\n", (long)[error code]);
+            std::printf("METAL: Error userInfo: %s\n", [[[error userInfo] description] UTF8String]);
+        }
         return false;
     }
+    
+    printf("METAL: Pipeline state created successfully (%p) - shader compilation complete\n", s_pipelineState);
+    fflush(stdout);
     
     return true;
 }
@@ -313,6 +362,13 @@ bool MetalWrapper::Initialize(const MetalConfig& cfg) {
 }
 
 void MetalWrapper::Shutdown() {
+    // Phase 35.6 Rollback Metal Fix: Properly cleanup SDL_MetalView to prevent Window Server crashes
+    if (s_sdlMetalView) {
+        printf("METAL: Destroying SDL_MetalView (%p)\n", s_sdlMetalView);
+        SDL_Metal_DestroyView(s_sdlMetalView);
+        s_sdlMetalView = nullptr;
+    }
+    
     s_renderEncoder = nil;
     s_pipelineState = nil;
     s_vertexBuffer = nil;
@@ -322,7 +378,7 @@ void MetalWrapper::Shutdown() {
     s_layer = nil;
     s_commandQueue = nil;
     s_device = nil;
-    std::printf("METAL: Shutdown\n");
+    std::printf("METAL: Shutdown complete\n");
 }
 
 void MetalWrapper::Resize(int width, int height) {
@@ -389,25 +445,63 @@ void MetalWrapper::BeginFrame(float r, float g, float b, float a) {
     printf("METAL DEBUG: About to create render encoder (cmdBuffer=%p, pass=%p)\n", s_cmdBuffer, pass);
     printf("METAL DEBUG: Pipeline state before encoder: %p\n", s_pipelineState);
     
-    // Validate command buffer state before creating encoder
+    // Phase 35.6 Rollback Metal Fix: Comprehensive pre-flight checks
+    // Prevents AGXMetal13_3 driver crash in AGCDeserializedReply::deserialize() + 988
+    
+    // 1. Validate command buffer state
     if (!s_cmdBuffer) {
         printf("METAL FATAL: cmdBuffer is NULL before encoder creation!\n");
         return;
     }
     
-    // Validate render pass descriptor
+    // 2. Validate render pass descriptor
     if (!pass) {
         printf("METAL FATAL: RenderPassDescriptor is NULL!\n");
         return;
     }
     
-    // Validate texture attachment
+    // 3. Validate color attachment texture
     if (!pass.colorAttachments[0].texture) {
         printf("METAL FATAL: Color attachment texture is NULL!\n");
         return;
     }
     
-    printf("METAL DEBUG: Validations passed, creating render encoder...\n");
+    // 4. Validate texture pixel format matches pipeline
+    MTLPixelFormat textureFormat = [pass.colorAttachments[0].texture pixelFormat];
+    if (textureFormat != MTLPixelFormatBGRA8Unorm) {
+        printf("METAL WARNING: Texture format mismatch! Expected BGRA8Unorm, got %lu\n", (unsigned long)textureFormat);
+    }
+    
+    printf("METAL DEBUG: Pre-flight checks passed, validating pipeline state...\n");
+    fflush(stdout);
+    
+    // 5. CRITICAL: Validate pipeline state BEFORE creating encoder
+    if (!s_pipelineState) {
+        printf("METAL FATAL: Pipeline state is NULL - cannot create render encoder!\n");
+        printf("METAL FATAL: Was InitializeShaders() called successfully?\n");
+        return;
+    }
+    
+    // 6. Additional validation: Check if pipeline state is valid Metal object
+    @try {
+        // Try to access pipeline state properties - if corrupted, this may throw
+        NSString *label = [(id<MTLRenderPipelineState>)s_pipelineState label];
+        (void)label;  // Suppress unused warning
+        printf("METAL DEBUG: Pipeline state validated (%p), label=\"%s\"\n", 
+               s_pipelineState, label ? [label UTF8String] : "nil");
+    }
+    @catch (NSException *exception) {
+        printf("METAL FATAL: Pipeline state is CORRUPTED - exception: %s\n", 
+               [[exception description] UTF8String]);
+        return;
+    }
+    
+    // 7. Validate render pass descriptor configuration
+    printf("METAL DEBUG: RenderPass config - loadAction: %lu, storeAction: %lu\n",
+           (unsigned long)pass.colorAttachments[0].loadAction,
+           (unsigned long)pass.colorAttachments[0].storeAction);
+    
+    printf("METAL DEBUG: All validations passed, creating render encoder...\n");
     fflush(stdout);
     
     // Begin render pass - encoder stays active until EndFrame

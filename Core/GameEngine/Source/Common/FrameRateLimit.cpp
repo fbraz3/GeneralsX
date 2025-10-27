@@ -55,7 +55,7 @@ Real FrameRateLimit::wait(UnsignedInt maxFps)
 		printf("FRAMERATE WAIT[%d]: maxFps=%u, elapsed=%.6f, target=%.6f, sleep=%.6f\n", 
 			callCount, maxFps, elapsedSeconds, targetSeconds, sleepSeconds);
 		printf("  tick=%lld, start=%lld, diff=%lld, freq=%lld\n",
-			tick.QuadPart, m_start.QuadPart, tick.QuadPart - m_start.QuadPart, m_freq.QuadPart);
+			tick.QuadPart, m_start, tick.QuadPart - m_start, m_freq);
 		fflush(stdout);
 		callCount++;
 	}
@@ -76,8 +76,7 @@ Real FrameRateLimit::wait(UnsignedInt maxFps)
 	do
 	{
 		QueryPerformanceCounter(&tick);
-<<<<<<< HEAD
-		elapsedSeconds = static_cast<double>(tick.QuadPart - m_start.QuadPart) / m_freq.QuadPart;
+		elapsedSeconds = static_cast<double>(tick.QuadPart - m_start) / m_freq;
 		spinCount++;
 		if (callCount < 2 && spinCount > 100000) {
 			printf("  WARNING: Spin wait exceeded 100k iterations! elapsed=%.6f, target=%.6f\n",

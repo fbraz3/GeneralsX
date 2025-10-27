@@ -76,6 +76,12 @@ inline void _splitpath(const char* path, char* drive, char* dir, char* fname, ch
 #include "stringex.h"
 #include "DownloadDebug.h"
 
+// Use Win32Net compatibility functions for cross-platform socket support
+#ifndef _WIN32
+using Win32Net::compat_getsockname;
+using Win32Net::compat_listen;
+#endif
+
 // umm... what?? BGC 3/27/03
 //#ifndef RTS_DEBUG
 //#define RTS_DEBUG
@@ -1169,9 +1175,9 @@ int Cftp::SendNewPort( void )
 
 		i = sizeof( m_DataSockAddr);
 
-		getsockname( m_iDataSocket, (struct sockaddr *)&m_DataSockAddr, &i );
+		compat_getsockname( m_iDataSocket, (struct sockaddr *)&m_DataSockAddr, &i );
 
-		listen( m_iDataSocket, 5 );
+		compat_listen( m_iDataSocket, 5 );
 
 
 		// Set socket to non-blocking

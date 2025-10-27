@@ -11,6 +11,9 @@
 #define WIN32_COMPAT_H_INCLUDED
 
 #ifndef _WIN32
+// SDL2 for window creation on non-Windows platforms
+#include <SDL2/SDL.h>
+
 // Include DirectX math compatibility
 #include "../WWMath/d3dx8math.h"
 // Compatibility types for non-Windows systems
@@ -115,6 +118,16 @@ typedef struct {
     RGBQUAD bmiColors[1];
 } BITMAPINFO;
 
+// Pointer typedefs for BITMAP structures
+typedef BITMAPINFOHEADER* PBITMAPINFOHEADER;
+typedef BITMAPINFO* PBITMAPINFO;
+typedef BYTE* LPBYTE;
+
+// Memory allocation flags and types
+#define LPTR (LMEM_FIXED | LMEM_ZEROINIT)
+#define LMEM_FIXED 0x0000
+#define LMEM_ZEROINIT 0x0040
+
 // GDI constants
 #define DIB_RGB_COLORS 0
 
@@ -144,6 +157,23 @@ typedef struct {
 #define VK_UP 0x26
 #define VK_RIGHT 0x27
 #define VK_DOWN 0x28
+
+// Phase 36.7: Window constants (moved here for SDL2 window creation functions)
+// Window style constants
+#define WS_POPUP        0x80000000L
+#define WS_VISIBLE      0x10000000L
+#define WS_DLGFRAME     0x00400000L
+#define WS_CAPTION      0x00C00000L
+#define WS_SYSMENU      0x00080000L
+
+// Window positioning constants
+#define CW_USEDEFAULT   ((int)0x80000000)
+
+// ShowWindow constants
+#define SW_HIDE         0
+#define SW_SHOWNORMAL   1
+#define SW_SHOW         5
+#define SW_RESTORE      9
 
 // FormatMessage constants
 #define FORMAT_MESSAGE_FROM_SYSTEM 0x00001000
@@ -1364,6 +1394,7 @@ inline BOOL HeapFree(HANDLE hHeap, DWORD dwFlags, void* lpMem) {
 
 // Global memory allocation functions
 typedef void* HGLOBAL;
+typedef HGLOBAL HLOCAL;  // Local memory handle (redirected to global)
 
 inline HGLOBAL GlobalAlloc(UINT uFlags, size_t dwBytes) {
     void* ptr = malloc(dwBytes);
@@ -1385,6 +1416,15 @@ inline HGLOBAL GlobalFree(HGLOBAL hMem) {
         free(hMem);
     }
     return nullptr;
+}
+
+// Local memory API (redirected to global memory)
+inline HLOCAL LocalAlloc(UINT uFlags, size_t dwBytes) {
+    return (HLOCAL)GlobalAlloc(uFlags, dwBytes);
+}
+
+inline HLOCAL LocalFree(HLOCAL hMem) {
+    return (HLOCAL)GlobalFree((HGLOBAL)hMem);
 }
 
 #endif // MEMORY_MANAGEMENT_DEFINED
@@ -1636,12 +1676,23 @@ inline BOOL SetWindowTextW(HWND hWnd, const wchar_t* lpString) {
 }
 
 inline BOOL ShowWindow(HWND hWnd, int nCmdShow) {
-    // Stub implementation for showing/hiding window
+    // Phase 36.7: SDL2 window visibility control
+    if (!hWnd) return FALSE;
+    SDL_Window* window = (SDL_Window*)hWnd;
+    
+    if (nCmdShow == SW_SHOW || nCmdShow == SW_SHOWNORMAL || nCmdShow == SW_RESTORE) {
+        SDL_ShowWindow(window);
+        SDL_RaiseWindow(window);
+    } else if (nCmdShow == SW_HIDE) {
+        SDL_HideWindow(window);
+    }
     return TRUE;
 }
 
 inline BOOL UpdateWindow(HWND hWnd) {
-    // Stub implementation for updating window
+    // Phase 36.7: SDL2 window update (pump events)
+    if (!hWnd) return FALSE;
+    SDL_PumpEvents(); // Process pending events
     return TRUE;
 }
 
@@ -1796,18 +1847,7 @@ typedef struct sockaddr SOCKADDR;
 typedef struct sockaddr_in SOCKADDR_IN;
 typedef struct hostent HOSTENT;
 
-// Additional socket functions (to be implemented in network compatibility layer)
-inline int getsockname(SOCKET s, struct sockaddr* addr, int* addrlen) {
-    // Platform-specific implementation would go here
-    // For now, return success but this needs proper implementation
-    return 0;
-}
-
-inline int listen(SOCKET s, int backlog) {
-    // Platform-specific implementation would go here
-    return ::listen(s, backlog);
-}
-
+// Note: getsockname and listen are defined in network.h with proper compat layer
 // Note: closesocket is defined in WWDownload/winsock.h
 // Define closesocket for GameSpy compatibility
 #ifndef closesocket
@@ -1883,21 +1923,62 @@ inline int GetSystemMetrics(int nIndex) {
 }
 
 inline HWND SetFocus(HWND hWnd) {
-    (void)hWnd;
-    return (HWND)1; // Previous focus window
+    // Phase 36.7: SDL2 focus control
+    if (!hWnd) return NULL;
+    SDL_Window* window = (SDL_Window*)hWnd;
+    SDL_RaiseWindow(window);
+    return hWnd; // Return same window as previous focus
 }
 
 inline BOOL SetForegroundWindow(HWND hWnd) {
-    (void)hWnd;
+    // Phase 36.7: SDL2 foreground window control
+    if (!hWnd) return FALSE;
+    SDL_Window* window = (SDL_Window*)hWnd;
+    SDL_RaiseWindow(window);
     return TRUE;
 }
 
 inline HWND CreateWindow(LPCSTR lpClassName, LPCSTR lpWindowName, DWORD dwStyle,
                         int x, int y, int nWidth, int nHeight,
                         HWND hWndParent, void* hMenu, HINSTANCE hInstance, void* lpParam) {
-    (void)lpClassName; (void)lpWindowName; (void)dwStyle; (void)x; (void)y;
-    (void)nWidth; (void)nHeight; (void)hWndParent; (void)hMenu; (void)hInstance; (void)lpParam;
-    return (HWND)1; // Dummy window handle
+    (void)lpClassName; (void)hWndParent; (void)hMenu; (void)hInstance; (void)lpParam;
+    
+    // Phase 36.7: SDL2 window creation for real window visibility
+    // Initialize SDL if not already initialized
+    static bool sdl_initialized = false;
+    if (!sdl_initialized) {
+        if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+            printf("CreateWindow - SDL_Init failed: %s\n", SDL_GetError());
+            return NULL;
+        }
+        sdl_initialized = true;
+        printf("CreateWindow - SDL2 initialized successfully\n");
+    }
+    
+    // Phase 36.8: Always use macOS window decorations (ignore WS_POPUP)
+    // Convert Windows style to SDL flags - force decorated window on macOS
+    Uint32 sdl_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
+    // Note: dwStyle is intentionally ignored to keep macOS native decorations
+
+    // Create SDL window
+    SDL_Window* window = SDL_CreateWindow(
+        lpWindowName,
+        x == CW_USEDEFAULT ? SDL_WINDOWPOS_CENTERED : x,
+        y == CW_USEDEFAULT ? SDL_WINDOWPOS_CENTERED : y,
+        nWidth,
+        nHeight,
+        sdl_flags
+    );
+    
+    if (!window) {
+        printf("CreateWindow - SDL_CreateWindow failed: %s\n", SDL_GetError());
+        return NULL;
+    }
+    
+    printf("CreateWindow - SDL2 window created: %s (%dx%d at %d,%d)\n", 
+           lpWindowName, nWidth, nHeight, x, y);
+    
+    return (HWND)window; // Return SDL_Window* as HWND
 }
 
 typedef LONG (*PTOP_LEVEL_EXCEPTION_FILTER)(EXCEPTION_POINTERS* ExceptionInfo);
@@ -2072,12 +2153,7 @@ inline DWORD GetCurrentTime() {
 // Window activation constants
 #define WA_INACTIVE     0
 
-// Window style constants
-#define WS_POPUP        0x80000000L
-#define WS_VISIBLE      0x10000000L
-#define WS_DLGFRAME     0x00400000L
-#define WS_CAPTION      0x00C00000L
-#define WS_SYSMENU      0x00080000L
+// Note: WS_* and SW_* constants moved to top of file for SDL2 window creation
 
 // Window class styles
 #define CS_HREDRAW      0x0002
@@ -2100,8 +2176,7 @@ inline DWORD GetCurrentTime() {
 // Exception handling constants
 #define EXCEPTION_EXECUTE_HANDLER 1
 
-// ShowWindow constants
-#define SW_RESTORE      9
+// Note: ShowWindow constants (SW_*) moved to top of file for SDL2 window creation
 
 // Resource macros
 #define MAKEINTRESOURCE(i) ((LPCSTR)((ULONG_PTR)((WORD)(i))))

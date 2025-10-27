@@ -313,5 +313,21 @@ STDMETHODIMP WebBrowser::TestMethod(Int num1)
 #else
 // Browser functionality disabled on non-Windows platforms
 #include "GameNetwork/WOLBrowser/WebBrowser.h"
-WebBrowser * TheWebBrowser = NULL;
+
+// Stub implementation for macOS/Linux
+WebBrowser::WebBrowser() {}
+WebBrowser::~WebBrowser() {}
+
+HRESULT WebBrowser::TestMethod(Int num1) {
+    // Stub - browser functionality disabled on non-Windows
+    return S_OK;
+}
+
+void WebBrowser::init() {}
+void WebBrowser::update() {}
+void WebBrowser::reset() {}
+
+WebBrowserURL * WebBrowser::findURL(AsciiString tag) { return NULL; }
+WebBrowserURL * WebBrowser::makeNewURL(AsciiString tag) { return NULL; }
+
 #endif // _WIN32

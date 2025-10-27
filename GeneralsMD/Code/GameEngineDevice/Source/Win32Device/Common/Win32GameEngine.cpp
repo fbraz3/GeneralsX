@@ -173,17 +173,56 @@ void Win32GameEngine::serviceWindowsOS( void )
 	}
 #else
 	// Phase 27.1.5: SDL2 event loop for cross-platform support (macOS/Linux)
+	// Phase 35.6 Rollback Metal Fix: Robust event handling for malformed Window Server events
+	
+	// Phase 35.6 CRITICAL: Disable SDL text input to prevent macOS IME crashes
+	// macOS Input Method Editor (IME) crashes in libicucore when processing keyboard events
+	// with NULL UnicodeString pointers. Text input should only be enabled when actually needed
+	// (e.g., typing in chat or name fields).
+	static bool text_input_disabled = false;
+	if (!text_input_disabled) {
+		SDL_StopTextInput();  // Disable IME by default
+		text_input_disabled = true;
+		printf("Phase 35.6: SDL text input disabled to prevent macOS IME crashes\n");
+	}
+	
 	SDL_Event event;
 	
 	// Debug: Count events polled
 	static int event_count = 0;
+	static int corrupted_event_count = 0;
 	
-	// Poll all pending SDL events
-	while (SDL_PollEvent(&event)) {
+	// Phase 35.6: Poll events with error checking
+	// macOS 15.0.1 can send corrupted CGEvent tokens causing crashes in NSEventThread
+	// We validate each event before processing to avoid crashes
+	int poll_result = 0;
+	while ((poll_result = SDL_PollEvent(&event)) != 0) {
+		// Check if SDL reported an error during event polling
+		const char* sdl_error = SDL_GetError();
+		if (sdl_error && sdl_error[0] != '\0') {
+			printf("Phase 35.6 WARNING: SDL_PollEvent error: %s (clearing)\n", sdl_error);
+			SDL_ClearError();
+			corrupted_event_count++;
+			continue;  // Skip this event
+		}
+		
 		if (event_count < 10) {
 			printf("Phase 27.1.5 DEBUG: SDL event type=%d (count=%d)\n", event.type, event_count);
 		}
 		event_count++;
+		
+		// Phase 35.6: Validate event type is within SDL's valid range
+		// SDL2 defines event types from SDL_FIRSTEVENT (0) to SDL_LASTEVENT (0xFFFF)
+		// User events start at SDL_USEREVENT (0x8000)
+		if (event.type == 0 || event.type > 0xFFFF) {
+			printf("Phase 35.6 WARNING: Ignoring SDL event with invalid type=0x%x\n", event.type);
+			corrupted_event_count++;
+			if (corrupted_event_count % 100 == 0) {
+				printf("Phase 35.6 ALERT: Detected %d corrupted events (possible Window Server bug)\n", 
+				       corrupted_event_count);
+			}
+			continue;  // Skip corrupted events
+		}
 		
 		switch (event.type) {
 			case SDL_QUIT:
