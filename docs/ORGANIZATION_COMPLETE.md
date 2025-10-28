@@ -9,18 +9,21 @@
 ## What Was Created
 
 ### New Phase Directories
+
 - ✅ `docs/PHASE37/` - Asset Loading & Textures (BLOCKER)
 - ✅ `docs/PHASE38/` - Audio System Validation
 - ✅ `docs/PHASE39/` - UI/Menu System  
 - ✅ `docs/PHASE40/` - Game Logic & Gameplay
 
 ### New Documentation Files
+
 - ✅ `docs/ROADMAP.md` - Complete project roadmap with timeline
 - ✅ `docs/PHASES_SUMMARY.md` - Quick reference guide
 - ✅ `docs/INDEX.md` - Documentation index and navigation
 - ✅ `docs/PHASE_XX_POSITIONING.md` - Where Phase XX fits in timeline
 
 ### Updated Phase XX
+
 - ✅ `docs/PHASE_XX/README.md` - Clarified as final phase (after Phase 40)
 
 ---
@@ -52,6 +55,7 @@ docs/
 ## Timeline Clarity
 
 ### Phases 37-40 (Playable Single-Player)
+
 ```
 Phase 37 (Nov 1-3):   Asset Loading - BLOCKER
   ↓
@@ -65,6 +69,7 @@ PLAYABLE GAME (Nov 20) 🎮
 ```
 
 ### Phase XX (Multiplayer)
+
 ```
 AFTER Phase 40 complete:
   ↓
@@ -78,16 +83,19 @@ COMPLETE GAME (Dec 30) 🌐
 ## Key Navigation Points
 
 ### For Next Work
+
 1. Read: `docs/INDEX.md` (this section)
 2. Read: `docs/PHASE37/README.md` (complete instructions)
 3. Start: Phase 37.1 (texture debugging)
 
 ### For Project Status
+
 - Daily updates: `docs/MACOS_PORT_DIARY.md`
 - Overview: `docs/ROADMAP.md`
 - Quick ref: `docs/PHASES_SUMMARY.md`
 
 ### For Understanding Context
+
 - AI agents: `.github/copilot-instructions.md`
 - Build info: `.github/instructions/project.instructions.md`
 - Documentation: `docs/INDEX.md`
@@ -125,17 +133,20 @@ Phase XX (Multiplayer):
 ## Success Criteria
 
 ### Phase 37 Success
+
 - [x] Documentation complete
 - [ ] Textures loading from .big files
 - [ ] Metal rendering visible content (not just blue)
 - [ ] 10+ textures rendered on screen
 
 ### Phases 38-39 Success
+
 - [ ] Audio playing during gameplay
 - [ ] Menu fully operational with input
 - [ ] Game launchable from menu
 
 ### Phase 40 Success
+
 - [ ] Map loads with units
 - [ ] Player can select/move units
 - [ ] AI opponent present
@@ -143,6 +154,7 @@ Phase XX (Multiplayer):
 - [ ] Game can end (win/lose)
 
 ### Game Ready for Release
+
 - [x] All phases 37-40 complete
 - [x] Single-player playable
 - [x] Phase XX done (multiplayer)
@@ -153,16 +165,19 @@ Phase XX (Multiplayer):
 ## Immediate Actions
 
 ### RIGHT NOW (Oct 27)
+
 - [x] Read this file
 - [ ] Read `docs/PHASE37/README.md`
 - [ ] Read `docs/INDEX.md` for full navigation
 
 ### THIS SESSION (Oct 27-28)
+
 - [ ] Start Phase 37.1: Texture debugging
 - [ ] Add logging to `texture.cpp`
 - [ ] Build and run first diagnostic
 
 ### BY NOV 3
+
 - [ ] Complete Phase 37 (all 3 sub-phases)
 - [ ] Textures rendering on screen
 - [ ] No more "blue screen only"
@@ -180,6 +195,7 @@ Some markdown files have linting warnings (MD032, MD040 for list/code formatting
 ✅ **Phase organization is COMPLETE**
 
 All documentation created with clear:
+
 - Objectives per phase
 - Task breakdowns
 - Success criteria

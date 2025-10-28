@@ -11,12 +11,14 @@ Render menu system with proper texture/UI element display, validate mouse/keyboa
 ## Current Status
 
 ✅ **What's Working**:
+
 - Metal rendering pipeline
 - Texture loading from .big files (Phase 37)
 - Audio system with UI sound support (Phase 38)
 - SDL2 input system (mouse/keyboard event handling)
 
 ❌ **What's Missing**:
+
 - Menu UI elements not rendering
 - Mouse cursor not visible
 - Button states (normal/hover/pressed) not displaying
@@ -53,6 +55,7 @@ Render menu system with proper texture/UI element display, validate mouse/keyboa
   - [ ] Texture sampling correct (no artifacts)
 
 **Files to Modify**:
+
 - `InGameUI.cpp` - Menu rendering logic
 - `Shell.map` - Menu configuration
 - Metal shaders - UI-specific rendering (if needed)
@@ -99,6 +102,7 @@ grep -i "render\|draw\|button\|ui" /tmp/phase39_menu_render.log | head -30
   - [ ] Focus management correct
 
 **Files to Modify**:
+
 - `Mouse.cpp` - Cursor rendering + event handling
 - `Keyboard.cpp` - Keyboard event handling
 - `GameWindowManager.cpp` - Input dispatch
@@ -144,6 +148,7 @@ grep -i "mouse\|click\|keyboard\|input" /tmp/phase39_input_test.log | head -20
   - [ ] Start game → Load map and transition to gameplay
 
 **Files to Modify**:
+
 - `Shell.cpp` - Menu state machine
 - `GameLogic.cpp` - Game initialization from menu
 - Menu transition logic
@@ -233,14 +238,17 @@ grep -i "menu\|state\|transition" /tmp/phase39_menu_test.log | head -20
 ## Dependencies
 
 ✅ **Complete**:
+
 - Phase 30: Metal Backend
 - Phase 31: Texture System
 
 ⏳ **Required**:
+
 - Phase 37: Asset Loading (for UI textures)
 - Phase 38: Audio System (for UI feedback sounds)
 
 ⏳ **Blocking Phase 40**:
+
 - UI must work before gameplay map rendering
 
 ## Next Phase

@@ -5,6 +5,7 @@ Versão: October 27, 2025
 ## Quick Navigation
 
 ### ✅ Completed Phases (27-36)
+
 All foundational work complete - Metal backend operational with blue screen rendering.
 
 - **Phase 27**: W3D Graphics Engine ✅
@@ -19,36 +20,43 @@ All foundational work complete - Metal backend operational with blue screen rend
 - **Phase 36**: Upstream Merge & Compatibility ✅
 
 ### 🚀 Active Development (37-40)
+
 Current roadmap for playable game implementation.
 
 **Phase 37** - Asset Loading & Textures (BLOCKER)
+
 - 📂 `docs/PHASE37/README.md`
 - Status: Ready to start
 - Time: 3-5 days
 - Goal: Fix why textures not rendering (only blue screen)
 
 **Phase 38** - Audio System Validation
+
 - 📂 `docs/PHASE38/README.md`
 - Status: Waiting for Phase 37
 - Time: 3-4 days
 - Goal: Fix audio playback and INI parser
 
 **Phase 39** - UI/Menu System
+
 - 📂 `docs/PHASE39/README.md`
 - Status: Waiting for Phase 37 & 38
 - Time: 4-5 days
 - Goal: Render playable menu with input
 
 **Phase 40** - Game Logic & Gameplay
+
 - 📂 `docs/PHASE40/README.md`
 - Status: Waiting for Phase 39
 - Time: 5-7 days
 - Goal: Playable single-player skirmish
 
 ### 🌐 Future (Phase XX)
+
 Final stretch goal - multiplayer networking.
 
 **Phase XX** - Multiplayer & Networking
+
 - 📂 `docs/PHASE_XX/README.md`
 - Status: Planned after Phase 40
 - Time: 3-4 weeks

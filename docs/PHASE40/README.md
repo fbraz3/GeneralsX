@@ -11,6 +11,7 @@ Implement core gameplay systems: map loading, unit/building rendering, AI state 
 ## Current Status
 
 ✅ **What's Working**:
+
 - Game initialization and shutdown
 - Menu system (Phase 39)
 - Audio events (Phase 38)
@@ -18,6 +19,7 @@ Implement core gameplay systems: map loading, unit/building rendering, AI state 
 - Metal rendering pipeline
 
 ❌ **What's Missing**:
+
 - Gameplay map loading
 - Unit/building rendering
 - Camera control and movement
@@ -60,6 +62,7 @@ Implement core gameplay systems: map loading, unit/building rendering, AI state 
   - [ ] Appropriate LOD transitions
 
 **Files to Modify**:
+
 - `Map.cpp` - Map file loading
 - `TerrainRender.cpp` - Terrain rendering
 - `SceneRender.cpp` - Scene object rendering
@@ -109,6 +112,7 @@ grep -i "map\|terrain\|load" /tmp/phase40_map_load.log | head -30
   - [ ] Water splashes (if applicable)
 
 **Files to Modify**:
+
 - `Object.cpp` - Base object class
 - `Unit.cpp` - Unit-specific behavior
 - `Building.cpp` - Building-specific behavior
@@ -159,6 +163,7 @@ grep -i "unit\|object\|render" /tmp/phase40_units.log | head -30
   - [ ] Command acknowledgement sounds
 
 **Files to Modify**:
+
 - `Camera.cpp` - Camera control
 - `InputSystem.cpp` - Input interpretation
 - `CommandSystem.cpp` - Command issuance
@@ -208,6 +213,7 @@ grep -i "input\|command\|select" /tmp/phase40_input.log | head -20
   - [ ] Return to menu option
 
 **Files to Modify**:
+
 - `Pathfind.cpp` - Pathfinding algorithm
 - `AIPlayer.cpp` - AI decision making
 - `GameLogic.cpp` - Victory/defeat logic
@@ -301,6 +307,7 @@ grep -i "ai\|pathfind\|move\|attack" /tmp/phase40_ai.log | head -30
 ## Dependencies
 
 ✅ **Complete**:
+
 - Phase 30: Metal Backend
 - Phase 31: Texture System
 - Phase 37: Asset Loading
@@ -308,6 +315,7 @@ grep -i "ai\|pathfind\|move\|attack" /tmp/phase40_ai.log | head -30
 - Phase 39: UI/Menu System
 
 ⏳ **Blocking Phase XX**:
+
 - Phase 40 must complete for multiplayer (Phase XX) to function
 
 ## Next Phase
