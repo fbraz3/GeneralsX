@@ -1140,14 +1140,26 @@ void TextureClass::Apply(unsigned int stage)
 			}
 		}
 		
-		// Apply texture if available
+		// Apply texture - Phase 37.3: Try Metal first if available, fall back to OpenGL
+		#ifdef __APPLE__
+		if (MetalTexture != NULL) {
+			// Metal texture already set - just skip OpenGL binding
+			printf("Phase 37.3: Metal texture bound (ID=%p) for stage %u\n", MetalTexture, stage);
+		} else if (GLTexture != 0) {
+			glActiveTexture(GL_TEXTURE0 + stage);
+			glBindTexture(GL_TEXTURE_2D, GLTexture);
+		} else {
+			printf("Phase 37.3 WARNING: No texture available for stage %u (Metal=%p, GL=%u)!\n", stage, MetalTexture, GLTexture);
+		}
+		#else
+		// Non-macOS: OpenGL only
 		if (GLTexture != 0) {
 			glActiveTexture(GL_TEXTURE0 + stage);
 			glBindTexture(GL_TEXTURE_2D, GLTexture);
-			// printf("Phase 28.5: Applied GL texture %u to stage %u\n", GLTexture, stage);
 		} else {
 			printf("Phase 28.5 WARNING: Attempting to apply NULL GL texture!\n");
 		}
+		#endif
 #endif
 	}
 	else

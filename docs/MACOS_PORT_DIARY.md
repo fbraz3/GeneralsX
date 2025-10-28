@@ -87,6 +87,7 @@ Call Stack:     StdBIGFileSystem::openArchiveFile() → AsciiString::operator=()
 ```
 
 **Corrupted Pointer**: `0x6e646461001c0001`  
+
 - Bytes `0x6e646461` = ASCII "addn" (little-endian)  
 - Bytes `0x001c0001` = Garbage/invalid offset  
 - **Conclusion**: `m_data` pointed to already-freed memory containing ASCII garbage
@@ -97,11 +98,13 @@ Call Stack:     StdBIGFileSystem::openArchiveFile() → AsciiString::operator=()
 > "Triple validations cause overhead → race conditions → intermittent segfaults"
 
 **Reality Proven by Crash**:
+
 1. **Protections were ESSENTIAL**: They detected and prevented crashes from corrupted pointers
 2. **Misunderstood architecture**: `AsciiString` calls `freeBytes()` DIRECTLY, not via `operator delete`
 3. **"Single-point validation" was FALSE**: Multiple execution paths require multiple protections
 
 **Actual Call Chain** (AsciiString - WITHOUT passing through operator delete):
+
 ```
 AsciiString::releaseBuffer()
   ↓
@@ -113,6 +116,7 @@ CRASH: pointer arithmetic with 0x6e646461001c0001
 ```
 
 **If protections were active** (Phase 30.6):
+
 - `freeBytes()` would have detected ASCII pointer: `isValidMemoryPointer(0x6e646461001c0001) → false`
 - Silent return (no crash)
 - Log: `"MEMORY PROTECTION: Detected ASCII-like pointer..."`
@@ -121,14 +125,17 @@ CRASH: pointer arithmetic with 0x6e646461001c0001
 ### Reverted Changes
 
 **✅ Restored 1**: Complete logging in `isValidMemoryPointer()`  
+
 - **Before**: Printf only 1× per 100 detections (rate-limiting)  
 - **After**: Printf ALL detections (complete diagnostics)  
 
 **✅ Restored 2**: Validation in `recoverBlockFromUserData()`  
+
 - **Before**: No validation (trusted caller)  
 - **After**: `if (!isValidMemoryPointer(pUserData)) return NULL;`  
 
 **✅ Restored 3**: Validation in `freeBytes()`  
+
 - **Before**: No validation (trusted operator delete)  
 - **After**: `if (!isValidMemoryPointer(pBlockPtr)) return;`  
 
@@ -167,11 +174,13 @@ CRASH: pointer arithmetic with 0x6e646461001c0001
 **Testing Status**: ⏳ **PENDING USER VALIDATION** (10+ runs recommended)
 
 **Problem Statement**:
+
 - User experiencing frequent segmentation faults
 - Success rate: ~30-50% (requires multiple run attempts)
 - No consistent crash location or pattern
 
 **Root Cause Discovery**:
+
 - **Triple validation per delete operation**:
   1. `operator delete(p)` → `isValidMemoryPointer(p)` [1st check]
   2. `freeBytes(p)` → `isValidMemoryPointer(p)` [2nd check - redundant]
@@ -182,17 +191,21 @@ CRASH: pointer arithmetic with 0x6e646461001c0001
 **Optimizations Applied**:
 
 #### 1. Single-Point Validation Strategy ✅
+
 **Removed redundant checks**:
+
 - ❌ `freeBytes()` validation (Line 2341) → Protected at entry point
 - ❌ `recoverBlockFromUserData()` validation (Line 957) → Protected at entry point
 - ✅ **Kept** validation in 4 `operator delete` overloads (Lines 3381, 3397, 3429, 3461)
 
 **Rationale**:
+
 - Protection happens once at entry points (delete operators)
 - Internal functions only called from protected paths
 - If bypassed, crash immediately to expose bugs (fail-fast principle)
 
 **Code changes**:
+
 ```cpp
 // Before (freeBytes)
 void DynamicMemoryAllocator::freeBytes(void* pBlockPtr) {
@@ -211,6 +224,7 @@ void DynamicMemoryAllocator::freeBytes(void* pBlockPtr) {
 ```
 
 #### 2. Rate-Limited Logging (99% Reduction) ✅
+
 **Old behavior**: Printf on every ASCII pointer detection  
 **New behavior**: Printf only every 100th detection
 
@@ -237,12 +251,15 @@ if (all_ascii) {
 ```
 
 **Performance Impact**:
+
 - **Before**: `delete p` → 24 byte checks + up to 3× printf
 - **After**: `delete p` → 8 byte checks + printf/100
 - **Improvement**: ~67% reduction in validation overhead + 99% reduction in I/O
 
 #### 3. Architectural Documentation ✅
+
 **Created**: `docs/PHASE35/PHASE35_6_SEGFAULT_ANALYSIS.md` (full analysis)
+
 - Call chain visualization
 - Performance metrics calculation
 - Testing protocol (baseline vs optimized)
@@ -250,11 +267,13 @@ if (all_ascii) {
 - Rollback plan if segfaults increase
 
 **References**:
+
 - Phase 30.6: Original protection introduction (AGXMetal13_3 driver bugs)
 - Phase 35.1-35.5: Previous protection removal work (completed October 19-21)
 - PROTECTION_INVENTORY.md: Complete protection catalog
 
 **Next Steps (User Testing Required)**:
+
 1. **Baseline**: Record current segfault frequency (10 runs)
 2. **Test optimized build**: Run game 10+ times with new executable
 3. **Collect crash logs**: `$HOME/Documents/.../ReleaseCrashInfo.txt`
@@ -262,12 +281,14 @@ if (all_ascii) {
 5. **Report**: Share results in next session
 
 **Expected Outcome**:
+
 - ✅ Reduced segfault frequency (target: >70% success rate)
 - ✅ Faster delete operations (less timing-sensitive race conditions)
 - ✅ Same or fewer driver bug detections (protection still active)
 
 **Rollback Plan**:
 If segfaults increase:
+
 - Revert commit
 - Investigate Theory 2 (validation masking real bugs)
 - Add crash-on-detection mode to expose masked corruption
@@ -287,6 +308,7 @@ If segfaults increase:
 **Runtime Status**: ✅ Validated (60s Metal backend test, 0 crashes)
 
 **Git State**:
+
 - Branch: `main`
 - HEAD: `f4edfdfd` (merge commit)
 - Upstream: `TheSuperHackers/GeneralsGameCode:develop` (73 commits)
@@ -295,20 +317,23 @@ If segfaults increase:
 **Critical Fixes Applied**:
 
 #### 1. WebBrowser COM/ATL Compatibility (5 iterations)
+
 - **Problem**: DirectX COM browser interface incompatible with macOS
 - **Solution**: Conditional class inheritance pattern
   - Windows: `FEBDispatch<WebBrowser, IBrowserDispatch, &IID_IBrowserDispatch> + SubsystemInterface`
   - macOS: `SubsystemInterface` only (no COM dependencies)
-- **Files**: 
+- **Files**:
   - `GeneralsMD/Code/GameEngine/Include/GameNetwork/WOLBrowser/WebBrowser.h`
   - `Generals/Code/GameEngine/Include/GameNetwork/WOLBrowser/WebBrowser.h`
 
 #### 2. Windows Bitmap/Memory API Stubs
+
 - **Added typedefs**: `PBITMAPINFOHEADER`, `PBITMAPINFO`, `LPBYTE`, `LPTR`
 - **Added functions**: `LocalAlloc()`, `LocalFree()` → redirected to `GlobalAlloc/Free`
 - **File**: `Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h`
 
 #### 3. Linker Symbol Resolution
+
 - **WebBrowser stubs**: Minimal implementation for macOS/Linux
   - Constructor, destructor, `TestMethod()`, `init()`, `reset()`, `update()`, `findURL()`, `makeNewURL()`
   - **Removed**: Incorrect `initSubsystem()`/`shutdownSubsystem()` (not declared in class)
@@ -318,6 +343,7 @@ If segfaults increase:
 - **TheWebBrowser pointer**: Single definition in `cross_platform_stubs.cpp` (removed duplicates)
 
 #### 4. Platform-Specific Factory Methods
+
 - **File**: `Win32GameEngine.h` (both Generals + GeneralsMD)
 - `createWebBrowser()`: Returns `CComObject<W3DWebBrowser>` on Windows, `W3DWebBrowser` on macOS
 - `createAudioManager()`: Returns `MilesAudioManager` on Windows, `NULL` on macOS
@@ -325,24 +351,29 @@ If segfaults increase:
 **Upstream Integration Changes**:
 
 #### Unified Headers (#pragma once standardization)
+
 - **Impact**: 500+ header files converted from include guards to `#pragma once`
 - **Benefit**: Faster compilation, cleaner code
 - **Scripts**: `scripts/cpp/replace_include_guards_with_pragma.py` + utilities
 
 #### Component Relocation
+
 - **STLUtils.h**: Moved from `Core/GameEngine/Include/Common/` → `Core/Libraries/Source/WWVegas/WWLib/`
 - **Reason**: Better library organization alignment
 
 #### New Components
+
 - **FramePacer**: New `Core/GameEngine/Include/Common/FramePacer.h` + `.cpp` for improved frame timing
 
 **Build Metrics**:
+
 - Files compiled: 828/828 (100%)
 - Errors: 0
 - Warnings: 42 (baseline - same as pre-merge)
 - Linker warnings: 1 (duplicate library - cosmetic)
 
 **Runtime Validation**:
+
 - Executable: `GeneralsXZH` (Zero Hour expansion)
 - Backend: Metal (macOS default)
 - Test duration: 60 seconds
@@ -353,12 +384,14 @@ If segfaults increase:
 **Platform Support Status**:
 
 ✅ **Fully Operational**:
+
 - macOS ARM64 (Apple Silicon)
   - Build: Clean compilation
   - Runtime: Validated with Metal backend
   - Graphics: Fully operational
 
 ⚠️ **Partially Operational**:
+
 - Audio: Disabled on non-Windows (MilesAudioManager Windows-only)
   - Phase 33 (OpenAL backend) pending
   - Stub returns `NULL` to prevent crashes
@@ -367,11 +400,13 @@ If segfaults increase:
   - No crashes from missing COM interfaces
 
 **Documentation Updates**:
+
 - `docs/PHASE36/MERGE_EXECUTION_STRATEGY.md` - Complete merge execution log
 - Build logs: `logs/phase36_BUILD_SUCCESS.log`
 - Runtime logs: `logs/phase36_runtime_test_*.log`
 
 **Git Commit**:
+
 ```
 feat: merge upstream 73 commits (Phase 36 - cross-platform compatibility)
 
@@ -383,6 +418,7 @@ Runtime status: ✅ Validated
 ```
 
 **Next Steps (Phase 37)**:
+
 1. Feature integration from new upstream components (FramePacer, etc.)
 2. Test upstream improvements in existing subsystems
 3. Evaluate new compiler scripts for future use
@@ -401,6 +437,7 @@ Runtime status: ✅ Validated
 **Result**: ⚠️ **IMPOSSIBLE** - FramePacer only exists in upstream
 
 **Git State**:
+
 - Branch: `main` (clean)
 - HEAD: `fac287ab` (3 commits ahead of origin/main)
 - Attempted branch: `feature/gameengine-api-migration` (created then deleted)
@@ -439,6 +476,7 @@ grep -rn "extern.*TheFramePacer" GeneralsMD/Code/GameEngine/
 **Why Stub Solution Failed**:
 
 Creating a minimal FramePacer stub would require:
+
 - ❌ Implementing FramePacer class with 15+ methods
 - ❌ Creating TheFramePacer singleton initialization (where? when?)
 - ❌ Ensuring initialization happens BEFORE GameEngine uses it
@@ -513,6 +551,7 @@ git commit
 **Next Session**: Execute direct merge with `git merge original/main --no-ff --no-commit`
 
 **Time Investment Summary**:
+
 - Phase 36.1 (Initial Analysis): 3 hours
 - Phase 36.2 (Critical Files): 2 hours  
 - Phase 36.3 (GameEngine Refactoring): 4 hours
@@ -522,8 +561,6 @@ git commit
 ---
 
 ## October 24, 2025 - Phase 36 (Part 3): GameEngine→FramePacer Refactoring Analysis
-
-
 
 **MILESTONE**: Phase 35 (Code Cleanup & Protection Removal) officially begun! After identifying critical bugs caused by defensive programming patterns in Phase 33.9 (exception swallowing) and Phase 34.3 (global state corruption), we now systematically audit and remove high-risk protections that introduce bugs rather than prevent them.
 
@@ -3697,7 +3734,7 @@ if (vectorSize > 100000) { // Detect massive corruption
 - ✅ **Bink Video Complete**: Full video codec API stub implementation
 - ✅ **Type System Unified**: All CORE_IDirect3D*vs IDirect3D* conflicts resolved
 - ✅ **Vector Math**: D3DXVECTOR4 with full operator*= support and const void* conversions
-- ✅ **Windows API Isolation**: Comprehensive #ifdef _WIN32 protection for GetCursorPos, VK_* constants, message handling
+- ✅ **Windows API Isolation**: Comprehensive #ifdef *WIN32 protection for GetCursorPos, VK** constants, message handling
 - ✅ **Cross-Platform Ready**: Core graphics engine now compiles on macOS with OpenGL compatibility layer
 - 🔧 **Final Systems**: Only 17 errors remain in auxiliary systems (Miles Audio, Bink Video, DirectInput)
 
@@ -4124,7 +4161,7 @@ The macOS port has achieved major milestones by successfully compiling all core 
 
 3. **Configuration System**: Settings load/save through Registry compatibility layer**Technical Solutions Implemented for Zero Errors**:
 
-- ✅ __Core/Generals LP_ Coordination_*: Removed `LPDIRECT3D8`, `LPDIRECT3DDEVICE8`, `LPDIRECT3DSURFACE8` redefinitions from Generals/d3d8.h
+- ✅ **Core/Generals LP* Coordination**: Removed `LPDIRECT3D8`, `LPDIRECT3DDEVICE8`, `LPDIRECT3DSURFACE8` redefinitions from Generals/d3d8.h
 
 ### Production Readiness Indicators- ✅ **Void Pointer Casting Strategy**: Implemented explicit casting `(IDirect3DSurface8**)&render_target` in dx8wrapper.cpp
 
@@ -4156,7 +4193,7 @@ The macOS port has achieved major milestones by successfully compiling all core 
 
 ## 📈 Development Velocity Analysis- **Session Start**: 7 typedef redefinition errors (LP* conflicts)
 
-- __After LP_ typedef removal_*: 4 redefinition errors  
+- **After LP* typedef removal**: 4 redefinition errors  
 
 ### Historical Progress- **After LPDISPATCH forward declaration**: 1 missing constant error
 
@@ -4284,20 +4321,20 @@ The macOS port of Command & Conquer: Generals has achieved extraordinary success
 
 ---- ✅ **Memory Management**: Proper handle lifecycle management and resource cleanup
 
-_Last Updated: September 14, 2025_- ✅ **Type System**: Consistent typedef system across all compatibility layers
+*Last Updated: September 14, 2025*- ✅ **Type System**: Consistent typedef system across all compatibility layers
 
-_Next Update: Upon executable compilation success_
+*Next Update: Upon executable compilation success*
 **Error Progression - Phase 2 SUCCESS**:
 
 - **Session Start**: 7 typedef redefinition errors (LP* conflicts)
-- __After LP_ typedef removal_*: 4 redefinition errors  
+- **After LP* typedef removal**: 4 redefinition errors  
 - **After LPDISPATCH forward declaration**: 1 missing constant error
 - **After D3DRS_PATCHSEGMENTS addition**: **0 ERRORS** ✅ **COMPLETE SUCCESS**
 - **Final Status**: g_ww3d2 target compiles with only warnings, zero errors
 
 **Technical Achievements**:
 
-- __LP_ Typedef Coordination_*: Successfully eliminated conflicts between Core void* and Generals interface definitions
+- **LP* Typedef Coordination**: Successfully eliminated conflicts between Core void* and Generals interface definitions
 - **Explicit Casting Implementation**: (IDirect3D**)cast pattern working perfectly for void* to interface conversions
 - **Include Guard Systems**: GENERALS_DIRECTX_INTERFACES_DEFINED guards preventing redefinition conflicts
 - **D3DRENDERSTATETYPE Completion**: All DirectX render states properly defined for shader system compatibility
@@ -4423,7 +4460,7 @@ _Next Update: Upon executable compilation success_
 - **DirectX Typedef Resolution COMPLETE**: g_ww3d2 target compiling with **0 ERRORS** ✅
 - **120+ Compilation Errors Resolved**: Through comprehensive Windows API implementation
 - **Multi-layer DirectX Architecture**: Perfect coordination between Core and Generals layers
-- __LP_ Typedef Harmony_*: Complete harmony between Core void* definitions and Generals interface casting
+- **LP* Typedef Harmony**: Complete harmony between Core void* definitions and Generals interface casting
 
 **🚀 NEXT PHASE: Minimum Viable Version Roadmap**
 

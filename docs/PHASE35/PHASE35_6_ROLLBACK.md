@@ -65,6 +65,7 @@ Protection:     isValidMemoryPointer() would have DETECTED and PREVENTED this cr
 ### Change 1: Rate-Limited Logging ❌ REVERTED
 
 **Before** (Phase 35.6 - INCORRECT):
+
 ```cpp
 if (all_ascii) {
     // Phase 35.6: Rate-limited logging to reduce printf overhead (99% reduction)
@@ -78,6 +79,7 @@ if (all_ascii) {
 ```
 
 **After** (Phase 35.6 Rollback - CORRECT):
+
 ```cpp
 if (all_ascii) {
     // Convert to string for logging
@@ -99,6 +101,7 @@ if (all_ascii) {
 ### Change 2: Validation in recoverBlockFromUserData() ❌ REVERTED
 
 **Before** (Phase 35.6 - DANGEROUS):
+
 ```cpp
 /* static */ MemoryPoolSingleBlock *MemoryPoolSingleBlock::recoverBlockFromUserData(void* pUserData)
 {
@@ -112,6 +115,7 @@ if (all_ascii) {
 ```
 
 **After** (Phase 35.6 Rollback - SAFE):
+
 ```cpp
 /* static */ MemoryPoolSingleBlock *MemoryPoolSingleBlock::recoverBlockFromUserData(void* pUserData)
 {
@@ -133,6 +137,7 @@ if (all_ascii) {
 ### Change 3: Validation in freeBytes() ❌ REVERTED
 
 **Before** (Phase 35.6 - DANGEROUS):
+
 ```cpp
 void DynamicMemoryAllocator::freeBytes(void* pBlockPtr)
 {
@@ -146,6 +151,7 @@ void DynamicMemoryAllocator::freeBytes(void* pBlockPtr)
 ```
 
 **After** (Phase 35.6 Rollback - SAFE):
+
 ```cpp
 void DynamicMemoryAllocator::freeBytes(void* pBlockPtr)
 {
@@ -172,6 +178,7 @@ void DynamicMemoryAllocator::freeBytes(void* pBlockPtr)
 > "Delete operators do 3 validations of the same pointer → overhead → race conditions → segfaults"
 
 **Proven Reality**:
+
 - Validations **PROTECT** against bugs, they don't cause bugs
 - The crash occurred because `AsciiString` calls `freeBytes()` **DIRECTLY**, not via `operator delete`
 - Real call chain: `releaseBuffer() → freeBytes() → recoverBlockFromUserData()`
@@ -180,22 +187,28 @@ void DynamicMemoryAllocator::freeBytes(void* pBlockPtr)
 ### Misunderstood Architecture
 
 **We Assumed** (WRONG):
+
 ```
 Usuário → delete ptr → operator delete() → freeBytes() → recoverBlockFromUserData()
            ✅ validado   ⚠️ redundante    ⚠️ redundante
 ```
 
 **Realidade** (caso AsciiString):
+
 ```
 ```
+
 User → delete ptr → operator delete() → freeBytes() → recoverBlockFromUserData()
         ✅ validated   ⚠️ redundant    ⚠️ redundant
+
 ```
 
 **Reality** (AsciiString case):
 ```
+
 AsciiString → releaseBuffer() → TheDynamicMemoryAllocator->freeBytes() → recoverBlockFromUserData()
                ❌ NO validation  ❌ NO validation (Phase 35.6)          ❌ NO validation (Phase 35.6)
+
 ```
 
 **Conclusion**: "Single-point validation" only works if **ALL** paths go through `operator delete`. AsciiString (and probably other subsystems) call `freeBytes()` directly.
