@@ -43,6 +43,9 @@
 #ifndef _WIN32
 #include <glad/glad.h>
 #include "texture_cache.h"  // Phase 28.5: Texture cache integration
+#ifdef __APPLE__
+#include "metalwrapper.h"   // Phase 37.4: Metal texture binding
+#endif
 #endif
 
 #include "texture.h"
@@ -1140,16 +1143,17 @@ void TextureClass::Apply(unsigned int stage)
 			}
 		}
 		
-		// Apply texture - Phase 37.3: Try Metal first if available, fall back to OpenGL
+		// Apply texture - Phase 37.4: Metal texture binding implementation
 		#ifdef __APPLE__
 		if (MetalTexture != NULL) {
-			// Metal texture already set - just skip OpenGL binding
-			printf("Phase 37.3: Metal texture bound (ID=%p) for stage %u\n", MetalTexture, stage);
+			// Phase 37.4: Call actual Metal binding function
+			GX::MetalWrapper::BindTexture(MetalTexture, stage);
+			printf("Phase 37.4: Metal texture bound (ID=%p) for stage %u\n", MetalTexture, stage);
 		} else if (GLTexture != 0) {
 			glActiveTexture(GL_TEXTURE0 + stage);
 			glBindTexture(GL_TEXTURE_2D, GLTexture);
 		} else {
-			printf("Phase 37.3 WARNING: No texture available for stage %u (Metal=%p, GL=%u)!\n", stage, MetalTexture, GLTexture);
+			printf("Phase 37.4 WARNING: No texture available for stage %u (Metal=%p, GL=%u)!\n", stage, MetalTexture, GLTexture);
 		}
 		#else
 		// Non-macOS: OpenGL only
