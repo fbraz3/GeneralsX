@@ -233,6 +233,20 @@ set_target_properties(g_ww3d2 PROPERTIES OUTPUT_NAME ww3d2)
 
 target_sources(g_ww3d2 PRIVATE ${WW3D2_SRC})
 
+target_compile_definitions(g_ww3d2 PRIVATE
+    $<$<BOOL:${IS_VS6_BUILD}>:WINVER=0x0500>
+)
+
+target_precompile_headers(g_ww3d2 PRIVATE
+    dx8wrapper.h
+    [["always.h"]]
+    [["STLUtils.h"]]
+    [["win.h"]]
+    [["WWCommon.h"]]
+    [["wwstring.h"]]
+    <windows.h>
+)
+
 target_link_libraries(g_ww3d2 PRIVATE
     corei_ww3d2
     g_wwcommon
