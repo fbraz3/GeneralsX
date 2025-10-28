@@ -11,17 +11,20 @@ Validate OpenAL audio backend implementation from Phase 33, fix INI parsing issu
 ## Current Status
 
 ✅ **What's Working**:
+
 - OpenAL device initialization (32 2D + 128 3D sources created)
 - Audio request queue system operational
 - Update loop with playing/fading/stopped list management
 - WAV/MP3 file loading framework
 
 ⚠️ **What's Partially Working**:
+
 - INI parsing reads default values instead of actual config (Phase 33.9 fix attempted but needs validation)
 - Volume values always 0.00 (DefaultSoundVolume, DefaultMusicVolume should be ~80)
 - Music filenames reading as empty strings
 
 ❌ **What's Missing**:
+
 - Audio playback during gameplay (no speaker output)
 - Music system integration with menu/map loading
 - 3D spatial audio positioning validation
@@ -56,6 +59,7 @@ Validate OpenAL audio backend implementation from Phase 33, fix INI parsing issu
   - [ ] Compare against Phase 33.8 baseline
 
 **Files to Check**:
+
 - `GeneralsMD/Code/GameEngine/Source/Common/INI/INI.cpp` - Exception handling
 - `GeneralsMD/Code/Audio/GameAudio.cpp` - Audio INI loading
 - Build output: Check for "UNIVERSAL PROTECTION" messages
@@ -104,6 +108,7 @@ grep -i "INI ERROR\|DefaultSoundVolume\|DefaultMusicVolume" /tmp/phase38_ini_tes
   - [ ] Test music pause/resume
 
 **Files to Modify**:
+
 - Add test audio event in gameplay loop (temporary)
 - Add logging to OpenALAudioManager::processRequest()
 - Add logging to OpenALAudioManager::update()
@@ -149,6 +154,7 @@ grep -i "ProcessRequest\|playSample\|AR_Play" /tmp/phase38_audio_test.log | head
   - [ ] Persist volume settings to config
 
 **Files to Modify**:
+
 - `GameLogic.cpp` - Connect unit sounds
 - `InGameUI.cpp` - UI click/hover sounds
 - Audio settings menu - Volume slider integration
@@ -231,12 +237,15 @@ grep -i "AudioEvent\|playAudio\|SoundEffect" /tmp/phase38_gameplay_audio.log | w
 ## Dependencies
 
 ✅ **Complete**:
+
 - Phase 33: OpenAL Backend Implementation
 
 ⏳ **Required Before Start**:
+
 - Phase 37: Asset Loading (textures needed for UI audio testing)
 
 ⏳ **Blocking Phase 39**:
+
 - Phase 38 must complete for menu audio integration
 
 ## Next Phase
