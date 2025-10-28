@@ -396,6 +396,75 @@ GLuint Upload_Texture_From_Memory(const void* pixel_data, uint32_t width, uint32
 }
 
 /**
+ * @brief Upload texture from raw memory data and return Metal texture pointer (Phase 37.5)
+ */
+GLuint Upload_Texture_From_Memory_With_Metal(const void* pixel_data, uint32_t width, uint32_t height,
+                                              GLenum format, size_t data_size,
+                                              void** out_metal_texture) {
+    fprintf(stderr, "🔴 PHASE 37.5: Upload_Texture_From_Memory_With_Metal called!!!\n");
+    fflush(stderr);
+    
+    printf("Phase 37.5 DEBUG: Upload_Texture_From_Memory_With_Metal called (w=%u, h=%u, fmt=0x%04X, out_metal=%p)\n",
+           width, height, format, out_metal_texture);
+    fflush(stdout);
+    
+    if (!out_metal_texture) {
+        printf("TEXTURE ERROR: NULL out_metal_texture in Upload_Texture_From_Memory_With_Metal\n");
+        return Upload_Texture_From_Memory(pixel_data, width, height, format, data_size);
+    }
+    
+    *out_metal_texture = nullptr;  // Initialize output
+    
+    if (!pixel_data) {
+        printf("TEXTURE ERROR: NULL pixel data in Upload_Texture_From_Memory_With_Metal\n");
+        return 0;
+    }
+    
+    if (width == 0 || height == 0) {
+        printf("TEXTURE ERROR: Invalid dimensions %ux%u in Upload_Texture_From_Memory_With_Metal\n", width, height);
+        return 0;
+    }
+    
+    // Use Metal backend when available
+    #ifndef _WIN32
+    extern bool g_useMetalBackend;
+    
+    #ifdef __APPLE__
+    printf("Phase 37.5 DEBUG: Checking Metal backend (g_useMetalBackend=%d)\n", g_useMetalBackend);
+    fflush(stdout);
+    if (g_useMetalBackend) {
+        printf("TEXTURE (Metal): Uploading from memory with Metal return: %ux%u, format 0x%04X, size %zu bytes\n",
+               width, height, format, data_size);
+        
+        // Create Metal texture directly
+        void* metal_texture = GX::MetalWrapper::CreateTextureFromMemory(width, height, format, pixel_data, data_size);
+        
+        if (!metal_texture) {
+            printf("TEXTURE ERROR (Metal): Failed to create texture from memory\n");
+            return 0;
+        }
+        
+        // Store Metal pointer in output parameter
+        *out_metal_texture = metal_texture;
+        
+        // Cast Metal texture pointer to GLuint for compatibility
+        GLuint texture_id = (GLuint)(uintptr_t)metal_texture;
+        
+        printf("Phase 37.5: Metal texture created and stored (ID=%p)\n", metal_texture);
+        fflush(stdout);
+        
+        return texture_id;
+    }
+    #endif
+    #endif
+    
+    // Fall back to regular Upload_Texture_From_Memory for OpenGL
+    printf("Phase 37.5 DEBUG: Falling back to OpenGL (Metal not available or not enabled)\n");
+    fflush(stdout);
+    return Upload_Texture_From_Memory(pixel_data, width, height, format, data_size);
+}
+
+/**
  * @brief Delete OpenGL texture
  */
 void Delete_GL_Texture(GLuint texture_id) {

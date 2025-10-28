@@ -38,6 +38,7 @@
  */
 struct TextureEntry {
     GLuint texture_id;          ///< OpenGL texture ID
+    void* metal_texture_id;     ///< Phase 37.5: Metal texture pointer (id<MTLTexture>*)
     uint32_t width;             ///< Texture width in pixels
     uint32_t height;            ///< Texture height in pixels
     uint32_t ref_count;         ///< Reference count (0 = can be deleted)
@@ -45,6 +46,7 @@ struct TextureEntry {
     
     TextureEntry()
         : texture_id(0)
+        , metal_texture_id(nullptr)
         , width(0)
         , height(0)
         , ref_count(0)
@@ -118,6 +120,17 @@ public:
      * @param file_path Path used when loading texture
      */
     void Release_Texture(const char* file_path);
+    
+    /**
+     * @brief Get Metal texture pointer from cache (Phase 37.5)
+     * 
+     * Retrieves the Metal texture pointer for a cached texture.
+     * Metal texture must have been loaded via Load_From_Memory or Get_Texture.
+     * 
+     * @param file_path Path used when loading texture
+     * @return Metal texture pointer (id<MTLTexture>*) or nullptr if not cached
+     */
+    void* Get_Metal_Texture(const char* file_path) const;
     
     /**
      * @brief Delete all textures with ref_count == 0
