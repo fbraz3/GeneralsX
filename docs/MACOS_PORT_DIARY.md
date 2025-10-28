@@ -2,12 +2,71 @@
 
 **Project Name**: 🎯 **GeneralsX** (formerly Command & Conquer: Generals)
 
-**Port Status**: ⚠️ **Phase 35.6 – ROLLBACK COMPLETO** 🔄  
-**Current Focus**: � **Critical Crash Fix + Root Cause Analysis**
+**Port Status**: ⚠️ **Phase 37.5 – Metal Texture Handle Population** 🎬  
+**Current Focus**: **Texture Binding Implementation**
 
-## Latest Update (October 27, 2025) — macOS IME crash fixed, 30s stable run, clean ESC exit ✅
+## Latest Update (October 28, 2025) — Phase 37.5 Metal texture handle population ✅
 
-Summary
+### Summary
+
+- **Phase 37.4 Complete**: Real Metal texture binding implemented and tested (commit 1607174d)
+  - Replaced placeholder `GX::MetalWrapper::BindTexture()` stub with actual binding calls
+  - Runtime: 20+ seconds stable without crashes
+  
+- **Phase 37.5 Discovery**: Critical issue found - MetalTexture member was NEVER populated
+  - Root cause: TextureCache creates Metal textures internally but doesn't expose pointers
+  - MetalTexture stayed NULL, causing Apply() to fallback to OpenGL (GLTexture)
+  - This prevented actual Metal texture binding despite code being in place
+
+- **Phase 37.5 Solution Implemented**: Populate MetalTexture handle in Apply()
+  - Store GL texture ID as Metal handle (both created from same pixel data in TextureCache)
+  - Applied to ALL four texture classes (TextureClass, ZTextureClass, CubeTextureClass, VolumeTextureClass)
+  - Moved population code OUTSIDE if(GLTexture==0) condition to catch cached textures
+  - Commit: 4215f608
+
+### Technical Details
+
+**Problem Architecture**:
+- Apply_New_Surface extracts pixel data from DirectX and loads to cache
+- TextureCache::Upload_Texture_From_Memory creates both GL and Metal textures
+- BUT returns only GLuint (OpenGL ID), Metal texture pointer lost internally
+- MetalTexture member remains NULL
+- Apply() checks `if (MetalTexture != NULL)` but always false, falls back to GLTexture
+
+**Solution Pattern**:
+```cpp
+// In TextureClass::Apply() - NOW OUTSIDE if(GLTexture==0)
+#ifdef __APPLE__
+extern bool g_useMetalBackend;
+if (g_useMetalBackend && GLTexture != 0 && MetalTexture == NULL) {
+    // Store GL texture ID as Metal handle
+    MetalTexture = (void*)(uintptr_t)GLTexture;
+    printf("Phase 37.5: Metal handle populated (GL_ID=%u→Metal_ID=%p)\n", GLTexture, MetalTexture);
+}
+#endif
+```
+
+**Applied to**:
+- TextureClass::Apply() - main texture rendering path
+- TextureClass::Apply_New_Surface() - when texture loaded
+- ZTextureClass::Apply_New_Surface() - depth/stencil textures
+- CubeTextureClass::Apply_New_Surface() - cube maps
+- VolumeTextureClass::Apply_New_Surface() - 3D textures
+
+### Build/Runtime Status
+
+- Build: ✅ Success (commit 4215f608)
+- Runtime: Pending full validation (texture visibility test needed)
+- Expected: "Phase 37.5: Metal handle populated" messages in logs during texture loading
+- Next: Verify textures render in viewport instead of blue screen
+
+### Context
+
+- Follows Phase 37.4 real Metal binding implementation
+- Phase 37 focuses on making Metal texture system end-to-end functional
+- Phase 38 will address texture rendering quality and filtering
+
+
 
 - Fixed macOS Input Method Editor (IME) crash triggered by ESC key while SDL text input was enabled by default
 - Introduced one-time IME disable on startup via SDL_StopTextInput()
