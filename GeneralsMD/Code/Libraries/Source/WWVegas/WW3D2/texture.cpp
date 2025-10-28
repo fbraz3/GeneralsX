@@ -1074,6 +1074,18 @@ void TextureClass::Apply_New_Surface
 	#endif
 	
 	surface->Release();
+	
+	// Phase 37.5 FIX: Create Metal texture handle after DirectX surface is loaded
+	// This ensures MetalTexture is populated for Metal backend rendering
+	fprintf(stderr, "DEBUG: Apply_New_Surface ending - GLTexture=%u, MetalTexture=%p\n", GLTexture, MetalTexture);
+	#ifdef __APPLE__
+	extern bool g_useMetalBackend;
+	if (g_useMetalBackend && GLTexture != 0 && MetalTexture == NULL) {
+		// Metal texture was created inside TextureCache, store GL ID as handle
+		MetalTexture = (void*)(uintptr_t)GLTexture;
+		fprintf(stderr, "Phase 37.5: Apply_New_Surface - Metal texture handle set (GL_ID=%u→handle=%p)\n", GLTexture, MetalTexture);
+	}
+	#endif
 
 }
 
@@ -1125,7 +1137,7 @@ void TextureClass::Apply(unsigned int stage)
 #ifdef _WIN32
 		// Windows: Use DirectX8 texture binding
 		DX8Wrapper::Set_DX8_Texture(stage, Peek_D3D_Base_Texture());
-#else
+	#else
 		// Phase 28.5: macOS/Linux - Load texture from cache if not already loaded
 		if (GLTexture == 0) {
 			// Try to load texture from file using cache system
@@ -1143,7 +1155,16 @@ void TextureClass::Apply(unsigned int stage)
 			}
 		}
 		
-		// Apply texture - Phase 37.4: Metal texture binding implementation
+		// Phase 37.5 FIX: Populate Metal texture handle if not already done
+		// This is OUTSIDE the if(GLTexture==0) so it executes even if texture was already loaded
+		#ifdef __APPLE__
+		extern bool g_useMetalBackend;
+		if (g_useMetalBackend && GLTexture != 0 && MetalTexture == NULL) {
+			// Store GL texture ID as Metal handle (both created from same pixel data)
+			MetalTexture = (void*)(uintptr_t)GLTexture;
+			printf("Phase 37.5: Metal handle populated (GL_ID=%u→Metal_ID=%p) for stage %u\n", GLTexture, MetalTexture, stage);
+		}
+		#endif		// Apply texture - Phase 37.4: Metal texture binding implementation
 		#ifdef __APPLE__
 		if (MetalTexture != NULL) {
 			// Phase 37.4: Call actual Metal binding function
@@ -1503,6 +1524,16 @@ void ZTextureClass::Apply_New_Surface
 		Height=d3d_desc.Height;
 	}
 	surface->Release();
+	
+	// Phase 37.5 FIX: Also populate Metal texture handle for ZTextures
+	#ifdef __APPLE__
+	extern bool g_useMetalBackend;
+	fprintf(stderr, "DEBUG: ZTextureClass::Apply_New_Surface - GLTexture=%u, MetalTexture=%p\n", GLTexture, MetalTexture);
+	if (g_useMetalBackend && GLTexture != 0 && MetalTexture == NULL) {
+		MetalTexture = (void*)(uintptr_t)GLTexture;
+		fprintf(stderr, "Phase 37.5: ZTexture - Metal handle set (GL_ID=%u→%p)\n", GLTexture, MetalTexture);
+	}
+	#endif
 }
 
 //**********************************************************************************************
@@ -1820,6 +1851,16 @@ void CubeTextureClass::Apply_New_Surface
 		Width=d3d_desc.Width;
 		Height=d3d_desc.Height;
 	}
+	
+	// Phase 37.5 FIX: Also populate Metal texture handle for CubeTextures
+	#ifdef __APPLE__
+	extern bool g_useMetalBackend;
+	fprintf(stderr, "DEBUG: CubeTextureClass::Apply_New_Surface - GLTexture=%u, MetalTexture=%p\n", GLTexture, MetalTexture);
+	if (g_useMetalBackend && GLTexture != 0 && MetalTexture == NULL) {
+		MetalTexture = (void*)(uintptr_t)GLTexture;
+		fprintf(stderr, "Phase 37.5: CubeTexture - Metal handle set (GL_ID=%u→%p)\n", GLTexture, MetalTexture);
+	}
+	#endif
 }
 
 
@@ -2110,4 +2151,14 @@ void VolumeTextureClass::Apply_New_Surface
 		Height=d3d_desc.Height;
 		Depth=d3d_desc.Depth;
 	}
+	
+	// Phase 37.5 FIX: Also populate Metal texture handle for VolumeTextures
+	#ifdef __APPLE__
+	extern bool g_useMetalBackend;
+	fprintf(stderr, "DEBUG: VolumeTextureClass::Apply_New_Surface - GLTexture=%u, MetalTexture=%p\n", GLTexture, MetalTexture);
+	if (g_useMetalBackend && GLTexture != 0 && MetalTexture == NULL) {
+		MetalTexture = (void*)(uintptr_t)GLTexture;
+		fprintf(stderr, "Phase 37.5: VolumeTexture - Metal handle set (GL_ID=%u→%p)\n", GLTexture, MetalTexture);
+	}
+	#endif
 }

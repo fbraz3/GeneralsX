@@ -217,8 +217,9 @@ GLuint TextureCache::Load_From_Memory(const char* cache_key, const void* pixel_d
     printf("TEXTURE CACHE MISS (Memory): Creating '%s' from memory (%ux%u, format 0x%04X)...\n",
            cache_key, width, height, format);
     
-    // Upload to GPU (Metal or OpenGL)
-    GLuint texture_id = Upload_Texture_From_Memory(pixel_data, width, height, format, data_size);
+    // Upload to GPU (Metal or OpenGL) and get Metal texture pointer (Phase 37.5)
+    void* metal_texture = nullptr;
+    GLuint texture_id = Upload_Texture_From_Memory_With_Metal(pixel_data, width, height, format, data_size, &metal_texture);
     
     if (texture_id == 0) {
         printf("TEXTURE CACHE ERROR: Failed to upload texture '%s' from memory\n", cache_key);
@@ -228,6 +229,7 @@ GLuint TextureCache::Load_From_Memory(const char* cache_key, const void* pixel_d
     // Add to cache
     TextureEntry entry;
     entry.texture_id = texture_id;
+    entry.metal_texture_id = metal_texture;  // Phase 37.5: Store Metal texture pointer
     entry.width = width;
     entry.height = height;
     entry.ref_count = 1;  // Initial reference
@@ -236,8 +238,8 @@ GLuint TextureCache::Load_From_Memory(const char* cache_key, const void* pixel_d
     m_cache[normalized] = entry;
     m_load_count++;
     
-    printf("TEXTURE CACHE: Cached (Memory) '%s' (ID %u, %ux%u, refs 1)\n",
-           cache_key, texture_id, width, height);
+    printf("TEXTURE CACHE: Cached (Memory) '%s' (ID %u, Metal=%p, %ux%u, refs 1)\n",
+           cache_key, texture_id, metal_texture, width, height);
     
     return texture_id;
 }
@@ -267,6 +269,30 @@ void TextureCache::Release_Texture(const char* file_path) {
     } else {
         printf("TEXTURE CACHE WARNING: Texture '%s' already has 0 references\n", file_path);
     }
+}
+
+/**
+ * @brief Get Metal texture pointer from cache (Phase 37.5)
+ */
+void* TextureCache::Get_Metal_Texture(const char* file_path) const {
+    if (!file_path) {
+        printf("TEXTURE CACHE WARNING: NULL file path in Get_Metal_Texture\n");
+        return nullptr;
+    }
+    
+    std::string normalized = Normalize_Path(file_path);
+    
+    auto it = m_cache.find(normalized);
+    if (it == m_cache.end()) {
+        printf("TEXTURE CACHE WARNING: Metal texture not found in cache for '%s'\n", file_path);
+        return nullptr;
+    }
+    
+    if (it->second.metal_texture_id == nullptr) {
+        printf("TEXTURE CACHE DEBUG: Texture '%s' has no Metal texture (OpenGL-only or not yet created)\n", file_path);
+    }
+    
+    return it->second.metal_texture_id;
 }
 
 /**

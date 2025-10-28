@@ -136,6 +136,24 @@ GLuint Upload_Texture_From_Memory(const void* pixel_data, uint32_t width, uint32
                                    GLenum format, size_t data_size);
 
 /**
+ * @brief Upload texture from raw memory data and return Metal texture pointer (Phase 37.5)
+ * 
+ * Extended version that also returns Metal texture pointer for direct binding.
+ * Uses same upload logic as Upload_Texture_From_Memory but exposes Metal texture.
+ * 
+ * @param pixel_data Raw pixel data in memory
+ * @param width Texture width in pixels
+ * @param height Texture height in pixels
+ * @param format OpenGL internal format (GL_RGBA8, GL_COMPRESSED_*, etc.)
+ * @param data_size Size of pixel_data in bytes
+ * @param out_metal_texture Output: Metal texture pointer (id<MTLTexture>*) or nullptr
+ * @return OpenGL texture ID (0 on failure)
+ */
+GLuint Upload_Texture_From_Memory_With_Metal(const void* pixel_data, uint32_t width, uint32_t height,
+                                              GLenum format, size_t data_size,
+                                              void** out_metal_texture);
+
+/**
  * @brief Delete OpenGL texture
  * 
  * Wrapper around glDeleteTextures for consistency.
