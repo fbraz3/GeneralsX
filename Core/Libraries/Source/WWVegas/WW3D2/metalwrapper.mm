@@ -504,9 +504,13 @@ void MetalWrapper::BeginFrame(float r, float g, float b, float a) {
     printf("METAL DEBUG: All validations passed, creating render encoder...\n");
     fflush(stdout);
     
+    // CRITICAL: Wrap render encoder creation in autoreleasepool to prevent Metal deadlock
+    // Metal framework creates internal ObjC objects during encoder setup
+    @autoreleasepool {
     // Begin render pass - encoder stays active until EndFrame
     // NOTE: This call may hang if there's a Metal driver issue or invalid state
     s_renderEncoder = [(id<MTLCommandBuffer>)s_cmdBuffer renderCommandEncoderWithDescriptor:pass];
+    }  // End @autoreleasepool for render encoder creation
     
     printf("METAL DEBUG: Render encoder created successfully (%p)\n", s_renderEncoder);
     fflush(stdout);
