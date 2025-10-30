@@ -586,6 +586,31 @@ private:
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
     
     // ========================================================================
+    // Private Platform-Specific Surface Creation
+    // ========================================================================
+    
+    /**
+     * Create Metal surface (macOS).
+     */
+    #ifdef __APPLE__
+        HRESULT CreateSurfaceMacOS();
+    #endif
+    
+    /**
+     * Create Win32 surface (Windows).
+     */
+    #ifdef _WIN32
+        HRESULT CreateSurfaceWindows();
+    #endif
+    
+    /**
+     * Create X11 surface (Linux).
+     */
+    #ifdef __linux__
+        HRESULT CreateSurfaceLinux();
+    #endif
+    
+    // ========================================================================
     // Private Command Buffer Recording Helpers
     // ========================================================================
     
