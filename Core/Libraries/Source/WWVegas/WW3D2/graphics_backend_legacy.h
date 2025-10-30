@@ -11,6 +11,9 @@
 
 #pragma once
 
+#ifndef GRAPHICS_BACKEND_LEGACY_H
+#define GRAPHICS_BACKEND_LEGACY_H
+
 #include "graphics_backend.h"
 
 /**
@@ -44,12 +47,11 @@ public:
     HRESULT Present() override;
     
     HRESULT Clear(
-        DWORD count,
-        const D3DRECT* rects,
-        DWORD flags,
-        D3DCOLOR color,
-        float z,
-        DWORD stencil
+        bool clear_color,
+        bool clear_z_stencil,
+        const void* color_vec3,
+        float z = 1.0f,
+        DWORD stencil = 0
     ) override;
     
     // ========================================================================

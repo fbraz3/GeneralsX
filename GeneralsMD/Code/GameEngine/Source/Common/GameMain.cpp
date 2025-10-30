@@ -32,6 +32,9 @@
 #include "Common/GameEngine.h"
 #include "Common/ReplaySimulation.h"
 
+// Phase 38: Graphics Backend Abstraction Layer
+#include "../../Libraries/Source/WWVegas/WW3D2/graphics_backend.h"
+
 
 /**
  * This is the entry point for the game system.
@@ -47,6 +50,19 @@ Int GameMain()
 	TheFramePacer->enableFramesPerSecondLimit(TRUE);
 	TheGameEngine = CreateGameEngine();
 	printf("GameMain - Game engine created successfully\n");
+	
+	// Phase 38.3: Initialize graphics backend abstraction layer
+	printf("GameMain - Initializing graphics backend...\n");
+	HRESULT backend_hr = InitializeGraphicsBackend();
+	if (backend_hr != 0) { // S_OK = 0
+		printf("GameMain - FATAL: Failed to initialize graphics backend (0x%08lx)\n", backend_hr);
+		delete TheFramePacer;
+		TheFramePacer = NULL;
+		delete TheGameEngine;
+		TheGameEngine = NULL;
+		return 1; // Error exit code
+	}
+	printf("GameMain - Graphics backend initialized successfully\n");
 	
 	printf("GameMain - About to call TheGameEngine->init()\n");
 	fflush(stdout);
@@ -66,6 +82,10 @@ Int GameMain()
 	}
 
 	// since execute() returned, we are exiting the game
+	printf("GameMain - Shutting down graphics backend...\n");
+	ShutdownGraphicsBackend();
+	printf("GameMain - Graphics backend shut down\n");
+	
 	printf("GameMain - Deleting game engine\n");
 	delete TheFramePacer;
 	TheFramePacer = NULL;

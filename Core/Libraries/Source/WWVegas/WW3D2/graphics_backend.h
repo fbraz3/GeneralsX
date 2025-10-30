@@ -13,28 +13,23 @@
 
 #pragma once
 
+#ifndef GRAPHICS_BACKEND_H
+#define GRAPHICS_BACKEND_H
+
 // ============================================================================
-// Forward Declarations - DirectX Types
+// Include DirectX Compatibility Layer
 // ============================================================================
 
-// These are defined elsewhere in the codebase
-struct D3DRECT;
-struct D3DLIGHT8;
-struct D3DMATERIAL8;
-struct D3DVIEWPORT8;
+// This header provides all DirectX types and enums needed
+#include "d3d8.h"  // Includes D3DRENDERSTATETYPE, D3DFORMAT, D3DPRIMITIVETYPE, etc.
+#include "win32_compat.h"  // Provides HRESULT and other Windows types
 
-// Enum types - forward declared
-enum D3DRENDERSTATETYPE;
-enum D3DTEXTUREOP;
-enum D3DFORMAT;
-enum D3DPRIMITIVETYPE;
-enum D3DTRANSFORMSTATETYPE;
+// ============================================================================
+// Forward Declarations - Graphics Structs
+// ============================================================================
 
-// DirectX types
-typedef unsigned long DWORD;
-typedef unsigned int UINT;
-typedef int HRESULT;
-typedef unsigned long D3DCOLOR;
+// These are DirectX structures already defined in d3d8.h
+// No need to forward declare here
 
 // ============================================================================
 // Graphics Backend Interface
@@ -95,25 +90,19 @@ public:
     virtual HRESULT Present() = 0;
     
     /**
-     * Clear the render target and/or depth buffer.
+     * Clear the render target.
      * 
-     * @param count Number of rectangles in rects array
-     * @param rects Array of rectangles to clear (NULL = entire surface)
-     * @param flags D3DCLEAR_* flags (TARGET, ZBUFFER, STENCIL)
      * @param color Color to clear to
      * @param z Depth value to clear to
      * @param stencil Stencil value to clear to
      */
     virtual HRESULT Clear(
-        DWORD count,
-        const D3DRECT* rects,
-        DWORD flags,
-        D3DCOLOR color,
-        float z,
-        DWORD stencil
-    ) = 0;
-    
-    // ========================================================================
+        bool clear_color,
+        bool clear_z_stencil,
+        const void* color_vec3,
+        float z = 1.0f,
+        DWORD stencil = 0
+    ) = 0;    // ========================================================================
     // Texture Management
     // ========================================================================
     
@@ -417,4 +406,25 @@ public:
  */
 extern IGraphicsBackend* g_graphicsBackend;
 
+// ============================================================================
+// Backend Initialization Functions
+// ============================================================================
+
+/**
+ * Initialize the graphics backend at application startup.
+ * Called from GameMain() after game engine creation.
+ * 
+ * @return HRESULT (S_OK = 0 on success, error code on failure)
+ */
+HRESULT InitializeGraphicsBackend();
+
+/**
+ * Shutdown the graphics backend at application exit.
+ * Called from GameMain() before engine deletion.
+ * 
+ * @return HRESULT (S_OK = 0 on success, error code on failure)
+ */
+HRESULT ShutdownGraphicsBackend();
+
 #endif // GRAPHICS_BACKEND_H
+

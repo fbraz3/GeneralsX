@@ -250,6 +250,12 @@ set(WW3D2_SRC
     # Phase 5: Audio & Multimedia APIs (OpenAL-based DirectSound compatibility)
     dsound_compat.cpp
     multimedia_timers.cpp
+    
+    # Phase 38: Graphics Backend Abstraction Layer
+    graphics_backend.h
+    graphics_backend_legacy.h
+    graphics_backend_legacy.cpp
+    graphics_backend_init.cpp
 )
 
 if(APPLE)
