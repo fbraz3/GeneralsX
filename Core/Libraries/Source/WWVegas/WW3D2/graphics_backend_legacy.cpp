@@ -97,10 +97,9 @@ HRESULT LegacyGraphicsBackend::Present() {
 }
 
 HRESULT LegacyGraphicsBackend::Clear(
-    DWORD count,
-    const D3DRECT* rects,
-    DWORD flags,
-    D3DCOLOR color,
+    bool clear_color,
+    bool clear_z_stencil,
+    const void* color_vec3,
     float z,
     DWORD stencil) {
     

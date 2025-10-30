@@ -61,7 +61,7 @@ HRESULT InitializeGraphicsBackend() {
         
         HRESULT hr = g_graphicsBackend->Initialize();
         if (hr != 0) { // S_OK = 0
-            printf("ERROR: Failed to initialize graphics backend (0x%08X)\n", hr);
+            printf("ERROR: Failed to initialize graphics backend (0x%08lx)\n", hr);
             delete g_graphicsBackend;
             g_graphicsBackend = nullptr;
             return hr;
