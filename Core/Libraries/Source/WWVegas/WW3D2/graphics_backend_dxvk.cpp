@@ -43,6 +43,19 @@
 // ============================================================================
 // Vulkan Validation Layers (Debug Only)
 // ============================================================================
+//
+// Validation layers are recommended for development debugging.
+// They are discovered and managed by the Vulkan Loader.
+//
+// Reference: docs/PHASE39/PHASE39_2_MOLTENVK_GUIDELINES.md (Section 4)
+// - Development builds: Layers ENABLED (VK_LAYER_KHRONOS_validation)
+// - Production builds: Layers DISABLED (no performance overhead)
+//
+// During development, validation layers are automatically discovered from:
+// - macOS: /usr/local/etc/vulkan/explicit_layer.d/
+// - Linux: /usr/share/vulkan/explicit_layer.d/
+// - Windows: Registry or $VK_LAYER_PATH environment variable
+// ============================================================================
 
 #if VALIDATION_LAYERS_ENABLED
     static const char* VALIDATION_LAYERS[] = {
@@ -54,6 +67,27 @@
 // ============================================================================
 // Vulkan Extension Requirements
 // ============================================================================
+//
+// Following the RECOMMENDED MoltenVK usage model from LunarG documentation:
+//
+// RECOMMENDED (What We Do):
+// ✅ Link to Vulkan Loader (libvulkan.dylib on macOS)
+// ✅ MoltenVK acts as ICD (Installable Client Driver)
+// ✅ Vulkan Loader discovers and delegates to MoltenVK
+// ✅ Enables Vulkan Validation Layers for debugging
+// ✅ Platform independent: same binary on Windows/Linux/macOS
+//
+// NOT RECOMMENDED (What We DON'T Do):
+// ❌ Direct linking to MoltenVK static/dynamic library
+// ❌ Sacrifices validation layer support
+// ❌ Reduces portability and flexibility
+//
+// Architecture:
+// Application → Vulkan Loader → MoltenVK ICD → Metal Framework → GPU
+//
+// Reference: docs/PHASE39/PHASE39_2_MOLTENVK_GUIDELINES.md (Sections 1-3)
+// CMake Config: cmake/vulkan.cmake (sets Vulkan::Loader as target)
+// ============================================================================
 
 static const char* DEVICE_EXTENSIONS[] = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -63,14 +97,14 @@ static const size_t DEVICE_EXTENSION_COUNT = 1;
 static const char* INSTANCE_EXTENSIONS[] = {
     VK_KHR_SURFACE_EXTENSION_NAME,
     #ifdef __APPLE__
-        VK_EXT_METAL_SURFACE_EXTENSION_NAME,
+        VK_EXT_METAL_SURFACE_EXTENSION_NAME,  // Metal surface via Vulkan Loader
     #endif
     #ifdef _WIN32
-        VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
+        VK_KHR_WIN32_SURFACE_EXTENSION_NAME,  // Win32 surface via Vulkan Loader
     #endif
     #ifdef __linux__
-        VK_KHR_XCBSURFACE_EXTENSION_NAME,
-        VK_KHR_XLIB_SURFACE_EXTENSION_NAME,
+        VK_KHR_XCB_SURFACE_EXTENSION_NAME,    // X11 XCB surface via Vulkan Loader
+        VK_KHR_XLIB_SURFACE_EXTENSION_NAME,   // X11 Xlib surface via Vulkan Loader
     #endif
 };
 static const size_t INSTANCE_EXTENSION_COUNT = sizeof(INSTANCE_EXTENSIONS) / sizeof(INSTANCE_EXTENSIONS[0]);
