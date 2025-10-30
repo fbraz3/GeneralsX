@@ -573,30 +573,31 @@ void DXVKGraphicsBackend::DestroyInstance() {
 }
 
 // ============================================================================
-// [NOTE: Part 2 of 5 - Implementation continues in next file]
+// Device, Surface, and Swapchain Implementation
 // ============================================================================
-// 
-// The following methods are to be implemented in subsequent parts:
-// - CreateDevice() - Physical device selection and logical device creation
-// - CreateSurface() - Platform-specific window surface creation
-// - CreateSwapchain() / RecreateSwapchain() - Swapchain image management
-// - CreateRenderPass() - Render pass definition
-// - CreateFramebuffers() - Framebuffer creation for each swapchain image
-// - CreateCommandPool() / AllocateCommandBuffers() - Command recording setup
-// - CreateSyncObjects() - Semaphores and fences for frame synchronization
-// - CreatePipelineCache() - Pipeline cache for compilation optimization
-// - CreateShaderModules() - Load vertex and fragment shaders
-// - CreateGraphicsPipeline() / RecreateGraphicsPipeline() - Pipeline creation
-// - Helper methods: AllocateMemory, FindMemoryType, ConvertD3DFormatToVulkan, etc.
-//
-// Each method will be approximately 150-300 lines with full error handling,
-// validation, and debug output.
-//
+// These methods are implemented in graphics_backend_dxvk_device.cpp
+// File organization for better code structure:
+// - graphics_backend_dxvk.cpp: Lifecycle (Initialize, Shutdown, Reset)
+// - graphics_backend_dxvk_device.cpp: Device/Surface/Swapchain creation
+// - graphics_backend_dxvk_frame.cpp (Phase 39.2.3b): Frame management (BeginScene, EndScene)
+// - graphics_backend_dxvk_render.cpp (Phase 39.2.4): Drawing operations
 // ============================================================================
 
-// Placeholder implementations for remaining methods (will be completed in Phase 39.2.2-5)
+// NOTE: See graphics_backend_dxvk_device.cpp for implementations of:
+// - CreateDevice(), DestroyDevice()
+// - CreateSurface(), DestroySurface()
+// - CreateSwapchain(), RecreateSwapchain(), DestroySwapchain()
+// - CreateRenderPass(), DestroyRenderPass()
+// - CreateFramebuffers(), DestroyFramebuffers()
+// - CreateCommandPool(), DestroyCommandPool()
+// - AllocateCommandBuffers(), FreeCommandBuffers()
+// - CreateSyncObjects(), DestroySyncObjects()
+// - CreatePipelineCache(), DestroyPipelineCache()
+// - CreateShaderModules(), DestroyShaderModules()
+// - CreateGraphicsPipeline(), RecreateGraphicsPipeline(), DestroyGraphicsPipeline()
+// - Memory allocation helpers and format conversion
 
-HRESULT DXVKGraphicsBackend::CreateDevice() {
+// Placeholder implementations (actual implementations in graphics_backend_dxvk_device.cpp)HRESULT DXVKGraphicsBackend::CreateDevice() {
     printf("[DXVK] CreateDevice() - NOT YET IMPLEMENTED\n");
     return E_NOTIMPL;
 }
