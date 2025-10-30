@@ -256,6 +256,14 @@ set(WW3D2_SRC
     graphics_backend_legacy.h
     graphics_backend_legacy.cpp
     graphics_backend_init.cpp
+    
+    # Phase 39: Vulkan Backend Implementation (MoltenVK on macOS)
+    graphics_backend_dxvk.h
+    graphics_backend_dxvk.cpp
+    graphics_backend_dxvk_device.cpp
+    graphics_backend_dxvk_frame.cpp
+    graphics_backend_dxvk_render.cpp
+    graphics_backend_dxvk_buffers.cpp
 )
 
 if(APPLE)
@@ -279,6 +287,53 @@ target_link_libraries(corei_ww3d2 INTERFACE
     core_browserengine
     core_wwlib
 )
+
+# ============================================================================
+# Vulkan Backend Configuration (Phase 39)
+# ============================================================================
+# 
+# Implements Vulkan graphics backend with MoltenVK on macOS, Vulkan SDK
+# on Linux, and potential DXVK integration on Windows.
+#
+# Reference: cmake/vulkan.cmake (Vulkan SDK discovery)
+# Reference: docs/PHASE39/PHASE39_2_MOLTENVK_GUIDELINES.md (Best practices)
+
+# Include Vulkan CMake module
+include(${CMAKE_SOURCE_DIR}/cmake/vulkan.cmake)
+
+# Link Vulkan backend (via Vulkan Loader, NOT direct MoltenVK linking)
+if(TARGET Vulkan::Loader)
+    target_link_libraries(corei_ww3d2 INTERFACE Vulkan::Loader)
+    
+    # Add Vulkan include directories
+    target_include_directories(corei_ww3d2 INTERFACE 
+        ${Vulkan_INCLUDE_DIRS}
+    )
+    
+    if(NOT WIN32)
+        # On macOS/Linux, enable KHR extensions and validation layers
+        target_compile_definitions(corei_ww3d2 INTERFACE
+            VK_USE_PLATFORM_METAL_EXT
+            VK_ENABLE_BETA_EXTENSIONS
+        )
+    endif()
+    
+    if(APPLE)
+        # macOS-specific Vulkan settings
+        target_compile_definitions(corei_ww3d2 INTERFACE
+            USE_MOLTENVK=1
+        )
+    endif()
+    
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        # Enable validation layers in debug builds
+        target_compile_definitions(corei_ww3d2 INTERFACE
+            VK_VALIDATION_ENABLED=1
+        )
+    endif()
+endif()
+
+# ============================================================================
 
 if(APPLE)
     # Link Metal frameworks
