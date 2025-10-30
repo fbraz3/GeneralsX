@@ -66,3 +66,6 @@ build.ninja
 /logs/*.patch
 /logs/**/*.diff
 /logs/**/*.patch
+
+# Documentation build output
+/docs/Vulkan/
