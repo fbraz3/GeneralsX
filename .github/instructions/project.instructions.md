@@ -170,3 +170,96 @@ cd references/dsalzner-linux-attempt/
 # Compare implementations
 diff -r GeneralsMD/Code/GameEngine/ references/jmarshall-win64-modern/GeneralsMD/Code/GameEngine/
 ```
+
+# Vulkan SDK Documentation Reference (Phase 39 & Beyond)
+
+**Location**: `docs/Vulkan/` directory (local documentation)
+
+## Setup & Documentation
+
+### Vulkan SDK Installation
+- **Official SDK**: https://vulkan.lunarg.com/ (for updates and official resources)
+- **macOS Specific**: https://vulkan.lunarg.com/doc/sdk/1.4.328.1/mac/
+- **Status**: Vulkan SDK 1.4.328.1 installed and validated on macOS ARM64
+- **Validation**: `vkcube` and `vkconfig-gui` confirmed working
+
+### Local Documentation
+
+**Download Documentation** (if not already present):
+```bash
+# Set Vulkan version
+VULKAN_VERSION="1.4.328.1"
+
+# Download documentation to docs/Vulkan/
+cd docs/Vulkan/
+wget "https://files.lunarg.com/VulkanSDK/VulkanSDK-Mac-Docs-${VULKAN_VERSION}.zip"
+unzip "VulkanSDK-Mac-Docs-${VULKAN_VERSION}.zip"
+```
+
+**Key Documentation Files**:
+- `getting_started.html` - **START HERE** for Phase 39
+  - Creating a Vulkan Instance
+  - Physical Device Selection
+  - Creating a Logical Device
+  - Command Buffers & Recording
+  - Render Passes & Framebuffers
+  - Presentation Engine (Swapchain)
+
+- `best_practices.html` - **CRITICAL** for performance
+  - Queue Management
+  - Memory Management & Allocation Strategies
+  - Pipeline Cache Management
+  - Synchronization (Semaphores, Fences)
+  - Performance Optimization Tips
+
+- `layer_user_guide.html` - Debugging and validation
+  - Validation Layers (detecting errors)
+  - Performance Layers (profiling)
+  - Debugging Techniques for Graphics Issues
+
+- `runtime_guide.html` - macOS-specific information
+  - Layer Configuration
+  - Performance Monitoring
+  - macOS Runtime Considerations
+
+### Phase 39 Reference
+
+**Architecture Analysis**: See `docs/PHASE38/PHASE38_6_VULKAN_ANALYSIS.md`
+- Complete DirectX 8 → Vulkan method mapping
+- All 47 IGraphicsBackend methods documented
+- DXVK integration strategy explained
+- Risk assessment and validation plan
+
+**DXVK Implementation**: Phase 39 uses Vulkan SDK for:
+- VkInstance creation
+- Physical device enumeration
+- VkDevice and VkQueue management
+- Command buffer recording
+- Render pass setup
+- Resource management (buffers, images, samplers)
+
+### When You Need Vulkan Docs
+
+**During Phase 39 Implementation**:
+- Implementing DXVKGraphicsBackend methods → Reference `getting_started.html`
+- Optimizing frame rendering performance → Reference `best_practices.html`
+- Debugging GPU validation errors → Reference `layer_user_guide.html`
+- Troubleshooting macOS-specific issues → Reference `runtime_guide.html`
+
+**During Phase 40+ Graphics Development**:
+- Advanced rendering features
+- Performance optimization
+- Cross-platform compatibility issues
+- GPU driver-specific workarounds
+
+### GitIgnore Note
+
+Large Vulkan SDK documentation files are gitignored:
+```
+docs/Vulkan/*.zip
+docs/Vulkan/VulkanSDK-Mac-Docs-*/
+```
+
+Only `docs/Vulkan/README.md` is tracked (contains setup instructions).
+
+````
