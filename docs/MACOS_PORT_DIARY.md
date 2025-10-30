@@ -2,10 +2,76 @@
 
 **Project Name**: 🎯 **GeneralsX** (formerly Command & Conquer: Generals)
 
-**Port Status**: ⚠️ **Phase 37.5 – Metal Texture Handle Population** 🎬  
-**Current Focus**: **Texture Binding Implementation**
+**Port Status**: 🚧 **DECISION GATE - Architectural Pivot to DXVK/Vulkan** (October 29, 2025)  
+**Previous Status**: ⚠️ **Phase 37.5 – Metal Texture Handle Population** 🎬 (ARCHIVED)  
+**Current Focus**: **Awaiting approval for Phase 38-50 (DXVK Hybrid Architecture)**
 
-## Latest Update (October 28, 2025) — Phase 37.5 Metal texture handle population ✅
+## Latest Update (October 29, 2025) — Strategic Architecture Pivot ✅
+
+### Summary
+
+- **NEW ROADMAP CREATED**: `docs/PHASE_ROADMAP_V2.md`
+  - Proposes DXVK/Vulkan hybrid architecture (Phases 38-50)
+  - 4-6 week timeline to full gameplay
+  - Single Vulkan backend across Windows/Linux/macOS (via MoltenVK)
+  - Alternative to Phases 27-37 custom Metal/OpenGL approach
+
+- **DECISION GATE DOCUMENT**: `docs/DECISION_GATE_DXVK.md`
+  - Compares Phase 27-37 (Custom) vs Phase 38-50 (DXVK)
+  - Risk analysis and rollback strategy
+  - Approval matrix and stakeholder questions
+  - Status: **AWAITING YOUR DECISION**
+
+### Why This Pivot?
+
+**Phase 37 Status: BLOCKED**
+- Metal texture system implementation complete (Phase 37.5)
+- BUT: Game still shows blue screen (no textures visible)
+- OR: Metal driver crashes (AGXMetal13_3 error)
+- Root issue: Custom graphics abstraction too complex for 1 developer
+
+**New Strategy: Use Proven Technology**
+- DXVK: Used in Proton (Steam Play) for 1000s of games
+- Vulkan: Cross-platform graphics standard
+- MoltenVK: Khronos-maintained Vulkan→Metal on macOS
+- Result: Single backend, better support, faster development
+
+### Timeline Impact
+
+| Approach | Status | Timeline | Next Milestone |
+|----------|--------|----------|-----------------|
+| **Phase 27-37 (Current)** | BLOCKED | 6+ weeks | Unknown (Phase 37 hangs) |
+| **Phase 38-50 (DXVK)** | PLANNED | **4-6 weeks** | **PLAYABLE GAME** |
+
+### What Happens to Phase 37 Work?
+
+**If DXVK Approved**:
+- Phase 27-37 archived to `docs/metal_port/`
+- All code preserved in git history
+- Can rollback if DXVK fails
+- Clean fresh start with Phase 38
+
+**If DXVK Rejected**:
+- Continue Phase 37 texture debugging
+- Additional 2-3 weeks on unknown issues
+- Higher risk of further delays
+
+### Decision Required
+
+**READ**: `docs/DECISION_GATE_DXVK.md` (Risk analysis, timeline, Q&A)  
+**READ**: `docs/PHASE_ROADMAP_V2.md` (Full DXVK architecture & phases)  
+**DECIDE**: Approve Phase 38-50 or Continue Phase 37?
+
+To approve:
+```bash
+# Edit docs/DECISION_GATE_DXVK.md
+# Change: Status: AWAITING APPROVAL → Status: APPROVED
+# Commit with: feat(architecture): approve DXVK hybrid roadmap
+```
+
+---
+
+## Previous Update (October 28, 2025) — Phase 37.5 Metal texture handle population ✅
 
 ### Summary
 

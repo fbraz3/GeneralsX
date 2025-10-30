@@ -9,7 +9,8 @@
 1. **THIS FILE** - You're reading it
 2. `docs/PHASES_SUMMARY.md` - 2-minute overview
 3. `docs/ROADMAP.md` - Full project roadmap  
-4. `docs/PHASE37/README.md` - Next work (Phase 37)
+4. `docs/PHASE_ROADMAP_V2.md` - **NEW: DXVK Hybrid Architecture** ← Read this for latest strategy
+5. `docs/PHASE37/README.md` - Current work (Phase 37)
 
 ## 🗂️ Phase Documentation
 
@@ -52,6 +53,7 @@ Final stretch goal after Phase 40.
 |----------|---------|-----------|
 | `docs/MACOS_PORT_DIARY.md` | Development diary | Always up-to-date status |
 | `docs/ROADMAP.md` | Full project roadmap | Understanding big picture |
+| `docs/PHASE_ROADMAP_V2.md` | **NEW: DXVK hybrid strategy** | **Latest architecture decisions** |
 | `docs/PHASES_SUMMARY.md` | Quick reference | Quick orientation |
 | `docs/README.md` | Project overview | First time reading |
 
