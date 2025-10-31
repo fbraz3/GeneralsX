@@ -264,6 +264,9 @@ set(WW3D2_SRC
     graphics_backend_dxvk_frame.cpp
     graphics_backend_dxvk_render.cpp
     graphics_backend_dxvk_buffers.cpp
+    
+    # Phase 41: Drawing Operations Implementation
+    graphics_backend_dxvk_drawing.cpp
 )
 
 if(APPLE)
