@@ -621,6 +621,115 @@ public:
      */
     void ReportIndexBufferState() const;
     
+    // ========================================================================
+    // Phase 44.4: Draw Commands - State Validation & Helpers
+    // ========================================================================
+    
+    /**
+     * Validate that graphics pipeline is ready for drawing.
+     * Checks: initialization, scene state, pipeline, buffers, render target.
+     */
+    bool ValidateDrawState();
+    
+    /**
+     * Validate indexed draw state specifically (requires index buffer).
+     */
+    bool ValidateIndexedDrawState();
+    
+    /**
+     * Report complete draw state for diagnostics.
+     */
+    void ReportDrawState();
+    
+    /**
+     * Convert D3D primitive type to Vulkan topology and calculate vertex/index count.
+     */
+    bool ConvertPrimitiveType(
+        D3DPRIMITIVETYPE d3dType,
+        VkPrimitiveTopology& outTopology,
+        unsigned int primitiveCount,
+        unsigned int& outVertexIndexCount
+    );
+    
+    /**
+     * Get human-readable name for primitive type (debug output).
+     */
+    const char* GetPrimitiveTypeName(D3DPRIMITIVETYPE type);
+    
+    /**
+     * Validate DrawPrimitive parameters before execution.
+     */
+    bool ValidateDrawPrimitiveParams(
+        D3DPRIMITIVETYPE primitiveType,
+        unsigned int startVertex,
+        unsigned int primitiveCount,
+        unsigned int maxVertices
+    );
+    
+    /**
+     * Validate DrawIndexedPrimitive parameters before execution.
+     */
+    bool ValidateDrawIndexedParams(
+        D3DPRIMITIVETYPE primitiveType,
+        unsigned int baseVertexIndex,
+        unsigned int minVertexIndex,
+        unsigned int numVertices,
+        unsigned int startIndex,
+        unsigned int primitiveCount,
+        unsigned int maxIndices,
+        unsigned int maxVertices
+    );
+    
+    /**
+     * Record draw call statistics for performance analysis.
+     */
+    void RecordDrawStatistics(
+        D3DPRIMITIVETYPE primitiveType,
+        unsigned int vertexCount,
+        unsigned int indexCount,
+        bool isIndexed
+    );
+    
+    /**
+     * Reset draw statistics at frame start.
+     */
+    void ResetDrawStatistics();
+    
+    /**
+     * Report draw statistics for current frame.
+     */
+    void ReportDrawStatistics();
+    
+    /**
+     * Update viewport and scissor rect for current command buffer.
+     */
+    void UpdateViewportAndScissor();
+    
+    /**
+     * Ensure graphics pipeline is bound to current command buffer.
+     */
+    void EnsurePipelineBinding();
+    
+    /**
+     * Get the number of pending draw calls in current frame.
+     */
+    unsigned int GetPendingDrawCalls() const;
+    
+    /**
+     * Check if a primitive type is valid.
+     */
+    bool IsPrimitiveTypeValid(D3DPRIMITIVETYPE type);
+    
+    /**
+     * Get total vertices submitted in current frame.
+     */
+    unsigned int GetFrameVertexCount() const;
+    
+    /**
+     * Get total indices submitted in current frame.
+     */
+    unsigned int GetFrameIndexCount() const;
+    
     /**
      * Clear render target and depth buffer.
      */
@@ -631,6 +740,61 @@ public:
         float z = 1.0f,
         DWORD stencil = 0
     ) override;
+    
+    // ========================================================================
+    // Phase 44.5: Material System
+    // ========================================================================
+    
+    /**
+     * Phase 44.5.1: Create material descriptor set layout.
+     * Defines the layout of material properties in shaders.
+     * Bindings: diffuse texture, normal map, specular map, material buffer.
+     */
+    HRESULT CreateMaterialDescriptorSetLayout();
+    
+    /**
+     * Phase 44.5.1: Create material descriptor pool.
+     * Allocates descriptor pool for 1000 material descriptor sets.
+     */
+    HRESULT CreateMaterialDescriptorPool();
+    
+    /**
+     * Phase 44.5.1: Allocate a material descriptor set.
+     * Returns VkDescriptorSet for one material instance.
+     */
+    VkDescriptorSet AllocateMaterialDescriptorSet();
+    
+    /**
+     * Phase 44.5.1: Update material descriptor set with textures and buffers.
+     * Binds texture views and material properties buffer to descriptor set.
+     */
+    HRESULT UpdateMaterialDescriptorSet(
+        VkDescriptorSet descriptorSet,
+        VkImageView diffuseTexture,
+        VkImageView normalTexture,
+        VkImageView specularTexture,
+        VkBuffer materialBuffer
+    );
+    
+    /**
+     * Phase 44.5.1: Bind material descriptor set to command buffer.
+     * Makes material textures and parameters available to pipeline.
+     * Called before DrawIndexed in Phase 44.4.
+     */
+    HRESULT BindMaterialDescriptorSet(
+        VkCommandBuffer commandBuffer,
+        VkDescriptorSet descriptorSet
+    );
+    
+    /**
+     * Phase 44.5.1: Destroy material descriptor set layout.
+     */
+    HRESULT DestroyMaterialDescriptorSetLayout();
+    
+    /**
+     * Phase 44.5.1: Destroy material descriptor pool.
+     */
+    HRESULT DestroyMaterialDescriptorPool();
     
     // ========================================================================
     // Texture Management
@@ -1224,6 +1388,21 @@ private:
     uint32_t m_indexCount;                  ///< Number of indices in buffer
     uint32_t m_indexStride;                 ///< Bytes per index (2 or 4)
     VkIndexType m_currentIndexFormat;       ///< Current index format (UINT16 or UINT32)
+
+    // ========== Phase 44.4: Draw Statistics ==========
+    uint32_t m_statsDrawCallsPerFrame;      ///< Non-indexed draw calls this frame
+    uint32_t m_statsIndexedDrawCallsPerFrame; ///< Indexed draw calls this frame
+    uint32_t m_statsVerticesPerFrame;       ///< Total vertices submitted this frame
+    uint32_t m_statsIndicesPerFrame;        ///< Total indices submitted this frame
+    uint32_t m_statsTrianglesPerFrame;      ///< Total triangles submitted this frame
+    uint32_t m_statsLinesPerFrame;          ///< Total lines submitted this frame
+    uint32_t m_statsPointsPerFrame;         ///< Total points submitted this frame
+
+    // ========== Phase 44.5: Material System Members ==========
+    VkDescriptorSetLayout m_materialDescriptorSetLayout;  ///< Material descriptor set layout
+    VkDescriptorPool m_materialDescriptorPool;            ///< Material descriptor pool (1000 sets)
+    uint32_t m_allocatedMaterialSets;                     ///< Number of allocated material descriptor sets
+    VkSampler m_defaultSampler;                           ///< Default texture sampler
 
     VkPipelineCache m_pipelineCache;        ///< Pipeline cache for optimization
     
