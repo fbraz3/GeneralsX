@@ -746,24 +746,6 @@ HRESULT DXVKGraphicsBackend::CreateGraphicsPipeline() {
     return E_NOTIMPL;
 }
 
-HRESULT DXVKGraphicsBackend::RecreateGraphicsPipeline() {
-    printf("[DXVK] RecreateGraphicsPipeline() - NOT YET IMPLEMENTED\n");
-    return E_NOTIMPL;
-}
-
-void DXVKGraphicsBackend::DestroyGraphicsPipeline() {
-    if (m_device != VK_NULL_HANDLE) {
-        if (m_graphicsPipeline != VK_NULL_HANDLE) {
-            vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
-            m_graphicsPipeline = VK_NULL_HANDLE;
-        }
-        if (m_pipelineLayout != VK_NULL_HANDLE) {
-            vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
-            m_pipelineLayout = VK_NULL_HANDLE;
-        }
-    }
-}
-
 // ============================================================================
 // Frame Rendering (Placeholder - to be implemented in Phase 39.2.3)
 // ============================================================================

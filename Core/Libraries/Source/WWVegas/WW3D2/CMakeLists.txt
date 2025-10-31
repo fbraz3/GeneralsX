@@ -279,6 +279,9 @@ set(WW3D2_SRC
     graphics_backend_dxvk_commands.cpp
     graphics_backend_dxvk_errors.cpp
     graphics_backend_dxvk_perf.cpp
+    
+    # Phase 44: Advanced Rendering
+    graphics_backend_dxvk_pipeline.cpp
 )
 
 if(APPLE)
