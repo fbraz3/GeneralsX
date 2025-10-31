@@ -112,7 +112,7 @@ HRESULT DXVKGraphicsBackend::DrawIndexedPrimitive(
         return E_FAIL;
     }
     
-    if (!m_indexBuffer || m_indexBuffer->buffer == VK_NULL_HANDLE) {
+    if (!m_indexBuffer) {
         if (m_debugOutput) {
             printf("[DXVK] WARNING: DrawIndexedPrimitive - No index buffer bound\n");
         }
@@ -157,7 +157,7 @@ HRESULT DXVKGraphicsBackend::DrawIndexedPrimitive(
     // Bind index buffer
     vkCmdBindIndexBuffer(
         m_commandBuffers[m_currentFrame],
-        m_indexBuffer->buffer,
+        m_indexBuffer,
         0,
         VK_INDEX_TYPE_UINT32  // Assuming 32-bit indices
     );
@@ -443,10 +443,10 @@ HRESULT DXVKGraphicsBackend::SetIndices(void* buffer) {
     }
     
     if (buffer == nullptr) {
-        m_indexBuffer = nullptr;
+        m_indexBuffer = VK_NULL_HANDLE;
     } else {
         auto bufHandle = (DXVKBufferHandle*)buffer;
-        m_indexBuffer = std::make_shared<DXVKBufferHandle>(*bufHandle);
+        m_indexBuffer = bufHandle->buffer;
     }
     
     m_lastError = S_OK;
