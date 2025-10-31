@@ -20,7 +20,7 @@
  */
 
 #include "graphics_backend_dxvk.h"
-#include "Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h"
+#include "win32_compat.h"
 #include <cstring>
 #include <cmath>
 #include <iostream>
@@ -89,25 +89,26 @@
 // CMake Config: cmake/vulkan.cmake (sets Vulkan::Loader as target)
 // ============================================================================
 
-static const char* DEVICE_EXTENSIONS[] = {
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME
-};
-static const size_t DEVICE_EXTENSION_COUNT = 1;
+// Note: DEVICE_EXTENSIONS and DEVICE_EXTENSION_COUNT are defined in graphics_backend_dxvk.h
+// to avoid redefinition errors
+
+// Metal surface extension for macOS (may not be in older Vulkan SDK headers)
+#ifndef VK_KHR_METAL_SURFACE_EXTENSION_NAME
+#define VK_KHR_METAL_SURFACE_EXTENSION_NAME "VK_EXT_metal_surface"
+#endif
 
 static const char* INSTANCE_EXTENSIONS[] = {
-    VK_KHR_SURFACE_EXTENSION_NAME,
-    #ifdef __APPLE__
-        VK_EXT_METAL_SURFACE_EXTENSION_NAME,  // Metal surface via Vulkan Loader
-    #endif
-    #ifdef _WIN32
-        VK_KHR_WIN32_SURFACE_EXTENSION_NAME,  // Win32 surface via Vulkan Loader
-    #endif
-    #ifdef __linux__
-        VK_KHR_XCB_SURFACE_EXTENSION_NAME,    // X11 XCB surface via Vulkan Loader
-        VK_KHR_XLIB_SURFACE_EXTENSION_NAME,   // X11 Xlib surface via Vulkan Loader
-    #endif
+    VK_KHR_SURFACE_EXTENSION_NAME
+#ifdef __APPLE__
+    , VK_KHR_METAL_SURFACE_EXTENSION_NAME
+#endif
 };
-static const size_t INSTANCE_EXTENSION_COUNT = sizeof(INSTANCE_EXTENSIONS) / sizeof(INSTANCE_EXTENSIONS[0]);
+// Calculate extension count at compile time based on #ifdef
+#ifdef __APPLE__
+static const size_t INSTANCE_EXTENSION_COUNT = 2;
+#else
+static const size_t INSTANCE_EXTENSION_COUNT = 1;
+#endif
 
 // ============================================================================
 // Debug Callback (Validation Layers)
@@ -181,14 +182,14 @@ DXVKGraphicsBackend::DXVKGraphicsBackend()
     
     // Initialize material
     std::memset(&m_material, 0, sizeof(m_material));
-    m_material.Diffuse = {1.0f, 1.0f, 1.0f, 1.0f};
-    m_material.Ambient = {0.2f, 0.2f, 0.2f, 1.0f};
-    m_material.Specular = {1.0f, 1.0f, 1.0f, 1.0f};
-    m_material.Emissive = {0.0f, 0.0f, 0.0f, 1.0f};
+    m_material.Diffuse[0] = 1.0f; m_material.Diffuse[1] = 1.0f; m_material.Diffuse[2] = 1.0f; m_material.Diffuse[3] = 1.0f;
+    m_material.Ambient[0] = 0.2f; m_material.Ambient[1] = 0.2f; m_material.Ambient[2] = 0.2f; m_material.Ambient[3] = 1.0f;
+    m_material.Specular[0] = 1.0f; m_material.Specular[1] = 1.0f; m_material.Specular[2] = 1.0f; m_material.Specular[3] = 1.0f;
+    m_material.Emissive[0] = 0.0f; m_material.Emissive[1] = 0.0f; m_material.Emissive[2] = 0.0f; m_material.Emissive[3] = 1.0f;
     m_material.Power = 32.0f;
     
-    // Initialize ambient color
-    m_ambientColor = D3DCOLOR_RGBA(128, 128, 128, 255);
+    // Initialize ambient color (0xAARRGGBB format)
+    m_ambientColor = 0xFF808080;
     
     g_dxvkBackend = this;
 }
@@ -597,7 +598,9 @@ void DXVKGraphicsBackend::DestroyInstance() {
 // - CreateGraphicsPipeline(), RecreateGraphicsPipeline(), DestroyGraphicsPipeline()
 // - Memory allocation helpers and format conversion
 
-// Placeholder implementations (actual implementations in graphics_backend_dxvk_device.cpp)HRESULT DXVKGraphicsBackend::CreateDevice() {
+// Placeholder implementations (actual implementations in graphics_backend_dxvk_device.cpp)
+
+HRESULT DXVKGraphicsBackend::CreateDevice() {
     printf("[DXVK] CreateDevice() - NOT YET IMPLEMENTED\n");
     return E_NOTIMPL;
 }
@@ -779,12 +782,11 @@ HRESULT DXVKGraphicsBackend::Present() {
 }
 
 HRESULT DXVKGraphicsBackend::Clear(
-    unsigned int count,
-    const D3DRECT* rects,
-    unsigned int flags,
-    D3DCOLOR color,
+    bool clear_color,
+    bool clear_z_stencil,
+    const void* color_vec3,
     float z,
-    unsigned int stencil) {
+    DWORD stencil) {
     printf("[DXVK] Clear() - NOT YET IMPLEMENTED\n");
     return E_NOTIMPL;
 }
@@ -828,8 +830,6 @@ HRESULT DXVKGraphicsBackend::DrawIndexedPrimitive(
 HRESULT DXVKGraphicsBackend::CreateTexture(
     unsigned int width,
     unsigned int height,
-    unsigned int levels,
-    unsigned int usage,
     D3DFORMAT format,
     void** texture) {
     printf("[DXVK] CreateTexture() - NOT YET IMPLEMENTED\n");

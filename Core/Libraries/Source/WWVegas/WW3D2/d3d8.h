@@ -64,6 +64,16 @@ typedef void* LPDISPATCH;
 // DirectX color type
 typedef uint32_t D3DCOLOR;
 
+// DirectX rectangle type
+typedef struct {
+    long x1;
+    long y1;
+    long x2;
+    long y2;
+} D3DRECT;
+
+typedef D3DRECT* LPD3DRECT;
+
 // DirectX texture filter types
 #ifndef D3DTEXF_NONE
 typedef enum {

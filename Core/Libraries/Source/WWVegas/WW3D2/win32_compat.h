@@ -303,6 +303,7 @@ typedef void* HANDLE;
 #define E_FAIL                        ((HRESULT)0x80004005L)
 #define E_INVALIDARG                  ((HRESULT)0x80070057L)
 #define E_OUTOFMEMORY                 ((HRESULT)0x8007000EL)
+#define E_NOTIMPL                     ((HRESULT)0x80004001L)
 
 // Audio types (avoid redefinition if Miles Sound System already defined them)
 // Skip these definitions if Miles Sound System header was already included
@@ -2367,5 +2368,9 @@ bool GetStringFromGeneralsRegistry(AsciiString section, AsciiString key, AsciiSt
 #endif // !_WIN32
 
 #endif // !_WIN32
+
+// D3D Color macros
+#define D3DCOLOR_RGBA(r, g, b, a) ((unsigned int)((a & 0xFF) << 24) | ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF))
+#define D3DCOLOR_ARGB(a, r, g, b) ((unsigned int)((a & 0xFF) << 24) | ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF))
 
 #endif // WIN32_COMPAT_H_INCLUDED

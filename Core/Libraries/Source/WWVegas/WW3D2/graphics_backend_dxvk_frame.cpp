@@ -163,26 +163,25 @@ HRESULT DXVKGraphicsBackend::Present() {
  * Clear render target and depth buffer.
  */
 HRESULT DXVKGraphicsBackend::Clear(
-    unsigned int count,
-    const D3DRECT* rects,
-    unsigned int flags,
-    D3DCOLOR color,
+    bool clear_color,
+    bool clear_z_stencil,
+    const void* color_vec3,
     float z,
-    unsigned int stencil) {
+    DWORD stencil) {
     
     if (!m_initialized || !m_inScene) {
         return E_FAIL;
     }
     
     if (m_debugOutput) {
-        printf("[DXVK] Clear: flags=0x%X, color=0x%X\n", flags, color);
+        printf("[DXVK] Clear: color=%p, z=%.2f\n", color_vec3, z);
     }
     
-    // Extract RGBA from D3DCOLOR (format: 0xAARRGGBB)
-    float r = (float)((color >> 16) & 0xFF) / 255.0f;
-    float g = (float)((color >> 8) & 0xFF) / 255.0f;
-    float b = (float)(color & 0xFF) / 255.0f;
-    float a = (float)((color >> 24) & 0xFF) / 255.0f;
+    // Convert color vector to RGBA (color_vec3 is a 3-element float array)
+    float r = color_vec3 ? ((const float*)color_vec3)[0] : 0.0f;
+    float g = color_vec3 ? ((const float*)color_vec3)[1] : 0.0f;
+    float b = color_vec3 ? ((const float*)color_vec3)[2] : 0.0f;
+    float a = 1.0f;
     
     // Begin render pass
     VkRenderPassBeginInfo renderPassInfo{};
@@ -196,7 +195,7 @@ HRESULT DXVKGraphicsBackend::Clear(
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearValue;
     
-    vkCmdBeginRenderPass(m_commandBuffers[m_currentFrame], &renderPassInfo, VK_SUBPASS_INLINE);
+    vkCmdBeginRenderPass(m_commandBuffers[m_currentFrame], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
     
     // Set viewport
     VkViewport viewport{};
