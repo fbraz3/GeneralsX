@@ -38,7 +38,7 @@
 #pragma once
 
 #include "always.h"
-#include "Vector.H"
+#include "Vector.h"
 #include "wwstring.h"
 #include "hashtemplate.h"
 

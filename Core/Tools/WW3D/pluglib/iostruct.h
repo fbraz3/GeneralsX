@@ -40,7 +40,7 @@
 
 #ifndef BITTYPE_H
 
-#include "BITTYPE.H"
+#include "BITTYPE.h"
 #endif
 
 /*

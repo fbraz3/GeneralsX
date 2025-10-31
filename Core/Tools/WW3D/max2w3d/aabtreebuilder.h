@@ -42,7 +42,7 @@
 #include "vector3.h"
 #include "vector3i.h"
 #include "aaplane.h"
-#include "BITTYPE.H"
+#include "BITTYPE.h"
 #include <float.h>
 
 class AABTreeClass;

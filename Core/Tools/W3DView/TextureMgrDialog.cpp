@@ -35,13 +35,13 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-#include "StdAfx.H"
-#include "W3DView.H"
-#include "TextureMgrDialog.H"
-#include "Mesh.H"
-#include "MatInfo.H"
-#include "TextureSettingsDialog.H"
-#include "AssetMgr.H"
+#include "StdAfx.h"
+#include "W3DView.h"
+#include "TextureMgrDialog.h"
+#include "Mesh.h"
+#include "MatInfo.h"
+#include "TextureSettingsDialog.h"
+#include "AssetMgr.h"
 #include "texture.h"
 
 

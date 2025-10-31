@@ -151,7 +151,7 @@ set(W3DVIEW_SRC
     "Utils.cpp"
     "Utils.h"
     "Vector3RndCombo.cpp"
-    "Vector3RndCombo.H"
+    "Vector3RndCombo.h"
     "ViewerAssetMgr.cpp"
     "ViewerAssetMgr.h"
     "ViewerScene.cpp"

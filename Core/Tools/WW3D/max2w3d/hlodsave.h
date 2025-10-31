@@ -42,7 +42,7 @@
 #include <stdio.h>
 
 #include "w3d_file.h"
-#include "PROGRESS.H"
+#include "PROGRESS.h"
 #include "chunkio.h"
 #include "meshcon.h"
 

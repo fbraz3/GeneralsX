@@ -22,7 +22,7 @@
  *                                                                                             *
  *                 Project Name : G                                      *
  *                                                                                             *
- *                     $Archive:: /G/wdump/RAWFILEM.CPP                                       $*
+ *                     $Archive:: /G/wdump/RAWFILEM.cpp                                       $*
  *                                                                                             *
  *                      $Author:: Eric_c                                                      $*
  *                                                                                             *
@@ -65,7 +65,7 @@
  *    Display an error message as indicated. If it is allowed to retry, then pressing a key    *
  *    will return from this function. Otherwise, it will exit the program with "exit()".       *
  *                                                                                             *
- * INPUT:   error    -- The error number (same as the DOSERR.H error numbers).                 *
+ * INPUT:   error    -- The error number (same as the DOSERR.h error numbers).                 *
  *                                                                                             *
  *          canretry -- Can this routine exit normally so that retrying can occur? If this is  *
  *                      false, then the program WILL exit in this routine.                     *

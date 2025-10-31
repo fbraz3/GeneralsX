@@ -23,7 +23,7 @@
  *                                                                                             *
  *                 Project Name : Westwood 3D                                                  *
  *                                                                                             *
- *                    File Name : VECTOR2.H                                                    *
+ *                    File Name : VECTOR2.h                                                    *
  *                                                                                             *
  *                   Programmer : Greg Hjelstrom                                               *
  *                                                                                             *

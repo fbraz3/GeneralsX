@@ -36,11 +36,11 @@
 
 #pragma once
 
-#include "Vector.H"
-#include "RendObj.H"
-#include "Utils.H"
-#include "Resource.H"
-#include "DialogToolbar.H"
+#include "Vector.h"
+#include "RendObj.h"
+#include "Utils.h"
+#include "Resource.h"
+#include "DialogToolbar.h"
 #include "texture.h"
 
 // Forward declarations

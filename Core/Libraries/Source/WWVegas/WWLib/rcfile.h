@@ -37,7 +37,7 @@
 #pragma once
 
 #include "always.h"
-#include "WWFILE.H"
+#include "WWFILE.h"
 #include "win.h"
 
 /*

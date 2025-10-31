@@ -36,7 +36,7 @@
 
 #pragma once
 
-#include	"PIPE.H"
+#include "PIPE.h"
 
 /*
 **	This class performs Base64 encoding/decoding to the data that is piped through. Note that

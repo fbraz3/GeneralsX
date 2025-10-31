@@ -29,7 +29,7 @@
 #include "dx8wrapper.h"
 #include "dx8caps.h"
 #include "missingtexture.h"
-#include "TARGA.H"
+#include "TARGA.h"
 #include <d3dx8tex.h>
 #include "wwmemlog.h"
 #include "texture.h"

@@ -41,7 +41,7 @@
 #endif
 
 #ifndef	RANDOM_H
-	#include "RANDOM.H"
+	#include "RANDOM.h"
 #endif
 
 #ifndef	WWDEBUG_H

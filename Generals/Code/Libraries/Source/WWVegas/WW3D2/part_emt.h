@@ -37,7 +37,7 @@
 #pragma once
 
 #include "rendobj.h"
-#include "RANDOM.H"
+#include "RANDOM.h"
 #include "part_buf.h"
 #include "quat.h"
 #include "w3d_file.h"

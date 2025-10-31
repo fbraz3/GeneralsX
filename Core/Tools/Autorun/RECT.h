@@ -22,7 +22,7 @@
  *                                                                                             *
  *                 Project Name : Command & Conquer                                            *
  *                                                                                             *
- *                      Archive : /Sun/RECT.H                                                  *
+ *                      Archive : /Sun/RECT.h                                                  *
  *                                                                                             *
  *                       Author : Joe_b                                                        *
  *                                                                                             *

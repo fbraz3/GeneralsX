@@ -22,7 +22,7 @@
  *                                                                                             *
  *                 Project Name : Command & Conquer                                            *
  *                                                                                             *
- *                     $Archive:: /Commando/Library/BFIOFILE.H                                $*
+ *                     $Archive:: /Commando/Library/BFIOFILE.h                                $*
  *                                                                                             *
  *                      $Author:: Greg_h                                                      $*
  *                                                                                             *
@@ -36,7 +36,7 @@
 
 #pragma once
 
-#include	"RAWFILE.H"
+#include "RAWFILE.h"
 
 /*
 **	This derivation of the raw file class handles buffering the input/output in order to

@@ -40,8 +40,8 @@
 #include	"always.h"
 #include	"readline.h"
 #include	"trim.h"
-#include	"WWFILE.H"
-#include	"XSTRAW.H"
+#include "WWFILE.h"
+#include "XSTRAW.h"
 
 
 #if !defined(__BORLANDC__) && !defined(_MSC_VER)

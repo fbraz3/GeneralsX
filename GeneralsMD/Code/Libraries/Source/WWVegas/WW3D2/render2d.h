@@ -38,7 +38,7 @@
 
 #include "always.h"
 //#include "simplevec.h"
-#include "Vector.H"
+#include "Vector.h"
 #include "vector2.h"
 
 #include "shader.h"

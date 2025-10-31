@@ -88,24 +88,24 @@
 #include	"b64pipe.h"
 #include	"b64straw.h"
 #include	"cstraw.h"
-#include	"INI.H"
+#include "INI.h"
 #include	"readline.h"
 #include	"trim.h"
 #include	"win.h"
-#include	"XPIPE.H"
-#include	"XSTRAW.H"
+#include "XPIPE.h"
+#include "XSTRAW.h"
 #include <malloc.h>
 #ifdef _UNIX
 #include <ctype.h>
 #endif
-#include "RAWFILE.H"
+#include "RAWFILE.h"
 #include "ffactory.h"
 
 // recently transferred from ini.h
 #include "inisup.h"
 #include	"trect.h"
-#include	"WWFILE.H"
-#include	"PIPE.H"
+#include "WWFILE.h"
+#include "PIPE.h"
 #include	"wwstring.h"
 #include "widestring.h"
 #include "nstrdup.h"

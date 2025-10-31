@@ -22,7 +22,7 @@
  *                                                                                             *
  *                 Project Name : Commando / G 3D engine                                       *
  *                                                                                             *
- *                    File Name : MeshDeformPanel.H                                            *
+ *                    File Name : MeshDeformPanel.h                                            *
  *                                                                                             *
  *                   Programmer : Patrick Smith                                                *
  *                                                                                             *

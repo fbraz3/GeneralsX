@@ -37,7 +37,7 @@
 
 #include "StdAfx.h"
 #include "AssetInfo.h"
-//#include "HModel.H"
+//#include "HModel.h"
 #include "assetmgr.h"
 #include "htree.h"
 

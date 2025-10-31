@@ -37,7 +37,7 @@
 #pragma once
 
 #include "always.h"
-#include "LISTNODE.H"
+#include "LISTNODE.h"
 #include "wwdebug.h"
 
 class RefCountClass;

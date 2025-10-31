@@ -39,7 +39,7 @@
 #include <max.h>
 #include "w3d_file.h"
 #include "chunkio.h"
-#include "PROGRESS.H"
+#include "PROGRESS.h"
 
 
 /*******************************************************************************************

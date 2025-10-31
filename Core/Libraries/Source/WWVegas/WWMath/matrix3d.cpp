@@ -23,7 +23,7 @@
  *                                                                                             *
  *                 Project Name : Voxel Technology                                             *
  *                                                                                             *
- *                    File Name : MATRIX3D.CPP                                                 *
+ *                    File Name : MATRIX3D.cpp                                                 *
  *                                                                                             *
  *                Org Programmer : Greg Hjelstrom                                               *
  *                                                                                             *

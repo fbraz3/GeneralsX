@@ -44,7 +44,7 @@
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "Lib/BaseType.h"
-#include "WWLib/TARGA.H"
+#include "WWLib/TARGA.h"
 #include "ImageDirectory.h"
 #include "ImageInfo.h"
 #include "TexturePage.h"

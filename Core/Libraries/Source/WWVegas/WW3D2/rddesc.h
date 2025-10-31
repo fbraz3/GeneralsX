@@ -36,7 +36,7 @@
 
 #pragma once
 
-#include "Vector.H"
+#include "Vector.h"
 #include "wwstring.h"
 #include <d3d8types.h>
 #include <d3d8caps.h>

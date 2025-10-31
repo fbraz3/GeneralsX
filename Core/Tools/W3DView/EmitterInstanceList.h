@@ -32,7 +32,7 @@
 
 #pragma once
 
-#include "Vector.H"
+#include "Vector.h"
 #include "part_ldr.h"
 #include "part_emt.h"
 

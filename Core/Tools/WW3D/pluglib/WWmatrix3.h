@@ -23,7 +23,7 @@
  *                                                                                             *
  *                 Project Name : WW3D                                                         *
  *                                                                                             *
- *                    File Name : MATRIX3.H                                                    *
+ *                    File Name : MATRIX3.h                                                    *
  *                                                                                             *
  *                   Programmer : Greg Hjelstrom                                               *
  *                                                                                             *

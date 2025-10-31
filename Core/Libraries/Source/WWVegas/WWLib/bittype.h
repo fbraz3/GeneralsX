@@ -23,7 +23,7 @@
  *                                                                         *
  *                 Project Name : Voxel Technology                         *
  *                                                                         *
- *                    File Name : BITTYPE.H                                *
+ *                    File Name : BITTYPE.h                                *
  *                                                                         *
  *                   Programmer : Greg Hjelstrom                           *
  *                                                                         *

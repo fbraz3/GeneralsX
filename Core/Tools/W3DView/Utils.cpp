@@ -18,7 +18,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 //
-//  Utils.CPP
+//  Utils.cpp
 //
 //  Module containing usefull misc. utility functions
 //
@@ -33,7 +33,7 @@
 #include "assetmgr.h"
 #include "agg_def.h"
 #include "hlod.h"
-#include <VFW.H>
+#include <VFW.h>
 #include "rcfile.h"
 
 

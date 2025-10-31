@@ -41,7 +41,7 @@
 #include "always.h"
 #include "wwmemlog.h"
 #include "wwdebug.h"
-#include "Vector.H"
+#include "Vector.h"
 #include "FastAllocator.h"
 
 #define USE_FAST_ALLOCATOR

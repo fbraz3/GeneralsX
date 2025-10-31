@@ -22,7 +22,7 @@
  *                                                                                             *
  *                 Project Name : Command & Conquer                                            *
  *                                                                                             *
- *                     $Archive:: /Commando/Library/STIMER.H                                  $*
+ *                     $Archive:: /Commando/Library/STIMER.h                                  $*
  *                                                                                             *
  *                      $Author:: Greg_h                                                      $*
  *                                                                                             *

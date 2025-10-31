@@ -38,7 +38,7 @@
 #pragma once
 
 #include "always.h"
-#include "BITTYPE.H"
+#include "BITTYPE.h"
 #include "iostruct.h"
 #include <limits.h>
 

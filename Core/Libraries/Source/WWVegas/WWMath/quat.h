@@ -23,7 +23,7 @@
  *                                                                         *
  *                 Project Name : Voxel Technology                         *
  *                                                                         *
- *                    File Name : QUAT.H                                   *
+ *                    File Name : QUAT.h                                   *
  *                                                                         *
  *                   Programmer : Greg Hjelstrom                           *
  *                                                                         *

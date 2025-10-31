@@ -88,7 +88,7 @@
 
 
 // DEBUG DEBUG
-#include "MPU.H"
+#include "MPU.h"
 
 #define DEBUG_SHADOW_RENDERING					0
 //#define DEFAULT_TEXTURE_SIZE						64

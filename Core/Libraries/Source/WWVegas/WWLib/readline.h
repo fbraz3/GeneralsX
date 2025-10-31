@@ -36,8 +36,8 @@
 
 #pragma once
 
-#include	"STRAW.H"
-#include	"WWFILE.H"
+#include "STRAW.h"
+#include "WWFILE.h"
 #include <wchar.h>
 
 int Read_Line(FileClass & file, char * buffer, int len, bool & eof);

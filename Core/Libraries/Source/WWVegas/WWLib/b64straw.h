@@ -36,7 +36,7 @@
 
 #pragma once
 
-#include	"STRAW.H"
+#include "STRAW.h"
 
 /*
 **	Performs Base 64 encoding/decoding on the data that is drawn through the straw. Note that

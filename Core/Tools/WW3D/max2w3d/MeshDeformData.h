@@ -37,7 +37,7 @@
 #pragma once
 
 #include <max.h>
-#include "Vector.H"
+#include "Vector.h"
 #include "MeshDeformSet.h"
 
 

@@ -39,7 +39,7 @@
 
 #include "always.h"
 #include "bittype.h"
-#include "WWFILE.H"
+#include "WWFILE.h"
 #include "iostruct.h"
 
 /************************************************************************************

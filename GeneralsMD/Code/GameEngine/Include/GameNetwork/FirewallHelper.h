@@ -29,7 +29,7 @@
  *                                                                                             *
  *                 Project Name : Command & Conquer                                            *
  *                                                                                             *
- *                     $Archive:: /RedAlert2/NAT.CPP                                          $*
+ *                     $Archive:: /RedAlert2/NAT.cpp                                          $*
  *                                                                                             *
  *                      $Author:: Steve_t                                                     $*
  *                                                                                             *

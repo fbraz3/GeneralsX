@@ -20,7 +20,7 @@
  *                                                                         *
  *                 Project Name : Westwood Auto Registration App           *
  *                                                                         *
- *                    File Name : PACKET.CPP                               *
+ *                    File Name : PACKET.cpp                               *
  *                                                                         *
  *                   Programmer : Philip W. Gorrow                         *
  *                                                                         *

@@ -23,7 +23,7 @@
  *                                                                                             *
  *                 Project Name : WW3D                                                         *
  *                                                                                             *
- *                    File Name : MATRIX4.H                                                    *
+ *                    File Name : MATRIX4.h                                                    *
  *                                                                                             *
  *               Org Programmer : Greg Hjelstrom                                               *
  *                                                                                             *

@@ -37,7 +37,7 @@
 #pragma once
 
 #include "animobj.h"
-#include "Vector.H"
+#include "Vector.h"
 #include "snapPts.h"
 #include "proto.h"
 #include "w3derr.h"

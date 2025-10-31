@@ -39,7 +39,7 @@
 #include	"always.h"
 #include "vector2.h"
 #include "vector3.h"
-#include "BITTYPE.H"
+#include "BITTYPE.h"
 
 #include <assert.h>
 

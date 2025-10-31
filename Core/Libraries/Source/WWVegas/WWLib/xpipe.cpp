@@ -22,7 +22,7 @@
  *                                                                                             *
  *                 Project Name : Command & Conquer                                            *
  *                                                                                             *
- *                     $Archive:: /Commando/Code/Library/XPIPE.CPP                            $*
+ *                     $Archive:: /Commando/Code/Library/XPIPE.cpp                            $*
  *                                                                                             *
  *                      $Author:: Greg_h                                                      $*
  *                                                                                             *
@@ -39,7 +39,7 @@
 
 
 #include	"always.h"
-#include	"XPIPE.H"
+#include "XPIPE.h"
 #include	<stddef.h>
 
 

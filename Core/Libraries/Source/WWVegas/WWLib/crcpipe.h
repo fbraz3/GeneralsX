@@ -36,8 +36,8 @@
 
 #pragma once
 
-#include	"CRC.H"
-#include	"PIPE.H"
+#include "CRC.h"
+#include "PIPE.h"
 
 /*
 **	This class doesn't modify the data being piped through, but it does examine it and build

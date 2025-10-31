@@ -41,7 +41,7 @@
 #include "always.h"
 #include <stdlib.h>
 #include "parametertypes.h"
-#include "Vector.H"
+#include "Vector.h"
 #include "wwstring.h"
 #include "bittype.h"
 #include "obbox.h"

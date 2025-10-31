@@ -44,7 +44,7 @@
 #include "SoundBuffer.h"
 #include "AudibleSound.h"
 #include "Sound3D.h"
-#include "RAWFILE.H"
+#include "RAWFILE.h"
 #include "SoundScene.h"
 #include "SoundPseudo3D.h"
 #include "ffactory.h"

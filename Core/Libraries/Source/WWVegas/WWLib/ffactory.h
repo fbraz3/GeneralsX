@@ -38,13 +38,13 @@
 
 #include "always.h"
 #include "mutex.h"
-#include "Vector.H"
+#include "Vector.h"
 #include "wwstring.h"
 
 /*
 **
 */
-#include	"RAWFILE.H"
+#include "RAWFILE.h"
 class	FileClass;
 
 /*

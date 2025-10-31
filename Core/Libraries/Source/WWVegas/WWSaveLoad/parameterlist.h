@@ -37,7 +37,7 @@
 #pragma once
 
 #include "always.h"
-#include "Vector.H"
+#include "Vector.h"
 #include "parameter.h"
 #include "wwdebug.h"
 

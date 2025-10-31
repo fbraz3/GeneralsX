@@ -45,7 +45,7 @@
 
 #include "rendobj.h"
 #include "float.h"
-#include "Vector.H"
+#include "Vector.h"
 
 class LODHeapNode;
 

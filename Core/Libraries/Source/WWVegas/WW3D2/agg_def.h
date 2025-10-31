@@ -38,7 +38,7 @@
 #include "rendobj.h"
 #include "w3d_file.h"
 #include "w3derr.h"
-#include "Vector.H"
+#include "Vector.h"
 #include "bittype.h"
 
 #ifdef _UNIX

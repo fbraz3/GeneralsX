@@ -36,7 +36,7 @@
 
 #pragma once
 
-#include	"STRAW.H"
+#include "STRAW.h"
 
 /*
 **	This class handles LZO compression/decompression to the data stream that is drawn through

@@ -28,7 +28,7 @@
 #include "MainFrm.h"
 #include "W3DViewDoc.h"
 #include "DataTreeView.h"
-//#include "HModel.H"
+//#include "HModel.h"
 
 #ifdef RTS_DEBUG
 #define new DEBUG_NEW

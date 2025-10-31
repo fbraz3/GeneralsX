@@ -43,7 +43,7 @@
 #include "wwdebug.h"
 #include "wwstring.h"
 #include "hashtemplate.h"
-#include "Vector.H"
+#include "Vector.h"
 
 
 // Forward declarations

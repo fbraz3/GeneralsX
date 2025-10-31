@@ -22,7 +22,7 @@
  *                                                                                             *
  *                 Project Name : Command & Conquer                                            *
  *                                                                                             *
- *                     $Archive:: /Commando/Library/SEARCH.H                                  $*
+ *                     $Archive:: /Commando/Library/SEARCH.h                                  $*
  *                                                                                             *
  *                      $Author:: Greg_h                                                      $*
  *                                                                                             *

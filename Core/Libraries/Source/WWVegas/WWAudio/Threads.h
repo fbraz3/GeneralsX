@@ -33,7 +33,7 @@
 #pragma once
 
 #include "windows.h"
-#include "Vector.H"
+#include "Vector.h"
 #include "mutex.h"
 
 // Forward declarations

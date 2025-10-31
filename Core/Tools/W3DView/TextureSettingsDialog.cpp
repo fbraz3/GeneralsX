@@ -31,12 +31,12 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-#include "StdAfx.H"
-#include "Texture.H"
-#include "W3DView.H"
-#include "TextureSettingsDialog.H"
-#include "Utils.H"
-#include "AssetMgr.H"
+#include "StdAfx.h"
+#include "Texture.h"
+#include "W3DView.h"
+#include "TextureSettingsDialog.h"
+#include "Utils.h"
+#include "AssetMgr.h"
 
 /*#ifdef RTS_DEBUG
 #define new DEBUG_NEW

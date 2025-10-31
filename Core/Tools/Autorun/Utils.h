@@ -22,7 +22,7 @@
  *                                                                         *
  *     	          Project Name : Setup                   				   *
  *                                                                         *
- *                    File Name : UTILS.H                                  *
+ *                    File Name : UTILS.h                                  *
  *                                                                         *
  *                   Programmers: Maria del Mar McCready Legg              *
  *                                                                         *

@@ -40,7 +40,7 @@
 #pragma once
 
 #include "hashcalc.h"
-#include "Vector.H"
+#include "Vector.h"
 
 /*
 ** UniqueArrayClass

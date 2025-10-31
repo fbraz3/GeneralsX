@@ -22,7 +22,7 @@
  *																		*
  *			Project Name : DrawButton                  					*
  *																		*
- *			   File Name : DRAWBUTTON.H									*
+ *			   File Name : DRAWBUTTON.h									*
  *																		*
  *            Programmer : Maria del Mar McCready Legg					*
  *																		*

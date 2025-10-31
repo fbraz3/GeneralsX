@@ -22,7 +22,7 @@
  *                                                                                             *
  *                 Project Name : Command & Conquer                                            *
  *                                                                                             *
- *                     $Archive:: /G/wwlib/PALETTE.H                                          $*
+ *                     $Archive:: /G/wwlib/PALETTE.h                                          $*
  *                                                                                             *
  *                      $Author:: Eric_c                                                      $*
  *                                                                                             *

@@ -34,7 +34,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include	"ffactory.h"
-#include	"RAWFILE.H"
+#include "RAWFILE.h"
 #include "bufffile.h"
 #include "realcrc.h"
 #include <stdlib.h>

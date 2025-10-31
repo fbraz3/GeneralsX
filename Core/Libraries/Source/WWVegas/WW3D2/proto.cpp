@@ -42,7 +42,7 @@
 
 #include "proto.h"
 #include "mesh.h"
-#include "hmdldef.H"
+#include "hmdldef.h"
 #include "hlod.h"
 #include "w3derr.h"
 

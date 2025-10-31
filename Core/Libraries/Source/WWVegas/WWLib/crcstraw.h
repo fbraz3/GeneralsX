@@ -36,8 +36,8 @@
 
 #pragma once
 
-#include	"CRC.H"
-#include	"STRAW.H"
+#include	"CRC.h"
+#include	"STRAW.h"
 
 /*
 **	This class will build a CRC value from the data stream that is drawn through this class.

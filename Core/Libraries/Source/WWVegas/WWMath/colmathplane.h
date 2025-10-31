@@ -47,7 +47,7 @@
 
 /*
 ** Inline collision functions dealing with planes
-** This module is meant to be included only in .CPP files after you include colmath.h
+** This module is meant to be included only in .cpp files after you include colmath.h
 ** It is not automatically included in order to reduce file dependencies...
 */
 

@@ -38,10 +38,10 @@
 //
 
 #include "animatedsoundmgr.h"
-#include "INI.H"
+#include "INI.h"
 #include "inisup.h"
 #include "ffactory.h"
-#include "WWFILE.H"
+#include "WWFILE.h"
 #include "definition.h"
 #include "definitionmgr.h"
 #include "definitionclassids.h"

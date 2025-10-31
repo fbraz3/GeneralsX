@@ -36,8 +36,8 @@
 
 #pragma once
 
-#include	"BUFF.H"
-#include	"STRAW.H"
+#include "BUFF.h"
+#include "STRAW.h"
 
 /*
 **	This class handles transfer of data by perform regulated requests for data from the next

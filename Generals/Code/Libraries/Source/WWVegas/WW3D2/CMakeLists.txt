@@ -79,7 +79,7 @@ set(WW3D2_SRC
     hlod.cpp
     hlod.h
     #hmdldef.cpp
-    #hmdldef.H
+    #hmdldef.h
     hmorphanim.cpp
     hmorphanim.h
     hrawanim.cpp

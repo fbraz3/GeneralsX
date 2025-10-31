@@ -20,7 +20,7 @@
  *                                                                         *
  *                 Project Name : Westwood Auto Registration App           *
  *                                                                         *
- *                    File Name : FIELD.CPP                                *
+ *                    File Name : FIELD.cpp                                *
  *                                                                         *
  *                   Programmer : Philip W. Gorrow                         *
  *                                                                         *

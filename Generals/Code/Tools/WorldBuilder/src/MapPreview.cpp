@@ -55,7 +55,7 @@
 #include "W3DDevice/GameClient/HeightMap.h"
 #include "Common/MapReaderWriterInfo.h"
 #include "Common/FileSystem.h"
-#include "WWLib/TARGA.H"
+#include "WWLib/TARGA.h"
 #include "Common/DataChunk.h"
 //-----------------------------------------------------------------------------
 // DEFINES ////////////////////////////////////////////////////////////////////

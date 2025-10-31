@@ -38,10 +38,10 @@
 #pragma once
 
 #include "always.h"
-#include "Vector.H"
+#include "Vector.h"
 #include "htreemgr.h"
 #include "hanimmgr.h"
-#include "SLIST.H"
+#include "SLIST.h"
 #include "texture.h"
 #include "hashtemplate.h"
 #include "simplevec.h"

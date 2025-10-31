@@ -39,7 +39,7 @@
 
 #include "always.h"
 #include "nvdxtlib.h"
-#include "TARGA.H"
+#include "TARGA.h"
 #include "tgatodxt.h"
 #include "wwdebug.h"
 #include <io.h>

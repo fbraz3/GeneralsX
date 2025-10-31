@@ -40,7 +40,7 @@
 #include <d3d8.h>
 #include <d3dx8core.h>
 #include "dx8wrapper.h"
-#include "TARGA.H"
+#include "TARGA.h"
 #include <nstrdup.h>
 #include "w3d_file.h"
 #include "assetmgr.h"

@@ -38,7 +38,7 @@
 
 #include "always.h"
 #include "vector3.h"
-#include "RANDOM.H"
+#include "RANDOM.h"
 #include <limits.h>
 
 /*

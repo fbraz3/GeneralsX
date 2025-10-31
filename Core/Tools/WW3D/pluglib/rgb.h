@@ -22,7 +22,7 @@
  *                                                                                             *
  *                 Project Name : Command & Conquer                                            *
  *                                                                                             *
- *                     $Archive:: /G/wwlib/RGB.H                                              $*
+ *                     $Archive:: /G/wwlib/RGB.h                                              $*
  *                                                                                             *
  *                      $Author:: Eric_c                                                      $*
  *                                                                                             *

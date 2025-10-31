@@ -105,7 +105,7 @@
 #include "dx8renderer.h"
 #include "metalmap.h"
 #include "w3dexclusionlist.h"
-#include <INI.H>
+#include <INI.h>
 #include <windows.h>
 #include <d3dx8core.h>
 #include "texture.h"

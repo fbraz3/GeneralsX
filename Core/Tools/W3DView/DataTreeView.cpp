@@ -48,7 +48,7 @@
 #include "hcanim.h"
 #include "AssetInfo.h"
 #include "Utils.h"
-#include "Vector.H"
+#include "Vector.h"
 #include "part_emt.h"
 #include "agg_def.h"
 #include "bmp2d.h"

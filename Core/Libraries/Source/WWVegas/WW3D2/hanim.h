@@ -44,8 +44,8 @@
 #include "hash.h"
 #include "mempool.h"
 #include <refcount.h>
-#include <SLIST.H>
-#include <Vector.H>
+#include <SLIST.h>
+#include <Vector.h>
 
 struct NodeMotionStruct;
 class MotionChannelClass;

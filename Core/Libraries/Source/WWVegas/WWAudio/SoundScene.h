@@ -39,7 +39,7 @@
 #include "aabtreecull.h"
 #include "gridcull.h"
 #include "Listener.h"
-#include "Vector.H"
+#include "Vector.h"
 #include "PriorityVector.h"
 #include "SoundCullObj.h"
 #include "LogicalListener.h"

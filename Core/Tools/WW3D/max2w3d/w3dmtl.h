@@ -38,7 +38,7 @@
 
 #include "always.h"
 #include "w3d_file.h"
-#include "Vector.H"
+#include "Vector.h"
 
 class GameMtl;
 class Mtl;

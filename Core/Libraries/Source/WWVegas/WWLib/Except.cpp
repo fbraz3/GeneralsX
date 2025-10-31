@@ -55,7 +55,7 @@
 #include "cpudetect.h"
 #include	"Except.h"
 //#include "debug.h"
-#include "MPU.H"
+#include "MPU.h"
 //#include "commando\nat.h"
 #include "thread.h"
 #include "wwdebug.h"

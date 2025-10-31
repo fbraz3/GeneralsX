@@ -41,7 +41,7 @@
 #include "mss.h"
 #pragma warning (pop)
 
-#include "Vector.H"
+#include "Vector.h"
 #include "SoundBuffer.h"
 #include "AudioEvents.h"
 #include "wwstring.h"
@@ -253,7 +253,7 @@ public:
 	//
 	float					Get_Effects_Level (void)	{ return m_EffectsLevel; }
 
-	//	See ENVIRONMENT_ defines in MSS.H for a list of possible values.
+	//	See ENVIRONMENT_ defines in MSS.h for a list of possible values.
 	int					Get_Reverb_Room_Type (void)		{ return m_ReverbRoomType; }
 	void					Set_Reverb_Room_Type (int type);
 

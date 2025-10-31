@@ -40,7 +40,7 @@
 #include "ScreenCursor.h"
 #include "mesh.h"
 #include "coltest.h"
-#include "MPU.H"
+#include "MPU.h"
 #include "dazzle.h"
 #include "SoundScene.h"
 #include "WWAudio.h"

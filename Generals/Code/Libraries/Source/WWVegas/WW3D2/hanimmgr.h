@@ -40,7 +40,7 @@
 #include "always.h"
 #include "hash.h"
 #include "wwstring.h"
-#include "Vector.H"
+#include "Vector.h"
 
 class HAnimClass;
 class ChunkLoadClass;
