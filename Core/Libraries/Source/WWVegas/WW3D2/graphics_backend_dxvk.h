@@ -49,6 +49,17 @@ struct DXVKTextureHandle;
 struct DXVKBufferHandle;
 
 // ============================================================================
+// Vertex Format Enumeration (Phase 44.2)
+// ============================================================================
+
+enum VertexFormat {
+    VERTEX_FORMAT_POSITION_ONLY = 0,    ///< 3x float32 (12 bytes) - position only
+    VERTEX_FORMAT_POSITION_COLOR = 1,   ///< 3x float32 + uint32 (16 bytes) - position + RGBA color
+    VERTEX_FORMAT_POSITION_UV = 2,      ///< 3x float32 + 2x float32 (20 bytes) - position + texture coordinates
+    VERTEX_FORMAT_FULL = 3              ///< 3x float32 + 3x float32 + 2x float32 + uint32 (36 bytes) - full vertex with all attributes
+};
+
+// ============================================================================
 // Type Aliases for Vulkan Memory Management
 // ============================================================================
 
@@ -478,6 +489,74 @@ public:
      * Report graphics pipeline state.
      */
     void ReportPipelineState() const;
+
+    // ========== Phase 44.2: Vertex Buffer Management ==========
+
+    /**
+     * Create vertex buffer and allocate device memory.
+     * Allocates 16MB vertex buffer for geometry data.
+     */
+    HRESULT CreateVertexBuffer();
+    
+    /**
+     * Destroy vertex buffer and free device memory.
+     */
+    void DestroyVertexBuffer();
+    
+    /**
+     * Set vertex format (position-only, position+color, position+UV, full).
+     */
+    HRESULT SetVertexFormat(VertexFormat format);
+    
+    /**
+     * Upload vertex data to GPU buffer.
+     */
+    HRESULT UpdateVertexBuffer(const void* vertexData, uint32_t vertexCount);
+    
+    /**
+     * Bind vertex buffer to command buffer for rendering.
+     */
+    HRESULT BindVertexBuffer(VkCommandBuffer commandBuffer);
+    
+    /**
+     * Query vertex buffer handle.
+     */
+    VkBuffer GetVertexBuffer() const;
+    
+    /**
+     * Query vertex buffer memory handle.
+     */
+    VkDeviceMemory GetVertexBufferMemory() const;
+    
+    /**
+     * Query current vertex count in buffer.
+     */
+    uint32_t GetVertexCount() const;
+    
+    /**
+     * Query vertex stride (bytes per vertex).
+     */
+    uint32_t GetVertexStride() const;
+    
+    /**
+     * Check if vertex buffer is ready for rendering.
+     */
+    bool IsVertexBufferReady() const;
+    
+    /**
+     * Get vertex attribute descriptions for pipeline.
+     */
+    const std::vector<VkVertexInputAttributeDescription>& GetVertexAttributeDescriptions() const;
+    
+    /**
+     * Get vertex binding description for pipeline.
+     */
+    const VkVertexInputBindingDescription& GetVertexBindingDescription() const;
+    
+    /**
+     * Report vertex buffer state and diagnostics.
+     */
+    void ReportVertexBufferState();
     
     /**
      * Clear render target and depth buffer.
@@ -1062,6 +1141,18 @@ private:
     VkCommandPool m_commandPool;            ///< Command buffer pool
     VkPipeline m_graphicsPipeline;          ///< Graphics pipeline
     VkPipelineLayout m_pipelineLayout;      ///< Pipeline layout
+
+    // ========== Phase 44.2: Vertex Buffer Members ==========
+    VkBuffer m_vertexBuffer;                ///< Vertex buffer handle
+    VkDeviceMemory m_vertexBufferMemory;    ///< Vertex buffer device memory
+    VkDeviceSize m_vertexBufferSize;        ///< Total vertex buffer size
+    VkDeviceSize m_vertexBufferOffset;      ///< Current offset in vertex buffer
+    uint32_t m_vertexCount;                 ///< Number of vertices in buffer
+    uint32_t m_vertexStride;                ///< Bytes per vertex
+    VertexFormat m_currentVertexFormat;     ///< Current vertex format
+    std::vector<VkVertexInputAttributeDescription> m_vertexAttributeDescriptions;
+    VkVertexInputBindingDescription m_vertexBindingDescription;
+
     VkPipelineCache m_pipelineCache;        ///< Pipeline cache for optimization
     
     // ========================================================================

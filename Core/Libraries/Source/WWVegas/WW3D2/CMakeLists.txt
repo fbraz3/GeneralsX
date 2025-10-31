@@ -282,6 +282,7 @@ set(WW3D2_SRC
     
     # Phase 44: Advanced Rendering
     graphics_backend_dxvk_pipeline.cpp
+    graphics_backend_dxvk_vertex_buffer.cpp
 )
 
 if(APPLE)
