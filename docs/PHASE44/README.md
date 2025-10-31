@@ -221,16 +221,19 @@ TheFileSystem->Open("Art/Buildings/BarracksBuild.w3d");
 ## Integration Points
 
 ### With Phase 42 (Textures)
+
 - Material textures loaded and bound
 - Normal maps and specular maps
 - Texture filtering and addressing modes
 
 ### With Phase 41 (Drawing)
+
 - DrawIndexedPrimitive called for submeshes
 - Render states applied per material
 - Vertex buffer bound before drawing
 
 ### With Phase 45 (Camera)
+
 - View/projection matrices passed to shaders
 - World transforms applied to models
 

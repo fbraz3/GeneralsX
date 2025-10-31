@@ -158,11 +158,13 @@ Combined Transform = Projection * View * World
 ## Coordinate System Conventions
 
 ### Axes
+
 - X: Right (positive right)
 - Y: Up (positive up)
 - Z: Forward (positive away from camera, left-handed)
 
 ### Angles
+
 - Pitch: Rotation around X axis (up/down)
 - Yaw: Rotation around Y axis (left/right)
 - Roll: Rotation around Z axis (camera tilt)
@@ -209,6 +211,7 @@ Matrix4x4 Camera::GetProjectionMatrix() const {
 ## Camera Modes
 
 ### Free Camera (Testing)
+
 ```cpp
 void FreeCameraUpdate(float dt) {
     // Movement: WASD keys
@@ -218,6 +221,7 @@ void FreeCameraUpdate(float dt) {
 ```
 
 ### RTS Camera (Isometric)
+
 ```cpp
 void RTSCameraUpdate(float dt) {
     // Fixed viewing angle (45 degrees)
@@ -228,6 +232,7 @@ void RTSCameraUpdate(float dt) {
 ```
 
 ### Chase Camera (Following Unit)
+
 ```cpp
 void ChaseCameraUpdate(float dt) {
     // Follow target position with offset
@@ -287,14 +292,17 @@ void main() {
 ## Integration Points
 
 ### With Phase 43 (Render Loop)
+
 - Camera matrices updated before BeginScene
 - Matrices passed to GPU before drawing
 
 ### With Phase 44 (Model Loading)
+
 - World transform combined with camera matrices
 - Object positioning in world space
 
 ### With Phase 46 (Game Logic)
+
 - Camera follows game objects
 - Game updates camera target position
 

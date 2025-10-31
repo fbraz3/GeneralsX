@@ -276,14 +276,17 @@ void UpdateFrameTiming(FrameTiming& timing) {
 ## Integration Points
 
 ### With Phase 41-42 (Drawing & Textures)
+
 - Render calls routed through GameObject system
 - Material/texture binding happens per-object
 
 ### With Phase 43 (Render Loop)
+
 - Game loop wraps render loop
 - BeginScene/EndScene called by game loop
 
 ### With Phase 44-45 (Models & Camera)
+
 - Models stored in GameObjects
 - Camera follows game objects
 
