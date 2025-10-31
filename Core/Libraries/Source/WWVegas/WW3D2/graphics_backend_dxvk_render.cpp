@@ -371,9 +371,9 @@ HRESULT DXVKGraphicsBackend::SetMaterial(const D3DMATERIAL8* material) {
     
     if (m_debugOutput) {
         printf("[DXVK] SetMaterial: ambient=(%f,%f,%f), diffuse=(%f,%f,%f), specular=(%f,%f,%f), power=%f\n",
-               material->Ambient.r, material->Ambient.g, material->Ambient.b,
-               material->Diffuse.r, material->Diffuse.g, material->Diffuse.b,
-               material->Specular.r, material->Specular.g, material->Specular.b,
+               material->Ambient[0], material->Ambient[1], material->Ambient[2],
+               material->Diffuse[0], material->Diffuse[1], material->Diffuse[2],
+               material->Specular[0], material->Specular[1], material->Specular[2],
                material->Power);
     }
     

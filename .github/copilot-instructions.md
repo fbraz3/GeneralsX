@@ -292,7 +292,3 @@ Refs: Phase 28.4 Post-DirectX Texture Interception
 **Game initialization seems stuck** → It's loading assets - wait 60 seconds, check CPU usage, grep logs AFTER completion
 
 **Integration not working as expected** → Read `docs/Misc/LESSONS_LEARNED.md` for common architectural mismatches (VFS, pipeline execution)
-
----
-
-**Last Updated**: October 19, 2025 (Phase 28.4 complete, Phase 30.6 memory protections operational)

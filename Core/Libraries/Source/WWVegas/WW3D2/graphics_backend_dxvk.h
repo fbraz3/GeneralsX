@@ -36,6 +36,12 @@
 #include <memory>
 #include <map>
 
+// Vulkan constants and extensions
+#define DEVICE_EXTENSION_COUNT 1
+const char* const DEVICE_EXTENSIONS[DEVICE_EXTENSION_COUNT] = {
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
+
 // Forward declarations
 struct DXVKTextureHandle;
 struct DXVKBufferHandle;
@@ -59,18 +65,29 @@ struct DXVKTextureHandle {
     VkImage image;                          ///< Vulkan image handle
     VkImageView imageView;                  ///< Vulkan image view
     VkDeviceMemory memory;                  ///< GPU memory allocation
+    VkDeviceMemory imageMemory;             ///< GPU memory allocation for the image
     VkSampler sampler;                      ///< Texture sampler
     unsigned int width;                     ///< Texture width in pixels
     unsigned int height;                    ///< Texture height in pixels
+    unsigned int mipLevels;                 ///< Number of mipmap levels
     VkFormat format;                        ///< Vulkan pixel format (e.g., VK_FORMAT_R8G8B8A8_UNORM)
     D3DFORMAT originalFormat;               ///< Original DirectX format for reference
     bool isRenderTarget;                    ///< True if texture is used as render target
     bool isDynamic;                         ///< True if texture is dynamic (CPU-updatable)
     
+    // Lock-related fields
+    void* lockedData;                       ///< Pointer to locked texture data (CPU-readable)
+    VkBuffer lockedStagingBuffer;           ///< Staging buffer for texture data during lock
+    VkDeviceMemory lockedStagingMemory;     ///< Memory for staging buffer
+    size_t lockedSize;                      ///< Size of locked data in bytes
+    
     DXVKTextureHandle()
         : image(VK_NULL_HANDLE), imageView(VK_NULL_HANDLE), memory(VK_NULL_HANDLE),
-          sampler(VK_NULL_HANDLE), width(0), height(0), format(VK_FORMAT_UNDEFINED),
-          originalFormat(D3DFMT_UNKNOWN), isRenderTarget(false), isDynamic(false) {}
+          imageMemory(VK_NULL_HANDLE), sampler(VK_NULL_HANDLE), width(0), height(0),
+          mipLevels(1), format(VK_FORMAT_UNDEFINED), originalFormat(D3DFMT_UNKNOWN),
+          isRenderTarget(false), isDynamic(false), lockedData(nullptr),
+          lockedStagingBuffer(VK_NULL_HANDLE), lockedStagingMemory(VK_NULL_HANDLE),
+          lockedSize(0) {}
 };
 
 // ============================================================================
@@ -83,14 +100,24 @@ struct DXVKTextureHandle {
 struct DXVKBufferHandle {
     VkBuffer buffer;                        ///< Vulkan buffer handle
     VkDeviceMemory memory;                  ///< GPU memory allocation
+    VkDeviceMemory bufferMemory;            ///< GPU memory allocation for the buffer
     unsigned int size;                      ///< Buffer size in bytes
     VkBufferUsageFlags usage;               ///< Buffer usage flags (VERTEX, INDEX, etc)
     bool isDynamic;                         ///< True if buffer is dynamic (CPU-updatable)
     void* stagingData;                      ///< Staging buffer for CPU access during lock
     
+    // Lock-related fields
+    void* lockedData;                       ///< Pointer to locked buffer data (CPU-readable)
+    VkBuffer lockedStagingBuffer;           ///< Staging buffer for buffer data during lock
+    VkDeviceMemory lockedStagingMemory;     ///< Memory for staging buffer
+    unsigned int lockedOffset;              ///< Offset into buffer where lock began
+    size_t lockedSize;                      ///< Size of locked data in bytes
+    
     DXVKBufferHandle()
-        : buffer(VK_NULL_HANDLE), memory(VK_NULL_HANDLE), size(0),
-          usage(0), isDynamic(false), stagingData(nullptr) {}
+        : buffer(VK_NULL_HANDLE), memory(VK_NULL_HANDLE), bufferMemory(VK_NULL_HANDLE),
+          size(0), usage(0), isDynamic(false), stagingData(nullptr),
+          lockedData(nullptr), lockedStagingBuffer(VK_NULL_HANDLE),
+          lockedStagingMemory(VK_NULL_HANDLE), lockedOffset(0), lockedSize(0) {}
 };
 
 // ============================================================================
@@ -167,12 +194,11 @@ public:
      * Clear render target and depth buffer.
      */
     virtual HRESULT Clear(
-        unsigned int count,
-        const D3DRECT* rects,
-        unsigned int flags,
-        D3DCOLOR color,
-        float z,
-        unsigned int stencil
+        bool clear_color,
+        bool clear_z_stencil,
+        const void* color_vec3,
+        float z = 1.0f,
+        DWORD stencil = 0
     ) override;
     
     // ========================================================================
@@ -186,8 +212,6 @@ public:
     virtual HRESULT CreateTexture(
         unsigned int width,
         unsigned int height,
-        unsigned int levels,
-        unsigned int usage,
         D3DFORMAT format,
         void** texture
     ) override;
@@ -691,6 +715,7 @@ private:
     // ========================================================================
     
     std::map<unsigned int, VulkanTexturePtr> m_textures;    ///< Active textures by stage
+    std::map<void*, VulkanTexturePtr> m_textureCache;       ///< Texture cache by handle pointer
     std::map<unsigned int, VulkanBufferPtr> m_vertexBuffers;    ///< Vertex buffers by stream
     VulkanBufferPtr m_indexBuffer;          ///< Current index buffer
     
