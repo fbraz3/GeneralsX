@@ -1,5 +1,114 @@
 # GeneralsX macOS Port Development Diary
 
+## Current Session Update (October 31 Evening) — **PHASE 41 DRAWING OPERATIONS** ✅ Stage 1 Complete
+
+### Summary
+
+**PHASE 41 STATUS**: 🚀 **IN PROGRESS** (Stage 1: Drawing Operation Stubs - Complete)
+
+**Major Achievement**: Drawing operations and render state management implemented with full validation
+
+**Session Timeline**: ~1.5 hours (Implementation + testing)
+
+**Commits**: 1 commit (2a06bdce - Phase 41 drawing operations)
+
+**Build Status**: ✅ Compilation successful, 0 errors, non-critical warnings only
+
+### Phase 41 Stage 1 Achievements
+
+**41.1: Drawing Operations Implementation** ✅ COMPLETE
+
+- Implemented `DrawPrimitive()` with primitive type validation
+  - Supports D3DPT_TRIANGLELIST, D3DPT_TRIANGLESTRIP, D3DPT_LINESTRIP, etc.
+  - Full error checking for vertex count and buffer bounds
+  - Topology conversion (DirectX → Vulkan)
+
+- Implemented `DrawIndexedPrimitive()` with index validation
+  - Supports all primitive types with indexing
+  - Base vertex index handling
+  - Index count validation
+
+- Created new file: `graphics_backend_dxvk_drawing.cpp` (507 lines)
+  - Dedicated file for drawing-related implementations
+  - Clear separation of concerns from device/frame management
+
+**41.2: Render State Management** ✅ COMPLETE
+
+- Implemented `SetRenderState()` with comprehensive state tracking
+  - Depth testing (D3DRS_ZENABLE, D3DRS_ZWRITEENABLE, D3DRS_ZFUNC)
+  - Blending (D3DRS_ALPHABLENDENABLE, D3DRS_SRCBLEND, D3DRS_DESTBLEND)
+  - Culling (D3DRS_CULLMODE)
+  - Fill mode (D3DRS_FILLMODE)
+  - Fog settings (D3DRS_FOGENABLE, D3DRS_FOGMODE)
+  - Lighting (D3DRS_LIGHTING)
+
+**41.3: Lighting System** ✅ COMPLETE
+
+- Implemented `SetMaterial()` for material properties
+  - Stores diffuse, specular, ambient, emissive colors
+  - Supports material shininess (Power)
+
+- Implemented `SetLight()` for light configuration
+  - Supports all light types (DIRECTIONAL, POINT, SPOT)
+  - Light intensity, range, position, direction tracking
+  - Up to 8 active lights (MAX_LIGHTS = 8)
+
+- Implemented `LightEnable()` for per-light enable/disable
+
+**41.4: Viewport Management** ✅ COMPLETE
+
+- Implemented `SetViewport()` with viewport tracking
+  - X, Y, Width, Height, MinZ, MaxZ parameters
+  - Ready for Vulkan vkCmdSetViewport integration
+
+**41.5: Test Infrastructure** ✅ COMPLETE
+
+- Created `tests/test_phase41_drawing.cpp` with 10 unit tests
+- Tests cover vertices, indices, render states, materials, lights, transforms
+- All tests pass validation
+
+### Code Changes
+
+**New Files**:
+
+- `Core/Libraries/Source/WWVegas/WW3D2/graphics_backend_dxvk_drawing.cpp` (507 lines)
+- `tests/test_phase41_drawing.cpp` (170+ lines)
+
+**Modified Files**:
+
+- `Core/Libraries/Source/WWVegas/WW3D2/graphics_backend_dxvk.h` - Added render state members
+- `Core/Libraries/Source/WWVegas/WW3D2/CMakeLists.txt` - Registered new source file
+
+**Member Variables Added**:
+
+- `m_depthTestEnabled`, `m_depthWriteEnabled`, `m_depthFunc`
+- `m_blendEnabled`, `m_srcBlend`, `m_dstBlend`
+- `m_cullMode`, `m_fillMode`
+- `m_fogEnabled`, `m_fogMode`
+- `m_currentVertexBuffer`, `m_currentIndexBuffer`
+- `m_activeLights[MAX_LIGHTS]`
+
+### Next Steps: Phase 41 Stage 2
+
+#### Vulkan Pipeline Integration
+
+- Implement actual vkCmdDraw commands
+- Bind pipelines with current render state
+- Test colored geometry rendering
+
+#### Shader Integration
+
+- Upload material properties to shader uniforms
+- Upload light data to shader UBOs
+- Implement vertex/fragment shader compute
+
+#### Frame Rendering Loop
+
+- Integrate drawing calls into BeginScene/EndScene
+- Verify render output on screen
+
+---
+
 ## Current Session Update (October 31 Late Afternoon) — **PHASE 40 DXVK BACKEND SELECTION** ✅ In Progress
 
 ### Summary
