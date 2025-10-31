@@ -7,6 +7,9 @@
 
 #include "graphics_backend.h"
 #include "graphics_backend_legacy.h"
+#ifdef USE_DXVK
+#include "graphics_backend_dxvk.h"
+#endif
 
 // ============================================================================
 // Global Graphics Backend Instance
@@ -43,11 +46,25 @@ HRESULT InitializeGraphicsBackend() {
         // DXVK/Vulkan backend (Phase 39+)
         printf("Graphics Backend: DXVK/Vulkan (USE_DXVK enabled)\n");
         
-        // TODO: Implement DVKGraphicsBackend in Phase 39
-        // g_graphicsBackend = new DVKGraphicsBackend();
+        g_graphicsBackend = new DXVKGraphicsBackend();
         
-        printf("ERROR: DXVK backend not yet implemented (Phase 39)\n");
-        return -1; // E_FAIL
+        if (g_graphicsBackend == nullptr) {
+            printf("ERROR: Failed to create DXVKGraphicsBackend\n");
+            return -1; // E_FAIL
+        }
+        
+        HRESULT hr = g_graphicsBackend->Initialize();
+        if (hr != 0) { // S_OK = 0
+            printf("ERROR: Failed to initialize DXVK graphics backend (0x%08lx)\n", hr);
+            delete g_graphicsBackend;
+            g_graphicsBackend = nullptr;
+            return hr;
+        }
+        
+        printf("Graphics backend initialized successfully\n");
+        printf("Backend: %s\n", g_graphicsBackend->GetBackendName());
+        
+        return 0; // S_OK
     #else
         // Legacy Metal/OpenGL backend (Phase 27-37)
         printf("Graphics Backend: Legacy Metal/OpenGL (USE_DXVK disabled)\n");

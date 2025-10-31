@@ -8,6 +8,7 @@ option(RTS_BUILD_OPTION_DEBUG "Build code with the \"Debug\" configuration." OFF
 option(RTS_BUILD_OPTION_ASAN "Build code with Address Sanitizer." OFF)
 option(RTS_BUILD_OPTION_VC6_FULL_DEBUG "Build VC6 with full debug info." OFF)
 option(RTS_BUILD_OPTION_FFMPEG "Enable FFmpeg support" OFF)
+option(USE_DXVK "Enable DXVK/Vulkan graphics backend (Phase 40+)" OFF)
 
 if(NOT RTS_BUILD_ZEROHOUR AND NOT RTS_BUILD_GENERALS)
     set(RTS_BUILD_ZEROHOUR TRUE)
@@ -23,6 +24,7 @@ add_feature_info(DebugBuild RTS_BUILD_OPTION_DEBUG "Building as a \"Debug\" buil
 add_feature_info(AddressSanitizer RTS_BUILD_OPTION_ASAN "Building with address sanitizer")
 add_feature_info(Vc6FullDebug RTS_BUILD_OPTION_VC6_FULL_DEBUG "Building VC6 with full debug info")
 add_feature_info(FFmpegSupport RTS_BUILD_OPTION_FFMPEG "Building with FFmpeg support")
+add_feature_info(DXVKSupport USE_DXVK "Building with DXVK/Vulkan graphics backend")
 
 if(RTS_BUILD_ZEROHOUR)
     option(RTS_BUILD_ZEROHOUR_TOOLS "Build tools for Zero Hour" ON)
@@ -79,4 +81,12 @@ endif()
 
 if(RTS_BUILD_OPTION_PROFILE)
     target_compile_definitions(core_config INTERFACE RTS_PROFILE)
+endif()
+
+if(USE_DXVK)
+    message(STATUS "✅ DXVK/Vulkan graphics backend enabled (Phase 40+)")
+    target_compile_definitions(core_config INTERFACE USE_DXVK)
+else()
+    message(STATUS "ℹ️  Using legacy Metal/OpenGL graphics backend (Phase 27-37)")
+    message(STATUS "   Enable with: cmake -DUSE_DXVK=ON")
 endif()
