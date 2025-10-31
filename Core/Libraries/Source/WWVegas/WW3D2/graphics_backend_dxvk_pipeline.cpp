@@ -31,6 +31,11 @@
 #include <cstring>
 #include <vector>
 
+// Define error codes if not already defined
+#ifndef D3DERR_INVALIDCALL
+#define D3DERR_INVALIDCALL 0x8876  // DirectX 8 invalid call error code
+#endif
+
 // ============================================================================
 // Phase 44.1: Shader Compilation Stubs (Shaders Embedded)
 // ============================================================================
