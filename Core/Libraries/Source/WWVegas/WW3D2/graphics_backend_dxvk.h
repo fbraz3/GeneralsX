@@ -558,6 +558,69 @@ public:
      */
     void ReportVertexBufferState();
     
+    // ========================================================================
+    // Phase 44.3: Index Buffer Management
+    // ========================================================================
+    
+    /**
+     * Create index buffer (16MB GPU memory allocation).
+     * Supports VK_INDEX_TYPE_UINT16 and VK_INDEX_TYPE_UINT32.
+     */
+    HRESULT CreateIndexBuffer();
+    
+    /**
+     * Destroy index buffer and release GPU memory.
+     */
+    HRESULT DestroyIndexBuffer();
+    
+    /**
+     * Set index format (UINT16 or UINT32).
+     * Affects stride calculation for data upload.
+     */
+    HRESULT SetIndexFormat(VkIndexType format);
+    
+    /**
+     * Upload index data to GPU buffer.
+     * Parameters: data pointer, index count
+     */
+    HRESULT UpdateIndexBuffer(const void* data, uint32_t count);
+    
+    /**
+     * Bind index buffer to current command buffer.
+     * Called before DrawIndexed().
+     */
+    HRESULT BindIndexBuffer(VkCommandBuffer commandBuffer);
+    
+    /**
+     * Get VkBuffer handle for index buffer.
+     */
+    VkBuffer GetIndexBuffer() const;
+    
+    /**
+     * Get VkDeviceMemory handle for index buffer.
+     */
+    VkDeviceMemory GetIndexBufferMemory() const;
+    
+    /**
+     * Get current index count.
+     */
+    uint32_t GetIndexCount() const;
+    
+    /**
+     * Get current index format (UINT16 or UINT32).
+     */
+    VkIndexType GetIndexFormat() const;
+    
+    /**
+     * Check if index buffer is ready for rendering.
+     */
+    bool IsIndexBufferReady() const;
+    
+    /**
+     * Report index buffer state and diagnostics.
+     */
+    void ReportIndexBufferState() const;
+    
     /**
      * Clear render target and depth buffer.
      */
@@ -1153,6 +1216,15 @@ private:
     std::vector<VkVertexInputAttributeDescription> m_vertexAttributeDescriptions;
     VkVertexInputBindingDescription m_vertexBindingDescription;
 
+    // ========== Phase 44.3: Index Buffer Members ==========
+    VkBuffer m_indexBuffer;                 ///< Index buffer handle
+    VkDeviceMemory m_indexBufferMemory;     ///< Index buffer device memory
+    VkDeviceSize m_indexBufferSize;         ///< Total index buffer size (16MB)
+    VkDeviceSize m_indexBufferOffset;       ///< Current offset in index buffer
+    uint32_t m_indexCount;                  ///< Number of indices in buffer
+    uint32_t m_indexStride;                 ///< Bytes per index (2 or 4)
+    VkIndexType m_currentIndexFormat;       ///< Current index format (UINT16 or UINT32)
+
     VkPipelineCache m_pipelineCache;        ///< Pipeline cache for optimization
     
     // ========================================================================
@@ -1198,7 +1270,6 @@ private:
     uint32_t m_frameCount;                  ///< Total frames rendered
     
     std::map<unsigned int, VulkanBufferPtr> m_vertexBuffers;    ///< Vertex buffers by stream
-    VulkanBufferPtr m_indexBuffer;          ///< Current index buffer
     
     D3DVIEWPORT8 m_viewport;                ///< Current viewport
     float m_worldMatrix[16];                ///< World transformation matrix
