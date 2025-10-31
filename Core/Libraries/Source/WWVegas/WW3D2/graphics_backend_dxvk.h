@@ -35,6 +35,7 @@
 #include <vector>
 #include <memory>
 #include <map>
+#include <array>
 
 // Vulkan constants and extensions
 #define DEVICE_EXTENSION_COUNT 1
@@ -729,7 +730,27 @@ private:
     D3DCOLOR m_ambientColor;                ///< Ambient light color
     bool m_lightingEnabled;                 ///< Lighting state
     
+    // Phase 41: Render State Tracking
     std::map<D3DRENDERSTATETYPE, DWORD> m_renderStates;    ///< Render states cache
+    bool m_depthTestEnabled;                ///< Depth testing enabled state
+    bool m_depthWriteEnabled;               ///< Depth write enabled state
+    DWORD m_depthFunc;                      ///< Depth comparison function
+    bool m_blendEnabled;                    ///< Blending enabled state
+    DWORD m_srcBlend;                       ///< Source blend factor
+    DWORD m_dstBlend;                       ///< Destination blend factor
+    DWORD m_cullMode;                       ///< Face culling mode
+    DWORD m_fillMode;                       ///< Fill mode (solid, wireframe, points)
+    bool m_fogEnabled;                      ///< Fog enabled state
+    DWORD m_fogMode;                        ///< Fog mode
+    
+    // Phase 41: Buffer Tracking
+    DXVKBufferHandle* m_currentVertexBuffer;    ///< Currently bound vertex buffer
+    DXVKBufferHandle* m_currentIndexBuffer;     ///< Currently bound index buffer
+    
+    // Phase 41: Light Management
+    static constexpr uint32_t MAX_LIGHTS = 8;
+    std::array<bool, MAX_LIGHTS> m_activeLights;   ///< Light enable/disable state
+
     
     // ========================================================================
     // State Tracking Members
