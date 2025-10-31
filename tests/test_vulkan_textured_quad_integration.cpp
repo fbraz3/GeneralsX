@@ -33,6 +33,8 @@
 #include <string.h>
 #include <stdint.h>
 #include <assert.h>
+#include <dirent.h>
+#include <sys/stat.h>
 
 // ============================================================================
 // Test Structures

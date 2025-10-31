@@ -29,6 +29,8 @@
 #include <string.h>
 #include <stdint.h>
 #include <assert.h>
+#include <dirent.h>
+#include <sys/stat.h>
 
 // Mock Vulkan types for testing without full SDK
 typedef uint32_t VkResult;
@@ -88,7 +90,9 @@ int test_vulkan_instance_creation() {
     
     printf("    - Checking MoltenVK ICD discovery path...\n");
     const char* icd_path = "/usr/local/etc/vulkan/icd.d/";
-    if (opendir(icd_path) != nullptr) {
+    DIR* dir = opendir(icd_path);
+    if (dir != nullptr) {
+        closedir(dir);
         printf("      ✓ MoltenVK ICD path exists: %s\n", icd_path);
     } else {
         printf("      ℹ MoltenVK ICD path not found (may be in SDK folder)\n");
