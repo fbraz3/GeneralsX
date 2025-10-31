@@ -267,6 +267,18 @@ set(WW3D2_SRC
     
     # Phase 41: Drawing Operations Implementation
     graphics_backend_dxvk_drawing.cpp
+    
+    # Phase 42: Texture System Implementation
+    graphics_backend_dxvk_textures.cpp
+    graphics_backend_dxvk_formats.cpp
+    graphics_backend_dxvk_texture_cache.cpp
+    
+    # Phase 43: Render Loop & Frame Presentation
+    graphics_backend_dxvk_render_loop.cpp
+    graphics_backend_dxvk_frame_sync.cpp
+    graphics_backend_dxvk_commands.cpp
+    graphics_backend_dxvk_errors.cpp
+    graphics_backend_dxvk_perf.cpp
 )
 
 if(APPLE)

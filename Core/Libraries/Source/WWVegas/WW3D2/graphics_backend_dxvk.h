@@ -36,6 +36,7 @@
 #include <memory>
 #include <map>
 #include <array>
+#include <chrono>
 
 // Vulkan constants and extensions
 #define DEVICE_EXTENSION_COUNT 1
@@ -80,6 +81,7 @@ struct DXVKTextureHandle {
     void* lockedData;                       ///< Pointer to locked texture data (CPU-readable)
     VkBuffer lockedStagingBuffer;           ///< Staging buffer for texture data during lock
     VkDeviceMemory lockedStagingMemory;     ///< Memory for staging buffer
+    unsigned int lockedOffset;              ///< Offset into texture where lock began
     size_t lockedSize;                      ///< Size of locked data in bytes
     
     DXVKTextureHandle()
@@ -88,7 +90,7 @@ struct DXVKTextureHandle {
           mipLevels(1), format(VK_FORMAT_UNDEFINED), originalFormat(D3DFMT_UNKNOWN),
           isRenderTarget(false), isDynamic(false), lockedData(nullptr),
           lockedStagingBuffer(VK_NULL_HANDLE), lockedStagingMemory(VK_NULL_HANDLE),
-          lockedSize(0) {}
+          lockedOffset(0), lockedSize(0) {}
 };
 
 // ============================================================================
@@ -191,6 +193,243 @@ public:
      */
     virtual HRESULT Present() override;
     
+    // ========================================================================
+    // Phase 43.2: Frame Synchronization & Timing
+    // ========================================================================
+    
+    /**
+     * Initialize frame synchronization structures.
+     */
+    HRESULT InitializeFrameSynchronization();
+    
+    /**
+     * Shutdown frame synchronization.
+     */
+    HRESULT ShutdownFrameSynchronization();
+    
+    /**
+     * Wait for a frame to complete GPU work (wait-before-overwrite pattern).
+     */
+    HRESULT WaitForFrame(uint32_t frameIndex, uint64_t timeoutNs);
+    
+    /**
+     * Check if frame GPU work is complete (non-blocking).
+     */
+    bool IsFrameComplete(uint32_t frameIndex) const;
+    
+    /**
+     * Pace rendering to target FPS (60).
+     */
+    uint64_t PaceFrameToTargetFPS();
+    
+    /**
+     * Get time budget remaining in current frame.
+     */
+    int64_t GetFrameTimeBudgetRemaining() const;
+    
+    /**
+     * Measure frame time from start.
+     */
+    float MeasureFrameTime() const;
+    
+    /**
+     * Get current frame index for multi-frame management.
+     */
+    uint32_t GetCurrentFrameIndex() const;
+    
+    /**
+     * Advance to next frame after Present().
+     */
+    uint32_t AdvanceToNextFrame();
+    
+    /**
+     * Get total frame count since initialization.
+     */
+    uint32_t GetFrameCount() const;
+    
+    /**
+     * Get max frames in flight.
+     */
+    uint32_t GetMaxFramesInFlight() const;
+    
+    /**
+     * Report synchronization state for debugging.
+     */
+    void ReportSynchronizationState() const;
+    
+    /**
+     * Set viewport for rendering.
+     */
+    void SetViewport(float x, float y, float width, float height,
+                    float minDepth, float maxDepth);
+    
+    /**
+     * Set scissor rectangle for rendering.
+     */
+    void SetScissor(int32_t x, int32_t y, uint32_t width, uint32_t height);
+    
+    /**
+     * Record clear operation in render pass.
+     */
+    HRESULT RecordClearOperation(bool clearColor, bool clearDepth,
+                                const float* colorRGBA, float depthValue);
+    
+    /**
+     * Enable or disable blending.
+     */
+    void SetBlendingEnabled(bool enabled);
+    
+    /**
+     * Set blend mode.
+     */
+    void SetBlendMode(D3DBLEND srcFactor, D3DBLEND dstFactor);
+    
+    /**
+     * Report render pass state for debugging.
+     */
+    void ReportRenderPassState() const;
+    
+    /**
+     * Recover from device lost.
+     */
+    HRESULT RecoverFromDeviceLost();
+    
+    /**
+     * Log comprehensive error information.
+     */
+    void LogError(HRESULT errorCode, const char* context);
+    
+    /**
+     * Handle presentation errors.
+     */
+    HRESULT HandlePresentError(VkResult presentResult);
+    
+    /**
+     * Handle acquisition errors.
+     */
+    HRESULT HandleAcquisitionError(VkResult acquireResult);
+    
+    /**
+     * Validate render pipeline state.
+     */
+    HRESULT ValidateRenderState() const;
+    
+    /**
+     * Perform comprehensive device diagnostics.
+     */
+    void PerformDiagnostics() const;
+    
+    // ========================================================================
+    // Phase 43.5: Performance Monitoring & Profiling
+    // ========================================================================
+    
+    /**
+     * Get current FPS (frames per second).
+     */
+    float GetCurrentFPS() const;
+    
+    /**
+     * Get rolling average FPS over recent frames.
+     */
+    float GetAverageFPS() const;
+    
+    /**
+     * Get minimum frame time from history.
+     */
+    float GetMinFrameTime() const;
+    
+    /**
+     * Get maximum frame time from history.
+     */
+    float GetMaxFrameTime() const;
+    
+    /**
+     * Get average frame time over history.
+     */
+    float GetAverageFrameTime() const;
+    
+    /**
+     * Record current frame time in history.
+     */
+    void RecordFrameTime(float frameTimeMs);
+    
+    /**
+     * Record stage timing (acquire time).
+     */
+    void RecordAcquireTime(float timeMs);
+    
+    /**
+     * Record stage timing (submit time).
+     */
+    void RecordSubmitTime(float timeMs);
+    
+    /**
+     * Record stage timing (present time).
+     */
+    void RecordPresentTime(float timeMs);
+    
+    /**
+     * Get frame timing breakdown for last frame.
+     */
+    struct FrameTimingBreakdown {
+        float acquireTime;
+        float submitTime;
+        float presentTime;
+        float totalTime;
+    };
+    
+    FrameTimingBreakdown GetLastFrameBreakdown() const;
+    
+    /**
+     * Get percentile frame time (e.g., 99th percentile).
+     */
+    float GetPercentileFrameTime(float percentile) const;
+    
+    /**
+     * Get GPU frame time (Phase 45+).
+     */
+    float GetGPUFrameTime() const;
+    
+    /**
+     * Get GPU utilization percentage (Phase 45+).
+     */
+    float GetGPUUtilization() const;
+    
+    /**
+     * Generate performance report string.
+     */
+    const char* GeneratePerformanceReport(char* buffer, size_t bufferSize) const;
+    
+    /**
+     * Print performance statistics to console.
+     */
+    void PrintPerformanceStats() const;
+    
+    /**
+     * Count frames over budget (16.67ms for 60 FPS).
+     */
+    uint32_t CountFramesOverBudget() const;
+    
+    /**
+     * Identify performance bottleneck (Acquire/Submit/Present).
+     */
+    const char* IdentifyBottleneck() const;
+    
+    /**
+     * Get performance warning message.
+     */
+    const char* GetPerformanceWarning() const;
+    
+    /**
+     * Reset performance statistics.
+     */
+    void ResetPerformanceStats();
+    
+    /**
+     * Get performance history size.
+     */
+    uint32_t GetPerformanceHistorySize() const;
+    
     /**
      * Clear render target and depth buffer.
      */
@@ -244,6 +483,83 @@ public:
      * Unlock texture and upload CPU modifications to GPU.
      */
     virtual HRESULT UnlockTexture(void* texture) override;
+    
+    /**
+     * Phase 42.2: Load DDS compressed texture from memory.
+     * Supports DXT1/DXT3/DXT5 (BC1/2/3) compression.
+     */
+    HRESULT LoadDDSTexture(const uint8_t* data, uint32_t size, void** texture);
+    
+    /**
+     * Phase 42.3: Load TGA texture from memory.
+     * Supports 24-bit RGB and 32-bit RGBA TGA files.
+     */
+    HRESULT LoadTGATexture(const uint8_t* data, uint32_t size, void** texture);
+    
+    /**
+     * Phase 42.4: Generate mipmap chain for texture.
+     * Creates progressively smaller levels with box filter downsampling.
+     */
+    HRESULT GenerateMipmaps(void* texture, uint32_t levels = 0);
+    
+    // ========================================================================
+    // Phase 42.5: Texture Cache Management
+    // ========================================================================
+    
+    /**
+     * Initialize texture cache system.
+     * Called during backend initialization.
+     */
+    void InitializeTextureCache();
+    
+    /**
+     * Shutdown texture cache system.
+     * Releases all cached textures.
+     */
+    void ShutdownTextureCache();
+    
+    /**
+     * Cache a loaded texture by filename.
+     * Reduces redundant load operations.
+     */
+    void CacheTexture(const char* filename, void* textureHandle, 
+                      uint32_t width, uint32_t height, D3DFORMAT format);
+    
+    /**
+     * Retrieve texture from cache by filename.
+     */
+    bool GetCachedTexture(const char* filename, void** outTextureHandle);
+    
+    /**
+     * Clear all cached textures.
+     * Used for map transitions or explicit cache flush.
+     */
+    void ClearTextureCache();
+    
+    /**
+     * Notify cache of frame completion for LRU tracking.
+     */
+    void NotifyFrameComplete();
+    
+    /**
+     * Print cache statistics for profiling.
+     */
+    void PrintCacheStatistics();
+    
+    /**
+     * Set maximum cache memory limit.
+     */
+    void SetMaxCacheMemory(uint32_t maxMemory);
+    
+    /**
+     * Get current cache memory usage.
+     */
+    uint32_t GetCacheMemoryUsage() const;
+    
+    /**
+     * Get cache hit rate for profiling.
+     */
+    float GetCacheHitRate() const;
     
     // ========================================================================
     // Render State Management
@@ -661,6 +977,25 @@ private:
      */
     VkPrimitiveTopology ConvertPrimitiveType(D3DPRIMITIVETYPE type);
     
+    /**
+     * Get Vulkan image usage flags for texture.
+     */
+    VkImageUsageFlags GetTextureImageUsageFlags(bool isRenderTarget);
+    
+    /**
+     * Get texture memory properties.
+     */
+    VkMemoryPropertyFlags GetTextureMemoryProperties();
+    
+    // ========================================================================
+    // Phase 42.5: Private Texture Cache Methods
+    // ========================================================================
+    
+    /**
+     * Evict least-recently-used textures when cache is full.
+     */
+    void EvictLRUTextures(uint32_t requiredMemory);
+    
     // ========================================================================
     // Vulkan Instance and Device Members
     // ========================================================================
@@ -679,6 +1014,7 @@ private:
     VkSwapchainKHR m_swapchain;             ///< Swapchain for presentation
     std::vector<VkImage> m_swapchainImages; ///< Swapchain images
     std::vector<VkImageView> m_swapchainImageViews;  ///< Image views
+    std::vector<VkFramebuffer> m_swapchainFramebuffers;  ///< Framebuffers for each image
     std::vector<VkFramebuffer> m_framebuffers;       ///< Framebuffers
     VkFormat m_swapchainFormat;             ///< Chosen swapchain format
     VkExtent2D m_swapchainExtent;           ///< Swapchain dimensions
@@ -717,6 +1053,26 @@ private:
     
     std::map<unsigned int, VulkanTexturePtr> m_textures;    ///< Active textures by stage
     std::map<void*, VulkanTexturePtr> m_textureCache;       ///< Texture cache by handle pointer
+    
+    // ========================================================================
+    // Phase 42.5: Texture Cache Members
+    // ========================================================================
+    
+    bool m_textureCacheEnabled;             ///< Texture caching enabled
+    std::map<uint32_t, void*> m_textureCacheMap;  ///< Cached textures by filename CRC
+    uint32_t m_totalCacheMemory;            ///< Total memory used by cache
+    uint32_t m_maxCacheMemory;              ///< Maximum cache memory limit (256MB default)
+    uint32_t m_cacheHits;                   ///< Cache hit count for profiling
+    uint32_t m_cacheMisses;                 ///< Cache miss count for profiling
+    uint32_t m_currentFrameNumber;          ///< Current frame for LRU tracking
+    
+    // ========================================================================
+    // Phase 43.2: Frame Synchronization & Timing Members
+    // ========================================================================
+    
+    std::chrono::high_resolution_clock::time_point m_frameStartTime;  ///< Frame start timestamp
+    uint32_t m_frameCount;                  ///< Total frames rendered
+    
     std::map<unsigned int, VulkanBufferPtr> m_vertexBuffers;    ///< Vertex buffers by stream
     VulkanBufferPtr m_indexBuffer;          ///< Current index buffer
     
@@ -760,6 +1116,14 @@ private:
     bool m_inScene;                         ///< True between BeginScene/EndScene
     bool m_debugOutput;                     ///< Debug output enabled
     HRESULT m_lastError;                    ///< Last error code
+    
+    // ========================================================================
+    // Phase 43: Render Loop Members
+    // ========================================================================
+    
+    uint32_t m_frameNumber;                 ///< Frame counter (incremented on BeginScene)
+    uint32_t m_currentImageIndex;           ///< Current swapchain image index
+    float m_clearColor[4];                  ///< Clear color (RGBA)
     
     // ========================================================================
     // Window and Display Members

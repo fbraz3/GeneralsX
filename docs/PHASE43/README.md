@@ -129,14 +129,17 @@ vkQueuePresentKHR()         // Present to screen
 ## Integration Points
 
 ### With Phase 41 & 42
+
 - Draw commands recorded between BeginScene/EndScene
 - Render pass compatible with texture binding
 
 ### With Game Engine
+
 - Game calls BeginScene before draw commands
 - Game calls Present to display frame
 
 ### With Phase 45 (Camera)
+
 - Camera matrices set before BeginScene
 - Viewport set in BeginScene
 

@@ -455,6 +455,7 @@ ScrollSpeed=1.0
 ## Testing Checklist
 
 ### Quick Test (2 minutes)
+
 ```bash
 1. Launch game
 2. Verify main menu appears
@@ -469,6 +470,7 @@ ScrollSpeed=1.0
 ```
 
 ### Extended Test (30 minutes)
+
 ```bash
 1. Complete quick test
 2. Play full game (build units, expand)
