@@ -117,11 +117,20 @@ HRESULT DXVKGraphicsBackend::DrawPrimitive(
         return D3DERR_INVALIDCALL;
     }
 
-    // TODO: Phase 41.1 - Bind pipeline with current topology
-    // TODO: Phase 41.2 - Bind vertex buffer
-    // TODO: Phase 41.3 - Record draw command
-    
-    printf("Phase 41: DrawPrimitive - vertices=%u, primitives=%u, type=%d\n",
+    // Bind vertex buffer to command buffer
+    VkDeviceSize offset = 0;
+    vkCmdBindVertexBuffers(m_commandBuffers[m_currentFrame], 0, 1, &m_currentVertexBuffer->buffer, &offset);
+
+    // Bind pipeline with topology
+    // TODO: Phase 41.2 - Create/bind pipeline based on topology
+    if (m_graphicsPipeline != VK_NULL_HANDLE) {
+        vkCmdBindPipeline(m_commandBuffers[m_currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
+    }
+
+    // Record draw command
+    vkCmdDraw(m_commandBuffers[m_currentFrame], vertexCount, 1, startVertex, 0);
+
+    printf("Phase 41: DrawPrimitive - vertices=%u, primitives=%u, type=%d (EXECUTED)\n",
            vertexCount, primitiveCount, primitiveType);
 
     return D3D_OK;
@@ -209,11 +218,23 @@ HRESULT DXVKGraphicsBackend::DrawIndexedPrimitive(
         return D3DERR_INVALIDCALL;
     }
 
-    // TODO: Phase 41.1 - Bind pipeline with current topology
-    // TODO: Phase 41.2 - Bind vertex and index buffers
-    // TODO: Phase 41.3 - Record indexed draw command
-    
-    printf("Phase 41: DrawIndexedPrimitive - indices=%u, primitives=%u, baseVertex=%d, type=%d\n",
+    // Bind vertex buffer to command buffer
+    VkDeviceSize offset = 0;
+    vkCmdBindVertexBuffers(m_commandBuffers[m_currentFrame], 0, 1, &m_currentVertexBuffer->buffer, &offset);
+
+    // Bind index buffer to command buffer
+    vkCmdBindIndexBuffer(m_commandBuffers[m_currentFrame], m_currentIndexBuffer->buffer, 0, VK_INDEX_TYPE_UINT16);
+
+    // Bind pipeline with topology
+    // TODO: Phase 41.2 - Create/bind pipeline based on topology
+    if (m_graphicsPipeline != VK_NULL_HANDLE) {
+        vkCmdBindPipeline(m_commandBuffers[m_currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
+    }
+
+    // Record indexed draw command
+    vkCmdDrawIndexed(m_commandBuffers[m_currentFrame], indexCount, 1, startIndex, baseVertexIndex, 0);
+
+    printf("Phase 41: DrawIndexedPrimitive - indices=%u, primitives=%u, baseVertex=%d, type=%d (EXECUTED)\n",
            indexCount, primitiveCount, baseVertexIndex, primitiveType);
 
     return D3D_OK;
@@ -500,10 +521,132 @@ HRESULT DXVKGraphicsBackend::SetViewport(
     m_viewport.MinZ = minZ;
     m_viewport.MaxZ = maxZ;
 
-    printf("Phase 41: SetViewport - x=%u, y=%u, width=%u, height=%u, minz=%f, maxz=%f\n",
+    // Set Vulkan viewport if we're in a scene
+    if (m_inScene && m_commandBuffers[m_currentFrame] != VK_NULL_HANDLE) {
+        VkViewport vkViewport{};
+        vkViewport.x = (float)x;
+        vkViewport.y = (float)y;
+        vkViewport.width = (float)width;
+        vkViewport.height = (float)height;
+        vkViewport.minDepth = minZ;
+        vkViewport.maxDepth = maxZ;
+        
+        vkCmdSetViewport(m_commandBuffers[m_currentFrame], 0, 1, &vkViewport);
+        
+        // Also set scissor rect to match viewport
+        VkRect2D scissor{};
+        scissor.offset.x = (int32_t)x;
+        scissor.offset.y = (int32_t)y;
+        scissor.extent.width = width;
+        scissor.extent.height = height;
+        
+        vkCmdSetScissor(m_commandBuffers[m_currentFrame], 0, 1, &scissor);
+    }
+
+    printf("Phase 41: SetViewport - x=%u, y=%u, width=%u, height=%u, minz=%f, maxz=%f (SET)\n",
            x, y, width, height, minZ, maxZ);
 
     // TODO: Phase 41.2 - Update Vulkan viewport and scissor rect
 
     return D3D_OK;
+}
+
+// ============================================================================
+// Helper Functions: DirectX to Vulkan State Mapping
+// ============================================================================
+
+/**
+ * Convert DirectX blend mode to Vulkan blend factor.
+ * 
+ * Maps D3DBLEND values to VkBlendFactor for color blending.
+ */
+VkBlendFactor ConvertD3DBlendMode(DWORD d3dBlend) {
+    switch (d3dBlend) {
+        case 1:  // D3DBLEND_ZERO
+            return VK_BLEND_FACTOR_ZERO;
+        case 2:  // D3DBLEND_ONE
+            return VK_BLEND_FACTOR_ONE;
+        case 3:  // D3DBLEND_SRCCOLOR
+            return VK_BLEND_FACTOR_SRC_COLOR;
+        case 4:  // D3DBLEND_INVSRCCOLOR
+            return VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+        case 5:  // D3DBLEND_SRCALPHA
+            return VK_BLEND_FACTOR_SRC_ALPHA;
+        case 6:  // D3DBLEND_INVSRCALPHA
+            return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        case 7:  // D3DBLEND_DESTALPHA
+            return VK_BLEND_FACTOR_DST_ALPHA;
+        case 8:  // D3DBLEND_INVDESTALPHA
+            return VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
+        case 9:  // D3DBLEND_DESTCOLOR
+            return VK_BLEND_FACTOR_DST_COLOR;
+        case 10: // D3DBLEND_INVDESTCOLOR
+            return VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
+        default:
+            return VK_BLEND_FACTOR_ONE;
+    }
+}
+
+/**
+ * Convert DirectX depth comparison function to Vulkan.
+ * 
+ * Maps D3DCMPFUNC values to VkCompareOp for depth testing.
+ */
+VkCompareOp ConvertD3DCompareFunc(DWORD d3dCmpFunc) {
+    switch (d3dCmpFunc) {
+        case 1:  // D3DCMP_NEVER
+            return VK_COMPARE_OP_NEVER;
+        case 2:  // D3DCMP_LESS
+            return VK_COMPARE_OP_LESS;
+        case 3:  // D3DCMP_EQUAL
+            return VK_COMPARE_OP_EQUAL;
+        case 4:  // D3DCMP_LESSEQUAL
+            return VK_COMPARE_OP_LESS_OR_EQUAL;
+        case 5:  // D3DCMP_GREATER
+            return VK_COMPARE_OP_GREATER;
+        case 6:  // D3DCMP_NOTEQUAL
+            return VK_COMPARE_OP_NOT_EQUAL;
+        case 7:  // D3DCMP_GREATEREQUAL
+            return VK_COMPARE_OP_GREATER_OR_EQUAL;
+        case 8:  // D3DCMP_ALWAYS
+            return VK_COMPARE_OP_ALWAYS;
+        default:
+            return VK_COMPARE_OP_LESS;
+    }
+}
+
+/**
+ * Convert DirectX cull mode to Vulkan.
+ * 
+ * Maps D3DCULL values to VkCullModeFlagBits.
+ */
+VkCullModeFlags ConvertD3DCullMode(DWORD d3dCull) {
+    switch (d3dCull) {
+        case 1:  // D3DCULL_NONE
+            return VK_CULL_MODE_NONE;
+        case 2:  // D3DCULL_CW
+            return VK_CULL_MODE_BACK_BIT;
+        case 3:  // D3DCULL_CCW
+            return VK_CULL_MODE_FRONT_BIT;
+        default:
+            return VK_CULL_MODE_BACK_BIT;
+    }
+}
+
+/**
+ * Convert DirectX fill mode to Vulkan.
+ * 
+ * Maps D3DFILLMODE values to VkPolygonMode.
+ */
+VkPolygonMode ConvertD3DFillMode(DWORD d3dFill) {
+    switch (d3dFill) {
+        case 1:  // D3DFILL_POINT
+            return VK_POLYGON_MODE_POINT;
+        case 2:  // D3DFILL_WIREFRAME
+            return VK_POLYGON_MODE_LINE;
+        case 3:  // D3DFILL_SOLID
+            return VK_POLYGON_MODE_FILL;
+        default:
+            return VK_POLYGON_MODE_FILL;
+    }
 }
