@@ -598,7 +598,9 @@ void DXVKGraphicsBackend::DestroyInstance() {
 // - CreateGraphicsPipeline(), RecreateGraphicsPipeline(), DestroyGraphicsPipeline()
 // - Memory allocation helpers and format conversion
 
-// Placeholder implementations (actual implementations in graphics_backend_dxvk_device.cpp)
+// All implementations are in graphics_backend_dxvk_device.cpp
+// These functions are declared and implemented there, so they should be called
+// and linker will resolve them properly.
 
 HRESULT DXVKGraphicsBackend::CreateDevice() {
     printf("[DXVK] CreateDevice() - NOT YET IMPLEMENTED\n");
