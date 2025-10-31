@@ -430,6 +430,55 @@ public:
      */
     uint32_t GetPerformanceHistorySize() const;
     
+    // ========================================================================
+    // Phase 44.1: Graphics Pipeline
+    // ========================================================================
+    
+    /**
+     * Create graphics pipeline layout.
+     */
+    HRESULT CreatePipelineLayout();
+    
+    /**
+     * Destroy pipeline layout.
+     */
+    HRESULT DestroyPipelineLayout();
+    
+    /**
+     * Create graphics pipeline (vertex + fragment shaders).
+     */
+    HRESULT CreateGraphicsPipeline();
+    
+    /**
+     * Destroy graphics pipeline.
+     */
+    HRESULT DestroyGraphicsPipeline();
+    
+    /**
+     * Bind graphics pipeline to command buffer.
+     */
+    HRESULT BindGraphicsPipeline();
+    
+    /**
+     * Get graphics pipeline.
+     */
+    VkPipeline GetGraphicsPipeline() const;
+    
+    /**
+     * Get pipeline layout.
+     */
+    VkPipelineLayout GetPipelineLayout() const;
+    
+    /**
+     * Check if graphics pipeline is ready.
+     */
+    bool IsGraphicsPipelineReady() const;
+    
+    /**
+     * Report graphics pipeline state.
+     */
+    void ReportPipelineState() const;
+    
     /**
      * Clear render target and depth buffer.
      */
@@ -890,22 +939,6 @@ private:
      * Destroy shader modules.
      */
     void DestroyShaderModules();
-    
-    /**
-     * Create graphics pipeline (VkPipeline).
-     * Defines vertex input, rasterization, depth-stencil, and color blending.
-     */
-    HRESULT CreateGraphicsPipeline();
-    
-    /**
-     * Recreate graphics pipeline (on render state changes).
-     */
-    HRESULT RecreateGraphicsPipeline();
-    
-    /**
-     * Destroy graphics pipeline.
-     */
-    void DestroyGraphicsPipeline();
     
     // ========================================================================
     // Private Memory Allocation Helpers
