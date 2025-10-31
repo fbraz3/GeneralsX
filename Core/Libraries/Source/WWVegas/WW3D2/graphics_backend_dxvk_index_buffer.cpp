@@ -36,7 +36,11 @@
 #include <cstring>
 #include <cstdio>
 
-namespace DXVK {
+// DirectX error codes
+#define D3DERR_INVALIDCALL 0x8876086CL
+#ifndef S_OK
+#define S_OK 0x00000000L
+#endif
 
 // ============================================================================
 // Phase 44.3.1: Index Buffer Creation & Allocation
@@ -391,5 +395,3 @@ void DXVKGraphicsBackend::ReportIndexBufferState() const
            IsIndexBufferReady() ? "YES" : "NO");
     printf("========================\n\n");
 }
-
-}  // namespace DXVK
