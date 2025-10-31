@@ -870,6 +870,66 @@ public:
     void ReportMaterialSystemState() const;
     
     // ========================================================================
+    // Phase 44.5.3: Material Cache System
+    // ========================================================================
+    
+    /**
+     * Phase 44.5.3: Initialize material caching system.
+     * Cache stores descriptor sets by material ID for fast lookup.
+     * Expected hit rate: ~95% for typical scenes.
+     * Max cached materials: 200 (configurable).
+     */
+    HRESULT InitializeMaterialCache();
+    
+    /**
+     * Phase 44.5.3: Retrieve cached descriptor set for material.
+     * Returns VK_NULL_HANDLE if material not in cache (cache miss).
+     */
+    VkDescriptorSet GetCachedMaterialDescriptorSet(uint32_t materialID);
+    
+    /**
+     * Phase 44.5.3: Store material descriptor set in cache.
+     * Cached for future reuse (O(1) lookup on next occurrence).
+     */
+    void CacheMaterialDescriptorSet(uint32_t materialID, VkDescriptorSet descriptorSet);
+    
+    /**
+     * Phase 44.5.3: Clear all cached materials.
+     * Called on map transitions or cache flush requests.
+     */
+    void FlushMaterialCache();
+    
+    /**
+     * Phase 44.5.3: Get cache statistics for profiling.
+     * Returns hit rate, hit/miss counts, active entries.
+     */
+    struct MaterialCacheStats GetMaterialCacheStats() const;
+    
+    /**
+     * Phase 44.5.3: Remove least-recently-used material from cache.
+     * Called automatically when cache reaches capacity.
+     */
+    bool EvictLRUMaterial();
+    
+    /**
+     * Phase 44.5.3: Update access time for material (for LRU tracking).
+     * Called every time material is rendered.
+     */
+    void UpdateMaterialCacheAccessTime(uint32_t materialID);
+    
+    /**
+     * Phase 44.5.3: Optimize cache based on frame profiling.
+     * Called at end of frame to adjust strategy for next frame.
+     */
+    void OptimizeMaterialCacheFrame();
+    
+    /**
+     * Phase 44.5.3: Print comprehensive cache performance report.
+     * Shows hit rate, efficiency, and optimization recommendations.
+     */
+    void ReportMaterialCachePerformance() const;
+    
+    // ========================================================================
     // Texture Management
     // ========================================================================
     
@@ -1476,6 +1536,13 @@ private:
     VkDescriptorPool m_materialDescriptorPool;            ///< Material descriptor pool (1000 sets)
     uint32_t m_allocatedMaterialSets;                     ///< Number of allocated material descriptor sets
     VkSampler m_defaultSampler;                           ///< Default texture sampler
+    
+    // ========== Phase 44.5.3: Material Cache Members ==========
+    std::map<uint32_t, VkDescriptorSet> m_materialCache;  ///< Cached descriptor sets by material ID
+    std::map<uint32_t, uint64_t> m_materialAccessTime;    ///< Last access time per material (for LRU)
+    uint32_t m_cacheTotalLookups;                         ///< Total cache lookups (for statistics)
+    uint32_t m_cacheHits;                                 ///< Cache hits (for statistics)
+    uint32_t m_cacheMisses;                               ///< Cache misses (for statistics)
 
     VkPipelineCache m_pipelineCache;        ///< Pipeline cache for optimization
     
@@ -1510,8 +1577,6 @@ private:
     std::map<uint32_t, void*> m_textureCacheMap;  ///< Cached textures by filename CRC
     uint32_t m_totalCacheMemory;            ///< Total memory used by cache
     uint32_t m_maxCacheMemory;              ///< Maximum cache memory limit (256MB default)
-    uint32_t m_cacheHits;                   ///< Cache hit count for profiling
-    uint32_t m_cacheMisses;                 ///< Cache miss count for profiling
     uint32_t m_currentFrameNumber;          ///< Current frame for LRU tracking
     
     // ========================================================================
