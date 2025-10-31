@@ -302,8 +302,8 @@ target_link_libraries(corei_ww3d2 INTERFACE
 include(${CMAKE_SOURCE_DIR}/cmake/vulkan.cmake)
 
 # Link Vulkan backend (via Vulkan Loader, NOT direct MoltenVK linking)
-if(TARGET Vulkan::Loader)
-    target_link_libraries(corei_ww3d2 INTERFACE Vulkan::Loader)
+if(VULKAN_LOADER_LIBRARY)
+    target_link_libraries(corei_ww3d2 INTERFACE ${VULKAN_LOADER_LIBRARY})
     
     # Add Vulkan include directories
     target_include_directories(corei_ww3d2 INTERFACE 
@@ -331,6 +331,8 @@ if(TARGET Vulkan::Loader)
             VK_VALIDATION_ENABLED=1
         )
     endif()
+elseif(NOT USE_DXVK)
+    message(STATUS "DXVK/Vulkan backend disabled - using legacy Metal/OpenGL")
 endif()
 
 # ============================================================================

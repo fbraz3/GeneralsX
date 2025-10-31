@@ -171,6 +171,9 @@ endif()
 if(NOT TARGET Vulkan::Loader)
     message(WARNING "Vulkan::Loader target not found. Falling back to Vulkan::Vulkan")
     # Fallback: Use Vulkan::Vulkan which includes both loader and headers
+    set(VULKAN_LOADER_LIBRARY Vulkan::Vulkan)
+else()
+    set(VULKAN_LOADER_LIBRARY Vulkan::Loader)
 endif()
 
 # ============================================================================
@@ -321,7 +324,7 @@ message(STATUS "")
 
 set(VULKAN_AVAILABLE TRUE CACHE BOOL "Vulkan support available")
 set(VULKAN_INCLUDE_DIRS ${Vulkan_INCLUDE_DIR})
-set(VULKAN_LOADER_LIBRARY Vulkan::Loader)
+# VULKAN_LOADER_LIBRARY already set above (either Vulkan::Loader or Vulkan::Vulkan)
 set(VULKAN_LIBRARIES Vulkan::Vulkan)
 set(VULKAN_COMPILE_DEFINITIONS
     -DVULKAN_ENABLED=1
