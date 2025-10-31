@@ -797,6 +797,79 @@ public:
     HRESULT DestroyMaterialDescriptorPool();
     
     // ========================================================================
+    // Phase 44.5.2: Shader Parameter Binding
+    // ========================================================================
+    
+    /**
+     * Phase 44.5.2: Update push constants for per-draw material data.
+     * Push constants: MaterialID, BlendMode, UVTransform, ColorTint (40 bytes total).
+     * Called on every draw call with material-specific parameters.
+     */
+    HRESULT UpdatePushConstants(
+        VkCommandBuffer commandBuffer,
+        uint32_t materialID,
+        uint32_t blendMode,
+        uint32_t uvOffsetScale,
+        uint32_t colorTint
+    );
+    
+    /**
+     * Phase 44.5.2: Update push constants with PBR material properties.
+     * Extended version: adds Metallic, Roughness, Emissive, AlphaThreshold, AlphaMode.
+     * For physically-based rendering materials.
+     */
+    HRESULT UpdatePushConstantsExtended(
+        VkCommandBuffer commandBuffer,
+        uint32_t materialID,
+        uint32_t blendMode,
+        uint32_t uvOffsetScale,
+        uint32_t colorTint,
+        float metallic,
+        float roughness,
+        float emissive,
+        float alphaThreshold,
+        uint32_t alphaMode
+    );
+    
+    /**
+     * Phase 44.5.2: Bind shader parameters (descriptor set + push constants).
+     * Single call combines descriptor binding and push constant updates.
+     * Called in draw sequence: BindVertexBuffer → BindIndexBuffer → BindShaderParameters → DrawIndexed
+     */
+    HRESULT BindShaderParameters(
+        VkCommandBuffer commandBuffer,
+        VkDescriptorSet descriptorSet,
+        uint32_t materialID,
+        uint32_t blendMode,
+        uint32_t uvTransform,
+        uint32_t colorTint
+    );
+    
+    /**
+     * Phase 44.5.2: Bind shader parameters with PBR properties.
+     * Extended version for physically-based rendering materials.
+     */
+    HRESULT BindShaderParametersExtended(
+        VkCommandBuffer commandBuffer,
+        VkDescriptorSet descriptorSet,
+        uint32_t materialID,
+        uint32_t blendMode,
+        uint32_t uvTransform,
+        uint32_t colorTint,
+        float metallic,
+        float roughness,
+        float emissive,
+        float alphaThreshold,
+        uint32_t alphaMode
+    );
+    
+    /**
+     * Phase 44.5.2: Report material system state for diagnostics.
+     * Prints descriptor pool usage, push constant layout, pipeline integration.
+     */
+    void ReportMaterialSystemState() const;
+    
+    // ========================================================================
     // Texture Management
     // ========================================================================
     

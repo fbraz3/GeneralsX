@@ -459,3 +459,339 @@ HRESULT DXVKGraphicsBackend::DestroyMaterialDescriptorPool()
     printf("[DXVK] Material descriptor pool destroyed\n");
     return S_OK;
 }
+
+// ============================================================================
+// Phase 44.5.2: Shader Parameter Binding
+// ============================================================================
+
+/**
+ * UpdatePushConstants(VkCommandBuffer, VkOffset, const void*)
+ * 
+ * Update push constants for per-draw material data.
+ * Push constants are small amounts of data (32-128 bytes per draw call) that
+ * change frequently and don't need descriptor updates.
+ * 
+ * Push Constant Layout (40 bytes total):
+ * ```
+ * struct PushConstants {
+ *     uint32_t materialID;        // Offset 0, 4 bytes - Material identifier
+ *     uint32_t blendMode;         // Offset 4, 4 bytes - Blend mode (D3DBLEND_*)
+ *     uint32_t uvOffsetScale;     // Offset 8, 4 bytes - UV transform packed
+ *     uint32_t colorTint;         // Offset 12, 4 bytes - RGBA color tint
+ *     float    metallic;          // Offset 16, 4 bytes - PBR metallic value
+ *     float    roughness;         // Offset 20, 4 bytes - PBR roughness value
+ *     float    emissive;          // Offset 24, 4 bytes - Emissive intensity
+ *     uint32_t _pad0;             // Offset 28, 4 bytes - Padding
+ *     float    alphaThreshold;    // Offset 32, 4 bytes - Alpha cutoff threshold
+ *     uint32_t alphaMode;         // Offset 36, 4 bytes - Alpha mode (opaque/transparent/mask)
+ * };  // Total: 40 bytes (< 128 byte Vulkan minimum)
+ * ```
+ * 
+ * Vulkan API:
+ * - vkCmdPushConstants(commandBuffer, pipelineLayout, stageFlags, offset, size, pValues)
+ * - stageFlags: VK_SHADER_STAGE_FRAGMENT_BIT (fragment-only material properties)
+ * - offset: 0 (start at beginning of push constant range)
+ * - size: must match shader layout
+ * 
+ * Parameters:
+ * - commandBuffer: Recording command buffer
+ * - materialID: Unique material identifier (for caching/lookup)
+ * - blendMode: D3D8 blend mode to apply
+ * - uvOffsetScale: Packed UV transformation (offset.x, offset.y, scale.x, scale.y)
+ * - colorTint: RGBA tint color (packed as uint32)
+ * 
+ * Returns:
+ * - VK_SUCCESS: Push constants updated successfully
+ * - D3DERR_INVALIDCALL: Invalid command buffer or size mismatch
+ */
+HRESULT DXVKGraphicsBackend::UpdatePushConstants(
+    VkCommandBuffer commandBuffer,
+    uint32_t materialID,
+    uint32_t blendMode,
+    uint32_t uvOffsetScale,
+    uint32_t colorTint
+)
+{
+    if (commandBuffer == VK_NULL_HANDLE) {
+        printf("[DXVK] ERROR: Invalid command buffer for push constants\n");
+        return D3DERR_INVALIDCALL;
+    }
+
+    // Prepare push constant data (40 bytes)
+    struct {
+        uint32_t materialID;
+        uint32_t blendMode;
+        uint32_t uvOffsetScale;
+        uint32_t colorTint;
+        float    metallic;
+        float    roughness;
+        float    emissive;
+        uint32_t _pad0;
+        float    alphaThreshold;
+        uint32_t alphaMode;
+    } pushData = {
+        materialID,
+        blendMode,
+        uvOffsetScale,
+        colorTint,
+        1.0f,           // metallic (default: fully metallic)
+        0.5f,           // roughness (default: medium)
+        1.0f,           // emissive intensity
+        0,              // padding
+        0.5f,           // alpha threshold for alpha-mask
+        0               // alpha mode: 0=opaque, 1=transparent, 2=mask
+    };
+
+    vkCmdPushConstants(
+        commandBuffer,
+        m_pipelineLayout,
+        VK_SHADER_STAGE_FRAGMENT_BIT,
+        0,                          // offset
+        sizeof(pushData),           // size: 40 bytes
+        &pushData
+    );
+
+    printf("[DXVK] Push constants updated (material=%u, blend=%u)\n", materialID, blendMode);
+    return S_OK;
+}
+
+/**
+ * UpdatePushConstantsExtended(VkCommandBuffer, const void*)
+ * 
+ * Update push constants with full material parameters (including PBR properties).
+ * Allows setting metallic, roughness, emissive, and alpha properties.
+ * 
+ * Parameters:
+ * - commandBuffer: Recording command buffer
+ * - materialID: Unique material identifier
+ * - blendMode: D3D8 blend mode
+ * - uvOffsetScale: Packed UV transformation
+ * - colorTint: RGBA color tint
+ * - metallic: PBR metallic value (0.0-1.0)
+ * - roughness: PBR roughness value (0.0-1.0)
+ * - emissive: Emissive intensity multiplier
+ * - alphaThreshold: Alpha cutoff for mask mode
+ * - alphaMode: 0=opaque, 1=transparent, 2=mask
+ * 
+ * Returns:
+ * - VK_SUCCESS: Push constants updated successfully
+ */
+HRESULT DXVKGraphicsBackend::UpdatePushConstantsExtended(
+    VkCommandBuffer commandBuffer,
+    uint32_t materialID,
+    uint32_t blendMode,
+    uint32_t uvOffsetScale,
+    uint32_t colorTint,
+    float metallic,
+    float roughness,
+    float emissive,
+    float alphaThreshold,
+    uint32_t alphaMode
+)
+{
+    if (commandBuffer == VK_NULL_HANDLE) {
+        printf("[DXVK] ERROR: Invalid command buffer for extended push constants\n");
+        return D3DERR_INVALIDCALL;
+    }
+
+    // Prepare push constant data with PBR properties
+    struct {
+        uint32_t materialID;
+        uint32_t blendMode;
+        uint32_t uvOffsetScale;
+        uint32_t colorTint;
+        float    metallic;
+        float    roughness;
+        float    emissive;
+        uint32_t _pad0;
+        float    alphaThreshold;
+        uint32_t alphaMode;
+    } pushData = {
+        materialID,
+        blendMode,
+        uvOffsetScale,
+        colorTint,
+        metallic,
+        roughness,
+        emissive,
+        0,              // padding
+        alphaThreshold,
+        alphaMode
+    };
+
+    vkCmdPushConstants(
+        commandBuffer,
+        m_pipelineLayout,
+        VK_SHADER_STAGE_FRAGMENT_BIT,
+        0,                          // offset
+        sizeof(pushData),           // size: 40 bytes
+        &pushData
+    );
+
+    printf("[DXVK] Extended push constants updated (material=%u, pbr=%.2f/%.2f/%.2f)\n",
+           materialID, metallic, roughness, emissive);
+    return S_OK;
+}
+
+/**
+ * BindShaderParameters(VkCommandBuffer, const ShaderParameters*)
+ * 
+ * Complete shader parameter binding for a draw call.
+ * Combines descriptor set binding and push constants in single call.
+ * 
+ * Call Sequence (Phase 44.4 Draw Command):
+ * 1. BeginRenderPass()
+ * 2. BindPipeline()
+ * 3. BindVertexBuffer()
+ * 4. BindIndexBuffer()
+ * 5. BindShaderParameters() ← THIS FUNCTION (handles both descriptor + push)
+ * 6. DrawIndexed()
+ * 7. EndRenderPass()
+ * 
+ * Parameters:
+ * - commandBuffer: Recording command buffer
+ * - descriptorSet: Material descriptor set (textures and buffers)
+ * - materialID: Material identifier for push constants
+ * - blendMode: Blend mode
+ * - uvTransform: Packed UV offset/scale
+ * - colorTint: Color tint RGBA
+ * 
+ * Returns:
+ * - VK_SUCCESS: All parameters bound successfully
+ */
+HRESULT DXVKGraphicsBackend::BindShaderParameters(
+    VkCommandBuffer commandBuffer,
+    VkDescriptorSet descriptorSet,
+    uint32_t materialID,
+    uint32_t blendMode,
+    uint32_t uvTransform,
+    uint32_t colorTint
+)
+{
+    if (commandBuffer == VK_NULL_HANDLE) {
+        printf("[DXVK] ERROR: Invalid command buffer for shader parameters\n");
+        return D3DERR_INVALIDCALL;
+    }
+
+    // Step 1: Bind descriptor set (Phase 44.5.1)
+    if (descriptorSet != VK_NULL_HANDLE) {
+        vkCmdBindDescriptorSets(
+            commandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            m_pipelineLayout,
+            0,              // firstSet
+            1,              // descriptorSetCount
+            &descriptorSet, // pDescriptorSets
+            0,              // dynamicOffsetCount
+            nullptr         // pDynamicOffsets
+        );
+    }
+
+    // Step 2: Update push constants
+    UpdatePushConstants(commandBuffer, materialID, blendMode, uvTransform, colorTint);
+
+    printf("[DXVK] Shader parameters bound (descriptor + push constants)\n");
+    return S_OK;
+}
+
+/**
+ * BindShaderParametersExtended(VkCommandBuffer, ...)
+ * 
+ * Complete shader parameter binding with PBR properties.
+ * 
+ * Parameters:
+ * - commandBuffer: Recording command buffer
+ * - descriptorSet: Material descriptor set
+ * - materialID: Material identifier
+ * - blendMode: Blend mode
+ * - uvTransform: Packed UV transformation
+ * - colorTint: Color tint RGBA
+ * - metallic: PBR metallic value
+ * - roughness: PBR roughness value
+ * - emissive: Emissive intensity
+ * - alphaThreshold: Alpha mask threshold
+ * - alphaMode: Alpha blending mode (opaque/transparent/mask)
+ * 
+ * Returns:
+ * - VK_SUCCESS: All parameters bound successfully
+ */
+HRESULT DXVKGraphicsBackend::BindShaderParametersExtended(
+    VkCommandBuffer commandBuffer,
+    VkDescriptorSet descriptorSet,
+    uint32_t materialID,
+    uint32_t blendMode,
+    uint32_t uvTransform,
+    uint32_t colorTint,
+    float metallic,
+    float roughness,
+    float emissive,
+    float alphaThreshold,
+    uint32_t alphaMode
+)
+{
+    if (commandBuffer == VK_NULL_HANDLE) {
+        printf("[DXVK] ERROR: Invalid command buffer for extended shader parameters\n");
+        return D3DERR_INVALIDCALL;
+    }
+
+    // Step 1: Bind descriptor set
+    if (descriptorSet != VK_NULL_HANDLE) {
+        vkCmdBindDescriptorSets(
+            commandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            m_pipelineLayout,
+            0,              // firstSet
+            1,              // descriptorSetCount
+            &descriptorSet, // pDescriptorSets
+            0,              // dynamicOffsetCount
+            nullptr         // pDynamicOffsets
+        );
+    }
+
+    // Step 2: Update extended push constants
+    UpdatePushConstantsExtended(commandBuffer, materialID, blendMode, uvTransform,
+                               colorTint, metallic, roughness, emissive,
+                               alphaThreshold, alphaMode);
+
+    printf("[DXVK] Extended shader parameters bound (descriptor + PBR push constants)\n");
+    return S_OK;
+}
+
+/**
+ * ReportMaterialSystemState()
+ * 
+ * Print comprehensive diagnostic information about material system state.
+ * Used for debugging and performance analysis.
+ * 
+ * Output includes:
+ * - Descriptor pool status (allocated sets, capacity)
+ * - Active material descriptors
+ * - Push constant sizes and ranges
+ * - Integration status with pipeline
+ * 
+ * Returns: void
+ */
+void DXVKGraphicsBackend::ReportMaterialSystemState() const
+{
+    printf("\n[DXVK] Material System State Report\n");
+    printf("===================================\n");
+    
+    printf("Descriptor Sets:\n");
+    printf("  Allocated: %u / 1000\n", m_allocatedMaterialSets);
+    printf("  Available: %u\n", 1000 - m_allocatedMaterialSets);
+    printf("  Layout: %s\n", m_materialDescriptorSetLayout != VK_NULL_HANDLE ? "Valid" : "INVALID");
+    printf("  Pool: %s\n", m_materialDescriptorPool != VK_NULL_HANDLE ? "Valid" : "INVALID");
+    
+    printf("Push Constants:\n");
+    printf("  Size: 40 bytes (Vulkan min 128 bytes)\n");
+    printf("  Stage: VK_SHADER_STAGE_FRAGMENT_BIT\n");
+    printf("  Fields: MaterialID (4), BlendMode (4), UVTransform (4), ColorTint (4),\n");
+    printf("          Metallic (4), Roughness (4), Emissive (4), Padding (4),\n");
+    printf("          AlphaThreshold (4), AlphaMode (4)\n");
+    
+    printf("Pipeline Integration:\n");
+    printf("  Layout: %s\n", m_pipelineLayout != VK_NULL_HANDLE ? "Valid" : "INVALID");
+    printf("  Pipeline: %s\n", m_graphicsPipeline != VK_NULL_HANDLE ? "Valid" : "INVALID");
+    
+    printf("===================================\n\n");
+}
