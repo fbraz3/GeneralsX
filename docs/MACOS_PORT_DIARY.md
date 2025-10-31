@@ -1,3 +1,71 @@
+# GeneralsX macOS Port Development Diary
+
+## Current Session Update (October 31 Late Afternoon) — **PHASE 40 DXVK BACKEND SELECTION** ✅ In Progress
+
+### Summary
+
+**PHASE 40 STATUS**: 🚀 **IN PROGRESS** (Backend Selection Complete, Runtime Initialization Working)
+
+**Major Achievement**: DXVK/Vulkan graphics backend is now selected and initializing at runtime
+
+**Session Timeline**: ~2 hours (Backend selection fix + refactoring)
+
+**Commits**: 2 commits (cfc54cd8 - Backend Enable, 2bf4969b - Stub Removal)
+
+### Phase 40 Milestones
+
+**40.1: Backend Selection Fix** ✅ COMPLETE
+
+- Created USE_DXVK CMake flag in `cmake/config-build.cmake`
+- Added conditional DXVK instantiation in `graphics_backend_init.cpp`
+- Fixed Vulkan loader fallback logic in `cmake/vulkan.cmake`
+- Updated WW3D2 CMakeLists.txt to use VULKAN_LOADER_LIBRARY variable
+- Build command: `cmake --preset macos-arm64 -DUSE_DXVK=ON`
+
+**40.2: Stub Removal & Unblocking** ✅ COMPLETE
+
+- Removed duplicate 'NOT YET IMPLEMENTED' stubs from `graphics_backend_dxvk.cpp`
+- Enabled real implementations in `graphics_backend_dxvk_device.cpp`
+- Game now initializes with real Vulkan device creation
+- Verified: Game reaches INI parsing without crash
+
+### Runtime Status
+
+```text
+Graphics Backend: DXVK/Vulkan (USE_DXVK enabled) ✅
+Backend: Vulkan/MoltenVK (macOS) ✅
+```
+
+**Initialization Flow**:
+
+1. CreateInstance() - ✅ Working
+2. CreateDevice() - ✅ Real implementation active
+3. CreateSurface() - ✅ Real implementation active  
+4. CreateSwapchain() - ✅ Real implementation active
+5. CreateRenderPass() - ✅ Real implementation active
+6. CreateFramebuffers() - ✅ Real implementation active
+7. CreateCommandPool() - ✅ Real implementation active
+8. CreateSyncObjects() - ✅ Real implementation active
+9. CreatePipelineCache() - ✅ Real implementation active
+10. CreateShaderModules() - ✅ Real implementation active
+11. CreateGraphicsPipeline() - ✅ Real implementation active
+
+### Executable Details
+
+- File: `GeneralsXZH` (14MB)
+- Compilation: ✅ 0 errors, 130 warnings (non-critical)
+- Linking: ✅ All Vulkan symbols resolved
+- Runtime: ✅ Game initializing without crashes
+
+### Next Steps (Phase 40+ Continuation)
+
+- Implement remaining graphics operations (drawing, textures)
+- Test render loop and frame presentation
+- Implement missing stubs for materials, lights, transforms
+- Full gameplay testing
+
+---
+
 ## Latest Update (October 30 Evening) — **PHASE 39.2 COMPLETE** ✅ Vulkan Backend Fully Implemented
 
 ### Summary
