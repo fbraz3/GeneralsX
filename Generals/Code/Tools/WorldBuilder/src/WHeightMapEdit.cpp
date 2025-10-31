@@ -414,20 +414,18 @@ void WorldHeightMapEdit::loadBaseImages(void)
 void WorldHeightMapEdit::loadDirectoryOfImages(const char *pFilePath)
 {
 	char				dirBuf[_MAX_PATH];
-	char				findBuf[_MAX_PATH];
 	char				fileBuf[_MAX_PATH];
 
-	strcpy(dirBuf, pFilePath);
+	strlcpy(dirBuf, pFilePath, ARRAY_SIZE(dirBuf));
 	int len = strlen(dirBuf);
 
 	if (len > 0 && dirBuf[len - 1] != '\\') {
 		dirBuf[len++] = '\\';
 		dirBuf[len] = 0;
 	}
-	strcpy(findBuf, dirBuf);
 
 	FilenameList filenameList;
-	TheFileSystem->getFileListInDirectory(AsciiString(findBuf), AsciiString("*.*"), filenameList, TRUE);
+	TheFileSystem->getFileListInDirectory(AsciiString(dirBuf), AsciiString("*.*"), filenameList, TRUE);
 
 	if (filenameList.size() == 0) {
 		return;
@@ -436,8 +434,7 @@ void WorldHeightMapEdit::loadDirectoryOfImages(const char *pFilePath)
 	do {
 		AsciiString filename = *it;
 
-		strcpy(fileBuf, dirBuf);
-		strcat(fileBuf, filename.str());
+		snprintf(fileBuf, ARRAY_SIZE(fileBuf), "%s%s", dirBuf, filename.str());
 		loadBitmap(fileBuf, filename.str());
 
 		++it;
