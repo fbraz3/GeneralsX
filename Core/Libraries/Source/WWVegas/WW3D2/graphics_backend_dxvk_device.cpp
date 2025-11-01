@@ -825,25 +825,6 @@ HRESULT DXVKGraphicsBackend::CreateShaderModules() {
     return S_OK;
 }
 
-/**
- * Create graphics pipeline for rendering.
- * This implements the graphics pipeline state (vertex layout, rasterization, etc).
- */
-HRESULT DXVKGraphicsBackend::CreateGraphicsPipeline() {
-    if (m_debugOutput) {
-        printf("[DXVK] Creating graphics pipeline...\n");
-    }
-    
-    // For Phase 39.2, pipeline creation is deferred
-    // It will be created when we have proper shader modules
-    
-    if (m_debugOutput) {
-        printf("[DXVK] Graphics pipeline: deferred until shaders are loaded\n");
-    }
-    
-    return S_OK;
-}
-
 // ============================================================================
 // Format Conversion Helpers
 // ============================================================================
