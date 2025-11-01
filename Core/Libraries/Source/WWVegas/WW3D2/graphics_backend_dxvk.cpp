@@ -602,35 +602,12 @@ void DXVKGraphicsBackend::DestroyInstance() {
 // These functions are declared and implemented there, so they should be called
 // and linker will resolve them properly.
 
-HRESULT DXVKGraphicsBackend::CreateDevice() {
-    printf("[DXVK] CreateDevice() - NOT YET IMPLEMENTED\n");
-    return E_NOTIMPL;
-}
-
-void DXVKGraphicsBackend::DestroyDevice() {
-    // Placeholder
-}
-
-HRESULT DXVKGraphicsBackend::CreateSurface() {
-    printf("[DXVK] CreateSurface() - NOT YET IMPLEMENTED\n");
-    return E_NOTIMPL;
-}
-
+// Destroy functions with implementations 
 void DXVKGraphicsBackend::DestroySurface() {
     if (m_surface != VK_NULL_HANDLE && m_instance != VK_NULL_HANDLE) {
         vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
         m_surface = VK_NULL_HANDLE;
     }
-}
-
-HRESULT DXVKGraphicsBackend::CreateSwapchain() {
-    printf("[DXVK] CreateSwapchain() - NOT YET IMPLEMENTED\n");
-    return E_NOTIMPL;
-}
-
-HRESULT DXVKGraphicsBackend::RecreateSwapchain() {
-    printf("[DXVK] RecreateSwapchain() - NOT YET IMPLEMENTED\n");
-    return E_NOTIMPL;
 }
 
 void DXVKGraphicsBackend::DestroySwapchain() {
@@ -642,21 +619,11 @@ void DXVKGraphicsBackend::DestroySwapchain() {
     m_swapchainImageViews.clear();
 }
 
-HRESULT DXVKGraphicsBackend::CreateRenderPass() {
-    printf("[DXVK] CreateRenderPass() - NOT YET IMPLEMENTED\n");
-    return E_NOTIMPL;
-}
-
 void DXVKGraphicsBackend::DestroyRenderPass() {
     if (m_renderPass != VK_NULL_HANDLE && m_device != VK_NULL_HANDLE) {
         vkDestroyRenderPass(m_device, m_renderPass, nullptr);
         m_renderPass = VK_NULL_HANDLE;
     }
-}
-
-HRESULT DXVKGraphicsBackend::CreateFramebuffers() {
-    printf("[DXVK] CreateFramebuffers() - NOT YET IMPLEMENTED\n");
-    return E_NOTIMPL;
 }
 
 void DXVKGraphicsBackend::DestroyFramebuffers() {
@@ -668,11 +635,6 @@ void DXVKGraphicsBackend::DestroyFramebuffers() {
     m_framebuffers.clear();
 }
 
-HRESULT DXVKGraphicsBackend::CreateCommandPool() {
-    printf("[DXVK] CreateCommandPool() - NOT YET IMPLEMENTED\n");
-    return E_NOTIMPL;
-}
-
 void DXVKGraphicsBackend::DestroyCommandPool() {
     if (m_commandPool != VK_NULL_HANDLE && m_device != VK_NULL_HANDLE) {
         vkDestroyCommandPool(m_device, m_commandPool, nullptr);
@@ -680,18 +642,8 @@ void DXVKGraphicsBackend::DestroyCommandPool() {
     }
 }
 
-HRESULT DXVKGraphicsBackend::AllocateCommandBuffers() {
-    printf("[DXVK] AllocateCommandBuffers() - NOT YET IMPLEMENTED\n");
-    return E_NOTIMPL;
-}
-
 void DXVKGraphicsBackend::FreeCommandBuffers() {
     m_commandBuffers.clear();
-}
-
-HRESULT DXVKGraphicsBackend::CreateSyncObjects() {
-    printf("[DXVK] CreateSyncObjects() - NOT YET IMPLEMENTED\n");
-    return E_NOTIMPL;
 }
 
 void DXVKGraphicsBackend::DestroySyncObjects() {
@@ -711,21 +663,11 @@ void DXVKGraphicsBackend::DestroySyncObjects() {
     m_inFlightFences.clear();
 }
 
-HRESULT DXVKGraphicsBackend::CreatePipelineCache() {
-    printf("[DXVK] CreatePipelineCache() - NOT YET IMPLEMENTED\n");
-    return E_NOTIMPL;
-}
-
 void DXVKGraphicsBackend::DestroyPipelineCache() {
     if (m_pipelineCache != VK_NULL_HANDLE && m_device != VK_NULL_HANDLE) {
         vkDestroyPipelineCache(m_device, m_pipelineCache, nullptr);
         m_pipelineCache = VK_NULL_HANDLE;
     }
-}
-
-HRESULT DXVKGraphicsBackend::CreateShaderModules() {
-    printf("[DXVK] CreateShaderModules() - NOT YET IMPLEMENTED\n");
-    return E_NOTIMPL;
 }
 
 void DXVKGraphicsBackend::DestroyShaderModules() {
@@ -739,11 +681,6 @@ void DXVKGraphicsBackend::DestroyShaderModules() {
             m_fragmentShader = VK_NULL_HANDLE;
         }
     }
-}
-
-HRESULT DXVKGraphicsBackend::CreateGraphicsPipeline() {
-    printf("[DXVK] CreateGraphicsPipeline() - NOT YET IMPLEMENTED\n");
-    return E_NOTIMPL;
 }
 
 // ============================================================================
