@@ -39,6 +39,40 @@
 #include <chrono>
 
 // Vulkan constants and extensions
+
+// Instance extensions (needed for creating surfaces and other functionality)
+#ifdef __APPLE__
+    #define INSTANCE_EXTENSION_COUNT 3
+    const char* const INSTANCE_EXTENSIONS[INSTANCE_EXTENSION_COUNT] = {
+        VK_KHR_SURFACE_EXTENSION_NAME,
+        VK_EXT_METAL_SURFACE_EXTENSION_NAME,
+        VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
+    };
+#elif defined(_WIN32)
+    #define INSTANCE_EXTENSION_COUNT 2
+    const char* const INSTANCE_EXTENSIONS[INSTANCE_EXTENSION_COUNT] = {
+        VK_KHR_SURFACE_EXTENSION_NAME,
+        VK_KHR_WIN32_SURFACE_EXTENSION_NAME
+    };
+#else  // Linux
+    #define INSTANCE_EXTENSION_COUNT 2
+    const char* const INSTANCE_EXTENSIONS[INSTANCE_EXTENSION_COUNT] = {
+        VK_KHR_SURFACE_EXTENSION_NAME,
+        VK_KHR_XLIB_SURFACE_EXTENSION_NAME
+    };
+#endif
+
+// Validation layers
+#ifdef _DEBUG
+    #define VALIDATION_LAYER_COUNT 1
+    const char* const VALIDATION_LAYERS[VALIDATION_LAYER_COUNT] = {
+        "VK_LAYER_KHRONOS_validation"
+    };
+#else
+    #define VALIDATION_LAYER_COUNT 0
+#endif
+
+// Device extensions (needed for swapchain and other device-level features)
 #define DEVICE_EXTENSION_COUNT 1
 const char* const DEVICE_EXTENSIONS[DEVICE_EXTENSION_COUNT] = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME

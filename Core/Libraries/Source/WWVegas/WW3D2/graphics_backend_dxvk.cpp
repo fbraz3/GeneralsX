@@ -55,14 +55,10 @@
 // - macOS: /usr/local/etc/vulkan/explicit_layer.d/
 // - Linux: /usr/share/vulkan/explicit_layer.d/
 // - Windows: Registry or $VK_LAYER_PATH environment variable
+//
+// NOTE: VALIDATION_LAYERS and VALIDATION_LAYER_COUNT are defined in
+// graphics_backend_dxvk.h to avoid redefinition errors
 // ============================================================================
-
-#if VALIDATION_LAYERS_ENABLED
-    static const char* VALIDATION_LAYERS[] = {
-        "VK_LAYER_KHRONOS_validation"
-    };
-    static const size_t VALIDATION_LAYER_COUNT = 1;
-#endif
 
 // ============================================================================
 // Vulkan Extension Requirements
@@ -89,26 +85,9 @@
 // CMake Config: cmake/vulkan.cmake (sets Vulkan::Loader as target)
 // ============================================================================
 
-// Note: DEVICE_EXTENSIONS and DEVICE_EXTENSION_COUNT are defined in graphics_backend_dxvk.h
-// to avoid redefinition errors
-
-// Metal surface extension for macOS (may not be in older Vulkan SDK headers)
-#ifndef VK_KHR_METAL_SURFACE_EXTENSION_NAME
-#define VK_KHR_METAL_SURFACE_EXTENSION_NAME "VK_EXT_metal_surface"
-#endif
-
-static const char* INSTANCE_EXTENSIONS[] = {
-    VK_KHR_SURFACE_EXTENSION_NAME
-#ifdef __APPLE__
-    , VK_KHR_METAL_SURFACE_EXTENSION_NAME
-#endif
-};
-// Calculate extension count at compile time based on #ifdef
-#ifdef __APPLE__
-static const size_t INSTANCE_EXTENSION_COUNT = 2;
-#else
-static const size_t INSTANCE_EXTENSION_COUNT = 1;
-#endif
+// NOTE: INSTANCE_EXTENSIONS, DEVICE_EXTENSIONS, VALIDATION_LAYERS constants
+// are defined in graphics_backend_dxvk.h to avoid redefinition errors
+// (Each .cpp file that includes this header would redefine them otherwise)
 
 // ============================================================================
 // Debug Callback (Validation Layers)
@@ -474,11 +453,21 @@ HRESULT DXVKGraphicsBackend::Reset() {
 // ============================================================================
 
 HRESULT DXVKGraphicsBackend::CreateInstance() {
-    if (m_debugOutput) {
-        printf("[DXVK] Creating Vulkan instance...\n");
+    // Always print startup message for debugging
+    printf("[DXVK] CreateInstance() called - Creating Vulkan instance...\n");
+    
+    // Step 1: Check available extensions
+    uint32_t extCount = 0;
+    vkEnumerateInstanceExtensionProperties(nullptr, &extCount, nullptr);
+    std::vector<VkExtensionProperties> availableExtensions(extCount);
+    vkEnumerateInstanceExtensionProperties(nullptr, &extCount, availableExtensions.data());
+    
+    printf("[DXVK] Available instance extensions (%u):\n", extCount);
+    for (const auto& ext : availableExtensions) {
+        printf("[DXVK]   - %s\n", ext.extensionName);
     }
     
-    // Check validation layer support
+    // Step 2: Check validation layer support
     #if VALIDATION_LAYERS_ENABLED
         uint32_t layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -493,12 +482,12 @@ HRESULT DXVKGraphicsBackend::CreateInstance() {
             }
         }
         
-        if (!validationLayerFound && m_debugOutput) {
+        if (!validationLayerFound) {
             printf("[DXVK] WARNING: Validation layers requested but not available\n");
         }
     #endif
     
-    // Application info
+    // Step 3: Prepare application info
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.pApplicationName = "GeneralsX";
@@ -507,7 +496,13 @@ HRESULT DXVKGraphicsBackend::CreateInstance() {
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = VK_API_VERSION_1_2;
     
-    // Instance create info
+    // Step 4: Debug print requested extensions
+    printf("[DXVK] Requesting %u instance extensions:\n", INSTANCE_EXTENSION_COUNT);
+    for (uint32_t i = 0; i < INSTANCE_EXTENSION_COUNT; i++) {
+        printf("[DXVK]   - %s\n", INSTANCE_EXTENSIONS[i]);
+    }
+    
+    // Step 5: Prepare instance create info
     VkInstanceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInfo.pApplicationInfo = &appInfo;
@@ -523,20 +518,35 @@ HRESULT DXVKGraphicsBackend::CreateInstance() {
     
     #ifdef __APPLE__
         createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+        printf("[DXVK] Enabling VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR for macOS\n");
     #endif
     
-    // Create instance
+    // Step 6: Create instance
+    printf("[DXVK] Calling vkCreateInstance...\n");
     VkResult result = vkCreateInstance(&createInfo, nullptr, &m_instance);
+    printf("[DXVK] vkCreateInstance returned: %d\n", result);
+    
     if (result != VK_SUCCESS) {
-        if (m_debugOutput) {
-            printf("[DXVK] ERROR: vkCreateInstance failed: %d\n", result);
+        printf("[DXVK] ERROR: vkCreateInstance failed with result: %d (0x%08X)\n", result, result);
+        
+        // Map error codes to readable strings
+        const char* errorStr = "UNKNOWN";
+        switch (result) {
+            case VK_ERROR_OUT_OF_HOST_MEMORY: errorStr = "VK_ERROR_OUT_OF_HOST_MEMORY"; break;
+            case VK_ERROR_OUT_OF_DEVICE_MEMORY: errorStr = "VK_ERROR_OUT_OF_DEVICE_MEMORY"; break;
+            case VK_ERROR_INITIALIZATION_FAILED: errorStr = "VK_ERROR_INITIALIZATION_FAILED"; break;
+            case VK_ERROR_LAYER_NOT_PRESENT: errorStr = "VK_ERROR_LAYER_NOT_PRESENT"; break;
+            case VK_ERROR_EXTENSION_NOT_PRESENT: errorStr = "VK_ERROR_EXTENSION_NOT_PRESENT"; break;
+            case VK_ERROR_INCOMPATIBLE_DRIVER: errorStr = "VK_ERROR_INCOMPATIBLE_DRIVER"; break;
+            default: break;
         }
+        printf("[DXVK]   Error type: %s\n", errorStr);
+        printf("[DXVK]   m_instance = %p\n", (void*)m_instance);
+        
         return E_FAIL;
     }
     
-    if (m_debugOutput) {
-        printf("[DXVK] Vulkan instance created successfully\n");
-    }
+    printf("[DXVK] Vulkan instance created successfully (handle: %p)\n", (void*)m_instance);
     
     #if ENABLE_DEBUG_CALLBACK
         // Setup debug callback
