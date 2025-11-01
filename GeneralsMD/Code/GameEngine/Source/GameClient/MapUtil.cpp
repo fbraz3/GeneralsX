@@ -81,26 +81,12 @@ static Coord3DList	m_techPositions;
 static Int m_mapDX = 0;
 static Int m_mapDY = 0;
 
-static UnsignedInt calcCRC( AsciiString dirName, AsciiString fname )
+static UnsignedInt calcCRC( AsciiString fname )
 {
 	CRC theCRC;
 	theCRC.clear();
 
-	// Try the official map dir
-	AsciiString asciiFile;
-	char	tempBuf[_MAX_PATH];
-	char	filenameBuf[_MAX_PATH];
-	int length = 0;
-	strcpy(tempBuf, fname.str());
-	length = strlen( tempBuf );
-	if( length >= 4 )
-	{
-		strlcpy( filenameBuf, tempBuf, length - 4 + 1);
-	}
-
-	File *fp;
-	asciiFile = fname;
-	fp = TheFileSystem->openFile(asciiFile.str(), File::READ);
+	File *fp = TheFileSystem->openFile(fname.str(), File::READ);
 	if( !fp )
 	{
 		DEBUG_CRASH(("Couldn't open '%s'", fname.str()));
@@ -231,23 +217,9 @@ static Bool ParseSizeOnlyInChunk(DataChunkInput &file, DataChunkInfo *info, void
 
 static Bool loadMap( AsciiString filename )
 {
-	char	tempBuf[_MAX_PATH];
-	char	filenameBuf[_MAX_PATH];
-	AsciiString asciiFile;
-	int length = 0;
-
-	strcpy(tempBuf, filename.str());
-
-	length = strlen( tempBuf );
-	if( length >= 4 )
-	{
-		strlcpy( filenameBuf, tempBuf, length - 4 + 1);
-	}
-
 	CachedFileInputStream fileStrm;
 
-	asciiFile = filename;
-	if( !fileStrm.open(asciiFile) )
+	if( !fileStrm.open(filename) )
 	{
 		return FALSE;
 	}
@@ -598,17 +570,6 @@ Bool MapCache::loadUserMaps()
 				else
 				{
 					if (TheFileSystem->getFileInfo(tempfilename, &fileInfo)) {
-						char funk[_MAX_PATH];
-						strcpy(funk, tempfilename.str());
-						char *filenameptr = funk;
-						char *tempchar = funk;
-						while (*tempchar != 0) {
-							if ((*tempchar == '\\') || (*tempchar == '/')) {
-								filenameptr = tempchar+1;
-							}
-							++tempchar;
-						}
-
 						m_seen[tempfilename] = TRUE;
 						parsedAMap |= addMap(mapDir, *iter, &fileInfo, TheGlobalData->m_buildMapCache);
 					} else {
@@ -702,7 +663,7 @@ Bool MapCache::addMap( AsciiString dirName, AsciiString fname, FileInfo *fileInf
 	md.m_timestamp.m_lowTimeStamp = fileInfo->timestampLow;
 	md.m_supplyPositions = m_supplyPositions;
 	md.m_techPositions = m_techPositions;
-	md.m_CRC = calcCRC(dirName, fname);
+	md.m_CRC = calcCRC(fname);
 
 	Bool exists = false;
 	AsciiString munkee = worldDict.getAsciiString(TheKey_mapName, &exists);
@@ -1138,12 +1099,8 @@ Image *getMapPreviewImage( AsciiString mapName )
 	AsciiString tgaName = mapName;
 	AsciiString name;
 	AsciiString tempName;
-	AsciiString filename;
 	tgaName.truncateBy(4); // ".map"
-	name = tgaName;//.reverseFind('\\') + 1;
-	filename = tgaName.reverseFind('\\') + 1;
-	//tgaName = name;
-	filename.concat(".tga");
+	name = tgaName;
 	tgaName.concat(".tga");
 
 	AsciiString portableName = TheGameState->realMapPathToPortableMapPath(name);
