@@ -1,6 +1,54 @@
 # GeneralsX macOS Port Development Diary
 
-## Latest: November 1 Evening — **PHASE 47 COMPLETE** ✅✅✅
+## Latest: November 1 Late Evening — **METAL BACKEND RENDERING** ✅
+
+### Session: Metal Render Encoder Crash Fix — Breakthrough Success!
+
+**CRITICAL FIX**: Removed nested `@autoreleasepool` from Metal render encoder creation → **Metal backend now rendering frames continuously**.
+
+**Problem Identified**: 
+- Metal encoder creation was crashing after printing "All validations passed, creating render encoder..."
+- Root cause: Nested `@autoreleasepool` inside try-catch during GPU initialization causing deadlock
+
+**Solution Applied**:
+- Removed problematic nested autorelease pool wrapper in `metalwrapper.mm` (lines ~500-530)
+- Metal framework prefers application-level autorelease pool, not per-encoder pools
+- Kept try-catch for exception handling
+
+**Result**: ✅ **METAL BACKEND OPERATIONAL**
+- Multiple test frames captured rendering successfully
+- Encoder creation: "Render encoder created successfully (0x70cffbca0)"
+- Viewport correctly configured: 800x600
+- Game loop stable: frame timing working, drawing occurring
+- Continuous rendering: tested for 10 seconds with no crashes
+
+**Files Modified**:
+- `Core/GameEngineDevice/Source/MetalWrapper/metalwrapper.mm` (render encoder creation)
+
+**Verification Log**:
+```
+METAL DEBUG: All validations passed, creating render encoder...
+METAL DEBUG: About to call renderCommandEncoderWithDescriptor...
+METAL DEBUG: Render encoder created successfully (0x70cffbca0)
+METAL: BeginFrame() - Pipeline state set on encoder
+METAL: BeginFrame() - Viewport set (800x600)
+METAL: BeginFrame() - Render encoder created (0x70cffbca0)
+```
+
+**Strategic Value**:
+- Metal backend now functional as fallback while Vulkan issues investigated
+- Game renders continuously (not just initializes)
+- Can now test gameplay, input, physics, UI rendering
+- Enables testing of other engine systems independent of Vulkan
+
+**Next Steps**:
+1. Keep Metal working - this is our stable fallback
+2. Return to Vulkan `vkCreateInstance` investigation (still fails with -9)
+3. Consider implementing automatic fallback: Vulkan→Metal on init failure
+
+---
+
+## Previous: November 1 Evening — **PHASE 47 COMPLETE** ✅✅✅
 
 **PHASE 47 STATUS**: ✅ **ALL 8 STAGES COMPLETE** - Testing, Profiling, Optimization & Stabilization
 

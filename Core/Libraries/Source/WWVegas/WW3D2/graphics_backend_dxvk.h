@@ -202,6 +202,12 @@ public:
     virtual ~DXVKGraphicsBackend();
     
     /**
+     * Set the window handle for rendering.
+     * Must be called BEFORE Initialize().
+     */
+    virtual void SetWindowHandle(HWND handle) override;
+    
+    /**
      * Initialize Vulkan device and swapchain.
      * Called at application startup after window creation.
      */

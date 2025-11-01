@@ -35,6 +35,9 @@
 // Phase 38: Graphics Backend Abstraction Layer
 #include "../../Libraries/Source/WWVegas/WW3D2/graphics_backend.h"
 
+// External window handle from WinMain
+extern HWND ApplicationHWnd;
+
 
 /**
  * This is the entry point for the game system.
@@ -53,7 +56,56 @@ Int GameMain()
 	
 	// Phase 38.3: Initialize graphics backend abstraction layer
 	printf("GameMain - Initializing graphics backend...\n");
-	HRESULT backend_hr = InitializeGraphicsBackend();
+	fflush(stdout);
+	
+	// Step 1: Check window handle
+	printf("GameMain - DEBUG: ApplicationHWnd=%p\n", (void*)ApplicationHWnd);
+	fflush(stdout);
+	
+	if (ApplicationHWnd == nullptr) {
+		printf("GameMain - ERROR: ApplicationHWnd is NULL! Window was not created properly.\n");
+		fflush(stdout);
+		return 1;
+	}
+	
+	// Step 2: Create backend instance
+	printf("GameMain - Calling CreateGraphicsBackend()...\n");
+	fflush(stdout);
+	HRESULT backend_create_hr = CreateGraphicsBackend();
+	if (backend_create_hr != 0) {
+		printf("GameMain - FATAL: Failed to create graphics backend (0x%08lx)\n", (unsigned long)backend_create_hr);
+		fflush(stdout);
+		delete TheFramePacer;
+		TheFramePacer = NULL;
+		delete TheGameEngine;
+		TheGameEngine = NULL;
+		return 1;
+	}
+	printf("GameMain - Graphics backend instance created: %p\n", (void*)g_graphicsBackend);
+	fflush(stdout);
+	
+	// Step 3: Set window handle
+	printf("GameMain - Setting window handle: %p\n", ApplicationHWnd);
+	fflush(stdout);
+	g_graphicsBackend->SetWindowHandle(ApplicationHWnd);
+	printf("GameMain - Window handle set successfully\n");
+	fflush(stdout);
+	
+	// Step 4: Initialize backend
+	printf("GameMain - Calling InitializeGraphicsBackendNow()...\n");
+	fflush(stdout);
+	HRESULT backend_init_hr = InitializeGraphicsBackendNow();
+	if (backend_init_hr != 0) {
+		printf("GameMain - FATAL: Failed to initialize graphics backend (0x%08lx)\n", (unsigned long)backend_init_hr);
+		fflush(stdout);
+		delete TheFramePacer;
+		TheFramePacer = NULL;
+		delete TheGameEngine;
+		TheGameEngine = NULL;
+		return 1; // Error exit code
+	}
+	
+	HRESULT backend_hr = g_graphicsBackend->Initialize();
 	if (backend_hr != 0) { // S_OK = 0
 		printf("GameMain - FATAL: Failed to initialize graphics backend (0x%08lx)\n", backend_hr);
 		delete TheFramePacer;

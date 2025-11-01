@@ -27,6 +27,17 @@
 #include <algorithm>
 
 // ============================================================================
+// DEBUG: Global initialization check
+// ============================================================================
+static int g_dxvk_cpp_loaded = 0;
+static void __attribute__((constructor)) _dxvk_init_check(void) {
+    if (!g_dxvk_cpp_loaded) {
+        printf("[DXVK] graphics_backend_dxvk.cpp LOADED (constructor callback)\n");
+        g_dxvk_cpp_loaded = 1;
+    }
+}
+
+// ============================================================================
 // Debug Configuration
 // ============================================================================
 
@@ -181,29 +192,88 @@ DXVKGraphicsBackend::~DXVKGraphicsBackend() {
 }
 
 // ============================================================================
+// Window Handle Management
+// ============================================================================
+
+void DXVKGraphicsBackend::SetWindowHandle(HWND handle) {
+    printf("[DXVK] SetWindowHandle() called with handle=%p\n", handle);
+    fflush(stdout);
+    if (handle == nullptr) {
+        printf("[DXVK] WARNING: SetWindowHandle received NULL handle!\n");
+        fflush(stdout);
+    }
+    m_windowHandle = handle;
+    printf("[DXVK] SetWindowHandle() completed - m_windowHandle now=%p\n", (void*)m_windowHandle);
+    fflush(stdout);
+}
+
+// ============================================================================
 // Public Lifecycle Methods
 // ============================================================================
 
 HRESULT DXVKGraphicsBackend::Initialize() {
+    printf("[DXVK] >>> INITIALIZE() CALLED <<<\n");
+    fflush(stdout);
+    fprintf(stderr, "[DXVK] >>> INITIALIZE() CALLED <<<\n");
+    fflush(stderr);
+    
     if (m_initialized) {
+        printf("[DXVK] >>> Initialize() returning early - already initialized\n");
+        fflush(stdout);
         m_lastError = S_OK;
         return S_OK;
     }
+    
+    printf("[DXVK] >>> Initialize() starting full initialization\n");
+    fflush(stdout);
     
     if (m_debugOutput) {
         printf("[DXVK] Initializing Vulkan graphics backend...\n");
     }
     
     // Step 1: Create Vulkan instance
+    fprintf(stderr, "[DXVK] >>> Calling CreateInstance()...\n");
+    fflush(stderr);
+    
     HRESULT hr = CreateInstance();
+    
+    fprintf(stderr, "[DXVK] >>> CreateInstance() returned: 0x%lX (as signed: %ld)\n", 
+            (unsigned long)hr, (long)hr);
+    fprintf(stderr, "[DXVK] >>> FAILED(hr)=%d, S_OK=0x%lX, E_FAIL=0x%lX\n", 
+            FAILED(hr), (unsigned long)S_OK, (unsigned long)E_FAIL);
+    fprintf(stderr, "[DXVK] >>> Checking: hr < 0 = %d, hr >= 0 = %d\n", 
+            (long)hr < 0, (long)hr >= 0);
+    fflush(stderr);
+    
     if (FAILED(hr)) {
+        fprintf(stderr, "[DXVK] >>> ERROR: CreateInstance failed, returning early\n");
+        fflush(stderr);
+        printf("[DXVK] ERROR: Failed to create Vulkan instance (0x%08X)\n", hr);
+        m_lastError = hr;
+        return hr;
+    }
+    fflush(stderr);
+    
+    if (FAILED(hr)) {
+        fprintf(stderr, "[DXVK] >>> ERROR: CreateInstance failed, returning early\n");
+        fflush(stderr);
         printf("[DXVK] ERROR: Failed to create Vulkan instance (0x%08X)\n", hr);
         m_lastError = hr;
         return hr;
     }
     
+    fprintf(stderr, "[DXVK] >>> CreateInstance succeeded, continuing\n");
+    fflush(stderr);
+    
     // Step 2: Create physical device and logical device
+    fprintf(stderr, "[DXVK] >>> About to call CreateDevice()\n");
+    fflush(stderr);
+    
     hr = CreateDevice();
+    
+    fprintf(stderr, "[DXVK] >>> CreateDevice() returned: 0x%08X\n", hr);
+    fflush(stderr);
+    
     if (FAILED(hr)) {
         printf("[DXVK] ERROR: Failed to create Vulkan device (0x%08X)\n", hr);
         DestroyInstance();
@@ -211,8 +281,21 @@ HRESULT DXVKGraphicsBackend::Initialize() {
         return hr;
     }
     
+    fprintf(stderr, "[DXVK] >>> Device created successfully, m_device=%p\n", (void*)m_device);
+    fflush(stderr);
+    
     // Step 3: Create window surface
+    printf("[DXVK] CHECKPOINT 1: About to call CreateSurface()\n");
+    fflush(stdout);
+    printf("[DXVK] DEBUG: m_instance=%p, m_device=%p, m_windowHandle=%p\n", 
+           (void*)m_instance, (void*)m_device, m_windowHandle);
+    fflush(stdout);
+    
     hr = CreateSurface();
+    
+    printf("[DXVK] CHECKPOINT 2: CreateSurface() returned - hr=0x%08X, m_surface=%p\n", hr, (void*)m_surface);
+    fflush(stdout);
+    
     if (FAILED(hr)) {
         printf("[DXVK] ERROR: Failed to create window surface (0x%08X)\n", hr);
         DestroyDevice();
@@ -501,7 +584,7 @@ HRESULT DXVKGraphicsBackend::CreateInstance() {
     for (uint32_t i = 0; i < INSTANCE_EXTENSION_COUNT; i++) {
         printf("[DXVK]   - %s\n", INSTANCE_EXTENSIONS[i]);
     }
-    
+
     // Step 5: Prepare instance create info
     VkInstanceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -510,8 +593,10 @@ HRESULT DXVKGraphicsBackend::CreateInstance() {
     createInfo.ppEnabledExtensionNames = INSTANCE_EXTENSIONS;
     
     #if VALIDATION_LAYERS_ENABLED
-        createInfo.enabledLayerCount = VALIDATION_LAYER_COUNT;
-        createInfo.ppEnabledLayerNames = VALIDATION_LAYERS;
+        printf("[DXVK] WARNING: Validation layers requested but disabled for now\n");
+        // Temporarily disable validation layers for debugging
+        createInfo.enabledLayerCount = 0;
+        // createInfo.ppEnabledLayerNames = VALIDATION_LAYERS;
     #else
         createInfo.enabledLayerCount = 0;
     #endif
@@ -521,10 +606,13 @@ HRESULT DXVKGraphicsBackend::CreateInstance() {
         printf("[DXVK] Enabling VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR for macOS\n");
     #endif
     
-    // Step 6: Create instance
+    // Step 6: Create instance with retry logic
     printf("[DXVK] Calling vkCreateInstance...\n");
+    printf("[DXVK]   enabledExtensionCount: %u\n", createInfo.enabledExtensionCount);
+    printf("[DXVK]   enabledLayerCount: %u\n", createInfo.enabledLayerCount);
+    
     VkResult result = vkCreateInstance(&createInfo, nullptr, &m_instance);
-    printf("[DXVK] vkCreateInstance returned: %d\n", result);
+    printf("[DXVK] vkCreateInstance returned: %d (instance handle: %p)\n", result, (void*)m_instance);
     
     if (result != VK_SUCCESS) {
         printf("[DXVK] ERROR: vkCreateInstance failed with result: %d (0x%08X)\n", result, result);
@@ -543,10 +631,76 @@ HRESULT DXVKGraphicsBackend::CreateInstance() {
         printf("[DXVK]   Error type: %s\n", errorStr);
         printf("[DXVK]   m_instance = %p\n", (void*)m_instance);
         
-        return E_FAIL;
+        // RETRY 1: Try without VK_KHR_PORTABILITY_ENUMERATION flag but WITH extension
+        #ifdef __APPLE__
+            printf("[DXVK] RETRY 1: Trying without VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR flag...\n");
+            
+            createInfo.flags &= ~VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+            
+            result = vkCreateInstance(&createInfo, nullptr, &m_instance);
+            printf("[DXVK] vkCreateInstance (retry 1) returned: %d (instance handle: %p)\n", result, (void*)m_instance);
+            
+            if (result != VK_SUCCESS) {
+                printf("[DXVK] ERROR: Retry 1 also failed\n");
+                
+                // RETRY 2: Try without any portability enumeration
+                printf("[DXVK] RETRY 2: Trying without VK_KHR_PORTABILITY_ENUMERATION extension...\n");
+                
+                const char* const fallbackExtensions[] = {
+                    VK_KHR_SURFACE_EXTENSION_NAME,
+                    VK_EXT_METAL_SURFACE_EXTENSION_NAME
+                };
+                
+                createInfo.enabledExtensionCount = 2;
+                createInfo.ppEnabledExtensionNames = fallbackExtensions;
+                
+                result = vkCreateInstance(&createInfo, nullptr, &m_instance);
+                printf("[DXVK] vkCreateInstance (retry 2) returned: %d (instance handle: %p)\n", result, (void*)m_instance);
+                
+                if (result != VK_SUCCESS) {
+                    printf("[DXVK] ERROR: Retry 2 also failed\n");
+                    
+                    // RETRY 3: Try with ONLY VK_KHR_surface
+                    printf("[DXVK] RETRY 3: Trying with ONLY VK_KHR_surface extension...\n");
+                    
+                    const char* const minimalExtensions[] = {
+                        VK_KHR_SURFACE_EXTENSION_NAME
+                    };
+                    
+                    createInfo.enabledExtensionCount = 1;
+                    createInfo.ppEnabledExtensionNames = minimalExtensions;
+                    
+                    result = vkCreateInstance(&createInfo, nullptr, &m_instance);
+                    printf("[DXVK] vkCreateInstance (retry 3) returned: %d (instance handle: %p)\n", result, (void*)m_instance);
+                    
+                    if (result != VK_SUCCESS) {
+                        printf("[DXVK] ERROR: Retry 3 also failed - giving up\n");
+                        fprintf(stderr, "[DXVK] CreateInstance() returning E_FAIL (0x%lX) - all retries exhausted\n", (unsigned long)E_FAIL);
+                        fflush(stderr);
+                        return E_FAIL;
+                    } else {
+                        printf("[DXVK] SUCCESS: Vulkan instance created with minimal extensions (VK_KHR_surface only)\n");
+                    }
+                } else {
+                    printf("[DXVK] SUCCESS: Vulkan instance created with fallback extensions (no portability enumeration)\n");
+                }
+            } else {
+                printf("[DXVK] SUCCESS: Vulkan instance created without portability flag\n");
+            }
+        #else
+            // List which extensions failed
+            printf("[DXVK] Troubleshooting - checking which extensions might be missing:\n");
+            for (uint32_t i = 0; i < INSTANCE_EXTENSION_COUNT; i++) {
+                printf("[DXVK]   - Requested extension: %s\n", INSTANCE_EXTENSIONS[i]);
+            }
+            
+            fprintf(stderr, "[DXVK] CreateInstance() returning E_FAIL (0x%lX) - non-macOS path\n", (unsigned long)E_FAIL);
+            fflush(stderr);
+            return E_FAIL;
+        #endif
+    } else {
+        printf("[DXVK] Vulkan instance created successfully (handle: %p)\n", (void*)m_instance);
     }
-    
-    printf("[DXVK] Vulkan instance created successfully (handle: %p)\n", (void*)m_instance);
     
     #if ENABLE_DEBUG_CALLBACK
         // Setup debug callback

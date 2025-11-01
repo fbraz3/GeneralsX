@@ -53,6 +53,14 @@ public:
     // ========================================================================
     
     /**
+     * Set the window handle for rendering.
+     * Must be called BEFORE Initialize().
+     * 
+     * @param handle HWND window handle from CreateWindow()
+     */
+    virtual void SetWindowHandle(HWND handle) = 0;
+    
+    /**
      * Initialize the graphics device.
      * Called once at startup.
      */
@@ -411,8 +419,24 @@ extern IGraphicsBackend* g_graphicsBackend;
 // ============================================================================
 
 /**
+ * Create the graphics backend instance (without initializing).
+ * Allows SetWindowHandle() to be called BEFORE Initialize().
+ * 
+ * @return HRESULT (S_OK = 0 on success, error code on failure)
+ */
+HRESULT CreateGraphicsBackend();
+
+/**
+ * Initialize the graphics backend (must be called AFTER CreateGraphicsBackend and SetWindowHandle).
+ * 
+ * @return HRESULT (S_OK = 0 on success, error code on failure)
+ */
+HRESULT InitializeGraphicsBackendNow();
+
+/**
  * Initialize the graphics backend at application startup.
  * Called from GameMain() after game engine creation.
+ * LEGACY: New code should use CreateGraphicsBackend + SetWindowHandle + InitializeGraphicsBackendNow.
  * 
  * @return HRESULT (S_OK = 0 on success, error code on failure)
  */
