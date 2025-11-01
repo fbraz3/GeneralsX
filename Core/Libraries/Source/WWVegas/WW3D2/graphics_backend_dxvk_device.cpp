@@ -21,6 +21,10 @@
  */
 
 #include "graphics_backend_dxvk.h"
+#include <SDL2/SDL.h>
+#ifdef __APPLE__
+    #include <SDL2/SDL_metal.h>
+#endif
 
 // ============================================================================
 // Device Creation (FindDevice + CreateLogicalDevice)
@@ -87,11 +91,27 @@ HRESULT DXVKGraphicsBackend::AllocateMemory(
 HRESULT DXVKGraphicsBackend::CreateDevice() {
     if (m_debugOutput) {
         printf("[DXVK] Creating Vulkan device...\n");
+        printf("[DXVK]   Instance handle: %p\n", (void*)m_instance);
+    }
+    
+    // Validate instance is valid
+    if (m_instance == VK_NULL_HANDLE) {
+        if (m_debugOutput) {
+            printf("[DXVK] ERROR: Vulkan instance is VK_NULL_HANDLE!\n");
+        }
+        return E_FAIL;
     }
     
     // Step 1: Enumerate physical devices
     uint32_t deviceCount = 0;
-    vkEnumeratePhysicalDevices(m_instance, &deviceCount, nullptr);
+    if (m_debugOutput) {
+        printf("[DXVK] Calling vkEnumeratePhysicalDevices...\n");
+    }
+    
+    VkResult enumResult = vkEnumeratePhysicalDevices(m_instance, &deviceCount, nullptr);
+    if (m_debugOutput) {
+        printf("[DXVK] vkEnumeratePhysicalDevices returned: %d, deviceCount: %u\n", enumResult, deviceCount);
+    }
     
     if (deviceCount == 0) {
         if (m_debugOutput) {
@@ -245,6 +265,9 @@ HRESULT DXVKGraphicsBackend::CreateDevice() {
         printf("[DXVK] Logical device created successfully\n");
     }
     
+    fprintf(stderr, "[DXVK] >>> CreateDevice() SUCCESS - about to return S_OK\n");
+    fflush(stderr);
+    
     return S_OK;
 }
 
@@ -267,18 +290,21 @@ void DXVKGraphicsBackend::DestroyDevice() {
 // ============================================================================
 
 HRESULT DXVKGraphicsBackend::CreateSurface() {
-    if (m_debugOutput) {
-        printf("[DXVK] Creating window surface...\n");
-    }
+    printf("[DXVK] CreateSurface() called\n");
+    fflush(stdout);
     
     #ifdef __APPLE__
         // macOS: Metal surface
+        printf("[DXVK] Platform: macOS, calling CreateSurfaceMacOS()\n");
+        fflush(stdout);
         return CreateSurfaceMacOS();
     #elif defined(_WIN32)
         // Windows: Win32 surface
+        printf("[DXVK] Platform: Windows, calling CreateSurfaceWindows()\n");
         return CreateSurfaceWindows();
     #elif defined(__linux__)
         // Linux: XCB or Xlib surface
+        printf("[DXVK] Platform: Linux, calling CreateSurfaceLinux()\n");
         return CreateSurfaceLinux();
     #else
         printf("[DXVK] ERROR: Platform not supported\n");
@@ -288,28 +314,65 @@ HRESULT DXVKGraphicsBackend::CreateSurface() {
 
 #ifdef __APPLE__
 HRESULT DXVKGraphicsBackend::CreateSurfaceMacOS() {
-    // On macOS, we need a Metal layer from the window
-    // This would normally come from NSWindow/NSView
-    // For now, we create a minimal Metal surface for testing
+    printf("[DXVK] CreateSurfaceMacOS() called - FORCED DEBUG OUTPUT\n");
     
-    // NOTE: In production, this would receive CAMetalLayer from the game window
-    // The game window creation is handled elsewhere in GeneralsX
-    
-    if (m_debugOutput) {
-        printf("[DXVK] Creating Metal surface (macOS)...\n");
+    // Validate window handle
+    if (m_windowHandle == nullptr) {
+        printf("[DXVK] ERROR: Window handle is NULL\n");
+        return E_FAIL;
     }
     
-    // Create Metal layer (simplified - normally comes from window)
-    // In real implementation, this would be:
-    // CAMetalLayer* metalLayer = [gameWindow.layer addSublayer:[CAMetalLayer layer]];
+    printf("[DXVK] Window handle: %p\n", m_windowHandle);
     
-    // For now, we'll defer surface creation until window is properly set up
-    // The actual surface creation will happen in a separate method
-    // when window handle and Metal layer are available
+    // m_windowHandle is HWND, which is an SDL_Window* on macOS
+    SDL_Window* sdlWindow = (SDL_Window*)m_windowHandle;
     
-    if (m_debugOutput) {
-        printf("[DXVK] Metal surface creation deferred (window setup required)\n");
+    printf("[DXVK] SDL window pointer: %p\n", (void*)sdlWindow);
+    
+    // Create Metal view for the window
+    SDL_MetalView metalView = SDL_Metal_CreateView(sdlWindow);
+    if (metalView == nullptr) {
+        printf("[DXVK] ERROR: Failed to create Metal view\n");
+        return E_FAIL;
     }
+    
+    printf("[DXVK] Metal view created: %p\n", (void*)metalView);
+    
+    // Get the Metal layer from the Metal view
+    CAMetalLayer* metalLayer = (CAMetalLayer*)SDL_Metal_GetLayer(metalView);
+    if (metalLayer == nullptr) {
+        printf("[DXVK] ERROR: Failed to get Metal layer from view\n");
+        SDL_Metal_DestroyView(metalView);
+        return E_FAIL;
+    }
+    
+    printf("[DXVK] Metal layer obtained: %p\n", (void*)metalLayer);
+    
+    // Create Vulkan Metal surface from the Metal layer
+    VkMetalSurfaceCreateInfoEXT surfaceCreateInfo{};
+    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
+    surfaceCreateInfo.pLayer = metalLayer;
+    
+    printf("[DXVK] About to call vkCreateMetalSurfaceEXT...\n");
+    printf("[DXVK]   Instance: %p\n", (void*)m_instance);
+    printf("[DXVK]   Metal layer: %p\n", metalLayer);
+    
+    VkResult result = vkCreateMetalSurfaceEXT(m_instance, &surfaceCreateInfo, nullptr, &m_surface);
+    
+    printf("[DXVK] vkCreateMetalSurfaceEXT returned: %d\n", result);
+    
+    if (result != VK_SUCCESS) {
+        printf("[DXVK] ERROR: vkCreateMetalSurfaceEXT failed: %d\n", result);
+        SDL_Metal_DestroyView(metalView);
+        return E_FAIL;
+    }
+    
+    printf("[DXVK] Metal surface created successfully (handle: %p)\n", (void*)m_surface);
+    
+    // NOTE: We're not destroying metalView here because the Metal layer
+    // is still referenced by the surface. The view should be kept alive
+    // for the lifetime of the surface.
+    // TODO: Store metalView pointer and destroy it in DestroySurface()
     
     return S_OK;
 }

@@ -2063,21 +2063,37 @@ void DX8Wrapper::End_Scene(bool flip_frames)
 
 	DX8WebBrowser::Render(0);
 
+	// Phase 29.1: Metal EndFrame and present - MUST be called every frame to finalize the encoder
+	// Don't wait for flip_frames flag!
+#ifndef _WIN32
+#if defined(__APPLE__)
+	// Phase 29.1: Metal EndFrame and present
+	// Phase 29.5.1: Use g_useMetalBackend instead of getenv()
+	extern bool g_useMetalBackend;
+	if (g_useMetalBackend) {
+		GX::MetalWrapper::EndFrame();
+		printf("DX8Wrapper::End_Scene - Metal EndFrame called\n");
+		fflush(stdout);
+	} else {
+		// Phase 28.10: OpenGL buffer swap for frame presentation
+		extern SDL_Window* g_SDLWindow;
+		if (g_SDLWindow) {
+			SDL_GL_SwapWindow(g_SDLWindow);
+		}
+	}
+#else
+	// Phase 28.10: OpenGL buffer swap for frame presentation (Linux)
+	extern SDL_Window* g_SDLWindow;
+	if (g_SDLWindow) {
+		SDL_GL_SwapWindow(g_SDLWindow);
+	}
+#endif
+#endif
+
 	if (flip_frames) {
 #ifndef _WIN32
 #if defined(__APPLE__)
-		// Phase 29.1: Metal EndFrame and present
-		// Phase 29.5.1: Use g_useMetalBackend instead of getenv()
-		extern bool g_useMetalBackend;
-		if (g_useMetalBackend) {
-			GX::MetalWrapper::EndFrame();
-		} else {
-			// Phase 28.10: OpenGL buffer swap for frame presentation
-			extern SDL_Window* g_SDLWindow;
-			if (g_SDLWindow) {
-				SDL_GL_SwapWindow(g_SDLWindow);
-			}
-		}
+		// Already called EndFrame() above
 #else
 		// Phase 28.10: OpenGL buffer swap for frame presentation (Linux)
 		extern SDL_Window* g_SDLWindow;

@@ -504,19 +504,32 @@ void MetalWrapper::BeginFrame(float r, float g, float b, float a) {
     printf("METAL DEBUG: All validations passed, creating render encoder...\n");
     fflush(stdout);
     
-    // CRITICAL: Wrap render encoder creation in autoreleasepool to prevent Metal deadlock
-    // Metal framework creates internal ObjC objects during encoder setup
-    @autoreleasepool {
-    // Begin render pass - encoder stays active until EndFrame
-    // NOTE: This call may hang if there's a Metal driver issue or invalid state
-    s_renderEncoder = [(id<MTLCommandBuffer>)s_cmdBuffer renderCommandEncoderWithDescriptor:pass];
-    }  // End @autoreleasepool for render encoder creation
+    // CRITICAL: Move autorelease pool OUTSIDE the frame loop to prevent Metal deadlock
+    // DO NOT wrap render encoder creation in autorelease pool during command recording
+    // Metal's command buffers need manual lifetime management
     
-    printf("METAL DEBUG: Render encoder created successfully (%p)\n", s_renderEncoder);
-    fflush(stdout);
+    // Wrap render encoder creation in try-catch to prevent crashes
+    @try {
+        printf("METAL DEBUG: About to call renderCommandEncoderWithDescriptor...\n");
+        fflush(stdout);
+        
+        // Begin render pass - encoder stays active until EndFrame
+        // NOTE: This call may hang if there's a Metal driver issue or invalid state
+        s_renderEncoder = [(id<MTLCommandBuffer>)s_cmdBuffer renderCommandEncoderWithDescriptor:pass];
+        
+        printf("METAL DEBUG: Render encoder created successfully (%p)\n", s_renderEncoder);
+        fflush(stdout);
+    } @catch (NSException* e) {
+        printf("METAL FATAL: Exception while creating render encoder: %s (%s)\n", 
+               [e.name UTF8String], [e.reason UTF8String]);
+        fflush(stdout);
+        s_renderEncoder = nil;
+        return;
+    }
     
     if (!s_renderEncoder) {
         printf("METAL FATAL: Failed to create render encoder (returned nil)!\n");
+        fflush(stdout);
         return;
     }
     

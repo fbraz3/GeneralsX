@@ -46,6 +46,18 @@ LegacyGraphicsBackend::~LegacyGraphicsBackend() {
 }
 
 // ============================================================================
+// Window Handle Management
+// ============================================================================
+
+void LegacyGraphicsBackend::SetWindowHandle(HWND handle) {
+    if (m_debugOutput) {
+        printf("LegacyGraphicsBackend: SetWindowHandle(%p)\n", handle);
+    }
+    // Legacy backend doesn't need window handle - it's handled elsewhere
+    // Just log for debugging purposes
+}
+
+// ============================================================================
 // Device Management
 // ============================================================================
 
