@@ -1,8 +1,42 @@
 # GeneralsX macOS Port Development Diary
 
-## Latest: November 1 Late Evening — **METAL BACKEND RENDERING** ✅
+## Latest: November 2 — **VULKAN INSTANCE CREATION FIXED** ✅✅
 
-### Session: Metal Render Encoder Crash Fix — Breakthrough Success!
+### Session: Vulkan Investigation — Root Cause Found!
+
+**BREAKTHROUGH**: vkCreateInstance failing with VK_ERROR_INCOMPATIBLE_DRIVER (-9) was due to **MISSING FLAG** when requesting `VK_KHR_portability_enumeration` extension on macOS.
+
+**Root Cause Analysis**:
+- MoltenVK requires `VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR` flag when using portability enumeration
+- This is enforced by Vulkan loader and MoltenVK ICD
+- Code already had the flag! Problem was only visible when USE_DXVK=ON was set
+
+**Investigation Process**:
+1. Ran `vulkaninfo` - confirmed 18 extensions available (KHR_surface, EXT_metal_surface, KHR_portability_enumeration)
+2. Created test program with direct extension strings
+3. **Critical Discovery**: Test results showed:
+   - Test 1: VK_KHR_surface only → -9 FAIL (expected - need metal surface)
+   - Test 2: KHR_surface + EXT_metal_surface → -9 FAIL (unexpected!)
+   - Test 3: All 3 + WITH flag → **SUCCESS** ✅
+   - Test 3: All 3 WITHOUT flag → -9 FAIL (confirmed portability requirement)
+
+**Verification**:
+- Recompiled GeneralsXZH with USE_DXVK=ON
+- Tested with real application:
+  ```
+  [DXVK] vkCreateInstance returned: 0 ✅
+  [DXVK] Metal surface created successfully ✅
+  [DXVK] Vulkan device created successfully ✅
+  ```
+
+**Current Status**:
+✅ **Metal Backend**: Fully functional, rendering frames continuously
+✅ **Vulkan Backend**: Instance and device creation working, surface creation working
+⏳ **Next**: Swapchain and graphics pipeline for Vulkan
+
+### Previous: November 1 Late Evening — **METAL BACKEND RENDERING** ✅
+
+#### Session: Metal Render Encoder Crash Fix — Breakthrough Success!
 
 **CRITICAL FIX**: Removed nested `@autoreleasepool` from Metal render encoder creation → **Metal backend now rendering frames continuously**.
 
