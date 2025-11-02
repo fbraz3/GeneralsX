@@ -1,6 +1,60 @@
 # GeneralsX macOS Port Development Diary
 
-## Latest: November 2 — **VULKAN INSTANCE CREATION FIXED** ✅✅
+## Latest: November 2 Evening — **PHASE 48 REORGANIZED & VULKAN DEFAULT SET** ✅✅
+
+### Session: Phase 48 Reorganization and Infrastructure Confirmation
+
+**OBJECTIVES COMPLETED**:
+1. ✅ Confirmed Vulkan is **default backend** (USE_DXVK=ON in cmake/config-build.cmake line 11)
+2. ✅ Tested build with ONLY `cmake --preset macos-arm64` (no flags needed) → Vulkan runs by default
+3. ✅ **Phase 48 completely reorganized** into 3 prerequisite Vulkan graphics tasks
+
+**Phase 48 New Structure**:
+
+Replaced generic "Minimal Playable Version" Phase 48 with **Vulkan Graphics Pipeline Foundation** (Pre-requisite for full Phase 48 integration):
+
+- **PHASE48_OVERVIEW.md**: Master document explaining all 3 tasks and their relationships
+- **PHASE48_1_VULKAN_SWAPCHAIN.md**: VkSwapchainKHR creation, frame acquisition, presentation (1-2 days)
+- **PHASE48_2_GRAPHICS_PIPELINE.md**: Shader compilation to SPIR-V, render pass, graphics pipeline (2 days)
+- **PHASE48_3_FIRST_QUAD.md**: Command buffers, GPU sync, render colored quad to screen (1-2 days)
+
+**Sequence**: Task 1 → Task 2 → Task 3 → Original Phase 48 (main menu integration)
+
+**Code Organization**:
+- File locations clearly documented (graphics_backend_dxvk_*.cpp)
+- Shader files location: resources/shaders/basic.vert, basic.frag
+- CMake shader compilation setup included
+
+**Key Findings**:
+
+1. **Vulkan Already Default**: No code changes needed!
+   - USE_DXVK=ON is default in cmake/config-build.cmake
+   - Message: "✅ DXVK/Vulkan graphics backend enabled (Phase 40+) - PRIMARY PATH"
+
+2. **Binary Confirms Vulkan Works**:
+   ```
+   Build: cmake --preset macos-arm64 && cmake --build build/macos-arm64 --target GeneralsXZH
+   Result: Graphics Backend: Creating DXVK/Vulkan backend (USE_DXVK enabled) ✅
+   ```
+
+3. **Workflow Simplified**:
+   - Before: Required `-DUSE_DXVK=ON` flag manually
+   - After: Just `cmake --preset macos-arm64` → Vulkan runs automatically
+
+**Documentation Additions**:
+- Each task has acceptance criteria and testing approach
+- Code samples for all major Vulkan calls
+- Error handling patterns included
+- References to existing code patterns (Phase 40-47)
+
+**Status**: Ready for implementation phase
+- Task 1 (Swapchain): Not started, ready to implement
+- Task 2 (Pipeline): Depends on Task 1
+- Task 3 (First Quad): Depends on Task 2
+
+---
+
+## Previous: November 2 — **VULKAN INSTANCE CREATION FIXED** ✅✅
 
 ### Session: Vulkan Investigation — Root Cause Found!
 
