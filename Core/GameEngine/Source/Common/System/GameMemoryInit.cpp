@@ -113,15 +113,9 @@ void userMemoryManagerInitPools()
 	// we expect. so do it the hard way.
 	char buf[_MAX_PATH];
 	::GetModuleFileName(NULL, buf, sizeof(buf));
-	char* pEnd = buf + strlen(buf);
-	while (pEnd != buf)
+	if (char* pEnd = strrchr(buf, '\\'))
 	{
-		if (*pEnd == '\\')
-		{
-			*pEnd = 0;
-			break;
-		}
-		--pEnd;
+		*pEnd = 0;
 	}
 	strlcat(buf, "\\Data\\INI\\MemoryPools.ini", ARRAY_SIZE(buf));
 

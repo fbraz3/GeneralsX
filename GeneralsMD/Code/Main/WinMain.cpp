@@ -801,15 +801,9 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		/// @todo remove this force set of working directory later
 		Char buffer[ _MAX_PATH ];
 		GetModuleFileName( NULL, buffer, sizeof( buffer ) );
-		Char *pEnd = buffer + strlen( buffer );
-		while( pEnd != buffer )
+		if (Char *pEnd = strrchr(buffer, '\\'))
 		{
-			if( *pEnd == '\\' )
-			{
-				*pEnd = 0;
-				break;
-			}
-			pEnd--;
+			*pEnd = 0;
 		}
 		::SetCurrentDirectory(buffer);
 

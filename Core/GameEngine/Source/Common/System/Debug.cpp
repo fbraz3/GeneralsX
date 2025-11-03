@@ -376,15 +376,9 @@ void DebugInit(int flags)
 
 		char dirbuf[ _MAX_PATH ];
 		::GetModuleFileName( NULL, dirbuf, sizeof( dirbuf ) );
-		char *pEnd = dirbuf + strlen( dirbuf );
-		while( pEnd != dirbuf )
+		if (char *pEnd = strrchr(dirbuf, '\\'))
 		{
-			if( *pEnd == '\\' )
-			{
-				*(pEnd + 1) = 0;
-				break;
-			}
-			pEnd--;
+			*(pEnd + 1) = 0;
 		}
 
 		strcpy(theLogFileNamePrev, dirbuf);
