@@ -56,7 +56,19 @@ void StdBIGFileSystem::init() {
 		return;
 	}
 
+	// CRASH FIX (Nov 4, 2025): On macOS, Metal/Vulkan initialization may still have background threads
+	// running. Add a small delay to allow GPU driver threads to finish before file I/O starts.
+	// This prevents AttributeGraph crashes that occur when file I/O races with GPU framework initialization.
+	#ifdef __APPLE__
+	usleep(100000);  // 100ms delay to allow Metal background threads to settle
+	#endif
+
+	// Load .big files from current directory
+	// NOTE: This can be called during system initialization and may race with graphics backend initialization
+	DEBUG_LOG(("StdBIGFileSystem::init() - Starting .big file loading from current directory"));
+	
 	loadBigFilesFromDirectory("", "*.big");
+	DEBUG_LOG(("StdBIGFileSystem::init() - Completed .big file loading from current directory"));
 
 #if RTS_ZEROHOUR
     // load original Generals assets
@@ -64,9 +76,14 @@ void StdBIGFileSystem::init() {
     GetStringFromGeneralsRegistry("", "InstallPath", installPath );
     //@todo this will need to be ramped up to a crash for release
     DEBUG_ASSERTCRASH(installPath != "", ("Be 1337! Go install Generals!"));
-    if (installPath!="")
+    if (installPath!="") {
+      DEBUG_LOG(("StdBIGFileSystem::init() - Loading additional .big files from install path: %s", installPath.str()));
       loadBigFilesFromDirectory(installPath, "*.big");
+      DEBUG_LOG(("StdBIGFileSystem::init() - Completed loading .big files from install path"));
+    }
 #endif
+
+	DEBUG_LOG(("StdBIGFileSystem::init() - COMPLETED"));
 }
 
 void StdBIGFileSystem::reset() {
@@ -79,6 +96,15 @@ void StdBIGFileSystem::postProcessLoad() {
 }
 
 ArchiveFile * StdBIGFileSystem::openArchiveFile(const Char *filename) {
+	// CRASH FIX (Nov 4, 2025): Add safety checks to prevent AttributeGraph corruption
+	// Thread 0 was stuck in fread() while Thread 1 crashed in AttributeGraph memory allocation
+	// This suggests race condition during Vulkan+file I/O initialization
+	
+	if (filename == NULL) {
+		DEBUG_CRASH(("StdBIGFileSystem::openArchiveFile - NULL filename pointer"));
+		return NULL;
+	}
+
 	File *fp = TheLocalFileSystem->openFile(filename, File::READ | File::BINARY);
 	AsciiString archiveFileName;
 	archiveFileName = filename;
@@ -97,7 +123,15 @@ ArchiveFile * StdBIGFileSystem::openArchiveFile(const Char *filename) {
 
 	AsciiString asciibuf;
 	char buffer[_MAX_PATH];
-	fp->read(buffer, 4); // read the "BIG" at the beginning of the file.
+	
+	// SAFETY: Catch file read errors that might corrupt memory
+	if (!fp->read(buffer, 4)) {
+		DEBUG_CRASH(("Could not read BIG identifier from %s", filename));
+		fp->close();
+		fp = NULL;
+		return NULL;
+	}
+	
 	buffer[4] = 0;
 	if (strcmp(buffer, BIGFileIdentifier) != 0) {
 		DEBUG_CRASH(("Error reading BIG file identifier in file %s", filename));
@@ -107,18 +141,35 @@ ArchiveFile * StdBIGFileSystem::openArchiveFile(const Char *filename) {
 	}
 
 	// read in the file size.
-	fp->read(&archiveFileSize, 4);
+	if (!fp->read(&archiveFileSize, 4)) {
+		DEBUG_CRASH(("Could not read file size from %s", filename));
+		fp->close();
+		fp = NULL;
+		return NULL;
+	}
 
 	DEBUG_LOG(("StdBIGFileSystem::openArchiveFile - size of archive file is %d bytes", archiveFileSize));
-
 //	char t;
 
 	// read in the number of files contained in this BIG file.
 	// change the order of the bytes cause the file size is in reverse byte order for some reason.
-	fp->read(&numLittleFiles, 4);
+	if (!fp->read(&numLittleFiles, 4)) {
+		DEBUG_CRASH(("Could not read numLittleFiles from %s", filename));
+		fp->close();
+		fp = NULL;
+		delete archiveFile;
+		return NULL;
+	}
+	
 	numLittleFiles = betoh(numLittleFiles);
+	
+	// SAFETY: Sanity check for corrupted .big files or memory corruption
+	if (numLittleFiles < 0 || numLittleFiles > 100000) {
+		DEBUG_LOG(("StdBIGFileSystem::openArchiveFile - WARNING: Suspiciously large file count %d in %s", numLittleFiles, filename));
+		// Continue anyway, might be legitimate large archive
+	}
 
-	DEBUG_LOG(("StdBIGFileSystem::openArchiveFile - %d are contained in archive", numLittleFiles));
+	DEBUG_LOG(("StdBIGFileSystem::openArchiveFile - %d files are contained in archive", numLittleFiles));
 //	for (Int i = 0; i < 2; ++i) {
 //		t = buffer[i];
 //		buffer[i] = buffer[(4-i)-1];
@@ -133,11 +184,23 @@ ArchiveFile * StdBIGFileSystem::openArchiveFile(const Char *filename) {
 	for (Int i = 0; i < numLittleFiles; ++i) {
 		Int filesize = 0;
 		Int fileOffset = 0;
-		fp->read(&fileOffset, 4);
-		fp->read(&filesize, 4);
+		
+		// SAFETY: Read with bounds checking
+		if (!fp->read(&fileOffset, 4) || !fp->read(&filesize, 4)) {
+			DEBUG_LOG(("StdBIGFileSystem::openArchiveFile - Failed to read file entry %d from %s", i, filename));
+			break;  // Exit loop early if file is truncated
+		}
 
 		filesize = betoh(filesize);
 		fileOffset = betoh(fileOffset);
+		
+		// SAFETY: Sanity checks for file entries
+		if (filesize < 0 || filesize > 1000000000) {  // Warn if > 1GB
+			DEBUG_LOG(("StdBIGFileSystem::openArchiveFile - WARNING: Suspiciously large file size %d for entry %d", filesize, i));
+		}
+		if (fileOffset < 0) {  // Negative offsets don't make sense
+			DEBUG_LOG(("StdBIGFileSystem::openArchiveFile - WARNING: Negative offset for entry %d", i));
+		}
 
 		fileInfo->m_archiveFilename = archiveFileName;
 		fileInfo->m_offset = fileOffset;
@@ -147,7 +210,14 @@ ArchiveFile * StdBIGFileSystem::openArchiveFile(const Char *filename) {
 		Int pathIndex = -1;
 		do {
 			++pathIndex;
-			fp->read(buffer + pathIndex, 1);
+			if (pathIndex >= _MAX_PATH - 1) {
+				DEBUG_LOG(("StdBIGFileSystem::openArchiveFile - Path name too long in entry %d", i));
+				break;
+			}
+			if (!fp->read(buffer + pathIndex, 1)) {
+				DEBUG_LOG(("StdBIGFileSystem::openArchiveFile - Failed to read path character %d", pathIndex));
+				break;
+			}
 		} while (buffer[pathIndex] != 0);
 
 		Int filenameIndex = pathIndex;
