@@ -287,7 +287,7 @@ protected:
 #pragma pack(push, 1)
 struct LANMessage
 {
-	enum											///< What kind of message are we?
+	enum Type				          ///< What kind of message are we?
 	{
 		// Locating everybody
 		MSG_REQUEST_LOCATIONS,	///< Hey, where is everybody?
@@ -313,7 +313,7 @@ struct LANMessage
 		MSG_INACTIVE,						///< I've alt-tabbed out.  Unaccept me cause I'm a poo-flinging monkey.
 
 		MSG_REQUEST_GAME_INFO,	///< For direct connect, get the game info from a specific IP Address
-	} LANMessageType;
+	} messageType;
 
 	WideChar name[g_lanPlayerNameLength+1]; ///< My name, for convenience
 	char userName[g_lanLoginNameLength+1];	///< login name, for convenience
