@@ -14,6 +14,11 @@
 
 namespace GX {
 
+// CRITICAL: Metal dispatch queue for synchronizing all Metal operations
+// This prevents race conditions between main thread and AGX background compiler threads
+// All Metal API calls are serialized through this queue to ensure data structure consistency
+static dispatch_queue_t s_metalQueue = nullptr;
+
 // Static members
 id MetalWrapper::s_device = nil;
 id MetalWrapper::s_commandQueue = nil;
@@ -322,6 +327,14 @@ bool MetalWrapper::CreateSimplePipeline() {
 }
 
 bool MetalWrapper::Initialize(const MetalConfig& cfg) {
+    // CRITICAL: Create Metal dispatch queue for serializing all Metal operations
+    // This ensures AGX background compiler threads don't race with render encoder creation
+    // All Metal API calls will go through dispatch_sync(s_metalQueue, ^{...})
+    if (!s_metalQueue) {
+        s_metalQueue = dispatch_queue_create("com.generals.metal.serial", DISPATCH_QUEUE_SERIAL);
+        printf("METAL: Dispatch queue created for serialized Metal operations\n");
+    }
+    
     s_device = MTLCreateSystemDefaultDevice();
     if (!s_device) {
         std::printf("METAL: No compatible GPU device found\n");
@@ -504,27 +517,41 @@ void MetalWrapper::BeginFrame(float r, float g, float b, float a) {
     printf("METAL DEBUG: All validations passed, creating render encoder...\n");
     fflush(stdout);
     
-    // CRITICAL: Move autorelease pool OUTSIDE the frame loop to prevent Metal deadlock
-    // DO NOT wrap render encoder creation in autorelease pool during command recording
-    // Metal's command buffers need manual lifetime management
-    
-    // Wrap render encoder creation in try-catch to prevent crashes
-    @try {
-        printf("METAL DEBUG: About to call renderCommandEncoderWithDescriptor...\n");
-        fflush(stdout);
-        
-        // Begin render pass - encoder stays active until EndFrame
-        // NOTE: This call may hang if there's a Metal driver issue or invalid state
-        s_renderEncoder = [(id<MTLCommandBuffer>)s_cmdBuffer renderCommandEncoderWithDescriptor:pass];
-        
-        printf("METAL DEBUG: Render encoder created successfully (%p)\n", s_renderEncoder);
-        fflush(stdout);
-    } @catch (NSException* e) {
-        printf("METAL FATAL: Exception while creating render encoder: %s (%s)\n", 
-               [e.name UTF8String], [e.reason UTF8String]);
-        fflush(stdout);
-        s_renderEncoder = nil;
-        return;
+    // CRITICAL: Serialize render encoder creation via Metal dispatch queue
+    // This prevents AGX background compiler threads from racing with render encoder setup
+    // dispatch_sync ensures this operation completes before next frame operations begin
+    if (s_metalQueue) {
+        dispatch_sync(s_metalQueue, ^{
+            @try {
+                printf("METAL DEBUG: About to call renderCommandEncoderWithDescriptor (via dispatch_sync)...\n");
+                fflush(stdout);
+                
+                // Begin render pass - encoder stays active until EndFrame
+                s_renderEncoder = [(id<MTLCommandBuffer>)s_cmdBuffer renderCommandEncoderWithDescriptor:pass];
+                
+                printf("METAL DEBUG: Render encoder created successfully (%p)\n", s_renderEncoder);
+                fflush(stdout);
+            } @catch (NSException* e) {
+                printf("METAL FATAL: Exception while creating render encoder: %s (%s)\n", 
+                       [e.name UTF8String], [e.reason UTF8String]);
+                fflush(stdout);
+                s_renderEncoder = nil;
+            }
+        });
+    } else {
+        // Fallback if queue not initialized (shouldn't happen)
+        @try {
+            printf("METAL DEBUG: About to call renderCommandEncoderWithDescriptor (no queue, fallback)...\n");
+            fflush(stdout);
+            s_renderEncoder = [(id<MTLCommandBuffer>)s_cmdBuffer renderCommandEncoderWithDescriptor:pass];
+            printf("METAL DEBUG: Render encoder created successfully (%p)\n", s_renderEncoder);
+            fflush(stdout);
+        } @catch (NSException* e) {
+            printf("METAL FATAL: Exception in fallback: %s (%s)\n", 
+                   [e.name UTF8String], [e.reason UTF8String]);
+            fflush(stdout);
+            s_renderEncoder = nil;
+        }
     }
     
     if (!s_renderEncoder) {

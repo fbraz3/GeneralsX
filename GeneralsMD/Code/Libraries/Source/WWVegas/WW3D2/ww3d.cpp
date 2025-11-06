@@ -295,11 +295,16 @@ WW3DErrorType WW3D::Init(void *hwnd, char *defaultpal, bool lite)
 	*/
 	if (!lite) {
 		WWDEBUG_SAY(("Init Dazzles"));
-		FileClass * dazzle_ini_file = _TheFileFactory->Get_File(DAZZLE_INI_FILENAME);
-		if (dazzle_ini_file) {
-			INIClass dazzle_ini(*dazzle_ini_file);
-			DazzleRenderObjClass::Init_From_INI(&dazzle_ini);
-			_TheFileFactory->Return_File(dazzle_ini_file);
+		// Safety check: FileFactory may not be initialized yet if there's initialization ordering issue
+		if (_TheFileFactory != nullptr) {
+			FileClass * dazzle_ini_file = _TheFileFactory->Get_File(DAZZLE_INI_FILENAME);
+			if (dazzle_ini_file) {
+				INIClass dazzle_ini(*dazzle_ini_file);
+				DazzleRenderObjClass::Init_From_INI(&dazzle_ini);
+				_TheFileFactory->Return_File(dazzle_ini_file);
+			}
+		} else {
+			printf("WW3D::Init WARNING - _TheFileFactory is NULL, skipping dazzle INI loading\n");
 		}
 	}
 	/*

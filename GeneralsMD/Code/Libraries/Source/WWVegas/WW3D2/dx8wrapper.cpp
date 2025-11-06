@@ -572,14 +572,30 @@ void DX8Wrapper::Do_Onetime_Device_Dependent_Inits(void)
 	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - About to init MissingTexture\n");
 	MissingTexture::_Init();
 	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - MissingTexture init complete\n");
+	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - About to init TextureFilterClass\n");
 	TextureFilterClass::_Init_Filters((TextureFilterClass::TextureFilterMode)WW3D::Get_Texture_Filter());
+	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - TextureFilterClass init complete\n");
+	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - About to init TheDX8MeshRenderer\n");
 	TheDX8MeshRenderer.Init();
+	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - TheDX8MeshRenderer init complete\n");
+	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - About to call SHD_INIT\n");
 	SHD_INIT;
+	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - SHD_INIT complete\n");
+	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - About to init BoxRenderObjClass\n");
 	BoxRenderObjClass::Init();
+	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - BoxRenderObjClass init complete\n");
+	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - About to init VertexMaterialClass\n");
 	VertexMaterialClass::Init();
+	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - VertexMaterialClass init complete\n");
+	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - About to init PointGroupClass\n");
 	PointGroupClass::_Init(); // This needs the VertexMaterialClass to be initted
+	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - PointGroupClass init complete\n");
+	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - About to init ShatterSystem\n");
 	ShatterSystem::Init();
+	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - ShatterSystem init complete\n");
+	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - About to init TextureLoader\n");
 	TextureLoader::Init();
+	printf("DX8Wrapper::Do_Onetime_Device_Dependent_Inits - TextureLoader init complete\n");
 
 	Set_Default_Global_Render_States();
 
