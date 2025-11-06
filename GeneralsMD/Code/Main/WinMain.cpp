@@ -897,19 +897,20 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			printf("===== WinMain: Backend = METAL (via -forceDirectX parameter) =====\n");
 		}
 		else {
-#ifdef __APPLE__
-			// macOS: Metal is the default backend (can be disabled with USE_OPENGL=1)
-			const char* use_opengl = getenv("USE_OPENGL");
-			g_useMetalBackend = (use_opengl == nullptr); // Metal unless OpenGL explicitly requested
-			printf("===== WinMain: macOS detected, backend = %s =====\n", 
-				g_useMetalBackend ? "METAL (default)" : "OPENGL (via USE_OPENGL=1)");
-#else
-			// Linux/other: OpenGL is default (Metal opt-in with USE_METAL=1)
-			const char* use_metal = getenv("USE_METAL");
-			g_useMetalBackend = (use_metal != nullptr);
-			printf("===== WinMain: Linux detected, backend = %s =====\n", 
-				g_useMetalBackend ? "METAL (via USE_METAL=1)" : "OPENGL (default)");
-#endif
+		// Phase 48 (November 4, 2025): Vulkan-only execution mode
+		// Metal and OpenGL backends have been disabled to focus on Vulkan/MoltenVK
+		// See docs/ROLLBACK_METAL_BACKEND.md and docs/ROLLBACK_OPENGL_BACKEND.md for restoration
+		g_useMetalBackend = false;  // Force Vulkan/MoltenVK only
+		printf("===== WinMain: Vulkan/MoltenVK-only mode (Phase 48) - Metal and OpenGL disabled =====\n");
+		
+		// TODO: Once Vulkan is stable, re-enable backend selection via environment variables:
+		// #ifdef __APPLE__
+		//     const char* use_opengl = getenv("USE_OPENGL");
+		//     g_useMetalBackend = (use_opengl == nullptr);
+		// #else
+		//     const char* use_metal = getenv("USE_METAL");
+		//     g_useMetalBackend = (use_metal != nullptr);
+		// #endif
 		}
 #endif
 
@@ -1014,10 +1015,12 @@ GameEngine *CreateGameEngine( void )
 // Cross-platform main function for non-Windows systems
 int main(int argc, char* argv[])
 {
-    // Phase 29.3: Check Metal environment variable at startup
-    const char* useMetal = getenv("USE_METAL");
-    printf("===== STARTUP: USE_METAL environment variable = %s =====\n", 
-        useMetal ? useMetal : "NOT SET");
+    // Phase 48 (November 4, 2025): Vulkan-only execution
+    // Disabled environment variable checks for Metal/OpenGL backends
+    // const char* useMetal = getenv("USE_METAL");
+    // printf("===== STARTUP: USE_METAL environment variable = %s =====\n", 
+    //     useMetal ? useMetal : "NOT SET");
+    printf("===== STARTUP: Vulkan/MoltenVK-only mode (Phase 48) =====\n");
     
     // Convert command line arguments to Windows-style and store in global variable
     g_commandLine = argv[0]; // Start with program name
