@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>VK_HUAWEI_cluster_culling_shader :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:features" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="features" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Feature Descriptions</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Vulkan Roadmap and Feature Descriptions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Roadmap.html">Vulkan Roadmap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Feature Descriptions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMDX_shader_enqueue.html">VK_AMDX_shader_enqueue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_anti_lag.html">VK_AMD_anti_lag</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_shader_early_and_late_fragment_tests.html">VK_AMD_shader_early_and_late_fragment_tests</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ANDROID_external_format_resolve.html">VK_ANDROID_external_format_resolve</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_pipeline_opacity_micromap.html">VK_ARM_pipeline_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_render_pass_striped.html">VK_ARM_render_pass_striped</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_tensors.html">VK_ARM_tensors</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_dynamic_state.html">VK_EXT_attachment_feedback_loop_dynamic_state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_layout.html">VK_EXT_attachment_feedback_loop_layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_calibrated_timestamps.html">VK_EXT_calibrated_timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_bias_control.html">VK_EXT_depth_bias_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_clamp_control.html">VK_EXT_depth_clamp_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_descriptor_buffer.html">VK_EXT_descriptor_buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_fault.html">VK_EXT_device_fault</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_generated_commands.html">VK_EXT_device_generated_commands</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_dynamic_rendering_unused_attachments.html">VK_EXT_dynamic_rendering_unused_attachments</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_extended_dynamic_state3.html">VK_EXT_extended_dynamic_state3</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_acquire_unmodified.html">VK_EXT_external_memory_acquire_unmodified</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_metal.html">VK_EXT_external_memory_metal</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_fragment_density_map_offset.html">VK_EXT_fragment_density_map_offset</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_frame_boundary.html">Proposal: <code>VK_EXT_frame_boundary</code></a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_graphics_pipeline_library.html">VK_EXT_graphics_pipeline_library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_host_image_copy.html">VK_EXT_host_image_copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_2d_array_of_3d.html">VK_EXT_image_2d_array_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_compression_control.html">VK_EXT_image_compression_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_sliced_view_of_3d.html">VK_EXT_image_sliced_view_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_layer_settings.html">VK_EXT_layer_settings</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_dithering.html">VK_EXT_legacy_dithering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_vertex_attributes.html">VK_EXT_legacy_vertex_attributes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_map_memory_placed.html">VK_EXT_map_memory_placed</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mesh_shader.html">VK_EXT_mesh_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_metal_objects.html">VK_EXT_metal_objects</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_multisampled_render_to_single_sampled.html">VK_EXT_multisampled_render_to_single_sampled</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mutable_descriptor_type.html">VK_EXT_mutable_descriptor_type</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_non_seamless_cube_map.html">VK_EXT_non_seamless_cube_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_opacity_micromap.html">VK_EXT_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_library_group_handles.html">VK_EXT_pipeline_library_group_handles</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_protected_access.html">VK_EXT_pipeline_protected_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_present_mode_fifo_latest_ready.html">VK_EXT_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_primitives_generated_query.html">VK_EXT_primitives_generated_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_rasterization_order_attachment_access.html">VK_EXT_rasterization_order_attachment_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_float8.html">VK_EXT_shader_float8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_module_identifier.html">VK_EXT_shader_module_identifier</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_object.html">VK_EXT_shader_object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_replicated_composites.html">VK_EXT_shader_replicated_composites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_tile_image.html">VK_EXT_shader_tile_image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_subpass_merge_feedback.html">VK_EXT_subpass_merge_feedback</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_surface_maintenance1.html">VK_EXT_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_swapchain_maintenance1.html">VK_EXT_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_zero_initialize_device_memory.html">VK_EXT_zero_initialize_device_memory</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_GOOGLE_surfaceless_query.html">VK_GOOGLE_surfaceless_query</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_cluster_culling_shader.html">VK_HUAWEI_cluster_culling_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_invocation_mask.html">VK_HUAWEI_invocation_mask</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_compute_shader_derivatives.html">VK_KHR_compute_shader_derivatives</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_cooperative_matrix.html">VK_KHR_cooperative_matrix</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering.html">VK_KHR_dynamic_rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering_local_read.html">VK_KHR_dynamic_rendering_local_read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shader_barycentric.html">VK_KHR_fragment_shader_barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shading_rate.html">VK_KHR_fragment_shading_rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_load_store_op_none.html">VK_KHR_load_store_op_none</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance5.html">VK_KHR_maintenance5</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance6.html">VK_KHR_maintenance6</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance7.html">VK_KHR_maintenance7</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance8.html">VK_KHR_maintenance8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance9.html">Proposal Template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_map_memory2.html">VK_KHR_map_memory2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_pipeline_binary.html">VK_KHR_pipeline_binary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_id2.html">VK_KHR_present_id2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_mode_fifo_latest_ready.html">VK_KHR_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_wait2.html">VK_KHR_present_wait2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_ray_tracing_position_fetch.html">VK_KHR_ray_tracing_position_fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_bfloat16.html">VK_KHR_shader_bfloat16</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_expect_assume.html">VK_KHR_shader_expect_assume</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_float_controls2.html">VK_KHR_shader_float_controls2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_integer_dot_product.html">VK_KHR_shader_integer_dot_product</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_maximal_reconvergence.html">VK_KHR_shader_maximal_reconvergence</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_quad_control.html">VK_KHR_shader_quad_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_relaxed_extended_instruction.html">VK_KHR_shader_relaxed_extended_instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_subgroup_rotate.html">Subgroup rotation instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_surface_maintenance1.html">VK_KHR_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_swapchain_maintenance1.html">VK_KHR_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_unified_image_layouts.html">VK_KHR_unified_image_layouts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_vertex_attribute_divisor.html">VK_KHR_vertex_attribute_divisor</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_av1.html">VK_KHR_video_decode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h264.html">VK_KHR_video_decode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h265.html">VK_KHR_video_decode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_queue.html">VK_KHR_video_decode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_vp9.html">VK_KHR_video_decode_vp9</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_av1.html">VK_KHR_video_encode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h264.html">VK_KHR_video_encode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h265.html">VK_KHR_video_encode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_intra_refresh.html">VK_KHR_video_encode_intra_refresh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_quantization_map.html">VK_KHR_video_encode_quantization_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_queue.html">VK_KHR_video_encode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance1.html">VK_KHR_video_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance2.html">VK_KHR_video_maintenance2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_queue.html">VK_KHR_video_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_LUNARG_direct_driver_loading.html">VK_LUNARG_direct_driver_loading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_MSFT_layered_driver.html">VK_MSFT_layered_driver</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cluster_acceleration_structure.html">VK_NV_cluster_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_matrix2.html">VK_NV_cooperative_matrix2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_vector.html">VK_NV_cooperative_vector</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_display_stereo.html">VK_NV_display_stereo</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_external_compute_queue.html">VK_NV_external_compute_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_partitioned_acceleration_structure.html">VK_NV_partitioned_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_linear_swept_spheres.html">VK_NV_ray_tracing_linear_swept_spheres</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_validation.html">VK_NV_ray_tracing_validation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_image_processing.html">VK_QCOM_image_processing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_memory_heap.html">VK_QCOM_tile_memory_heap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_properties.html">VK_QCOM_tile_properties</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_shading.html">VK_QCOM_tile_shading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_VERSION_1_4.html">Vulkan 1.4</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Feature Descriptions</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Feature Descriptions</a></li>
+    <li>Feature Descriptions</li>
+    <li><a href="VK_HUAWEI_cluster_culling_shader.html">VK_HUAWEI_cluster_culling_shader</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/features/modules/features/pages/proposals/VK_HUAWEI_cluster_culling_shader.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">VK_HUAWEI_cluster_culling_shader</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_problem_statement">1. Problem Statement</a></li>
+<li><a href="#_solution_space">2. Solution space</a></li>
+<li><a href="#_proposal">3. Proposal.</a>
+<ul class="sectlevel2">
+<li><a href="#_cluster_culling_shader">3.1. Cluster culling shader</a></li>
+<li><a href="#_api_changes">3.2. API changes</a></li>
+<li><a href="#_spir_v_changes">3.3. SPIR-V changes</a></li>
+<li><a href="#_glsl_changes">3.4. GLSL changes</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="sect1">
+<h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>1. Problem Statement</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When drawing a scene with a massive amount of geometry, it is necessary to remove the invisible geometry to decrease redundant drawing, a common approach used to remove invisible geometry is called cluster culling, a cluster is a subset of a mesh that has as many shared vertices as possible, alternatively, a cluster can also be an entire mesh, cluster will be pre-computed and stored with the geometry to avoid computation at runtime.</p>
+</div>
+<div class="paragraph">
+<p>The GPU has numerous of thread and parallel computing capabilities, so it is more suitable for culling many clusters than the CPU. Many developers use compute shader for GPU culling tasks. Because compute shader can not generate output which directly connected to the existing rendering pipeline. It is necessary to separate culling and rendering into two passes. First, the culling pass processes the whole scene and updates the MDI command, and then uses the MDI method to draw during the rendering pass.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution space</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Provide a new extension to connect the output of the compute shader to the existing rendering pipeline, in addition, when drawing a visible cluster, an appropriately shading rate can also be configured. developers who originally used compute shader for culling can easily migrate to this new extension and have better performance.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>3. Proposal.</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_cluster_culling_shader"><a class="anchor" href="#_cluster_culling_shader"></a>3.1. Cluster culling shader</h3>
+<div class="paragraph">
+<p>This extension allowing application to use a new programmable shader type&#8201;&#8212;&#8201;Cluster Culling Shader&#8201;&#8212;&#8201;to execute geometry culling on GPU. This mechanism does not require pipeline barrier between compute shader and other rendering pipeline.</p>
+</div>
+<div class="paragraph">
+<p>This new shader type have execution environments similar to that of compute shaders, where a collection of shader invocations form a workgroup and cooperate to perform cluster based culling and LOD selection, a shader invocation can emit a group of built-in output variables treated as a drawing command which can drives subsequent rendering pipeline to draw geometries of cluster with a specific shading rate, e.g. the distance between a cluster and the view point can be used to determine the shading rate of the cluster. These capabilities enables the cluster culling shader to reduce the rendering loading more effectively.</p>
+</div>
+<div class="paragraph">
+<p>It should be noted that the usage of per-cluster shading rate has the following restrictions:
+1. CCS and Vertex Shader cannot output shading rate at the same time.
+2. The per-cluster shading rate output by CCS will be regarded as per-primitive shading rate in combiner operation.
+3. If CCS does not output per-cluster shading rate, the rules of combiner operation remain unchanged.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_api_changes"><a class="anchor" href="#_api_changes"></a>3.2. API changes</h3>
+<div class="sect3">
+<h4 id="_shader_stage_and_synchronization"><a class="anchor" href="#_shader_stage_and_synchronization"></a>3.2.1. shader stage and synchronization</h4>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Extending <code>VkShaderStageFlagBits:</code></dt>
+<dd>
+<p><code>VK_SHADER_STAGE_CLUSTER_CULLING_BIT_HUAWEI</code>
+specifies the cluster shader stage.</p>
+</dd>
+<dt class="hdlist1">Extending <code>VkPipelineStageFlagBits2:</code></dt>
+<dd>
+<p><code>VK_PIPELINE_STAGE2_CLUSTER_CULLING_SHADER_BIT_HUAWEI</code>
+ specifies the cluster pipeline stage for synchronization.</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_new_structure"><a class="anchor" href="#_new_structure"></a>3.2.2. New structure</h4>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Extending <code>VkPhysicalDeviceFeatures2</code>, <code>VkDeviceCreateInfo:</code></dt>
+<dd>
+<p>VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI</p>
+</dd>
+<dt class="hdlist1">Extending <code>VkPhysicalDeviceProperties2:</code></dt>
+<dd>
+<p><code>VkPhysicalDeviceClusterCullingShaderPropertiesHUAWEI</code></p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_drawcall"><a class="anchor" href="#_drawcall"></a>3.2.3. drawcall</h4>
+<div class="paragraph">
+<p>dispatching command are recording into a command buffer and when executed by a queue, it will produce work which executes according to the bound Cluster Culling Shader pipeline.</p>
+</div>
+<div class="paragraph">
+<p>To Record a Cluster Culling Shader command:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">void vkCmdDrawClusterHUAWEI(
+    VkCommandBuffer     commandBuffer,
+    uint32_t            groupCountX,
+    uint32_t            groupCountY,
+    uint32_t            groupCountZ );</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer into which the command will be recorded.</p>
+</li>
+<li>
+<p><code>groupCountX</code> is the number of local workgroups to dispatch in the X dimension.</p>
+</li>
+<li>
+<p><code>groupCountY</code> is the number of local workgroups to dispatch in the Y dimension</p>
+</li>
+<li>
+<p><code>groupCountZ</code> is the number of local workgroups to dispatch in the Z dimension
+When the command is executed, a global workgroup consisting of  <code>groupCountX</code>  * <code>groupCountY</code> * <code>groupCountZ</code> local workgroup is assembled.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>To record an indirect Cluster Culling Shader command:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">void vkCmdDrawClusterIndirectHUAWEI(
+    VkCommandBuffer     commandBuffer,
+    vkBuffer            buffer,
+    vkDeviceSize        offset );</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer into which the command will be recorded.</p>
+</li>
+<li>
+<p><code>buffer</code> is the buffer containing dispatch parameters.</p>
+</li>
+<li>
+<p><code>offset</code> is the byte offset into buffer where parameters begin.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><code>vkCmdDrawClusterIndirectHUAWEI</code> behaves similarly to <code>vkCmdDrawClusterHUAWEI</code> except that the parameters are read by the device from a buffer during execution.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_feature"><a class="anchor" href="#_feature"></a>3.2.4. feature</h4>
+<div class="paragraph">
+<p><code>VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI</code> - Structure describing cluster culling shading features that can be supported by an implementation.</p>
+</div>
+<div class="paragraph">
+<p><code>VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI</code> structure is defined as:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">Typedef struct VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI {
+    VkStructureType             sType;
+    void*                       pNext;
+    VkBool32                    clustercullingShader;
+    VkBool32                    multiviewClusterCullingShader;
+    VkBool32                    clusterShadingRate;
+}VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is the type of this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is NULL or a pointer to a structure extending this structure.</p>
+</li>
+<li>
+<p><code>clustercullingShader</code> indicates whether the cluster culling stage is supported.</p>
+</li>
+<li>
+<p><code>multiviewClusterCullingShader</code> indicates whether multiview can be used with cluster culling shader.</p>
+</li>
+<li>
+<p><code>clusterShadingRate</code> specifies whether the per-cluster shading rate is supported.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If the <code>VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI</code> structure is included in the <code>pNext</code> chain of the <code>VkPhysicalDeviceFeature2</code> structure passed to <code>vkPhysicalDeviceFeature2</code>, it is filled in to indicate whether each corresponding feature is supported.
+<code>VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI</code> can also be used in the <code>pNext</code> chain of <code>VkDeviceCreateInfo</code> to selectively enable these features.</p>
+</div>
+<div class="paragraph">
+<p><code>VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI</code> - Structure describing whether cluster culling shading supported per-cluster shading rate.</p>
+</div>
+<div class="paragraph">
+<p><code>VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI</code> structure is defined as:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">Typedef struct VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI {
+    VkStructureType             sType;
+    void*                               pNext;
+    VkBool32            clusterShadingRate;
+}VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is the type of this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is NULL or a pointer to a structure extending this structure.</p>
+</li>
+<li>
+<p><code>clusterShadingRate</code> specifies whether the per-cluster shading rate is supported.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>To query whether Cluster Culling Shader support per-cluster shading rate, include a <code>VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI</code> structure in the pNext chain of the
+<code>VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI</code> structure passed to <code>vkPhysicalDeviceFeature2</code>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_property"><a class="anchor" href="#_property"></a>3.2.5. property</h4>
+<div class="paragraph">
+<p><code>VkPhysicalDeviceClusterCullingShaderPropertiesHUAWEI</code> - Structure describing cluster culling shading properties.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">Typedef struct VkPhysicalDeviceClusterCullingShaderPropertiesHUAWEI {
+    VkStructureType             sType;
+    void*                       pNext;
+    uint32_t                    maxWorkGroupCount[3];
+    uint32_t                    maxWorkGroupSize[3];
+    uint32_t                    maxOutputClusterCount;
+}VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is the type of this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is NULL or a pointer to a structure extending this structure.</p>
+</li>
+<li>
+<p><code>maxWorkgroupCount</code> is the maximum number of local workgroups that can be launched by a single command. These three value represent the maximum local workgroup count in the X, Y and Z dimensions, respectively. In the current implementation, the values of Y and Z are both implicitly set as one. <code>groupCountX</code> of <code>DrawCluster*</code> command must be less than or equal to <code>maxWorkGroupCount[0]</code>.</p>
+</li>
+<li>
+<p><code>maxWorkGroupSize</code> is the maximum size of a local workgroup. These three value represent the maximum local workgroup size in the X, Y and Z dimensions, respectively. The x, y and z sizes, as specified by the LocalSize or LocalSizeId execution mode or by the object decorated by the WorkgroupSize decoration in shader modules, must be less than or equal to the corresponding limit.</p>
+</li>
+<li>
+<p><code>maxOutputClusterCount</code> is the maximum number of output clusters that a single workgroup may emit.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If the <code>VkPhysicalDeviceClusterCullingShaderPropertiesHUAWEI</code> structure is included in the <code>pNext</code> chain of the <code>VkPhysicalDeviceProperties2</code> structure passed to <code>vkGetPhysicalDeviceProperties2</code>, it is filled in with each corresponding implementation-dependent property.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_spir_v_changes"><a class="anchor" href="#_spir_v_changes"></a>3.3. SPIR-V changes</h3>
+<div class="sect3">
+<h4 id="_new_capability"><a class="anchor" href="#_new_capability"></a>3.3.1. new capability</h4>
+<div class="paragraph">
+<p><code>ClusterCullingShadingHUAWEI</code></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_execution_model"><a class="anchor" href="#_execution_model"></a>3.3.2. execution model</h4>
+<div class="paragraph">
+<p><code>ClusterCullingHUAWEI</code></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_built_in"><a class="anchor" href="#_built_in"></a>3.3.3. built-in</h4>
+<div class="paragraph">
+<p>Cluster Culling Shaders have the following built-in output variables, these variables form an aforementioned drawing command.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>IndexCountHUAWEI</code> is the number of vertices to draw.</p>
+</li>
+<li>
+<p><code>VertexCountHUAWEI</code> is the number of vertices to draw.</p>
+</li>
+<li>
+<p><code>InstanceCountHUAWEI</code> is the number of instances to draw.</p>
+</li>
+<li>
+<p><code>FirstIndexHUAWEI</code> is the base index within the index buffer.</p>
+</li>
+<li>
+<p><code>FirstVertexHUAWEI</code> is the index of the first vertex to draw.</p>
+</li>
+<li>
+<p><code>VertexOffsetHUAWEI</code> is the value added to the vertex index before indexing into the vertex buffer.</p>
+</li>
+<li>
+<p><code>FirstInstanceHUAWEI</code> is the instance ID of the first instance to draw.</p>
+</li>
+<li>
+<p><code>ClusterIdHUAWEI</code> is the index of cluster being rendered by this drawing command. Cluster Culling Shader passes this id to vertex shader for cluster related information fetching. When cluster culling shader enable, gl_DrawID will be replaced by gl_ClusterIDHUAWEI in Vertex Shader.</p>
+</li>
+<li>
+<p><code>ClusterShadingRateHUAWEI</code> is the shading rate of cluster being rendering by this drawing command. if <code>VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI::clusterShadingRate</code> is enabled, ClusterShadingRateHUAWEI is settable from Cluster Culling Shader which support coarse shading.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_new_function"><a class="anchor" href="#_new_function"></a>3.3.4. new function.</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>OpDispatchClusterHUAWEI</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Any invocation in Cluster Culling Shader can execute this instruction more than once, after execution, it will emite the Cluster Culling Shader built-in output variables which describe in 3.3.3 to the subsequent rendering pipeline. While a workgroup is done, GPU creates warps for VS according to these output variables, all invocations in VertexShader are responsible for shading the vertices.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_glsl_changes"><a class="anchor" href="#_glsl_changes"></a>3.4. GLSL changes</h3>
+<div class="paragraph">
+<p>New write-only output blocks are defined for built-in output variables:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">Type 1 (non-indexed mode):
+out gl_PerClusterHUAWEI
+{
+    uint gl_VertexCountHUAWEI;
+    uint gl_InstanceCountHUAWEI;
+    uint gl_FirstVertexHUAWEI;
+    uint gl_FirstInstanceHUAWEI;
+    uint gl_ClusterIdHUAWEI;
+    uint gl_ClusterShadingRateHUAWEI;
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">Type 2 (indexed mode):
+ out gl_PerClusterHUAWEI
+{
+    uint gl_IndexCountHUAWEI;
+    uint gl_InstanceCountHUAWEI;
+    uint gl_FirstIndexHUAWEI ;
+    int  gl_VertexOffsetHUAWEI;
+    uint gl_FirstInstanceHUAWEI;
+    uint gl_ClusterIdHUAWEI;
+    uint gl_ClusterShadingRateHUAWEI;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A new function is added:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">void dispatchClusterHUAWEI(void);</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

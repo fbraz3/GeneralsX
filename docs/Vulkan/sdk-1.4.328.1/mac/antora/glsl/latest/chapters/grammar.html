@@ -1,0 +1,1998 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Shading Language Grammar :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:glsl" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="glsl" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">OpenGL Shading Language Specification</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="preamble.html">Preamble</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="overview.html">Overview of Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="basics.html">Basics</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="variables.html">Variables and Types</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="operators.html">Operators and Expressions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="statements.html">Statements and Structure</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="builtins.html">Built-In Variables</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="builtinfunctions.html">Built-In Functions</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="grammar.html">Shading Language Grammar</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="acknowledgements.html">Acknowledgments</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="references.html">Normative References</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="spirvmappings.html">Non-Normative SPIR-V Mappings</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">OpenGL Shading Language Specification</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">OpenGL Shading Language Specification</a></li>
+    <li><a href="grammar.html">Shading Language Grammar</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/GLSL/antora/modules/ROOT/pages/chapters/grammar.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Shading Language Grammar</h1>
+<div class="paragraph">
+<p>The grammar is fed from the output of lexical analysis.
+The tokens returned from lexical analysis are</p>
+</div>
+<div class="openblock bnf">
+<div class="content">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Token Name</th>
+<th class="tableblock halign-left valign-top">GLSL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CONST</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>const</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BOOL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>bool</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FLOAT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>float</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">INT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>int</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UINT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>uint</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DOUBLE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>double</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BVEC2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>bvec2</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BVEC3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>bvec3</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BVEC4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>bvec4</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IVEC2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>ivec2</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IVEC3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>ivec3</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IVEC4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>ivec4</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UVEC2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>uvec2</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UVEC3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>uvec3</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UVEC4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>uvec4</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VEC2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vec2</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VEC3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vec3</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VEC4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vec4</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MAT2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>mat2</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MAT3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>mat3</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MAT4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>mat4</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MAT2X2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>mat2x2</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MAT2X3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>mat2x3</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MAT2X4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>mat2x4</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MAT3X2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>mat3x2</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MAT3X3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>mat3x3</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MAT3X4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>mat3x4</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MAT4X2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>mat4x2</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MAT4X3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>mat4x3</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MAT4X4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>mat4x4</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DVEC2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>dvec2</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DVEC3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>dvec3</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DVEC4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>dvec4</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DMAT2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>dmat2</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DMAT3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>dmat3</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DMAT4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>dmat4</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DMAT2X2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>dmat2x2</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DMAT2X3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>dmat2x3</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DMAT2X4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>dmat2x4</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DMAT3X2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>dmat3x2</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DMAT3X3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>dmat3x3</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DMAT3X4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>dmat3x4</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DMAT4X2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>dmat4x2</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DMAT4X3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>dmat4x3</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DMAT4X4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>dmat4x4</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CENTROID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>centroid</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IN</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>in</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OUT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>out</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">INOUT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>inout</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UNIFORM</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>uniform</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PATCH</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>patch</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SAMPLE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>sample</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BUFFER</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>buffer</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SHARED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>shared</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">COHERENT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>coherent</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VOLATILE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>volatile</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RESTRICT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>restrict</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">READONLY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>readonly</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">WRITEONLY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>writeonly</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NOPERSPECTIVE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>noperspective</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FLAT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>flat</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SMOOTH</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>smooth</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LAYOUT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>layout</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ATOMIC_UINT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>atomic_uint</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SAMPLER2D</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>sampler2D</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SAMPLER3D</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>sampler3D</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SAMPLERCUBE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>samplerCube</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SAMPLER2DSHADOW</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>sampler2DShadow</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SAMPLERCUBESHADOW</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>samplerCubeShadow</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SAMPLER2DARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>sampler2DArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SAMPLER2DARRAYSHADOW</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>sampler2DArrayShadow</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISAMPLER2D</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>isampler2D</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISAMPLER3D</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>isampler3D</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISAMPLERCUBE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>isamplerCube</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISAMPLER2DARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>isampler2DArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">USAMPLER2D</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>usampler2D</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">USAMPLER3D</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>usampler3D</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">USAMPLERCUBE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>usamplerCube</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">USAMPLER2DARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>usampler2DArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SAMPLER1D</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>sampler1D</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SAMPLER1DSHADOW</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>sampler1DShadow</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SAMPLER1DARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>sampler1DArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SAMPLER1DARRAYSHADOW</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>sampler1DArrayShadow</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISAMPLER1D</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>isampler1D</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISAMPLER1DARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>isampler1DArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">USAMPLER1D</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>usampler1D</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">USAMPLER1DARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>usampler1DArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SAMPLER2DRECT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>sampler2DRect</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SAMPLER2DRECTSHADOW</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>sampler2DRectShadow</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISAMPLER2DRECT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>isampler2DRect</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">USAMPLER2DRECT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>usampler2DRect</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SAMPLERBUFFER</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>samplerBuffer</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISAMPLERBUFFER</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>isamplerBuffer</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">USAMPLERBUFFER</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>usamplerBuffer</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SAMPLERCUBEARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>samplerCubeArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SAMPLERCUBEARRAYSHADOW</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>samplerCubeArrayShadow</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISAMPLERCUBEARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>isamplerCubeArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">USAMPLERCUBEARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>usamplerCubeArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SAMPLER2DMS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>sampler2DMS</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISAMPLER2DMS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>isampler2DMS</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">USAMPLER2DMS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>usampler2DMS</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SAMPLER2DMSARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>sampler2DMSArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISAMPLER2DMSARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>isampler2DMSArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">USAMPLER2DMSARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>usampler2DMSArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IMAGE2D</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>image2D</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IIMAGE2D</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>iimage2D</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UIMAGE2D</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>uimage2D</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IMAGE3D</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>image3D</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IIMAGE3D</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>iimage3D</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UIMAGE3D</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>uimage3D</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IMAGECUBE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>imageCube</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IIMAGECUBE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>iimageCube</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UIMAGECUBE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>uimageCube</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IMAGEBUFFER</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>imageBuffer</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IIMAGEBUFFER</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>iimageBuffer</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UIMAGEBUFFER</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>uimageBuffer</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IMAGE2DARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>image2DArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IIMAGE2DARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>iimage2DArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UIMAGE2DARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>uimage2DArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IMAGECUBEARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>imageCubeArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IIMAGECUBEARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>iimageCubeArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UIMAGECUBEARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>uimageCubeArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IMAGE1D</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>image1D</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IIMAGE1D</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>iimage1D</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UIMAGE1D</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>uimage1D</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IMAGE1DARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>image1DArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IIMAGE1DARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>iimage1DArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UIMAGE1DARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>uimage1DArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IMAGE2DRECT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>image2DRect</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IIMAGE2DRECT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>iimage2DRect</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UIMAGE2DRECT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>uimage2DRect</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IMAGE2DMS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>image2DMS</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IIMAGE2DMS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>iimage2DMS</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UIMAGE2DMS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>uimage2DMS</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IMAGE2DMSARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>image2DMSArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IIMAGE2DMSARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>iimage2DMSArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UIMAGE2DMSARRAY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>uimage2DMSArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">STRUCT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>struct</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VOID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>void</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">WHILE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>while</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BREAK</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>break</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CONTINUE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>continue</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DO</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>do</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ELSE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>else</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FOR</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>for</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IF</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>if</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DISCARD</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>discard</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RETURN</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>return</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SWITCH</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>switch</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CASE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>case</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DEFAULT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>default</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SUBROUTINE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>subroutine</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IDENTIFIER</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="basics.html#identifiers" class="xref page">Identifiers</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TYPE_NAME</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="basics.html#identifiers" class="xref page">Identifiers</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FLOATCONSTANT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="variables.html#floats" class="xref page">Floats</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">INTCONSTANT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="variables.html#integers" class="xref page">Integers</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UINTCONSTANT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="variables.html#integers" class="xref page">Integers</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BOOLCONSTANT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="variables.html#booleans" class="xref page">Booleans</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DOUBLECONSTANT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="variables.html#floats" class="xref page">Floats</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FIELD_SELECTION</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="basics.html#identifiers" class="xref page">Identifiers</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LEFT_OP</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;&lt;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RIGHT_OP</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&gt;&gt;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">INC_OP</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>++</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DEC_OP</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>--</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LE_OP</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;=</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GE_OP</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&gt;=</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EQ_OP</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>==</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NE_OP</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>!=</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AND_OP</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&amp;&amp;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OR_OP</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>||</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">XOR_OP</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>^^</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MUL_ASSIGN</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>*=</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DIV_ASSIGN</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>/=</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ADD_ASSIGN</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>+=</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MOD_ASSIGN</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>%=</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LEFT_ASSIGN</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;&lt;=</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RIGHT_ASSIGN</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&gt;&gt;=</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AND_ASSIGN</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&amp;=</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">XOR_ASSIGN</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>^=</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OR_ASSIGN</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>|=</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SUB_ASSIGN</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>-=</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LEFT_PAREN</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>(</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RIGHT_PAREN</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>)</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LEFT_BRACKET</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RIGHT_BRACKET</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>]</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LEFT_BRACE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>{</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RIGHT_BRACE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>}</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DOT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>.</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">COMMA</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>,</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">COLON</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>:</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EQUAL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>=</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SEMICOLON</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BANG</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>!</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DASH</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>-</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TILDE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>~</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PLUS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>+</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">STAR</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>*</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SLASH</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>/</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PERCENT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>%</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LEFT_ANGLE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RIGHT_ANGLE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&gt;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VERTICAL_BAR</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>|</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CARET</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>^</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AMPERSAND</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&amp;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QUESTION</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>?</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">INVARIANT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>invariant</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PRECISE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>precise</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HIGH_PRECISION</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>highp</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MEDIUM_PRECISION</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>mediump</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LOW_PRECISION</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>lowp</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PRECISION</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>precision</code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="paragraph">
+<p>The following describes the grammar for the OpenGL Shading Language in terms of the above
+tokens.
+The starting rule is <em>translation_unit</em>.
+An empty shader (one having no tokens to parse, after pre-processing) is
+valid, resulting in no compile-time errors, even though the grammar below
+does not have a rule to accept an empty token stream.</p>
+</div>
+<div class="openblock bnf">
+<div class="content">
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><em>variable_identifier</em> : </dt>
+<dd>
+<p><em>IDENTIFIER</em></p>
+</dd>
+<dt class="hdlist1"><em>primary_expression</em> : </dt>
+<dd>
+<p><em>variable_identifier</em><br>
+<em>INTCONSTANT</em><br>
+<em>UINTCONSTANT</em><br>
+<em>FLOATCONSTANT</em><br>
+<em>BOOLCONSTANT</em><br>
+<em>DOUBLECONSTANT</em><br>
+<em>LEFT_PAREN</em> <em>expression</em> <em>RIGHT_PAREN</em></p>
+</dd>
+<dt class="hdlist1"><em>postfix_expression</em> : </dt>
+<dd>
+<p><em>primary_expression</em><br>
+<em>postfix_expression</em> <em>LEFT_BRACKET</em> <em>integer_expression</em> <em>RIGHT_BRACKET</em><br>
+<em>function_call</em><br>
+<em>postfix_expression</em> <em>DOT</em> <em>FIELD_SELECTION</em><br>
+<em>postfix_expression</em> <em>INC_OP</em><br>
+<em>postfix_expression</em> <em>DEC_OP</em></p>
+</dd>
+</dl>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>FIELD_SELECTION includes members in structures, component selection for
+vectors and the 'length' identifier for the length() method</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><em>integer_expression</em> : </dt>
+<dd>
+<p><em>expression</em></p>
+</dd>
+<dt class="hdlist1"><em>function_call</em> : </dt>
+<dd>
+<p><em>function_call_or_method</em></p>
+</dd>
+<dt class="hdlist1"><em>function_call_or_method</em> : </dt>
+<dd>
+<p><em>function_call_generic</em></p>
+</dd>
+<dt class="hdlist1"><em>function_call_generic</em> : </dt>
+<dd>
+<p><em>function_call_header_with_parameters</em> <em>RIGHT_PAREN</em><br>
+<em>function_call_header_no_parameters</em> <em>RIGHT_PAREN</em></p>
+</dd>
+<dt class="hdlist1"><em>function_call_header_no_parameters</em> : </dt>
+<dd>
+<p><em>function_call_header</em> <em>VOID</em><br>
+<em>function_call_header</em></p>
+</dd>
+<dt class="hdlist1"><em>function_call_header_with_parameters</em> : </dt>
+<dd>
+<p><em>function_call_header</em> <em>assignment_expression</em><br>
+<em>function_call_header_with_parameters</em> <em>COMMA</em> <em>assignment_expression</em></p>
+</dd>
+<dt class="hdlist1"><em>function_call_header</em> : </dt>
+<dd>
+<p><em>function_identifier</em> <em>LEFT_PAREN</em></p>
+</dd>
+</dl>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Grammar Note: Constructors look like functions, but lexical analysis
+recognized most of them as keywords.
+They are now recognized through <em>type_specifier</em>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Methods (<strong>.length</strong>), subroutine array calls, and identifiers are recognized
+through <em>postfix_expression</em>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><em>function_identifier</em> : </dt>
+<dd>
+<p><em>type_specifier</em><br>
+<em>postfix_expression</em></p>
+</dd>
+<dt class="hdlist1"><em>unary_expression</em> : </dt>
+<dd>
+<p><em>postfix_expression</em><br>
+<em>INC_OP</em> <em>unary_expression</em><br>
+<em>DEC_OP</em> <em>unary_expression</em><br>
+<em>unary_operator</em> <em>unary_expression</em></p>
+</dd>
+</dl>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Grammar Note: No traditional style type casts.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><em>unary_operator</em> : </dt>
+<dd>
+<p><em>PLUS</em><br>
+<em>DASH</em><br>
+<em>BANG</em><br>
+<em>TILDE</em></p>
+</dd>
+</dl>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Grammar Note: No '*' or '&amp;' unary ops.
+Pointers are not supported.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><em>multiplicative_expression</em> : </dt>
+<dd>
+<p><em>unary_expression</em><br>
+<em>multiplicative_expression</em> <em>STAR</em> <em>unary_expression</em><br>
+<em>multiplicative_expression</em> <em>SLASH</em> <em>unary_expression</em><br>
+<em>multiplicative_expression</em> <em>PERCENT</em> <em>unary_expression</em></p>
+</dd>
+<dt class="hdlist1"><em>additive_expression</em> : </dt>
+<dd>
+<p><em>multiplicative_expression</em><br>
+<em>additive_expression</em> <em>PLUS</em> <em>multiplicative_expression</em><br>
+<em>additive_expression</em> <em>DASH</em> <em>multiplicative_expression</em></p>
+</dd>
+<dt class="hdlist1"><em>shift_expression</em> : </dt>
+<dd>
+<p><em>additive_expression</em><br>
+<em>shift_expression</em> <em>LEFT_OP</em> <em>additive_expression</em><br>
+<em>shift_expression</em> <em>RIGHT_OP</em> <em>additive_expression</em></p>
+</dd>
+<dt class="hdlist1"><em>relational_expression</em> : </dt>
+<dd>
+<p><em>shift_expression</em><br>
+<em>relational_expression</em> <em>LEFT_ANGLE</em> <em>shift_expression</em><br>
+<em>relational_expression</em> <em>RIGHT_ANGLE</em> <em>shift_expression</em><br>
+<em>relational_expression</em> <em>LE_OP</em> <em>shift_expression</em><br>
+<em>relational_expression</em> <em>GE_OP</em> <em>shift_expression</em></p>
+</dd>
+<dt class="hdlist1"><em>equality_expression</em> : </dt>
+<dd>
+<p><em>relational_expression</em><br>
+<em>equality_expression</em> <em>EQ_OP</em> <em>relational_expression</em><br>
+<em>equality_expression</em> <em>NE_OP</em> <em>relational_expression</em></p>
+</dd>
+<dt class="hdlist1"><em>and_expression</em> : </dt>
+<dd>
+<p><em>equality_expression</em><br>
+<em>and_expression</em> <em>AMPERSAND</em> <em>equality_expression</em></p>
+</dd>
+<dt class="hdlist1"><em>exclusive_or_expression</em> : </dt>
+<dd>
+<p><em>and_expression</em><br>
+<em>exclusive_or_expression</em> <em>CARET</em> <em>and_expression</em></p>
+</dd>
+<dt class="hdlist1"><em>inclusive_or_expression</em> : </dt>
+<dd>
+<p><em>exclusive_or_expression</em><br>
+<em>inclusive_or_expression</em> <em>VERTICAL_BAR</em> <em>exclusive_or_expression</em></p>
+</dd>
+<dt class="hdlist1"><em>logical_and_expression</em> : </dt>
+<dd>
+<p><em>inclusive_or_expression</em><br>
+<em>logical_and_expression</em> <em>AND_OP</em> <em>inclusive_or_expression</em></p>
+</dd>
+<dt class="hdlist1"><em>logical_xor_expression</em> : </dt>
+<dd>
+<p><em>logical_and_expression</em><br>
+<em>logical_xor_expression</em> <em>XOR_OP</em> <em>logical_and_expression</em></p>
+</dd>
+<dt class="hdlist1"><em>logical_or_expression</em> : </dt>
+<dd>
+<p><em>logical_xor_expression</em><br>
+<em>logical_or_expression</em> <em>OR_OP</em> <em>logical_xor_expression</em></p>
+</dd>
+<dt class="hdlist1"><em>conditional_expression</em> : </dt>
+<dd>
+<p><em>logical_or_expression</em><br>
+<em>logical_or_expression</em> <em>QUESTION</em> <em>expression</em> <em>COLON</em>
+<em>assignment_expression</em></p>
+</dd>
+<dt class="hdlist1"><em>assignment_expression</em> : </dt>
+<dd>
+<p><em>conditional_expression</em><br>
+<em>unary_expression</em> <em>assignment_operator</em> <em>assignment_expression</em></p>
+</dd>
+<dt class="hdlist1"><em>assignment_operator</em> : </dt>
+<dd>
+<p><em>EQUAL</em><br>
+<em>MUL_ASSIGN</em><br>
+<em>DIV_ASSIGN</em><br>
+<em>MOD_ASSIGN</em><br>
+<em>ADD_ASSIGN</em><br>
+<em>SUB_ASSIGN</em><br>
+<em>LEFT_ASSIGN</em><br>
+<em>RIGHT_ASSIGN</em><br>
+<em>AND_ASSIGN</em><br>
+<em>XOR_ASSIGN</em><br>
+<em>OR_ASSIGN</em></p>
+</dd>
+<dt class="hdlist1"><em>expression</em> : </dt>
+<dd>
+<p><em>assignment_expression</em><br>
+<em>expression</em> <em>COMMA</em> <em>assignment_expression</em></p>
+</dd>
+<dt class="hdlist1"><em>constant_expression</em> : </dt>
+<dd>
+<p><em>conditional_expression</em></p>
+</dd>
+<dt class="hdlist1"><em>declaration</em> : </dt>
+<dd>
+<p><em>function_prototype</em> <em>SEMICOLON</em><br>
+<em>init_declarator_list</em> <em>SEMICOLON</em><br>
+<em>PRECISION</em> <em>precision_qualifier</em> <em>type_specifier</em> <em>SEMICOLON</em><br>
+<em>type_qualifier</em> <em>IDENTIFIER</em> <em>LEFT_BRACE</em> <em>struct_declaration_list</em>
+<em>RIGHT_BRACE</em> <em>SEMICOLON</em><br>
+<em>type_qualifier</em> <em>IDENTIFIER</em> <em>LEFT_BRACE</em> <em>struct_declaration_list</em>
+<em>RIGHT_BRACE</em> <em>IDENTIFIER</em> <em>SEMICOLON</em><br>
+<em>type_qualifier</em> <em>IDENTIFIER</em> <em>LEFT_BRACE</em> <em>struct_declaration_list</em>
+<em>RIGHT_BRACE</em> <em>IDENTIFIER</em> <em>array_specifier</em> <em>SEMICOLON</em><br>
+<em>type_qualifier</em> <em>SEMICOLON</em><br>
+<em>type_qualifier</em> <em>identifier_list</em> <em>SEMICOLON</em></p>
+</dd>
+<dt class="hdlist1"><em>identifier_list</em> : </dt>
+<dd>
+<p><em>IDENTIFIER</em><br>
+<em>identifier_list</em> <em>COMMA</em> <em>IDENTIFIER</em></p>
+</dd>
+<dt class="hdlist1"><em>function_prototype</em> : </dt>
+<dd>
+<p><em>function_declarator</em> <em>RIGHT_PAREN</em></p>
+</dd>
+<dt class="hdlist1"><em>function_declarator</em> : </dt>
+<dd>
+<p><em>function_header</em><br>
+<em>function_header_with_parameters</em></p>
+</dd>
+<dt class="hdlist1"><em>function_header_with_parameters</em> : </dt>
+<dd>
+<p><em>function_header</em> <em>parameter_declaration</em><br>
+<em>function_header_with_parameters</em> <em>COMMA</em> <em>parameter_declaration</em></p>
+</dd>
+<dt class="hdlist1"><em>function_header</em> : </dt>
+<dd>
+<p><em>fully_specified_type</em> <em>IDENTIFIER</em> <em>LEFT_PAREN</em></p>
+</dd>
+<dt class="hdlist1"><em>parameter_declarator</em> : </dt>
+<dd>
+<p><em>type_specifier</em> <em>IDENTIFIER</em><br>
+<em>type_specifier</em> <em>IDENTIFIER</em> <em>array_specifier</em></p>
+</dd>
+<dt class="hdlist1"><em>parameter_declaration</em> : </dt>
+<dd>
+<p><em>type_qualifier</em> <em>parameter_declarator</em><br>
+<em>parameter_declarator</em><br>
+<em>type_qualifier</em> <em>parameter_type_specifier</em><br>
+<em>parameter_type_specifier</em></p>
+</dd>
+<dt class="hdlist1"><em>parameter_type_specifier</em> : </dt>
+<dd>
+<p><em>type_specifier</em></p>
+</dd>
+<dt class="hdlist1"><em>init_declarator_list</em> : </dt>
+<dd>
+<p><em>single_declaration</em><br>
+<em>init_declarator_list</em> <em>COMMA</em> <em>IDENTIFIER</em><br>
+<em>init_declarator_list</em> <em>COMMA</em> <em>IDENTIFIER</em> <em>array_specifier</em><br>
+<em>init_declarator_list</em> <em>COMMA</em> <em>IDENTIFIER</em> <em>array_specifier</em> <em>EQUAL</em>
+<em>initializer</em><br>
+<em>init_declarator_list</em> <em>COMMA</em> <em>IDENTIFIER</em> <em>EQUAL</em> <em>initializer</em></p>
+</dd>
+<dt class="hdlist1"><em>single_declaration</em> : </dt>
+<dd>
+<p><em>fully_specified_type</em><br>
+<em>fully_specified_type</em> <em>IDENTIFIER</em><br>
+<em>fully_specified_type</em> <em>IDENTIFIER</em> <em>array_specifier</em><br>
+<em>fully_specified_type</em> <em>IDENTIFIER</em> <em>array_specifier</em> <em>EQUAL</em>
+<em>initializer</em><br>
+<em>fully_specified_type</em> <em>IDENTIFIER</em> <em>EQUAL</em> <em>initializer</em></p>
+</dd>
+</dl>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Grammar Note: No 'enum', or 'typedef'.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><em>fully_specified_type</em> : </dt>
+<dd>
+<p><em>type_specifier</em><br>
+<em>type_qualifier</em> <em>type_specifier</em></p>
+</dd>
+<dt class="hdlist1"><em>invariant_qualifier</em> : </dt>
+<dd>
+<p><em>INVARIANT</em></p>
+</dd>
+<dt class="hdlist1"><em>interpolation_qualifier</em> : </dt>
+<dd>
+<p><em>SMOOTH</em><br>
+<em>FLAT</em><br>
+<em>NOPERSPECTIVE</em></p>
+</dd>
+<dt class="hdlist1"><em>layout_qualifier</em> : </dt>
+<dd>
+<p><em>LAYOUT</em> <em>LEFT_PAREN</em> <em>layout_qualifier_id_list</em> <em>RIGHT_PAREN</em></p>
+</dd>
+<dt class="hdlist1"><em>layout_qualifier_id_list</em> : </dt>
+<dd>
+<p><em>layout_qualifier_id</em><br>
+<em>layout_qualifier_id_list</em> <em>COMMA</em> <em>layout_qualifier_id</em></p>
+</dd>
+<dt class="hdlist1"><em>layout_qualifier_id</em> : </dt>
+<dd>
+<p><em>IDENTIFIER</em><br>
+<em>IDENTIFIER</em> <em>EQUAL</em> <em>constant_expression</em><br>
+<em>SHARED</em></p>
+</dd>
+<dt class="hdlist1"><em>precise_qualifier</em> : </dt>
+<dd>
+<p><em>PRECISE</em></p>
+</dd>
+<dt class="hdlist1"><em>type_qualifier</em> : </dt>
+<dd>
+<p><em>single_type_qualifier</em><br>
+<em>type_qualifier</em> <em>single_type_qualifier</em></p>
+</dd>
+<dt class="hdlist1"><em>single_type_qualifier</em> : </dt>
+<dd>
+<p><em>storage_qualifier</em><br>
+<em>layout_qualifier</em><br>
+<em>precision_qualifier</em><br>
+<em>interpolation_qualifier</em><br>
+<em>invariant_qualifier</em><br>
+<em>precise_qualifier</em></p>
+</dd>
+<dt class="hdlist1"><em>storage_qualifier</em> : </dt>
+<dd>
+<p><em>CONST</em><br>
+<em>IN</em><br>
+<em>OUT</em><br>
+<em>INOUT</em><br>
+<em>CENTROID</em><br>
+<em>PATCH</em><br>
+<em>SAMPLE</em><br>
+<em>UNIFORM</em><br>
+<em>BUFFER</em><br>
+<em>SHARED</em><br>
+<em>COHERENT</em><br>
+<em>VOLATILE</em><br>
+<em>RESTRICT</em><br>
+<em>READONLY</em><br>
+<em>WRITEONLY</em><br>
+<em>SUBROUTINE</em><br>
+<em>SUBROUTINE</em> <em>LEFT_PAREN</em> <em>type_name_list</em> <em>RIGHT_PAREN</em></p>
+</dd>
+<dt class="hdlist1"><em>type_name_list</em> : </dt>
+<dd>
+<p><em>TYPE_NAME</em><br>
+<em>type_name_list</em> <em>COMMA</em> <em>TYPE_NAME</em></p>
+</dd>
+<dt class="hdlist1"><em>type_specifier</em> : </dt>
+<dd>
+<p><em>type_specifier_nonarray</em><br>
+<em>type_specifier_nonarray</em> <em>array_specifier</em></p>
+</dd>
+</dl>
+</div>
+<div id="array_specifier" class="dlist">
+<dl>
+<dt class="hdlist1"><em>array_specifier</em> : </dt>
+<dd>
+<p><em>LEFT_BRACKET</em> <em>RIGHT_BRACKET</em><br>
+<em>LEFT_BRACKET</em> <em>conditional_expression</em> <em>RIGHT_BRACKET</em><br>
+<em>array_specifier</em> <em>LEFT_BRACKET</em> <em>RIGHT_BRACKET</em><br>
+<em>array_specifier</em> <em>LEFT_BRACKET</em> <em>conditional_expression</em> <em>RIGHT_BRACKET</em></p>
+</dd>
+</dl>
+</div>
+<div id="type_specifier_nonarray" class="dlist">
+<dl>
+<dt class="hdlist1"><em>type_specifier_nonarray</em> : </dt>
+<dd>
+<p><em>VOID</em><br>
+<em>FLOAT</em><br>
+<em>DOUBLE</em><br>
+<em>INT</em><br>
+<em>UINT</em><br>
+<em>BOOL</em><br>
+<em>VEC2</em><br>
+<em>VEC3</em><br>
+<em>VEC4</em><br>
+<em>DVEC2</em><br>
+<em>DVEC3</em><br>
+<em>DVEC4</em><br>
+<em>BVEC2</em><br>
+<em>BVEC3</em><br>
+<em>BVEC4</em><br>
+<em>IVEC2</em><br>
+<em>IVEC3</em><br>
+<em>IVEC4</em><br>
+<em>UVEC2</em><br>
+<em>UVEC3</em><br>
+<em>UVEC4</em><br>
+<em>MAT2</em><br>
+<em>MAT3</em><br>
+<em>MAT4</em><br>
+<em>MAT2X2</em><br>
+<em>MAT2X3</em><br>
+<em>MAT2X4</em><br>
+<em>MAT3X2</em><br>
+<em>MAT3X3</em><br>
+<em>MAT3X4</em><br>
+<em>MAT4X2</em><br>
+<em>MAT4X3</em><br>
+<em>MAT4X4</em><br>
+<em>DMAT2</em><br>
+<em>DMAT3</em><br>
+<em>DMAT4</em><br>
+<em>DMAT2X2</em><br>
+<em>DMAT2X3</em><br>
+<em>DMAT2X4</em><br>
+<em>DMAT3X2</em><br>
+<em>DMAT3X3</em><br>
+<em>DMAT3X4</em><br>
+<em>DMAT4X2</em><br>
+<em>DMAT4X3</em><br>
+<em>DMAT4X4</em><br>
+<em>ATOMIC_UINT</em><br>
+<em>SAMPLER2D</em><br>
+<em>SAMPLER3D</em><br>
+<em>SAMPLERCUBE</em><br>
+<em>SAMPLER2DSHADOW</em><br>
+<em>SAMPLERCUBESHADOW</em><br>
+<em>SAMPLER2DARRAY</em><br>
+<em>SAMPLER2DARRAYSHADOW</em><br>
+<em>SAMPLERCUBEARRAY</em><br>
+<em>SAMPLERCUBEARRAYSHADOW</em><br>
+<em>ISAMPLER2D</em><br>
+<em>ISAMPLER3D</em><br>
+<em>ISAMPLERCUBE</em><br>
+<em>ISAMPLER2DARRAY</em><br>
+<em>ISAMPLERCUBEARRAY</em><br>
+<em>USAMPLER2D</em><br>
+<em>USAMPLER3D</em><br>
+<em>USAMPLERCUBE</em><br>
+<em>USAMPLER2DARRAY</em><br>
+<em>USAMPLERCUBEARRAY</em><br>
+<em>SAMPLER1D</em><br>
+<em>SAMPLER1DSHADOW</em><br>
+<em>SAMPLER1DARRAY</em><br>
+<em>SAMPLER1DARRAYSHADOW</em><br>
+<em>ISAMPLER1D</em><br>
+<em>ISAMPLER1DARRAY</em><br>
+<em>USAMPLER1D</em><br>
+<em>USAMPLER1DARRAY</em><br>
+<em>SAMPLER2DRECT</em><br>
+<em>SAMPLER2DRECTSHADOW</em><br>
+<em>ISAMPLER2DRECT</em><br>
+<em>USAMPLER2DRECT</em><br>
+<em>SAMPLERBUFFER</em><br>
+<em>ISAMPLERBUFFER</em><br>
+<em>USAMPLERBUFFER</em><br>
+<em>SAMPLER2DMS</em><br>
+<em>ISAMPLER2DMS</em><br>
+<em>USAMPLER2DMS</em><br>
+<em>SAMPLER2DMSARRAY</em><br>
+<em>ISAMPLER2DMSARRAY</em><br>
+<em>USAMPLER2DMSARRAY</em><br>
+<em>IMAGE2D</em><br>
+<em>IIMAGE2D</em><br>
+<em>UIMAGE2D</em><br>
+<em>IMAGE3D</em><br>
+<em>IIMAGE3D</em><br>
+<em>UIMAGE3D</em><br>
+<em>IMAGECUBE</em><br>
+<em>IIMAGECUBE</em><br>
+<em>UIMAGECUBE</em><br>
+<em>IMAGEBUFFER</em><br>
+<em>IIMAGEBUFFER</em><br>
+<em>UIMAGEBUFFER</em><br>
+<em>IMAGE1D</em><br>
+<em>IIMAGE1D</em><br>
+<em>UIMAGE1D</em><br>
+<em>IMAGE1DARRAY</em><br>
+<em>IIMAGE1DARRAY</em><br>
+<em>UIMAGE1DARRAY</em><br>
+<em>IMAGE2DRECT</em><br>
+<em>IIMAGE2DRECT</em><br>
+<em>UIMAGE2DRECT</em><br>
+<em>IMAGE2DARRAY</em><br>
+<em>IIMAGE2DARRAY</em><br>
+<em>UIMAGE2DARRAY</em><br>
+<em>IMAGECUBEARRAY</em><br>
+<em>IIMAGECUBEARRAY</em><br>
+<em>UIMAGECUBEARRAY</em><br>
+<em>IMAGE2DMS</em><br>
+<em>IIMAGE2DMS</em><br>
+<em>UIMAGE2DMS</em><br>
+<em>IMAGE2DMSARRAY</em><br>
+<em>IIMAGE2DMSARRAY</em><br>
+<em>UIMAGE2DMSARRAY</em><br>
+<em>struct_specifier</em><br>
+<em>TYPE_NAME</em></p>
+</dd>
+<dt class="hdlist1"><em>precision_qualifier</em> : </dt>
+<dd>
+<p><em>HIGH_PRECISION</em><br>
+<em>MEDIUM_PRECISION</em><br>
+<em>LOW_PRECISION</em></p>
+</dd>
+<dt class="hdlist1"><em>struct_specifier</em> : </dt>
+<dd>
+<p><em>STRUCT</em> <em>IDENTIFIER</em> <em>LEFT_BRACE</em> <em>struct_declaration_list</em>
+<em>RIGHT_BRACE</em><br>
+<em>STRUCT</em> <em>LEFT_BRACE</em> <em>struct_declaration_list</em> <em>RIGHT_BRACE</em></p>
+</dd>
+<dt class="hdlist1"><em>struct_declaration_list</em> : </dt>
+<dd>
+<p><em>struct_declaration</em><br>
+<em>struct_declaration_list</em> <em>struct_declaration</em></p>
+</dd>
+<dt class="hdlist1"><em>struct_declaration</em> : </dt>
+<dd>
+<p><em>type_specifier</em> <em>struct_declarator_list</em> <em>SEMICOLON</em><br>
+<em>type_qualifier</em> <em>type_specifier</em> <em>struct_declarator_list</em> <em>SEMICOLON</em></p>
+</dd>
+<dt class="hdlist1"><em>struct_declarator_list</em> : </dt>
+<dd>
+<p><em>struct_declarator</em><br>
+<em>struct_declarator_list</em> <em>COMMA</em> <em>struct_declarator</em></p>
+</dd>
+<dt class="hdlist1"><em>struct_declarator</em> : </dt>
+<dd>
+<p><em>IDENTIFIER</em><br>
+<em>IDENTIFIER</em> <em>array_specifier</em></p>
+</dd>
+<dt class="hdlist1"><em>initializer</em> : </dt>
+<dd>
+<p><em>assignment_expression</em><br>
+<em>LEFT_BRACE</em> <em>initializer_list</em> <em>RIGHT_BRACE</em><br>
+<em>LEFT_BRACE</em> <em>initializer_list</em> <em>COMMA</em> <em>RIGHT_BRACE</em></p>
+</dd>
+<dt class="hdlist1"><em>initializer_list</em> : </dt>
+<dd>
+<p><em>initializer</em><br>
+<em>initializer_list</em> <em>COMMA</em> <em>initializer</em></p>
+</dd>
+<dt class="hdlist1"><em>declaration_statement</em> : </dt>
+<dd>
+<p><em>declaration</em></p>
+</dd>
+<dt class="hdlist1"><em>statement</em> : </dt>
+<dd>
+<p><em>compound_statement</em><br>
+<em>simple_statement</em></p>
+</dd>
+</dl>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Grammar Note: labeled statements for SWITCH only; 'goto' is not supported.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><em>simple_statement</em> : </dt>
+<dd>
+<p><em>declaration_statement</em><br>
+<em>expression_statement</em><br>
+<em>selection_statement</em><br>
+<em>switch_statement</em><br>
+<em>case_label</em><br>
+<em>iteration_statement</em><br>
+<em>jump_statement</em></p>
+</dd>
+<dt class="hdlist1"><em>compound_statement</em> : </dt>
+<dd>
+<p><em>LEFT_BRACE</em> <em>RIGHT_BRACE</em><br>
+<em>LEFT_BRACE</em> <em>statement_list</em> <em>RIGHT_BRACE</em></p>
+</dd>
+<dt class="hdlist1"><em>statement_no_new_scope</em> : </dt>
+<dd>
+<p><em>compound_statement_no_new_scope</em><br>
+<em>simple_statement</em></p>
+</dd>
+<dt class="hdlist1"><em>compound_statement_no_new_scope</em> : </dt>
+<dd>
+<p><em>LEFT_BRACE</em> <em>RIGHT_BRACE</em><br>
+<em>LEFT_BRACE</em> <em>statement_list</em> <em>RIGHT_BRACE</em></p>
+</dd>
+<dt class="hdlist1"><em>statement_list</em> : </dt>
+<dd>
+<p><em>statement</em><br>
+<em>statement_list</em> <em>statement</em></p>
+</dd>
+<dt class="hdlist1"><em>expression_statement</em> : </dt>
+<dd>
+<p><em>SEMICOLON</em><br>
+<em>expression</em> <em>SEMICOLON</em></p>
+</dd>
+<dt class="hdlist1"><em>selection_statement</em> : </dt>
+<dd>
+<p><em>IF</em> <em>LEFT_PAREN</em> <em>expression</em> <em>RIGHT_PAREN</em> <em>selection_rest_statement</em></p>
+</dd>
+<dt class="hdlist1"><em>selection_rest_statement</em> : </dt>
+<dd>
+<p><em>statement</em> <em>ELSE</em> <em>statement</em><br>
+<em>statement</em></p>
+</dd>
+<dt class="hdlist1"><em>condition</em> : </dt>
+<dd>
+<p><em>expression</em><br>
+<em>fully_specified_type</em> <em>IDENTIFIER</em> <em>EQUAL</em> <em>initializer</em></p>
+</dd>
+<dt class="hdlist1"><em>switch_statement</em> : </dt>
+<dd>
+<p><em>SWITCH</em> <em>LEFT_PAREN</em> <em>expression</em> <em>RIGHT_PAREN</em> <em>LEFT_BRACE</em>
+<em>switch_statement_list</em><br>
+<em>RIGHT_BRACE</em></p>
+</dd>
+<dt class="hdlist1"><em>switch_statement_list</em> : </dt>
+<dd>
+<p>/* <em>empty</em> */<br>
+<em>statement_list</em></p>
+</dd>
+<dt class="hdlist1"><em>case_label</em> : </dt>
+<dd>
+<p><em>CASE</em> <em>expression</em> <em>COLON</em><br>
+<em>DEFAULT</em> <em>COLON</em></p>
+</dd>
+<dt class="hdlist1"><em>iteration_statement</em> : </dt>
+<dd>
+<p><em>WHILE</em> <em>LEFT_PAREN</em> <em>condition</em> <em>RIGHT_PAREN</em> <em>statement_no_new_scope</em><br>
+<em>DO</em> <em>statement</em> <em>WHILE</em> <em>LEFT_PAREN</em> <em>expression</em> <em>RIGHT_PAREN</em>
+<em>SEMICOLON</em><br>
+<em>FOR</em> <em>LEFT_PAREN</em> <em>for_init_statement</em> <em>for_rest_statement</em>
+<em>RIGHT_PAREN</em> <em>statement_no_new_scope</em></p>
+</dd>
+<dt class="hdlist1"><em>for_init_statement</em> : </dt>
+<dd>
+<p><em>expression_statement</em><br>
+<em>declaration_statement</em></p>
+</dd>
+<dt class="hdlist1"><em>conditionopt</em> : </dt>
+<dd>
+<p>/* <em>empty</em> */<br>
+<em>condition</em></p>
+</dd>
+<dt class="hdlist1"><em>for_rest_statement</em> : </dt>
+<dd>
+<p><em>conditionopt</em> <em>SEMICOLON</em><br>
+<em>conditionopt</em> <em>SEMICOLON</em> <em>expression</em></p>
+</dd>
+<dt class="hdlist1"><em>jump_statement</em> : </dt>
+<dd>
+<p><em>CONTINUE</em> <em>SEMICOLON</em><br>
+<em>BREAK</em> <em>SEMICOLON</em><br>
+<em>RETURN</em> <em>SEMICOLON</em><br>
+<em>RETURN</em> <em>expression</em> <em>SEMICOLON</em><br>
+<em>DISCARD</em> <em>SEMICOLON</em> // Fragment shader only.</p>
+</dd>
+</dl>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Grammar Note: No 'goto'.
+Gotos are not supported.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><em>translation_unit</em> : </dt>
+<dd>
+<p><em>external_declaration</em><br>
+<em>translation_unit</em> <em>external_declaration</em></p>
+</dd>
+<dt class="hdlist1"><em>external_declaration</em> : </dt>
+<dd>
+<p><em>function_definition</em><br>
+<em>declaration</em><br>
+<em>SEMICOLON</em></p>
+</dd>
+<dt class="hdlist1"><em>function_definition</em> : </dt>
+<dd>
+<p><em>function_prototype</em> <em>compound_statement_no_new_scope</em></p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>In general the above grammar describes a super set of the OpenGL Shading Language.
+Certain constructs that are valid purely in terms of the grammar are
+disallowed by statements elsewhere in this specification.</p>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

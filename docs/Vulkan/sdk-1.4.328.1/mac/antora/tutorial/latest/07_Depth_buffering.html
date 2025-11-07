@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Depth Buffering :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../_/css/site.css">
+    <link rel="stylesheet" href="../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../.."><img class="navbar-item" alt="Vulkan White Label" src="../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="90_FAQ.html">FAQ</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li><a href="07_Depth_buffering.html">Depth buffering</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Tutorial/antora/modules/ROOT/pages/07_Depth_buffering.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Depth Buffering</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The geometry we&#8217;ve worked with so far is projected into 3D, but it&#8217;s still completely flat.
+In this chapter, we&#8217;re going to add a Z coordinate to the position to prepare for 3D meshes.
+We&#8217;ll use this third coordinate to place a square over the current square to see a problem that arises when geometry is not sorted by depth.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_3d_geometry"><a class="anchor" href="#_3d_geometry"></a>3D geometry</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Change the <code>Vertex</code> struct to use a 3D vector for the position, and update the <code>format</code> in the corresponding <code>VkVertexInputAttributeDescription</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">struct Vertex {
+    glm::vec3 pos;
+    glm::vec3 color;
+    glm::vec2 texCoord;
+
+    ...
+
+    static std::array&lt;vk::VertexInputAttributeDescription, 3&gt; getAttributeDescriptions() {
+        return {
+            vk::VertexInputAttributeDescription( 0, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, pos) ),
+            vk::VertexInputAttributeDescription( 1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, color) ),
+            vk::VertexInputAttributeDescription( 2, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, texCoord) )
+        };
+
+        ...
+    }
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Next, update the vertex shader to accept and transform 3D coordinates as input.
+Remember to recompile it afterward!</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">float3 inPosition;
+
+...
+
+[shader("vertex")]
+VSOutput vertMain(VSInput input) {
+    VSOutput output;
+    output.pos = mul(ubo.proj, mul(ubo.view, mul(ubo.model, float4(input.inPosition, 1.0))));
+    output.fragColor = input.inColor;
+    output.fragTexCoord = input.inTexCoord;
+    return output;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Lastly, update the <code>vertices</code> container to include Z coordinates:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">const std::vector&lt;Vertex&gt; vertices = {
+    {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+    {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+    {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+    {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you run your application now, then you should see exactly the same result as before.
+It&#8217;s time to add some extra geometry to make the scene more interesting, and to demonstrate the problem that we&#8217;re going to tackle in this chapter.
+Duplicate the vertices to define positions for a square right under the current one like this:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/extra_square.svg" alt="extra square">
+</div>
+</div>
+<div class="paragraph">
+<p>Use Z coordinates of <code>-0.5f</code> and add the appropriate indices for the extra square:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">const std::vector&lt;Vertex&gt; vertices = {
+    {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+    {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+    {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+    {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+
+    {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+    {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+    {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+    {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
+};
+
+const std::vector&lt;uint16_t&gt; indices = {
+    0, 1, 2, 2, 3, 0,
+    4, 5, 6, 6, 7, 4
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Run your program now, and you&#8217;ll see something resembling an Escher illustration:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/depth_issues.png" alt="depth issues">
+</div>
+</div>
+<div class="paragraph">
+<p>The problem is that the fragments of the lower square are drawn over the fragments of the upper square, simply because it comes later in the index array.
+There are two ways to solve this:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Sort all the draw calls by depth from back to front</p>
+</li>
+<li>
+<p>Use depth testing with a depth buffer</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The first approach is commonly used for drawing transparent objects, because order-independent transparency is a difficult challenge to solve.
+However, the problem of ordering fragments by depth is much more commonly solved using a <em>depth buffer</em>.
+A depth buffer is an additional attachment that stores the depth for every position just like the color attachment stores the color of every position.
+Every time the rasterizer produces a fragment, the depth test will check if the new fragment is closer than the previous one.
+If it isn&#8217;t, then the new fragment is discarded.
+A fragment that passes the depth test writes its own depth to the depth buffer.
+It is possible to manipulate this value from the fragment shader, just like you can manipulate the color output.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include &lt;glm/glm.hpp&gt;
+#include &lt;glm/gtc/matrix_transform.hpp&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The perspective projection matrix generated by GLM will use the OpenGL depth range of <code>-1.0</code> to <code>1.0</code> by default.
+We need to configure it to use the Vulkan range of <code>0.0</code> to <code>1.0</code> using the <code>GLM_FORCE_DEPTH_ZERO_TO_ONE</code> definition.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_depth_image_and_view"><a class="anchor" href="#_depth_image_and_view"></a>Depth image and view</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A depth attachment is based on an image, just like the color attachment.
+The difference is that the swap chain will not automatically create depth images for us.
+We only need a single depth image, because only one draw operation is running at once.
+The depth image will again require the trifecta of resources: image, memory and image view.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::raii::Image depthImage = nullptr;
+vk::raii::DeviceMemory depthImageMemory = nullptr;
+vk::raii::ImageView depthImageView = nullptr;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Create a new function <code>createDepthResources</code> to set up these resources:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void initVulkan() {
+    ...
+    createCommandPool();
+    createDepthResources();
+    createTextureImage();
+    ...
+}
+
+...
+
+void createDepthResources() {
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Creating a depth image is fairly straightforward.
+It should have the same resolution as the color attachment, defined by the swap chain extent, an image usage appropriate for a depth attachment, optimal tiling and device local memory.
+The only question is: what is the right format for a depth image?
+The format must contain a depth component, indicated by <code><em>D??</em></code> in the <code>VK_FORMAT_</code>.</p>
+</div>
+<div class="paragraph">
+<p>Unlike the texture image, we don&#8217;t necessarily need a specific format, because we won&#8217;t be directly accessing the texels from the program.
+It just needs to have a reasonable accuracy, at least 24 bits is common in real-world applications.
+There are several formats that fit this requirement:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_FORMAT_D32_SFLOAT</code>: 32-bit float for depth</p>
+</li>
+<li>
+<p><code>VK_FORMAT_D32_SFLOAT_S8_UINT</code>: 32-bit signed float for depth and 8 bit stencil component</p>
+</li>
+<li>
+<p><code>VK_FORMAT_D24_UNORM_S8_UINT</code>: 24-bit float for depth and 8 bit stencil component</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The stencil component is used for <a href="https://en.wikipedia.org/wiki/Stencil_buffer">stencil tests</a>, which is an additional test that can be combined with depth testing.
+We&#8217;ll look at this in a future chapter.</p>
+</div>
+<div class="paragraph">
+<p>We could simply go for the <code>VK_FORMAT_D32_SFLOAT</code> format, because support for it is extremely common (see the hardware database), but it&#8217;s nice to add some extra flexibility to our application where possible.
+We&#8217;re going to write a function <code>findSupportedFormat</code> that takes a list of candidate formats in order from most desirable to least desirable, and checks which is the first one that is supported:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::Format findSupportedFormat(const std::vector&lt;vk::Format&gt;&amp; candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features) {
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The support of a format depends on the tiling mode and usage, so we must also include these as parameters.
+The support of a format can be queried using the <code>vkGetPhysicalDeviceFormatProperties</code> function:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">for (const auto format : candidates) {
+    vk::FormatProperties props = physicalDevice.getFormatProperties(format);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>VkFormatProperties</code> struct contains three fields:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>linearTilingFeatures</code>: Use cases that are supported with linear tiling</p>
+</li>
+<li>
+<p><code>optimalTilingFeatures</code>: Use cases that are supported with optimal tiling</p>
+</li>
+<li>
+<p><code>bufferFeatures</code>: Use cases that are supported for buffers</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Only the first two are relevant here, and the one we check depends on the <code>tiling</code> parameter of the function:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">if (tiling == vk::ImageTiling::eLinear &amp;&amp; (props.linearTilingFeatures &amp; features) == features) {
+    return format;
+}
+if (tiling == vk::ImageTiling::eOptimal &amp;&amp; (props.optimalTilingFeatures &amp; features) == features) {
+    return format;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If none of the candidate formats support the desired usage, then we can either return a special value or simply throw an exception:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::Format findSupportedFormat(const std::vector&lt;vk::Format&gt;&amp; candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features) {
+    for (const auto format : candidates) {
+        vk::FormatProperties props = physicalDevice.getFormatProperties(format);
+
+        if (tiling == vk::ImageTiling::eLinear &amp;&amp; (props.linearTilingFeatures &amp; features) == features) {
+            return format;
+        }
+        if (tiling == vk::ImageTiling::eOptimal &amp;&amp; (props.optimalTilingFeatures &amp; features) == features) {
+            return format;
+        }
+    }
+
+    throw std::runtime_error("failed to find supported format!");
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We&#8217;ll use this function now to create a <code>findDepthFormat</code> helper function to select a format with a depth component that supports usage as depth attachment:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">VkFormat findDepthFormat() {
+   return findSupportedFormat(
+        {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint},
+            vk::ImageTiling::eOptimal,
+            vk::FormatFeatureFlagBits::eDepthStencilAttachment
+        );
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Make sure to use the <code>VK_FORMAT_FEATURE_</code> flag instead of <code>VK_IMAGE_USAGE_</code> in this case.
+All of these candidate formats contain a depth component, but the latter two also contain a stencil component.
+We won&#8217;t be using that yet, but we do need to take that into account when performing layout transitions on images with these formats.
+Add a simple helper function that tells us if the chosen depth format contains a stencil component:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">bool hasStencilComponent(vk::Format format) {
+    return format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Call the function to find a depth format from <code>createDepthResources</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::Format depthFormat = findDepthFormat();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We now have all the required information to invoke our <code>createImage</code> and <code>createImageView</code> helper functions:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">createImage(swapChainExtent.width, swapChainExtent.height, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, depthImage, depthImageMemory);
+depthImageView = createImageView(depthImage, depthFormat, vk::ImageAspectFlagBits::eDepth);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>However, the <code>createImageView</code> function currently assumes that the subresource is always the <code>VK_IMAGE_ASPECT_COLOR_BIT</code>, so we will need to turn that field into a parameter:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::raii::ImageView createImageView(vk::raii::Image&amp; image, vk::Format format, vk::ImageAspectFlags aspectFlags) {
+    ...
+    viewInfo.subresourceRange.aspectMask = aspectFlags;
+    ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Update all calls to this function to use the right aspect:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">swapChainImageViews[i] = createImageView(swapChainImages[i], swapChainImageFormat, vk::ImageAspectFlagBits::eColor);
+...
+depthImageView = createImageView(depthImage, depthFormat, vk::ImageAspectFlagBits::eDepth);
+...
+textureImageView = createImageView(textureImage, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>That&#8217;s it for creating the depth image.
+We don&#8217;t need to map it or copy another image to it, because we&#8217;re going to clear it at the start of the render pass like the color attachment.</p>
+</div>
+<div class="sect2">
+<h3 id="_explicitly_transitioning_the_depth_image"><a class="anchor" href="#_explicitly_transitioning_the_depth_image"></a>Explicitly transitioning the depth image</h3>
+<div class="paragraph">
+<p>We don&#8217;t need to explicitly transition the layout of the image to a depth attachment because we&#8217;ll take care of this in the render pass.
+However, for completeness, I&#8217;ll still describe the process in this section.
+You may skip it if you like.</p>
+</div>
+<div class="paragraph">
+<p>Make a call to <code>transitionImageLayout</code> at the end of the <code>createDepthResources</code> function like so:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">transitionImageLayout(depthImage, depthFormat, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The undefined layout can be used as initial layout, because there are no existing depth image contents that matter.
+We need to update some logic in <code>transitionImageLayout</code> to use the right subresource aspect:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">if (newLayout == vk::ImageLayout::eDepthStencilAttachmentOptimal) {
+    barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
+
+    if (hasStencilComponent(format)) {
+        barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+    }
+} else {
+    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Although we&#8217;re not using the stencil component, we do need to include it in the layout transitions of the depth image.</p>
+</div>
+<div class="paragraph">
+<p>Finally, add the correct access masks and pipeline stages:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED &amp;&amp; newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+    barrier.srcAccessMask = 0;
+    barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+    sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+} else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &amp;&amp; newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+    barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+    sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+} else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED &amp;&amp; newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+    barrier.srcAccessMask = 0;
+    barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+    sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+} else {
+    throw std::invalid_argument("unsupported layout transition!");
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The depth buffer will be read from to perform depth tests to see if a fragment is visible, and will be written to when a new fragment is drawn.
+The reading happens in the <code>VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT</code> stage and the writing in the <code>VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT</code>.
+You should pick the earliest pipeline stage that matches the specified operations, so that it is ready for usage as depth attachment when it needs to be.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_render_pass"><a class="anchor" href="#_render_pass"></a>Render pass</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>We&#8217;re now going to modify <code>createRenderPass</code> to include a depth attachment.
+First specify the <code>VkAttachmentDescription</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::AttachmentDescription depthAttachment({}, findDepthFormat(), vk::SampleCountFlagBits::e1, vk::AttachmentLoadOp::eClear,
+    vk::AttachmentStoreOp::eDontCare, vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare, vk::ImageLayout::eUndefined,
+    vk::ImageLayout::eDepthStencilAttachmentOptimal);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>format</code> should be the same as the depth image itself.
+This time we don&#8217;t care about storing the depth data (<code>storeOp</code>), because it will not be used after drawing has finished.
+This may allow the hardware to perform additional optimizations.
+Just like the color buffer, we don&#8217;t care about the previous depth contents, so we can use <code>VK_IMAGE_LAYOUT_UNDEFINED</code> as <code>initialLayout</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::AttachmentReference depthAttachmentRef(1, vk::ImageLayout::eDepthStencilAttachmentOptimal);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Add a reference to the attachment for the first (and only) subpass:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::SubpassDescription subpass({}, vk::PipelineBindPoint::eGraphics, 0, {}, 1, &amp;colorAttachmentRef, {}, &amp;depthAttachmentRef);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Unlike color attachments, a subpass can only use a single depth (+stencil) attachment.
+It wouldn&#8217;t really make any sense to do depth tests on multiple buffers.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++"> std::array attachments = {colorAttachment, depthAttachment};
+ vk::RenderPassCreateInfo renderPassInfo({}, attachments, subpass, dependency);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Next, update the <code>VkSubpassDependency</code> struct to refer to both attachments.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::SubpassDependency dependency(vk::SubpassExternal, {},
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eLateFragmentTests,
+                    vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                    vk::AccessFlagBits::eDepthStencilAttachmentWrite,
+                    vk::AccessFlagBits::eDepthStencilAttachmentWrite | vk::AccessFlagBits::eColorAttachmentWrite
+                    );</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Finally, we need to extend our subpass dependencies to make sure that there is no conflict between the transitioning of the depth image and it being cleared as part of its load operation.
+The depth image is first accessed in the early fragment test pipeline stage and because we have a load operation that <em>clears</em>, we should specify the access mask for writes.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_framebuffer"><a class="anchor" href="#_framebuffer"></a>Framebuffer</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The next step is to modify the framebuffer creation to bind the depth image to the depth attachment.
+Go to <code>createFramebuffers</code> and specify the depth image view as second attachment:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">svk::ImageView attachments[] = { view, *depthImageView };
+vk::FramebufferCreateInfo framebufferCreateInfo( {}, *renderPass, attachments, swapChainExtent.width, swapChainExtent.height, 1 );</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The color attachment differs for every swap chain image, but the same depth image can be used by all of them because only a single subpass is running at the same time due to our semaphores.</p>
+</div>
+<div class="paragraph">
+<p>You&#8217;ll also need to move the call to <code>createFramebuffers</code> to make sure that it is called after the depth image view has actually been created:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void initVulkan() {
+    ...
+    createDepthResources();
+    createFramebuffers();
+    ...
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_clear_values"><a class="anchor" href="#_clear_values"></a>Clear values</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Because we now have multiple attachments with <code>VK_ATTACHMENT_LOAD_OP_CLEAR</code>, we also need to specify multiple clear values.
+Go to <code>recordCommandBuffer</code> and create an array of <code>VkClearValue</code> structs:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::ClearValue clearColor[2] = { vk::ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f), vk::ClearDepthStencilValue(1.0f, 0) };
+vk::RenderPassBeginInfo renderPassInfo( *renderPass, swapChainFramebuffers[imageIndex], {{0, 0}, swapChainExtent}, clearColor);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The range of depths in the depth buffer is <code>0.0</code> to <code>1.0</code> in Vulkan, where <code>1.0</code> lies at the far view plane and <code>0.0</code> at the near view plane.
+The initial value at each point in the depth buffer should be the furthest possible depth, which is <code>1.0</code>.</p>
+</div>
+<div class="paragraph">
+<p>Note that the order of <code>clearValues</code> should be identical to the order of your attachments.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_depth_and_stencil_state"><a class="anchor" href="#_depth_and_stencil_state"></a>Depth and stencil state</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The depth attachment is ready to be used now, but depth testing still needs to be enabled in the graphics pipeline.
+It is configured through the <code>VkPipelineDepthStencilStateCreateInfo</code> struct:</p>
+</div>
+<div class="paragraph">
+<p>The <code>depthTestEnable</code> field specifies if the depth of new fragments should be compared to the depth buffer to see if they should be discarded.
+The <code>depthWriteEnable</code> field specifies if the new depth of fragments that pass the depth test should actually be written to the depth buffer.</p>
+</div>
+<div class="paragraph">
+<p>The <code>depthCompareOp</code> field specifies the comparison that is performed to keep or discard fragments.
+We&#8217;re sticking to the convention of lower depth = closer, so the depth of new fragments should be <em>less</em>.</p>
+</div>
+<div class="paragraph">
+<p>The <code>depthBoundsTestEnable</code>, <code>minDepthBounds</code> and <code>maxDepthBounds</code> fields are used for the optional depth bound test.
+Basically, this allows you to only keep fragments that fall within the specified depth range.
+We won&#8217;t be using this functionality.</p>
+</div>
+<div class="paragraph">
+<p>The last three fields configure stencil buffer operations, which we also won&#8217;t be using in this tutorial.
+If you want to use these operations, then you will have to make sure that the format of the depth/stencil image contains a stencil component.</p>
+</div>
+<div class="paragraph">
+<p>Update the <code>VkGraphicsPipelineCreateInfo</code> struct to reference the depth stencil state we just filled in.
+A depth stencil state must always be specified if the render pass contains a depth stencil attachment.</p>
+</div>
+<div class="paragraph">
+<p>If you run your program now, then you should see that the fragments of the geometry are now correctly ordered:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/depth_correct.png" alt="depth correct">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_handling_window_resize"><a class="anchor" href="#_handling_window_resize"></a>Handling window resize</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The resolution of the depth buffer should change when the window is resized to match the new color attachment resolution.
+Extend the <code>recreateSwapChain</code> function to recreate the depth resources in that case:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void recreateSwapChain() {
+    int width = 0, height = 0;
+    while (width == 0 || height == 0) {
+        glfwGetFramebufferSize(window, &amp;width, &amp;height);
+        glfwWaitEvents();
+    }
+
+    vkDeviceWaitIdle(device);
+
+    cleanupSwapChain();
+
+    createSwapChain();
+    createImageViews();
+    createDepthResources();
+    createFramebuffers();
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Congratulations, your application is now finally ready to render arbitrary 3D geometry and have it look right.
+We&#8217;re going to try this out in the <a href="08_Loading_models.html" class="xref page">next chapter</a> by drawing a textured model!</p>
+</div>
+<div class="paragraph">
+<p><a href="_attachments/27_depth_buffering.cpp">C&#43;&#43; code</a> /
+<a href="_attachments/27_shader_depth.slang">slang shader</a> /
+<a href="_attachments/27_shader_depth.vert">GLSL Vertex shader</a> /
+<a href="_attachments/27_shader_depth.frag">GLSL Fragment shader</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+<script src="../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../.." data-snippet-length="100" data-stylesheet="../../_/css/search.css"></script>
+<script async src="../../search-index.js"></script>
+<script async src="../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Shader Object :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:samples" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="samples" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../../README.html">Vulkan Samples</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../README.html">Samples overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../vulkan_basics.html">Vulkan basics</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../../shaders/README.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../framework/README.html">Sample framework</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../components/README.html">Framework components</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/README.html">Api usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/compute_nbody/README.html">Compute N-body</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_compute_nbody/README.html">Compute N-body (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/dynamic_uniform_buffers/README.html">Dynamic uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_dynamic_uniform_buffers/README.html">Dynamic Uniform Buffers (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/hdr/README.html">HDR</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_hdr/README.html">HDR (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/hello_triangle/README.html">Hello Triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_hello_triangle/README.html">Hello Triangle (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/hello_triangle_1_3/README.html">Hello Triangle 1.3</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_hello_triangle_1_3/README.html">Hello Triangle 1.3(Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/instancing/README.html">Instancing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_instancing/README.html">Instancing (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/separate_image_sampler/README.html">Separate image sampler</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_separate_image_sampler/README.html">Separate image sampler (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/terrain_tessellation/README.html">Terrain tessellation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_terrain_tessellation/README.html">Terrain tessellation (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/texture_loading/README.html">Texture loading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_texture_loading/README.html">Texture loading (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/texture_mipmap_generation/README.html">Texture mipmap generation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_texture_mipmap_generation/README.html">Texture mipmap generation (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/timestamp_queries/README.html">Timestamp queries</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_timestamp_queries/README.html">Timestamp queries (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/oit_linked_lists/README.html">OIT linked lists</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_oit_linked_lists/README.html">OIT linked lists (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/oit_depth_peeling/README.html">OIT depth peeling</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_oit_depth_peeling/README.html">OIT depth peeling (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../README.html">Extension usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../buffer_device_address/README.html">Buffer device address</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../calibrated_timestamps/README.html">Calibrated timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../conditional_rendering/README.html">Conditional rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../conservative_rasterization/README.html">Conservative rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../debug_utils/README.html">Debug utils</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../descriptor_buffer_basic/README.html">Descriptor buffer basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../descriptor_indexing/README.html">Descriptor indexing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../dynamic_line_rasterization/README.html">Dynamic line rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../dynamic_primitive_clipping/README.html">Dynamic primitive clipping</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../dynamic_rendering/README.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../dynamic_rendering_local_read/README.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../extended_dynamic_state2/README.html">Extended dynamic state2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../fragment_shader_barycentric/README.html">Fragment shader barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../fragment_shading_rate/README.html">Fragment shading rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../fragment_shading_rate_dynamic/README.html">Fragment shading rate dynamic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../full_screen_exclusive/README.html">Full screen exclusive</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../graphics_pipeline_library/README.html">Graphics pipeline library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../gshader_to_mshader/README.html">Geometry shader to mesh shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../host_image_copy/README.html">Host image copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../logic_op_dynamic_state/README.html">Logic op dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../memory_budget/README.html">Memory budget</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../mesh_shader_culling/README.html">Mesh shader culling</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../mesh_shading/README.html">Mesh shading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../hpp_mesh_shading/README.html">Mesh shading (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../open_cl_interop/README.html">OpenCL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../open_cl_interop_arm/README.html">OpenCL interop (Arm)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../open_gl_interop/README.html">OpenGL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../portability/README.html">Portability</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../push_descriptors/README.html">Push descriptors</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../hpp_push_descriptors/README.html">Push descriptors (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ray_tracing_basic/README.html">Raytracing basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ray_tracing_extended/README.html">Raytracing extended</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ray_queries/README.html">Ray queries</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ray_tracing_reflection/README.html">Ray tracing reflection</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ray_tracing_position_fetch/README.html">Ray tracing position fetch</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="README.html">Shader Object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../shader_debugprintf/README.html">Shader Debug Printf</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../sparse_image/README.html">Sparse Image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../synchronization_2/README.html">Synchronization 2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../timeline_semaphore/README.html">Timeline semaphore</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../vertex_dynamic_state/README.html">Vertex dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../dynamic_multisample_rasterization/README.html">Dynamic multisample rasterization</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../performance/README.html">Performance samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/16bit_arithmetic/README.html">16bit arithmetic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/16bit_storage_input_output/README.html">16bit storage input output</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/afbc/README.html">AFBC</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/async_compute/README.html">Async compute</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/command_buffer_usage/README.html">Command buffer usage</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/constant_data/README.html">Constant data</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/descriptor_management/README.html">Descriptor management</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/image_compression_control/README.html">Image compression control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/layout_transitions/README.html">Layout transitions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/msaa/README.html">MSAA</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/multithreading_render_passes/README.html">Multithreading render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/multi_draw_indirect/README.html">Multi draw indirect</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/pipeline_barriers/README.html">Pipeline barriers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../performance/pipeline_cache/README.html">Pipeline cache</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../performance/hpp_pipeline_cache/README.html">Pipeline cache (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/render_passes/README.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/specialization_constants/README.html">Specialization constants</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/subpasses/README.html">Subpasses</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/surface_rotation/README.html">Surface rotation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../performance/swapchain_images/README.html">Swapchain images</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../performance/hpp_swapchain_images/README.html">Swapchain images (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/texture_compression_basisu/README.html">Texture compression basisu</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../performance/texture_compression_comparison/README.html">Texture compression comparison</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../performance/hpp_texture_compression_comparison/README.html">Texture compression comparison (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/wait_idle/README.html">Wait idle</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../tooling/README.html">Tooling samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../tooling/profiles/README.html">Profiles</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../general/README.html">General samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../general/mobile_nerf/README.html">Mobile NeRF</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../general/mobile_nerf_rayquery/README.html">Mobile NeRF Ray Query</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../docs/README.html">General documentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../docs/build.html">Build guide</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../docs/memory_limits.html">Memory limits</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../docs/misc.html">Miscellaneous</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Samples</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../../../README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../../README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../../README.html">Vulkan Samples</a></li>
+    <li><a href="../README.html">Extension usage samples</a></li>
+    <li><a href="README.html">Shader Object</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Samples/antora/modules/ROOT/pages/samples/extensions/shader_object/README.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Shader Object</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+The source for this sample can be found in the <a href="https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/shader_object">Khronos Vulkan samples github repository</a>.
+</td>
+</tr>
+</table>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../../_images/samples/extensions/shader_object/images/shader_object_screenshot.png" alt="Sample">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This sample demonstrates how to use the <code>VK_EXT_shader_object</code> extension, which provides a way to specify shaders and state without using <code>VkPipeline</code> objects.</p>
+</div>
+<div class="paragraph">
+<p>When drawing with shader objects, shaders for each stage are set individually on a command buffer and state can be set at any time before calling <code>vkCmdDraw*</code>.</p>
+</div>
+<div class="paragraph">
+<p>This sample sets a minimal amount of state required for each draw call, and only updates state when the next draw call requires it.</p>
+</div>
+<div class="paragraph">
+<p>In its default configuration, this sample automatically iterates over permutations of shaders and state, randomly changing one of:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The shader used by one stage of one model</p>
+</li>
+<li>
+<p>The post processing fragment shader</p>
+</li>
+<li>
+<p>The output color format</p>
+</li>
+<li>
+<p>The output depth format</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The models in the middle demonstrate the use of linked vertex and fragment shaders, which can only ever change in tandem.
+The surrounding models use unlinked shaders, where each model uses its own separate vertex, fragment, and potentially geometry shaders.</p>
+</div>
+<div class="paragraph">
+<p>Post processing, which is enabled by default, applies a specified visual effect to the results of model rendering.</p>
+</div>
+<div class="paragraph">
+<p>An optional wireframe mode may be enabled if supported by the device.</p>
+</div>
+<div class="paragraph">
+<p>This sample can be configured at runtime through a debug GUI.
+This UI allows you to change various aspects of the scene that would be impractical to control dynamically using pipelines.
+UI drawing also demonstrates interoperability between pipelines within conventional render passes (which are used to render the UI) and shader objects with dynamic rendering (which are used to render the scene).</p>
+</div>
+<div class="paragraph">
+<p>A plot of the last 2000 CPU frame times is displayed at the bottom of the screen.
+This plot shows the CPU impact of swapping shaders and state at runtime.</p>
+</div>
+<div class="paragraph">
+<p>Shader objects may only be used within <code>VK_KHR_dynamic_rendering</code> render passes.
+The <a href="../dynamic_rendering">dynamic rendering sample</a> explains how to use that extension in more detail.
+The main parts relevant to drawing with shader objects are <code>vkCmdBeginRenderingKHR</code> and <code>vkCmdEndRenderingKHR</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_enabling_the_extension"><a class="anchor" href="#_enabling_the_extension"></a>Enabling the Extension</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In order to use shader objects, both the <code>VK_EXT_shader_object</code> extension and the <code>shaderObject</code> feature need to be enabled on the <code>VkDevice</code>.
+This is accomplished by including <code>VK_EXT_SHADER_OBJECT_EXTENSION_NAME</code> in <code>VkDeviceCreateInfo</code>'s <code>ppEnabledExtensionNames</code> array, and also including a <code>VkPhysicalDeviceShaderObjectFeaturesEXT</code> structure with the <code>shaderObject</code> feature set to <code>VK_TRUE</code> in its <code>pNext</code> chain.</p>
+</div>
+<div class="paragraph">
+<p>In our case, these are handled through a common abstraction shared with the other samples.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-CPP hljs" data-lang="CPP">add_device_extension(VK_EXT_SHADER_OBJECT_EXTENSION_NAME);</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-CPP hljs" data-lang="CPP">// Enable Shader Object
+auto &amp;requestedShaderObject        = gpu.request_extension_features&lt;VkPhysicalDeviceShaderObjectFeaturesEXT&gt;(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT);
+requestedShaderObject.shaderObject = VK_TRUE;</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_shader_object_creation"><a class="anchor" href="#_shader_object_creation"></a>Shader Object Creation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><code>VkShaderEXT</code> objects are created using the <code>vkCreateShadersEXT</code> function.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-CPP hljs" data-lang="CPP">VkResult vkCreateShadersEXT(
+    VkDevice                     device,
+    uint32_t                     createInfoCount,
+    const VkShaderCreateInfoEXT* pCreateInfos,
+    const VkAllocationCallbacks* pAllocator,
+    VkShaderEXT*                 pShaders);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In this sample, shaders are abstracted into a <code>Shader</code> class.
+This class holds the created <code>VkShaderEXT</code> object, information needed for building and binding the shader.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-CPP hljs" data-lang="CPP">class Shader
+{
+    VkShaderStageFlagBits stage;
+    VkShaderStageFlags    next_stage;
+    VkShaderEXT           shader      = VK_NULL_HANDLE;
+    std::string           shader_name = "shader";
+    VkShaderCreateInfoEXT vk_shader_create_info;
+    std::vector&lt;uint32_t&gt; spirv;
+
+    // ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The scene contains multiple models that each use multiple <code>Shader</code> objects.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_linked_shaders"><a class="anchor" href="#_linked_shaders"></a>Linked Shaders</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If we know a combination of shaders will always be used together we can link the shaders together.
+Linked shaders allow the driver to perform cross stage optimizations that can potentially improve GPU performance when the shaders are executed.</p>
+</div>
+<div class="paragraph">
+<p>One of the ways this sample uses linked shaders is for the skybox.</p>
+</div>
+<div class="paragraph">
+<p>The skybox uses only a vertex and fragment shader.
+The vertex shader&#8217;s stage is set to <code>VK_SHADER_STAGE_VERTEX_BIT</code> with its next stage set to only <code>VK_SHADER_STAGE_FRAGMENT_BIT</code>.
+The fragment shader&#8217;s stage is set to <code>VK_SHADER_STAGE_FRAGMENT_BIT</code>, with no next stage.</p>
+</div>
+<div class="paragraph">
+<p>To draw with shader objects we need to create one <code>VkShaderEXT</code> object per shader stage.
+This means we need an instance of the <code>Shader</code> class for each shader stage.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-CPP hljs" data-lang="CPP">// Create shaders with current and next stage bits and set the shaders GLSL shader data, descriptor sets, and push constants
+
+skybox_vert_shader = new Shader(VK_SHADER_STAGE_VERTEX_BIT,
+                                VK_SHADER_STAGE_FRAGMENT_BIT,
+                                "skybox vert",
+                                vert_shader_data,
+                                &amp;descriptor_set_layouts[ShaderTypeBasic],
+                                &amp;push_constant_ranges[ShaderTypeBasic]);
+skybox_frag_shader = new Shader(VK_SHADER_STAGE_FRAGMENT_BIT,
+                                0,
+                                "skybox frag",
+                                frag_shader_data,
+                                &amp;descriptor_set_layouts[ShaderTypeBasic],
+                                &amp;push_constant_ranges[ShaderTypeBasic]);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>Shader</code> class require us to provide the entire contents of the <code>VkShaderCreateInfoEXT</code> structure including information to compile the GLSL.
+The constructor will compile the GLSL and fill out the <code>VkShaderCreateInfoEXT</code> structure for this <code>Shader</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-CPP hljs" data-lang="CPP">ShaderObject::Shader::Shader(VkShaderStageFlagBits stage_,
+                             VkShaderStageFlags    next_stage_,
+                             std::string           shader_name_,
+                             const std::vector&lt;uint8_t&gt; &amp; vert_glsl_source,
+                             const VkDescriptorSetLayout *pSetLayouts,
+                             const VkPushConstantRange *  pPushConstantRange)
+{
+    stage       = stage_;
+    shader_name = shader_name_;
+    next_stage  = next_stage_;
+
+	// Compile the GLSL source
+	if (!glsl_compiler.compile_to_spirv(stage, vert_glsl_source, "main", {}, spirv, info_log))
+	{
+		LOGE("Failed to compile shader, Error: {}", info_log.c_str());
+	}
+
+	// Fill out the shader create info struct
+	vk_shader_create_info.sType                  = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT;
+	vk_shader_create_info.pNext                  = nullptr;
+	vk_shader_create_info.flags                  = 0;
+	vk_shader_create_info.stage                  = stage;
+	vk_shader_create_info.nextStage              = next_stage;
+	vk_shader_create_info.codeType               = VK_SHADER_CODE_TYPE_SPIRV_EXT;
+	vk_shader_create_info.codeSize               = spirv.size() * sizeof(spirv[0]);
+	vk_shader_create_info.pCode                  = spirv.data();
+	vk_shader_create_info.pName                  = "main";
+	vk_shader_create_info.setLayoutCount         = 1;
+	vk_shader_create_info.pSetLayouts            = pSetLayouts;
+	vk_shader_create_info.pushConstantRangeCount = 1;
+	vk_shader_create_info.pPushConstantRanges    = pPushConstantRange;
+	vk_shader_create_info.pSpecializationInfo    = nullptr;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We want the skybox shaders to be linked, so we need to add the <code>VK_SHADER_CREATE_LINK_STAGE_BIT_EXT</code> flag to each shader&#8217;s <code>VkShaderCreateInfoEXT</code>.
+The sample determines whether to add the flag at shader creation time depending on if <code>build_shader</code> or <code>build_linked_shaders</code> is called.
+<code>build_linked_shaders</code> will be called with pointers to the vertex and fragment shaders.
+The sample only supports linked vertex and fragment shaders and does not handle linking other shader stages such as geometry.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-CPP hljs" data-lang="CPP">// Set the fragment shader as linked to build them linked and build the shader
+build_linked_shaders(device, skybox_vert_shader, skybox_frag_shader);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To build the shaders we call <code>vkCreateShadersEXT</code> with all of the <code>VkShaderCreateInfoEXT</code>s for each of the linked shaders.
+The <code>build_linked_shaders</code> function adds the <code>VK_SHADER_CREATE_LINK_STAGE_BIT_EXT</code> flag to each <code>VkShaderCreateInfoEXT</code> struct, then calls <code>vkCreateShadersEXT</code> on both shaders.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-CPP hljs" data-lang="CPP">void ShaderObject::build_linked_shaders(VkDevice device, ShaderObject::Shader *vert, ShaderObject::Shader *frag)
+{
+	VkShaderCreateInfoEXT shader_create_infos[2];
+
+	if (vert == nullptr || frag == nullptr)
+	{
+		LOGE("build_linked_shaders failed with null vertex or fragment shader\n");
+	}
+
+	shader_create_infos[0] = vert-&gt;get_create_info();
+	shader_create_infos[1] = frag-&gt;get_create_info();
+
+	for (auto &amp;shader_create : shader_create_infos)
+	{
+		shader_create.flags |= VK_SHADER_CREATE_LINK_STAGE_BIT_EXT;
+	}
+
+	VkShaderEXT shaderEXTs[2];
+
+	// Create the shader objects
+	VkResult result = vkCreateShadersEXT(device,
+	                                     2,
+	                                     shader_create_infos,
+	                                     nullptr,
+										 shaderEXTs);
+
+	if (result != VK_SUCCESS)
+	{
+		LOGE("vkCreateShadersEXT failed\n");
+	}
+
+	vert-&gt;set_shader(shaderEXTs[0]);
+	frag-&gt;set_shader(shaderEXTs[1]);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The skybox shaders can now be bound and used to draw.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_unlinked_shaders"><a class="anchor" href="#_unlinked_shaders"></a>Unlinked Shaders</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Linking shaders is optional.
+For some use cases it may be advantageous to create shaders that are not linked.
+This allows arbitrary combinations of shaders to be used together at command buffer recording time, though you should keep in mind that the driver may be less able to optimize the shaders' GPU performance.</p>
+</div>
+<div class="paragraph">
+<p>In order to use a given combination of unlinked shaders together, their input and output interfaces need to be compatible and their arrays of descriptor set layouts and push constants must be identical.</p>
+</div>
+<div class="paragraph">
+<p>Some models in the scene use unlinked shaders.
+For the sake of convenience, this sample refers to these models as "material models".</p>
+</div>
+<div class="paragraph">
+<p>Each of the material models binds different vertex, geometry, and fragment shaders.
+Each of the vertex shaders can be used with each of the geometry and fragment shaders.</p>
+</div>
+<div class="paragraph">
+<p>This sample lets you disable the geometry stage through the debug UI, so all of the vertex shaders support both geometry or fragment as a next stage.
+In order to allow either next stage, the vertex shaders are created with next stage flags of <code>VK_SHADER_STAGE_GEOMETRY_BIT | VK_SHADER_STAGE_FRAGMENT_BIT</code> and set the GLSL, descriptors, and push constants.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-CPP hljs" data-lang="CPP">// Create shader with current and next stage bits set the GLSL shader data, descriptor sets, and push constants
+material_vert_shaders.emplace_back(
+    new Shader(VK_SHADER_STAGE_VERTEX_BIT,
+               VK_SHADER_STAGE_GEOMETRY_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+               shader_name.substr(unlinked_material_prefix_size, shader_name.length() - (unlinked_material_prefix_size + frag_suffix_size)),
+               shader_data,
+               &amp;descriptor_set_layouts[ShaderTypeMaterial],
+               &amp;push_constant_ranges[ShaderTypeMaterial]));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then build the shader alone.
+This works similarly to the earlier skybox example, except that the <code>VkShaderEXT</code>s are created separately.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-CPP hljs" data-lang="CPP">// Build shader
+build_shader(device, material_vert_shaders.back());</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>build_shader</code> function is very similar to <code>build_linked_shaders</code> but only creates one <code>VkShaderEXT</code> object.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-CPP hljs" data-lang="CPP">void ShaderObject::build_shader(VkDevice device, ShaderObject::Shader *shader)
+{
+	VkShaderEXT shaderEXT;
+	VkShaderCreateInfoEXT shaderCreateInfo = shader-&gt;get_create_info();
+
+	VkResult result = vkCreateShadersEXT(device, 1, &amp;shaderCreateInfo, nullptr, &amp;shaderEXT);
+
+	if (result != VK_SUCCESS)
+	{
+		LOGE("vkCreateShadersEXT failed\n");
+	}
+
+	shader-&gt;set_shader(shaderEXT);
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_binding_shaders"><a class="anchor" href="#_binding_shaders"></a>Binding Shaders</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><code>VkShaderEXT</code> objects need to be bound to the command buffer for use in subsequent <code>vkCmdDraw*</code> calls.
+One or more shader objects can be bound using <code>vkCmdBindShadersEXT</code>.</p>
+</div>
+<div class="paragraph">
+<p>Before drawing the skybox we need to bind the relevant <code>VkShaderEXT</code> objects.
+This sample calls the <code>bind_shader</code> function, which simply binds the <code>Shader</code>'s <code>VkShaderEXT</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-CPP hljs" data-lang="CPP">// Bind shaders for the skybox
+bind_shader(draw_cmd_buffer, skybox_vert_shader);
+bind_shader(draw_cmd_buffer, skybox_frag_shader);</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-CPP hljs" data-lang="CPP">void ShaderObject::bind_shader(VkCommandBuffer cmd_buffer, ShaderObject::Shader *shader)
+{
+	vkCmdBindShadersEXT(cmd_buffer, 1, shader-&gt;get_stage(), shader-&gt;get_shader());
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The unlinked shaders are bound with multiple calls to <code>bind_shader</code>, one per each shader to bind.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-CPP hljs" data-lang="CPP">void ShaderObject::bind_material_shader(VkCommandBuffer cmd_buffer, int shader_index)
+{
+	CurrentShader &amp;shader = current_material_shaders[shader_index];
+
+	bind_shader(cmd_buffer, material_vert_shaders[shader.vert]);
+	if (enable_geometry_pass)
+		bind_shader(cmd_buffer, material_geo_shaders[shader.geo]);
+	bind_shader(cmd_buffer, material_frag_shaders[shader.frag]);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>It would be equally valid for the <code>Shader</code> class to be designed to bind all of the <code>VkShaderEXT</code> objects in a single <code>vkCmdBindShadersEXT</code> call.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_unbinding_shaders"><a class="anchor" href="#_unbinding_shaders"></a>Unbinding Shaders</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Bound shaders can be unbound by calling <code>vkCmdBindShadersEXT</code> with <code>pShaders</code> set to <code>nullptr</code> and <code>pStages</code> set to an array of stages to unbind.</p>
+</div>
+<div class="paragraph">
+<p>This sample uses a geometry shader for only some draws, so we need to unbind the geometry shader before draws that don&#8217;t need them.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-CPP hljs" data-lang="CPP">// Unbind geometry shader by binding nullptr to the geometry stage
+VkShaderStageFlagBits geo_stage = VK_SHADER_STAGE_GEOMETRY_BIT;
+vkCmdBindShadersEXT(draw_cmd_buffer, 1, &amp;geo_stage, nullptr);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Before drawing with shader objects, applications are required to bind either <code>nullptr</code> or a valid <code>VkShaderEXT</code> object for every shader stage enabled on the device.
+A valid geometry stage shader will not be bound before the first draw so we need to bind <code>nullptr</code> to it.
+The same code as above can be used.</p>
+</div>
+<div class="paragraph">
+<p>This sample does not enable the <code>tessellationShader</code> device feature, so it&#8217;s not necessary to bind anything to either tessellation stage.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_state_setting_and_drawing"><a class="anchor" href="#_state_setting_and_drawing"></a>State Setting and Drawing</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#shaders-objects-state">Setting State</a> subsection of the <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#shaders-objects">Shader Objects</a> section of the Vulkan specification lists the graphics state that needs to be set on a command buffer before <code>vkCmdDraw*</code> can be called with graphics shader objects bound.</p>
+</div>
+<div class="paragraph">
+<p>This sample demonstrates one possible way to take advantage of these rules to minimize calls into the Vulkan driver.</p>
+</div>
+<div class="paragraph">
+<p>All of the required and common state for this sample, such as vertex input binding descriptions, is set in <code>set_initial_state</code> before any draw calls.
+State specific to particular draws is set on the command buffer as needed.</p>
+</div>
+<div class="paragraph">
+<p>For the skybox, we disable culling and writing to depth.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-CPP hljs" data-lang="CPP">// Disable depth write and use cull mode none to draw skybox
+vkCmdSetCullModeEXT(draw_cmd_buffer, VK_CULL_MODE_NONE);
+vkCmdSetDepthWriteEnableEXT(draw_cmd_buffer, VK_FALSE);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then we bind the descriptor sets and push constants for the draw.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-CPP hljs" data-lang="CPP">// Bind descriptors and push constants for the skybox draw
+glm::mat4 model_matrix = glm::mat4(1.0f);
+vkCmdBindDescriptorSets(draw_cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout[ShaderTypeBasic], 0, 1, &amp;descriptor_sets[ShaderTypeBasic], 0, nullptr);
+vkCmdPushConstants(draw_cmd_buffer, pipeline_layout[ShaderTypeBasic], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(BasicPushConstant), &amp;model_matrix);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Finally, we bind the shaders and draw the model.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-CPP hljs" data-lang="CPP">// Bind shaders for the skybox
+bind_shader(draw_cmd_buffer, skybox_vert_shader);
+bind_shader(draw_cmd_buffer, skybox_frag_shader);
+
+// Draw the skybox model
+draw_model(skybox, draw_cmd_buffer);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The models that will be drawn next require different state than the skybox.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-CPP hljs" data-lang="CPP">vkCmdSetCullModeEXT(draw_cmd_buffer, VK_CULL_MODE_BACK_BIT);
+vkCmdSetDepthWriteEnableEXT(draw_cmd_buffer, VK_TRUE);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Unlinked shaders are bound the same way as linked shaders.
+First we set state, bind descriptor sets, push constants, and finally bind shaders and draw the model.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-CPP hljs" data-lang="CPP">// Update and push constants for cube 1
+material_push_constant.model = glm::translate(glm::vec3(1.2f, -1.f, 0)) * glm::rotate((float) elapsed_time, glm::vec3(0, 1, 0)) * glm::scale(glm::vec3(0.05f));
+vkCmdPushConstants(draw_cmd_buffer, pipeline_layout[ShaderTypeMaterial],
+                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_GEOMETRY_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                    0, sizeof(MaterialPushConstant), &amp;material_push_constant);
+
+// Bind shaders for cube 1, which is material model 2
+bind_material_shader(draw_cmd_buffer, 2);
+
+// Draw cube 1
+draw_model(cube, draw_cmd_buffer);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After rendering the skybox, terrain, and all other models, an optional post processing effect is applied to the intermediate image.
+The final result is drawn to the screen.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_options"><a class="anchor" href="#_options"></a>Options</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The debug UI allows various aspects of rendering to be controlled dynamically.
+It can change shaders per model, both color and depth output formats, and the post processing effect.
+This level of dynamism would be impractical to achieve using pipelines because the tens of thousands of permutations of state would potentially each require their own pipeline.
+Shader objects, on the other hand, support this kind of application architecture naturally.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_emulation_layer"><a class="anchor" href="#_emulation_layer"></a>Emulation Layer</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The Vulkan SDK ships with an <a href="https://github.com/KhronosGroup/Vulkan-ExtensionLayer/blob/main/docs/shader_object_layer.md">emulation layer</a> that allows <code>VK_EXT_shader_object</code> to be used on drivers that don&#8217;t yet have native support for the extension.
+The layer is useful for applications that want to use shader objects without implementing their own pipeline based fallback path for older drivers without native support.
+The layer can be shipped with your application, and it will disable itself if a native implementation of <code>VK_EXT_shader_object</code> exists in the driver.</p>
+</div>
+<div class="paragraph">
+<p>The emulation layer can be enabled by adding <code>VK_LAYER_KHRONOS_shader_object</code> to <code>ppEnabledLayerNames</code> in <code>VkDeviceCreateInfo</code>.</p>
+</div>
+<div class="paragraph">
+<p>Similar to enabling extensions, enabling layers is done through a common abstraction with the other samples.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-CPP hljs" data-lang="CPP">	add_instance_layer("VK_LAYER_KHRONOS_shader_object");</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Because you can&#8217;t rely on the Vulkan SDK to be installed on a user&#8217;s system, this sample&#8217;s method of loading the layer is not suitable for a real application.
+Instead, the layer needs to be shipped with the application.</p>
+</div>
+<div class="paragraph">
+<p>There are various ways to ship the layer with an application.
+One method is to copy the layer&#8217;s <code>VkLayer_khronos_shader_object.dll</code> and <code>VkLayer_khronos_shader_object.json</code> from the Vulkan SDK to the same directory as your application&#8217;s executable and then append the path to these files to the <code>VK_LAYER_PATH</code> environment variable before your first call into the Vulkan API.</p>
+</div>
+<div class="paragraph">
+<p>However the layer is packaged, the Vulkan Loader is always responsible for loading the layer.
+Because of this the layer&#8217;s files will always need to be somewhere accessible to the loader.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_additional_resources"><a class="anchor" href="#_additional_resources"></a>Additional Resources</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.khronos.org/blog/you-can-use-vulkan-without-pipelines-today">You Can Use Vulkan Without Pipelines Today</a></p>
+</li>
+<li>
+<p><a href="https://docs.vulkan.org/features/latest/features/proposals/VK_EXT_shader_object.html">Extension Proposal</a></p>
+</li>
+<li>
+<p><a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#shaders-objects">Specification</a></p>
+</li>
+<li>
+<p><a href="https://github.com/KhronosGroup/Vulkan-ExtensionLayer/blob/main/docs/shader_object_layer.md">Emulation Layer</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_conclusion"><a class="anchor" href="#_conclusion"></a>Conclusion</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Shader objects can be an invaluable tool for simplifying shader and state management in highly dynamic application architectures which don&#8217;t lend themselves to practical implementation using pipelines.</p>
+</div>
+<div class="paragraph">
+<p>With increasingly widespread driver support augmented by the emulation layer, applications best suited to this kind of architecture can be designed around shader objects instead of pipelines with high confidence that they will achieve a user experience as good or better than what a pipeline based implementation could realistically achieve.
+d to this kind of architecture can be designed around shader objects instead of pipelines with high confidence that they will achieve a user experience as good or better than what a pipeline based implementation could realistically achieve.</p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../../_/js/site.js" data-ui-root-path="../../../../../_"></script>
+<script async src="../../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../../.." data-snippet-length="100" data-stylesheet="../../../../../_/css/search.css"></script>
+<script async src="../../../../../search-index.js"></script>
+<script async src="../../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

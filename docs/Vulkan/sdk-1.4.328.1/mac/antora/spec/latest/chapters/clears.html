@@ -1,0 +1,2067 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Clear Commands :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:spec" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="spec" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Specification</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="fundamentals.html">Fundamentals</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="initialization.html">Initialization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="devsandqueues.html">Devices and Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="cmdbuffers.html">Command Buffers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="synchronization.html">Synchronization and Cache Control</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="renderpass.html">Render Pass</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="shaders.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="pipelines.html">Pipelines</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="memory.html">Memory Allocation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="resources.html">Resource Creation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="samplers.html">Samplers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="descriptorsets.html">Resource Descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="interfaces.html">Shader Interfaces</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="textures.html">Image Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="fragmentdensitymapops.html">Fragment Density Map Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_ARM_tensors/tensorops.html">Tensor Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="queries.html">Queries</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="clears.html">Clear Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="copies.html">Copy Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="drawing.html">Drawing Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="fxvertex.html">Fixed-Function Vertex Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="tessellation.html">Tessellation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="geometry.html">Geometry Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_NV_mesh_shader/mesh.html">Mesh Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_HUAWEI_cluster_culling_shader/clusterculling.html">Cluster Culling Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="vertexpostproc.html">Fixed-Function Vertex Post-Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="primsrast.html">Rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="fragops.html">Fragment Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="framebuffer.html">The Framebuffer</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="dispatch.html">Dispatching Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="device_generated_commands/generatedcommands.html">Device-Generated Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="sparsemem.html">Sparse Resources</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_KHR_surface/wsi.html">Window System Integration (WSI)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_KHR_deferred_host_operations/deferred_host_operations.html">Deferred Host Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_EXT_private_data.html">Private Data</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="accelstructures.html">Acceleration Structures</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_EXT_opacity_micromap/micromaps.html">Micromap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="raytraversal.html">Ray Traversal</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="raytracing.html">Ray Tracing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_NV_memory_decompression.html">Memory Decompression</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="videocoding.html">Video Coding</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_NV_optical_flow/optical_flow.html">Optical Flow</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="executiongraphs.html">Execution Graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_NV_external_compute_queue/VK_NV_external_compute_queue.html">External Compute Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_ARM_data_graph/graphs.html">Data graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="extensions.html">Extending Vulkan</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="features.html">Features</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="limits.html">Limits</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="formats.html">Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="capabilities.html">Additional Capabilities</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="debugging.html">Debugging</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/spirvenv.html">Vulkan Environment for SPIR-V</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/memorymodel.html">Memory Model</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/compressedtex.html">Compressed Image Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/versions.html">Core Revisions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/extensions.html">Layers &amp; Extensions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/roadmap.html">Vulkan Roadmap Milestones</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/deprecation.html">Deprecation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/boilerplate.html">API Boilerplate</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/invariance.html">Invariance</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/glossary.html">Lexicon</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/credits.html">Credits (Informative)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Specification</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Specification</a></li>
+    <li><a href="clears.html">Clear Commands</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/spec/modules/ROOT/pages/chapters/clears.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Clear Commands</h1>
+<div class="sect1">
+<h2 id="clears-outside"><a class="anchor" href="#clears-outside"></a>Clearing Images Outside a Render Pass Instance</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Color and depth/stencil images <strong>can</strong> be cleared outside a render pass
+instance using <a href="#vkCmdClearColorImage">vkCmdClearColorImage</a> or
+<a href="#vkCmdClearDepthStencilImage">vkCmdClearDepthStencilImage</a>, respectively.
+These commands are only allowed outside of a render pass instance.</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To clear one or more subranges of a color image, call:</p>
+</div>
+<div id="vkCmdClearColorImage" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+void vkCmdClearColorImage(
+    VkCommandBuffer                             commandBuffer,
+    VkImage                                     image,
+    VkImageLayout                               imageLayout,
+    const VkClearColorValue*                    pColor,
+    uint32_t                                    rangeCount,
+    const VkImageSubresourceRange*              pRanges);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer into which the command will be
+recorded.</p>
+</li>
+<li>
+<p><code>image</code> is the image to be cleared.</p>
+</li>
+<li>
+<p><code>imageLayout</code> specifies the current layout of the image subresource
+ranges to be cleared, and <strong>must</strong> be
+<code>VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR</code>,
+<code>VK_IMAGE_LAYOUT_GENERAL</code> or
+<code>VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL</code>.</p>
+</li>
+<li>
+<p><code>pColor</code> is a pointer to a <a href="#VkClearColorValue">VkClearColorValue</a> structure
+containing the values that the image subresource ranges will be cleared
+to (see <a href="#clears-values">Clear Values</a> below).</p>
+</li>
+<li>
+<p><code>rangeCount</code> is the number of image subresource range structures in
+<code>pRanges</code>.</p>
+</li>
+<li>
+<p><code>pRanges</code> is a pointer to an array of <a href="resources.html#VkImageSubresourceRange" class="xref page">VkImageSubresourceRange</a>
+structures describing a range of mipmap levels, array layers, and
+aspects to be cleared, as described in <a href="resources.html#resources-image-views" class="xref page">Image    Views</a>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Each specified range in <code>pRanges</code> is cleared to the value specified by
+<code>pColor</code>.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-image-01993" href="#VUID-vkCmdClearColorImage-image-01993"></a> <span class="vuid">VUID-vkCmdClearColorImage-image-01993</span><br>
+
+The <a href="resources.html#resources-image-format-features" class="xref page">format features</a> of <code>image</code>
+<strong>must</strong> contain <code>VK_FORMAT_FEATURE_TRANSFER_DST_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-image-00002" href="#VUID-vkCmdClearColorImage-image-00002"></a> <span class="vuid">VUID-vkCmdClearColorImage-image-00002</span><br>
+
+<code>image</code> <strong>must</strong> have been created with
+<code>VK_IMAGE_USAGE_TRANSFER_DST_BIT</code> usage flag</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-image-01545" href="#VUID-vkCmdClearColorImage-image-01545"></a> <span class="vuid">VUID-vkCmdClearColorImage-image-01545</span><br>
+
+<code>image</code> <strong>must</strong> not use any of the
+<a href="formats.html#formats-requiring-sampler-ycbcr-conversion" class="xref page">formats that require a    sampler Y′C<sub>B</sub>C<sub>R</sub> conversion</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-image-00003" href="#VUID-vkCmdClearColorImage-image-00003"></a> <span class="vuid">VUID-vkCmdClearColorImage-image-00003</span><br>
+
+If <code>image</code> is non-sparse then it <strong>must</strong> be bound completely and
+contiguously to a single <code>VkDeviceMemory</code> object</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-imageLayout-00004" href="#VUID-vkCmdClearColorImage-imageLayout-00004"></a> <span class="vuid">VUID-vkCmdClearColorImage-imageLayout-00004</span><br>
+
+<code>imageLayout</code> <strong>must</strong> specify the layout of the image subresource
+ranges of <code>image</code> specified in <code>pRanges</code> at the time this
+command is executed on a <code>VkDevice</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-imageLayout-01394" href="#VUID-vkCmdClearColorImage-imageLayout-01394"></a> <span class="vuid">VUID-vkCmdClearColorImage-imageLayout-01394</span><br>
+
+<code>imageLayout</code> <strong>must</strong> be
+<code>VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR</code>,
+<code>VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL</code> or
+<code>VK_IMAGE_LAYOUT_GENERAL</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-aspectMask-02498" href="#VUID-vkCmdClearColorImage-aspectMask-02498"></a> <span class="vuid">VUID-vkCmdClearColorImage-aspectMask-02498</span><br>
+
+The <a href="resources.html#VkImageSubresourceRange" class="xref page">VkImageSubresourceRange</a>::<code>aspectMask</code> members of the
+elements of the <code>pRanges</code> array <strong>must</strong> each only include
+<code>VK_IMAGE_ASPECT_COLOR_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-baseMipLevel-01470" href="#VUID-vkCmdClearColorImage-baseMipLevel-01470"></a> <span class="vuid">VUID-vkCmdClearColorImage-baseMipLevel-01470</span><br>
+
+The <a href="resources.html#VkImageSubresourceRange" class="xref page">VkImageSubresourceRange</a>::<code>baseMipLevel</code> members of the
+elements of the <code>pRanges</code> array <strong>must</strong> each be less than the
+<code>mipLevels</code> specified in <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a> when <code>image</code>
+was created</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-pRanges-01692" href="#VUID-vkCmdClearColorImage-pRanges-01692"></a> <span class="vuid">VUID-vkCmdClearColorImage-pRanges-01692</span><br>
+
+For each <a href="resources.html#VkImageSubresourceRange" class="xref page">VkImageSubresourceRange</a> element of <code>pRanges</code>, if the
+<code>levelCount</code> member is not <code>VK_REMAINING_MIP_LEVELS</code>, then
+<span class="eq"><code>baseMipLevel</code> +  <code>levelCount</code></span> <strong>must</strong> be less than or
+equal to the <code>mipLevels</code> specified in <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a> when
+<code>image</code> was created</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-baseArrayLayer-01472" href="#VUID-vkCmdClearColorImage-baseArrayLayer-01472"></a> <span class="vuid">VUID-vkCmdClearColorImage-baseArrayLayer-01472</span><br>
+
+The <a href="resources.html#VkImageSubresourceRange" class="xref page">VkImageSubresourceRange</a>::<code>baseArrayLayer</code> members of the
+elements of the <code>pRanges</code> array <strong>must</strong> each be less than the
+<code>arrayLayers</code> specified in <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a> when <code>image</code>
+was created</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-pRanges-01693" href="#VUID-vkCmdClearColorImage-pRanges-01693"></a> <span class="vuid">VUID-vkCmdClearColorImage-pRanges-01693</span><br>
+
+For each <a href="resources.html#VkImageSubresourceRange" class="xref page">VkImageSubresourceRange</a> element of <code>pRanges</code>, if the
+<code>layerCount</code> member is not <code>VK_REMAINING_ARRAY_LAYERS</code>, then
+<span class="eq"><code>baseArrayLayer</code> +  <code>layerCount</code></span> <strong>must</strong> be less than or
+equal to the <code>arrayLayers</code> specified in <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a> when
+<code>image</code> was created</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-image-00007" href="#VUID-vkCmdClearColorImage-image-00007"></a> <span class="vuid">VUID-vkCmdClearColorImage-image-00007</span><br>
+
+<code>image</code> <strong>must</strong> not have a compressed or depth/stencil format</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-pColor-04961" href="#VUID-vkCmdClearColorImage-pColor-04961"></a> <span class="vuid">VUID-vkCmdClearColorImage-pColor-04961</span><br>
+
+<code>pColor</code> <strong>must</strong> be a valid pointer to a <a href="#VkClearColorValue">VkClearColorValue</a> union</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-commandBuffer-01805" href="#VUID-vkCmdClearColorImage-commandBuffer-01805"></a> <span class="vuid">VUID-vkCmdClearColorImage-commandBuffer-01805</span><br>
+
+If <code>commandBuffer</code> is an unprotected command buffer and
+<a href="devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
+<code>image</code> <strong>must</strong> not be a protected image</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-commandBuffer-01806" href="#VUID-vkCmdClearColorImage-commandBuffer-01806"></a> <span class="vuid">VUID-vkCmdClearColorImage-commandBuffer-01806</span><br>
+
+If <code>commandBuffer</code> is a protected command buffer and
+<a href="devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
+<strong>must</strong> not be an unprotected image</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-image-09678" href="#VUID-vkCmdClearColorImage-image-09678"></a> <span class="vuid">VUID-vkCmdClearColorImage-image-09678</span><br>
+
+If <code>image</code>&#8217;s format has components other than R and G, it <strong>must</strong> not
+have a 64-bit component width</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-commandBuffer-parameter" href="#VUID-vkCmdClearColorImage-commandBuffer-parameter"></a> <span class="vuid">VUID-vkCmdClearColorImage-commandBuffer-parameter</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be a valid <a href="cmdbuffers.html#VkCommandBuffer" class="xref page">VkCommandBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-image-parameter" href="#VUID-vkCmdClearColorImage-image-parameter"></a> <span class="vuid">VUID-vkCmdClearColorImage-image-parameter</span><br>
+ <code>image</code> <strong>must</strong> be a valid <a href="resources.html#VkImage" class="xref page">VkImage</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-imageLayout-parameter" href="#VUID-vkCmdClearColorImage-imageLayout-parameter"></a> <span class="vuid">VUID-vkCmdClearColorImage-imageLayout-parameter</span><br>
+ <code>imageLayout</code> <strong>must</strong> be a valid <a href="resources.html#VkImageLayout" class="xref page">VkImageLayout</a> value</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-pRanges-parameter" href="#VUID-vkCmdClearColorImage-pRanges-parameter"></a> <span class="vuid">VUID-vkCmdClearColorImage-pRanges-parameter</span><br>
+ <code>pRanges</code> <strong>must</strong> be a valid pointer to an array of <code>rangeCount</code> valid <a href="resources.html#VkImageSubresourceRange" class="xref page">VkImageSubresourceRange</a> structures</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-commandBuffer-recording" href="#VUID-vkCmdClearColorImage-commandBuffer-recording"></a> <span class="vuid">VUID-vkCmdClearColorImage-commandBuffer-recording</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be in the <a href="cmdbuffers.html#commandbuffers-lifecycle" class="xref page">recording state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-commandBuffer-cmdpool" href="#VUID-vkCmdClearColorImage-commandBuffer-cmdpool"></a> <span class="vuid">VUID-vkCmdClearColorImage-commandBuffer-cmdpool</span><br>
+ The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> support graphics, or compute operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-renderpass" href="#VUID-vkCmdClearColorImage-renderpass"></a> <span class="vuid">VUID-vkCmdClearColorImage-renderpass</span><br>
+ This command <strong>must</strong> only be called outside of a render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-videocoding" href="#VUID-vkCmdClearColorImage-videocoding"></a> <span class="vuid">VUID-vkCmdClearColorImage-videocoding</span><br>
+ This command <strong>must</strong> only be called outside of a video coding scope</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-rangeCount-arraylength" href="#VUID-vkCmdClearColorImage-rangeCount-arraylength"></a> <span class="vuid">VUID-vkCmdClearColorImage-rangeCount-arraylength</span><br>
+ <code>rangeCount</code> <strong>must</strong> be greater than <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearColorImage-commonparent" href="#VUID-vkCmdClearColorImage-commonparent"></a> <span class="vuid">VUID-vkCmdClearColorImage-commonparent</span><br>
+ Both of <code>commandBuffer</code>, and <code>image</code> <strong>must</strong> have been created, allocated, or retrieved from the same <a href="devsandqueues.html#VkDevice" class="xref page">VkDevice</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>commandBuffer</code> <strong>must</strong> be externally synchronized</p>
+</li>
+<li>
+<p>Host access to the <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Command Properties</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><a href="cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
+<th class="tableblock halign-left valign-top"><a href="renderpass.html#vkCmdBeginRenderPass" class="xref page">Render Pass Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
+<th class="tableblock halign-left valign-top"><a href="fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Graphics<br>
+Compute</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Action</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To clear one or more subranges of a depth/stencil image, call:</p>
+</div>
+<div id="vkCmdClearDepthStencilImage" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+void vkCmdClearDepthStencilImage(
+    VkCommandBuffer                             commandBuffer,
+    VkImage                                     image,
+    VkImageLayout                               imageLayout,
+    const VkClearDepthStencilValue*             pDepthStencil,
+    uint32_t                                    rangeCount,
+    const VkImageSubresourceRange*              pRanges);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer into which the command will be
+recorded.</p>
+</li>
+<li>
+<p><code>image</code> is the image to be cleared.</p>
+</li>
+<li>
+<p><code>imageLayout</code> specifies the current layout of the image subresource
+ranges to be cleared, and <strong>must</strong> be <code>VK_IMAGE_LAYOUT_GENERAL</code> or
+<code>VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL</code>.</p>
+</li>
+<li>
+<p><code>pDepthStencil</code> is a pointer to a <a href="#VkClearDepthStencilValue">VkClearDepthStencilValue</a>
+structure containing the values that the depth and stencil image
+subresource ranges will be cleared to (see <a href="#clears-values">Clear Values</a> below).</p>
+</li>
+<li>
+<p><code>rangeCount</code> is the number of image subresource range structures in
+<code>pRanges</code>.</p>
+</li>
+<li>
+<p><code>pRanges</code> is a pointer to an array of <a href="resources.html#VkImageSubresourceRange" class="xref page">VkImageSubresourceRange</a>
+structures describing a range of mipmap levels, array layers, and
+aspects to be cleared, as described in <a href="resources.html#resources-image-views" class="xref page">Image    Views</a>.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-image-01994" href="#VUID-vkCmdClearDepthStencilImage-image-01994"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-image-01994</span><br>
+
+The <a href="resources.html#resources-image-format-features" class="xref page">format features</a> of <code>image</code>
+<strong>must</strong> contain <code>VK_FORMAT_FEATURE_TRANSFER_DST_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-pRanges-02658" href="#VUID-vkCmdClearDepthStencilImage-pRanges-02658"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-pRanges-02658</span><br>
+
+If the <code>aspect</code> member of any element of <code>pRanges</code> includes
+<code>VK_IMAGE_ASPECT_STENCIL_BIT</code>, and <code>image</code> was created with
+<a href="resources.html#VkImageStencilUsageCreateInfo" class="xref page">separate stencil usage</a>,
+<code>VK_IMAGE_USAGE_TRANSFER_DST_BIT</code> <strong>must</strong> have been included in the
+<a href="resources.html#VkImageStencilUsageCreateInfo" class="xref page">VkImageStencilUsageCreateInfo</a>::<code>stencilUsage</code> used to create
+<code>image</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-pRanges-02659" href="#VUID-vkCmdClearDepthStencilImage-pRanges-02659"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-pRanges-02659</span><br>
+
+If the <code>aspect</code> member of any element of <code>pRanges</code> includes
+<code>VK_IMAGE_ASPECT_STENCIL_BIT</code>,
+and <code>image</code> was not created with
+<a href="resources.html#VkImageStencilUsageCreateInfo" class="xref page">separate stencil usage</a>,
+<code>VK_IMAGE_USAGE_TRANSFER_DST_BIT</code> <strong>must</strong> have been included in the
+<a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a>::<code>usage</code> used to create <code>image</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-pRanges-02660" href="#VUID-vkCmdClearDepthStencilImage-pRanges-02660"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-pRanges-02660</span><br>
+
+If the <code>aspect</code> member of any element of <code>pRanges</code> includes
+<code>VK_IMAGE_ASPECT_DEPTH_BIT</code>, <code>VK_IMAGE_USAGE_TRANSFER_DST_BIT</code>
+<strong>must</strong> have been included in the <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a>::<code>usage</code>
+used to create <code>image</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-image-00010" href="#VUID-vkCmdClearDepthStencilImage-image-00010"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-image-00010</span><br>
+
+If <code>image</code> is non-sparse then it <strong>must</strong> be bound completely and
+contiguously to a single <code>VkDeviceMemory</code> object</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-imageLayout-00011" href="#VUID-vkCmdClearDepthStencilImage-imageLayout-00011"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-imageLayout-00011</span><br>
+
+<code>imageLayout</code> <strong>must</strong> specify the layout of the image subresource
+ranges of <code>image</code> specified in <code>pRanges</code> at the time this
+command is executed on a <code>VkDevice</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-imageLayout-00012" href="#VUID-vkCmdClearDepthStencilImage-imageLayout-00012"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-imageLayout-00012</span><br>
+
+<code>imageLayout</code> <strong>must</strong> be either of
+<code>VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL</code> or
+<code>VK_IMAGE_LAYOUT_GENERAL</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-aspectMask-02824" href="#VUID-vkCmdClearDepthStencilImage-aspectMask-02824"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-aspectMask-02824</span><br>
+
+The <a href="resources.html#VkImageSubresourceRange" class="xref page">VkImageSubresourceRange</a>::<code>aspectMask</code> member of each
+element of the <code>pRanges</code> array <strong>must</strong> not include bits other than
+<code>VK_IMAGE_ASPECT_DEPTH_BIT</code> or <code>VK_IMAGE_ASPECT_STENCIL_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-image-02825" href="#VUID-vkCmdClearDepthStencilImage-image-02825"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-image-02825</span><br>
+
+If the <code>image</code>&#8217;s format does not have a stencil component, then the
+<a href="resources.html#VkImageSubresourceRange" class="xref page">VkImageSubresourceRange</a>::<code>aspectMask</code> member of each element
+of the <code>pRanges</code> array <strong>must</strong> not include the
+<code>VK_IMAGE_ASPECT_STENCIL_BIT</code> bit</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-image-02826" href="#VUID-vkCmdClearDepthStencilImage-image-02826"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-image-02826</span><br>
+
+If the <code>image</code>&#8217;s format does not have a depth component, then the
+<a href="resources.html#VkImageSubresourceRange" class="xref page">VkImageSubresourceRange</a>::<code>aspectMask</code> member of each element
+of the <code>pRanges</code> array <strong>must</strong> not include the
+<code>VK_IMAGE_ASPECT_DEPTH_BIT</code> bit</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-baseMipLevel-01474" href="#VUID-vkCmdClearDepthStencilImage-baseMipLevel-01474"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-baseMipLevel-01474</span><br>
+
+The <a href="resources.html#VkImageSubresourceRange" class="xref page">VkImageSubresourceRange</a>::<code>baseMipLevel</code> members of the
+elements of the <code>pRanges</code> array <strong>must</strong> each be less than the
+<code>mipLevels</code> specified in <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a> when <code>image</code>
+was created</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-pRanges-01694" href="#VUID-vkCmdClearDepthStencilImage-pRanges-01694"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-pRanges-01694</span><br>
+
+For each <a href="resources.html#VkImageSubresourceRange" class="xref page">VkImageSubresourceRange</a> element of <code>pRanges</code>, if the
+<code>levelCount</code> member is not <code>VK_REMAINING_MIP_LEVELS</code>, then
+<span class="eq"><code>baseMipLevel</code> +  <code>levelCount</code></span> <strong>must</strong> be less than or
+equal to the <code>mipLevels</code> specified in <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a> when
+<code>image</code> was created</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-baseArrayLayer-01476" href="#VUID-vkCmdClearDepthStencilImage-baseArrayLayer-01476"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-baseArrayLayer-01476</span><br>
+
+The <a href="resources.html#VkImageSubresourceRange" class="xref page">VkImageSubresourceRange</a>::<code>baseArrayLayer</code> members of the
+elements of the <code>pRanges</code> array <strong>must</strong> each be less than the
+<code>arrayLayers</code> specified in <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a> when <code>image</code>
+was created</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-pRanges-01695" href="#VUID-vkCmdClearDepthStencilImage-pRanges-01695"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-pRanges-01695</span><br>
+
+For each <a href="resources.html#VkImageSubresourceRange" class="xref page">VkImageSubresourceRange</a> element of <code>pRanges</code>, if the
+<code>layerCount</code> member is not <code>VK_REMAINING_ARRAY_LAYERS</code>, then
+<span class="eq"><code>baseArrayLayer</code> +  <code>layerCount</code></span> <strong>must</strong> be less than or
+equal to the <code>arrayLayers</code> specified in <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a> when
+<code>image</code> was created</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-image-00014" href="#VUID-vkCmdClearDepthStencilImage-image-00014"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-image-00014</span><br>
+
+<code>image</code> <strong>must</strong> have a depth/stencil format</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-commandBuffer-01807" href="#VUID-vkCmdClearDepthStencilImage-commandBuffer-01807"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-commandBuffer-01807</span><br>
+
+If <code>commandBuffer</code> is an unprotected command buffer and
+<a href="devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
+<code>image</code> <strong>must</strong> not be a protected image</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-commandBuffer-01808" href="#VUID-vkCmdClearDepthStencilImage-commandBuffer-01808"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-commandBuffer-01808</span><br>
+
+If <code>commandBuffer</code> is a protected command buffer and
+<a href="devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
+<code>image</code> <strong>must</strong> not be an unprotected image</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-commandBuffer-parameter" href="#VUID-vkCmdClearDepthStencilImage-commandBuffer-parameter"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-commandBuffer-parameter</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be a valid <a href="cmdbuffers.html#VkCommandBuffer" class="xref page">VkCommandBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-image-parameter" href="#VUID-vkCmdClearDepthStencilImage-image-parameter"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-image-parameter</span><br>
+ <code>image</code> <strong>must</strong> be a valid <a href="resources.html#VkImage" class="xref page">VkImage</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-imageLayout-parameter" href="#VUID-vkCmdClearDepthStencilImage-imageLayout-parameter"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-imageLayout-parameter</span><br>
+ <code>imageLayout</code> <strong>must</strong> be a valid <a href="resources.html#VkImageLayout" class="xref page">VkImageLayout</a> value</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-pDepthStencil-parameter" href="#VUID-vkCmdClearDepthStencilImage-pDepthStencil-parameter"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-pDepthStencil-parameter</span><br>
+ <code>pDepthStencil</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkClearDepthStencilValue">VkClearDepthStencilValue</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-pRanges-parameter" href="#VUID-vkCmdClearDepthStencilImage-pRanges-parameter"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-pRanges-parameter</span><br>
+ <code>pRanges</code> <strong>must</strong> be a valid pointer to an array of <code>rangeCount</code> valid <a href="resources.html#VkImageSubresourceRange" class="xref page">VkImageSubresourceRange</a> structures</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-commandBuffer-recording" href="#VUID-vkCmdClearDepthStencilImage-commandBuffer-recording"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-commandBuffer-recording</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be in the <a href="cmdbuffers.html#commandbuffers-lifecycle" class="xref page">recording state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-commandBuffer-cmdpool" href="#VUID-vkCmdClearDepthStencilImage-commandBuffer-cmdpool"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-commandBuffer-cmdpool</span><br>
+ The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> support graphics operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-renderpass" href="#VUID-vkCmdClearDepthStencilImage-renderpass"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-renderpass</span><br>
+ This command <strong>must</strong> only be called outside of a render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-videocoding" href="#VUID-vkCmdClearDepthStencilImage-videocoding"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-videocoding</span><br>
+ This command <strong>must</strong> only be called outside of a video coding scope</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-rangeCount-arraylength" href="#VUID-vkCmdClearDepthStencilImage-rangeCount-arraylength"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-rangeCount-arraylength</span><br>
+ <code>rangeCount</code> <strong>must</strong> be greater than <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearDepthStencilImage-commonparent" href="#VUID-vkCmdClearDepthStencilImage-commonparent"></a> <span class="vuid">VUID-vkCmdClearDepthStencilImage-commonparent</span><br>
+ Both of <code>commandBuffer</code>, and <code>image</code> <strong>must</strong> have been created, allocated, or retrieved from the same <a href="devsandqueues.html#VkDevice" class="xref page">VkDevice</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>commandBuffer</code> <strong>must</strong> be externally synchronized</p>
+</li>
+<li>
+<p>Host access to the <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Command Properties</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><a href="cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
+<th class="tableblock halign-left valign-top"><a href="renderpass.html#vkCmdBeginRenderPass" class="xref page">Render Pass Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
+<th class="tableblock halign-left valign-top"><a href="fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Graphics</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Action</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Clears outside render pass instances are treated as transfer operations for
+the purposes of memory barriers.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="clears-inside"><a class="anchor" href="#clears-inside"></a>Clearing Images Inside a Render Pass Instance</h2>
+<div class="sectionbody">
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To clear one or more regions of color and depth/stencil attachments inside a
+render pass instance, call:</p>
+</div>
+<div id="vkCmdClearAttachments" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+void vkCmdClearAttachments(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    attachmentCount,
+    const VkClearAttachment*                    pAttachments,
+    uint32_t                                    rectCount,
+    const VkClearRect*                          pRects);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer into which the command will be
+recorded.</p>
+</li>
+<li>
+<p><code>attachmentCount</code> is the number of entries in the <code>pAttachments</code>
+array.</p>
+</li>
+<li>
+<p><code>pAttachments</code> is a pointer to an array of <a href="#VkClearAttachment">VkClearAttachment</a>
+structures defining the attachments to clear and the clear values to
+use.</p>
+</li>
+<li>
+<p><code>rectCount</code> is the number of entries in the <code>pRects</code> array.</p>
+</li>
+<li>
+<p><code>pRects</code> is a pointer to an array of <a href="#VkClearRect">VkClearRect</a> structures
+defining regions to clear for every attachment in <code>pAttachments</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If the render pass has a <a href="renderpass.html#renderpass-fragmentdensitymapattachment" class="xref page">fragment density map attachment</a>, clears follow the
+<a href="fragmentdensitymapops.html#fragmentdensitymapops" class="xref page">operations of fragment density maps</a> as if each
+clear region was a primitive which generates fragments.
+The clear color is applied to all pixels inside each fragment&#8217;s area
+regardless if the pixels lie outside of the clear region.
+Clears <strong>may</strong> have a different set of supported fragment areas than draws.</p>
+</div>
+<div class="paragraph">
+<p>Unlike other <a href="#clears">clear commands</a>, <a href="#vkCmdClearAttachments">vkCmdClearAttachments</a> is not a
+transfer command.
+It performs its operations in <a href="primsrast.html#primsrast-order" class="xref page">rasterization order</a>.
+For color attachments, the operations are executed as color attachment
+writes, by the <code>VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT</code> stage.
+For depth/stencil attachments, the operations are executed as
+<a href="fragops.html#fragops-depth" class="xref page">depth writes</a> and <a href="fragops.html#fragops-stencil" class="xref page">stencil writes</a> by
+the <code>VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT</code> and
+<code>VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT</code> stages.</p>
+</div>
+<div class="paragraph">
+<p><code>vkCmdClearAttachments</code> is not affected by the bound pipeline state.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>It is generally preferable to clear attachments by using the
+<code>VK_ATTACHMENT_LOAD_OP_CLEAR</code> load operation at the start of rendering,
+as it is more efficient on some implementations.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>If any attachment&#8217;s <code>aspectMask</code> to be cleared is not backed by an image
+view, the clear has no effect on that aspect.</p>
+</div>
+<div class="paragraph">
+<p>If an attachment being cleared refers to an image view created with an
+<code>aspectMask</code> equal to one of <code>VK_IMAGE_ASPECT_PLANE_0_BIT</code>,
+<code>VK_IMAGE_ASPECT_PLANE_1_BIT</code> or <code>VK_IMAGE_ASPECT_PLANE_2_BIT</code>, it
+is considered to be <code>VK_IMAGE_ASPECT_COLOR_BIT</code> for purposes of this
+command, and <strong>must</strong> be cleared with the <code>VK_IMAGE_ASPECT_COLOR_BIT</code>
+aspect as specified by <a href="resources.html#image-views-plane-promotion" class="xref page">image view creation</a>.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-aspectMask-07884" href="#VUID-vkCmdClearAttachments-aspectMask-07884"></a> <span class="vuid">VUID-vkCmdClearAttachments-aspectMask-07884</span><br>
+
+If
+the current render pass instance does not use dynamic rendering, and
+the <code>aspectMask</code> member of any element of <code>pAttachments</code>
+contains <code>VK_IMAGE_ASPECT_DEPTH_BIT</code>, the current subpass instance&#8217;s
+depth-stencil attachment <strong>must</strong> be either <code>VK_ATTACHMENT_UNUSED</code> or
+the attachment <code>format</code> <strong>must</strong> contain a depth component</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-aspectMask-07885" href="#VUID-vkCmdClearAttachments-aspectMask-07885"></a> <span class="vuid">VUID-vkCmdClearAttachments-aspectMask-07885</span><br>
+
+If
+the current render pass instance does not use dynamic rendering, and
+the <code>aspectMask</code> member of any element of <code>pAttachments</code>
+contains <code>VK_IMAGE_ASPECT_STENCIL_BIT</code>, the current subpass
+instance&#8217;s depth-stencil attachment <strong>must</strong> be either
+<code>VK_ATTACHMENT_UNUSED</code> or the attachment <code>format</code> <strong>must</strong> contain
+a stencil component</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-aspectMask-07271" href="#VUID-vkCmdClearAttachments-aspectMask-07271"></a> <span class="vuid">VUID-vkCmdClearAttachments-aspectMask-07271</span><br>
+
+If the <code>aspectMask</code> member of any element of <code>pAttachments</code>
+contains <code>VK_IMAGE_ASPECT_COLOR_BIT</code>, the <code>colorAttachment</code>
+<strong>must</strong> be a valid color attachment index in the current render pass
+instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-rect-02682" href="#VUID-vkCmdClearAttachments-rect-02682"></a> <span class="vuid">VUID-vkCmdClearAttachments-rect-02682</span><br>
+
+The <code>rect</code> member of each element of <code>pRects</code> <strong>must</strong> have an
+<code>extent.width</code> greater than <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-rect-02683" href="#VUID-vkCmdClearAttachments-rect-02683"></a> <span class="vuid">VUID-vkCmdClearAttachments-rect-02683</span><br>
+
+The <code>rect</code> member of each element of <code>pRects</code> <strong>must</strong> have an
+<code>extent.height</code> greater than <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-pRects-00016" href="#VUID-vkCmdClearAttachments-pRects-00016"></a> <span class="vuid">VUID-vkCmdClearAttachments-pRects-00016</span><br>
+
+The rectangular region specified by each element of <code>pRects</code> <strong>must</strong>
+be contained within the render area of the current render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-pRects-06937" href="#VUID-vkCmdClearAttachments-pRects-06937"></a> <span class="vuid">VUID-vkCmdClearAttachments-pRects-06937</span><br>
+
+The layers specified by each element of <code>pRects</code> <strong>must</strong> be contained
+within every attachment that <code>pAttachments</code> refers to, i.e. for each
+element of <code>pRects</code>, <a href="#VkClearRect">VkClearRect</a>::<code>baseArrayLayer</code> + 
+<a href="#VkClearRect">VkClearRect</a>::<code>layerCount</code> <strong>must</strong> be less than or equal to the
+number of layers rendered to in the current render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-layerCount-01934" href="#VUID-vkCmdClearAttachments-layerCount-01934"></a> <span class="vuid">VUID-vkCmdClearAttachments-layerCount-01934</span><br>
+
+The <code>layerCount</code> member of each element of <code>pRects</code> <strong>must</strong> not be
+<code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-commandBuffer-02504" href="#VUID-vkCmdClearAttachments-commandBuffer-02504"></a> <span class="vuid">VUID-vkCmdClearAttachments-commandBuffer-02504</span><br>
+
+If <code>commandBuffer</code> is an unprotected command buffer and
+<a href="devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
+each attachment to be cleared <strong>must</strong> not be a protected image</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-commandBuffer-02505" href="#VUID-vkCmdClearAttachments-commandBuffer-02505"></a> <span class="vuid">VUID-vkCmdClearAttachments-commandBuffer-02505</span><br>
+
+If <code>commandBuffer</code> is a protected command buffer and
+<a href="devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
+each attachment to be cleared <strong>must</strong> not be an unprotected image</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-baseArrayLayer-00018" href="#VUID-vkCmdClearAttachments-baseArrayLayer-00018"></a> <span class="vuid">VUID-vkCmdClearAttachments-baseArrayLayer-00018</span><br>
+
+If the render pass instance this is recorded in uses multiview, then
+<code>baseArrayLayer</code> <strong>must</strong> be zero and <code>layerCount</code> <strong>must</strong> be one</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-colorAttachment-09503" href="#VUID-vkCmdClearAttachments-colorAttachment-09503"></a> <span class="vuid">VUID-vkCmdClearAttachments-colorAttachment-09503</span><br>
+
+The <code>colorAttachment</code> member of each element of <code>pAttachments</code>
+<strong>must</strong> not identify a color attachment that is currently mapped to
+<code>VK_ATTACHMENT_UNUSED</code> in <code>commandBuffer</code> via
+<a href="interfaces.html#VkRenderingAttachmentLocationInfo" class="xref page">VkRenderingAttachmentLocationInfo</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-aspectMask-09298" href="#VUID-vkCmdClearAttachments-aspectMask-09298"></a> <span class="vuid">VUID-vkCmdClearAttachments-aspectMask-09298</span><br>
+
+If the subpass this is recorded in performs an external format resolve,
+the <code>aspectMask</code> member of any element of <code>pAttachments</code> <strong>must</strong>
+not include <code>VK_IMAGE_ASPECT_PLANE<em>_i_</em>BIT</code> for any index <em>i</em></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-None-09679" href="#VUID-vkCmdClearAttachments-None-09679"></a> <span class="vuid">VUID-vkCmdClearAttachments-None-09679</span><br>
+
+If the attachment format has components other than R and G, it <strong>must</strong> not
+have a 64-bit component width</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-None-10616" href="#VUID-vkCmdClearAttachments-None-10616"></a> <span class="vuid">VUID-vkCmdClearAttachments-None-10616</span><br>
+
+This command <strong>must</strong> not be recorded when
+<a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a> is
+enabled</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-commandBuffer-parameter" href="#VUID-vkCmdClearAttachments-commandBuffer-parameter"></a> <span class="vuid">VUID-vkCmdClearAttachments-commandBuffer-parameter</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be a valid <a href="cmdbuffers.html#VkCommandBuffer" class="xref page">VkCommandBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-pAttachments-parameter" href="#VUID-vkCmdClearAttachments-pAttachments-parameter"></a> <span class="vuid">VUID-vkCmdClearAttachments-pAttachments-parameter</span><br>
+ <code>pAttachments</code> <strong>must</strong> be a valid pointer to an array of <code>attachmentCount</code> valid <a href="#VkClearAttachment">VkClearAttachment</a> structures</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-pRects-parameter" href="#VUID-vkCmdClearAttachments-pRects-parameter"></a> <span class="vuid">VUID-vkCmdClearAttachments-pRects-parameter</span><br>
+ <code>pRects</code> <strong>must</strong> be a valid pointer to an array of <code>rectCount</code> <a href="#VkClearRect">VkClearRect</a> structures</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-commandBuffer-recording" href="#VUID-vkCmdClearAttachments-commandBuffer-recording"></a> <span class="vuid">VUID-vkCmdClearAttachments-commandBuffer-recording</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be in the <a href="cmdbuffers.html#commandbuffers-lifecycle" class="xref page">recording state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-commandBuffer-cmdpool" href="#VUID-vkCmdClearAttachments-commandBuffer-cmdpool"></a> <span class="vuid">VUID-vkCmdClearAttachments-commandBuffer-cmdpool</span><br>
+ The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> support graphics operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-renderpass" href="#VUID-vkCmdClearAttachments-renderpass"></a> <span class="vuid">VUID-vkCmdClearAttachments-renderpass</span><br>
+ This command <strong>must</strong> only be called inside of a render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-videocoding" href="#VUID-vkCmdClearAttachments-videocoding"></a> <span class="vuid">VUID-vkCmdClearAttachments-videocoding</span><br>
+ This command <strong>must</strong> only be called outside of a video coding scope</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-attachmentCount-arraylength" href="#VUID-vkCmdClearAttachments-attachmentCount-arraylength"></a> <span class="vuid">VUID-vkCmdClearAttachments-attachmentCount-arraylength</span><br>
+ <code>attachmentCount</code> <strong>must</strong> be greater than <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdClearAttachments-rectCount-arraylength" href="#VUID-vkCmdClearAttachments-rectCount-arraylength"></a> <span class="vuid">VUID-vkCmdClearAttachments-rectCount-arraylength</span><br>
+ <code>rectCount</code> <strong>must</strong> be greater than <code>0</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>commandBuffer</code> <strong>must</strong> be externally synchronized</p>
+</li>
+<li>
+<p>Host access to the <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Command Properties</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><a href="cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
+<th class="tableblock halign-left valign-top"><a href="renderpass.html#vkCmdBeginRenderPass" class="xref page">Render Pass Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
+<th class="tableblock halign-left valign-top"><a href="fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Inside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Graphics</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Action</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkClearRect</code> structure is defined as:</p>
+</div>
+<div id="VkClearRect" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+typedef struct VkClearRect {
+    VkRect2D    rect;
+    uint32_t    baseArrayLayer;
+    uint32_t    layerCount;
+} VkClearRect;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>rect</code> is the two-dimensional region to be cleared.</p>
+</li>
+<li>
+<p><code>baseArrayLayer</code> is the first layer to be cleared.</p>
+</li>
+<li>
+<p><code>layerCount</code> is the number of layers to clear.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The layers <span class="eq">[<code>baseArrayLayer</code>, <code>baseArrayLayer</code> + 
+<code>layerCount</code>)</span> counting from the base layer of the attachment image view
+are cleared.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkClearAttachment</code> structure is defined as:</p>
+</div>
+<div id="VkClearAttachment" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+typedef struct VkClearAttachment {
+    VkImageAspectFlags    aspectMask;
+    uint32_t              colorAttachment;
+    VkClearValue          clearValue;
+} VkClearAttachment;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>aspectMask</code> is a mask selecting the color, depth and/or stencil
+aspects of the attachment to be cleared.</p>
+</li>
+<li>
+<p><code>colorAttachment</code> is only meaningful if
+<code>VK_IMAGE_ASPECT_COLOR_BIT</code> is set in <code>aspectMask</code>, in which
+case it is an index into the bound color attachments.</p>
+</li>
+<li>
+<p><code>clearValue</code> is the color or depth/stencil value to clear the
+attachment to, as described in <a href="#clears-values">Clear Values</a> below.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkClearAttachment-aspectMask-00019" href="#VUID-VkClearAttachment-aspectMask-00019"></a> <span class="vuid">VUID-VkClearAttachment-aspectMask-00019</span><br>
+
+If <code>aspectMask</code> includes <code>VK_IMAGE_ASPECT_COLOR_BIT</code>, it <strong>must</strong>
+not include <code>VK_IMAGE_ASPECT_DEPTH_BIT</code> or
+<code>VK_IMAGE_ASPECT_STENCIL_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkClearAttachment-aspectMask-00020" href="#VUID-VkClearAttachment-aspectMask-00020"></a> <span class="vuid">VUID-VkClearAttachment-aspectMask-00020</span><br>
+
+<code>aspectMask</code> <strong>must</strong> not include <code>VK_IMAGE_ASPECT_METADATA_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkClearAttachment-aspectMask-02246" href="#VUID-VkClearAttachment-aspectMask-02246"></a> <span class="vuid">VUID-VkClearAttachment-aspectMask-02246</span><br>
+
+<code>aspectMask</code> <strong>must</strong> not include
+<code>VK_IMAGE_ASPECT_MEMORY_PLANE<em>_i_</em>BIT_EXT</code> for any index <em>i</em></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkClearAttachment-aspectMask-parameter" href="#VUID-VkClearAttachment-aspectMask-parameter"></a> <span class="vuid">VUID-VkClearAttachment-aspectMask-parameter</span><br>
+ <code>aspectMask</code> <strong>must</strong> be a valid combination of <a href="resources.html#VkImageAspectFlagBits" class="xref page">VkImageAspectFlagBits</a> values</p>
+</li>
+<li>
+<p><a id="VUID-VkClearAttachment-aspectMask-requiredbitmask" href="#VUID-VkClearAttachment-aspectMask-requiredbitmask"></a> <span class="vuid">VUID-VkClearAttachment-aspectMask-requiredbitmask</span><br>
+ <code>aspectMask</code> <strong>must</strong> not be <code>0</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="clears-values"><a class="anchor" href="#clears-values"></a>Clear Values</h2>
+<div class="sectionbody">
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkClearColorValue</code> structure is defined as:</p>
+</div>
+<div id="VkClearColorValue" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+typedef union VkClearColorValue {
+    float       float32[4];
+    int32_t     int32[4];
+    uint32_t    uint32[4];
+} VkClearColorValue;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>float32</code> are the color clear values when the format of the image or
+attachment is one of the <a href="formats.html#formats-numericformat" class="xref page">numeric formats</a> with
+a numeric type that is floating-point.
+Floating-point values are automatically converted to the format of the
+image, with the clear value being treated as linear if the image is
+sRGB.</p>
+</li>
+<li>
+<p><code>int32</code> are the color clear values when the format of the image or
+attachment has a numeric type that is signed integer (<code>SINT</code>).
+Signed integer values are converted to the format of the image by
+casting to the smaller type (with negative 32-bit values mapping to
+negative values in the smaller type).
+If the integer clear value is not representable in the target type (e.g.
+would overflow in conversion to that type), the clear value is
+<strong>undefined</strong>.</p>
+</li>
+<li>
+<p><code>uint32</code> are the color clear values when the format of the image or
+attachment has a numeric type that is unsigned integer (<code>UINT</code>).
+Unsigned integer values are converted to the format of the image by
+casting to the integer type with fewer bits.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The four array elements of the clear color map to R, G, B, and A components
+of image formats, in order.</p>
+</div>
+<div class="paragraph">
+<p>If the image has more than one sample, the same value is written to all
+samples for any pixels being cleared.</p>
+</div>
+<div class="paragraph">
+<p>If the image or attachment format has a 64-bit component width, the first 2
+array elements of each of the arrays above are reinterpreted as a single
+64-bit element for the R component.
+The next 2 array elements are used in the same way for the G component.
+In other words, the union behaves as if it had the following additional
+members:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">double float64[2];
+int64_t int64[2];
+uint64_t uint64[2];</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkClearDepthStencilValue</code> structure is defined as:</p>
+</div>
+<div id="VkClearDepthStencilValue" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+typedef struct VkClearDepthStencilValue {
+    float       depth;
+    uint32_t    stencil;
+} VkClearDepthStencilValue;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>depth</code> is the clear value for the depth aspect of the depth/stencil
+attachment.
+It is a floating-point value which is automatically converted to the
+attachment&#8217;s format.</p>
+</li>
+<li>
+<p><code>stencil</code> is the clear value for the stencil aspect of the
+depth/stencil attachment.
+It is a 32-bit integer value which is converted to the attachment&#8217;s
+format by taking the appropriate number of LSBs.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkClearDepthStencilValue-depth-00022" href="#VUID-VkClearDepthStencilValue-depth-00022"></a> <span class="vuid">VUID-VkClearDepthStencilValue-depth-00022</span><br>
+
+Unless the <code><a href="../appendices/extensions.html#VK_EXT_depth_range_unrestricted" class="xref page">VK_EXT_depth_range_unrestricted</a></code> extension is enabled
+<code>depth</code> <strong>must</strong> be between <code>0.0</code> and <code>1.0</code>, inclusive</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkClearValue</code> union is defined as:</p>
+</div>
+<div id="VkClearValue" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+typedef union VkClearValue {
+    VkClearColorValue           color;
+    VkClearDepthStencilValue    depthStencil;
+} VkClearValue;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>color</code> specifies the color image clear values to use when clearing
+a color image or attachment.</p>
+</li>
+<li>
+<p><code>depthStencil</code> specifies the depth and stencil clear values to use
+when clearing a depth/stencil image or attachment.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This union is used where part of the API requires either color or
+depth/stencil clear values, depending on the attachment, and defines the
+initial clear values in the <a href="renderpass.html#VkRenderPassBeginInfo" class="xref page">VkRenderPassBeginInfo</a> structure.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="clears-filling-buffers"><a class="anchor" href="#clears-filling-buffers"></a>Filling Buffers</h2>
+<div class="sectionbody">
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To clear buffer data, call:</p>
+</div>
+<div id="vkCmdFillBuffer" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+void vkCmdFillBuffer(
+    VkCommandBuffer                             commandBuffer,
+    VkBuffer                                    dstBuffer,
+    VkDeviceSize                                dstOffset,
+    VkDeviceSize                                size,
+    uint32_t                                    data);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer into which the command will be
+recorded.</p>
+</li>
+<li>
+<p><code>dstBuffer</code> is the buffer to be filled.</p>
+</li>
+<li>
+<p><code>dstOffset</code> is the byte offset into the buffer at which to start
+filling, and <strong>must</strong> be a multiple of 4.</p>
+</li>
+<li>
+<p><code>size</code> is the number of bytes to fill, and <strong>must</strong> be either a
+multiple of 4, or <code>VK_WHOLE_SIZE</code> to fill the range from
+<code>offset</code> to the end of the buffer.
+If <code>VK_WHOLE_SIZE</code> is used and the remaining size of the buffer is
+not a multiple of 4, then the nearest smaller multiple is used.</p>
+</li>
+<li>
+<p><code>data</code> is the 4-byte word written repeatedly to the buffer to fill
+<code>size</code> bytes of data.
+The data word is written to memory according to the host endianness.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><code>vkCmdFillBuffer</code> is treated as a &#8220;transfer&#8221; operation for the
+purposes of synchronization barriers.
+The <code>VK_BUFFER_USAGE_TRANSFER_DST_BIT</code> <strong>must</strong> be specified in <code>usage</code>
+of <a href="resources.html#VkBufferCreateInfo" class="xref page">VkBufferCreateInfo</a> in order for the buffer to be compatible with
+<code>vkCmdFillBuffer</code>.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdFillBuffer-dstOffset-00024" href="#VUID-vkCmdFillBuffer-dstOffset-00024"></a> <span class="vuid">VUID-vkCmdFillBuffer-dstOffset-00024</span><br>
+
+<code>dstOffset</code> <strong>must</strong> be less than the size of <code>dstBuffer</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdFillBuffer-dstOffset-00025" href="#VUID-vkCmdFillBuffer-dstOffset-00025"></a> <span class="vuid">VUID-vkCmdFillBuffer-dstOffset-00025</span><br>
+
+<code>dstOffset</code> <strong>must</strong> be a multiple of <code>4</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdFillBuffer-size-00026" href="#VUID-vkCmdFillBuffer-size-00026"></a> <span class="vuid">VUID-vkCmdFillBuffer-size-00026</span><br>
+
+If <code>size</code> is not equal to <code>VK_WHOLE_SIZE</code>, <code>size</code> <strong>must</strong> be
+greater than <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdFillBuffer-size-00027" href="#VUID-vkCmdFillBuffer-size-00027"></a> <span class="vuid">VUID-vkCmdFillBuffer-size-00027</span><br>
+
+If <code>size</code> is not equal to <code>VK_WHOLE_SIZE</code>, <code>size</code> <strong>must</strong> be
+less than or equal to the size of <code>dstBuffer</code> minus <code>dstOffset</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdFillBuffer-size-00028" href="#VUID-vkCmdFillBuffer-size-00028"></a> <span class="vuid">VUID-vkCmdFillBuffer-size-00028</span><br>
+
+If <code>size</code> is not equal to <code>VK_WHOLE_SIZE</code>, <code>size</code> <strong>must</strong> be a
+multiple of <code>4</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdFillBuffer-dstBuffer-00029" href="#VUID-vkCmdFillBuffer-dstBuffer-00029"></a> <span class="vuid">VUID-vkCmdFillBuffer-dstBuffer-00029</span><br>
+
+<code>dstBuffer</code> <strong>must</strong> have been created with
+<code>VK_BUFFER_USAGE_TRANSFER_DST_BIT</code> usage flag</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdFillBuffer-apiVersion-07894" href="#VUID-vkCmdFillBuffer-apiVersion-07894"></a> <span class="vuid">VUID-vkCmdFillBuffer-apiVersion-07894</span><br>
+
+If the <a href="../appendices/extensions.html#VK_KHR_maintenance1" class="xref page">VK_KHR_maintenance1</a> extension is not enabled and
+<a href="devsandqueues.html#VkPhysicalDeviceProperties" class="xref page">VkPhysicalDeviceProperties</a>::<code>apiVersion</code> is less than Vulkan
+1.1, the
+<a href="cmdbuffers.html#VkCommandPool" class="xref page">VkCommandPool</a> that <code>commandBuffer</code> was allocated from <strong>must</strong>
+support graphics or compute operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdFillBuffer-dstBuffer-00031" href="#VUID-vkCmdFillBuffer-dstBuffer-00031"></a> <span class="vuid">VUID-vkCmdFillBuffer-dstBuffer-00031</span><br>
+
+If <code>dstBuffer</code> is non-sparse then it <strong>must</strong> be bound completely and
+contiguously to a single <a href="memory.html#VkDeviceMemory" class="xref page">VkDeviceMemory</a> object</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdFillBuffer-commandBuffer-01811" href="#VUID-vkCmdFillBuffer-commandBuffer-01811"></a> <span class="vuid">VUID-vkCmdFillBuffer-commandBuffer-01811</span><br>
+
+If <code>commandBuffer</code> is an unprotected command buffer and
+<a href="devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
+<code>dstBuffer</code> <strong>must</strong> not be a protected buffer</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdFillBuffer-commandBuffer-01812" href="#VUID-vkCmdFillBuffer-commandBuffer-01812"></a> <span class="vuid">VUID-vkCmdFillBuffer-commandBuffer-01812</span><br>
+
+If <code>commandBuffer</code> is a protected command buffer and
+<a href="devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
+<code>dstBuffer</code> <strong>must</strong> not be an unprotected buffer</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdFillBuffer-commandBuffer-parameter" href="#VUID-vkCmdFillBuffer-commandBuffer-parameter"></a> <span class="vuid">VUID-vkCmdFillBuffer-commandBuffer-parameter</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be a valid <a href="cmdbuffers.html#VkCommandBuffer" class="xref page">VkCommandBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdFillBuffer-dstBuffer-parameter" href="#VUID-vkCmdFillBuffer-dstBuffer-parameter"></a> <span class="vuid">VUID-vkCmdFillBuffer-dstBuffer-parameter</span><br>
+ <code>dstBuffer</code> <strong>must</strong> be a valid <a href="resources.html#VkBuffer" class="xref page">VkBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdFillBuffer-commandBuffer-recording" href="#VUID-vkCmdFillBuffer-commandBuffer-recording"></a> <span class="vuid">VUID-vkCmdFillBuffer-commandBuffer-recording</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be in the <a href="cmdbuffers.html#commandbuffers-lifecycle" class="xref page">recording state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdFillBuffer-commandBuffer-cmdpool" href="#VUID-vkCmdFillBuffer-commandBuffer-cmdpool"></a> <span class="vuid">VUID-vkCmdFillBuffer-commandBuffer-cmdpool</span><br>
+ The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> support transfer, graphics or compute operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdFillBuffer-renderpass" href="#VUID-vkCmdFillBuffer-renderpass"></a> <span class="vuid">VUID-vkCmdFillBuffer-renderpass</span><br>
+ This command <strong>must</strong> only be called outside of a render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdFillBuffer-videocoding" href="#VUID-vkCmdFillBuffer-videocoding"></a> <span class="vuid">VUID-vkCmdFillBuffer-videocoding</span><br>
+ This command <strong>must</strong> only be called outside of a video coding scope</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdFillBuffer-commonparent" href="#VUID-vkCmdFillBuffer-commonparent"></a> <span class="vuid">VUID-vkCmdFillBuffer-commonparent</span><br>
+ Both of <code>commandBuffer</code>, and <code>dstBuffer</code> <strong>must</strong> have been created, allocated, or retrieved from the same <a href="devsandqueues.html#VkDevice" class="xref page">VkDevice</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>commandBuffer</code> <strong>must</strong> be externally synchronized</p>
+</li>
+<li>
+<p>Host access to the <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Command Properties</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><a href="cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
+<th class="tableblock halign-left valign-top"><a href="renderpass.html#vkCmdBeginRenderPass" class="xref page">Render Pass Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
+<th class="tableblock halign-left valign-top"><a href="fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Transfer<br>
+Graphics<br>
+Compute</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Action</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="clears-updating-buffers"><a class="anchor" href="#clears-updating-buffers"></a>Updating Buffers</h2>
+<div class="sectionbody">
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To update buffer data inline in a command buffer, call:</p>
+</div>
+<div id="vkCmdUpdateBuffer" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+void vkCmdUpdateBuffer(
+    VkCommandBuffer                             commandBuffer,
+    VkBuffer                                    dstBuffer,
+    VkDeviceSize                                dstOffset,
+    VkDeviceSize                                dataSize,
+    const void*                                 pData);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer into which the command will be
+recorded.</p>
+</li>
+<li>
+<p><code>dstBuffer</code> is a handle to the buffer to be updated.</p>
+</li>
+<li>
+<p><code>dstOffset</code> is the byte offset into the buffer to start updating,
+and <strong>must</strong> be a multiple of 4.</p>
+</li>
+<li>
+<p><code>dataSize</code> is the number of bytes to update, and <strong>must</strong> be a multiple
+of 4.</p>
+</li>
+<li>
+<p><code>pData</code> is a pointer to the source data for the buffer update, and
+<strong>must</strong> be at least <code>dataSize</code> bytes in size.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><code>dataSize</code> <strong>must</strong> be less than or equal to 65536 bytes.
+For larger updates, applications <strong>can</strong> use buffer to buffer
+<a href="copies.html#copies-buffers" class="xref page">copies</a>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Buffer updates performed with <code>vkCmdUpdateBuffer</code> first copy the data
+into command buffer memory when the command is recorded (which requires
+additional storage and may incur an additional allocation), and then copy
+the data from the command buffer into <code>dstBuffer</code> when the command is
+executed on a device.</p>
+</div>
+<div class="paragraph">
+<p>The additional cost of this functionality compared to <a href="copies.html#copies-buffers" class="xref page">buffer to buffer copies</a> means it should only be used for very small
+amounts of data, and is why it is limited to at most 65536 bytes.
+Applications <strong>can</strong> work around this restriction by issuing multiple
+<code>vkCmdUpdateBuffer</code> commands to different ranges of the same buffer, but
+doing so is not recommended.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The source data is copied from <code>pData</code> to the command buffer when the
+command is called.</p>
+</div>
+<div class="paragraph">
+<p><code>vkCmdUpdateBuffer</code> is only allowed outside of a render pass.
+This command is treated as a &#8220;transfer&#8221; operation for the purposes of
+synchronization barriers.
+The <code>VK_BUFFER_USAGE_TRANSFER_DST_BIT</code> <strong>must</strong> be specified in <code>usage</code>
+of <a href="resources.html#VkBufferCreateInfo" class="xref page">VkBufferCreateInfo</a> in order for the buffer to be compatible with
+<code>vkCmdUpdateBuffer</code>.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdUpdateBuffer-dstOffset-00032" href="#VUID-vkCmdUpdateBuffer-dstOffset-00032"></a> <span class="vuid">VUID-vkCmdUpdateBuffer-dstOffset-00032</span><br>
+
+<code>dstOffset</code> <strong>must</strong> be less than the size of <code>dstBuffer</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdUpdateBuffer-dataSize-00033" href="#VUID-vkCmdUpdateBuffer-dataSize-00033"></a> <span class="vuid">VUID-vkCmdUpdateBuffer-dataSize-00033</span><br>
+
+<code>dataSize</code> <strong>must</strong> be less than or equal to the size of
+<code>dstBuffer</code> minus <code>dstOffset</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdUpdateBuffer-dstBuffer-00034" href="#VUID-vkCmdUpdateBuffer-dstBuffer-00034"></a> <span class="vuid">VUID-vkCmdUpdateBuffer-dstBuffer-00034</span><br>
+
+<code>dstBuffer</code> <strong>must</strong> have been created with
+<code>VK_BUFFER_USAGE_TRANSFER_DST_BIT</code> usage flag</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdUpdateBuffer-dstBuffer-00035" href="#VUID-vkCmdUpdateBuffer-dstBuffer-00035"></a> <span class="vuid">VUID-vkCmdUpdateBuffer-dstBuffer-00035</span><br>
+
+If <code>dstBuffer</code> is non-sparse then it <strong>must</strong> be bound completely and
+contiguously to a single <code>VkDeviceMemory</code> object</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdUpdateBuffer-dstOffset-00036" href="#VUID-vkCmdUpdateBuffer-dstOffset-00036"></a> <span class="vuid">VUID-vkCmdUpdateBuffer-dstOffset-00036</span><br>
+
+<code>dstOffset</code> <strong>must</strong> be a multiple of <code>4</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdUpdateBuffer-dataSize-00037" href="#VUID-vkCmdUpdateBuffer-dataSize-00037"></a> <span class="vuid">VUID-vkCmdUpdateBuffer-dataSize-00037</span><br>
+
+<code>dataSize</code> <strong>must</strong> be less than or equal to <code>65536</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdUpdateBuffer-dataSize-00038" href="#VUID-vkCmdUpdateBuffer-dataSize-00038"></a> <span class="vuid">VUID-vkCmdUpdateBuffer-dataSize-00038</span><br>
+
+<code>dataSize</code> <strong>must</strong> be a multiple of <code>4</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdUpdateBuffer-commandBuffer-01813" href="#VUID-vkCmdUpdateBuffer-commandBuffer-01813"></a> <span class="vuid">VUID-vkCmdUpdateBuffer-commandBuffer-01813</span><br>
+
+If <code>commandBuffer</code> is an unprotected command buffer and
+<a href="devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
+<code>dstBuffer</code> <strong>must</strong> not be a protected buffer</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdUpdateBuffer-commandBuffer-01814" href="#VUID-vkCmdUpdateBuffer-commandBuffer-01814"></a> <span class="vuid">VUID-vkCmdUpdateBuffer-commandBuffer-01814</span><br>
+
+If <code>commandBuffer</code> is a protected command buffer and
+<a href="devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
+<code>dstBuffer</code> <strong>must</strong> not be an unprotected buffer</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdUpdateBuffer-commandBuffer-parameter" href="#VUID-vkCmdUpdateBuffer-commandBuffer-parameter"></a> <span class="vuid">VUID-vkCmdUpdateBuffer-commandBuffer-parameter</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be a valid <a href="cmdbuffers.html#VkCommandBuffer" class="xref page">VkCommandBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdUpdateBuffer-dstBuffer-parameter" href="#VUID-vkCmdUpdateBuffer-dstBuffer-parameter"></a> <span class="vuid">VUID-vkCmdUpdateBuffer-dstBuffer-parameter</span><br>
+ <code>dstBuffer</code> <strong>must</strong> be a valid <a href="resources.html#VkBuffer" class="xref page">VkBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdUpdateBuffer-pData-parameter" href="#VUID-vkCmdUpdateBuffer-pData-parameter"></a> <span class="vuid">VUID-vkCmdUpdateBuffer-pData-parameter</span><br>
+ <code>pData</code> <strong>must</strong> be a valid pointer to an array of <code>dataSize</code> bytes</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdUpdateBuffer-commandBuffer-recording" href="#VUID-vkCmdUpdateBuffer-commandBuffer-recording"></a> <span class="vuid">VUID-vkCmdUpdateBuffer-commandBuffer-recording</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be in the <a href="cmdbuffers.html#commandbuffers-lifecycle" class="xref page">recording state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdUpdateBuffer-commandBuffer-cmdpool" href="#VUID-vkCmdUpdateBuffer-commandBuffer-cmdpool"></a> <span class="vuid">VUID-vkCmdUpdateBuffer-commandBuffer-cmdpool</span><br>
+ The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> support transfer, graphics, or compute operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdUpdateBuffer-renderpass" href="#VUID-vkCmdUpdateBuffer-renderpass"></a> <span class="vuid">VUID-vkCmdUpdateBuffer-renderpass</span><br>
+ This command <strong>must</strong> only be called outside of a render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdUpdateBuffer-videocoding" href="#VUID-vkCmdUpdateBuffer-videocoding"></a> <span class="vuid">VUID-vkCmdUpdateBuffer-videocoding</span><br>
+ This command <strong>must</strong> only be called outside of a video coding scope</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdUpdateBuffer-dataSize-arraylength" href="#VUID-vkCmdUpdateBuffer-dataSize-arraylength"></a> <span class="vuid">VUID-vkCmdUpdateBuffer-dataSize-arraylength</span><br>
+ <code>dataSize</code> <strong>must</strong> be greater than <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdUpdateBuffer-commonparent" href="#VUID-vkCmdUpdateBuffer-commonparent"></a> <span class="vuid">VUID-vkCmdUpdateBuffer-commonparent</span><br>
+ Both of <code>commandBuffer</code>, and <code>dstBuffer</code> <strong>must</strong> have been created, allocated, or retrieved from the same <a href="devsandqueues.html#VkDevice" class="xref page">VkDevice</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>commandBuffer</code> <strong>must</strong> be externally synchronized</p>
+</li>
+<li>
+<p>Host access to the <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Command Properties</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><a href="cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
+<th class="tableblock halign-left valign-top"><a href="renderpass.html#vkCmdBeginRenderPass" class="xref page">Render Pass Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
+<th class="tableblock halign-left valign-top"><a href="fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Transfer<br>
+Graphics<br>
+Compute</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Action</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The <code>pData</code> parameter was of type <code>uint32_t*</code> instead of <code>void*</code>
+prior to version 1.0.19 of the Specification and <a href="../appendices/boilerplate.html#VK_HEADER_VERSION" class="xref page">VK_HEADER_VERSION</a> 19
+of the <a href="../appendices/boilerplate.html#boilerplate-headers" class="xref page">Vulkan Header Files</a>.
+This was a historical anomaly, as the source data may be of other types.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

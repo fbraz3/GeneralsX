@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="icon" href="images/Vulkan_LogoBug_48px_Nov17.png">
+<link rel="stylesheet" href="github-markdown.css">
+</head>
+<body>
+<article class="markdown-body">
+<!-- markdownlint-disable MD041 -->
+
+<!-- Copyright 2015-2025 LunarG, Inc. -->
+
+<p><a href="https://www.khronos.org/vulkan/" TARGET="_blank"><img src="https://vulkan.lunarg.com/img/Vulkan_100px_Dec16.png" title="https://www.khronos.org/vulkan/" alt="Khronos Vulkan" /></a></p>
+<h1 id="synchronization-validation">Synchronization Validation</h1>
+<p>Synchronization Validation is implemented in the <code>VK_LAYER_KHRONOS_validation layer</code>. When enabled, the Synchronization Object is intended to identify resource access conflicts due to missing or incorrect synchronization operations between actions (Draw, Copy, Dispatch, Blit) reading or writing the same regions of memory.</p>
+<p>Synchronization will ideally be run periodically after resolving any outstanding validation checks from all other validation objects, so that issues may be addressed in early stages of development.</p>
+<p>The specific areas covered by this layer are currently tracked in the <a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/projects/5" TARGET="_blank">Synchronization Validation Project</a>. Requests for additional checks can be requested by creating a <a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues" TARGET="_blank">Github issue</a>.</p>
+<h2 id="enabling-synchronization-validation">Enabling Synchronization Validation</h2>
+<p>Synchronization Validation is just a <a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/main/docs/settings.md" TARGET="_blank">normal layer setting</a> that can be turned on.</p>
+<p>The main 3 ways to turn on Sync</p>
+<ol>
+<li>We <strong>highly</strong> suggest people to use <a href="https://www.lunarg.com/introducing-the-new-vulkan-configurator-vkconfig/" TARGET="_blank">VkConfig</a> and use the Synchronization Preset.</li>
+</ol>
+<blockquote>
+<p><strong>NOTE</strong> - This will turn off other non-sync validation for you makeing Synchronization Validation run faster.</p>
+</blockquote>
+<ol start="2">
+<li>Use <code>VK_EXT_layer_settings</code></li>
+</ol>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1"><span class="co">// Will turn on as an additional setting with core validation</span></a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="at">const</span> VkBool32 verbose_value = <span class="kw">true</span>;</a>
+<a class="sourceLine" id="cb1-3" title="3"><span class="at">const</span> VkLayerSettingEXT layer_setting = {<span class="st">&quot;VK_LAYER_KHRONOS_validation&quot;</span>, <span class="st">&quot;validate_sync&quot;</span>, VK_LAYER_SETTING_TYPE_BOOL32_EXT, <span class="dv">1</span>, &amp;verbose_value};</a>
+<a class="sourceLine" id="cb1-4" title="4">VkLayerSettingsCreateInfoEXT layer_settings_create_info = {VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT, <span class="kw">nullptr</span>, <span class="dv">1</span>, &amp;layer_setting};</a>
+<a class="sourceLine" id="cb1-5" title="5"></a>
+<a class="sourceLine" id="cb1-6" title="6">VkInstanceCreateInfo instance_ci = GetYourCreateInfo();</a>
+<a class="sourceLine" id="cb1-7" title="7">instance_ci.pNext = &amp;layer_settings_create_info;</a></code></pre></div>
+<ol start="3">
+<li>Set as an environment variable (will turn on as an additional setting with core validation)</li>
+</ol>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb2-1" title="1"><span class="co"># Windows</span></a>
+<a class="sourceLine" id="cb2-2" title="2"><span class="kw">set</span> <span class="va">VK_LAYER_VALIDATE_SYNC=</span>1</a>
+<a class="sourceLine" id="cb2-3" title="3"></a>
+<a class="sourceLine" id="cb2-4" title="4"><span class="co"># Linux</span></a>
+<a class="sourceLine" id="cb2-5" title="5"><span class="bu">export</span> <span class="va">VK_LAYER_VALIDATE_SYNC=</span>1</a>
+<a class="sourceLine" id="cb2-6" title="6"></a>
+<a class="sourceLine" id="cb2-7" title="7"><span class="co"># Android</span></a>
+<a class="sourceLine" id="cb2-8" title="8"><span class="ex">adb</span> setprop debug.vulkan.khronos_validation.validate_sync=1</a></code></pre></div>
+<p><a href="./khronos_validation_layer.html">Additional configuration settings</a> will all share the <code>VK_LAYER_SYNCVAL_</code>/<code>khronos_validation.syncval_*</code> prefix namespace.</p>
+<h2 id="synchronization-validation-functionality">Synchronization Validation Functionality</h2>
+<h3 id="overview">Overview</h3>
+<p>The pipelined and multi-threaded nature of Vulkan makes it particularly important for applications to correctly insert needed synchronization primitives, and for validation to diagnose unprotected memory access hazards. Synchronization reports the presence of access hazards including information to identify the Vulkan operations which are in conflict. The reported hazards are:</p>
+<table>
+  <tr>
+   <td>RAW
+   </td>
+   <td>Read-after-write
+   </td>
+   <td>Occurs when a subsequent operation uses the result of a previous operation without waiting for the result to be completed.
+   </td>
+  </tr>
+  <tr>
+   <td>WAR
+   </td>
+   <td>Write-after-read
+   </td>
+   <td>Occurs when a subsequent operation overwrites a memory location read by a previous operation before that operation is complete (requires only execution dependency).
+   </td>
+  </tr>
+  <tr>
+   <td>WAW
+   </td>
+   <td>Write-after-write
+   </td>
+   <td>Occurs when a subsequent operation writes to the same set of memory locations (in whole or in part) being written by a previous operation.
+   </td>
+  </tr>
+  <tr>
+   <td>WRW
+   </td>
+   <td>Write-racing-write
+   </td>
+   <td>Occurs when unsynchronized subpasses/queues perform writes to the same set of memory locations.
+   </td>
+  </tr>
+  <tr>
+   <td>RRW
+   </td>
+   <td>Read-racing-write
+   </td>
+   <td>Occurs when unsynchronized subpasses/queues perform read and write operations on the same set of memory locations.
+   </td>
+  </tr>
+</table>
+
+<h3 id="current-feature-set">Current Feature set</h3>
+<ul>
+<li><p>Hazard detection for memory usage for commands within the <em>same</em> command buffer.</p></li>
+<li><p>Synchronization operations .</p>
+<ul>
+<li>vkCmdPipelineBarrier.</li>
+<li>vkCmdSetEvent/vkCmdWaitEvents/vkCmdResetEvent.</li>
+<li>renderpass/subpass barriers.</li>
+</ul></li>
+<li><p>The <code>VK_KHR_synchronization2</code> extension</p>
+<ul>
+<li>vkCmdPipelineBarrier2KHR</li>
+<li>vkCmdSetEvent2KHR/vkCmdWaitEvents2KHR/vkCmdResetEvent2KHR.</li>
+</ul></li>
+<li><p>Image layout transition hazard and access tracking.</p></li>
+<li><p>Load/Store/Resolve operations within Subpasses.</p></li>
+<li><p>ExecuteCommands detection of hazard from or with secondary command buffers</p></li>
+<li><p>QueueSubmit/QueueSubmit2 time hazard detection</p></li>
+<li><p>Semaphore and Fence synchronization operations/effects</p></li>
+<li><p>Device and Queue WaitIdle support</p></li>
+<li><p>Dynamic Rendering support</p></li>
+</ul>
+<h3 id="known-limitations">Known Limitations</h3>
+<ul>
+<li>Does not support precise tracking of descriptors accessed by the shader (requires integration with GPU-AV)</li>
+<li>Hazards related to memory aliasing are not detected properly</li>
+<li>Indirectly accessed (indirect/indexed) buffers validated at <em>binding</em> granularity. (Every valid location assumed to be accessed.)</li>
+<li>Queue family ownership transfer not supported</li>
+<li>Host set event not supported.</li>
+<li>No dedicated support for sparse resources. Need to investigate which kind of support is needed.</li>
+<li>Host memory accesses are not tracked. Corresponding race conditions are not reported.</li>
+<li>Does not include implementation of multi-view renderpass support.</li>
+<li>Memory access checks not suppressed for VK_CULL_MODE_FRONT_AND_BACK.</li>
+<li>Does not include component granularity access tracking, or correctly support swizzling.</li>
+</ul>
+<h2 id="typical-synchronization-validation-usage">Typical Synchronization Validation Usage</h2>
+<h3 id="debugging-synchronization-validation-issues">Debugging Synchronization Validation Issues</h3>
+<p>To debug synchronization validation issues (all platforms):</p>
+<ul>
+<li>Create a debug callback with <code>vkCreateDebugUtilsMessengerEXT</code> with the <code>VK_DEBUG_REPORT_ERROR_BIT_EXT</code> set.</li>
+<li>Enable synchronization as noted above. On Linux and Windows this can be simplified by enabling Synchronization Validation using <a href="./vkconfig.html">Vulkan Configurator (vkconfig)</a>.</li>
+<li>Set a breakpoint in the debug callback and run your application in the debugger.</li>
+<li>The callback will be called when a <code>vkCmd</code>... command with a hazard is recorded.</li>
+</ul>
+<p>On Windows, Synchronization Validation can be run using just vkconfig and the debugger without defining a callback:</p>
+<ul>
+<li>In vkconfig.
+<ul>
+<li>Enable Synchronization Validation.</li>
+<li>Select 'Debug Actions' 'Break' and 'Debug Output'.</li>
+</ul></li>
+<li>Debug application in Visual Studio.</li>
+<li>Hazard messages will appear in the debugger output window and the debugger will break (in the validation layer code) when a <code>vkCmd</code>... command with a hazard is recorded.</li>
+</ul>
+<h3 id="synchronization-validation-messages">Synchronization Validation Messages</h3>
+<p>A synchronization validation error message describes a race condition by identifying two memory accesses that caused the hazard and the state of applied synchronization.</p>
+<p>Error message example:</p>
+<blockquote>
+<p>vkCmdExecuteCommands(): WRITE_AFTER_READ hazard detected. vkCmdCopyImage (from the secondary VkCommandBuffer 0x1fb2f224d40) writes to VkImage 0xf56c9b0000000004, which was previously read by another vkCmdCopyImage command (from the primary VkCommandBuffer 0x1fb245f4200).</p>
+<p>No sufficient synchronization is present to ensure that a write (VK_ACCESS_2_TRANSFER_WRITE_BIT) at VK_PIPELINE_STAGE_2_COPY_BIT does not conflict with a prior read (VK_ACCESS_2_TRANSFER_READ_BIT) at the same stage.</p>
+<p>Vulkan insight: an execution dependency is sufficient to prevent this hazard.</p>
+</blockquote>
+<p>The error message usually includes the following:</p>
+<ul>
+<li>The Vulkan API function that triggered the synchronization error</li>
+<li>A brief description of the type of race condition (e.g., WRITE_AFTER_WRITE)</li>
+<li>The commands that performed memory accesses and the resource involved (e.g., vkCmdCopyBuffer and vkCmdDispatch accessing the same VkImage)</li>
+<li>Synchronization details: pipeline stages, access types, and applied synchronization</li>
+<li>In some cases, a "Vulkan insight" section at the end of the error message may provide additional information related to the current error</li>
+</ul>
+<p>Unlike core validation error messages, where each message is identified by a VUID, synchronization validation primarily detects a single type of error: a race condition between two memory accesses. There are limitless ways to produce a race condition (combinations of command pairs and different synchronization methods), which is why race condition scenarios are not identified by VUIDs.</p>
+<p>To suppress or filter synchronization validation error messages, one can use the optional <code>Extra properties</code> section. Extra properties contain key-value pairs that help identify the error message and are presented in a more structured format compared to the main error message, making parsing easier.</p>
+<p>One of the benefits of parsing <code>Extra properties</code> rather than the main error message is that the former is more stable and changes less frequently. This creates a nice separation: on one side, we can take every opportunity to improve the error message wording while keeping the Extra properties values unchanged in most cases, so suppression and filtering logic does not need to be updated.</p>
+<p>Example of error message with extra properties enabled:</p>
+<blockquote>
+<p>vkQueueSubmit(): WRITE_AFTER_WRITE hazard detected. vkCmdEndRenderPass (from VkCommandBuffer submitted on the current VkQueue ) writes to resource, which was previously written by vkCmdClearColorImage (from VkCommandBuffer submitted on VkQueue ).</p>
+<p>The current synchronization allows VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT accesses at VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, but to prevent this hazard, it must allow VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT accesses at VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT.</p>
+</blockquote>
+<pre><code>[Extra properties]
+message_type = SubmitTimeError
+hazard_type = WRITE_AFTER_WRITE
+prior_access = VK_PIPELINE_STAGE_2_CLEAR_BIT(VK_ACCESS_2_TRANSFER_WRITE_BIT)
+write_barriers = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT(VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT)
+command = vkCmdEndRenderPass
+prior_command = vkCmdClearColorImage
+command_buffer_index = 1
+submit_index = 2
+batch_index = 0
+batch_tag = 5
+</code></pre>
+<p>Extra properties can be enabled in Vulkan Configurator or by using <code>khronos_validation.syncval_message_extra_properties</code> validation layer setting.</p>
+<h3 id="frequently-found-issues">Frequently Found Issues</h3>
+<ul>
+<li>Assuming Pipeline stages are logically extended with respect to memory access barriers. Specifying the vertex shader stage in a barrier will <strong>not</strong> apply to all subsequent shader stages read/write access.</li>
+<li>Invalid stage/access pairs (specifying a pipeline stage for which a given access is not valid) that yield no barrier.</li>
+<li>Relying on implicit subpass dependencies with <code>VK_SUBPASS_EXTERNAL</code> when memory barriers are needed.</li>
+<li>Missing memory dependencies with Image Layout Transitions from pipeline barrier or renderpass Begin/Next/End operations.</li>
+<li>Missing stage/access scopes for load operations, noting that color and depth/stencil are done by different stage/access.</li>
+</ul>
+<h3 id="debugging-tips">Debugging Tips</h3>
+<ul>
+<li>Read and write barriers in the error message can help identify the synchronization operation (either subpass dependency or pipeline barrier) with insufficient or incorrect destination stage/access masks (second scope).</li>
+<li><code>Access info read_barrier</code> and <code>write_barrier</code> values of 0, reflect the absence of any barrier, and can indicate an insufficient or incorrect source mask (first scope).</li>
+<li>Insert additional barriers with stage/access <code>VK_PIPELINE_STAGE_ALL_COMMANDS_BIT</code>, <code>VK_ACCESS_MEMORY_READ_BIT</code>|<code>VK_ACCESS_MEMORY_WRITE_BIT</code> for both<code> src*Mask</code> and <code>dst*Mask</code> fields to locate missing barriers. If the inserted barrier <em>resolves</em> a hazard, the conflicting access <em>happens-before</em> the inserted barrier. (Be sure to delete later.)</li>
+</ul>
+<h2 id="synchronization-blogsarticles">Synchronization blogs/articles</h2>
+<p>Synchronization Examples<a href="https://github.com/KhronosGroup/Vulkan-Docs/wiki/Synchronization-Examples" TARGET="_blank"> https://github.com/KhronosGroup/Vulkan-Docs/wiki/Synchronization-Examples</a></p>
+<p>Keeping your GPU fed without getting bitten <a href="https://www.youtube.com/watch?v=oF7vOTTaAh4" TARGET="_blank"> https://www.youtube.com/watch?v=oF7vOTTaAh4</a></p>
+<p>Yet another blog explaining Vulkan synchronization<a href="http://themaister.net/blog/2019/08/14/yet-another-blog-explaining-vulkan-synchronization/" TARGET="_blank"> http://themaister.net/blog/2019/08/14/yet-another-blog-explaining-vulkan-synchronization/</a></p>
+<p>A Guide to Vulkan Synchronization Validation <a href="https://www.khronos.org/news/permalink/blog-a-guide-to-vulkan-synchronization-validation" TARGET="_blank">https://www.khronos.org/news/permalink/blog-a-guide-to-vulkan-synchronization-validation</a></p>
+</article>
+</body>
+</html>

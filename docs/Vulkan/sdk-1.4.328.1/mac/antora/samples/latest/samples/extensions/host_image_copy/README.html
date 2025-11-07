@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Host image copy :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:samples" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="samples" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../../README.html">Vulkan Samples</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../README.html">Samples overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../vulkan_basics.html">Vulkan basics</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../../shaders/README.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../framework/README.html">Sample framework</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../components/README.html">Framework components</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/README.html">Api usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/compute_nbody/README.html">Compute N-body</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_compute_nbody/README.html">Compute N-body (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/dynamic_uniform_buffers/README.html">Dynamic uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_dynamic_uniform_buffers/README.html">Dynamic Uniform Buffers (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/hdr/README.html">HDR</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_hdr/README.html">HDR (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/hello_triangle/README.html">Hello Triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_hello_triangle/README.html">Hello Triangle (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/hello_triangle_1_3/README.html">Hello Triangle 1.3</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_hello_triangle_1_3/README.html">Hello Triangle 1.3(Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/instancing/README.html">Instancing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_instancing/README.html">Instancing (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/separate_image_sampler/README.html">Separate image sampler</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_separate_image_sampler/README.html">Separate image sampler (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/terrain_tessellation/README.html">Terrain tessellation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_terrain_tessellation/README.html">Terrain tessellation (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/texture_loading/README.html">Texture loading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_texture_loading/README.html">Texture loading (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/texture_mipmap_generation/README.html">Texture mipmap generation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_texture_mipmap_generation/README.html">Texture mipmap generation (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/timestamp_queries/README.html">Timestamp queries</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_timestamp_queries/README.html">Timestamp queries (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/oit_linked_lists/README.html">OIT linked lists</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_oit_linked_lists/README.html">OIT linked lists (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/oit_depth_peeling/README.html">OIT depth peeling</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_oit_depth_peeling/README.html">OIT depth peeling (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../README.html">Extension usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../buffer_device_address/README.html">Buffer device address</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../calibrated_timestamps/README.html">Calibrated timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../conditional_rendering/README.html">Conditional rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../conservative_rasterization/README.html">Conservative rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../debug_utils/README.html">Debug utils</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../descriptor_buffer_basic/README.html">Descriptor buffer basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../descriptor_indexing/README.html">Descriptor indexing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../dynamic_line_rasterization/README.html">Dynamic line rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../dynamic_primitive_clipping/README.html">Dynamic primitive clipping</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../dynamic_rendering/README.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../dynamic_rendering_local_read/README.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../extended_dynamic_state2/README.html">Extended dynamic state2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../fragment_shader_barycentric/README.html">Fragment shader barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../fragment_shading_rate/README.html">Fragment shading rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../fragment_shading_rate_dynamic/README.html">Fragment shading rate dynamic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../full_screen_exclusive/README.html">Full screen exclusive</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../graphics_pipeline_library/README.html">Graphics pipeline library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../gshader_to_mshader/README.html">Geometry shader to mesh shader</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="README.html">Host image copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../logic_op_dynamic_state/README.html">Logic op dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../memory_budget/README.html">Memory budget</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../mesh_shader_culling/README.html">Mesh shader culling</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../mesh_shading/README.html">Mesh shading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../hpp_mesh_shading/README.html">Mesh shading (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../open_cl_interop/README.html">OpenCL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../open_cl_interop_arm/README.html">OpenCL interop (Arm)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../open_gl_interop/README.html">OpenGL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../portability/README.html">Portability</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../push_descriptors/README.html">Push descriptors</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../hpp_push_descriptors/README.html">Push descriptors (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ray_tracing_basic/README.html">Raytracing basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ray_tracing_extended/README.html">Raytracing extended</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ray_queries/README.html">Ray queries</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ray_tracing_reflection/README.html">Ray tracing reflection</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ray_tracing_position_fetch/README.html">Ray tracing position fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../shader_object/README.html">Shader Object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../shader_debugprintf/README.html">Shader Debug Printf</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../sparse_image/README.html">Sparse Image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../synchronization_2/README.html">Synchronization 2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../timeline_semaphore/README.html">Timeline semaphore</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../vertex_dynamic_state/README.html">Vertex dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../dynamic_multisample_rasterization/README.html">Dynamic multisample rasterization</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../performance/README.html">Performance samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/16bit_arithmetic/README.html">16bit arithmetic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/16bit_storage_input_output/README.html">16bit storage input output</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/afbc/README.html">AFBC</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/async_compute/README.html">Async compute</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/command_buffer_usage/README.html">Command buffer usage</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/constant_data/README.html">Constant data</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/descriptor_management/README.html">Descriptor management</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/image_compression_control/README.html">Image compression control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/layout_transitions/README.html">Layout transitions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/msaa/README.html">MSAA</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/multithreading_render_passes/README.html">Multithreading render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/multi_draw_indirect/README.html">Multi draw indirect</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/pipeline_barriers/README.html">Pipeline barriers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../performance/pipeline_cache/README.html">Pipeline cache</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../performance/hpp_pipeline_cache/README.html">Pipeline cache (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/render_passes/README.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/specialization_constants/README.html">Specialization constants</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/subpasses/README.html">Subpasses</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/surface_rotation/README.html">Surface rotation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../performance/swapchain_images/README.html">Swapchain images</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../performance/hpp_swapchain_images/README.html">Swapchain images (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/texture_compression_basisu/README.html">Texture compression basisu</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../performance/texture_compression_comparison/README.html">Texture compression comparison</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../performance/hpp_texture_compression_comparison/README.html">Texture compression comparison (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/wait_idle/README.html">Wait idle</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../tooling/README.html">Tooling samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../tooling/profiles/README.html">Profiles</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../general/README.html">General samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../general/mobile_nerf/README.html">Mobile NeRF</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../general/mobile_nerf_rayquery/README.html">Mobile NeRF Ray Query</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../docs/README.html">General documentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../docs/build.html">Build guide</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../docs/memory_limits.html">Memory limits</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../docs/misc.html">Miscellaneous</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Samples</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../../../README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../../README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../../README.html">Vulkan Samples</a></li>
+    <li><a href="../README.html">Extension usage samples</a></li>
+    <li><a href="README.html">Host image copy</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Samples/antora/modules/ROOT/pages/samples/extensions/host_image_copy/README.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Host image copy</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+The source for this sample can be found in the <a href="https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/host_image_copy">Khronos Vulkan samples github repository</a>.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A common thing in Vulkan is copying image data to the GPU to sample from it in a shader (e.g. for texturing objects). Often that image data is coming from a file stored on disk (e.g. in KTX format) and needs to be moved from the host to the device.</p>
+</div>
+<div class="paragraph">
+<p>Depending on the memory setup of the implementation, this requires uploading the image data to a host visible buffer and then copying it over to a device local buffer to make it usable as an image in a shader. This also requires multiple image transitions (barriers). This is commonly referred to as "staging".</p>
+</div>
+<div class="paragraph">
+<p>In some scenarios like streaming image data from disk, this way of uploading image data may come with drawbacks like added memory requirements and unnecessary copies. These may result in negative effects like memory swapping or stuttering.</p>
+</div>
+<div class="paragraph">
+<p>The <code>VK_EXT_host_image_copy</code> extension aims to improve this by providing a direct way of moving image data from host memory to/from the device without having to go through such a staging process. It also simplifies the image transition process.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+A staged upload usually has to first perform a CPU copy of data to a GPU-visible buffer and then uses the GPU to convert that data into the optimal format. A host-image copy does the copy and conversion using the CPU alone. In many circumstances this can actually be faster than the staged approach even though the GPU is not involved in the transfer.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_enabling_the_extension"><a class="anchor" href="#_enabling_the_extension"></a>Enabling the Extension</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>VK_EXT_host_image_copy</code> extension needs to be enabled at device level. Depending on the Vulkan version you target, additional extensions might need to be enabled. See the <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_EXT_host_image_copy.html#_extension_and_version_dependencies">extension and version dependencies</a> of the extension spec for details.</p>
+</div>
+<div class="paragraph">
+<p>In addition to the extension(s) you also need to enable the <code>hostImageCopy</code> for the extension structure:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">VkPhysicalDeviceHostImageCopyFeaturesEXT host_image_copy_features{};
+...
+host_image_copy_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_FEATURES_EXT;
+host_image_copy_features.hostImageCopy = VK_TRUE;
+// Chain into device creation</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_checking_for_image_format_support"><a class="anchor" href="#_checking_for_image_format_support"></a>Checking for image format support</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Even though all image formats that support sampling need to support host image copies, other image formats may not. So it&#8217;s always a good idea to check for host image copy support for the image format that you want to copy to. This is done by checking if the <code>VK_FORMAT_FEATURE_2_HOST_IMAGE_TRANSFER_BIT_EXT</code> bit is set:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">VkFormat image_format = VK_FORMAT_...;
+...
+
+VkFormatProperties3 format_properties_3{};
+format_properties_3.sType = VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_3_KHR;
+
+// Properties3 need to be chained into Properties2
+VkFormatProperties2 format_properties_2{};
+format_properties_2.sType = VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_2;
+format_properties_2.pNext = &amp;format_properties_3;
+
+// Get format properties for the select image format
+vkGetPhysicalDeviceFormatProperties2(physical_device, image_format, &amp;format_properties_2);
+
+if ((format_properties_3.optimalTilingFeatures &amp; VK_FORMAT_FEATURE_2_HOST_IMAGE_TRANSFER_BIT_EXT) == 0)
+{
+    // Fallback to a different format or use other means of uploading data
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_setting_up_the_image"><a class="anchor" href="#_setting_up_the_image"></a>Setting up the image</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The target of our copy will be a device local image in optimal tiling format. Setting this up is not much different than with other ways of uploading image data:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">VkImageCreateInfo imageCreateInfo = vkb::initializers::image_create_info();
+imageCreateInfo.imageType         = VK_IMAGE_TYPE_2D;
+imageCreateInfo.format            = image_format;
+imageCreateInfo.mipLevels         = 1;
+imageCreateInfo.arrayLayers       = 1;
+imageCreateInfo.samples           = VK_SAMPLE_COUNT_1_BIT;
+imageCreateInfo.tiling            = VK_IMAGE_TILING_OPTIMAL;
+imageCreateInfo.sharingMode       = VK_SHARING_MODE_EXCLUSIVE;
+imageCreateInfo.initialLayout     = VK_IMAGE_LAYOUT_UNDEFINED;
+imageCreateInfo.extent            = {texture.width, texture.height, 1};
+imageCreateInfo.usage             = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_HOST_TRANSFER_BIT_EXT;
+VK_CHECK(vkCreateImage(get_device().get_handle(), &amp;imageCreateInfo, nullptr, &amp;texture.image));
+...
+// Bind memory</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The only differences compared to staging are the usage flags. We no longer need the <code>VK_IMAGE_USAGE_TRANSFER_DST_BIT</code> flag and replace it with <code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT_EXT</code> to let the implementation know that we&#8217;ll be using host image copies.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_simplified_image_layout_transitions"><a class="anchor" href="#_simplified_image_layout_transitions"></a>Simplified image layout transitions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Using staging you&#8217;d have to submit multiple barriers. One that transitions the image as a destination for transfers and, after doing the copy, another one that transitions to the image to a shader read layout so it can be sampled in e.g. a fragment shader. These barriers then need to be submitted to a queue using a command buffer.</p>
+</div>
+<div class="paragraph">
+<p><code>VK_EXT_host_image_copy</code> simplifies this process in two ways: First you only need one transition for the final usage layout (e.g. shader read), second you can do that transition on the host without having to setup and issue a command buffer using the <code>vkTransitionImageLayoutEXT</code> function.</p>
+</div>
+<div class="paragraph">
+<p>So for copying host memory to a device image all you need is this single barrier call:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">VkHostImageLayoutTransitionInfoEXT host_image_layout_transition_info{};
+host_image_layout_transition_info.sType            = VK_STRUCTURE_TYPE_HOST_IMAGE_LAYOUT_TRANSITION_INFO_EXT;
+host_image_layout_transition_info.image            = texture.image;
+host_image_layout_transition_info.oldLayout        = VK_IMAGE_LAYOUT_UNDEFINED;
+host_image_layout_transition_info.newLayout        = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+host_image_layout_transition_info.subresourceRange = subresource_range;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>oldLayout</code> is the one that device image was created with initially, <code>newLayout</code> is the actual usage layout of the image after the copy operation.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_copy_image_data_from_host_to_image"><a class="anchor" href="#_copy_image_data_from_host_to_image"></a>Copy image data from host to image</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If the selected image format supports host copies we can copy image data from host memory to the device image like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Setup host to image copy
+VkMemoryToImageCopyEXT memory_to_image_copy{};
+
+memory_to_image_copy.sType                           = VK_STRUCTURE_TYPE_MEMORY_TO_IMAGE_COPY_EXT;
+memory_to_image_copy.imageSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
+memory_to_image_copy.imageSubresource.mipLevel       = 0;
+memory_to_image_copy.imageSubresource.baseArrayLayer = 0;
+memory_to_image_copy.imageSubresource.layerCount     = 1;
+memory_to_image_copy.imageExtent.width               = image_width;
+memory_to_image_copy.imageExtent.height              = image_height;
+memory_to_image_copy.imageExtent.depth               = 1;
+memory_to_image_copy.pHostPointer                    = host_memory_address;
+
+// Issue the copy
+VkCopyMemoryToImageInfoEXT copy_memory_info{};
+copy_memory_info.sType          = VK_STRUCTURE_TYPE_COPY_MEMORY_TO_IMAGE_INFO_EXT;
+copy_memory_info.dstImage       = texture.image;
+copy_memory_info.dstImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+copy_memory_info.regionCount    = static_cast&lt;uint32_t&gt;(memory_to_image_copies.size());
+copy_memory_info.pRegions       = &amp;memory_to_image_copy;
+
+vkCopyMemoryToImageEXT(device, &amp;copy_memory_info);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>pHostPointer</code> points to the source data in host memory. So for e.g. copying multiple mip levels one would setup multiple  <code>VkMemoryToImageCopyEXT</code> elements and offset <code>pHostPointer</code> to point at the start of each mip level in host memory. That makes it very easy to copy from arbitrary locations in host memory, no matter if data is tightly packed or stored behind different addresses.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_sample"><a class="anchor" href="#_the_sample"></a>The sample</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The sample is a variation of the texture loading api sample and replaces the staging approach for uploading an image with a host image copy. Looking at both samples is an easy way of comparing the two approaches and how much easier things get when using host image copies.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_conclusion"><a class="anchor" href="#_conclusion"></a>Conclusion</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Aside from the use-case shown in this sample, the <code>VK_EXT_host_image_copy</code> extension also can do image copies to host memory and image to image copies on the host. All these can simplify image copies and help reduce memory requirements and improve performance.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_additional_resources"><a class="anchor" href="#_additional_resources"></a>Additional Resources</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.khronos.org/blog/copying-images-on-the-host-in-vulkan">Copying Images on the Host in Vulkan</a></p>
+</li>
+<li>
+<p><a href="https://docs.vulkan.org/features/latest/features/proposals/VK_EXT_host_image_copy.html">Extension proposal</a></p>
+</li>
+<li>
+<p><a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_EXT_host_image_copy.html">Specification</a></p>
+</li>
+<li>
+<p><a href="https://vulkan.gpuinfo.org/displayextensiondetail?extension=VK_EXT_host_image_copy">Extension device support</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../../_/js/site.js" data-ui-root-path="../../../../../_"></script>
+<script async src="../../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../../.." data-snippet-length="100" data-stylesheet="../../../../../_/css/search.css"></script>
+<script async src="../../../../../search-index.js"></script>
+<script async src="../../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

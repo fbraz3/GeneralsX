@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Appropriate use of surface rotation :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:samples" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="samples" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../../README.html">Vulkan Samples</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../README.html">Samples overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../vulkan_basics.html">Vulkan basics</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../../shaders/README.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../framework/README.html">Sample framework</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../components/README.html">Framework components</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/README.html">Api usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/compute_nbody/README.html">Compute N-body</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_compute_nbody/README.html">Compute N-body (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/dynamic_uniform_buffers/README.html">Dynamic uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_dynamic_uniform_buffers/README.html">Dynamic Uniform Buffers (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/hdr/README.html">HDR</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_hdr/README.html">HDR (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/hello_triangle/README.html">Hello Triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_hello_triangle/README.html">Hello Triangle (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/hello_triangle_1_3/README.html">Hello Triangle 1.3</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_hello_triangle_1_3/README.html">Hello Triangle 1.3(Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/instancing/README.html">Instancing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_instancing/README.html">Instancing (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/separate_image_sampler/README.html">Separate image sampler</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_separate_image_sampler/README.html">Separate image sampler (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/terrain_tessellation/README.html">Terrain tessellation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_terrain_tessellation/README.html">Terrain tessellation (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/texture_loading/README.html">Texture loading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_texture_loading/README.html">Texture loading (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/texture_mipmap_generation/README.html">Texture mipmap generation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_texture_mipmap_generation/README.html">Texture mipmap generation (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/timestamp_queries/README.html">Timestamp queries</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_timestamp_queries/README.html">Timestamp queries (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/oit_linked_lists/README.html">OIT linked lists</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_oit_linked_lists/README.html">OIT linked lists (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/oit_depth_peeling/README.html">OIT depth peeling</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_oit_depth_peeling/README.html">OIT depth peeling (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../extensions/README.html">Extension usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/buffer_device_address/README.html">Buffer device address</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/calibrated_timestamps/README.html">Calibrated timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/conditional_rendering/README.html">Conditional rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/conservative_rasterization/README.html">Conservative rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/debug_utils/README.html">Debug utils</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/descriptor_buffer_basic/README.html">Descriptor buffer basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/descriptor_indexing/README.html">Descriptor indexing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/dynamic_line_rasterization/README.html">Dynamic line rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/dynamic_primitive_clipping/README.html">Dynamic primitive clipping</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/dynamic_rendering/README.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/dynamic_rendering_local_read/README.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/extended_dynamic_state2/README.html">Extended dynamic state2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/fragment_shader_barycentric/README.html">Fragment shader barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/fragment_shading_rate/README.html">Fragment shading rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/fragment_shading_rate_dynamic/README.html">Fragment shading rate dynamic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/full_screen_exclusive/README.html">Full screen exclusive</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/graphics_pipeline_library/README.html">Graphics pipeline library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/gshader_to_mshader/README.html">Geometry shader to mesh shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/host_image_copy/README.html">Host image copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/logic_op_dynamic_state/README.html">Logic op dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/memory_budget/README.html">Memory budget</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/mesh_shader_culling/README.html">Mesh shader culling</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../extensions/mesh_shading/README.html">Mesh shading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../extensions/hpp_mesh_shading/README.html">Mesh shading (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/open_cl_interop/README.html">OpenCL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/open_cl_interop_arm/README.html">OpenCL interop (Arm)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/open_gl_interop/README.html">OpenGL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/portability/README.html">Portability</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../extensions/push_descriptors/README.html">Push descriptors</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../extensions/hpp_push_descriptors/README.html">Push descriptors (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/ray_tracing_basic/README.html">Raytracing basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/ray_tracing_extended/README.html">Raytracing extended</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/ray_queries/README.html">Ray queries</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/ray_tracing_reflection/README.html">Ray tracing reflection</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/ray_tracing_position_fetch/README.html">Ray tracing position fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/shader_object/README.html">Shader Object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/shader_debugprintf/README.html">Shader Debug Printf</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/sparse_image/README.html">Sparse Image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/synchronization_2/README.html">Synchronization 2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/timeline_semaphore/README.html">Timeline semaphore</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/vertex_dynamic_state/README.html">Vertex dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/dynamic_multisample_rasterization/README.html">Dynamic multisample rasterization</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../README.html">Performance samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../16bit_arithmetic/README.html">16bit arithmetic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../16bit_storage_input_output/README.html">16bit storage input output</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../afbc/README.html">AFBC</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../async_compute/README.html">Async compute</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../command_buffer_usage/README.html">Command buffer usage</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../constant_data/README.html">Constant data</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../descriptor_management/README.html">Descriptor management</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../image_compression_control/README.html">Image compression control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../layout_transitions/README.html">Layout transitions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../msaa/README.html">MSAA</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../multithreading_render_passes/README.html">Multithreading render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../multi_draw_indirect/README.html">Multi draw indirect</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../pipeline_barriers/README.html">Pipeline barriers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../pipeline_cache/README.html">Pipeline cache</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../hpp_pipeline_cache/README.html">Pipeline cache (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../render_passes/README.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../specialization_constants/README.html">Specialization constants</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../subpasses/README.html">Subpasses</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="README.html">Surface rotation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../swapchain_images/README.html">Swapchain images</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../hpp_swapchain_images/README.html">Swapchain images (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../texture_compression_basisu/README.html">Texture compression basisu</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../texture_compression_comparison/README.html">Texture compression comparison</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../hpp_texture_compression_comparison/README.html">Texture compression comparison (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../wait_idle/README.html">Wait idle</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../tooling/README.html">Tooling samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../tooling/profiles/README.html">Profiles</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../general/README.html">General samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../general/mobile_nerf/README.html">Mobile NeRF</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../general/mobile_nerf_rayquery/README.html">Mobile NeRF Ray Query</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../docs/README.html">General documentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../docs/build.html">Build guide</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../docs/memory_limits.html">Memory limits</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../docs/misc.html">Miscellaneous</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Samples</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../../../README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../../README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../../README.html">Vulkan Samples</a></li>
+    <li><a href="../README.html">Performance samples</a></li>
+    <li><a href="README.html">Surface rotation</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Samples/antora/modules/ROOT/pages/samples/performance/surface_rotation/README.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Appropriate use of surface rotation</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+The source for this sample can be found in the <a href="https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/performance/surface_rotation">Khronos Vulkan samples github repository</a>.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Mobile devices can be rotated, therefore the logical orientation of the application window and the physical orientation of the display may not match.
+Applications then need to be able to operate in two modes: portrait and landscape.
+The difference between these two modes can be simplified to just a change in resolution.
+However, some display subsystems always work on the "native" (or "physical") orientation of the display panel.
+Since the device has been rotated, to achieve the desired effect the application output must also rotate.</p>
+</div>
+<div class="paragraph">
+<p>In OpenGL ES the GPU driver can transparently handle the logical rotation of window surface framebuffers, but the Vulkan specification has made this explicit in the API.
+Therefore in Vulkan the application is responsible for supporting rotation.</p>
+</div>
+<div class="paragraph">
+<p>In this sample we focus on the rotation step, and analyse the performance implications of implementing it correctly with Vulkan.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../../_images/samples/performance/surface_rotation/images/rotation_cases.jpg" alt="Pre-rotation">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_pre_rotation"><a class="anchor" href="#_pre_rotation"></a>Pre-rotation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The rotation step can be carried out in different ways:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>It can efficiently and transparently be handled in hardware by the Display Processing Unit (DPU), but this is only possible in those devices that support it.</p>
+</li>
+<li>
+<p>It can be handled by Android, by introducing a compositor pass that rotates the output using the GPU, or some other dedicated block.
+This is transparent to the application, but will have additional system-level costs such as extra memory bandwidth, or even GPU processing if the compositor uses the GPU as the rotation engine.</p>
+</li>
+<li>
+<p>It can be handled by the Vulkan application, by rendering into a window surface which is oriented to match the physical orientation of the display panel.
+We call this pre-rotation.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>An application has no means to tell whether the current device can support a free rotation during composition, so the only guaranteed method to avoid any additional processing cost is to render into a window surface which is oriented to match the physical orientation of the display panel, thus removing the Android compositor step.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_demo_application"><a class="anchor" href="#_demo_application"></a>Demo application</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The sample application you can find here shows how you can handle rotations in your Vulkan application in a way that avoids using the Android compositor for rotation.
+It allows you to enable and disable pre-rotation at run time, so you can compare these two modes using the hardware counters shown on the display.
+In this section we will go through the code required to carry out pre-rotation.
+In the analysis section below we will explain the differences in more detail.
+Note that not all devices will show obvious differences, as more and more include a DPU capable of performing the rotation in hardware.</p>
+</div>
+<div class="paragraph">
+<p>In a nutshell, below are the steps required to handle pre-rotation:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">No pre-rotation</th>
+<th class="tableblock halign-left valign-top">Pre-rotation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Destroy the Vulkan framebuffers and the swapchain</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Destroy the Vulkan framebuffers and the swapchain</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Re-create the swapchain using the new surface dimensions i.e.
+the swapchain dimensions match the surface&#8217;s.
+Ignore the <code>preTransform</code> field in <a href="https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkSwapchainCreateInfoKHR.html"><code>VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR</code></a>.
+This will not match the value returned by <a href="https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/vkGetPhysicalDeviceSurfaceCapabilitiesKHR.html"><code>vkGetPhysicalDeviceSurfaceCapabilitiesKHR</code></a> and therefore the Android Compositor will rotate the scene before presenting it to the display</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Re-create the swapchain using the old swapchain dimensions, i.e.
+the swapchain dimensions do not change.
+Update the <code>preTransform</code> field in <a href="https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkSwapchainCreateInfoKHR.html"><code>VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR</code></a> so that it matches the <code>currentTransform</code> field of the <a href="https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkSurfaceCapabilitiesKHR.html"><code>VkSurfaceCapabilitiesKHR</code></a> returned by the new surface.
+This communicates to Android that it does not need to rotate the scene.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Re-create the framebuffers</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Re-create the framebuffers</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">n/a</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Adjust the MVP matrix so that the world is rotated</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Render the scene</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Render the scene</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_rotation_in_android"><a class="anchor" href="#_rotation_in_android"></a>Rotation in Android</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Android added pre-rotation to their <a href="https://developer.android.com/ndk/guides/graphics/design-notes">Vulkan Design Guidelines</a>.
+However, <a href="https://developer.android.com/guide/topics/resources/runtime-changes#HandlingTheChange">by default</a>, Android calls <code>onDestroy</code> when the screen is rotated.
+To disable this behavior and handle rotations in Vulkan, you must add the <code>orientation</code> (for API level 13 and lower) and <code>screenSize</code> attributes to the activity&#8217;s <code>configChanges</code> in the Android manifest:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">&lt;activity android:name=".BPNativeActivity"
+          android:configChanges="orientation|screenSize"&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To track orientation changes, use Android&#8217;s <code>APP_CMD_CONTENT_RECT_CHANGED</code> event:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">void on_app_cmd(android_app *app, int32_t cmd)
+{
+	auto platform = reinterpret_cast&lt;AndroidPlatform *&gt;(app-&gt;userData);
+	assert(platform &amp;&amp; "Platform is not valid");
+
+	switch (cmd)
+	{
+		case APP_CMD_INIT_WINDOW:
+		{
+			platform-&gt;get_window().resize(ANativeWindow_getWidth(app-&gt;window), ANativeWindow_getHeight(app-&gt;window));
+			app-&gt;destroyRequested = !platform-&gt;prepare();
+			break;
+		}
+		case APP_CMD_CONTENT_RECT_CHANGED:
+		{
+			// Get the new size
+			auto width  = app-&gt;contentRect.right - app-&gt;contentRect.left;
+			auto height = app-&gt;contentRect.bottom - app-&gt;contentRect.top;
+			platform-&gt;resize(width, height);
+			break;
+		}
+	}
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note that android NDK 21 and below does not support <code>APP_CMD_CONTENT_RECT_CHANGED</code>.
+This is fixed in version 22+ which at the date of this addition has not been released.
+This can be patched in the short term by registering a callback that mimics the expected behavior of <code>OnContentRectChanged</code>.
+The callback we use in this project is:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">void on_content_rect_changed(ANativeActivity *activity, const ARect *rect)
+{
+	... log content rect dimensions
+
+	struct android_app *app = reinterpret_cast&lt;struct android_app *&gt;(activity-&gt;instance);
+	auto                cmd = APP_CMD_CONTENT_RECT_CHANGED;
+
+	app-&gt;contentRect = *rect;
+
+	if (write(app-&gt;msgwrite, &amp;cmd, sizeof(cmd)) != sizeof(cmd))
+	{
+		... failed to write message to the app glue command stream
+	}
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The above triggers the <code>APP_CMD_CONTENT_RECT_CHANGED</code> event and the new content rect dimensions should be accessible by the <code>app-&gt;contentRect</code> attribute.</p>
+</div>
+<div class="paragraph">
+<p>There are other alternatives to <code>CONTENT_RECT_CHANGED</code>, an example can be found here <a href="https://android-developers.googleblog.com/2020/02/handling-device-orientation-efficiently.html">Handling Device Orientation Efficiently in Vulkan With Pre-Rotation</a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_swapchain_re_creation"><a class="anchor" href="#_swapchain_re_creation"></a>Swapchain re-creation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>We need to sample the current transform from the surface:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">VkSurfaceCapabilitiesKHR surface_properties;
+VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(get_device().get_physical_device(),
+                                                   get_surface(),
+                                                   &amp;surface_properties));
+
+pre_transform = surface_properties.currentTransform;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>currentTransform</code> is a <a href="https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/chap32.html#VkSurfaceTransformFlagBitsKHR"><code>VkSurfaceTransformFlagBitsKHR</code></a> value.
+When we re-create the swapchain, we must set the swapchain&#8217;s <a href="https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkSwapchainCreateInfoKHR.html"><code>preTransform</code></a> to match this value.
+This informs the compositor that the application has handled the required transform so it does not have to.</p>
+</div>
+<div class="paragraph">
+<p>To re-create the swapchain, the sample uses the helper function <code>update_swapchain</code> provided by the framework:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">get_device().wait_idle();
+
+auto surface_extent = get_render_context().get_surface_extent();
+
+get_render_context().update_swapchain(surface_extent, select_pre_transform());</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This function then takes care to safely destroy the framebuffers and use the new <code>preTransform</code> value to re-create the swapchain:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">device.get_resource_cache().clear_framebuffers();
+
+auto width  = extent.width;
+auto height = extent.height;
+if (transform == VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR || transform == VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR)
+{
+	// Pre-rotation: always use native orientation i.e. if rotated, use width and height of identity transform
+	std::swap(width, height);
+}
+
+swapchain = std::make_unique&lt;Swapchain&gt;(*swapchain, VkExtent2D{width, height}, transform);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note that if pre-rotation is enabled and the application has been rotated by 90 degrees, then the surface dimensions must be swapped with respect to the previous orientation.
+This is done to preserve the dimensions of the swapchain images, since we are planning to rotate our geometry accordingly.</p>
+</div>
+<div class="paragraph">
+<p>The framework then takes care to re-create the framebuffers.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_rotating_the_scene"><a class="anchor" href="#_rotating_the_scene"></a>Rotating the scene</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When rotating our geometry, normally all we need to do is adjust the Model View Projection (MVP) matrix that we provide to the vertex shader every frame.
+In this case we want to rotate the scene just before applying the projection transformation.
+Therefore we update the matrix that the camera will use to compute the projection matrix:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">glm::mat4   pre_rotate_mat = glm::mat4(1.0f);
+glm::vec3   rotation_axis  = glm::vec3(0.0f, 0.0f, 1.0f);
+const auto &amp;swapchain      = get_render_context().get_swapchain();
+
+if (swapchain.get_transform() &amp; VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR)
+{
+	pre_rotate_mat = glm::rotate(pre_rotate_mat, glm::radians(90.0f), rotation_axis);
+}
+else if (swapchain.get_transform() &amp; VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR)
+{
+	pre_rotate_mat = glm::rotate(pre_rotate_mat, glm::radians(270.0f), rotation_axis);
+}
+else if (swapchain.get_transform() &amp; VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR)
+{
+	pre_rotate_mat = glm::rotate(pre_rotate_mat, glm::radians(180.0f), rotation_axis);
+}
+
+camera-&gt;set_pre_rotation(pre_rotate_mat)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The camera stores this pre-rotation matrix.
+This way the framework will use the updated matrix before pushing the MVP to the shader:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">void GeometrySubpass::update_uniform(CommandBuffer &amp;command_buffer, sg::Node &amp;node, size_t thread_index)
+{
+	GlobalUniform global_uniform;
+
+	global_uniform.camera_view_proj = camera.get_pre_rotation() * vkb::vulkan_style_projection(camera.get_projection()) * camera.get_view();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For completion, here are the relevant sections of the vertex shader:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">layout(location = 0) in vec3 position;
+
+layout(set = 0, binding = 1) uniform GlobalUniform {
+    mat4 model;
+    mat4 view_proj;
+    vec3 camera_position;
+} global_uniform;
+
+layout (location = 0) out vec4 o_pos;
+
+void main(void)
+{
+    o_pos = global_uniform.model * vec4(position, 1.0);
+    gl_Position = global_uniform.view_proj * o_pos;;
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_performance_impact"><a class="anchor" href="#_performance_impact"></a>Performance impact</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>surface_rotation</code> Vulkan sample allows you to toggle between pre-rotation mode and compositor mode.
+Below is a screenshot of the sample running on a device that does not support native (DPU) rotation, but instead includes a separate 2D block which rotates the GPU output before presenting it to the display.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../../_images/samples/performance/surface_rotation/images/android_compositor.jpg" alt="Android compositor handling the rotation">
+</div>
+</div>
+<div class="paragraph">
+<p>Compare this to the same scene rendered using pre-rotation:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../../_images/samples/performance/surface_rotation/images/android_prerotation.jpg" alt="Pre-rotating the scene">
+</div>
+</div>
+<div class="paragraph">
+<p>As you can see there is a significant increase in the stall rate on the external memory bus if pre-rotation is not enabled, because the framebuffer is being read and written to the 2D rotation block.
+For this device the additional system memory bandwidth generated by the 2D block increases the use of external memory, which is visible as an increase in memory back-pressure seen by the GPU.</p>
+</div>
+<div class="paragraph">
+<p>This is more obvious if we trace both modes using Streamline.
+If you enable all Mali counters and use the relevant template (Mali-G72 in this case) to visualize the data, we can see that we go from an average 12% read stall / 7% write stall to 22% read stall / 17% write stall.
+In the image below pre-rotation is enabled and disabled every second (using the auto-toggle option).
+The absolute traffic per cycle drops, but this is because of the drop in performance associated to the increased memory pressure.</p>
+</div>
+<div class="paragraph">
+<p>image::./images/prerotate_streamline.png[Streamline capture.
+Pre-rotate is enabled/disabled every second]</p>
+</div>
+<div class="paragraph">
+<p>In this case the 2D rotation block is using a significant portion of the bandwidth, causing a drop in performance.
+Note however that this scene is rendered in a memory-heavy fashion (no culling, no compressed textures) to make the effect of pre-rotation more visible.
+Even if your scene is not memory-heavy, the extra load on the system resulting from performing the rotation during composition will have a negative impact on the battery life of the device.</p>
+</div>
+<div class="paragraph">
+<p>In order to save battery life in those devices without a rotation-capable DPU, always ensure that your Vulkan renderer performs pre-rotation.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_best_practice_summary"><a class="anchor" href="#_best_practice_summary"></a>Best-practice summary</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><strong>Do</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>To avoid presentation engine transformation passes ensure that swapchain <a href="https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkSwapchainCreateInfoKHR.html"><code>preTransform</code></a> matches the <code>currentTransform</code> value returned by <a href="https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/vkGetPhysicalDeviceSurfaceCapabilitiesKHR.html"><code>vkGetPhysicalDeviceSurfaceCapabilitiesKHR</code></a>.</p>
+</li>
+<li>
+<p>If a swapchain image acquisition returns <a href="https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkResult.html"><code>VK_SUBOPTIMAL_KHR</code></a> or <a href="https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkResult.html"><code>VK_ERROR_OUT_OF_DATE_KHR</code></a> then recreate the swapchain taking into account any updated surface properties including potential orientation updates reported via <code>currentTransform</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Don&#8217;t</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Assume that supported presentation engine&#8217;s transforms other than <code>currentTransform</code> are free;
+many presentation engines can handle rotation and/or mirroring but at additional processing cost.
+Note that Android will always return all transforms as supported, because the GPU is always available as a general purpose fallback.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Impact</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Non-native orientation may require additional transformation passes in the presentation engine.
+This may require use of the GPU or a dedicated 2D block on some systems which cannot handle the transformation directly in the display controller.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Debugging</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>You may use a system profiler such as Streamline to spot extra memory loads in the GPU counters, either as a direct effect (GPU composition) or as a side-effect (memory pressure).
+s a direct effect (GPU composition) or as a side-effect (memory pressure).</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../../_/js/site.js" data-ui-root-path="../../../../../_"></script>
+<script async src="../../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../../.." data-snippet-length="100" data-stylesheet="../../../../../_/css/search.css"></script>
+<script async src="../../../../../search-index.js"></script>
+<script async src="../../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

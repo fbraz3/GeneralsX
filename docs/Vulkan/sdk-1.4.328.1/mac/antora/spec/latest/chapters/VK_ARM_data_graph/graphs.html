@@ -1,0 +1,3932 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Data graphs :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:spec" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="spec" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../index.html">Vulkan Specification</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../fundamentals.html">Fundamentals</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../initialization.html">Initialization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../devsandqueues.html">Devices and Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../cmdbuffers.html">Command Buffers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../synchronization.html">Synchronization and Cache Control</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../renderpass.html">Render Pass</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../shaders.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../pipelines.html">Pipelines</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../memory.html">Memory Allocation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../resources.html">Resource Creation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../samplers.html">Samplers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../descriptorsets.html">Resource Descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../interfaces.html">Shader Interfaces</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../textures.html">Image Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../fragmentdensitymapops.html">Fragment Density Map Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_ARM_tensors/tensorops.html">Tensor Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../queries.html">Queries</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../clears.html">Clear Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../copies.html">Copy Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../drawing.html">Drawing Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../fxvertex.html">Fixed-Function Vertex Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../tessellation.html">Tessellation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../geometry.html">Geometry Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_NV_mesh_shader/mesh.html">Mesh Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_HUAWEI_cluster_culling_shader/clusterculling.html">Cluster Culling Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../vertexpostproc.html">Fixed-Function Vertex Post-Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../primsrast.html">Rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../fragops.html">Fragment Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../framebuffer.html">The Framebuffer</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../dispatch.html">Dispatching Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../device_generated_commands/generatedcommands.html">Device-Generated Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../sparsemem.html">Sparse Resources</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_KHR_surface/wsi.html">Window System Integration (WSI)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_KHR_deferred_host_operations/deferred_host_operations.html">Deferred Host Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_EXT_private_data.html">Private Data</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../accelstructures.html">Acceleration Structures</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_EXT_opacity_micromap/micromaps.html">Micromap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../raytraversal.html">Ray Traversal</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../raytracing.html">Ray Tracing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_NV_memory_decompression.html">Memory Decompression</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../videocoding.html">Video Coding</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_NV_optical_flow/optical_flow.html">Optical Flow</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../executiongraphs.html">Execution Graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_NV_external_compute_queue/VK_NV_external_compute_queue.html">External Compute Queues</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="graphs.html">Data graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../extensions.html">Extending Vulkan</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../features.html">Features</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../limits.html">Limits</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../formats.html">Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../capabilities.html">Additional Capabilities</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../debugging.html">Debugging</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/spirvenv.html">Vulkan Environment for SPIR-V</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/memorymodel.html">Memory Model</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/compressedtex.html">Compressed Image Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/versions.html">Core Revisions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/extensions.html">Layers &amp; Extensions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/roadmap.html">Vulkan Roadmap Milestones</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/deprecation.html">Deprecation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/boilerplate.html">API Boilerplate</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/invariance.html">Invariance</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/glossary.html">Lexicon</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/credits.html">Credits (Informative)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Specification</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../../index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../index.html">Vulkan Specification</a></li>
+    <li><a href="graphs.html">Data graphs</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/spec/modules/ROOT/pages/chapters/VK_ARM_data_graph/graphs.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Data graphs</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><em>Data graph pipelines</em> encapsulate computational graphs that operate on
+whole resources (e.g. tensors).
+The <a href="#graphs-operations">graph operations</a> that form these computational
+graphs are executed by <a href="#graphs-processing-engines">graph processing engines</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="graphs-pipelines"><a class="anchor" href="#graphs-pipelines"></a>Pipeline Creation</h2>
+<div class="sectionbody">
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To create data graph pipelines, call:</p>
+</div>
+<div id="vkCreateDataGraphPipelinesARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+VkResult vkCreateDataGraphPipelinesARM(
+    VkDevice                                    device,
+    VkDeferredOperationKHR                      deferredOperation,
+    VkPipelineCache                             pipelineCache,
+    uint32_t                                    createInfoCount,
+    const VkDataGraphPipelineCreateInfoARM*     pCreateInfos,
+    const VkAllocationCallbacks*                pAllocator,
+    VkPipeline*                                 pPipelines);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the logical device that creates the data graph
+pipelines.</p>
+</li>
+<li>
+<p><code>deferredOperation</code> is <a href="../../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a> or the handle of a valid
+<a href="../VK_KHR_deferred_host_operations/deferred_host_operations.html#VkDeferredOperationKHR" class="xref page">VkDeferredOperationKHR</a> <a href="../VK_KHR_deferred_host_operations/deferred_host_operations.html#deferred-host-operations-requesting" class="xref page">    request deferral</a> object for this command.</p>
+</li>
+<li>
+<p><code>pipelineCache</code> is either <a href="../../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, indicating that
+pipeline caching is disabled; or the handle of a valid
+<a href="../pipelines.html#pipelines-cache" class="xref page">pipeline cache</a> object, in which case use of that
+cache is enabled for the duration of the command.</p>
+</li>
+<li>
+<p><code>createInfoCount</code> is the length of the <code>pCreateInfos</code> and
+<code>pPipelines</code> arrays.</p>
+</li>
+<li>
+<p><code>pCreateInfos</code> is a pointer to an array of
+<a href="#VkDataGraphPipelineCreateInfoARM">VkDataGraphPipelineCreateInfoARM</a> structures.</p>
+</li>
+<li>
+<p><code>pAllocator</code> controls host memory allocation as described in the
+<a href="../memory.html#memory-allocation" class="xref page">Memory Allocation</a> chapter.</p>
+</li>
+<li>
+<p><code>pPipelines</code> is a pointer to an array of <a href="../pipelines.html#VkPipeline" class="xref page">VkPipeline</a> handles in
+which the resulting data graph pipelines objects are returned.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The implementation will create a pipeline in each element of
+<code>pPipelines</code> from the corresponding element of <code>pCreateInfos</code>.
+If the creation of any pipeline fails, that pipeline will be set to
+<a href="../../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCreateDataGraphPipelinesARM-dataGraph-09760" href="#VUID-vkCreateDataGraphPipelinesARM-dataGraph-09760"></a> <span class="vuid">VUID-vkCreateDataGraphPipelinesARM-dataGraph-09760</span><br>
+
+The <a href="../features.html#features-dataGraph" class="xref page"><code>dataGraph</code></a> feature <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateDataGraphPipelinesARM-device-09927" href="#VUID-vkCreateDataGraphPipelinesARM-device-09927"></a> <span class="vuid">VUID-vkCreateDataGraphPipelinesARM-device-09927</span><br>
+
+<code>device</code> <strong>must</strong> support at least one queue family with the
+<code>VK_QUEUE_DATA_GRAPH_BIT_ARM</code> capability</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateDataGraphPipelinesARM-deferredOperation-09761" href="#VUID-vkCreateDataGraphPipelinesARM-deferredOperation-09761"></a> <span class="vuid">VUID-vkCreateDataGraphPipelinesARM-deferredOperation-09761</span><br>
+
+<code>deferredOperation</code> <strong>must</strong> be <a href="../../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCreateDataGraphPipelinesARM-deferredOperation-09916" href="#VUID-vkCreateDataGraphPipelinesARM-deferredOperation-09916"></a> <span class="vuid">VUID-vkCreateDataGraphPipelinesARM-deferredOperation-09916</span><br>
+
+If <code>deferredOperation</code> is not <a href="../../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, the <code>flags</code>
+member of elements of <code>pCreateInfos</code> <strong>must</strong> not include
+<code>VK_PIPELINE_CREATE_EARLY_RETURN_ON_FAILURE_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCreateDataGraphPipelinesARM-pNext-09928" href="#VUID-vkCreateDataGraphPipelinesARM-pNext-09928"></a> <span class="vuid">VUID-vkCreateDataGraphPipelinesARM-pNext-09928</span><br>
+
+If at least one of the <a href="#VkDataGraphPipelineCreateInfoARM">VkDataGraphPipelineCreateInfoARM</a> includes a
+<a href="#VkDataGraphPipelineIdentifierCreateInfoARM">VkDataGraphPipelineIdentifierCreateInfoARM</a> structure in its
+<code>pNext</code> chain then <code>pipelineCache</code> <strong>must</strong> not be
+<a href="../../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCreateDataGraphPipelinesARM-pipelineCache-09762" href="#VUID-vkCreateDataGraphPipelinesARM-pipelineCache-09762"></a> <span class="vuid">VUID-vkCreateDataGraphPipelinesARM-pipelineCache-09762</span><br>
+
+If <code>pipelineCache</code> was created with
+<code>VK_PIPELINE_CACHE_CREATE_EXTERNALLY_SYNCHRONIZED_BIT</code>, host access
+to <code>pipelineCache</code> <strong>must</strong> be
+<a href="../fundamentals.html#fundamentals-threadingbehavior" class="xref page">externally synchronized</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCreateDataGraphPipelinesARM-device-parameter" href="#VUID-vkCreateDataGraphPipelinesARM-device-parameter"></a> <span class="vuid">VUID-vkCreateDataGraphPipelinesARM-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateDataGraphPipelinesARM-deferredOperation-parameter" href="#VUID-vkCreateDataGraphPipelinesARM-deferredOperation-parameter"></a> <span class="vuid">VUID-vkCreateDataGraphPipelinesARM-deferredOperation-parameter</span><br>
+ If <code>deferredOperation</code> is not <a href="../../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, <code>deferredOperation</code> <strong>must</strong> be a valid <a href="../VK_KHR_deferred_host_operations/deferred_host_operations.html#VkDeferredOperationKHR" class="xref page">VkDeferredOperationKHR</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateDataGraphPipelinesARM-pipelineCache-parameter" href="#VUID-vkCreateDataGraphPipelinesARM-pipelineCache-parameter"></a> <span class="vuid">VUID-vkCreateDataGraphPipelinesARM-pipelineCache-parameter</span><br>
+ If <code>pipelineCache</code> is not <a href="../../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, <code>pipelineCache</code> <strong>must</strong> be a valid <a href="../pipelines.html#VkPipelineCache" class="xref page">VkPipelineCache</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateDataGraphPipelinesARM-pCreateInfos-parameter" href="#VUID-vkCreateDataGraphPipelinesARM-pCreateInfos-parameter"></a> <span class="vuid">VUID-vkCreateDataGraphPipelinesARM-pCreateInfos-parameter</span><br>
+ <code>pCreateInfos</code> <strong>must</strong> be a valid pointer to an array of <code>createInfoCount</code> valid <a href="#VkDataGraphPipelineCreateInfoARM">VkDataGraphPipelineCreateInfoARM</a> structures</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateDataGraphPipelinesARM-pAllocator-parameter" href="#VUID-vkCreateDataGraphPipelinesARM-pAllocator-parameter"></a> <span class="vuid">VUID-vkCreateDataGraphPipelinesARM-pAllocator-parameter</span><br>
+ If <code>pAllocator</code> is not <code>NULL</code>, <code>pAllocator</code> <strong>must</strong> be a valid pointer to a valid <a href="../memory.html#VkAllocationCallbacks" class="xref page">VkAllocationCallbacks</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateDataGraphPipelinesARM-pPipelines-parameter" href="#VUID-vkCreateDataGraphPipelinesARM-pPipelines-parameter"></a> <span class="vuid">VUID-vkCreateDataGraphPipelinesARM-pPipelines-parameter</span><br>
+ <code>pPipelines</code> <strong>must</strong> be a valid pointer to an array of <code>createInfoCount</code> <a href="../pipelines.html#VkPipeline" class="xref page">VkPipeline</a> handles</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateDataGraphPipelinesARM-device-queuecount" href="#VUID-vkCreateDataGraphPipelinesARM-device-queuecount"></a> <span class="vuid">VUID-vkCreateDataGraphPipelinesARM-device-queuecount</span><br>
+ The device <strong>must</strong> have been created with at least <code>1</code> queue</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateDataGraphPipelinesARM-createInfoCount-arraylength" href="#VUID-vkCreateDataGraphPipelinesARM-createInfoCount-arraylength"></a> <span class="vuid">VUID-vkCreateDataGraphPipelinesARM-createInfoCount-arraylength</span><br>
+ <code>createInfoCount</code> <strong>must</strong> be greater than <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCreateDataGraphPipelinesARM-deferredOperation-parent" href="#VUID-vkCreateDataGraphPipelinesARM-deferredOperation-parent"></a> <span class="vuid">VUID-vkCreateDataGraphPipelinesARM-deferredOperation-parent</span><br>
+ If <code>deferredOperation</code> is a valid handle, it <strong>must</strong> have been created, allocated, or retrieved from <code>device</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCreateDataGraphPipelinesARM-pipelineCache-parent" href="#VUID-vkCreateDataGraphPipelinesARM-pipelineCache-parent"></a> <span class="vuid">VUID-vkCreateDataGraphPipelinesARM-pipelineCache-parent</span><br>
+ If <code>pipelineCache</code> is a valid handle, it <strong>must</strong> have been created, allocated, or retrieved from <code>device</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+<li>
+<p><code>VK_PIPELINE_COMPILE_REQUIRED_EXT</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_OUT_OF_DEVICE_MEMORY</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkDataGraphPipelineCreateInfoARM</code> structure is defined as:</p>
+</div>
+<div id="VkDataGraphPipelineCreateInfoARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef struct VkDataGraphPipelineCreateInfoARM {
+    VkStructureType                              sType;
+    const void*                                  pNext;
+    VkPipelineCreateFlags2KHR                    flags;
+    VkPipelineLayout                             layout;
+    uint32_t                                     resourceInfoCount;
+    const VkDataGraphPipelineResourceInfoARM*    pResourceInfos;
+} VkDataGraphPipelineCreateInfoARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>flags</code> is a bitmask of <a href="../pipelines.html#VkPipelineCreateFlagBits2KHR" class="xref page">VkPipelineCreateFlagBits2KHR</a>
+specifying how the pipeline will be generated.</p>
+</li>
+<li>
+<p><code>layout</code> is the description of binding locations used by both the
+pipeline and descriptor sets used with the pipeline.</p>
+</li>
+<li>
+<p><code>resourceInfoCount</code> is the length of the <code>pResourceInfos</code> array.</p>
+</li>
+<li>
+<p><code>pResourceInfos</code> is a pointer to an array of
+<a href="#VkDataGraphPipelineResourceInfoARM">VkDataGraphPipelineResourceInfoARM</a> structures.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Applications <strong>can</strong> create a data graph pipeline entirely from data present in
+a pipeline cache.
+This is done by including a <a href="#VkDataGraphPipelineIdentifierCreateInfoARM">VkDataGraphPipelineIdentifierCreateInfoARM</a>
+structure in the <code>pNext</code> chain.
+If the required data is not found in the pipeline cache, creating the data
+graph pipeline is not possible and the implementation <strong>must</strong> fail as
+specified by <code>VK_PIPELINE_CREATE_FAIL_ON_PIPELINE_COMPILE_REQUIRED_BIT</code>.</p>
+</div>
+<div class="paragraph">
+<p>When an identifier is used to create a data graph pipeline, implementations
+<strong>may</strong> fail pipeline creation with <code>VK_PIPELINE_COMPILE_REQUIRED</code> for any
+reason.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-pNext-09763" href="#VUID-VkDataGraphPipelineCreateInfoARM-pNext-09763"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-pNext-09763</span><br>
+
+One and only one of the following structures <strong>must</strong> be included in the
+<code>pNext</code> chain:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#VkDataGraphPipelineShaderModuleCreateInfoARM">VkDataGraphPipelineShaderModuleCreateInfoARM</a></p>
+</li>
+<li>
+<p><a href="#VkDataGraphPipelineIdentifierCreateInfoARM">VkDataGraphPipelineIdentifierCreateInfoARM</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-flags-09764" href="#VUID-VkDataGraphPipelineCreateInfoARM-flags-09764"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-flags-09764</span><br>
+
+<code>flags</code> <strong>may</strong> only contain
+<code>VK_PIPELINE_CREATE_2_NO_PROTECTED_ACCESS_BIT_EXT</code>,
+<code>VK_PIPELINE_CREATE_2_PROTECTED_ACCESS_ONLY_BIT_EXT</code>,
+<code>VK_PIPELINE_CREATE_2_DISABLE_OPTIMIZATION_BIT</code>,
+<code>VK_PIPELINE_CREATE_2_DESCRIPTOR_BUFFER_BIT_EXT</code>,
+<code>VK_PIPELINE_CREATE_2_FAIL_ON_PIPELINE_COMPILE_REQUIRED_BIT_KHR</code> or
+<code>VK_PIPELINE_CREATE_2_EARLY_RETURN_ON_FAILURE_BIT_KHR</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-layout-09767" href="#VUID-VkDataGraphPipelineCreateInfoARM-layout-09767"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-layout-09767</span><br>
+
+<code>layout</code> <strong>must</strong> have been created with <code>pushConstantRangeCount</code>
+equal to 0 and <code>pPushConstantRanges</code> equal to <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-dataGraphUpdateAfterBind-09768" href="#VUID-VkDataGraphPipelineCreateInfoARM-dataGraphUpdateAfterBind-09768"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-dataGraphUpdateAfterBind-09768</span><br>
+
+If the
+<a href="../features.html#features-dataGraphUpdateAfterBind" class="xref page"><code>dataGraphUpdateAfterBind</code></a>
+feature is not enabled, <code>layout</code> must not use any
+<a href="../descriptorsets.html#VkDescriptorSetLayout" class="xref page">VkDescriptorSetLayout</a> object created with the
+<code>VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT</code> bit set</p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-dataGraphDescriptorBuffer-09885" href="#VUID-VkDataGraphPipelineCreateInfoARM-dataGraphDescriptorBuffer-09885"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-dataGraphDescriptorBuffer-09885</span><br>
+
+If the
+<a href="../features.html#features-dataGraphDescriptorBuffer" class="xref page"><code>dataGraphDescriptorBuffer</code></a>
+feature is not enabled, <code>flags</code> <strong>must</strong> not contain
+<code>VK_PIPELINE_CREATE_2_DESCRIPTOR_BUFFER_BIT_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-module-09769" href="#VUID-VkDataGraphPipelineCreateInfoARM-module-09769"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-module-09769</span><br>
+
+If a <a href="../interfaces.html#interfaces-resources" class="xref page">resource variable</a> is declared in
+<a href="#VkDataGraphPipelineShaderModuleCreateInfoARM">VkDataGraphPipelineShaderModuleCreateInfoARM</a>::<code>module</code>, a
+descriptor slot in <code>layout</code> <strong>must</strong> match the descriptor type</p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-pNext-09875" href="#VUID-VkDataGraphPipelineCreateInfoARM-pNext-09875"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-pNext-09875</span><br>
+
+If a <a href="#VkDataGraphPipelineIdentifierCreateInfoARM">VkDataGraphPipelineIdentifierCreateInfoARM</a> structure is
+included in the <code>pNext</code> chain, then <code>flags</code> <strong>must</strong> contain
+<code>VK_PIPELINE_CREATE_2_FAIL_ON_PIPELINE_COMPILE_REQUIRED_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-pNext-09876" href="#VUID-VkDataGraphPipelineCreateInfoARM-pNext-09876"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-pNext-09876</span><br>
+
+If a <a href="#VkDataGraphPipelineIdentifierCreateInfoARM">VkDataGraphPipelineIdentifierCreateInfoARM</a> structure is
+included in the <code>pNext</code> chain, then a
+<a href="#VkDataGraphPipelineShaderModuleCreateInfoARM">VkDataGraphPipelineShaderModuleCreateInfoARM</a> structure <strong>must</strong> not
+be included in the <code>pNext</code> chain</p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-pNext-09882" href="#VUID-VkDataGraphPipelineCreateInfoARM-pNext-09882"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-pNext-09882</span><br>
+
+If a <a href="#VkDataGraphPipelineIdentifierCreateInfoARM">VkDataGraphPipelineIdentifierCreateInfoARM</a> structure is
+included in the <code>pNext</code> chain, then <code>resourceInfoCount</code> <strong>must</strong> be
+0 and <code>pResourceInfos</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-dataGraphShaderModule-09886" href="#VUID-VkDataGraphPipelineCreateInfoARM-dataGraphShaderModule-09886"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-dataGraphShaderModule-09886</span><br>
+
+If the <a href="../features.html#features-dataGraphShaderModule" class="xref page"><code>dataGraphShaderModule</code></a>
+feature is not enabled, a
+<a href="#VkDataGraphPipelineShaderModuleCreateInfoARM">VkDataGraphPipelineShaderModuleCreateInfoARM</a> structure <strong>must</strong> not
+be included in the <code>pNext</code> chain</p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-module-09934" href="#VUID-VkDataGraphPipelineCreateInfoARM-module-09934"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-module-09934</span><br>
+
+If a <a href="../interfaces.html#interfaces-resources" class="xref page">resource variable</a> is declared in
+<code>module</code> as an array, a descriptor slot in <code>layout</code> <strong>must</strong> match
+the descriptor count</p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-pipelineCreationCacheControl-09871" href="#VUID-VkDataGraphPipelineCreateInfoARM-pipelineCreationCacheControl-09871"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-pipelineCreationCacheControl-09871</span><br>
+
+If the <a href="../features.html#features-pipelineCreationCacheControl" class="xref page">    <code>pipelineCreationCacheControl</code></a> feature is not enabled, <code>flags</code>
+<strong>must</strong> not include
+<code>VK_PIPELINE_CREATE_2_FAIL_ON_PIPELINE_COMPILE_REQUIRED_BIT_KHR</code> or
+<code>VK_PIPELINE_CREATE_2_EARLY_RETURN_ON_FAILURE_BIT_KHR</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-pSetLayouts-09770" href="#VUID-VkDataGraphPipelineCreateInfoARM-pSetLayouts-09770"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-pSetLayouts-09770</span><br>
+
+The descriptor set layouts in
+<a href="../descriptorsets.html#VkPipelineLayoutCreateInfo" class="xref page">VkPipelineLayoutCreateInfo</a>::<code>pSetLayouts</code> used to create
+<code>layout</code> <strong>must</strong> not include any <a href="../descriptorsets.html#VkDescriptorSetLayoutBinding" class="xref page">VkDescriptorSetLayoutBinding</a>
+whose descriptor type is <code>VK_DESCRIPTOR_TYPE_MUTABLE_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-pResourceInfos-09771" href="#VUID-VkDataGraphPipelineCreateInfoARM-pResourceInfos-09771"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-pResourceInfos-09771</span><br>
+
+For each of the structures in <code>pResourceInfos</code>,
+<a href="#VkDataGraphPipelineResourceInfoARM">VkDataGraphPipelineResourceInfoARM</a>::<code>descriptorSet</code> and
+<a href="#VkDataGraphPipelineResourceInfoARM">VkDataGraphPipelineResourceInfoARM</a>::<code>binding</code> <strong>must</strong> correspond
+to a <a href="../interfaces.html#interfaces-resources" class="xref page">resource variable</a> declared in <code>module</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-pipelineProtectedAccess-09772" href="#VUID-VkDataGraphPipelineCreateInfoARM-pipelineProtectedAccess-09772"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-pipelineProtectedAccess-09772</span><br>
+
+If the
+<a href="../features.html#features-pipelineProtectedAccess" class="xref page"><code>pipelineProtectedAccess</code></a>
+feature is not enabled, <code>flags</code> <strong>must</strong> not include
+<code>VK_PIPELINE_CREATE_2_NO_PROTECTED_ACCESS_BIT_EXT</code> or
+<code>VK_PIPELINE_CREATE_2_PROTECTED_ACCESS_ONLY_BIT_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-flags-09773" href="#VUID-VkDataGraphPipelineCreateInfoARM-flags-09773"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-flags-09773</span><br>
+
+<code>flags</code> <strong>must</strong> not include both
+<code>VK_PIPELINE_CREATE_2_NO_PROTECTED_ACCESS_BIT_EXT</code> and
+<code>VK_PIPELINE_CREATE_2_PROTECTED_ACCESS_ONLY_BIT_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-pNext-09804" href="#VUID-VkDataGraphPipelineCreateInfoARM-pNext-09804"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-pNext-09804</span><br>
+
+If the <code>pNext</code> chain includes an
+<a href="../pipelines.html#VkPipelineCreationFeedbackCreateInfo" class="xref page">VkPipelineCreationFeedbackCreateInfo</a> structure, then its
+<code>pipelineStageCreationFeedbackCount</code> <strong>must</strong> be 0</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-sType-sType" href="#VUID-VkDataGraphPipelineCreateInfoARM-sType-sType"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_CREATE_INFO_ARM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-pNext-pNext" href="#VUID-VkDataGraphPipelineCreateInfoARM-pNext-pNext"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-pNext-pNext</span><br>
+ Each <code>pNext</code> member of any structure (including this one) in the <code>pNext</code> chain <strong>must</strong> be either <code>NULL</code> or a pointer to a valid instance of <a href="#VkDataGraphPipelineCompilerControlCreateInfoARM">VkDataGraphPipelineCompilerControlCreateInfoARM</a>, <a href="#VkDataGraphPipelineIdentifierCreateInfoARM">VkDataGraphPipelineIdentifierCreateInfoARM</a>, <a href="#VkDataGraphPipelineShaderModuleCreateInfoARM">VkDataGraphPipelineShaderModuleCreateInfoARM</a>, <a href="#VkDataGraphProcessingEngineCreateInfoARM">VkDataGraphProcessingEngineCreateInfoARM</a>, or <a href="../pipelines.html#VkPipelineCreationFeedbackCreateInfo" class="xref page">VkPipelineCreationFeedbackCreateInfo</a></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-sType-unique" href="#VUID-VkDataGraphPipelineCreateInfoARM-sType-unique"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-sType-unique</span><br>
+ The <code>sType</code> value of each structure in the <code>pNext</code> chain <strong>must</strong> be unique</p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-flags-parameter" href="#VUID-VkDataGraphPipelineCreateInfoARM-flags-parameter"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-flags-parameter</span><br>
+ <code>flags</code> <strong>must</strong> be a valid combination of <a href="../pipelines.html#VkPipelineCreateFlagBits2KHR" class="xref page">VkPipelineCreateFlagBits2KHR</a> values</p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-layout-parameter" href="#VUID-VkDataGraphPipelineCreateInfoARM-layout-parameter"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-layout-parameter</span><br>
+ <code>layout</code> <strong>must</strong> be a valid <a href="../descriptorsets.html#VkPipelineLayout" class="xref page">VkPipelineLayout</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-pResourceInfos-parameter" href="#VUID-VkDataGraphPipelineCreateInfoARM-pResourceInfos-parameter"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-pResourceInfos-parameter</span><br>
+ <code>pResourceInfos</code> <strong>must</strong> be a valid pointer to an array of <code>resourceInfoCount</code> valid <a href="#VkDataGraphPipelineResourceInfoARM">VkDataGraphPipelineResourceInfoARM</a> structures</p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCreateInfoARM-resourceInfoCount-arraylength" href="#VUID-VkDataGraphPipelineCreateInfoARM-resourceInfoCount-arraylength"></a> <span class="vuid">VUID-VkDataGraphPipelineCreateInfoARM-resourceInfoCount-arraylength</span><br>
+ <code>resourceInfoCount</code> <strong>must</strong> be greater than <code>0</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkDataGraphPipelineShaderModuleCreateInfoARM</code> structure is defined
+as:</p>
+</div>
+<div id="VkDataGraphPipelineShaderModuleCreateInfoARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef struct VkDataGraphPipelineShaderModuleCreateInfoARM {
+    VkStructureType                          sType;
+    const void*                              pNext;
+    VkShaderModule                           module;
+    const char*                              pName;
+    const VkSpecializationInfo*              pSpecializationInfo;
+    uint32_t                                 constantCount;
+    const VkDataGraphPipelineConstantARM*    pConstants;
+} VkDataGraphPipelineShaderModuleCreateInfoARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>module</code> is optionally a <a href="../shaders.html#VkShaderModule" class="xref page">VkShaderModule</a> object containing the
+description of the graph.</p>
+</li>
+<li>
+<p><code>pName</code> is a pointer to a null-terminated UTF-8 string specifying
+the graph entry point name for this pipeline.</p>
+</li>
+<li>
+<p><code>pSpecializationInfo</code> is a pointer to a <a href="../pipelines.html#VkSpecializationInfo" class="xref page">VkSpecializationInfo</a>
+structure as described in
+<a href="../pipelines.html#pipelines-specialization-constants" class="xref page">Specialization Constants</a>, or
+<code>NULL</code>.</p>
+</li>
+<li>
+<p><code>constantCount</code> is the length of the <code>pConstants</code> array.</p>
+</li>
+<li>
+<p><code>pConstants</code> is a pointer to an array of
+<a href="#VkDataGraphPipelineConstantARM">VkDataGraphPipelineConstantARM</a> structures.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If <code>module</code> is not <a href="../../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, the pipeline&#8217;s graph is defined
+by <code>module</code>.
+If <code>module</code> is <a href="../../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, the pipeline&#8217;s graph is defined by
+the chained <a href="../shaders.html#VkShaderModuleCreateInfo" class="xref page">VkShaderModuleCreateInfo</a>.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-id-09774" href="#VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-id-09774"></a> <span class="vuid">VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-id-09774</span><br>
+
+The <code>id</code> member of all structures in <code>pConstants</code> <strong>must</strong> be a
+valid <code>GraphConstantID</code> used by a <code>OpGraphConstantARM</code> instruction
+in <code>module</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-dataGraphSpecializationConstants-09849" href="#VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-dataGraphSpecializationConstants-09849"></a> <span class="vuid">VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-dataGraphSpecializationConstants-09849</span><br>
+
+If the <a href="../features.html#features-dataGraphSpecializationConstants" class="xref page">    <code>dataGraphSpecializationConstants</code></a> feature is not enabled then
+<code>pSpecializationInfo</code> <strong>must</strong> be <code>NULL</code> and <code>module</code> <strong>must</strong> not
+contain any <code>OpSpec*</code> instructions</p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-pName-09872" href="#VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-pName-09872"></a> <span class="vuid">VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-pName-09872</span><br>
+
+<code>pName</code> <strong>must</strong> be the name of an <code>OpGraphEntryPointARM</code> in
+<code>module</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-pNext-09873" href="#VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-pNext-09873"></a> <span class="vuid">VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-pNext-09873</span><br>
+
+If the <code>pNext</code> chain includes a <a href="../shaders.html#VkShaderModuleCreateInfo" class="xref page">VkShaderModuleCreateInfo</a>
+structure, then <code>module</code> <strong>must</strong> be <a href="../../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-pNext-09874" href="#VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-pNext-09874"></a> <span class="vuid">VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-pNext-09874</span><br>
+
+If the <code>pNext</code> chain does not include a
+<a href="../shaders.html#VkShaderModuleCreateInfo" class="xref page">VkShaderModuleCreateInfo</a> structure, then <code>module</code> <strong>must</strong> be a
+valid <a href="../shaders.html#VkShaderModule" class="xref page">VkShaderModule</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-sType-sType" href="#VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-sType-sType"></a> <span class="vuid">VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SHADER_MODULE_CREATE_INFO_ARM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-module-parameter" href="#VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-module-parameter"></a> <span class="vuid">VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-module-parameter</span><br>
+ If <code>module</code> is not <a href="../../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, <code>module</code> <strong>must</strong> be a valid <a href="../shaders.html#VkShaderModule" class="xref page">VkShaderModule</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-pName-parameter" href="#VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-pName-parameter"></a> <span class="vuid">VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-pName-parameter</span><br>
+ <code>pName</code> <strong>must</strong> be a null-terminated UTF-8 string</p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-pSpecializationInfo-parameter" href="#VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-pSpecializationInfo-parameter"></a> <span class="vuid">VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-pSpecializationInfo-parameter</span><br>
+ If <code>pSpecializationInfo</code> is not <code>NULL</code>, <code>pSpecializationInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="../pipelines.html#VkSpecializationInfo" class="xref page">VkSpecializationInfo</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-pConstants-parameter" href="#VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-pConstants-parameter"></a> <span class="vuid">VUID-VkDataGraphPipelineShaderModuleCreateInfoARM-pConstants-parameter</span><br>
+ If <code>constantCount</code> is not <code>0</code>, and <code>pConstants</code> is not <code>NULL</code>, <code>pConstants</code> <strong>must</strong> be a valid pointer to an array of <code>constantCount</code> valid <a href="#VkDataGraphPipelineConstantARM">VkDataGraphPipelineConstantARM</a> structures</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkDataGraphPipelineIdentifierCreateInfoARM</code> structure is defined
+as:</p>
+</div>
+<div id="VkDataGraphPipelineIdentifierCreateInfoARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef struct VkDataGraphPipelineIdentifierCreateInfoARM {
+    VkStructureType    sType;
+    const void*        pNext;
+    uint32_t           identifierSize;
+    const uint8_t*     pIdentifier;
+} VkDataGraphPipelineIdentifierCreateInfoARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>identifierSize</code> is the size in bytes of the identifier data
+accessible via <code>pIdentifier</code>.</p>
+</li>
+<li>
+<p><code>pIdentifer</code> is a pointer to <code>identifierSize</code> bytes of data that
+describe the pipeline being created.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphPipelineIdentifierCreateInfoARM-pIdentifer-09877" href="#VUID-VkDataGraphPipelineIdentifierCreateInfoARM-pIdentifer-09877"></a> <span class="vuid">VUID-VkDataGraphPipelineIdentifierCreateInfoARM-pIdentifer-09877</span><br>
+
+The data provided via <code>pIdentifer</code> <strong>must</strong> have been obtained by
+calling <a href="#vkGetDataGraphPipelinePropertiesARM">vkGetDataGraphPipelinePropertiesARM</a> to query the value of
+the <code>VK_DATA_GRAPH_PIPELINE_PROPERTY_IDENTIFIER_ARM</code> property</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphPipelineIdentifierCreateInfoARM-sType-sType" href="#VUID-VkDataGraphPipelineIdentifierCreateInfoARM-sType-sType"></a> <span class="vuid">VUID-VkDataGraphPipelineIdentifierCreateInfoARM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_IDENTIFIER_CREATE_INFO_ARM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineIdentifierCreateInfoARM-pIdentifier-parameter" href="#VUID-VkDataGraphPipelineIdentifierCreateInfoARM-pIdentifier-parameter"></a> <span class="vuid">VUID-VkDataGraphPipelineIdentifierCreateInfoARM-pIdentifier-parameter</span><br>
+ <code>pIdentifier</code> <strong>must</strong> be a valid pointer to an array of <code>identifierSize</code> <code>uint8_t</code> values</p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineIdentifierCreateInfoARM-identifierSize-arraylength" href="#VUID-VkDataGraphPipelineIdentifierCreateInfoARM-identifierSize-arraylength"></a> <span class="vuid">VUID-VkDataGraphPipelineIdentifierCreateInfoARM-identifierSize-arraylength</span><br>
+ <code>identifierSize</code> <strong>must</strong> be greater than <code>0</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkDataGraphPipelineCompilerControlCreateInfoARM</code> structure is
+defined as:</p>
+</div>
+<div id="VkDataGraphPipelineCompilerControlCreateInfoARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef struct VkDataGraphPipelineCompilerControlCreateInfoARM {
+    VkStructureType    sType;
+    const void*        pNext;
+    const char*        pVendorOptions;
+} VkDataGraphPipelineCompilerControlCreateInfoARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>pVendorOptions</code> is a null-terminated UTF-8 string specifying
+implementation-specific options that affect the creation of a data graph
+pipeline.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCompilerControlCreateInfoARM-sType-sType" href="#VUID-VkDataGraphPipelineCompilerControlCreateInfoARM-sType-sType"></a> <span class="vuid">VUID-VkDataGraphPipelineCompilerControlCreateInfoARM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_COMPILER_CONTROL_CREATE_INFO_ARM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineCompilerControlCreateInfoARM-pVendorOptions-parameter" href="#VUID-VkDataGraphPipelineCompilerControlCreateInfoARM-pVendorOptions-parameter"></a> <span class="vuid">VUID-VkDataGraphPipelineCompilerControlCreateInfoARM-pVendorOptions-parameter</span><br>
+ <code>pVendorOptions</code> <strong>must</strong> be a null-terminated UTF-8 string</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkDataGraphPipelineConstantARM</code> structure is defined as:</p>
+</div>
+<div id="VkDataGraphPipelineConstantARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef struct VkDataGraphPipelineConstantARM {
+    VkStructureType    sType;
+    const void*        pNext;
+    uint32_t           id;
+    const void*        pConstantData;
+} VkDataGraphPipelineConstantARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is a pointer to a structure extending this structure.</p>
+</li>
+<li>
+<p><code>id</code> is the unique identifier of the graph constant this structure
+describes.</p>
+</li>
+<li>
+<p><code>pConstantData</code> is a pointer to the data for this graph constant.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The size and layout of the data pointed to by <code>pConstantData</code> is
+specified by a specific structure in the <code>pNext</code> chain for each type of
+graph constant.</p>
+</div>
+<div class="paragraph">
+<p>For graph constants of tensor type, the layout of the data is specified by a
+<a href="../resources.html#VkTensorDescriptionARM" class="xref page">VkTensorDescriptionARM</a> structure.
+The data <strong>must</strong> be laid out according to the following members of this
+structure:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="../resources.html#VkTensorDescriptionARM" class="xref page">VkTensorDescriptionARM</a>::<code>tiling</code></p>
+</li>
+<li>
+<p><a href="../resources.html#VkTensorDescriptionARM" class="xref page">VkTensorDescriptionARM</a>::<code>format</code></p>
+</li>
+<li>
+<p><a href="../resources.html#VkTensorDescriptionARM" class="xref page">VkTensorDescriptionARM</a>::<code>dimensionCount</code></p>
+</li>
+<li>
+<p><a href="../resources.html#VkTensorDescriptionARM" class="xref page">VkTensorDescriptionARM</a>::<code>pDimensions</code></p>
+</li>
+<li>
+<p><a href="../resources.html#VkTensorDescriptionARM" class="xref page">VkTensorDescriptionARM</a>::<code>pStrides</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The presence of a
+<a href="#VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM">VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM</a>
+structure in the <code>pNext</code> chain has no impact on the expected layout of
+the data pointed to by <code>pConstantData</code>.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphPipelineConstantARM-pNext-09775" href="#VUID-VkDataGraphPipelineConstantARM-pNext-09775"></a> <span class="vuid">VUID-VkDataGraphPipelineConstantARM-pNext-09775</span><br>
+
+If the <code>pNext</code> chain of this structure includes one or more
+<a href="#VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM">VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM</a>
+structures then it <strong>must</strong> also include a <a href="../resources.html#VkTensorDescriptionARM" class="xref page">VkTensorDescriptionARM</a>
+structure</p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineConstantARM-pNext-09776" href="#VUID-VkDataGraphPipelineConstantARM-pNext-09776"></a> <span class="vuid">VUID-VkDataGraphPipelineConstantARM-pNext-09776</span><br>
+
+If the <code>pNext</code> chain of this structure includes one or more
+<a href="#VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM">VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM</a>
+structures then, for each structure,
+<a href="#VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM">VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM</a>::<code>dimension</code>
+<strong>must</strong> be less than <a href="../resources.html#VkTensorDescriptionARM" class="xref page">VkTensorDescriptionARM</a>::<code>dimensionCount</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineConstantARM-pNext-09777" href="#VUID-VkDataGraphPipelineConstantARM-pNext-09777"></a> <span class="vuid">VUID-VkDataGraphPipelineConstantARM-pNext-09777</span><br>
+
+If the <code>pNext</code> chain of this structure includes a
+<a href="#VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM">VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM</a>
+structure then, for each structure,
+<a href="../resources.html#VkTensorDescriptionARM" class="xref page">VkTensorDescriptionARM</a>::<code>pDimensions</code>[<a href="#VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM">VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM</a>::<code>dimension</code>]
+<strong>must</strong> be a multiple of
+<a href="#VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM">VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM</a>::<code>groupSize</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineConstantARM-pNext-09870" href="#VUID-VkDataGraphPipelineConstantARM-pNext-09870"></a> <span class="vuid">VUID-VkDataGraphPipelineConstantARM-pNext-09870</span><br>
+
+If the <code>pNext</code> chain of this structure includes multiple
+<a href="#VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM">VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM</a>
+structures then no two structures <strong>may</strong> have their
+<a href="#VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM">VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM</a>::<code>dimension</code>
+member set to the same value</p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineConstantARM-id-09850" href="#VUID-VkDataGraphPipelineConstantARM-id-09850"></a> <span class="vuid">VUID-VkDataGraphPipelineConstantARM-id-09850</span><br>
+
+If <code>id</code> corresponds to a graph constant of tensor type, then a
+<a href="../resources.html#VkTensorDescriptionARM" class="xref page">VkTensorDescriptionARM</a> structure whose <code>usage</code> member contains
+<code>VK_TENSOR_USAGE_DATA_GRAPH_BIT_ARM</code> <strong>must</strong> be included in the
+<code>pNext</code> chain</p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineConstantARM-pNext-09917" href="#VUID-VkDataGraphPipelineConstantARM-pNext-09917"></a> <span class="vuid">VUID-VkDataGraphPipelineConstantARM-pNext-09917</span><br>
+
+If the <code>pNext</code> chain of this structure includes a
+<a href="../resources.html#VkTensorDescriptionARM" class="xref page">VkTensorDescriptionARM</a> structure, then its <code>tiling</code> member
+<strong>must</strong> be <code>VK_TENSOR_TILING_LINEAR_ARM</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphPipelineConstantARM-sType-sType" href="#VUID-VkDataGraphPipelineConstantARM-sType-sType"></a> <span class="vuid">VUID-VkDataGraphPipelineConstantARM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_CONSTANT_ARM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineConstantARM-pNext-pNext" href="#VUID-VkDataGraphPipelineConstantARM-pNext-pNext"></a> <span class="vuid">VUID-VkDataGraphPipelineConstantARM-pNext-pNext</span><br>
+ Each <code>pNext</code> member of any structure (including this one) in the <code>pNext</code> chain <strong>must</strong> be either <code>NULL</code> or a pointer to a valid instance of <a href="#VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM">VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM</a> or <a href="../resources.html#VkTensorDescriptionARM" class="xref page">VkTensorDescriptionARM</a></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineConstantARM-sType-unique" href="#VUID-VkDataGraphPipelineConstantARM-sType-unique"></a> <span class="vuid">VUID-VkDataGraphPipelineConstantARM-sType-unique</span><br>
+ The <code>sType</code> value of each structure in the <code>pNext</code> chain <strong>must</strong> be unique, with the exception of structures of type <a href="#VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM">VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM</a></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineConstantARM-pConstantData-parameter" href="#VUID-VkDataGraphPipelineConstantARM-pConstantData-parameter"></a> <span class="vuid">VUID-VkDataGraphPipelineConstantARM-pConstantData-parameter</span><br>
+ <code>pConstantData</code> <strong>must</strong> be a pointer value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM</code>
+structure is defined as:</p>
+</div>
+<div id="VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph with VK_ARM_tensors
+typedef struct VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM {
+    VkStructureType    sType;
+    const void*        pNext;
+    uint32_t           dimension;
+    uint32_t           zeroCount;
+    uint32_t           groupSize;
+} VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>dimension</code> is the dimension of the tensor along which its data is
+sparse.</p>
+</li>
+<li>
+<p><code>zeroCount</code> is the number of tensor elements that <strong>must</strong> be zero in
+every group of <code>groupSize</code> elements.</p>
+</li>
+<li>
+<p><code>groupSize</code> is the number of tensor elements in a group.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>This extension does not provide applications with a way of knowing which
+combinations of <code>dimension</code>, <code>zeroCount</code>, and <code>groupSize</code> an
+implementation <strong>can</strong> take advantage of.
+Providing sparsity information for a graph constant is always valid and
+recommended, regardless of the specific combinations an implementation <strong>can</strong>
+take advantage of.
+When they <strong>can</strong> not take advantage of the sparsity information,
+implementations will ignore it and treat the data as dense.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM-sType-sType" href="#VUID-VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM-sType-sType"></a> <span class="vuid">VUID-VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_CONSTANT_TENSOR_SEMI_STRUCTURED_SPARSITY_INFO_ARM</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkDataGraphPipelineResourceInfoARM</code> structure is defined as:</p>
+</div>
+<div id="VkDataGraphPipelineResourceInfoARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef struct VkDataGraphPipelineResourceInfoARM {
+    VkStructureType    sType;
+    const void*        pNext;
+    uint32_t           descriptorSet;
+    uint32_t           binding;
+    uint32_t           arrayElement;
+} VkDataGraphPipelineResourceInfoARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>descriptorSet</code> is the descriptor set number of the resource being
+described.</p>
+</li>
+<li>
+<p><code>binding</code> is the binding number of the resource being described.</p>
+</li>
+<li>
+<p><code>arrayElement</code> is the element in the resource array if
+<code>descriptorSet</code> and <code>binding</code> identifies an array of resources
+or <code>0</code> otherwise.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphPipelineResourceInfoARM-arrayElement-09779" href="#VUID-VkDataGraphPipelineResourceInfoARM-arrayElement-09779"></a> <span class="vuid">VUID-VkDataGraphPipelineResourceInfoARM-arrayElement-09779</span><br>
+
+<code>arrayElement</code> <strong>must</strong> be <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineResourceInfoARM-descriptorSet-09851" href="#VUID-VkDataGraphPipelineResourceInfoARM-descriptorSet-09851"></a> <span class="vuid">VUID-VkDataGraphPipelineResourceInfoARM-descriptorSet-09851</span><br>
+
+If <code>descriptorSet</code> and <code>binding</code> identify a tensor resource or
+an array of tensor resources, then a <a href="../resources.html#VkTensorDescriptionARM" class="xref page">VkTensorDescriptionARM</a>
+structure whose <code>usage</code> contains
+<code>VK_TENSOR_USAGE_DATA_GRAPH_BIT_ARM</code> <strong>must</strong> be included in the
+<code>pNext</code> chain</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphPipelineResourceInfoARM-sType-sType" href="#VUID-VkDataGraphPipelineResourceInfoARM-sType-sType"></a> <span class="vuid">VUID-VkDataGraphPipelineResourceInfoARM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_RESOURCE_INFO_ARM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineResourceInfoARM-pNext-pNext" href="#VUID-VkDataGraphPipelineResourceInfoARM-pNext-pNext"></a> <span class="vuid">VUID-VkDataGraphPipelineResourceInfoARM-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code> or a pointer to a valid instance of <a href="../resources.html#VkTensorDescriptionARM" class="xref page">VkTensorDescriptionARM</a></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineResourceInfoARM-sType-unique" href="#VUID-VkDataGraphPipelineResourceInfoARM-sType-unique"></a> <span class="vuid">VUID-VkDataGraphPipelineResourceInfoARM-sType-unique</span><br>
+ The <code>sType</code> value of each structure in the <code>pNext</code> chain <strong>must</strong> be unique</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_sessions"><a class="anchor" href="#_sessions"></a>Sessions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Graph pipelines execute within <em>data graph pipeline sessions</em> that provide a
+context for their execution as well as binding points for the memory they
+need (e.g. transient storage).</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Graph pipeline sessions are represented by
+<code>VkDataGraphPipelineSessionARM</code> handles:</p>
+</div>
+<div id="VkDataGraphPipelineSessionARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkDataGraphPipelineSessionARM)</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To create a data graph pipeline session, call</p>
+</div>
+<div id="vkCreateDataGraphPipelineSessionARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+VkResult vkCreateDataGraphPipelineSessionARM(
+    VkDevice                                    device,
+    const VkDataGraphPipelineSessionCreateInfoARM* pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkDataGraphPipelineSessionARM*              pSession);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the logical device that creates the data graph pipeline
+session.</p>
+</li>
+<li>
+<p><code>pCreateInfo</code> is a pointer to a
+<a href="#VkDataGraphPipelineSessionCreateInfoARM">VkDataGraphPipelineSessionCreateInfoARM</a> structure.</p>
+</li>
+<li>
+<p><code>pAllocator</code> controls host memory allocation as described in the
+<a href="../memory.html#memory-allocation" class="xref page">Memory Allocation</a> chapter.</p>
+</li>
+<li>
+<p><code>pSession</code> is a pointer to a <a href="#VkDataGraphPipelineSessionARM">VkDataGraphPipelineSessionARM</a>
+handle in which the resulting data graph pipeline session object is
+returned.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCreateDataGraphPipelineSessionARM-device-parameter" href="#VUID-vkCreateDataGraphPipelineSessionARM-device-parameter"></a> <span class="vuid">VUID-vkCreateDataGraphPipelineSessionARM-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateDataGraphPipelineSessionARM-pCreateInfo-parameter" href="#VUID-vkCreateDataGraphPipelineSessionARM-pCreateInfo-parameter"></a> <span class="vuid">VUID-vkCreateDataGraphPipelineSessionARM-pCreateInfo-parameter</span><br>
+ <code>pCreateInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkDataGraphPipelineSessionCreateInfoARM">VkDataGraphPipelineSessionCreateInfoARM</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateDataGraphPipelineSessionARM-pAllocator-parameter" href="#VUID-vkCreateDataGraphPipelineSessionARM-pAllocator-parameter"></a> <span class="vuid">VUID-vkCreateDataGraphPipelineSessionARM-pAllocator-parameter</span><br>
+ If <code>pAllocator</code> is not <code>NULL</code>, <code>pAllocator</code> <strong>must</strong> be a valid pointer to a valid <a href="../memory.html#VkAllocationCallbacks" class="xref page">VkAllocationCallbacks</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateDataGraphPipelineSessionARM-pSession-parameter" href="#VUID-vkCreateDataGraphPipelineSessionARM-pSession-parameter"></a> <span class="vuid">VUID-vkCreateDataGraphPipelineSessionARM-pSession-parameter</span><br>
+ <code>pSession</code> <strong>must</strong> be a valid pointer to a <a href="#VkDataGraphPipelineSessionARM">VkDataGraphPipelineSessionARM</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateDataGraphPipelineSessionARM-device-queuecount" href="#VUID-vkCreateDataGraphPipelineSessionARM-device-queuecount"></a> <span class="vuid">VUID-vkCreateDataGraphPipelineSessionARM-device-queuecount</span><br>
+ The device <strong>must</strong> have been created with at least <code>1</code> queue</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_OUT_OF_DEVICE_MEMORY</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkDataGraphPipelineSessionCreateInfoARM</code> structure is defined as:</p>
+</div>
+<div id="VkDataGraphPipelineSessionCreateInfoARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef struct VkDataGraphPipelineSessionCreateInfoARM {
+    VkStructureType                             sType;
+    const void*                                 pNext;
+    VkDataGraphPipelineSessionCreateFlagsARM    flags;
+    VkPipeline                                  dataGraphPipeline;
+} VkDataGraphPipelineSessionCreateInfoARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>flags</code> is a bitmask of
+<a href="#VkDataGraphPipelineSessionCreateFlagBitsARM">VkDataGraphPipelineSessionCreateFlagBitsARM</a> describing additional
+parameters of the session.</p>
+</li>
+<li>
+<p><code>dataGraphPipeline</code> is the <a href="../pipelines.html#VkPipeline" class="xref page">VkPipeline</a> handle of the data graph
+pipeline for which a session is being created.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphPipelineSessionCreateInfoARM-dataGraphPipeline-09781" href="#VUID-VkDataGraphPipelineSessionCreateInfoARM-dataGraphPipeline-09781"></a> <span class="vuid">VUID-VkDataGraphPipelineSessionCreateInfoARM-dataGraphPipeline-09781</span><br>
+
+<code>dataGraphPipeline</code> <strong>must</strong> have been obtained via a call to
+<a href="#vkCreateDataGraphPipelinesARM">vkCreateDataGraphPipelinesARM</a></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineSessionCreateInfoARM-protectedMemory-09782" href="#VUID-VkDataGraphPipelineSessionCreateInfoARM-protectedMemory-09782"></a> <span class="vuid">VUID-VkDataGraphPipelineSessionCreateInfoARM-protectedMemory-09782</span><br>
+
+If the <a href="../features.html#features-protectedMemory" class="xref page"><code>protectedMemory</code></a> feature is not
+enabled, <code>flags</code> <strong>must</strong> not contain
+<code>VK_DATA_GRAPH_PIPELINE_SESSION_CREATE_PROTECTED_BIT_ARM</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphPipelineSessionCreateInfoARM-sType-sType" href="#VUID-VkDataGraphPipelineSessionCreateInfoARM-sType-sType"></a> <span class="vuid">VUID-VkDataGraphPipelineSessionCreateInfoARM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SESSION_CREATE_INFO_ARM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineSessionCreateInfoARM-pNext-pNext" href="#VUID-VkDataGraphPipelineSessionCreateInfoARM-pNext-pNext"></a> <span class="vuid">VUID-VkDataGraphPipelineSessionCreateInfoARM-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineSessionCreateInfoARM-flags-parameter" href="#VUID-VkDataGraphPipelineSessionCreateInfoARM-flags-parameter"></a> <span class="vuid">VUID-VkDataGraphPipelineSessionCreateInfoARM-flags-parameter</span><br>
+ <code>flags</code> <strong>must</strong> be a valid combination of <a href="#VkDataGraphPipelineSessionCreateFlagBitsARM">VkDataGraphPipelineSessionCreateFlagBitsARM</a> values</p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineSessionCreateInfoARM-dataGraphPipeline-parameter" href="#VUID-VkDataGraphPipelineSessionCreateInfoARM-dataGraphPipeline-parameter"></a> <span class="vuid">VUID-VkDataGraphPipelineSessionCreateInfoARM-dataGraphPipeline-parameter</span><br>
+ <code>dataGraphPipeline</code> <strong>must</strong> be a valid <a href="../pipelines.html#VkPipeline" class="xref page">VkPipeline</a> handle</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Bits which <strong>can</strong> be set in
+<a href="#VkDataGraphPipelineSessionCreateInfoARM">VkDataGraphPipelineSessionCreateInfoARM</a>::<code>flags</code>, specifying
+additional parameters of a data graph pipeline session, are:</p>
+</div>
+<div id="VkDataGraphPipelineSessionCreateFlagBitsARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+// Flag bits for VkDataGraphPipelineSessionCreateFlagBitsARM
+typedef VkFlags64 VkDataGraphPipelineSessionCreateFlagBitsARM;
+static const VkDataGraphPipelineSessionCreateFlagBitsARM VK_DATA_GRAPH_PIPELINE_SESSION_CREATE_PROTECTED_BIT_ARM = 0x00000001ULL;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_DATA_GRAPH_PIPELINE_SESSION_CREATE_PROTECTED_BIT_ARM</code> specifies
+that the data graph pipeline session is backed by protected memory.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div id="VkDataGraphPipelineSessionCreateFlagsARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef VkFlags64 VkDataGraphPipelineSessionCreateFlagsARM;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>VkDataGraphPipelineSessionCreateFlagsARM</code> is a bitmask type for setting
+a mask of zero or more <a href="#VkDataGraphPipelineSessionCreateFlagBitsARM">VkDataGraphPipelineSessionCreateFlagBitsARM</a>.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To determine the bind point requirements for a data graph pipeline session,
+call:</p>
+</div>
+<div id="vkGetDataGraphPipelineSessionBindPointRequirementsARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+VkResult vkGetDataGraphPipelineSessionBindPointRequirementsARM(
+    VkDevice                                    device,
+    const VkDataGraphPipelineSessionBindPointRequirementsInfoARM* pInfo,
+    uint32_t*                                   pBindPointRequirementCount,
+    VkDataGraphPipelineSessionBindPointRequirementARM* pBindPointRequirements);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the logical device that owns the data graph pipeline
+session.</p>
+</li>
+<li>
+<p><code>pInfo</code> is a pointer to a
+<a href="#VkDataGraphPipelineSessionBindPointRequirementsInfoARM">VkDataGraphPipelineSessionBindPointRequirementsInfoARM</a> structure
+containing parameters for the bind point requirements query.</p>
+</li>
+<li>
+<p><code>pBindPointRequirementCount</code> is a pointer to an integer related to
+the number of bind point available or queried, as described below.</p>
+</li>
+<li>
+<p><code>pBindPointRequirements</code> is either <code>NULL</code> or a pointer to an array
+of <a href="#VkDataGraphPipelineSessionBindPointRequirementARM">VkDataGraphPipelineSessionBindPointRequirementARM</a> structures.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If <code>pBindPointRequirements</code> is <code>NULL</code>, then the number of bind points
+associated with the data graph pipeline session is returned in
+<code>pBindPointRequirementCount</code>.
+Otherwise, <code>pBindPointRequirementCount</code> <strong>must</strong> point to a variable set by
+the user to the number of elements in the <code>pBindPointRequirements</code>
+array, and on return the variable is overwritten with the number of
+structures actually written to <code>pBindPointRequirements</code>.
+If <code>pBindPointRequirementCount</code> is less than the number of bind points
+associated with the data graph pipeline session, at most
+<code>pBindPointRequirementCount</code> structures will be written, and
+<code>VK_INCOMPLETE</code> will be returned instead of <code>VK_SUCCESS</code>, to
+indicate that not all the required bind points were returned.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkGetDataGraphPipelineSessionBindPointRequirementsARM-session-09783" href="#VUID-vkGetDataGraphPipelineSessionBindPointRequirementsARM-session-09783"></a> <span class="vuid">VUID-vkGetDataGraphPipelineSessionBindPointRequirementsARM-session-09783</span><br>
+
+The <code>session</code> member of <code>pInfo</code> <strong>must</strong> have been created with
+<code>device</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkGetDataGraphPipelineSessionBindPointRequirementsARM-device-parameter" href="#VUID-vkGetDataGraphPipelineSessionBindPointRequirementsARM-device-parameter"></a> <span class="vuid">VUID-vkGetDataGraphPipelineSessionBindPointRequirementsARM-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkGetDataGraphPipelineSessionBindPointRequirementsARM-pInfo-parameter" href="#VUID-vkGetDataGraphPipelineSessionBindPointRequirementsARM-pInfo-parameter"></a> <span class="vuid">VUID-vkGetDataGraphPipelineSessionBindPointRequirementsARM-pInfo-parameter</span><br>
+ <code>pInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkDataGraphPipelineSessionBindPointRequirementsInfoARM">VkDataGraphPipelineSessionBindPointRequirementsInfoARM</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkGetDataGraphPipelineSessionBindPointRequirementsARM-pBindPointRequirementCount-parameter" href="#VUID-vkGetDataGraphPipelineSessionBindPointRequirementsARM-pBindPointRequirementCount-parameter"></a> <span class="vuid">VUID-vkGetDataGraphPipelineSessionBindPointRequirementsARM-pBindPointRequirementCount-parameter</span><br>
+ <code>pBindPointRequirementCount</code> <strong>must</strong> be a valid pointer to a <code>uint32_t</code> value</p>
+</li>
+<li>
+<p><a id="VUID-vkGetDataGraphPipelineSessionBindPointRequirementsARM-pBindPointRequirements-parameter" href="#VUID-vkGetDataGraphPipelineSessionBindPointRequirementsARM-pBindPointRequirements-parameter"></a> <span class="vuid">VUID-vkGetDataGraphPipelineSessionBindPointRequirementsARM-pBindPointRequirements-parameter</span><br>
+ If the value referenced by <code>pBindPointRequirementCount</code> is not <code>0</code>, and <code>pBindPointRequirements</code> is not <code>NULL</code>, <code>pBindPointRequirements</code> <strong>must</strong> be a valid pointer to an array of <code>pBindPointRequirementCount</code> <a href="#VkDataGraphPipelineSessionBindPointRequirementARM">VkDataGraphPipelineSessionBindPointRequirementARM</a> structures</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+<li>
+<p><code>VK_INCOMPLETE</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_OUT_OF_DEVICE_MEMORY</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div id="VkDataGraphPipelineSessionBindPointRequirementsInfoARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef struct VkDataGraphPipelineSessionBindPointRequirementsInfoARM {
+    VkStructureType                  sType;
+    const void*                      pNext;
+    VkDataGraphPipelineSessionARM    session;
+} VkDataGraphPipelineSessionBindPointRequirementsInfoARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>session</code> is a <a href="#VkDataGraphPipelineSessionARM">VkDataGraphPipelineSessionARM</a> specifying the
+data graph pipeline session whose bind point requirements are being
+queried.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphPipelineSessionBindPointRequirementsInfoARM-sType-sType" href="#VUID-VkDataGraphPipelineSessionBindPointRequirementsInfoARM-sType-sType"></a> <span class="vuid">VUID-VkDataGraphPipelineSessionBindPointRequirementsInfoARM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_REQUIREMENTS_INFO_ARM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineSessionBindPointRequirementsInfoARM-pNext-pNext" href="#VUID-VkDataGraphPipelineSessionBindPointRequirementsInfoARM-pNext-pNext"></a> <span class="vuid">VUID-VkDataGraphPipelineSessionBindPointRequirementsInfoARM-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineSessionBindPointRequirementsInfoARM-session-parameter" href="#VUID-VkDataGraphPipelineSessionBindPointRequirementsInfoARM-session-parameter"></a> <span class="vuid">VUID-VkDataGraphPipelineSessionBindPointRequirementsInfoARM-session-parameter</span><br>
+ <code>session</code> <strong>must</strong> be a valid <a href="#VkDataGraphPipelineSessionARM">VkDataGraphPipelineSessionARM</a> handle</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div id="VkDataGraphPipelineSessionBindPointRequirementARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef struct VkDataGraphPipelineSessionBindPointRequirementARM {
+    VkStructureType                               sType;
+    const void*                                   pNext;
+    VkDataGraphPipelineSessionBindPointARM        bindPoint;
+    VkDataGraphPipelineSessionBindPointTypeARM    bindPointType;
+    uint32_t                                      numObjects;
+} VkDataGraphPipelineSessionBindPointRequirementARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>bindPoint</code> is a <a href="#VkDataGraphPipelineSessionBindPointARM">VkDataGraphPipelineSessionBindPointARM</a>
+specifying the data graph pipeline session bind point being required.</p>
+</li>
+<li>
+<p><code>bindPointType</code> is a
+<a href="#VkDataGraphPipelineSessionBindPointTypeARM">VkDataGraphPipelineSessionBindPointTypeARM</a> specifying the type of
+object required for <code>bindPoint</code>.</p>
+</li>
+<li>
+<p><code>numObjects</code> is the number of objects required for <code>bindPoint</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Implementations <strong>must</strong> always return 1 for <code>numObjects</code> if
+<code>bindPoint</code> is one of the following bind points:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_TRANSIENT_ARM</code></p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphPipelineSessionBindPointRequirementARM-sType-sType" href="#VUID-VkDataGraphPipelineSessionBindPointRequirementARM-sType-sType"></a> <span class="vuid">VUID-VkDataGraphPipelineSessionBindPointRequirementARM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_REQUIREMENT_ARM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineSessionBindPointRequirementARM-pNext-pNext" href="#VUID-VkDataGraphPipelineSessionBindPointRequirementARM-pNext-pNext"></a> <span class="vuid">VUID-VkDataGraphPipelineSessionBindPointRequirementARM-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineSessionBindPointRequirementARM-bindPoint-parameter" href="#VUID-VkDataGraphPipelineSessionBindPointRequirementARM-bindPoint-parameter"></a> <span class="vuid">VUID-VkDataGraphPipelineSessionBindPointRequirementARM-bindPoint-parameter</span><br>
+ <code>bindPoint</code> <strong>must</strong> be a valid <a href="#VkDataGraphPipelineSessionBindPointARM">VkDataGraphPipelineSessionBindPointARM</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineSessionBindPointRequirementARM-bindPointType-parameter" href="#VUID-VkDataGraphPipelineSessionBindPointRequirementARM-bindPointType-parameter"></a> <span class="vuid">VUID-VkDataGraphPipelineSessionBindPointRequirementARM-bindPointType-parameter</span><br>
+ <code>bindPointType</code> <strong>must</strong> be a valid <a href="#VkDataGraphPipelineSessionBindPointTypeARM">VkDataGraphPipelineSessionBindPointTypeARM</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Possible values of <code>VkDataGraphPipelineSessionBindPointARM</code>, specifying
+the bind point of a data graph pipeline session, are:</p>
+</div>
+<div id="VkDataGraphPipelineSessionBindPointARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef enum VkDataGraphPipelineSessionBindPointARM {
+    VK_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_TRANSIENT_ARM = 0,
+} VkDataGraphPipelineSessionBindPointARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_TRANSIENT_ARM</code>
+corresponds to the transient data produced and consumed during one
+dispatch of a data graph pipeline in a data graph pipeline session.
+This transient data is never reused by subsequent dispatches and can
+safely be clobbered once a <a href="#vkCmdDispatchDataGraphARM">vkCmdDispatchDataGraphARM</a> command
+completes execution.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Possible values of <code>VkDataGraphPipelineSessionBindPointTypeARM</code>,
+specifying the type of a bind point of a data graph pipeline session, are:</p>
+</div>
+<div id="VkDataGraphPipelineSessionBindPointTypeARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef enum VkDataGraphPipelineSessionBindPointTypeARM {
+    VK_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_TYPE_MEMORY_ARM = 0,
+} VkDataGraphPipelineSessionBindPointTypeARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_TYPE_MEMORY_ARM</code>
+corresponds to a memory allocation.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To determine the memory requirements for a data graph pipeline session,
+call:</p>
+</div>
+<div id="vkGetDataGraphPipelineSessionMemoryRequirementsARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+void vkGetDataGraphPipelineSessionMemoryRequirementsARM(
+    VkDevice                                    device,
+    const VkDataGraphPipelineSessionMemoryRequirementsInfoARM* pInfo,
+    VkMemoryRequirements2*                      pMemoryRequirements);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the logical device that owns the data graph pipeline
+session.</p>
+</li>
+<li>
+<p><code>pInfo</code> is a pointer to a
+<a href="#VkDataGraphPipelineSessionMemoryRequirementsInfoARM">VkDataGraphPipelineSessionMemoryRequirementsInfoARM</a> structure
+containing parameters for the memory requirements query.</p>
+</li>
+<li>
+<p><code>pMemoryRequirements</code> is a pointer to a <a href="../resources.html#VkMemoryRequirements2" class="xref page">VkMemoryRequirements2</a>
+structure in which the memory requirements of the data graph pipeline
+session object are returned.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkGetDataGraphPipelineSessionMemoryRequirementsARM-bindPoint-09784" href="#VUID-vkGetDataGraphPipelineSessionMemoryRequirementsARM-bindPoint-09784"></a> <span class="vuid">VUID-vkGetDataGraphPipelineSessionMemoryRequirementsARM-bindPoint-09784</span><br>
+
+The <code>bindPoint</code> member of <code>pInfo</code> <strong>must</strong> have been returned as
+part of a <a href="#VkDataGraphPipelineSessionBindPointRequirementARM">VkDataGraphPipelineSessionBindPointRequirementARM</a> whose
+<code>bindPointType</code> member is
+<code>VK_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_TYPE_MEMORY_ARM</code> by a
+prior call to <a href="#vkGetDataGraphPipelineSessionMemoryRequirementsARM">vkGetDataGraphPipelineSessionMemoryRequirementsARM</a>
+for the <code>session</code> member of <code>pInfo</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkGetDataGraphPipelineSessionMemoryRequirementsARM-device-parameter" href="#VUID-vkGetDataGraphPipelineSessionMemoryRequirementsARM-device-parameter"></a> <span class="vuid">VUID-vkGetDataGraphPipelineSessionMemoryRequirementsARM-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkGetDataGraphPipelineSessionMemoryRequirementsARM-pInfo-parameter" href="#VUID-vkGetDataGraphPipelineSessionMemoryRequirementsARM-pInfo-parameter"></a> <span class="vuid">VUID-vkGetDataGraphPipelineSessionMemoryRequirementsARM-pInfo-parameter</span><br>
+ <code>pInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkDataGraphPipelineSessionMemoryRequirementsInfoARM">VkDataGraphPipelineSessionMemoryRequirementsInfoARM</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkGetDataGraphPipelineSessionMemoryRequirementsARM-pMemoryRequirements-parameter" href="#VUID-vkGetDataGraphPipelineSessionMemoryRequirementsARM-pMemoryRequirements-parameter"></a> <span class="vuid">VUID-vkGetDataGraphPipelineSessionMemoryRequirementsARM-pMemoryRequirements-parameter</span><br>
+ <code>pMemoryRequirements</code> <strong>must</strong> be a valid pointer to a <a href="../resources.html#VkMemoryRequirements2" class="xref page">VkMemoryRequirements2</a> structure</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkDataGraphPipelineSessionMemoryRequirementsInfoARM</code> structure is
+defined as:</p>
+</div>
+<div id="VkDataGraphPipelineSessionMemoryRequirementsInfoARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef struct VkDataGraphPipelineSessionMemoryRequirementsInfoARM {
+    VkStructureType                           sType;
+    const void*                               pNext;
+    VkDataGraphPipelineSessionARM             session;
+    VkDataGraphPipelineSessionBindPointARM    bindPoint;
+    uint32_t                                  objectIndex;
+} VkDataGraphPipelineSessionMemoryRequirementsInfoARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>session</code> is the data graph pipeline session to query.</p>
+</li>
+<li>
+<p><code>bindPoint</code> is the bind point of a data graph pipeline session for
+which memory requirements are being queried.</p>
+</li>
+<li>
+<p><code>objectIndex</code> is the index of the object whose memory requirements
+are being queried.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphPipelineSessionMemoryRequirementsInfoARM-objectIndex-09855" href="#VUID-VkDataGraphPipelineSessionMemoryRequirementsInfoARM-objectIndex-09855"></a> <span class="vuid">VUID-VkDataGraphPipelineSessionMemoryRequirementsInfoARM-objectIndex-09855</span><br>
+
+<code>objectIndex</code> <strong>must</strong> be less than the number of objects returned by
+<a href="#vkGetDataGraphPipelineSessionBindPointRequirementsARM">vkGetDataGraphPipelineSessionBindPointRequirementsARM</a> via
+<a href="#VkDataGraphPipelineSessionBindPointRequirementARM">VkDataGraphPipelineSessionBindPointRequirementARM</a>::<code>numObjects</code>
+with
+<a href="#VkDataGraphPipelineSessionMemoryRequirementsInfoARM">VkDataGraphPipelineSessionMemoryRequirementsInfoARM</a>::<code>bindPoint</code>
+equal to <code>bindPoint</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphPipelineSessionMemoryRequirementsInfoARM-sType-sType" href="#VUID-VkDataGraphPipelineSessionMemoryRequirementsInfoARM-sType-sType"></a> <span class="vuid">VUID-VkDataGraphPipelineSessionMemoryRequirementsInfoARM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SESSION_MEMORY_REQUIREMENTS_INFO_ARM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineSessionMemoryRequirementsInfoARM-pNext-pNext" href="#VUID-VkDataGraphPipelineSessionMemoryRequirementsInfoARM-pNext-pNext"></a> <span class="vuid">VUID-VkDataGraphPipelineSessionMemoryRequirementsInfoARM-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineSessionMemoryRequirementsInfoARM-session-parameter" href="#VUID-VkDataGraphPipelineSessionMemoryRequirementsInfoARM-session-parameter"></a> <span class="vuid">VUID-VkDataGraphPipelineSessionMemoryRequirementsInfoARM-session-parameter</span><br>
+ <code>session</code> <strong>must</strong> be a valid <a href="#VkDataGraphPipelineSessionARM">VkDataGraphPipelineSessionARM</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineSessionMemoryRequirementsInfoARM-bindPoint-parameter" href="#VUID-VkDataGraphPipelineSessionMemoryRequirementsInfoARM-bindPoint-parameter"></a> <span class="vuid">VUID-VkDataGraphPipelineSessionMemoryRequirementsInfoARM-bindPoint-parameter</span><br>
+ <code>bindPoint</code> <strong>must</strong> be a valid <a href="#VkDataGraphPipelineSessionBindPointARM">VkDataGraphPipelineSessionBindPointARM</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To attach memory to a data graph pipeline session object, call:</p>
+</div>
+<div id="vkBindDataGraphPipelineSessionMemoryARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+VkResult vkBindDataGraphPipelineSessionMemoryARM(
+    VkDevice                                    device,
+    uint32_t                                    bindInfoCount,
+    const VkBindDataGraphPipelineSessionMemoryInfoARM* pBindInfos);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the logical device that owns the data graph pipeline
+session and memory.</p>
+</li>
+<li>
+<p><code>bindInfoCount</code> is the length of the <code>pBindInfos</code> array.</p>
+</li>
+<li>
+<p><code>pBindInfos</code> is a pointer to an array of
+<a href="#VkBindDataGraphPipelineSessionMemoryInfoARM">VkBindDataGraphPipelineSessionMemoryInfoARM</a> structures describing
+graph pipeline sessions and memory to bind.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkBindDataGraphPipelineSessionMemoryARM-device-parameter" href="#VUID-vkBindDataGraphPipelineSessionMemoryARM-device-parameter"></a> <span class="vuid">VUID-vkBindDataGraphPipelineSessionMemoryARM-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkBindDataGraphPipelineSessionMemoryARM-pBindInfos-parameter" href="#VUID-vkBindDataGraphPipelineSessionMemoryARM-pBindInfos-parameter"></a> <span class="vuid">VUID-vkBindDataGraphPipelineSessionMemoryARM-pBindInfos-parameter</span><br>
+ <code>pBindInfos</code> <strong>must</strong> be a valid pointer to an array of <code>bindInfoCount</code> valid <a href="#VkBindDataGraphPipelineSessionMemoryInfoARM">VkBindDataGraphPipelineSessionMemoryInfoARM</a> structures</p>
+</li>
+<li>
+<p><a id="VUID-vkBindDataGraphPipelineSessionMemoryARM-bindInfoCount-arraylength" href="#VUID-vkBindDataGraphPipelineSessionMemoryARM-bindInfoCount-arraylength"></a> <span class="vuid">VUID-vkBindDataGraphPipelineSessionMemoryARM-bindInfoCount-arraylength</span><br>
+ <code>bindInfoCount</code> <strong>must</strong> be greater than <code>0</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_OUT_OF_DEVICE_MEMORY</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkBindDataGraphPipelineSessionMemoryInfoARM</code> structure is defined
+as:</p>
+</div>
+<div id="VkBindDataGraphPipelineSessionMemoryInfoARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef struct VkBindDataGraphPipelineSessionMemoryInfoARM {
+    VkStructureType                           sType;
+    const void*                               pNext;
+    VkDataGraphPipelineSessionARM             session;
+    VkDataGraphPipelineSessionBindPointARM    bindPoint;
+    uint32_t                                  objectIndex;
+    VkDeviceMemory                            memory;
+    VkDeviceSize                              memoryOffset;
+} VkBindDataGraphPipelineSessionMemoryInfoARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>session</code> is the data graph pipeline session to be attached to
+memory.</p>
+</li>
+<li>
+<p><code>bindPoint</code> is the data graph pipeline session bind point to which
+<code>memory</code> is to be attached.</p>
+</li>
+<li>
+<p><code>objectIndex</code> is the index of the object for <code>bindPoint</code> at
+which <code>memory</code> is to be attached.</p>
+</li>
+<li>
+<p><code>memory</code> is a <a href="../memory.html#VkDeviceMemory" class="xref page">VkDeviceMemory</a> object describing the device
+memory to attach.</p>
+</li>
+<li>
+<p><code>memoryOffset</code> is the start offset of the resion of <code>memory</code>
+which is to be bound to the data graph pipeline session.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-session-09785" href="#VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-session-09785"></a> <span class="vuid">VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-session-09785</span><br>
+
+<code>session</code> <strong>must</strong> not have been bound to a memory object for
+<code>bindPoint</code></p>
+</li>
+<li>
+<p><a id="VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-bindPoint-09786" href="#VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-bindPoint-09786"></a> <span class="vuid">VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-bindPoint-09786</span><br>
+
+<code>bindPoint</code> <strong>must</strong> have been returned as part of a
+<a href="#VkDataGraphPipelineSessionBindPointRequirementARM">VkDataGraphPipelineSessionBindPointRequirementARM</a> whose
+<code>bindPointType</code> member is
+<code>VK_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_TYPE_MEMORY_ARM</code> by a
+prior call to <a href="#vkGetDataGraphPipelineSessionMemoryRequirementsARM">vkGetDataGraphPipelineSessionMemoryRequirementsARM</a>
+for <code>session</code></p>
+</li>
+<li>
+<p><a id="VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-memoryOffset-09787" href="#VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-memoryOffset-09787"></a> <span class="vuid">VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-memoryOffset-09787</span><br>
+
+<code>memoryOffset</code> <strong>must</strong> be less than the size of <code>memory</code></p>
+</li>
+<li>
+<p><a id="VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-memory-09788" href="#VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-memory-09788"></a> <span class="vuid">VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-memory-09788</span><br>
+
+<code>memory</code> must have been allocated using one of the memory types
+allowed in the <code>memoryTypeBits</code> member of the
+<a href="../resources.html#VkMemoryRequirements" class="xref page">VkMemoryRequirements</a> structure returned from a call to
+<a href="#vkGetDataGraphPipelineSessionMemoryRequirementsARM">vkGetDataGraphPipelineSessionMemoryRequirementsARM</a> with
+<code>session</code></p>
+</li>
+<li>
+<p><a id="VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-memoryOffset-09789" href="#VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-memoryOffset-09789"></a> <span class="vuid">VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-memoryOffset-09789</span><br>
+
+<code>memoryOffset</code> <strong>must</strong> be an integer multiple of the <code>alignment</code>
+member of the <a href="../resources.html#VkMemoryRequirements" class="xref page">VkMemoryRequirements</a> structure returned from a call
+to <a href="#vkGetDataGraphPipelineSessionMemoryRequirementsARM">vkGetDataGraphPipelineSessionMemoryRequirementsARM</a> with
+<code>session</code></p>
+</li>
+<li>
+<p><a id="VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-size-09790" href="#VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-size-09790"></a> <span class="vuid">VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-size-09790</span><br>
+
+The <code>size</code> member of the <a href="../resources.html#VkMemoryRequirements" class="xref page">VkMemoryRequirements</a> structure
+returned from a call to
+<a href="#vkGetDataGraphPipelineSessionMemoryRequirementsARM">vkGetDataGraphPipelineSessionMemoryRequirementsARM</a> with
+<code>session</code> <strong>must</strong> be less than or equal to the size of <code>memory</code>
+minus <code>memoryOffset</code></p>
+</li>
+<li>
+<p><a id="VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-session-09791" href="#VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-session-09791"></a> <span class="vuid">VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-session-09791</span><br>
+
+If <code>session</code> was created with the
+<code>VK_DATA_GRAPH_PIPELINE_SESSION_CREATE_PROTECTED_BIT_ARM</code> bit set,
+the session <strong>must</strong> be bound to a memory object allocated with a memory
+type that reports <code>VK_MEMORY_PROPERTY_PROTECTED_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-session-09792" href="#VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-session-09792"></a> <span class="vuid">VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-session-09792</span><br>
+
+If <code>session</code> was created with the
+<code>VK_DATA_GRAPH_PIPELINE_SESSION_CREATE_PROTECTED_BIT_ARM</code> bit not
+set, the session <strong>must</strong> not be bound to a memory object allocated with a
+memory type that reports <code>VK_MEMORY_PROPERTY_PROTECTED_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-objectIndex-09805" href="#VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-objectIndex-09805"></a> <span class="vuid">VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-objectIndex-09805</span><br>
+
+<code>objectIndex</code> <strong>must</strong> be less than the value of <code>numObjects</code>
+returned by <a href="#vkGetDataGraphPipelineSessionBindPointRequirementsARM">vkGetDataGraphPipelineSessionBindPointRequirementsARM</a>
+for <code>bindPoint</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-sType-sType" href="#VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-sType-sType"></a> <span class="vuid">VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_BIND_DATA_GRAPH_PIPELINE_SESSION_MEMORY_INFO_ARM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-pNext-pNext" href="#VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-pNext-pNext"></a> <span class="vuid">VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-session-parameter" href="#VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-session-parameter"></a> <span class="vuid">VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-session-parameter</span><br>
+ <code>session</code> <strong>must</strong> be a valid <a href="#VkDataGraphPipelineSessionARM">VkDataGraphPipelineSessionARM</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-bindPoint-parameter" href="#VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-bindPoint-parameter"></a> <span class="vuid">VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-bindPoint-parameter</span><br>
+ <code>bindPoint</code> <strong>must</strong> be a valid <a href="#VkDataGraphPipelineSessionBindPointARM">VkDataGraphPipelineSessionBindPointARM</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-memory-parameter" href="#VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-memory-parameter"></a> <span class="vuid">VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-memory-parameter</span><br>
+ <code>memory</code> <strong>must</strong> be a valid <a href="../memory.html#VkDeviceMemory" class="xref page">VkDeviceMemory</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-commonparent" href="#VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-commonparent"></a> <span class="vuid">VUID-VkBindDataGraphPipelineSessionMemoryInfoARM-commonparent</span><br>
+ Both of <code>memory</code>, and <code>session</code> <strong>must</strong> have been created, allocated, or retrieved from the same <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To destroy a data graph pipeline session, call:</p>
+</div>
+<div id="vkDestroyDataGraphPipelineSessionARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+void vkDestroyDataGraphPipelineSessionARM(
+    VkDevice                                    device,
+    VkDataGraphPipelineSessionARM               session,
+    const VkAllocationCallbacks*                pAllocator);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the logical device that destroys the data graph pipeline
+session.</p>
+</li>
+<li>
+<p><code>session</code> is the handle of the data graph pipeline session to
+destroy.</p>
+</li>
+<li>
+<p><code>pAllocator</code> controls host memory allocation as described in the
+<a href="../memory.html#memory-allocation" class="xref page">Memory Allocation</a> chapter.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkDestroyDataGraphPipelineSessionARM-session-09793" href="#VUID-vkDestroyDataGraphPipelineSessionARM-session-09793"></a> <span class="vuid">VUID-vkDestroyDataGraphPipelineSessionARM-session-09793</span><br>
+
+All submitted commands that refer to <code>session</code> <strong>must</strong> have completed
+execution</p>
+</li>
+<li>
+<p><a id="VUID-vkDestroyDataGraphPipelineSessionARM-session-09794" href="#VUID-vkDestroyDataGraphPipelineSessionARM-session-09794"></a> <span class="vuid">VUID-vkDestroyDataGraphPipelineSessionARM-session-09794</span><br>
+
+If <code>VkAllocationCallbacks</code> were provided when <code>session</code> was
+created, a compatible set of callbacks <strong>must</strong> be provided here</p>
+</li>
+<li>
+<p><a id="VUID-vkDestroyDataGraphPipelineSessionARM-session-09795" href="#VUID-vkDestroyDataGraphPipelineSessionARM-session-09795"></a> <span class="vuid">VUID-vkDestroyDataGraphPipelineSessionARM-session-09795</span><br>
+
+If no <code>VkAllocationCallbacks</code> were provided when <code>session</code> was
+created, <code>pAllocator</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkDestroyDataGraphPipelineSessionARM-device-parameter" href="#VUID-vkDestroyDataGraphPipelineSessionARM-device-parameter"></a> <span class="vuid">VUID-vkDestroyDataGraphPipelineSessionARM-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkDestroyDataGraphPipelineSessionARM-session-parameter" href="#VUID-vkDestroyDataGraphPipelineSessionARM-session-parameter"></a> <span class="vuid">VUID-vkDestroyDataGraphPipelineSessionARM-session-parameter</span><br>
+ <code>session</code> <strong>must</strong> be a valid <a href="#VkDataGraphPipelineSessionARM">VkDataGraphPipelineSessionARM</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkDestroyDataGraphPipelineSessionARM-pAllocator-parameter" href="#VUID-vkDestroyDataGraphPipelineSessionARM-pAllocator-parameter"></a> <span class="vuid">VUID-vkDestroyDataGraphPipelineSessionARM-pAllocator-parameter</span><br>
+ If <code>pAllocator</code> is not <code>NULL</code>, <code>pAllocator</code> <strong>must</strong> be a valid pointer to a valid <a href="../memory.html#VkAllocationCallbacks" class="xref page">VkAllocationCallbacks</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkDestroyDataGraphPipelineSessionARM-session-parent" href="#VUID-vkDestroyDataGraphPipelineSessionARM-session-parent"></a> <span class="vuid">VUID-vkDestroyDataGraphPipelineSessionARM-session-parent</span><br>
+ <code>session</code> <strong>must</strong> have been created, allocated, or retrieved from <code>device</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>session</code> <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_dispatch"><a class="anchor" href="#_dispatch"></a>Dispatch</h2>
+<div class="sectionbody">
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To record a data graph pipeline dispatch, call:</p>
+</div>
+<div id="vkCmdDispatchDataGraphARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+void vkCmdDispatchDataGraphARM(
+    VkCommandBuffer                             commandBuffer,
+    VkDataGraphPipelineSessionARM               session,
+    const VkDataGraphPipelineDispatchInfoARM*   pInfo);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer into which the command will be
+recorded.</p>
+</li>
+<li>
+<p><code>session</code> is the <a href="#VkDataGraphPipelineSessionARM">VkDataGraphPipelineSessionARM</a> that data graph
+pipeline being dispatched will use.</p>
+</li>
+<li>
+<p><code>pInfo</code> is <code>NULL</code> or a pointer to a
+<a href="#VkDataGraphPipelineDispatchInfoARM">VkDataGraphPipelineDispatchInfoARM</a> structure.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdDispatchDataGraphARM-session-09796" href="#VUID-vkCmdDispatchDataGraphARM-session-09796"></a> <span class="vuid">VUID-vkCmdDispatchDataGraphARM-session-09796</span><br>
+
+For each of the session bind point requirements returned by
+<a href="#vkGetDataGraphPipelineSessionBindPointRequirementsARM">vkGetDataGraphPipelineSessionBindPointRequirementsARM</a> for
+<code>session</code>,
+<a href="#VkDataGraphPipelineSessionBindPointRequirementARM">VkDataGraphPipelineSessionBindPointRequirementARM</a>::<code>numObjects</code>
+objects <strong>must</strong> have been bound to <code>session</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchDataGraphARM-None-09797" href="#VUID-vkCmdDispatchDataGraphARM-None-09797"></a> <span class="vuid">VUID-vkCmdDispatchDataGraphARM-None-09797</span><br>
+
+For each set <em>n</em> that is statically used by a bound data graph pipeline,
+a descriptor set <strong>must</strong> have been bound to <em>n</em> at the same pipeline bind
+point, with a <a href="../descriptorsets.html#VkPipelineLayout" class="xref page">VkPipelineLayout</a> that is compatible for set <em>n</em>,
+with the <a href="../descriptorsets.html#VkPipelineLayout" class="xref page">VkPipelineLayout</a> used to create the current
+<a href="../pipelines.html#VkPipeline" class="xref page">VkPipeline</a>, as described in <a href="../descriptorsets.html#descriptorsets-compatibility" class="xref page">Pipeline Layout Compatibility</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchDataGraphARM-None-09935" href="#VUID-vkCmdDispatchDataGraphARM-None-09935"></a> <span class="vuid">VUID-vkCmdDispatchDataGraphARM-None-09935</span><br>
+
+Descriptors in each bound descriptor set, specified via
+<a href="../descriptorsets.html#vkCmdBindDescriptorSets" class="xref page">vkCmdBindDescriptorSets</a>, <strong>must</strong> be valid as described by
+<a href="../descriptorsets.html#descriptor-validity" class="xref page">descriptor validity</a> if they are statically used
+by
+the <a href="../pipelines.html#VkPipeline" class="xref page">VkPipeline</a> bound to the pipeline bind point used by this
+command and the bound <a href="../pipelines.html#VkPipeline" class="xref page">VkPipeline</a> was not created with
+<code>VK_PIPELINE_CREATE_DESCRIPTOR_BUFFER_BIT_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchDataGraphARM-None-09936" href="#VUID-vkCmdDispatchDataGraphARM-None-09936"></a> <span class="vuid">VUID-vkCmdDispatchDataGraphARM-None-09936</span><br>
+
+If the descriptors used by the <a href="../pipelines.html#VkPipeline" class="xref page">VkPipeline</a> bound to the pipeline
+bind point were specified via <a href="../descriptorsets.html#vkCmdBindDescriptorSets" class="xref page">vkCmdBindDescriptorSets</a>, the bound
+<a href="../pipelines.html#VkPipeline" class="xref page">VkPipeline</a> <strong>must</strong> have been created without
+<code>VK_PIPELINE_CREATE_DESCRIPTOR_BUFFER_BIT_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchDataGraphARM-None-09937" href="#VUID-vkCmdDispatchDataGraphARM-None-09937"></a> <span class="vuid">VUID-vkCmdDispatchDataGraphARM-None-09937</span><br>
+
+Descriptors in bound descriptor buffers, specified via
+<a href="../descriptorsets.html#vkCmdSetDescriptorBufferOffsetsEXT" class="xref page">vkCmdSetDescriptorBufferOffsetsEXT</a>, <strong>must</strong> be valid if they are
+dynamically used by the <a href="../pipelines.html#VkPipeline" class="xref page">VkPipeline</a> bound to the pipeline bind
+point used by this command and the bound <a href="../pipelines.html#VkPipeline" class="xref page">VkPipeline</a> was created
+with <code>VK_PIPELINE_CREATE_DESCRIPTOR_BUFFER_BIT_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchDataGraphARM-None-09938" href="#VUID-vkCmdDispatchDataGraphARM-None-09938"></a> <span class="vuid">VUID-vkCmdDispatchDataGraphARM-None-09938</span><br>
+
+If the descriptors used by the <a href="../pipelines.html#VkPipeline" class="xref page">VkPipeline</a> bound to the pipeline
+bind point were specified via <a href="../descriptorsets.html#vkCmdSetDescriptorBufferOffsetsEXT" class="xref page">vkCmdSetDescriptorBufferOffsetsEXT</a>,
+the bound <a href="../pipelines.html#VkPipeline" class="xref page">VkPipeline</a> <strong>must</strong> have been created with
+<code>VK_PIPELINE_CREATE_DESCRIPTOR_BUFFER_BIT_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchDataGraphARM-None-09939" href="#VUID-vkCmdDispatchDataGraphARM-None-09939"></a> <span class="vuid">VUID-vkCmdDispatchDataGraphARM-None-09939</span><br>
+
+If a descriptor is dynamically used with a <a href="../pipelines.html#VkPipeline" class="xref page">VkPipeline</a> created with
+<code>VK_PIPELINE_CREATE_DESCRIPTOR_BUFFER_BIT_EXT</code>, the descriptor
+memory <strong>must</strong> be resident</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchDataGraphARM-None-09799" href="#VUID-vkCmdDispatchDataGraphARM-None-09799"></a> <span class="vuid">VUID-vkCmdDispatchDataGraphARM-None-09799</span><br>
+
+A valid data graph pipeline <strong>must</strong> be bound to the
+<code>VK_PIPELINE_BIND_POINT_DATA_GRAPH_ARM</code> pipeline bind point used by
+this command</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchDataGraphARM-pDescription-09930" href="#VUID-vkCmdDispatchDataGraphARM-pDescription-09930"></a> <span class="vuid">VUID-vkCmdDispatchDataGraphARM-pDescription-09930</span><br>
+
+If a <code>VK_DESCRIPTOR_TYPE_TENSOR_ARM</code> descriptor is accessed as a
+result of this command, then the underlying <a href="../resources.html#VkTensorARM" class="xref page">VkTensorARM</a> object
+<strong>must</strong> have been created with a
+<a href="../resources.html#VkTensorCreateInfoARM" class="xref page">VkTensorCreateInfoARM</a>::<code>pDescription</code> whose <code>usage</code> member
+contained <code>VK_TENSOR_USAGE_DATA_GRAPH_BIT_ARM</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchDataGraphARM-commandBuffer-09940" href="#VUID-vkCmdDispatchDataGraphARM-commandBuffer-09940"></a> <span class="vuid">VUID-vkCmdDispatchDataGraphARM-commandBuffer-09940</span><br>
+
+If <code>commandBuffer</code> was allocated from a pool that was created with a
+<a href="#VkDataGraphProcessingEngineCreateInfoARM">VkDataGraphProcessingEngineCreateInfoARM</a> structure in the
+<code>pNext</code> chain of <a href="../cmdbuffers.html#VkCommandPoolCreateInfo" class="xref page">VkCommandPoolCreateInfo</a> that included a
+foreign data graph processing engine in its <code>pProcessingEngines</code>
+member, then all <code>VK_DESCRIPTOR_TYPE_TENSOR_ARM</code> descriptors
+accessed as a result of this command <strong>must</strong> be tied to <a href="../resources.html#VkTensorARM" class="xref page">VkTensorARM</a>
+objects that have been bound to memory created from external handle
+types reported as supported in a
+<a href="#VkQueueFamilyDataGraphProcessingEnginePropertiesARM">VkQueueFamilyDataGraphProcessingEnginePropertiesARM</a>::<code>foreignMemoryHandleTypes</code>
+structure via
+<a href="#vkGetPhysicalDeviceQueueFamilyDataGraphProcessingEnginePropertiesARM">vkGetPhysicalDeviceQueueFamilyDataGraphProcessingEnginePropertiesARM</a>
+with a <code>queueFamilyIndex</code> matching the one the command pool was
+created for, for all the foreign data graph processing engines that were
+part of the <a href="#VkDataGraphProcessingEngineCreateInfoARM">VkDataGraphProcessingEngineCreateInfoARM</a> used to
+create the command pool</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchDataGraphARM-commandBuffer-09800" href="#VUID-vkCmdDispatchDataGraphARM-commandBuffer-09800"></a> <span class="vuid">VUID-vkCmdDispatchDataGraphARM-commandBuffer-09800</span><br>
+
+If <code>commandBuffer</code> is an unprotected command buffer and
+<a href="../devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
+any resource accessed by bound data graph pipelines <strong>must</strong> not be a
+protected resource</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchDataGraphARM-commandBuffer-09801" href="#VUID-vkCmdDispatchDataGraphARM-commandBuffer-09801"></a> <span class="vuid">VUID-vkCmdDispatchDataGraphARM-commandBuffer-09801</span><br>
+
+If <code>commandBuffer</code> is a protected command buffer and
+<a href="../devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
+any resource written to by the <code>VkPipeline</code> object bound to the bind
+point used by this command <strong>must</strong> not be an unprotected resource</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchDataGraphARM-commandBuffer-09941" href="#VUID-vkCmdDispatchDataGraphARM-commandBuffer-09941"></a> <span class="vuid">VUID-vkCmdDispatchDataGraphARM-commandBuffer-09941</span><br>
+
+All the operations used by the bound data graph pipeline <strong>must</strong> be
+supported on the queue family for which the command pool out of which
+<code>commandBuffer</code> was allocated, as reported by
+<a href="#vkGetPhysicalDeviceQueueFamilyDataGraphPropertiesARM">vkGetPhysicalDeviceQueueFamilyDataGraphPropertiesARM</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdDispatchDataGraphARM-commandBuffer-parameter" href="#VUID-vkCmdDispatchDataGraphARM-commandBuffer-parameter"></a> <span class="vuid">VUID-vkCmdDispatchDataGraphARM-commandBuffer-parameter</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be a valid <a href="../cmdbuffers.html#VkCommandBuffer" class="xref page">VkCommandBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchDataGraphARM-session-parameter" href="#VUID-vkCmdDispatchDataGraphARM-session-parameter"></a> <span class="vuid">VUID-vkCmdDispatchDataGraphARM-session-parameter</span><br>
+ <code>session</code> <strong>must</strong> be a valid <a href="#VkDataGraphPipelineSessionARM">VkDataGraphPipelineSessionARM</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchDataGraphARM-pInfo-parameter" href="#VUID-vkCmdDispatchDataGraphARM-pInfo-parameter"></a> <span class="vuid">VUID-vkCmdDispatchDataGraphARM-pInfo-parameter</span><br>
+ If <code>pInfo</code> is not <code>NULL</code>, <code>pInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkDataGraphPipelineDispatchInfoARM">VkDataGraphPipelineDispatchInfoARM</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchDataGraphARM-commandBuffer-recording" href="#VUID-vkCmdDispatchDataGraphARM-commandBuffer-recording"></a> <span class="vuid">VUID-vkCmdDispatchDataGraphARM-commandBuffer-recording</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be in the <a href="../cmdbuffers.html#commandbuffers-lifecycle" class="xref page">recording state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchDataGraphARM-commandBuffer-cmdpool" href="#VUID-vkCmdDispatchDataGraphARM-commandBuffer-cmdpool"></a> <span class="vuid">VUID-vkCmdDispatchDataGraphARM-commandBuffer-cmdpool</span><br>
+ The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> support data_graph operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchDataGraphARM-renderpass" href="#VUID-vkCmdDispatchDataGraphARM-renderpass"></a> <span class="vuid">VUID-vkCmdDispatchDataGraphARM-renderpass</span><br>
+ This command <strong>must</strong> only be called outside of a render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchDataGraphARM-videocoding" href="#VUID-vkCmdDispatchDataGraphARM-videocoding"></a> <span class="vuid">VUID-vkCmdDispatchDataGraphARM-videocoding</span><br>
+ This command <strong>must</strong> only be called outside of a video coding scope</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchDataGraphARM-commonparent" href="#VUID-vkCmdDispatchDataGraphARM-commonparent"></a> <span class="vuid">VUID-vkCmdDispatchDataGraphARM-commonparent</span><br>
+ Both of <code>commandBuffer</code>, and <code>session</code> <strong>must</strong> have been created, allocated, or retrieved from the same <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>commandBuffer</code> <strong>must</strong> be externally synchronized</p>
+</li>
+<li>
+<p>Host access to the <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Command Properties</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><a href="../cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
+<th class="tableblock halign-left valign-top"><a href="../renderpass.html#vkCmdBeginRenderPass" class="xref page">Render Pass Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="../videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="../devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
+<th class="tableblock halign-left valign-top"><a href="../fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Data_Graph</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Action</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#VkDataGraphPipelineDispatchInfoARM">VkDataGraphPipelineDispatchInfoARM</a> structure is defined as:</p>
+</div>
+<div id="VkDataGraphPipelineDispatchInfoARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef struct VkDataGraphPipelineDispatchInfoARM {
+    VkStructureType                        sType;
+    void*                                  pNext;
+    VkDataGraphPipelineDispatchFlagsARM    flags;
+} VkDataGraphPipelineDispatchInfoARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>flags</code> is a bitmask of <a href="#VkDataGraphPipelineDispatchFlagBitsARM">VkDataGraphPipelineDispatchFlagBitsARM</a>
+describing additional parameters of the dispatch.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphPipelineDispatchInfoARM-sType-sType" href="#VUID-VkDataGraphPipelineDispatchInfoARM-sType-sType"></a> <span class="vuid">VUID-VkDataGraphPipelineDispatchInfoARM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_DISPATCH_INFO_ARM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineDispatchInfoARM-pNext-pNext" href="#VUID-VkDataGraphPipelineDispatchInfoARM-pNext-pNext"></a> <span class="vuid">VUID-VkDataGraphPipelineDispatchInfoARM-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineDispatchInfoARM-flags-zerobitmask" href="#VUID-VkDataGraphPipelineDispatchInfoARM-flags-zerobitmask"></a> <span class="vuid">VUID-VkDataGraphPipelineDispatchInfoARM-flags-zerobitmask</span><br>
+ <code>flags</code> <strong>must</strong> be <code>0</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Bits which <strong>can</strong> be set in
+<a href="#VkDataGraphPipelineDispatchInfoARM">VkDataGraphPipelineDispatchInfoARM</a>::<code>flags</code>, specifying additional
+parameters of a data graph pipeline dispatch, are:</p>
+</div>
+<div id="VkDataGraphPipelineDispatchFlagBitsARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+// Flag bits for VkDataGraphPipelineDispatchFlagBitsARM
+typedef VkFlags64 VkDataGraphPipelineDispatchFlagBitsARM;</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div id="VkDataGraphPipelineDispatchFlagsARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef VkFlags64 VkDataGraphPipelineDispatchFlagsARM;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>VkDataGraphPipelineDispatchFlagsARM</code> is a bitmask type for setting a
+mask of zero or more <a href="#VkDataGraphPipelineDispatchFlagBitsARM">VkDataGraphPipelineDispatchFlagBitsARM</a>.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="graphs-properties"><a class="anchor" href="#graphs-properties"></a>Properties</h2>
+<div class="sectionbody">
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To query the properties of a data graph pipeline that can be obtained, call:</p>
+</div>
+<div id="vkGetDataGraphPipelineAvailablePropertiesARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+VkResult vkGetDataGraphPipelineAvailablePropertiesARM(
+    VkDevice                                    device,
+    const VkDataGraphPipelineInfoARM*           pPipelineInfo,
+    uint32_t*                                   pPropertiesCount,
+    VkDataGraphPipelinePropertyARM*             pProperties);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the logical device that created the data graph pipeline.</p>
+</li>
+<li>
+<p><code>pPipelineInfo</code> is a <a href="#VkDataGraphPipelineInfoARM">VkDataGraphPipelineInfoARM</a> that describes
+the <a href="../pipelines.html#VkPipeline" class="xref page">VkPipeline</a> being queried.</p>
+</li>
+<li>
+<p><code>pPropertiesCount</code> is a pointer to an integer related to the number
+of properties available or queried, as described below.</p>
+</li>
+<li>
+<p><code>pProperties</code> is either <code>NULL</code> or a pointer to an array of
+<a href="#VkDataGraphPipelinePropertyARM">VkDataGraphPipelinePropertyARM</a> enums.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If <code>pProperties</code> is <code>NULL</code>, then the number of properties associated
+with the data graph pipeline is returned in <code>pPropertiesCount</code>.
+Otherwise, <code>pPropertiesCount</code> <strong>must</strong> point to a variable set by the user
+to the number of elements in the <code>pProperties</code> array, and on return the
+variable is overwritten with the number of enums actually written to
+<code>pProperties</code>.
+If <code>pPropertiesCount</code> is less than the number of properties associated
+with the data graph pipeline, at most <code>pPropertiesCount</code> structures will
+be written, and <code>VK_INCOMPLETE</code> will be returned instead of
+<code>VK_SUCCESS</code>, to indicate that not all the available properties were
+returned.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkGetDataGraphPipelineAvailablePropertiesARM-dataGraphPipeline-09887" href="#VUID-vkGetDataGraphPipelineAvailablePropertiesARM-dataGraphPipeline-09887"></a> <span class="vuid">VUID-vkGetDataGraphPipelineAvailablePropertiesARM-dataGraphPipeline-09887</span><br>
+
+The <code>dataGraphPipeline</code> member of <code>pPipelineInfo</code> <strong>must</strong> have
+been returned by a call to <a href="#vkCreateDataGraphPipelinesARM">vkCreateDataGraphPipelinesARM</a></p>
+</li>
+<li>
+<p><a id="VUID-vkGetDataGraphPipelineAvailablePropertiesARM-dataGraphPipeline-09888" href="#VUID-vkGetDataGraphPipelineAvailablePropertiesARM-dataGraphPipeline-09888"></a> <span class="vuid">VUID-vkGetDataGraphPipelineAvailablePropertiesARM-dataGraphPipeline-09888</span><br>
+
+The <code>dataGraphPipeline</code> member of <code>pPipelineInfo</code> <strong>must</strong> have
+been created with <code>device</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkGetDataGraphPipelineAvailablePropertiesARM-device-parameter" href="#VUID-vkGetDataGraphPipelineAvailablePropertiesARM-device-parameter"></a> <span class="vuid">VUID-vkGetDataGraphPipelineAvailablePropertiesARM-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkGetDataGraphPipelineAvailablePropertiesARM-pPipelineInfo-parameter" href="#VUID-vkGetDataGraphPipelineAvailablePropertiesARM-pPipelineInfo-parameter"></a> <span class="vuid">VUID-vkGetDataGraphPipelineAvailablePropertiesARM-pPipelineInfo-parameter</span><br>
+ <code>pPipelineInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkDataGraphPipelineInfoARM">VkDataGraphPipelineInfoARM</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkGetDataGraphPipelineAvailablePropertiesARM-pPropertiesCount-parameter" href="#VUID-vkGetDataGraphPipelineAvailablePropertiesARM-pPropertiesCount-parameter"></a> <span class="vuid">VUID-vkGetDataGraphPipelineAvailablePropertiesARM-pPropertiesCount-parameter</span><br>
+ <code>pPropertiesCount</code> <strong>must</strong> be a valid pointer to a <code>uint32_t</code> value</p>
+</li>
+<li>
+<p><a id="VUID-vkGetDataGraphPipelineAvailablePropertiesARM-pProperties-parameter" href="#VUID-vkGetDataGraphPipelineAvailablePropertiesARM-pProperties-parameter"></a> <span class="vuid">VUID-vkGetDataGraphPipelineAvailablePropertiesARM-pProperties-parameter</span><br>
+ If the value referenced by <code>pPropertiesCount</code> is not <code>0</code>, and <code>pProperties</code> is not <code>NULL</code>, <code>pProperties</code> <strong>must</strong> be a valid pointer to an array of <code>pPropertiesCount</code> <a href="#VkDataGraphPipelinePropertyARM">VkDataGraphPipelinePropertyARM</a> values</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+<li>
+<p><code>VK_INCOMPLETE</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_OUT_OF_DEVICE_MEMORY</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To query properties of a data graph pipeline, call:</p>
+</div>
+<div id="vkGetDataGraphPipelinePropertiesARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+VkResult vkGetDataGraphPipelinePropertiesARM(
+    VkDevice                                    device,
+    const VkDataGraphPipelineInfoARM*           pPipelineInfo,
+    uint32_t                                    propertiesCount,
+    VkDataGraphPipelinePropertyQueryResultARM*  pProperties);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the logical device that created the data graph pipeline.</p>
+</li>
+<li>
+<p><code>pPipelineInfo</code> is a <a href="#VkDataGraphPipelineInfoARM">VkDataGraphPipelineInfoARM</a> that describes
+the <a href="../pipelines.html#VkPipeline" class="xref page">VkPipeline</a> being queried.</p>
+</li>
+<li>
+<p><code>propertiesCount</code> is the length of the <code>pProperties</code> array.</p>
+</li>
+<li>
+<p><code>pProperties</code> is a pointer to an array of
+<a href="#VkDataGraphPipelinePropertyQueryResultARM">VkDataGraphPipelinePropertyQueryResultARM</a> structures.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkGetDataGraphPipelinePropertiesARM-dataGraphPipeline-09869" href="#VUID-vkGetDataGraphPipelinePropertiesARM-dataGraphPipeline-09869"></a> <span class="vuid">VUID-vkGetDataGraphPipelinePropertiesARM-dataGraphPipeline-09869</span><br>
+
+The <code>dataGraphPipeline</code> member of <code>pPipelineInfo</code> <strong>must</strong> have
+been returned by a call to <a href="#vkCreateDataGraphPipelinesARM">vkCreateDataGraphPipelinesARM</a></p>
+</li>
+<li>
+<p><a id="VUID-vkGetDataGraphPipelinePropertiesARM-dataGraphPipeline-09802" href="#VUID-vkGetDataGraphPipelinePropertiesARM-dataGraphPipeline-09802"></a> <span class="vuid">VUID-vkGetDataGraphPipelinePropertiesARM-dataGraphPipeline-09802</span><br>
+
+The <code>dataGraphPipeline</code> member of <code>pPipelineInfo</code> <strong>must</strong> have
+been created with <code>device</code></p>
+</li>
+<li>
+<p><a id="VUID-vkGetDataGraphPipelinePropertiesARM-pProperties-09889" href="#VUID-vkGetDataGraphPipelinePropertiesARM-pProperties-09889"></a> <span class="vuid">VUID-vkGetDataGraphPipelinePropertiesARM-pProperties-09889</span><br>
+
+There <strong>must</strong> not be two or more structures in the <code>pProperties</code> array
+with the same
+<a href="#VkDataGraphPipelinePropertyQueryResultARM">VkDataGraphPipelinePropertyQueryResultARM</a>::<code>property</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkGetDataGraphPipelinePropertiesARM-device-parameter" href="#VUID-vkGetDataGraphPipelinePropertiesARM-device-parameter"></a> <span class="vuid">VUID-vkGetDataGraphPipelinePropertiesARM-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkGetDataGraphPipelinePropertiesARM-pPipelineInfo-parameter" href="#VUID-vkGetDataGraphPipelinePropertiesARM-pPipelineInfo-parameter"></a> <span class="vuid">VUID-vkGetDataGraphPipelinePropertiesARM-pPipelineInfo-parameter</span><br>
+ <code>pPipelineInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkDataGraphPipelineInfoARM">VkDataGraphPipelineInfoARM</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkGetDataGraphPipelinePropertiesARM-pProperties-parameter" href="#VUID-vkGetDataGraphPipelinePropertiesARM-pProperties-parameter"></a> <span class="vuid">VUID-vkGetDataGraphPipelinePropertiesARM-pProperties-parameter</span><br>
+ <code>pProperties</code> <strong>must</strong> be a valid pointer to an array of <code>propertiesCount</code> <a href="#VkDataGraphPipelinePropertyQueryResultARM">VkDataGraphPipelinePropertyQueryResultARM</a> structures</p>
+</li>
+<li>
+<p><a id="VUID-vkGetDataGraphPipelinePropertiesARM-propertiesCount-arraylength" href="#VUID-vkGetDataGraphPipelinePropertiesARM-propertiesCount-arraylength"></a> <span class="vuid">VUID-vkGetDataGraphPipelinePropertiesARM-propertiesCount-arraylength</span><br>
+ <code>propertiesCount</code> <strong>must</strong> be greater than <code>0</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+<li>
+<p><code>VK_INCOMPLETE</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_OUT_OF_DEVICE_MEMORY</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkDataGraphPipelineInfoARM</code> structure is defined as:</p>
+</div>
+<div id="VkDataGraphPipelineInfoARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef struct VkDataGraphPipelineInfoARM {
+    VkStructureType    sType;
+    const void*        pNext;
+    VkPipeline         dataGraphPipeline;
+} VkDataGraphPipelineInfoARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>dataGraphPipeline</code> is a <a href="../pipelines.html#VkPipeline" class="xref page">VkPipeline</a> handle.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphPipelineInfoARM-dataGraphPipeline-09803" href="#VUID-VkDataGraphPipelineInfoARM-dataGraphPipeline-09803"></a> <span class="vuid">VUID-VkDataGraphPipelineInfoARM-dataGraphPipeline-09803</span><br>
+
+<code>dataGraphPipeline</code> <strong>must</strong> have been created with
+<a href="#vkCreateDataGraphPipelinesARM">vkCreateDataGraphPipelinesARM</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphPipelineInfoARM-sType-sType" href="#VUID-VkDataGraphPipelineInfoARM-sType-sType"></a> <span class="vuid">VUID-VkDataGraphPipelineInfoARM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_INFO_ARM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineInfoARM-pNext-pNext" href="#VUID-VkDataGraphPipelineInfoARM-pNext-pNext"></a> <span class="vuid">VUID-VkDataGraphPipelineInfoARM-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelineInfoARM-dataGraphPipeline-parameter" href="#VUID-VkDataGraphPipelineInfoARM-dataGraphPipeline-parameter"></a> <span class="vuid">VUID-VkDataGraphPipelineInfoARM-dataGraphPipeline-parameter</span><br>
+ <code>dataGraphPipeline</code> <strong>must</strong> be a valid <a href="../pipelines.html#VkPipeline" class="xref page">VkPipeline</a> handle</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkDataGraphPipelinePropertyQueryResultARM</code> structure is defined as:</p>
+</div>
+<div id="VkDataGraphPipelinePropertyQueryResultARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef struct VkDataGraphPipelinePropertyQueryResultARM {
+    VkStructureType                   sType;
+    const void*                       pNext;
+    VkDataGraphPipelinePropertyARM    property;
+    VkBool32                          isText;
+    size_t                            dataSize;
+    void*                             pData;
+} VkDataGraphPipelinePropertyQueryResultARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>property</code> is a <a href="#VkDataGraphPipelinePropertyARM">VkDataGraphPipelinePropertyARM</a> specifying the
+property of the data graph pipeline being queried.</p>
+</li>
+<li>
+<p><code>isText</code> specifies whether the returned data is text or opaque data.
+If <code>isText</code> is <code>VK_TRUE</code> then the data returned in <code>pData</code>
+is text and guaranteed to be a null-terminated UTF-8 string.</p>
+</li>
+<li>
+<p><code>dataSize</code> is an integer related to the size, in bytes, of the data,
+as described below.</p>
+</li>
+<li>
+<p><code>pData</code> is either <code>NULL</code> or a pointer to a block of memory into
+which the implementation will return the property data.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If <code>pData</code> is <code>NULL</code>, then the size, in bytes, of the property data is
+returned in <code>dataSize</code>.
+Otherwise, <code>dataSize</code> must be the size of the buffer, in bytes, pointed
+to by <code>pData</code> and on return <code>dataSize</code> is overwritten with the
+number of bytes of data actually written to <code>pData</code> including any
+trailing NUL character.
+If <code>dataSize</code> is less than the size, in bytes, of the property data, at
+most <code>dataSize</code> bytes of data will be written to <code>pData</code>, and
+<code>VK_INCOMPLETE</code> will be returned by
+<a href="#vkGetDataGraphPipelinePropertiesARM">vkGetDataGraphPipelinePropertiesARM</a> instead of <code>VK_SUCCESS</code>, to
+indicate that not all the available property data was returned.
+If <code>isText</code> is <code>VK_TRUE</code> and <code>pData</code> is not <code>NULL</code> and
+<code>dataSize</code> is not zero, the last byte written to <code>pData</code> will be a
+NUL character.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphPipelinePropertyQueryResultARM-sType-sType" href="#VUID-VkDataGraphPipelinePropertyQueryResultARM-sType-sType"></a> <span class="vuid">VUID-VkDataGraphPipelinePropertyQueryResultARM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_PROPERTY_QUERY_RESULT_ARM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelinePropertyQueryResultARM-pNext-pNext" href="#VUID-VkDataGraphPipelinePropertyQueryResultARM-pNext-pNext"></a> <span class="vuid">VUID-VkDataGraphPipelinePropertyQueryResultARM-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelinePropertyQueryResultARM-property-parameter" href="#VUID-VkDataGraphPipelinePropertyQueryResultARM-property-parameter"></a> <span class="vuid">VUID-VkDataGraphPipelinePropertyQueryResultARM-property-parameter</span><br>
+ <code>property</code> <strong>must</strong> be a valid <a href="#VkDataGraphPipelinePropertyARM">VkDataGraphPipelinePropertyARM</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphPipelinePropertyQueryResultARM-pData-parameter" href="#VUID-VkDataGraphPipelinePropertyQueryResultARM-pData-parameter"></a> <span class="vuid">VUID-VkDataGraphPipelinePropertyQueryResultARM-pData-parameter</span><br>
+ If <code>dataSize</code> is not <code>0</code>, and <code>pData</code> is not <code>NULL</code>, <code>pData</code> <strong>must</strong> be a valid pointer to an array of <code>dataSize</code> bytes</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Possible values of
+<a href="#VkDataGraphPipelinePropertyQueryResultARM">VkDataGraphPipelinePropertyQueryResultARM</a>::<code>property</code>, specifying
+the property of the data graph pipeline being queried, are:</p>
+</div>
+<div id="VkDataGraphPipelinePropertyARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef enum VkDataGraphPipelinePropertyARM {
+    VK_DATA_GRAPH_PIPELINE_PROPERTY_CREATION_LOG_ARM = 0,
+    VK_DATA_GRAPH_PIPELINE_PROPERTY_IDENTIFIER_ARM = 1,
+} VkDataGraphPipelinePropertyARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_DATA_GRAPH_PIPELINE_PROPERTY_CREATION_LOG_ARM</code> corresponds to a
+human-readable log produced during the creation of a data graph
+pipeline.
+It <strong>may</strong> contain information about errors encountered during the creation
+or other information generally useful for debugging.
+This property <strong>can</strong> be queried for any data graph pipeline.</p>
+</li>
+<li>
+<p><code>VK_DATA_GRAPH_PIPELINE_PROPERTY_IDENTIFIER_ARM</code> corresponds to an
+opaque identifier for the data graph pipeline.
+It <strong>can</strong> be used to create a graph pipeline from a pipeline cache without
+the need to provide any creation data beyond the identifier, using a
+<a href="#VkDataGraphPipelineIdentifierCreateInfoARM">VkDataGraphPipelineIdentifierCreateInfoARM</a> structure.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="graphs-processing-engines"><a class="anchor" href="#graphs-processing-engines"></a>Processing Engines</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Data graph pipelines execute on one or more <em>data graph processing engines</em>.
+Each queue family of a <a href="../devsandqueues.html#VkPhysicalDevice" class="xref page">VkPhysicalDevice</a> that supports
+<code>VK_QUEUE_DATA_GRAPH_BIT_ARM</code> <strong>may</strong> provide access to processing engines.
+Processing engines <strong>may</strong> be <em>foreign</em>.
+Foreign processing engines require the use of external memory and semaphores
+to exchange data and synchronize with data graph pipelines that target them.
+Each processing engine <strong>may</strong> support a selection of <a href="#graphs-operations">graph operations</a>.
+There exists a <em>default processing engine</em> that enables implementations to
+support some operations without tying support to specific processing
+engines.
+This allows implementations to avoid being specific about the processing
+engines that they use internally or to remove the necessity for applications
+to choose the specific processing engine used to execute a given set of
+operations.</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To query the properties of a data graph processing engine for a specific
+queue family of a physical device, call:</p>
+</div>
+<div id="vkGetPhysicalDeviceQueueFamilyDataGraphProcessingEnginePropertiesARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+void vkGetPhysicalDeviceQueueFamilyDataGraphProcessingEnginePropertiesARM(
+    VkPhysicalDevice                            physicalDevice,
+    const VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM* pQueueFamilyDataGraphProcessingEngineInfo,
+    VkQueueFamilyDataGraphProcessingEnginePropertiesARM* pQueueFamilyDataGraphProcessingEngineProperties);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>physicalDevice</code> is the physical device to query.</p>
+</li>
+<li>
+<p><code>pQueueFamilyDataGraphProcessingEngineInfo</code> is a pointer to a
+<a href="#VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM">VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM</a>
+structure that specifies the data graph processing engine and queue
+family to query.</p>
+</li>
+<li>
+<p><code>pQueueFamilyDataGraphProcessingEngineProperties</code> is a pointer to a
+<a href="#VkQueueFamilyDataGraphProcessingEnginePropertiesARM">VkQueueFamilyDataGraphProcessingEnginePropertiesARM</a> structure in
+which the queries properties are returned.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkGetPhysicalDeviceQueueFamilyDataGraphProcessingEnginePropertiesARM-physicalDevice-parameter" href="#VUID-vkGetPhysicalDeviceQueueFamilyDataGraphProcessingEnginePropertiesARM-physicalDevice-parameter"></a> <span class="vuid">VUID-vkGetPhysicalDeviceQueueFamilyDataGraphProcessingEnginePropertiesARM-physicalDevice-parameter</span><br>
+ <code>physicalDevice</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkPhysicalDevice" class="xref page">VkPhysicalDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkGetPhysicalDeviceQueueFamilyDataGraphProcessingEnginePropertiesARM-pQueueFamilyDataGraphProcessingEngineInfo-parameter" href="#VUID-vkGetPhysicalDeviceQueueFamilyDataGraphProcessingEnginePropertiesARM-pQueueFamilyDataGraphProcessingEngineInfo-parameter"></a> <span class="vuid">VUID-vkGetPhysicalDeviceQueueFamilyDataGraphProcessingEnginePropertiesARM-pQueueFamilyDataGraphProcessingEngineInfo-parameter</span><br>
+ <code>pQueueFamilyDataGraphProcessingEngineInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM">VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkGetPhysicalDeviceQueueFamilyDataGraphProcessingEnginePropertiesARM-pQueueFamilyDataGraphProcessingEngineProperties-parameter" href="#VUID-vkGetPhysicalDeviceQueueFamilyDataGraphProcessingEnginePropertiesARM-pQueueFamilyDataGraphProcessingEngineProperties-parameter"></a> <span class="vuid">VUID-vkGetPhysicalDeviceQueueFamilyDataGraphProcessingEnginePropertiesARM-pQueueFamilyDataGraphProcessingEngineProperties-parameter</span><br>
+ <code>pQueueFamilyDataGraphProcessingEngineProperties</code> <strong>must</strong> be a valid pointer to a <a href="#VkQueueFamilyDataGraphProcessingEnginePropertiesARM">VkQueueFamilyDataGraphProcessingEnginePropertiesARM</a> structure</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM</code>
+structure is defined as:</p>
+</div>
+<div id="VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef struct VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM {
+    VkStructureType                                     sType;
+    const void*                                         pNext;
+    uint32_t                                            queueFamilyIndex;
+    VkPhysicalDeviceDataGraphProcessingEngineTypeARM    engineType;
+} VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>queueFamilyIndex</code> specifies the queue family being queried.</p>
+</li>
+<li>
+<p><code>engineType</code> is a
+<a href="#VkPhysicalDeviceDataGraphProcessingEngineTypeARM">VkPhysicalDeviceDataGraphProcessingEngineTypeARM</a> specifying the
+engine type whose properties are being queried.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM-sType-sType" href="#VUID-VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM-sType-sType"></a> <span class="vuid">VUID-VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_QUEUE_FAMILY_DATA_GRAPH_PROCESSING_ENGINE_INFO_ARM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM-pNext-pNext" href="#VUID-VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM-pNext-pNext"></a> <span class="vuid">VUID-VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM-engineType-parameter" href="#VUID-VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM-engineType-parameter"></a> <span class="vuid">VUID-VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM-engineType-parameter</span><br>
+ <code>engineType</code> <strong>must</strong> be a valid <a href="#VkPhysicalDeviceDataGraphProcessingEngineTypeARM">VkPhysicalDeviceDataGraphProcessingEngineTypeARM</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkQueueFamilyDataGraphProcessingEnginePropertiesARM</code> structure is
+defined as:</p>
+</div>
+<div id="VkQueueFamilyDataGraphProcessingEnginePropertiesARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef struct VkQueueFamilyDataGraphProcessingEnginePropertiesARM {
+    VkStructureType                       sType;
+    const void*                           pNext;
+    VkExternalSemaphoreHandleTypeFlags    foreignSemaphoreHandleTypes;
+    VkExternalMemoryHandleTypeFlags       foreignMemoryHandleTypes;
+} VkQueueFamilyDataGraphProcessingEnginePropertiesARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>foreignSemaphoreHandleTypes</code> is a
+<a href="../capabilities.html#VkExternalSemaphoreHandleTypeFlags" class="xref page">VkExternalSemaphoreHandleTypeFlags</a> that describes the external
+semaphore handle types supported by a foreign data graph processing
+engine.</p>
+</li>
+<li>
+<p><code>foreignMemoryHandleTypes</code> is a
+<a href="../capabilities.html#VkExternalMemoryHandleTypeFlags" class="xref page">VkExternalMemoryHandleTypeFlags</a> that describes the external memory
+handle types supported by a foreign data graph processing engine.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkQueueFamilyDataGraphProcessingEnginePropertiesARM-sType-sType" href="#VUID-VkQueueFamilyDataGraphProcessingEnginePropertiesARM-sType-sType"></a> <span class="vuid">VUID-VkQueueFamilyDataGraphProcessingEnginePropertiesARM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_QUEUE_FAMILY_DATA_GRAPH_PROCESSING_ENGINE_PROPERTIES_ARM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkQueueFamilyDataGraphProcessingEnginePropertiesARM-pNext-pNext" href="#VUID-VkQueueFamilyDataGraphProcessingEnginePropertiesARM-pNext-pNext"></a> <span class="vuid">VUID-VkQueueFamilyDataGraphProcessingEnginePropertiesARM-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkQueueFamilyDataGraphProcessingEnginePropertiesARM-foreignSemaphoreHandleTypes-parameter" href="#VUID-VkQueueFamilyDataGraphProcessingEnginePropertiesARM-foreignSemaphoreHandleTypes-parameter"></a> <span class="vuid">VUID-VkQueueFamilyDataGraphProcessingEnginePropertiesARM-foreignSemaphoreHandleTypes-parameter</span><br>
+ <code>foreignSemaphoreHandleTypes</code> <strong>must</strong> be a valid combination of <a href="../capabilities.html#VkExternalSemaphoreHandleTypeFlagBits" class="xref page">VkExternalSemaphoreHandleTypeFlagBits</a> values</p>
+</li>
+<li>
+<p><a id="VUID-VkQueueFamilyDataGraphProcessingEnginePropertiesARM-foreignSemaphoreHandleTypes-requiredbitmask" href="#VUID-VkQueueFamilyDataGraphProcessingEnginePropertiesARM-foreignSemaphoreHandleTypes-requiredbitmask"></a> <span class="vuid">VUID-VkQueueFamilyDataGraphProcessingEnginePropertiesARM-foreignSemaphoreHandleTypes-requiredbitmask</span><br>
+ <code>foreignSemaphoreHandleTypes</code> <strong>must</strong> not be <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-VkQueueFamilyDataGraphProcessingEnginePropertiesARM-foreignMemoryHandleTypes-parameter" href="#VUID-VkQueueFamilyDataGraphProcessingEnginePropertiesARM-foreignMemoryHandleTypes-parameter"></a> <span class="vuid">VUID-VkQueueFamilyDataGraphProcessingEnginePropertiesARM-foreignMemoryHandleTypes-parameter</span><br>
+ <code>foreignMemoryHandleTypes</code> <strong>must</strong> be a valid combination of <a href="../capabilities.html#VkExternalMemoryHandleTypeFlagBits" class="xref page">VkExternalMemoryHandleTypeFlagBits</a> values</p>
+</li>
+<li>
+<p><a id="VUID-VkQueueFamilyDataGraphProcessingEnginePropertiesARM-foreignMemoryHandleTypes-requiredbitmask" href="#VUID-VkQueueFamilyDataGraphProcessingEnginePropertiesARM-foreignMemoryHandleTypes-requiredbitmask"></a> <span class="vuid">VUID-VkQueueFamilyDataGraphProcessingEnginePropertiesARM-foreignMemoryHandleTypes-requiredbitmask</span><br>
+ <code>foreignMemoryHandleTypes</code> <strong>must</strong> not be <code>0</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkPhysicalDeviceDataGraphProcessingEngineARM</code> structure is defined
+as:</p>
+</div>
+<div id="VkPhysicalDeviceDataGraphProcessingEngineARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef struct VkPhysicalDeviceDataGraphProcessingEngineARM {
+    VkPhysicalDeviceDataGraphProcessingEngineTypeARM    type;
+    VkBool32                                            isForeign;
+} VkPhysicalDeviceDataGraphProcessingEngineARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>type</code> is a <a href="#VkPhysicalDeviceDataGraphProcessingEngineTypeARM">VkPhysicalDeviceDataGraphProcessingEngineTypeARM</a>
+that specifies the type of the processing engine.</p>
+</li>
+<li>
+<p><code>isForeign</code> specifies whether the processing engine is foreign.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkPhysicalDeviceDataGraphProcessingEngineARM-type-parameter" href="#VUID-VkPhysicalDeviceDataGraphProcessingEngineARM-type-parameter"></a> <span class="vuid">VUID-VkPhysicalDeviceDataGraphProcessingEngineARM-type-parameter</span><br>
+ <code>type</code> <strong>must</strong> be a valid <a href="#VkPhysicalDeviceDataGraphProcessingEngineTypeARM">VkPhysicalDeviceDataGraphProcessingEngineTypeARM</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The defined data graph processing engines are:</p>
+</div>
+<div id="VkPhysicalDeviceDataGraphProcessingEngineTypeARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef enum VkPhysicalDeviceDataGraphProcessingEngineTypeARM {
+    VK_PHYSICAL_DEVICE_DATA_GRAPH_PROCESSING_ENGINE_TYPE_DEFAULT_ARM = 0,
+} VkPhysicalDeviceDataGraphProcessingEngineTypeARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_PHYSICAL_DEVICE_DATA_GRAPH_PROCESSING_ENGINE_TYPE_DEFAULT_ARM</code>
+corresponds to the default data graph processing engine.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkDataGraphProcessingEngineCreateInfoARM</code> structure is defined as:</p>
+</div>
+<div id="VkDataGraphProcessingEngineCreateInfoARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef struct VkDataGraphProcessingEngineCreateInfoARM {
+    VkStructureType                                  sType;
+    const void*                                      pNext;
+    uint32_t                                         processingEngineCount;
+    VkPhysicalDeviceDataGraphProcessingEngineARM*    pProcessingEngines;
+} VkDataGraphProcessingEngineCreateInfoARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>processingEngineCount</code> is the number of elements in
+<code>pProcessingEngines</code>.</p>
+</li>
+<li>
+<p><code>pProcessingEngines</code> is a pointer to an array of
+<code>processingEngineCount</code>
+<a href="#VkPhysicalDeviceDataGraphProcessingEngineARM">VkPhysicalDeviceDataGraphProcessingEngineARM</a> structures.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphProcessingEngineCreateInfoARM-pProcessingEngines-09918" href="#VUID-VkDataGraphProcessingEngineCreateInfoARM-pProcessingEngines-09918"></a> <span class="vuid">VUID-VkDataGraphProcessingEngineCreateInfoARM-pProcessingEngines-09918</span><br>
+
+<code>pProcessingEngines</code> <strong>must</strong> not contain identical
+<a href="#VkPhysicalDeviceDataGraphProcessingEngineARM">VkPhysicalDeviceDataGraphProcessingEngineARM</a> structures</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDataGraphProcessingEngineCreateInfoARM-sType-sType" href="#VUID-VkDataGraphProcessingEngineCreateInfoARM-sType-sType"></a> <span class="vuid">VUID-VkDataGraphProcessingEngineCreateInfoARM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_DATA_GRAPH_PROCESSING_ENGINE_CREATE_INFO_ARM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphProcessingEngineCreateInfoARM-pProcessingEngines-parameter" href="#VUID-VkDataGraphProcessingEngineCreateInfoARM-pProcessingEngines-parameter"></a> <span class="vuid">VUID-VkDataGraphProcessingEngineCreateInfoARM-pProcessingEngines-parameter</span><br>
+ <code>pProcessingEngines</code> <strong>must</strong> be a valid pointer to an array of <code>processingEngineCount</code> <a href="#VkPhysicalDeviceDataGraphProcessingEngineARM">VkPhysicalDeviceDataGraphProcessingEngineARM</a> structures</p>
+</li>
+<li>
+<p><a id="VUID-VkDataGraphProcessingEngineCreateInfoARM-processingEngineCount-arraylength" href="#VUID-VkDataGraphProcessingEngineCreateInfoARM-processingEngineCount-arraylength"></a> <span class="vuid">VUID-VkDataGraphProcessingEngineCreateInfoARM-processingEngineCount-arraylength</span><br>
+ <code>processingEngineCount</code> <strong>must</strong> be greater than <code>0</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="graphs-operations"><a class="anchor" href="#graphs-operations"></a>Operations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Data graph processing engines execute <em>data graph operations</em>.
+Operations <strong>may</strong> be of a fixed-function nature, configurable or not, or <strong>may</strong>
+, for example, be provided as part of a SPIR-V extended instruction set.</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To query the data graph processing engines and operations they support for a
+specific queue family of a physical device, call:</p>
+</div>
+<div id="vkGetPhysicalDeviceQueueFamilyDataGraphPropertiesARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+VkResult vkGetPhysicalDeviceQueueFamilyDataGraphPropertiesARM(
+    VkPhysicalDevice                            physicalDevice,
+    uint32_t                                    queueFamilyIndex,
+    uint32_t*                                   pQueueFamilyDataGraphPropertyCount,
+    VkQueueFamilyDataGraphPropertiesARM*        pQueueFamilyDataGraphProperties);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>physicalDevice</code> is the physical device to query.</p>
+</li>
+<li>
+<p><code>queueFamilyIndex</code> is the index of the queue family being queried.</p>
+</li>
+<li>
+<p><code>pQueueFamilyDataGraphPropertyCount</code> is a pointer to an integer
+related to the number of properties available or queried.</p>
+</li>
+<li>
+<p><code>pQueueFamilyDataGraphProperties</code> is either <code>NULL</code> or a pointer to
+an array of <a href="#VkQueueFamilyDataGraphPropertiesARM">VkQueueFamilyDataGraphPropertiesARM</a> structures.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If <code>pQueueFamilyDataGraphProperties</code> is <code>NULL</code>, then the number of
+properties available is returned in
+<code>pQueueFamilyDataGraphPropertyCount</code>.
+Otherwise, <code>pQueueFamilyDataGraphPropertyCount</code> <strong>must</strong> point to a
+variable set by the application to the number of elements in the
+<code>pQueueFamilyDataGraphProperties</code> array, and on return the variable is
+overwritten with the number of structures actually written to
+<code>pQueueFamilyDataGraphProperties</code>.
+If <code>pQueueFamilyDataGraphPropertyCount</code> is less than the number of
+properties available, at most <code>pQueueFamilyDataGraphPropertyCount</code>
+structures will be written, and <code>VK_INCOMPLETE</code> will be returned instead
+of <code>VK_SUCCESS</code>, to indicate that not all the available properties were
+returned.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkGetPhysicalDeviceQueueFamilyDataGraphPropertiesARM-physicalDevice-parameter" href="#VUID-vkGetPhysicalDeviceQueueFamilyDataGraphPropertiesARM-physicalDevice-parameter"></a> <span class="vuid">VUID-vkGetPhysicalDeviceQueueFamilyDataGraphPropertiesARM-physicalDevice-parameter</span><br>
+ <code>physicalDevice</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkPhysicalDevice" class="xref page">VkPhysicalDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkGetPhysicalDeviceQueueFamilyDataGraphPropertiesARM-pQueueFamilyDataGraphPropertyCount-parameter" href="#VUID-vkGetPhysicalDeviceQueueFamilyDataGraphPropertiesARM-pQueueFamilyDataGraphPropertyCount-parameter"></a> <span class="vuid">VUID-vkGetPhysicalDeviceQueueFamilyDataGraphPropertiesARM-pQueueFamilyDataGraphPropertyCount-parameter</span><br>
+ <code>pQueueFamilyDataGraphPropertyCount</code> <strong>must</strong> be a valid pointer to a <code>uint32_t</code> value</p>
+</li>
+<li>
+<p><a id="VUID-vkGetPhysicalDeviceQueueFamilyDataGraphPropertiesARM-pQueueFamilyDataGraphProperties-parameter" href="#VUID-vkGetPhysicalDeviceQueueFamilyDataGraphPropertiesARM-pQueueFamilyDataGraphProperties-parameter"></a> <span class="vuid">VUID-vkGetPhysicalDeviceQueueFamilyDataGraphPropertiesARM-pQueueFamilyDataGraphProperties-parameter</span><br>
+ If the value referenced by <code>pQueueFamilyDataGraphPropertyCount</code> is not <code>0</code>, and <code>pQueueFamilyDataGraphProperties</code> is not <code>NULL</code>, <code>pQueueFamilyDataGraphProperties</code> <strong>must</strong> be a valid pointer to an array of <code>pQueueFamilyDataGraphPropertyCount</code> <a href="#VkQueueFamilyDataGraphPropertiesARM">VkQueueFamilyDataGraphPropertiesARM</a> structures</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+<li>
+<p><code>VK_INCOMPLETE</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_OUT_OF_DEVICE_MEMORY</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkQueueFamilyDataGraphPropertiesARM</code> structure is defined as:</p>
+</div>
+<div id="VkQueueFamilyDataGraphPropertiesARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef struct VkQueueFamilyDataGraphPropertiesARM {
+    VkStructureType                                 sType;
+    const void*                                     pNext;
+    VkPhysicalDeviceDataGraphProcessingEngineARM    engine;
+    VkPhysicalDeviceDataGraphOperationSupportARM    operation;
+} VkQueueFamilyDataGraphPropertiesARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>engine</code> is a <a href="#VkPhysicalDeviceDataGraphProcessingEngineARM">VkPhysicalDeviceDataGraphProcessingEngineARM</a>
+structure describing a data graph processing engine.</p>
+</li>
+<li>
+<p><code>operation</code> is a <a href="#VkPhysicalDeviceDataGraphOperationSupportARM">VkPhysicalDeviceDataGraphOperationSupportARM</a>
+structure describing one or more operations supported by a data graph
+processing engine.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkQueueFamilyDataGraphPropertiesARM-sType-sType" href="#VUID-VkQueueFamilyDataGraphPropertiesARM-sType-sType"></a> <span class="vuid">VUID-VkQueueFamilyDataGraphPropertiesARM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_QUEUE_FAMILY_DATA_GRAPH_PROPERTIES_ARM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkQueueFamilyDataGraphPropertiesARM-pNext-pNext" href="#VUID-VkQueueFamilyDataGraphPropertiesARM-pNext-pNext"></a> <span class="vuid">VUID-VkQueueFamilyDataGraphPropertiesARM-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkQueueFamilyDataGraphPropertiesARM-engine-parameter" href="#VUID-VkQueueFamilyDataGraphPropertiesARM-engine-parameter"></a> <span class="vuid">VUID-VkQueueFamilyDataGraphPropertiesARM-engine-parameter</span><br>
+ <code>engine</code> <strong>must</strong> be a valid <a href="#VkPhysicalDeviceDataGraphProcessingEngineARM">VkPhysicalDeviceDataGraphProcessingEngineARM</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-VkQueueFamilyDataGraphPropertiesARM-operation-parameter" href="#VUID-VkQueueFamilyDataGraphPropertiesARM-operation-parameter"></a> <span class="vuid">VUID-VkQueueFamilyDataGraphPropertiesARM-operation-parameter</span><br>
+ <code>operation</code> <strong>must</strong> be a valid <a href="#VkPhysicalDeviceDataGraphOperationSupportARM">VkPhysicalDeviceDataGraphOperationSupportARM</a> structure</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkPhysicalDeviceDataGraphOperationSupportARM</code> structure is defined
+as:</p>
+</div>
+<div id="VkPhysicalDeviceDataGraphOperationSupportARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef struct VkPhysicalDeviceDataGraphOperationSupportARM {
+    VkPhysicalDeviceDataGraphOperationTypeARM    operationType;
+    char                                         name[VK_MAX_PHYSICAL_DEVICE_DATA_GRAPH_OPERATION_SET_NAME_SIZE_ARM];
+    uint32_t                                     version;
+} VkPhysicalDeviceDataGraphOperationSupportARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>operationType</code> is a <a href="#VkPhysicalDeviceDataGraphOperationTypeARM">VkPhysicalDeviceDataGraphOperationTypeARM</a>
+enum specifying the type of the operation whose support is being
+described.</p>
+</li>
+<li>
+<p><code>name</code> is a pointer to a null-terminated UTF-8 string specifying the
+name of the operation whose support is being described.</p>
+</li>
+<li>
+<p><code>version</code> is an integer specifying the version of the operation
+whose support is being described.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkPhysicalDeviceDataGraphOperationSupportARM-operationType-parameter" href="#VUID-VkPhysicalDeviceDataGraphOperationSupportARM-operationType-parameter"></a> <span class="vuid">VUID-VkPhysicalDeviceDataGraphOperationSupportARM-operationType-parameter</span><br>
+ <code>operationType</code> <strong>must</strong> be a valid <a href="#VkPhysicalDeviceDataGraphOperationTypeARM">VkPhysicalDeviceDataGraphOperationTypeARM</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkPhysicalDeviceDataGraphOperationSupportARM-name-parameter" href="#VUID-VkPhysicalDeviceDataGraphOperationSupportARM-name-parameter"></a> <span class="vuid">VUID-VkPhysicalDeviceDataGraphOperationSupportARM-name-parameter</span><br>
+ <code>name</code> <strong>must</strong> be a null-terminated UTF-8 string whose length is less than or equal to VK_MAX_PHYSICAL_DEVICE_DATA_GRAPH_OPERATION_SET_NAME_SIZE_ARM</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The defined data graph operations are:</p>
+</div>
+<div id="VkPhysicalDeviceDataGraphOperationTypeARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_data_graph
+typedef enum VkPhysicalDeviceDataGraphOperationTypeARM {
+    VK_PHYSICAL_DEVICE_DATA_GRAPH_OPERATION_TYPE_SPIRV_EXTENDED_INSTRUCTION_SET_ARM = 0,
+} VkPhysicalDeviceDataGraphOperationTypeARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_PHYSICAL_DEVICE_DATA_GRAPH_OPERATION_TYPE_SPIRV_EXTENDED_INSTRUCTION_SET_ARM</code>
+corresponds to operations provided by a SPIR-V extended instruction set.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

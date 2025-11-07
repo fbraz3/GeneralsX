@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Development Environment :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../_/css/site.css">
+    <link rel="stylesheet" href="../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../.."><img class="navbar-item" alt="Vulkan White Label" src="../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="90_FAQ.html">FAQ</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li><a href="02_Development_environment.html">Development environment</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Tutorial/antora/modules/ROOT/pages/02_Development_environment.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Development Environment</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this chapter, we&#8217;ll set up your environment for developing Vulkan
+applications and install some useful libraries. All the tools we&#8217;ll use,
+except for the compiler, are compatible with Windows, Linux and macOS, but the
+steps for installing them differ a bit, which is why they&#8217;re described
+separately here.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_dependency_install_scripts"><a class="anchor" href="#_dependency_install_scripts"></a>Dependency Install Scripts</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To make the setup process easier, we&#8217;ve provided dependency install scripts for Windows and Linux:</p>
+</div>
+<div class="sect2">
+<h3 id="_windows"><a class="anchor" href="#_windows"></a>Windows</h3>
+<div class="paragraph">
+<p>For Windows, we provide a script that uses vcpkg to install all the required dependencies:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Make sure you have vcpkg installed. If not, follow the instructions at <a href="https://github.com/microsoft/vcpkg" class="bare">https://github.com/microsoft/vcpkg</a></p>
+</li>
+<li>
+<p>Run the <code>scripts/install_dependencies_windows.bat</code> script</p>
+</li>
+<li>
+<p>Follow the instructions to install the Vulkan SDK</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>While we are using vcpkg to enable this install script; the entire
+process is outlined below in detail and can be achieved without using the
+install script or needing vcpkg.  That&#8217;s just a convenience to make the setup
+ process easier.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_linux"><a class="anchor" href="#_linux"></a>Linux</h3>
+<div class="paragraph">
+<p>For Linux, we provide a script that detects your package manager and installs all the required dependencies:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Run the <code>scripts/install_dependencies_linux.sh</code> script</p>
+</li>
+<li>
+<p>Follow the instructions to install the Vulkan SDK</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>If you prefer to install the dependencies manually, or if you&#8217;re using macOS, follow the platform-specific instructions below.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_common_considerations"><a class="anchor" href="#_common_considerations"></a>Common considerations</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_vulkan_sdk"><a class="anchor" href="#_vulkan_sdk"></a>Vulkan SDK</h3>
+<div class="paragraph">
+<p>The most important part you&#8217;ll need for developing Vulkan applications is the SDK.
+It includes headers, standard validation layers, debugging tools and a loader for the Vulkan functions.
+The loader looks up the functions in the driver at runtime, similarly to GLEW for OpenGL—if you&#8217;re familiar with that.</p>
+</div>
+<div class="paragraph">
+<p>The SDK can be downloaded from <a href="https://vulkan.lunarg.com/">the LunarG website</a> using the buttons at the bottom of the page.
+You don&#8217;t have to create an account, but it will give you access to some additional documentation that may be useful to you.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/vulkan_sdk_download_buttons.png" alt="vulkan sdk download buttons">
+</div>
+</div>
+<div class="paragraph">
+<p>Proceed through the installation and pay attention to the installation location of the SDK.
+The first thing we&#8217;ll do is verify that your graphics card and driver properly support Vulkan.
+Go to the directory where you installed the SDK, open the <code>bin</code> directory and
+ run the <code>vkcube</code> demo.</p>
+</div>
+<div class="paragraph">
+<p>There is another program in this directory that will be useful for
+development. The <code>glslangValidator</code> and <code>glslc</code> programs will be
+used to compile shaders from the human-readable
+<a href="https://en.wikipedia.org/wiki/OpenGL_Shading_Language">GLSL</a> to bytecode.
+We&#8217;ll cover this in depth in the
+<a href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html" class="xref page">shader modules</a>
+ chapter. The <code>bin</code> directory also contains the binaries of
+the Vulkan loader and the validation layers, while the <code>lib</code> directory
+contains the libraries.</p>
+</div>
+<div class="paragraph">
+<p>Lastly, there&#8217;s the <code>include</code> directory that contains the Vulkan headers.
+Feel free to explore the other files, but we won&#8217;t need them for this tutorial.</p>
+</div>
+<div class="paragraph">
+<p>To automatically set the environment variables up that VulkanSDK will use to
+make life easier with the CMake project configuration and various other
+tooling, We recommend using the <code>setup-env</code> script. This can be added to
+your auto-start for your terminal and IDE setup such that those environment
+variables work everywhere.</p>
+</div>
+<div class="paragraph">
+<p>If you receive an error message, then ensure that your drivers are up to date,
+include the Vulkan runtime and that your graphics card is supported. See the
+<a href="00_Introduction.html" class="xref page">introduction chapter</a> for links to drivers from the major
+vendors.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_cmake"><a class="anchor" href="#_cmake"></a>CMake</h3>
+<div class="paragraph">
+<p>For all the warts of working in cross-platform projects, CMake has become an
+industry-wide staple. It allows developers to create a project wide build
+description file which takes care of setting up and configuring all the
+support tools required to create any project.
+Other build systems that achieve similar capabilities exist such as bazel,
+however, none are as widely used and accepted as CMake is.
+A full description of how to use CMake is beyond the scope of this tutorial,
+however, further details can be found at <a href="http://www.cmake.org">CMake</a></p>
+</div>
+<div class="paragraph">
+<p>Vulkan SDK has support for using find_package. To use it with your project,
+you can add the search path for the *-config.cmake to the <code>HINTS</code> portion of
+the find_package config calls: i.e.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cmake hljs" data-lang="cmake">find_package(Slang CONFIG HINTS "$ENV{VULKAN_SDK}/lib/cmake").</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the future, FindVulkan.cmake might migrate to the *-config.cmake standard,
+however at the time of writing it is recommended to grab FindVulkan.cmake
+from VulkanSamples, as the one from Kitware is both deprecated and has bugs
+in the macOS build. You will find it in the code directory <a href="_attachments/CMake/FindVulkan.cmake">FindVulkan.cmake</a>.</p>
+</div>
+<div class="paragraph">
+<p>Using FindVulkan.cmake is a project-specific file, you can take it and make
+changes as necessary to work well in your build environment, and can craft
+it further to your needs.  The one Khronos distributes in VulkanSamples is
+well tested and is a good starting point.</p>
+</div>
+<div class="paragraph">
+<p>To use it, add it to your CMAKE_MODULE_PATH like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cmake hljs" data-lang="cmake">`list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMake")`</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This will allow other projects that distribute via Find*.cmake to be placed
+in that same folder. See the accompanying <a href="_attachments/CMakeLists.txt">CMakeLists.txt</a>
+for an example of a working project.</p>
+</div>
+<div class="paragraph">
+<p>Vulkan has support for C&#43;&#43; modules which became available with c&#43;&#43;20. A
+large advantage of C&#43;&#43; modules is they give all the benefits of C&#43;&#43; without
+the overhead long compile times. To do this, the .cppm file must be compiled
+for your target device. This tutorial serves as an example of taking
+advantage of C&#43;&#43; modules. The CMakeLists.txt in our tutorial has all the
+instructions needed for building the module automatically:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cmake hljs" data-lang="cmake">find_package (Vulkan REQUIRED)
+
+# set up Vulkan C++ module
+add_library(VulkanCppModule)
+add_library(Vulkan::cppm ALIAS VulkanCppModule)
+
+ttarget_compile_definitions(VulkanCppModule PUBLIC
+        VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1
+        VULKAN_HPP_NO_STRUCT_CONSTRUCTORS=1
+)
+target_include_directories(VulkanCppModule
+        PRIVATE
+        "${Vulkan_INCLUDE_DIR}"
+)
+target_link_libraries(VulkanCppModule
+        PUBLIC
+        Vulkan::Vulkan
+)
+
+set_target_properties(VulkanCppModule PROPERTIES CXX_STANDARD 20)
+
+target_sources(VulkanCppModule
+        PUBLIC
+        FILE_SET cxx_modules TYPE CXX_MODULES
+        BASE_DIRS
+        "${Vulkan_INCLUDE_DIR}"
+        FILES
+        "${Vulkan_INCLUDE_DIR}/vulkan/vulkan.cppm"
+)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The VulkanCppModule target only needs to be defined once, then add it to the
+dependency of your consuming project, and it will be built automatically, and
+you won&#8217;t need to also add Vulkan::Vulkan to your project.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cmake hljs" data-lang="cmake">target_link_libraries (${PROJECT_NAME} Vulkan::cppm)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>That is all that is required to add Vulkan to any project.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_window_management"><a class="anchor" href="#_window_management"></a>Window Management</h3>
+<div class="paragraph">
+<p>As mentioned before, Vulkan by itself is a platform-agnostic API and does not
+include tools for creating a window to display the rendered results. To benefit
+from the cross-platform advantages of Vulkan, we&#8217;ll use the
+<a href="http://www.glfw.org/">GLFW library</a> to create a window, which supports Windows, Linux and
+ macOS. There are other libraries available for this purpose, like
+<a href="https://www.libsdl.org/">SDL</a>, but the advantage of GLFW is that
+it also abstracts away some of the other platform-specific things in Vulkan
+besides just window creation.</p>
+</div>
+<div class="paragraph">
+<p>An unfortunate disadvantage is GLFW doesn&#8217;t work in Android or iOS; it is a
+desktop-only solution. SDL does offer mobile support; however, mobile
+windowing support is best done by interfacing with the Operating system such
+ as using the JNI in Android.</p>
+</div>
+<div class="paragraph">
+<p>While mobile is beyond the scope of this initial tutorial, plans exist to
+eventually cover it in detail, and
+<a href="https://developer.android.com/ndk/guides/graphics/getting-started">Google has excellent documentation</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_glm"><a class="anchor" href="#_glm"></a>GLM</h3>
+<div class="paragraph">
+<p>Unlike DirectX 12, Vulkan does not include a library for linear algebra
+operations, so we&#8217;ll have to download one. <a href="http://glm.g-truc.net/">GLM</a> is a
+nice library that is designed for use with graphics APIs and is also commonly
+used with OpenGL.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_texturing_library"><a class="anchor" href="#_texturing_library"></a>Texturing library</h3>
+<div class="paragraph">
+<p>Vulkan by itself has no support for reading various texture resources such
+as png, jpeg, or ktx files. However, as this is a large topic, it is beyond
+the scope of this tutorial to fully dive into all the various formats.  For
+this tutorial, we will use stb as a dependency for loading up textures.  We
+do recommend investigating ktx to gain full advantage of a texture format
+that is designed for graphics applications in mind.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_modeling_library"><a class="anchor" href="#_modeling_library"></a>Modeling library</h3>
+<div class="paragraph">
+<p>Model formats are numerous and expose a lot of details everywhere. In
+general, with Vulkan and other graphical APIs, the most important things to
+know are vertex information, texture coordinates, and potentially diffuse
+color details.  GLTF is an advanced feature-full model format with
+easy-to-support features available in a cross-platform library.  However, for this
+tutorial, we&#8217;re going to use tinyobjloader for its pure simplicity.  We
+recommend tinyobjlader library only for small not complex projects.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_windows_2"><a class="anchor" href="#_windows_2"></a>Windows</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Development in Windows is easiest with Visual Studio. CLion works well with
+Windows as does Android Studio, however, Visual Studio is very popular and
+well-supported, so we&#8217;ll discuss getting dependencies there. For complete
+C++20 support, you need to use any version greater than 2019. The steps
+outlined below were written for VS 2022.</p>
+</div>
+<div class="sect2">
+<h3 id="_package_management"><a class="anchor" href="#_package_management"></a>Package management</h3>
+<div class="paragraph">
+<p>For all platforms, we recommend using a platform management tool. Windows
+natively doesn&#8217;t depend upon package management, so this is a foreign concept.
+However, Microsoft has introduced a fantastic package management tool which
+does work cross-platform.  VCPkg also includes setting up all required CMake
+settings.  We recommend  following the excellent documentation
+<a href="https://learn.microsoft.com/en-us/vcpkg/get_started/get-started?pivots=shell-powershell">here</a>
+for details on how to use CMake in Windows projects.</p>
+</div>
+<div class="paragraph">
+<p>This setup allows Windows developers to natively work in Visual Studio using
+ CMake, and the integration is rather quite good.
+Alternatively, <a href="http://jetbrains.com">CLion</a> natively supports CMakeLists.txt
+projects on all platforms and works/functions exactly like Android Studio.
+It is also a free IDE.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_glfw"><a class="anchor" href="#_glfw"></a>GLFW</h3>
+<div class="paragraph">
+<p>We recommend using vcpkg as mentioned before to install packages, to do that,
+run this from the command line: <code>vcpkg install glfw3</code></p>
+</div>
+<div class="paragraph">
+<p>If you desire to install without vcpkg, you can find the latest release of
+GLFW on the <a href="https://www.glfw.org/download.html">official website</a>.</p>
+</div>
+<div class="paragraph">
+<p>In this tutorial, we&#8217;ll be using the 64-bit binaries, but you can of course also
+choose to build in 32-bit mode. In that case make sure to link with the Vulkan
+SDK binaries in the <code>Lib32</code> directory instead of <code>Lib</code>. After downloading it, extract the archive
+to a convenient location. I&#8217;ve chosen to create a <code>Libraries</code> directory in the
+Visual Studio directory under documents.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/glfw_directory.png" alt="glfw directory">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_glm_2"><a class="anchor" href="#_glm_2"></a>GLM</h3>
+<div class="paragraph">
+<p>As a pure graphics api, Vulkan does not include a library for linear algebra operations, so we&#8217;ll have to download one.
+LM can also be installed with vcpkg like so: vcpkg install glm</p>
+</div>
+<div class="paragraph">
+<p>Alternatively, GLM is a header-only library, so download the <a href="https://glm.g-truc.net/">GLM</a>
+which is designed for use with graphics APIs and is also commonly used with OpenGL.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/library_directory.png" alt="library directory">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tinyobjloader"><a class="anchor" href="#_tinyobjloader"></a>tinyobjloader</h3>
+<div class="paragraph">
+<p>Tinyobjloader can be installed with vcpkg like so: vcpkg install tinyobjloader</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_setting_up_visual_studio"><a class="anchor" href="#_setting_up_visual_studio"></a>Setting up Visual Studio</h3>
+<div class="sect3">
+<h4 id="_setting_up_a_cmake_project"><a class="anchor" href="#_setting_up_a_cmake_project"></a>Setting up a CMake project</h4>
+<div class="paragraph">
+<p>Now that you have installed all the dependencies, we can set up a basic
+CMake project for Vulkan and write a little bit of code to make sure that
+everything works.</p>
+</div>
+<div class="paragraph">
+<p>I will assume that you already have some basic experience with CMake, like
+how variables and rules work. If not, you can get up to speed very quickly with <a href="https://cmake.org/cmake/help/book/mastering-cmake/cmake/Help/guide/tutorial/">this tutorial</a>.</p>
+</div>
+<div class="paragraph">
+<p>You can now use the <a href="_attachments/">attachments</a> directory in this tutorial
+as a template for your Vulkan projects. Make a copy, rename it to something like <code>HelloTriangle</code>
+and remove all the code in <code>main.cpp</code>.</p>
+</div>
+<div class="paragraph">
+<p>Congratulations, you&#8217;re all set for <a href="03_Drawing_a_triangle/00_Setup/00_Base_code.html" class="xref page">playing with Vulkan</a>!</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_linux_2"><a class="anchor" href="#_linux_2"></a>Linux</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>These instructions will be aimed at Ubuntu, Fedora and Arch Linux users, but
+ you may be able to follow along by changing the package manager-specific
+ commands to the ones that are appropriate for you.
+You should have a compiler that supports C&#43;&#43;20 (GCC 7+ or Clang 5+).
+You&#8217;ll also need You&#8217;ll also need <code>cmake</code>. Most of this can be installed via
+ larger packages such as build-essentials.</p>
+</div>
+<div class="paragraph">
+<p>We recommend using CLion or another IDE; however, as with most things in Linux, GUIs are entirely optional.</p>
+</div>
+<div class="sect2">
+<h3 id="_vulkan_tarball"><a class="anchor" href="#_vulkan_tarball"></a>Vulkan tarball</h3>
+<div class="paragraph">
+<p>The most important parts you&#8217;ll need for developing Vulkan applications on
+Linux are the Vulkan loader, validation layers, and a couple of command-line
+utilities to test whether your machine is Vulkan-capable:</p>
+</div>
+<div class="paragraph">
+<p>Download the VulkanSDK tarball from <a href="https://vulkan.lunarg.com/">LunarG</a>.
+Place the uncompressed VulkanSDK in a convenient path, and create a symbolic
+link to the latest on like so:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">pushd vulkansdk
+tar -xzf vulkansdk-linux-x86_64-1.4.304.1.tgz
+ln -s 1.4.304.1 default</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then add the following to your ~/.bashrc file so Vulkan&#8217;s environment
+variables are enabled everywhere:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">source ~/vulkanSDK/default/setup-env.sh</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If installation  was successful, you should be all set with the Vulkan  portion.
+Remember to run  <code>vkcube</code> and ensure you see the following pop up in a window:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/cube_demo_nowindow.png" alt="cube demo nowindow">
+</div>
+</div>
+<div class="paragraph">
+<p>If you receive an error message, then ensure that your drivers are up to date, include the Vulkan runtime and that your graphics card is supported.
+See the <a href="00_Introduction.html" class="xref page">introduction chapter</a> for links to drivers from the major vendors.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_ninja"><a class="anchor" href="#_ninja"></a>Ninja</h3>
+<div class="paragraph">
+<p>Ninja is a rapid build system that CMake has support for in all
+platforms.  We recommend installing it with <code>sudo apt install ninja</code></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_x_window_system_and_xfree86_vidmodeextension"><a class="anchor" href="#_x_window_system_and_xfree86_vidmodeextension"></a>X Window System and XFree86-VidModeExtension</h3>
+<div class="paragraph">
+<p>It is possible that these libraries are not on the system, if not, you can
+install them using the following commands:
+* <code>sudo apt install libxxf86vm-dev</code> or <code>dnf install libXxf86vm-devel</code>:
+Provides an interface to the XFree86-VidModeExtension.
+* <code>sudo apt install libxi-dev</code> or <code>dnf install libXi-devel</code>: Provides an X
+Window System client interface to the XINPUT extension.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_glfw_2"><a class="anchor" href="#_glfw_2"></a>GLFW</h3>
+<div class="paragraph">
+<p>We&#8217;ll be installing GLFW from the following command:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo apt install libglfw3-dev</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo dnf install glfw-devel</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo pacman -S glfw-wayland # glfw-x11 for X11 users</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_glm_3"><a class="anchor" href="#_glm_3"></a>GLM</h3>
+<div class="paragraph">
+<p>It is a header-only library that can be installed from the <code>libglm-dev</code> or
+<code>glm-devel</code> package:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo apt install libglm-dev</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo dnf install glm-devel</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo pacman -S glm</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_setting_up_clion_optional"><a class="anchor" href="#_setting_up_clion_optional"></a>Setting up CLion (optional)</h3>
+<div class="paragraph">
+<p>You can get <a href="http://jetbrains.com">CLion</a> from there.  We recommend installing
+from the jetbrains toolbox so it can keep CLion up to date automatically.  To
+ use an IDE like CLion, we have to setup the environment variables that are
+ otherwise setup by when the terminal executes</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">source ~/vulkanSDK/default/setup-env.sh</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To do that, open Settings, then select "Build, Execution, Deployment" and
+then select CMake. At the bottom of that window will be the environment
+variable, Just, add VULKAN_SDK=&lt;fullPathToVulkanSDK&gt; there and Vulkan will be
+found during compile time.  As a convenience, for runtime at least, we
+recommend placing the layers system wide.  To do that, from the terminal do
+this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo cp $VULKAN_SDK/lib/libVkLayer_*.so /usr/local/lib/
+sudo mkdir -p /usr/local/share/vulkan/explicit_layer.d
+sudo cp $VULKAN_SDK/share/vulkan/explicit_layer.d/VkLayer_*.json /usr/local/share/vulkan/explicit_layer.d</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Alternatively, you could add VK_LAYER_PATH to your system environment
+variables, and point it to <code>$VULKAN_SDK/share/vulkan/explicit_layer.d</code> Also,
+you&#8217;d want to add to LD_LIBRARY_CONFIG the <code>$VULKAN_SDK/lib</code> path.  This is
+all done for you by the setup-env.sh file when using the terminal.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_setting_up_a_cmake_project_2"><a class="anchor" href="#_setting_up_a_cmake_project_2"></a>Setting up a CMake project</h3>
+<div class="paragraph">
+<p>Now that you have installed all the dependencies, we can set up a basic
+CMake project for Vulkan and write a little bit of code to make sure that
+everything works.</p>
+</div>
+<div class="paragraph">
+<p>I will assume that you already have some basic experience with CMake, like
+how variables and rules work. If not, you can get up to speed very quickly with <a href="https://cmake.org/cmake/help/book/mastering-cmake/cmake/Help/guide/tutorial/">this tutorial</a>.</p>
+</div>
+<div class="paragraph">
+<p>You can now use the <a href="_attachments/">attachments</a> directory in this tutorial as a template for your
+Vulkan projects. Make a copy, rename it to something like <code>HelloTriangle</code>
+and remove all the code in <code>main.cpp</code>.</p>
+</div>
+<div class="paragraph">
+<p>You are now all set for <a href="03_Drawing_a_triangle/00_Setup/00_Base_code.html" class="xref page">the real adventure</a>.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_macos"><a class="anchor" href="#_macos"></a>macOS</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>These instructions will assume you are using Xcode and the <a href="https://brew.sh/">Homebrew package manager</a>.
+Also, keep in mind that you will need at least macOS version 10.11, and your device needs to support the <a href="https://en.wikipedia.org/wiki/Metal_(API)#Supported_GPUs">Metal API</a>.</p>
+</div>
+<div class="sect2">
+<h3 id="_vulkan_sdk_2"><a class="anchor" href="#_vulkan_sdk_2"></a>Vulkan SDK</h3>
+<div class="paragraph">
+<p>The SDK version for macOS internally uses <a href="https://github.com/KhronosGroup/MoltenVK">MoltenVK</a>.
+There is no native support for Vulkan on macOS, so what MoltenVK does is actually act as a layer that translates Vulkan API calls to Apple&#8217;s Metal graphics framework.
+With this, you can take advantage of the debugging and performance benefits of Apple&#8217;s Metal framework.</p>
+</div>
+<div class="paragraph">
+<p>After downloading the installer for macOS, double-click the installer and follow the prompts. Keep a note of the installation location during the "Installation Folder" step. You will need to reference it when creating your projects in Xcode.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/sdk_install_mac.png" alt="sdk install mac">
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Note</strong>: In this tutorial, <code>vulkansdk</code> will refer to the path where you installed the VulkanSDK.</p>
+</div>
+<div class="paragraph">
+<p>Within the <code>vulkansdk/Applications</code> folder you should have some executable files that will run a few demos using the SDK.
+Run the <code>vkcube</code> executable and you will see the following:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/cube_demo_mac.png" alt="cube demo mac">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_glfw_3"><a class="anchor" href="#_glfw_3"></a>GLFW</h3>
+<div class="paragraph">
+<p>To install GLFW on MacOS we will use the Homebrew package manager to get the <code>glfw</code> package:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">brew install glfw</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_glm_4"><a class="anchor" href="#_glm_4"></a>GLM</h3>
+<div class="paragraph">
+<p>It is a header-only library that can be installed from the <code>glm</code> package:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">brew install glm</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_setting_up_xcode"><a class="anchor" href="#_setting_up_xcode"></a>Setting up Xcode</h3>
+<div class="paragraph">
+<p>Now that all the dependencies are installed, we can set up a basic Xcode project for Vulkan.
+Most of the instructions here are essentially a lot of "plumbing," so we can get all the dependencies linked to the project.
+Also, keep in mind that during the following instructions whenever we mention the folder <code>vulkansdk</code> we are referring to the folder where you extracted the Vulkan SDK.</p>
+</div>
+<div class="paragraph">
+<p>We recommend using CMake everywhere, and Apple is no different. An example
+of how to use CMake for Apple can be found <a href="https://medium.com/practical-coding/migrating-to-cmake-in-c-and-getting-it-working-with-xcode-50b7bb80ae3d">here</a>
+We also have documentation for using a cmake project in Apple environments
+at the VulkanSamples project.  It targets both iOS and Desktop Apple.</p>
+</div>
+<div class="paragraph">
+<p>Once you use CMake with the XCode generator, open the resulting xcode
+project. If you use the code directory of this tutorial, you can do this
+from the command line:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">cd code
+cmake -G XCode</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The last thing you need to set up is a couple of environment variables.
+On Xcode toolbar go to <code>Product</code> &gt; <code>Scheme</code> &gt; <code>Edit Scheme...</code>, and in the <code>Arguments</code> tab add the two following environment variables:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>VK_ICD_FILENAMES = <code>vulkansdk/macOS/share/vulkan/icd.d/MoltenVK_icd.json</code></p>
+</li>
+<li>
+<p>VK_LAYER_PATH = <code>vulkansdk/macOS/share/vulkan/explicit_layer.d</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Uncheck 'shared'. It should look like so:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/xcode_variables.png" alt="xcode variables">
+</div>
+</div>
+<div class="paragraph">
+<p>Finally, you should be all set!</p>
+</div>
+<div class="paragraph">
+<p>You are now all set for <a href="03_Drawing_a_triangle/00_Setup/00_Base_code.html" class="xref page">the real thing</a>.</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+<script src="../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../.." data-snippet-length="100" data-stylesheet="../../_/css/search.css"></script>
+<script async src="../../search-index.js"></script>
+<script async src="../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

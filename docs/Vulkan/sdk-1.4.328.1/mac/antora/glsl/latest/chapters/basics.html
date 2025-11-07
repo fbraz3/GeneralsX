@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Basics :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:glsl" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="glsl" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">OpenGL Shading Language Specification</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="preamble.html">Preamble</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="overview.html">Overview of Shading</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="basics.html">Basics</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="variables.html">Variables and Types</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="operators.html">Operators and Expressions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="statements.html">Statements and Structure</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="builtins.html">Built-In Variables</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="builtinfunctions.html">Built-In Functions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="grammar.html">Shading Language Grammar</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="acknowledgements.html">Acknowledgments</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="references.html">Normative References</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="spirvmappings.html">Non-Normative SPIR-V Mappings</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">OpenGL Shading Language Specification</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">OpenGL Shading Language Specification</a></li>
+    <li><a href="basics.html">Basics</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/GLSL/antora/modules/ROOT/pages/chapters/basics.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Basics</h1>
+<div class="sect1">
+<h2 id="character-set"><a class="anchor" href="#character-set"></a>Character Set and Phases of Compilation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The source character set used for the OpenGL Shading Language is Unicode in the UTF-8
+encoding scheme.</p>
+</div>
+<div class="paragraph">
+<p>After preprocessing, only the following characters are allowed in the
+resulting stream of GLSL tokens:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The letters <strong>a-z</strong>, <strong>A-Z</strong>, and the underscore (<strong>_</strong>).</p>
+</li>
+<li>
+<p>The numbers <strong>0-9</strong>.</p>
+</li>
+<li>
+<p>The symbols period (<strong>.</strong>), plus (<strong>+</strong>), dash (<strong>-</strong>), slash (<strong>/</strong>), asterisk
+(<strong>*</strong>), percent (<strong>%</strong>), angled brackets (<strong>&lt;</strong> and <strong>&gt;</strong>), square brackets
+(<strong>[</strong> and <strong>]</strong>), parentheses (<strong>(</strong> and <strong>)</strong>), braces (<strong>{</strong> and <strong>}</strong>), caret
+(<strong>^</strong>), vertical bar (<strong>|</strong>), ampersand (<strong>&amp;</strong>), tilde (<strong>~</strong>), equals (<strong>=</strong>),
+exclamation point (<strong>!</strong>), colon (<strong>:</strong>), semicolon (<strong>;</strong>), comma (<strong>,</strong>), and
+question mark (<strong>?</strong>).</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>A compile-time error will be given if any other character is used in a GLSL
+token.</p>
+</div>
+<div class="paragraph">
+<p>There are no digraphs or trigraphs.
+There are no escape sequences or other uses of the backslash beyond use as
+the line-continuation character.</p>
+</div>
+<div class="paragraph">
+<p>Lines are relevant for compiler diagnostic messages and the preprocessor.
+They are terminated by carriage-return or line-feed.
+If both are used together, it will count as only a single line termination.
+For the remainder of this document, any of these combinations is simply
+referred to as a new-line.
+Lines may be of arbitrary length.</p>
+</div>
+<div class="paragraph">
+<p>In general, the language&#8217;s use of this character set is case sensitive.</p>
+</div>
+<div class="paragraph">
+<p>There are no character or string data types, so no quoting characters are
+included.</p>
+</div>
+<div class="paragraph">
+<p>There is no end-of-file character.</p>
+</div>
+<div class="paragraph">
+<p>More formally, compilation happens as if the following logical phases were
+executed in order:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Source strings are concatenated to form a single input.
+All provided new-lines are retained.</p>
+</li>
+<li>
+<p>Line numbering is noted, based on all present new-lines, and does not
+change when new-lines are later eliminated.</p>
+</li>
+<li>
+<p>Wherever a backslash ('\') occurs immediately before a new-line, both
+are eliminated.
+(Note no white space is substituted, allowing a single token to span a
+new-line.) Any newly formed backslash followed by a new-line is not
+eliminated; only those pairs originally occurring after phase 1 are
+eliminated.</p>
+</li>
+<li>
+<p>All comments are replaced with a single space.
+(Note that '//' style comments end before their terminating new-lines
+and white space is generally relevant to preprocessing.)</p>
+</li>
+<li>
+<p>Preprocessing is done, resulting in a sequence of GLSL tokens, formed
+from the character set stated above.</p>
+</li>
+<li>
+<p>GLSL processing is done on the sequence of GLSL tokens.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Details that fully define source strings, comments, line numbering, new-line
+elimination, and preprocessing are all discussed in upcoming sections.
+Sections beyond those describe GLSL processing.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="source-strings"><a class="anchor" href="#source-strings"></a>Source Strings</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The source for a single shader is an array of strings of characters from the
+character set.
+A single shader is made from the concatenation of these strings.
+Each string can contain multiple lines, separated by new-lines.
+No new-lines need be present in a string; a single line can be formed from
+multiple strings.
+No new-lines or other characters are inserted by the implementation when it
+concatenates the strings to form a single shader.
+Multiple shaders can be linked together to form a single program.</p>
+</div>
+<div class="paragraph">
+<p>Diagnostic messages returned from compiling a shader must identify both the
+line number within a string and which source string the message applies to.
+Source strings are counted sequentially with the first string being string
+0.
+Line numbers are one more than the number of new-lines that have been
+processed, including counting the new-lines that will be removed by the
+line-continuation character (<strong>\</strong>).</p>
+</div>
+<div class="paragraph">
+<p>Lines separated by the line-continuation character preceding a new-line are
+concatenated together before either comment processing or preprocessing.
+This means that no white space is substituted for the line-continuation
+character.
+That is, a single token could be formed by the concatenation by taking the
+characters at the end of one line concatenating them with the characters at
+the beginning of the next line.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">float f\
+oo;
+// forms a single line equivalent to "float foo;"
+// (assuming '\' is the last character before the new-line and "oo" are
+// the first two characters of the next line)</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="preprocessor"><a class="anchor" href="#preprocessor"></a>Preprocessor</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>There is a preprocessor that processes the source strings as part of the
+compilation process.
+Except as noted below, it behaves as the C++ standard preprocessor (see
+&#8220;<a href="references.html#references" class="xref page">Normative References</a>&#8221;).</p>
+</div>
+<div class="paragraph">
+<p>The complete list of preprocessor directives is as follows.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p>#<br>
+#define<br>
+#undef<br></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p>#if<br>
+#ifdef<br>
+#ifndef<br>
+#else<br>
+#elif<br>
+#endif<br></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p>#error<br>
+#pragma<br></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p>#extension<br>
+#version<br></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p>#line</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>The following
+operators are
+also available:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p>defined<br>
+##</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>Each number sign (<strong>#</strong>) can be preceded in its line only by spaces or
+horizontal tabs.
+It may also be followed by spaces and horizontal tabs, preceding the
+directive.
+Each directive is terminated by a new-line.
+Preprocessing does not change the number or relative location of new-lines
+in a source string.
+Preprocessing takes places after new-lines have been removed by the
+line-continuation character.</p>
+</div>
+<div class="paragraph">
+<p>The number sign (<strong>#</strong>) on a line by itself is ignored.
+Any directive not listed above will cause a compile-time error.</p>
+</div>
+<div class="paragraph">
+<p><strong>#define</strong> and <strong>#undef</strong> functionality are defined as is standard for C++
+preprocessors for macro definitions both with and without macro parameters.</p>
+</div>
+<div class="paragraph">
+<p>The following predefined macros are available:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p>__LINE__<br>
+__FILE__<br>
+__VERSION__<br></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>__LINE__ will substitute a decimal integer constant that is one more than
+the number of preceding new-lines in the current source string.</p>
+</div>
+<div class="paragraph">
+<p>__FILE__ will substitute a decimal integer constant that says which source
+string number is currently being processed.</p>
+</div>
+<div class="paragraph">
+<p>__VERSION__ will substitute a decimal integer reflecting the version
+number of the OpenGL Shading Language.
+The version of the shading language described in this document will have
+__VERSION__ substitute the decimal integer 460.</p>
+</div>
+<div class="paragraph">
+<p>By convention, all macro names containing two consecutive underscores (__)
+are reserved for use by underlying software layers.
+Defining
+or undefining
+such a name in a shader does not itself result in an error, but may
+result in unintended behaviors that stem from having multiple definitions of
+the same name.
+All macro names prefixed with &#8220;GL_&#8221; (&#8220;GL&#8221; followed by a single
+underscore) are also reserved, and defining
+or undefining
+such a name results in a compile-time error.</p>
+</div>
+<div class="paragraph">
+<p>Implementations must support macro-name lengths of up to 1024 characters.
+Implementations are allowed to generate an error for a macro name of length
+greater than 1024 characters, but are also allowed to support lengths
+greater than 1024.</p>
+</div>
+<div class="paragraph">
+<p><strong>#if</strong>, <strong>#ifdef</strong>, <strong>#ifndef</strong>, <strong>#else</strong>, <strong>#elif</strong>, and <strong>#endif</strong> are defined to
+operate as is standard for C++ preprocessors except for the following:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Expressions following <strong>#if</strong> and <strong>#elif</strong> are
+further restricted to
+expressions operating on literal integer constants, plus identifiers
+consumed by the <strong>defined</strong> operator.</p>
+</li>
+<li>
+<p>Character constants are not supported.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The operators available are as follows.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Precedence</th>
+<th class="tableblock halign-left valign-top">Operator class</th>
+<th class="tableblock halign-left valign-top">Operators</th>
+<th class="tableblock halign-left valign-top">Associativity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1 (highest)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">parenthetical grouping</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">( )</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NA</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">unary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">defined<br>
+                                         + - ~ !</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Right to Left</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">multiplicative</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">* / %</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">additive</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">+ -</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bit-wise shift</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">xref: []</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">relational</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt; &gt; &lt;= &gt;=</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">7</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">equality</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">== !=</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">8</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bit-wise and</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&amp;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">9</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bit-wise exclusive or</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">^</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bit-wise inclusive or</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">|</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">11</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logical and</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&amp;&amp;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">12 (lowest)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logical inclusive or</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">||</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>The <strong>defined</strong> operator can be used in either of the following ways:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">defined identifier
+defined ( identifier )</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Two tokens in a macro can be concatenated into one token using the token
+pasting (<strong>##</strong>) operator, as is standard for C++ preprocessors.
+The result must be a valid single token, which will then be subject to macro
+expansion.
+That is, macro expansion happens only after token pasting.
+There are no other number sign based operators (e.g. no <strong>#</strong> or <strong>#@</strong>), nor is
+there a <strong>sizeof</strong> operator.</p>
+</div>
+<div class="paragraph">
+<p>The semantics of applying operators to integer literals in the preprocessor
+match those standard in the C++ preprocessor, not those in the OpenGL Shading Language.</p>
+</div>
+<div class="paragraph">
+<p>Preprocessor expressions will be evaluated according to the behavior of the
+host processor, not the processor targeted by the shader.</p>
+</div>
+<div class="paragraph">
+<p><strong>#error</strong> will cause the implementation to put a compile-time diagnostic message
+into the shader object&#8217;s information log (see section 7.12 &#8220;Shader, Program
+and Program Pipeline Queries&#8221; of the <a href="references.html#references" class="xref page">OpenGL Specification</a> for how to
+access a shader object&#8217;s information log).
+The message will be the tokens following the <strong>#error</strong> directive, up to the
+first new-line.
+The implementation must treat the presence of a <strong>#error</strong> directive as a
+compile-time error.</p>
+</div>
+<div class="paragraph">
+<p><strong>#pragma</strong> allows implementation-dependent compiler control.
+Tokens following <strong>#pragma</strong> are not subject to preprocessor macro expansion.
+If an implementation does not recognize the tokens following <strong>#pragma</strong>, then
+it will ignore that pragma.
+The following pragmas are defined as part of the language.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">#pragma STDGL</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <strong>STDGL</strong> pragma is used to reserve pragmas for use by future revisions of
+this language.
+No implementation may use a pragma whose first token is <strong>STDGL</strong>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">#pragma optimize(on)
+#pragma optimize(off)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>can be used to turn off optimizations as an aid in developing and debugging
+shaders.
+It can only be used outside function definitions.
+By default, optimization is turned on for all shaders.
+The debug pragma</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">#pragma debug(on)
+#pragma debug(off)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>can be used to enable compiling and annotating a shader with debug
+information, so that it can be used with a debugger.
+It can only be used outside function definitions.
+By default, debug is turned off.</p>
+</div>
+<div class="paragraph">
+<p>Shaders should declare the version of the language they are written to.
+The language version a shader is written to is specified by</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">#version number profile_opt</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>where <em>number</em> must be a version of the language, following the same
+convention as __VERSION__ above.
+The directive &#8220;<strong>#version 460</strong>&#8221; is required in any shader that
+uses version 4.60 of the language.
+Any <em>number</em> representing a version of the language a compiler does not
+support will cause a compile-time error to be generated.
+Version 1.10 of the language does not require shaders to include this
+directive, and shaders that do not include a <strong>#version</strong> directive will be
+treated as targeting version 1.10.
+Shaders that specify <strong>#version</strong> 100 will be treated as targeting version
+1.00 of the OpenGL ES Shading Language.
+Shaders that specify <strong>#version</strong> 300 will be treated as targeting version
+3.00 of the OpenGL ES Shading Language.
+Shaders that specify <strong>#version</strong> 310 will be treated as targeting version
+3.10 of the OpenGL ES Shading Language.</p>
+</div>
+<div class="paragraph">
+<p>If the optional <em>profile</em> argument is provided, it must be the name of an
+OpenGL profile.
+Currently, there are three choices:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">core
+compatibility
+es</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A <em>profile</em> argument can only be used with version 150 or greater.
+If no profile argument is provided and the version is 150 or greater, the
+default is <strong>core</strong>.
+If version 300 or 310 is specified, the profile argument is not optional and
+must be <strong>es</strong>, or a compile-time error results.
+The Language Specification for the <strong>es</strong> profile is specified in The OpenGL
+ES Shading Language specification.</p>
+</div>
+<div class="paragraph">
+<p>Shaders for the <strong>core</strong> or <strong>compatibility</strong> profiles that declare different
+versions can be linked together.
+However, <strong>es</strong> profile shaders cannot be linked with non-<strong>es</strong> profile shaders
+or with <strong>es</strong> profile shaders of a different version, or a link-time error
+will result.
+When linking shaders of versions allowed by these rules, remaining link-time
+errors will be given as per the linking rules in the GLSL version
+corresponding to the version of the context the shaders are linked under.
+Shader compile-time errors must still be given strictly based on the version
+declared (or defaulted to) within each shader.</p>
+</div>
+<div class="paragraph">
+<p>Unless otherwise specified, this specification is documenting the core
+profile, and everything specified for the core profile is also available in
+the compatibility profile.
+Features specified as belonging specifically to the compatibility profile
+are not available in the core profile.
+Compatibility-profile features are not available when generating SPIR-V.</p>
+</div>
+<div class="paragraph">
+<p>There is a built-in macro definition for each profile the implementation
+supports.
+All implementations provide the following macro:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">#define GL_core_profile 1</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Implementations providing the <strong>compatibility</strong> profile provide the following
+macro:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">#define GL_compatibility_profile 1</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Implementations providing the <strong>es</strong> profile provide the following macro:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">#define GL_es_profile 1</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <strong>#version</strong> directive must occur in a shader before anything else, except
+for comments and white space.</p>
+</div>
+<div class="paragraph">
+<p>By default, compilers of this language must issue compile-time syntactic,
+semantic, and grammatical errors for shaders that do not conform to this
+specification.
+Any extended behavior must first be enabled.
+Directives to control the behavior of the compiler with respect to
+extensions are declared with the <strong>#extension</strong> directive</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">#extension extension_name : behavior
+#extension all : behavior</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>where <em>extension_name</em> is the name of an extension.
+Extension names are not documented in this specification.
+The token <strong>all</strong> means the behavior applies to all extensions supported by
+the compiler.
+The <em>behavior</em> can be one of the following:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Behavior</th>
+<th class="tableblock halign-left valign-top">Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>require</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Behave as specified by the extension <em>extension_name</em>.<br>
+              Give a compile-time error on the <strong>#extension</strong> if the extension
+              <em>extension_name</em> is not supported, or if <strong>all</strong> is specified.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>enable</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Behave as specified by the extension <em>extension_name</em>.<br>
+              Warn on the <strong>#extension</strong> if the extension <em>extension_name</em> is
+              not supported.<br>
+              Give a compile-time error on the <strong>#extension</strong> if <strong>all</strong> is
+              specified.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>warn</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Behave as specified by the extension <em>extension_name</em>,
+              except issue warnings on any detectable use of that extension,
+              unless such use is supported by other enabled or required
+              extensions.<br>
+              If <strong>all</strong> is specified, then warn on all detectable uses of any
+              extension used.<br>
+              Warn on the <strong>#extension</strong> if the extension <em>extension_name</em> is
+              not supported.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>disable</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Behave (including issuing errors and warnings) as if the
+              extension <em>extension_name</em> is not part of the language
+              definition.<br>
+              If <strong>all</strong> is specified, then behavior must revert back to that
+              of the non-extended core version of the language being
+              compiled to.<br>
+              Warn on the <strong>#extension</strong> if the extension <em>extension_name</em> is
+              not supported.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>The <strong>extension</strong> directive is a simple, low-level mechanism to set the
+behavior for each extension.
+It does not define policies such as which combinations are appropriate,
+those must be defined elsewhere.
+Order of directives matters in setting the behavior for each extension:
+Directives that occur later override those seen earlier.
+The <strong>all</strong> variant sets the behavior for all extensions, overriding all
+previously issued <strong>extension</strong> directives, but only for the <em>behaviors</em>
+<strong>warn</strong> and <strong>disable</strong>.</p>
+</div>
+<div class="paragraph">
+<p>The initial state of the compiler is as if the directive</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">#extension all : disable</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>was issued, telling the compiler that all error and warning reporting must
+be done according to this specification, ignoring any extensions.</p>
+</div>
+<div class="paragraph">
+<p>Each extension can define its allowed granularity of scope.
+If nothing is said, the granularity is a shader (that is, a single
+compilation unit), and the extension directives must occur before any
+non-preprocessor tokens.
+If necessary, the linker can enforce granularities larger than a single
+compilation unit, in which case each involved shader will have to contain
+the necessary extension directive.</p>
+</div>
+<div class="paragraph">
+<p>Macro expansion is not done on lines containing <strong>#extension</strong> and <strong>#version</strong>
+directives.</p>
+</div>
+<div class="paragraph">
+<p><strong>#line</strong> must have, after macro substitution, one of the following forms:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">#line line
+#line line source-string-number</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>where <em>line</em> and <em>source-string-number</em> are
+constant integer expressions.
+If these constant expressions are not integer literals then behavior is undefined.
+After processing this directive (including its new-line), the implementation
+will behave as if it is compiling at line number <em>line</em> and source string
+number <em>source-string-number</em>.
+Subsequent source strings will be numbered sequentially, until another
+<strong>#line</strong> directive overrides that numbering.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Note</div>
+<div class="paragraph">
+<p>Some implementations have allowed constant expressions in #line directives and
+some have not. Even where expressions are supported the grammar is ambiguous and so
+results are implementation dependent. For example,
++ #line +2 +2               // Line number set to 4, or file to 2 and line to 2</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>When shaders are compiled for OpenGL SPIR-V, the following predefined
+macro is available:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">#define GL_SPIRV 100</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When targeting Vulkan, the following predefined macro is available:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">#define VULKAN 100</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="comments"><a class="anchor" href="#comments"></a>Comments</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Comments are delimited by <strong>/*</strong> and <strong>*/</strong>, or by <strong>//</strong> and a new-line.
+// style comments include the initial // marker and continue up to, but
+not including, the terminating newline.
+/*...*/ comments include both the start and end marker.
+The begin comment delimiters (/* or //) are not recognized as comment
+delimiters inside of a comment, hence comments cannot be nested.</p>
+</div>
+<div class="paragraph">
+<p>Inside comments, any byte values may be used, except a byte whose value is
+0.
+No errors will be given for the content of comments and no validation on the
+content of comments need be done.</p>
+</div>
+<div class="paragraph">
+<p>Removal of new-lines by the line-continuation character (<strong>\</strong>) logically
+occurs before comments are processed.
+That is, a single-line comment ending in the line-continuation character
+(<strong>\</strong>) includes the next line in the comment.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// a single-line comment containing the next line \
+a = b; // this is still in the first comment</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="tokens"><a class="anchor" href="#tokens"></a>Tokens</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The language, after preprocessing, is a sequence of tokens.
+A token can be</p>
+</div>
+<div class="openblock bnf">
+<div class="content">
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><em>token</em> : </dt>
+<dd>
+<p><em>keyword</em><br>
+<em>identifier</em><br>
+<em>integer-constant</em><br>
+<em>floating-constant</em><br>
+<em>operator</em><br>
+<strong>;</strong> <strong>{</strong> <strong>}</strong></p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="keywords"><a class="anchor" href="#keywords"></a>Keywords</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The following are the keywords in the language and (after
+preprocessing) can only be used as described in this specification,
+or a compile-time error results:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>const</strong> <strong>uniform</strong> <strong>buffer</strong> <strong>shared</strong>
+<strong>attribute</strong> <strong>varying</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>coherent</strong> <strong>volatile</strong> <strong>restrict</strong> <strong>readonly</strong> <strong>writeonly</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>atomic_uint</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>layout</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>centroid</strong> <strong>flat</strong> <strong>smooth</strong>
+<strong>noperspective</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>patch</strong> <strong>sample</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>invariant</strong> <strong>precise</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>break</strong> <strong>continue</strong> <strong>do</strong> <strong>for</strong> <strong>while</strong> <strong>switch</strong> <strong>case</strong> <strong>default</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>if</strong> <strong>else</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>subroutine</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>in</strong> <strong>out</strong> <strong>inout</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>int</strong> <strong>void</strong> <strong>bool</strong> <strong>true</strong> <strong>false</strong> <strong>float</strong>
+<strong>double</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>discard</strong> <strong>return</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>vec2</strong> <strong>vec3</strong> <strong>vec4</strong> <strong>ivec2</strong> <strong>ivec3</strong> <strong>ivec4</strong> <strong>bvec2</strong> <strong>bvec3</strong> <strong>bvec4</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>uint</strong> <strong>uvec2</strong> <strong>uvec3</strong> <strong>uvec4</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>dvec2</strong> <strong>dvec3</strong> <strong>dvec4</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>mat2</strong> <strong>mat3</strong> <strong>mat4</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>mat2x2</strong> <strong>mat2x3</strong> <strong>mat2x4</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>mat3x2</strong> <strong>mat3x3</strong> <strong>mat3x4</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>mat4x2</strong> <strong>mat4x3</strong> <strong>mat4x4</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>dmat2</strong> <strong>dmat3</strong> <strong>dmat4</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>dmat2x2</strong> <strong>dmat2x3</strong> <strong>dmat2x4</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>dmat3x2</strong> <strong>dmat3x3</strong> <strong>dmat3x4</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>dmat4x2</strong> <strong>dmat4x3</strong> <strong>dmat4x4</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>lowp</strong> <strong>mediump</strong> <strong>highp</strong> <strong>precision</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>sampler1D</strong> <strong>sampler1DShadow</strong> <strong>sampler1DArray</strong> <strong>sampler1DArrayShadow</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>isampler1D</strong> <strong>isampler1DArray</strong> <strong>usampler1D</strong> <strong>usampler1DArray</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>sampler2D</strong> <strong>sampler2DShadow</strong> <strong>sampler2DArray</strong> <strong>sampler2DArrayShadow</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>isampler2D</strong> <strong>isampler2DArray</strong> <strong>usampler2D</strong> <strong>usampler2DArray</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>sampler2DRect</strong> <strong>sampler2DRectShadow</strong> <strong>isampler2DRect</strong> <strong>usampler2DRect</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>sampler2DMS</strong> <strong>isampler2DMS</strong> <strong>usampler2DMS</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>sampler2DMSArray</strong> <strong>isampler2DMSArray</strong> <strong>usampler2DMSArray</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>sampler3D</strong> <strong>isampler3D</strong> <strong>usampler3D</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>samplerCube</strong> <strong>samplerCubeShadow</strong> <strong>isamplerCube</strong> <strong>usamplerCube</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>samplerCubeArray</strong> <strong>samplerCubeArrayShadow</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>isamplerCubeArray</strong> <strong>usamplerCubeArray</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>samplerBuffer</strong> <strong>isamplerBuffer</strong> <strong>usamplerBuffer</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>image1D</strong> <strong>iimage1D</strong> <strong>uimage1D</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>image1DArray</strong> <strong>iimage1DArray</strong> <strong>uimage1DArray</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>image2D</strong> <strong>iimage2D</strong> <strong>uimage2D</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>image2DArray</strong> <strong>iimage2DArray</strong> <strong>uimage2DArray</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>image2DRect</strong> <strong>iimage2DRect</strong> <strong>uimage2DRect</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>image2DMS</strong> <strong>iimage2DMS</strong> <strong>uimage2DMS</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>image2DMSArray</strong> <strong>iimage2DMSArray</strong> <strong>uimage2DMSArray</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>image3D</strong> <strong>iimage3D</strong> <strong>uimage3D</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>imageCube</strong> <strong>iimageCube</strong> <strong>uimageCube</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>imageCubeArray</strong> <strong>iimageCubeArray</strong> <strong>uimageCubeArray</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>imageBuffer</strong> <strong>iimageBuffer</strong> <strong>uimageBuffer</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>struct</strong></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>In addition, when targeting Vulkan, the following keywords also exist:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>texture1D</strong> <strong>texture1DArray</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>itexture1D</strong> <strong>itexture1DArray</strong> <strong>utexture1D</strong> <strong>utexture1DArray</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>texture2D</strong> <strong>texture2DArray</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>itexture2D</strong> <strong>itexture2DArray</strong> <strong>utexture2D</strong> <strong>utexture2DArray</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>texture2DRect</strong> <strong>itexture2DRect</strong> <strong>utexture2DRect</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>texture2DMS</strong> <strong>itexture2DMS</strong> <strong>utexture2DMS</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>texture2DMSArray</strong> <strong>itexture2DMSArray</strong> <strong>utexture2DMSArray</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>texture3D</strong> <strong>itexture3D</strong> <strong>utexture3D</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>textureCube</strong> <strong>itextureCube</strong> <strong>utextureCube</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>textureCubeArray</strong> <strong>itextureCubeArray</strong> <strong>utextureCubeArray</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>textureBuffer</strong> <strong>itextureBuffer</strong> <strong>utextureBuffer</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>sampler</strong> <strong>samplerShadow</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>subpassInput</strong> <strong>isubpassInput</strong> <strong>usubpassInput</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>subpassInputMS</strong> <strong>isubpassInputMS</strong> <strong>usubpassInputMS</strong></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>The following are the keywords reserved for future use.
+Using them will result in a compile-time error:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>common</strong> <strong>partition</strong> <strong>active</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>asm</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>class</strong> <strong>union</strong> <strong>enum</strong> <strong>typedef</strong> <strong>template</strong> <strong>this</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>resource</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>goto</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>inline</strong> <strong>noinline</strong> <strong>public</strong> <strong>static</strong> <strong>extern</strong> <strong>external</strong> <strong>interface</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>long</strong> <strong>short</strong> <strong>half</strong> <strong>fixed</strong> <strong>unsigned</strong> <strong>superp</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>input</strong> <strong>output</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>hvec2</strong> <strong>hvec3</strong> <strong>hvec4</strong> <strong>fvec2</strong> <strong>fvec3</strong> <strong>fvec4</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>filter</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>sizeof</strong> <strong>cast</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>namespace</strong> <strong>using</strong></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><strong>sampler3DRect</strong></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>In addition, all identifiers containing two consecutive underscores (__)
+are reserved for use by underlying software layers.
+Defining such a name in a shader does not itself result in an error, but may
+result in unintended behaviors that stem from having multiple definitions of
+the same name.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="identifiers"><a class="anchor" href="#identifiers"></a>Identifiers</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Identifiers are used for variable names, function names, structure names,
+and field selectors (field selectors select components of
+<code><a href="operators.html#vector-components" class="xref page">vectors</a></code> and <code><a href="operators.html#matrix-components" class="xref page">matrices</a></code>,
+similarly to structure members).
+Identifiers have the form:</p>
+</div>
+<div class="openblock bnf">
+<div class="content">
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><em>identifier</em> : </dt>
+<dd>
+<p><em>nondigit</em><br>
+<em>identifier</em> <em>nondigit</em><br>
+<em>identifier</em> <em>digit</em></p>
+</dd>
+<dt class="hdlist1"><em>nondigit</em> : one of </dt>
+<dd>
+<p><strong>_</strong> <strong>a b c d e f g h i j k l m n o p q r s t u v w x y z</strong><br>
+<strong>A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</strong></p>
+</dd>
+<dt class="hdlist1"><em>digit</em> : one of </dt>
+<dd>
+<p><strong>0 1 2 3 4 5 6 7 8 9</strong></p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Identifiers starting with &#8220;gl_&#8221; are reserved, and
+in general, may not be declared in a shader;
+this results in a compile-time error.
+However, as noted in the specification, there are some cases where
+previously declared variables can be redeclared, and predeclared &#8220;gl_&#8221;
+names are allowed to be redeclared in a shader only for these specific
+purposes.</p>
+</div>
+<div class="paragraph">
+<p>Implementations must support identifier lengths of up to 1024 characters.
+Implementations are allowed to generate an error for an identifier of length
+greater than 1024 characters, but are also allowed to support lengths
+greater than 1024.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="definitions"><a class="anchor" href="#definitions"></a>Definitions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Some language rules described below depend on the following definitions.</p>
+</div>
+<div class="sect2">
+<h3 id="static-use"><a class="anchor" href="#static-use"></a>Static Use</h3>
+<div class="paragraph">
+<p>A shader contains a <em>static use</em> of a variable <em>x</em> if, after preprocessing,
+the shader contains a statement that would access any part of <em>x</em>,
+whether or not flow of control will cause that statement to be executed.
+Such a variable is referred to as being <em>statically used</em>. If the access is a
+write then <em>x</em> is further said to be <em>statically assigned</em>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="dynamically-uniform-expressions-and-uniform-control-flow"><a class="anchor" href="#dynamically-uniform-expressions-and-uniform-control-flow"></a>Dynamically Uniform Expressions and Uniform Control Flow</h3>
+<div class="paragraph">
+<p>Some operations require an expression to be <em>dynamically uniform</em>, or that
+it be located in <em>uniform control flow</em>.
+These requirements are defined by the following set of definitions.</p>
+</div>
+<div class="paragraph">
+<p>An <em>invocation</em> is a single execution of <em>main()</em> for a particular stage,
+operating only on the amount of data explicitly exposed within that stage&#8217;s
+shaders.
+(Any implicit operation on additional instances of data would comprise
+additional invocations.) For example, in compute execution models, a single
+invocation operates only on a single work item, or, in a vertex execution
+model, a single invocation operates only on a single vertex.</p>
+</div>
+<div class="paragraph">
+<p>An <em>invocation group</em> is the complete set of invocations collectively
+processing a particular compute workgroup or graphical operation, where the
+scope of a "graphical operation" is implementation-dependent, but at least
+as large as a single triangle or patch, and at most as large as a single
+rendering command, as defined by the client API.</p>
+</div>
+<div class="paragraph">
+<p>Within a single invocation, a single shader statement can be executed
+multiple times, giving multiple <em>dynamic instances</em> of that instruction.
+This can happen when the instruction is executed in a loop, or in a function
+called from multiple call sites, or combinations of multiple of these.
+Different loop iterations and different dynamic function-call-site chains
+yield different dynamic instances of such an instruction.
+Dynamic instances are distinguished by their control-flow path within an
+invocation, not by which invocation executed it.
+That is, different invocations of <em>main()</em> execute the same dynamic
+instances of an instruction when they follow the same control-flow path.</p>
+</div>
+<div class="paragraph">
+<p>An expression is <em>dynamically uniform</em> for a dynamic instance consuming it
+when its value is the same for all invocations (in the invocation group)
+that execute that dynamic instance.</p>
+</div>
+<div class="paragraph">
+<p><em>Uniform control flow</em> (or converged control flow) occurs when all
+invocations in the invocation group execute the same control-flow path (and
+hence the same sequence of dynamic instances of instructions).
+Uniform control flow is the initial state at the entry into <em>main()</em>, and
+lasts until a conditional branch takes different control paths for different
+invocations (non-uniform or divergent control flow).
+Such divergence can reconverge, with all the invocations once again
+executing the same control-flow path, and this re-establishes the existence
+of uniform control flow.
+If control flow is uniform upon entry into a selection or loop, and all
+invocations in the invocation group subsequently leave that selection or
+loop, then control flow reconverges to be uniform.</p>
+</div>
+<div class="paragraph">
+<p>For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">main()
+{
+    float a = ...; // this is uniform control flow
+    if (a &lt; b) {   // this expression is true for some fragments, not all
+        ...;       // non-uniform control flow
+    } else {
+        ...;       // non-uniform control flow
+    }
+    ...;           // uniform control flow again
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Other examples of non-uniform control flow can occur within loops where some
+invocations execute iterations that others do not, after conditional breaks,
+continues, early returns, and after fragment discards, when the condition is
+true for some fragments but not others.</p>
+</div>
+<div class="paragraph">
+<p>Note that constant expressions are trivially dynamically uniform.
+It follows that typical loop counters based on these are also dynamically
+uniform.</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

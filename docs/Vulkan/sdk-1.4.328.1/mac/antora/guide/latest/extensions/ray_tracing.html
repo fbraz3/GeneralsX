@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Ray Tracing :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:guide" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="guide" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Guide</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Vulkan Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Logistics Overview</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../what_is_vulkan.html">What is Vulkan?</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../what_vulkan_can_do.html">What Vulkan Can Do</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../vulkan_spec.html">Vulkan Specification</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../platforms.html">Platforms</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../checking_for_support.html">Checking For Vulkan Support</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../versions.html">Versions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../vulkan_release_summary.html">Vulkan Release Summary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../what_is_spirv.html">What is SPIR-V</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../portability_initiative.html">Portability Initiative</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../vulkan_cts.html">Vulkan CTS</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../development_tools.html">Development Tools</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../validation_overview.html">Vulkan Validation Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../decoder_ring.html">Vulkan Decoder Ring</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Using Vulkan</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../loader.html">Loader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../layers.html">Layers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../querying_extensions_features.html">Querying Properties, Extensions, Features, Limits, and Formats</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../enabling_extensions.html">Enabling Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../enabling_features.html">Enabling Features</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../spirv_extensions.html">Using SPIR-V Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../formats.html">Formats</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../queues.html">Queues</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../wsi.html">Window System Integration (WSI)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../pnext_and_stype.html">pNext and sType</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../synchronization.html">Synchronization</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="VK_KHR_synchronization2.html">VK_KHR_synchronization2</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../swapchain_semaphore_reuse.html">Swapchain Semaphore Reuse</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../synchronization_examples.html">Synchronization Examples</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../memory_allocation.html">Memory Allocation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../sparse_resources.html">Sparse Resources</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../protected.html">Protected Memory</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../buffer_device_address.html">Buffer Device Address</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../pipeline_cache.html">Pipeline Cache</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../threading.html">Threading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../depth.html">Depth</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../primitive_topology.html">Primitive Topology</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../mapping_data_to_shaders.html">Mapping Data to Shaders</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../storage_image_and_texel_buffers.html">Storage Image and Texel Buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../vertex_input_data_processing.html">Vertex Input Data Processing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../descriptor_arrays.html">Descriptor Arrays</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../descriptor_dynamic_offset.html">Descriptor Dynamic Offset</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../location_component_interface.html">Location and Component Interface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../push_constants.html">Push Constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../ways_to_provide_spirv.html">Ways to Provide SPIR-V</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../robustness.html">Robustness</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../dynamic_state.html">Pipeline Dynamic State</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../dynamic_state_map.html">Dynamic State Map</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../subgroups.html">Subgroups</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../shader_memory_layout.html">Shader Memory Layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../atomics.html">Atomics</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../image_copies.html">Image Copies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../common_pitfalls.html">Common Pitfalls for New Vulkan Developers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../hlsl.html">HLSL in Vulkan</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../high_level_shader_language_comparison.html">Vulkan High Level Shader Language Comparison</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">When and Why to use Extensions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="cleanup.html">Cleanup Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="device_groups.html">Device Groups</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="external.html">External Memory and Synchronization</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="ray_tracing.html">Ray Tracing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="shader_features.html">Shader Features</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="translation_layer_extensions.html">Translation Layer Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_descriptor_indexing.html">VK_EXT_descriptor_indexing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_inline_uniform_block.html">VK_EXT_inline_uniform_block</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_memory_priority.html">VK_EXT_memory_priority</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_descriptor_update_template.html">VK_KHR_descriptor_update_template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_draw_indirect_count.html">VK_KHR_draw_indirect_count</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_image_format_list.html">VK_KHR_image_format_list</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_imageless_framebuffer.html">VK_KHR_imageless_framebuffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_sampler_ycbcr_conversion.html">VK_KHR_sampler_ycbcr_conversion</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_subgroup_uniform_control_flow.html">VK_KHR_shader_subgroup_uniform_control_flow</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_debug_utils.html">VK_KHR_debug_utils</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Guide</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Guide</a></li>
+    <li>When and Why to use Extensions</li>
+    <li><a href="ray_tracing.html">Ray Tracing</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Guide/antora/modules/ROOT/pages/extensions/ray_tracing.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Ray Tracing</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>A set of five interrelated extensions provide ray tracing support in the Vulkan API.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_acceleration_structure.html">VK_KHR_acceleration_structure</a></p>
+</li>
+<li>
+<p><a href="https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_ray_tracing_pipeline.html">VK_KHR_ray_tracing_pipeline</a></p>
+</li>
+<li>
+<p><a href="https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_ray_query.html">VK_KHR_ray_query</a></p>
+</li>
+<li>
+<p><a href="https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_pipeline_library.html">VK_KHR_pipeline_library</a></p>
+</li>
+<li>
+<p><a href="https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_deferred_host_operations.html">VK_KHR_deferred_host_operations</a></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Additional SPIR-V and GLSL extensions also expose the necessary programmable functionality for shaders:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="http://htmlpreview.github.io/?https://github.com/KhronosGroup/SPIRV-Registry/blob/main/extensions/KHR/SPV_KHR_ray_tracing.html">SPV_KHR_ray_tracing</a></p>
+</li>
+<li>
+<p><a href="http://htmlpreview.github.io/?https://github.com/KhronosGroup/SPIRV-Registry/blob/main/extensions/KHR/SPV_KHR_ray_query.html">SPV_KHR_ray_query</a></p>
+</li>
+<li>
+<p><a href="https://github.com/KhronosGroup/GLSL/blob/master/extensions/ext/GLSL_EXT_ray_tracing.txt">GLSL_EXT_ray_tracing</a></p>
+</li>
+<li>
+<p><a href="https://github.com/KhronosGroup/GLSL/blob/master/extensions/ext/GLSL_EXT_ray_query.txt">GLSL_EXT_ray_query</a></p>
+</li>
+<li>
+<p><a href="https://github.com/KhronosGroup/GLSL/blob/master/extensions/ext/GLSL_EXT_ray_flags_primitive_culling.txt">GLSL_EXT_ray_flags_primitive_culling</a></p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Many ray tracing applications require large contiguous memory
+allocations. Due to the limited size of the address space, this can prove
+challenging on 32-bit systems. Whilst implementations are free to expose ray
+tracing extensions on 32-bit systems, applications may encounter intermittent
+memory-related issues such as allocation failures due to fragmentation.
+Additionally, some implementations may opt not to expose ray tracing
+extensions on 32-bit drivers.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="VK_KHR_acceleration_structure"><a class="anchor" href="#VK_KHR_acceleration_structure"></a>VK_KHR_acceleration_structure</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Acceleration structures are an implementation-dependent opaque representation
+of geometric objects, which are used for ray tracing.
+By building objects into acceleration structures, ray tracing can be performed
+against a known data layout, and in an efficient manner.
+The <code>VK_KHR_acceleration_structure</code> extension introduces functionality to build
+and copy acceleration structures, along with functionality to support
+serialization to/from memory.</p>
+</div>
+<div class="paragraph">
+<p>Acceleration structures are required for both ray pipelines
+(<code>VK_KHR_ray_tracing_pipeline</code>) and ray queries (<code>VK_KHR_ray_query</code>).</p>
+</div>
+<div class="paragraph">
+<p>To create an acceleration structure:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Populate an instance of <code>VkAccelerationStructureBuildGeometryInfoKHR</code> with
+the acceleration structure type, geometry types, counts, and maximum sizes.
+The geometry data does not need to be populated at this point.</p>
+</li>
+<li>
+<p>Call <code>vkGetAccelerationStructureBuildSizesKHR</code> to get the memory size
+requirements to perform a build.</p>
+</li>
+<li>
+<p>Allocate buffers of sufficient size to hold the acceleration structure
+(<code>VkAccelerationStructureBuildSizesKHR::accelerationStructureSize</code>) and build
+scratch buffer (<code>VkAccelerationStructureBuildSizesKHR::buildScratchSize</code>)</p>
+</li>
+<li>
+<p>Call <code>vkCreateAccelerationStructureKHR</code> to create an acceleration structure
+at a specified location within a buffer</p>
+</li>
+<li>
+<p>Call <code>vkCmdBuildAccelerationStructuresKHR</code> to build the acceleration structure.
+The previously populated <code>VkAccelerationStructureBuildGeometryInfoKHR</code> should
+be used as a parameter here, along with the destination acceleration structure
+object, build scratch buffer, and geometry data pointers (for vertices,
+indices and transforms)</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="VK_KHR_ray_tracing_pipeline"><a class="anchor" href="#VK_KHR_ray_tracing_pipeline"></a>VK_KHR_ray_tracing_pipeline</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>VK_KHR_ray_tracing_pipeline</code> extension introduces ray tracing pipelines.
+This new form of rendering pipeline is independent of the traditional
+rasterization pipeline. Ray tracing pipelines utilize a dedicated set of shader
+stages, distinct from the traditional vertex/geometry/fragment stages. Ray tracing
+pipelines also utilize dedicated commands to submit rendering work
+(<code>vkCmdTraceRaysKHR</code> and <code>vkCmdTraceRaysIndirectKHR</code>). These commands can be
+regarded as somewhat analagous to the drawing commands in traditional
+rasterization pipelines (<code>vkCmdDraw</code> and <code>vkCmdDrawIndirect</code>).</p>
+</div>
+<div class="paragraph">
+<p>To trace rays:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Bind a ray tracing pipeline using <code>vkCmdBindPipeline</code> with
+<code>VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR</code></p>
+</li>
+<li>
+<p>Call <code>vkCmdTraceRaysKHR</code> or <code>vkCmdTraceRaysIndirectKHR</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Ray tracing pipelines introduce several new shader domains. These are described
+below:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://www.khronos.org/assets/uploads/blogs/2020-The-ray-tracing-mechanism-achieved-through-the-five-shader-stages-2.jpg" alt="Ray Tracing Shaders">
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Ray generation shader represents the starting point for ray tracing. The ray tracing commands
+(<code>vkCmdTraceRaysKHR</code> and <code>vkCmdTraceRaysIndirectKHR</code>) launch a grid of shader invocations,
+similar to compute shaders. A ray generation shader constructs rays and begins tracing via
+the invocation of traceRayEXT(). Additionally, it processes the results from the hit group.</p>
+</li>
+<li>
+<p>Closest hit shaders are executed when the ray intersects the closest geometry. An application
+can support any number of closest hit shaders. They are typically used for carrying out
+lighting calculations and can recursively trace additional rays.</p>
+</li>
+<li>
+<p>Miss shaders are executed instead of a closest hit shader when a ray does not intersect any
+geometry during traversal. A common use for a miss shader is to sample an environment map.</p>
+</li>
+<li>
+<p>The built-in intersection test is a ray-triangle test. Intersection shaders allow for custom
+intersection handling.</p>
+</li>
+<li>
+<p>Similar to the closest hit shader, any-hit shaders are executed after an intersection is
+reported. The difference is that an any-hit shader are be invoked for any intersection in
+the ray interval defined by [tmin, tmax] and not the closest one to the origin of the ray.
+The any-hit shader is used to filter an intersection and therefore is often used to
+implement alpha-testing.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="VK_KHR_ray_query"><a class="anchor" href="#VK_KHR_ray_query"></a>VK_KHR_ray_query</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>VK_KHR_ray_query</code> extension provides support for tracing rays from all
+shader types, including graphics, compute, and ray tracing pipelines.</p>
+</div>
+<div class="paragraph">
+<p>Ray query requires that ray traversal code is explicitly included within the
+shader. This differs from ray tracing pipelines, where ray generation,
+intersection testing and handling of ray-geometry hits are represented as
+separate shader stages. Consequently, whilst ray query allows rays to be traced
+from a wider range of shader stages, it also restricts the range of optimizations
+that a Vulkan implementation might apply to the scheduling and tracing of rays.</p>
+</div>
+<div class="paragraph">
+<p>The extension does not introduce additional API entry-points. It simply provides
+API support for the related SPIR-V and GLSL extensions (<code>SPV_KHR_ray_query</code> and
+<code>GLSL_EXT_ray_query</code>).</p>
+</div>
+<div class="paragraph">
+<p>The functionality provided by <code>VK_KHR_ray_query</code> is complementary to that
+provided by <code>VK_KHR_ray_tracing_pipeline</code>, and the two extensions can be used
+together.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">rayQueryEXT rq;
+
+rayQueryInitializeEXT(rq, accStruct, gl_RayFlagsTerminateOnFirstHitEXT, cullMask, origin, tMin, direction, tMax);
+
+// Traverse the acceleration structure and store information about the first intersection (if any)
+rayQueryProceedEXT(rq);
+
+if (rayQueryGetIntersectionTypeEXT(rq, true) == gl_RayQueryCommittedIntersectionNoneEXT) {
+    // Not in shadow
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="VK_KHR_pipeline_library"><a class="anchor" href="#VK_KHR_pipeline_library"></a>VK_KHR_pipeline_library</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><code>VK_KHR_pipeline_library</code> introduces pipeline libraries. A pipeline library is
+a special pipeline that was created using the <code>VK_PIPELINE_CREATE_LIBRARY_BIT_KHR</code>
+and cannot be bound and used directly. Instead, these are pipelines that
+represent a collection of shaders, shader groups and related state which can be
+linked into other pipelines.</p>
+</div>
+<div class="paragraph">
+<p><code>VK_KHR_pipeline_library</code> does not introduce any new API functions directly, or
+define how to create a pipeline library. Instead, this functionality is left to
+other extensions which make use of the functionality provided by
+<code>VK_KHR_pipeline_library</code>.
+Currently, the only example of this is <code>VK_KHR_ray_tracing_pipeline</code>.
+<code>VK_KHR_pipeline_library</code> was defined as a separate extension to allow for the
+possibility of using the same functionality in other extensions in the future
+without introducing a dependency on the ray tracing extensions.</p>
+</div>
+<div class="paragraph">
+<p>To create a ray tracing pipeline library:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Set <code>VK_PIPELINE_CREATE_LIBRARY_BIT_KHR</code> in <code>VkRayTracingPipelineCreateInfoKHR::flags</code>
+when calling <code>vkCreateRayTracingPipelinesKHR</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>To link ray tracing pipeline libraries into a full pipeline:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Set <code>VkRayTracingPipelineCreateInfoKHR::pLibraryInfo</code> to point to an instance
+of <code>VkPipelineLibraryCreateInfoKHR</code></p>
+</li>
+<li>
+<p>Populate <code>VkPipelineLibraryCreateInfoKHR::pLibraries</code> with the pipeline
+libraries to be used as inputs to linking, and set <code>VkPipelineLibraryCreateInfoKHR::libraryCount</code>
+to the appropriate value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="VK_KHR_deferred_host_operations"><a class="anchor" href="#VK_KHR_deferred_host_operations"></a>VK_KHR_deferred_host_operations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><code>VK_KHR_deferred_host_operations</code> introduces a mechanism for distributing expensive
+CPU tasks across multiple threads. Rather than introduce a thread pool into Vulkan
+drivers, <code>VK_KHR_deferred_host_operations</code> is designed to allow an application to
+create and manage the threads.</p>
+</div>
+<div class="paragraph">
+<p>As with <code>VK_KHR_pipeline_library</code>, <code>VK_KHR_deferred_host_operations</code> was defined
+as a separate extension to allow for the possibility of using the same functionality
+in other extensions in the future without introducing a dependency on the ray
+tracing extensions.</p>
+</div>
+<div class="paragraph">
+<p>Only operations that are specifically noted as supporting deferral may be deferred.
+Currently the only operations which support deferral are <code>vkCreateRayTracingPipelinesKHR</code>,
+<code>vkBuildAccelerationStructuresKHR</code>, <code>vkCopyAccelerationStructureKHR</code>,
+<code>vkCopyMemoryToAccelerationStructureKHR</code>, and <code>vkCopyAccelerationStructureToMemoryKHR</code></p>
+</div>
+<div class="paragraph">
+<p>To request that an operation is deferred:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Create a <code>VkDeferredOperationKHR</code> object by calling <code>vkCreateDeferredOperationKHR</code></p>
+</li>
+<li>
+<p>Call the operation that you wish to be deferred, passing the <code>VkDeferredOperationKHR</code>
+as a parameter.</p>
+</li>
+<li>
+<p>Check the <code>VkResult</code> returned by the above operation:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_OPERATION_DEFERRED_KHR</code> indicates that the operation was successfully
+deferred</p>
+</li>
+<li>
+<p><code>VK_OPERATION_NOT_DEFERRED_KHR</code> indicates that the operation successfully
+completed immediately</p>
+</li>
+<li>
+<p>Any error value indicates that an error occurred</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>To join a thread to a deferred operation, and contribute CPU time to progressing
+the operation:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Call <code>vkDeferredOperationJoinKHR</code> from each thread that you wish to participate
+in the operation</p>
+</li>
+<li>
+<p>Check the <code>VkResult</code> returned by <code>vkDeferredOperationJoinKHR</code>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code> indicates that the operation is complete</p>
+</li>
+<li>
+<p><code>VK_THREAD_DONE_KHR</code> indicates that there is no more work to assign to the
+calling thread, but that other threads may still have some additional work to
+complete. The current thread should not attempt to re-join by calling
+<code>vkDeferredOperationJoinKHR</code> again</p>
+</li>
+<li>
+<p><code>VK_THREAD_IDLE_KHR</code> indicates that there is <strong>temporarily</strong> no work to assign
+to the calling thread, but that additional work may become available in the
+future. The current thread may perform some other useful work on the calling
+thread, and re-joining by calling <code>vkDeferredOperationJoinKHR</code> again later
+may prove beneficial</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>After an operation has completed (i.e. <code>vkDeferredOperationJoinKHR</code> has returned
+<code>VK_SUCCESS</code>), call <code>vkGetDeferredOperationResultKHR</code> to get the result of the
+operation.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="ray-tracing-synchronization"><a class="anchor" href="#ray-tracing-synchronization"></a>Synchronization for Ray Tracing</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>For trace or query calls in a shader, use
+<code>VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR</code> with the relevant shader
+stage(s) for the acceleration structure</p>
+</li>
+<li>
+<p>For accesses to the shader binding table in the ray tracing pipeline, use
+<code>VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR</code> with either
+<code>VK_ACCESS_SHADER_READ_BIT</code> or <code>VK_ACCESS_2_SHADER_BINDING_TABLE_READ_BIT_KHR</code></p>
+</li>
+<li>
+<p>For acceleration structure builds, use
+<code>VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR</code> with access bits
+corresponding to the resource being accessed:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Destination AS uses <code>VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR</code></p>
+</li>
+<li>
+<p>Source AS (e.g. for updates) uses <code>VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR</code></p>
+</li>
+<li>
+<p>Scratch buffers need both <code>VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR</code>
+and <code>VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR</code></p>
+</li>
+<li>
+<p>Vertex/Index/Instance/Transform buffers use <code>VK_ACCESS_SHADER_READ_BIT</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>For acceleration structure copy commands, use
+<code>VK_PIPELINE_STAGE_2_ACCELERATION_STRUCTURE_COPY_BIT_KHR</code> or
+<code>VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR</code>, again with access
+flags dependent on sources:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Destination AS uses <code>VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR</code></p>
+</li>
+<li>
+<p>Source AS uses <code>VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR</code></p>
+</li>
+<li>
+<p>Destination buffer uses <code>VK_ACCESS_TRANSFER_WRITE_BIT</code></p>
+</li>
+<li>
+<p>Source buffer uses <code>VK_ACCESS_TRANSFER_READ_BIT</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>For indirect trace calls, the indirect buffer is
+<code>VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT</code> with
+<code>VK_ACCESS_INDIRECT_COMMAND_READ_BIT</code></p>
+</li>
+<li>
+<p>For indirect acceleration structure builds, the indirect buffer is
+<code>VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR</code> with
+<code>VK_ACCESS_INDIRECT_COMMAND_READ_BIT</code></p>
+</li>
+<li>
+<p>For micromap builds, use <code>VK_PIPELINE_STAGE_2_MICROMAP_BUILD_BIT_EXT</code> with
+access bits corresponding to which resource is being accessed:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Destination micromap uses <code>VK_ACCESS_2_MICROMAP_WRITE_BIT_EXT</code></p>
+</li>
+<li>
+<p>Scratch buffers need both <code>VK_ACCESS_2_MICROMAP_WRITE_BIT_EXT</code> and
+<code>VK_ACCESS_2_MICROMAP_READ_BIT_EXT</code></p>
+</li>
+<li>
+<p>Input buffers use <code>VK_ACCESS_SHADER_READ_BIT</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>For micromap copy commands, use <code>VK_PIPELINE_STAGE_2_MICROMAP_BUILD_BIT_EXT</code>,
+again with access flags dependent on sources:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Destination micromap uses <code>VK_ACCESS_2_MICROMAP_WRITE_BIT_EXT</code></p>
+</li>
+<li>
+<p>Source micromap uses <code>VK_ACCESS_2_MICROMAP_READ_BIT_EXT</code></p>
+</li>
+<li>
+<p>Destination buffer uses <code>VK_ACCESS_TRANSFER_WRITE_BIT</code></p>
+</li>
+<li>
+<p>Source buffer uses <code>VK_ACCESS_TRANSFER_READ_BIT</code></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Unlike other copy operations, <code>VK_PIPELINE_STAGE_TRANSFER_BIT</code> does not
+work for acceleration structure copies.</p>
+</div>
+<div class="paragraph">
+<p>Use of <code>VK_PIPELINE_STAGE_2_ACCELERATION_STRUCTURE_COPY_BIT_KHR</code>/
+<code>VK_ACCESS_2_SHADER_BINDING_TABLE_READ_BIT_KHR</code> requires
+<code>VK_KHR_ray_tracing_maintenance1</code>.</p>
+</div>
+<div class="paragraph">
+<p>Use of <code>VK_PIPELINE_STAGE_2_MICROMAP_BUILD_BIT_EXT</code>/
+<code>VK_ACCESS_2_MICROMAP_WRITE_BIT_EXT</code>/<code>VK_ACCESS_2_MICROMAP_READ_BIT_EXT</code>
+requires <code>VK_EXT_opacity_micromap</code>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="ray-tracing-best-practices"><a class="anchor" href="#ray-tracing-best-practices"></a>Ray Tracing Best Practices</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_minimize_the_number_of_concurrently_active_ray_query_objects"><a class="anchor" href="#_minimize_the_number_of_concurrently_active_ray_query_objects"></a>Minimize the Number of Concurrently Active Ray Query Objects</h3>
+<div class="paragraph">
+<p>Ray query objects may be expensive in terms of thread private storage, so for
+performance, it&#8217;s best to use as few as possible. In most cases it should be
+possible to use a single ray query object even if tracing multiple rays since a
+terminated ray that&#8217;s issuing a new ray can use the same object. Multiple ray
+queries in the same shader should only be needed when multiple traversals need
+to be active concurrently, and shaders should be designed to minimize the number
+of active traversals.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_minimize_the_size_of_ray_payloads_hit_attributes_and_callable_data"><a class="anchor" href="#_minimize_the_size_of_ray_payloads_hit_attributes_and_callable_data"></a>Minimize the Size of Ray Payloads, Hit Attributes and Callable Data</h3>
+<div class="paragraph">
+<p>The ray tracing shader stages can communicate parameters and results using ray
+payload structures between all traversal stages, hit attribute structures
+from the traversal control shaders, and callable data structures for callable
+shaders.</p>
+</div>
+<div class="paragraph">
+<p>All three of these structures consume driver-managed memory, the total quantity of
+which may scale based on the size of the structures themselves, the number
+of concurrently active rays, and additional factors such as levels of recursion.</p>
+</div>
+<div class="paragraph">
+<p>Shaders should aim to keep the size of these structures low.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_prefer_device_local_memory"><a class="anchor" href="#_prefer_device_local_memory"></a>Prefer Device-Local Memory</h3>
+<div class="paragraph">
+<p>While acceleration structures can be built on any Vulkan memory heap,
+tracing rays on accelerations structures located in device-local memory should
+be expected to deliver the best performance, and should be preferred. The use of
+host-local memory (i.e. GPU accessible system memory) may be necessary in
+situations where applications are limited by the quantity of available
+device-local memory, but this is unlikely to deliver equivalent performance to
+tracing rays on device-local memory.</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Depth :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../_/css/site.css">
+    <link rel="stylesheet" href="../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../.."><img class="navbar-item" alt="Vulkan White Label" src="../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:guide" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="guide" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="index.html">Vulkan Guide</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="index.html">Vulkan Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Logistics Overview</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="what_is_vulkan.html">What is Vulkan?</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="what_vulkan_can_do.html">What Vulkan Can Do</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="vulkan_spec.html">Vulkan Specification</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="platforms.html">Platforms</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="checking_for_support.html">Checking For Vulkan Support</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="versions.html">Versions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="vulkan_release_summary.html">Vulkan Release Summary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="what_is_spirv.html">What is SPIR-V</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="portability_initiative.html">Portability Initiative</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="vulkan_cts.html">Vulkan CTS</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="development_tools.html">Development Tools</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="validation_overview.html">Vulkan Validation Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="decoder_ring.html">Vulkan Decoder Ring</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Using Vulkan</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="loader.html">Loader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="layers.html">Layers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="querying_extensions_features.html">Querying Properties, Extensions, Features, Limits, and Formats</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="enabling_extensions.html">Enabling Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="enabling_features.html">Enabling Features</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="spirv_extensions.html">Using SPIR-V Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="formats.html">Formats</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="queues.html">Queues</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="wsi.html">Window System Integration (WSI)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="pnext_and_stype.html">pNext and sType</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="synchronization.html">Synchronization</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="extensions/VK_KHR_synchronization2.html">VK_KHR_synchronization2</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="swapchain_semaphore_reuse.html">Swapchain Semaphore Reuse</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="synchronization_examples.html">Synchronization Examples</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="memory_allocation.html">Memory Allocation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="sparse_resources.html">Sparse Resources</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="protected.html">Protected Memory</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="buffer_device_address.html">Buffer Device Address</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="pipeline_cache.html">Pipeline Cache</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="threading.html">Threading</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="depth.html">Depth</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="primitive_topology.html">Primitive Topology</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="mapping_data_to_shaders.html">Mapping Data to Shaders</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="storage_image_and_texel_buffers.html">Storage Image and Texel Buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="vertex_input_data_processing.html">Vertex Input Data Processing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="descriptor_arrays.html">Descriptor Arrays</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="descriptor_dynamic_offset.html">Descriptor Dynamic Offset</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="location_component_interface.html">Location and Component Interface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="push_constants.html">Push Constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="ways_to_provide_spirv.html">Ways to Provide SPIR-V</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="robustness.html">Robustness</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="dynamic_state.html">Pipeline Dynamic State</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="dynamic_state_map.html">Dynamic State Map</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="subgroups.html">Subgroups</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="shader_memory_layout.html">Shader Memory Layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="atomics.html">Atomics</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="image_copies.html">Image Copies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="common_pitfalls.html">Common Pitfalls for New Vulkan Developers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="hlsl.html">HLSL in Vulkan</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="high_level_shader_language_comparison.html">Vulkan High Level Shader Language Comparison</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">When and Why to use Extensions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/cleanup.html">Cleanup Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/device_groups.html">Device Groups</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/external.html">External Memory and Synchronization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/ray_tracing.html">Ray Tracing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/shader_features.html">Shader Features</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/translation_layer_extensions.html">Translation Layer Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_EXT_descriptor_indexing.html">VK_EXT_descriptor_indexing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_EXT_inline_uniform_block.html">VK_EXT_inline_uniform_block</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_EXT_memory_priority.html">VK_EXT_memory_priority</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_descriptor_update_template.html">VK_KHR_descriptor_update_template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_draw_indirect_count.html">VK_KHR_draw_indirect_count</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_image_format_list.html">VK_KHR_image_format_list</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_imageless_framebuffer.html">VK_KHR_imageless_framebuffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_sampler_ycbcr_conversion.html">VK_KHR_sampler_ycbcr_conversion</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_shader_subgroup_uniform_control_flow.html">VK_KHR_shader_subgroup_uniform_control_flow</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_debug_utils.html">VK_KHR_debug_utils</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Guide</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Vulkan Guide</a></li>
+    <li>Using Vulkan</li>
+    <li><a href="depth.html">Depth</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Guide/antora/modules/ROOT/pages/depth.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Depth</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>The term <code>depth</code> is used in various spots in the <a href="vulkan_spec.html" class="xref page">Vulkan Spec</a>. This chapter is aimed to give an overview of the various "depth" terminology used in Vulkan. Some basic knowledge of 3D graphics is needed to get the most out of this chapter.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>While stencil is closely related depth, this chapter does not aim to cover it outside the realm of API names</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#graphics-pipeline">Graphics Pipeline</a></p>
+</li>
+<li>
+<p><a href="#depth-formats">Depth Formats</a></p>
+</li>
+<li>
+<p><a href="#depth-buffer-as-a-vkimage">Depth Buffer as a VkImage</a></p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#layout">Layout</a></p>
+</li>
+<li>
+<p><a href="#clearing">Clearing</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><a href="#pre-rasterization">Pre-rasterization</a></p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#primitive-clipping">Primitive Clipping</a></p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#user-defined-clipping-and-culling">User defined clipping and culling</a></p>
+</li>
+<li>
+<p><a href="#porting-from-opengl">Porting from OpenGL</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><a href="#viewport-transformation">Viewport Transformation</a></p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#depth-range">Depth Range</a></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><a href="#rasterization">Rasterization</a></p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#depth-bias">Depth Bias</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><a href="#post-rasterization">Post-rasterization</a></p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#fragment-shader">Fragment Shader</a></p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#conservative-depth">Conservative depth</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><a href="#per-sample-processing-and-coverage-mask">Per-sample processing and coverage mask</a></p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#resolving-depth-buffer">Resolving depth buffer</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><a href="#depth-bounds">Depth Bounds</a></p>
+</li>
+<li>
+<p><a href="#depth-test">Depth Test</a></p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#depth-compare-operation">Depth Compare Operation</a></p>
+</li>
+<li>
+<p><a href="#depth-buffer-writes">Depth Buffer Writes</a></p>
+</li>
+<li>
+<p><a href="#depth-clamping">Depth Clamping</a></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="graphics-pipeline"><a class="anchor" href="#graphics-pipeline"></a>Graphics Pipeline</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The concept of "depth" is only used for <a href="what_vulkan_can_do.html" class="xref page">graphics pipelines</a> in Vulkan and doesn&#8217;t take effect until a draw call is submitted.</p>
+</div>
+<div class="paragraph">
+<p>Inside the <code>VkGraphicsPipelineCreateInfo</code> there are many different values related to <code>depth</code> that can be controlled. Some states are even <a href="dynamic_state.html" class="xref page">dynamic</a> as well.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="depth-formats"><a class="anchor" href="#depth-formats"></a>Depth Formats</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>There are a few different depth formats and an implementation may expose support for in Vulkan.</p>
+</div>
+<div class="paragraph">
+<p>For <strong>reading</strong> from a depth image only <code>VK_FORMAT_D16_UNORM</code> and <code>VK_FORMAT_D32_SFLOAT</code> are required to support being read via sampling or blit operations.</p>
+</div>
+<div class="paragraph">
+<p>For <strong>writing</strong> to a depth image <code>VK_FORMAT_D16_UNORM</code> is required to be supported. From here at least one of (<code>VK_FORMAT_X8_D24_UNORM_PACK32</code> <strong>or</strong> <code>VK_FORMAT_D32_SFLOAT</code>) <strong>and</strong> (<code>VK_FORMAT_D24_UNORM_S8_UINT</code> <strong>or</strong> <code>VK_FORMAT_D32_SFLOAT_S8_UINT</code>) must also be supported. This will involve some extra logic when trying to find which format to use if <strong>both</strong> the depth and stencil are needed in the same format.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Example of query logic
+VkFormatProperties properties;
+
+vkGetPhysicalDeviceFormatProperties(physicalDevice, VK_FORMAT_D24_UNORM_S8_UINT, &amp;properties);
+bool d24s8_support = (properties.optimalTilingFeatures &amp; VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+
+vkGetPhysicalDeviceFormatProperties(physicalDevice, VK_FORMAT_D32_SFLOAT_S8_UINT, &amp;properties);
+bool d32s8_support = (properties.optimalTilingFeatures &amp; VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+
+assert(d24s8_support | d32s8_support); // will always support at least one</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="depth-buffer-as-a-vkimage"><a class="anchor" href="#depth-buffer-as-a-vkimage"></a>Depth Buffer as a VkImage</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The term "depth buffer" is used a lot when talking about graphics, but in Vulkan, it is just a <code>VkImage</code>/<code>VkImageView</code> that a <code>VkFramebuffer</code> can reference at draw time. When creating a <code>VkRenderPass</code> the <code>pDepthStencilAttachment</code> value points to the depth attachment in the framebuffer.</p>
+</div>
+<div class="paragraph">
+<p>In order to use <code>pDepthStencilAttachment</code> the backing <code>VkImage</code> must have been created with <code>VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code>.</p>
+</div>
+<div class="paragraph">
+<p>When performing operations such as image barriers or clearing where the <code>VkImageAspectFlags</code> is required, the <code>VK_IMAGE_ASPECT_DEPTH_BIT</code> is used to reference the depth memory.</p>
+</div>
+<div class="sect2">
+<h3 id="layout"><a class="anchor" href="#layout"></a>Layout</h3>
+<div class="paragraph">
+<p>When selecting the <code>VkImageLayout</code> there are some layouts that allow for <strong>both</strong> reading and writing to the image:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>VK_IMAGE_LAYOUT_<strong>DEPTH</strong>_STENCIL_<strong>ATTACHMENT</strong>_OPTIMAL</p>
+</li>
+<li>
+<p>VK_IMAGE_LAYOUT_<strong>DEPTH_ATTACHMENT</strong>_STENCIL_READ_ONLY_OPTIMAL</p>
+</li>
+<li>
+<p>VK_IMAGE_LAYOUT_<strong>DEPTH_ATTACHMENT</strong>_OPTIMAL</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>as well as layouts that allow for <strong>only</strong> reading to the image:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>VK_IMAGE_LAYOUT_<strong>DEPTH</strong>_STENCIL_<strong>READ_ONLY</strong>_OPTIMAL</p>
+</li>
+<li>
+<p>VK_IMAGE_LAYOUT_<strong>DEPTH_READ_ONLY</strong>_STENCIL_ATTACHMENT_OPTIMAL</p>
+</li>
+<li>
+<p>VK_IMAGE_LAYOUT_<strong>DEPTH_READ_ONLY</strong>_OPTIMAL</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>When doing the layout transition make sure to set the proper depth access masks needed for both reading and writing the depth image.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Example of going from undefined layout to a depth attachment to be read and written to
+
+// Core Vulkan example
+srcAccessMask = 0;
+dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+
+// VK_KHR_synchronization2
+srcAccessMask = VK_ACCESS_2_NONE_KHR;
+dstAccessMask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT_KHR | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT_KHR;
+sourceStage = VK_PIPELINE_STAGE_2_NONE_KHR;
+destinationStage = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT_KHR | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT_KHR;</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>If unsure to use only early or late fragment tests for your application, use both.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="clearing"><a class="anchor" href="#clearing"></a>Clearing</h3>
+<div class="paragraph">
+<p>It is always better to clear a depth buffer at the start of the pass with <code>loadOp</code> set to <code>VK_ATTACHMENT_LOAD_OP_CLEAR</code>, but depth images can also be cleared outside a render pass using <code>vkCmdClearDepthStencilImage</code>.</p>
+</div>
+<div class="paragraph">
+<p>When clearing, notice that <code>VkClearValue</code> is a union and <code>VkClearDepthStencilValue depthStencil</code> should be set instead of the color clear value.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="pre-rasterization"><a class="anchor" href="#pre-rasterization"></a>Pre-rasterization</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In the graphics pipeline, there are a series of <a href="https://docs.vulkan.org/spec/latest/chapters/pipelines.html#pipelines-graphics-subsets-pre-rasterization">pre-rasterization shader stages</a> that generate primitives to be rasterized. Before reaching the rasterization step, the final <code>vec4</code> position (<code>gl_Position</code>) of the last pre-rasterization stage runs through <a href="https://docs.vulkan.org/spec/latest/chapters/vertexpostproc.html">Fixed-Function Vertex Post-Processing</a>.</p>
+</div>
+<div class="paragraph">
+<p>The following gives a high level overview of the various coordinates name and operations that occur before rasterization.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/depth_coordinates_flow.png" alt="depth_coordinates_flow">
+</div>
+</div>
+<div class="sect2">
+<h3 id="primitive-clipping"><a class="anchor" href="#primitive-clipping"></a>Primitive Clipping</h3>
+<div class="paragraph">
+<p>Clipping always occurs, unless using the <code>depthClipEnable</code> from <a href="extensions/translation_layer_extensions.html#vk_ext_depth_clip_enable" class="xref page">VK_EXT_depth_clip_enable</a>, if the primitive is outside the <code>view volume</code>. In Vulkan, this is expressed for depth as</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">0 &lt;= Zc &lt;= Wc</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When the normalized device coordinates (NDC) are calculated, anything outside of <code>[0, 1]</code> is clipped.</p>
+</div>
+<div class="paragraph">
+<p>A few examples where <code>Zd</code> is the result of <code>Zc</code>/<code>Wc</code>:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>vec4(1.0, 1.0, 2.0, 2.0)</code> - not clipped (<code>Zd</code> == <code>1.0</code>)</p>
+</li>
+<li>
+<p><code>vec4(1.0, 1.0, 0.0, 2.0)</code> - not clipped (<code>Zd</code> == <code>0.0</code>)</p>
+</li>
+<li>
+<p><code>vec4(1.0, 1.0, -1.0, 2.0)</code> - clipped  (<code>Zd</code> == <code>-0.5</code>)</p>
+</li>
+<li>
+<p><code>vec4(1.0, 1.0, -1.0, -2.0)</code> - not clipped (<code>Zd</code> == <code>0.5</code>)</p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="user-defined-clipping-and-culling"><a class="anchor" href="#user-defined-clipping-and-culling"></a>User defined clipping and culling</h4>
+<div class="paragraph">
+<p>Using <code>ClipDistance</code> and <code>CullDistance</code> built-in arrays the <a href="https://docs.vulkan.org/spec/latest/chapters/pipelines.html#pipelines-graphics-subsets-pre-rasterization">pre-rasterization shader stages</a> can set <a href="https://www.khronos.org/opengl/wiki/Vertex_Post-Processing#User-defined_clipping">user defined clipping and culling</a>.</p>
+</div>
+<div class="paragraph">
+<p>In the last pre-rasterization shader stage, these values will be linearly interpolated across the primitive and the portion of the primitive with interpolated distances less than <code>0</code> will be considered outside the clip volume. If <code>ClipDistance</code> or <code>CullDistance</code> are then used by a fragment shader, they contain these linearly interpolated values.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p><code>ClipDistance</code> and <code>CullDistance</code> are <code>gl_ClipDistance[]</code> and <code>gl_CullDistance[]</code> in GLSL.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="porting-from-opengl"><a class="anchor" href="#porting-from-opengl"></a>Porting from OpenGL</h4>
+<div class="paragraph">
+<p>In OpenGL the <code>view volume</code> is expressed as</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">-Wc &lt;= Zc &lt;= Wc</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>and anything outside of <code>[-1, 1]</code> is clipped.</p>
+</div>
+<div class="paragraph">
+<p>The <a href="https://registry.khronos.org/vulkan/specs/latest/man/html/VK_EXT_depth_clip_control.html">VK_EXT_depth_clip_control</a> extension was added to allow efficient layering of OpenGL over Vulkan. By setting the <code>VkPipelineViewportDepthClipControlCreateInfoEXT::negativeOneToOne</code> to <code>VK_TRUE</code> when creating the <code>VkPipeline</code> it will use the OpenGL <code>[-1, 1]</code> view volume.</p>
+</div>
+<div class="paragraph">
+<p>If <code>VK_EXT_depth_clip_control</code> is not available, the <a href="https://github.com/KhronosGroup/Vulkan-Docs/issues/1054#issuecomment-547202276">workaround currently</a> is to perform the conversion in the pre-rasterization shader</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// [-1,1] to [0,1]
+position.z = (position.z + position.w) * 0.5;</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="viewport-transformation"><a class="anchor" href="#viewport-transformation"></a>Viewport Transformation</h3>
+<div class="paragraph">
+<p>The viewport transformation is a transformation from normalized device coordinates to framebuffer coordinates, based on a viewport rectangle and depth range.</p>
+</div>
+<div class="paragraph">
+<p>The list of viewports being used in the pipeline is expressed by <code>VkPipelineViewportStateCreateInfo::pViewports</code> and <code>VkPipelineViewportStateCreateInfo::viewportCount</code> sets the number of viewports being used. If <code>VkPhysicalDeviceFeatures::multiViewport</code> is not enabled, there must only be 1 viewport.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The viewport value can be set <a href="dynamic_state.html" class="xref page">dynamically</a> using <code>VK_DYNAMIC_STATE_VIEWPORT</code> or the <code>VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT_EXT</code> from <a href="https://registry.khronos.org/vulkan/specs/latest/man/html/VK_EXT_extended_dynamic_state.html">VK_EXT_extended_dynamic_state</a>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="sect3">
+<h4 id="depth-range"><a class="anchor" href="#depth-range"></a>Depth Range</h4>
+<div class="paragraph">
+<p>Each viewport holds a <code>VkViewport::minDepth</code> and <code>VkViewport::maxDepth</code> value which sets the "depth range" for the viewport.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Despite their names, <code>minDepth</code> can be less than, equal to, or greater than <code>maxDepth</code>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The <code>minDepth</code> and <code>maxDepth</code> are restricted to be set inclusively between <code>0.0</code> and <code>1.0</code>. If the <a href="https://registry.khronos.org/vulkan/specs/latest/man/html/VK_EXT_depth_range_unrestricted.html">VK_EXT_depth_range_unrestricted</a> is enabled, this restriction goes away.</p>
+</div>
+<div class="paragraph">
+<p>The framebuffer depth coordinate <code>Zf</code> is represented as:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">Zf = Pz * Zd + Oz</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>Zd</code> = <code>Zc</code>/<code>Wc</code> (see <a href="#primitive-clipping">Primitive Clipping</a>)</p>
+</li>
+<li>
+<p><code>Oz</code> = <code>minDepth</code></p>
+</li>
+<li>
+<p><code>Pz</code> = <code>maxDepth</code> - <code>minDepth</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="rasterization"><a class="anchor" href="#rasterization"></a>Rasterization</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="depth-bias"><a class="anchor" href="#depth-bias"></a>Depth Bias</h3>
+<div class="paragraph">
+<p>The depth values of all fragments generated by the rasterization of a polygon can be offset by a single value that is computed for that polygon. If <code>VkPipelineRasterizationStateCreateInfo::depthBiasEnable</code> is <code>VK_FALSE</code> at draw time, no depth bias is applied.</p>
+</div>
+<div class="paragraph">
+<p>Using the <code>depthBiasConstantFactor</code>, <code>depthBiasClamp</code>, and <code>depthBiasSlopeFactor</code> in <code>VkPipelineRasterizationStateCreateInfo</code> the depth bias <a href="https://docs.vulkan.org/spec/latest/chapters/primsrast.html#primsrast-depthbias">can be calculated</a>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Requires the <code>VkPhysicalDeviceFeatures::depthBiasClamp</code> feature to be supported otherwise <code>VkPipelineRasterizationStateCreateInfo::depthBiasClamp</code> must be <code>0.0f</code>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The depth bias values can be set <a href="dynamic_state.html" class="xref page">dynamically</a> using <code>VK_DYNAMIC_STATE_DEPTH_BIAS</code> or the <code>VK_DYNAMIC_STATE_DEPTH_BIAS_ENABLE_EXT</code> from <a href="https://registry.khronos.org/vulkan/specs/latest/man/html/VK_EXT_extended_dynamic_state2.html">VK_EXT_extended_dynamic_state2</a>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="post-rasterization"><a class="anchor" href="#post-rasterization"></a>Post-rasterization</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="fragment-shader"><a class="anchor" href="#fragment-shader"></a>Fragment Shader</h3>
+<div class="paragraph">
+<p>The input built-in <code>FragCoord</code> is the framebuffer coordinate. The <code>Z</code> component is the interpolated depth value of the primitive. This <code>Z</code> component value will be written to <code>FragDepth</code> if the shader doesn&#8217;t write to it. If the shader dynamically writes to <code>FragDepth</code>, the <code>DepthReplacing</code> Execution Mode must be declared (This is done in tools such as glslang).</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p><code>FragDepth</code> and <code>FragCoord</code> are <code>gl_FragDepth</code> and <code>gl_FragCoord</code> in GLSL.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>When using <code>OpTypeImage</code> in SPIR-V the <code>Depth</code> operand is ignored in Vulkan</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="sect3">
+<h4 id="conservative-depth"><a class="anchor" href="#conservative-depth"></a>Conservative depth</h4>
+<div class="paragraph">
+<p>The <code>DepthGreater</code>, <code>DepthLess</code>, and <code>DepthUnchanged</code> Execution Mode allow for a possible optimization for implementations that <a href="https://registry.khronos.org/OpenGL/extensions/ARB/ARB_conservative_depth.txt">relies on an early depth test to be run before the fragment</a>. This can be easily done in GLSL by declaring <code>gl_FragDepth</code> with the proper layout qualifier.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// assume it may be modified in any way
+layout(depth_any) out float gl_FragDepth;
+
+// assume it may be modified such that its value will only increase
+layout(depth_greater) out float gl_FragDepth;
+
+// assume it may be modified such that its value will only decrease
+layout(depth_less) out float gl_FragDepth;
+
+// assume it will not be modified
+layout(depth_unchanged) out float gl_FragDepth;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Violating the condition​ yields undefined behavior.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="per-sample-processing-and-coverage-mask"><a class="anchor" href="#per-sample-processing-and-coverage-mask"></a>Per-sample processing and coverage mask</h3>
+<div class="paragraph">
+<p>The following post-rasterization occurs as a "per-sample" operation. This means when doing <a href="https://docs.vulkan.org/spec/latest/chapters/fragops.html#fragops-covg">multisampling</a> with a color attachment, any "depth buffer" <code>VkImage</code> used as well must also have been created with the same <code>VkSampleCountFlagBits</code> value.</p>
+</div>
+<div class="paragraph">
+<p>Each fragment has a <a href="https://docs.vulkan.org/spec/latest/chapters/primsrast.html#primsrast-multisampling-coverage-mask">coverage mask</a> based on which samples within that fragment are determined to be within the area of the primitive that generated the fragment. If a fragment operation results in all bits of the coverage mask being <code>0</code>, the fragment is discarded.</p>
+</div>
+<div class="sect3">
+<h4 id="resolving-depth-buffer"><a class="anchor" href="#resolving-depth-buffer"></a>Resolving depth buffer</h4>
+<div class="paragraph">
+<p>It is possible in Vulkan using the <a href="extensions/cleanup.html#vk_khr_depth_stencil_resolve" class="xref page">VK_KHR_depth_stencil_resolve</a> extension (promoted to Vulkan core in 1.2) to resolve multisampled depth/stencil attachments in a subpass in a similar manner as for color attachments.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="depth-bounds"><a class="anchor" href="#depth-bounds"></a>Depth Bounds</h3>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Requires the <code>VkPhysicalDeviceFeatures::depthBounds</code> feature to be supported.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>If <code>VkPipelineDepthStencilStateCreateInfo::depthBoundsTestEnable</code> is used to take each <code>Za</code> in the depth attachment and check if it is within the range set by <code>VkPipelineDepthStencilStateCreateInfo::minDepthBounds</code> and <code>VkPipelineDepthStencilStateCreateInfo::maxDepthBounds</code>. If the value is not within the bounds, the <a href="https://docs.vulkan.org/spec/latest/chapters/primsrast.html#primsrast-multisampling-coverage-mask">coverage mask</a> is set to zero.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The depth bound values can be set <a href="dynamic_state.html" class="xref page">dynamically</a> using <code>VK_DYNAMIC_STATE_DEPTH_BOUNDS</code> or the <code>VK_DYNAMIC_STATE_DEPTH_BOUNDS_TEST_ENABLE_EXT</code> from <a href="https://registry.khronos.org/vulkan/specs/latest/man/html/VK_EXT_extended_dynamic_state.html">VK_EXT_extended_dynamic_state</a>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="depth-test"><a class="anchor" href="#depth-test"></a>Depth Test</h3>
+<div class="paragraph">
+<p>The depth test compares the framebuffer depth coordinate <code>Zf</code> with the depth value <code>Za</code> in the depth attachment. If the test fails, the fragment is discarded. If the test passes, the depth attachment will be updated with the fragment&#8217;s output depth. The <code>VkPipelineDepthStencilStateCreateInfo::depthTestEnable</code> is used to enable/disable the test in the pipeline.</p>
+</div>
+<div class="paragraph">
+<p>The following gives a high level overview of the depth test.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/depth_test.png" alt="depth_test">
+</div>
+</div>
+<div class="sect3">
+<h4 id="depth-compare-operation"><a class="anchor" href="#depth-compare-operation"></a>Depth Compare Operation</h4>
+<div class="paragraph">
+<p>The <code>VkPipelineDepthStencilStateCreateInfo::depthCompareOp</code> provides the comparison function used for the depth test.</p>
+</div>
+<div class="paragraph">
+<p>An example where <code>depthCompareOp</code> == <code>VK_COMPARE_OP_LESS</code> (<code>Zf</code> &lt; <code>Za</code>)</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>Zf</code> = 1.0 | <code>Za</code> = 2.0 | test passes</p>
+</li>
+<li>
+<p><code>Zf</code> = 1.0 | <code>Za</code> = 1.0 | test fails</p>
+</li>
+<li>
+<p><code>Zf</code> = 1.0 | <code>Za</code> = 0.0 | test fails</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The <code>depthTestEnable</code> and <code>depthCompareOp</code> value can be set <a href="dynamic_state.html" class="xref page">dynamically</a> using <code>VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE_EXT</code> and <code>VK_DYNAMIC_STATE_DEPTH_COMPARE_OP_EXT</code> from <a href="https://registry.khronos.org/vulkan/specs/latest/man/html/VK_EXT_extended_dynamic_state.html">VK_EXT_extended_dynamic_state</a>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="depth-buffer-writes"><a class="anchor" href="#depth-buffer-writes"></a>Depth Buffer Writes</h4>
+<div class="paragraph">
+<p>Even if the depth test passes, if <code>VkPipelineDepthStencilStateCreateInfo::depthWriteEnable</code> is set to <code>VK_FALSE</code> it will not write the value out to the depth attachment. The main reason for this is because the depth test itself will set the <a href="https://docs.vulkan.org/spec/latest/chapters/primsrast.html#primsrast-multisampling-coverage-mask">coverage mask</a> which can be used for certain render techniques.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The <code>depthWriteEnable</code> value can be set <a href="dynamic_state.html" class="xref page">dynamically</a> using <code>VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE_EXT</code> from <a href="https://registry.khronos.org/vulkan/specs/latest/man/html/VK_EXT_extended_dynamic_state.html">VK_EXT_extended_dynamic_state</a>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="depth-clamping"><a class="anchor" href="#depth-clamping"></a>Depth Clamping</h4>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Requires the <code>VkPhysicalDeviceFeatures::depthClamp</code> feature to be supported.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Prior to the depth test, if <code>VkPipelineRasterizationStateCreateInfo::depthClampEnable</code> is enabled, before the sample’s <code>Zf</code> is compared to <code>Za</code>, <code>Zf</code> is clamped to <code>[min(n,f), max(n,f)]</code>, where <code>n</code> and <code>f</code> are the <code>minDepth</code> and <code>maxDepth</code> depth range values of the viewport used by this fragment, respectively.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+<script src="../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../.." data-snippet-length="100" data-stylesheet="../../_/css/search.css"></script>
+<script async src="../../search-index.js"></script>
+<script async src="../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

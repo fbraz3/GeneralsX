@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Proposal: VK_EXT_frame_boundary :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:features" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="features" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Feature Descriptions</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Vulkan Roadmap and Feature Descriptions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Roadmap.html">Vulkan Roadmap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Feature Descriptions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMDX_shader_enqueue.html">VK_AMDX_shader_enqueue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_anti_lag.html">VK_AMD_anti_lag</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_shader_early_and_late_fragment_tests.html">VK_AMD_shader_early_and_late_fragment_tests</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ANDROID_external_format_resolve.html">VK_ANDROID_external_format_resolve</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_pipeline_opacity_micromap.html">VK_ARM_pipeline_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_render_pass_striped.html">VK_ARM_render_pass_striped</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_tensors.html">VK_ARM_tensors</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_dynamic_state.html">VK_EXT_attachment_feedback_loop_dynamic_state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_layout.html">VK_EXT_attachment_feedback_loop_layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_calibrated_timestamps.html">VK_EXT_calibrated_timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_bias_control.html">VK_EXT_depth_bias_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_clamp_control.html">VK_EXT_depth_clamp_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_descriptor_buffer.html">VK_EXT_descriptor_buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_fault.html">VK_EXT_device_fault</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_generated_commands.html">VK_EXT_device_generated_commands</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_dynamic_rendering_unused_attachments.html">VK_EXT_dynamic_rendering_unused_attachments</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_extended_dynamic_state3.html">VK_EXT_extended_dynamic_state3</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_acquire_unmodified.html">VK_EXT_external_memory_acquire_unmodified</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_metal.html">VK_EXT_external_memory_metal</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_fragment_density_map_offset.html">VK_EXT_fragment_density_map_offset</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="VK_EXT_frame_boundary.html">Proposal: <code>VK_EXT_frame_boundary</code></a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_graphics_pipeline_library.html">VK_EXT_graphics_pipeline_library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_host_image_copy.html">VK_EXT_host_image_copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_2d_array_of_3d.html">VK_EXT_image_2d_array_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_compression_control.html">VK_EXT_image_compression_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_sliced_view_of_3d.html">VK_EXT_image_sliced_view_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_layer_settings.html">VK_EXT_layer_settings</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_dithering.html">VK_EXT_legacy_dithering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_vertex_attributes.html">VK_EXT_legacy_vertex_attributes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_map_memory_placed.html">VK_EXT_map_memory_placed</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mesh_shader.html">VK_EXT_mesh_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_metal_objects.html">VK_EXT_metal_objects</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_multisampled_render_to_single_sampled.html">VK_EXT_multisampled_render_to_single_sampled</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mutable_descriptor_type.html">VK_EXT_mutable_descriptor_type</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_non_seamless_cube_map.html">VK_EXT_non_seamless_cube_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_opacity_micromap.html">VK_EXT_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_library_group_handles.html">VK_EXT_pipeline_library_group_handles</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_protected_access.html">VK_EXT_pipeline_protected_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_present_mode_fifo_latest_ready.html">VK_EXT_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_primitives_generated_query.html">VK_EXT_primitives_generated_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_rasterization_order_attachment_access.html">VK_EXT_rasterization_order_attachment_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_float8.html">VK_EXT_shader_float8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_module_identifier.html">VK_EXT_shader_module_identifier</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_object.html">VK_EXT_shader_object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_replicated_composites.html">VK_EXT_shader_replicated_composites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_tile_image.html">VK_EXT_shader_tile_image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_subpass_merge_feedback.html">VK_EXT_subpass_merge_feedback</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_surface_maintenance1.html">VK_EXT_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_swapchain_maintenance1.html">VK_EXT_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_zero_initialize_device_memory.html">VK_EXT_zero_initialize_device_memory</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_GOOGLE_surfaceless_query.html">VK_GOOGLE_surfaceless_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_cluster_culling_shader.html">VK_HUAWEI_cluster_culling_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_invocation_mask.html">VK_HUAWEI_invocation_mask</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_compute_shader_derivatives.html">VK_KHR_compute_shader_derivatives</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_cooperative_matrix.html">VK_KHR_cooperative_matrix</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering.html">VK_KHR_dynamic_rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering_local_read.html">VK_KHR_dynamic_rendering_local_read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shader_barycentric.html">VK_KHR_fragment_shader_barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shading_rate.html">VK_KHR_fragment_shading_rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_load_store_op_none.html">VK_KHR_load_store_op_none</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance5.html">VK_KHR_maintenance5</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance6.html">VK_KHR_maintenance6</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance7.html">VK_KHR_maintenance7</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance8.html">VK_KHR_maintenance8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance9.html">Proposal Template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_map_memory2.html">VK_KHR_map_memory2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_pipeline_binary.html">VK_KHR_pipeline_binary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_id2.html">VK_KHR_present_id2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_mode_fifo_latest_ready.html">VK_KHR_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_wait2.html">VK_KHR_present_wait2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_ray_tracing_position_fetch.html">VK_KHR_ray_tracing_position_fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_bfloat16.html">VK_KHR_shader_bfloat16</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_expect_assume.html">VK_KHR_shader_expect_assume</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_float_controls2.html">VK_KHR_shader_float_controls2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_integer_dot_product.html">VK_KHR_shader_integer_dot_product</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_maximal_reconvergence.html">VK_KHR_shader_maximal_reconvergence</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_quad_control.html">VK_KHR_shader_quad_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_relaxed_extended_instruction.html">VK_KHR_shader_relaxed_extended_instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_subgroup_rotate.html">Subgroup rotation instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_surface_maintenance1.html">VK_KHR_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_swapchain_maintenance1.html">VK_KHR_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_unified_image_layouts.html">VK_KHR_unified_image_layouts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_vertex_attribute_divisor.html">VK_KHR_vertex_attribute_divisor</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_av1.html">VK_KHR_video_decode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h264.html">VK_KHR_video_decode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h265.html">VK_KHR_video_decode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_queue.html">VK_KHR_video_decode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_vp9.html">VK_KHR_video_decode_vp9</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_av1.html">VK_KHR_video_encode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h264.html">VK_KHR_video_encode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h265.html">VK_KHR_video_encode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_intra_refresh.html">VK_KHR_video_encode_intra_refresh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_quantization_map.html">VK_KHR_video_encode_quantization_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_queue.html">VK_KHR_video_encode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance1.html">VK_KHR_video_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance2.html">VK_KHR_video_maintenance2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_queue.html">VK_KHR_video_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_LUNARG_direct_driver_loading.html">VK_LUNARG_direct_driver_loading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_MSFT_layered_driver.html">VK_MSFT_layered_driver</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cluster_acceleration_structure.html">VK_NV_cluster_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_matrix2.html">VK_NV_cooperative_matrix2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_vector.html">VK_NV_cooperative_vector</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_display_stereo.html">VK_NV_display_stereo</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_external_compute_queue.html">VK_NV_external_compute_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_partitioned_acceleration_structure.html">VK_NV_partitioned_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_linear_swept_spheres.html">VK_NV_ray_tracing_linear_swept_spheres</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_validation.html">VK_NV_ray_tracing_validation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_image_processing.html">VK_QCOM_image_processing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_memory_heap.html">VK_QCOM_tile_memory_heap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_properties.html">VK_QCOM_tile_properties</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_shading.html">VK_QCOM_tile_shading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_VERSION_1_4.html">Vulkan 1.4</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Feature Descriptions</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Feature Descriptions</a></li>
+    <li>Feature Descriptions</li>
+    <li><a href="VK_EXT_frame_boundary.html">Proposal: <code>VK_EXT_frame_boundary</code></a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/features/modules/features/pages/proposals/VK_EXT_frame_boundary.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Proposal: <code>VK_EXT_frame_boundary</code></h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_problem_statement">Problem Statement</a>
+<ul class="sectlevel2">
+<li><a href="#_graphics_applications_bypassing_the_khronos_swapchain">Graphics applications bypassing the Khronos swapchain</a></li>
+<li><a href="#_compute_only_applications">Compute-only applications</a></li>
+<li><a href="#_overlapping_frames">Overlapping frames</a></li>
+</ul>
+</li>
+<li><a href="#_solution_space">Solution Space</a></li>
+<li><a href="#_proposal">Proposal</a>
+<ul class="sectlevel2">
+<li><a href="#_overview">Overview</a></li>
+<li><a href="#_the_vkframeboundaryext_type">The <code>VkFrameBoundaryEXT</code> type</a></li>
+<li><a href="#_validation">Validation</a></li>
+</ul>
+</li>
+<li><a href="#_examples">Examples</a>
+<ul class="sectlevel2">
+<li><a href="#_compute_only">Compute-only</a></li>
+<li><a href="#_graphics_sequential_frames_not_using_the_khr_swapchain">Graphics, sequential frames, not using the KHR swapchain</a></li>
+<li><a href="#_overlapping_frames_with_wait_after_signal">Overlapping frames with wait-after-signal</a></li>
+</ul>
+</li>
+<li><a href="#_issues">Issues</a>
+<ul class="sectlevel2">
+<li><a href="#_resolved_what_should_this_extension_be_named">RESOLVED: What should this extension be named?</a></li>
+<li><a href="#_resolved_what_information_should_be_included_in_vkframeboundaryext">RESOLVED: What information should be included in VkFrameBoundaryEXT?</a></li>
+<li><a href="#_resolved_how_should_frame_identifiers_be_validated">RESOLVED: How should frame identifiers be validated?</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><code>VK_EXT_frame_boundary</code> is a device extension that helps <strong>tools</strong> (such as
+debuggers) to group queue submissions per frames in non-trivial scenarios,
+typically when <code>vkQueuePresentKHR</code> is not a relevant frame boundary delimiter.</p>
+</div>
+<div class="paragraph">
+<p>See also the discussion in <a href="https://gitlab.khronos.org/vulkan/vulkan/-/issues/2436" class="bare">https://gitlab.khronos.org/vulkan/vulkan/-/issues/2436</a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>Problem Statement</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Various Vulkan tools (e.g. debuggers) use a layer to monitor all Vulkan
+commands, and need to know where a frame starts and ends. In general,
+<code>vkQueuePresentKHR</code> is a natural frame boundary delimiter: a frame is made by
+all commands between two <code>vkQueuePresentKHR</code>. However, there are scenarios where
+<code>vkQueuePresentKHR</code> is not a suitable frame boundary delimiter. The
+<code>VK_EXT_frame_boundary</code> device extension lets application developers indicate to
+tools where the frames start and end.</p>
+</div>
+<div class="paragraph">
+<p>Note: here, &#8220;frame&#8221; is understood as &#8220;a unit of workload that spans one or more
+queue submissions&#8221;. The notion of frame is application-dependent. In graphical
+applications, a frame is typically the work needed to render into the image that
+is eventually presented. In a compute-only application, a frame could be a set
+of compute kernels dispatches that treat one unit of work.</p>
+</div>
+<div class="paragraph">
+<p>There are a number of cases where <code>vkQueuePresentKHR</code> is not a suitable frame
+boundary delimiter.</p>
+</div>
+<div class="sect2">
+<h3 id="_graphics_applications_bypassing_the_khronos_swapchain"><a class="anchor" href="#_graphics_applications_bypassing_the_khronos_swapchain"></a>Graphics applications bypassing the Khronos swapchain</h3>
+<div class="paragraph">
+<p>Graphics applications are not tied to use the Khronos swapchain, and they may
+interact directly with a platform presentation engine. In this case, they will
+not call <code>vkQueuePresentKHR</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_compute_only_applications"><a class="anchor" href="#_compute_only_applications"></a>Compute-only applications</h3>
+<div class="paragraph">
+<p>Compute-only applications typically do not interact with a presentation engine at
+all, so they would not call <code>vkQueuePresentKHR</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_overlapping_frames"><a class="anchor" href="#_overlapping_frames"></a>Overlapping frames</h3>
+<div class="paragraph">
+<p>A graphics application may pipeline its frame preparation such that work for
+different frames is being submitted in an interleaved way, a scenario we call
+here &#8220;overlapping frames&#8221;.</p>
+</div>
+<div class="paragraph">
+<p>For instance, consider a graphics application where each frame is executed
+via two <code>vkQueueSubmit</code> followed by a <code>vkQueuePresentKHR</code>, and frame
+preparation is pipelined, such that the serialized commands look like:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>vkQueueSubmit();     // 1st submit of Frame N
+vkQueueSubmit();     // 2nd submit of Frame N-1
+vkQueuePresentKHR(); // present Frame N-1
+vkQueueSubmit();     // 1st submit of Frame N+1
+vkQueueSubmit();     // 2nd submit of Frame N
+vkQueuePresentKHR(); // present Frame N</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Here, relying on <code>vkQueuePresentKHR</code> as a frame boundary delimiter would lead to
+the erroneous grouping of queue submissions of different frames as the work of a
+single frame.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>Solution Space</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>Debug utilities: existing debug utilities let us tag Vulkan objects, could we
+use that to identify which work belongs to which frame? We can think of
+tagging the command buffers submitted with a frame identifier. However some
+command buffers may be used concurrently by several frames, so that is not a
+viable approach. In the same vein, queue debug label regions are not
+satisfactory since they cannot handle overlapping frames.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>What we need is a way to associate a frame identifier to the one or more queue
+submissions that submit the work for this frame. This is what the
+VK_EXT_frame_boundary extension does.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>Proposal</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h3>
+<div class="paragraph">
+<p>We want applications to be able to group queue submissions by frames. To this
+aim, we let applications tag queue submissions with a <code>uint64_t</code> frame
+identifier. However, this is not sufficient: given that a frame may span more
+than one queue submissions, in order to know when a frame ends, tools also need
+to know which queue submission is the last one for a given frame. So in addition
+to the frame identifier, we also want to be able to tag queue submissions with a
+&#8220;frame end&#8221; flag, to mark the last submission for a given frame identifier.</p>
+</div>
+<div class="paragraph">
+<p>There is one clarification left to do: the &#8220;frame end&#8221; submission is the
+&#8220;logical last&#8221; queue submission, but in the presence of timeline semaphores it
+may not be the last one to be submitted. Since timeline semaphores permit queue
+submissions to wait on semaphores whose signal is not yet submitted, the
+semaphore meant to be the last part of work for a given frame may not be the
+last one to be submitted. In this context, we want to mark the &#8220;frame end&#8221;
+submission as the one that is logically the last submission for the frame: if
+this submission waits on semaphores whose signal is not yet submitted, then all
+subsequent submissions with the same frame identifier until the submission that
+signals these semaphores are also associated to that frame.</p>
+</div>
+<div class="paragraph">
+<p>To illustrate this on a small example, considering serialized Vulkan commands:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>// At this point, the latest signal of timeline semaphore TLS set its value to 1
+
+// Logical last submission for frame N, wait on TLS value 2
+vkQueueSubmit( frameID:N, frameEnd, wait:TLS(2) )
+
+// The actual final submission, which unblocks the previous one, is also part
+// of the work for frame N, even if in submit order it comes after the frameEnd
+// submission.
+vkQueueSubmit( frameID:N, signal:TLS(2) )</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>So we want a way to tag queue submissions with a <code>uint64_t</code> frame identifier,
+and a frameEnd flag. To this aim, the <code>VK_EXT_frame_boundary</code> device extension
+defines the new <code>VkFrameBoundaryEXT</code> type that is meant to be passed in queue
+submission pNext chains.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_vkframeboundaryext_type"><a class="anchor" href="#_the_vkframeboundaryext_type"></a>The <code>VkFrameBoundaryEXT</code> type</h3>
+<div class="paragraph">
+<p>The <code>VK_EXT_frame_boundary</code> device extension defines a new
+<code>VkFrameBoundaryEXT</code> type that is meant to be added to pNext chains of queue
+submissions, such as <code>VkSubmitInfo</code>, <code>VkSubmitInfo2</code>, <code>VkBindSparseInfo</code>
+or <code>VkPresentInfoKHR</code>. This type looks like:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>// Flags
+typedef enum VkFrameBoundaryFlagBitsEXT {
+  VK_FRAME_BOUNDARY_FRAME_END_BIT_EXT = 0x00000001,
+} VkFrameBoundaryFlagBitsEXT;
+typedef VkFlags VkFrameBoundaryFlagsEXT;
+
+// VkFrameBoundaryEXT can be passed in any queue submission's pNext chain
+typedef struct VkFrameBoundaryEXT {
+    VkStructureType              sType;
+    const void*                  pNext;
+
+    // Necessary members:
+    // flags is necessary to mark the last submission of a frame
+    VkFrameBoundaryFlagsEXT      flags;
+    // frameID is necessary to disambiguate overlapping frames
+    uint64_t                     frameID;
+
+    // Extra members: provide a list of objects which  No need to pass the layout as
+    // trace-replay tools will track the layout anyway.
+    uint32_t                     imageCount;
+    const VkImage*               pImages;
+    uint32_t                     bufferCount;
+    const VkBuffer*              pBuffers;
+
+    // Extra info can be passed with an arbitrary tag payload, typically
+    // a tool-specific struct.
+    uint64_t                     tagName;
+    size_t                       tagSize;
+    const void*                  pTag;
+} VkFrameBoundaryEXT;</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Where:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><code>flags</code> provides a way to tag submissions with a frameEnd flag.</p>
+</li>
+<li>
+<p><code>frameID</code> provides a way to tag submissions with a frame identifier.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>In addition to these two necessary members, we have a few extras:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>a list of VkImage: this makes this extension as expressive as
+<code>vkQueuePresentKHR</code>, the classic frame boundary delimiter. For the classic
+frame-oriented graphics workloads, it is convenient to have a list of images
+storing the final frame renderings. We do not need the image layout as the
+trace-replay tools would have to track image layout already anyway.</p>
+</li>
+<li>
+<p>a list of VkBuffer: which allows applications that do not produce their
+final result as an image (eg. compute applications) to provide the final
+result of the frame.</p>
+</li>
+<li>
+<p>a way to attach a binary payload: this can be used to pass tool-specific
+extra information.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_validation"><a class="anchor" href="#_validation"></a>Validation</h3>
+<div class="paragraph">
+<p>Since the concept of a frame is application dependent, there is no way to
+validate relevant use of frame identifier. As such there is no restrictions
+imposed on frame identifiers and is the responsibility of the application
+to use them in a relevant way.</p>
+</div>
+<div class="paragraph">
+<p>In practice it is advised that applications use a single monotonically
+increasing counter to base their frame identifiers on and not to reuse
+identifiers between separate frames.</p>
+</div>
+<div class="paragraph">
+<p>However, there is no way for the validation layer to detect an application
+not adhering to these rules, since the validation layer has no idea which
+submissions should be grouped together, so a valid grouping like this might
+be flagged as invalid because of the application using wait before signal:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>vkQueueSubmit( frame:0 ) // start of a frame
+vkQueueSubmit( frame:0 ) // part of the frame
+vkQueueSubmit( frame:0, frameEnd, wait:TLS(42) ) // logical end, waiting on a not-yet-signaled TLS
+vkQueueSubmit( frame:0, signal:TLS(42) ) // this is still part of the current frame, after the frameEnd marker.</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_examples"><a class="anchor" href="#_examples"></a>Examples</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_compute_only"><a class="anchor" href="#_compute_only"></a>Compute-only</h3>
+<div class="paragraph">
+<p>Compute-only that want to split their work into frames can do so with:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>vkQueueSubmit( frame:N )           // Zero or more submits for frame N
+vkQueueSubmit( frame:N, frameEnd ) // Last submit for frame N
+
+vkQueueSubmit( frame:N+1 )           // Zero or more submits for frame N+1
+vkQueueSubmit( frame:N+1, frameEnd ) // Last submit for frame N+1</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_graphics_sequential_frames_not_using_the_khr_swapchain"><a class="anchor" href="#_graphics_sequential_frames_not_using_the_khr_swapchain"></a>Graphics, sequential frames, not using the KHR swapchain</h3>
+<div class="paragraph">
+<p>A graphics application that prepare frames in sequence (as opposed to
+overlapping frames), but makes no use of the KHR swapchain, can group
+submissions with:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>vkQueueSubmit( frame:N ) // Zero or more submits for frame N
+vkQueueSubmit( frame:N, frameEnd, imageCount:1, pImages:0x12345 ) // Last submit for frame N
+// here code that passes pImages to the presentation engine
+
+vkQueueSubmit( frame:N+1 )           // Zero or more submits for frame N+1
+vkQueueSubmit( frame:N+1, frameEnd, imageCount:1, pImages:0x54321 ) // Last submit for frame N+1
+// here code that passes pImages to the presentation engine</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_overlapping_frames_with_wait_after_signal"><a class="anchor" href="#_overlapping_frames_with_wait_after_signal"></a>Overlapping frames with wait-after-signal</h3>
+<div class="paragraph">
+<p>A graphics application with overlapping frames and wait-after-signal (that may
+be due to multithreading, here we look at a serialized view of Vulkan commands),
+can group queue submissions per frame with:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>vkQueueSubmit( frame:N ); // 1st submit of frame N
+
+vkQueueSubmit( frame:N-1 ); // Some other submissions for an other frame
+vkQueueSubmit( frame:N+1 ); // Some other submissions for an other frame
+
+// 2nd submit of frame N, logically the last one, but waits on a TLS not yet
+// signaled for that value
+vkQueueSubmit( frame:N, frameEnd, wait:TLS(42) );
+
+vkQueueSubmit( frame:... ); // Some other submissions for other frames
+
+// 3rd submit of frame N, not the logical last one, but the last one in submit
+// order (here serialized) since it signals the TLS on which the logical last
+// submission waits
+vkQueueSubmit( frame:N, signal:TLS(42) );</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_issues"><a class="anchor" href="#_issues"></a>Issues</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_resolved_what_should_this_extension_be_named"><a class="anchor" href="#_resolved_what_should_this_extension_be_named"></a>RESOLVED: What should this extension be named?</h3>
+<div class="paragraph">
+<p>VK_EXT_frame_boundary.</p>
+</div>
+<div class="paragraph">
+<p>&#8220;Frame&#8221; is still the best word to convey the meaning of &#8220;a unit of workload
+spanning one or more queue submissions&#8221;. &#8220;Boundary&#8221; might be seen as too
+specific since this can be seen more generally as tagging queue submissions
+with frame identifiers, but really the goal of this tagging is precisely to
+know when a frame starts and ends, i.e. to know its boundaries.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_what_information_should_be_included_in_vkframeboundaryext"><a class="anchor" href="#_resolved_what_information_should_be_included_in_vkframeboundaryext"></a>RESOLVED: What information should be included in VkFrameBoundaryEXT?</h3>
+<div class="paragraph">
+<p>Beyond the necessary flags and frameID, we keep only a list of objects that
+contain the end result of the frame, and a binary blob where other extra info
+can be provided.</p>
+</div>
+<div class="paragraph">
+<p>The list of VkImage and VkBuffer objects allow the application to provide the
+end result of the frame. There is no need to provide extra information about
+the object like the layout of these images since capture-replay tools would
+track the Vulkan state whilst the application is running.</p>
+</div>
+<div class="paragraph">
+<p>The list of VkImage lets this extension be as expressive as
+<code>vkQueuePresentKHR</code>, which has a list of swapchain images.</p>
+</div>
+<div class="paragraph">
+<p>A binary blob (called &#8220;tag&#8221; to be homogeneous with
+VkDebugUtilsObjectTagInfoEXT), allows tools to define their own data containing
+any extra information that is required and update this without having to change
+the Vulkan specification.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_how_should_frame_identifiers_be_validated"><a class="anchor" href="#_resolved_how_should_frame_identifiers_be_validated"></a>RESOLVED: How should frame identifiers be validated?</h3>
+<div class="paragraph">
+<p>Do not impose conditions on frame identifiers.</p>
+</div>
+<div class="paragraph">
+<p>Frame identifiers are just a way to indicate to tools how to group queue
+submissions, and that there is no ground to impose any kind of monotonic
+increase. Frame identifiers may be reused and the application is responsible to
+reuse them in a &#8220;safe&#8221; way. In practice it is advised that applications do not
+reuse frame identifiers, but if the application is not careful when reusing
+frame identifiers, it only makes a difference for tools, so it should not have
+a semantic impact.</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

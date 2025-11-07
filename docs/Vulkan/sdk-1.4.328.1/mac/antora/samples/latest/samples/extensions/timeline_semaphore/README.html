@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Timeline semaphore :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:samples" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="samples" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../../README.html">Vulkan Samples</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../README.html">Samples overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../vulkan_basics.html">Vulkan basics</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../../shaders/README.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../framework/README.html">Sample framework</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../components/README.html">Framework components</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/README.html">Api usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/compute_nbody/README.html">Compute N-body</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_compute_nbody/README.html">Compute N-body (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/dynamic_uniform_buffers/README.html">Dynamic uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_dynamic_uniform_buffers/README.html">Dynamic Uniform Buffers (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/hdr/README.html">HDR</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_hdr/README.html">HDR (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/hello_triangle/README.html">Hello Triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_hello_triangle/README.html">Hello Triangle (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/hello_triangle_1_3/README.html">Hello Triangle 1.3</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_hello_triangle_1_3/README.html">Hello Triangle 1.3(Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/instancing/README.html">Instancing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_instancing/README.html">Instancing (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/separate_image_sampler/README.html">Separate image sampler</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_separate_image_sampler/README.html">Separate image sampler (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/terrain_tessellation/README.html">Terrain tessellation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_terrain_tessellation/README.html">Terrain tessellation (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/texture_loading/README.html">Texture loading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_texture_loading/README.html">Texture loading (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/texture_mipmap_generation/README.html">Texture mipmap generation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_texture_mipmap_generation/README.html">Texture mipmap generation (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/timestamp_queries/README.html">Timestamp queries</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_timestamp_queries/README.html">Timestamp queries (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/oit_linked_lists/README.html">OIT linked lists</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_oit_linked_lists/README.html">OIT linked lists (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/oit_depth_peeling/README.html">OIT depth peeling</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_oit_depth_peeling/README.html">OIT depth peeling (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../README.html">Extension usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../buffer_device_address/README.html">Buffer device address</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../calibrated_timestamps/README.html">Calibrated timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../conditional_rendering/README.html">Conditional rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../conservative_rasterization/README.html">Conservative rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../debug_utils/README.html">Debug utils</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../descriptor_buffer_basic/README.html">Descriptor buffer basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../descriptor_indexing/README.html">Descriptor indexing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../dynamic_line_rasterization/README.html">Dynamic line rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../dynamic_primitive_clipping/README.html">Dynamic primitive clipping</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../dynamic_rendering/README.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../dynamic_rendering_local_read/README.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../extended_dynamic_state2/README.html">Extended dynamic state2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../fragment_shader_barycentric/README.html">Fragment shader barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../fragment_shading_rate/README.html">Fragment shading rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../fragment_shading_rate_dynamic/README.html">Fragment shading rate dynamic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../full_screen_exclusive/README.html">Full screen exclusive</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../graphics_pipeline_library/README.html">Graphics pipeline library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../gshader_to_mshader/README.html">Geometry shader to mesh shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../host_image_copy/README.html">Host image copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../logic_op_dynamic_state/README.html">Logic op dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../memory_budget/README.html">Memory budget</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../mesh_shader_culling/README.html">Mesh shader culling</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../mesh_shading/README.html">Mesh shading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../hpp_mesh_shading/README.html">Mesh shading (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../open_cl_interop/README.html">OpenCL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../open_cl_interop_arm/README.html">OpenCL interop (Arm)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../open_gl_interop/README.html">OpenGL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../portability/README.html">Portability</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../push_descriptors/README.html">Push descriptors</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../hpp_push_descriptors/README.html">Push descriptors (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ray_tracing_basic/README.html">Raytracing basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ray_tracing_extended/README.html">Raytracing extended</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ray_queries/README.html">Ray queries</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ray_tracing_reflection/README.html">Ray tracing reflection</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ray_tracing_position_fetch/README.html">Ray tracing position fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../shader_object/README.html">Shader Object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../shader_debugprintf/README.html">Shader Debug Printf</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../sparse_image/README.html">Sparse Image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../synchronization_2/README.html">Synchronization 2</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="README.html">Timeline semaphore</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../vertex_dynamic_state/README.html">Vertex dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../dynamic_multisample_rasterization/README.html">Dynamic multisample rasterization</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../performance/README.html">Performance samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/16bit_arithmetic/README.html">16bit arithmetic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/16bit_storage_input_output/README.html">16bit storage input output</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/afbc/README.html">AFBC</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/async_compute/README.html">Async compute</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/command_buffer_usage/README.html">Command buffer usage</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/constant_data/README.html">Constant data</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/descriptor_management/README.html">Descriptor management</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/image_compression_control/README.html">Image compression control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/layout_transitions/README.html">Layout transitions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/msaa/README.html">MSAA</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/multithreading_render_passes/README.html">Multithreading render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/multi_draw_indirect/README.html">Multi draw indirect</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/pipeline_barriers/README.html">Pipeline barriers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../performance/pipeline_cache/README.html">Pipeline cache</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../performance/hpp_pipeline_cache/README.html">Pipeline cache (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/render_passes/README.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/specialization_constants/README.html">Specialization constants</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/subpasses/README.html">Subpasses</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/surface_rotation/README.html">Surface rotation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../performance/swapchain_images/README.html">Swapchain images</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../performance/hpp_swapchain_images/README.html">Swapchain images (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/texture_compression_basisu/README.html">Texture compression basisu</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../performance/texture_compression_comparison/README.html">Texture compression comparison</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../performance/hpp_texture_compression_comparison/README.html">Texture compression comparison (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/wait_idle/README.html">Wait idle</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../tooling/README.html">Tooling samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../tooling/profiles/README.html">Profiles</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../general/README.html">General samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../general/mobile_nerf/README.html">Mobile NeRF</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../general/mobile_nerf_rayquery/README.html">Mobile NeRF Ray Query</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../docs/README.html">General documentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../docs/build.html">Build guide</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../docs/memory_limits.html">Memory limits</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../docs/misc.html">Miscellaneous</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Samples</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../../../README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../../README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../../README.html">Vulkan Samples</a></li>
+    <li><a href="../README.html">Extension usage samples</a></li>
+    <li><a href="README.html">Timeline semaphore</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Samples/antora/modules/ROOT/pages/samples/extensions/timeline_semaphore/README.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Timeline semaphore</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+The source for this sample can be found in the <a href="https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/timeline_semaphore">Khronos Vulkan samples github repository</a>.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In Vulkan 1.0, we were introduced to <code>VkSemaphore</code> which is able to synchronize work between Vulkan queues.
+It has some peculiar behavior which makes it somewhat difficult to use in practice.
+The timeline semaphore is designed to solve these problems and it also makes the queue synchronization model closer to what we see in D3D12.</p>
+</div>
+<div class="paragraph">
+<p>The existing semaphore as-is works fine in normal situations, but as applications learn to take advantage of async compute, async transfer, and other advanced synchronization use cases, there are problems which are hard to ignore.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_binary_semaphore_problems"><a class="anchor" href="#_the_binary_semaphore_problems"></a>The binary semaphore problems</h3>
+<div class="paragraph">
+<p>The existing semaphore type is now called a <code>BINARY</code> semaphore, as signals and waits must always happen in 1:1 pairs.
+Completing a wait for a semaphore on the <code>VkQueue</code> also <strong>unsignals it</strong>.
+This is problematic for more advanced use cases where we wish to create a single producer, multiple consumers scenario.
+To make binary semaphores work, we would have to signal multiple semaphores in a single <code>vkQueueSubmit</code>, and then assign one semaphore to each waiting queue.
+This is rather awkward, since it might not be obvious at signal time how this scenario will play out, and juggling N semaphores just for this case is not fun.</p>
+</div>
+<div class="paragraph">
+<p>When juggling N semaphores, it might also happen that a semaphore was not required after all, and we are now sitting with a signalled semaphore which cannot be recycled and signalled again unless we wait for it first.
+The solution here is to just destroy such "hung" semaphores, which is unfortunate.
+Ideally we would be able to reset semaphores on the host as well, but no such API exists and submitting a wait to GPU just for the purpose of unsignalling a semaphore is silly.</p>
+</div>
+<div class="paragraph">
+<p>There is also an object bloat problem.
+Usually, there are many submissions in flight on a GPU, and to be able to synchronize with each submission, we must keep track of a certain number of semaphores which are in-flight at any one time.
+This is doable, but inelegant.
+There is a similar problem for <code>VkFence</code> as well.</p>
+</div>
+<div class="paragraph">
+<p>The final problem is a lack of out-of-order signal and wait.
+This is a somewhat of a niche problem, but in a world with free threaded task graphs, it could make sense to be able to submit work out of order and let synchronization objects take care of synchronization on the GPU.
+With binary semaphores, a signal must be submitted before the wait, which guarantees forward progress, but guarantees jank in the engine.
+There are certainly good reasons for this restriction, but it removes some flexibility.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_viewing_a_vkqueue_as_a_sequence_thinking_in_terms_of_counters"><a class="anchor" href="#_viewing_a_vkqueue_as_a_sequence_thinking_in_terms_of_counters"></a>Viewing a <code>VkQueue</code> as a sequence - thinking in terms of counters</h3>
+<div class="paragraph">
+<p>In order to signal on a <code>VkQueue</code>, we wait for everything that happened before we signal anything.
+This also means that future signal operations will wait for a superset of the operations in the signal that came before.
+In this sense, instead of thinking of synchronizing against individual submissions, we can think about things like "Wait for submission #134 on compute queue to complete", i.e.
+we just associate a single monotonically increasing number to a queue.
+Submitting to a <code>VkQueue</code> can now be considered a simple increment of the monotonically increasing number.</p>
+</div>
+<div class="paragraph">
+<p>This is the foundation of timeline semaphores.
+A <code>VkSemaphore</code> can have a 64-bit counter associated with it and there are two new operations we can do:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>As a signal semaphore, wait for everything to complete in queue, then <strong>monotonically</strong> bump counter value to <code>$old_value + $increment</code>, where <code>$increment</code> is usually 1.</p>
+</li>
+<li>
+<p>As a wait semaphore, wait for the counter of the semaphore to reach <strong>at least</strong> the wait count value.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>From an application point of view, there is no longer a need to own synchronization objects and applications can instead agree on 64-bit counters.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_out_of_order_signal_and_wait"><a class="anchor" href="#_out_of_order_signal_and_wait"></a>Out-of-order signal and wait</h3>
+<div class="paragraph">
+<p>Timeline semaphores also adds support for submitting waits before the corresponding signal operation.
+This hands over the burden to the driver, where it will need to either hold back submissions on its own, or defer this work to the kernel driver.
+Either way, the application no longer needs to hold back submissions.</p>
+</div>
+<div class="paragraph">
+<p>This can be quite useful when applications have multiple threads which perform queue submission, since ensuring ordering otherwise would require a lot of careful thread synchronization.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_single_producer_multiple_consumers"><a class="anchor" href="#_single_producer_multiple_consumers"></a>Single producer, multiple consumers</h3>
+<div class="paragraph">
+<p>There is no unsignal operation with timeline semaphores, so it&#8217;s perfectly fine to do something like:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Signal graphics queue, value 40</p>
+</li>
+<li>
+<p>Wait async compute queue 0, value 40</p>
+</li>
+<li>
+<p>Wait async compute queue 1, value 39</p>
+</li>
+<li>
+<p>Wait async compute queue 2, value 36</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Once the counter reaches 40, it will always be at least 40, and we can keep waiting for this counter as long as we wish.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_integration_of_host_signal_and_wait_good_night_sweet_vkfence"><a class="anchor" href="#_integration_of_host_signal_and_wait_good_night_sweet_vkfence"></a>Integration of host signal and wait, good night sweet <code>VkFence</code></h3>
+<div class="paragraph">
+<p>VkFence is somewhat redundant when we have timeline semaphores, since we can now wait for counter values on CPU as well.
+There is not even a requirement to externally synchronize <code>VkSemaphore</code> objects when doing so, which is very nice!
+To synchronize GPU work with CPU, we just need to know the timeline value we signalled with.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_using_timeline_semaphores"><a class="anchor" href="#_using_timeline_semaphores"></a>Using timeline semaphores</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>First, we need to create a <code>VkSemaphore</code> with <code>TIMELINE</code> type.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// A timeline semaphore is still a semaphore, but it is of TIMELINE type rather than BINARY.
+VkSemaphoreCreateInfo        create_info = vkb::initializers::semaphore_create_info();
+VkSemaphoreTypeCreateInfoKHR type_create_info{VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO_KHR};
+
+type_create_info.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE_KHR;
+type_create_info.initialValue  = 0;
+create_info.pNext              = &amp;type_create_info;
+
+VK_CHECK(vkCreateSemaphore(get_device().get_handle(), &amp;create_info, nullptr, &amp;timeline.semaphore));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We can signal the timeline in <code>vkQueueSubmit</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">VkSubmitInfo submit         = vkb::initializers::submit_info();
+submit.pSignalSemaphores    = &amp;timeline.semaphore;
+submit.signalSemaphoreCount = 1;
+submit.pCommandBuffers      = &amp;cmd;
+submit.commandBufferCount   = 1;
+
+// For every timeline semaphore we signal, we give an auxillary timeline value.
+VkTimelineSemaphoreSubmitInfoKHR timeline_info{VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO_KHR};
+timeline_info.signalSemaphoreValueCount = 1;
+timeline_info.pSignalSemaphoreValues    = &amp;timeline.timeline;
+
+submit.pNext = &amp;timeline_info;
+
+VK_CHECK(vkQueueSubmit(signal_queue, 1, &amp;submit, VK_NULL_HANDLE));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Similarly, we can wait in <code>vkQueueSubmit</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">const VkPipelineStageFlags wait_stages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+
+VkSubmitInfo submit       = vkb::initializers::submit_info();
+submit.pWaitSemaphores    = &amp;timeline.semaphore;
+submit.pWaitDstStageMask  = &amp;wait_stages;
+submit.waitSemaphoreCount = 1;
+submit.pCommandBuffers    = &amp;cmd;
+submit.commandBufferCount = 1;
+
+VkTimelineSemaphoreSubmitInfoKHR timeline_info{VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO_KHR};
+timeline_info.waitSemaphoreValueCount = 1;
+timeline_info.pWaitSemaphoreValues    = &amp;timeline.timeline;
+
+submit.pNext = &amp;timeline_info;
+
+VK_CHECK(vkQueueSubmit(wait_queue, 1, &amp;submit, VK_NULL_HANDLE));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We can wait for one or more semaphores on host as well!</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">VkSemaphoreWaitInfoKHR wait_info{VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO_KHR};
+wait_info.pSemaphores    = &amp;semaphore;
+wait_info.semaphoreCount = 1;
+wait_info.pValues        = &amp;value;
+VK_CHECK(vkWaitSemaphoresKHR(device-&gt;get_handle(), &amp;wait_info, UINT64_MAX));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A somewhat esoteric feature is to signal a timeline on host, this can be used to "kick" the GPU.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">VkSemaphoreSignalInfoKHR signal_info{VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO_KHR};
+signal_info.semaphore = semaphore;
+signal_info.value     = value;
+VK_CHECK(vkSignalSemaphoreKHR(device-&gt;get_handle(), &amp;signal_info));</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_sample"><a class="anchor" href="#_the_sample"></a>The sample</h2>
+<div class="sectionbody">
+<div class="imageblock">
+<div class="content">
+<img src="../../../_images/samples/extensions/timeline_semaphore/images/sample.png" alt="Sample">
+</div>
+</div>
+<div class="paragraph">
+<p>This sample demonstrates an esoteric way of implementing the well-known "Game of Life".
+Through this sample we end up using all the core features of timeline semaphores.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_queues"><a class="anchor" href="#_the_queues"></a>The queues</h3>
+<div class="paragraph">
+<p>In this sample, we make use of two <code>VkQueues</code>, an async compute queue which performs simulation, and the main graphics queue which blits to swapchain and presents the results.
+The two queues need to carefully synchronize with each other.
+This sample could trivially be done with binary semaphores of course, so in this sample we implement it in a difficult way to demonstrate the full API capabilities.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_async_worker_thread_out_of_order_submission"><a class="anchor" href="#_async_worker_thread_out_of_order_submission"></a>Async worker thread - out-of-order submission</h3>
+<div class="paragraph">
+<p>The key aspects we use to demonstrate out of order submission are dedicated workers thread which perform all work related to simulation on the async compute queue, and drawing on the graphics queue.
+They never synchronize with the main thread except at teardown, so the only way to synchronize them is through timeline semaphores.
+To avoid issues when running the sample on Windows platforms (particularly when resizing the window), forward progress in the queues is throttled by the main thread (i.e. only allowing the timeline to advance
+when a render call is active).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_data_flow"><a class="anchor" href="#_data_flow"></a>Data flow</h3>
+<div class="paragraph">
+<p>To simulate "Game of Life", we allocate two images of 64x64 RGBA8.
+First, one image is initialized with initial state, and from here there is a ping-pong where image N is updated, while reading from image 1 - N.
+After updating image N, the main thread will sample from image N.</p>
+</div>
+<div class="paragraph">
+<p>The sequential flow of the rendering is something like:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Compute: wait for "submit"</p>
+</li>
+<li>
+<p>Graphics: wait for "submit"</p>
+</li>
+<li>
+<p>Main: acquires the swapchain image</p>
+</li>
+<li>
+<p>Main: signal "submit"</p>
+</li>
+<li>
+<p>Main: wait for "present"</p>
+</li>
+<li>
+<p>Compute: wait for "image_acquired" (binary semaphore)</p>
+</li>
+<li>
+<p>Graphics: wait for "draw"</p>
+</li>
+<li>
+<p>Compute: write image</p>
+</li>
+<li>
+<p>Compute: signal "draw"</p>
+</li>
+<li>
+<p>Compute: wait for "end of frame"</p>
+</li>
+<li>
+<p>Graphics: read image</p>
+</li>
+<li>
+<p>Graphics: signal "present"</p>
+</li>
+<li>
+<p>Graphics: wait for "end of frame"</p>
+</li>
+<li>
+<p>Main: present swapchain</p>
+</li>
+<li>
+<p>Main: signals "end of frame"</p>
+</li>
+<li>
+<p>Compute: wait for "submit"</p>
+</li>
+<li>
+<p>Graphics: wait for "submit"</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>And so on &#8230;&#8203;
+With out of order signal, we can end up observing this order of submissions instead.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Compute: wait for "submit"</p>
+</li>
+<li>
+<p>Graphics: wait for "submit"</p>
+</li>
+<li>
+<p>Main: acquires the swapchain image</p>
+</li>
+<li>
+<p>Main: signal "submit"</p>
+</li>
+<li>
+<p>Graphics: wait for "draw"</p>
+</li>
+<li>
+<p>Compute: wait for "image_acquired" (binary semaphore)</p>
+</li>
+<li>
+<p>Compute: write image</p>
+</li>
+<li>
+<p>Compute: signal "draw"</p>
+</li>
+<li>
+<p>Graphics: read image</p>
+</li>
+<li>
+<p>Graphics: signal "present"</p>
+</li>
+<li>
+<p>Main: wait for "present"</p>
+</li>
+<li>
+<p>Main: present swapchain</p>
+</li>
+<li>
+<p>Compute: wait for "end of frame"</p>
+</li>
+<li>
+<p>Main: signals "end of frame"</p>
+</li>
+<li>
+<p>Graphics: wait for "end of frame"</p>
+</li>
+<li>
+<p>Compute: wait for "submit"</p>
+</li>
+<li>
+<p>Graphics: wait for "submit"</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>When submitting out of order, it is important that you don&#8217;t just submit work way ahead of where the GPU actually is, since the latency becomes extremely large.
+The natural place to keep submission explosion under control here is the place where we wait for the timeline on host, since we need to re-record command buffers anyways.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_avoiding_deadlocks_in_vkdevicewaitidle"><a class="anchor" href="#_avoiding_deadlocks_in_vkdevicewaitidle"></a>Avoiding deadlocks in <code>vkDeviceWaitIdle</code></h3>
+<div class="paragraph">
+<p>When submitting out-of-order we end up in a situation where a queue cannot see any forward progress until another queue submits.
+Calling <code>vkDeviceWaitIdle</code> at this point triggers a deadlock of the application since <code>vkDeviceWaitIdle</code> will never finish, as there is one queue which cannot make forward progress.
+While calling <code>vkDeviceWaitIdle</code>, you cannot call <code>vkQueueSubmit</code> due to external synchronization rules.</p>
+</div>
+<div class="paragraph">
+<p>Instead, just wait for timeline semaphores on host to "drain" the GPU, or if you must use API calls, use <code>vkQueueWaitIdle</code> and only wait on queues which you need.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_avoiding_deadlocks_when_tearing_down_worker_thread"><a class="anchor" href="#_avoiding_deadlocks_when_tearing_down_worker_thread"></a>Avoiding deadlocks when tearing down worker thread</h3>
+<div class="paragraph">
+<p>Similar to <code>vkDeviceWaitIdle</code>, when tearing down the application, an out-of-order submission might be waiting on work which never comes, and that queue becomes deadlocked.
+To alleviate this, we can make use of host signalling of timeline semaphores to unblock everything in one fell swoop.</p>
+</div>
+<div class="paragraph">
+<p>From <code>TimelineSemaphore::finish_timeline_workers()</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">	graphics_worker.alive = false;
+	compute_worker.alive  = false;
+
+	signal_timeline(Timeline::MAX_STAGES);
+
+	if (graphics_worker.thread.joinable())
+	{
+		graphics_worker.thread.join();
+	}
+
+	if (compute_worker.thread.joinable())
+	{
+		compute_worker.thread.join();
+	}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>From <code>TimelineSemaphore::finish_timeline_workers()</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">	graphics_worker.alive = false;
+	compute_worker.alive  = false;
+
+	signal_timeline(Timeline::MAX_STAGES);
+
+	if (graphics_worker.thread.joinable())
+	{
+		graphics_worker.thread.join();
+	}
+
+	if (compute_worker.thread.joinable())
+	{
+		compute_worker.thread.join();
+	}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_out_of_order_submission_fallbacks_for_single_queue_implementations"><a class="anchor" href="#_out_of_order_submission_fallbacks_for_single_queue_implementations"></a>Out-of-order submission fallbacks for single queue implementations</h3>
+<div class="paragraph">
+<p>Since this sample needs to run on all implementations which support timeline semaphores, the sample also demonstrates the limitations of out-of-order queue submissions.
+It&#8217;s easy to land in a situation where you deadlock the GPU or driver which only happens on single queue Vulkan implementations.
+There are two fixes we need to make this work.</p>
+</div>
+<div class="sect3">
+<h4 id="_holding_back_submissions"><a class="anchor" href="#_holding_back_submissions"></a>Holding back submissions</h4>
+<div class="paragraph">
+<p>This workaround ensures that submissions happen in-order, where forward progress can always be made.
+Since we are using multiple submission threads this sample uses a condition variable to only allow a wait to be submitted if it ensures forward progress.
+This is handled by <code>TimelineSemaphore::update_pending()</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">std::lock_guard&lt;std::mutex&gt; holder{lock.lock};
+lock.pending_timeline = timeline;
+lock.cond.notify_one();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>and <code>TimelineSemaphore::wait_pending()</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">std::unique_lock&lt;std::mutex&gt; holder{lock.lock};
+lock.cond.wait(holder, [&amp;lock, timeline]() -&gt; bool {
+    return lock.pending_timeline &gt;= timeline;
+});</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Blocking like this only works when multiple threads can submit, but that&#8217;s what this sample is doing, so it is a simple fix.</p>
+</div>
+<div class="paragraph">
+<p>The most robust workaround is probably to not lean too heavily on out-of-order submission unless you know you have all the <code>VkQueues</code> you need to resolve the dependencies properly.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_locking_vkqueuesubmit"><a class="anchor" href="#_locking_vkqueuesubmit"></a>Locking <code>vkQueueSubmit</code></h4>
+<div class="paragraph">
+<p>If two threads end up submitting to the same queue at the same time, we need to add locks due to external synchronization requirement of the <code>VkQueue</code>.
+In this sample, we only add the locks if we&#8217;re applying workarounds.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_api_limitations"><a class="anchor" href="#_api_limitations"></a>API limitations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Currently, the Vulkan WSI swapchain does not support timeline semaphores.
+In practice, this isn&#8217;t too big of a deal as swapchain integration tends to be a "special case" either way in most rendering backends.
+The acquire and release semaphores have no analog in other modern APIs.</p>
+</div>
+<div class="paragraph">
+<p>Another related issue with WSI swapchains is that when using binary semaphores, it is not possible to use wait-before-signal.
+The specification states that in order to submit a wait on a binary semaphore all dependencies for that semaphore wait must have been submitted already.
+This means that we need to potentially block a bit on host before we can call vkQueuePresentKHR.
+The sample does this right before calling <code>ApiVulkanSample::submit_frame()</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Before we call present, which uses a binary semaphore, we must ensure that all dependent submissions
+// have been submitted, so that the presenting queue is unblocked at the time of calling.
+wait_pending(async_compute_timeline_lock, main_thread_timeline.timeline);
+
+ApiVulkanSample::submit_frame();</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_conclusion"><a class="anchor" href="#_conclusion"></a>Conclusion</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Timeline semaphores grants a lot of flexibility to applications.
+With modern approaches of task graphs, many threads and free flowing synchronization, timeline semaphores simplify a lot of things and removes the need for emulating a similar concept with binary semaphores and fences.</p>
+</div>
+<div class="paragraph">
+<p>Be careful with out-of-order submissions.
+There are various pitfalls with this approach which have been outlined in this sample.</p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../../_/js/site.js" data-ui-root-path="../../../../../_"></script>
+<script async src="../../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../../.." data-snippet-length="100" data-stylesheet="../../../../../_/css/search.css"></script>
+<script async src="../../../../../search-index.js"></script>
+<script async src="../../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

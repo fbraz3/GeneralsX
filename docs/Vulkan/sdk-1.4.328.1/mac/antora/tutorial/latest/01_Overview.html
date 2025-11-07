@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Overview :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../_/css/site.css">
+    <link rel="stylesheet" href="../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../.."><img class="navbar-item" alt="Vulkan White Label" src="../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="90_FAQ.html">FAQ</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li><a href="01_Overview.html">Overview</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Tutorial/antora/modules/ROOT/pages/01_Overview.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Overview</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This chapter will start off with an introduction of Vulkan and the problems
+it addresses. After that, we&#8217;re going to look at the ingredients that are
+required for the first triangle. This will give you a big picture to place
+each of the subsequent chapters in. We will conclude by covering the
+structure of the Vulkan API and the general usage patterns.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_origin_of_vulkan"><a class="anchor" href="#_origin_of_vulkan"></a>Origin of Vulkan</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Just like the previous graphics APIs, Vulkan is designed as a cross-platform
+ abstraction over <a href="https://en.wikipedia.org/wiki/Graphics_processing_unit">GPUs</a>.
+The problem with most of these APIs is that the era in which they were
+designed featured graphics hardware mostly limited to configurable
+fixed functionality. Programmers had to provide the vertex data in a standard
+ format and were at the mercy of the GPU manufacturers in regard to
+ lighting and shading options.</p>
+</div>
+<div class="paragraph">
+<p>As graphics card architectures matured, they started offering more and more
+programmable functionality. All this new functionality had to be integrated
+with the existing APIs somehow. This resulted in less than ideal abstractions
+ and a lot of guesswork on the graphics driver side to map the programmer&#8217;s
+ intent to the modern graphics architectures. That&#8217;s why there are so many
+ driver updates for improving the performance in games, sometimes by
+ significant margins. Because of the complexity of these drivers, application
+  developers also need to deal with inconsistencies between vendors, like
+  the syntax that is accepted for <a href="https://en.wikipedia.org/wiki/Shader">shaders</a>.
+Aside from these new features, the past decade also saw an influx of mobile
+and embedded devices with powerful graphics hardware. These mobile GPUs have
+ different architectures based on their energy and space requirements.
+One such example is <a href="https://en.wikipedia.org/wiki/Tiled_rendering">tiled rendering</a>,
+which would benefit from improved performance by offering the
+programmer more control over this functionality.
+Another limitation originating from the age of these APIs is limited
+multi-threading support, which can result in a bottleneck on the CPU side.</p>
+</div>
+<div class="paragraph">
+<p>Vulkan solves these problems by being designed from scratch for modern
+graphics architectures. It reduces the driver overhead by allowing programmers to
+ clearly specify their intent using a more feature-full yet verbose API, and
+ allows multiple threads to create and submit commands in parallel. It reduces
+ inconsistencies in shader compilation by switching to a standardized byte
+ code format with a single compiler. Lastly, it acknowledges the general
+ purpose processing capabilities of modern graphics cards by unifying the
+ graphics and compute functionality into a single API.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_what_it_takes_to_draw_a_triangle"><a class="anchor" href="#_what_it_takes_to_draw_a_triangle"></a>What it takes to draw a triangle</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>We&#8217;ll now look at an overview of all the steps it takes to render a triangle
+ in a well-behaved Vulkan program.
+All the concepts introduced here will be elaborated on in the next chapters.
+This is just to give you a big picture to relate all the individual components to.</p>
+</div>
+<div class="sect2">
+<h3 id="_step_1_instance_and_physical_device_selection"><a class="anchor" href="#_step_1_instance_and_physical_device_selection"></a>Step 1 - Instance and physical device selection</h3>
+<div class="paragraph">
+<p>A Vulkan application starts by setting up the Vulkan API through a <code>VkInstance</code>.
+An instance is created by describing your application and any API extensions
+ you will be using. After creating the instance, you can query for Vulkan
+ supported hardware and select one or more <code>VkPhysicalDevice</code>s to use for
+ operations. You can query for properties like VRAM size and device
+ capabilities to select desired devices, for example, to prefer using
+ dedicated graphics cards.</p>
+</div>
+<div class="paragraph">
+<p>For vk::raii we need to use a <code>vk::raii::Context</code>, which manages functions that
+are not bound to either the <code>VkInstance</code> or a <code>VkPhysicalDevice</code></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_2_logical_device_and_queue_families"><a class="anchor" href="#_step_2_logical_device_and_queue_families"></a>Step 2 - Logical device and queue families</h3>
+<div class="paragraph">
+<p>After selecting the right hardware device to use, you need to create a
+VkDevice (logical device), where you describe more specifically which
+VkPhysicalDeviceFeatures you will be using, like multi viewport rendering
+and 64-bit floats.
+You also need to specify which queue families you would like to use.
+Most operations performed with Vulkan, like draw commands and memory
+operations, are asynchronously executed by submitting them to a VkQueue.
+Queues are allocated from queue families, where each queue family supports a
+ specific set of operations in its queues.
+For example, there could be separate queue families for graphics, compute
+and memory transfer operations.
+The availability of queue families could also be used as a distinguishing
+factor in physical device selection.
+It is possible for a device with Vulkan support to not offer any graphics
+functionality; however, all graphics cards with Vulkan support today will
+generally support all queue operations that we&#8217;re interested in.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_3_window_surface_and_swap_chain"><a class="anchor" href="#_step_3_window_surface_and_swap_chain"></a>Step 3 - Window surface and swap chain</h3>
+<div class="paragraph">
+<p>Unless you&#8217;re only interested in offscreen rendering, you will need to
+create a window to present rendered images.
+Windows can be created with the native platform APIs or libraries like
+<a href="https://www.glfw.org/">GLFW</a> and <a href="https://www.libsdl.org/">SDL</a>.
+We will be using GLFW in this tutorial, but more about that in the next
+chapter.</p>
+</div>
+<div class="paragraph">
+<p>We need two more parts to actually render to a window: a window surface
+ (VkSurfaceKHR) and a swap chain (VkSwapchainKHR).
+Note the <code>KHR</code> postfix, which means that these objects are part of a Vulkan
+extension. The Vulkan API itself is completely platform-agnostic, which is
+why we need to use the standardized WSI (Window System Interface) extension
+to interact with the window manager.
+The surface is a cross-platform abstraction over windows to render to and is
+ generally instantiated by providing a reference to the native window
+ handle, for example <code>HWND</code> on Windows.
+Luckily, the GLFW library has a built-in function to deal with the
+platform-specific details of this.</p>
+</div>
+<div class="paragraph">
+<p>The swap chain is a collection of render targets.
+Its basic purpose is to ensure that the image that we&#8217;re currently rendering
+ is different from the one that is currently on the screen.
+This is important to make sure that only complete images are shown.
+Every time we want to draw a frame, we have to ask the swap chain to provide
+us with an image to render to.
+When we&#8217;ve finished drawing a frame, the image is returned to the swap chain
+ for it to be presented to the screen at some point.
+The number of render targets and conditions for presenting finished images
+to the screen depends on the present mode.
+Common present modes are  double buffering (vsync) and triple buffering.
+We&#8217;ll look into these in the swap chain creation chapter.</p>
+</div>
+<div class="paragraph">
+<p>Some platforms allow you to render directly to a display without interacting
+ with any window manager through the <code>VK_KHR_display</code> and
+ <code>VK_KHR_display_swapchain</code> extensions.
+These allow you to create a surface that represents the entire screen and
+could be used to implement your own window manager, for example.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_4_image_views_and_framebuffers"><a class="anchor" href="#_step_4_image_views_and_framebuffers"></a>Step 4 - Image views and framebuffers</h3>
+<div class="paragraph">
+<p>To draw to an image acquired from the swap chain, we have to wrap it into a
+VkImageView and VkFramebuffer.
+An image view references a specific part of an image to be used, and a
+framebuffer references image views that are to be used for color, depth and
+stencil targets.
+Because there could be many different images in the swap chain, we&#8217;ll
+preemptively create an image view and framebuffer for each of them and
+select the right one at draw time.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_5_render_passes"><a class="anchor" href="#_step_5_render_passes"></a>Step 5 - Render passes</h3>
+<div class="paragraph">
+<p>Render passes in Vulkan describe the type of images that are used during
+rendering operations, how they will be used, and how their contents should
+be treated.
+In our initial triangle rendering application, we&#8217;ll tell Vulkan that we
+will use a single image as a color target and that we want it to be cleared to
+ a solid color right before the drawing operation.
+Whereas a render pass only describes the type of images, a VkFramebuffer
+actually binds specific images to these slots.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_6_graphics_pipeline"><a class="anchor" href="#_step_6_graphics_pipeline"></a>Step 6 - Graphics pipeline</h3>
+<div class="paragraph">
+<p>The graphics pipeline in Vulkan is set up by creating a VkPipeline object.
+It describes the configurable state of the graphics card, like the viewport
+size and depth buffer operation and the programmable state using VkShaderModule objects.
+The VkShaderModule objects are created from shader byte code.
+The driver also needs to know which render targets will be used in the
+pipeline, which we specify by referencing the render pass.</p>
+</div>
+<div class="paragraph">
+<p>One of the most distinctive features of Vulkan compared to existing APIs, is
+ that almost all configuration of the graphics pipeline needs to be set in
+ advance.
+That means that if you want to switch to a different shader or slightly
+change your vertex layout, then you need to entirely recreate the graphics
+pipeline.
+That means that you will have to create many VkPipeline objects in advance
+for all the different combinations you need for your rendering operations.
+Only some basic configuration, like viewport size and clear color, can be
+changed dynamically.
+All the states also need to be described explicitly; there is no default
+color blend state, for example.</p>
+</div>
+<div class="paragraph">
+<p>The good news is that because you&#8217;re doing the equivalent of ahead-of-time
+compilation versus just-in-time compilation, there are more optimization
+opportunities for the driver. Runtime performance is more predictable
+because large state changes like switching to a different graphics pipeline
+are made very explicit.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_7_command_pools_and_command_buffers"><a class="anchor" href="#_step_7_command_pools_and_command_buffers"></a>Step 7 - Command pools and command buffers</h3>
+<div class="paragraph">
+<p>As mentioned earlier, many of the operations in Vulkan that we want to
+execute, like drawing operations, need to be submitted to a queue.
+These operations first need to be recorded into a VkCommandBuffer before
+they can be submitted.
+These command buffers are allocated from a <code>VkCommandPool</code> that is
+associated with a specific queue family.
+To draw a simple triangle, we need to record a command buffer with the
+following operations:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Begin the render pass</p>
+</li>
+<li>
+<p>Bind the graphics pipeline</p>
+</li>
+<li>
+<p>Draw three vertices</p>
+</li>
+<li>
+<p>End the render pass</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Because the image in the framebuffer depends on which specific image the
+swap chain will give us, we need to record a command buffer for each
+possible image and select the right one at draw time.
+The alternative would be to record the command buffer again every frame,
+which is not as efficient.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_8_main_loop"><a class="anchor" href="#_step_8_main_loop"></a>Step 8 - Main loop</h3>
+<div class="paragraph">
+<p>Now that the drawing commands have been wrapped into a command buffer, the
+main loop is quite straightforward.
+We first acquire an image from the swap chain with vkAcquireNextImageKHR.
+We can then select the appropriate command buffer for that image and execute
+ it with vkQueueSubmit.
+Finally, we return the image to the swap chain for presentation to the
+screen with vkQueuePresentKHR.</p>
+</div>
+<div class="paragraph">
+<p>Operations that are submitted to queues are executed asynchronously.
+Therefore, we have to use synchronization objects like semaphores to ensure a
+ correct order of execution.
+Execution of the draw command buffer must be set up to wait on image
+acquisition to finish; otherwise it may occur that we start rendering to an
+image that is still being read for presentation on the screen.
+The vkQueuePresentKHR call in turn needs to wait for rendering to be
+finished, for which we&#8217;ll use a second semaphore that is signaled after
+rendering completes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_summary"><a class="anchor" href="#_summary"></a>Summary</h3>
+<div class="paragraph">
+<p>This whirlwind tour should give you a basic understanding of the work ahead
+ of drawing the first triangle.
+A real-world program contains more steps, like allocating vertex buffers,
+creating uniform buffers and uploading texture images that will be covered
+in later chapters. However, we&#8217;ll start simple because Vulkan has enough of
+a steep learning curve as it is.
+Note that we&#8217;ll cheat a bit by initially embedding the vertex coordinates in
+ the vertex shader instead of using a vertex buffer.
+That&#8217;s because managing vertex buffers requires some familiarity with
+command buffers first.</p>
+</div>
+<div class="paragraph">
+<p>So in short, to draw the first triangle, we need to:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Create a VkInstance</p>
+</li>
+<li>
+<p>Select a supported graphics card (VkPhysicalDevice)</p>
+</li>
+<li>
+<p>Create a VkDevice and VkQueue for drawing and presentation</p>
+</li>
+<li>
+<p>Create a window, window surface and swap chain</p>
+</li>
+<li>
+<p>Wrap the swap chain images into VkImageView</p>
+</li>
+<li>
+<p>Create a render pass that specifies the render targets and usage</p>
+</li>
+<li>
+<p>Create framebuffers for the render pass</p>
+</li>
+<li>
+<p>Set up the graphics pipeline</p>
+</li>
+<li>
+<p>Allocate and record a command buffer with the draw commands for every
+possible swap chain image</p>
+</li>
+<li>
+<p>Draw frames by acquiring images, submitting the right draw command buffer
+and returning the images to the swap chain</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>It&#8217;s a lot of steps, but the purpose of each step will be made
+basic and clear in the upcoming chapters.
+If you&#8217;re confused about the relation of a single step compared to the whole
+ program, you should refer back to this chapter.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_api_concepts"><a class="anchor" href="#_api_concepts"></a>API concepts</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This chapter will conclude with a short overview of how the Vulkan API is
+structured at a lower level.</p>
+</div>
+<div class="sect2">
+<h3 id="_coding_conventions"><a class="anchor" href="#_coding_conventions"></a>Coding conventions</h3>
+<div class="paragraph">
+<p>All the Vulkan functions, enumerations and structs are defined in the
+<code>vulkan.h</code> header, which is included in the <a href="https://lunarg.com/vulkan-sdk/">Vulkan SDK</a>
+developed by LunarG. We&#8217;ll look into installing this SDK in the next chapter.</p>
+</div>
+<div class="paragraph">
+<p>Functions have a lower case <code>vk</code> prefix, types like enumerations and structs
+ have a <code>Vk</code> prefix and enumeration values have a <code>VK_</code> prefix.
+The API heavily uses structs to provide parameters to functions.
+For example, object creation generally follows this pattern:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">VkXXXCreateInfo createInfo{};
+createInfo.sType = VK_STRUCTURE_TYPE_XXX_CREATE_INFO;
+createInfo.pNext = nullptr;
+createInfo.foo = ...;
+createInfo.bar = ...;
+
+VkXXX object;
+if (vkCreateXXX(&amp;createInfo, nullptr, &amp;object) != VK_SUCCESS) {
+    std::cerr &lt;&lt; "failed to create object" &lt;&lt; std::endl;
+    return false;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Many structures in Vulkan require you to explicitly specify the type of
+structure in the <code>sType</code> member.
+The <code>pNext</code> member can point to an extension structure and will always be
+<code>nullptr</code> in this tutorial.
+Functions that create or destroy an object will have a VkAllocationCallbacks
+ parameter that allows you to use a custom allocator for driver memory,
+ which will also be left <code>nullptr</code> in this tutorial.</p>
+</div>
+<div class="paragraph">
+<p>Almost all functions return a VkResult that is either <code>VK_SUCCESS</code> or an
+error code.
+The specification describes which error codes each function can return and
+what they mean.</p>
+</div>
+<div class="paragraph">
+<p>To help illustrate the utility of using the RAII C++ Vulkan abstraction; this
+is the same code written with our modern API:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">auto createInfo = vk::xxx();
+auto object = vk::raii::XXX(context, createInfo);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Failure of such calls is reported by C++ exceptions. The exception will
+respond with more information about the error including the aforementioned
+vkResult, this enables us to check multiple commands from one call and keep
+the command syntax clean.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_validation_layers"><a class="anchor" href="#_validation_layers"></a>Validation layers</h3>
+<div class="paragraph">
+<p>As mentioned earlier, Vulkan is designed for high performance and low driver
+ overhead.
+Therefore, it will include very limited error checking and debugging
+capabilities by default.
+The driver will often crash instead of returning an error code if you do
+something wrong, or worse, it will appear to work on your graphics card and
+completely fail on others.</p>
+</div>
+<div class="paragraph">
+<p>Vulkan allows you to enable extensive checks through a feature known as
+<em>validation layers</em>.
+Validation layers are pieces of code that can be inserted between the API
+and the graphics driver to do things like running extra checks on function
+parameters and tracking memory management problems.
+The nice thing is that you can enable them during development and then
+completely disable them when releasing your application for zero overhead.
+Anyone can write their own validation layers, but the Vulkan SDK by LunarG
+provides a standard set of validation layers that we&#8217;ll be using in this tutorial.
+You also need to register a callback function to receive debug messages from
+ the layers.</p>
+</div>
+<div class="paragraph">
+<p>Because Vulkan is so explicit about every operation and the validation
+layers are so extensive, it can actually be a lot easier to find out why
+your screen is black compared to OpenGL and Direct3D!</p>
+</div>
+<div class="paragraph">
+<p>There&#8217;s only one more step before we&#8217;ll start writing code, and that&#8217;s
+<a href="02_Development_environment.html" class="xref page">setting up the development environment</a>.</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+<script src="../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../.." data-snippet-length="100" data-stylesheet="../../_/css/search.css"></script>
+<script async src="../../search-index.js"></script>
+<script async src="../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

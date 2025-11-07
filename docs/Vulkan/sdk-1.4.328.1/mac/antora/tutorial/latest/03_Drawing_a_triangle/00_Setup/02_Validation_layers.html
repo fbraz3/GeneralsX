@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Validation layers :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../90_FAQ.html">FAQ</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li><a href="00_Base_code.html">Drawing a triangle</a></li>
+    <li><a href="00_Base_code.html">Setup</a></li>
+    <li><a href="02_Validation_layers.html">Validation layers</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Tutorial/antora/modules/ROOT/pages/03_Drawing_a_triangle/00_Setup/02_Validation_layers.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Validation layers</h1>
+<div class="sect1">
+<h2 id="_what_are_validation_layers"><a class="anchor" href="#_what_are_validation_layers"></a>What are validation layers?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The Vulkan API is designed around the idea of minimal driver overhead, and one of
+the manifestations of that goal is that there is very limited error checking in
+the API by default. Even mistakes as simple as setting enumerations to incorrect
+values or passing null pointers to required parameters are generally not
+explicitly handled beyond c&#43;&#43; type checking, and will simply result in
+crashes or undefined behavior.
+Because Vulkan requires you to be very explicit about everything you&#8217;re doing,
+it&#8217;s easy to make many small mistakes like using a new GPU feature and
+forgetting to request it at logical device creation time.</p>
+</div>
+<div class="paragraph">
+<p>However, that doesn&#8217;t mean that these checks can&#8217;t be added to the API. Vulkan
+introduces an elegant system for this known as <strong>validation layers</strong>. Validation
+layers are optional components that hook into Vulkan function calls to apply
+additional operations. Common operations in validation layers are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Checking the values of parameters against the specification to detect misuse</p>
+</li>
+<li>
+<p>Tracking the creation and destruction of objects to find resource leaks</p>
+</li>
+<li>
+<p>Checking thread safety by tracking the threads that calls originate from</p>
+</li>
+<li>
+<p>Logging every call and its parameters to the standard output</p>
+</li>
+<li>
+<p>Tracing Vulkan calls for profiling and replaying</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Here&#8217;s an example of what the implementation of a function in a diagnostics
+validation layer could look like:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">VkResult vkCreateInstance(
+    const VkInstanceCreateInfo* pCreateInfo,
+    const VkAllocationCallbacks* pAllocator,
+    VkInstance* instance) {
+
+    if (pCreateInfo == nullptr || instance == nullptr) {
+        log("Null pointer passed to required parameter!");
+        return VK_ERROR_INITIALIZATION_FAILED;
+    }
+
+    return real_vkCreateInstance(pCreateInfo, pAllocator, instance);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>These validation layers can be freely stacked to include all the debugging
+functionality that you&#8217;re interested in. You can enable validation layers
+for debug builds and completely disable them for release builds, which gives you
+the best of both worlds!</p>
+</div>
+<div class="paragraph">
+<p>Vulkan does not come with any validation layers built-in, but the LunarG Vulkan
+SDK provides a nice set of layers that check for common errors. They&#8217;re also
+completely <a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers">open source</a>,
+so you can check which kind of mistakes they check for and contribute. Using the
+validation layers is the best way to avoid your application breaking on
+different drivers by accidentally relying on undefined behavior.</p>
+</div>
+<div class="paragraph">
+<p>Validation layers can only be used if they have been installed onto the system.
+For example, the LunarG validation layers are only available on PCs with the
+Vulkan SDK installed.</p>
+</div>
+<div class="paragraph">
+<p>Other layers exist, and we recommend making use of them. We&#8217;ll
+leave it as an exercise to the reader to discover and try out the other
+layers.  However, we recommend looking at BestPractices for more help and
+suggestions about how to use Vulkan in an updated way.</p>
+</div>
+<div class="paragraph">
+<p>There were formerly two different types of validation layers in Vulkan: instance
+and device specific. The idea was that instance layers would only check
+calls related to global Vulkan objects like instances, and device-specific layers
+would only check calls related to a specific GPU. Device-specific layers have now been
+deprecated, which means that instance validation layers apply to all Vulkan
+calls. The specification document still recommends that you enable validation
+layers at device level as well for compatibility, which is required by some
+implementations. We&#8217;ll simply specify the same layers as the instance at logical
+device level, which we&#8217;ll see
+<a href="04_Logical_device_and_queues.html" class="xref page">later on</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_using_validation_layers"><a class="anchor" href="#_using_validation_layers"></a>Using validation layers</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this section, we&#8217;ll see how to enable the standard diagnostics layers provided
+by the Vulkan SDK. Just like extensions, validation layers need to be enabled by
+specifying their name. All the useful standard validation is bundled into a
+layer included in the SDK that is known as <code>VK_LAYER_KHRONOS_validation</code>.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s first add two configuration variables to the program to specify the layers
+to enable and whether to enable them or not. We&#8217;ve chosen to base that value on
+whether the program is being compiled in debug mode or not. The <code>NDEBUG</code> macro
+is part of the c&#43;&#43; standard and means "not debug".</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">constexpr uint32_t WIDTH = 800;
+constexpr uint32_t HEIGHT = 600;
+
+const std::vector validationLayers = {
+    "VK_LAYER_KHRONOS_validation"
+};
+
+#ifdef NDEBUG
+constexpr bool enableValidationLayers = false;
+#else
+constexpr bool enableValidationLayers = true;
+#endif</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We&#8217;ll add a new function <code>checkValidationLayerSupport</code> that checks if all
+the requested layers are available. As the instance layers are returned as a
+std::array, they can be filtered via a single line and return the value
+using lambda functions.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">bool checkValidationLayerSupport() {
+    return (std::ranges::any_of(context.enumerateInstanceLayerProperties(),
+        []( vk::LayerProperties const &amp; lp ) { return ( strcmp( "VK_LAYER_KHRONOS_validation", lp.layerName ) == 0 ); } ) );
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We can now use this function in <code>createInstance</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createInstance() {
+    if (enableValidationLayers &amp;&amp; !checkValidationLayerSupport()) {
+        throw std::runtime_error("validation layers requested, but not available!");
+    }
+
+    ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now run the program in debug mode and ensure that the error does not occur. If
+it does, then have a look at the FAQ.</p>
+</div>
+<div class="paragraph">
+<p>Finally, modify the <code>VkInstanceCreateInfo</code> struct instantiation to include the
+validation layer names if they are enabled:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">std::vector&lt;char const *&gt; enabledLayers;
+if (enableValidationLayers) {
+    enabledLayers.assign(validationLayers.begin(), validationLayers.end());
+}
+vk::InstanceCreateInfo createInfo({}, &amp;appInfo, enabledLayers, {});</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If the check was successful then <code>vkCreateInstance</code> should not ever return a
+<code>VK_ERROR_LAYER_NOT_PRESENT</code> error, but you should run the program to make sure.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_message_callback"><a class="anchor" href="#_message_callback"></a>Message callback</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The validation layers will print debug messages to the standard output by
+default, but we can also handle them ourselves by providing an explicit
+callback in our program. This will also allow you to decide which kind of
+messages you would like to see, because not all are necessarily (fatal)
+errors. If you don&#8217;t want to do that right now, then you may skip to the
+last section in this chapter.</p>
+</div>
+<div class="paragraph">
+<p>To set up a callback in the program to handle messages and the associated
+details, we have to set up a debug messenger with a callback using the
+<code>VK_EXT_debug_utils</code> extension.</p>
+</div>
+<div class="paragraph">
+<p>We&#8217;ll first create a <code>getRequiredExtensions</code> function that will return the
+required list of extensions based on whether validation layers are enabled or
+not:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">std::vector&lt;const char*&gt; getRequiredExtensions() {
+    uint32_t glfwExtensionCount = 0;
+    auto glfwExtensions = glfwGetRequiredInstanceExtensions(&amp;glfwExtensionCount);
+
+    std::vector&lt;vk::ExtensionProperties&gt; props = context.enumerateInstanceExtensionProperties();
+    if (const auto propsIterator = std::ranges::find_if(props, []( vk::ExtensionProperties const &amp; ep ) { return strcmp( ep.extensionName, vk::EXTDebugUtilsExtensionName ) == 0; } ); propsIterator == props.end() )
+    {
+        std::cout &lt;&lt; "Something went very wrong, cannot find VK_EXT_debug_utils extension" &lt;&lt; std::endl;
+        exit( 1 );
+    }
+    std::vector extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+    if (enableValidationLayers) {
+        extensions.push_back(vk::EXTDebugUtilsExtensionName );
+    }
+
+    return extensions;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The extensions specified by GLFW are always required, as we&#8217;re working with
+the GLFW dependency for windowing, but the debug messenger extension is
+conditionally added. Note that We&#8217;ve used the
+<code>VK_EXT_DEBUG_UTILS_EXTENSION_NAME</code> macro here which is equal to the literal
+string "VK_EXT_debug_utils". Using this macro lets you avoid typos.</p>
+</div>
+<div class="paragraph">
+<p>We can now use this function in <code>createInstance</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">auto extensions = getRequiredExtensions();
+vk::InstanceCreateInfo createInfo({}, &amp;appInfo, enabledLayers, extensions);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Run the program to make sure you don&#8217;t receive a
+<code>VK_ERROR_EXTENSION_NOT_PRESENT</code> error. We don&#8217;t really need to check for the
+existence of this extension because it should be implied by the availability of
+the validation layers.</p>
+</div>
+<div class="paragraph">
+<p>Now let&#8217;s see what a debug callback function looks like. Add a new static member
+function called <code>debugCallback</code> with the <code>PFN_vkDebugUtilsMessengerCallbackEXT</code>
+prototype. The <code>VKAPI_ATTR</code> and <code>VKAPI_CALL</code> ensure that the function has the
+right signature for Vulkan to call it.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT severity, vk::DebugUtilsMessageTypeFlagsEXT type, const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void*) {
+    std::cerr &lt;&lt; "validation layer: type " &lt;&lt; to_string(type) &lt;&lt; " msg: " &lt;&lt; pCallbackData-&gt;pMessage &lt;&lt; std::endl;
+
+    return vk::False;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The first parameter specifies the severity of the message, which is one of
+the following flags:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT</code>: Diagnostic message</p>
+</li>
+<li>
+<p><code>VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT</code>: Informational message
+like the creation of a resource</p>
+</li>
+<li>
+<p><code>VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT</code>: Message about behavior
+that is not necessarily an error, but very likely a bug in your application</p>
+</li>
+<li>
+<p><code>VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT</code>: Message about behavior
+that is invalid and may cause crashes</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The values of this enumeration are set up in such a way that you can use a
+comparison operation to check if a message is equal or worse compared to
+some level of severity, for example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">if (messageSeverity &gt;= vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning) {
+    // Message is important enough to show
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>messageType</code> parameter can have the following values:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT</code>: Some event has happened that is unrelated to the specification or performance</p>
+</li>
+<li>
+<p><code>VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT</code>: Something has happened that violates the specification or indicates a possible mistake</p>
+</li>
+<li>
+<p><code>VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT</code>: Potential non-optimal use of Vulkan</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The <code>pCallbackData</code> parameter refers to a <code>VkDebugUtilsMessengerCallbackDataEXT</code> struct containing the details of the message itself, with the most important members being:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>pMessage</code>: The debug message as a null-terminated string</p>
+</li>
+<li>
+<p><code>pObjects</code>: Array of Vulkan object handles related to the message</p>
+</li>
+<li>
+<p><code>objectCount</code>: Number of objects in the array</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Finally, the <code>pUserData</code> parameter contains a pointer specified during the
+setup of the callback and allows you to pass your own data to it.</p>
+</div>
+<div class="paragraph">
+<p>The callback returns a boolean that indicates if the Vulkan call that triggered
+the validation layer message should be aborted. If the callback returns true,
+then the call is aborted with the <code>VK_ERROR_VALIDATION_FAILED_EXT</code> error. This
+is normally only used to test the validation layers themselves, so you should
+always return <code>VK_FALSE</code>.</p>
+</div>
+<div class="paragraph">
+<p>All that remains now is telling Vulkan about the callback function. Such a
+callback is part of a <strong>debug messenger,</strong> and you can have as many of them as
+you want. Add a class member for this handle right under <code>instance</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">std::unique_ptr&lt;vk::raii::DebugUtilsMessengerEXT&gt; debugMessenger;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now add a function <code>setupDebugMessenger</code> to be called from <code>initVulkan</code> right
+after <code>createInstance</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void initVulkan() {
+    createInstance();
+    setupDebugMessenger();
+}
+
+void setupDebugMessenger() {
+    if (!enableValidationLayers) return;
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We&#8217;ll need to fill in a structure with details about the messenger and its callback:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::DebugUtilsMessageSeverityFlagsEXT severityFlags( vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError );
+vk::DebugUtilsMessageTypeFlagsEXT    messageTypeFlags( vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation );
+
+vk::DebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfoEXT({}, severityFlags, messageTypeFlags, &amp;debugCallback);
+debugMessenger = std::make_unique&lt;vk::raii::DebugUtilsMessengerEXT&gt;( *instance, debugUtilsMessengerCreateInfoEXT );</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>messageSeverity</code> field allows you to specify all the types of
+severities you would like your callback to be called for. We&#8217;ve specified
+all types except for <code>VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT</code> here to
+receive notifications about possible problems while leaving out verbose
+general debug info.</p>
+</div>
+<div class="paragraph">
+<p>Similarly, the <code>messageType</code> field lets you filter which types of messages
+your callback is notified about. We&#8217;ve simply enabled all types here. You
+can always disable some if they&#8217;re not useful to you.</p>
+</div>
+<div class="paragraph">
+<p>Finally, the <code>pfnUserCallback</code> field specifies the pointer to the callback
+function. You can optionally pass a pointer to the <code>pUserData</code> field which
+will be passed along to the callback function via the <code>pUserData</code> parameter.
+You could use this to pass a pointer to the <code>HelloTriangleApplication</code>
+class, for example.</p>
+</div>
+<div class="paragraph">
+<p>Note that there are many more ways to configure validation layer messages
+and debug callbacks, but this is a good setup to get started with for this
+tutorial. See the <a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/html/chap50.html#VK_EXT_debug_utils">extension specification</a>
+for more info about the possibilities.</p>
+</div>
+<div class="paragraph">
+<p>We can now re-use this in the <code>createInstance</code> function:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createInstance() {
+    constexpr auto appInfo = vk::ApplicationInfo("Hello Triangle", 1, "No Engine", 1, vk::ApiVersion11);
+    auto extensions = getRequiredExtensions();
+    std::vector&lt;char const *&gt; enabledLayers;
+    if (enableValidationLayers) {
+        enabledLayers.assign(validationLayers.begin(), validationLayers.end());
+    }
+    vk::InstanceCreateInfo createInfo({}, &amp;appInfo, enabledLayers.size(), enabledLayers.data(), extensions.size(), extensions.data());
+    instance = std::make_unique&lt;vk::raii::Instance&gt;(context, createInfo);
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_configuration"><a class="anchor" href="#_configuration"></a>Configuration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>There are a lot more settings for the behavior of validation layers than just
+the flags specified in the <code>VkDebugUtilsMessengerCreateInfoEXT</code> struct. Browse
+to the Vulkan SDK and go to the <code>Config</code> directory. There you will find a
+<code>vk_layer_settings.txt</code> file that explains how to configure the layers.</p>
+</div>
+<div class="paragraph">
+<p>To configure the layer settings for your own application, copy the file to the
+<code>Debug</code> and <code>Release</code> directories of your project and follow the instructions to
+set the desired behavior. However, for the remainder of this tutorial, We will
+assume that you&#8217;re using the default settings.</p>
+</div>
+<div class="paragraph">
+<p>Throughout this tutorial, we will be making a couple of intentional mistakes
+to show you how helpful the validation layers are with catching them and to teach you
+how important it is to know exactly what you&#8217;re doing with Vulkan. Now it&#8217;s time
+to look at <a href="03_Physical_devices_and_queue_families.html" class="xref page">Vulkan devices in the system</a>.</p>
+</div>
+<div class="paragraph">
+<p><a href="../../_attachments/02_validation_layers.cpp">C&#43;&#43; code</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

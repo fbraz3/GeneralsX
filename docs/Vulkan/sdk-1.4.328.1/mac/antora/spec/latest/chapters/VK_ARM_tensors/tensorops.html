@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Tensor Operations :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:spec" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="spec" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../index.html">Vulkan Specification</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../fundamentals.html">Fundamentals</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../initialization.html">Initialization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../devsandqueues.html">Devices and Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../cmdbuffers.html">Command Buffers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../synchronization.html">Synchronization and Cache Control</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../renderpass.html">Render Pass</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../shaders.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../pipelines.html">Pipelines</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../memory.html">Memory Allocation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../resources.html">Resource Creation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../samplers.html">Samplers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../descriptorsets.html">Resource Descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../interfaces.html">Shader Interfaces</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../textures.html">Image Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../fragmentdensitymapops.html">Fragment Density Map Operations</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="tensorops.html">Tensor Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../queries.html">Queries</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../clears.html">Clear Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../copies.html">Copy Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../drawing.html">Drawing Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../fxvertex.html">Fixed-Function Vertex Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../tessellation.html">Tessellation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../geometry.html">Geometry Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_NV_mesh_shader/mesh.html">Mesh Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_HUAWEI_cluster_culling_shader/clusterculling.html">Cluster Culling Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../vertexpostproc.html">Fixed-Function Vertex Post-Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../primsrast.html">Rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../fragops.html">Fragment Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../framebuffer.html">The Framebuffer</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../dispatch.html">Dispatching Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../device_generated_commands/generatedcommands.html">Device-Generated Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../sparsemem.html">Sparse Resources</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_KHR_surface/wsi.html">Window System Integration (WSI)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_KHR_deferred_host_operations/deferred_host_operations.html">Deferred Host Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_EXT_private_data.html">Private Data</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../accelstructures.html">Acceleration Structures</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_EXT_opacity_micromap/micromaps.html">Micromap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../raytraversal.html">Ray Traversal</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../raytracing.html">Ray Tracing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_NV_memory_decompression.html">Memory Decompression</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../videocoding.html">Video Coding</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_NV_optical_flow/optical_flow.html">Optical Flow</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../executiongraphs.html">Execution Graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_NV_external_compute_queue/VK_NV_external_compute_queue.html">External Compute Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_ARM_data_graph/graphs.html">Data graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../extensions.html">Extending Vulkan</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../features.html">Features</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../limits.html">Limits</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../formats.html">Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../capabilities.html">Additional Capabilities</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../debugging.html">Debugging</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/spirvenv.html">Vulkan Environment for SPIR-V</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/memorymodel.html">Memory Model</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/compressedtex.html">Compressed Image Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/versions.html">Core Revisions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/extensions.html">Layers &amp; Extensions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/roadmap.html">Vulkan Roadmap Milestones</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/deprecation.html">Deprecation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/boilerplate.html">API Boilerplate</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/invariance.html">Invariance</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/glossary.html">Lexicon</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/credits.html">Credits (Informative)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Specification</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../../index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../index.html">Vulkan Specification</a></li>
+    <li><a href="tensorops.html">Tensor Operations</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/spec/modules/ROOT/pages/chapters/VK_ARM_tensors/tensorops.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Tensor Operations</h1>
+<div class="sect1">
+<h2 id="_tensor_operations_overview"><a class="anchor" href="#_tensor_operations_overview"></a>Tensor Operations Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Vulkan Tensor Operations are operations performed by those SPIR-V Tensor
+Instructions which take an <code>OpTypeTensorARM</code> (representing a
+<code>VkTensorViewARM</code>).
+Read and write operations take tensor element coordinates as operands, and
+return elements from the tensor.
+Query operations return properties of the bound tensor.</p>
+</div>
+<div class="paragraph">
+<p>Tensor Operations include the functionality of the following SPIR-V Tensor
+Instructions:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>OpTensorReadARM</code> reads one or more elements from the tensor.</p>
+</li>
+<li>
+<p><code>OpTensorWriteARM</code> writes one or more elements to the tensor.</p>
+</li>
+<li>
+<p><code>OpTensorQuerySizeARM</code> returns the size of the tensor descriptor that
+would be accessed.
+The tensor itself is not accessed.</p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_tensor_coordinate_system"><a class="anchor" href="#_tensor_coordinate_system"></a>Tensor Coordinate System</h3>
+<div class="paragraph">
+<p>Each elements in a tensor can be addressed using a set of <span class="eq">N</span> integer
+coordinates where <span class="eq">N</span> is equal to the rank, i.e. number of dimensions,
+of the tensor.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_tensor_element_input_operations"><a class="anchor" href="#_tensor_element_input_operations"></a>Tensor Element Input Operations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><em>Tensor element input instructions</em> are SPIR-V tensor instructions that read
+from a tensor.
+<em>Tensor element input operations</em> are a set of steps that are performed on
+state, coordinates, and tensor element values while processing a tensor
+element input instruction, and which are common to some or all tensor
+element input instructions.
+They include the following steps, which are performed in the listed order:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#tensors-input-validation">Validation operations</a></p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#tensors-operation-validation">Instruction/Tensor validation</a></p>
+</li>
+<li>
+<p><a href="#tensors-coordinate-validation">Coordinate validation</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><a href="#tensors-input-format-conversion">Format conversion</a></p>
+</li>
+<li>
+<p><a href="#tensors-element-replacement">Tensor Element replacement</a></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For tensor element input instructions involving multiple tensor elements,
+these steps are applied for each tensor element that is used in the
+instruction.</p>
+</div>
+<div class="sect2">
+<h3 id="tensors-input-validation"><a class="anchor" href="#tensors-input-validation"></a>Tensor Element Input Validation Operations</h3>
+<div class="paragraph">
+<p>Tensor element input validation operations inspect instruction/tensor state
+or coordinates, and in certain circumstances cause the tensor element value
+to be replaced or become <strong>undefined</strong>.
+There are a series of validations that the tensor element undergoes.</p>
+</div>
+<div class="sect3">
+<h4 id="tensors-operation-validation"><a class="anchor" href="#tensors-operation-validation"></a>Instruction/Tensor View Validation</h4>
+<div class="paragraph">
+<p>There are a number of cases where a SPIR-V instruction <strong>can</strong> mismatch with
+the tensor view.
+In such cases the value of the tensor element returned is <strong>undefined</strong>.</p>
+</div>
+<div class="paragraph">
+<p>These cases include:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The SPIR-V instruction&#8217;s tensor variable&#8217;s properties are not compatible
+with the tensor view:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>The SPIR-V Tensor <code>Element</code> <code>Type</code> is not
+<a href="../../appendices/spirvenv.html#spirvenv-tensor-formats" class="xref page">compatible</a> with the tensor view&#8217;s
+<code>format</code>.</p>
+</li>
+<li>
+<p>The SPIR-V Tensor <code>Rank</code> is not present.</p>
+</li>
+<li>
+<p>The SPIR-V Tensor <code>Rank</code> is not the same as the value provided for
+<a href="../resources.html#VkTensorDescriptionARM" class="xref page">VkTensorDescriptionARM</a>::<code>dimensionCount</code> when creating the
+tensor used by the tensor view.</p>
+</li>
+<li>
+<p>The SPIR-V Tensor <code>Shape</code>, if present, does not match the set of
+values provided for <a href="../resources.html#VkTensorDescriptionARM" class="xref page">VkTensorDescriptionARM</a>::<code>pDimensions</code>
+when creating the tensor used by the tensor view.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="tensors-coordinate-validation"><a class="anchor" href="#tensors-coordinate-validation"></a>Tensor Element Coordinate Validation</h4>
+<div class="paragraph">
+<p>Tensor element coordinates are validated against the size of the tensor.</p>
+</div>
+<div class="paragraph">
+<p>If the tensor element coordinates do not satisfy all of the conditions</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p><span class="eq">0 ≤ Coordinates[i] &lt; Size[i]</span> for <span class="eq">0 ≤ i &lt;
+dimensionCount</span></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>where:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p><span class="eq">Size[i]</span> is the size of the tensor along dimension <span class="eq">i</span>
+as provided via
+<a href="../resources.html#VkTensorDescriptionARM" class="xref page">VkTensorDescriptionARM</a>::<code>pDimensions</code>[i] when the
+tensor was created.</p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><span class="eq">dimensionCount</span> is the number of dimensions of the tensor
+as provided via
+<a href="../resources.html#VkTensorDescriptionARM" class="xref page">VkTensorDescriptionARM</a>::<code>dimensionCount</code> when the
+tensor was created.</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>, or the tensor descriptor is a null descriptor,</p>
+</div>
+<div class="paragraph">
+<p>then the tensor element fails coordinate validation.</p>
+</div>
+<div class="paragraph">
+<p>There are two cases to consider:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Valid Tensor Element Coordinates</p>
+<div class="ulist">
+<ul>
+<li>
+<p>If the tensor element coordinates pass validation (that is, the
+coordinates lie within the tensor),</p>
+<div class="paragraph">
+<p>then the tensor element value comes from the value in tensor memory.</p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Out-of-Bounds Tensor Element</p>
+<div class="ulist">
+<ul>
+<li>
+<p>If the tensor element coordinates fail validation,</p>
+<div class="paragraph">
+<p>then the tensor element is an invalid tensor element and
+<a href="#tensors-element-replacement">tensor element replacement</a> is performed.</p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="tensors-input-format-conversion"><a class="anchor" href="#tensors-input-format-conversion"></a>Format Conversion</h3>
+<div class="paragraph">
+<p>If required, tensor elements undergo a format conversion from the
+<a href="../formats.html#VkFormat" class="xref page">VkFormat</a> of the tensor view to the element type of the tensor resource
+variable on which a read operation is performed.</p>
+</div>
+<div class="paragraph">
+<p>Each element is converted based on its type and size (as defined in the
+<a href="../formats.html#formats-definition" class="xref page">Format Definition</a> section for each <a href="../formats.html#VkFormat" class="xref page">VkFormat</a>),
+using the appropriate equations in <a href="../fundamentals.html#fundamentals-fp16" class="xref page">16-Bit Floating-Point Numbers</a>, <a href="../fundamentals.html#fundamentals-fp11" class="xref page">Unsigned 11-Bit Floating-Point Numbers</a>,
+<a href="../fundamentals.html#fundamentals-fp10" class="xref page">Unsigned 10-Bit Floating-Point Numbers</a>,
+<a href="../fundamentals.html#fundamentals-fixedconv" class="xref page">Fixed-Point Data Conversion</a>, and
+<a href="../fundamentals.html#fundamentals-bool" class="xref page">8-bit booleans</a>.</p>
+</div>
+<div class="paragraph">
+<p>The compatibility between SPIR-V tensor element types and <a href="../formats.html#VkFormat" class="xref page">VkFormat</a> is
+specified under <a href="../../appendices/spirvenv.html#spirvenv-tensor-formats" class="xref page">Compatibility Between SPIR-V Tensor Element Types And Vulkan Formats</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="tensors-element-replacement"><a class="anchor" href="#tensors-element-replacement"></a>Tensor Element Replacement</h3>
+<div class="paragraph">
+<p>A tensor element is replaced if it is an invalid tensor element.</p>
+</div>
+<div class="paragraph">
+<p>Invalid tensor elements are replaced as follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If the <code>OpTensorReadARM</code> instruction that caused an invalid tensor
+element to be accessed did not have a <code>OutOfBoundsValueARM</code> tensor
+operand present, then the value returned is the same as that produced by
+<code>OpConstantNull</code> for the type returned.</p>
+</li>
+<li>
+<p>If the <code>OpTensorReadARM</code> instruction that caused an invalid tensor
+element to be accessed had a <code>OutOfBoundsValueARM</code> tensor operand
+present, then the value provided using <code>OutOfBoundsValueARM</code> is
+returned.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_tensor_element_output_operations"><a class="anchor" href="#_tensor_element_output_operations"></a>Tensor Element Output Operations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><em>Tensor element output instructions</em> are SPIR-V tensor instructions that
+write to a tensor.
+<em>Tensor element output operations</em> are a set of steps that are performed on
+state, coordinates, and tensor element values while processing a tensor
+element output instruction, and which are common to some or all tensor
+element output instructions.
+They include the following steps, which are performed in the listed order:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#tensors-output-validation">Validation operations</a></p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#tensors-format-validation">Format validation</a></p>
+</li>
+<li>
+<p><a href="#tensors-output-coordinate-validation">Coordinate validation</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><a href="#tensors-output-format-conversion">Tensor element output format    conversion</a></p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="tensors-output-validation"><a class="anchor" href="#tensors-output-validation"></a>Tensor Element Output Validation Operations</h3>
+<div class="paragraph">
+<p><em>Tensor element output validation operations</em> inspect instruction/tensor
+state or coordinates, and in certain circumstances cause the write to have
+no effect.
+There are a series of validations that the tensor element undergoes.</p>
+</div>
+<div class="sect3">
+<h4 id="tensors-format-validation"><a class="anchor" href="#tensors-format-validation"></a>Tensor Element Format Validation</h4>
+<div class="paragraph">
+<p>If one of the following conditions is met, then an operation writing to the
+tensor causes the tensor&#8217;s memory to become <strong>undefined</strong> .</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The SPIR-V instruction&#8217;s tensor variable&#8217;s properties are not compatible
+with the tensor view:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>The SPIR-V Tensor Element Type is not
+<a href="../../appendices/spirvenv.html#spirvenv-tensor-formats" class="xref page">compatible</a> with the tensor view&#8217;s
+<code>format</code>.</p>
+</li>
+<li>
+<p>The SPIR-V Tensor Rank is not present.</p>
+</li>
+<li>
+<p>The SPIR-V Tensor Rank is not the same as the value provided for
+<a href="../resources.html#VkTensorDescriptionARM" class="xref page">VkTensorDescriptionARM</a>::<code>dimensionCount</code> when creating the
+tensor used by the tensor view.</p>
+</li>
+<li>
+<p>The SPIR-V Tensor Shape, if present, does not match the set of values
+provided for <a href="../resources.html#VkTensorDescriptionARM" class="xref page">VkTensorDescriptionARM</a>::<code>pDimensions</code> when
+creating the tensor used by the tensor view.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="tensors-output-coordinate-validation"><a class="anchor" href="#tensors-output-coordinate-validation"></a>Tensor Element Coordinate Validation</h3>
+<div class="paragraph">
+<p>The tensor element coordinates are validated according to the same rules as
+for tensor element input <a href="#tensors-coordinate-validation">coordinate validation</a>.</p>
+</div>
+<div class="paragraph">
+<p>If the tensor element fails coordinate validation, then the write has no
+effect.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="tensors-output-format-conversion"><a class="anchor" href="#tensors-output-format-conversion"></a>Tensor Element Output Format Conversion</h3>
+<div class="paragraph">
+<p>If required, tensor elements undergo a format conversion from the element
+type of the tensor resource variable on which a write operation is performed
+to the <a href="../formats.html#VkFormat" class="xref page">VkFormat</a> of the tensor view.</p>
+</div>
+<div class="paragraph">
+<p>Each element is converted based on its type and size (as defined in the
+<a href="../formats.html#formats-definition" class="xref page">Format Definition</a> section for each <a href="../formats.html#VkFormat" class="xref page">VkFormat</a>).
+Floating-point outputs are converted as described in
+<a href="../fundamentals.html#fundamentals-fp-conversion" class="xref page">Floating-Point Format Conversions</a> and
+<a href="../fundamentals.html#fundamentals-fixedconv" class="xref page">Fixed-Point Data Conversion</a>.
+Boolean outputs are converted as described in <a href="../fundamentals.html#fundamentals-bool" class="xref page">8-bit boolean</a>.
+Integer outputs are converted such that their value is preserved.</p>
+</div>
+<div class="paragraph">
+<p>The compatibility between SPIR-V tensor element types and <a href="../formats.html#VkFormat" class="xref page">VkFormat</a> is
+specified under <a href="../../appendices/spirvenv.html#spirvenv-tensor-formats" class="xref page">Compatibility Between SPIR-V Tensor Element Types And Vulkan Formats</a>.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="tensors-queries"><a class="anchor" href="#tensors-queries"></a>Tensor Query Instructions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><code>OpTensorQuerySizeARM</code> queries the size of a tensor whose descriptor
+would be accessed by a shader tensor operation.</p>
+</div>
+<div class="paragraph">
+<p>It always returns 0 if the bound descriptor is a null descriptor.</p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="icon" href="images/Vulkan_LogoBug_48px_Nov17.png">
+<link rel="stylesheet" href="github-markdown.css">
+</head>
+<body>
+<article class="markdown-body">
+<!-- markdownlint-disable MD041 -->
+
+<!-- Copyright 2020-2025 LunarG, Inc. -->
+
+<!-- Copyright 2020-2025 Valve Corporation -->
+
+<p><a href="https://www.khronos.org/vulkan/" TARGET="_blank"><img src="https://vulkan.lunarg.com/img/Vulkan_100px_Dec16.png" title="https://www.khronos.org/vulkan/" alt="Khronos Vulkan" /></a></p>
+<h1 id="using-debug-printf">Using Debug Printf</h1>
+<h2 id="introduction">Introduction</h2>
+<p>Debugging Vulkan shaders, especially compute shaders, can be very difficult to do even with the aid of a powerful debugging tool like RenderDoc. Debug Printf is a recent Vulkan feature that allows developers to debug their shaders by inserting Debug Print statements. This feature is now supported within RenderDoc in a way that allows for per-invocation inspection of values in a shader. This article describes how to instrument your GLSL or HLSL shaders with Debug Printf and how to inspect and debug with them in RenderDoc, using vkconfig, or with environment variables.</p>
+<h2 id="turning-on-debug-printf-in-validation-layer">Turning on Debug Printf in Validation Layer</h2>
+<p>We suggest to use Vulkan Configurator (<code>VkConfig</code>) to enable Debug Printf</p>
+<p>For those who "just need to quick use it" there is a <code>VK_LAYER_PRINTF_ONLY_PRESET</code> environment variable that will turn on Debug Printf and turn off all of the other validation logic.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb1-1" title="1"><span class="co"># Windows</span></a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="kw">set</span> <span class="va">VK_LAYER_PRINTF_ONLY_PRESET=</span>1</a>
+<a class="sourceLine" id="cb1-3" title="3"></a>
+<a class="sourceLine" id="cb1-4" title="4"><span class="co"># Linux</span></a>
+<a class="sourceLine" id="cb1-5" title="5"><span class="bu">export</span> <span class="va">VK_LAYER_PRINTF_ONLY_PRESET=</span>1</a>
+<a class="sourceLine" id="cb1-6" title="6"></a>
+<a class="sourceLine" id="cb1-7" title="7"><span class="co"># Android</span></a>
+<a class="sourceLine" id="cb1-8" title="8"><span class="ex">adb</span> setprop debug.vulkan.khronos_validation.printf_only_preset=1</a></code></pre></div>
+<h2 id="settings">Settings</h2>
+<p>The following are the various Debug Printf settings (listed as environment variables, but work like all other settings).</p>
+<blockquote>
+<p>All settings also found in <code>VkConfig</code></p>
+</blockquote>
+<ul>
+<li><code>VK_LAYER_PRINTF_ENABLE</code> will turn on Debug Printf alongside the other validation
+<ul>
+<li><code>VK_LAYER_PRINTF_ENABLE=1</code> turn on</li>
+</ul></li>
+<li><code>VK_LAYER_PRINTF_TO_STDOUT</code> will print to <code>stdout</code> <strong>instead</strong> of the normal Debug Callback
+<ul>
+<li><code>VK_LAYER_PRINTF_TO_STDOUT=1</code> turn on</li>
+</ul></li>
+<li><code>VK_LAYER_PRINTF_VERBOSE</code> will print extra information (pipeline, shader, command, etc)
+<ul>
+<li><code>VK_LAYER_PRINTF_VERBOSE=1</code> turn on</li>
+</ul></li>
+<li><code>VK_LAYER_PRINTF_BUFFER_SIZE</code> size of the buffer used to store Printf messages (buffer is shared across all calls in a single <code>vkQueueSubmit</code>).
+<ul>
+<li>Default: 1024 bytes</li>
+<li><code>set VK_LAYER_PRINTF_BUFFER_SIZE=4096</code> (example of making it larger)</li>
+</ul></li>
+</ul>
+<h2 id="using-debug-printf-in-glsl-shaders">Using Debug Printf in GLSL Shaders</h2>
+<p>To use Debug Printf in GLSL shaders, you need to enable the <code>GL_EXT_debug_printf</code> extension. Then add <code>debugPrintfEXT()</code> calls at the locations in your shader where you want to print messages and/or values Here is a very simple example (<a href="https://godbolt.org/z/MnYGj8azM" TARGET="_blank">Try Online</a>):</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode glsl"><code class="sourceCode glsl"><a class="sourceLine" id="cb2-1" title="1"><span class="pp">#version 450</span></a>
+<a class="sourceLine" id="cb2-2" title="2"><span class="pp">#extension GL_EXT_debug_printf : enable</span></a>
+<a class="sourceLine" id="cb2-3" title="3"><span class="dt">void</span> <span class="fu">main</span>() {</a>
+<a class="sourceLine" id="cb2-4" title="4">    <span class="dt">float</span> myfloat = <span class="fl">3.1415</span>f;</a>
+<a class="sourceLine" id="cb2-5" title="5">    <span class="fu">debugPrintfEXT</span>(&quot;My <span class="dt">float</span> is %f&quot;, myfloat);</a>
+<a class="sourceLine" id="cb2-6" title="6">}</a></code></pre></div>
+<p><code>glslang</code> will automatically add the Debug Printf instructions</p>
+<h2 id="using-debug-printf-in-hlsl-and-slang-shaders">Using Debug Printf in HLSL and Slang Shaders</h2>
+<p>In HLSL and Slang, Debug Printf can be invoked as follows (<a href="https://godbolt.org/z/3ThznsdK8" TARGET="_blank">Try Online</a>):</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode glsl"><code class="sourceCode glsl"><a class="sourceLine" id="cb3-1" title="1"><span class="dt">void</span> <span class="fu">main</span>() {</a>
+<a class="sourceLine" id="cb3-2" title="2">    <span class="dt">float</span> myfloat = <span class="fl">3.1415</span>;</a>
+<a class="sourceLine" id="cb3-3" title="3">    <span class="fu">printf</span>(&quot;My <span class="dt">float</span> is %f&quot;, myfloat);</a>
+<a class="sourceLine" id="cb3-4" title="4">}</a></code></pre></div>
+<p>Both <code>dxc</code> and <code>slangc</code> will automatically add the Debug Printf instructions</p>
+<h2 id="recommendations">Recommendations</h2>
+<p>If you print every time a shader is executed you can easily get millions of things trying to print. It is recommended to use built-ins to limit what is printed</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode glsl"><code class="sourceCode glsl"><a class="sourceLine" id="cb4-1" title="1"><span class="co">// Vertex Shader</span></a>
+<a class="sourceLine" id="cb4-2" title="2"><span class="kw">if</span> (gl_VertexIndex == <span class="dv">0</span>) {</a>
+<a class="sourceLine" id="cb4-3" title="3">    <span class="fu">debugPrintfEXT</span>(&quot;Only print <span class="kw">for</span> a single vertex shader invocation\n&quot;);</a>
+<a class="sourceLine" id="cb4-4" title="4">}</a>
+<a class="sourceLine" id="cb4-5" title="5"></a>
+<a class="sourceLine" id="cb4-6" title="6"><span class="co">// Fragment Shader</span></a>
+<a class="sourceLine" id="cb4-7" title="7"><span class="kw">if</span> (<span class="bu">gl_FragCoord</span>.<span class="fu">x</span> &gt; <span class="fl">0.0</span> &amp;&amp; <span class="bu">gl_FragCoord</span>.<span class="fu">x</span> &lt; <span class="fl">0.1</span> &amp;&amp;</a>
+<a class="sourceLine" id="cb4-8" title="8">    <span class="bu">gl_FragCoord</span>.<span class="fu">y</span> &gt; <span class="fl">0.0</span> &amp;&amp; <span class="bu">gl_FragCoord</span>.<span class="fu">y</span> &lt; <span class="fl">0.1</span>) {</a>
+<a class="sourceLine" id="cb4-9" title="9">    <span class="fu">debugPrintfEXT</span>(&quot;Only print <span class="kw">for</span> a few fragment shader invocation\n&quot;);</a>
+<a class="sourceLine" id="cb4-10" title="10">}</a>
+<a class="sourceLine" id="cb4-11" title="11"></a>
+<a class="sourceLine" id="cb4-12" title="12"><span class="co">// Compute Shader</span></a>
+<a class="sourceLine" id="cb4-13" title="13"><span class="kw">if</span> (<span class="bu">gl_LocalInvocationIndex</span> == <span class="dv">0</span>) {</a>
+<a class="sourceLine" id="cb4-14" title="14">    <span class="fu">debugPrintfEXT</span>(&quot;Only print <span class="kw">for</span> a single compute invocation\n&quot;);</a>
+<a class="sourceLine" id="cb4-15" title="15">}</a></code></pre></div>
+<h2 id="debug-printf-output">Debug Printf Output</h2>
+<p>Debug Printf error message are returned as <code>VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT</code></p>
+<p>For your custom callback, you can look for <code>0x4fe1fef9</code> in <code>VkDebugUtilsMessengerCallbackDataEXT::messageIdNumber</code> as the magic hash if it is a Debug Printf message</p>
+<p>The Validation Layers will try to turn on <code>info</code> level messages when using Debug Printf so the message is found</p>
+<p>The <code>VkDebugUtilsMessengerCallbackDataEXT::pMessage</code> will contain the location and on a newline print out the error message such as:</p>
+<blockquote>
+<p>vkQueueSubmit(): pSubmits[0] Debug Printf:</p>
+<p>x == 100</p>
+</blockquote>
+<h3 id="debug-printf-format-string">Debug Printf Format String</h3>
+<p>The format string for this implementation of debug printf is more restricted than the traditional printf format string.</p>
+<p>Format for specifier is "%"<em>precision</em> &lt;d, i, o, u, x, X, a, A, e, E, f, F, g, G, ul, lu, or lx&gt;</p>
+<p>Format for vector specifier is "%"<em>precision</em>"v" [2, 3, or 4] [specifiers list above]</p>
+<p>Format for pointers (<code>PhysicalStorageBuffer</code>) is "%p"</p>
+<ul>
+<li>The vector value separator is ", "</li>
+<li>"%%" will print as "%"</li>
+<li>No length modifiers. Everything except ul, lu, and lx is 32 bits, and ul and lx values are printed in hex</li>
+<li>No strings or characters allowed</li>
+<li>No flags or width specifications allowed</li>
+<li>No error checking for invalid format strings is done.</li>
+</ul>
+<p>For example:</p>
+<pre><code>float myfloat = 3.1415f;
+vec4 floatvec = vec4(1.2f, 2.2f, 3.2f, 4.2f);
+uint64_t bigvar = 0x2000000000000001ul;
+</code></pre>
+<p><code>debugPrintfEXT("Here's a float value to 2 decimals %1.2f", myfloat);</code> Would print <strong>"Here's a float value to 2 decimals 3.14"</strong></p>
+<p><code>debugPrintfEXT("Here's a vector of floats %1.2v4f", floatvec);</code> Would print <strong>"Here's a vector of floats 1.20, 2.20, 3.20, 4.20"</strong></p>
+<p><code>debugPrintfEXT("Unsigned long as decimal %lu and as hex 0x%lx", bigvar, bigvar);</code> Would print <strong>"Unsigned long as decimal 2305843009213693953 and as hex 0x2000000000000001"</strong></p>
+<h2 id="debug-printf-messages-in-renderdoc">Debug Printf messages in RenderDoc</h2>
+<p>As of RenderDoc release 1.14, Debug Printf statements can be added to shaders, and debug printf messages will be received and logged in the Event Browser window.</p>
+<p>Using the debugmarker sample from Sascha Willems' Vulkan samples repository:</p>
+<ol>
+<li><p>Capture a frame: <img src="images/rd_frame.png" alt="Rd Frame" /></p></li>
+<li><p>Edit the shader:</p></li>
+</ol>
+<ul>
+<li>Add <code>#extension GL_EXT_debug_printf : enable</code> to beginning of shader</li>
+<li>Add <code>debugPrintfEXT("Position = %v4f", pos);</code> to shader after pos definition</li>
+<li>Hit Refresh</li>
+</ul>
+<p><img src="images/refresh.png" alt="Refresh" /></p>
+<p>The vkCmdDrawIndexed in question now has 51 messages.</p>
+<ol start="3">
+<li>Click on msg(s) to see Debug Printf output per draw: <img src="images/values.png" alt="Values" /></li>
+</ol>
+<h2 id="using-debug-printf-in-spir-v-shaders">Using Debug Printf in SPIR-V Shaders</h2>
+<p>Normally, developers will use a high-level language like HLSL or GLSL to generate SPIR-V. However, in some cases, developers may wish to insert Debug Printfs directly into SPIR-V</p>
+<p>To execute Debug Printf in a SPIR-V shader, a developer will need the following two instructions specified:</p>
+<pre><code>OpExtension &quot;SPV_KHR_non_semantic_info&quot;
+%N0 = OpExtInstImport NonSemantic.DebugPrintf
+</code></pre>
+<p>Debug Printf operations can then be specified in any function with the following instruction: <code>%NN = OpExtInst %void %N0 1 %N1 %N2 %N3</code> ... where:</p>
+<ul>
+<li><code>N0</code> is the result id of the <code>OpExtInstImport NonSemantic.DebugPrintf</code></li>
+<li><code>1</code> is the opcode of the Debug Printf instruction in <code>NonSemantic.DebugPrintf</code></li>
+<li><code>N1</code> is the result of an OpString containing the format for the Debug Printf</li>
+<li><code>N2</code>, <code>N3</code>, ... are result ids of scalar and vector values to be printed</li>
+<li><code>NN</code> is the result id of the Debug Printf operation. This value is undefined.</li>
+</ul>
+<blockquote>
+<p><code>OpExtInstImport</code> of any <code>NonSemantic*</code> is properly supported with the <code>VK_KHR_shader_non_semantic_info</code> device extension. Some older compiler stacks might not handle these unknown instructions well, some will ignore it as desired.</p>
+</blockquote>
+<h2 id="debug-printf-messages-from-validation-layers-via-vkconfig-vulkan-configurator">Debug Printf messages from Validation Layers via VkConfig (Vulkan Configurator)</h2>
+<p>Here's an example of adding a Debug Printf statement to the shader in the <code>vkcube</code> demo (from the <code>Vulkan-Tools</code> repository), and then using <code>VkConfig</code> to enable Debug Printf, launch vkcube, and see the Debug Printf output.</p>
+<ol>
+<li>Add Debug Printf to the vkcube demo:</li>
+</ol>
+<ul>
+<li>Add <code>VK_KHR_shader_non_semantic_info</code> to cube's <code>CreateDevice</code> function</li>
+<li>Add extension and <code>debugPrintfEXT</code> call to the shader</li>
+<li>Use <code>glslangvalidator</code> to compile the new shader</li>
+<li>(Offscreen) Rebuild vkcube</li>
+</ul>
+<p><img src="images/add_dbpf.png" alt="Add Dbpf" /></p>
+<ol start="2">
+<li>Configure <code>VkConfig</code> to enable Debug Printf</li>
+</ol>
+<ul>
+<li>Set Shader Printf Preset</li>
+<li>Set the executable path to the vkcube demo and add --c 1 to the command line to render one frame</li>
+<li>Click the "Launch" button</li>
+</ul>
+<p><img src="images/vkconfig_setup.png" alt="Vkconfig Setup" /></p>
+<ol start="3">
+<li>See the Debug Printf output in Launcher window: <img src="images/vkconfig_result.png" alt="Vkconfig Result" /></li>
+</ol>
+<h3 id="limitations">Limitations</h3>
+<ul>
+<li>Debug Printf consumes a descriptor set. If your application uses every last descriptor set on the GPU, Debug Printf will not work.</li>
+<li>Debug Printf consumes device memory on the GPU. Large or numerous Debug Printf messages can exhaust device memory. See settings above to control buffer size.
+<ul>
+<li>Can be controlled with <code>VK_LAYER_PRINTF_BUFFER_SIZE</code></li>
+</ul></li>
+<li>Validation Layers version: <code>1.2.135.0</code> or later is required</li>
+<li>Vulkan API version 1.1 or greater is required</li>
+<li>When using Validation Layers, the <code>fragmentStoresAndAtomics</code>, <code>vertexPipelineStoresAndAtomics</code>, and <code>timelineSemaphore</code> features are required</li>
+<li>The <code>VK_KHR_shader_non_semantic_info</code> extension must be supported and enabled
+<ul>
+<li>If using the Validation Layers, we attempt to strip it out to allow wider range of users to still use Debug Printf</li>
+</ul></li>
+<li>RenderDoc release 1.14 or later</li>
+<li>When using Debug Printf with a debug callback, it is recommended to disable validation, as the debug level of INFO or DEBUG causes the validation layers to produce many messages unrelated to Debug Printf, making it difficult to find the desired output.</li>
+</ul>
+<h3 id="other-references">Other References</h3>
+<p>Documentation for the GL_EXT_debug_printf extension can be found <a href="https://github.com/KhronosGroup/GLSL/blob/main/extensions/ext/GLSL_EXT_debug_printf.txt" TARGET="_blank">here</a></p>
+<p>There are many validation layer tests that demonstrates the simple and programmatic use of Debug Printf. See <code>tests/unit/debug_printf.cpp</code> in the Vulkan-ValidationLayers repository.</p>
+<p>Earlier implementations implicitly included stage specific built-in variables such as <code>gl_InvocationID</code>, <code>gl_VertexID</code> and <code>gl_FragCoord</code> in Debug Printf messages. This functionality has been removed because it made Debug Printf unusable in shader modules that defined entry points for multiple pipeline stages. If necessary, you can add these values to your printf statements explicitly. However, you must then make sure that the printf statement can only be executed from a pipeline stage where the built-in variable is available.</p>
+</article>
+</body>
+</html>

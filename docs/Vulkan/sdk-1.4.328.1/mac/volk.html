@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="icon" href="images/Vulkan_LogoBug_48px_Nov17.png">
+<link rel="stylesheet" href="github-markdown.css">
+</head>
+<body>
+<article class="markdown-body">
+<h1 id="-volk-build-status">🐺 volk <a href="https://github.com/zeux/volk/actions" TARGET="_blank"><img src="https://github.com/zeux/volk/workflows/build/badge.svg" alt="Build Status" /></a></h1>
+<h2 id="purpose">Purpose</h2>
+<p>volk is a meta-loader for Vulkan. It allows you to dynamically load entrypoints required to use Vulkan without linking to vulkan-1.dll or statically linking Vulkan loader. Additionally, volk simplifies the use of Vulkan extensions by automatically loading all associated entrypoints. Finally, volk enables loading Vulkan entrypoints directly from the driver which can increase performance by skipping loader dispatch overhead.</p>
+<p>volk is written in C89 and supports Windows, Linux, Android and macOS (via MoltenVK).</p>
+<h2 id="building">Building</h2>
+<p>There are multiple ways to use volk in your project:</p>
+<ol>
+<li>You can add <code>volk.c</code> to your build system. Note that the usual preprocessor defines that enable Vulkan's platform-specific functions (VK_USE_PLATFORM_WIN32_KHR, VK_USE_PLATFORM_XLIB_KHR, VK_USE_PLATFORM_MACOS_MVK, etc) must be passed as desired to the compiler when building <code>volk.c</code>.</li>
+<li>You can use provided CMake files, with the usage detailed below.</li>
+<li>You can use volk in header-only fashion. Include <code>volk.h</code> wherever you want to use Vulkan functions. In exactly one source file, define <code>VOLK_IMPLEMENTATION</code> before including <code>volk.h</code>. Do not build <code>volk.c</code> at all in this case - however, <code>volk.c</code> must still be in the same directory as <code>volk.h</code>. This method of integrating volk makes it possible to set the platform defines mentioned above with arbitrary (preprocessor) logic in your code.</li>
+</ol>
+<h2 id="basic-usage">Basic usage</h2>
+<p>To use volk, you have to include <code>volk.h</code> instead of <code>vulkan/vulkan.h</code>; this is necessary to use function definitions from volk.</p>
+<p>If some files in your application include <code>vulkan/vulkan.h</code> and don't include <code>volk.h</code>, this can result in symbol conflicts; consider defining <code>VK_NO_PROTOTYPES</code> when compiling code that uses Vulkan to make sure this doesn't happen. It's also important to make sure that <code>vulkan-1</code> is not linked into the application, as this results in symbol name conflicts as well.</p>
+<p>To initialize volk, call this function first:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1">VkResult volkInitialize();</a></code></pre></div>
+<p>This will attempt to load Vulkan loader from the system; if this function returns <code>VK_SUCCESS</code> you can proceed to create Vulkan instance. If this function fails, this means Vulkan loader isn't installed on your system.</p>
+<p>After creating the Vulkan instance using Vulkan API, call this function:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb2-1" title="1"><span class="dt">void</span> volkLoadInstance(VkInstance instance);</a></code></pre></div>
+<p>This function will load all required Vulkan entrypoints, including all extensions; you can use Vulkan from here on as usual.</p>
+<h2 id="optimizing-device-calls">Optimizing device calls</h2>
+<p>If you use volk as described in the previous section, all device-related function calls, such as <code>vkCmdDraw</code>, will go through Vulkan loader dispatch code. This allows you to transparently support multiple VkDevice objects in the same application, but comes at a price of dispatch overhead which can be as high as 7% depending on the driver and application.</p>
+<p>To avoid this, you have two options:</p>
+<ol>
+<li>For applications that use just one VkDevice object, load device-related Vulkan entrypoints directly from the driver with this function:</li>
+</ol>
+<div class="sourceCode" id="cb3"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1"><span class="dt">void</span> volkLoadDevice(VkDevice device);</a></code></pre></div>
+<ol start="2">
+<li>For applications that use multiple VkDevice objects, load device-related Vulkan entrypoints into a table:</li>
+</ol>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb4-1" title="1"><span class="dt">void</span> volkLoadDeviceTable(<span class="kw">struct</span> VolkDeviceTable* table, VkDevice device);</a></code></pre></div>
+<p>The second option requires you to change the application code to store one <code>VolkDeviceTable</code> per <code>VkDevice</code> and call functions from this table instead.</p>
+<p>Device entrypoints are loaded using <code>vkGetDeviceProcAddr</code>; when no layers are present, this commonly results in most function pointers pointing directly at the driver functions, minimizing the call overhead. When layers are loaded, the entrypoints will point at the implementations in the first applicable layer, so this is compatible with any layers including validation layers.</p>
+<p>Since <code>volkLoadDevice</code> overwrites some function pointers with device-specific versions, you can choose to use <code>volkLoadInstanceOnly</code> instead of <code>volkLoadInstance</code>; when using table-based interface this can also help enforce the usage of the function tables as <code>volkLoadInstanceOnly</code> will leave device-specific functions as <code>NULL</code>.</p>
+<h2 id="cmake-support">CMake support</h2>
+<p>If your project uses CMake, volk provides you with targets corresponding to the different use cases:</p>
+<ol>
+<li>Target <code>volk</code> is a static library. Any platform defines can be passed to the compiler by setting <code>VOLK_STATIC_DEFINES</code>. Example:</li>
+</ol>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cmake"><code class="sourceCode cmake"><a class="sourceLine" id="cb5-1" title="1"><span class="kw">if</span> (<span class="dv">WIN32</span>)</a>
+<a class="sourceLine" id="cb5-2" title="2">   <span class="kw">set</span>(VOLK_STATIC_DEFINES VK_USE_PLATFORM_WIN32_KHR)</a>
+<a class="sourceLine" id="cb5-3" title="3"><span class="kw">elseif</span>()</a>
+<a class="sourceLine" id="cb5-4" title="4">   ...</a>
+<a class="sourceLine" id="cb5-5" title="5"><span class="kw">endif</span>()</a>
+<a class="sourceLine" id="cb5-6" title="6"><span class="kw">add_subdirectory</span>(volk)</a>
+<a class="sourceLine" id="cb5-7" title="7"><span class="fu">target_link_library</span>(my_application PRIVATE volk)</a></code></pre></div>
+<ol start="2">
+<li>Target <code>volk_headers</code> is an interface target for the header-only style. Example:</li>
+</ol>
+<div class="sourceCode" id="cb6"><pre class="sourceCode cmake"><code class="sourceCode cmake"><a class="sourceLine" id="cb6-1" title="1"><span class="kw">add_subdirectory</span>(volk)</a>
+<a class="sourceLine" id="cb6-2" title="2"><span class="fu">target_link_library</span>(my_application PRIVATE volk_headers)</a></code></pre></div>
+<p>and in the code:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb7-1" title="1"><span class="co">/* ...any logic setting VK_USE_PLATFORM_WIN32_KHR and friends... */</span></a>
+<a class="sourceLine" id="cb7-2" title="2"><span class="pp">#define VOLK_IMPLEMENTATION</span></a>
+<a class="sourceLine" id="cb7-3" title="3"><span class="pp">#include </span><span class="im">&quot;volk.h&quot;</span></a></code></pre></div>
+<p>The above example use <code>add_subdirectory</code> to include volk into CMake's build tree. This is a good choice if you copy the volk files into your project tree or as a git submodule.</p>
+<p>volk also supports installation and config-file packages. Installation is disabled by default (so as to not pollute user projects with install rules), and can be enabled by passing <code>-DVOLK_INSTALL=ON</code> to CMake. Once installed, do something like <code>find_package(volk CONFIG REQUIRED)</code> in your project's CMakeLists.txt. The imported volk targets are called <code>volk::volk</code> and <code>volk::volk_headers</code>.</p>
+<h2 id="configuration">Configuration</h2>
+<p>By default, volk is compiled as a C library and exposes all Vulkan function pointers as globals. This can result in symbol conflicts if some libraries in the application are still linking to Vulkan libraries directly. While generally speaking it's desirable to not mix &amp; match volk with direct usage of Vulkan - for example, mixed usage means the application still links directly to Vulkan libraries and will fail to launch if Vulkan is not available on the user's system - it's possible to enable <code>VOLK_NAMESPACE</code> CMake option (or <code>VOLK_NAMESPACE</code> define when building volk manually), which places all volk symbols into <code>volk::</code> namespace. This requires compiling <code>volk.c</code> in C++ mode, which happens automatically when using CMake, but doesn'trequire any other changes.</p>
+<p>Device level functions can be hidden by defining <code>VOLK_NO_DEVICE_PROTOTYPES</code>. When using <code>volkLoadInstaceOnly</code> and <code>volkLoadDeviceTable</code> the device level functions are never loaded and when not used correctly would trigger a runtime error. By hiding the device prototypes mistakes can be checked by the compiler.</p>
+<h2 id="license">License</h2>
+<p>This library is available to anybody free of charge, under the terms of MIT License (see LICENSE.html).</p>
+</article>
+</body>
+</html>

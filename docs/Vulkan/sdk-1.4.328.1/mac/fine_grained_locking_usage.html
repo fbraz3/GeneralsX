@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="icon" href="images/Vulkan_LogoBug_48px_Nov17.png">
+<link rel="stylesheet" href="github-markdown.css">
+</head>
+<body>
+<article class="markdown-body">
+<!-- markdownlint-disable MD041 -->
+
+<!-- Copyright 2021-2025 LunarG, Inc. -->
+
+<p><a href="https://www.khronos.org/vulkan/" TARGET="_blank"><img src="https://vulkan.lunarg.com/img/Vulkan_100px_Dec16.png" title="https://www.khronos.org/vulkan/" alt="Khronos Vulkan" /></a></p>
+<h1 id="fine-grained-locking">Fine Grained Locking</h1>
+<p>Fine grained locking is a performance improvement for multithreaded workloads. It allows Vulkan calls from different threads to be validated in parallel, instead of being serialized by a global lock. Waiting on this lock causes performance problems for multi-threaded applications, and most Vulkan games are heavily multi-threaded. This feature has been tested with 15+ released games and improves performance in almost all of them, and many improve by about 150%.</p>
+<p>However, changes to locking strategy in a multi threaded program are a frequent cause of crashes, incorrect results, or deadlock. For debugging it can be disabled with the instructions below.</p>
+<p>Currently this optimization is available for Core Validation, Best Practices, GPU Assisted Validation and Debug Printf. Synchronization Validation always runs with global locking. Support for it will be added in a future release.</p>
+<p>Thread Safety, Object Lifetime, Handle Wrapping and Stateless validation have always avoided global locking and they are thus unaffected by this feature.</p>
+<h3 id="configuring-fine-grained-locking">Configuring Fine Grained Locking</h3>
+<p>For an overview of how to configure layers, refer to the <a href="./layer_configuration.html">Layers Overview and Configuration</a> document.</p>
+<p>Fine Grained Locking settings are managed by configuring the Validation Layer. These settings are described in the <a href="./khronos_validation_layer.html#user-content-layer-details">VK_LAYER_KHRONOS_validation</a> document.</p>
+<p>Fine grained locking can also be enabled and configured using the <a href="./vkconfig.html">Vulkan Configurator</a> included with the Vulkan SDK.</p>
+<h3 id="known-limitations">Known Limitations</h3>
+<p>Currently there is not a way to disable this setting via <code>VK_EXT_validation_features</code> or other programmatic interface. This will be addressed in a future release.</p>
+<p>The locking in Vulkan-ValidationLayer is not intended to provide correct results for programs that violate the thread safety guidelines described in <em>section 3.6 Threading Behavior</em> of the Vulkan specification. We will attempt to fix crash bugs in the layer resulting from insufficient external synchronization, but incorrect or inconsistent error messages will be likely. Please run Thread Safety violation to find problems like this.</p>
+<h3 id="debugging-tips">Debugging Tips</h3>
+<p>As mentioned above, solving all problems found by Thread Safety validation is highly recommended before trying to use Core Validation with Fine Grained Locking.</p>
+<p>If you encounter a crash, deadlock or incorrect behavior, re-run with Fine Grained Locking disabled. If your problem goes away, it is most likely a problem with the layer's locking code. If it remains, then it is probably caused by something else and will require further debugging.</p>
+<p>For crashes or deadlocks, it will be extremely helpful you provide stack traces for any threads in your program that were executing in the layer at the time the problem occurred. In Microsoft Visual Studio, the <a href="https://docs.microsoft.com/en-us/visualstudio/debugger/using-the-parallel-stacks-window?view=vs-2022" TARGET="_blank">Parallel Stacks</a> window is a good way to check the status of all threads in your program. With <a href="https://sourceware.org/gdb/current/onlinedocs/gdb/Threads.html#Threads" TARGET="_blank">gdb</a>, you usually need to use the <code>info thread</code> and <code>thread</code> commands to view the stacks from each thread.</p>
+<p>Replay tools such as <code>gfxrecon</code> are not always helpful when debugging problems in multi-threaded code. Because these tools usually need to serialize all vulkan commands into a single stream, they will not be able to recreate interactions between threads during replay. Often, the only way to recreate problems is to rerun the program, but sometimes changes in timing may cause problems to only happen on some types of hardware.</p>
+<p>Please file a <a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues" TARGET="_blank">Github issue</a> if you need help or have feedback on this feature. The more information you can provide about what was happening, the better we will be able to help!</p>
+</article>
+</body>
+</html>

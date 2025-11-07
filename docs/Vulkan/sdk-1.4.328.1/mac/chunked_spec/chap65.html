@@ -1,0 +1,3344 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.23">
+<meta name="author" content="The Khronos® Vulkan  Working Group">
+<title>Vulkan® 1.4.328 - A Specification (with all registered extensions)</title>
+<link rel="stylesheet" href="style0.css" type="text/css">
+<link rel="stylesheet" href="style1.css" type="text/css">
+<link rel="stylesheet" href="style2.css" type="text/css">
+
+<!-- dragged in by font-awesome css included by asciidoctor, but preloaded in this extension for convenience -->
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.woff2?v=4.7.0" as="font" type="font/woff2" crossorigin="">
+
+<!-- Note: Chrome needs crossorigin="" even for same-origin fonts -->
+<link rel="preload" href="../katex/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Main-Italic.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Typewriter-Regular.woff2" as="font" type="font/woff2" crossorigin=""><link rel="stylesheet" href="../katex/katex.min.css">
+<!--ChunkedSearchJSMarker-->
+<link href="chunked.css?4" rel="stylesheet">
+<script>var searchindexurl = 'search.index.js?4' + (document.title.replace(/[^0-9.]/g, ''));</script>
+<script src="chunked.js?4"></script>
+<link rel="stylesheet" href="style3.css" type="text/css">
+<script>
+    function hideElement(e){
+        e.setAttribute("hidden", "");
+        e.classList.add("hidden");
+    }
+
+    function unhideElement(e){
+        e.classList.remove("hidden");
+        e.removeAttribute("hidden");
+    }
+
+    function hideLoadableContent(){
+        unhideElement( document.getElementById("loading_msg") );
+        for( var loadable of document.getElementsByClassName("loadable") ) hideElement(loadable);
+    }
+
+    function unhideLoadableContent(){
+        hideElement( document.getElementById("loading_msg") );
+        for( var loadable of document.getElementsByClassName("loadable") ) unhideElement(loadable);
+    }
+
+    window.addEventListener("load", unhideLoadableContent);
+</script>
+<link rel="stylesheet" href="asciidoctor-chunker.css" type="text/css"></head>
+<body class="book toc2 toc-left">
+<div style="text-align: center;">
+    <span class="image"><img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+Cjxzdmcgdmlld0JveD0iMCAwIDExNTAgMzI2IiB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHhtbDpzcGFjZT0icHJlc2VydmUiIHN0eWxlPSJmaWxsLXJ1bGU6ZXZlbm9kZDtjbGlwLXJ1bGU6ZXZlbm9kZDtzdHJva2UtbGluZWpvaW46cm91bmQ7c3Ryb2tlLW1pdGVybGltaXQ6MS40MTQyMTsiPgogICAgPGcgaWQ9IkFydGJvYXJkMSIgdHJhbnNmb3JtPSJtYXRyaXgoMC45NTUxNSwwLDAsMC44ODgyODMsLTQwLjExNjMsLTMwLjIwMTYpIj4KICAgICAgICA8cmVjdCB4PSI0MiIgeT0iMzQiIHdpZHRoPSIxMjA0IiBoZWlnaHQ9IjM2NyIgc3R5bGU9ImZpbGw6bm9uZTsiLz4KICAgICAgICA8ZyB0cmFuc2Zvcm09Im1hdHJpeCgxLjA0Njk2LDAsMCwxLjEyNTc3LC00Ni45OTEzLC01MC40MzI1KSI+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik03MjQuMSwzODUuMDZMNjgzLjUzLDM4NS4wNkM2ODMuNTMsMzg1LjA2IDY4My41MywyODYuMDkgNjgzLjUzLDI1NS40QzY5Ni40OSwyNjIuNjIgNzEzLjYyLDI3NS45NCA3MjQuMSwyODguNzJMNzI0LjEsMzg1LjA2WiIgc3R5bGU9ImZpbGw6cmdiKDE3MiwyMiw0NCk7ZmlsbC1ydWxlOm5vbnplcm87Ii8+CiAgICAgICAgICAgIDxnPgogICAgICAgICAgICAgICAgPHBhdGggZD0iTTM4MS43NSwzODUuMDZMMzMxLjE3LDM4NS4wNkwyNjUuMTYsMTgxLjAzTDMxMS4xNywxODEuMDNMMzU2LjYxLDMyNC40OEwzNTcuMTgsMzI0LjQ4TDQwMy4xOCwxODEuMDNMNDQ5LjQ3LDE4MS4wM0wzODEuNzUsMzg1LjA2WiIgc3R5bGU9ImZpbGw6cmdiKDE3MiwyMiw0NCk7ZmlsbC1ydWxlOm5vbnplcm87Ii8+CiAgICAgICAgICAgICAgICA8cGF0aCBkPSJNNTg1LjUxLDM4NS4wNkw1NDYuOTMsMzg1LjA2TDU0Ni45MywzNjQuNDlMNTQ2LjA4LDM2NC40OUM1NDAuOTMsMzczLjA3IDUzNC4yNywzNzkuMjYgNTI2LjA3LDM4My4wN0M1MTcuODgsMzg2Ljg4IDUwOS41LDM4OC43OCA1MDAuOTIsMzg4Ljc4QzQ5MC4wNiwzODguNzggNDgxLjE2LDM4Ny4zNSA0NzQuMiwzODQuNUM0NjcuMjUsMzgxLjY1IDQ2MS43NywzNzcuNTkgNDU3Ljc3LDM3Mi4zNkM0NTMuNzYsMzY3LjEyIDQ1MC45NSwzNjAuNzQgNDQ5LjMzLDM1My4yMUM0NDcuNzIsMzQ1LjY5IDQ0Ni45MSwzMzcuMzUgNDQ2LjkxLDMyOC4yMUw0NDYuOTEsMjM3LjMzTDQ4Ny40OSwyMzcuMzNMNDg3LjQ5LDMyMC43N0M0ODcuNDksMzMyLjk2IDQ4OS40LDM0Mi4wNiA0OTMuMjEsMzQ4LjA2QzQ5Ny4wMiwzNTQuMDcgNTAzLjc4LDM1Ny4wNiA1MTMuNSwzNTcuMDZDNTI0LjU1LDM1Ny4wNiA1MzIuNTUsMzUzLjc4IDUzNy41LDM0Ny4yQzU0Mi40NiwzNDAuNjIgNTQ0LjkzLDMyOS44MSA1NDQuOTMsMzE0Ljc2TDU0NC45MywyMzcuMzJMNTg1LjUyLDIzNy4zMkw1ODUuNTIsMzg1LjA2TDU4NS41MSwzODUuMDZaIiBzdHlsZT0iZmlsbDpyZ2IoMTcyLDIyLDQ0KTtmaWxsLXJ1bGU6bm9uemVybzsiLz4KICAgICAgICAgICAgPC9nPgogICAgICAgICAgICA8cGF0aCBkPSJNNzMwLjg0LDI5Ni4xOUw3MzAuNzQsMjkwLjQ3TDc4MS44OSwyMzcuMzNMODI5LjkxLDIzNy4zM0w3NzQuMTgsMjkxLjYyTDgzNi4xOSwzODUuMDZMNzg3LjA0LDM4NS4wNkw3MzAuODQsMjk2LjE5WiIgc3R5bGU9ImZpbGw6cmdiKDE3MiwyMiw0NCk7ZmlsbC1ydWxlOm5vbnplcm87Ii8+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik04NDMuNjIsMjgyLjc2Qzg0NC4xOSwyNzMuMjQgODQ2LjU4LDI2NS4zMyA4NTAuNzcsMjU5LjA0Qzg1NC45NiwyNTIuNzUgODYwLjI5LDI0Ny43MSA4NjYuNzcsMjQzLjlDODczLjI1LDI0MC4wOSA4ODAuNTQsMjM3LjM3IDg4OC42NCwyMzUuNzZDODk2LjczLDIzNC4xNCA5MDQuODgsMjMzLjMzIDkxMy4wNywyMzMuMzNDOTIwLjUsMjMzLjMzIDkyOC4wMiwyMzMuODUgOTM1LjY0LDIzNC45Qzk0My4yNywyMzUuOTUgOTUwLjIxLDIzOCA5NTYuNSwyNDEuMDVDOTYyLjc4LDI0NC4xIDk2Ny45MywyNDguMzQgOTcxLjk0LDI1My43NkM5NzUuOTQsMjU5LjE5IDk3Ny45NCwyNjYuMzggOTc3Ljk0LDI3NS4zNEw5NzcuOTQsMzUyLjIxQzk3Ny45NCwzNTguODggOTc4LjMyLDM2NS4yNyA5NzkuMDgsMzcxLjM2Qzk3OS44NCwzNzcuNDYgOTgxLjE4LDM4Mi4wMyA5ODMuMDksMzg1LjA4TDk0MS45NCwzODUuMDhDOTQxLjE4LDM4Mi44IDk0MC41NiwzODAuNDYgOTQwLjA4LDM3OC4wOEM5MzkuNjEsMzc1LjcgOTM5LjI3LDM3My4yOCA5MzkuMDgsMzcwLjc5QzkzMi42LDM3Ny40NyA5MjQuOTcsMzgyLjEzIDkxNi4yMSwzODQuOEM5MDcuNDUsMzg3LjQ2IDg5OC40OSwzODguOCA4ODkuMzUsMzg4LjhDODgyLjMsMzg4LjggODc1LjcyLDM4Ny45NCA4NjkuNjQsMzg2LjIzQzg2My41NCwzODQuNTIgODU4LjIsMzgxLjg1IDg1My42NCwzNzguMjNDODQ5LjA2LDM3NC42MSA4NDUuNDgsMzcwLjA0IDg0Mi45MiwzNjQuNTFDODQwLjM1LDM1OC45OSA4MzkuMDYsMzUyLjQyIDgzOS4wNiwzNDQuOEM4MzkuMDYsMzM2LjQyIDg0MC41NCwzMjkuNTEgODQzLjQ5LDMyNC4wOEM4NDYuNDUsMzE4LjY1IDg1MC4yNSwzMTQuMzIgODU0LjkzLDMxMS4wOEM4NTkuNiwzMDcuODQgODY0LjkzLDMwNS40MSA4NzAuOTMsMzAzLjc5Qzg3Ni45MywzMDIuMTcgODgyLjk4LDMwMC44OCA4ODkuMDcsMjk5LjkzQzg5NS4xNywyOTguOTkgOTAxLjE3LDI5OC4yMiA5MDcuMDgsMjk3LjY1QzkxMi45OSwyOTcuMDggOTE4LjIyLDI5Ni4yMiA5MjIuNzksMjk1LjA4QzkyNy4zNywyOTMuOTMgOTMwLjk4LDI5Mi4yNyA5MzMuNjUsMjkwLjA3QzkzNi4zMiwyODcuODggOTM3LjU2LDI4NC42OSA5MzcuMzcsMjgwLjVDOTM3LjM3LDI3Ni4xMiA5MzYuNjUsMjcyLjY0IDkzNS4yMiwyNzAuMDdDOTMzLjc5LDI2Ny41IDkzMS44OSwyNjUuNSA5MjkuNTEsMjY0LjA3QzkyNy4xMywyNjIuNjQgOTI0LjM3LDI2MS42OSA5MjEuMjIsMjYxLjIxQzkxOC4wNywyNjAuNzMgOTE0LjcsMjYwLjQ5IDkxMS4wOCwyNjAuNDlDOTAzLjA4LDI2MC40OSA4OTYuNzksMjYyLjIgODkyLjIyLDI2NS42NEM4ODcuNjUsMjY5LjA3IDg4NC45OCwyNzQuNzggODg0LjIyLDI4Mi43OUw4NDMuNjIsMjgyLjc5TDg0My42MiwyODIuNzZaTTkzNy4zNSwzMTIuNzdDOTM1LjYzLDMxNC4zIDkzMy40OSwzMTUuNDggOTMwLjkyLDMxNi4zNEM5MjguMzUsMzE3LjIxIDkyNS41OSwzMTcuOTIgOTIyLjYzLDMxOC40OUM5MTkuNjgsMzE5LjA2IDkxNi41OCwzMTkuNTQgOTEzLjM1LDMxOS45MkM5MTAuMTEsMzIwLjMgOTA2Ljg3LDMyMC43NyA5MDMuNjMsMzIxLjM1QzkwMC41OCwzMjEuOTIgODk3LjU4LDMyMi42OSA4OTQuNjMsMzIzLjYzQzg5MS42OCwzMjQuNTkgODg5LjEsMzI1Ljg3IDg4Ni45MSwzMjcuNDlDODg0LjcyLDMyOS4xMSA4ODIuOTYsMzMxLjE2IDg4MS42MiwzMzMuNjNDODgwLjI5LDMzNi4xMSA4NzkuNjIsMzM5LjI1IDg3OS42MiwzNDMuMDZDODc5LjYyLDM0Ni42OCA4ODAuMjksMzQ5LjczIDg4MS42MiwzNTIuMkM4ODIuOTYsMzU0LjY4IDg4NC43NywzNTYuNjMgODg3LjA1LDM1OC4wNkM4ODkuMzQsMzU5LjQ5IDg5MiwzNjAuNDkgODk1LjA1LDM2MS4wNkM4OTguMSwzNjEuNjMgOTAxLjI0LDM2MS45MSA5MDQuNDgsMzYxLjkxQzkxMi40OCwzNjEuOTEgOTE4LjY4LDM2MC41OCA5MjMuMDYsMzU3LjkyQzkyNy40NCwzNTUuMjUgOTMwLjY5LDM1Mi4wNiA5MzIuNzcsMzQ4LjM0QzkzNC44NiwzNDQuNjMgOTM2LjE2LDM0MC44NyA5MzYuNjIsMzM3LjA2QzkzNy4xLDMzMy4yNSA5MzcuMzMsMzMwLjIgOTM3LjM0LDMyNy45Mkw5MzcuMzQsMzEyLjc3TDkzNy4zNSwzMTIuNzdaIiBzdHlsZT0iZmlsbDpyZ2IoMTcyLDIyLDQ0KTtmaWxsLXJ1bGU6bm9uemVybzsiLz4KICAgICAgICAgICAgPHBhdGggZD0iTTEwMDQuMjEsMjM3LjMzTDEwNDIuOCwyMzcuMzNMMTA0Mi44LDI1Ny45TDEwNDMuNjUsMjU3LjlDMTA0OC43OSwyNDkuMzMgMTA1NS40NiwyNDMuMDkgMTA2My42NSwyMzkuMTlDMTA3MS44NCwyMzUuMjggMTA4MC4yMywyMzMuMzMgMTA4OC43OSwyMzMuMzNDMTA5OS42NiwyMzMuMzMgMTEwOC41NiwyMzQuODEgMTExNS41MiwyMzcuNzZDMTEyMi40NywyNDAuNzIgMTEyNy45NCwyNDQuODEgMTEzMS45NSwyNTAuMDVDMTEzNS45NSwyNTUuMjkgMTEzOC43NiwyNjEuNjcgMTE0MC4zOCwyNjkuMTlDMTE0MiwyNzYuNzIgMTE0Mi44MSwyODUuMDUgMTE0Mi44MSwyOTQuMkwxMTQyLjgxLDM4NS4wN0wxMTAyLjI0LDM4NS4wN0wxMTAyLjI0LDMwMS42M0MxMTAyLjI0LDI4OS40MyAxMTAwLjMzLDI4MC4zNCAxMDk2LjUzLDI3NC4zNEMxMDkyLjcxLDI2OC4zNCAxMDg1Ljk1LDI2NS4zNCAxMDc2LjIzLDI2NS4zNEMxMDY1LjE4LDI2NS4zNCAxMDU3LjE5LDI2OC42MyAxMDUyLjIzLDI3NS4yQzEwNDcuMjcsMjgxLjc2IDEwNDQuOCwyOTIuNTggMTA0NC44LDMwNy42M0wxMDQ0LjgsMzg1LjA3TDEwMDQuMjIsMzg1LjA3TDEwMDQuMjIsMjM3LjMzTDEwMDQuMjEsMjM3LjMzWiIgc3R5bGU9ImZpbGw6cmdiKDE3MiwyMiw0NCk7ZmlsbC1ydWxlOm5vbnplcm87Ii8+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik02MTIuMzcsMjExLjg0TDYxMi4zNywzODUuMDdMNjUyLjk1LDM4NS4wN0w2NTIuOTUsMjM0LjIxQzYzOS45MywyMjYuMjMgNjI2LjM2LDIxOC43NCA2MTIuMzcsMjExLjg0WiIgc3R5bGU9ImZpbGw6cmdiKDE3MiwyMiw0NCk7ZmlsbC1ydWxlOm5vbnplcm87Ii8+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik0xOTguNDMsMjE5LjIxQzIyMS45NSwxNTAuMzIgMzYyLjU4LDEyNS4wNSA1MTIuNTgsMTYyLjc4QzYwMi41NSwxODUuNCA2NzYuMDcsMjI5LjI4IDcyNC4wOSwyNzIuNjdDNzAyLjMsMjE1LjEyIDU5Ni42NSwxMzMuMDggNDUxLjE4LDEwNC45NkMyODYuNyw3My4xNiAxMjQuNDcsMTAxLjExIDEwNC4zOSwxNzQuMUM4OS44OSwyMjYuODMgMTUzLjU3LDI4OC42IDI1Mi4wNSwzMzAuODRDMjA3LjgxLDI5NS4wMiAxODYuMjksMjU0Ljc4IDE5OC40MywyMTkuMjFaIiBzdHlsZT0iZmlsbDpyZ2IoMTcyLDIyLDQ0KTtmaWxsLXJ1bGU6bm9uemVybzsiLz4KICAgICAgICAgICAgPHBhdGggZD0iTTcyNC4xNiwyNDcuNjJMNzI0LjE2LDE4MS4wM0w2ODMuNTcsMTgxLjAzTDY4My41NywyMDEuMjVDNzAwLjg4LDIxNi43MSA3MTQuNjEsMjMyLjQ1IDcyNC4xNiwyNDcuNjJaIiBzdHlsZT0iZmlsbDpyZ2IoMTcyLDIyLDQ0KTtmaWxsLXJ1bGU6bm9uemVybzsiLz4KICAgICAgICA8L2c+CiAgICAgICAgPGcgdHJhbnNmb3JtPSJtYXRyaXgoMS4wNDY5NiwwLDAsMS4xMjU3NywtNDYuOTkxMywtNTAuNDMyNSkiPgogICAgICAgICAgICA8cGF0aCBkPSJNMTIxNC45OCwzNjMuNDNDMTIxNC45OCwzNzUuNjkgMTIwNS4zNSwzODUuMzIgMTE5Mi44MywzODUuMzJDMTE4MC40MywzODUuMzIgMTE3MC41NCwzNzUuNjkgMTE3MC41NCwzNjMuNDNDMTE3MC41NCwzNTEuNDMgMTE4MC40MywzNDEuOCAxMTkyLjgzLDM0MS44QzEyMDUuMzUsMzQxLjggMTIxNC45OCwzNTEuNDMgMTIxNC45OCwzNjMuNDNaTTExNzYuMDgsMzYzLjQzQzExNzYuMDgsMzczLjA2IDExODMuMiwzODAuNyAxMTkyLjk2LDM4MC43QzEyMDIuNDUsMzgwLjcgMTIwOS40NCwzNzMuMDUgMTIwOS40NCwzNjMuNTZDMTIwOS40NCwzNTMuOTMgMTIwMi40NSwzNDYuMTUgMTE5Mi44MiwzNDYuMTVDMTE4My4yLDM0Ni4xNiAxMTc2LjA4LDM1My45NCAxMTc2LjA4LDM2My40M1pNMTE4OS4zOSwzNzQuNzdMMTE4NC4zOCwzNzQuNzdMMTE4NC4zOCwzNTMuMTRDMTE4Ni4zNiwzNTIuNzQgMTE4OS4xMywzNTIuNDggMTE5Mi42OSwzNTIuNDhDMTE5Ni43OCwzNTIuNDggMTE5OC42MiwzNTMuMTQgMTIwMC4yMSwzNTQuMDZDMTIwMS40LDM1NC45OCAxMjAyLjMyLDM1Ni43IDEyMDIuMzIsMzU4LjgxQzEyMDIuMzIsMzYxLjE4IDEyMDAuNDcsMzYzLjAzIDExOTcuODQsMzYzLjgyTDExOTcuODQsMzY0LjA4QzExOTkuOTUsMzY0Ljg3IDEyMDEuMTQsMzY2LjQ1IDEyMDEuOCwzNjkuMzVDMTIwMi40NiwzNzIuNjUgMTIwMi44NSwzNzMuOTcgMTIwMy4zOCwzNzQuNzZMMTE5Ny45NywzNzQuNzZDMTE5Ny4zMSwzNzMuOTcgMTE5Ni45MiwzNzEuOTkgMTE5Ni4yNiwzNjkuNDlDMTE5NS44NiwzNjcuMTIgMTE5NC41NSwzNjYuMDYgMTE5MS43OCwzNjYuMDZMMTE4OS40MSwzNjYuMDZMMTE4OS40MSwzNzQuNzdMMTE4OS4zOSwzNzQuNzdaTTExODkuNTMsMzYyLjUxTDExOTEuOSwzNjIuNTFDMTE5NC42NywzNjIuNTEgMTE5Ni45MSwzNjEuNTkgMTE5Ni45MSwzNTkuMzRDMTE5Ni45MSwzNTcuMzYgMTE5NS40NiwzNTYuMDQgMTE5Mi4yOSwzNTYuMDRDMTE5MC45NywzNTYuMDQgMTE5MC4wNSwzNTYuMTcgMTE4OS41MiwzNTYuM0wxMTg5LjUyLDM2Mi41MUwxMTg5LjUzLDM2Mi41MVoiIHN0eWxlPSJmaWxsOnJnYigxNzIsMjIsNDQpO2ZpbGwtcnVsZTpub256ZXJvOyIvPgogICAgICAgIDwvZz4KICAgIDwvZz4KPC9zdmc+Cg==" alt="Vulkan Logo" width="50%">
+    </span>
+</div>
+<div id="header">
+<h1>Vulkan<sup>®</sup> 1.4.328 - A Specification (with all registered extensions)</h1>
+<div class="details">
+<span id="author" class="author">The Khronos<sup>®</sup> Vulkan  Working Group</span><br>
+<span id="revnumber">version 1.4.328,</span>
+<span id="revdate">2025-10-08 21:55:58Z</span>
+<br><span id="revremark">from git branch: Git branch not available commit: Git commit not available</span>
+</div>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="index.html">Titlepage</a></li><li><a href="chap1.html">1. Preamble</a></li>
+<li><a href="chap2.html">2. Introduction</a>
+<ul class="sectlevel2">
+<li><a href="chap2.html#introduction-conventions">2.1. Document Conventions</a></li>
+</ul>
+</li>
+<li><a href="chap3.html">3. Fundamentals</a>
+<ul class="sectlevel2">
+<li><a href="chap3.html#fundamentals-host-environment">3.1. Host and Device Environment</a></li>
+<li><a href="chap3.html#fundamentals-execmodel">3.2. Execution Model</a></li>
+<li><a href="chap3.html#fundamentals-objectmodel-overview">3.3. Object Model</a></li>
+<li><a href="chap3.html#fundamentals-abi">3.4. Application Binary Interface</a></li>
+<li><a href="chap3.html#fundamentals-commandsyntax">3.5. Command Syntax and Duration</a></li>
+<li><a href="chap3.html#fundamentals-threadingbehavior">3.6. Threading Behavior</a></li>
+<li><a href="chap3.html#fundamentals-validusage">3.7. Valid Usage</a></li>
+<li><a href="chap3.html#fundamentals-returncodes">3.8. <code>VkResult</code> Return Codes</a></li>
+<li><a href="chap3.html#fundamentals-numerics">3.9. Numeric Representation and Computation</a></li>
+<li><a href="chap3.html#fundamentals-fixedconv">3.10. Fixed-Point Data Conversions</a></li>
+<li><a href="chap3.html#fundamentals-strings">3.11. String Representation</a></li>
+<li><a href="chap3.html#fundamentals-common-objects">3.12. Common Object Types</a></li>
+<li><a href="chap3.html#fundamentals-api-name-aliases">3.13. API Name Aliases</a></li>
+</ul>
+</li>
+<li><a href="chap4.html">4. Initialization</a>
+<ul class="sectlevel2">
+<li><a href="chap4.html#initialization-functionpointers">4.1. Command Function Pointers</a></li>
+<li><a href="chap4.html#initialization-instances">4.2. Instances</a></li>
+</ul>
+</li>
+<li><a href="chap5.html">5. Devices and Queues</a>
+<ul class="sectlevel2">
+<li><a href="chap5.html#devsandqueues-physical-device-enumeration">5.1. Physical Devices</a></li>
+<li><a href="chap5.html#devsandqueues-devices">5.2. Devices</a></li>
+<li><a href="chap5.html#devsandqueues-queues">5.3. Queues</a></li>
+</ul>
+</li>
+<li><a href="chap6.html">6. Command Buffers</a>
+<ul class="sectlevel2">
+<li><a href="chap6.html#commandbuffers-lifecycle">6.1. Command Buffer Lifecycle</a></li>
+<li><a href="chap6.html#commandbuffers-pools">6.2. Command Pools</a></li>
+<li><a href="chap6.html#commandbuffer-allocation">6.3. Command Buffer Allocation and Management</a></li>
+<li><a href="chap6.html#commandbuffers-recording">6.4. Command Buffer Recording</a></li>
+<li><a href="chap6.html#commandbuffers-submission">6.5. Command Buffer Submission</a></li>
+<li><a href="chap6.html#commandbuffers-submission-progress">6.6. Queue Forward Progress</a></li>
+<li><a href="chap6.html#commandbuffers-secondary">6.7. Secondary Command Buffer Execution</a></li>
+<li><a href="chap6.html#commandbuffers-nested">6.8. Nested Command Buffers</a></li>
+<li><a href="chap6.html#commandbuffers-devicemask">6.9. Command Buffer Device Mask</a></li>
+</ul>
+</li>
+<li><a href="chap7.html">7. Synchronization and Cache Control</a>
+<ul class="sectlevel2">
+<li><a href="chap7.html#synchronization-dependencies">7.1. Execution and Memory Dependencies</a></li>
+<li><a href="chap7.html#synchronization-implicit">7.2. Implicit Synchronization Guarantees</a></li>
+<li><a href="chap7.html#synchronization-fences">7.3. Fences</a></li>
+<li><a href="chap7.html#synchronization-semaphores">7.4. Semaphores</a></li>
+<li><a href="chap7.html#synchronization-events">7.5. Events</a></li>
+<li><a href="chap7.html#synchronization-pipeline-barriers">7.6. Pipeline Barriers</a></li>
+<li><a href="chap7.html#synchronization-memory-barriers">7.7. Memory Barriers</a></li>
+<li><a href="chap7.html#synchronization-wait-idle">7.8. Wait Idle Operations</a></li>
+<li><a href="chap7.html#synchronization-submission-host-writes">7.9. Host Write Ordering Guarantees</a></li>
+<li><a href="chap7.html#synchronization-device-group">7.10. Synchronization and Multiple Physical Devices</a></li>
+<li><a href="chap7.html#calibrated-timestamps">7.11. Calibrated Timestamps</a></li>
+</ul>
+</li>
+<li><a href="chap8.html">8. Render Pass</a>
+<ul class="sectlevel2">
+<li><a href="chap8.html#renderpass-objects">8.1. Render Pass Objects</a></li>
+<li><a href="chap8.html#renderpass-creation">8.2. Render Pass Creation</a></li>
+<li><a href="chap8.html#renderpass-compatibility">8.3. Render Pass Compatibility</a></li>
+<li><a href="chap8.html#_framebuffers">8.4. Framebuffers</a></li>
+<li><a href="chap8.html#renderpass-load-operations">8.5. Render Pass Load Operations</a></li>
+<li><a href="chap8.html#renderpass-store-operations">8.6. Render Pass Store Operations</a></li>
+<li><a href="chap8.html#renderpass-resolve-operations">8.7. Render Pass Multisample Resolve Operations</a></li>
+<li><a href="chap8.html#renderpass-commands">8.8. Render Pass Commands</a></li>
+<li><a href="chap8.html#renderpass-creation-feedback">8.9. Render Pass Creation Feedback</a></li>
+<li><a href="chap8.html#common-render-pass-data-races">8.10. Common Render Pass Data Races (Informative)</a></li>
+<li><a href="chap8.html#renderpass-tile-shading">8.11. Tile Shading Render Pass</a></li>
+</ul>
+</li>
+<li><a href="chap9.html">9. Shaders</a>
+<ul class="sectlevel2">
+<li><a href="chap9.html#shaders-objects">9.1. Shader Objects</a></li>
+<li><a href="chap9.html#shader-modules">9.2. Shader Modules</a></li>
+<li><a href="chap9.html#shaders-identifiers">9.3. Shader Module Identifiers</a></li>
+<li><a href="chap9.html#shaders-binding">9.4. Binding Shaders</a></li>
+<li><a href="chap9.html#shaders-execution">9.5. Shader Execution</a></li>
+<li><a href="chap9.html#shaders-execution-memory-access-bounds">9.6. Shader Out-of-Bounds Memory Access</a></li>
+<li><a href="chap9.html#shaders-execution-memory-ordering">9.7. Shader Memory Access Ordering</a></li>
+<li><a href="chap9.html#shaders-inputs">9.8. Shader Inputs and Outputs</a></li>
+<li><a href="chap9.html#shaders-task">9.9. Task Shaders</a></li>
+<li><a href="chap9.html#shaders-mesh">9.10. Mesh Shaders</a></li>
+<li><a href="chap9.html#shaders-cluster-culling">9.11. Cluster Culling Shaders</a></li>
+<li><a href="chap9.html#shaders-vertex">9.12. Vertex Shaders</a></li>
+<li><a href="chap9.html#shaders-tessellation-control">9.13. Tessellation Control Shaders</a></li>
+<li><a href="chap9.html#shaders-tessellation-evaluation">9.14. Tessellation Evaluation Shaders</a></li>
+<li><a href="chap9.html#shaders-geometry">9.15. Geometry Shaders</a></li>
+<li><a href="chap9.html#shaders-fragment">9.16. Fragment Shaders</a></li>
+<li><a href="chap9.html#shaders-compute">9.17. Compute Shaders</a></li>
+<li><a href="chap9.html#shaders-ray-generation">9.18. Ray Generation Shaders</a></li>
+<li><a href="chap9.html#shaders-intersection">9.19. Intersection Shaders</a></li>
+<li><a href="chap9.html#shaders-any-hit">9.20. Any-Hit Shaders</a></li>
+<li><a href="chap9.html#shaders-closest-hit">9.21. Closest Hit Shaders</a></li>
+<li><a href="chap9.html#shaders-miss">9.22. Miss Shaders</a></li>
+<li><a href="chap9.html#shaders-callable">9.23. Callable Shaders</a></li>
+<li><a href="chap9.html#shaders-interpolation-decorations">9.24. Interpolation Decorations</a></li>
+<li><a href="chap9.html#shaders-staticuse">9.25. Static Use</a></li>
+<li><a href="chap9.html#shaders-scope">9.26. Scope</a></li>
+<li><a href="chap9.html#shaders-group-operations">9.27. Group Operations</a></li>
+<li><a href="chap9.html#shaders-quad-operations">9.28. Quad Group Operations</a></li>
+<li><a href="chap9.html#shaders-derivative-operations">9.29. Derivative Operations</a></li>
+<li><a href="chap9.html#shaders-helper-invocations">9.30. Helper Invocations</a></li>
+<li><a href="chap9.html#cooperative-matrices">9.31. Cooperative Matrices</a></li>
+<li><a href="chap9.html#_cooperative_vectors">9.32. Cooperative Vectors</a></li>
+<li><a href="chap9.html#shaders-validation-cache">9.33. Validation Cache</a></li>
+<li><a href="chap9.html#cuda-modules">9.34. CUDA Modules</a></li>
+</ul>
+</li>
+<li><a href="chap10.html">10. Pipelines</a>
+<ul class="sectlevel2">
+<li><a href="chap10.html#pipelines-multiple">10.1. Multiple Pipeline Creation</a></li>
+<li><a href="chap10.html#pipelines-creation-flags">10.2. Pipeline Creation Flags</a></li>
+<li><a href="chap10.html#pipelines-compute">10.3. Compute Pipelines</a></li>
+<li><a href="chap10.html#pipelines-graphics">10.4. Graphics Pipelines</a></li>
+<li><a href="chap10.html#pipelines-ray-tracing">10.5. Ray Tracing Pipelines</a></li>
+<li><a href="chap10.html#pipelines-destruction">10.6. Pipeline Destruction</a></li>
+<li><a href="chap10.html#pipelines-pipeline-derivatives">10.7. Pipeline Derivatives</a></li>
+<li><a href="chap10.html#pipelines-cache">10.8. Pipeline Cache</a></li>
+<li><a href="chap10.html#pipelines-binaries">10.9. Pipeline Binaries</a></li>
+<li><a href="chap10.html#pipelines-specialization-constants">10.10. Specialization Constants</a></li>
+<li><a href="chap10.html#pipelines-library">10.11. Pipeline Libraries</a></li>
+<li><a href="chap10.html#pipelines-binding">10.12. Pipeline Binding</a></li>
+<li><a href="chap10.html#pipelines-dynamic-state">10.13. Dynamic State</a></li>
+<li><a href="chap10.html#pipelines-shader-information">10.14. Pipeline Properties and Shader Information</a></li>
+<li><a href="chap10.html#pipelines-compiler-control">10.15. Pipeline Compiler Control</a></li>
+<li><a href="chap10.html#pipelines-creation-feedback">10.16. Pipeline Creation Feedback</a></li>
+</ul>
+</li>
+<li><a href="chap11.html">11. Memory Allocation</a>
+<ul class="sectlevel2">
+<li><a href="chap11.html#memory-host">11.1. Host Memory</a></li>
+<li><a href="chap11.html#memory-device">11.2. Device Memory</a></li>
+</ul>
+</li>
+<li><a href="chap12.html">12. Resource Creation</a>
+<ul class="sectlevel2">
+<li><a href="chap12.html#resources-buffers">12.1. Buffers</a></li>
+<li><a href="chap12.html#resources-buffer-views">12.2. Buffer Views</a></li>
+<li><a href="chap12.html#resources-buffer-device-addresses">12.3. Buffer Device Addresses</a></li>
+<li><a href="chap12.html#resources-images">12.4. Images</a></li>
+<li><a href="chap12.html#resources-image-layouts">12.5. Image Layouts</a></li>
+<li><a href="chap12.html#resources-image-views">12.6. Image Views</a></li>
+<li><a href="chap12.html#resources-acceleration-structures">12.7. Acceleration Structures</a></li>
+<li><a href="chap12.html#resources-micromaps">12.8. Micromaps</a></li>
+<li><a href="chap12.html#resources-association">12.9. Resource Memory Association</a></li>
+<li><a href="chap12.html#resources-sharing">12.10. Resource Sharing Mode</a></li>
+<li><a href="chap12.html#resources-memory-aliasing">12.11. Memory Aliasing</a></li>
+<li><a href="chap12.html#resources-buffer-collection-fuchsia">12.12. Buffer Collections</a></li>
+<li><a href="chap12.html#resources-tensors">12.13. Tensors</a></li>
+<li><a href="chap12.html#resources-tensor-views">12.14. Tensor Views</a></li>
+</ul>
+</li>
+<li><a href="chap13.html">13. Images</a>
+<ul class="sectlevel2">
+<li><a href="chap13.html#images-coordinate-validation">13.1. Image Coordinate Validation</a></li>
+<li><a href="chap13.html#images-reads">13.2. Image Reads</a></li>
+<li><a href="chap13.html#images-writes">13.3. Image Writes</a></li>
+</ul>
+</li>
+<li><a href="chap14.html">14. Samplers</a>
+<ul class="sectlevel2">
+<li><a href="chap14.html#samplers-YCbCr-conversion">14.1. Sampler Y′C<sub>B</sub>C<sub>R</sub> Conversion</a></li>
+</ul>
+</li>
+<li><a href="chap15.html">15. Resource Descriptors</a>
+<ul class="sectlevel2">
+<li><a href="chap15.html#descriptorsets-types">15.1. Descriptor Types</a></li>
+<li><a href="chap15.html#descriptorsets-sets">15.2. Descriptor Sets</a></li>
+<li><a href="chap15.html#descriptorsets-physical-storage-buffer">15.3. Physical Storage Buffer Access</a></li>
+<li><a href="chap15.html#descriptorbuffers">15.4. Descriptor Buffers</a></li>
+</ul>
+</li>
+<li><a href="chap16.html">16. Shader Interfaces</a>
+<ul class="sectlevel2">
+<li><a href="chap16.html#interfaces-iointerfaces">16.1. Shader Input and Output Interfaces</a></li>
+<li><a href="chap16.html#interfaces-vertexinput">16.2. Vertex Input Interface</a></li>
+<li><a href="chap16.html#interfaces-fragmentoutput">16.3. Fragment Output Interface</a></li>
+<li><a href="chap16.html#interfaces-legacy-dithering">16.4. Legacy Dithering</a></li>
+<li><a href="chap16.html#interfaces-fragmenttileimage">16.5. Fragment Tile Image Interface</a></li>
+<li><a href="chap16.html#interfaces-tile-attachment">16.6. Tile Attachment Interface</a></li>
+<li><a href="chap16.html#interfaces-inputattachment">16.7. Fragment Input Attachment Interface</a></li>
+<li><a href="chap16.html#interfaces-raypipeline">16.8. Ray Tracing Pipeline Interface</a></li>
+<li><a href="chap16.html#interfaces-resources">16.9. Shader Resource Interface</a></li>
+<li><a href="chap16.html#interfaces-builtin-variables">16.10. Built-In Variables</a></li>
+</ul>
+</li>
+<li><a href="chap17.html">17. Image Operations</a>
+<ul class="sectlevel2">
+<li><a href="chap17.html#_image_operations_overview">17.1. Image Operations Overview</a></li>
+<li><a href="chap17.html#textures-input">17.2. Sampling Operations</a></li>
+<li><a href="chap17.html#textures-normalized-operations">17.3. Normalized Texel Coordinate Operations</a></li>
+<li><a href="chap17.html#textures-unnormalized-operations">17.4. Unnormalized Texel Coordinate Operations</a></li>
+<li><a href="chap17.html#textures-integer-coordinate-operations">17.5. Integer Texel Coordinate Operations</a></li>
+<li><a href="chap17.html#textures-sample-operations">17.6. Image Sample Operations</a></li>
+<li><a href="chap17.html#textures-footprint">17.7. Texel Footprint Evaluation</a></li>
+<li><a href="chap17.html#textures-weightimage">17.8. Weight Image Sampling</a></li>
+<li><a href="chap17.html#textures-blockmatch">17.9. Block Matching</a></li>
+<li><a href="chap17.html#textures-boxfilter">17.10. Box Filter Sampling</a></li>
+<li><a href="chap17.html#textures-instructions">17.11. Image Operation Steps</a></li>
+<li><a href="chap17.html#textures-queries">17.12. Image Query Instructions</a></li>
+</ul>
+</li>
+<li><a href="chap18.html">18. Fragment Density Map Operations</a>
+<ul class="sectlevel2">
+<li><a href="chap18.html#_fragment_density_map_operations_overview">18.1. Fragment Density Map Operations Overview</a></li>
+<li><a href="chap18.html#fragmentdensitymap-fetch-density-value">18.2. Fetch Density Value</a></li>
+<li><a href="chap18.html#fragmentdensitymap-conversion-to-fragment-area">18.3. Fragment Area Conversion</a></li>
+</ul>
+</li>
+<li><a href="chap19.html">19. Tensor Operations</a>
+<ul class="sectlevel2">
+<li><a href="chap19.html#_tensor_operations_overview">19.1. Tensor Operations Overview</a></li>
+<li><a href="chap19.html#_tensor_element_input_operations">19.2. Tensor Element Input Operations</a></li>
+<li><a href="chap19.html#_tensor_element_output_operations">19.3. Tensor Element Output Operations</a></li>
+<li><a href="chap19.html#tensors-queries">19.4. Tensor Query Instructions</a></li>
+</ul>
+</li>
+<li><a href="chap20.html">20. Queries</a>
+<ul class="sectlevel2">
+<li><a href="chap20.html#queries-pools">20.1. Query Pools</a></li>
+<li><a href="chap20.html#queries-operation">20.2. Query Operation</a></li>
+<li><a href="chap20.html#queries-occlusion">20.3. Occlusion Queries</a></li>
+<li><a href="chap20.html#queries-pipestats">20.4. Pipeline Statistics Queries</a></li>
+<li><a href="chap20.html#queries-timestamps">20.5. Timestamp Queries</a></li>
+<li><a href="chap20.html#queries-performance">20.6. Performance Queries</a></li>
+<li><a href="chap20.html#queries-transform-feedback">20.7. Transform Feedback Queries</a></li>
+<li><a href="chap20.html#queries-primitives-generated">20.8. Primitives Generated Queries</a></li>
+<li><a href="chap20.html#queries-mesh-shader">20.9. Mesh Shader Queries</a></li>
+<li><a href="chap20.html#queries-performance-intel">20.10. Intel Performance Queries</a></li>
+<li><a href="chap20.html#queries-result-status-only">20.11. Result Status Queries</a></li>
+<li><a href="chap20.html#queries-video-encode-feedback">20.12. Video Encode Feedback Queries</a></li>
+</ul>
+</li>
+<li><a href="chap21.html">21. Clear Commands</a>
+<ul class="sectlevel2">
+<li><a href="chap21.html#clears-outside">21.1. Clearing Images Outside a Render Pass Instance</a></li>
+<li><a href="chap21.html#clears-inside">21.2. Clearing Images Inside a Render Pass Instance</a></li>
+<li><a href="chap21.html#clears-values">21.3. Clear Values</a></li>
+<li><a href="chap21.html#clears-filling-buffers">21.4. Filling Buffers</a></li>
+<li><a href="chap21.html#clears-updating-buffers">21.5. Updating Buffers</a></li>
+</ul>
+</li>
+<li><a href="chap22.html">22. Copy Commands</a>
+<ul class="sectlevel2">
+<li><a href="chap22.html#copies-buffers">22.1. Copying Data Between Buffers</a></li>
+<li><a href="chap22.html#copies-images">22.2. Copying Data Between Images</a></li>
+<li><a href="chap22.html#copies-buffers-images">22.3. Copying Data Between Buffers and Images</a></li>
+<li><a href="chap22.html#indirect-copies">22.4. Indirect Copies</a></li>
+<li><a href="chap22.html#copies-imagescaling">22.5. Image Copies With Scaling</a></li>
+<li><a href="chap22.html#copies-resolve">22.6. Resolving Multisample Images</a></li>
+<li><a href="chap22.html#copies-buffer-markers">22.7. Buffer Markers</a></li>
+<li><a href="chap22.html#copies-tensors">22.8. Copying Data Between Tensors</a></li>
+</ul>
+</li>
+<li><a href="chap23.html">23. Drawing Commands</a>
+<ul class="sectlevel2">
+<li><a href="chap23.html#drawing-primitive-topologies">23.1. Primitive Topologies</a></li>
+<li><a href="chap23.html#drawing-effective-primitive-topology">23.2. Effective Primitive Topology</a></li>
+<li><a href="chap23.html#drawing-primitive-order">23.3. Primitive Order</a></li>
+<li><a href="chap23.html#drawing-primitive-shading">23.4. Programmable Primitive Shading</a></li>
+<li><a href="chap23.html#drawing-conditional-rendering">23.5. Conditional Rendering</a></li>
+<li><a href="chap23.html#drawing-mesh-shading">23.6. Programmable Mesh Shading</a></li>
+<li><a href="chap23.html#drawing-cluster-culling-shading">23.7. Programmable Cluster Culling Shading</a></li>
+</ul>
+</li>
+<li><a href="chap24.html">24. Fixed-Function Vertex Processing</a>
+<ul class="sectlevel2">
+<li><a href="chap24.html#fxvertex-attrib">24.1. Vertex Attributes</a></li>
+<li><a href="chap24.html#fxvertex-input">24.2. Vertex Input Description</a></li>
+<li><a href="chap24.html#fxvertex-attribute_divisor">24.3. Vertex Attribute Divisor in Instanced Rendering</a></li>
+<li><a href="chap24.html#fxvertex-input-address-calculation">24.4. Vertex Input Address Calculation</a></li>
+</ul>
+</li>
+<li><a href="chap25.html">25. Tessellation</a>
+<ul class="sectlevel2">
+<li><a href="chap25.html#_tessellator">25.1. Tessellator</a></li>
+<li><a href="chap25.html#_tessellator_patch_discard">25.2. Tessellator Patch Discard</a></li>
+<li><a href="chap25.html#tessellation-tessellator-spacing">25.3. Tessellator Spacing</a></li>
+<li><a href="chap25.html#tessellation-primitive-order">25.4. Tessellation Primitive Ordering</a></li>
+<li><a href="chap25.html#tessellation-vertex-winding-order">25.5. Tessellator Vertex Winding Order</a></li>
+<li><a href="chap25.html#tessellation-triangle-tessellation">25.6. Triangle Tessellation</a></li>
+<li><a href="chap25.html#tessellation-quad-tessellation">25.7. Quad Tessellation</a></li>
+<li><a href="chap25.html#tessellation-isoline-tessellation">25.8. Isoline Tessellation</a></li>
+<li><a href="chap25.html#tessellation-point-mode">25.9. Tessellation Point Mode</a></li>
+<li><a href="chap25.html#_tessellation_pipeline_state">25.10. Tessellation Pipeline State</a></li>
+</ul>
+</li>
+<li><a href="chap26.html">26. Geometry Shading</a>
+<ul class="sectlevel2">
+<li><a href="chap26.html#geometry-input">26.1. Geometry Shader Input Primitives</a></li>
+<li><a href="chap26.html#geometry-output">26.2. Geometry Shader Output Primitives</a></li>
+<li><a href="chap26.html#geometry-invocations">26.3. Multiple Invocations of Geometry Shaders</a></li>
+<li><a href="chap26.html#geometry-ordering">26.4. Geometry Shader Primitive Ordering</a></li>
+<li><a href="chap26.html#geometry-passthrough">26.5. Geometry Shader Passthrough</a></li>
+</ul>
+</li>
+<li><a href="chap27.html">27. Mesh Shading</a>
+<ul class="sectlevel2">
+<li><a href="chap27.html#mesh-task-input">27.1. Task Shader Input</a></li>
+<li><a href="chap27.html#mesh-task-output">27.2. Task Shader Output</a></li>
+<li><a href="chap27.html#mesh-generation">27.3. Mesh Generation</a></li>
+<li><a href="chap27.html#mesh-input">27.4. Mesh Shader Input</a></li>
+<li><a href="chap27.html#mesh-output">27.5. Mesh Shader Output</a></li>
+<li><a href="chap27.html#mesh-output-perview">27.6. Mesh Shader Per-View Outputs</a></li>
+<li><a href="chap27.html#mesh-ordering">27.7. Mesh Shader Primitive Ordering</a></li>
+</ul>
+</li>
+<li><a href="chap28.html">28. Cluster Culling Shading</a>
+<ul class="sectlevel2">
+<li><a href="chap28.html#cluster-culling-input">28.1. Cluster Culling Shader Input</a></li>
+<li><a href="chap28.html#cluster-culling-output">28.2. Cluster Culling Shader Output</a></li>
+<li><a href="chap28.html#cluster-culling-cluster-ordering">28.3. Cluster Culling Shader Cluster Ordering</a></li>
+<li><a href="chap28.html#cluster-culling-primitive-ordering">28.4. Cluster Culling Shader Primitive Ordering</a></li>
+</ul>
+</li>
+<li><a href="chap29.html">29. Fixed-Function Vertex Post-Processing</a>
+<ul class="sectlevel2">
+<li><a href="chap29.html#vertexpostproc-transform-feedback">29.1. Transform Feedback</a></li>
+<li><a href="chap29.html#vertexpostproc-viewport-swizzle">29.2. Viewport Swizzle</a></li>
+<li><a href="chap29.html#vertexpostproc-flatshading">29.3. Flat Shading</a></li>
+<li><a href="chap29.html#vertexpostproc-clipping">29.4. Primitive Clipping</a></li>
+<li><a href="chap29.html#vertexpostproc-clipping-shader-outputs">29.5. Clipping Shader Outputs</a></li>
+<li><a href="chap29.html#vertexpostproc-viewportwscaling">29.6. Controlling Viewport W Scaling</a></li>
+<li><a href="chap29.html#vertexpostproc-coord-transform">29.7. Coordinate Transformations</a></li>
+<li><a href="chap29.html#vertexpostproc-renderpass-transform">29.8. Render Pass Transform</a></li>
+<li><a href="chap29.html#vertexpostproc-viewport">29.9. Controlling the Viewport</a></li>
+</ul>
+</li>
+<li><a href="chap30.html">30. Rasterization</a>
+<ul class="sectlevel2">
+<li><a href="chap30.html#primsrast-discard">30.1. Discarding Primitives Before Rasterization</a></li>
+<li><a href="chap30.html#primsrast-stream">30.2. Controlling the Vertex Stream Used for Rasterization</a></li>
+<li><a href="chap30.html#primsrast-order">30.3. Rasterization Order</a></li>
+<li><a href="chap30.html#primsrast-multisampling">30.4. Multisampling</a></li>
+<li><a href="chap30.html#primsrast-samplelocations">30.5. Custom Sample Locations</a></li>
+<li><a href="chap30.html#primsrast-fragment-shading-rate">30.6. Fragment Shading Rates</a></li>
+<li><a href="chap30.html#primsrast-shading-rate-image">30.7. Shading Rate Image</a></li>
+<li><a href="chap30.html#primsrast-sampleshading">30.8. Sample Shading</a></li>
+<li><a href="chap30.html#primsrast-barycentric">30.9. Barycentric Interpolation</a></li>
+<li><a href="chap30.html#primsrast-points">30.10. Points</a></li>
+<li><a href="chap30.html#primsrast-lines">30.11. Line Segments</a></li>
+<li><a href="chap30.html#primsrast-polygons">30.12. Polygons</a></li>
+</ul>
+</li>
+<li><a href="chap31.html">31. Fragment Operations</a>
+<ul class="sectlevel2">
+<li><a href="chap31.html#fragops-discard-rectangles">31.1. Discard Rectangles Test</a></li>
+<li><a href="chap31.html#fragops-scissor">31.2. Scissor Test</a></li>
+<li><a href="chap31.html#fragops-exclusive-scissor">31.3. Exclusive Scissor Test</a></li>
+<li><a href="chap31.html#fragops-samplemask">31.4. Sample Mask Test</a></li>
+<li><a href="chap31.html#fragops-shader">31.5. Fragment Shading</a></li>
+<li><a href="chap31.html#fragops-covg">31.6. Multisample Coverage</a></li>
+<li><a href="chap31.html#fragops-ds-state">31.7. Depth and Stencil Operations</a></li>
+<li><a href="chap31.html#fragops-dbt">31.8. Depth Bounds Test</a></li>
+<li><a href="chap31.html#fragops-stencil">31.9. Stencil Test</a></li>
+<li><a href="chap31.html#fragops-depth">31.10. Depth Test</a></li>
+<li><a href="chap31.html#fragops-rep-frag-test">31.11. Representative Fragment Test</a></li>
+<li><a href="chap31.html#fragops-samplecount">31.12. Sample Counting</a></li>
+<li><a href="chap31.html#fragops-coverage-to-color">31.13. Fragment Coverage to Color</a></li>
+<li><a href="chap31.html#fragops-coverage-reduction">31.14. Coverage Reduction</a></li>
+</ul>
+</li>
+<li><a href="chap32.html">32. The Framebuffer</a>
+<ul class="sectlevel2">
+<li><a href="chap32.html#framebuffer-blending">32.1. Blending</a></li>
+<li><a href="chap32.html#framebuffer-logicop">32.2. Logical Operations</a></li>
+<li><a href="chap32.html#framebuffer-color-write-mask">32.3. Color Write Mask</a></li>
+<li><a href="chap32.html#framebuffer-color-write-enable">32.4. Color Write Enable</a></li>
+<li><a href="chap32.html#framebuffer-queries">32.5. Framebuffer Query Instructions</a></li>
+</ul>
+</li>
+<li><a href="chap33.html">33. Dispatching Commands</a>
+<ul class="sectlevel2">
+<li><a href="chap33.html#cudadispatch">33.1. Dispatch Command for CUDA PTX Kernels</a></li>
+</ul>
+</li>
+<li><a href="chap34.html">34. Device-Generated Commands</a>
+<ul class="sectlevel2">
+<li><a href="chap34.html#indirectmdslayout">34.1. Indirect Commands Layout</a></li>
+<li><a href="chap34.html#_indirect_commands_generation_and_execution">34.2. Indirect Commands Generation and Execution</a></li>
+</ul>
+</li>
+<li><a href="chap35.html">35. Sparse Resources</a>
+<ul class="sectlevel2">
+<li><a href="chap35.html#sparsememory-sparseresourcefeatures">35.1. Sparse Resource Features</a></li>
+<li><a href="chap35.html#sparsememory-fully-resident">35.2. Sparse Buffers and Fully-Resident Images</a></li>
+<li><a href="chap35.html#sparsememory-partially-resident-buffers">35.3. Sparse Partially-Resident Buffers</a></li>
+<li><a href="chap35.html#sparsememory-partially-resident-images">35.4. Sparse Partially-Resident Images</a></li>
+<li><a href="chap35.html#sparsememory-sparse-memory-aliasing">35.5. Sparse Memory Aliasing</a></li>
+<li><a href="chap35.html#_sparse_resource_implementation_guidelines_informative">35.6. Sparse Resource Implementation Guidelines (Informative)</a></li>
+<li><a href="chap35.html#sparsememory-resourceapi">35.7. Sparse Resource API</a></li>
+</ul>
+</li>
+<li><a href="chap36.html">36. Window System Integration (WSI)</a>
+<ul class="sectlevel2">
+<li><a href="chap36.html#_wsi_platform">36.1. WSI Platform</a></li>
+<li><a href="chap36.html#_wsi_surface">36.2. WSI Surface</a></li>
+<li><a href="chap36.html#display">36.3. Presenting Directly to Display Devices</a></li>
+<li><a href="chap36.html#_querying_for_wsi_support">36.4. Querying for WSI Support</a></li>
+<li><a href="chap36.html#_surface_queries">36.5. Surface Queries</a></li>
+<li><a href="chap36.html#_full_screen_exclusive_control">36.6. Full Screen Exclusive Control</a></li>
+<li><a href="chap36.html#_device_group_queries">36.7. Device Group Queries</a></li>
+<li><a href="chap36.html#_display_timing_queries">36.8. Display Timing Queries</a></li>
+<li><a href="chap36.html#present-wait2">36.9. Present Wait</a></li>
+<li><a href="chap36.html#wsi-swapchain">36.10. WSI Swapchain</a></li>
+<li><a href="chap36.html#_hdr_metadata">36.11. HDR Metadata</a></li>
+<li><a href="chap36.html#lag-control">36.12. Lag Control</a></li>
+<li><a href="chap36.html#present-barrier">36.13. Present Barrier</a></li>
+</ul>
+</li>
+<li><a href="chap37.html">37. Deferred Host Operations</a>
+<ul class="sectlevel2">
+<li><a href="chap37.html#deferred-host-operations-requesting">37.1. Requesting Deferral</a></li>
+<li><a href="chap37.html#_deferred_host_operations_api">37.2. Deferred Host Operations API</a></li>
+</ul>
+</li>
+<li><a href="chap38.html">38. Private Data</a></li>
+<li><a href="chap39.html">39. Acceleration Structures</a>
+<ul class="sectlevel2">
+<li><a href="chap39.html#acceleration-structure-def">39.1. Acceleration Structures</a></li>
+<li><a href="chap39.html#cluster-geometry">39.2. Cluster Level Acceleration Structures</a></li>
+<li><a href="chap39.html#partitioned-tlas">39.3. Partitioned Top Level Acceleration Structures</a></li>
+<li><a href="chap39.html#host-acceleration-structure">39.4. Host Acceleration Structure Operations</a></li>
+</ul>
+</li>
+<li><a href="chap40.html">40. Compressed triangle data</a>
+<ul class="sectlevel2">
+<li><a href="chap40.html#dense-geometry-format">40.1. Dense Geometry Format Version 1 (DGF1)</a></li>
+</ul>
+</li>
+<li><a href="chap41.html">41. Micromap</a>
+<ul class="sectlevel2">
+<li><a href="chap41.html#micromap-def">41.1. Micromaps</a></li>
+<li><a href="chap41.html#host-micromap">41.2. Host Micromap Operations</a></li>
+</ul>
+</li>
+<li><a href="chap42.html">42. Ray Traversal</a>
+<ul class="sectlevel2">
+<li><a href="chap42.html#ray-intersection-candidate-determination">42.1. Ray Intersection Candidate Determination</a></li>
+<li><a href="chap42.html#ray-intersection-culling">42.2. Ray Intersection Culling</a></li>
+<li><a href="chap42.html#ray-intersection-confirmation">42.3. Ray Intersection Confirmation</a></li>
+<li><a href="chap42.html#ray-closest-hit-determination">42.4. Ray Closest Hit Determination</a></li>
+<li><a href="chap42.html#ray-result-determination">42.5. Ray Result Determination</a></li>
+</ul>
+</li>
+<li><a href="chap43.html">43. Ray Tracing</a>
+<ul class="sectlevel2">
+<li><a href="chap43.html#ray-tracing-shader-call">43.1. Shader Call Instructions</a></li>
+<li><a href="chap43.html#ray-tracing-commands">43.2. Ray Tracing Commands</a></li>
+<li><a href="chap43.html#shader-binding-table">43.3. Shader Binding Table</a></li>
+<li><a href="chap43.html#ray-tracing-pipeline-stack">43.4. Ray Tracing Pipeline Stack</a></li>
+<li><a href="chap43.html#ray-tracing-capture-replay">43.5. Ray Tracing Capture Replay</a></li>
+<li><a href="chap43.html#ray-tracing-validation">43.6. Ray Tracing Validation</a></li>
+</ul>
+</li>
+<li><a href="chap44.html">44. Memory Decompression</a></li>
+<li><a href="chap45.html">45. Video Coding</a>
+<ul class="sectlevel2">
+<li><a href="chap45.html#video-picture-resources">45.1. Video Picture Resources</a></li>
+<li><a href="chap45.html#dpb">45.2. Decoded Picture Buffer</a></li>
+<li><a href="chap45.html#video-profiles">45.3. Video Profiles</a></li>
+<li><a href="chap45.html#video-capabilities">45.4. Video Capabilities</a></li>
+<li><a href="chap45.html#video-session">45.5. Video Sessions</a></li>
+<li><a href="chap45.html#video-profile-compatibility">45.6. Video Profile Compatibility</a></li>
+<li><a href="chap45.html#video-session-parameters">45.7. Video Session Parameters</a></li>
+<li><a href="chap45.html#video-coding-scope">45.8. Video Coding Scope</a></li>
+<li><a href="chap45.html#video-coding-control">45.9. Video Coding Control</a></li>
+<li><a href="chap45.html#video-inline-queries">45.10. Inline Queries</a></li>
+<li><a href="chap45.html#video-decode-operations">45.11. Video Decode Operations</a></li>
+<li><a href="chap45.html#decode-h264">45.12. H.264 Decode Operations</a></li>
+<li><a href="chap45.html#decode-h265">45.13. H.265 Decode Operations</a></li>
+<li><a href="chap45.html#decode-vp9">45.14. VP9 Decode Operations</a></li>
+<li><a href="chap45.html#decode-av1">45.15. AV1 Decode Operations</a></li>
+<li><a href="chap45.html#video-encode-operations">45.16. Video Encode Operations</a></li>
+<li><a href="chap45.html#encode-intra-refresh">45.17. Video Encode Intra Refresh</a></li>
+<li><a href="chap45.html#encode-rate-control">45.18. Video Encode Rate Control</a></li>
+<li><a href="chap45.html#encode-quantization-map">45.19. Video Encode Quantization Maps</a></li>
+<li><a href="chap45.html#encode-rgb-conversion">45.20. Video Encode R′G′B′ Conversion</a></li>
+<li><a href="chap45.html#encode-h264">45.21. H.264 Encode Operations</a></li>
+<li><a href="chap45.html#encode-h265">45.22. H.265 Encode Operations</a></li>
+<li><a href="chap45.html#encode-av1">45.23. AV1 Encode Operations</a></li>
+</ul>
+</li>
+<li><a href="chap46.html">46. Optical Flow</a>
+<ul class="sectlevel2">
+<li><a href="chap46.html#_optical_flow_queues">46.1. Optical Flow Queues</a></li>
+<li><a href="chap46.html#opticalflow-formats">46.2. Optical Flow Image Formats</a></li>
+<li><a href="chap46.html#opticalflow-session">46.3. Optical Flow Session</a></li>
+</ul>
+</li>
+<li><a href="chap47.html">47. Execution Graphs</a>
+<ul class="sectlevel2">
+<li><a href="chap47.html#_pipeline_creation">47.1. Pipeline Creation</a></li>
+<li><a href="chap47.html#_initializing_scratch_memory">47.2. Initializing Scratch Memory</a></li>
+<li><a href="chap47.html#_dispatching_a_graph">47.3. Dispatching a Graph</a></li>
+<li><a href="chap47.html#_shader_enqueue">47.4. Shader Enqueue</a></li>
+</ul>
+</li>
+<li><a href="chap48.html">48. External Compute Queues</a></li>
+<li><a href="chap49.html">49. Data graphs</a>
+<ul class="sectlevel2">
+<li><a href="chap49.html#graphs-pipelines">49.1. Pipeline Creation</a></li>
+<li><a href="chap49.html#_sessions">49.2. Sessions</a></li>
+<li><a href="chap49.html#_dispatch">49.3. Dispatch</a></li>
+<li><a href="chap49.html#graphs-properties">49.4. Properties</a></li>
+<li><a href="chap49.html#graphs-processing-engines">49.5. Processing Engines</a></li>
+<li><a href="chap49.html#graphs-operations">49.6. Operations</a></li>
+</ul>
+</li>
+<li><a href="chap50.html">50. Extending Vulkan</a>
+<ul class="sectlevel2">
+<li><a href="chap50.html#extendingvulkan-functionalitylevels">50.1. Functionality Levels</a></li>
+<li><a href="chap50.html#extendingvulkan-instanceanddeviceversions">50.2. Instance and Device Versions</a></li>
+<li><a href="chap50.html#extendingvulkan-coreversions">50.3. Core Versions</a></li>
+<li><a href="chap50.html#extendingvulkan-layers">50.4. Layers</a></li>
+<li><a href="chap50.html#extendingvulkan-extensions">50.5. Extensions</a></li>
+<li><a href="chap50.html#extendingvulkan-extensions-extensiondependencies">50.6. Extension Dependencies</a></li>
+<li><a href="chap50.html#_compatibility_guarantees_informative">50.7. Compatibility Guarantees (Informative)</a></li>
+</ul>
+</li>
+<li><a href="chap51.html">51. Features</a>
+<ul class="sectlevel2">
+<li><a href="chap51.html#features-requirements">51.1. Feature Requirements</a></li>
+<li><a href="chap51.html#profile-features">51.2. Profile Features</a></li>
+</ul>
+</li>
+<li><a href="chap52.html">52. Limits</a>
+<ul class="sectlevel2">
+<li><a href="chap52.html#limits-minmax">52.1. Limit Requirements</a></li>
+<li><a href="chap52.html#limits-multisample">52.2. Additional Multisampling Capabilities</a></li>
+<li><a href="chap52.html#profile-limits">52.3. Profile Limits</a></li>
+</ul>
+</li>
+<li><a href="chap53.html">53. Formats</a>
+<ul class="sectlevel2">
+<li><a href="chap53.html#formats-definition">53.1. Format Definition</a></li>
+<li><a href="chap53.html#formats-properties">53.2. Format Properties</a></li>
+<li><a href="chap53.html#features-required-format-support">53.3. Required Format Support</a></li>
+</ul>
+</li>
+<li><a href="chap54.html">54. Additional Capabilities</a>
+<ul class="sectlevel2">
+<li><a href="chap54.html#capabilities-image">54.1. Additional Image Capabilities</a></li>
+<li><a href="chap54.html#capabilities-buffer">54.2. Additional Buffer Capabilities</a></li>
+<li><a href="chap54.html#capabilities-tensor">54.3. Additional Tensor Capabilities</a></li>
+<li><a href="chap54.html#capabilities-semaphore">54.4. Optional Semaphore Capabilities</a></li>
+<li><a href="chap54.html#capabilities-fence">54.5. Optional Fence Capabilities</a></li>
+<li><a href="chap54.html#features-timestamp-calibration">54.6. Timestamp Calibration Capabilities</a></li>
+</ul>
+</li>
+<li><a href="chap55.html">55. Debugging</a>
+<ul class="sectlevel2">
+<li><a href="chap55.html#debugging-debug-utils">55.1. Debug Utilities</a></li>
+<li><a href="chap55.html#debugging-debug-markers">55.2. Debug Markers</a></li>
+<li><a href="chap55.html#debugging-debug-report-callbacks">55.3. Debug Report Callbacks</a></li>
+<li><a href="chap55.html#_device_loss_debugging">55.4. Device Loss Debugging</a></li>
+<li><a href="chap55.html#debugging-tooling-info">55.5. Active Tooling Information</a></li>
+<li><a href="chap55.html#_frame_boundary">55.6. Frame Boundary</a></li>
+</ul>
+</li>
+<li><a href="chap56.html">Appendix A: Vulkan Environment for SPIR-V</a>
+<ul class="sectlevel2">
+<li><a href="chap56.html#_versions_and_formats">Versions and Formats</a></li>
+<li><a href="chap56.html#spirvenv-capabilities">Capabilities</a></li>
+<li><a href="chap56.html#spirvenv-module-validation">Validation Rules Within a Module</a></li>
+<li><a href="chap56.html#spirvenv-precision-operation">Precision and Operation of SPIR-V Instructions</a></li>
+<li><a href="chap56.html#spirvenv-buffer-indexing">Buffer Indexing Calculations</a></li>
+<li><a href="chap56.html#spirvenv-image-signedness">Signedness of SPIR-V Image Accesses</a></li>
+<li><a href="chap56.html#spirvenv-format-type-matching">Image Format and Type Matching</a></li>
+<li><a href="chap56.html#spirvenv-image-dimensions">Compatibility Between SPIR-V Image Dimensions and Vulkan ImageView Types</a></li>
+<li><a href="chap56.html#spirvenv-image-formats">Compatibility Between SPIR-V Image Formats and Vulkan Formats</a></li>
+<li><a href="chap56.html#spirenv-ray-query-precision-operation">Ray Query Precision and Operation</a></li>
+<li><a href="chap56.html#spirvenv-tensor-formats">Compatibility Between SPIR-V Tensor Element Types And Vulkan Formats</a></li>
+</ul>
+</li>
+<li><a href="chap57.html">Appendix B: Memory Model</a>
+<ul class="sectlevel2">
+<li><a href="chap57.html#memory-model-agent">Agent</a></li>
+<li><a href="chap57.html#memory-model-memory-location">Memory Location</a></li>
+<li><a href="chap57.html#memory-model-allocation">Allocation</a></li>
+<li><a href="chap57.html#memory-model-memory-operation">Memory Operation</a></li>
+<li><a href="chap57.html#memory-model-references">Reference</a></li>
+<li><a href="chap57.html#memory-model-program-order">Program-Order</a></li>
+<li><a href="chap57.html#shader-call-related">Shader Call Related</a></li>
+<li><a href="chap57.html#shader-call-order">Shader Call Order</a></li>
+<li><a href="chap57.html#memory-model-scope">Scope</a></li>
+<li><a href="chap57.html#memory-model-atomic-operation">Atomic Operation</a></li>
+<li><a href="chap57.html#memory-model-scoped-modification-order">Scoped Modification Order</a></li>
+<li><a href="chap57.html#memory-model-memory-semantics">Memory Semantics</a></li>
+<li><a href="chap57.html#memory-model-release-sequence">Release Sequence</a></li>
+<li><a href="chap57.html#memory-model-synchronizes-with">Synchronizes-With</a></li>
+<li><a href="chap57.html#memory-model-system-synchronizes-with">System-Synchronizes-With</a></li>
+<li><a href="chap57.html#memory-model-non-private">Private vs. Non-Private</a></li>
+<li><a href="chap57.html#memory-model-inter-thread-happens-before">Inter-Thread-Happens-Before</a></li>
+<li><a href="chap57.html#memory-model-happens-before">Happens-Before</a></li>
+<li><a href="chap57.html#memory-model-availability-visibility">Availability and Visibility</a></li>
+<li><a href="chap57.html#memory-model-vulkan-availability-visibility">Availability, Visibility, and Domain Operations</a></li>
+<li><a href="chap57.html#memory-model-availability-visibility-semantics">Availability and Visibility Semantics</a></li>
+<li><a href="chap57.html#memory-model-instruction-av-vis">Per-Instruction Availability and Visibility Semantics</a></li>
+<li><a href="chap57.html#memory-model-location-ordered">Location-Ordered</a></li>
+<li><a href="chap57.html#memory-model-access-data-race">Data Race</a></li>
+<li><a href="chap57.html#memory-model-visible-to">Visible-To</a></li>
+<li><a href="chap57.html#memory-model-acyclicity">Acyclicity</a></li>
+<li><a href="chap57.html#memory-model-shader-io">Shader I/O</a></li>
+<li><a href="chap57.html#memory-model-deallocation">Deallocation</a></li>
+<li><a href="chap57.html#memory-model-informative-descriptions">Descriptions (Informative)</a></li>
+<li><a href="chap57.html#memory-model-tessellation-output-ordering">Tessellation Output Ordering</a></li>
+<li><a href="chap57.html#memory-model-cooperative-matrix">Cooperative Matrix Memory Access</a></li>
+</ul>
+</li>
+<li><a href="chap58.html">Appendix C: Compressed Image Formats</a>
+<ul class="sectlevel2">
+<li><a href="chap58.html#appendix-compressedtex-bc">Block-Compressed Image Formats</a></li>
+<li><a href="chap58.html#appendix-compressedtex-etc2">ETC Compressed Image Formats</a></li>
+<li><a href="chap58.html#appendix-compressedtex-astc">ASTC Compressed Image Formats</a></li>
+<li><a href="chap58.html#appendix-compressedtex-pvrtc">PVRTC Compressed Image Formats</a></li>
+</ul>
+</li>
+<li><a href="chap59.html">Appendix D: Core Revisions (Informative)</a>
+<ul class="sectlevel2">
+<li><a href="chap59.html#versions-1.4">Vulkan Version 1.4</a></li>
+<li><a href="chap59.html#versions-1.3">Vulkan Version 1.3</a></li>
+<li><a href="chap59.html#versions-1.2">Vulkan Version 1.2</a></li>
+<li><a href="chap59.html#versions-1.1">Vulkan Version 1.1</a></li>
+<li><a href="chap59.html#versions-1.0">Vulkan Version 1.0</a></li>
+</ul>
+</li>
+<li><a href="chap60.html">Appendix E: Layers &amp; Extensions (Informative)</a>
+<ul class="sectlevel2">
+<li><a href="chap60.html#_extension_dependencies">Extension Dependencies</a></li>
+<li><a href="chap60.html#_extension_interactions">Extension Interactions</a></li>
+<li><a href="chap60.html#current-extension-appendices-list">List of Current Extensions</a></li>
+<li><a href="chap60.html#provisional-extension-appendices-list">List of Provisional Extensions</a></li>
+<li><a href="chap60.html#deprecated-extension-appendices-list">List of Deprecated Extensions</a></li>
+</ul>
+</li>
+<li><a href="chap61.html">Appendix F: Vulkan Roadmap Milestones</a>
+<ul class="sectlevel2">
+<li><a href="chap61.html#roadmap-2022">Roadmap 2022</a></li>
+<li><a href="chap61.html#roadmap-2024">Roadmap 2024</a></li>
+</ul>
+</li>
+<li><a href="chap62.html">Appendix G: Deprecation</a>
+<ul class="sectlevel2">
+<li><a href="chap62.html#_deprecated_functionality">Deprecated Functionality</a></li>
+</ul>
+</li>
+<li><a href="chap63.html">Appendix H: API Boilerplate</a>
+<ul class="sectlevel2">
+<li><a href="chap63.html#boilerplate-headers">Vulkan Header Files</a></li>
+<li><a href="chap63.html#boilerplate-wsi-header">Window System-Specific Header Control (Informative)</a></li>
+<li><a href="chap63.html#boilerplate-provisional-header">Provisional Extension Header Control (Informative)</a></li>
+<li><a href="chap63.html#boilerplate-video-std-headers">Video Std Headers</a></li>
+</ul>
+</li>
+<li><a href="chap64.html">Appendix I: Invariance</a>
+<ul class="sectlevel2">
+<li><a href="chap64.html#_repeatability">Repeatability</a></li>
+<li><a href="chap64.html#_multi_pass_algorithms">Multi-Pass Algorithms</a></li>
+<li><a href="chap64.html#_invariance_rules">Invariance Rules</a></li>
+<li><a href="chap64.html#_tessellation_invariance">Tessellation Invariance</a></li>
+</ul>
+</li>
+<li class="current"><a href="chap65.html">Appendix J: Lexicon</a>
+<ul class="sectlevel2">
+<li class="current"><a href="chap65.html#glossary">Glossary</a></li>
+<li class="current"><a href="chap65.html#lexicon-common-abbreviations">Common Abbreviations</a></li>
+<li class="current"><a href="chap65.html#lexicon-video-abbreviations">Video-Specific Abbreviations</a></li>
+<li class="current"><a href="chap65.html#lexicon-prefixes">Prefixes</a></li>
+</ul>
+</li>
+<li><a href="chap66.html">Appendix K: Credits (Informative)</a>
+<ul class="sectlevel2">
+<li><a href="chap66.html#_working_group_contributors_to_vulkan">Working Group Contributors to Vulkan</a></li>
+<li><a href="chap66.html#_other_credits">Other Credits</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="loading_msg" class="hidden" hidden=""><p>Loading… please wait.</p></div>
+<!--ChunkedSearchboxMarker-->
+<div class="searchbox"><label for="searchbox">Search: </label><input id="searchbox" type="text" disabled="disabled" value="Loading Search Data"><div id="resultsdiv"><ol id="results"></ol></div></div>
+<div id="content" class="loadable"><div class="sect1">
+<h2 id="lexicon"><a class="anchor" href="chap65.html"></a>Appendix J: Lexicon</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This appendix defines terms, abbreviations, and API prefixes used in the
+Specification.</p>
+</div>
+<div class="sect2">
+<h3 id="glossary"><a class="anchor" href="chap65.html#glossary"></a>Glossary</h3>
+<div class="paragraph">
+<p>The terms defined in this section are used consistently throughout the
+Specification and may be used with or without capitalization.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Accessible (Descriptor Binding)</dt>
+<dd>
+<p>A descriptor binding is accessible to a shader stage if that stage is
+included in the <code>stageFlags</code> of the descriptor binding.
+Descriptors using that binding <strong class="purple">can</strong> only be used by stages in which they
+are accessible.</p>
+</dd>
+<dt class="hdlist1">Acquire Operation (Resource)</dt>
+<dd>
+<p>An operation that acquires ownership of an image subresource or buffer
+range.</p>
+</dd>
+<dt class="hdlist1">Active (Descriptor Type)</dt>
+<dd>
+<p>When a descriptor with <em>mutable</em> type is updated with
+<a href="chap15.html#vkUpdateDescriptorSets">vkUpdateDescriptorSets</a>, the active descriptor type changes.
+When the descriptor is consumed by shaders, it is the active descriptor
+type which determines validity, i.e.
+<code>VkDescriptorSetLayoutBinding</code>::<code>descriptorType</code> is replaced
+with the active descriptor type.
+A mismatch in active descriptor type and consumption by shader is
+considered an undefined descriptor.</p>
+</dd>
+<dt class="hdlist1">Active (Transform Feedback)</dt>
+<dd>
+<p>Transform feedback is made active after
+<a href="chap29.html#vkCmdBeginTransformFeedbackEXT">vkCmdBeginTransformFeedbackEXT</a> executes and remains active until
+<a href="chap29.html#vkCmdEndTransformFeedbackEXT">vkCmdEndTransformFeedbackEXT</a> executes.
+While transform feedback is active, data written to variables in the
+output interface of the last
+<a href="chap10.html#pipelines-graphics-subsets-pre-rasterization">pre-rasterization shader
+stage</a> of the graphics pipeline are captured to the bound transform
+feedback buffers if those variables are decorated for transform
+feedback.</p>
+</dd>
+<dt class="hdlist1">Adjacent Vertex</dt>
+<dd>
+<p>A vertex in an adjacency primitive topology that is not part of a given
+primitive, but is accessible in geometry shaders.</p>
+</dd>
+<dt class="hdlist1">Active Object (Ray Tracing)</dt>
+<dd>
+<p>A primitive or instance in a ray tracing acceleration structure which
+has a corresponding ID, and is not <em>inactive</em> (meaning that it is
+visible to rays).</p>
+</dd>
+<dt class="hdlist1">Advanced Blend Operation</dt>
+<dd>
+<p>Blending performed using one of the blend operation enums introduced by
+the <code><a href="chap60.html#VK_EXT_blend_operation_advanced">VK_EXT_blend_operation_advanced</a></code> extension.
+See <a href="chap32.html#framebuffer-blend-advanced">Advanced Blending Operations</a>.</p>
+</dd>
+<dt class="hdlist1">Alias (API type/command)</dt>
+<dd>
+<p>An identical definition of another API type/command with the same
+behavior but a different name.</p>
+</dd>
+<dt class="hdlist1">Aliased Range (Memory)</dt>
+<dd>
+<p>A range of a device memory allocation that is bound to multiple
+resources simultaneously.</p>
+</dd>
+<dt class="hdlist1">Allocation Scope</dt>
+<dd>
+<p>An association of a host memory allocation to a parent object or
+command, where the allocation’s lifetime ends before or at the same time
+as the parent object is freed or destroyed, or during the parent
+command.</p>
+</dd>
+<dt class="hdlist1">API command</dt>
+<dd>
+<p>Any command defined in the Vulkan specification.
+These entry points all have a vk prefix.</p>
+</dd>
+<dt class="hdlist1">Aspect (Image)</dt>
+<dd>
+<p>Some image types contain multiple kinds (called “aspects”) of data for
+each pixel, where each aspect is used in a particular way by the
+pipeline and <strong class="purple">may</strong> be stored differently or separately from other
+aspects.
+For example, the color components of an image format make up the color
+aspect of the image, and <strong class="purple">can</strong> be used as a framebuffer color attachment.
+Some operations, like depth testing, operate only on specific aspects of
+an image.</p>
+</dd>
+<dt class="hdlist1">Attachment (Render Pass)</dt>
+<dd>
+<p>A zero-based integer index name used in render pass creation to refer to
+a framebuffer attachment that is accessed by one or more subpasses.
+The index also refers to an attachment description which includes
+information about the properties of the image view that will later be
+attached.</p>
+</dd>
+<dt class="hdlist1">Availability Operation</dt>
+<dd>
+<p>An operation that causes the values generated by specified memory write
+accesses to become available for future access.</p>
+</dd>
+<dt class="hdlist1">Available</dt>
+<dd>
+<p>A state of values written to memory that allows them to be made visible.</p>
+</dd>
+<dt class="hdlist1">Axis-aligned Bounding Box</dt>
+<dd>
+<p>A box bounding a region in space defined by extents along each axis and
+thus representing a box where each edge is aligned to one of the major
+axes.</p>
+</dd>
+<dt class="hdlist1">Back-Facing</dt>
+<dd>
+<p>See Facingness.</p>
+</dd>
+<dt class="hdlist1">Backward Prediction</dt>
+<dd>
+<p>Sample prediction performed during video decode and encode operations
+based on reference pictures that occur temporally (in display order)
+after the current picture.</p>
+</dd>
+<dt class="hdlist1">Backward Reference</dt>
+<dd>
+<p>A reference picture that occurs temporally (in display order) after the
+current picture.</p>
+</dd>
+<dt class="hdlist1">Batch</dt>
+<dd>
+<p>A single structure submitted to a queue as part of a
+<a href="chap5.html#devsandqueues-submission">queue submission command</a>, describing a set
+of queue operations to execute.</p>
+</dd>
+<dt class="hdlist1">Backwards Compatibility</dt>
+<dd>
+<p>A given version of the API is backwards compatible with an earlier
+version if an application, relying only on valid behavior and
+functionality defined by the earlier specification, is able to correctly
+run against each version without any modification.
+This assumes no active attempt by that application to not run when it
+detects a different version.</p>
+</dd>
+<dt class="hdlist1">Binary Semaphore</dt>
+<dd>
+<p>A semaphore with a boolean payload indicating whether the semaphore is
+signaled or unsignaled.
+Represented by a <a href="chap7.html#VkSemaphore">VkSemaphore</a> object
+created with a semaphore type of <code>VK_SEMAPHORE_TYPE_BINARY</code>
+.</p>
+</dd>
+<dt class="hdlist1">Binding (Memory)</dt>
+<dd>
+<p>    An association established between a range of a resource object and a
+    range of a memory object.
+    These associations determine the memory locations affected by operations
+    performed on elements of a resource object.
+    Memory bindings are established using the <a href="chap12.html#vkBindBufferMemory">vkBindBufferMemory</a>
+    command for non-sparse buffer objects,
+    using the <a href="chap12.html#vkBindImageMemory">vkBindImageMemory</a> command for non-sparse image objects
+, and using the <a href="chap35.html#vkQueueBindSparse">vkQueueBindSparse</a> command for sparse resources
+    .</p>
+</dd>
+<dt class="hdlist1">Blend Constant</dt>
+<dd>
+<p>Four floating-point (RGBA) values used as an input to blending.</p>
+</dd>
+<dt class="hdlist1">Blending</dt>
+<dd>
+<p>Arithmetic operations between a fragment color value and a value in a
+color attachment that produce a final color value to be written to the
+attachment.</p>
+</dd>
+<dt class="hdlist1">Buffer</dt>
+<dd>
+<p>A resource that represents a linear array of data in device memory.
+Represented by a <a href="chap12.html#VkBuffer">VkBuffer</a> object.</p>
+</dd>
+<dt class="hdlist1">Buffer Device Address</dt>
+<dd>
+<p>A 64-bit value used in a shader to access buffer memory through the
+<code>PhysicalStorageBuffer</code> storage class.</p>
+</dd>
+<dt class="hdlist1">Buffer View</dt>
+<dd>
+<p>An object that represents a range of a specific buffer, and state
+controlling how the contents are interpreted.
+Represented by a <a href="chap12.html#VkBufferView">VkBufferView</a> object.</p>
+</dd>
+<dt class="hdlist1">Built-In Variable</dt>
+<dd>
+<p>A variable decorated in a shader, where the decoration makes the
+variable take values provided by the execution environment or values
+that are generated by fixed-function pipeline stages.</p>
+</dd>
+<dt class="hdlist1">Built-In Interface Block</dt>
+<dd>
+<p>A block defined in a shader containing only variables decorated with
+built-in decorations, and is used to match against other shader stages.</p>
+</dd>
+<dt class="hdlist1">Clip Coordinates</dt>
+<dd>
+<p>The homogeneous coordinate space in which vertex positions
+(<code>Position</code> decoration) are written by
+<a href="chap10.html#pipelines-graphics-subsets-pre-rasterization">pre-rasterization shader
+stages</a>.</p>
+</dd>
+<dt class="hdlist1">Clip Distance</dt>
+<dd>
+<p>A built-in output from
+<a href="chap10.html#pipelines-graphics-subsets-pre-rasterization">pre-rasterization shader
+stages</a> defining a clip half-space against which the primitive is
+clipped.</p>
+</dd>
+<dt class="hdlist1">Clip Volume</dt>
+<dd>
+<p>The intersection of the view volume with all clip half-spaces.</p>
+</dd>
+<dt class="hdlist1">Coding Block (Video)</dt>
+<dd>
+<p>An element of a video picture, comprising a rectangular block of texel
+values that are coded as a single unit in video coding.
+Video coding blocks have a corresponding coding block size (width and
+height) defining the dimensions of these elements in units of texels.
+These dimensions are usually codec-specific and a single video
+compression standard <strong class="purple">may</strong> support more than one coding block type and
+size.
+Video compression standards <strong class="purple">may</strong> use multiple coding block types to
+organize coding blocks of different kinds and sizes into hierarchies.</p>
+</dd>
+<dt class="hdlist1">Color Attachment</dt>
+<dd>
+<p>A subpass attachment point, or image view, that is the target of
+fragment color outputs and blending.</p>
+</dd>
+<dt class="hdlist1">Color Fragment</dt>
+<dd>
+<p>A unique color value within a pixel of a multisampled color image.
+The <em>fragment mask</em> will contain indices to the <em>color fragment</em>.</p>
+</dd>
+<dt class="hdlist1">Color Renderable Format</dt>
+<dd>
+<p>A <a href="chap53.html#VkFormat">VkFormat</a> where <code>VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT</code> is
+set in one of the following, depending on the image’s tiling:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="chap53.html#VkFormatProperties">VkFormatProperties</a>::<code>linearTilingFeatures</code></p>
+</li>
+<li>
+<p><a href="chap53.html#VkFormatProperties">VkFormatProperties</a>::<code>optimalTilingFeatures</code>
+or a <a href="chap53.html#VkFormat">VkFormat</a> where
+<code>VK_FORMAT_FEATURE_2_LINEAR_COLOR_ATTACHMENT_BIT_NV</code> is set in
+<a href="chap53.html#VkFormatProperties">VkFormatProperties</a>::<code>linearTilingFeatures</code></p>
+</li>
+<li>
+<p><a href="chap53.html#VkDrmFormatModifierPropertiesEXT">VkDrmFormatModifierPropertiesEXT</a>::<code>drmFormatModifierTilingFeatures</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1">Combined Image Sampler</dt>
+<dd>
+<p>A descriptor type that includes both a sampled image and a sampler.</p>
+</dd>
+<dt class="hdlist1">Command Buffer</dt>
+<dd>
+<p>An object that records commands to be submitted to a queue.
+Represented by a <a href="chap6.html#VkCommandBuffer">VkCommandBuffer</a> object.</p>
+</dd>
+<dt class="hdlist1">Command Buffer Nesting Level</dt>
+<dd>
+<p>The Command Buffer Nesting Level of a secondary command buffer is equal
+to the maximum nesting level of all secondary command buffers executed
+by that command buffer plus one, where a secondary command buffer that
+executes no other secondary command buffers has a nesting level of zero.</p>
+</dd>
+<dt class="hdlist1">Command Pool</dt>
+<dd>
+<p>An object that command buffer memory is allocated from, and that owns
+that memory.
+Command pools aid multithreaded performance by enabling different
+threads to use different allocators, without internal synchronization on
+each use.
+Represented by a <a href="chap6.html#VkCommandPool">VkCommandPool</a> object.</p>
+</dd>
+<dt class="hdlist1">Compatible Allocator</dt>
+<dd>
+<p>When allocators are compatible, allocations from each allocator <strong class="purple">can</strong> be
+freed by the other allocator.</p>
+</dd>
+<dt class="hdlist1">Compatible Image Formats</dt>
+<dd>
+<p>When formats are compatible, images created with one of the formats <strong class="purple">can</strong>
+have image views created from it using any of the compatible formats.
+Also see <em>Size-Compatible Image Formats</em>.</p>
+</dd>
+<dt class="hdlist1">Compatible Queues</dt>
+<dd>
+<p>Queues within a queue family.
+Compatible queues have identical properties.</p>
+</dd>
+<dt class="hdlist1">Complete Mipmap Chain</dt>
+<dd>
+<p>The entire set of mip levels that can be provided for an image, from the
+largest application-specified mip level size down to the <em>minimum mip
+level size</em>.
+See <a href="chap12.html#resources-image-mip-level-sizing">Image Mip Level Sizing</a>.</p>
+</dd>
+<dt class="hdlist1">Completed Operation</dt>
+<dd>
+<p>A deferred operation whose corresponding command has been executed to
+completion.
+See <a href="chap37.html">Deferred Host Operations</a></p>
+</dd>
+<dt class="hdlist1">Component (Format)</dt>
+<dd>
+<p>A distinct part of a format.
+Color components are represented with <code>R</code>, <code>G</code>, <code>B</code>, and <code>A</code>.
+Depth and stencil components are represented with <code>D</code> and <code>S</code>.
+Formats <strong class="purple">can</strong> have multiple instances of the same component.
+Some formats have other notations such as <code>E</code> or <code>X</code> which are not
+considered a component of the format.</p>
+</dd>
+<dt class="hdlist1">Compressed Texel Block</dt>
+<dd>
+<p>An element of an image having a block-compressed format, comprising a
+rectangular block of texel values that are encoded as a single value in
+memory.
+Compressed texel blocks of a particular block-compressed format have a
+corresponding width, height, and depth defining the dimensions of these
+elements in units of texels, and a size in bytes of the encoding in
+memory.</p>
+</dd>
+</dl>
+</div>
+<div id="glossary-constant-integral-expression" class="dlist">
+<dl>
+<dt class="hdlist1">Constant Integral Expressions</dt>
+<dd>
+<p>A SPIR-V constant instruction whose type is <code>OpTypeInt</code>.
+See <em>Constant Instruction</em> in section 2.2.1 “Instructions” of the
+<a href="chap2.html#spirv-spec">Khronos SPIR-V Specification</a>.</p>
+</dd>
+<dt class="hdlist1">Cooperative Matrix</dt>
+<dd>
+<p>A SPIR-V type where the storage for and computations performed on the
+matrix are spread across a set of invocations such as a subgroup.</p>
+</dd>
+<dt class="hdlist1">Cooperative Vector</dt>
+<dd>
+<p>A SPIR-V vector type optimized for the evaluation of small neural
+networks.</p>
+</dd>
+<dt class="hdlist1">Corner-Sampled Image</dt>
+<dd>
+<p>A <a href="chap12.html#VkImage">VkImage</a> where unnormalized texel coordinates are centered on
+integer values instead of half-integer values.
+Specified by setting the <code>VK_IMAGE_CREATE_CORNER_SAMPLED_BIT_NV</code> bit
+on <a href="chap12.html#VkImageCreateInfo">VkImageCreateInfo</a>::<code>flags</code> at image creation.</p>
+</dd>
+<dt class="hdlist1">Coverage Index</dt>
+<dd>
+<p>The index of a sample in the coverage mask.</p>
+</dd>
+<dt class="hdlist1">Coverage Mask</dt>
+<dd>
+<p>A bitfield associated with a fragment representing the samples that were
+determined to be covered based on the result of rasterization, and then
+subsequently modified by fragment operations or the fragment shader.</p>
+</dd>
+<dt class="hdlist1">Cull Distance</dt>
+<dd>
+<p>A built-in output from
+<a href="chap10.html#pipelines-graphics-subsets-pre-rasterization">pre-rasterization shader
+stages</a> defining a cull half-space where the primitive is rejected if
+all vertices have a negative value for the same cull distance.</p>
+</dd>
+<dt class="hdlist1">Cull Volume</dt>
+<dd>
+<p>The intersection of the view volume with all cull half-spaces.</p>
+</dd>
+<dt class="hdlist1">Decode Output Picture</dt>
+<dd>
+<p>A video picture resource used to store the result of a video decode
+operation.</p>
+</dd>
+<dt class="hdlist1">Decoded Picture Buffer</dt>
+<dd>
+<p>An indexed set of reference pictures used by a video session.
+Abbreviated as DPB.</p>
+</dd>
+<dt class="hdlist1">Decoded Picture Buffer Slot</dt>
+<dd>
+<p>An entry within a DPB that <strong class="purple">can</strong> be associated with a particular
+reference picture.</p>
+</dd>
+<dt class="hdlist1">Decoded Picture Buffer Slot Index</dt>
+<dd>
+<p>The index of a DPB slot within its encompassing DPB.</p>
+</dd>
+<dt class="hdlist1">Decoration (SPIR-V)</dt>
+<dd>
+<p>Auxiliary information such as built-in variables, stream numbers,
+invariance, interpolation type, relaxed precision, etc., added to
+variables or structure-type members through decorations.</p>
+</dd>
+<dt class="hdlist1">Deferrable Command</dt>
+<dd>
+<p>A command which allows deferred execution of host-side work.
+See <a href="chap37.html">Deferred Host Operations</a>.</p>
+</dd>
+<dt class="hdlist1">Deferrable Operation</dt>
+<dd>
+<p>A single logical item of host-side work which can be deferred.
+Represented by the <a href="chap37.html#VkDeferredOperationKHR">VkDeferredOperationKHR</a> object.
+See <a href="chap37.html">Deferred Host Operations</a>.</p>
+</dd>
+<dt class="hdlist1">Deprecated (feature)</dt>
+<dd>
+<p>A feature is deprecated if it is no longer recommended as the correct or
+best way to achieve its intended purpose.</p>
+</dd>
+<dt class="hdlist1">Depth/Stencil Attachment</dt>
+<dd>
+<p>A subpass attachment point, or image view, that is the target of depth
+and/or stencil test operations and writes.</p>
+</dd>
+<dt class="hdlist1">Depth/Stencil Format</dt>
+<dd>
+<p>A <a href="chap53.html#VkFormat">VkFormat</a> that includes depth and/or stencil components.</p>
+</dd>
+<dt class="hdlist1">Depth/Stencil Image (or ImageView)</dt>
+<dd>
+<p>A <a href="chap12.html#VkImage">VkImage</a> (or <a href="chap12.html#VkImageView">VkImageView</a>) with a depth/stencil format.</p>
+</dd>
+<dt class="hdlist1">Depth/Stencil Resolve Attachment</dt>
+<dd>
+<p>A subpass attachment point, or image view, that is the target of a
+multisample resolve operation from the corresponding depth/stencil
+attachment at the end of the subpass.</p>
+</dd>
+<dt class="hdlist1">Derivative Group</dt>
+<dd>
+<p>    A set of
+compute,
+mesh, task,
+or
+    fragment shader invocations that cooperate to compute derivatives,
+    including implicit derivatives for sampled image operations.</p>
+</dd>
+<dt class="hdlist1">Descriptor</dt>
+<dd>
+<p>Information about a resource or resource view written into a descriptor
+set that is used to access the resource or view from a shader.</p>
+</dd>
+<dt class="hdlist1">Descriptor Binding</dt>
+<dd>
+<p>An entry in a descriptor set layout corresponding to zero or more
+descriptors of a single descriptor type in a set.
+Defined by a <a href="chap15.html#VkDescriptorSetLayoutBinding">VkDescriptorSetLayoutBinding</a> structure.</p>
+</dd>
+<dt class="hdlist1">Descriptor Pool</dt>
+<dd>
+<p>An object that descriptor sets are allocated from, and that owns the
+storage of those descriptor sets.
+Descriptor pools aid multithreaded performance by enabling different
+threads to use different allocators, without internal synchronization on
+each use.
+Represented by a <a href="chap15.html#VkDescriptorPool">VkDescriptorPool</a> object.</p>
+</dd>
+<dt class="hdlist1">Descriptor Set</dt>
+<dd>
+<p>An object that resource descriptors are written into via the API, and
+that <strong class="purple">can</strong> be bound to a command buffer such that the descriptors
+contained within it <strong class="purple">can</strong> be accessed from shaders.
+Represented by a <a href="chap15.html#VkDescriptorSet">VkDescriptorSet</a> object.</p>
+</dd>
+<dt class="hdlist1">Descriptor Set Layout</dt>
+<dd>
+<p>An object defining the set of resources (types and counts) and their
+relative arrangement (in the binding namespace) within a descriptor set.
+Used when allocating descriptor sets and when creating pipeline layouts.
+Represented by a <a href="chap15.html#VkDescriptorSetLayout">VkDescriptorSetLayout</a> object.</p>
+</dd>
+<dt class="hdlist1">Device</dt>
+<dd>
+<p>The processor(s) and execution environment that perform tasks requested
+by the application via the Vulkan API.</p>
+</dd>
+<dt class="hdlist1">Device Group</dt>
+<dd>
+<p>A set of physical devices that support accessing each other’s memory and
+recording a single command buffer that <strong class="purple">can</strong> be executed on all the
+physical devices.</p>
+</dd>
+<dt class="hdlist1">Device Index</dt>
+<dd>
+<p>A zero-based integer that identifies one physical device from a logical
+device.
+A device index is valid if it is less than the number of physical
+devices in the logical device.</p>
+</dd>
+<dt class="hdlist1">Device Mask</dt>
+<dd>
+<p>A bitmask where each bit represents one device index.
+A device mask value is valid if every bit that is set in the mask is at
+a bit position that is less than the number of physical devices in the
+logical device.</p>
+</dd>
+<dt class="hdlist1">Device Memory</dt>
+<dd>
+<p>Memory accessible to the device.
+Represented by a <a href="chap11.html#VkDeviceMemory">VkDeviceMemory</a> object.</p>
+</dd>
+<dt class="hdlist1">Device-Level Command</dt>
+<dd>
+<p>Any command that is dispatched from a logical device, or from a child
+object of a logical device.</p>
+</dd>
+<dt class="hdlist1">Device-Level Functionality</dt>
+<dd>
+<p>All device-level commands and objects, and their structures, enumerated
+types, and enumerants.
+Additionally, physical-device-level functionality defined by a
+<a href="chap50.html#extendingvulkan-device-extensions">device extension</a> is also
+considered device-level functionality.</p>
+</dd>
+<dt class="hdlist1">Device-Level Object</dt>
+<dd>
+<p>Logical device objects and their child objects.
+For example, <a href="chap5.html#VkDevice">VkDevice</a>, <a href="chap5.html#VkQueue">VkQueue</a>, and <a href="chap6.html#VkCommandBuffer">VkCommandBuffer</a>
+objects are device-level objects.</p>
+</dd>
+<dt class="hdlist1">Device-Local Memory</dt>
+<dd>
+<p>Memory that is connected to the device, and <strong class="purple">may</strong> be more performant for
+device access than host-local memory.</p>
+</dd>
+<dt class="hdlist1">Direct Drawing Commands</dt>
+<dd>
+<p><em>Drawing commands</em> that take all their parameters as direct arguments to
+the command (and not sourced via structures in buffer memory as the
+<em>indirect drawing commands</em>).
+Includes
+<a href="chap23.html#vkCmdDrawMultiIndexedEXT">vkCmdDrawMultiIndexedEXT</a>, <a href="chap23.html#vkCmdDrawMultiEXT">vkCmdDrawMultiEXT</a>,
+<a href="chap23.html#vkCmdDrawMeshTasksNV">vkCmdDrawMeshTasksNV</a>,
+<a href="chap23.html#vkCmdDrawMeshTasksEXT">vkCmdDrawMeshTasksEXT</a>,
+<a href="chap23.html#vkCmdDraw">vkCmdDraw</a>, and <a href="chap23.html#vkCmdDrawIndexed">vkCmdDrawIndexed</a>.</p>
+</dd>
+<dt class="hdlist1">Disjoint</dt>
+<dd>
+<p><em>Disjoint planes</em> are <em>image planes</em> to which memory is bound
+independently.<br>
+A <em>disjoint image</em> consists of multiple <em>disjoint planes</em>, and is
+created with the <code>VK_IMAGE_CREATE_DISJOINT_BIT</code> bit set.</p>
+</dd>
+<dt class="hdlist1">Dispatchable Command</dt>
+<dd>
+<p>A non-global command.
+The first argument to each dispatchable command is a dispatchable handle
+type.</p>
+</dd>
+<dt class="hdlist1">Dispatchable Handle</dt>
+<dd>
+<p>A handle of a pointer handle type which <strong class="purple">may</strong> be used by layers as part
+of intercepting API commands.</p>
+</dd>
+</dl>
+</div>
+<div id="glossary-dispatching-commands" class="dlist">
+<dl>
+<dt class="hdlist1">Dispatching Commands</dt>
+<dd>
+<p>Commands that provoke work using a compute pipeline, such as
+<a href="chap33.html#vkCmdDispatch">vkCmdDispatch</a>.
+See <a href="chap33.html">Dispatching Commands</a>.</p>
+</dd>
+<dt class="hdlist1">Drawing Commands</dt>
+<dd>
+<p>Commands that provoke work using a graphics pipeline.
+Includes <a href="chap23.html#vkCmdDraw">vkCmdDraw</a>, <a href="chap23.html#vkCmdDrawIndexed">vkCmdDrawIndexed</a>,
+<a href="chap23.html#vkCmdDrawIndirectCount">vkCmdDrawIndirectCount</a>, <a href="chap23.html#vkCmdDrawIndexedIndirectCount">vkCmdDrawIndexedIndirectCount</a>,
+<a href="chap23.html#vkCmdDrawIndirectCountKHR">vkCmdDrawIndirectCountKHR</a>, <a href="chap23.html#vkCmdDrawIndexedIndirectCountKHR">vkCmdDrawIndexedIndirectCountKHR</a>,
+<a href="chap23.html#vkCmdDrawIndirectCountAMD">vkCmdDrawIndirectCountAMD</a>, <a href="chap23.html#vkCmdDrawIndexedIndirectCountAMD">vkCmdDrawIndexedIndirectCountAMD</a>,
+<a href="chap23.html#vkCmdDrawMultiIndexedEXT">vkCmdDrawMultiIndexedEXT</a>, <a href="chap23.html#vkCmdDrawMultiEXT">vkCmdDrawMultiEXT</a>,
+<a href="chap23.html#vkCmdDrawMeshTasksNV">vkCmdDrawMeshTasksNV</a>, <a href="chap23.html#vkCmdDrawMeshTasksIndirectNV">vkCmdDrawMeshTasksIndirectNV</a>,
+<a href="chap23.html#vkCmdDrawMeshTasksIndirectCountNV">vkCmdDrawMeshTasksIndirectCountNV</a>,
+<a href="chap23.html#vkCmdDrawMeshTasksEXT">vkCmdDrawMeshTasksEXT</a>, <a href="chap23.html#vkCmdDrawMeshTasksIndirectEXT">vkCmdDrawMeshTasksIndirectEXT</a>,
+<a href="chap23.html#vkCmdDrawMeshTasksIndirectCountEXT">vkCmdDrawMeshTasksIndirectCountEXT</a>,
+<a href="chap23.html#vkCmdDrawIndirect">vkCmdDrawIndirect</a>, and <a href="chap23.html#vkCmdDrawIndexedIndirect">vkCmdDrawIndexedIndirect</a>.</p>
+</dd>
+<dt class="hdlist1">Duration (Command)</dt>
+<dd>
+<p>The <em>duration</em> of a Vulkan command refers to the interval between
+calling the command and its return to the caller.</p>
+</dd>
+<dt class="hdlist1">Dynamic Storage Buffer</dt>
+<dd>
+<p>A storage buffer whose offset is specified each time the storage buffer
+is bound to a command buffer via a descriptor set.</p>
+</dd>
+<dt class="hdlist1">Dynamic Uniform Buffer</dt>
+<dd>
+<p>A uniform buffer whose offset is specified each time the uniform buffer
+is bound to a command buffer via a descriptor set.</p>
+</dd>
+<dt class="hdlist1">Dynamically Uniform</dt>
+<dd>
+<p>See <em>Dynamically Uniform</em> in section 2.2 “Terms” of the
+<a href="chap2.html#spirv-spec">Khronos SPIR-V Specification</a>.</p>
+</dd>
+<dt class="hdlist1">Encode Input Picture</dt>
+<dd>
+<p>A video picture resource used as the input of a video encode operation.</p>
+</dd>
+<dt class="hdlist1">Element</dt>
+<dd>
+<p>Arrays are composed of multiple elements, where each element exists at a
+unique index within that array.
+Used primarily to describe data passed to or returned from the Vulkan
+API.</p>
+</dd>
+<dt class="hdlist1">Explicitly-Enabled Layer</dt>
+<dd>
+<p>A layer enabled by the application by adding it to the enabled layer
+list in <a href="chap4.html#vkCreateInstance">vkCreateInstance</a> or <a href="chap5.html#vkCreateDevice">vkCreateDevice</a>.</p>
+</dd>
+<dt class="hdlist1">Event</dt>
+<dd>
+<p>A synchronization primitive that is signaled when execution of previous
+commands completes through a specified set of pipeline stages.
+Events can be waited on by the device and polled by the host.
+Represented by a <a href="chap7.html#VkEvent">VkEvent</a> object.</p>
+</dd>
+<dt class="hdlist1">Executable State (Command Buffer)</dt>
+<dd>
+<p>A command buffer that has ended recording commands and <strong class="purple">can</strong> be executed.
+See also Initial State and Recording State.</p>
+</dd>
+<dt class="hdlist1">Execution Dependency</dt>
+<dd>
+<p>A dependency that guarantees that certain pipeline stages’ work for a
+first set of commands has completed execution before certain pipeline
+stages’ work for a second set of commands begins execution.
+This is accomplished via pipeline barriers, subpass dependencies,
+events, or implicit ordering operations.</p>
+</dd>
+<dt class="hdlist1">Execution Dependency Chain</dt>
+<dd>
+<p>A sequence of execution dependencies that transitively act as a single
+execution dependency.</p>
+</dd>
+<dt class="hdlist1">Explicit chroma reconstruction</dt>
+<dd>
+<p>An implementation of sampler Y′C<sub>B</sub>C<sub>R</sub> conversion which reconstructs
+reduced-resolution chroma samples to luma resolution and then separately
+performs texture sample interpolation.
+This is distinct from an implicit implementation, which incorporates
+chroma sample reconstruction into texture sample interpolation.</p>
+</dd>
+<dt class="hdlist1">Extension Scope</dt>
+<dd>
+<p>The set of objects and commands that <strong class="purple">can</strong> be affected by an extension.
+Extensions are either device scope or instance scope.</p>
+</dd>
+<dt class="hdlist1">Extending Structure</dt>
+<dd>
+<p>A structure type which may appear in the <em><code>pNext</code> chain</em> of another
+structure, extending the functionality of the other structure.
+Extending structures may be defined by either core API versions or
+extensions.</p>
+</dd>
+<dt class="hdlist1">External Handle</dt>
+<dd>
+<p>A resource handle which has meaning outside of a specific Vulkan device
+or its parent instance.
+External handles <strong class="purple">may</strong> be used to share resources between multiple Vulkan
+devices in different instances, or between Vulkan and other APIs.
+Some external handle types correspond to platform-defined handles, in
+which case the resource <strong class="purple">may</strong> outlive any particular Vulkan device or
+instance and <strong class="purple">may</strong> be transferred between processes, or otherwise
+manipulated via functionality defined by the platform for that handle
+type.</p>
+</dd>
+<dt class="hdlist1">External synchronization</dt>
+<dd>
+<p>A type of synchronization <strong class="purple">required</strong> of the application, where parameters
+defined to be externally synchronized <strong class="purple">must</strong> not be used simultaneously
+in multiple threads.</p>
+</dd>
+<dt class="hdlist1">Facingness (Polygon)</dt>
+<dd>
+<p>A classification of a polygon as either front-facing or back-facing,
+depending on the orientation (winding order) of its vertices.</p>
+</dd>
+<dt class="hdlist1">Facingness (Fragment)</dt>
+<dd>
+<p>A fragment is either front-facing or back-facing, depending on the
+primitive it was generated from.
+If the primitive was a polygon (regardless of polygon mode), the
+fragment inherits the facingness of the polygon.
+All other fragments are front-facing.</p>
+</dd>
+<dt class="hdlist1">Fence</dt>
+<dd>
+<p>A synchronization primitive that is signaled when a set of batches or
+sparse binding operations complete execution on a queue.
+Fences <strong class="purple">can</strong> be waited on by the host.
+Represented by a <a href="chap7.html#VkFence">VkFence</a> object.</p>
+</dd>
+<dt class="hdlist1">Field (Video)</dt>
+<dd>
+<p>Possibly discontinuous subregions of a frame.
+Frames <strong class="purple">may</strong> consist of two fields, a top field and a bottom field.</p>
+</dd>
+<dt class="hdlist1">Flat Shading</dt>
+<dd>
+<p>A property of a vertex attribute that causes the value from a single
+vertex (the provoking vertex) to be used for all vertices in a
+primitive, and for interpolation of that attribute to return that single
+value unaltered.</p>
+</dd>
+<dt class="hdlist1">Format Features</dt>
+<dd>
+<p>A set of features from <a href="chap53.html#VkFormatFeatureFlagBits">VkFormatFeatureFlagBits</a> that a
+<a href="chap53.html#VkFormat">VkFormat</a> is capable of using for various commands.
+The list is determined by factors such as <a href="chap12.html#VkImageTiling">VkImageTiling</a>.</p>
+</dd>
+<dt class="hdlist1">Forward Prediction</dt>
+<dd>
+<p>Sample prediction performed during video decode and encode operations
+based on reference pictures that occur temporally (in display order)
+before the current picture.</p>
+</dd>
+<dt class="hdlist1">Forward Reference</dt>
+<dd>
+<p>A reference picture that occurs temporally (in display order) before the
+current picture.</p>
+</dd>
+<dt class="hdlist1">Fragment</dt>
+<dd>
+<p>A rectangular framebuffer region with associated data produced by
+<a href="chap30.html">rasterization</a> and processed by <a href="chap31.html">fragment
+operations</a> including the fragment shader.</p>
+</dd>
+</dl>
+</div>
+<div id="glossary-fragment-area" class="dlist">
+<dl>
+<dt class="hdlist1">Fragment Area</dt>
+<dd>
+<p>The width and height, in pixels, of a fragment.</p>
+</dd>
+</dl>
+</div>
+<div id="glossary-fragment-density" class="dlist">
+<dl>
+<dt class="hdlist1">Fragment Density</dt>
+<dd>
+<p>The ratio of fragments per framebuffer area in the x and y direction.</p>
+</dd>
+</dl>
+</div>
+<div id="glossary-fragment-density-texel-size" class="dlist">
+<dl>
+<dt class="hdlist1">Fragment Density Texel Size</dt>
+<dd>
+<p>The <span class="eq">(w,h)</span> framebuffer region in pixels that each texel in a
+fragment density map applies to.</p>
+</dd>
+<dt class="hdlist1">Fragment Input Attachment Interface</dt>
+<dd>
+<p>Variables with <code>UniformConstant</code> storage class and a decoration of
+<code>InputAttachmentIndex</code> that are statically used by a fragment
+shader’s entry point, which receive values from input attachments.</p>
+</dd>
+<dt class="hdlist1">Fragment Mask</dt>
+<dd>
+<p>A lookup table that associates color samples with color fragment values.</p>
+</dd>
+<dt class="hdlist1">Fragment Output Interface</dt>
+<dd>
+<p>A fragment shader entry point’s variables with <code>Output</code> storage
+class, which output to color and/or depth/stencil attachments.</p>
+</dd>
+<dt class="hdlist1">Frame (Video)</dt>
+<dd>
+<p>A multi-dimensional array of luma samples and an optional
+multi-dimensional array of chroma samples.</p>
+</dd>
+</dl>
+</div>
+<div id="glossary-fragment-tile-image-interface" class="dlist">
+<dl>
+<dt class="hdlist1">Fragment Tile Image Interface</dt>
+<dd>
+<p>A fragment shader entry point’s variables with <code>TileImageEXT</code> storage
+class and a decoration of <code>Location</code>, which are used to read values
+from color attachments.</p>
+</dd>
+<dt class="hdlist1">Framebuffer</dt>
+<dd>
+<p>A collection of image views and a set of dimensions that, in conjunction
+with a render pass, define the inputs and outputs used by drawing
+commands.
+Represented by a <a href="chap8.html#VkFramebuffer">VkFramebuffer</a> object.</p>
+</dd>
+<dt class="hdlist1">Framebuffer Attachment</dt>
+<dd>
+<p>One of the image views used in a framebuffer.</p>
+</dd>
+<dt class="hdlist1">Framebuffer Coordinates</dt>
+<dd>
+<p>A coordinate system in which adjacent pixels’ coordinates differ by 1
+in x and/or y, with <span class="eq">(0,0)</span> in the upper left corner and pixel
+centers at half-integers.</p>
+</dd>
+<dt class="hdlist1">Framebuffer-Space</dt>
+<dd>
+<p>Operating with respect to framebuffer coordinates.</p>
+</dd>
+<dt class="hdlist1">Framebuffer-Local</dt>
+<dd>
+<p>A framebuffer-local dependency guarantees that only for a single
+framebuffer region, the first set of operations happens-before the
+second set of operations.</p>
+</dd>
+<dt class="hdlist1">Framebuffer-Global</dt>
+<dd>
+<p>A framebuffer-global dependency guarantees that for all framebuffer
+regions, the first set of operations happens-before the second set of
+operations.</p>
+</dd>
+<dt class="hdlist1">Framebuffer Region</dt>
+<dd>
+<p>A framebuffer region is a set of sample (x, y, layer, sample)
+coordinates that is a subset of the entire framebuffer.</p>
+</dd>
+<dt class="hdlist1">Front-Facing</dt>
+<dd>
+<p>See Facingness.</p>
+</dd>
+<dt class="hdlist1">Full Compatibility</dt>
+<dd>
+<p>A given version of the API is fully compatible with another version if
+an application, relying only on valid behavior and functionality defined
+by either of those specifications, is able to correctly run against each
+version without any modification.
+This assumes no active attempt by that application to not run when it
+detects a different version.</p>
+</dd>
+<dt class="hdlist1">Global Command</dt>
+<dd>
+<p>A Vulkan command for which the first argument is not a dispatchable
+handle type.</p>
+</dd>
+<dt class="hdlist1">Global Workgroup</dt>
+<dd>
+<p>    A collection of local workgroups dispatched by a single dispatching
+or single mesh task drawing
+    command.</p>
+</dd>
+<dt class="hdlist1">Handle</dt>
+<dd>
+<p>An opaque integer or pointer value used to refer to a Vulkan object.
+Each object type has a unique handle type.</p>
+</dd>
+<dt class="hdlist1">Happen-after, happens-after</dt>
+<dd>
+<p>A transitive, irreflexive and antisymmetric ordering relation between
+operations.
+An execution dependency with a source of <strong>A</strong> and a destination of <strong>B</strong>
+enforces that <strong>B</strong> happens-after <strong>A</strong>.
+The inverse relation of happens-before.</p>
+</dd>
+<dt class="hdlist1">Happen-before, happens-before</dt>
+<dd>
+<p>A transitive, irreflexive and antisymmetric ordering relation between
+operations.
+An execution dependency with a source of <strong>A</strong> and a destination of <strong>B</strong>
+enforces that <strong>A</strong> happens-before <strong>B</strong>.
+The inverse relation of happens-after.</p>
+</dd>
+<dt class="hdlist1">Helper Invocation</dt>
+<dd>
+<p>A fragment shader invocation that is created solely for the purposes of
+evaluating derivatives for use in non-helper fragment shader
+invocations, and which does not have side effects.</p>
+</dd>
+<dt class="hdlist1">Host</dt>
+<dd>
+<p>The processor(s) and execution environment that the application runs on,
+and that the Vulkan API is exposed on.</p>
+</dd>
+<dt class="hdlist1">Host Mapped Device Memory</dt>
+<dd>
+<p>Device memory that is mapped for host access using <a href="chap11.html#vkMapMemory">vkMapMemory</a>.</p>
+</dd>
+<dt class="hdlist1">Host Mapped Foreign Memory</dt>
+<dd>
+<p>Memory owned by a foreign device that is mapped for host access.</p>
+</dd>
+<dt class="hdlist1">Host Memory</dt>
+<dd>
+<p>Memory not accessible to the device, used to store implementation data
+structures.</p>
+</dd>
+<dt class="hdlist1">Host-Accessible Subresource</dt>
+<dd>
+<p>A buffer, or a linear image subresource in either the
+<code>VK_IMAGE_LAYOUT_PREINITIALIZED</code> or <code>VK_IMAGE_LAYOUT_GENERAL</code>
+layout.
+Host-accessible subresources have a well-defined addressing scheme which
+can be used by the host.</p>
+</dd>
+<dt class="hdlist1">Host-Local Memory</dt>
+<dd>
+<p>Memory that is not local to the device, and <strong class="purple">may</strong> be less performant for
+device access than device-local memory.</p>
+</dd>
+<dt class="hdlist1">Host-Visible Memory</dt>
+<dd>
+<p>Device memory that <strong class="purple">can</strong> be mapped on the host and <strong class="purple">can</strong> be read and
+written by the host.</p>
+</dd>
+<dt class="hdlist1">ICD</dt>
+<dd>
+<p>Installable Client Driver.
+An ICD is represented as a <a href="chap5.html#VkPhysicalDevice">VkPhysicalDevice</a>.</p>
+</dd>
+</dl>
+</div>
+<div id="glossary-identically-defined" class="dlist">
+<dl>
+<dt class="hdlist1">Identically Defined Objects</dt>
+<dd>
+<p>Objects of the same type where all arguments to their creation or
+allocation functions, with the exception of <code>pAllocator</code>, are<br></p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Vulkan handles which refer to the same object or</p>
+</li>
+<li>
+<p>identical scalar or enumeration values or</p>
+</li>
+<li>
+<p>Host pointers which point to an array of values or structures which
+also satisfy these three constraints.</p>
+</li>
+</ol>
+</div>
+</dd>
+<dt class="hdlist1">Image</dt>
+<dd>
+<p>A resource that represents a multi-dimensional formatted interpretation
+of device memory.
+Represented by a <a href="chap12.html#VkImage">VkImage</a> object.</p>
+</dd>
+<dt class="hdlist1">Image Subresource</dt>
+<dd>
+<p>A specific mipmap level, layer, and set of aspects of an image.</p>
+</dd>
+<dt class="hdlist1">Image Subresource Range</dt>
+<dd>
+<p>A set of image subresources that are contiguous mipmap levels and
+layers.</p>
+</dd>
+<dt class="hdlist1">Image View</dt>
+<dd>
+<p>An object that represents an image subresource range of a specific
+image, and state controlling how the contents are interpreted.
+Represented by a <a href="chap12.html#VkImageView">VkImageView</a> object.</p>
+</dd>
+<dt class="hdlist1">Immutable Sampler</dt>
+<dd>
+<p>A sampler descriptor provided at descriptor set layout creation time for
+a specific binding.
+This sampler is then used for that binding in all descriptor sets
+allocated with the layout, and it <strong class="purple">cannot</strong> be changed.</p>
+</dd>
+<dt class="hdlist1">Implicit chroma reconstruction</dt>
+<dd>
+<p>An implementation of sampler Y′C<sub>B</sub>C<sub>R</sub> conversion which reconstructs the
+reduced-resolution chroma samples directly at the sample point, as part
+of the normal texture sampling operation.
+This is distinct from an <em>explicit chroma reconstruction</em>
+implementation, which reconstructs the reduced-resolution chroma samples
+to the resolution of the luma samples, then filters the result as part
+of texture sample interpolation.</p>
+</dd>
+<dt class="hdlist1">Implicitly-Enabled Layer</dt>
+<dd>
+<p>A layer enabled by a loader-defined mechanism outside the Vulkan API,
+rather than explicitly by the application during instance or device
+creation.</p>
+</dd>
+<dt class="hdlist1">Inactive Object (Ray Tracing)</dt>
+<dd>
+<p>A primitive or instance in a ray tracing acceleration structure which
+has a corresponding ID, but which will never report an intersection with
+any ray.</p>
+</dd>
+<dt class="hdlist1">Index Buffer</dt>
+<dd>
+<p>A buffer bound via <a href="chap23.html#vkCmdBindIndexBuffer">vkCmdBindIndexBuffer</a> which is the source of
+index values used to fetch vertex attributes for a
+<a href="chap23.html#vkCmdDrawIndexed">vkCmdDrawIndexed</a> or <a href="chap23.html#vkCmdDrawIndexedIndirect">vkCmdDrawIndexedIndirect</a> command.</p>
+</dd>
+<dt class="hdlist1">Indexed Drawing Commands</dt>
+<dd>
+<p><em>Drawing commands</em> which use an <em>index buffer</em> as the source of index
+values used to fetch vertex attributes for a drawing command.
+Includes <a href="chap23.html#vkCmdDrawIndexed">vkCmdDrawIndexed</a>,
+<a href="chap23.html#vkCmdDrawIndexedIndirectCount">vkCmdDrawIndexedIndirectCount</a>,
+<a href="chap23.html#vkCmdDrawIndexedIndirectCountKHR">vkCmdDrawIndexedIndirectCountKHR</a>,
+<a href="chap23.html#vkCmdDrawIndexedIndirectCountAMD">vkCmdDrawIndexedIndirectCountAMD</a>,
+<a href="chap23.html#vkCmdDrawMultiIndexedEXT">vkCmdDrawMultiIndexedEXT</a>,
+and <a href="chap23.html#vkCmdDrawIndexedIndirect">vkCmdDrawIndexedIndirect</a>.</p>
+</dd>
+<dt class="hdlist1">Indirect Commands</dt>
+<dd>
+<p>Drawing or dispatching commands that source some of their parameters
+from structures in buffer memory.
+Includes <a href="chap23.html#vkCmdDrawIndirect">vkCmdDrawIndirect</a>, <a href="chap23.html#vkCmdDrawIndexedIndirect">vkCmdDrawIndexedIndirect</a>,
+<a href="chap23.html#vkCmdDrawIndirectCount">vkCmdDrawIndirectCount</a>, <a href="chap23.html#vkCmdDrawIndexedIndirectCount">vkCmdDrawIndexedIndirectCount</a>,
+<a href="chap23.html#vkCmdDrawIndirectCountKHR">vkCmdDrawIndirectCountKHR</a>, <a href="chap23.html#vkCmdDrawIndexedIndirectCountKHR">vkCmdDrawIndexedIndirectCountKHR</a>,
+<a href="chap23.html#vkCmdDrawIndirectCountAMD">vkCmdDrawIndirectCountAMD</a>, <a href="chap23.html#vkCmdDrawIndexedIndirectCountAMD">vkCmdDrawIndexedIndirectCountAMD</a>,
+<a href="chap23.html#vkCmdDrawMeshTasksIndirectNV">vkCmdDrawMeshTasksIndirectNV</a>,
+<a href="chap23.html#vkCmdDrawMeshTasksIndirectCountNV">vkCmdDrawMeshTasksIndirectCountNV</a>,
+<a href="chap23.html#vkCmdDrawMeshTasksIndirectEXT">vkCmdDrawMeshTasksIndirectEXT</a>,
+<a href="chap23.html#vkCmdDrawMeshTasksIndirectCountEXT">vkCmdDrawMeshTasksIndirectCountEXT</a>,
+and <a href="chap33.html#vkCmdDispatchIndirect">vkCmdDispatchIndirect</a>.</p>
+</dd>
+<dt class="hdlist1">Indirect Commands Layout</dt>
+<dd>
+<p>A definition of a sequence of commands, that are generated on the device
+via <a href="chap34.html#vkCmdPreprocessGeneratedCommandsNV">vkCmdPreprocessGeneratedCommandsNV</a> and
+<a href="chap34.html#vkCmdExecuteGeneratedCommandsNV">vkCmdExecuteGeneratedCommandsNV</a>.
+Each sequence is comprised of multiple
+<a href="chap34.html#VkIndirectCommandsTokenTypeNV">VkIndirectCommandsTokenTypeNV</a>, which represent a subset of
+traditional command buffer commands.
+Represented as <a href="chap34.html#VkIndirectCommandsLayoutNV">VkIndirectCommandsLayoutNV</a>.</p>
+</dd>
+<dt class="hdlist1">Indirect Drawing Commands</dt>
+<dd>
+<p><em>Drawing commands</em> that source some of their parameters from structures
+in buffer memory.
+Includes <a href="chap23.html#vkCmdDrawIndirect">vkCmdDrawIndirect</a>,
+<a href="chap23.html#vkCmdDrawIndirectCount">vkCmdDrawIndirectCount</a>, <a href="chap23.html#vkCmdDrawIndexedIndirectCount">vkCmdDrawIndexedIndirectCount</a>,
+<a href="chap23.html#vkCmdDrawIndirectCountKHR">vkCmdDrawIndirectCountKHR</a>, <a href="chap23.html#vkCmdDrawIndexedIndirectCountKHR">vkCmdDrawIndexedIndirectCountKHR</a>,
+<a href="chap23.html#vkCmdDrawIndirectCountAMD">vkCmdDrawIndirectCountAMD</a>, <a href="chap23.html#vkCmdDrawIndexedIndirectCountAMD">vkCmdDrawIndexedIndirectCountAMD</a>,
+<a href="chap23.html#vkCmdDrawMeshTasksIndirectNV">vkCmdDrawMeshTasksIndirectNV</a>,
+<a href="chap23.html#vkCmdDrawMeshTasksIndirectCountNV">vkCmdDrawMeshTasksIndirectCountNV</a>,
+<a href="chap23.html#vkCmdDrawMeshTasksIndirectEXT">vkCmdDrawMeshTasksIndirectEXT</a>,
+<a href="chap23.html#vkCmdDrawMeshTasksIndirectCountEXT">vkCmdDrawMeshTasksIndirectCountEXT</a>,
+and <a href="chap23.html#vkCmdDrawIndexedIndirect">vkCmdDrawIndexedIndirect</a>.</p>
+</dd>
+<dt class="hdlist1">Initial State (Command Buffer)</dt>
+<dd>
+<p>A command buffer that has not begun recording commands.
+See also Recording State and Executable State.</p>
+</dd>
+<dt class="hdlist1">Inline Uniform Block</dt>
+<dd>
+<p>A descriptor type that represents uniform data stored directly in
+descriptor sets, and supports read-only access in a shader.</p>
+</dd>
+<dt class="hdlist1">Input Attachment</dt>
+<dd>
+<p>A descriptor type that represents an image view, and supports unfiltered
+read-only access in a shader, only at the fragment’s location in the
+view.</p>
+</dd>
+<dt class="hdlist1">Instance</dt>
+<dd>
+<p>The top-level Vulkan object, which represents the application’s
+connection to the implementation.
+Represented by a <a href="chap4.html#VkInstance">VkInstance</a> object.</p>
+</dd>
+<dt class="hdlist1">Instance-Level Command</dt>
+<dd>
+<p>Any command that is dispatched from an instance, or from a child object
+of an instance, except for physical devices and their children.</p>
+</dd>
+<dt class="hdlist1">Instance-Level Functionality</dt>
+<dd>
+<p>All instance-level commands and objects, and their structures,
+enumerated types, and enumerants.</p>
+</dd>
+<dt class="hdlist1">Instance-Level Object</dt>
+<dd>
+<p>High-level Vulkan objects, which are not physical devices, nor children
+of physical devices.
+For example, <a href="chap4.html#VkInstance">VkInstance</a> is an instance-level object.</p>
+</dd>
+<dt class="hdlist1">Instance (Memory)</dt>
+<dd>
+<p>In a logical device representing more than one physical device, some
+device memory allocations have the requested amount of memory allocated
+multiple times, once for each physical device in a device mask.
+Each such replicated allocation is an instance of the device memory.</p>
+</dd>
+<dt class="hdlist1">Instance (Resource)</dt>
+<dd>
+<p>In a logical device representing more than one physical device, buffer
+and image resources exist on all physical devices but <strong class="purple">can</strong> be bound to
+memory differently on each.
+Each such replicated resource is an instance of the resource.</p>
+</dd>
+<dt class="hdlist1">Inter Block (Video)</dt>
+<dd>
+<p>A video coding block that uses inter prediction.</p>
+</dd>
+<dt class="hdlist1">Inter Prediction (Video)</dt>
+<dd>
+<p>Sample prediction derived from reference picture samples or metadata.</p>
+</dd>
+<dt class="hdlist1">Internal Synchronization</dt>
+<dd>
+<p>A type of synchronization <strong class="purple">required</strong> of the implementation, where
+parameters not defined to be externally synchronized <strong class="purple">may</strong> require
+internal mutexing to avoid multithreaded race conditions.</p>
+</dd>
+<dt class="hdlist1">Intra Block (Video)</dt>
+<dd>
+<p>A video coding block that only uses intra prediction.</p>
+</dd>
+<dt class="hdlist1">Intra Prediction (Video)</dt>
+<dd>
+<p>Sample prediction that is not derived from reference picture samples or
+metadata.</p>
+</dd>
+<dt class="hdlist1">Invocation (Shader)</dt>
+<dd>
+<p>A single execution of an entry point in a SPIR-V module.
+For example, a single vertex’s execution of a vertex shader or a single
+fragment’s execution of a fragment shader.</p>
+</dd>
+<dt class="hdlist1">Invocation Group</dt>
+<dd>
+<p>A set of shader invocations that are executed in parallel and that <strong class="purple">must</strong>
+execute the same control flow path in order for control flow to be
+considered dynamically uniform.</p>
+</dd>
+<dt class="hdlist1">Invocation Repack Instruction</dt>
+<dd>
+<p>A ray tracing <a href="chap43.html#ray-tracing-repack">instruction</a> where the
+implementation <strong class="purple">may</strong> change the set of invocations that are executing.</p>
+</dd>
+<dt class="hdlist1">Join (Deferred Host Operations)</dt>
+<dd>
+<p>The act of instructing a thread to participate in the execution of a
+deferred operation.
+See <a href="chap37.html">Deferred Host Operations</a>.</p>
+</dd>
+</dl>
+</div>
+<div id="glossary-linear-color-attachment" class="dlist">
+<dl>
+<dt class="hdlist1">Linear Color Attachment</dt>
+<dd>
+<p>A color attachment with linear tiling</p>
+</dd>
+</dl>
+</div>
+<div id="glossary-linear-resource" class="dlist">
+<dl>
+<dt class="hdlist1">Linear Resource</dt>
+<dd>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>A resource is <em>linear</em> if it is one of the following:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>a <a href="chap12.html#VkBuffer">VkBuffer</a></p>
+</li>
+<li>
+<p>a <a href="chap12.html#VkImage">VkImage</a> created with <code>VK_IMAGE_TILING_LINEAR</code></p>
+</li>
+<li>
+<p>a <a href="chap12.html#VkImage">VkImage</a> created with
+<code>VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT</code> and whose
+<a href="chap65.html#glossary-drm-format-modifier">Linux DRM format modifier</a> is
+<code>DRM_FORMAT_MOD_LINEAR</code></p>
+</li>
+<li>
+<p>a <a href="chap12.html#VkAccelerationStructureNV">VkAccelerationStructureNV</a>
+Because a <a href="chap12.html#VkAccelerationStructureKHR">VkAccelerationStructureKHR</a> resource does not have memory
+bound to it directly, it is considered neither linear nor non-linear.
+However, the <a href="chap12.html#VkBuffer">VkBuffer</a> on which a <a href="chap12.html#VkAccelerationStructureKHR">VkAccelerationStructureKHR</a>
+resource is placed is a linear resource.</p>
+</li>
+<li>
+<p>a <a href="chap12.html#VkTensorARM">VkTensorARM</a> created with <code>VK_TENSOR_TILING_LINEAR_ARM</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>A resource is <em>non-linear</em> if it is one of the following:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>a <a href="chap12.html#VkImage">VkImage</a> created with <code>VK_IMAGE_TILING_OPTIMAL</code></p>
+</li>
+<li>
+<p>a <a href="chap12.html#VkImage">VkImage</a> created with
+<code>VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT</code> and whose
+<a href="chap65.html#glossary-drm-format-modifier">Linux DRM format modifier</a> is not
+<code>DRM_FORMAT_MOD_LINEAR</code></p>
+</li>
+<li>
+<p>a <a href="chap12.html#VkTensorARM">VkTensorARM</a> created with <code>VK_TENSOR_TILING_OPTIMAL_ARM</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</dd>
+</dl>
+</div>
+<div id="glossary-drm-format-modifier" class="dlist">
+<dl>
+<dt class="hdlist1">Linux DRM Format Modifier</dt>
+<dd>
+<p>A 64-bit, vendor-prefixed, semi-opaque unsigned integer describing
+vendor-specific details of an image’s memory layout.
+In Linux graphics APIs, <em>modifiers</em> are commonly used to specify the
+memory layout of externally shared images.
+An image has a <em>modifier</em> if and only if it is created with <code>tiling</code>
+equal to <code>VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT</code>.
+For more details, refer to the appendix for extension
+<code><a href="chap60.html#VK_EXT_image_drm_format_modifier">VK_EXT_image_drm_format_modifier</a></code>.</p>
+</dd>
+<dt class="hdlist1">Local Workgroup</dt>
+<dd>
+<p>A collection of compute shader invocations invoked by a single
+dispatching command, which share data via <code>WorkgroupLocal</code> variables
+and can synchronize with each other.</p>
+</dd>
+<dt class="hdlist1">Logical Device</dt>
+<dd>
+<p>An object that represents the application’s interface to the physical
+device.
+The logical device is the parent of most Vulkan objects.
+Represented by a <a href="chap5.html#VkDevice">VkDevice</a> object.</p>
+</dd>
+<dt class="hdlist1">Logical Operation</dt>
+<dd>
+<p>Bitwise operations between a fragment color value and a value in a color
+attachment, that produce a final color value to be written to the
+attachment.</p>
+</dd>
+<dt class="hdlist1">Lost Device</dt>
+<dd>
+<p>A state that a logical device <strong class="purple">may</strong> be in as a result of unrecoverable
+implementation errors, or other exceptional conditions.</p>
+</dd>
+<dt class="hdlist1">Mappable</dt>
+<dd>
+<p>See Host-Visible Memory.</p>
+</dd>
+<dt class="hdlist1">Memory Dependency</dt>
+<dd>
+<p>A memory dependency is an execution dependency which includes
+availability and visibility operations such that:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>The first set of operations happens-before the availability operation</p>
+</li>
+<li>
+<p>The availability operation happens-before the visibility operation</p>
+</li>
+<li>
+<p>The visibility operation happens-before the second set of operations</p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1">Memory Domain</dt>
+<dd>
+<p>A memory domain is an abstract place to which memory writes are made
+available by availability operations and memory domain operations.
+The memory domains correspond to the set of agents that the write <strong class="purple">can</strong>
+then be made visible to.
+The memory domains are <em>host</em>, <em>device</em>, <em>shader</em>, <em>workgroup instance</em>
+(for workgroup instance there is a unique domain for each compute
+workgroup) and <em>subgroup instance</em> (for subgroup instance there is a
+unique domain for each subgroup).</p>
+</dd>
+<dt class="hdlist1">Memory Domain Operation</dt>
+<dd>
+<p>An operation that makes the writes that are available to one memory
+domain available to another memory domain.</p>
+</dd>
+<dt class="hdlist1">Memory Heap</dt>
+<dd>
+<p>A region of memory from which device memory allocations <strong class="purple">can</strong> be made.</p>
+</dd>
+<dt class="hdlist1">Memory Type</dt>
+<dd>
+<p>An index used to select a set of memory properties (e.g. mappable,
+cached) for a device memory allocation.</p>
+</dd>
+<dt class="hdlist1">Mesh Shading Pipeline</dt>
+<dd>
+<p>A graphics pipeline where the primitives are assembled explicitly in the
+shader stages.
+In contrast to the primitive shading pipeline where input primitives are
+assembled by fixed function processing.</p>
+</dd>
+<dt class="hdlist1">Mesh Tasks Drawing Commands</dt>
+<dd>
+<p><em>Drawing commands</em> which create shader invocations organized in
+workgroups for drawing mesh tasks.
+Includes
+<a href="chap23.html#vkCmdDrawMeshTasksNV">vkCmdDrawMeshTasksNV</a>, <a href="chap23.html#vkCmdDrawMeshTasksIndirectNV">vkCmdDrawMeshTasksIndirectNV</a>, and
+<a href="chap23.html#vkCmdDrawMeshTasksIndirectCountNV">vkCmdDrawMeshTasksIndirectCountNV</a>,
+<a href="chap23.html#vkCmdDrawMeshTasksEXT">vkCmdDrawMeshTasksEXT</a>, <a href="chap23.html#vkCmdDrawMeshTasksIndirectEXT">vkCmdDrawMeshTasksIndirectEXT</a>, and
+<a href="chap23.html#vkCmdDrawMeshTasksIndirectCountEXT">vkCmdDrawMeshTasksIndirectCountEXT</a>
+.</p>
+</dd>
+<dt class="hdlist1">Minimum Mip Level Size</dt>
+<dd>
+<p>The smallest size that is permitted for a mip level.
+For conventional images this is 1x1x1.
+For corner-sampled images, this is 2x2x2.
+See <a href="chap12.html#resources-image-mip-level-sizing">Image Mip Level Sizing</a>.</p>
+</dd>
+<dt class="hdlist1">Mip Tail Region</dt>
+<dd>
+<p>The set of mipmap levels of a sparse residency texture that are too
+small to fill a sparse block, and that <strong class="purple">must</strong> all be bound to memory
+collectively and opaquely.</p>
+</dd>
+<dt class="hdlist1">Multi-planar</dt>
+<dd>
+<p>A <em>multi-planar format</em> (or “planar format”) is an image format
+consisting of more than one <em>plane</em>, identifiable with a <code>_2PLANE</code>
+or <code>_3PLANE</code> component to the format name and listed in
+<a href="chap53.html#formats-requiring-sampler-ycbcr-conversion">Formats Requiring Sampler Y′C<sub>B</sub>C<sub>R</sub> Conversion for <code>VK_IMAGE_ASPECT_COLOR_BIT</code> Image Views</a>.
+A <em>multi-planar image</em> (or “planar image”) is an image of a
+multi-planar format.</p>
+</dd>
+<dt class="hdlist1">Nested Command Buffers</dt>
+<dd>
+<p>A nested command buffer is a secondary command buffer that is executed
+by another secondary command buffer, which may itself execute other
+secondary command buffers.</p>
+</dd>
+<dt class="hdlist1">Non-Dispatchable Handle</dt>
+<dd>
+<p>A handle of an integer handle type.
+Handle values <strong class="purple">may</strong> not be unique, even for two objects of the same type.</p>
+</dd>
+<dt class="hdlist1">Non-Indexed Drawing Commands</dt>
+<dd>
+<p><em>Drawing commands</em> for which the vertex attributes are sourced in linear
+order from the vertex input attributes for a drawing command (i.e. they
+do not use an <em>index buffer</em>).
+Includes <a href="chap23.html#vkCmdDraw">vkCmdDraw</a>,
+<a href="chap23.html#vkCmdDrawIndirectCount">vkCmdDrawIndirectCount</a>,
+<a href="chap23.html#vkCmdDrawIndirectCountKHR">vkCmdDrawIndirectCountKHR</a>,
+<a href="chap23.html#vkCmdDrawIndirectCountAMD">vkCmdDrawIndirectCountAMD</a>,
+<a href="chap23.html#vkCmdDrawMultiEXT">vkCmdDrawMultiEXT</a>,
+and <a href="chap23.html#vkCmdDrawIndirect">vkCmdDrawIndirect</a>.</p>
+</dd>
+<dt class="hdlist1">Normalized</dt>
+<dd>
+<p>A value that is interpreted as being in the range <span class="eq">[0,1]</span> as a
+result of being implicitly divided by some other value.</p>
+</dd>
+<dt class="hdlist1">Normalized Device Coordinates</dt>
+<dd>
+<p>A coordinate space after perspective division is applied to clip
+coordinates, and before the viewport transformation converts them to
+framebuffer coordinates.</p>
+</dd>
+<dt class="hdlist1">Obsoleted (feature)</dt>
+<dd>
+<p>A feature is obsolete if it can no longer be used.</p>
+</dd>
+<dt class="hdlist1">Opaque Capture Address</dt>
+<dd>
+<p>A 64-bit value representing the device address of a buffer or memory
+object that is expected to be used by trace capture/replay tools in
+combination with the <a href="chap51.html#features-bufferDeviceAddress"><code>bufferDeviceAddress</code></a> feature.</p>
+</dd>
+<dt class="hdlist1">Overlapped Range (Aliased Range)</dt>
+<dd>
+<p>    The aliased range of a device memory allocation that intersects a given
+    image subresource of an image
+, a given tensor,
+or range of a buffer.</p>
+</dd>
+<dt class="hdlist1">Ownership (Resource)</dt>
+<dd>
+<p>If an entity (e.g. a queue family) has ownership of a resource, access
+to that resource is well-defined for access by that entity.</p>
+</dd>
+<dt class="hdlist1">Packed Format</dt>
+<dd>
+<p>A format whose components are stored as a single texel block in memory,
+with their relative locations defined within that element.</p>
+</dd>
+<dt class="hdlist1">Packed Tensor</dt>
+<dd>
+<p>A tensor whose elements are densely laid out in memory and thus whose
+backing memory does not contain any padding data.</p>
+</dd>
+<dt class="hdlist1">Passthrough Geometry Shader</dt>
+<dd>
+<p>A geometry shader which uses the <code>PassthroughNV</code> decoration on a
+variable in its input interface.
+Output primitives in a passthrough geometry shader always have the same
+topology as the input primitive and are not produced by emitting
+vertices.</p>
+</dd>
+<dt class="hdlist1">Payload</dt>
+<dd>
+<p>Importable or exportable reference to the internal data of an object in
+Vulkan.</p>
+</dd>
+<dt class="hdlist1">Per-View</dt>
+<dd>
+<p>A variable that has an array of values which are output, one for each
+view that is being generated.
+A mesh shader which uses the <code>PerViewNV</code> decoration on a variable in
+its output interface.</p>
+</dd>
+<dt class="hdlist1">Peer Memory</dt>
+<dd>
+<p>An instance of memory corresponding to a different physical device than
+the physical device performing the memory access, in a logical device
+that represents multiple physical devices.</p>
+</dd>
+<dt class="hdlist1">Physical Device</dt>
+<dd>
+<p>An object that represents a single device in the system.
+Represented by a <a href="chap5.html#VkPhysicalDevice">VkPhysicalDevice</a> object.</p>
+</dd>
+<dt class="hdlist1">Physical-Device-Level Command</dt>
+<dd>
+<p>Any command that is dispatched from a physical device.</p>
+</dd>
+<dt class="hdlist1">Physical-Device-Level Functionality</dt>
+<dd>
+<p>All physical-device-level commands and objects, and their structures,
+enumerated types, and enumerants.</p>
+</dd>
+<dt class="hdlist1">Physical-Device-Level Object</dt>
+<dd>
+<p>Physical device objects.
+For example, <a href="chap5.html#VkPhysicalDevice">VkPhysicalDevice</a> is a physical-device-level object.</p>
+</dd>
+<dt class="hdlist1">Picture Partition (Video)</dt>
+<dd>
+<p>Collective term that refers to a subregion of a video picture resource
+that <strong class="purple">may</strong> be decoded or encoded independently according to the
+partitioning scheme defined in the corresponding video compression
+standard.
+Picture partitions <strong class="purple">may</strong> be non-rectangular.</p>
+</dd>
+<dt class="hdlist1">Pipeline</dt>
+<dd>
+<p>An object controlling how graphics or compute work is executed on the
+device.
+A pipeline includes one or more shaders, as well as state controlling
+any non-programmable stages of the pipeline.
+Represented by a <a href="chap10.html#VkPipeline">VkPipeline</a> object.</p>
+</dd>
+<dt class="hdlist1">Pipeline Barrier</dt>
+<dd>
+<p>An execution and/or memory dependency recorded as an explicit command in
+a command buffer, that forms a dependency between the previous and
+subsequent commands.</p>
+</dd>
+<dt class="hdlist1">Pipeline Cache</dt>
+<dd>
+<p>An object that <strong class="purple">can</strong> be used to collect and retrieve information from
+pipelines as they are created, and <strong class="purple">can</strong> be populated with previously
+retrieved information in order to accelerate pipeline creation.
+Represented by a <a href="chap10.html#VkPipelineCache">VkPipelineCache</a> object.</p>
+</dd>
+<dt class="hdlist1">Pipeline Layout</dt>
+<dd>
+<p>An object defining the set of resources (via a collection of descriptor
+set layouts) and push constants used by pipelines that are created using
+the layout.
+Used when creating a pipeline and when binding descriptor sets and
+setting push constant values.
+Represented by a <a href="chap15.html#VkPipelineLayout">VkPipelineLayout</a> object.</p>
+</dd>
+<dt class="hdlist1">Pipeline Library</dt>
+<dd>
+<p>A pipeline that cannot be directly used, instead defining a set of
+shaders and shader groups which will be <a href="chap10.html#pipelines-library">linked into
+other pipelines</a>.</p>
+</dd>
+<dt class="hdlist1">Pipeline Stage</dt>
+<dd>
+<p>A logically independent execution unit that performs some of the
+operations defined by an action command.</p>
+</dd>
+</dl>
+</div>
+<div id="glossary-pipeline-trace-ray" class="dlist">
+<dl>
+<dt class="hdlist1">Pipeline Trace Ray Instruction</dt>
+<dd>
+<p>A ray tracing instruction which traces a ray into an acceleration
+structure when using ray tracing pipelines.
+One of:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>OpTraceNV</code></p>
+</li>
+<li>
+<p><code>OpTraceRayKHR</code></p>
+</li>
+<li>
+<p><code>OpTraceRayMotionNV</code></p>
+</li>
+<li>
+<p><code>OpTraceMotionNV</code></p>
+</li>
+<li>
+<p><code>OpHitObjectTraceRayNV</code></p>
+</li>
+<li>
+<p><code>OpHitObjectTraceRayMotionNV</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><code>pNext</code> Chain</dt>
+<dd>
+<p>A set of structures <a href="chap3.html#fundamentals-validusage-pNext">chained together</a>
+through their <code>pNext</code> members.</p>
+</dd>
+<dt class="hdlist1">Planar</dt>
+<dd>
+<p>See <em>multi-planar</em>.</p>
+</dd>
+<dt class="hdlist1">Plane</dt>
+<dd>
+<p>An <em>image plane</em> is part of the representation of an image, containing a
+subset of the color components necessary to represent the texels in the
+image and with a contiguous mapping of coordinates to bound memory.
+Most images consist only of a single plane, but some formats spread the
+components across multiple image planes.
+The host-accessible properties of each image plane are accessible for a
+linear layout using <a href="chap12.html#vkGetImageSubresourceLayout">vkGetImageSubresourceLayout</a>.
+If a multi-planar image is created with the
+<code>VK_IMAGE_CREATE_DISJOINT_BIT</code> bit set, the image is described as
+<em>disjoint</em>, and its planes are therefore bound to memory independently.</p>
+</dd>
+<dt class="hdlist1">Point Sampling (Rasterization)</dt>
+<dd>
+<p>A rule that determines whether a fragment sample location is covered by
+a polygon primitive by testing whether the sample location is in the
+interior of the polygon in framebuffer-space, or on the boundary of the
+polygon according to the tie-breaking rules.</p>
+</dd>
+<dt class="hdlist1">Potential Format Features</dt>
+<dd>
+<p>The union of all <a href="chap53.html#VkFormatFeatureFlagBits">VkFormatFeatureFlagBits</a> that the implementation
+supports for a specified <a href="chap53.html#VkFormat">VkFormat</a>, over all supported image
+tilings.
+For <a href="chap11.html#memory-external-android-hardware-buffer-external-formats">Android
+external formats</a> the <a href="chap53.html#VkFormatFeatureFlagBits">VkFormatFeatureFlagBits</a> is provided by the
+implementation.
+For <a href="chap11.html#memory-external-screen-buffer-external-formats">QNX Screen external
+formats</a> the <a href="chap53.html#VkFormatFeatureFlagBits">VkFormatFeatureFlagBits</a> is provided by the
+implementation.</p>
+</dd>
+<dt class="hdlist1">Pre-rasterization</dt>
+<dd>
+<p>Operations that execute before <a href="chap30.html">rasterization</a>, and any
+state associated with those operations.</p>
+</dd>
+<dt class="hdlist1">Presentable image</dt>
+<dd>
+<p>A <code>VkImage</code> object obtained from a <code>VkSwapchainKHR</code> used to
+present to a <code>VkSurfaceKHR</code> object.</p>
+</dd>
+<dt class="hdlist1">Preserve Attachment</dt>
+<dd>
+<p>One of a list of attachments in a subpass description that is not read
+or written by the subpass, but that is read or written on earlier and
+later subpasses and whose contents <strong class="purple">must</strong> be preserved through this
+subpass.</p>
+</dd>
+<dt class="hdlist1">Primary Command Buffer</dt>
+<dd>
+<p>A command buffer that <strong class="purple">can</strong> execute secondary command buffers, and <strong class="purple">can</strong>
+be submitted directly to a queue.</p>
+</dd>
+<dt class="hdlist1">Primitive Shading Pipeline</dt>
+<dd>
+<p>A graphics pipeline where input primitives are assembled by fixed
+function processing.
+It is the counterpart to mesh shading.</p>
+</dd>
+<dt class="hdlist1">Primitive Topology</dt>
+<dd>
+<p>State controlling how vertices are assembled into primitives, e.g. as
+lists of triangles, strips of lines, etc.</p>
+</dd>
+<dt class="hdlist1">Promoted (feature)</dt>
+<dd>
+<p>A feature from an older extension is considered promoted if it is made
+available as part of a new core version or newer extension with wider
+support.</p>
+</dd>
+<dt class="hdlist1">Protected Buffer</dt>
+<dd>
+<p>A buffer to which protected device memory <strong class="purple">can</strong> be bound.</p>
+</dd>
+<dt class="hdlist1">Protected-capable Device Queue</dt>
+<dd>
+<p>A device queue to which protected command buffers <strong class="purple">can</strong> be submitted.</p>
+</dd>
+<dt class="hdlist1">Protected Command Buffer</dt>
+<dd>
+<p>A command buffer which <strong class="purple">can</strong> be submitted to a protected-capable device
+queue.</p>
+</dd>
+<dt class="hdlist1">Protected Device Memory</dt>
+<dd>
+<p>Device memory which <strong class="purple">can</strong> be visible to the device but <strong class="purple">must</strong> not be
+visible to the host.</p>
+</dd>
+<dt class="hdlist1">Protected Image</dt>
+<dd>
+<p>An image to which protected device memory <strong class="purple">can</strong> be bound.</p>
+</dd>
+<dt class="hdlist1">Protected Tensor</dt>
+<dd>
+<p>A tensor to which protected device memory <strong class="purple">can</strong> be bound.</p>
+</dd>
+<dt class="hdlist1">Provisional</dt>
+<dd>
+<p>A feature is released provisionally in order to get wider feedback on
+the functionality before it is finalized.
+Provisional features may change in ways that break backwards
+compatibility, and thus are not recommended for use in production
+applications.</p>
+</dd>
+<dt class="hdlist1">Provoking Vertex</dt>
+<dd>
+<p>The vertex in a primitive from which flat shaded attribute values are
+taken.
+This is generally the “first” vertex in the primitive, and depends on
+the primitive topology.</p>
+</dd>
+<dt class="hdlist1">PTLAS</dt>
+<dd>
+<p><a href="chap39.html#partitioned-tlas">Partitioned Top Level Acceleration Structures</a></p>
+</dd>
+<dt class="hdlist1">Push Constants</dt>
+<dd>
+<p>A small bank of values writable via the API and accessible in shaders.
+Push constants allow the application to set values used in shaders
+without creating buffers or modifying and binding descriptor sets for
+each update.</p>
+</dd>
+<dt class="hdlist1">Push Constant Interface</dt>
+<dd>
+<p>The set of variables with <code>PushConstant</code> storage class that are
+statically used by a shader entry point, and which receive values from
+push constant commands.</p>
+</dd>
+<dt class="hdlist1">Push Descriptors</dt>
+<dd>
+<p>Descriptors that are written directly into a command buffer rather than
+into a descriptor set.
+Push descriptors allow the application to set descriptors used in
+shaders without allocating or modifying descriptor sets for each update.</p>
+</dd>
+<dt class="hdlist1">Descriptor Update Template</dt>
+<dd>
+<p>An object specifying a mapping from descriptor update information in
+host memory to elements in a descriptor set, which helps enable more
+efficient descriptor set updates.</p>
+</dd>
+<dt class="hdlist1">Query Pool</dt>
+<dd>
+<p>An object containing a number of query entries and their associated
+state and results.
+Represented by a <a href="chap20.html#VkQueryPool">VkQueryPool</a> object.</p>
+</dd>
+<dt class="hdlist1">Queue</dt>
+<dd>
+<p>An object that executes command buffers and sparse binding operations on
+a device.
+Represented by a <a href="chap5.html#VkQueue">VkQueue</a> object.</p>
+</dd>
+<dt class="hdlist1">Queue Family</dt>
+<dd>
+<p>A set of queues that have common properties and support the same
+functionality, as advertised in <a href="chap5.html#VkQueueFamilyProperties">VkQueueFamilyProperties</a>.</p>
+</dd>
+<dt class="hdlist1">Queue Operation</dt>
+<dd>
+<p>A unit of work to be executed by a specific queue on a device, submitted
+via a <a href="chap5.html#devsandqueues-submission">queue submission command</a>.
+Each queue submission command details the specific queue operations that
+occur as a result of calling that command.
+Queue operations typically include work that is specific to each
+command, and synchronization tasks.</p>
+</dd>
+<dt class="hdlist1">Queue Submission</dt>
+<dd>
+<p>Zero or more batches and an optional fence to be signaled, passed to a
+command for execution on a queue.
+See the <a href="chap5.html#devsandqueues-submission">Devices and Queues chapter</a> for
+more information.</p>
+</dd>
+<dt class="hdlist1">Ray Tracing Command</dt>
+<dd>
+<p>    Commands that provoke work using a ray tracing pipeline.
+    Includes
+<a href="chap43.html#vkCmdTraceRaysNV">vkCmdTraceRaysNV</a>,
+<a href="chap43.html#vkCmdTraceRaysKHR">vkCmdTraceRaysKHR</a>, and <a href="chap43.html#vkCmdTraceRaysIndirectKHR">vkCmdTraceRaysIndirectKHR</a>
+    .</p>
+</dd>
+<dt class="hdlist1">Reconstructed Picture</dt>
+<dd>
+<p>A video picture resource reconstructed from a compressed bitstream using
+video decode or encode operations that <strong class="purple">can</strong> be used as a reference
+picture by future video decode or encode operations with the same video
+session.</p>
+</dd>
+<dt class="hdlist1">Recording State (Command Buffer)</dt>
+<dd>
+<p>A command buffer that is ready to record commands.
+See also Initial State and Executable State.</p>
+</dd>
+<dt class="hdlist1">Reference Picture</dt>
+<dd>
+<p>A video picture resource used by video decode and encode operations to
+provide predictions of the values of samples in the subsequently decoded
+or encoded pictures.</p>
+</dd>
+<dt class="hdlist1">Reference Picture Metadata</dt>
+<dd>
+<p>Opaque state associated with a DPB slot, maintained by a video session.</p>
+</dd>
+<dt class="hdlist1">Release Operation (Resource)</dt>
+<dd>
+<p>An operation that releases ownership of an image subresource or buffer
+range.</p>
+</dd>
+<dt class="hdlist1">Render Pass</dt>
+<dd>
+<p>An object that represents a set of framebuffer attachments and phases of
+rendering using those attachments.
+Represented by a <a href="chap8.html#VkRenderPass">VkRenderPass</a> object.</p>
+</dd>
+<dt class="hdlist1">Render Pass Instance</dt>
+<dd>
+<p>A use of a render pass in a command buffer.</p>
+</dd>
+<dt class="hdlist1">Required Extensions</dt>
+<dd>
+<p>Extensions that <strong class="purple">must</strong> be enabled alongside extensions dependent on them
+(see <a href="chap50.html#extendingvulkan-extensions-extensiondependencies">Extension
+Dependencies</a>).</p>
+</dd>
+<dt class="hdlist1">Reset (Command Buffer)</dt>
+<dd>
+<p>Resetting a command buffer discards any previously recorded commands and
+puts a command buffer in the initial state.</p>
+</dd>
+<dt class="hdlist1">Residency Code</dt>
+<dd>
+<p>An integer value returned by sparse image instructions, indicating
+whether any sparse unbound texels were accessed.</p>
+</dd>
+<dt class="hdlist1">Resolve Attachment</dt>
+<dd>
+<p>A subpass attachment point, or image view, that is the target of a
+multisample resolve operation from the corresponding color attachment at
+the end of the subpass.</p>
+</dd>
+<dt class="hdlist1">Retired Swapchain</dt>
+<dd>
+<p>A swapchain that has been used as the <code>oldSwapchain</code> parameter to
+<a href="chap36.html#vkCreateSwapchainKHR">vkCreateSwapchainKHR</a>.
+Images cannot be acquired from a retired swapchain, however images that
+were acquired (but not presented) before the swapchain was retired <strong class="purple">can</strong>
+be presented.</p>
+</dd>
+<dt class="hdlist1">Sample Index</dt>
+<dd>
+<p>The index of a sample within a <a href="chap30.html#primsrast-multisampling-coverage-mask">single set of samples</a>.</p>
+</dd>
+<dt class="hdlist1">Sample Shading</dt>
+<dd>
+<p>Invoking the fragment shader multiple times per fragment, with the
+covered samples partitioned among the invocations.</p>
+</dd>
+<dt class="hdlist1">Sampled Image</dt>
+<dd>
+<p>A descriptor type that represents an image view, and supports filtered
+(sampled) and unfiltered read-only access in a shader.</p>
+</dd>
+</dl>
+</div>
+<div id="glossary-sampled-tile-image" class="dlist">
+<dl>
+<dt class="hdlist1">Sampled Tile Image</dt>
+<dd>
+<p>A per-tile sampled image view of a framebuffer attachment, enabled by
+<code><a href="chap60.html#VK_QCOM_tile_shading">VK_QCOM_tile_shading</a></code>.</p>
+</dd>
+<dt class="hdlist1">Sampler</dt>
+<dd>
+<p>An object containing state controlling how sampled image data is sampled
+(or filtered) when accessed in a shader.
+Also a descriptor type describing the object.
+Represented by a <a href="chap14.html#VkSampler">VkSampler</a> object.</p>
+</dd>
+<dt class="hdlist1">Secondary Command Buffer</dt>
+<dd>
+<p>A command buffer that <strong class="purple">can</strong> be executed by a primary command buffer, and
+<strong class="purple">must</strong> not be submitted directly to a queue.</p>
+</dd>
+<dt class="hdlist1">Self-Dependency</dt>
+<dd>
+<p>A subpass dependency from a subpass to itself, i.e. with
+<code>srcSubpass</code> equal to <code>dstSubpass</code>.
+A self-dependency is not automatically performed during a render pass
+instance, rather a subset of it <strong class="purple">can</strong> be performed via
+<a href="chap7.html#vkCmdPipelineBarrier">vkCmdPipelineBarrier</a> during the subpass.</p>
+</dd>
+<dt class="hdlist1">Semaphore</dt>
+<dd>
+<p>A synchronization primitive that supports signal and wait operations,
+and <strong class="purple">can</strong> be used to synchronize operations within a queue or across
+queues.
+Represented by a <a href="chap7.html#VkSemaphore">VkSemaphore</a> object.</p>
+</dd>
+<dt class="hdlist1">Shader</dt>
+<dd>
+<p>Instructions selected (via an entry point) from a shader module, which
+are executed in a shader stage.</p>
+</dd>
+<dt class="hdlist1">Shader Call</dt>
+<dd>
+<p>An <a href="chap43.html#ray-tracing-shader-call">instruction</a> which <strong class="purple">may</strong> cause execution to
+continue in a different shader stage.</p>
+</dd>
+<dt class="hdlist1">Shader Code</dt>
+<dd>
+<p>A stream of instructions used to describe the operation of a shader.</p>
+</dd>
+<dt class="hdlist1">Shader Group</dt>
+<dd>
+<p>A set of Shader Stages that are part of a <a href="chap10.html#VkPipeline">VkPipeline</a> containing
+multiple of such sets.
+This allows the device to make use of all the shader groups from the
+bound pipeline independently.</p>
+</dd>
+<dt class="hdlist1">Shader Module</dt>
+<dd>
+<p>A collection of shader code, potentially including several functions and
+entry points, that is used to create shaders in pipelines.
+Represented by a <a href="chap9.html#VkShaderModule">VkShaderModule</a> object.</p>
+</dd>
+<dt class="hdlist1">Shader Stage</dt>
+<dd>
+<p>A stage of the graphics or compute pipeline that executes shader code.</p>
+</dd>
+</dl>
+</div>
+<div id="glossary-shading-rate" class="dlist">
+<dl>
+<dt class="hdlist1">Shading Rate</dt>
+<dd>
+<p>The ratio of the number of fragment shader invocations generated in a
+fully covered framebuffer region to the size (in pixels) of that region.</p>
+</dd>
+</dl>
+</div>
+<div id="glossary-shading-rate-image" class="dlist">
+<dl>
+<dt class="hdlist1">Shading Rate Image</dt>
+<dd>
+<p>An image used to establish the shading rate for a framebuffer region,
+where each pixel controls the shading rate for a corresponding
+framebuffer region.</p>
+</dd>
+<dt class="hdlist1">Shared presentable image</dt>
+<dd>
+<p>A presentable image created from a swapchain with <a href="chap36.html#VkPresentModeKHR">VkPresentModeKHR</a>
+set to either <code>VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR</code> or
+<code>VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR</code>.</p>
+</dd>
+<dt class="hdlist1">Side Effect</dt>
+<dd>
+<p>A store to memory or atomic operation on memory from a shader
+invocation.</p>
+</dd>
+<dt class="hdlist1">Single-plane format</dt>
+<dd>
+<p>A format that is not <em>multi-planar</em>.</p>
+</dd>
+<dt class="hdlist1">Size-Compatible Image Formats</dt>
+<dd>
+<p>When a compressed image format and an uncompressed image format are
+size-compatible, it means that the texel block size of the uncompressed
+format <strong class="purple">must</strong> equal the texel block size of the compressed format.</p>
+</dd>
+<dt class="hdlist1">Sparse Block</dt>
+<dd>
+<p>An element of a sparse resource that can be independently bound to
+memory.
+Sparse blocks of a particular sparse resource have a corresponding size
+in bytes that they use in the bound memory.</p>
+</dd>
+<dt class="hdlist1">Sparse Image Block</dt>
+<dd>
+<p>A sparse block in a sparse partially-resident image.
+In addition to the sparse block size in bytes, sparse image blocks have
+a corresponding width, height, and depth defining the dimensions of
+these elements in units of texels or compressed texel blocks, the latter
+being used in case of sparse images having a block-compressed format.</p>
+</dd>
+<dt class="hdlist1">Sparse Unbound Texel</dt>
+<dd>
+<p>A texel read from a region of a sparse texture that does not have memory
+bound to it.</p>
+</dd>
+<dt class="hdlist1">SRT</dt>
+<dd>
+<p>A decomposition of a spatial transform separating out scale, rotation,
+and translation which has better linear interpolation properties for
+representing motion.</p>
+</dd>
+<dt class="hdlist1">Static Use</dt>
+<dd>
+<p>An object in a shader is statically used by a shader entry point if any
+function in the entry point’s call tree contains an instruction using
+the object.
+A reference in the entry point’s interface list does not constitute a
+static use.
+Static use is used to constrain the set of descriptors used by a shader
+entry point.</p>
+</dd>
+<dt class="hdlist1">Storage Buffer</dt>
+<dd>
+<p>A descriptor type that represents a buffer, and supports reads, writes,
+and atomics in a shader.</p>
+</dd>
+<dt class="hdlist1">Storage Image</dt>
+<dd>
+<p>A descriptor type that represents an image view, and supports unfiltered
+loads, stores, and atomics in a shader.</p>
+</dd>
+<dt class="hdlist1">Storage Tensor</dt>
+<dd>
+<p>A descriptor type that represents a tensor view, and supports reads,
+writes, in a shader.</p>
+</dd>
+<dt class="hdlist1">Storage Texel Buffer</dt>
+<dd>
+<p>A descriptor type that represents a buffer view, and supports
+unfiltered, formatted reads, writes, and atomics in a shader.</p>
+</dd>
+</dl>
+</div>
+<div id="glossary-storage-tile-image" class="dlist">
+<dl>
+<dt class="hdlist1">Storage Tile Image</dt>
+<dd>
+<p>A per-tile storage image view of a framebuffer attachment, enabled by
+<code><a href="chap60.html#VK_QCOM_tile_shading">VK_QCOM_tile_shading</a></code>.</p>
+</dd>
+<dt class="hdlist1">Subgroup</dt>
+<dd>
+<p>A set of shader invocations that <strong class="purple">can</strong> synchronize and share data with
+each other efficiently.
+In compute shaders, the <em>local workgroup</em> is a superset of the subgroup.</p>
+</dd>
+<dt class="hdlist1">Subgroup Mask</dt>
+<dd>
+<p>A bitmask for all invocations in the current subgroup with one bit per
+invocation, starting with the least significant bit in the first vector
+component, continuing to the last bit (less than <code>SubgroupSize</code>) in
+the last required vector component.</p>
+</dd>
+<dt class="hdlist1">Subpass</dt>
+<dd>
+<p>A phase of rendering within a render pass, that reads and writes a
+subset of the attachments.</p>
+</dd>
+<dt class="hdlist1">Subpass Dependency</dt>
+<dd>
+<p>An execution and/or memory dependency between two subpasses described as
+part of render pass creation, and automatically performed between
+subpasses in a render pass instance.
+A subpass dependency limits the overlap of execution of the pair of
+subpasses, and <strong class="purple">can</strong> provide guarantees of memory coherence between
+accesses in the subpasses.</p>
+</dd>
+<dt class="hdlist1">Subpass Description</dt>
+<dd>
+<p>Lists of attachment indices for input attachments, color attachments,
+depth/stencil attachment, resolve attachments,
+depth/stencil resolve,
+and preserve attachments used by the subpass in a render pass.</p>
+</dd>
+<dt class="hdlist1">Subset (Self-Dependency)</dt>
+<dd>
+<p>A subset of a self-dependency is a pipeline barrier performed during the
+subpass of the self-dependency, and whose stage masks and access masks
+each contain a subset of the bits set in the identically named mask in
+the self-dependency.</p>
+</dd>
+<dt class="hdlist1">Tensor</dt>
+<dd>
+<p>A resource that represents an N-dimensional formatted interpretation of
+device memory.
+Represented by a <a href="chap12.html#VkTensorARM">VkTensorARM</a> object.</p>
+</dd>
+<dt class="hdlist1">Tensor Description</dt>
+<dd>
+<p>Describes the shape, format, usage and layout in memory of a tensor.
+Represented by <a href="chap12.html#VkTensorDescriptionARM">VkTensorDescriptionARM</a>.</p>
+</dd>
+<dt class="hdlist1">Tensor View</dt>
+<dd>
+<p>An object that represents a specific tensor, and state that controls how
+the contents are interpreted.
+Represented by a <a href="chap12.html#VkTensorViewARM">VkTensorViewARM</a> object.</p>
+</dd>
+<dt class="hdlist1">Texel Block</dt>
+<dd>
+<p>A single addressable element of an image with an uncompressed
+<a href="chap53.html#VkFormat">VkFormat</a>, or a single compressed block of an image with a
+compressed <a href="chap53.html#VkFormat">VkFormat</a>.</p>
+</dd>
+<dt class="hdlist1">Texel Block Size</dt>
+<dd>
+<p>The size (in bytes) used to store a texel block of a compressed or
+uncompressed image.</p>
+</dd>
+<dt class="hdlist1">Texel Coordinate System</dt>
+<dd>
+<p>One of three coordinate systems (normalized, unnormalized, integer)
+defining how texel coordinates are interpreted in an image or a specific
+mipmap level of an image.</p>
+</dd>
+</dl>
+</div>
+<div id="glossary-tile-memory-interface" class="dlist">
+<dl>
+<dt class="hdlist1">Tile Attachment Interface</dt>
+<dd>
+<p>The set of variables with <code>TileAttachmentQCOM</code> storage class that are
+statically used by a shader entry point, invoked within a tile shading
+render pass which read values from tiled attachments as described in
+<a href="chap8.html#renderpass-tile-shading">tile shading</a>.</p>
+</dd>
+</dl>
+</div>
+<div id="glossary-tile-image" class="dlist">
+<dl>
+<dt class="hdlist1">Tile Image</dt>
+<dd>
+<p>A per-tile view of a framebuffer attachment.
+If the <code><a href="chap60.html#VK_EXT_shader_tile_image">VK_EXT_shader_tile_image</a></code> extension is enabled, the
+framebuffer is considered to be divided into tiles.</p>
+</dd>
+<dt class="hdlist1">Timeline Semaphore</dt>
+<dd>
+<p>A semaphore with a strictly increasing 64-bit unsigned integer payload
+indicating whether the semaphore is signaled with respect to a
+particular reference value.
+Represented by a <a href="chap7.html#VkSemaphore">VkSemaphore</a> object created with a semaphore type
+of <code>VK_SEMAPHORE_TYPE_TIMELINE</code>.</p>
+</dd>
+<dt class="hdlist1">Uniform Texel Buffer</dt>
+<dd>
+<p>A descriptor type that represents a buffer view, and supports
+unfiltered, formatted, read-only access in a shader.</p>
+</dd>
+<dt class="hdlist1">Uniform Buffer</dt>
+<dd>
+<p>A descriptor type that represents a buffer, and supports read-only
+access in a shader.</p>
+</dd>
+<dt class="hdlist1">Units in the Last Place (ULP)</dt>
+<dd>
+<p>A measure of floating-point error loosely defined as the smallest
+representable step in a floating-point format near a given value.
+For the precise definition see <a href="chap56.html#spirvenv-precision-operation">Precision
+and Operation of SPIR-V instructions</a> or Jean-Michel Muller, “On the
+definition of ulp(x)”, RR-5504, INRIA.
+Other sources may also use the term “unit of least precision”.</p>
+</dd>
+<dt class="hdlist1">Unnormalized</dt>
+<dd>
+<p>A value that is interpreted according to its conventional
+interpretation, and is not normalized.</p>
+</dd>
+<dt class="hdlist1">Unprotected Buffer</dt>
+<dd>
+<p>A buffer to which unprotected device memory <strong class="purple">can</strong> be bound.</p>
+</dd>
+<dt class="hdlist1">Unprotected Command Buffer</dt>
+<dd>
+<p>A command buffer which <strong class="purple">can</strong> be submitted to an unprotected device queue
+or a protected-capable device queue.</p>
+</dd>
+<dt class="hdlist1">Unprotected Device Memory</dt>
+<dd>
+<p>Device memory which <strong class="purple">can</strong> be visible to the device and <strong class="purple">can</strong> be visible to
+the host.</p>
+</dd>
+<dt class="hdlist1">Unprotected Image</dt>
+<dd>
+<p>An image to which unprotected device memory <strong class="purple">can</strong> be bound.</p>
+</dd>
+<dt class="hdlist1">Unprotected Tensor</dt>
+<dd>
+<p>A tensor to which unprotected device memory <strong class="purple">can</strong> be bound.</p>
+</dd>
+<dt class="hdlist1">User-Defined Variable Interface</dt>
+<dd>
+<p>A shader entry point’s variables with <code>Input</code> or <code>Output</code> storage
+class that are not built-in variables.</p>
+</dd>
+<dt class="hdlist1">Vertex Input Attribute</dt>
+<dd>
+<p>A graphics pipeline resource that produces input values for the vertex
+shader by reading data from a vertex input binding and converting it to
+the attribute’s format.</p>
+</dd>
+<dt class="hdlist1">Vertex Stream</dt>
+<dd>
+<p>A vertex stream is where the last
+<a href="chap10.html#pipelines-graphics-subsets-pre-rasterization">pre-rasterization shader
+stages</a> outputs vertex data, which then goes to the rasterizer, is
+captured to a transform feedback buffer, or both.
+Geometry shaders <strong class="purple">can</strong> emit primitives to multiple independent vertex
+streams.
+Each vertex emitted by the geometry shader is directed at one of the
+vertex streams.</p>
+</dd>
+<dt class="hdlist1">Validation Cache</dt>
+<dd>
+<p>An object that <strong class="purple">can</strong> be used to collect and retrieve validation results
+from the validation layers, and <strong class="purple">can</strong> be populated with previously
+retrieved results in order to accelerate the validation process.
+Represented by a <a href="chap9.html#VkValidationCacheEXT">VkValidationCacheEXT</a> object.</p>
+</dd>
+<dt class="hdlist1">Variable-Sized Descriptor Binding</dt>
+<dd>
+<p>A descriptor binding whose size will be specified when a descriptor set
+is allocated using this layout.</p>
+</dd>
+<dt class="hdlist1">Vertex Input Binding</dt>
+<dd>
+<p>A graphics pipeline resource that is bound to a buffer and includes
+state that affects addressing calculations within that buffer.</p>
+</dd>
+<dt class="hdlist1">Vertex Input Interface</dt>
+<dd>
+<p>A vertex shader entry point’s variables with <code>Input</code> storage class,
+which receive values from vertex input attributes.</p>
+</dd>
+<dt class="hdlist1">Video Bitstream Buffer</dt>
+<dd>
+<p>A resource that represents a linear array of data in device memory
+storing encoded video data.
+Represented by a <a href="chap12.html#VkBuffer">VkBuffer</a> object.</p>
+</dd>
+<dt class="hdlist1">Video Coding Scope</dt>
+<dd>
+<p>A series of subsequent commands recorded into a command buffer starting
+with a <a href="chap45.html#vkCmdBeginVideoCodingKHR">vkCmdBeginVideoCodingKHR</a> command and ending with a
+<a href="chap45.html#vkCmdEndVideoCodingKHR">vkCmdEndVideoCodingKHR</a> command that encompasses a set of video
+decode or encode operations.</p>
+</dd>
+<dt class="hdlist1">Video Coding Operations</dt>
+<dd>
+<p>Any operations recorded into a command buffer within a video coding
+scope, including video decode and encode operations.</p>
+</dd>
+<dt class="hdlist1">Video Decode Operation</dt>
+<dd>
+<p>An operation consuming data from a video bitstream buffer and zero or
+more reference pictures, and producing data to a decode output picture
+and an optional reconstructed picture.</p>
+</dd>
+<dt class="hdlist1">Video Encode Operation</dt>
+<dd>
+<p>An operation consuming data from an encode input picture and zero or
+more reference pictures, and producing data to a video bitstream buffer
+and an optional reconstructed picture.</p>
+</dd>
+<dt class="hdlist1">Video Picture Resource</dt>
+<dd>
+<p>A resource that represents a multi-dimensional formatted interpretation
+of device memory to be used with a video session as a decode output
+picture, encode input picture, reconstructed picture, and/or reference
+picture.
+It <strong class="purple">may</strong> contain metadata associated with a particular video session it
+is used with.
+Represented by a <a href="chap12.html#VkImage">VkImage</a> object and referred to using
+<a href="chap12.html#VkImageView">VkImageView</a> objects created from it.</p>
+</dd>
+<dt class="hdlist1">Video Session</dt>
+<dd>
+<p>A resource that represents and maintains the state needed to perform
+video decode or encode operations.
+Represented by a <a href="chap45.html#VkVideoSessionKHR">VkVideoSessionKHR</a> object.</p>
+</dd>
+<dt class="hdlist1">Video Session Parameters</dt>
+<dd>
+<p>A resource that stores preprocessed codec-specific parameters used with
+a compatible video session in video codec operations.
+Represented by a <a href="chap45.html#VkVideoSessionParametersKHR">VkVideoSessionParametersKHR</a> object.</p>
+</dd>
+<dt class="hdlist1">Video Transcoding</dt>
+<dd>
+<p>The process of using the outputs of video decoding operations as inputs
+in video encoding operations.</p>
+</dd>
+<dt class="hdlist1">View Mask</dt>
+<dd>
+<p>When multiview is enabled, a view mask is a property of a subpass
+controlling which views the rendering commands are broadcast to.</p>
+</dd>
+<dt class="hdlist1">View Volume</dt>
+<dd>
+<p>A subspace in homogeneous coordinates, corresponding to post-projection
+x and y values between -1 and +1, and z values between 0 and +1.</p>
+</dd>
+<dt class="hdlist1">Viewport Transformation</dt>
+<dd>
+<p>A transformation from normalized device coordinates to framebuffer
+coordinates, based on a viewport rectangle and depth range.</p>
+</dd>
+<dt class="hdlist1">Visibility Operation</dt>
+<dd>
+<p>An operation that causes available values to become visible to specified
+memory accesses.</p>
+</dd>
+<dt class="hdlist1">Visible</dt>
+<dd>
+<p>A state of values written to memory that allows them to be accessed by a
+set of operations.</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="sect2">
+<h3 id="lexicon-common-abbreviations"><a class="anchor" href="chap65.html#lexicon-common-abbreviations"></a>Common Abbreviations</h3>
+<div class="paragraph">
+<p>The abbreviations and acronyms defined in this section are sometimes used in
+the Specification and the API where they are considered clear and
+commonplace.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Src</dt>
+<dd>
+<p>Source</p>
+</dd>
+<dt class="hdlist1">Dst</dt>
+<dd>
+<p>Destination</p>
+</dd>
+<dt class="hdlist1">Min</dt>
+<dd>
+<p>Minimum</p>
+</dd>
+<dt class="hdlist1">Max</dt>
+<dd>
+<p>Maximum</p>
+</dd>
+<dt class="hdlist1">Rect</dt>
+<dd>
+<p>Rectangle</p>
+</dd>
+<dt class="hdlist1">Info</dt>
+<dd>
+<p>Information</p>
+</dd>
+<dt class="hdlist1">LOD</dt>
+<dd>
+<p>Level&nbsp; of Detail</p>
+</dd>
+<dt class="hdlist1">Log</dt>
+<dd>
+<p>Logarithm</p>
+</dd>
+<dt class="hdlist1">ID</dt>
+<dd>
+<p>Identifier</p>
+</dd>
+<dt class="hdlist1">UUID</dt>
+<dd>
+<p>Universally Unique Identifier</p>
+</dd>
+<dt class="hdlist1">Op</dt>
+<dd>
+<p>Operation</p>
+</dd>
+<dt class="hdlist1">R</dt>
+<dd>
+<p>Red color component</p>
+</dd>
+<dt class="hdlist1">G</dt>
+<dd>
+<p>Green color component</p>
+</dd>
+<dt class="hdlist1">B</dt>
+<dd>
+<p>Blue color component</p>
+</dd>
+<dt class="hdlist1">A</dt>
+<dd>
+<p>Alpha color component</p>
+</dd>
+<dt class="hdlist1">RTZ</dt>
+<dd>
+<p>Round towards zero</p>
+</dd>
+<dt class="hdlist1">RTE</dt>
+<dd>
+<p>Round to nearest even</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="sect2">
+<h3 id="lexicon-video-abbreviations"><a class="anchor" href="chap65.html#lexicon-video-abbreviations"></a>Video-Specific Abbreviations</h3>
+<div class="paragraph">
+<p>The following abbreviations and acronyms are used in the context of video
+decode and encode operations to refer to commonly used video compression
+terms in their usual abbreviated form:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">AVC</dt>
+<dd>
+<p>Advanced Video Coding</p>
+</dd>
+<dt class="hdlist1">Bipred</dt>
+<dd>
+<p>Bidirectional Prediction</p>
+</dd>
+<dt class="hdlist1">CABAC</dt>
+<dd>
+<p>Context-Adaptive Binary Arithmetic Coding</p>
+</dd>
+<dt class="hdlist1">CAVLC</dt>
+<dd>
+<p>Context-Adaptive Variable-Length Coding</p>
+</dd>
+<dt class="hdlist1">CBR</dt>
+<dd>
+<p>Constant Bit Rate</p>
+</dd>
+<dt class="hdlist1">CTB</dt>
+<dd>
+<p>Coding Tree Block</p>
+</dd>
+<dt class="hdlist1">Diff</dt>
+<dd>
+<p>Difference</p>
+</dd>
+<dt class="hdlist1">DPB</dt>
+<dd>
+<p>Decoded Picture Buffer</p>
+</dd>
+<dt class="hdlist1">GOP</dt>
+<dd>
+<p>Group Of Pictures</p>
+</dd>
+<dt class="hdlist1">HDR</dt>
+<dd>
+<p>High Dynamic Range</p>
+</dd>
+<dt class="hdlist1">HEVC</dt>
+<dd>
+<p>High Efficiency Video Coding</p>
+</dd>
+<dt class="hdlist1">HRD</dt>
+<dd>
+<p>Hypothetical Reference Decoder</p>
+</dd>
+<dt class="hdlist1">IDC</dt>
+<dd>
+<p>Indicator</p>
+</dd>
+<dt class="hdlist1">IDR</dt>
+<dd>
+<p>Instantaneous Decoder Refresh</p>
+</dd>
+<dt class="hdlist1">MB</dt>
+<dd>
+<p>Macroblock</p>
+</dd>
+<dt class="hdlist1">MV</dt>
+<dd>
+<p>Motion Vector</p>
+</dd>
+<dt class="hdlist1">NALU</dt>
+<dd>
+<p>Network Abstraction Layer Unit</p>
+</dd>
+<dt class="hdlist1">OBU</dt>
+<dd>
+<p>Open Bitstream Unit</p>
+</dd>
+<dt class="hdlist1">PCM</dt>
+<dd>
+<p>Pulse-Code Modulation</p>
+</dd>
+<dt class="hdlist1">Pic</dt>
+<dd>
+<p>Picture</p>
+</dd>
+<dt class="hdlist1">Pred</dt>
+<dd>
+<p>Prediction</p>
+</dd>
+<dt class="hdlist1">PPS</dt>
+<dd>
+<p>Picture Parameter Set</p>
+</dd>
+<dt class="hdlist1">QP</dt>
+<dd>
+<p>Quantization Parameter</p>
+</dd>
+<dt class="hdlist1">RC</dt>
+<dd>
+<p>Rate Control</p>
+</dd>
+<dt class="hdlist1">SPS</dt>
+<dd>
+<p>Sequence Parameter Set</p>
+</dd>
+<dt class="hdlist1">Std</dt>
+<dd>
+<p>Standard</p>
+</dd>
+<dt class="hdlist1">VBR</dt>
+<dd>
+<p>Variable Bit Rate</p>
+</dd>
+<dt class="hdlist1">VCL</dt>
+<dd>
+<p>Video Coding Layer</p>
+</dd>
+<dt class="hdlist1">VPS</dt>
+<dd>
+<p>Video Parameter Set</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="sect2">
+<h3 id="lexicon-prefixes"><a class="anchor" href="chap65.html#lexicon-prefixes"></a>Prefixes</h3>
+<div class="paragraph">
+<p>Prefixes are used in the API to denote specific semantic meaning of Vulkan
+names, or as a label to avoid name clashes, and are explained here:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">VK/Vk/vk</dt>
+<dd>
+<p>Vulkan namespace<br>
+All types, commands, enumerants and defines in this specification are
+prefixed with these two characters.</p>
+</dd>
+<dt class="hdlist1">PFN/pfn</dt>
+<dd>
+<p>Function Pointer<br>
+Denotes that a type is a function pointer, or that a variable is of a
+pointer type.</p>
+</dd>
+<dt class="hdlist1">p</dt>
+<dd>
+<p>Pointer<br>
+Variable is a pointer.</p>
+</dd>
+<dt class="hdlist1">vkCmd</dt>
+<dd>
+<p>Commands that record commands in command buffers<br>
+These API commands do not result in immediate processing on the device.
+Instead, they record the requested action in a command buffer for
+execution when the command buffer is submitted to a queue.</p>
+</dd>
+<dt class="hdlist1">s</dt>
+<dd>
+<p>Structure<br>
+Used to denote the <code>VK_STRUCTURE_TYPE*</code> member of each structure in
+<code>sType</code></p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div></div>
+<nav>
+  <a rel="prev" href="chap64.html" class="nav nav-prev" title="Previous page" aria-label="Previous page" aria-keyshortcuts="Left">
+        <i class="fa fa-angle-left"></i>
+     </a>
+  <a rel="next" href="chap66.html" class="nav nav-next" title="Next page" aria-label="Next page" aria-keyshortcuts="Right">
+        <i class="fa fa-angle-right"></i>
+     </a>
+  <div style="clear: both"></div>
+</nav>
+
+
+
+
+</body>
+  <script>
+  function isInViewport(ele) {
+    const rect = ele.getBoundingClientRect();
+    return (
+        rect.top >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
+    );
+  }
+  function yPosition (ele) {
+    const rect = ele.getBoundingClientRect();
+    return (rect.top - 20); // 20px above
+  }
+  let curr = document.getElementsByClassName('current');
+  if (!isInViewport(curr[curr.length - 1])) {
+    document.getElementById('toc').scrollTo({
+      top: yPosition(curr[0]),
+      left: 0,
+      behavior: 'smooth'
+    });
+  }
+
+  /* For page navigation */
+  function gotoPage(selector) {
+    const button = document.querySelector(selector);
+    if (button)
+      window.location.href = button.href;
+  }
+  document.addEventListener('keydown', e => {
+    switch (e.key) {
+      case 'ArrowRight':
+        e.preventDefault();
+        gotoPage('.nav-next');
+        break;
+      case 'ArrowLeft':
+        e.preventDefault();
+        gotoPage('.nav-prev');
+        break;
+    }
+  });
+  </script>
+  </html>

@@ -1,0 +1,1598 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>VK_QCOM_image_processing :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:features" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="features" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Feature Descriptions</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Vulkan Roadmap and Feature Descriptions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Roadmap.html">Vulkan Roadmap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Feature Descriptions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMDX_shader_enqueue.html">VK_AMDX_shader_enqueue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_anti_lag.html">VK_AMD_anti_lag</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_shader_early_and_late_fragment_tests.html">VK_AMD_shader_early_and_late_fragment_tests</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ANDROID_external_format_resolve.html">VK_ANDROID_external_format_resolve</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_pipeline_opacity_micromap.html">VK_ARM_pipeline_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_render_pass_striped.html">VK_ARM_render_pass_striped</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_tensors.html">VK_ARM_tensors</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_dynamic_state.html">VK_EXT_attachment_feedback_loop_dynamic_state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_layout.html">VK_EXT_attachment_feedback_loop_layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_calibrated_timestamps.html">VK_EXT_calibrated_timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_bias_control.html">VK_EXT_depth_bias_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_clamp_control.html">VK_EXT_depth_clamp_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_descriptor_buffer.html">VK_EXT_descriptor_buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_fault.html">VK_EXT_device_fault</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_generated_commands.html">VK_EXT_device_generated_commands</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_dynamic_rendering_unused_attachments.html">VK_EXT_dynamic_rendering_unused_attachments</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_extended_dynamic_state3.html">VK_EXT_extended_dynamic_state3</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_acquire_unmodified.html">VK_EXT_external_memory_acquire_unmodified</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_metal.html">VK_EXT_external_memory_metal</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_fragment_density_map_offset.html">VK_EXT_fragment_density_map_offset</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_frame_boundary.html">Proposal: <code>VK_EXT_frame_boundary</code></a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_graphics_pipeline_library.html">VK_EXT_graphics_pipeline_library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_host_image_copy.html">VK_EXT_host_image_copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_2d_array_of_3d.html">VK_EXT_image_2d_array_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_compression_control.html">VK_EXT_image_compression_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_sliced_view_of_3d.html">VK_EXT_image_sliced_view_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_layer_settings.html">VK_EXT_layer_settings</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_dithering.html">VK_EXT_legacy_dithering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_vertex_attributes.html">VK_EXT_legacy_vertex_attributes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_map_memory_placed.html">VK_EXT_map_memory_placed</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mesh_shader.html">VK_EXT_mesh_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_metal_objects.html">VK_EXT_metal_objects</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_multisampled_render_to_single_sampled.html">VK_EXT_multisampled_render_to_single_sampled</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mutable_descriptor_type.html">VK_EXT_mutable_descriptor_type</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_non_seamless_cube_map.html">VK_EXT_non_seamless_cube_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_opacity_micromap.html">VK_EXT_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_library_group_handles.html">VK_EXT_pipeline_library_group_handles</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_protected_access.html">VK_EXT_pipeline_protected_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_present_mode_fifo_latest_ready.html">VK_EXT_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_primitives_generated_query.html">VK_EXT_primitives_generated_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_rasterization_order_attachment_access.html">VK_EXT_rasterization_order_attachment_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_float8.html">VK_EXT_shader_float8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_module_identifier.html">VK_EXT_shader_module_identifier</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_object.html">VK_EXT_shader_object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_replicated_composites.html">VK_EXT_shader_replicated_composites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_tile_image.html">VK_EXT_shader_tile_image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_subpass_merge_feedback.html">VK_EXT_subpass_merge_feedback</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_surface_maintenance1.html">VK_EXT_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_swapchain_maintenance1.html">VK_EXT_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_zero_initialize_device_memory.html">VK_EXT_zero_initialize_device_memory</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_GOOGLE_surfaceless_query.html">VK_GOOGLE_surfaceless_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_cluster_culling_shader.html">VK_HUAWEI_cluster_culling_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_invocation_mask.html">VK_HUAWEI_invocation_mask</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_compute_shader_derivatives.html">VK_KHR_compute_shader_derivatives</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_cooperative_matrix.html">VK_KHR_cooperative_matrix</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering.html">VK_KHR_dynamic_rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering_local_read.html">VK_KHR_dynamic_rendering_local_read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shader_barycentric.html">VK_KHR_fragment_shader_barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shading_rate.html">VK_KHR_fragment_shading_rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_load_store_op_none.html">VK_KHR_load_store_op_none</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance5.html">VK_KHR_maintenance5</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance6.html">VK_KHR_maintenance6</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance7.html">VK_KHR_maintenance7</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance8.html">VK_KHR_maintenance8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance9.html">Proposal Template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_map_memory2.html">VK_KHR_map_memory2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_pipeline_binary.html">VK_KHR_pipeline_binary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_id2.html">VK_KHR_present_id2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_mode_fifo_latest_ready.html">VK_KHR_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_wait2.html">VK_KHR_present_wait2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_ray_tracing_position_fetch.html">VK_KHR_ray_tracing_position_fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_bfloat16.html">VK_KHR_shader_bfloat16</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_expect_assume.html">VK_KHR_shader_expect_assume</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_float_controls2.html">VK_KHR_shader_float_controls2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_integer_dot_product.html">VK_KHR_shader_integer_dot_product</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_maximal_reconvergence.html">VK_KHR_shader_maximal_reconvergence</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_quad_control.html">VK_KHR_shader_quad_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_relaxed_extended_instruction.html">VK_KHR_shader_relaxed_extended_instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_subgroup_rotate.html">Subgroup rotation instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_surface_maintenance1.html">VK_KHR_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_swapchain_maintenance1.html">VK_KHR_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_unified_image_layouts.html">VK_KHR_unified_image_layouts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_vertex_attribute_divisor.html">VK_KHR_vertex_attribute_divisor</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_av1.html">VK_KHR_video_decode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h264.html">VK_KHR_video_decode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h265.html">VK_KHR_video_decode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_queue.html">VK_KHR_video_decode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_vp9.html">VK_KHR_video_decode_vp9</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_av1.html">VK_KHR_video_encode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h264.html">VK_KHR_video_encode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h265.html">VK_KHR_video_encode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_intra_refresh.html">VK_KHR_video_encode_intra_refresh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_quantization_map.html">VK_KHR_video_encode_quantization_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_queue.html">VK_KHR_video_encode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance1.html">VK_KHR_video_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance2.html">VK_KHR_video_maintenance2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_queue.html">VK_KHR_video_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_LUNARG_direct_driver_loading.html">VK_LUNARG_direct_driver_loading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_MSFT_layered_driver.html">VK_MSFT_layered_driver</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cluster_acceleration_structure.html">VK_NV_cluster_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_matrix2.html">VK_NV_cooperative_matrix2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_vector.html">VK_NV_cooperative_vector</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_display_stereo.html">VK_NV_display_stereo</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_external_compute_queue.html">VK_NV_external_compute_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_partitioned_acceleration_structure.html">VK_NV_partitioned_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_linear_swept_spheres.html">VK_NV_ray_tracing_linear_swept_spheres</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_validation.html">VK_NV_ray_tracing_validation</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_image_processing.html">VK_QCOM_image_processing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_memory_heap.html">VK_QCOM_tile_memory_heap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_properties.html">VK_QCOM_tile_properties</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_shading.html">VK_QCOM_tile_shading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_VERSION_1_4.html">Vulkan 1.4</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Feature Descriptions</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Feature Descriptions</a></li>
+    <li>Feature Descriptions</li>
+    <li><a href="VK_QCOM_image_processing.html">VK_QCOM_image_processing</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/features/modules/features/pages/proposals/VK_QCOM_image_processing.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">VK_QCOM_image_processing</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_problem_statement">1. Problem Statement</a></li>
+<li><a href="#_solution_space">2. Solution Space</a></li>
+<li><a href="#_proposal">3. Proposal</a>
+<ul class="sectlevel2">
+<li><a href="#_spir_v_built_in_functions">3.1. SPIR-V Built-in Functions</a></li>
+<li><a href="#_high_level_language_exposure">3.2. High Level Language Exposure</a></li>
+<li><a href="#_features_and_properties">3.3. Features and Properties</a></li>
+<li><a href="#_vksampler_compatibility">3.4. VkSampler compatibility</a></li>
+<li><a href="#_vkimage_compatibility">3.5. VkImage compatibility</a></li>
+<li><a href="#_descriptor_types">3.6. Descriptor Types</a></li>
+<li><a href="#_vkformat_support">3.7. VkFormat Support</a></li>
+<li><a href="#_weight_image_sampling">3.8. Weight Image Sampling</a></li>
+<li><a href="#_box_filter_sampling">3.9. Box Filter Sampling</a></li>
+<li><a href="#_block_matching_sampling">3.10. Block Matching Sampling</a></li>
+</ul>
+</li>
+<li><a href="#_expected_features_and_limits">4. Expected Features and limits</a></li>
+<li><a href="#_issues">5. Issues</a>
+<ul class="sectlevel2">
+<li><a href="#_resolved_should_this_be_one_extension_or_3_extensions">5.1. RESOLVED:  Should this be one extension or 3 extensions?</a></li>
+<li><a href="#_resolved_how_does_this_interact_with_descriptor_indexing">5.2. RESOLVED:  How does this interact with descriptor indexing ?</a></li>
+<li><a href="#_resolved_how_does_this_extension_interact_with_ext_robustness2">5.3. RESOLVED:  How does this extension interact with EXT_robustness2 ?</a></li>
+<li><a href="#_resolved_how_does_this_interact_with_push_descriptors">5.4. RESOLVED:  How does this interact with push descriptors ?</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This document proposes a new extension that adds shader built-in functions and
+descriptor types for image processing.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>1. Problem Statement</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>GPUs commonly process images for a wide range of use-cases.  These include enhancement
+of externally sourced images (i.e., camera image enhancement),  post processing of GPU-rendered
+game content, image scaling, and image analysis (i.e., motion vector generation).  For common use-cases,
+the existing texture built-ins combined with bilinear/bicubic filtering work well.  In other cases,
+higher-order filtering kernels or advanced image algorithms are required.</p>
+</div>
+<div class="paragraph">
+<p>While such algorithms could be implemented in shader code generically using existing texture
+built-in functions, it requires many round-trips between the texture unit and shader unit.
+The latest Adreno GPUs have dedicated HW shader instructions for such image processing tasks,
+enabling advanced functionality with simplified shader code.   For some use-cases, significant
+performance and power savings are possible using dedicated texture sampling instructions.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution Space</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Adreno GPUs have native support for multiple image processing instructions:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>High-order (up to 64x64 kernel) filters with application-supplied weights, and sub-texel phasing support</p>
+</li>
+<li>
+<p>High-order (up to 64x64) box filtering with HW-computed weights, and fractional box sizes</p>
+</li>
+<li>
+<p>Block Matching (up to 64x64) pixel regions across images</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These capabilities are currently not exposed in Vulkan.  Exposing these instructions would
+provide a significant increase in functionality beyond current SPIR-V texture built-ins.
+Adreno GPUs exposing this extension perform the above algorithms fully inside the texture
+unit, saving shader instructions cycles, memory bandwidth, and shader register space.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>3. Proposal</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The extension exposes support for 3 new SPIR-V instructions:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>OpImageWeightedSampleQCOM</code>: This instruction performs a weighted texture sampling
+operation involving two images: the <em>sampled image</em> and the <em>weight image</em>.  An MxN region of texels in the
+<em>sampled image</em> are convolved with an MxN set of scalar weights provided in the <em>weight image</em>.  Large filter
+sizes up to 64x64 taps enable important use-cases like edge-detection, feature extraction,
+and anti-aliasing.</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>Sub-pixel Weighting</code>:  Frequently the texture coordinates will not align with a texel center in the <em>sampled image</em>, and in such cases the kernel weights can be adjusted to reflect the sub-texel sample location.  Sub-texel weighting is supported, where the texel is subdivided into PxP sub-texels, called "phases", with unique weights per-phase.  Adreno GPUs support up to 32x32 phases.</p>
+</li>
+<li>
+<p><code>Separable-filters</code>: Many common 2D image filtering kernels can be expressed as a mathematically equivalent 1D separable kernel.  Separable filters offer significant performance/power savings over their non-separable equivalent.  This instruction supports both separable and non-separable filtering kernels.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>OpImageBoxFilterQCOM</code>: This instruction performs weighted average of the texels within a screen-aligned box.  The operation is similar to bi-linear filtering, except the region of texels is not limited to 2x2. The instruction includes a <code>BoxSize</code> parameter, with fractional box sizes up to [64.0, 64.0].  Similar to bi-linear filtering, the implementation computes a weighted average for all texels covered by the box, with the weight for each texel proportional covered area. Large box sizes up to 64x64 enable important use-cases like bulk mipmap generation and high quality single-pass image down-scaling with arbitrary scaling ratios (e.g. thumbnail generation).</p>
+</li>
+<li>
+<p><code>opImageBlockMatchSAD</code> and <code>opImageBlockMatchSSD</code>: These instructions perform a block matching operation involving two images: the <em>target image</em> and <em>reference image</em>.   The instruction takes two sets of integer texture coordinates, and an integer <code>BlockSize</code> parameter.  An MxN region of texels in the <em>target image</em> is compared with an MxN region in the <em>reference image</em>.  The instruction returns a per-component error metric describing the difference between the two regions.  The SAD returns the sum of the absolute errors and SSD returns the sum of the squared differences.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Each of the image processing instructions operate only on 2D images.  The instructions
+do not-support sampling of mipmap, multi-plane, multi-layer, multi-sampled, or depth/stencil
+images.  The new instructions can be used in any shader stage.</p>
+</div>
+<div class="paragraph">
+<p>Exposing this functionality in Vulkan makes use of a corresponding SPIR-V extension, and the built-ins
+will be exposed in high-level languages (e.g., GLSL) via related extensions.</p>
+</div>
+<div class="sect2">
+<h3 id="_spir_v_built_in_functions"><a class="anchor" href="#_spir_v_built_in_functions"></a>3.1. SPIR-V Built-in Functions</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 5.8823%;">
+<col style="width: 5.8823%;">
+<col style="width: 17.647%;">
+<col style="width: 17.647%;">
+<col style="width: 17.647%;">
+<col style="width: 17.647%;">
+<col style="width: 17.6474%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top" colspan="5"><p class="tableblock"><strong>OpImageSampleWeightedQCOM</strong><br>
+<br>
+Weighted sample operation<br>
+<br>
+<em>Result Type</em> is the type of the result of weighted sample operation
+<br>
+<em>Texture Sampled Image</em> must be an object whose type is OpTypeSampledImage. The MS operand of the
+underlying OpTypeImage must be 0.
+<br>
+<em>Coordinate</em> must be a vector of floating-point type, whose vector size is 2.
+<br>
+<em>Weight Image</em> must be an object whose type is OpTypeSampledImage. If the object is an interface object,
+it must be decorated with WeightTextureQCOM. Otherwise, a texture object which is used to construct the object
+must be decorated with WeightTextureQCOM.  The MS operand of the
+underlying OpTypeImage must be 0.
+<br></p></td>
+<td class="tableblock halign-left valign-top" colspan="2"><p class="tableblock">Capability:<br>
+<strong>TextureSampleWeightedQCOM</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4480</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;id&gt; <em>Result Type</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#ResultId">'Result &lt;id&gt;' </a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;id&gt; <em>Texture Sampled Image</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;id&gt; <em>Coordinate</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;id&gt; <em>Weight Image</em></p></td>
+</tr>
+</tbody>
+</table>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 5.8823%;">
+<col style="width: 5.8823%;">
+<col style="width: 17.647%;">
+<col style="width: 17.647%;">
+<col style="width: 17.647%;">
+<col style="width: 17.647%;">
+<col style="width: 17.6474%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top" colspan="5"><p class="tableblock"><strong>OpImageBoxFilterQCOM</strong><br>
+<br>
+Image box filter operation.<br>
+<br>
+<em>Result Type</em> is the type of the result of image box filter operation
+<br>
+<em>Texture Sampled Image</em> must be an object whose type is OpTypeSampledImage. The MS operand of the
+underlying OpTypeImage must be 0.
+<br>
+<em>Coordinate</em> must be a vector of floating-point type, whose vector size is 2.
+<br>
+<em>Box Size</em> must be a vector of floating-point type, whose vector size is 2 and signedness is 0.
+<br></p></td>
+<td class="tableblock halign-left valign-top" colspan="2"><p class="tableblock">Capability:<br>
+<strong>TextureBoxFilterQCOM</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4481</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;id&gt; <em>Result Type</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#ResultId">'Result &lt;id&gt;' </a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;id&gt; <em>Texture Sampled Image</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;id&gt; <em>Coordinate</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;id&gt; <em>Box Size</em></p></td>
+</tr>
+</tbody>
+</table>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 4.3478%;">
+<col style="width: 4.3478%;">
+<col style="width: 13.0434%;">
+<col style="width: 13.0434%;">
+<col style="width: 13.0434%;">
+<col style="width: 13.0434%;">
+<col style="width: 13.0434%;">
+<col style="width: 13.0434%;">
+<col style="width: 13.044%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top" colspan="7"><p class="tableblock"><strong>OpImageBlockMatchSADQCOM</strong><br>
+<br>
+Image block match operation with sum of absolute differences.<br>
+<br>
+<em>Result Type</em> is the type of the result of image block match sum of absolute differences
+<br>
+<em>Target Sampled Image</em> must be an object whose type is OpTypeSampledImage.
+If the object is an interface object, it must be decorated with BlockMatchTextureQCOM.
+Otherwise, a texture object which is used to construct the object must be decorated with BlockMatchTextureQCOM.
+The MS operand of the underlying OpTypeImage must be 0.
+<br>
+<em>Target Coordinate</em> must be a vector of integer type, whose vector size is 2 and signedness is 0.
+<br>
+<em>Reference Sampled Image</em> must be an object whose type is OpTypeSampledImage.
+If the object is an interface object, it must be decorated with BlockMatchTextureQCOM.
+Otherwise, a texture object which is used to construct the object must be decorated with BlockMatchTextureQCOM.
+The MS operand of the underlying OpTypeImage must be 0.
+<br>
+<em>Reference Coordinate</em> must be a vector of integer type, whose vector size is 2 and signedness is 0.
+<br>
+<em>Block Size</em> must be a vector of integer type, whose vector size is 2 and signedness is 0.
+<br></p></td>
+<td class="tableblock halign-left valign-top" colspan="2"><p class="tableblock">Capability:<br>
+<strong>TextureBlockMatchQCOM</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">8</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4483</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;id&gt; <em>Result Type</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#ResultId">'Result &lt;id&gt;' </a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;id&gt; <em>Target Sampled Image</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;id&gt; <em>Target Coordinate</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;id&gt; <em>Reference Sampled Image</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;id&gt; <em>Reference Coordinate</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;id&gt; <em>Block Size</em></p></td>
+</tr>
+</tbody>
+</table>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 4.3478%;">
+<col style="width: 4.3478%;">
+<col style="width: 13.0434%;">
+<col style="width: 13.0434%;">
+<col style="width: 13.0434%;">
+<col style="width: 13.0434%;">
+<col style="width: 13.0434%;">
+<col style="width: 13.0434%;">
+<col style="width: 13.044%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top" colspan="7"><p class="tableblock"><strong>OpImageBlockMatchSSDQCOM</strong><br>
+<br>
+Image block match operation with sum of square differences.<br>
+<br>
+<em>Result Type</em> is the type of the result of image block match sum of square differences
+<br>
+<em>Target Sampled Image</em> must be an object whose type is OpTypeSampledImage.
+If the object is an interface object, it must be decorated with BlockMatchTextureQCOM.
+Otherwise, a texture object which is used to construct the object must be decorated with BlockMatchTextureQCOM.
+The MS operand of the underlying OpTypeImage must be 0.
+<br>
+<em>Target Coordinate</em> must be a vector of integer type, whose vector size is 2 and signedness is 0.
+<br>
+<em>Reference Sampled Image</em> must be an object whose type is OpTypeSampledImage.
+If the object is an interface object, it must be decorated with BlockMatchTextureQCOM.
+Otherwise, a texture object which is used to construct the object must be decorated with BlockMatchTextureQCOM.
+The MS operand of the underlying OpTypeImage must be 0.
+<br>
+<em>Reference Coordinate</em> must be a vector of integer type, whose vector size is 2 and signedness is 0.
+<br>
+<em>Block Size</em> must be a vector of integer type, whose vector size is 2 and signedness is 0.
+<br></p></td>
+<td class="tableblock halign-left valign-top" colspan="2"><p class="tableblock">Capability:<br>
+<strong>TextureBlockMatchQCOM</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">8</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4482</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;id&gt; <em>Result Type</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#ResultId">'Result &lt;id&gt;' </a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;id&gt; <em>Target Sampled Image</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;id&gt; <em>Target Coordinate</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;id&gt; <em>Reference Sampled Image</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;id&gt; <em>Reference Coordinate</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;id&gt; <em>Block Size</em></p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>The extension adds two new SPIR-V decorations</p>
+</div>
+<div class="openblock">
+<div class="content">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-center valign-top" colspan="2">Decoration</th>
+<th class="tableblock halign-center valign-top" colspan="2">Extra Operands</th>
+<th class="tableblock halign-center valign-top">Enabling Capabilities</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4487</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>WeightTextureQCOM</strong><br>
+Apply to a texture used as 'Weight Image' in OpImageSampleWeightedQCOM.  Behavior is defined by the runtime environment.</p></td>
+<td class="tableblock halign-left valign-top" colspan="2"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>TextureSampleWeightedQCOM</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4488</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>BlockMatchTextureQCOM</strong><br>
+Apply to textures used as 'Target Sampled Image' and 'Reference Sampled Image' in OpImageBlockMatchSSDQCOM/OpImageBlockMatchSADQCOM.<br>
+Behavior is defined by the runtime environment.</p></td>
+<td class="tableblock halign-left valign-top" colspan="2"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>TextureBlockMatchQCOM</strong></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="paragraph">
+<p>This functionality is gated behind 3 SPIR-V capabilities:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-center valign-top" colspan="2">Capability</th>
+<th class="tableblock halign-center valign-top">Implicitly declares</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4484</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>TextureSampleWeightedQCOM</strong><br>
+Add weighted sample operation.</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4485</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>TextureBoxFilterQCOM</strong><br>
+Add box filter operation.</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4486</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>TextureBlockMatchQCOM</strong><br>
+Add block matching operation (sum of absolute/square differences).</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_high_level_language_exposure"><a class="anchor" href="#_high_level_language_exposure"></a>3.2. High Level Language Exposure</h3>
+<div class="paragraph">
+<p>The following summarizes how the built-ins are exposed in GLSL:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">    +------------------------------------+--------------------------------------------+
+    | Syntax                             | Description                                |
+    +------------------------------------+--------------------------------------------+
+    |   vec4 textureWeightedQCOM(        | weighted sample operation multiplies       |
+    |       sampler2D tex,               | a 2D kernel of filter weights with a       |
+    |       vec2      P,                 | corresponding region of sampled texels and |
+    |       sampler2DArray weight)       | sums the results to produce the output     |
+    |                                    | value.                                     |
+    +------------------------------------+--------------------------------------------+
+    |   vec4 textureBoxFilterQCOM(       | Linear operation taking average of pixels  |
+    |       sampler2D tex,               | within the spatial region described by     |
+    |       vec2      P,                 | boxSize.  The box is centered at coordinate|
+    |       vec2      boxSize)           | P and has width and height of boxSize.x    |
+    |                                    | and boxSize.y.                             |
+    +------------------------------------+--------------------------------------------+
+    |   vec4 textureBlockMatchSADQCOM(   | Block matching operation measures the      |
+    |       sampler2D target             | correlation (or similarity) of the target  |
+    |       uvec2     targetCoord,       | block and reference block.  TargetCoord    |
+    |       sampler2D reference,         | and refCoord specify the bottom-left corner|
+    |       uvec2     refCoord,          | of the block in target and reference       |
+    |       uvec2     blockSize)         | images. The error metric is the Sum of     |
+    |                                    | Absolute Differences(SAD).                 |
+    +------------------------------------+--------------------------------------------+
+    |   vec4 textureBlockMatchSSDQCOM(   | Block matching operation measures the      |
+    |       sampler2D target             | correlation (or similarity) of the target  |
+    |       uvec2     targetCoord,       | block and reference block.  TargetCoord    |
+    |       sampler2D reference,         | and refCoord specify the bottom-left corner|
+    |       uvec2     refCoord,          | of the block in target and reference       |
+    |       uvec2     blockSize)         | images. The error metric is the Sum of     |
+    |                                    | Square Differences(SSD).                   |
+    +------------------------------------+--------------------------------------------+</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_features_and_properties"><a class="anchor" href="#_features_and_properties"></a>3.3. Features and Properties</h3>
+<div class="paragraph">
+<p>Support for weighted sampling, box filtering, and block matching operations are
+indicated by feature bits in a structure that extends
+<a href="https://docs.vulkan.org/spec/latest/chapters/features.html#VkPhysicalDeviceFeatures2">VkPhysicalDeviceFeatures2</a>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDeviceImageProcessingFeaturesQCOM {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           textureSampleWeighted;
+    VkBool32           textureBoxFilter;
+    VkBool32           textureBlockMatch;
+} VkPhysicalDeviceImageProcessingFeaturesQCOM;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>textureSampleWeighted</code> indicates that the implementation supports SPIR-V modules
+declaring the <code>TextureSampleWeightedQCOM</code> capability.
+<code>textureBoxFilter</code> indicates that the implementation supports SPIR-V modules
+declaring the <code>TextureBoxFilterQCOM</code> capability.
+<code>textureBlockMatch</code> indicates that the implementation supports SPIR-V modules
+declaring the TextureBlockMatchQCOM capability.</p>
+</div>
+<div class="paragraph">
+<p>Implementation-specific properties are exposed in a structure that extends
+<a href="https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VkPhysicalDeviceProperties2">VkPhysicalDeviceProperties2</a>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDeviceImageProcessingPropertiesQCOM {
+    VkStructureType    sType;
+    void*              pNext;
+    uint32_t           maxWeightFilterPhases;
+    VkExtent2D         maxWeightFilterDimension;
+    VkExtent2D         maxBlockMatchRegion;
+    VkExtent2D         maxBoxFilterBlockSize;
+} VkPhysicalDeviceImageProcessingPropertiesQCOM;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>maxWeightFilterPhases</code> is the maximum number of sub-pixel phases supported for <code>OpImageSampleWeightedQCOM</code>.
+<code>maxWeightFilterDimension</code> is the largest supported filter size (width and height) for <code>OpImageSampleWeightedQCOM</code>.
+<code>maxBlockMatchRegion</code> is the largest supported region size (width and height) for <code>OpImageBlockMatchSSDQCOM</code> and <code>OpImageBlockMatchSADQCOM</code>.
+<code>maxBoxFilterBlockSize</code> is the largest supported BoxSize (width and height) for <code>OpImageBoxFilterQCOM</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vksampler_compatibility"><a class="anchor" href="#_vksampler_compatibility"></a>3.4. VkSampler compatibility</h3>
+<div class="paragraph">
+<p>VkSampler objects created for use with the built-ins added with this extension
+must be created with <code>VK_SAMPLER_CREATE_IMAGE_PROCESSING_BIT_QCOM</code>.
+Such samplers must not be used with the other existing <code>OpImage*</code> built-ins
+unrelated to this extension.  In practice, this means an application must create
+dedicated VkSamplers for use with this extension.</p>
+</div>
+<div class="paragraph">
+<p>The <code>OpImageSampleWeightedQCOM</code> and <code>OpImageSampleBoxFilterQCOM</code> built-ins
+support samplers with <code>unnormalizedCoordinates</code> equal to <code>VK_TRUE</code> or
+<code>VK_FALSE</code>.
+The <code>OpImageBlockMatchSADQCOM</code> and <code>OpImageBlockMatchSSDQCOM</code> require
+a sampler with <code>unnormalizedCoordinates</code> equal to <code>VK_TRUE</code>.</p>
+</div>
+<div class="paragraph">
+<p>All built-ins added with this extension support samplers with <code>addressModeU</code>
+and <code>addressModeV</code> equal to
+<code>VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE</code> or <code>VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER</code>.
+If <code>VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER</code> is used, the <code>borderColor</code> must be
+opaque black.</p>
+</div>
+<div class="paragraph">
+<p>All built-ins added with this extension support samplers with all
+<a href="https://docs.vulkan.org/spec/latest/chapters/samplers.html#VkSamplerReductionMode">VkSamplerReductionModes</a>.</p>
+</div>
+<div class="paragraph">
+<p>The other
+<a href="https://docs.vulkan.org/spec/latest/chapters/samplers.html#VkSamplerCreateInfo">VkSamplerCreateInfo</a> parameters
+must be set to a default values but generally have no effect on the built-ins.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vkimage_compatibility"><a class="anchor" href="#_vkimage_compatibility"></a>3.5. VkImage compatibility</h3>
+<div class="paragraph">
+<p>When creating a VkImage for compatibility with the new built-ins, the driver needs
+additional usage flags.  VkImages must be created with
+<code>VK_IMAGE_USAGE_SAMPLE_WEIGHT_BIT_QCOM</code> when used as a <em>weight image</em> with
+<code>OpImageSampleWeightedQCOM</code>.  VkImages must be created with
+<code>VK_IMAGE_USAGE_SAMPLE_BLOCK_MATCH_BIT_QCOM</code> when used as a
+<em>reference image</em> or <em>target image</em> with <code>OpImageBlockMatchSADQCOM</code>
+or <code>OpImageBlockMatchSSDQCOM</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_descriptor_types"><a class="anchor" href="#_descriptor_types"></a>3.6. Descriptor Types</h3>
+<div class="paragraph">
+<p>This extension adds two new descriptor Types:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM
+VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM</code> specifies a 2D image array descriptor
+for a <em>weight image</em> can be used with OpImageSampleWeightedQCOM.  The corresponding
+VkImageView must have been created with <code>VkImageViewSampleWeightCreateInfoQCOM</code> in the
+pNext chain.</p>
+</div>
+<div class="paragraph">
+<p><code>VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM</code> specifies a 2D image descriptor for the
+<em>reference image</em> or <em>target image</em> that can be used with <code>OpImageBlockMatchSADQCOM</code>
+or <code>OpImageBlockMatchSSDQCOM</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vkformat_support"><a class="anchor" href="#_vkformat_support"></a>3.7. VkFormat Support</h3>
+<div class="paragraph">
+<p>Implementations will advertise format support for this extension
+through the <code>linearTilingFeatures</code> or <code>optimalTilingFeatures</code> of
+<a href="https://docs.vulkan.org/spec/latest/chapters/formats.html#VkFormatProperties3">VkFormatProperties3</a></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VK_FORMAT_FEATURE_2_WEIGHT_IMAGE_BIT_QCOM
+VK_FORMAT_FEATURE_2_WEIGHT_SAMPLED_IMAGE_BIT_QCOM
+VK_FORMAT_FEATURE_2_BLOCK_MATCHING_BIT_QCOM
+VK_FORMAT_FEATURE_2_BOX_FILTER_SAMPLED_BIT_QCOM</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The SPIR-V <code>OpImageSampleWeightedQCOM</code> instruction takes two image parameters: the <em>weight image</em> which holds weight values, and the <em>sampled image</em> which holds the texels being sampled.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_FORMAT_FEATURE_2_WEIGHT_IMAGE_BIT_QCOM</code> specifies that the format is supported as a <em>weight image</em> with <code>OpImageSampleWeightedQCOM</code>.</p>
+</li>
+<li>
+<p><code>VK_FORMAT_FEATURE_2_WEIGHT_SAMPLED_IMAGE_BIT_QCOM</code> specifies that the format is supported as a <em>sampled image</em> with <code>OpImageSampleWeightedQCOM</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The SPIR-V <code>OpImageBlockMatchSADQCOM</code> and <code>OpImageBlockMatchSADQCOM</code>  instructions take two image parameters: the <em>target image</em> and the <em>reference image</em>.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_FORMAT_FEATURE_2_BLOCK_MATCHING_BIT_QCOM</code> specifies that the format is supported as a <em>target image</em> or <em>reference image</em> with both <code>OpImageBlockMatchSADQCOM</code> and <code>OpImageBlockMatchSADQCOM</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The SPIR-V <code>OpImageBoxFilterQCOM</code>  instruction takes one image parameter, the <em>sampled image</em>.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_FORMAT_FEATURE_2_BOX_FILTER_SAMPLED_BIT_QCOM</code> specifies that the format is supported as <em>sampled image</em> with <code>OpImageBoxFilterQCOM</code>.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_weight_image_sampling"><a class="anchor" href="#_weight_image_sampling"></a>3.8. Weight Image Sampling</h3>
+<div class="paragraph">
+<p>The SPIR-V <code>OpImageSampleWeightedQCOM</code> instruction takes 3 operands: <em>sampled image</em>,
+<em>weight image</em>, and texture coordinates.  The instruction computes a weighted average
+of an MxN region of texels in the <em>sampled image</em>, using a set of MxN weights in the
+<em>weight image</em>.</p>
+</div>
+<div class="paragraph">
+<p>To create a VkImageView for the <em>weight image</em>, the
+<a href="https://docs.vulkan.org/spec/latest/chapters/resources.html#VkImageViewCreateInfo">VkImageViewCreateInfo</a> structure
+is extended to provide weight filter parameters.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkImageViewSampleWeightCreateInfoQCOM {
+    VkStructureType    sType;
+    const void*        pNext;
+    VkOffset2D         filterCenter;
+    VkExtent2D         filterSize;
+    uint32_t           numPhases;
+} VkImageViewSampleWeightCreateInfoQCOM;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The texture coordinates provided to <code>OpImageSampleWeightedQCOM</code>,
+combined with the <code>filterCenter</code> and <code>filterSize</code> selects a
+region of texels in the <em>sampled texture</em>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// let (u,v) be 2D unnormalized coordinates passed to `OpImageSampleWeightedQCOM`.
+// The lower-left-texel of the region has integer texel coordinates (i0,j0):
+i0 =  floor(u) - filterCenter.x
+j0 =  floor(v) - filterCenter.y
+
+// the upper-right texel of the region has integer coordinates (imax,jmax)
+imax = i0 + filterSize.width - 1
+jmax = j0 + filterSize.height - 1</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If the sampler <code>reductionMode</code> is <code>VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE</code> then the
+value of each texel in the region is multiplied by the associated value from the <em>weight
+texure</em>, and the resulting weighted average is summed for each component across all texels
+in the region.  Note that since the weight values are application-defined,
+their sum may be greater than 1.0 or less than 0.0, therefore the
+filter output for UNORM format may be greater than 1.0 or less than 0.0.</p>
+</div>
+<div class="paragraph">
+<p>If the sampler <code>reductionMode</code> is VK_SAMPLER_REDUCTION_MODE_MIN or VK_SAMPLER_REDUCTION_MODE_MAX,
+a component-wise minimum or maximum is computed, for all texels in the region with non-zero
+weights.</p>
+</div>
+<div class="sect3">
+<h4 id="_sub_texel_weighting"><a class="anchor" href="#_sub_texel_weighting"></a>3.8.1. Sub-texel weighting</h4>
+<div class="paragraph">
+<p>The <em>weight image</em> can optionally provide sub-texel weights.  This feature
+is enabled by setting <code>numPhases</code> to a value greater than
+1.  In this case, <em>weight image</em> specifies <code>numPhases</code> unique sets of
+<code>filterSize</code>.<code>width</code> x <code>filterSize</code>.<code>height</code> weights for each phase.</p>
+</div>
+<div class="paragraph">
+<p>The texels in the <em>sampled image</em> are is subdivided
+both horizontally and vertically in to an NxN grid of sub-texel regions,
+or "phases".
+The number of horizontal and vertical subdivisions must be equal,
+must be a power-of-two.  <code>numPhases</code> is the product
+of the horizontal and vertical phase counts.</p>
+</div>
+<div class="paragraph">
+<p>For example, <code>numPhases</code> equal to 4 means that texel is divided into
+two vertical phases and two horizontal phases, and that the weight texture
+defines 4 sets of weights, each with a width and height as specified by
+<code>filterSize</code>.  The texture coordinate sub-texel location will determine
+which set of weights is used.
+The maximum supported values for <code>numPhases</code> and <code>filterSize</code> is specified by
+<code>VkPhysicalDeviceImageProcessingPropertiesQCOM</code> <code>maxWeightFilterPhases</code> and
+<code>maxWeightFilterDimension</code> respectively.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_weight_image_view_type"><a class="anchor" href="#_weight_image_view_type"></a>3.8.2. Weight Image View Type</h4>
+<div class="paragraph">
+<p>The <code>OpImageSampleWeightedQCOM</code> <em>weight image</em> created with
+<code>VkImageViewSampleWeightCreateInfoQCOM</code> must have a <code>viewType</code> of
+either <code>VK_IMAGE_VIEW_TYPE_1D_ARRAY</code> which indicates separable
+weight encoding, or <code>VK_IMAGE_VIEW_TYPE_2D_ARRAY</code> which indicates
+non-separable weight encoding as described below.</p>
+</div>
+<div class="paragraph">
+<p>The view type (1D array or 2D array) is the sole indication whether
+the weights are separable or non-separable&#8201;&#8212;&#8201;there is no other API state nor any
+shader change to designate separable versus non-separable weight image.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_non_separable_weight_encoding"><a class="anchor" href="#_non_separable_weight_encoding"></a>3.8.3. Non-Separable Weight Encoding</h4>
+<div class="paragraph">
+<p>For a non-separable weight filtering, the view will be type
+VK_IMAGE_VIEW_TYPE_2D_ARRAY.  Each layer of the 2D array
+corresponds to one phase of the filter.  The view&#8217;s
+<code>VkImageSubresourceRange::layerCount</code> must be equal to
+<code>VkImageViewSampleWeightCreateInfoQCOM::numPhases</code>. The phases
+are stored as layers in the 2D array, in horizontal phase major
+order,  left-to-right and top-to-bottom. Expressed as a formula,
+the layer index for each filter phase is computed as:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">layerIndex(horizPhase,vertPhase,horizPhaseCount) = (vertPhase * horizPhaseCount) + horizPhase</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For each layer, the weights are specified by the value in texels [0, 0] to
+[<code>filterSize.width</code>-1, <code>filterSize.height</code>-1].
+While is valid for the view&#8217;s VkImage to have width/height larger than <code>filterSize</code>,
+image texels with integer coordinates greater than or equal to <code>filterSize</code>
+are ignored by weight sampling.  Image property query instructions <code>OpImageQuerySize</code>,
+<code>OpImageQuerySizeLod</code>, <code>OpImageQueryLevels</code>, and <code>OpImageQuerySamples</code> return undefined
+values for a weight image descriptor.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_separable_weight_encoding"><a class="anchor" href="#_separable_weight_encoding"></a>3.8.4. Separable Weight Encoding</h4>
+<div class="paragraph">
+<p>For a separable weight filtering, the view will be type VK_IMAGE_VIEW_TYPE_1D_ARRAY.
+Horizontal weights for all phases are packed in layer '0' and the vertical weights for
+all phases are packed in layer '1'.  Within each layer, the weights are arranged into
+groups of 4.  For each group, the weights are ordered by phase. Expressed as a
+formula, the 1D texel offset for all weights and phases within each layer is computed as:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Let horizontal weights have a weightIndex of [0, filterSize.width - 1]
+// Let vertical weights have a weightIndex of [0, filterSize.height - 1]
+// Let phaseCount be the number of phases in either the vertical or horizontal direction.
+
+texelOffset(phaseIndex,weightIndex,phaseCount) = (phaseCount * 4 * (weightIndex / 4)) + (phaseIndex * 4) + (weightIndex % 4)</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_box_filter_sampling"><a class="anchor" href="#_box_filter_sampling"></a>3.9. Box Filter Sampling</h3>
+<div class="paragraph">
+<p>The SPIR-V <code>OpImageBoxFilterQCOM</code> instruction takes 3 operands: <em>sampled image</em>,
+<em>box size</em>, and texture coordinates.  Note that <em>box size</em> specifies a floating-point
+width and height in texels.  The instruction computes a weighted average of all texels
+in the <em>sampled image</em> that are covered (either partially or fully) by a box with
+the specified size and centered at the specified texture coordinates.</p>
+</div>
+<div class="paragraph">
+<p>For each texel covered by the box, a weight value is computed by the implementation.
+The weight is proportional to the area of the texel covered.  Those texels that are
+fully covered by the box receive a weight of 1.0.  Those texels that are partially
+covered by the box receive a weight proportional to the covered area.  For example,
+a texel that has one quarter of its area covered by the box will receive a
+weight of 0.25.</p>
+</div>
+<div class="paragraph">
+<p>If the sampler <code>reductionMode</code> is <code>VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE</code> then the
+value of each covered texel is multiplied by the weight, and the resulting weighted
+average is summed for each component across all covered texels.  The resulting sum
+is then divided by the <em>box size</em> area.</p>
+</div>
+<div class="paragraph">
+<p>If the sampler <code>reductionMode</code> is VK_SAMPLER_REDUCTION_MODE_MIN or VK_SAMPLER_REDUCTION_MODE_MAX,
+a component-wise minimum or maximum is computed, for all texels covered by the box,
+including texels that are partially covered.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_block_matching_sampling"><a class="anchor" href="#_block_matching_sampling"></a>3.10. Block Matching Sampling</h3>
+<div class="paragraph">
+<p>The SPIR-V <code>OpImageBlockMatchSADQCOM</code> and <code>OpImageBlockMatchSSDQCOM</code> instructions
+each takes 5 operands: <em>target image</em>, <em>target coordinates</em>, <em>reference image</em>,
+<em>reference coordinates</em>, and <em>block size</em>.  Each instruction computes an error
+metric, that describes whether a block of texels in the <em>target image</em> matches
+a corresponding block of texels in the <em>reference image</em>.  The error metric
+is computed per-component.  <code>OpImageBlockMatchSADQCOM</code> computes "Sum Of Absolute
+Difference" and <code>OpImageBlockMatchSSDQCOM</code> computes "Sum of Squared Difference",
+but otherwise both instructions are similar.</p>
+</div>
+<div class="paragraph">
+<p>Both <em>target coordinates</em> and <em>reference coordinates</em> are integer texel coordinates
+of the lower-left texel of the block to be matched in the <em>target image</em> and
+<em>reference image</em> respectively.
+The <em>block size</em> provides the height and width in integer texels of the regions to
+be matched.</p>
+</div>
+<div class="paragraph">
+<p>Note that the coordinates and <em>block size</em> may result in a region that extends
+beyond the bounds of <em>target image</em> or <em>reference image</em>.  For <em>target image</em>,
+this is valid and the  sampler <code>addressModeU</code> and <code>addressModeV</code> will determine
+the value of such texels.   For <em>reference image</em> case this will result in undefined
+values returned.  The application must guarantee that the <em>reference region
+does not extend beyond the bounds of _reference image</em>.</p>
+</div>
+<div class="paragraph">
+<p>For each texel in the regions, a difference value is computed by subtracting the
+target value from the reference value.  <code>OpImageBlockMatchSADQCOM</code> computes the
+absolute value of the difference; this is the <em>texel error</em>.  <code>OpImageBlockMatchSSDQCOM</code>
+computes the square of the difference; this is the <em>texel error squared</em>.</p>
+</div>
+<div class="paragraph">
+<p>If the sampler <code>reductionMode</code> is <code>VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE</code> then the
+<em>texel error</em> or texel_error_squared for each texel in the region is summed for each
+component across all texels.</p>
+</div>
+<div class="paragraph">
+<p>If the sampler <code>reductionMode</code> is VK_SAMPLER_REDUCTION_MODE_MIN or VK_SAMPLER_REDUCTION_MODE_MAX,
+a component-wise minimum or maximum is computed, for all texels in the region.
+<code>OpImageBlockMatchSADQCOM</code> returns the minimum or maximum <em>texel error</em> across
+all texels.    <code>OpImageBlockMatchSSDQCOM</code> returns the minimum or maximum <em>texel error</em>
+squared.   Note that <code>OpImageBlockMatchSSDQCOM</code> does not return the minimum or maximum
+of <em>texel error squared</em>.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_expected_features_and_limits"><a class="anchor" href="#_expected_features_and_limits"></a>4. Expected Features and limits</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Below are the properties, features, and formats that are expected to be advertised by a Adreno drivers supporting this extension:</p>
+</div>
+<div class="paragraph">
+<p>Features supported in VkPhysicalDeviceImageProcessingFeaturesQCOM:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">    textureSampleWeighted   = TRUE
+    textureBoxFilter        = TRUE
+    textureBlockMatch       = TRUE</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Properties reported in VkPhysicalDeviceImageProcessingPropertiesQCOM</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">    maxWeightFilterPhases       = 1024
+    maxWeightFilterDimension    = 64
+    maxBlockMatchRegion         = 64
+    maxBoxFilterBlockSize       = 64</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Formats supported by <em>sampled image</em> parameter to <code>OpImageSampleWeightedQCOM</code> and <code>OpImageBoxFilterQCOM</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">    VK_FORMAT_R8_UNORM
+    VK_FORMAT_R8_SNORM
+    VK_FORMAT_R8G8_UNORM
+    VK_FORMAT_R8G8B8A8_UNORM
+    VK_FORMAT_R8G8B8A8_SNORM
+    VK_FORMAT_A8B8G8R8_UNORM_PACK32
+    VK_FORMAT_A8B8G8R8_SNORM_PACK32
+    VK_FORMAT_A2B10G10R10_UNORM_PACK32
+    VK_FORMAT_R16_SFLOAT
+    VK_FORMAT_R16G16_SFLOAT
+    VK_FORMAT_R16G16B16A16_SFLOAT
+    VK_FORMAT_B10G11R11_UFLOAT_PACK32
+    VK_FORMAT_E5B9G9R9_UFLOAT_PACK32
+    VK_FORMAT_BC1_RGB_UNORM_BLOCK
+    VK_FORMAT_BC1_RGB_SRGB_BLOCK
+    VK_FORMAT_BC1_RGBA_UNORM_BLOCK
+    VK_FORMAT_BC1_RGBA_SRGB_BLOCK
+    VK_FORMAT_BC2_SRGB_BLOCK
+    VK_FORMAT_BC3_UNORM_BLOCK
+    VK_FORMAT_BC3_SRGB_BLOCK
+    VK_FORMAT_BC4_UNORM_BLOCK
+    VK_FORMAT_BC4_SNORM_BLOCK
+    VK_FORMAT_BC5_UNORM_BLOCK
+    VK_FORMAT_BC5_SNORM_BLOCK
+    VK_FORMAT_BC6H_UFLOAT_BLOCK
+    VK_FORMAT_BC6H_SFLOAT_BLOCK
+    VK_FORMAT_BC7_UNORM_BLOCK
+    VK_FORMAT_BC7_SRGB_BLOCK
+    VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK
+    VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK
+    VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK
+    VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK
+    VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK
+    VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK
+    VK_FORMAT_EAC_R11_UNORM_BLOCK
+    VK_FORMAT_EAC_R11_SNORM_BLOCK
+    VK_FORMAT_EAC_R11G11_UNORM_BLOCK
+    VK_FORMAT_EAC_R11G11_SNORM_BLOCK
+    VK_FORMAT_ASTC_4x4_UNORM_BLOCK
+    VK_FORMAT_ASTC_4x4_SRGB_BLOCK
+    VK_FORMAT_ASTC_5x4_UNORM_BLOCK
+    VK_FORMAT_ASTC_5x4_SRGB_BLOCK
+    VK_FORMAT_ASTC_5x5_UNORM_BLOCK
+    VK_FORMAT_ASTC_5x5_SRGB_BLOCK
+    VK_FORMAT_ASTC_6x5_UNORM_BLOCK
+    VK_FORMAT_ASTC_6x5_SRGB_BLOCK
+    VK_FORMAT_ASTC_6x6_UNORM_BLOCK
+    VK_FORMAT_ASTC_6x6_SRGB_BLOCK
+    VK_FORMAT_ASTC_8x5_UNORM_BLOCK
+    VK_FORMAT_ASTC_8x5_SRGB_BLOCK
+    VK_FORMAT_ASTC_8x6_SRGB_BLOCK
+    VK_FORMAT_ASTC_8x8_UNORM_BLOCK
+    VK_FORMAT_ASTC_8x8_SRGB_BLOCK
+    VK_FORMAT_ASTC_10x5_UNORM_BLOCK
+    VK_FORMAT_ASTC_10x5_SRGB_BLOCK
+    VK_FORMAT_ASTC_10x6_UNORM_BLOCK
+    VK_FORMAT_ASTC_10x6_SRGB_BLOCK
+    VK_FORMAT_ASTC_10x8_UNORM_BLOCK
+    VK_FORMAT_ASTC_10x8_SRGB_BLOCK
+    VK_FORMAT_ASTC_10x10_UNORM_BLOCK
+    VK_FORMAT_ASTC_10x10_SRGB_BLOCK
+    VK_FORMAT_ASTC_12x10_UNORM_BLOCK
+    VK_FORMAT_ASTC_12x10_SRGB_BLOCK
+    VK_FORMAT_ASTC_12x12_UNORM_BLOCK
+    VK_FORMAT_ASTC_12x12_SRGB_BLOCK
+    VK_FORMAT_G8B8G8R8_422_UNORM
+    VK_FORMAT_B8G8R8G8_422_UNORM
+    VK_FORMAT_A4B4G4R4_UNORM_PACK16
+    VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK
+    VK_FORMAT_ASTC_5x4_SFLOAT_BLOCK
+    VK_FORMAT_ASTC_5x5_SFLOAT_BLOCK
+    VK_FORMAT_ASTC_6x5_SFLOAT_BLOCK
+    VK_FORMAT_ASTC_6x6_SFLOAT_BLOCK
+    VK_FORMAT_ASTC_8x5_SFLOAT_BLOCK
+    VK_FORMAT_ASTC_8x6_SFLOAT_BLOCK
+    VK_FORMAT_ASTC_8x8_SFLOAT_BLOCK
+    VK_FORMAT_ASTC_10x5_SFLOAT_BLOCK
+    VK_FORMAT_ASTC_10x6_SFLOAT_BLOCK
+    VK_FORMAT_ASTC_10x8_SFLOAT_BLOCK
+    VK_FORMAT_ASTC_10x10_SFLOAT_BLOCK
+    VK_FORMAT_ASTC_12x10_SFLOAT_BLOCK
+    VK_FORMAT_ASTC_12x12_SFLOAT_BLOCK</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Formats supported by <em>weight image</em> parameter to <code>OpImageSampleWeightedQCOM</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">    VK_FORMAT_R8_UNORM
+    VK_FORMAT_R16_SFLOAT</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Formats supported by <em>target image</em> or <em>reference image</em> parameter to <code>OpImageBlockMatchSADQCOM</code> and <code>OpImageBlockMatchSSDQCOM</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">    VK_FORMAT_R8_UNORM
+    VK_FORMAT_R8G8_UNORM
+    VK_FORMAT_R8G8B8_UNORM
+    VK_FORMAT_R8G8B8A8_UNORM
+    VK_FORMAT_A8B8G8R8_UNORM_PACK32
+    VK_FORMAT_A2B10G10R10_UNORM_PACK32
+    VK_FORMAT_G8B8G8R8_422_UNORM
+    VK_FORMAT_B8G8R8G8_422_UNORM</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_issues"><a class="anchor" href="#_issues"></a>5. Issues</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_resolved_should_this_be_one_extension_or_3_extensions"><a class="anchor" href="#_resolved_should_this_be_one_extension_or_3_extensions"></a>5.1. RESOLVED:  Should this be one extension or 3 extensions?</h3>
+<div class="paragraph">
+<p>For simplicity, and since we expect this extension supported only for Adreno GPUs, we propose one extension with 3 feature bits.  The associated SPIR-V extension will have 3 capabilities.  The associated GLSL extension will have 3 extension strings.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_how_does_this_interact_with_descriptor_indexing"><a class="anchor" href="#_resolved_how_does_this_interact_with_descriptor_indexing"></a>5.2. RESOLVED:  How does this interact with descriptor indexing ?</h3>
+<div class="paragraph">
+<p>The new built-ins added by this extension support descriptor arrays and
+dynamic indexing, but only if the index is dynamically uniform.  The "update-after-bind"
+functionality is fully supported.  Non-uniform dynamic indexing is not supported.  There are no
+feature bits for an implementation to advertise support for dynamic indexing with the
+shader built-ins added in this extension.</p>
+</div>
+<div class="paragraph">
+<p>The new descriptor types for sample weight image and block match image count against
+the maxPerStageDescriptor[UpdateAfterBind]SampledImages and
+maxDescriptorSetUpdate[AfterBind]SampledImages limits.
+bind"</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_how_does_this_extension_interact_with_ext_robustness2"><a class="anchor" href="#_resolved_how_does_this_extension_interact_with_ext_robustness2"></a>5.3. RESOLVED:  How does this extension interact with EXT_robustness2 ?</h3>
+<div class="paragraph">
+<p>These instructions do not support nullDescriptor feature of robustness2.  If any descriptor accessed by these
+instructions is not bound, undefined results will occur.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_how_does_this_interact_with_push_descriptors"><a class="anchor" href="#_resolved_how_does_this_interact_with_push_descriptors"></a>5.4. RESOLVED:  How does this interact with push descriptors ?</h3>
+<div class="paragraph">
+<p>The descriptors added by this extension can be updated using vkCmdPushDescriptors</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

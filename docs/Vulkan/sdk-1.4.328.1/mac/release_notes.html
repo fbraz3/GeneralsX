@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="icon" href="images/Vulkan_LogoBug_48px_Nov17.png">
+<link rel="stylesheet" href="github-markdown.css">
+</head>
+<body>
+<article class="markdown-body">
+<!-- markdownlint-disable MD041 -->
+
+<!-- Copyright 2015-2024 LunarG, Inc. -->
+
+<p><a href="https://www.khronos.org/vulkan/" TARGET="_blank"><img src="https://vulkan.lunarg.com/img/Vulkan_100px_Dec16.png" title="https://www.khronos.org/vulkan/" alt="Khronos Vulkan" /></a></p>
+<p><a href="https://creativecommons.org/licenses/by-nd/4.0/" TARGET="_blank"><img src="https://i.creativecommons.org/l/by-nd/4.0/88x31.png" title="Creative Commons License" alt="Creative Commons" /></a></p>
+<h2 id="vulkan-sdk-143281-release-notes">Vulkan SDK 1.4.328.1 Release Notes</h2>
+<h5 id="october-8-2025">October 8, 2025</h5>
+<h3 id="overview-of-new-features-in-sdk-143281">Overview of new features in SDK 1.4.328.1</h3>
+<p>Version 1.4.328.1 addresses a potential crashing bug in the Vulkan Validation Layer and restores vulkan.cppm and vulkan_video.cppm to the distribution.</p>
+<h5 id="version-143280-for-macos">Version 1.4.328.0 for macOS</h5>
+<h6 id="october-7-2025">October 7, 2025</h6>
+<p><strong>SDK Version Lifetime</strong> Vulkan SDK's older than 2 years are removed from the Vulkan SDK download site and won't be available once removed. All SDK's are backwards compatible and using the latest or newer SDK is recommended due to ongoing bug fixes and enhancements in the SDK content.</p>
+<h3 id="overview-of-new-features-in-sdk-143280">Overview of new features in SDK 1.4.328.0</h3>
+<ul>
+<li><p>The Vulkan headers now include the following new extensions. Note that extensions are optional and may not be implemented by the underlying driver/ICD. Applications can now query for the presence of these new features.</p>
+<ul>
+<li>VK_KHR_copy_memory_indirect</li>
+<li>VK_VALVE_video_encode_rgb_conversion</li>
+<li>VK_KHR_shader_untyped_pointers</li>
+<li>VK_AMDX_dense_geometry_format</li>
+</ul></li>
+<li><p>Vulkan Configurator new has a “Vulkan drivers tab” that allows Vulkan developers to :</p>
+<ul>
+<li>Add additional Vulkan drivers (for example Lavapipe on Windows)</li>
+<li>Force the Vulkan physical device used by Vulkan applications</li>
+<li>Order the list of Vulkan physical devices</li>
+</ul></li>
+<li><p>The spirv-remap utility from glslang has been ported to the SPIRV-Tools repository in the form of an optimization pass called canonicalize-ids. See the usage (spirv-opt --help) for more details. The spirv-remap utility in glslang has been removed in favor of the canonicalize-ids pass in spirv-opt and should be functionally equivalent.</p></li>
+<li><p>Improved validation coverage. VUID validation coverage documentation (<a href="./validation_error_database.csv">validation_error_database.csv</a> and <a href="./validation_error_database.html">validation_error_database.html</a>) has been updated to represent the validation layer VUID coverage status.</p></li>
+<li><p>SDL3 is now distributed as part of the SDL optional package.</p></li>
+<li><p>The SDK now supports macOS and iOS 26 an is built with Xcode 26.</p></li>
+<li><p>MoltenVK has been updated to version 1.4.0.</p></li>
+<li><p>MoltenVK now supports Vulkan 1.4 with multiple new extensions.</p>
+<ul>
+<li>see the MoltenVK <a href="https://github.com/KhronosGroup/MoltenVK/releases/tag/v1.4.0" TARGET="_blank">release notes</a> for additional and more detailed update information</li>
+</ul></li>
+</ul>
+<h3 id="platform-support-matrix">Platform Support Matrix</h3>
+<table>
+<thead>
+<tr class="header">
+<th><strong>Feature</strong></th>
+<th><strong>Windows-x64/x86</strong></th>
+<th><strong>Windows-ARM</strong></th>
+<th><strong>Linux tarball</strong></th>
+<th><strong>macOS SDK</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Tools</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Vulkan Configurator</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="odd">
+<td>Vulkaninfo</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="even">
+<td>Vulkan Profiles API Library</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="odd">
+<td>VOLK (a meta-loader for Vulkan)</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="even">
+<td>AMD Memory Allocator</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="odd">
+<td><strong>Validation Layers</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Validation</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="odd">
+<td>Best Practices</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="even">
+<td>GPU Assisted Validation</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Debug Printf</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Synchronization Validation</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="odd">
+<td><strong>Utility Layers</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Crash Diagnostic Layer</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Profiles Layer</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="even">
+<td>API Dump</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="odd">
+<td>Monitor</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="even">
+<td>Screenshot</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="odd">
+<td>GFXReconstruct</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="even">
+<td><strong>Extension Layers</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Synchronization 2</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="even">
+<td>Shader Object</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="odd">
+<td><strong>Shader Tools</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>glslangValidator</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="odd">
+<td>SPIR-V Optimizer</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="even">
+<td>SPIR-V Disassembler, Assembler, Validator</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="odd">
+<td>SPIR-V Remapper (spirv-opt canonicalize-ids)</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="even">
+<td>SPIR-V Control Flow Visualization</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="odd">
+<td>SPIR-V Cross-Compilation and Reflection</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="even">
+<td>shaderc</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="odd">
+<td>DXC (DirectX Shader Compiler)</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="even">
+<td>SPIRV-reflect</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="odd">
+<td>slang</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+</tr>
+</tbody>
+</table>
+<h3 id="sdk-components">SDK Components</h3>
+<p>This version of the SDK is based on the following specifications, source code repositories, and commits:</p>
+<ul>
+<li><p><a href="https://www.khronos.org/registry/vulkan" TARGET="_blank">Vulkan Specification</a></p></li>
+<li><p><a href="https://www.khronos.org/registry/spir-v/" TARGET="_blank">SPIR-V Specification</a> (Version 1.6, Revision 5)</p></li>
+<li><p><a href="https://www.khronos.org/registry/OpenGL/index_gl.php#apispecs" TARGET="_blank">GLSL Specification</a> (Version 4.6)</p></li>
+<li><p>GitHub Repo: <a href="https://github.com/KhronosGroup/glslang/tree/vulkan-sdk-1.4.328" TARGET="_blank">KhronosGroup/glslang</a>, Version Tag: vulkan-sdk-1.4.328.0</p></li>
+<li><p>GitHub Repo: <a href="https://github.com/KhronosGroup/SPIRV-Cross/tree/vulkan-sdk-1.4.328" TARGET="_blank">KhronosGroup/SPIRV-Cross</a> Version Tag: vulkan-sdk-1.4.328.0</p></li>
+<li><p>Github Repo: <a href="https://github.com/KhronosGroup/SPIRV-Reflect/tree/vulkan-sdk-1.4.328" TARGET="_blank">SPIRV-Reflect</a> Version Tag: vulkan-sdk-1.4.328.0</p></li>
+<li><p>Github Repo: <a href="https://github.com/shader-slang/slang/tree/vulkan-sdk-1.4.328" TARGET="_blank">shader-slang</a> Version Tag: vulkan-sdk-1.4.328.0</p></li>
+<li><p>GitHub Repo: <a href="https://github.com/KhronosGroup/SPIRV-Tools/tree/vulkan-sdk-1.4.328" TARGET="_blank">KhronosGroup/SPIRV-Tools</a>, Version Tag: vulkan-sdk-1.4.328.0</p></li>
+<li><p>GitHub Repo: <a href="https://github.com/KhronosGroup/Vulkan-Headers/tree/vulkan-sdk-1.4.328" TARGET="_blank">KhronosGroup/Vulkan-Headers</a>, Version Tag: vulkan-sdk-1.4.328.0</p></li>
+<li><p>GitHub Repo: <a href="https://github.com/KhronosGroup/Vulkan-Loader/tree/vulkan-sdk-1.4.328" TARGET="_blank">KhronosGroup/Vulkan-Loader</a>, Version Tag: vulkan-sdk-1.4.328.0</p></li>
+<li><p>GitHub Repo: <a href="https://github.com/KhronosGroup/Vulkan-Tools/tree/vulkan-sdk-1.4.328" TARGET="_blank">KhronosGroup/Vulkan-Tools</a>, Version Tag: vulkan-sdk-1.4.328.0</p></li>
+<li><p>GitHub Repo: <a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/tree/vulkan-sdk-1.4.328" TARGET="_blank">KhronosGroup/Vulkan-ValidationLayers</a>, Version Tag: vulkan-sdk-1.4.328.0</p></li>
+<li><p>GitHub Repo: <a href="https://github.com/KhronosGroup/Vulkan-Profiles/tree/vulkan-sdk-1.4.328" TARGET="_blank">KhronosGroup/Vulkan-Profiles</a>, Version Tag: vulkan-sdk-1.4.328.0</p></li>
+<li><p>GitHub Repo: <a href="https://github.com/KhronosGroup/Vulkan-ExtensionLayer/tree/vulkan-sdk-1.4.328" TARGET="_blank">KhronosGroup/Vulkan-ExtensionLayer</a>, Version Tag: vulkan-sdk-1.4.328.0</p></li>
+<li><p>GitHub Repo: <a href="https://github.com/KhronosGroup/Vulkan-Utility-Libraries/tree/vulkan-sdk-1.4.328" TARGET="_blank">KhronosGroup/Vulkan-Utility-Libraries</a>, Version Tag: vulkan-sdk-1.4.328.0</p></li>
+<li><p>GitHub Repo: <a href="https://github.com/LunarG/gfxreconstruct/tree/vulkan-sdk-1.4.328" TARGET="_blank">LunarG/gfxreconstruct</a>, Version Tag: vulkan-sdk-1.4.328.0</p></li>
+<li><p>GitHub Repo: <a href="https://github.com/LunarG/VulkanTools/tree/vulkan-sdk-1.4.328" TARGET="_blank">LunarG/VulkanTools</a>, Version Tag: vulkan-sdk-1.4.328.0</p></li>
+<li><p>GitHub Repo: <a href="https://github.com/LunarG/CrashDiagnosticLayer/tree/vulkan-sdk-1.4.328" TARGET="_blank">LunarG/CrashDiagnosticLayer</a>, Version Tag: vulkan-sdk-1.4.328.0</p></li>
+<li><p>GitHub Repo: <a href="https://github.com/zeux/volk/tree/vulkan-sdk-1.4.328" TARGET="_blank">volk</a>, Version Tag: vulkan-sdk-1.4.328.0</p></li>
+<li><p>GitHub Repo: <a href="https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/releases/tag/v3.3.0" TARGET="_blank">AMD Memory Allocator</a> tag: v3.3.0</p></li>
+<li><p>GitHub Repo: <a href="https://github.com/microsoft/DirectXShaderCompiler/tree/d72f75ee338ea8515a17ea49467bbffdeb9e2cbe" TARGET="_blank">microsoft/DirectXShaderCompiler</a> commit: d72f75ee338ea8515a17ea49467bbffdeb9e2cbe</p></li>
+<li><p>GitHub Repo: <a href="https://github.com/google/shaderc/tree/5a67025adb5298c7d37077073299d2767934efee" TARGET="_blank">google/shaderc</a> commit: 5a67025adb5298c7d37077073299d2767934efee</p></li>
+<li><p>GitHub Repo: <a href="https://github.com/SaschaWillems/VulkanCapsViewer/tree/4.02" TARGET="_blank">SaschaWillems/VulkanCapsViewer</a> tag: 4.02</p></li>
+<li><p>GitHub Repo: <a href="https://github.com/libsdl-org/SDL/releases/tag/release-2.32.6" TARGET="_blank">sdl</a>, Version Tag: release-2.32.6</p></li>
+<li><p>GitHub Repo: <a href="https://github.com/libsdl-org/SDL/releases/tag/release-3.2.22" TARGET="_blank">sdl3</a>, Version Tag: release-3.2.22</p></li>
+<li><p>GitHub Repo: <a href="https://github.com/g-truc/glm/releases/tag/1.0.1" TARGET="_blank">glm</a>, Version Tag: 1.0.1</p></li>
+<li><p>GitHub Repo: [KhronosGroup/MoltenVK](<a href="https://github.com/KhronosGroup/MoltenVK/releases/tag/v1.4.0" TARGET="_blank">https://github.com/KhronosGroup/MoltenVK/releases/tag/v1.4.0</a>, Version Tag: v1.4.0</p></li>
+</ul>
+<p>LunarG would like to thank all of the many contributors to all of the above repositories and the contributions they are making to the Vulkan Ecosystem.</p>
+<h3 id="submitting-issues">Submitting Issues</h3>
+<p>If while using the tools and layers included in the SDK you find a defect in that tool or layer, the most expedient way to get a resolution is to submit to its corresponding repository. For example, if you believe you have found a defect in the Validation Layers, submit an issue at the <a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers" TARGET="_blank">repository for Validation Layers</a>. The only exception to this is for the shader tool chain (glslang, SPIRV-Cross, SPIRV-Tools, shaderc). For these repositories you can submit issues against the SDK at <a href="https://vulkan.lunarg.com/issue/home" TARGET="_blank">vulkan.lunarg.com</a>.</p>
+<h3 id="developer-notes">Developer Notes</h3>
+<p>The new installation app optionally (but by default) runs the script <code>install_vulkan.py</code> with administrative privileges. This copies the Vulkan Loader, MoltenVK, and command line utilities into system folders (<code>/usr/local</code>) for easier access during development.</p>
+<h3 id="known-issues">Known Issues</h3>
+<ul>
+<li>When using Vulkan Profiles requiring Profiles with the Vulkan Profiles layer, no warning is emitted when trying to override a device capability to a value that is not supported by the device.</li>
+<li>Vulkan Configurator known issues are documented in the <a href="https://github.com/LunarG/VulkanTools/blob/main/vkconfig_gui/CHANGELOG.md" TARGET="_blank">Vulkan Configurator Change Log</a></li>
+<li>Both XCode AND the XCode command line tools are required to run the installer due to it's dependency on Python3 being present on your system.</li>
+</ul>
+</article>
+</body>
+</html>

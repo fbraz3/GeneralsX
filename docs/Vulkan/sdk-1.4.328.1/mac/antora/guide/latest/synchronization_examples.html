@@ -1,0 +1,2212 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Synchronization Examples :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../_/css/site.css">
+    <link rel="stylesheet" href="../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../.."><img class="navbar-item" alt="Vulkan White Label" src="../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:guide" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="guide" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="index.html">Vulkan Guide</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="index.html">Vulkan Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Logistics Overview</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="what_is_vulkan.html">What is Vulkan?</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="what_vulkan_can_do.html">What Vulkan Can Do</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="vulkan_spec.html">Vulkan Specification</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="platforms.html">Platforms</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="checking_for_support.html">Checking For Vulkan Support</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="versions.html">Versions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="vulkan_release_summary.html">Vulkan Release Summary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="what_is_spirv.html">What is SPIR-V</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="portability_initiative.html">Portability Initiative</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="vulkan_cts.html">Vulkan CTS</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="development_tools.html">Development Tools</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="validation_overview.html">Vulkan Validation Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="decoder_ring.html">Vulkan Decoder Ring</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Using Vulkan</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="loader.html">Loader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="layers.html">Layers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="querying_extensions_features.html">Querying Properties, Extensions, Features, Limits, and Formats</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="enabling_extensions.html">Enabling Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="enabling_features.html">Enabling Features</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="spirv_extensions.html">Using SPIR-V Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="formats.html">Formats</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="queues.html">Queues</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="wsi.html">Window System Integration (WSI)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="pnext_and_stype.html">pNext and sType</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="synchronization.html">Synchronization</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="extensions/VK_KHR_synchronization2.html">VK_KHR_synchronization2</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="swapchain_semaphore_reuse.html">Swapchain Semaphore Reuse</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="synchronization_examples.html">Synchronization Examples</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="memory_allocation.html">Memory Allocation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="sparse_resources.html">Sparse Resources</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="protected.html">Protected Memory</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="buffer_device_address.html">Buffer Device Address</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="pipeline_cache.html">Pipeline Cache</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="threading.html">Threading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="depth.html">Depth</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="primitive_topology.html">Primitive Topology</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="mapping_data_to_shaders.html">Mapping Data to Shaders</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="storage_image_and_texel_buffers.html">Storage Image and Texel Buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="vertex_input_data_processing.html">Vertex Input Data Processing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="descriptor_arrays.html">Descriptor Arrays</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="descriptor_dynamic_offset.html">Descriptor Dynamic Offset</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="location_component_interface.html">Location and Component Interface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="push_constants.html">Push Constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="ways_to_provide_spirv.html">Ways to Provide SPIR-V</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="robustness.html">Robustness</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="dynamic_state.html">Pipeline Dynamic State</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="dynamic_state_map.html">Dynamic State Map</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="subgroups.html">Subgroups</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="shader_memory_layout.html">Shader Memory Layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="atomics.html">Atomics</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="image_copies.html">Image Copies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="common_pitfalls.html">Common Pitfalls for New Vulkan Developers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="hlsl.html">HLSL in Vulkan</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="high_level_shader_language_comparison.html">Vulkan High Level Shader Language Comparison</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">When and Why to use Extensions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/cleanup.html">Cleanup Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/device_groups.html">Device Groups</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/external.html">External Memory and Synchronization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/ray_tracing.html">Ray Tracing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/shader_features.html">Shader Features</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/translation_layer_extensions.html">Translation Layer Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_EXT_descriptor_indexing.html">VK_EXT_descriptor_indexing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_EXT_inline_uniform_block.html">VK_EXT_inline_uniform_block</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_EXT_memory_priority.html">VK_EXT_memory_priority</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_descriptor_update_template.html">VK_KHR_descriptor_update_template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_draw_indirect_count.html">VK_KHR_draw_indirect_count</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_image_format_list.html">VK_KHR_image_format_list</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_imageless_framebuffer.html">VK_KHR_imageless_framebuffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_sampler_ycbcr_conversion.html">VK_KHR_sampler_ycbcr_conversion</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_shader_subgroup_uniform_control_flow.html">VK_KHR_shader_subgroup_uniform_control_flow</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_debug_utils.html">VK_KHR_debug_utils</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Guide</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Vulkan Guide</a></li>
+    <li>Using Vulkan</li>
+    <li><a href="synchronization.html">Synchronization</a></li>
+    <li><a href="synchronization_examples.html">Synchronization Examples</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Guide/antora/modules/ROOT/pages/synchronization_examples.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Synchronization Examples</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>This page hosts examples for the <a href="extensions/VK_KHR_synchronization2.html" class="xref page">VK_KHR_synchronization2</a> APIs - examples for the original synchronization APIs can be found here: <a href="https://github.com/KhronosGroup/Vulkan-Docs/wiki/Synchronization-Examples-(Legacy-synchronization-APIs)">Legacy-synchronization-APIs</a></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Synchronization in Vulkan can be confusing.
+It takes a lot of time to understand, and even then it&#8217;s easy to trip up on small details.
+Most common use of Vulkan synchronization can be boiled down to a handful of use cases though, and this page lists a number of examples.</p>
+</div>
+<div class="paragraph">
+<p>Note that examples are usually expressed as a pipeline barrier, but events or subpass dependencies can be used similarly.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_compute_to_compute_dependencies"><a class="anchor" href="#_compute_to_compute_dependencies"></a>Compute to Compute Dependencies</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_first_dispatch_writes_to_a_storage_buffer_second_dispatch_reads_from_that_storage_buffer"><a class="anchor" href="#_first_dispatch_writes_to_a_storage_buffer_second_dispatch_reads_from_that_storage_buffer"></a>First dispatch writes to a storage buffer, second dispatch reads from that storage buffer.</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdDispatch(...);
+
+VkMemoryBarrier2KHR memoryBarrier = {
+  ...
+  .srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT_KHR,
+  .srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT_KHR,
+  .dstStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT_KHR,
+  .dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT_KHR };
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,              // memoryBarrierCount
+    &amp;memoryBarrier, // pMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+vkCmdDispatch(...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_first_dispatch_reads_from_a_storage_buffer_second_dispatch_writes_to_that_storage_buffer"><a class="anchor" href="#_first_dispatch_reads_from_a_storage_buffer_second_dispatch_writes_to_that_storage_buffer"></a>First dispatch reads from a storage buffer, second dispatch writes to that storage buffer.</h3>
+<div class="paragraph">
+<p>WAR hazards don&#8217;t need availability or visibility operations between them - execution dependencies are sufficient.
+A pipeline barrier or event without a any access flags is an execution dependency.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdDispatch(...);
+
+VkMemoryBarrier2KHR memoryBarrier = {
+  ...
+  .srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT_KHR,
+  .dstStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT_KHR };
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,              // memoryBarrierCount
+    &amp;memoryBarrier, // pMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+vkCmdDispatch(...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_first_dispatch_writes_to_a_storage_image_second_dispatch_reads_from_that_storage_image"><a class="anchor" href="#_first_dispatch_writes_to_a_storage_image_second_dispatch_reads_from_that_storage_image"></a>First dispatch writes to a storage image, second dispatch reads from that storage image.</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdDispatch(...);
+
+// Storage image to storage image dependencies are always in GENERAL layout; no need for a layout transition
+VkMemoryBarrier2KHR memoryBarrier = {
+  ...
+  .srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT_KHR,
+  .srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT_KHR,
+  .dstStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT_KHR,
+  .dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT_KHR};
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,              // memoryBarrierCount
+    &amp;memoryBarrier, // pMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+vkCmdDispatch(...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_three_dispatches_first_dispatch_writes_to_a_storage_buffer_second_dispatch_writes_to_non_overlapping_region_of_same_storage_buffer_third_dispatch_reads_both_regions"><a class="anchor" href="#_three_dispatches_first_dispatch_writes_to_a_storage_buffer_second_dispatch_writes_to_non_overlapping_region_of_same_storage_buffer_third_dispatch_reads_both_regions"></a>Three dispatches. First dispatch writes to a storage buffer, second dispatch writes to non-overlapping region of same storage buffer, third dispatch reads both regions.</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdDispatch(...);
+vkCmdDispatch(...);
+
+VkMemoryBarrier2KHR memoryBarrier = {
+  ...
+  .srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT_KHR,
+  .srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT_KHR,
+  .dstStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT_KHR,
+  .dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT_KHR };
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,              // memoryBarrierCount
+    &amp;memoryBarrier, // pMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+vkCmdDispatch(...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_three_dispatches_first_dispatch_writes_to_one_storage_buffer_second_dispatch_writes_to_a_different_storage_buffer_third_dispatch_reads_both"><a class="anchor" href="#_three_dispatches_first_dispatch_writes_to_one_storage_buffer_second_dispatch_writes_to_a_different_storage_buffer_third_dispatch_reads_both"></a>Three dispatches. First dispatch writes to one storage buffer, second dispatch writes to a different storage buffer, third dispatch reads both.</h3>
+<div class="paragraph">
+<p>Identical to previous example - global memory barrier covers all resources.
+Generally considered more efficient to do a global memory barrier than per-resource barriers, per-resource barriers should usually be used for queue ownership transfers and image layout transitions - otherwise use global barriers.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdDispatch(...);
+vkCmdDispatch(...);
+
+VkMemoryBarrier2KHR memoryBarrier = {
+  ...
+  .srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT_KHR,
+  .srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT_KHR,
+  .dstStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT_KHR,
+  .dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT_KHR };
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,              // memoryBarrierCount
+    &amp;memoryBarrier, // pMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+vkCmdDispatch(...);</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_compute_to_graphics_dependencies"><a class="anchor" href="#_compute_to_graphics_dependencies"></a>Compute to Graphics Dependencies</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Note that interactions with graphics should ideally be performed by using subpass dependencies (external or otherwise) rather than pipeline barriers, but most of the following examples are still described as pipeline barriers for brevity.</p>
+</div>
+<div class="sect2">
+<h3 id="_dispatch_writes_into_a_storage_buffer_draw_consumes_that_buffer_as_an_index_buffer"><a class="anchor" href="#_dispatch_writes_into_a_storage_buffer_draw_consumes_that_buffer_as_an_index_buffer"></a>Dispatch writes into a storage buffer. Draw consumes that buffer as an index buffer.</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdDispatch(...);
+
+VkMemoryBarrier2KHR memoryBarrier = {
+  ...
+  .srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT_KHR,
+  .srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT_KHR,
+  .dstStageMask = VK_PIPELINE_STAGE_2_INDEX_INPUT_BIT_KHR_KHR,
+  .dstAccessMask = VK_ACCESS_2_MEMORY_READ_BIT_KHR };
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,              // memoryBarrierCount
+    &amp;memoryBarrier, // pMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+... // Render pass setup etc.
+
+vkCmdDraw(...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dispatch_writes_into_a_storage_buffer_draw_consumes_that_buffer_as_an_index_buffer_a_further_compute_shader_reads_from_the_buffer_as_a_uniform_buffer"><a class="anchor" href="#_dispatch_writes_into_a_storage_buffer_draw_consumes_that_buffer_as_an_index_buffer_a_further_compute_shader_reads_from_the_buffer_as_a_uniform_buffer"></a>Dispatch writes into a storage buffer. Draw consumes that buffer as an index buffer. A further compute shader reads from the buffer as a uniform buffer.</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdDispatch(...);
+
+// Batch barriers where possible if it doesn't change how synchronization takes place
+VkMemoryBarrier2KHR memoryBarrier = {
+  ...
+  .srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT_KHR,
+  .srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT_KHR,
+  .dstStageMask = VK_PIPELINE_STAGE_2_INDEX_INPUT_BIT_KHR_KHR | VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT_KHR,
+  .dstAccessMask = VK_ACCESS_2_INDEX_READ_BIT_KHR | VK_ACCESS_2_UNIFORM_READ_BIT_KHR};
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,              // memoryBarrierCount
+    &amp;memoryBarrier, // pMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+... // Render pass setup etc.
+
+vkCmdDraw(...);
+
+... // Render pass teardown etc.
+
+vkCmdDispatch(...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dispatch_writes_into_a_storage_buffer_draw_consumes_that_buffer_as_a_draw_indirect_buffer"><a class="anchor" href="#_dispatch_writes_into_a_storage_buffer_draw_consumes_that_buffer_as_a_draw_indirect_buffer"></a>Dispatch writes into a storage buffer. Draw consumes that buffer as a draw indirect buffer.</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdDispatch(...);
+
+VkMemoryBarrier2KHR memoryBarrier = {
+  ...
+  .srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT_KHR,
+  .srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT_KHR,
+  .dstStageMask = VK_PIPELINE_STAGE_2_DRAW_INDIRECT_BIT_KHR,
+  .dstAccessMask = VK_ACCESS_2_MEMORY_READ_BIT_KHR };
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,              // memoryBarrierCount
+    &amp;memoryBarrier, // pMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+... // Render pass setup etc.
+
+vkCmdDrawIndirect(...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dispatch_writes_into_a_storage_image_draw_samples_that_image_in_a_fragment_shader"><a class="anchor" href="#_dispatch_writes_into_a_storage_image_draw_samples_that_image_in_a_fragment_shader"></a>Dispatch writes into a storage image. Draw samples that image in a fragment shader.</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdDispatch(...);
+
+VkImageMemoryBarrier2KHR imageMemoryBarrier = {
+  ...
+  .srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT_KHR,
+  .srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT_KHR,
+  .dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT_KHR,
+  .dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT_KHR,
+  .oldLayout = VK_IMAGE_LAYOUT_GENERAL,
+  .newLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL
+  /* .image and .subresourceRange should identify image subresource accessed */};
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,                      // imageMemoryBarrierCount
+    &amp;imageMemoryBarrier,    // pImageMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+... // Render pass setup etc.
+
+vkCmdDraw(...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dispatch_writes_into_a_storage_texel_buffer_draw_consumes_that_buffer_as_a_draw_indirect_buffer_and_then_again_as_a_uniform_buffer_in_the_fragment_shader"><a class="anchor" href="#_dispatch_writes_into_a_storage_texel_buffer_draw_consumes_that_buffer_as_a_draw_indirect_buffer_and_then_again_as_a_uniform_buffer_in_the_fragment_shader"></a>Dispatch writes into a storage texel buffer. Draw consumes that buffer as a draw indirect buffer, and then again as a uniform buffer in the fragment shader.</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdDispatch(...);
+
+VkMemoryBarrier2KHR memoryBarrier = {
+  ...
+  .srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT_KHR,
+  .srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT_KHR,
+  .dstStageMask = VK_PIPELINE_STAGE_2_DRAW_INDIRECT_BIT_KHR | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT_KHR,
+  .dstAccessMask = VK_ACCESS_2_INDIRECT_COMMAND_READ_BIT_KHR | VK_ACCESS_2_UNIFORM_READ_BIT_KHR};
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,              // memoryBarrierCount
+    &amp;memoryBarrier, // pMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+vkCmdDrawIndirect(...);</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_graphics_to_compute_dependencies"><a class="anchor" href="#_graphics_to_compute_dependencies"></a>Graphics to Compute Dependencies</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_draw_writes_to_a_color_attachment_dispatch_samples_from_that_image"><a class="anchor" href="#_draw_writes_to_a_color_attachment_dispatch_samples_from_that_image"></a>Draw writes to a color attachment. Dispatch samples from that image.</h3>
+<div class="paragraph">
+<p>Note that color attachment write is NOT in the fragment shader, it has its own dedicated pipeline stage!</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdDraw(...);
+
+... // Render pass teardown etc.
+
+VkImageMemoryBarrier2KHR imageMemoryBarrier = {
+  ...
+  .srcStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
+  .srcAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR,
+  .dstStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT_KHR,
+  .dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT_KHR,
+  .oldLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+  .newLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL
+  /* .image and .subresourceRange should identify image subresource accessed */};
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,                      // imageMemoryBarrierCount
+    &amp;imageMemoryBarrier,    // pImageMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+vkCmdDispatch(...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_draw_writes_to_a_depth_attachment_dispatch_samples_from_that_image"><a class="anchor" href="#_draw_writes_to_a_depth_attachment_dispatch_samples_from_that_image"></a>Draw writes to a depth attachment. Dispatch samples from that image.</h3>
+<div class="paragraph">
+<p>Note that depth attachment write is NOT in the fragment shader, it has its own dedicated pipeline stages!</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdDraw(...);
+
+... // Render pass teardown etc.
+
+VkImageMemoryBarrier2KHR imageMemoryBarrier = {
+  ...
+  .srcStageMask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT_KHR | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT_KHR,
+  .srcAccessMask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT_KHR,
+  .dstStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT_KHR,
+  .dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT_KHR,
+  .oldLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+  .newLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL
+  /* .image and .subresourceRange should identify image subresource accessed */};
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,                      // imageMemoryBarrierCount
+    &amp;imageMemoryBarrier,    // pImageMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+vkCmdDispatch(...);</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_graphics_to_graphics_dependencies"><a class="anchor" href="#_graphics_to_graphics_dependencies"></a>Graphics to Graphics Dependencies</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Many graphics to graphics dependencies can be expressed as a subpass dependency within a render pass, which is usually more efficient than a pipeline barrier or event.
+Where this is possible in the below, the example is expressed in terms of a subpass dependency.</p>
+</div>
+<div class="sect2">
+<h3 id="_first_draw_writes_to_a_depth_attachment_second_draw_reads_from_it_as_an_input_attachment_in_the_fragment_shader"><a class="anchor" href="#_first_draw_writes_to_a_depth_attachment_second_draw_reads_from_it_as_an_input_attachment_in_the_fragment_shader"></a>First draw writes to a depth attachment. Second draw reads from it as an input attachment in the fragment shader.</h3>
+<div class="paragraph">
+<p>The transition from VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL to VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL happens automatically as part of executing the render pass.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Set this to the index in VkRenderPassCreateInfo::pAttachments where the depth image is described.
+uint32_t depthAttachmentIndex = ...;
+
+VkSubpassDescription subpasses[2];
+
+VkAttachmentReference depthAttachment = {
+    .attachment = depthAttachmentIndex,
+    .layout     = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL};
+
+// Subpass containing first draw
+subpasses[0] = {
+    ...
+    .pDepthStencilAttachment = &amp;depthAttachment,
+    ...};
+
+VkAttachmentReference depthAsInputAttachment = {
+    .attachment = depthAttachmentIndex,
+    .layout     = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL};
+
+// Subpass containing second draw
+subpasses[1] = {
+    ...
+    .inputAttachmentCount = 1,
+    .pInputAttachments = &amp;depthAsInputAttachment,
+    ...};
+
+VkSubpassDependency dependency = {
+    .srcSubpass = 0,
+    .dstSubpass = 1,
+    .srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+                    VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+    .dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+    .srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+    .dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
+    .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT};
+
+// If initialLayout does not match the layout of the attachment reference in the first subpass, there will be an implicit transition before starting the render pass.
+// If finalLayout does not match the layout of the attachment reference in the last subpass, there will be an implicit transition at the end.
+VkAttachmentDescription depthFramebufferAttachment = {
+    ...
+    .initialLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+    .finalLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL};
+
+VkRenderPassCreateInfo renderPassCreateInfo = {
+    ...
+    .attachmentCount = 1,
+    .pAttachments = &amp;depthFramebufferAttachment,
+    .subpassCount = 2,
+    .pSubpasses = subpasses,
+    .dependencyCount = 1,
+    .pDependencies = &amp;dependency};
+
+vkCreateRenderPass(...);
+
+...</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_first_draw_writes_to_a_depth_attachment_second_draw_samples_from_that_depth_image_in_the_fragment_shader_e_g_shadow_map_rendering"><a class="anchor" href="#_first_draw_writes_to_a_depth_attachment_second_draw_samples_from_that_depth_image_in_the_fragment_shader_e_g_shadow_map_rendering"></a>First draw writes to a depth attachment. Second draw samples from that depth image in the fragment shader (e.g. shadow map rendering).</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdDraw(...);
+
+... // First render pass teardown etc.
+
+VkImageMemoryBarrier2KHR imageMemoryBarrier = {
+  ...
+  .srcStageMask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT_KHR | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT_KHR,
+  .srcAccessMask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT_KHR,
+  .dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT_KHR,
+  .dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT_KHR,
+  .oldLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+  .newLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL
+  /* .image and .subresourceRange should identify image subresource accessed */};
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,                      // imageMemoryBarrierCount
+    &amp;imageMemoryBarrier,    // pImageMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+... // Second render pass setup etc.
+
+vkCmdDraw(...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_first_draw_writes_to_a_color_attachment_second_draw_reads_from_it_as_an_input_attachment_in_the_fragment_shader"><a class="anchor" href="#_first_draw_writes_to_a_color_attachment_second_draw_reads_from_it_as_an_input_attachment_in_the_fragment_shader"></a>First draw writes to a color attachment. Second draw reads from it as an input attachment in the fragment shader.</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Set this to the index in VkRenderPassCreateInfo::pAttachments where the color image is described.
+uint32_t colorAttachmentIndex = ...;
+
+VkSubpassDescription subpasses[2];
+
+VkAttachmentReference colorAttachment = {
+    .attachment = colorAttachmentIndex,
+    .layout     = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL};
+
+// Subpass containing first draw
+subpasses[0] = {
+    ...
+    .colorAttachmentCount = 1,
+    .pColorAttachments = &amp;colorAttachment,
+    ...};
+
+VkAttachmentReference colorAsInputAttachment = {
+    .attachment = colorAttachmentIndex,
+    .layout     = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL};
+
+// Subpass containing second draw
+subpasses[1] = {
+    ...
+    .inputAttachmentCount = 1,
+    .pInputAttachments = &amp;colorAsInputAttachment,
+    ...};
+
+VkSubpassDependency dependency = {
+    .srcSubpass = 0,
+    .dstSubpass = 1,
+    .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+    .dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+    .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+    .dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
+    .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT};
+
+// If initialLayout does not match the layout of the attachment reference in the first subpass, there will be an implicit transition before starting the render pass.
+// If finalLayout does not match the layout of the attachment reference in the last subpass, there will be an implicit transition at the end.
+VkAttachmentDescription colorFramebufferAttachment = {
+    ...
+    .initialLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+    .finalLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL};
+
+VkRenderPassCreateInfo renderPassCreateInfo = {
+    ...
+    .attachmentCount = 1,
+    .pAttachments = &amp;colorFramebufferAttachment,
+    .subpassCount = 2,
+    .pSubpasses = subpasses,
+    .dependencyCount = 1,
+    .pDependencies = &amp;dependency};
+
+vkCreateRenderPass(...);
+
+...</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_first_draw_writes_to_a_color_attachment_second_draw_samples_from_that_color_image_in_the_fragment_shader"><a class="anchor" href="#_first_draw_writes_to_a_color_attachment_second_draw_samples_from_that_color_image_in_the_fragment_shader"></a>First draw writes to a color attachment. Second draw samples from that color image in the fragment shader.</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdDraw(...);
+
+... // First render pass teardown etc.
+
+VkImageMemoryBarrier2KHR imageMemoryBarrier = {
+  ...
+  .srcStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
+  .srcAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR,
+  .dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT_KHR,
+  .dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT_KHR,
+  .oldLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+  .newLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL
+  /* .image and .subresourceRange should identify image subresource accessed */};
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,                      // imageMemoryBarrierCount
+    &amp;imageMemoryBarrier,    // pImageMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+... // Second render pass setup etc.
+
+vkCmdDraw(...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_first_draw_writes_to_a_color_attachment_second_draw_samples_from_that_color_image_in_the_vertex_shader"><a class="anchor" href="#_first_draw_writes_to_a_color_attachment_second_draw_samples_from_that_color_image_in_the_vertex_shader"></a>First draw writes to a color attachment. Second draw samples from that color image in the vertex shader.</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdDraw(...);
+
+... // First render pass teardown etc.
+
+VkImageMemoryBarrier2KHR imageMemoryBarrier = {
+  ...
+  .srcStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
+  .srcAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR,
+  .dstStageMask = VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT_KHR,
+  .dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT_KHR,
+  .oldLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+  .newLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL
+  /* .image and .subresourceRange should identify image subresource accessed */};
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,                      // imageMemoryBarrierCount
+    &amp;imageMemoryBarrier,    // pImageMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+... // Second render pass setup etc.
+
+vkCmdDraw(...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_first_draw_samples_a_texture_in_the_fragment_shader_second_draw_writes_to_that_texture_as_a_color_attachment"><a class="anchor" href="#_first_draw_samples_a_texture_in_the_fragment_shader_second_draw_writes_to_that_texture_as_a_color_attachment"></a>First draw samples a texture in the fragment shader. Second draw writes to that texture as a color attachment.</h3>
+<div class="paragraph">
+<p>This is a WAR hazard, which you would usually only need an execution dependency for - meaning you wouldn&#8217;t need to supply any memory barriers.
+In this case you still need a memory barrier to do a layout transition though, but you don&#8217;t need any access types in the src access mask.
+The layout transition itself is considered a write operation though, so you do need the destination access mask to be correct - or there would be a WAW hazard between the layout transition and the color attachment write.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdDraw(...);
+
+... // First render pass teardown etc.
+
+VkImageMemoryBarrier2KHR imageMemoryBarrier = {
+  ...
+  .srcStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT_KHR,
+  .dstStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
+  .dstAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR,
+  .oldLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL,
+  .newLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL
+  /* .image and .subresourceRange should identify image subresource accessed */};
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,                      // imageMemoryBarrierCount
+    &amp;imageMemoryBarrier,    // pImageMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+... // Second render pass setup etc.
+
+vkCmdDraw(...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_first_render_pass_writes_to_a_depth_attachment_second_render_pass_re_uses_the_same_depth_attachment"><a class="anchor" href="#_first_render_pass_writes_to_a_depth_attachment_second_render_pass_re_uses_the_same_depth_attachment"></a>First render-pass writes to a depth attachment. Second render-pass re-uses the same depth attachment.</h3>
+<div class="paragraph">
+<p>This is an example of a WAW (Write-After-Write) hazard, which always require a memory dependency.
+Even if the render-pass does not read the output of the previous pass (in fact, in this example the previously image contents are explicitly not preserved by nature of transitioning from <code>UNDEFINED</code>) we still need a memory dependency to ensure writes to the image are not re-ordered.</p>
+</div>
+<div class="paragraph">
+<p>Additionally, as we&#8217;re using an automatic layout transition (<code>initialLayout</code> differs from <code>layout</code>), it&#8217;s important to make sure the transition does not happen too early.
+This commonly requires specifying a <code>VK_SUBPASS_EXTERNAL</code> subpass dependency explicitly, as the default implicit dependency (which has <code>srcStageMask = TOP</code>) is not sufficient.
+(See "Swapchain Image Acquire and Present" for another example of this.)</p>
+</div>
+<div class="paragraph">
+<p>This example use a <code>VK_SUBPASS_EXTERNAL</code> subpass dependency to achieve both goals (resolve WAW hazard, and hold back automatic layout transition), but as always a pipeline-barrier can also be used.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// We're using the depth buffer as a depth-stencil attachment
+VkAttachmentReference depthAttachment = {
+    .attachment = 0,
+    .layout     = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL};
+
+VkAttachmentDescription depthFramebufferAttachment = {
+    ...
+    .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR, // Want to clear the buffer at the start of the subpass
+    .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED, // No need to preserve previous image contents
+    .finalLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL // When done, leave it in the layout used in the subpass (no transition at the end)
+};
+
+// Subpass using the depth-buffer
+VkSubpassDescription subpass = {
+    ...
+    .pDepthStencilAttachment = &amp;depthAttachment,
+    ...};
+
+// Use an incoming subpass-dependency to ensure:
+// * Previous use of the depth-buffer is complete (execution dependency).
+// * WAW hazard is resolved (e.g. caches are flushed and invalidated so old and new writes are not re-ordered).
+// * Transition from UNDEFINED -&gt; VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL happens-after previous `EARLY/LATE_FRAGMENT_TESTS` use.
+// * Changes made to the image by the transition are accounted for by setting the appropriate dstAccessMask.
+VkSubpassDependency dependency = {
+    .srcSubpass = VK_SUBPASS_EXTERNAL,
+    .dstSubpass = 0,
+    .srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,  // Store op is always performed in late tests, after subpass access
+    .dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, // Load op is always performed in early tests, before subpass access
+    .srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+    .dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
+    .dependencyFlags = 0};
+
+VkRenderPassCreateInfo renderPassCreateInfo = {
+    ...
+    .attachmentCount = 1,
+    .pAttachments = &amp;depthFramebufferAttachment,
+    .subpassCount = 1,
+    .pSubpasses = &amp;subpass
+    .dependencyCount = 1,
+    .pDependencies = &amp;dependency};
+
+vkCreateRenderPass(...);
+
+...
+
+# First render-pass
+vkCmdBeginRenderPass();
+...
+vkCmdEndRenderPass();
+
+...
+
+# Second render-pass, could be the same or a different frame
+vkCmdBeginRenderPass();
+...
+vkCmdEndRenderPass();</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_transfer_dependencies"><a class="anchor" href="#_transfer_dependencies"></a>Transfer Dependencies</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_upload_data_from_the_cpu_to_a_vertex_buffer"><a class="anchor" href="#_upload_data_from_the_cpu_to_a_vertex_buffer"></a>Upload data from the CPU to a vertex buffer</h3>
+<div class="sect3">
+<h4 id="_discrete_host_and_device_memory"><a class="anchor" href="#_discrete_host_and_device_memory"></a>Discrete Host and Device Memory</h4>
+<div class="paragraph">
+<p>If there is a memory type with "HOST_VISIBLE" and not "DEVICE_LOCAL", and a separate type with "DEVICE_LOCAL" on, then use the following setup path.
+UMA systems are described in the next code block, though this code will work on such systems at the cost of additional memory overhead.</p>
+</div>
+<div class="paragraph">
+<p>Setup:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Data and size of that data
+const uint32_t vertexDataSize = ... ;
+const void* pData = ... ;
+
+// Create a staging buffer for upload
+VkBufferCreateInfo stagingCreateInfo = {
+    ...
+    .size = vertexDataSize,
+    .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+    ... };
+
+VkBuffer stagingBuffer;
+vkCreateBuffer(device, &amp;stagingCreateInfo, NULL, &amp;stagingBuffer);
+
+// Create the vertex buffer
+VkBufferCreateInfo vertexCreateInfo = {
+    ...
+    .size = vertexDataSize,
+    .usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+    ... };
+
+VkBuffer vertexBuffer;
+vkCreateBuffer(device, &amp;vertexCreateInfo, NULL, &amp;vertexBuffer);
+
+...
+
+// Allocate and memory bind memory for these buffers.
+// Ensure that the staging buffer uses a memory type that has
+// VK_MEMORY_PROPERTY_HOST_VISIBLE property and doesn't have
+// VK_MEMORY_PROPERTY_DEVICE_LOCAL.
+// The vertex buffer memory should be the opposite - it should include
+// VK_MEMORY_PROPERTY_DEVICE_LOCAL and should not have
+// VK_MEMORY_PROPERTY_HOST_VISIBLE.
+// Use the example code documented in the description of
+// VkPhysicalDeviceMemoryProperties:
+// https://www.khronos.org/registry/vulkan/specs/latest/man/html/VkPhysicalDeviceMemoryProperties.html
+
+...
+
+// Map the staging buffers - if you plan to re-use these (which you should),
+// keep them mapped.
+// Ideally just map the whole range at once as well.
+
+void* stagingData;
+
+vkMapMemory(
+    ...
+    stagingMemory,
+    stagingMemoryOffset,
+    vertexDataSize,
+    0,
+    &amp;stagingData);
+
+// Write data directly into the mapped pointer
+fread(stagingData, vertexDataSize, 1, vertexFile);
+
+// Flush the memory range
+// If the memory type of stagingMemory includes VK_MEMORY_PROPERTY_HOST_COHERENT, skip this step
+
+// Align to the VkPhysicalDeviceProperties::nonCoherentAtomSize
+uint32_t alignedSize = (vertexDataSize-1) - ((vertexDataSize-1) % nonCoherentAtomSize) + nonCoherentAtomSize;
+
+// Setup the range
+VkMappedMemoryRange stagingRange = {
+    ...
+    .memory = stagingMemory,
+    .offset = stagingMemoryOffset,
+    .size   = alignedSize};
+
+// Flush the range
+vkFlushMappedMemoryRanges(device, 1, &amp;stagingRange);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Command Buffer Recording and Submission for a unified transfer/graphics queue:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkBeginCommandBuffer(...);
+
+// Submission guarantees the host write being complete, as per
+// https://docs.vulkan.org/spec/latest/chapters/synchronization.html#synchronization-submission-host-writes
+// So no need for a barrier before the transfer
+
+// Copy the staging buffer contents to the vertex buffer
+VkBufferCopy vertexCopyRegion = {
+    .srcOffset = stagingMemoryOffset,
+    .dstOffset = vertexMemoryOffset,
+    .size      = vertexDataSize};
+
+vkCmdCopyBuffer(
+    commandBuffer,
+    stagingBuffer,
+    vertexBuffer,
+    1,
+    &amp;vertexCopyRegion);
+
+
+// If the graphics queue and transfer queue are the same queue
+if (isUnifiedGraphicsAndTransferQueue)
+{
+    // If there is a semaphore signal + wait between this being submitted and
+    // the vertex buffer being used, then skip this pipeline barrier.
+
+    // Pipeline barrier before using the vertex data
+    // Note that this can apply to all buffers uploaded in the same way, so
+    // ideally batch all copies before this.
+    VkMemoryBarrier2KHR memoryBarrier = {
+        ...
+        .srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT_KHR,
+        .srcAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT_KHR,
+        .dstStageMask = VK_PIPELINE_STAGE_2_VERTEX_ATTRIBUTE_INPUT_BIT_KHR,
+        .dstAccessMask = VK_ACCESS_2_MEMORY_READ_BIT_KHR};
+
+    VkDependencyInfoKHR dependencyInfo = {
+        ...
+        1,                 // memoryBarrierCount
+        &amp;memoryBarrier,    // pMemoryBarriers
+        ...
+    }
+
+    vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+
+    vkEndCommandBuffer(...);
+
+    vkQueueSubmit2KHR(unifiedQueue, ...);
+}
+else
+{
+    // Pipeline barrier to start a queue ownership transfer after the copy
+    VkBufferMemoryBarrier2KHR bufferMemoryBarrier = {
+        ...
+        .srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT_KHR,
+        .srcAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT_KHR,
+        .srcQueueFamilyIndex = transferQueueFamilyIndex,
+        .dstQueueFamilyIndex = graphicsQueueFamilyIndex,
+        .buffer = vertexBuffer,
+        ...};
+
+    VkDependencyInfoKHR dependencyInfo = {
+        ...
+        1,                      // bufferMemoryBarrierCount
+        &amp;bufferMemoryBarrier,    // pBufferMemoryBarriers
+        ...
+    }
+
+    vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+    vkEndCommandBuffer(...);
+
+    // Ensure a semaphore is signalled here which will be waited on by the graphics queue.
+    vkQueueSubmit2KHR(transferQueue, ...);
+
+    // Record a command buffer for the graphics queue.
+    vkBeginCommandBuffer(...);
+
+    // Pipeline barrier before using the vertex buffer, after finalising the ownership transfer
+    VkBufferMemoryBarrier2KHR bufferMemoryBarrier = {
+        ...
+        .dstStageMask = VK_PIPELINE_STAGE_2_VERTEX_ATTRIBUTE_INPUT_BIT_KHR,
+        .dstAccessMask = VK_ACCESS_2_MEMORY_READ_BIT_KHR,
+        .srcQueueFamilyIndex = transferQueueFamilyIndex,
+        .dstQueueFamilyIndex = graphicsQueueFamilyIndex,
+        .buffer = vertexBuffer,
+        ...};
+
+    VkDependencyInfoKHR dependencyInfo = {
+        ...
+        1,                       // bufferMemoryBarrierCount
+        &amp;bufferMemoryBarrier,    // pBufferMemoryBarriers
+        ...
+    }
+
+    vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+    vkEndCommandBuffer(...);
+
+    vkQueueSubmit2KHR(graphicsQueue, ...);
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_unified_memory"><a class="anchor" href="#_unified_memory"></a>Unified Memory</h4>
+<div class="paragraph">
+<p>For UMA systems, you can use the above, but it will use less memory if you avoid the staging buffer for these systems, as per the following setup.
+There is no need to perform any device-side synchronization assuming the first commands that use it are submitted <em>after</em> the upload (rather than using VkEvents, which are not recommended, and not described here).</p>
+</div>
+<div class="paragraph">
+<p>Setup:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Data and size of that data
+const uint32_t vertexDataSize = ... ;
+const void* pData = ... ;
+
+// Create the vertex buffer
+VkBufferCreateInfo vertexCreateInfo = {
+    ...
+    .size = vertexDataSize,
+    .usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+    ... };
+
+VkBuffer vertexBuffer;
+vkCreateBuffer(device, &amp;vertexCreateInfo, NULL, &amp;vertexBuffer);
+
+...
+
+// Allocate and memory bind memory for this buffer.
+// It should use a memory type that includes HOST_VISIBLE, and ideally also
+// DEVICE_LOCAL if available.
+// Use the example code documented in the description of
+// VkPhysicalDeviceMemoryProperties:
+// https://www.khronos.org/registry/vulkan/specs/latest/man/html/VkPhysicalDeviceMemoryProperties.html
+
+...
+
+// Map the vertex buffer
+
+void* vertexData;
+
+vkMapMemory(
+    ...
+    vertexMemory,
+    vertexMemoryOffset,
+    vertexDataSize,
+    0,
+    &amp;vertexData);
+
+// Write data directly into the mapped pointer
+fread(vertexData, vertexDataSize, 1, vertexFile);
+
+// Flush the memory range
+// If the memory type of vertexMemory includes VK_MEMORY_PROPERTY_HOST_COHERENT, skip this step
+
+// Align to the VkPhysicalDeviceProperties::nonCoherentAtomSize
+uint32_t alignedSize = (vertexDataSize-1) - ((vertexDataSize-1) % nonCoherentAtomSize) + nonCoherentAtomSize;
+
+// Setup the range
+VkMappedMemoryRange vertexRange = {
+    ...
+    .memory = vertexMemory,
+    .offset = vertexMemoryOffset,
+    .size   = alignedSize};
+
+// Flush the range
+vkFlushMappedMemoryRanges(device, 1, &amp;vertexRange);
+
+// You may want to skip this if you're going to modify the
+// data again
+vkUnmapMemory(device, vertexMemory);</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_upload_data_from_the_cpu_to_an_image_sampled_in_a_fragment_shader"><a class="anchor" href="#_upload_data_from_the_cpu_to_an_image_sampled_in_a_fragment_shader"></a>Upload data from the CPU to an image sampled in a fragment shader</h3>
+<div class="paragraph">
+<p>This path is universal to both UMA and discrete systems, as images should be converted to optimal tiling on upload.</p>
+</div>
+<div class="paragraph">
+<p>Setup:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Data and size of that data
+const uint32_t imageDataSize = ... ;
+
+// Create a staging buffer for upload
+VkBufferCreateInfo stagingCreateInfo = {
+    ...
+    .size = imageDataSize,
+    .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+    ... };
+
+VkBuffer stagingBuffer;
+vkCreateBuffer(device, &amp;stagingCreateInfo, NULL, &amp;stagingBuffer);
+
+// Create the sampled image
+VkImageCreateInfo imageCreateInfo = {
+    ...
+    // Set the dimensions for the image as appropriate
+    .tiling = VK_IMAGE_TILING_OPTIMAL,
+    .usage  = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+    ... };
+
+VkImage image;
+vkCreateImage(device, &amp;imageCreateInfo, NULL, &amp;image);
+
+...
+
+// Allocate and memory bind memory for these resources.
+// Ensure that the staging buffer uses a memory type that has
+// VK_MEMORY_PROPERTY_HOST_VISIBLE property and doesn't have
+// VK_MEMORY_PROPERTY_DEVICE_LOCAL.
+// The image memory should be the opposite - it should include
+// VK_MEMORY_PROPERTY_DEVICE_LOCAL and should not have
+// VK_MEMORY_PROPERTY_HOST_VISIBLE.
+// Use the example code documented in the description of
+// VkPhysicalDeviceMemoryProperties:
+// https://www.khronos.org/registry/vulkan/specs/latest/man/html/VkPhysicalDeviceMemoryProperties.html
+
+...
+
+// Map the staging buffers - if you plan to re-use these (which you should),
+// keep them mapped.
+// Ideally just map the whole range at once as well.
+
+void* stagingData;
+
+vkMapMemory(
+    ...
+    stagingMemory,
+    stagingMemoryOffset,
+    imageDataSize,
+    0,
+    &amp;stagingData);
+
+// Write data directly into the mapped pointer
+fread(stagingData, imageDataSize, 1, imageFile);
+
+// Flush the memory range
+// If the memory type of stagingMemory includes VK_MEMORY_PROPERTY_HOST_COHERENT, skip this step
+
+// Align to the VkPhysicalDeviceProperties::nonCoherentAtomSize
+uint32_t alignedSize = (imageDataSize-1) - ((imageDataSize-1) % nonCoherentAtomSize) + nonCoherentAtomSize;
+
+// Setup the range
+VkMappedMemoryRange stagingRange = {
+    ...
+    .memory = stagingMemory,
+    .offset = stagingMemoryOffset,
+    .size   = alignedSize};
+
+// Flush the range
+vkFlushMappedMemoryRanges(device, 1, &amp;stagingRange);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Command Buffer Recording and Submission:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkBeginCommandBuffer(...);
+
+// Submission guarantees the host write being complete, as per
+// https://docs.vulkan.org/spec/latest/chapters/synchronization.html#synchronization-submission-host-writes
+// So no need for a barrier before the transfer for that purpose, but one is
+// required for the image layout changes.
+
+// Pipeline barrier before the copy to perform a layout transition
+VkImageMemoryBarrier2KHR preCopyMemoryBarrier = {
+    ...
+    .dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT_KHR,
+    .dstAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT_KHR,
+    .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+    .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+    .image = image,
+    .subresourceRange = ... }; // Transition as much of the image as you can at once.
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,                      // imageMemoryBarrierCount
+    &amp;preCopyMemoryBarrier,  // pImageMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+// Setup copies for the all regions required (should be batched into a single call where possible)
+vkCmdCopyBufferToImage(
+    commandBuffer,
+    stagingBuffer,
+    image,
+    ... };
+
+// If the graphics queue and transfer queue are the same queue
+if (isUnifiedGraphicsAndTransferQueue)
+{
+    // Pipeline barrier before using the vertex data
+    VkImageMemoryBarrier2KHR postCopyMemoryBarrier = {
+        ...
+        .srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT_KHR,
+        .srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT_KHR,
+        .dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT_KHR,
+        .dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT_KHR,
+        .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        .newLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL,
+        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .image = image,
+        .subresourceRange = ... }; // Transition as much of the image as you can at once.
+
+    VkDependencyInfoKHR dependencyInfo = {
+        ...
+        1,                      // imageMemoryBarrierCount
+        &amp;postCopyMemoryBarrier, // pImageMemoryBarriers
+        ...
+    }
+
+    vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+    vkEndCommandBuffer(...);
+
+    vkQueueSubmit2KHR(unifiedQueue, ...);
+}
+else
+{
+    // Pipeline barrier before using the vertex data
+    VkImageMemoryBarrier2KHR postCopyTransferMemoryBarrier = {
+        ...
+        .srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT_KHR,
+        .srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT_KHR,
+        .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        .newLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL,
+        .srcQueueFamilyIndex = transferQueueFamilyIndex,
+        .dstQueueFamilyIndex = graphicsQueueFamilyIndex,
+        .image = image,
+        .subresourceRange = ... }; // Transition as much of the image as you can at once.
+
+    VkDependencyInfoKHR dependencyInfo = {
+        ...
+        1,                              // imageMemoryBarrierCount
+        &amp;postCopyTransferMemoryBarrier, // pImageMemoryBarriers
+        ...
+    }
+
+    vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+    vkEndCommandBuffer(...);
+
+    vkQueueSubmit2KHR(transferQueue, ...);
+
+    vkBeginCommandBuffer(...);
+
+    // Pipeline barrier before using the vertex data
+    VkImageMemoryBarrier2KHR postCopyGraphicsMemoryBarrier = {
+        ...
+        .dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT_KHR,
+        .dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT_KHR,
+        .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        .newLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL,
+        .srcQueueFamilyIndex = transferQueueFamilyIndex,
+        .dstQueueFamilyIndex = graphicsQueueFamilyIndex,
+        .image = image,
+        .subresourceRange = ... }; // Transition as much of the image as you can at once.
+
+    VkDependencyInfoKHR dependencyInfo = {
+        ...
+        1,                              // imageMemoryBarrierCount
+        &amp;postCopyGraphicsMemoryBarrier, // pImageMemoryBarriers
+        ...
+    }
+
+    vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+    vkEndCommandBuffer(...);
+
+    vkQueueSubmit2KHR(graphicsQueue, ...);
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_cpu_read_back_of_data_written_by_a_compute_shader"><a class="anchor" href="#_cpu_read_back_of_data_written_by_a_compute_shader"></a>CPU read back of data written by a compute shader</h3>
+<div class="paragraph">
+<p>This example shows the steps required to get data written to a buffer by a compute shader, back to the CPU.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>vkCmdDispatch(...);
+
+VkMemoryBarrier2KHR memoryBarrier = {
+  ...
+  .srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT_KHR,
+  .srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT_KHR,
+  .dstStageMask = VK_PIPELINE_STAGE_2_HOST_BIT_KHR,
+  .dstAccessMask = VK_ACCESS_2_HOST_READ_BIT_KHR};
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,              // memoryBarrierCount
+    &amp;memoryBarrier, // pMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+vkEndCommandBuffer(...);
+
+vkQueueSubmit2KHR(..., fence); // Submit the command buffer with a fence</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The GPU will take time to process, so this should be pipelined with other resource management (e.g.
+swapchain images):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>vkWaitForFences(fence);
+
+// If the memory is host coherent, skip this step - otherwise invalidation is necessary
+if (memoryIsNotHostCoherent) {
+    VkMappedMemoryRange mappedMemoryRange = {
+        ...
+        mappedMemory,       // Mapped pointer to the VkDeviceMemory allocation backing the buffer.
+        ...
+    } VkMappedMemoryRange;
+
+    vkInvalidateMappedMemoryRanges(..., 1, &amp;mappedMemoryRange);
+}
+
+// Read values back from the mapped pointer
+value = mappedMemory[...];</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_interactions_with_semaphores"><a class="anchor" href="#_interactions_with_semaphores"></a>Interactions with semaphores</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If you have a dependency where the two commands being synchronized have a semaphore signal/wait between them, the additional synchronization done by pipeline barriers/events/subpass dependencies can be reduced or removed.
+Only parameters affected by the presence of the semaphore dependency are listed</p>
+</div>
+<div class="sect2">
+<h3 id="_any_dependency_where_only_buffers_are_affected_or_images_where_the_layout_doesnt_change"><a class="anchor" href="#_any_dependency_where_only_buffers_are_affected_or_images_where_the_layout_doesnt_change"></a>Any dependency where only buffers are affected, or images where the layout doesn&#8217;t change</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Nothing to see here - semaphore alone is sufficient.
+// No additional synchronization required - remove those barriers.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Signalling a semaphore waits for all stages to complete, and all memory accesses are made available automatically.
+Similarly, waiting for a semaphore will make all memory accesses available, and prevent further work from being started until it is signalled.
+Note that in the case of QueueSubmit there is an explicit set of stages to prevent running in VkSubmitInfo::pWaitDstStageMask - for all other semaphore uses execution of all work is prevented.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dependency_between_images_where_a_layout_transition_is_required_expressed_before_the_semaphore_signal"><a class="anchor" href="#_dependency_between_images_where_a_layout_transition_is_required_expressed_before_the_semaphore_signal"></a>Dependency between images where a layout transition is required, expressed before the semaphore signal</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdDispatch(...);
+
+VkImageMemoryBarrier2KHR imageMemoryBarrier = {
+  ...
+  .dstStageMask = VK_PIPELINE_STAGE_2_NONE_KHR
+  .dstAccessMask = VK_ACCESS_2_NONE_KHR};
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,                      // imageMemoryBarrierCount
+    &amp;imageMemoryBarrier,    // pImageMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+... // Semaphore signal/wait happens here
+
+vkCmdDispatch(...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dependency_between_images_where_a_layout_transition_is_required_expressed_after_the_semaphore_signal"><a class="anchor" href="#_dependency_between_images_where_a_layout_transition_is_required_expressed_after_the_semaphore_signal"></a>Dependency between images where a layout transition is required, expressed after the semaphore signal</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdDispatch(...);
+
+... // Semaphore signal/wait happens here
+
+VkImageMemoryBarrier2KHR imageMemoryBarrier = {
+  ...
+  .srcStageMask = VK_PIPELINE_STAGE_2_NONE_KHR
+  .srcAccessMask = VK_ACCESS_2_NONE_KHR};
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,                      // imageMemoryBarrierCount
+    &amp;imageMemoryBarrier,    // pImageMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+vkCmdDispatch(...);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The stages used in srcAccessMask <strong>must</strong> be equal to (or logically later than) the values in VkSubmitInfo::pWaitDstStageMask defined for the relevant semaphore wait operation, otherwise the barrier is not guaranteed to occur after the semaphore wait.
+In this example, we&#8217;re assuming the relevant pWaitDstStageMask value is equal to <code>VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT_KHR</code>.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_swapchain_image_acquire_and_present"><a class="anchor" href="#_swapchain_image_acquire_and_present"></a>Swapchain Image Acquire and Present</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_combined_graphicspresent_queue"><a class="anchor" href="#_combined_graphicspresent_queue"></a>Combined Graphics/Present Queue</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkAttachmentReference attachmentReference = {
+    .attachment = 0,
+    .layout     = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL};
+
+// Subpass containing first draw
+VkSubpassDescription subpass = {
+    ...
+    .colorAttachmentCount = 1,
+    .pColorAttachments = &amp;attachmentReference,
+    ...};
+
+/* Add external dependencies to ensure that the layout
+   transitions happen at the right time.
+   Unlike synchronization 1, we insert 2 dependencies,
+   as the semaphore wait and signal operations happen
+   at COLOR_ATTACHMENT_OUTPUT to reduce their scope to
+   the minimum; the subpass dependencies are then both
+   adjusted to match */
+VkSubpassDependency dependencies[2] = {
+    {
+        .srcSubpass = VK_SUBPASS_EXTERNAL,
+        .dstSubpass = 0,
+        .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .srcAccessMask = VK_ACCESS_NONE_KHR,
+        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+        .dependencyFlags = 0
+    },
+    /* In cases where the application signals the semaphore with
+       VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, or uses vkQueueSubmit,
+       this second dependency could be omitted. */
+    {
+        .srcSubpass = 0,
+        .dstSubpass = VK_SUBPASS_EXTERNAL,
+        .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+        .dstAccessMask = VK_ACCESS_NONE_KHR,
+        .dependencyFlags = 0
+    }
+};
+
+
+VkAttachmentDescription attachmentDescription = {
+    ...
+    .loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+    ...
+    // The image will automatically be transitioned from UNDEFINED to COLOR_ATTACHMENT_OPTIMAL for rendering, then out to PRESENT_SRC_KHR at the end.
+    .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+    // Presenting images in Vulkan requires a special layout.
+    .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR};
+
+VkRenderPassCreateInfo renderPassCreateInfo = {
+    ...
+    .attachmentCount = 1,
+    .pAttachments    = &amp;attachmentDescription,
+    .subpassCount    = 1,
+    .pSubpasses      = &amp;subpass,
+    .dependencyCount = 2,
+    .pDependencies   = dependencies};
+
+vkCreateRenderPass(...);
+
+...
+
+vkAcquireNextImageKHR(
+    ...
+    acquireCompleteSemaphore,   //semaphore
+    ...
+    &amp;imageIndex);       //image index
+
+VkSemaphoreSubmitInfoKHR acquireCompleteInfo = {
+    ...
+    .semaphore = acquireCompleteSemaphore,
+    .stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR};
+
+VkSemaphoreSubmitInfoKHR renderingCompleteInfo = {
+    ...
+    .semaphore = renderingCompleteSemaphore,
+    .stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR};
+
+VkSubmitInfo2KHR submitInfo = {
+    ...
+    .waitSemaphoreInfoCount     = 1,
+    .pWaitSemaphoreInfos        = &amp;acquireCompleteInfo,
+    ...
+    .signalSemaphoreInfoCount   = 1,
+    .pSignalSemaphoreInfos      = &amp;renderingCompleteInfo};
+
+
+vkQueueSubmit2KHR(..., &amp;submitInfo, ...);
+
+VkPresentInfoKHR presentInfo = {
+    .waitSemaphoreCount = 1,
+    .pWaitSemaphores = &amp;renderingCompleteSemaphore,
+    ...};
+
+vkQueuePresentKHR(..., &amp;presentInfo);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_multiple_queues"><a class="anchor" href="#_multiple_queues"></a>Multiple Queues</h3>
+<div class="paragraph">
+<p>If the present queue is a different queue from the queue where rendering is done, a queue ownership transfer must additionally be performed between the two queues at both acquire and present time, which requires additional synchronization.</p>
+</div>
+<div class="paragraph">
+<p>Render pass setup:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkAttachmentReference attachmentReference = {
+    .attachment = 0,
+    .layout     = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL};
+
+// Subpass containing first draw
+VkSubpassDescription subpass = {
+    ...
+    .colorAttachmentCount = 1,
+    .pColorAttachments = &amp;attachmentReference,
+    ...};
+
+VkAttachmentDescription attachmentDescription = {
+    ...
+    .loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+    ...
+    .initialLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+    .finalLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL};
+
+/*  Due to these necessary extra synchronization points, it makes more sense
+    to omit the sub pass external dependencies (which can't express a queue
+    transfer), and batch the relevant operations with the new pipeline
+    barriers we're introducing. */
+
+VkRenderPassCreateInfo renderPassCreateInfo = {
+    ...
+    .attachmentCount = 1,
+    .pAttachments    = &amp;attachmentDescription,
+    .subpassCount    = 1,
+    .pSubpasses      = &amp;subpass,
+    .dependencyCount = 0,
+    .pDependencies   = NULL};
+
+vkCreateRenderPass(...);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Rendering command buffer - graphics queue</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">/* Queue ownership transfer is only required when we need the content to remain valid across queues.
+   Since we are transitioning from UNDEFINED -- and therefore discarding the image contents to begin with --
+   we are not required to perform an ownership transfer from the presentation queue to graphics.
+
+   This transition could also be made as an EXTERNAL -&gt; subpass #0 render pass dependency as shown earlier. */
+
+VkImageMemoryBarrier2KHR imageMemoryBarrier = {
+  ...
+  .srcStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
+  .dstStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
+  .dstAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR,
+  .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+  .newLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+  .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+  .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+  /* .image and .subresourceRange should identify image subresource accessed */};
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,                      // imageMemoryBarrierCount
+    &amp;imageMemoryBarrier,    // pImageMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);
+
+... // Render pass submission.
+
+// Queue release operation. dstAccessMask should always be 0.
+VkImageMemoryBarrier2KHR imageMemoryBarrier = {
+  ...
+  .srcStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
+  .srcAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR,
+  .oldLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+  .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+  .srcQueueFamilyIndex = graphicsQueueFamilyIndex, // index of the graphics queue family
+  .dstQueueFamilyIndex = presentQueueFamilyIndex,  // index of the present queue family
+  /* .image and .subresourceRange should identify image subresource accessed */};
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,                      // imageMemoryBarrierCount
+    &amp;imageMemoryBarrier,    // pImageMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Pre-present commands - presentation queue</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// After submitting the render pass...
+VkImageMemoryBarrier2KHR imageMemoryBarrier = {
+  ...
+  // A layout transition which happens as part of an ownership transfer needs to be specified twice; one for the release, and one for the acquire.
+  // No srcStage/AccessMask is needed, waiting for a semaphore does that automatically.
+  // No dstStage/AccessMask is needed, signalling a semaphore does that automatically.
+  .oldLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+  .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+  .srcQueueFamilyIndex = graphicsQueueFamilyIndex, // index of the graphics queue family
+  .dstQueueFamilyIndex = presentQueueFamilyIndex,  // index of the present queue family
+  /* .image and .subresourceRange should identify image subresource accessed */};
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,                      // imageMemoryBarrierCount
+    &amp;imageMemoryBarrier,    // pImageMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Queue submission:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkAcquireNextImageKHR(
+    ...
+    acquireCompleteSemaphore,   //semaphore
+    ...
+    &amp;imageIndex);       //image index
+
+VkSemaphoreSubmitInfoKHR acquireCompleteInfo = {
+    ...
+    .semaphore = acquireCompleteSemaphore,
+    .stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR};
+
+VkSemaphoreSubmitInfoKHR renderingCompleteInfo = {
+    ...
+    .semaphore = renderingCompleteSemaphore,
+    .stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR};
+
+VkCommandBufferSubmitInfoKHR renderingCommandBufferInfo = {
+    ...
+    .commandBuffer = renderingCommandBuffer;
+};
+
+VkSubmitInfo2KHR renderingSubmitInfo = {
+    ...
+    .waitSemaphoreInfoCount     = 1,
+    .pWaitSemaphoreInfos        = &amp;acquireCompleteInfo,
+    .commandBufferInfoCount     = 1,
+    .pCommandBufferInfos        = &amp;renderingCommandBufferInfo,
+    .signalSemaphoreInfoCount   = 1,
+    .pSignalSemaphoreInfos      = &amp;renderingCompleteSemaphore};
+
+vkQueueSubmit2KHR(renderQueue, &amp;renderingSubmitInfo, ...);
+
+VkSemaphoreSubmitInfoKHR prePresentWaitInfo = {
+    ...
+    .semaphore = renderingCompleteSemaphore,
+    .stageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT_KHR};
+
+VkSemaphoreSubmitInfoKHR prePresentCompleteInfo = {
+    ...
+    .semaphore = prePresentCompleteSemaphore,
+    .stageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT_KHR};
+
+VkCommandBufferSubmitInfoKHR prePresentCommandBufferInfo = {
+    ...
+    .commandBuffer = prePresentCommandBuffer;
+};
+
+VkSubmitInfo2KHR prePresentSubmitInfo = {
+    ...
+    .waitSemaphoreInfoCount     = 1,
+    .pWaitSemaphoreInfos        = &amp;prePresentWaitInfo,
+    .commandBufferInfoCount     = 1,
+    .pCommandBufferInfos        = &amp;prePresentCommandBufferInfo,
+    .signalSemaphoreInfoCount   = 1,
+    .pSignalSemaphoreInfos      = &amp;prePresentCompleteInfo};
+
+vkQueueSubmit2KHR(presentQueue, &amp;prePresentSubmitInfo, ...);
+
+VkPresentInfoKHR presentInfo = {
+    .waitSemaphoreCount = 1,
+    .pWaitSemaphores = &amp;prePresentCompleteSemaphore,
+    ...};
+
+vkQueuePresentKHR(..., &amp;presentInfo);</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_full_pipeline_barrier"><a class="anchor" href="#_full_pipeline_barrier"></a>Full pipeline barrier</h2>
+<div class="sectionbody">
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>You should <strong>ONLY USE THIS FOR DEBUGGING</strong> - this is not something that should ever ship in real code, this will flush and invalidate all caches and stall everything, it is a tool not to be used lightly!</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>That said, it can be <em>really</em> handy if you think you have a race condition in your app and you just want to serialize everything so you can debug it.</p>
+</div>
+<div class="paragraph">
+<p>Note that this does not take care of image layouts - if you&#8217;re debugging you can set the layout of all your images to GENERAL to overcome this, but again - do not do this in release code!</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkMemoryBarrier2KHR memoryBarrier = {
+  ...
+  .srcStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT_KHR,
+  .srcAccessMask = VK_ACCESS_2_MEMORY_READ_BIT_KHR |
+                   VK_ACCESS_2_MEMORY_WRITE_BIT_KHR,
+  .dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT_KHR,
+  .dstAccessMask = VK_ACCESS_2_MEMORY_READ_BIT_KHR |
+                   VK_ACCESS_2_MEMORY_WRITE_BIT_KHR};
+
+VkDependencyInfoKHR dependencyInfo = {
+    ...
+    1,              // memoryBarrierCount
+    &amp;memoryBarrier, // pMemoryBarriers
+    ...
+}
+
+vkCmdPipelineBarrier2KHR(commandBuffer, &amp;dependencyInfo);</code></pre>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+<script src="../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../.." data-snippet-length="100" data-stylesheet="../../_/css/search.css"></script>
+<script async src="../../search-index.js"></script>
+<script async src="../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

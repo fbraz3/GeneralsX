@@ -1,0 +1,1818 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>VK_QCOM_tile_shading :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:features" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="features" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Feature Descriptions</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Vulkan Roadmap and Feature Descriptions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Roadmap.html">Vulkan Roadmap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Feature Descriptions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMDX_shader_enqueue.html">VK_AMDX_shader_enqueue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_anti_lag.html">VK_AMD_anti_lag</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_shader_early_and_late_fragment_tests.html">VK_AMD_shader_early_and_late_fragment_tests</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ANDROID_external_format_resolve.html">VK_ANDROID_external_format_resolve</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_pipeline_opacity_micromap.html">VK_ARM_pipeline_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_render_pass_striped.html">VK_ARM_render_pass_striped</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_tensors.html">VK_ARM_tensors</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_dynamic_state.html">VK_EXT_attachment_feedback_loop_dynamic_state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_layout.html">VK_EXT_attachment_feedback_loop_layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_calibrated_timestamps.html">VK_EXT_calibrated_timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_bias_control.html">VK_EXT_depth_bias_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_clamp_control.html">VK_EXT_depth_clamp_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_descriptor_buffer.html">VK_EXT_descriptor_buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_fault.html">VK_EXT_device_fault</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_generated_commands.html">VK_EXT_device_generated_commands</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_dynamic_rendering_unused_attachments.html">VK_EXT_dynamic_rendering_unused_attachments</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_extended_dynamic_state3.html">VK_EXT_extended_dynamic_state3</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_acquire_unmodified.html">VK_EXT_external_memory_acquire_unmodified</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_metal.html">VK_EXT_external_memory_metal</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_fragment_density_map_offset.html">VK_EXT_fragment_density_map_offset</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_frame_boundary.html">Proposal: <code>VK_EXT_frame_boundary</code></a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_graphics_pipeline_library.html">VK_EXT_graphics_pipeline_library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_host_image_copy.html">VK_EXT_host_image_copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_2d_array_of_3d.html">VK_EXT_image_2d_array_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_compression_control.html">VK_EXT_image_compression_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_sliced_view_of_3d.html">VK_EXT_image_sliced_view_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_layer_settings.html">VK_EXT_layer_settings</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_dithering.html">VK_EXT_legacy_dithering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_vertex_attributes.html">VK_EXT_legacy_vertex_attributes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_map_memory_placed.html">VK_EXT_map_memory_placed</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mesh_shader.html">VK_EXT_mesh_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_metal_objects.html">VK_EXT_metal_objects</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_multisampled_render_to_single_sampled.html">VK_EXT_multisampled_render_to_single_sampled</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mutable_descriptor_type.html">VK_EXT_mutable_descriptor_type</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_non_seamless_cube_map.html">VK_EXT_non_seamless_cube_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_opacity_micromap.html">VK_EXT_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_library_group_handles.html">VK_EXT_pipeline_library_group_handles</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_protected_access.html">VK_EXT_pipeline_protected_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_present_mode_fifo_latest_ready.html">VK_EXT_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_primitives_generated_query.html">VK_EXT_primitives_generated_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_rasterization_order_attachment_access.html">VK_EXT_rasterization_order_attachment_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_float8.html">VK_EXT_shader_float8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_module_identifier.html">VK_EXT_shader_module_identifier</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_object.html">VK_EXT_shader_object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_replicated_composites.html">VK_EXT_shader_replicated_composites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_tile_image.html">VK_EXT_shader_tile_image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_subpass_merge_feedback.html">VK_EXT_subpass_merge_feedback</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_surface_maintenance1.html">VK_EXT_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_swapchain_maintenance1.html">VK_EXT_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_zero_initialize_device_memory.html">VK_EXT_zero_initialize_device_memory</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_GOOGLE_surfaceless_query.html">VK_GOOGLE_surfaceless_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_cluster_culling_shader.html">VK_HUAWEI_cluster_culling_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_invocation_mask.html">VK_HUAWEI_invocation_mask</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_compute_shader_derivatives.html">VK_KHR_compute_shader_derivatives</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_cooperative_matrix.html">VK_KHR_cooperative_matrix</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering.html">VK_KHR_dynamic_rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering_local_read.html">VK_KHR_dynamic_rendering_local_read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shader_barycentric.html">VK_KHR_fragment_shader_barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shading_rate.html">VK_KHR_fragment_shading_rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_load_store_op_none.html">VK_KHR_load_store_op_none</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance5.html">VK_KHR_maintenance5</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance6.html">VK_KHR_maintenance6</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance7.html">VK_KHR_maintenance7</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance8.html">VK_KHR_maintenance8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance9.html">Proposal Template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_map_memory2.html">VK_KHR_map_memory2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_pipeline_binary.html">VK_KHR_pipeline_binary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_id2.html">VK_KHR_present_id2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_mode_fifo_latest_ready.html">VK_KHR_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_wait2.html">VK_KHR_present_wait2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_ray_tracing_position_fetch.html">VK_KHR_ray_tracing_position_fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_bfloat16.html">VK_KHR_shader_bfloat16</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_expect_assume.html">VK_KHR_shader_expect_assume</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_float_controls2.html">VK_KHR_shader_float_controls2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_integer_dot_product.html">VK_KHR_shader_integer_dot_product</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_maximal_reconvergence.html">VK_KHR_shader_maximal_reconvergence</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_quad_control.html">VK_KHR_shader_quad_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_relaxed_extended_instruction.html">VK_KHR_shader_relaxed_extended_instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_subgroup_rotate.html">Subgroup rotation instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_surface_maintenance1.html">VK_KHR_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_swapchain_maintenance1.html">VK_KHR_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_unified_image_layouts.html">VK_KHR_unified_image_layouts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_vertex_attribute_divisor.html">VK_KHR_vertex_attribute_divisor</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_av1.html">VK_KHR_video_decode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h264.html">VK_KHR_video_decode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h265.html">VK_KHR_video_decode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_queue.html">VK_KHR_video_decode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_vp9.html">VK_KHR_video_decode_vp9</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_av1.html">VK_KHR_video_encode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h264.html">VK_KHR_video_encode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h265.html">VK_KHR_video_encode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_intra_refresh.html">VK_KHR_video_encode_intra_refresh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_quantization_map.html">VK_KHR_video_encode_quantization_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_queue.html">VK_KHR_video_encode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance1.html">VK_KHR_video_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance2.html">VK_KHR_video_maintenance2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_queue.html">VK_KHR_video_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_LUNARG_direct_driver_loading.html">VK_LUNARG_direct_driver_loading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_MSFT_layered_driver.html">VK_MSFT_layered_driver</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cluster_acceleration_structure.html">VK_NV_cluster_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_matrix2.html">VK_NV_cooperative_matrix2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_vector.html">VK_NV_cooperative_vector</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_display_stereo.html">VK_NV_display_stereo</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_external_compute_queue.html">VK_NV_external_compute_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_partitioned_acceleration_structure.html">VK_NV_partitioned_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_linear_swept_spheres.html">VK_NV_ray_tracing_linear_swept_spheres</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_validation.html">VK_NV_ray_tracing_validation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_image_processing.html">VK_QCOM_image_processing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_memory_heap.html">VK_QCOM_tile_memory_heap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_properties.html">VK_QCOM_tile_properties</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_shading.html">VK_QCOM_tile_shading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_VERSION_1_4.html">Vulkan 1.4</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Feature Descriptions</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Feature Descriptions</a></li>
+    <li>Feature Descriptions</li>
+    <li><a href="VK_QCOM_tile_shading.html">VK_QCOM_tile_shading</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/features/modules/features/pages/proposals/VK_QCOM_tile_shading.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">VK_QCOM_tile_shading</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_problem_statement">1. Problem Statement</a></li>
+<li><a href="#_solution_space">2. Solution Space</a></li>
+<li><a href="#_proposal">3. Proposal</a>
+<ul class="sectlevel2">
+<li><a href="#_enabling_tile_shading">3.1. Enabling Tile Shading</a></li>
+<li><a href="#_per_tile_execution_mode">3.2. Per-tile execution mode</a></li>
+<li><a href="#_secondary_command_buffers">3.3. Secondary Command Buffers</a></li>
+<li><a href="#_tile_attachments">3.4. Tile Attachments</a></li>
+<li><a href="#_per_tile_command_restrictions">3.5. Per-Tile Command Restrictions</a></li>
+<li><a href="#_tile_apron">3.6. Tile Apron</a></li>
+<li><a href="#_area_based_dispatch">3.7. Area-based dispatch</a></li>
+<li><a href="#spirv-changes">3.8. SPIR-V Changes</a></li>
+<li><a href="#_high_level_language_exposure">3.9. High Level Language Exposure</a></li>
+<li><a href="#_synchronization">3.10. Synchronization</a></li>
+<li><a href="#_features_and_properties_structures">3.11. Features and Properties structures</a></li>
+</ul>
+</li>
+<li><a href="#_issues">4. Issues</a>
+<ul class="sectlevel2">
+<li><a href="#_are_all_attachment_typescolor_depthstencil_input_resolve_accessible_via_tile_attachment_loadstore_operations">4.1. Are all attachment types(color, depth/stencil, input, resolve) accessible via tile attachment load/store operations.</a></li>
+<li><a href="#_should_draw_commands_be_allowed_when_per_tile_execution_mode_is_enabled">4.2. Should draw commands be allowed when per-tile execution mode is enabled?</a></li>
+<li><a href="#_should_texture_sampling_be_supported_on_tile_attachments">4.3. Should texture sampling be supported on tile attachments?</a></li>
+<li><a href="#_does_this_extension_offer_any_guarantees_for_the_granularity_of_the_tile_dimensions">4.4. Does this extension offer any guarantees for the granularity of the tile dimensions?</a></li>
+<li><a href="#_should_we_support_atomic_operations_on_tile_attachments">4.5. Should we support atomic operations on tile attachments?</a></li>
+<li><a href="#_does_this_extension_support_multiview_rendering">4.6. Does this extension support multiview rendering?</a></li>
+<li><a href="#_does_this_extension_support_attachments_with_a_layer_count_greater_than_1">4.7. Does this extension support attachments with a layer count greater than 1?</a></li>
+<li><a href="#_are_store_operations_allowed_for_apron_pixels">4.8. Are store operations allowed for apron pixels?</a></li>
+<li><a href="#_is_functionality_and_performance_expected_to_be_similar_for_both_render_pass_objects_and_dynamic_render_passes">4.9. Is functionality and performance expected to be similar for both render pass objects and dynamic render passes?</a></li>
+<li><a href="#_does_this_extension_change_the_behavior_of_render_pass_loadop_or_storeop">4.10. Does this extension change the behavior of render pass LoadOp or StoreOp?</a></li>
+<li><a href="#_can_tile_attachment_loadstore_operations_be_used_without_enabling_per_tile_execution">4.11. Can tile attachment load/store operations be used without enabling per-tile execution?</a></li>
+<li><a href="#_should_this_extension_include_the_ability_for_fragment_or_compute_shader_to_reinterpret_the_format_of_tile_attachment_pixels">4.12. Should this extension include the ability for fragment or compute shader to reinterpret the format of tile attachment pixels?</a></li>
+<li><a href="#_should_this_extension_include_an_area_based_dispatch">4.13. Should this extension include an area-based dispatch?</a></li>
+<li><a href="#_do_we_need_a_new_vk_pipeline_create_bit_to_specify_if_per_tile_execution_mode_will_be_enabled">4.14. Do we need a new VK_PIPELINE_CREATE bit to specify if per-tile execution mode will be enabled?</a></li>
+<li><a href="#_should_vkcomputepipelinecreateinfo_be_extended_with_renderpasssubpass_information">4.15. Should VkComputePipelineCreateInfo be extended with renderpass/subpass information?</a></li>
+<li><a href="#_how_does_this_extension_differ_from_vk_ext_shader_tile_image">4.16. How does this extension differ from VK_EXT_shader_tile_image?</a></li>
+<li><a href="#_is_robustness_specified_for_out_of_bounds_tile_attachment_access">4.17. Is robustness specified for out-of-bounds tile attachment access?</a></li>
+<li><a href="#_how_does_this_extension_interact_with_vk_qcom_image_processing">4.18. How does this extension interact with VK_QCOM_image_processing?</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This document proposes a new extension that adds "tile shading" to Vulkan.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>1. Problem Statement</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Rendering pipelines that interleave compute with graphics, have become
+increasingly common.
+Tile-based lighting techniques are commonly used in Forward+ and Tile
+Deferred renderers leverage compute shaders to optimize the subsequent
+lighting pass.
+Tile-based level of detail using compute shaders are used
+in some virtualized geometry systems. Tile-based approaches with compute
+are used for screen space ambient occlusion, de-noising, and other
+post-processing algorithms.</p>
+</div>
+<div class="paragraph">
+<p>Most mobile GPUs utilize Tile-Based Deferred Rendering (TBDR) combined
+with high-bandwidth "tile memory" to optimize for power and performance.
+Conversely, most desktop GPUs use Immediate-Mode (IM) rendering without
+tile memory.</p>
+</div>
+<div class="paragraph">
+<p>A TBDR architecture divides the color and depth buffer attachments into a regular
+grid of smaller regions called "tiles".
+When the commands for a renderpass instance are submitted for execution, the GPU
+may perform a tile visibility pass with the resulting per-tile visibility information
+deferred for use in a subsequent series of tile rendering passes&#8201;&#8212;&#8201;one rendering
+pass for each tile in the framebuffer. Since the tile rendering passes are
+independent, some implementations may render multiple tiles in parallel. After
+each tile is rendered, the resulting tile is copied to the framebuffer.
+The tile rendering passes render into a specialized high-bandwidth
+on-die memory called "tile memory".
+GPU access to tile memory is dramatically more efficient than the device memory
+that backs the framebuffer attachments.</p>
+</div>
+<div class="paragraph">
+<p>The TBDR architecture creates an opportunity to express operations that execute
+per-tile after each tile rendering pass completes, and while the framebuffer
+content is still cached in highly efficient tile memory.
+While the primary focus is on executing compute workloads that operate on
+tiles, there are also use-cases for executing draw commands after the
+tile rendering pass completes.
+Since these dispatch and/or draw commands execute per-tile, they can only
+access those pixel locations within the boundaries of the current tile.
+This proposal describes a Vulkan API extension for the above
+tile-based features, collectively referred to as "tile shading".</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution Space</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>For the common use-cases, the tile shading pass will consume the attachment
+pixels that were rendered in a previous pass, or will generate outputs that
+are to be consumed in a subsequent pass.
+For this reason, tile shading fits naturally as some variant of Vulkan render passes.</p>
+</div>
+<div class="paragraph">
+<p>The options considered for addressing this issue:
+  * Add tile shading functionality as a set of individual API extensions corresponding to individual features
+  * Create a single, cohesive extension for the tile shading, that brings Vulkan to parity with other APIs.</p>
+</div>
+<div class="paragraph">
+<p>Option 1 has an advantage in that each extension is smaller and has reduced API surface area. It also
+increases the likelihood that some extensions would be supported by multiple GPU vendors.
+This piecemeal approach is likely to result in fractured support in the ecosystem, and makes it difficult
+for developers to rely on a single cohesive set of functionality.</p>
+</div>
+<div class="paragraph">
+<p>Option 2 has the advantage of collecting a set of related features into a single extension, but
+is likely to align with the capabilities of a single TBDR architecture, in this case Adreno &#8482; GPUs.</p>
+</div>
+<div class="paragraph">
+<p>This proposal focuses on option 2, and specifically on evangelizing the tile shading features
+that are available on Adreno &#8482; GPUs. Some features in this vendor extension may
+be incorporated into a future cross-vendor tile shading extension while other features may
+be unique to Adreno &#8482; and never supported by other vendors.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>3. Proposal</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This proposal builds on two existing extensions:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_QCOM_tile_properties">VK_QCOM_tile_properties</a> which exposes tile locations
+and dimensions to the application.</p>
+</li>
+<li>
+<p><a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_dynamic_rendering_local_read">VK_KHR_dynamic_rendering_local_read</a>
+which extends dynamic rendering to support multiple passes with input attachments.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Implementations exposing this extension must support <code>VK_QCOM_tile_properties</code> because the ability
+to query how the implementation has sub-divided the attachments into tiles is so fundamental to tile
+shading. Implementations exposing this extension are encouraged (but not required) to support
+'VK_KHR_dynamic_rendering_local_read' because it significantly increases the set of tile shading use-cases
+that can be supported with dynamic render passes.</p>
+</div>
+<div class="paragraph">
+<p>Tile shading extends Vulkan render passes with new functionality. When tile shading is
+enabled for a render pass instance, these are the highlights of the new functionality:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Fragment shaders can declare <a href="#renderpass-tile-shading-attachment-access">tile image attachment</a>
+resources allowing fragment shader invocations to load pixel values of other fragments
+within the same tile, or to sample from the pixels in a tile attachment.</p>
+</li>
+<li>
+<p>Fragment shaders can use <a href="#spirv-changes">built-in input variables</a> that describe the
+active tile&#8217;s extent in framebuffer coordinates.</p>
+</li>
+<li>
+<p><a href="#renderpass-tile-shading-aprons">Tile aprons</a> can be enabled and pixels in the apron
+region can be accessed by the fragment shader.</p>
+</li>
+<li>
+<p>A new state command is added that enables/disables
+<a href="#renderpass-per-tile-execution-model">per-tile execution model</a>.
+When this execution model is enabled:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VkCmdDispatch*</code> commands can be recorded in a render pass instance.</p>
+</li>
+<li>
+<p>Recorded draw and dispatch commands will be invoked multiple times; each recorded
+command is invoked once for each tile in the framebuffer. The tile&#8217;s
+extent is exposed in the shader via <a href="#spirv-changes">built-in input variables</a>
+and in the API via <code>VK_QCOM_tile_properties</code>.</p>
+</li>
+<li>
+<p>Compute shaders have all the same functionality described above for fragment shaders.
+This includes load/store/sample of <a href="#renderpass-tile-shading-attachment-access">tile image attachments</a>,
+<a href="#spirv-changes">built-in input variables</a>, and <a href="#renderpass-tile-shading-aprons">tile aprons</a>.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Vulkan tile shading will empower applications to leverage tile memory by injecting
+per-tile commands into GPU&#8217;s existing TBDR geometry pipeline, allowing compute to
+participate fully in render passes, and enabling operations
+that happen while the color and depth values reside in tile memory.</p>
+</div>
+<div class="sect2">
+<h3 id="_enabling_tile_shading"><a class="anchor" href="#_enabling_tile_shading"></a>3.1. Enabling Tile Shading</h3>
+<div class="paragraph">
+<p>To enable tile shading for a render pass, add
+<code>VkRenderPassTileShadingCreateInfoQCOM</code> in the pNext chain of
+<code>VkRenderPassCreateInfo</code> or <code>VkRenderingInfo</code> with
+<code>VK_TILE_SHADING_RENDER_PASS_ENABLE_BIT_QCOM</code> set in <code>flags</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef enum VkTileShadingRenderPassFlagBitsQCOM {
+    VK_TILE_SHADING_RENDER_PASS_ENABLE_BIT_QCOM              = 0x00000001,
+    VK_TILE_SHADING_RENDER_PASS_PER_TILE_EXECUTION_BIT_QCOM  = 0x00000002,
+    VK_TILE_SHADING_RENDER_PASS_FLAG_BITS_MAX_ENUM           = 0x7FFFFFFF
+} VkTileShadingRenderPassFlagBitsQCOM;
+
+typedef VkFlags VkTileShadingRenderPassFlagsQCOM;
+
+typedef struct VkRenderPassTileShadingCreateInfoQCOM {
+    VkStructureType                     sType;
+    const void*                         pNext;
+    VkTileShadingRenderPassFlagsQCOM    flags;
+    VkExtent2D                          tileApronSize;
+} VkRenderPassTileShadingCreateInfoQCOM;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>tileApronSize</code> specifies the width and height of the
+<a href="#renderpass-tile-shading-aprons">tile apron</a>.
+If tile apron is not used, this should be set to 0.</p>
+</div>
+<div class="paragraph">
+<p>When tile shading is enabled for a render pass, the following
+features become available to shaders within that render pass:
+  * Compute shaders can declare the <code>TileShadingQCOM</code> capability.
+  * Fragment shaders shaders can declare the <code>TileShadingQCOM</code> capability if the
+    <code>tileShadingFragmentStage</code> feature is enabled.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_per_tile_execution_mode"><a class="anchor" href="#_per_tile_execution_mode"></a>3.2. Per-tile execution mode</h3>
+<div class="paragraph">
+<p>Within a render pass that <a href="#renderpass-tile-shading">enables tile shading</a>,
+the <a href="#renderpass-per-tile-execution-model">per-tile execution mode</a>
+can be enabled or disabled:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPerTileBeginInfoQCOM {
+    VkStructureType    sType;
+    const void*        pNext;
+} VkPerTileBeginInfoQCOM;
+
+typedef struct VkPerTileEndInfoQCOM {
+    VkStructureType    sType;
+    const void*        pNext;
+} VkPerTileEndInfoQCOM;
+
+void vkCmdBeginPerTileExecutionQCOM(
+    VkCommandBuffer               commandBuffer,
+    const VkPerTileBeginInfoQCOM* pPerTileBeginInfo);
+
+void vkCmdEndPerTileExecutionQCOM(
+    VkCommandBuffer               commandBuffer);
+    const VkPerTileEndInfoQCOM*   pPerTileEndInfo);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Inside each begin/end block, <em>per-tile execution mode</em> is enabled.
+Begin/end blocks can only be recorded inside a render pass instance that
+enables tile shading.
+At the end of a render pass instance, <em>per-tile execution mode</em> must be disabled.</p>
+</div>
+<div class="paragraph">
+<p>When <em>per-tile execution mode</em> is enabled, any recorded commands (state, action,
+synchronization, and indirection) are executed for each tile. The order in which
+tiles are processed and the ordering of commands across tiles is undefined.</p>
+</div>
+<div class="paragraph">
+<p>When <em>per-tile execution mode</em> is enabled, and if the <code>tileShadingPerTileDispatch</code>
+feature is enabled, <code>VkCmdDispatch*</code> commands can be recorded inside a render pass.
+These per-tile dispatches can use the functionality described in
+<a href="#spirv-changes">SPIRV changes</a>.</p>
+</div>
+<div class="paragraph">
+<p>When <em>per-tile execution mode</em> is enabled, the
+<a href="#renderpass-tile-shading-command-restrictions">Per-Tile Command Restrictions</a> apply.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_secondary_command_buffers"><a class="anchor" href="#_secondary_command_buffers"></a>3.3. Secondary Command Buffers</h3>
+<div class="paragraph">
+<p>When executing secondary command buffers in a render pass with tile shading enabled a
+VkRenderPassTileShadingInfoQCOM must have been supplied when recording the secondary command
+buffer in VkCommandBufferInheritanceInfo.</p>
+</div>
+<div class="paragraph">
+<p>It must match the render pass for tiling enabled, per-tile mode active, and apron size.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tile_attachments"><a class="anchor" href="#_tile_attachments"></a>3.4. Tile Attachments</h3>
+<div class="paragraph">
+<p>Tile attachment variables in the shader provide a per-tile storage image view
+of the color, depth, or input attachments of the current render pass instance.
+If the attachment is multisampled or layered, a corresponding layered or
+multisampled tile attachment variable is declared.</p>
+</div>
+<div class="paragraph">
+<p>Tile attachment variables can only be declared and statically referenced in compute
+and fragment shaders that declare the <code>TileShadingQCOM</code> capability.
+Tile attachment variables are backed by a descriptor that references the same
+<code>VkImageView</code> as specified for an attachment of the current render pass instance.</p>
+</div>
+<div class="paragraph">
+<p>Tile attachment variables are further subdivided into "storage tile
+attachment" and "sampled tile attachment" variables. The former supports
+load/store operations and is backed by a descriptor of
+type <code>VK_DESCRIPTOR_TYPE_STORAGE_IMAGE</code>, while the latter supports sampling
+and is backed by a descriptor of type <code>VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE</code></p>
+</div>
+<div class="paragraph">
+<p>Existing features and format restrictions for storage images and sampled images
+also apply when accessing a storage tile attachment or sampled tile attachment. For
+instance, the <code>fragmentStoresAndAtomicsreads</code> feature applies to storage tile attachment
+accesses in the fragment shader.
+Similarly, features <code>shaderStorageImageWriteWithoutFormat</code> and
+<code>shaderStorageImageReadWithoutFormat</code> apply to storage tile attachments.
+<code>OpAtomic*</code> operations are supported for storage tile attachments if the
+<code>tileShadingAtomicOps</code> feature is enabled.</p>
+</div>
+<div class="paragraph">
+<p>The basic data type of the shader variable must match the format of the attachment.
+In the case of depth/stencil attachments, the data type of the shader variable determines
+if the depth or stencil aspect of the tile is accessed by the shader.</p>
+</div>
+<div class="paragraph">
+<p>Accessing a tile attachment only requires that the image not be in the
+<code>VK_IMAGE_LAYOUT_UNDEFINED</code> or <code>VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL</code>
+layouts.</p>
+</div>
+<div class="paragraph">
+<p>Tile attachment variables can be aggregated into arrays.</p>
+</div>
+<div class="paragraph">
+<p>More details on tile attachment variable declarations and associated load/store/sample
+operations are described in the <a href="#spirv-changes">SPIR-V Changes</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_per_tile_command_restrictions"><a class="anchor" href="#_per_tile_command_restrictions"></a>3.5. Per-Tile Command Restrictions</h3>
+<div class="paragraph">
+<p>When <a href="#renderpass-per-tile-execution-model">per-tile execution mode</a>
+is enabled within a render pass instance, the set of commands that can
+be recorded is largely unchanged. This section documents several exceptions.
+Due to the continuously evolving API, this may not be a complete list of exceptions.</p>
+</div>
+<div class="paragraph">
+<p>Where <em>per-tile execution model</em> is enabled, <code>vkCmdDispatch*</code> commands are allowed.</p>
+</div>
+<div class="paragraph">
+<p>Where <em>per-tile execution model</em> is enabled the following are disallowed:
+  * Transform feedback commands are not allowed:  <code>vkCmdBeginTransformFeedbackEXT</code>,
+   <code>vkCmdEndTransformFeedbackEXT</code>.
+  * Query commands are not allowed: <code>vkCmdBeginQueryIndexedEXT</code>, <code>vkCmdEndQueryIndexedEXT</code>,
+   <code>vkCmdBeginQuery</code>, <code>vkCmdWriteTimestamp',
+   `vkCmdEndQuery</code>, <code>vkCmdDebugMarkerBeginEXT</code>, <code>vkCmdDebugMarkerEndEXT</code>,
+    <code>vkCmdDebugMarkerInsertEXT</code>.
+  * Some synchronization commands are not allowed:   <code>vkCmdWaitEvents2</code>, <code>vkCmdWaitEvents</code>.
+  * The following action command is not allowed: <code>vkCmdClearAttachments</code>
+  * Access of an attachment with layout <code>VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL</code>
+    as provided by <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_attachment_feedback_loop_layout">VK_EXT_attachment_feedback_loop_layout</a>.
+  * Any commands that would cause a invocations of the tessellation, geometry, ray tracing,
+    or mesh shading shader stages.</p>
+</div>
+<div class="paragraph">
+<p>Other tile shading restrictions:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A render pass that enables tile shading must not be recorded
+inside a command buffer created with <code>VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT</code>.</p>
+</li>
+<li>
+<p>A render pass that enables tile shading must not include the
+<code>VkRenderPassFragmentDensityMapCreateInfoEXT::fragmentDensityMapAttachment</code> equal
+ to a value other than <code>VK_NULL</code>.</p>
+</li>
+<li>
+<p>A render pass that enables tile shading must not render
+to Android Hardware Buffers with external formats as provided by
+<a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_ANDROID_external_format_resolve">VK_ANDROID_external_format_resolve</a>.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tile_apron"><a class="anchor" href="#_tile_apron"></a>3.6. Tile Apron</h3>
+<div class="paragraph">
+<p>In a render pass that enables tile shading, a <em>tile apron</em> be enabled by setting
+<code>tileApronSize</code> to a value other than (0,0). Subpass must be specified with flags
+that include <code>VK_SUBPASS_DESCRIPTION_TILE_SHADING_APRON_BIT_QCOM</code> or the apron
+size will be (0,0) for that subpass, and apps must not access values outside the tile.
+The tile apron enables shader invocations to load from tile attachment variables at a
+location that is outside the current tile. The (width,height) value of <code>tileApronSize</code>
+specifies the number of pixels in the horizontal and vertical directions that are
+included in the apron region. For example, (1,1) means that the apron region extends
+the top, bottom, left and right margins of the tile by 1 pixel. The <code>tileApronSize</code>
+must not exceed <code>VkPhysicalDeviceTileShadingPropertiesQCOM::maxApronSize</code>.</p>
+</div>
+<div class="paragraph">
+<p>The tile apron feature is expected to be important for image-based algorithms that require
+access to a single pixel and the neighborhood of pixels around it. These included image
+processing use-cases such as convolution image processing and gaming use-cases such as
+screen-space ambient occlusion (SSAO).
+A good mental model for the tile apron is to think of it as enabling "overlapping
+tiles".
+When enabled, the margins of each tile are extended in the horizontal and vertical
+directions, to include some pixels that belong to the adjacent tiles.
+Those pixels that are outside the original tile extents, but within the apron region
+are termed "apron pixels".</p>
+</div>
+<div class="paragraph">
+<p>Apron pixels will be initialized as specified by the render pass <code>VkAttachmentLoadOp</code>,
+and are updated by draw commands that execute inside the render pass, but they are
+always discarded at the end of the render pass (i.e., never stored to the attachment
+by VkAttachmentStoreOp).
+In a tile shading render pass, fragment and compute shader invocations can load apron
+pixels with <code>OpImageRead</code> or <code>OpImageSparseRead</code> but cannot store to apron pixels using
+<code>OpImageWrite</code> or with atomic operations using <code>OpImageTexelPointer</code>.
+Enabling the apron for a render pass instance affects color, depth, and input attachments.</p>
+</div>
+<div class="paragraph">
+<p>Enabling the apron will reduce the efficiency of TBDR GPU rendering, with larger apron sizes
+having greater impact. Aprons should be enabled judiciously.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_area_based_dispatch"><a class="anchor" href="#_area_based_dispatch"></a>3.7. Area-based dispatch</h3>
+<div class="paragraph">
+<p>The following command executes a tile-sized dispatch, where
+<a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_QCOM_tile_properties">VK_QCOM_tile_properties</a>
+<code>VkTilePropertiesQCOM::tileSize</code> or the associated shader built-ins provide
+the tile dimensions.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkDispatchTileInfoQCOM {
+    VkStructureType    sType;
+    const void*        pNext;
+} VkDispatchTileInfoQCOM;
+
+void vkCmdDispatchTileQCOM(
+    VkCommandBuffer               c,
+    const VkDispatchTileInfoQCOM* pDispatchTileInfo);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This command operates in the
+<a href="#renderpass-per-tile-execution-model">per-tile execution model</a>,
+invoking a separate dispatch for each <em>covered tile</em>.
+The global workgroup count and local workgroup size of each dispatch are defined by the
+implementation to efficiently iterate over a uniform grid of pixel blocks within
+the area of its <em>active tile</em>.</p>
+</div>
+<div class="paragraph">
+<p>Each shader invocation operates on a single pixel block and its size is determined by the shader&#8217;s
+tiling rate, which <strong>must</strong> be defined by shaders executed by this command. The TileShadingRateQCOM
+execution mode operand defines the shader&#8217;s tiling rate. Its x and y <strong>must</strong> be a power
+of two and less than or equal to the <a href="#limits-maxTileShadingRate">maxTileShadingRate</a> limit.
+Its z <strong>must</strong> be less than or equal to the z value of the active tile size as returned by
+<code>VK_QCOM_tile_properties</code>, and
+<code>VkTilePropertiesQCOM::tileSize.z % TileShadingRateQCOM.z</code> <strong>must</strong> equal <code>0</code>.</p>
+</div>
+<div class="paragraph">
+<p>The start location of the shader invocation&#8217;s pixel block is
+<code>vec3(TileOffsetQCOM, 0) + (GlobalInvocationId * TileShadingRateQCOM)</code></p>
+</div>
+<div class="paragraph">
+<p>Shader invocations <strong>can</strong> perform tile attachment load/store operations at
+any location within the <em>active tile</em>, but the most efficient access <strong>may</strong>
+be limited to fragment locations within and local to the shader invocation&#8217;s pixel block.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="spirv-changes"><a class="anchor" href="#spirv-changes"></a>3.8. SPIR-V Changes</h3>
+<div class="paragraph">
+<p>The proposed SPIR-V extension <code>SPV_QCOM_tile_shading</code> will add the following SPIR-V Capabilities,
+Instructions, Storage Classes, and Decorations.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">Capability               Meaning
+-------------            ----------------------------------------------
+TileShadingQCOM          Enables access to tile image attachments.
+
+Storage Class            Meaning
+-------------            ----------------------------------------------
+TileAttachmentQCOM       Tile image variable. Fragment or Compute.
+
+
+Execution Mode                      Meaning
+-------------                       ---------------------------------------
+NonCoherentTileAttachmentReadQCOM   Disables raster order guarantee. Fragment only.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a href="#renderpass-tile-shading-attachment-access">Tile attachment</a> variables are declared
+as  <code>OpTypeImage</code> variables with storage class <code>TileAttachmentQCOM</code>.
+Such variables can be used to perform tile read/write operations, tile sampling
+operations, or tile atomic operations.
+These variables must be 2D images but can be arrayed, layered, and/or
+multi-sampled.
+These variables require "DescriptorSet" and "Binding" decorations,
+but do not require the "Location" nor the "InputAttachmentIndex" decorations.</p>
+</div>
+<div class="paragraph">
+<p>Such variables can be consumed by <code>OpImageRead</code>, <code>OpImageSparseRead</code>, <code>OpImageWrite</code>,
+and <code>OpImageTexelPointer</code>.</p>
+</div>
+<div class="paragraph">
+<p>To declare a tile attachment variable compatible with sampling operations,
+the variable must be declared as described above except that the <code>Sampled</code>
+operand must be equal to <code>1</code>.</p>
+</div>
+<div class="paragraph">
+<p>Each tile attachment image variable must be backed by an associated descriptor of
+type <code>VK_DESCRIPTOR_TYPE_STORAGE_IMAGE</code>, <code>VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE</code>,
+<code>VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER</code>, <code>VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM</code>,
+<code>VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM</code>, or
+<code>VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT</code>
+that is equivalent to the <code>VkImageView</code> specified as an attachment in the current
+render pass instance.</p>
+</div>
+<div class="paragraph">
+<p>Other restrictions, such the valid shader stages, formats, and image coordinates
+for access to these tile image variables are specified by Vulkan SPIR-V environment.</p>
+</div>
+<div class="paragraph">
+<p>The extension adds the optional execution mode <code>NonCoherentTileAttachmentReadQCOM</code>.
+When the new execution mode is enabled, the read operations of
+tile image attachments are not guaranteed to be in rasterization order.
+This execution mode is only valid for the fragment shader.</p>
+</div>
+<div class="paragraph">
+<p>The following built-in input variables are proposed, describing the (x,y)
+location and extent of the current tile:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">TileOffsetQCOM;      // uvec2 framebuffer coordinates of top-left
+                     // texel of active tile.
+TileDimensionQCOM;   // uvec3 tile size (width,height,layers) in texels of
+                     // the current tile.
+TileApronSizeQCOM;   // uvec2 size of (vertical,horizontal) apron for the
+                     // active tile.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The Vulkan SPIR-V environment will specify that:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The <code>tileShading</code> feature must be enabled to create fragment or compute shader
+modules with the <code>TileShadingQCOM</code> capability.</p>
+</li>
+<li>
+<p>A pipeline that contains shaders with <code>TileShadingQCOM</code> capability can only be bound in
+a render pass instance that enables tile shading.</p>
+</li>
+<li>
+<p>A compute shader can use stores (via <code>OpImageWrite</code>) and atomics (via <code>OpImageTexelPointer</code>)
+for tile color attachments. Compute shader stores and atomics are not allowed for tile
+depth/stencil or tile input attachments.</p>
+</li>
+<li>
+<p>A fragment shader must not use stores for tile color, tile input, or tile depth/stencil attachments.</p>
+</li>
+<li>
+<p>A fragment or compute shader can use loads (<code>OpImageRead</code>, <code>OpImageSparseRead</code>) for tile color, tile depth/stencil,
+or tile input attachments.</p>
+</li>
+<li>
+<p>If the <a href="#renderpass-tile-shading-aprons">tile apron</a> has width or height greater than zero, then loads
+and sampling of apron pixels (outside the tile, but within
+the apron) are allowed. Stores to apron pixels are disallowed. If not executing in a dynamic render pass,
+the subpass flags must include <code>VK_SUBPASS_DESCRIPTION_TILE_SHADING_APRON_BIT_QCOM</code>.</p>
+</li>
+<li>
+<p>If the <code>OpImageRead</code>, <code>OpImageSparseRead</code>, <code>OpImageWrite</code>, or <code>OpImageTexelPointer</code> instructions access a
+tile attachment, the Coordinate must be a location within the tile extent and within
+the render pass <code>renderArea</code>.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_high_level_language_exposure"><a class="anchor" href="#_high_level_language_exposure"></a>3.9. High Level Language Exposure</h3>
+<div class="paragraph">
+<p>The GLSL extension GL_QCOM_tile_shading will adds the following types, storage qualifiers,
+layout qualifiers, and built-in variables.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">Layout Qualifier                   Meaning
+---------------------------        ---------------------------------------------
+non_coherent_attachment_readQCOM   "In-only" fragment qualifier (like early_fragment_tests).
+                                   Specifies that image attachment reads do not follow raster order.
+
+tile_memoryQCOM                    A uniform qualifier for fragment and compute shaders.
+                                   Can be used for storage image types (i.e. image2D) as well as
+                                   read-only types (texture2D, sampler2D).
+
+Built-in Variable                 Meaning
+---------------------------       ---------------------------------------------
+in uvec2 gl_TileOffsetQCOM        The framebuffer coordinates of the top-left texel
+                                  of the current tile.
+in uvec3 gl_TileDimensionQCOM     The dimension of the current tile in pixels.
+in uvec2 gl_TileApronSizeQCOM     The apron width and height.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Earlier versions of this proposal included new built-in functions for tile image load/stores
+and atomics. In the latest version these have been removed. Tile image
+attachments (both storage and sampled attachments) are accessed using existing load/store and image
+atomic built-in functions.</p>
+</div>
+<div class="paragraph">
+<p>Fragment shader sample showing tile attachment load/stores</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">#version 310 es
+#extension GL_QCOM_tile_shading : enable
+precision highp float;
+
+// input attachment
+layout (set=0, binding=0, tile_memoryQCOM) uniform highp image2D input0;
+
+// tile color and depth/stencil attachments
+layout (set=0, binding=1, tile_memoryQCOM) uniform highp image2D color0;
+layout (set=0, binding=2, tile_memoryQCOM) uniform highp image2D color1;
+layout (set=0, binding=3, tile_memoryQCOM) uniform highp image2D depth0;
+layout (set=0, binding=3, tile_memoryQCOM) uniform highp image2D stencil0;
+
+layout (location=0) out vec4 fragColor;
+void main()
+{
+    uvec3 center = uvec3(gl_TileOffset,0) + (gl_TileSize/2);     // coordinates of center of tile
+
+    // load from tile attachments
+    vec4 colorB = imageLoad( input0, center );               // read input attachment
+    vec4 colorC = imageLoad( color0, center );               // read color attachment0
+    vec4 colorD = imageLoad( color1, center );               // read color attachment1
+    vec4 depthVal = vec4(imageLoad( depth0, center));        // read depth
+    vec4 stencilVal = vec4(imageLoad( stencil0, center));    // read stencil
+
+    // compute output value
+    vec4 outColor  = ( colorB + colorC + colorD + depthVal + stencilVal );
+
+    // write to tile attachments not allowed in fragment shader.
+    // imageStore( color0, center, outColor );        // not allowed in a fragment shader
+    // imageStore( depth0, center, depthVal );        // not allowed in fragment or compute shader
+
+    // write to color attachment 0 via fragment output
+    fragColor = outColor + vec4(1.0, 0.0, 0.0, 1.0);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Compute shader sample showing tile attachment load/stores</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">&lt; ... same attachment declarations as fragment shader &gt;
+
+void main ()
+{
+  uvec2 center2D = clamp(gl_GlobalInvocationID.xy, gl_TileOffset, gl_TileOffset + gl_TileSize - uvec2(1,1));
+  uvec3 center = uvec3(center2D,0);
+
+  // read from attachments
+  vec4  colorA   = imageLoad( color0, center );
+  vec4  colorB   = imageLoad( color1, center );
+  vec4  colorC   = imageLoad( input0, center );
+
+  // compute output values
+  vec4 outColor   = ( colorA + colorB + colorC ) * 0.33f;
+
+  // write to color tile attachment
+  imageStore( color0, center, outColor );
+
+  // write to depth/stencil/input attachments not allowed in compute shader.
+  // imageStore( input0, center, outColor );     // not allowed
+  // imageStore( depth0, center, depthVal );     // not allowed
+  // imageStore( stencil0, center, stencilVal ); // not allowed
+
+return;
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_synchronization"><a class="anchor" href="#_synchronization"></a>3.10. Synchronization</h3>
+<div class="paragraph">
+<p>The following synchronization-related enumerations are added. These can be
+specified in synchronization commands or in subpass dependencies.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VK_ACCESS_2_SHADER_TILE_ATTACHMENT_READ_BIT_QCOM   // read access to a tile attachment
+VK_ACCESS_2_SHADER_TILE_ATTACHMENT_WRITE_BIT_QCOM  // write access to a tile attachment</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Prior to this extension, the <em>framebuffer region</em> described by <code>VK_DEPENDENCY_BY_REGION_BIT</code>
+may be no larger than a single pixel or single sample. For a render pass that enables tile shading,
+the following changes are made:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The framebuffer regions defined by <code>VK_DEPENDENCY_BY_REGION_BIT</code> are enlarged to
+be tile-sized regions, where <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_QCOM_tile_properties">VK_QCOM_tile_properties</a>
+exposes the tile regions. In other words, the framebuffer region is a tile region and
+framebuffer-local dependencies are tile granularity dependencies.</p>
+</li>
+<li>
+<p>Both synchronization scopes of a framebuffer-local dependency include all the pixels
+contained in the tile.</p>
+</li>
+<li>
+<p>The framebuffer-space pipeline stages are extended to include
+<code>VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT</code> and <code>VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT</code>. Allowing
+<code>VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT</code> with framebuffer-local dependencies enables important
+use-cases of tile shading.</p>
+</li>
+<li>
+<p>Explicit ordering constraints must be expressed through explicit synchronization primitives.</p>
+</li>
+<li>
+<p>Dependencies between subpasses can be expressed with subpass dependencies, including the
+above bits for tile attachments.</p>
+</li>
+<li>
+<p>Dependencies between synchronizing scopes within a subpass can be expressed with a
+pipeline barrier.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For a render pass that enables tile shading, the following changes are
+made to pipeline barriers:
+ * The set of <code>VkAccessFlags</code> allowed in a render pass self-dependency or in a pipeline barrier within
+   a render pass are extended to include the following:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">   VK_ACCESS_INDIRECT_COMMAND_READ_BIT
+   VK_ACCESS_SHADER_SAMPLED_READ_BIT,
+   VK_ACCESS_SHADER_STORAGE_READ_BIT
+   VK_ACCESS_SHADER_STORAGE_WRITE_BIT
+   VK_ACCESS_SHADER_TILE_ATTACHMENT_READ_BIT
+   VK_ACCESS_SHADER_TILE_ATTACHMENT_WRITE_BIT</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Consistent with the above, the source and destination stage masks in
+a render pass self-dependency or pipeline barrier within a render pass are extended
+to include:</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>   VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT
+   VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_features_and_properties_structures"><a class="anchor" href="#_features_and_properties_structures"></a>3.11. Features and Properties structures</h3>
+<div class="paragraph">
+<p>The following feature structure is proposed. Most of the features should be
+self-explanatory.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDeviceTileShadingFeaturesQCOM {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           tileShading;
+    VkBool32           tileShadingFragmentStage;
+    VkBool32           tileShadingColorAttachments;
+    VkBool32           tileShadingDepthAttachments;
+    VkBool32           tileShadingStencilAttachments;
+    VkBool32           tileShadingInputAttachments;
+    VkBool32           tileShadingSampledAttachments;
+    VkBool32           tileShadingPerTileDraw;
+    VkBool32           tileShadingPerTileDispatch;
+    VkBool32           tileShadingDispatchTile;
+    VkBool32           tileShadingApron;
+    VkBool32           tileShadingAnisotropicApron;
+    VkBool32           tileShadingAtomicOps;
+    VkBool32           tileShadingImageProcessing;
+} VkPhysicalDeviceTileShadingFeaturesQCOM;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A few notable features are documented below.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>tileShading</code> is the base feature, indicating the
+implementation supports creating a render pass that enables
+tile shading and shaders that enable the <code>TileShadingQCOM</code> capability.</p>
+</li>
+<li>
+<p><code>tileShadingFragmentStage</code> indicates the implementation supports tile shading
+in the fragment stage.</p>
+</li>
+<li>
+<p><code>tileShadingColorAttachments</code> indicates the implementation supports
+use of <code>OpImageRead</code> and <code>OpImageSparseRead</code> in the supported stages
+to access a color attachment.
+In addition, this feature indicates support for  and <code>OpImageStore</code> and
+<code>OpImageSparseRead</code> to access a color attachment in the compute stage.</p>
+</li>
+<li>
+<p><code>tileShadingDepthAttachments</code> indicates the implementation supports
+use of <code>OpImageRead</code> and <code>OpImageSparseRead</code> in the supported
+stages to access the depth aspect of a depth/stencil attachment.</p>
+</li>
+<li>
+<p><code>tileShadingStencilAttachments</code> indicates the implementation supports
+use of <code>OpImageRead</code> and <code>OpImageSparseRead</code> in the supported
+stages to access the stencil aspect of a depth/stencil attachment.</p>
+</li>
+<li>
+<p><code>tileShadingInputAttachments</code> indicates the implementation supports
+use of <code>OpImageRead</code> in the supported
+stages to access an input attachment.</p>
+</li>
+<li>
+<p>Feature`tileShadingSampledAttachments` indicates the implementation supports
+sampling instructions (<code>OpImageSample*</code>, <code>OpImageSparseSample*</code>,
+<code>OpImage*Gather</code>, <code>OpImageSparse*Gather</code>, <code>OpImageFetch</code>, <code>OpImageSparseFetch</code>,
+<code>OpImageSampleWeightedQCOM</code>, <code>OpImageBoxFilterQCOM</code>, <code>OpImageBlockMatch*SSD*QCOM</code>)
+for any tile attachment supporting <code>OpImageRead</code> or <code>OpImageSparseRead</code>.</p>
+</li>
+<li>
+<p><code>tileShadingPerTileDraw</code> indicates the implementation supports the
+recording of draw commands inside a per-tile execution block.</p>
+</li>
+<li>
+<p><code>tileShadingPerTileDispatch</code> indicates the implementation supports
+the recording of dispatch commands inside a render pass. Note that
+dispatches inside a render pass are allowed only where
+<a href="#renderpass-per-tile-execution-model">per-tile execution</a> is enabled.</p>
+</li>
+<li>
+<p><code>tileShadingDispatchTile</code> indicates the implementation supports
+the <code>vkCmdDispatchTileQCOM</code> command. Note this feature requires
+<code>tileShadingPerTileDispatch</code>.</p>
+</li>
+<li>
+<p><code>tileShadingApron</code> indicates the implementation supports an apron
+width/height greater than 0. Note that for aprons to be useful, one
+of the below tileShading*Attachments features needs to be supported.</p>
+</li>
+<li>
+<p><code>tileShadingAnisotropicApron</code> indicates the implementation supports
+aprons with a width and height that are different values.</p>
+</li>
+<li>
+<p><code>tileShadingAtomicOps</code> indicates the implementation support atomic
+operations with tile attachments.</p>
+</li>
+<li>
+<p><code>tileShadingImageProcessing</code> indicates that the implementation
+supports image processing instructions with tile attachments.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The following properties structure is proposed.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDeviceTileShadingPropertiesQCOM {
+    VkStructureType    sType;
+    void*              pNext;
+    uint32_t           maxApronSize;
+    VkBool32           preferNonCoherent;
+    VkExtent2D         tileGranularity;
+    VkExtent2D         maxTileShadingRate;
+} VkPhysicalDeviceTileShadingPropertiesQCOM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The <code>maxApronSize</code> property defines the maximum tile apron size allowed.</p>
+</li>
+<li>
+<p>The <code>preferNonCoherent</code> property indicates whether the implementation prefers
+SPIR-V <code>NonCoherentTileAttachment</code> execution mode.</p>
+</li>
+<li>
+<p>The <code>tileGranularity</code> property provides a guarantee on the granularity of each tile.
+Each tile will have dimensions that are a multiple of this granularity in width and height.</p>
+</li>
+<li>
+<p>The <code>maxTileShadingRate</code> property defines the maximum value that the <code>TileShadingRateQCOM</code>
+specified in the shader can be, and must be a power of 2.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_issues"><a class="anchor" href="#_issues"></a>4. Issues</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_are_all_attachment_typescolor_depthstencil_input_resolve_accessible_via_tile_attachment_loadstore_operations"><a class="anchor" href="#_are_all_attachment_typescolor_depthstencil_input_resolve_accessible_via_tile_attachment_loadstore_operations"></a>4.1. Are all attachment types(color, depth/stencil, input, resolve) accessible via tile attachment load/store operations.</h3>
+<div class="paragraph">
+<p>PROPOSED:  No, we propose the following restrictions for specific attachment types and shader stages:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Compute and fragment shaders must not store to depth/stencil attachments, resolve attachments,
+nor input attachments.</p>
+</li>
+<li>
+<p>Fragment shaders must not store to color attachments.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>There are no known use-cases for tile stores to input attachments, and it seemed
+unexpected that an "input attachment" would be modified. Shader writes to
+depth/stencil attachments is unexpected and may require disablement of
+implementation-specific depth acceleration features. Resolve attachments are
+unlikely to be backed by tile memory  Within a fragment shader, stores to the
+color attachment do not seem useful and could be difficult to synchronize with
+fragment output writes. For those reasons, the above cases are disallowed
+in this extension.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_should_draw_commands_be_allowed_when_per_tile_execution_mode_is_enabled"><a class="anchor" href="#_should_draw_commands_be_allowed_when_per_tile_execution_mode_is_enabled"></a>4.2. Should draw commands be allowed when per-tile execution mode is enabled?</h3>
+<div class="paragraph">
+<p>PROPOSED: Yes, this is allowed, because it can be useful for certain use-cases.</p>
+</div>
+<div class="paragraph">
+<p>Without this extension, a TBDR GPU can "distribute" the draw call across the tiles.
+As the GPU processes each tile, if a draw command includes primitives that do not
+cover the current tile, then the implementation may "skip" such primitives for
+that tile.
+If a draw command contains no primitives that cover the current tile, the
+draw call may be entirely skipped for that tile.
+This is important feature for maximizing TBDR rendering efficiency.</p>
+</div>
+<div class="paragraph">
+<p>With this extension, per-tile draws are introduced. A per-tile draw guarantees
+the draw will be executed for each tile, effectively bypassing the above
+mechanisms.
+The intended use-case for per-tile draws is for GPU-driven rendering.
+In this use-case, a per-tile dispatch invokes a per-tile compute shader that writes
+data to an indirect buffer, followed by a per-tile vkCmdDrawIndirect* that
+consumes the same buffer. The application should ensure that each
+per-tile draw contains only primitives that cover the current tile. This is also
+the motivation for adding <code>VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT</code> as a
+framebuffer-space pipeline stage, enabling BY_REGION dependencies for the
+DRAW_INDIRECT stage.</p>
+</div>
+<div class="paragraph">
+<p>Other than such GPU-driven use-cases, the use of per-tile draws is discouraged.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_should_texture_sampling_be_supported_on_tile_attachments"><a class="anchor" href="#_should_texture_sampling_be_supported_on_tile_attachments"></a>4.3. Should texture sampling be supported on tile attachments?</h3>
+<div class="paragraph">
+<p>PROPOSED: Yes, this has been included in the current proposal, but
+guarded by feature bit <code>tileShadingSampledAttachments</code>.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Tile attachment images used to construct <code>OpSampledImage</code> must
+have been declared with the <code>tileSampledImageQCOM</code> storage qualifier,
+and will have an associated <code>VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE</code> or
+<code>VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER</code> descriptor.</p>
+</li>
+<li>
+<p>The resulting <code>OpSampledImage</code> variable can be used with all the texture
+<code>OpImageSample*</code>, <code>OpImageSparseSample*</code>, <code>OpImage*Gather</code>, and <code>OpImageSparse*Gather</code>
+instructions.</p>
+</li>
+<li>
+<p>Texture coordinates for are relative to the attachment dimensions, rather than
+relative to the tile dimensions.</p>
+</li>
+<li>
+<p>When sampling from a sampled tile attachment, if the texture coordinates
+are near a tile edge, or fully outside the tile, the texels participating in
+texture filter may extend beyond the boundaries of the tile, resulting in reads
+of invalid texel locations, resulting in undefined values returned to the
+shader. The implementation is not required to clamp the coordinates to a valid
+range. Applications will need to guarantee that the filter does not result in
+reading locations outside the tile+apron boundary.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_does_this_extension_offer_any_guarantees_for_the_granularity_of_the_tile_dimensions"><a class="anchor" href="#_does_this_extension_offer_any_guarantees_for_the_granularity_of_the_tile_dimensions"></a>4.4. Does this extension offer any guarantees for the granularity of the tile dimensions?</h3>
+<div class="paragraph">
+<p>PROPOSED: Yes, the granularity is guaranteed.</p>
+</div>
+<div class="paragraph">
+<p><a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_QCOM_tile_properties">VK_QCOM_tile_properties</a> reports
+tile dimensions but does not provide any guarantees on the granularity of the tile
+dimension, making it difficult to author compute shaders that operate on a workgroup
+size of known dimensions.</p>
+</div>
+<div class="paragraph">
+<p>An extension property <code>tileGranularity</code> is exposed to provide this.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_should_we_support_atomic_operations_on_tile_attachments"><a class="anchor" href="#_should_we_support_atomic_operations_on_tile_attachments"></a>4.5. Should we support atomic operations on tile attachments?</h3>
+<div class="paragraph">
+<p>PROPOSED:  Yes, the atomic operations on tile attachments are supported but
+the functionality is currently guarded by a feature bit.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_does_this_extension_support_multiview_rendering"><a class="anchor" href="#_does_this_extension_support_multiview_rendering"></a>4.6. Does this extension support multiview rendering?</h3>
+<div class="paragraph">
+<p>PROPOSED: Yes, this is supported.</p>
+</div>
+<div class="paragraph">
+<p>Without this extension, implementations may implement multiview
+rendering as single-pass rendering to a multi-layered attachment, or multi-pass
+rendering where each pass renders one view/layer. With this extension,
+the former would use multi-layered tiles and the latter would use
+single-layered tiles. The number of layers in the tile would affect
+most application use-cases for tile shading. <code>VK_QCOM_tile_properties</code> exposes
+the number of layers in the tile, allowing the application to handle either
+implementation style.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_does_this_extension_support_attachments_with_a_layer_count_greater_than_1"><a class="anchor" href="#_does_this_extension_support_attachments_with_a_layer_count_greater_than_1"></a>4.7. Does this extension support attachments with a layer count greater than 1?</h3>
+<div class="paragraph">
+<p>PROPOSED: Yes, this is supported. The the existing <code>VK_QCOM_tile_properties</code>
+extension exposes support for multi-layered tiles.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_are_store_operations_allowed_for_apron_pixels"><a class="anchor" href="#_are_store_operations_allowed_for_apron_pixels"></a>4.8. Are store operations allowed for apron pixels?</h3>
+<div class="paragraph">
+<p>PROPOSED: No, this is not allowed.</p>
+</div>
+<div class="paragraph">
+<p>There are no known use-cases, for stores to the apron pixels
+and supporting this may come at a performance cost on some
+TBDRs.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_is_functionality_and_performance_expected_to_be_similar_for_both_render_pass_objects_and_dynamic_render_passes"><a class="anchor" href="#_is_functionality_and_performance_expected_to_be_similar_for_both_render_pass_objects_and_dynamic_render_passes"></a>4.9. Is functionality and performance expected to be similar for both render pass objects and dynamic render passes?</h3>
+<div class="paragraph">
+<p>PROPOSED: Yes, since this extension builds upon
+<a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_dynamic_rendering_local_read">VK_KHR_dynamic_rendering_local_read</a>,
+the functionality and performance is expected to be equivalent.</p>
+</div>
+<div class="paragraph">
+<p>Earlier versions of this extension that were not based on
+VK_KHR_dynamic_rendering_local_read resulted in far less functionality
+for dynamic render passes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_does_this_extension_change_the_behavior_of_render_pass_loadop_or_storeop"><a class="anchor" href="#_does_this_extension_change_the_behavior_of_render_pass_loadop_or_storeop"></a>4.10. Does this extension change the behavior of render pass LoadOp or StoreOp?</h3>
+<div class="paragraph">
+<p>RESOLVED: No, there is no change to the behavior.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_can_tile_attachment_loadstore_operations_be_used_without_enabling_per_tile_execution"><a class="anchor" href="#_can_tile_attachment_loadstore_operations_be_used_without_enabling_per_tile_execution"></a>4.11. Can tile attachment load/store operations be used without enabling per-tile execution?</h3>
+<div class="paragraph">
+<p>RESOLVED: Yes, if a render pass enables tile shading but not the
+<a href="#renderpass-per-tile-execution-model">per-tile execution model</a>, then
+fragment shader invocations can load pixel values from tile attachment
+variables.</p>
+</div>
+<div class="paragraph">
+<p>This includes loading the pixel value of the fragment coordinate
+(aka "framebuffer fetch") as well as the ability to load pixel values
+of other fragments within the tile and/or the apron region.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_should_this_extension_include_the_ability_for_fragment_or_compute_shader_to_reinterpret_the_format_of_tile_attachment_pixels"><a class="anchor" href="#_should_this_extension_include_the_ability_for_fragment_or_compute_shader_to_reinterpret_the_format_of_tile_attachment_pixels"></a>4.12. Should this extension include the ability for fragment or compute shader to reinterpret the format of tile attachment pixels?</h3>
+<div class="paragraph">
+<p>RESOLVED: No, while such a feature is desirable for many TBDR GPUs and is related to
+to this extension, but was considered beyond the scope of this extension.</p>
+</div>
+<div class="paragraph">
+<p>Use-cases such as deferred shading and deferred lighting are often implemented with multiple
+color attachments, representing the framebuffer pixels in different formats or layouts.
+The OpenGL extension <code>GL_EXT_shader_pixel_local_storage</code> supports such reinterpretation,
+and other tile shading APIs incorporate something similar. These mechanisms enable
+the same block of tile memory to be interpreted as multiple layouts or formats.</p>
+</div>
+<div class="paragraph">
+<p>Such reinterpretation of framebuffer pixels can be useful even if tile shading is not
+used. Therefore, it may be best handled as a completely separate extension.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_should_this_extension_include_an_area_based_dispatch"><a class="anchor" href="#_should_this_extension_include_an_area_based_dispatch"></a>4.13. Should this extension include an area-based dispatch?</h3>
+<div class="paragraph">
+<p>RESOLVED: Yes, one some Adreno &#8482; GPUs and for some use-cases, the tile-sized
+dispatch can improve GPU efficiency and has been incorporated into this extension.</p>
+</div>
+<div class="paragraph">
+<p><code>vkCmdDispatchTileQCOM</code> provides a "tile-sized dispatch" where
+the number of compute shader invocations is a function of the tile dimensions,
+where the GPU can construct workgroups that are aligned to implementation specific
+micro-tiles and assign those workgroups to the shader core that is able to
+most optimally perform load/store operations for the micro tile&#8217;s pixels.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_do_we_need_a_new_vk_pipeline_create_bit_to_specify_if_per_tile_execution_mode_will_be_enabled"><a class="anchor" href="#_do_we_need_a_new_vk_pipeline_create_bit_to_specify_if_per_tile_execution_mode_will_be_enabled"></a>4.14. Do we need a new VK_PIPELINE_CREATE bit to specify if per-tile execution mode will be enabled?</h3>
+<div class="paragraph">
+<p>RESOLVED: No. In this proposal, a created graphics pipeline can be used in a render
+pass regardless whether the render pass enables tile shading, and regardless whether
+<a href="#renderpass-per-tile-execution-model">per-tile execution mode</a> is enabled. Similarly,
+a created compute pipelines can now be used inside or outside a render pass. We decided
+not to require these usage flags during pipeline creation because we think it would be a burden
+to developers and because we do not anticipate implementations will require this information.
+We do specify that the new shader built-ins (e.g., TileDimensionQCOM, TileOffsetQCOM, etc.) contain
+the value <code>0</code> if the shader is invoked when per-tile execution mode is disabled.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_should_vkcomputepipelinecreateinfo_be_extended_with_renderpasssubpass_information"><a class="anchor" href="#_should_vkcomputepipelinecreateinfo_be_extended_with_renderpasssubpass_information"></a>4.15. Should VkComputePipelineCreateInfo be extended with renderpass/subpass information?</h3>
+<div class="paragraph">
+<p>RESOLVED: No. Similar to above, we believe that limiting
+compute pipelines to a single renderpass/subpass would be a burden to developers
+and we do not anticipate that implementations need this information.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_how_does_this_extension_differ_from_vk_ext_shader_tile_image"><a class="anchor" href="#_how_does_this_extension_differ_from_vk_ext_shader_tile_image"></a>4.16. How does this extension differ from <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_shader_tile_image">VK_EXT_shader_tile_image</a>?</h3>
+<div class="paragraph">
+<p>RESOLVED: The functionality of this extension is a superset of <code>VK_EXT_shader_tile_image</code>.</p>
+</div>
+<div class="paragraph">
+<p>VK_EXT_shader_tile_image is limited to bringing the functionality of
+GL_EXT_shader_framebuffer_fetch to Vulkan dynamic render passes. The
+associated SPV_EXT_shader_tile_image and GL_EXT_shader_tile_image
+extensions provide descriptor-less read-only access to only the current
+fragment location for only color/depth/stencil attachments. This extension
+is a superset of the functionality in VK_EXT_shader_tile_image with
+the exception of descriptor-less access.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_is_robustness_specified_for_out_of_bounds_tile_attachment_access"><a class="anchor" href="#_is_robustness_specified_for_out_of_bounds_tile_attachment_access"></a>4.17. Is robustness specified for out-of-bounds tile attachment access?</h3>
+<div class="paragraph">
+<p>RESOLVED: Possibly in a future extension. This extension requires that sampling
+and load/store tile attachment access must use an offset/coordinate that is within
+the boundary of the tile (plus any apron). Out-of-bounds access will result in
+undefined behavior. For many use-cases, this will require the
+application shader clamps the coordinates to the tile&#8217;s boundaries.
+Note that although clamp/wrap modes are specified in the VkSampler object,
+and are fully supported with tile attachment access, those clamp/wrap operations are
+defined to occur at the edges of the VkImage and not at the edges of the tile.
+While shader-based clamping will add unwanted shader overhead, initial implementations
+supporting this extension may not support tile access with robustness.</p>
+</div>
+<div class="paragraph">
+<p>While this extension could define an optional tile robustness feature, we have not
+yet standardized on the robustness behavior(s) that should be provided for tile access.
+For example, a robust out-of-bounds tile access might return 0, or the coordinates might
+be clamped to the tile&#8217;s boundaries.
+In this initial proposal, we have elected to simply ban out-of-bounds tile access.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_how_does_this_extension_interact_with_vk_qcom_image_processing"><a class="anchor" href="#_how_does_this_extension_interact_with_vk_qcom_image_processing"></a>4.18. How does this extension interact with <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_QCOM_image_processing">VK_QCOM_image_processing</a>?</h3>
+<div class="paragraph">
+<p>RESOLVED: The functionality VK_QCOM_image_processing and VK_QCOM_image_processing2 are
+available with tile shading with an optional feature bit <code>tileShadingImageProcessing</code>.</p>
+</div>
+<div class="paragraph">
+<p>VK_QCOM_image_processing and VK_QCOM_image_processing2 adds several new "high order" SPIR-V texture filtering operations
+for image processing (<code>OpImageSampleWeightedQCOM</code>, <code>OpImageBoxFilterQCOM</code>, <code>OpImageBlockMatch*</code>).</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

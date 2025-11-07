@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="icon" href="images/Vulkan_LogoBug_48px_Nov17.png">
+<link rel="stylesheet" href="github-markdown.css">
+</head>
+<body>
+<article class="markdown-body">
+<!-- markdownlint-disable MD041 -->
+
+<p align="left"><img src="https://vulkan.lunarg.com/img/NewLunarGLogoBlack.png" alt="LunarG" width=263 height=113 /></p>
+<p align="left">Copyright &copy; 2015-2025 LunarG, Inc.</p>
+
+<p><a href="https://creativecommons.org/licenses/by-nd/4.0/" TARGET="_blank"><img src="https://i.creativecommons.org/l/by-nd/4.0/88x31.png" title="Creative Commons License" alt="Creative Commons" /></a></p>
+<p align="center"><img src="./images/vulkan_configurator.png" width=400 /></p>
+
+<p><a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/main/docs/LoaderInterfaceArchitecture.md#layers" TARGET="_blank">Vulkan layers</a> allow application developers to add functionality to Vulkan applications without modifying the application itself, e.g.: validating API usages, dumping API entry points or generating screenshots of specified frames.</p>
+<p>Configuring layers means multiple tasks:</p>
+<ul>
+<li>Enabling layers, selecting which layer will be executed</li>
+<li>Ordering layers, choosing the order of the layer execution between the Vulkan application and the Vulkan driver.</li>
+<li>Configuring each layer capabilities</li>
+</ul>
+<p><a href="./layer_configuration.html">Vulkan layers can be configured using three different methods</a> to match specific Vulkan developers' workflows:</p>
+<ul>
+<li>Using Vulkan Loader (<code>VK_LOADER_LAYERS_ENABLE</code>) and Vulkan Layers environment variables.</li>
+<li>Using the Vulkan API: <code>vkCreateInstance()</code> and the <code>VK_EXT_layer_settings</code> extension since <em>Vulkan 1.3.272</em>.</li>
+<li>Using Vulkan Loader settings and the <code>vk_layer_settings.txt</code> file using <em>Vulkan Configurator</em> since <em>Vulkan 1.3.284</em>.</li>
+</ul>
+<p><em>Vulkan Configurator 3</em> requires <em>Vulkan Loader 1.4.304</em> or newer to run.</p>
+<ul>
+<li><strong><a href="https://github.com/LunarG/VulkanTools/blob/main/vkconfig_gui/CHANGELOG.md" TARGET="_blank">Change Log</a></strong>: The history of <em>Vulkan Configurator</em> releases.</li>
+<li><strong><a href="https://github.com/LunarG/VulkanTools/issues" TARGET="_blank">Bug reports</a></strong>: Open a GitHub issue when you encounter a bug.</li>
+<li><strong><a href="https://github.com/LunarG/VulkanTools/blob/main/vkconfig_gui/CONTRIBUTING.md" TARGET="_blank">Contributing</a></strong>: Submit a fix or a feature to <em>Vulkan Configurator</em>.</li>
+</ul>
+<hr />
+<h2 id="platforms-support">Platforms Support</h2>
+<table>
+<thead>
+<tr class="header">
+<th>OS</th>
+<th>Windows</th>
+<th>Linux</th>
+<th>macOS</th>
+<th>iOS</th>
+<th>Android</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Support</td>
+<td><span class="emoji" data-emoji="heavy_check_mark">✔️</span></td>
+<td><span class="emoji" data-emoji="heavy_check_mark">✔️</span></td>
+<td><span class="emoji" data-emoji="heavy_check_mark">✔️</span></td>
+<td><span class="emoji" data-emoji="x">❌</span></td>
+<td><span class="emoji" data-emoji="x">❌</span></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="downloads">Downloads</h2>
+<p><em>Vulkan Configurator</em> is delivered with the <a href="https://vulkan.lunarg.com/sdk/home" TARGET="_top">Vulkan SDK</a>.</p>
+<hr />
+<h2 id="using-vulkan-configurator">Using Vulkan Configurator</h2>
+<p><em>Vulkan Configurator</em> is mainly a graphical user interface (GUI) that may be launched from the console using <code>vkconfig-gui</code> and a command line tool <code>vkconfig --gui</code>.</p>
+<p>The tool is distributed differently, depending on the platform:</p>
+<ul>
+<li>Ubuntu packages: Upon installing the <code>lunarg-vkconfig</code> package.</li>
+<li>Linux tarball: The vkconfig executable comes pre-built; be sure Qt is installed to run it.
+<ul>
+<li>On Ubuntu 22.04 Qt can be installed by running <code>sudo apt install qt6-default</code></li>
+</ul></li>
+<li>Windows: The tool will be present on the start menu, in the Vulkan SDK menu.</li>
+<li>macOS: The tool is provided as an application bundle. Run it by double-clicking the bundle from a Finder window.</li>
+</ul>
+<p><em>Vulkan Configurator</em> may be used with command line arguments to configure Vulkan Loader. Use <code>vkconfig --help</code> in the console for more information.</p>
+<p align="center"><img src="./images/presentation.gif" width=400 /></p>
+
+<hr />
+<h2 id="terminology">Terminology</h2>
+<p><a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/main/docs/LoaderInterfaceArchitecture.md#layers" TARGET="_blank"><em><strong>Vulkan Layer</strong></em></a>: A layer is an optional library that can intercept Vulkan functions on their way from the Vulkan application down to the Vulkan drivers. Multiple layers can be chained together to use multiple layer functionalities simultaneously.</p>
+<p><a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/main/docs/LoaderApplicationInterface.md#implicit-vs-explicit-layers" TARGET="_blank"><em><strong>Vulkan Explicit Layers vs Implicit Layer</strong></em></a>: An explicit layer has to be explicitly activated by the user from source in <code>vkCreateInstance</code>, using <em>Vulkan Configurator</em> or the <code>VK_LOADER_LAYERS_ENABLE</code> environment variable. Implicit layers are enabled by their existence on the system by default.</p>
+<p><em><strong>Vulkan Loader Settings</strong></em>: The Vulkan Loader settings are located on the system with the filename <code>vk_loader_settings.json</code> and is generated by Vulkan Configurator while running. It is the Vulkan Loader mechanism used by <em>Vulkan Configurator</em> to select and order Vulkan layers being executed when launching a Vulkan executable.</p>
+<p><em><strong>Vulkan Layers Settings</strong></em>: Per-layer settings loaded by each layer library and stored in the <code>vk_layer_settings.txt</code> file. This file is located either next to the Vulkan application executable or set globally and applied to all Vulkan applications thanks to <em>Vulkan Configurator</em>. These settings are described <a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/main/layers/vk_layer_settings.txt" TARGET="_blank">here for VK_LAYER_KHRONOS_validation</a> and <a href="https://github.com/LunarG/VulkanTools/blob/main/layersvt/vk_layer_settings.txt" TARGET="_blank">here for other layers created by LunarG</a>.</p>
+<hr />
+<h2 id="vulkan-layers-execution-order-overview">Vulkan Layers execution order overview</h2>
+<p>The <em>Vulkan Loader</em> and <em>Vulkan Configurator</em> support enabling and ordering layers independently.</p>
+<p>A Vulkan application developer may want to reorder the Vulkan Layers using <em>Vulkan Configurator</em>. When the Vulkan application developer set all the layers to <code>auto</code>, the Vulkan Loader will follow order of the layers set in <em>Vulkan Configurator</em>, overriding the layers order set by <code>VK_LOADER_LAYERS_ENABLES</code> and <code>vkCreateInstance</code>.</p>
+<p>All layers may are not be located by <em>Vulkan Configurator</em>. Some may be located and enabled by the Vulkan application at launch time using <code>VK_ADD_LAYER_PATH</code> environment variable and they will be executed within the "Vulkan Layers Located by Vulkan Application" block set in <em>Vulkan Configurator</em> in the layers order specified in <code>VK_LOADER_LAYERS_ENABLES</code> and <code>vkCreateInstance</code> arguments represented in the following diagram:</p>
+<p align="center"><img src="./images/vulkan_layers_located_application.png" width=400 /></p>
+
+<hr />
+<h2 id="user-specific-system-configuration">User-specific system configuration</h2>
+<p><em>Vulkan Configurator</em> does not make any system-wide changes to a system, but it does make user-specific changes. These changes are documented below:</p>
+<h3 id="linux-and-macos">Linux and macOS</h3>
+<p>Unix systems store files in the following paths:</p>
+<ul>
+<li><code>$HOME/.local/share/vulkan/loader_settings.d/vk_loader_settings.json</code> specifies the enabled layers and their execution order to the Vulkan Loader</li>
+<li><code>$HOME/.local/share/vulkan/settings.d/vk_layer_settings.txt</code> tells Vulkan layers which settings to use</li>
+</ul>
+<h3 id="windows">Windows</h3>
+<p>Windows systems store files in the following paths:</p>
+<ul>
+<li><code>%HOME%\AppData\Local\LunarG\vulkan\vk_loader_settings.json</code> specifies the enabled layers and their execution order to the Vulkan Loader</li>
+<li><code>%HOME%\AppData\Local\LunarG\vkconfig\override\vk_layer_settings.txt</code> tells Vulkan layers which settings to use</li>
+</ul>
+<p>Windows system has registry entries in the following locations:</p>
+<ul>
+<li><code>HKEY_CURRENT_USER\Software\Khronos\Vulkan\ImplicitLayers</code> which locates <code>vk_loader_settings.json</code></li>
+<li><code>HKEY_CURRENT_USER\Software\Khronos\Vulkan\Settings</code> which locates the global <code>vk_layer_settings.txt</code></li>
+</ul>
+</article>
+</body>
+</html>

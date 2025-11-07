@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Staging buffer :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../90_FAQ.html">FAQ</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li><a href="00_Vertex_input_description.html">Vertex buffers</a></li>
+    <li><a href="02_Staging_buffer.html">Staging buffer</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Tutorial/antora/modules/ROOT/pages/04_Vertex_buffers/02_Staging_buffer.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Staging buffer</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The vertex buffer we have right now works correctly, but the memory type that allows us to access it from the CPU may not be the most optimal memory type for the graphics card itself to read from.
+The most optimal memory has the <code>VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT</code> flag and is usually not accessible by the CPU on dedicated graphics cards.
+In this chapter, we&#8217;re going to create two vertex buffers.
+One <em>staging buffer</em> in CPU accessible memory to upload the data from the vertex array to, and the final vertex buffer in device local memory.
+We&#8217;ll then use a buffer copy command to move the data from the staging buffer to the actual vertex buffer.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_transfer_queue"><a class="anchor" href="#_transfer_queue"></a>Transfer queue</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The buffer copy command requires a queue family that supports transfer operations, which is indicated using <code>VK_QUEUE_TRANSFER_BIT</code>.
+The good news is that any queue family with <code>VK_QUEUE_GRAPHICS_BIT</code> or <code>VK_QUEUE_COMPUTE_BIT</code> capabilities already implicitly support <code>VK_QUEUE_TRANSFER_BIT</code> operations.
+The implementation is not required to explicitly list it in <code>queueFlags</code> in those cases.</p>
+</div>
+<div class="paragraph">
+<p>If you like a challenge, then you can still try to use a different queue family specifically for transfer operations.
+It will require you to make the following modifications to your program:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Modify <code>QueueFamilyIndices</code> and <code>findQueueFamilies</code> to explicitly look for a queue family with the <code>VK_QUEUE_TRANSFER_BIT</code> bit, but not the <code>VK_QUEUE_GRAPHICS_BIT</code>.</p>
+</li>
+<li>
+<p>Modify <code>createLogicalDevice</code> to request a handle to the transfer queue</p>
+</li>
+<li>
+<p>Create a second command pool for command buffers that are submitted on the transfer queue family</p>
+</li>
+<li>
+<p>Change the <code>sharingMode</code> of resources to be <code>VK_SHARING_MODE_CONCURRENT</code> and specify both the graphics and transfer queue families</p>
+</li>
+<li>
+<p>Submit any transfer commands like <code>vkCmdCopyBuffer</code> (which we&#8217;ll be using in this chapter) to the transfer queue instead of the graphics queue</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>It&#8217;s a bit of work, but it&#8217;ll teach you a lot about how resources are shared between queue families.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_abstracting_buffer_creation"><a class="anchor" href="#_abstracting_buffer_creation"></a>Abstracting buffer creation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Because we&#8217;re going to create multiple buffers in this chapter, it&#8217;s a good idea to move buffer creation to a helper function.
+Create a new function <code>createBuffer</code> and move the code in <code>createVertexBuffer</code> (except mapping) to it.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Buffer&amp; buffer, vk::raii::DeviceMemory&amp; bufferMemory) {
+    vk::BufferCreateInfo bufferInfo{ .size = size, .usage = usage, .sharingMode = vk::SharingMode::eExclusive };
+    buffer = vk::raii::Buffer(device, bufferInfo);
+    vk::MemoryRequirements memRequirements = buffer.getMemoryRequirements();
+    vk::MemoryAllocateInfo allocInfo{ .allocationSize = memRequirements.size, .memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties) };
+    bufferMemory = vk::raii::DeviceMemory(device, allocInfo);
+    buffer.bindMemory(*bufferMemory, 0);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Make sure to add parameters for the buffer size, memory properties and usage so that we can use this function to create many different types of buffers.
+The last two parameters are output variables to write the handles to.</p>
+</div>
+<div class="paragraph">
+<p>You can now remove the buffer creation and memory allocation code from <code>createVertexBuffer</code> and just call <code>createBuffer</code> instead:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createVertexBuffer() {
+    vk::DeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+    createBuffer(bufferSize, vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, vertexBuffer, vertexBufferMemory);
+    void* data = vertexBufferMemory.mapMemory(0, bufferSize);
+    memcpy(data, vertices.data(), (size_t) bufferSize);
+    vertexBufferMemory.unmapMemory();
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Run your program to make sure that the vertex buffer still works properly.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_using_a_staging_buffer"><a class="anchor" href="#_using_a_staging_buffer"></a>Using a staging buffer</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>We&#8217;re now going to change <code>createVertexBuffer</code> to only use a host visible buffer as temporary buffer and use a device local one as actual vertex buffer.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createVertexBuffer() {
+    vk::DeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+
+    vk::BufferCreateInfo stagingInfo{ .size = bufferSize, .usage = vk::BufferUsageFlagBits::eTransferSrc, .sharingMode = vk::SharingMode::eExclusive };
+    vk::raii::Buffer stagingBuffer(device, stagingInfo);
+    vk::MemoryRequirements memRequirementsStaging = stagingBuffer.getMemoryRequirements();
+    vk::MemoryAllocateInfo memoryAllocateInfoStaging{  .allocationSize = memRequirementsStaging.size, .memoryTypeIndex = findMemoryType(memRequirementsStaging.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent) };
+    vk::raii::DeviceMemory stagingBufferMemory(device, memoryAllocateInfoStaging);
+
+    stagingBuffer.bindMemory(stagingBufferMemory, 0);
+    void* dataStaging = stagingBufferMemory.mapMemory(0, stagingInfo.size);
+    memcpy(dataStaging, vertices.data(), stagingInfo.size);
+    stagingBufferMemory.unmapMemory();
+
+    vk::BufferCreateInfo bufferInfo{ .size = bufferSize,  .usage = vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, .sharingMode = vk::SharingMode::eExclusive };
+    vertexBuffer = vk::raii::Buffer(device, bufferInfo);
+
+    vk::MemoryRequirements memRequirements = vertexBuffer.getMemoryRequirements();
+    vk::MemoryAllocateInfo memoryAllocateInfo{  .allocationSize = memRequirements.size, .memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal) };
+    vertexBufferMemory = vk::raii::DeviceMemory( device, memoryAllocateInfo );
+
+    vertexBuffer.bindMemory( *vertexBufferMemory, 0 );
+
+    copyBuffer(stagingBuffer, vertexBuffer, stagingInfo.size);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We&#8217;re now using a new <code>stagingBuffer</code> with <code>stagingBufferMemory</code> for mapping and copying the vertex data.
+In this chapter, we&#8217;re going to use two new buffer usage flags:
+Note, we have to create a temporary pointer to a new vk::raii::Buffer object
+because the vk::raii::Buffer has the constructor deleted and thus doesn&#8217;t
+play well with std::make_unique, this is just a trick to get it to work.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_BUFFER_USAGE_TRANSFER_SRC_BIT</code>: Buffer can be used as source in a memory transfer operation.</p>
+</li>
+<li>
+<p><code>VK_BUFFER_USAGE_TRANSFER_DST_BIT</code>: Buffer can be used as destination in a memory transfer operation.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The <code>vertexBuffer</code> is now allocated from a memory type that is device local, which generally means that we&#8217;re not able to use <code>vkMapMemory</code>.
+However, we can copy data from the <code>stagingBuffer</code> to the <code>vertexBuffer</code>.
+We have to indicate that we intend to do that by specifying the transfer source flag for the <code>stagingBuffer</code> and the transfer destination flag for the <code>vertexBuffer</code>, along with the vertex buffer usage flag.</p>
+</div>
+<div class="paragraph">
+<p>We&#8217;re now going to write a function to copy the contents from one buffer to another, called <code>copyBuffer</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void copyBuffer(vk::raii::Buffer &amp; srcBuffer, vk::raii::Buffer &amp; dstBuffer, vk::DeviceSize size) {
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Memory transfer operations are executed using command buffers, just like drawing commands.
+Therefore we must first allocate a temporary command buffer.
+You may wish to create a separate command pool for these kinds of short-lived buffers, because the implementation may be able to apply memory allocation optimizations.
+You should use the <code>VK_COMMAND_POOL_CREATE_TRANSIENT_BIT</code> flag during command pool generation in that case.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void copyBuffer(vk::raii::Buffer &amp; srcBuffer, vk::raii::Buffer &amp; dstBuffer, vk::DeviceSize size) {
+    vk::CommandBufferAllocateInfo allocInfo{ .commandPool = commandPool, .level = vk::CommandBufferLevel::ePrimary, .commandBufferCount = 1 };
+    vk::raii::CommandBuffer commandCopyBuffer = std::move(device.allocateCommandBuffers(allocInfo).front());
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And immediately start recording the command buffer:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">commandCopyBuffer.begin(vk::CommandBufferBeginInfo { .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit });</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We&#8217;re only going to use the command buffer once and wait with returning from the function until the copy operation has finished executing.
+It&#8217;s good practice to tell the driver about our intent using <code>VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">commandCopyBuffer.copyBuffer(srcBuffer, dstBuffer, vk::BufferCopy(0, 0, size));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Contents of buffers are transferred using the <code>vkCmdCopyBuffer</code> command.
+It takes the source and destination buffers as arguments, and an array of regions to copy.
+The regions are defined in <code>VkBufferCopy</code> structs and consist of a source buffer offset, destination buffer offset and size.
+It is not possible to specify <code>VK_WHOLE_SIZE</code> here, unlike the <code>vkMapMemory</code> command.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">commandCopyBuffer.end();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This command buffer only contains the copy command, so we can stop recording right after that.
+Now execute the command buffer to complete the transfer:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">graphicsQueue.submit(vk::SubmitInfo{ .commandBufferCount = 1, .pCommandBuffers = &amp;*commandCopyBuffer }, nullptr);
+graphicsQueue.waitIdle();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Unlike the draw commands, there are no events we need to wait on this time.
+We just want to execute the transfer on the buffers immediately.
+There are again two possible ways to wait on this transfer to complete.
+We could use a fence and wait with <code>vkWaitForFences</code>, or simply wait for the transfer queue to become idle with <code>vkQueueWaitIdle</code>.
+A fence would allow you to schedule multiple transfers simultaneously and wait for all of them complete, instead of executing one at a time.
+That may give the driver more opportunities to optimize.</p>
+</div>
+<div class="paragraph">
+<p>We can now call <code>copyBuffer</code> from the <code>createVertexBuffer</code> function to move the vertex data to the device local buffer:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::BufferCreateInfo bufferInfo{ .size = bufferSize,  .usage = vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, .sharingMode = vk::SharingMode::eExclusive };
+vertexBuffer = vk::raii::Buffer(device, bufferInfo);
+
+vk::MemoryRequirements memRequirements = vertexBuffer.getMemoryRequirements();
+vk::MemoryAllocateInfo memoryAllocateInfo{  .allocationSize = memRequirements.size, .memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal) };
+vertexBufferMemory = vk::raii::DeviceMemory( device, memoryAllocateInfo );
+
+vertexBuffer.bindMemory( *vertexBufferMemory, 0 );
+
+copyBuffer(stagingBuffer, vertexBuffer, bufferSize);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After copying the data from the staging buffer to the device buffer, the RAII
+ buffer object will clean itself up and free the memory.</p>
+</div>
+<div class="paragraph">
+<p>Run your program to verify that you&#8217;re seeing the familiar triangle again.
+The improvement may not be visible right now, but its vertex data is now being loaded from high performance memory.
+This will matter when we&#8217;re going to start rendering more complex geometry.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_conclusion"><a class="anchor" href="#_conclusion"></a>Conclusion</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>It should be noted that in a real world application, you&#8217;re not supposed to actually call <code>vkAllocateMemory</code> for every individual buffer.
+The maximum number of simultaneous memory allocations is limited by the <code>maxMemoryAllocationCount</code> physical device limit, which may be as low as <code>4096</code> even on high end hardware like an NVIDIA GTX 1080.
+The right way to allocate memory for a large number of objects at the same time is to create a custom allocator that splits up a single allocation among many different objects by using the <code>offset</code> parameters that we&#8217;ve seen in many functions.</p>
+</div>
+<div class="paragraph">
+<p>You can either implement such an allocator yourself, or use the <a href="https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator">VulkanMemoryAllocator</a> library provided by the GPUOpen initiative.
+However, for this tutorial, it&#8217;s okay to use a separate allocation for every resource, because we won&#8217;t come close to hitting any of these limits for now.</p>
+</div>
+<div class="paragraph">
+<p>In the <a href="03_Index_buffer.html" class="xref page">next chapter,</a> we&#8217;ll learn about index buffers for vertex reuse.</p>
+</div>
+<div class="paragraph">
+<p><a href="../_attachments/20_staging_buffer.cpp">C&#43;&#43; code</a> /
+<a href="../_attachments/18_shader_vertexbuffer.slang">slang shader</a> /
+<a href="../_attachments/18_shader_vertexbuffer.vert">GLSL Vertex shader</a> /
+<a href="../_attachments/18_shader_vertexbuffer.frag">GLSL Fragment shader</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

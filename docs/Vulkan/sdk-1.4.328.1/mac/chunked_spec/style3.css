@@ -1,0 +1,13 @@
+
+    #loading_msg {
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 1ex;
+        margin-bottom: 1ex;
+        max-width: 62.5em;
+        position: relative;
+        padding-left: 1.5em;
+        padding-right: 1.5em;
+    }
+    .hidden {display: none;}

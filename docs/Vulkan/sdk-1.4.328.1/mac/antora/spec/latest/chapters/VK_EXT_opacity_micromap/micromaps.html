@@ -1,0 +1,3738 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Micromap :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:spec" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="spec" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../index.html">Vulkan Specification</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../fundamentals.html">Fundamentals</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../initialization.html">Initialization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../devsandqueues.html">Devices and Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../cmdbuffers.html">Command Buffers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../synchronization.html">Synchronization and Cache Control</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../renderpass.html">Render Pass</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../shaders.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../pipelines.html">Pipelines</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../memory.html">Memory Allocation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../resources.html">Resource Creation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../samplers.html">Samplers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../descriptorsets.html">Resource Descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../interfaces.html">Shader Interfaces</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../textures.html">Image Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../fragmentdensitymapops.html">Fragment Density Map Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_ARM_tensors/tensorops.html">Tensor Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../queries.html">Queries</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../clears.html">Clear Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../copies.html">Copy Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../drawing.html">Drawing Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../fxvertex.html">Fixed-Function Vertex Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../tessellation.html">Tessellation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../geometry.html">Geometry Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_NV_mesh_shader/mesh.html">Mesh Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_HUAWEI_cluster_culling_shader/clusterculling.html">Cluster Culling Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../vertexpostproc.html">Fixed-Function Vertex Post-Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../primsrast.html">Rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../fragops.html">Fragment Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../framebuffer.html">The Framebuffer</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../dispatch.html">Dispatching Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../device_generated_commands/generatedcommands.html">Device-Generated Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../sparsemem.html">Sparse Resources</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_KHR_surface/wsi.html">Window System Integration (WSI)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_KHR_deferred_host_operations/deferred_host_operations.html">Deferred Host Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_EXT_private_data.html">Private Data</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../accelstructures.html">Acceleration Structures</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="micromaps.html">Micromap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../raytraversal.html">Ray Traversal</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../raytracing.html">Ray Tracing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_NV_memory_decompression.html">Memory Decompression</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../videocoding.html">Video Coding</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_NV_optical_flow/optical_flow.html">Optical Flow</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../executiongraphs.html">Execution Graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_NV_external_compute_queue/VK_NV_external_compute_queue.html">External Compute Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_ARM_data_graph/graphs.html">Data graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../extensions.html">Extending Vulkan</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../features.html">Features</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../limits.html">Limits</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../formats.html">Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../capabilities.html">Additional Capabilities</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../debugging.html">Debugging</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/spirvenv.html">Vulkan Environment for SPIR-V</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/memorymodel.html">Memory Model</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/compressedtex.html">Compressed Image Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/versions.html">Core Revisions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/extensions.html">Layers &amp; Extensions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/roadmap.html">Vulkan Roadmap Milestones</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/deprecation.html">Deprecation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/boilerplate.html">API Boilerplate</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/invariance.html">Invariance</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/glossary.html">Lexicon</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/credits.html">Credits (Informative)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Specification</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../../index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../index.html">Vulkan Specification</a></li>
+    <li><a href="micromaps.html">Micromap</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/spec/modules/ROOT/pages/chapters/VK_EXT_opacity_micromap/micromaps.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Micromap</h1>
+<div class="sect1">
+<h2 id="micromap-def"><a class="anchor" href="#micromap-def"></a>Micromaps</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><em>Acceleration structures</em> store and organize geometry for ray tracing, but
+in some cases it is beneficial to include some information within the
+geometry, particularly for triangles.
+A <em>micromap</em> organizes this data around a map of values corresponding to
+subdivided microtriangles which can be added to a triangle geometry when
+building a <em>bottom level acceleration structure</em>.</p>
+</div>
+<div class="paragraph">
+<p>An <em>opacity micromap</em> is a type of micromap which stores information to
+control intersection opacity as described in <a href="../raytraversal.html#ray-opacity-micromap" class="xref page">Ray Opacity Micromap</a>.</p>
+</div>
+<div class="paragraph">
+<p>A <em>displacement micromap</em> is a type of micromap which stores information to
+displace sub-triangle vertices as described in <a href="#displacement-micromap">Displacement Micromap</a>.</p>
+</div>
+<div class="paragraph">
+<p>A micromap is considered to be constructed if a <a href="#micromap-building">micromap build command</a> or <a href="#micromap-copying">copy command</a> has been executed with
+the given acceleration structure as the destination.</p>
+</div>
+<div class="sect2">
+<h3 id="micromap-building"><a class="anchor" href="#micromap-building"></a>Building Micromaps</h3>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To build micromaps call:</p>
+</div>
+<div id="vkCmdBuildMicromapsEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_opacity_micromap
+void vkCmdBuildMicromapsEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    infoCount,
+    const VkMicromapBuildInfoEXT*               pInfos);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer into which the command will be
+recorded.</p>
+</li>
+<li>
+<p><code>infoCount</code> is the number of micromaps to build.
+It specifies the number of the <code>pInfos</code> structures that <strong>must</strong> be
+provided.</p>
+</li>
+<li>
+<p><code>pInfos</code> is a pointer to an array of <code>infoCount</code>
+<a href="#VkMicromapBuildInfoEXT">VkMicromapBuildInfoEXT</a> structures defining the data used to build
+each micromap.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The <code>vkCmdBuildMicromapsEXT</code> command provides the ability to initiate
+multiple micromaps builds, however there is no ordering or synchronization
+implied between any of the individual micromap builds.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>This means that there <strong>cannot</strong> be any memory aliasing between any micromap
+memories or scratch memories being used by any of the builds.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div id="micromap-scratch" class="paragraph">
+<p>Accesses to the micromap scratch buffers as identified by the
+<a href="#VkMicromapBuildInfoEXT">VkMicromapBuildInfoEXT</a>::<code>scratchData</code> buffer device addresses
+<strong>must</strong> be <a href="../synchronization.html#synchronization-dependencies" class="xref page">synchronized</a> with the
+<code>VK_PIPELINE_STAGE_2_MICROMAP_BUILD_BIT_EXT</code>
+<a href="../synchronization.html#synchronization-pipeline-stages" class="xref page">pipeline stage</a> and an
+<a href="../synchronization.html#synchronization-access-types" class="xref page">access type</a> of
+(<code>VK_ACCESS_2_MICROMAP_READ_BIT_EXT</code> |
+<code>VK_ACCESS_2_MICROMAP_WRITE_BIT_EXT</code>).
+Accesses to <a href="#VkMicromapBuildInfoEXT">VkMicromapBuildInfoEXT</a>::<code>dstMicromap</code> <strong>must</strong> be
+<a href="../synchronization.html#synchronization-dependencies" class="xref page">synchronized</a> with the
+<code>VK_PIPELINE_STAGE_2_MICROMAP_BUILD_BIT_EXT</code>
+<a href="../synchronization.html#synchronization-pipeline-stages" class="xref page">pipeline stage</a> and an
+<a href="../synchronization.html#synchronization-access-types" class="xref page">access type</a> of
+<code>VK_ACCESS_2_MICROMAP_WRITE_BIT_EXT</code>.</p>
+</div>
+<div class="paragraph">
+<p>Accesses to other input buffers as identified by any used values of
+<a href="#VkMicromapBuildInfoEXT">VkMicromapBuildInfoEXT</a>::<code>data</code> or
+<a href="#VkMicromapBuildInfoEXT">VkMicromapBuildInfoEXT</a>::<code>triangleArray</code> <strong>must</strong> be
+<a href="../synchronization.html#synchronization-dependencies" class="xref page">synchronized</a> with the
+<code>VK_PIPELINE_STAGE_2_MICROMAP_BUILD_BIT_EXT</code>
+<a href="../synchronization.html#synchronization-pipeline-stages" class="xref page">pipeline stage</a> and an
+<a href="../synchronization.html#synchronization-access-types" class="xref page">access type</a> of
+<code>VK_ACCESS_SHADER_READ_BIT</code>.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdBuildMicromapsEXT-pInfos-07461" href="#VUID-vkCmdBuildMicromapsEXT-pInfos-07461"></a> <span class="vuid">VUID-vkCmdBuildMicromapsEXT-pInfos-07461</span><br>
+
+For each <code>pInfos</code>[i], <code>dstMicromap</code> <strong>must</strong> have been created with
+a value of <a href="../resources.html#VkMicromapCreateInfoEXT" class="xref page">VkMicromapCreateInfoEXT</a>::<code>size</code> greater than or
+equal to the memory size required by the build operation, as returned by
+<a href="../resources.html#vkGetMicromapBuildSizesEXT" class="xref page">vkGetMicromapBuildSizesEXT</a> with <span class="eq"><code>pBuildInfo</code> =
+<code>pInfos</code>[i]</span></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBuildMicromapsEXT-mode-07462" href="#VUID-vkCmdBuildMicromapsEXT-mode-07462"></a> <span class="vuid">VUID-vkCmdBuildMicromapsEXT-mode-07462</span><br>
+
+The <code>mode</code> member of each element of <code>pInfos</code> <strong>must</strong> be a valid
+<a href="#VkBuildMicromapModeEXT">VkBuildMicromapModeEXT</a> value</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBuildMicromapsEXT-dstMicromap-07463" href="#VUID-vkCmdBuildMicromapsEXT-dstMicromap-07463"></a> <span class="vuid">VUID-vkCmdBuildMicromapsEXT-dstMicromap-07463</span><br>
+
+The <code>dstMicromap</code> member of any element of <code>pInfos</code> <strong>must</strong> be a
+valid <a href="../resources.html#VkMicromapEXT" class="xref page">VkMicromapEXT</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBuildMicromapsEXT-pInfos-07464" href="#VUID-vkCmdBuildMicromapsEXT-pInfos-07464"></a> <span class="vuid">VUID-vkCmdBuildMicromapsEXT-pInfos-07464</span><br>
+
+For each element of <code>pInfos</code> its <code>type</code> member <strong>must</strong> match the
+value of <a href="../resources.html#VkMicromapCreateInfoEXT" class="xref page">VkMicromapCreateInfoEXT</a>::<code>type</code> when its
+<code>dstMicromap</code> was created</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBuildMicromapsEXT-dstMicromap-07465" href="#VUID-vkCmdBuildMicromapsEXT-dstMicromap-07465"></a> <span class="vuid">VUID-vkCmdBuildMicromapsEXT-dstMicromap-07465</span><br>
+
+The range of memory backing the <code>dstMicromap</code> member of any element
+of <code>pInfos</code> that is accessed by this command <strong>must</strong> not overlap the
+memory backing the <code>dstMicromap</code> member of any other element of
+<code>pInfos</code>, which is accessed by this command</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBuildMicromapsEXT-dstMicromap-07466" href="#VUID-vkCmdBuildMicromapsEXT-dstMicromap-07466"></a> <span class="vuid">VUID-vkCmdBuildMicromapsEXT-dstMicromap-07466</span><br>
+
+The range of memory backing the <code>dstMicromap</code> member of any element
+of <code>pInfos</code> that is accessed by this command <strong>must</strong> not overlap the
+memory backing the <code>scratchData</code> member of any element of
+<code>pInfos</code> (including the same element), which is accessed by this
+command</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBuildMicromapsEXT-scratchData-07467" href="#VUID-vkCmdBuildMicromapsEXT-scratchData-07467"></a> <span class="vuid">VUID-vkCmdBuildMicromapsEXT-scratchData-07467</span><br>
+
+The range of memory backing the <code>scratchData</code> member of any element
+of <code>pInfos</code> that is accessed by this command <strong>must</strong> not overlap the
+memory backing the <code>scratchData</code> member of any other element of
+<code>pInfos</code>, which is accessed by this command</p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdBuildMicromapsEXT-pInfos-07508" href="#VUID-vkCmdBuildMicromapsEXT-pInfos-07508"></a> <span class="vuid">VUID-vkCmdBuildMicromapsEXT-pInfos-07508</span><br>
+
+For each element of <code>pInfos</code>, the <code>buffer</code> used to create its
+<code>dstMicromap</code> member <strong>must</strong> be bound to device memory</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBuildMicromapsEXT-pInfos-07509" href="#VUID-vkCmdBuildMicromapsEXT-pInfos-07509"></a> <span class="vuid">VUID-vkCmdBuildMicromapsEXT-pInfos-07509</span><br>
+
+If <code>pInfos</code>[i].<code>mode</code> is <code>VK_BUILD_MICROMAP_MODE_BUILD_EXT</code>,
+all addresses between <code>pInfos</code>[i].<code>scratchData.deviceAddress</code>
+and <code>pInfos</code>[i].<code>scratchData.deviceAddress</code> +  N - 1 <strong>must</strong>
+be in the buffer device address range of the same buffer, where N is
+given by the <code>buildScratchSize</code> member of the
+<a href="../resources.html#VkMicromapBuildSizesInfoEXT" class="xref page">VkMicromapBuildSizesInfoEXT</a> structure returned from a call to
+<a href="../resources.html#vkGetMicromapBuildSizesEXT" class="xref page">vkGetMicromapBuildSizesEXT</a> with an identical
+<a href="#VkMicromapBuildInfoEXT">VkMicromapBuildInfoEXT</a> structure and primitive count</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBuildMicromapsEXT-data-07510" href="#VUID-vkCmdBuildMicromapsEXT-data-07510"></a> <span class="vuid">VUID-vkCmdBuildMicromapsEXT-data-07510</span><br>
+
+The buffers from which the buffer device addresses for all of the
+<code>data</code> and <code>triangleArray</code> members of all <code>pInfos</code>[i] are
+queried <strong>must</strong> have been created with the
+<code>VK_BUFFER_USAGE_MICROMAP_BUILD_INPUT_READ_ONLY_BIT_EXT</code> usage flag</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBuildMicromapsEXT-pInfos-07511" href="#VUID-vkCmdBuildMicromapsEXT-pInfos-07511"></a> <span class="vuid">VUID-vkCmdBuildMicromapsEXT-pInfos-07511</span><br>
+
+For each element of <code>pInfos</code>[i] the buffer from which the buffer
+device address <code>pInfos</code>[i].<code>scratchData.deviceAddress</code> is
+queried <strong>must</strong> have been created with
+<code>VK_BUFFER_USAGE_STORAGE_BUFFER_BIT</code> usage flag</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBuildMicromapsEXT-pInfos-07512" href="#VUID-vkCmdBuildMicromapsEXT-pInfos-07512"></a> <span class="vuid">VUID-vkCmdBuildMicromapsEXT-pInfos-07512</span><br>
+
+For each element of <code>pInfos</code>, its <code>scratchData.deviceAddress</code>,
+<code>data.deviceAddress</code>, and <code>triangleArray.deviceAddress</code> members
+<strong>must</strong> be valid device addresses obtained from
+<a href="../resources.html#vkGetBufferDeviceAddress" class="xref page">vkGetBufferDeviceAddress</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBuildMicromapsEXT-pInfos-07513" href="#VUID-vkCmdBuildMicromapsEXT-pInfos-07513"></a> <span class="vuid">VUID-vkCmdBuildMicromapsEXT-pInfos-07513</span><br>
+
+For each element of <code>pInfos</code>, if <code>scratchData.deviceAddress</code>,
+<code>data.deviceAddress</code>, or <code>triangleArray.deviceAddress</code> is the
+address of a non-sparse buffer then it <strong>must</strong> be bound completely and
+contiguously to a single <a href="../memory.html#VkDeviceMemory" class="xref page">VkDeviceMemory</a> object</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBuildMicromapsEXT-pInfos-07514" href="#VUID-vkCmdBuildMicromapsEXT-pInfos-07514"></a> <span class="vuid">VUID-vkCmdBuildMicromapsEXT-pInfos-07514</span><br>
+
+For each element of <code>pInfos</code>, its <code>scratchData.deviceAddress</code>
+member <strong>must</strong> be a multiple of
+<a href="../limits.html#VkPhysicalDeviceAccelerationStructurePropertiesKHR" class="xref page">VkPhysicalDeviceAccelerationStructurePropertiesKHR</a>::<code>minAccelerationStructureScratchOffsetAlignment</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBuildMicromapsEXT-pInfos-07515" href="#VUID-vkCmdBuildMicromapsEXT-pInfos-07515"></a> <span class="vuid">VUID-vkCmdBuildMicromapsEXT-pInfos-07515</span><br>
+
+For each element of <code>pInfos</code>, its <code>triangleArray.deviceAddress</code>
+and <code>data.deviceAddress</code> members <strong>must</strong> be a multiple of <code>256</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdBuildMicromapsEXT-commandBuffer-parameter" href="#VUID-vkCmdBuildMicromapsEXT-commandBuffer-parameter"></a> <span class="vuid">VUID-vkCmdBuildMicromapsEXT-commandBuffer-parameter</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be a valid <a href="../cmdbuffers.html#VkCommandBuffer" class="xref page">VkCommandBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBuildMicromapsEXT-pInfos-parameter" href="#VUID-vkCmdBuildMicromapsEXT-pInfos-parameter"></a> <span class="vuid">VUID-vkCmdBuildMicromapsEXT-pInfos-parameter</span><br>
+ <code>pInfos</code> <strong>must</strong> be a valid pointer to an array of <code>infoCount</code> valid <a href="#VkMicromapBuildInfoEXT">VkMicromapBuildInfoEXT</a> structures</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBuildMicromapsEXT-commandBuffer-recording" href="#VUID-vkCmdBuildMicromapsEXT-commandBuffer-recording"></a> <span class="vuid">VUID-vkCmdBuildMicromapsEXT-commandBuffer-recording</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be in the <a href="../cmdbuffers.html#commandbuffers-lifecycle" class="xref page">recording state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBuildMicromapsEXT-commandBuffer-cmdpool" href="#VUID-vkCmdBuildMicromapsEXT-commandBuffer-cmdpool"></a> <span class="vuid">VUID-vkCmdBuildMicromapsEXT-commandBuffer-cmdpool</span><br>
+ The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> support compute operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBuildMicromapsEXT-renderpass" href="#VUID-vkCmdBuildMicromapsEXT-renderpass"></a> <span class="vuid">VUID-vkCmdBuildMicromapsEXT-renderpass</span><br>
+ This command <strong>must</strong> only be called outside of a render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBuildMicromapsEXT-videocoding" href="#VUID-vkCmdBuildMicromapsEXT-videocoding"></a> <span class="vuid">VUID-vkCmdBuildMicromapsEXT-videocoding</span><br>
+ This command <strong>must</strong> only be called outside of a video coding scope</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBuildMicromapsEXT-infoCount-arraylength" href="#VUID-vkCmdBuildMicromapsEXT-infoCount-arraylength"></a> <span class="vuid">VUID-vkCmdBuildMicromapsEXT-infoCount-arraylength</span><br>
+ <code>infoCount</code> <strong>must</strong> be greater than <code>0</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>commandBuffer</code> <strong>must</strong> be externally synchronized</p>
+</li>
+<li>
+<p>Host access to the <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Command Properties</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><a href="../cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
+<th class="tableblock halign-left valign-top"><a href="../renderpass.html#vkCmdBeginRenderPass" class="xref page">Render Pass Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="../videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="../devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
+<th class="tableblock halign-left valign-top"><a href="../fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Compute</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Action</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Formats which <strong>can</strong> be set in <a href="#VkMicromapUsageEXT">VkMicromapUsageEXT</a>::<code>format</code> and
+<a href="#VkMicromapTriangleEXT">VkMicromapTriangleEXT</a>::<code>format</code> for micromap builds, are:</p>
+</div>
+<div id="VkOpacityMicromapFormatEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_opacity_micromap
+typedef enum VkOpacityMicromapFormatEXT {
+    VK_OPACITY_MICROMAP_FORMAT_2_STATE_EXT = 1,
+    VK_OPACITY_MICROMAP_FORMAT_4_STATE_EXT = 2,
+} VkOpacityMicromapFormatEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_OPACITY_MICROMAP_FORMAT_2_STATE_EXT</code> specifies that the given
+micromap format has one bit per subtriangle encoding either fully opaque
+or fully transparent.</p>
+</li>
+<li>
+<p><code>VK_OPACITY_MICROMAP_FORMAT_4_STATE_EXT</code> specifies that the given
+micromap format has two bits per subtriangle encoding four modes which
+can be interpreted as described in <a href="../raytraversal.html#ray-opacity-micromap" class="xref page">ray    traversal</a>.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>For compactness, these values are stored as 16-bit in some structures.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Formats which <strong>can</strong> be set in <a href="#VkMicromapUsageEXT">VkMicromapUsageEXT</a>::<code>format</code> and
+<a href="#VkMicromapTriangleEXT">VkMicromapTriangleEXT</a>::<code>format</code> for micromap builds, are:</p>
+</div>
+<div id="VkDisplacementMicromapFormatNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_displacement_micromap
+typedef enum VkDisplacementMicromapFormatNV {
+    VK_DISPLACEMENT_MICROMAP_FORMAT_64_TRIANGLES_64_BYTES_NV = 1,
+    VK_DISPLACEMENT_MICROMAP_FORMAT_256_TRIANGLES_128_BYTES_NV = 2,
+    VK_DISPLACEMENT_MICROMAP_FORMAT_1024_TRIANGLES_128_BYTES_NV = 3,
+} VkDisplacementMicromapFormatNV;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_DISPLACEMENT_MICROMAP_FORMAT_64_TRIANGLES_64_BYTES_NV</code> specifies
+that the given micromap format encodes 64 micro-triangles worth of
+displacements in 64 bytes as described in
+<a href="#displacement-micromap-encoding">Displacement Micromap Encoding</a>.</p>
+</li>
+<li>
+<p><code>VK_DISPLACEMENT_MICROMAP_FORMAT_256_TRIANGLES_128_BYTES_NV</code>
+specifies that the given micromap format encodes 256 micro-triangles
+worth of displacements in 128 bytes as described in
+<a href="#displacement-micromap-encoding">Displacement Micromap Encoding</a>.</p>
+</li>
+<li>
+<p><code>VK_DISPLACEMENT_MICROMAP_FORMAT_1024_TRIANGLES_128_BYTES_NV</code>
+specifies that the given micromap format encodes 1024 micro-triangles
+worth of displacements in 128 bytes as described in
+<a href="#displacement-micromap-encoding">Displacement Micromap Encoding</a>.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>For compactness, these values are stored as 16-bit in some structures.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkMicromapBuildInfoEXT</code> structure is defined as:</p>
+</div>
+<div id="VkMicromapBuildInfoEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_opacity_micromap
+typedef struct VkMicromapBuildInfoEXT {
+    VkStructureType                     sType;
+    const void*                         pNext;
+    VkMicromapTypeEXT                   type;
+    VkBuildMicromapFlagsEXT             flags;
+    VkBuildMicromapModeEXT              mode;
+    VkMicromapEXT                       dstMicromap;
+    uint32_t                            usageCountsCount;
+    const VkMicromapUsageEXT*           pUsageCounts;
+    const VkMicromapUsageEXT* const*    ppUsageCounts;
+    VkDeviceOrHostAddressConstKHR       data;
+    VkDeviceOrHostAddressKHR            scratchData;
+    VkDeviceOrHostAddressConstKHR       triangleArray;
+    VkDeviceSize                        triangleArrayStride;
+} VkMicromapBuildInfoEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>type</code> is a <a href="../resources.html#VkMicromapTypeEXT" class="xref page">VkMicromapTypeEXT</a> value specifying the type of
+micromap being built.</p>
+</li>
+<li>
+<p><code>flags</code> is a bitmask of <a href="../resources.html#VkBuildMicromapFlagBitsEXT" class="xref page">VkBuildMicromapFlagBitsEXT</a> specifying
+additional parameters of the micromap.</p>
+</li>
+<li>
+<p><code>mode</code> is a <a href="#VkBuildMicromapModeEXT">VkBuildMicromapModeEXT</a> value specifying the type
+of operation to perform.</p>
+</li>
+<li>
+<p><code>dstMicromap</code> is a pointer to the target micromap for the build.</p>
+</li>
+<li>
+<p><code>usageCountsCount</code> specifies the number of usage counts structures
+that will be used to determine the size of this micromap.</p>
+</li>
+<li>
+<p><code>pUsageCounts</code> is a pointer to an array of <a href="#VkMicromapUsageEXT">VkMicromapUsageEXT</a>
+structures.</p>
+</li>
+<li>
+<p><code>ppUsageCounts</code> is a pointer to an array of pointers to
+<a href="#VkMicromapUsageEXT">VkMicromapUsageEXT</a> structures.</p>
+</li>
+<li>
+<p><code>data</code> is the device or host address to memory which contains the
+data for the micromap.</p>
+</li>
+<li>
+<p><code>scratchData</code> is the device or host address to memory that will be
+used as scratch memory for the build.</p>
+</li>
+<li>
+<p><code>triangleArray</code> is the device or host address to memory containing
+the <a href="#VkMicromapTriangleEXT">VkMicromapTriangleEXT</a> data</p>
+</li>
+<li>
+<p><code>triangleArrayStride</code> is the stride in bytes between each element of
+<code>triangleArray</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Only one of <code>pUsageCounts</code> or <code>ppUsageCounts</code> <strong>can</strong> be a valid
+pointer, the other <strong>must</strong> be <code>NULL</code>.
+The elements of the non-<code>NULL</code> array describe the total counts used to build
+each micromap.
+Each element contains a <code>count</code> which is the number of micromap
+triangles of that <code>format</code> and <code>subdivisionLevel</code> contained in the
+micromap.
+Multiple elements with the same <code>format</code> and <code>subdivisionLevel</code> are
+allowed and the total count for that <code>format</code> and <code>subdivisionLevel</code>
+is the sum of the <code>count</code> for each element.</p>
+</div>
+<div class="paragraph">
+<p>Each micromap triangle refers to one element in <code>triangleArray</code> which
+contains the <code>format</code> and <code>subdivisionLevel</code> for that particular
+triangle as well as a <code>dataOffset</code> in bytes which is the location
+relative to <code>data</code> where that triangle&#8217;s micromap data begins.
+The data at <code>triangleArray</code> is laid out as a 4 byte unsigned integer for
+the <code>dataOffset</code> followed by a 2 byte unsigned integer for the
+subdivision level then a 2 byte unsigned integer for the format.
+In practice, compilers compile <a href="#VkMicromapTriangleEXT">VkMicromapTriangleEXT</a> to match this
+pattern.</p>
+</div>
+<div class="paragraph">
+<p>For opacity micromaps, the data at <code>data</code> is packed as either one bit
+per element for <code>VK_OPACITY_MICROMAP_FORMAT_2_STATE_EXT</code> or two bits per
+element for <code>VK_OPACITY_MICROMAP_FORMAT_4_STATE_EXT</code> and is packed from
+LSB to MSB in each byte.
+The data at each index in those bytes is interpreted as discussed in
+<a href="../raytraversal.html#ray-opacity-micromap" class="xref page">Ray Opacity Micromap</a>.</p>
+</div>
+<div class="paragraph">
+<p>For displacement micromaps, the data at <code>data</code> is interpreted as
+discussed in <a href="#displacement-micromap-encoding">Displacement Micromap Encoding</a>.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkMicromapBuildInfoEXT-pUsageCounts-07516" href="#VUID-VkMicromapBuildInfoEXT-pUsageCounts-07516"></a> <span class="vuid">VUID-VkMicromapBuildInfoEXT-pUsageCounts-07516</span><br>
+
+Only one of <code>pUsageCounts</code> or <code>ppUsageCounts</code> <strong>can</strong> be a valid
+pointer, the other <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkMicromapBuildInfoEXT-type-07517" href="#VUID-VkMicromapBuildInfoEXT-type-07517"></a> <span class="vuid">VUID-VkMicromapBuildInfoEXT-type-07517</span><br>
+
+If <code>type</code> is <code>VK_MICROMAP_TYPE_OPACITY_MICROMAP_EXT</code> the
+<code>format</code> member of <a href="#VkMicromapUsageEXT">VkMicromapUsageEXT</a> <strong>must</strong> be a valid value
+from <code>VkOpacityMicromapFormatEXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkMicromapBuildInfoEXT-type-07518" href="#VUID-VkMicromapBuildInfoEXT-type-07518"></a> <span class="vuid">VUID-VkMicromapBuildInfoEXT-type-07518</span><br>
+
+If <code>type</code> is <code>VK_MICROMAP_TYPE_OPACITY_MICROMAP_EXT</code> the
+<code>format</code> member of <a href="#VkMicromapTriangleEXT">VkMicromapTriangleEXT</a> <strong>must</strong> be a valid
+value from <code>VkOpacityMicromapFormatEXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkMicromapBuildInfoEXT-type-08704" href="#VUID-VkMicromapBuildInfoEXT-type-08704"></a> <span class="vuid">VUID-VkMicromapBuildInfoEXT-type-08704</span><br>
+
+If <code>type</code> is <code>VK_MICROMAP_TYPE_DISPLACEMENT_MICROMAP_NV</code> the
+<code>format</code> member of <a href="#VkMicromapUsageEXT">VkMicromapUsageEXT</a> <strong>must</strong> be a valid value
+from <code>VkDisplacementMicromapFormatNV</code></p>
+</li>
+<li>
+<p><a id="VUID-VkMicromapBuildInfoEXT-type-08705" href="#VUID-VkMicromapBuildInfoEXT-type-08705"></a> <span class="vuid">VUID-VkMicromapBuildInfoEXT-type-08705</span><br>
+
+If <code>type</code> is <code>VK_MICROMAP_TYPE_DISPLACEMENT_MICROMAP_NV</code> the
+<code>format</code> member of <a href="#VkMicromapTriangleEXT">VkMicromapTriangleEXT</a> <strong>must</strong> be a valid
+value from <code>VkDisplacementMicromapFormatNV</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkMicromapBuildInfoEXT-sType-sType" href="#VUID-VkMicromapBuildInfoEXT-sType-sType"></a> <span class="vuid">VUID-VkMicromapBuildInfoEXT-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_MICROMAP_BUILD_INFO_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkMicromapBuildInfoEXT-pNext-pNext" href="#VUID-VkMicromapBuildInfoEXT-pNext-pNext"></a> <span class="vuid">VUID-VkMicromapBuildInfoEXT-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkMicromapBuildInfoEXT-type-parameter" href="#VUID-VkMicromapBuildInfoEXT-type-parameter"></a> <span class="vuid">VUID-VkMicromapBuildInfoEXT-type-parameter</span><br>
+ <code>type</code> <strong>must</strong> be a valid <a href="../resources.html#VkMicromapTypeEXT" class="xref page">VkMicromapTypeEXT</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkMicromapBuildInfoEXT-flags-parameter" href="#VUID-VkMicromapBuildInfoEXT-flags-parameter"></a> <span class="vuid">VUID-VkMicromapBuildInfoEXT-flags-parameter</span><br>
+ <code>flags</code> <strong>must</strong> be a valid combination of <a href="../resources.html#VkBuildMicromapFlagBitsEXT" class="xref page">VkBuildMicromapFlagBitsEXT</a> values</p>
+</li>
+<li>
+<p><a id="VUID-VkMicromapBuildInfoEXT-pUsageCounts-parameter" href="#VUID-VkMicromapBuildInfoEXT-pUsageCounts-parameter"></a> <span class="vuid">VUID-VkMicromapBuildInfoEXT-pUsageCounts-parameter</span><br>
+ If <code>usageCountsCount</code> is not <code>0</code>, and <code>pUsageCounts</code> is not <code>NULL</code>, <code>pUsageCounts</code> <strong>must</strong> be a valid pointer to an array of <code>usageCountsCount</code> <a href="#VkMicromapUsageEXT">VkMicromapUsageEXT</a> structures</p>
+</li>
+<li>
+<p><a id="VUID-VkMicromapBuildInfoEXT-ppUsageCounts-parameter" href="#VUID-VkMicromapBuildInfoEXT-ppUsageCounts-parameter"></a> <span class="vuid">VUID-VkMicromapBuildInfoEXT-ppUsageCounts-parameter</span><br>
+ If <code>usageCountsCount</code> is not <code>0</code>, and <code>ppUsageCounts</code> is not <code>NULL</code>, <code>ppUsageCounts</code> <strong>must</strong> be a valid pointer to an array of <code>usageCountsCount</code> valid pointers to <a href="#VkMicromapUsageEXT">VkMicromapUsageEXT</a> structures</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkBuildMicromapModeEXT</code> enumeration is defined as:</p>
+</div>
+<div id="VkBuildMicromapModeEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_opacity_micromap
+typedef enum VkBuildMicromapModeEXT {
+    VK_BUILD_MICROMAP_MODE_BUILD_EXT = 0,
+} VkBuildMicromapModeEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_BUILD_MICROMAP_MODE_BUILD_EXT</code> specifies that the destination
+micromap will be built using the specified data.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkMicromapUsageEXT</code> structure is defined as:</p>
+</div>
+<div id="VkMicromapUsageEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_opacity_micromap
+typedef struct VkMicromapUsageEXT {
+    uint32_t    count;
+    uint32_t    subdivisionLevel;
+    uint32_t    format;
+} VkMicromapUsageEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>count</code> is the number of triangles in the usage format defined by
+the <code>subdivisionLevel</code> and <code>format</code> below in the micromap</p>
+</li>
+<li>
+<p><code>subdivisionLevel</code> is the subdivision level of this usage format</p>
+</li>
+<li>
+<p><code>format</code> is the format of this usage format</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkMicromapUsageEXT-format-07519" href="#VUID-VkMicromapUsageEXT-format-07519"></a> <span class="vuid">VUID-VkMicromapUsageEXT-format-07519</span><br>
+
+If the <a href="../resources.html#VkMicromapTypeEXT" class="xref page">VkMicromapTypeEXT</a> of the micromap is
+<code>VK_MICROMAP_TYPE_OPACITY_MICROMAP_EXT</code> then <code>format</code> <strong>must</strong> be
+<code>VK_OPACITY_MICROMAP_FORMAT_2_STATE_EXT</code> or
+<code>VK_OPACITY_MICROMAP_FORMAT_4_STATE_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkMicromapUsageEXT-format-07520" href="#VUID-VkMicromapUsageEXT-format-07520"></a> <span class="vuid">VUID-VkMicromapUsageEXT-format-07520</span><br>
+
+If the <a href="../resources.html#VkMicromapTypeEXT" class="xref page">VkMicromapTypeEXT</a> of the micromap is
+<code>VK_MICROMAP_TYPE_OPACITY_MICROMAP_EXT</code> and <code>format</code> is
+<code>VK_OPACITY_MICROMAP_FORMAT_2_STATE_EXT</code> then <code>subdivisionLevel</code>
+<strong>must</strong> be less than or equal to
+<a href="../limits.html#VkPhysicalDeviceOpacityMicromapPropertiesEXT" class="xref page">VkPhysicalDeviceOpacityMicromapPropertiesEXT</a>::<code>maxOpacity2StateSubdivisionLevel</code></p>
+</li>
+<li>
+<p><a id="VUID-VkMicromapUsageEXT-format-07521" href="#VUID-VkMicromapUsageEXT-format-07521"></a> <span class="vuid">VUID-VkMicromapUsageEXT-format-07521</span><br>
+
+If the <a href="../resources.html#VkMicromapTypeEXT" class="xref page">VkMicromapTypeEXT</a> of the micromap is
+<code>VK_MICROMAP_TYPE_OPACITY_MICROMAP_EXT</code> and <code>format</code> is
+<code>VK_OPACITY_MICROMAP_FORMAT_4_STATE_EXT</code> then <code>subdivisionLevel</code>
+<strong>must</strong> be less than or equal to
+<a href="../limits.html#VkPhysicalDeviceOpacityMicromapPropertiesEXT" class="xref page">VkPhysicalDeviceOpacityMicromapPropertiesEXT</a>::<code>maxOpacity4StateSubdivisionLevel</code></p>
+</li>
+<li>
+<p><a id="VUID-VkMicromapUsageEXT-format-08706" href="#VUID-VkMicromapUsageEXT-format-08706"></a> <span class="vuid">VUID-VkMicromapUsageEXT-format-08706</span><br>
+
+If the <a href="../resources.html#VkMicromapTypeEXT" class="xref page">VkMicromapTypeEXT</a> of the micromap is
+<code>VK_MICROMAP_TYPE_DISPLACEMENT_MICROMAP_NV</code> then <code>format</code> <strong>must</strong>
+be <code>VK_DISPLACEMENT_MICROMAP_FORMAT_64_TRIANGLES_64_BYTES_NV</code>,
+<code>VK_DISPLACEMENT_MICROMAP_FORMAT_256_TRIANGLES_128_BYTES_NV</code> or
+<code>VK_DISPLACEMENT_MICROMAP_FORMAT_1024_TRIANGLES_128_BYTES_NV</code></p>
+</li>
+<li>
+<p><a id="VUID-VkMicromapUsageEXT-subdivisionLevel-08707" href="#VUID-VkMicromapUsageEXT-subdivisionLevel-08707"></a> <span class="vuid">VUID-VkMicromapUsageEXT-subdivisionLevel-08707</span><br>
+
+If the <a href="../resources.html#VkMicromapTypeEXT" class="xref page">VkMicromapTypeEXT</a> of the micromap is
+<code>VK_MICROMAP_TYPE_DISPLACEMENT_MICROMAP_NV</code> then
+<code>subdivisionLevel</code> <strong>must</strong> be less than or equal to
+<a href="../limits.html#VkPhysicalDeviceDisplacementMicromapPropertiesNV" class="xref page">VkPhysicalDeviceDisplacementMicromapPropertiesNV</a>::<code>maxDisplacementMicromapSubdivisionLevel</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>format</code> is interpreted based on the <code>type</code> of the micromap
+using it.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkMicromapTriangleEXT</code> structure is defined as:</p>
+</div>
+<div id="VkMicromapTriangleEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_opacity_micromap
+typedef struct VkMicromapTriangleEXT {
+    uint32_t    dataOffset;
+    uint16_t    subdivisionLevel;
+    uint16_t    format;
+} VkMicromapTriangleEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>dataOffset</code> is the offset in bytes of the start of the data for
+this triangle.
+This is a byte aligned value.</p>
+</li>
+<li>
+<p><code>subdivisionLevel</code> is the subdivision level of this triangle</p>
+</li>
+<li>
+<p><code>format</code> is the format of this triangle</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkMicromapTriangleEXT-format-07522" href="#VUID-VkMicromapTriangleEXT-format-07522"></a> <span class="vuid">VUID-VkMicromapTriangleEXT-format-07522</span><br>
+
+If the <a href="../resources.html#VkMicromapTypeEXT" class="xref page">VkMicromapTypeEXT</a> of the micromap is
+<code>VK_MICROMAP_TYPE_OPACITY_MICROMAP_EXT</code> then <code>format</code> <strong>must</strong> be
+<code>VK_OPACITY_MICROMAP_FORMAT_2_STATE_EXT</code> or
+<code>VK_OPACITY_MICROMAP_FORMAT_4_STATE_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkMicromapTriangleEXT-format-07523" href="#VUID-VkMicromapTriangleEXT-format-07523"></a> <span class="vuid">VUID-VkMicromapTriangleEXT-format-07523</span><br>
+
+If the <a href="../resources.html#VkMicromapTypeEXT" class="xref page">VkMicromapTypeEXT</a> of the micromap is
+<code>VK_MICROMAP_TYPE_OPACITY_MICROMAP_EXT</code> and <code>format</code> is
+<code>VK_OPACITY_MICROMAP_FORMAT_2_STATE_EXT</code> then <code>subdivisionLevel</code>
+<strong>must</strong> be less than or equal to
+<a href="../limits.html#VkPhysicalDeviceOpacityMicromapPropertiesEXT" class="xref page">VkPhysicalDeviceOpacityMicromapPropertiesEXT</a>::<code>maxOpacity2StateSubdivisionLevel</code></p>
+</li>
+<li>
+<p><a id="VUID-VkMicromapTriangleEXT-format-07524" href="#VUID-VkMicromapTriangleEXT-format-07524"></a> <span class="vuid">VUID-VkMicromapTriangleEXT-format-07524</span><br>
+
+If the <a href="../resources.html#VkMicromapTypeEXT" class="xref page">VkMicromapTypeEXT</a> of the micromap is
+<code>VK_MICROMAP_TYPE_OPACITY_MICROMAP_EXT</code> and <code>format</code> is
+<code>VK_OPACITY_MICROMAP_FORMAT_4_STATE_EXT</code> then <code>subdivisionLevel</code>
+<strong>must</strong> be less than or equal to
+<a href="../limits.html#VkPhysicalDeviceOpacityMicromapPropertiesEXT" class="xref page">VkPhysicalDeviceOpacityMicromapPropertiesEXT</a>::<code>maxOpacity4StateSubdivisionLevel</code></p>
+</li>
+<li>
+<p><a id="VUID-VkMicromapTriangleEXT-format-08708" href="#VUID-VkMicromapTriangleEXT-format-08708"></a> <span class="vuid">VUID-VkMicromapTriangleEXT-format-08708</span><br>
+
+If the <a href="../resources.html#VkMicromapTypeEXT" class="xref page">VkMicromapTypeEXT</a> of the micromap is
+<code>VK_MICROMAP_TYPE_DISPLACEMENT_MICROMAP_NV</code> then <code>format</code> <strong>must</strong>
+be <code>VK_DISPLACEMENT_MICROMAP_FORMAT_64_TRIANGLES_64_BYTES_NV</code>,
+<code>VK_DISPLACEMENT_MICROMAP_FORMAT_256_TRIANGLES_128_BYTES_NV</code> or
+<code>VK_DISPLACEMENT_MICROMAP_FORMAT_1024_TRIANGLES_128_BYTES_NV</code></p>
+</li>
+<li>
+<p><a id="VUID-VkMicromapTriangleEXT-subdivisionLevel-08709" href="#VUID-VkMicromapTriangleEXT-subdivisionLevel-08709"></a> <span class="vuid">VUID-VkMicromapTriangleEXT-subdivisionLevel-08709</span><br>
+
+If the <a href="../resources.html#VkMicromapTypeEXT" class="xref page">VkMicromapTypeEXT</a> of the micromap is
+<code>VK_MICROMAP_TYPE_DISPLACEMENT_MICROMAP_NV</code> then
+<code>subdivisionLevel</code> <strong>must</strong> be less than or equal to
+<a href="../limits.html#VkPhysicalDeviceDisplacementMicromapPropertiesNV" class="xref page">VkPhysicalDeviceDisplacementMicromapPropertiesNV</a>::<code>maxDisplacementMicromapSubdivisionLevel</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>format</code> is interpreted based on the <code>type</code> of the micromap
+using it.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="micromap-copying"><a class="anchor" href="#micromap-copying"></a>Copying Micromaps</h3>
+<div class="paragraph">
+<p>An additional command exists for copying micromaps without updating their
+contents.
+Before copying, an application <strong>must</strong> query the size of the resulting
+micromap.</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To query micromap size parameters call:</p>
+</div>
+<div id="vkCmdWriteMicromapsPropertiesEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_opacity_micromap
+void vkCmdWriteMicromapsPropertiesEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    micromapCount,
+    const VkMicromapEXT*                        pMicromaps,
+    VkQueryType                                 queryType,
+    VkQueryPool                                 queryPool,
+    uint32_t                                    firstQuery);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer into which the command will be
+recorded.</p>
+</li>
+<li>
+<p><code>micromapCount</code> is the count of micromaps for which to query the
+property.</p>
+</li>
+<li>
+<p><code>pMicromaps</code> is a pointer to an array of existing previously built
+micromaps.</p>
+</li>
+<li>
+<p><code>queryType</code> is a <a href="../queries.html#VkQueryType" class="xref page">VkQueryType</a> value specifying the type of
+queries managed by the pool.</p>
+</li>
+<li>
+<p><code>queryPool</code> is the query pool that will manage the results of the
+query.</p>
+</li>
+<li>
+<p><code>firstQuery</code> is the first query index within the query pool that
+will contain the <code>micromapCount</code> number of results.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Accesses to any of the micromaps listed in <code>pMicromaps</code> <strong>must</strong> be
+<a href="../synchronization.html#synchronization-dependencies" class="xref page">synchronized</a> with the
+<code>VK_PIPELINE_STAGE_2_MICROMAP_BUILD_BIT_EXT</code>
+<a href="../synchronization.html#synchronization-pipeline-stages" class="xref page">pipeline stage</a> and an
+<a href="../synchronization.html#synchronization-access-types" class="xref page">access type</a> of
+<code>VK_ACCESS_2_MICROMAP_READ_BIT_EXT</code>.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If <code>queryType</code> is
+<code>VK_QUERY_TYPE_MICROMAP_SERIALIZATION_SIZE_EXT</code>, then the value
+written out is the number of bytes required by a serialized micromap.</p>
+</li>
+<li>
+<p>If <code>queryType</code> is <code>VK_QUERY_TYPE_MICROMAP_COMPACTED_SIZE_EXT</code>,
+then the value written out is the number of bytes required by a
+compacted micromap.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdWriteMicromapsPropertiesEXT-queryPool-07525" href="#VUID-vkCmdWriteMicromapsPropertiesEXT-queryPool-07525"></a> <span class="vuid">VUID-vkCmdWriteMicromapsPropertiesEXT-queryPool-07525</span><br>
+
+<code>queryPool</code> <strong>must</strong> have been created with a <code>queryType</code> matching
+<code>queryType</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdWriteMicromapsPropertiesEXT-queryPool-07526" href="#VUID-vkCmdWriteMicromapsPropertiesEXT-queryPool-07526"></a> <span class="vuid">VUID-vkCmdWriteMicromapsPropertiesEXT-queryPool-07526</span><br>
+
+The queries identified by <code>queryPool</code> and <code>firstQuery</code> <strong>must</strong> be
+<em>unavailable</em></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdWriteMicromapsPropertiesEXT-buffer-07527" href="#VUID-vkCmdWriteMicromapsPropertiesEXT-buffer-07527"></a> <span class="vuid">VUID-vkCmdWriteMicromapsPropertiesEXT-buffer-07527</span><br>
+
+The <code>buffer</code> used to create each micromap in <code>pMicrmaps</code> <strong>must</strong>
+be bound to device memory</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdWriteMicromapsPropertiesEXT-query-07528" href="#VUID-vkCmdWriteMicromapsPropertiesEXT-query-07528"></a> <span class="vuid">VUID-vkCmdWriteMicromapsPropertiesEXT-query-07528</span><br>
+
+The sum of <code>query</code> plus <code>micromapCount</code> <strong>must</strong> be less than or
+equal to the number of queries in <code>queryPool</code></p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdWriteMicromapsPropertiesEXT-pMicromaps-07501" href="#VUID-vkCmdWriteMicromapsPropertiesEXT-pMicromaps-07501"></a> <span class="vuid">VUID-vkCmdWriteMicromapsPropertiesEXT-pMicromaps-07501</span><br>
+
+All micromaps in <code>pMicromaps</code> <strong>must</strong> have been constructed prior to
+the execution of this command</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdWriteMicromapsPropertiesEXT-pMicromaps-07502" href="#VUID-vkCmdWriteMicromapsPropertiesEXT-pMicromaps-07502"></a> <span class="vuid">VUID-vkCmdWriteMicromapsPropertiesEXT-pMicromaps-07502</span><br>
+
+All micromaps in <code>pMicromaps</code> <strong>must</strong> have been constructed with
+<code>VK_BUILD_MICROMAP_ALLOW_COMPACTION_BIT_EXT</code> if <code>queryType</code> is
+<code>VK_QUERY_TYPE_MICROMAP_COMPACTED_SIZE_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdWriteMicromapsPropertiesEXT-queryType-07503" href="#VUID-vkCmdWriteMicromapsPropertiesEXT-queryType-07503"></a> <span class="vuid">VUID-vkCmdWriteMicromapsPropertiesEXT-queryType-07503</span><br>
+
+<code>queryType</code> <strong>must</strong> be <code>VK_QUERY_TYPE_MICROMAP_COMPACTED_SIZE_EXT</code>
+or <code>VK_QUERY_TYPE_MICROMAP_SERIALIZATION_SIZE_EXT</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdWriteMicromapsPropertiesEXT-commandBuffer-parameter" href="#VUID-vkCmdWriteMicromapsPropertiesEXT-commandBuffer-parameter"></a> <span class="vuid">VUID-vkCmdWriteMicromapsPropertiesEXT-commandBuffer-parameter</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be a valid <a href="../cmdbuffers.html#VkCommandBuffer" class="xref page">VkCommandBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdWriteMicromapsPropertiesEXT-pMicromaps-parameter" href="#VUID-vkCmdWriteMicromapsPropertiesEXT-pMicromaps-parameter"></a> <span class="vuid">VUID-vkCmdWriteMicromapsPropertiesEXT-pMicromaps-parameter</span><br>
+ <code>pMicromaps</code> <strong>must</strong> be a valid pointer to an array of <code>micromapCount</code> valid <a href="../resources.html#VkMicromapEXT" class="xref page">VkMicromapEXT</a> handles</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdWriteMicromapsPropertiesEXT-queryType-parameter" href="#VUID-vkCmdWriteMicromapsPropertiesEXT-queryType-parameter"></a> <span class="vuid">VUID-vkCmdWriteMicromapsPropertiesEXT-queryType-parameter</span><br>
+ <code>queryType</code> <strong>must</strong> be a valid <a href="../queries.html#VkQueryType" class="xref page">VkQueryType</a> value</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdWriteMicromapsPropertiesEXT-queryPool-parameter" href="#VUID-vkCmdWriteMicromapsPropertiesEXT-queryPool-parameter"></a> <span class="vuid">VUID-vkCmdWriteMicromapsPropertiesEXT-queryPool-parameter</span><br>
+ <code>queryPool</code> <strong>must</strong> be a valid <a href="../queries.html#VkQueryPool" class="xref page">VkQueryPool</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdWriteMicromapsPropertiesEXT-commandBuffer-recording" href="#VUID-vkCmdWriteMicromapsPropertiesEXT-commandBuffer-recording"></a> <span class="vuid">VUID-vkCmdWriteMicromapsPropertiesEXT-commandBuffer-recording</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be in the <a href="../cmdbuffers.html#commandbuffers-lifecycle" class="xref page">recording state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdWriteMicromapsPropertiesEXT-commandBuffer-cmdpool" href="#VUID-vkCmdWriteMicromapsPropertiesEXT-commandBuffer-cmdpool"></a> <span class="vuid">VUID-vkCmdWriteMicromapsPropertiesEXT-commandBuffer-cmdpool</span><br>
+ The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> support compute operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdWriteMicromapsPropertiesEXT-renderpass" href="#VUID-vkCmdWriteMicromapsPropertiesEXT-renderpass"></a> <span class="vuid">VUID-vkCmdWriteMicromapsPropertiesEXT-renderpass</span><br>
+ This command <strong>must</strong> only be called outside of a render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdWriteMicromapsPropertiesEXT-videocoding" href="#VUID-vkCmdWriteMicromapsPropertiesEXT-videocoding"></a> <span class="vuid">VUID-vkCmdWriteMicromapsPropertiesEXT-videocoding</span><br>
+ This command <strong>must</strong> only be called outside of a video coding scope</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdWriteMicromapsPropertiesEXT-micromapCount-arraylength" href="#VUID-vkCmdWriteMicromapsPropertiesEXT-micromapCount-arraylength"></a> <span class="vuid">VUID-vkCmdWriteMicromapsPropertiesEXT-micromapCount-arraylength</span><br>
+ <code>micromapCount</code> <strong>must</strong> be greater than <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdWriteMicromapsPropertiesEXT-commonparent" href="#VUID-vkCmdWriteMicromapsPropertiesEXT-commonparent"></a> <span class="vuid">VUID-vkCmdWriteMicromapsPropertiesEXT-commonparent</span><br>
+ Each of <code>commandBuffer</code>, <code>queryPool</code>, and the elements of <code>pMicromaps</code> <strong>must</strong> have been created, allocated, or retrieved from the same <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>commandBuffer</code> <strong>must</strong> be externally synchronized</p>
+</li>
+<li>
+<p>Host access to the <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Command Properties</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><a href="../cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
+<th class="tableblock halign-left valign-top"><a href="../renderpass.html#vkCmdBeginRenderPass" class="xref page">Render Pass Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="../videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="../devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
+<th class="tableblock halign-left valign-top"><a href="../fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Compute</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Action</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To copy a micromap call:</p>
+</div>
+<div id="vkCmdCopyMicromapEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_opacity_micromap
+void vkCmdCopyMicromapEXT(
+    VkCommandBuffer                             commandBuffer,
+    const VkCopyMicromapInfoEXT*                pInfo);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer into which the command will be
+recorded.</p>
+</li>
+<li>
+<p><code>pInfo</code> is a pointer to a <a href="#VkCopyMicromapInfoEXT">VkCopyMicromapInfoEXT</a> structure
+defining the copy operation.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This command copies the <code>pInfo-&gt;src</code> micromap to the <code>pInfo-&gt;dst</code>
+micromap in the manner specified by <code>pInfo-&gt;mode</code>.</p>
+</div>
+<div class="paragraph">
+<p>Accesses to <code>pInfo-&gt;src</code> and <code>pInfo-&gt;dst</code> <strong>must</strong> be
+<a href="../synchronization.html#synchronization-dependencies" class="xref page">synchronized</a> with the
+<code>VK_PIPELINE_STAGE_2_MICROMAP_BUILD_BIT_EXT</code>
+<a href="../synchronization.html#synchronization-pipeline-stages" class="xref page">pipeline stage</a> and an
+<a href="../synchronization.html#synchronization-access-types" class="xref page">access type</a> of
+<code>VK_ACCESS_2_MICROMAP_READ_BIT_EXT</code> or
+<code>VK_ACCESS_2_MICROMAP_WRITE_BIT_EXT</code> as appropriate.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdCopyMicromapEXT-buffer-07529" href="#VUID-vkCmdCopyMicromapEXT-buffer-07529"></a> <span class="vuid">VUID-vkCmdCopyMicromapEXT-buffer-07529</span><br>
+
+The <code>buffer</code> used to create <code>pInfo-&gt;src</code> <strong>must</strong> be bound to
+device memory</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyMicromapEXT-buffer-07530" href="#VUID-vkCmdCopyMicromapEXT-buffer-07530"></a> <span class="vuid">VUID-vkCmdCopyMicromapEXT-buffer-07530</span><br>
+
+The <code>buffer</code> used to create <code>pInfo-&gt;dst</code> <strong>must</strong> be bound to
+device memory</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdCopyMicromapEXT-commandBuffer-parameter" href="#VUID-vkCmdCopyMicromapEXT-commandBuffer-parameter"></a> <span class="vuid">VUID-vkCmdCopyMicromapEXT-commandBuffer-parameter</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be a valid <a href="../cmdbuffers.html#VkCommandBuffer" class="xref page">VkCommandBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyMicromapEXT-pInfo-parameter" href="#VUID-vkCmdCopyMicromapEXT-pInfo-parameter"></a> <span class="vuid">VUID-vkCmdCopyMicromapEXT-pInfo-parameter</span><br>
+ <code>pInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkCopyMicromapInfoEXT">VkCopyMicromapInfoEXT</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyMicromapEXT-commandBuffer-recording" href="#VUID-vkCmdCopyMicromapEXT-commandBuffer-recording"></a> <span class="vuid">VUID-vkCmdCopyMicromapEXT-commandBuffer-recording</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be in the <a href="../cmdbuffers.html#commandbuffers-lifecycle" class="xref page">recording state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyMicromapEXT-commandBuffer-cmdpool" href="#VUID-vkCmdCopyMicromapEXT-commandBuffer-cmdpool"></a> <span class="vuid">VUID-vkCmdCopyMicromapEXT-commandBuffer-cmdpool</span><br>
+ The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> support compute operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyMicromapEXT-renderpass" href="#VUID-vkCmdCopyMicromapEXT-renderpass"></a> <span class="vuid">VUID-vkCmdCopyMicromapEXT-renderpass</span><br>
+ This command <strong>must</strong> only be called outside of a render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyMicromapEXT-videocoding" href="#VUID-vkCmdCopyMicromapEXT-videocoding"></a> <span class="vuid">VUID-vkCmdCopyMicromapEXT-videocoding</span><br>
+ This command <strong>must</strong> only be called outside of a video coding scope</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>commandBuffer</code> <strong>must</strong> be externally synchronized</p>
+</li>
+<li>
+<p>Host access to the <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Command Properties</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><a href="../cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
+<th class="tableblock halign-left valign-top"><a href="../renderpass.html#vkCmdBeginRenderPass" class="xref page">Render Pass Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="../videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="../devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
+<th class="tableblock halign-left valign-top"><a href="../fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Compute</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Action</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkCopyMicromapInfoEXT</code> structure is defined as:</p>
+</div>
+<div id="VkCopyMicromapInfoEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_opacity_micromap
+typedef struct VkCopyMicromapInfoEXT {
+    VkStructureType          sType;
+    const void*              pNext;
+    VkMicromapEXT            src;
+    VkMicromapEXT            dst;
+    VkCopyMicromapModeEXT    mode;
+} VkCopyMicromapInfoEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>src</code> is the source micromap for the copy.</p>
+</li>
+<li>
+<p><code>dst</code> is the target micromap for the copy.</p>
+</li>
+<li>
+<p><code>mode</code> is a <a href="#VkCopyMicromapModeEXT">VkCopyMicromapModeEXT</a> value specifying additional
+operations to perform during the copy.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkCopyMicromapInfoEXT-mode-07531" href="#VUID-VkCopyMicromapInfoEXT-mode-07531"></a> <span class="vuid">VUID-VkCopyMicromapInfoEXT-mode-07531</span><br>
+
+<code>mode</code> <strong>must</strong> be <code>VK_COPY_MICROMAP_MODE_COMPACT_EXT</code> or
+<code>VK_COPY_MICROMAP_MODE_CLONE_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkCopyMicromapInfoEXT-src-07532" href="#VUID-VkCopyMicromapInfoEXT-src-07532"></a> <span class="vuid">VUID-VkCopyMicromapInfoEXT-src-07532</span><br>
+
+The source acceleration structure <code>src</code> <strong>must</strong> have been constructed
+prior to the execution of this command</p>
+</li>
+<li>
+<p><a id="VUID-VkCopyMicromapInfoEXT-mode-07533" href="#VUID-VkCopyMicromapInfoEXT-mode-07533"></a> <span class="vuid">VUID-VkCopyMicromapInfoEXT-mode-07533</span><br>
+
+If <code>mode</code> is <code>VK_COPY_MICROMAP_MODE_COMPACT_EXT</code>, <code>src</code>
+<strong>must</strong> have been constructed with
+<code>VK_BUILD_MICROMAP_ALLOW_COMPACTION_BIT_EXT</code> in the build</p>
+</li>
+<li>
+<p><a id="VUID-VkCopyMicromapInfoEXT-buffer-07534" href="#VUID-VkCopyMicromapInfoEXT-buffer-07534"></a> <span class="vuid">VUID-VkCopyMicromapInfoEXT-buffer-07534</span><br>
+
+The <code>buffer</code> used to create <code>src</code> <strong>must</strong> be bound to device
+memory</p>
+</li>
+<li>
+<p><a id="VUID-VkCopyMicromapInfoEXT-buffer-07535" href="#VUID-VkCopyMicromapInfoEXT-buffer-07535"></a> <span class="vuid">VUID-VkCopyMicromapInfoEXT-buffer-07535</span><br>
+
+The <code>buffer</code> used to create <code>dst</code> <strong>must</strong> be bound to device
+memory</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkCopyMicromapInfoEXT-sType-sType" href="#VUID-VkCopyMicromapInfoEXT-sType-sType"></a> <span class="vuid">VUID-VkCopyMicromapInfoEXT-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_COPY_MICROMAP_INFO_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkCopyMicromapInfoEXT-pNext-pNext" href="#VUID-VkCopyMicromapInfoEXT-pNext-pNext"></a> <span class="vuid">VUID-VkCopyMicromapInfoEXT-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkCopyMicromapInfoEXT-src-parameter" href="#VUID-VkCopyMicromapInfoEXT-src-parameter"></a> <span class="vuid">VUID-VkCopyMicromapInfoEXT-src-parameter</span><br>
+ <code>src</code> <strong>must</strong> be a valid <a href="../resources.html#VkMicromapEXT" class="xref page">VkMicromapEXT</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-VkCopyMicromapInfoEXT-dst-parameter" href="#VUID-VkCopyMicromapInfoEXT-dst-parameter"></a> <span class="vuid">VUID-VkCopyMicromapInfoEXT-dst-parameter</span><br>
+ <code>dst</code> <strong>must</strong> be a valid <a href="../resources.html#VkMicromapEXT" class="xref page">VkMicromapEXT</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-VkCopyMicromapInfoEXT-mode-parameter" href="#VUID-VkCopyMicromapInfoEXT-mode-parameter"></a> <span class="vuid">VUID-VkCopyMicromapInfoEXT-mode-parameter</span><br>
+ <code>mode</code> <strong>must</strong> be a valid <a href="#VkCopyMicromapModeEXT">VkCopyMicromapModeEXT</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkCopyMicromapInfoEXT-commonparent" href="#VUID-VkCopyMicromapInfoEXT-commonparent"></a> <span class="vuid">VUID-VkCopyMicromapInfoEXT-commonparent</span><br>
+ Both of <code>dst</code>, and <code>src</code> <strong>must</strong> have been created, allocated, or retrieved from the same <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Possible values of <code>mode</code> specifying additional operations to perform
+during the copy, are:</p>
+</div>
+<div id="VkCopyMicromapModeEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_opacity_micromap
+typedef enum VkCopyMicromapModeEXT {
+    VK_COPY_MICROMAP_MODE_CLONE_EXT = 0,
+    VK_COPY_MICROMAP_MODE_SERIALIZE_EXT = 1,
+    VK_COPY_MICROMAP_MODE_DESERIALIZE_EXT = 2,
+    VK_COPY_MICROMAP_MODE_COMPACT_EXT = 3,
+} VkCopyMicromapModeEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_COPY_MICROMAP_MODE_CLONE_EXT</code> creates a direct copy of the
+micromap specified in <code>src</code> into the one specified by <code>dst</code>.
+The <code>dst</code> micromap <strong>must</strong> have been created with the same parameters
+as <code>src</code>.</p>
+</li>
+<li>
+<p><code>VK_COPY_MICROMAP_MODE_SERIALIZE_EXT</code> serializes the micromap to a
+semi-opaque format which can be reloaded on a compatible implementation.</p>
+</li>
+<li>
+<p><code>VK_COPY_MICROMAP_MODE_DESERIALIZE_EXT</code> deserializes the semi-opaque
+serialization format in the buffer to the micromap.</p>
+</li>
+<li>
+<p><code>VK_COPY_MICROMAP_MODE_COMPACT_EXT</code> creates a more compact version
+of a micromap <code>src</code> into <code>dst</code>.
+The micromap <code>dst</code> <strong>must</strong> have been created with a size at least as
+large as that returned by <a href="#vkCmdWriteMicromapsPropertiesEXT">vkCmdWriteMicromapsPropertiesEXT</a> after
+the build of the micromap specified by <code>src</code>.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To copy a micromap to device memory call:</p>
+</div>
+<div id="vkCmdCopyMicromapToMemoryEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_opacity_micromap
+void vkCmdCopyMicromapToMemoryEXT(
+    VkCommandBuffer                             commandBuffer,
+    const VkCopyMicromapToMemoryInfoEXT*        pInfo);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer into which the command will be
+recorded.</p>
+</li>
+<li>
+<p><code>pInfo</code> is an a pointer to a <a href="#VkCopyMicromapToMemoryInfoEXT">VkCopyMicromapToMemoryInfoEXT</a>
+structure defining the copy operation.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Accesses to <code>pInfo-&gt;src</code> <strong>must</strong> be <a href="../synchronization.html#synchronization-dependencies" class="xref page">synchronized</a> with the <code>VK_PIPELINE_STAGE_2_MICROMAP_BUILD_BIT_EXT</code>
+<a href="../synchronization.html#synchronization-pipeline-stages" class="xref page">pipeline stage</a> and an
+<a href="../synchronization.html#synchronization-access-types" class="xref page">access type</a> of
+<code>VK_ACCESS_2_MICROMAP_READ_BIT_EXT</code>.
+Accesses to the buffer indicated by <code>pInfo-&gt;dst.deviceAddress</code> <strong>must</strong> be
+synchronized with the <code>VK_PIPELINE_STAGE_2_MICROMAP_BUILD_BIT_EXT</code>
+pipeline stage and an access type of <code>VK_ACCESS_TRANSFER_WRITE_BIT</code>.</p>
+</div>
+<div class="paragraph">
+<p>This command produces the same results as <a href="#vkCopyMicromapToMemoryEXT">vkCopyMicromapToMemoryEXT</a>,
+but writes its result to a device address, and is executed on the device
+rather than the host.
+The output <strong>may</strong> not necessarily be bit-for-bit identical, but it can be
+equally used by either <a href="#vkCmdCopyMemoryToMicromapEXT">vkCmdCopyMemoryToMicromapEXT</a> or
+<a href="#vkCopyMemoryToMicromapEXT">vkCopyMemoryToMicromapEXT</a>.</p>
+</div>
+<div id="serialized-micromap-header" class="paragraph">
+<p>The defined header structure for the serialized data consists of:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_UUID_SIZE</code> bytes of data matching
+<code>VkPhysicalDeviceIDProperties</code>::<code>driverUUID</code></p>
+</li>
+<li>
+<p><code>VK_UUID_SIZE</code> bytes of data identifying the compatibility for
+    comparison using <a href="#vkGetDeviceMicromapCompatibilityEXT">vkGetDeviceMicromapCompatibilityEXT</a>
+The serialized data is written to the buffer (or read from the buffer)
+according to the host endianness.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdCopyMicromapToMemoryEXT-pInfo-07536" href="#VUID-vkCmdCopyMicromapToMemoryEXT-pInfo-07536"></a> <span class="vuid">VUID-vkCmdCopyMicromapToMemoryEXT-pInfo-07536</span><br>
+
+<code>pInfo-&gt;dst.deviceAddress</code> <strong>must</strong> be a valid device address for a
+buffer bound to device memory</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyMicromapToMemoryEXT-pInfo-07537" href="#VUID-vkCmdCopyMicromapToMemoryEXT-pInfo-07537"></a> <span class="vuid">VUID-vkCmdCopyMicromapToMemoryEXT-pInfo-07537</span><br>
+
+<code>pInfo-&gt;dst.deviceAddress</code> <strong>must</strong> be aligned to <code>256</code> bytes</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyMicromapToMemoryEXT-pInfo-07538" href="#VUID-vkCmdCopyMicromapToMemoryEXT-pInfo-07538"></a> <span class="vuid">VUID-vkCmdCopyMicromapToMemoryEXT-pInfo-07538</span><br>
+
+If the buffer pointed to by <code>pInfo-&gt;dst.deviceAddress</code> is non-sparse
+then it <strong>must</strong> be bound completely and contiguously to a single
+<a href="../memory.html#VkDeviceMemory" class="xref page">VkDeviceMemory</a> object</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyMicromapToMemoryEXT-buffer-07539" href="#VUID-vkCmdCopyMicromapToMemoryEXT-buffer-07539"></a> <span class="vuid">VUID-vkCmdCopyMicromapToMemoryEXT-buffer-07539</span><br>
+
+The <code>buffer</code> used to create <code>pInfo-&gt;src</code> <strong>must</strong> be bound to
+device memory</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdCopyMicromapToMemoryEXT-commandBuffer-parameter" href="#VUID-vkCmdCopyMicromapToMemoryEXT-commandBuffer-parameter"></a> <span class="vuid">VUID-vkCmdCopyMicromapToMemoryEXT-commandBuffer-parameter</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be a valid <a href="../cmdbuffers.html#VkCommandBuffer" class="xref page">VkCommandBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyMicromapToMemoryEXT-pInfo-parameter" href="#VUID-vkCmdCopyMicromapToMemoryEXT-pInfo-parameter"></a> <span class="vuid">VUID-vkCmdCopyMicromapToMemoryEXT-pInfo-parameter</span><br>
+ <code>pInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkCopyMicromapToMemoryInfoEXT">VkCopyMicromapToMemoryInfoEXT</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyMicromapToMemoryEXT-commandBuffer-recording" href="#VUID-vkCmdCopyMicromapToMemoryEXT-commandBuffer-recording"></a> <span class="vuid">VUID-vkCmdCopyMicromapToMemoryEXT-commandBuffer-recording</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be in the <a href="../cmdbuffers.html#commandbuffers-lifecycle" class="xref page">recording state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyMicromapToMemoryEXT-commandBuffer-cmdpool" href="#VUID-vkCmdCopyMicromapToMemoryEXT-commandBuffer-cmdpool"></a> <span class="vuid">VUID-vkCmdCopyMicromapToMemoryEXT-commandBuffer-cmdpool</span><br>
+ The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> support compute operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyMicromapToMemoryEXT-renderpass" href="#VUID-vkCmdCopyMicromapToMemoryEXT-renderpass"></a> <span class="vuid">VUID-vkCmdCopyMicromapToMemoryEXT-renderpass</span><br>
+ This command <strong>must</strong> only be called outside of a render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyMicromapToMemoryEXT-videocoding" href="#VUID-vkCmdCopyMicromapToMemoryEXT-videocoding"></a> <span class="vuid">VUID-vkCmdCopyMicromapToMemoryEXT-videocoding</span><br>
+ This command <strong>must</strong> only be called outside of a video coding scope</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>commandBuffer</code> <strong>must</strong> be externally synchronized</p>
+</li>
+<li>
+<p>Host access to the <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Command Properties</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><a href="../cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
+<th class="tableblock halign-left valign-top"><a href="../renderpass.html#vkCmdBeginRenderPass" class="xref page">Render Pass Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="../videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="../devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
+<th class="tableblock halign-left valign-top"><a href="../fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Compute</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Action</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div id="VkCopyMicromapToMemoryInfoEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_opacity_micromap
+typedef struct VkCopyMicromapToMemoryInfoEXT {
+    VkStructureType             sType;
+    const void*                 pNext;
+    VkMicromapEXT               src;
+    VkDeviceOrHostAddressKHR    dst;
+    VkCopyMicromapModeEXT       mode;
+} VkCopyMicromapToMemoryInfoEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>src</code> is the source micromap for the copy</p>
+</li>
+<li>
+<p><code>dst</code> is the device or host address to memory which is the target
+for the copy</p>
+</li>
+<li>
+<p><code>mode</code> is a <a href="#VkCopyMicromapModeEXT">VkCopyMicromapModeEXT</a> value specifying additional
+operations to perform during the copy.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkCopyMicromapToMemoryInfoEXT-src-07540" href="#VUID-VkCopyMicromapToMemoryInfoEXT-src-07540"></a> <span class="vuid">VUID-VkCopyMicromapToMemoryInfoEXT-src-07540</span><br>
+
+The source micromap <code>src</code> <strong>must</strong> have been constructed prior to the
+execution of this command</p>
+</li>
+<li>
+<p><a id="VUID-VkCopyMicromapToMemoryInfoEXT-dst-07541" href="#VUID-VkCopyMicromapToMemoryInfoEXT-dst-07541"></a> <span class="vuid">VUID-VkCopyMicromapToMemoryInfoEXT-dst-07541</span><br>
+
+The memory pointed to by <code>dst</code> <strong>must</strong> be at least as large as the
+serialization size of <code>src</code>, as reported by
+<a href="#vkWriteMicromapsPropertiesEXT">vkWriteMicromapsPropertiesEXT</a> or
+<a href="#vkCmdWriteMicromapsPropertiesEXT">vkCmdWriteMicromapsPropertiesEXT</a> with a query type of
+<code>VK_QUERY_TYPE_MICROMAP_SERIALIZATION_SIZE_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkCopyMicromapToMemoryInfoEXT-mode-07542" href="#VUID-VkCopyMicromapToMemoryInfoEXT-mode-07542"></a> <span class="vuid">VUID-VkCopyMicromapToMemoryInfoEXT-mode-07542</span><br>
+
+<code>mode</code> <strong>must</strong> be <code>VK_COPY_MICROMAP_MODE_SERIALIZE_EXT</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkCopyMicromapToMemoryInfoEXT-sType-sType" href="#VUID-VkCopyMicromapToMemoryInfoEXT-sType-sType"></a> <span class="vuid">VUID-VkCopyMicromapToMemoryInfoEXT-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_COPY_MICROMAP_TO_MEMORY_INFO_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkCopyMicromapToMemoryInfoEXT-pNext-pNext" href="#VUID-VkCopyMicromapToMemoryInfoEXT-pNext-pNext"></a> <span class="vuid">VUID-VkCopyMicromapToMemoryInfoEXT-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkCopyMicromapToMemoryInfoEXT-src-parameter" href="#VUID-VkCopyMicromapToMemoryInfoEXT-src-parameter"></a> <span class="vuid">VUID-VkCopyMicromapToMemoryInfoEXT-src-parameter</span><br>
+ <code>src</code> <strong>must</strong> be a valid <a href="../resources.html#VkMicromapEXT" class="xref page">VkMicromapEXT</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-VkCopyMicromapToMemoryInfoEXT-mode-parameter" href="#VUID-VkCopyMicromapToMemoryInfoEXT-mode-parameter"></a> <span class="vuid">VUID-VkCopyMicromapToMemoryInfoEXT-mode-parameter</span><br>
+ <code>mode</code> <strong>must</strong> be a valid <a href="#VkCopyMicromapModeEXT">VkCopyMicromapModeEXT</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To copy device memory to a micromap call:</p>
+</div>
+<div id="vkCmdCopyMemoryToMicromapEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_opacity_micromap
+void vkCmdCopyMemoryToMicromapEXT(
+    VkCommandBuffer                             commandBuffer,
+    const VkCopyMemoryToMicromapInfoEXT*        pInfo);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer into which the command will be
+recorded.</p>
+</li>
+<li>
+<p><code>pInfo</code> is a pointer to a <a href="#VkCopyMemoryToMicromapInfoEXT">VkCopyMemoryToMicromapInfoEXT</a>
+structure defining the copy operation.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Accesses to <code>pInfo-&gt;dst</code> <strong>must</strong> be <a href="../synchronization.html#synchronization-dependencies" class="xref page">synchronized</a> with the <code>VK_PIPELINE_STAGE_2_MICROMAP_BUILD_BIT_EXT</code>
+<a href="../synchronization.html#synchronization-pipeline-stages" class="xref page">pipeline stage</a> and an
+<a href="../synchronization.html#synchronization-access-types" class="xref page">access type</a> of
+<code>VK_ACCESS_2_MICROMAP_READ_BIT_EXT</code>.
+Accesses to the buffer indicated by <code>pInfo-&gt;src.deviceAddress</code> <strong>must</strong> be
+synchronized with the <code>VK_PIPELINE_STAGE_2_MICROMAP_BUILD_BIT_EXT</code>
+pipeline stage and an access type of <code>VK_ACCESS_TRANSFER_READ_BIT</code>.</p>
+</div>
+<div class="paragraph">
+<p>This command can accept micromaps produced by either
+<a href="#vkCmdCopyMicromapToMemoryEXT">vkCmdCopyMicromapToMemoryEXT</a> or <a href="#vkCopyMicromapToMemoryEXT">vkCopyMicromapToMemoryEXT</a>.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdCopyMemoryToMicromapEXT-pInfo-07543" href="#VUID-vkCmdCopyMemoryToMicromapEXT-pInfo-07543"></a> <span class="vuid">VUID-vkCmdCopyMemoryToMicromapEXT-pInfo-07543</span><br>
+
+<code>pInfo-&gt;src.deviceAddress</code> <strong>must</strong> be a valid device address for a
+buffer bound to device memory</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyMemoryToMicromapEXT-pInfo-07544" href="#VUID-vkCmdCopyMemoryToMicromapEXT-pInfo-07544"></a> <span class="vuid">VUID-vkCmdCopyMemoryToMicromapEXT-pInfo-07544</span><br>
+
+<code>pInfo-&gt;src.deviceAddress</code> <strong>must</strong> be aligned to <code>256</code> bytes</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyMemoryToMicromapEXT-pInfo-07545" href="#VUID-vkCmdCopyMemoryToMicromapEXT-pInfo-07545"></a> <span class="vuid">VUID-vkCmdCopyMemoryToMicromapEXT-pInfo-07545</span><br>
+
+If the buffer pointed to by <code>pInfo-&gt;src.deviceAddress</code> is non-sparse
+then it <strong>must</strong> be bound completely and contiguously to a single
+<a href="../memory.html#VkDeviceMemory" class="xref page">VkDeviceMemory</a> object</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyMemoryToMicromapEXT-buffer-07546" href="#VUID-vkCmdCopyMemoryToMicromapEXT-buffer-07546"></a> <span class="vuid">VUID-vkCmdCopyMemoryToMicromapEXT-buffer-07546</span><br>
+
+The <code>buffer</code> used to create <code>pInfo-&gt;dst</code> <strong>must</strong> be bound to
+device memory</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdCopyMemoryToMicromapEXT-commandBuffer-parameter" href="#VUID-vkCmdCopyMemoryToMicromapEXT-commandBuffer-parameter"></a> <span class="vuid">VUID-vkCmdCopyMemoryToMicromapEXT-commandBuffer-parameter</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be a valid <a href="../cmdbuffers.html#VkCommandBuffer" class="xref page">VkCommandBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyMemoryToMicromapEXT-pInfo-parameter" href="#VUID-vkCmdCopyMemoryToMicromapEXT-pInfo-parameter"></a> <span class="vuid">VUID-vkCmdCopyMemoryToMicromapEXT-pInfo-parameter</span><br>
+ <code>pInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkCopyMemoryToMicromapInfoEXT">VkCopyMemoryToMicromapInfoEXT</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyMemoryToMicromapEXT-commandBuffer-recording" href="#VUID-vkCmdCopyMemoryToMicromapEXT-commandBuffer-recording"></a> <span class="vuid">VUID-vkCmdCopyMemoryToMicromapEXT-commandBuffer-recording</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be in the <a href="../cmdbuffers.html#commandbuffers-lifecycle" class="xref page">recording state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyMemoryToMicromapEXT-commandBuffer-cmdpool" href="#VUID-vkCmdCopyMemoryToMicromapEXT-commandBuffer-cmdpool"></a> <span class="vuid">VUID-vkCmdCopyMemoryToMicromapEXT-commandBuffer-cmdpool</span><br>
+ The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> support compute operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyMemoryToMicromapEXT-renderpass" href="#VUID-vkCmdCopyMemoryToMicromapEXT-renderpass"></a> <span class="vuid">VUID-vkCmdCopyMemoryToMicromapEXT-renderpass</span><br>
+ This command <strong>must</strong> only be called outside of a render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyMemoryToMicromapEXT-videocoding" href="#VUID-vkCmdCopyMemoryToMicromapEXT-videocoding"></a> <span class="vuid">VUID-vkCmdCopyMemoryToMicromapEXT-videocoding</span><br>
+ This command <strong>must</strong> only be called outside of a video coding scope</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>commandBuffer</code> <strong>must</strong> be externally synchronized</p>
+</li>
+<li>
+<p>Host access to the <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Command Properties</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><a href="../cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
+<th class="tableblock halign-left valign-top"><a href="../renderpass.html#vkCmdBeginRenderPass" class="xref page">Render Pass Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="../videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="../devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
+<th class="tableblock halign-left valign-top"><a href="../fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Compute</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Action</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkCopyMemoryToMicromapInfoEXT</code> structure is defined as:</p>
+</div>
+<div id="VkCopyMemoryToMicromapInfoEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_opacity_micromap
+typedef struct VkCopyMemoryToMicromapInfoEXT {
+    VkStructureType                  sType;
+    const void*                      pNext;
+    VkDeviceOrHostAddressConstKHR    src;
+    VkMicromapEXT                    dst;
+    VkCopyMicromapModeEXT            mode;
+} VkCopyMemoryToMicromapInfoEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>src</code> is the device or host address to memory containing the source
+data for the copy.</p>
+</li>
+<li>
+<p><code>dst</code> is the target micromap for the copy.</p>
+</li>
+<li>
+<p><code>mode</code> is a <a href="#VkCopyMicromapModeEXT">VkCopyMicromapModeEXT</a> value specifying additional
+operations to perform during the copy.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkCopyMemoryToMicromapInfoEXT-src-07547" href="#VUID-VkCopyMemoryToMicromapInfoEXT-src-07547"></a> <span class="vuid">VUID-VkCopyMemoryToMicromapInfoEXT-src-07547</span><br>
+
+The source memory pointed to by <code>src</code> <strong>must</strong> contain data previously
+serialized using <a href="#vkCmdCopyMicromapToMemoryEXT">vkCmdCopyMicromapToMemoryEXT</a></p>
+</li>
+<li>
+<p><a id="VUID-VkCopyMemoryToMicromapInfoEXT-mode-07548" href="#VUID-VkCopyMemoryToMicromapInfoEXT-mode-07548"></a> <span class="vuid">VUID-VkCopyMemoryToMicromapInfoEXT-mode-07548</span><br>
+
+<code>mode</code> <strong>must</strong> be <code>VK_COPY_MICROMAP_MODE_DESERIALIZE_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkCopyMemoryToMicromapInfoEXT-src-07549" href="#VUID-VkCopyMemoryToMicromapInfoEXT-src-07549"></a> <span class="vuid">VUID-VkCopyMemoryToMicromapInfoEXT-src-07549</span><br>
+
+The data in <code>src</code> <strong>must</strong> have a format compatible with the
+destination physical device as returned by
+<a href="#vkGetDeviceMicromapCompatibilityEXT">vkGetDeviceMicromapCompatibilityEXT</a></p>
+</li>
+<li>
+<p><a id="VUID-VkCopyMemoryToMicromapInfoEXT-dst-07550" href="#VUID-VkCopyMemoryToMicromapInfoEXT-dst-07550"></a> <span class="vuid">VUID-VkCopyMemoryToMicromapInfoEXT-dst-07550</span><br>
+
+<code>dst</code> <strong>must</strong> have been created with a <code>size</code> greater than or
+equal to that used to serialize the data in <code>src</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkCopyMemoryToMicromapInfoEXT-sType-sType" href="#VUID-VkCopyMemoryToMicromapInfoEXT-sType-sType"></a> <span class="vuid">VUID-VkCopyMemoryToMicromapInfoEXT-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_COPY_MEMORY_TO_MICROMAP_INFO_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkCopyMemoryToMicromapInfoEXT-pNext-pNext" href="#VUID-VkCopyMemoryToMicromapInfoEXT-pNext-pNext"></a> <span class="vuid">VUID-VkCopyMemoryToMicromapInfoEXT-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkCopyMemoryToMicromapInfoEXT-dst-parameter" href="#VUID-VkCopyMemoryToMicromapInfoEXT-dst-parameter"></a> <span class="vuid">VUID-VkCopyMemoryToMicromapInfoEXT-dst-parameter</span><br>
+ <code>dst</code> <strong>must</strong> be a valid <a href="../resources.html#VkMicromapEXT" class="xref page">VkMicromapEXT</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-VkCopyMemoryToMicromapInfoEXT-mode-parameter" href="#VUID-VkCopyMemoryToMicromapInfoEXT-mode-parameter"></a> <span class="vuid">VUID-VkCopyMemoryToMicromapInfoEXT-mode-parameter</span><br>
+ <code>mode</code> <strong>must</strong> be a valid <a href="#VkCopyMicromapModeEXT">VkCopyMicromapModeEXT</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To check if a serialized micromap is compatible with the current device
+call:</p>
+</div>
+<div id="vkGetDeviceMicromapCompatibilityEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_opacity_micromap
+void vkGetDeviceMicromapCompatibilityEXT(
+    VkDevice                                    device,
+    const VkMicromapVersionInfoEXT*             pVersionInfo,
+    VkAccelerationStructureCompatibilityKHR*    pCompatibility);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the device to check the version against.</p>
+</li>
+<li>
+<p><code>pVersionInfo</code> is a pointer to a <a href="#VkMicromapVersionInfoEXT">VkMicromapVersionInfoEXT</a>
+structure specifying version information to check against the device.</p>
+</li>
+<li>
+<p><code>pCompatibility</code> is a pointer to a
+<a href="../accelstructures.html#VkAccelerationStructureCompatibilityKHR" class="xref page">VkAccelerationStructureCompatibilityKHR</a> value in which
+compatibility information is returned.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkGetDeviceMicromapCompatibilityEXT-micromap-07551" href="#VUID-vkGetDeviceMicromapCompatibilityEXT-micromap-07551"></a> <span class="vuid">VUID-vkGetDeviceMicromapCompatibilityEXT-micromap-07551</span><br>
+
+The <a href="../features.html#features-micromap" class="xref page"><code>micromap</code></a> feature <strong>must</strong> be enabled</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkGetDeviceMicromapCompatibilityEXT-device-parameter" href="#VUID-vkGetDeviceMicromapCompatibilityEXT-device-parameter"></a> <span class="vuid">VUID-vkGetDeviceMicromapCompatibilityEXT-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkGetDeviceMicromapCompatibilityEXT-pVersionInfo-parameter" href="#VUID-vkGetDeviceMicromapCompatibilityEXT-pVersionInfo-parameter"></a> <span class="vuid">VUID-vkGetDeviceMicromapCompatibilityEXT-pVersionInfo-parameter</span><br>
+ <code>pVersionInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkMicromapVersionInfoEXT">VkMicromapVersionInfoEXT</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkGetDeviceMicromapCompatibilityEXT-pCompatibility-parameter" href="#VUID-vkGetDeviceMicromapCompatibilityEXT-pCompatibility-parameter"></a> <span class="vuid">VUID-vkGetDeviceMicromapCompatibilityEXT-pCompatibility-parameter</span><br>
+ <code>pCompatibility</code> <strong>must</strong> be a valid pointer to a <a href="../accelstructures.html#VkAccelerationStructureCompatibilityKHR" class="xref page">VkAccelerationStructureCompatibilityKHR</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkMicromapVersionInfoEXT</code> structure is defined as:</p>
+</div>
+<div id="VkMicromapVersionInfoEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_opacity_micromap
+typedef struct VkMicromapVersionInfoEXT {
+    VkStructureType    sType;
+    const void*        pNext;
+    const uint8_t*     pVersionData;
+} VkMicromapVersionInfoEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>pVersionData</code> is a pointer to the version header of a micromap as
+defined in <a href="#vkCmdCopyMicromapToMemoryEXT">vkCmdCopyMicromapToMemoryEXT</a></p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p><code>pVersionData</code> is a <em>pointer</em> to an array of 2×<code>VK_UUID_SIZE</code>
+<code>uint8_t</code> values instead of two <code>VK_UUID_SIZE</code> arrays as the expected
+use case for this member is to be pointed at the header of a previously
+serialized micromap (via <a href="#vkCmdCopyMicromapToMemoryEXT">vkCmdCopyMicromapToMemoryEXT</a> or
+<a href="#vkCopyMicromapToMemoryEXT">vkCopyMicromapToMemoryEXT</a>) that is loaded in memory.
+Using arrays would necessitate extra memory copies of the UUIDs.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkMicromapVersionInfoEXT-sType-sType" href="#VUID-VkMicromapVersionInfoEXT-sType-sType"></a> <span class="vuid">VUID-VkMicromapVersionInfoEXT-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_MICROMAP_VERSION_INFO_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkMicromapVersionInfoEXT-pNext-pNext" href="#VUID-VkMicromapVersionInfoEXT-pNext-pNext"></a> <span class="vuid">VUID-VkMicromapVersionInfoEXT-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkMicromapVersionInfoEXT-pVersionData-parameter" href="#VUID-VkMicromapVersionInfoEXT-pVersionData-parameter"></a> <span class="vuid">VUID-VkMicromapVersionInfoEXT-pVersionData-parameter</span><br>
+ <code>pVersionData</code> <strong>must</strong> be a valid pointer to an array of <span class="steminline"> <svg style="vertical-align: -0.215ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="18.15ex" height="1.722ex" role="img" focusable="false" viewBox="0 -666 8022.4 761"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mn"><path data-c="32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path></g><g data-mml-node="mo" transform="translate(722.2,0)"><path data-c="D7" d="M630 29Q630 9 609 9Q604 9 587 25T493 118L389 222L284 117Q178 13 175 11Q171 9 168 9Q160 9 154 15T147 29Q147 36 161 51T255 146L359 250L255 354Q174 435 161 449T147 471Q147 480 153 485T168 490Q173 490 175 489Q178 487 284 383L389 278L493 382Q570 459 587 475T609 491Q630 491 630 471Q630 464 620 453T522 355L418 250L522 145Q606 61 618 48T630 29Z"></path></g><g data-mml-node="TeXAtom" data-mjx-texclass="ORD" transform="translate(1722.4,0)"><g data-mml-node="mi"><path data-c="1D685" d="M19 578Q19 585 20 590T23 598T29 604T38 608T48 610T62 611T78 612T97 611T119 611H195Q210 602 213 596T217 573Q217 561 216 555T206 542T179 535H164Q166 529 188 435T235 231T261 94L262 84V88Q263 91 263 94Q265 121 289 231T336 438L360 535H345Q308 535 308 566V573Q308 586 308 590T314 600T330 611H484Q499 602 502 595T505 573Q505 560 504 554T493 541T465 535H447L384 278Q321 19 319 14Q309 -7 278 -7H262H246Q215 -7 205 14Q203 19 140 278L78 535H59Q45 535 38 536T25 547T19 573V578Z"></path><path data-c="1D67A" d="M18 549T18 573T29 604T70 611H118H193Q207 603 210 596T214 573Q214 549 198 538Q191 535 172 535H152V421Q152 344 152 326T153 309L242 422L329 534Q327 535 322 536T314 538T308 542T303 548T300 558T298 573Q298 600 316 608Q322 611 392 611H463Q477 602 481 595T485 573Q485 535 446 535H441H420L281 357L436 77L454 76Q473 75 478 73Q495 62 495 38Q495 10 473 1H345Q334 5 329 11T324 21T323 38Q323 51 324 56T332 68T355 77L233 296L152 192V76H172Q191 76 198 73Q214 63 214 38Q214 9 193 1H41Q18 8 18 38Q18 61 35 73Q42 76 61 76H81V535H61Q42 535 35 538Q18 549 18 573Z" transform="translate(525,0)"></path></g><g data-mml-node="mi" transform="translate(1050,0)"><path data-c="5F" d="M57 -60Q57 -33 86 -25H438Q468 -34 468 -60T438 -95H86Q57 -86 57 -60Z"></path></g><g data-mml-node="mi" transform="translate(1575,0)"><path data-c="1D684" d="M-3 573Q-3 597 8 604T50 612Q57 612 77 612T111 611H200Q214 602 218 595T222 573Q222 549 205 538Q198 535 175 535H151V359Q151 333 151 291Q152 177 156 162Q157 160 157 159Q165 123 193 95T262 66Q303 66 330 94T367 159Q371 175 371 191T373 359V535H349H339Q328 535 322 537T309 548T303 573T306 595T325 611H506Q520 602 524 595T528 573Q528 549 511 538Q504 535 481 535H457V364Q457 189 456 182Q448 101 394 45T262 -11Q189 -11 132 43T68 182Q67 189 67 364V535H43H33Q22 535 16 537T3 548T-3 573Z"></path><path data-c="1D684" d="M-3 573Q-3 597 8 604T50 612Q57 612 77 612T111 611H200Q214 602 218 595T222 573Q222 549 205 538Q198 535 175 535H151V359Q151 333 151 291Q152 177 156 162Q157 160 157 159Q165 123 193 95T262 66Q303 66 330 94T367 159Q371 175 371 191T373 359V535H349H339Q328 535 322 537T309 548T303 573T306 595T325 611H506Q520 602 524 595T528 573Q528 549 511 538Q504 535 481 535H457V364Q457 189 456 182Q448 101 394 45T262 -11Q189 -11 132 43T68 182Q67 189 67 364V535H43H33Q22 535 16 537T3 548T-3 573Z" transform="translate(525,0)"></path><path data-c="1D678" d="M400 76Q431 76 441 69T452 38Q452 29 452 26T450 18T443 9T430 1H95Q84 6 79 12T73 23T72 38Q72 65 90 73Q96 76 157 76H220V535H157H124Q93 535 83 542T72 573Q72 603 93 610Q97 611 264 611H430Q432 609 436 607T444 602T449 594Q452 588 452 573Q452 546 434 538Q428 535 367 535H304V76H367H400Z" transform="translate(1050,0)"></path><path data-c="1D673" d="M38 1Q16 8 16 38Q16 62 32 73Q39 76 58 76H78V535H58Q40 535 32 538Q16 548 16 573Q16 587 17 591Q23 604 34 607T83 611H166H176Q188 611 209 611T239 612Q299 612 337 597T415 530Q485 438 485 300Q485 180 431 100T301 3L291 1H38ZM400 301Q400 363 385 410T346 482T303 519T267 534Q261 535 210 535H162V76H214L267 77Q323 89 361 148T400 301Z" transform="translate(1575,0)"></path></g><g data-mml-node="mi" transform="translate(3675,0)"><path data-c="5F" d="M57 -60Q57 -33 86 -25H438Q468 -34 468 -60T438 -95H86Q57 -86 57 -60Z"></path></g><g data-mml-node="mi" transform="translate(4200,0)"><path data-c="1D682" d="M52 454Q52 524 107 572T229 621Q266 621 274 620Q326 610 360 588L371 581Q377 594 379 598T386 610T397 619T412 622Q433 622 439 610T446 570Q446 563 446 545T445 515V479Q445 441 444 432T436 417Q428 408 403 408T370 417Q361 424 361 434Q361 439 360 448T351 476T331 509T295 535T238 546Q194 546 163 522T132 458Q132 435 148 412Q155 401 166 393T192 380T218 371T247 364T270 359Q341 342 349 339Q389 325 418 296T461 229Q472 201 472 164Q469 92 417 41T287 -11Q240 -11 200 -1T143 19L126 29Q117 6 109 -2Q100 -11 84 -11Q64 -11 58 1T51 42Q51 49 51 66T52 95V135Q52 173 53 180T61 194Q70 203 95 203Q119 203 127 194Q136 186 136 168Q143 66 284 66H290Q325 66 350 85Q391 115 391 165Q391 204 369 228T322 260Q320 260 255 275T185 293Q123 309 88 355T52 454Z"></path><path data-c="1D678" d="M400 76Q431 76 441 69T452 38Q452 29 452 26T450 18T443 9T430 1H95Q84 6 79 12T73 23T72 38Q72 65 90 73Q96 76 157 76H220V535H157H124Q93 535 83 542T72 573Q72 603 93 610Q97 611 264 611H430Q432 609 436 607T444 602T449 594Q452 588 452 573Q452 546 434 538Q428 535 367 535H304V76H367H400Z" transform="translate(525,0)"></path><path data-c="1D689" d="M71 1Q60 5 55 11T49 23T48 39V46Q48 56 58 73T131 183Q171 242 197 282L366 535H144V501Q144 470 143 464T135 450Q127 442 102 442H94Q71 442 62 461Q60 466 60 527L61 589Q70 607 83 610H88Q93 610 102 610T124 610T154 610T188 611T227 611T270 611H454Q456 609 461 606T467 601T471 597T474 591T475 584T476 572V565Q476 555 466 538T393 428Q353 369 327 329L158 76H397V120V146Q397 169 405 179T439 189Q470 189 479 169Q481 164 481 95V48Q481 24 478 16T459 1H71Z" transform="translate(1050,0)"></path><path data-c="1D674" d="M374 271Q374 241 367 232T332 223Q307 223 299 231Q290 240 290 263V279H173V76H418V118V144Q418 167 426 176T460 186Q491 186 500 166Q502 161 502 93V52Q502 25 499 17T480 1H41Q19 9 19 32V38Q19 63 36 73Q42 76 65 76H89V535H65H55Q44 535 38 537T25 548T19 573Q19 602 41 610H47Q53 610 63 610T88 610T121 610T160 611T204 611T251 611H458Q460 609 465 606T471 602T475 598T478 593T479 586T480 576T480 562V526V488Q480 452 462 444Q458 442 438 442Q413 442 405 450Q398 457 397 463T396 501V535H173V355H290V371Q290 394 299 403T332 412Q363 412 372 392Q374 387 374 317V271Z" transform="translate(1575,0)"></path></g></g></g></g></svg> </span> <code>uint8_t</code> values</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="host-micromap"><a class="anchor" href="#host-micromap"></a>Host Micromap Operations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Implementations are also required to provide host implementations of the
+micromap operations if the <a href="../features.html#features-micromapHostCommands" class="xref page"><code>micromapHostCommands</code></a> feature is enabled:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#vkBuildMicromapsEXT">vkBuildMicromapsEXT</a> corresponding to <a href="#vkCmdBuildMicromapsEXT">vkCmdBuildMicromapsEXT</a></p>
+</li>
+<li>
+<p><a href="#vkCopyMicromapEXT">vkCopyMicromapEXT</a> corresponding to <a href="#vkCmdCopyMicromapEXT">vkCmdCopyMicromapEXT</a></p>
+</li>
+<li>
+<p><a href="#vkCopyMicromapToMemoryEXT">vkCopyMicromapToMemoryEXT</a> corresponding to
+<a href="#vkCmdCopyMicromapToMemoryEXT">vkCmdCopyMicromapToMemoryEXT</a></p>
+</li>
+<li>
+<p><a href="#vkCopyMemoryToMicromapEXT">vkCopyMemoryToMicromapEXT</a> corresponding to
+<a href="#vkCmdCopyMemoryToMicromapEXT">vkCmdCopyMemoryToMicromapEXT</a></p>
+</li>
+<li>
+<p><a href="#vkWriteMicromapsPropertiesEXT">vkWriteMicromapsPropertiesEXT</a> corresponding to
+<a href="#vkCmdWriteMicromapsPropertiesEXT">vkCmdWriteMicromapsPropertiesEXT</a></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These commands are functionally equivalent to their device counterparts,
+except that they are executed on the host timeline, rather than being
+enqueued into command buffers.</p>
+</div>
+<div class="paragraph">
+<p>All micromaps used by the host commands <strong>must</strong> be bound to host-visible
+memory, and all input data for micromap builds <strong>must</strong> be referenced using
+host addresses instead of device addresses.
+Applications are not required to map micromap memory when using the host
+commands.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The <a href="#vkBuildMicromapsEXT">vkBuildMicromapsEXT</a> and <a href="#vkCmdBuildMicromapsEXT">vkCmdBuildMicromapsEXT</a> <strong>may</strong> use
+different algorithms, and thus are not required to produce identical
+structures.</p>
+</div>
+<div class="paragraph">
+<p>Apart from these details, the host and device operations are
+interchangeable.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>For efficient execution, micromaps manipulated using these commands should
+always be bound to host cached memory, as the implementation may need to
+repeatedly read and write this memory during the execution of the command.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To build micromaps on the host, call:</p>
+</div>
+<div id="vkBuildMicromapsEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_opacity_micromap
+VkResult vkBuildMicromapsEXT(
+    VkDevice                                    device,
+    VkDeferredOperationKHR                      deferredOperation,
+    uint32_t                                    infoCount,
+    const VkMicromapBuildInfoEXT*               pInfos);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the <code>VkDevice</code> for which the micromaps are being
+built.</p>
+</li>
+<li>
+<p><code>deferredOperation</code> is an optional <a href="../VK_KHR_deferred_host_operations/deferred_host_operations.html#VkDeferredOperationKHR" class="xref page">VkDeferredOperationKHR</a> to
+<a href="../VK_KHR_deferred_host_operations/deferred_host_operations.html#deferred-host-operations-requesting" class="xref page">request deferral</a> for this
+command.</p>
+</li>
+<li>
+<p><code>infoCount</code> is the number of micromaps to build.
+It specifies the number of the <code>pInfos</code> that <strong>must</strong> be provided.</p>
+</li>
+<li>
+<p><code>pInfos</code> is a pointer to an array of <code>infoCount</code>
+<a href="#VkMicromapBuildInfoEXT">VkMicromapBuildInfoEXT</a> structures defining the geometry used to
+build each micromap.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This command fulfills the same task as <a href="#vkCmdBuildMicromapsEXT">vkCmdBuildMicromapsEXT</a> but is
+executed by the host.</p>
+</div>
+<div class="paragraph">
+<p>The <code>vkBuildMicromapsEXT</code> command provides the ability to initiate
+multiple micromaps builds, however there is no ordering or synchronization
+implied between any of the individual micromap builds.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>This means that there <strong>cannot</strong> be any memory aliasing between any micromap
+memories or scratch memories being used by any of the builds.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkBuildMicromapsEXT-pInfos-07461" href="#VUID-vkBuildMicromapsEXT-pInfos-07461"></a> <span class="vuid">VUID-vkBuildMicromapsEXT-pInfos-07461</span><br>
+
+For each <code>pInfos</code>[i], <code>dstMicromap</code> <strong>must</strong> have been created with
+a value of <a href="../resources.html#VkMicromapCreateInfoEXT" class="xref page">VkMicromapCreateInfoEXT</a>::<code>size</code> greater than or
+equal to the memory size required by the build operation, as returned by
+<a href="../resources.html#vkGetMicromapBuildSizesEXT" class="xref page">vkGetMicromapBuildSizesEXT</a> with <span class="eq"><code>pBuildInfo</code> =
+<code>pInfos</code>[i]</span></p>
+</li>
+<li>
+<p><a id="VUID-vkBuildMicromapsEXT-mode-07462" href="#VUID-vkBuildMicromapsEXT-mode-07462"></a> <span class="vuid">VUID-vkBuildMicromapsEXT-mode-07462</span><br>
+
+The <code>mode</code> member of each element of <code>pInfos</code> <strong>must</strong> be a valid
+<a href="#VkBuildMicromapModeEXT">VkBuildMicromapModeEXT</a> value</p>
+</li>
+<li>
+<p><a id="VUID-vkBuildMicromapsEXT-dstMicromap-07463" href="#VUID-vkBuildMicromapsEXT-dstMicromap-07463"></a> <span class="vuid">VUID-vkBuildMicromapsEXT-dstMicromap-07463</span><br>
+
+The <code>dstMicromap</code> member of any element of <code>pInfos</code> <strong>must</strong> be a
+valid <a href="../resources.html#VkMicromapEXT" class="xref page">VkMicromapEXT</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkBuildMicromapsEXT-pInfos-07464" href="#VUID-vkBuildMicromapsEXT-pInfos-07464"></a> <span class="vuid">VUID-vkBuildMicromapsEXT-pInfos-07464</span><br>
+
+For each element of <code>pInfos</code> its <code>type</code> member <strong>must</strong> match the
+value of <a href="../resources.html#VkMicromapCreateInfoEXT" class="xref page">VkMicromapCreateInfoEXT</a>::<code>type</code> when its
+<code>dstMicromap</code> was created</p>
+</li>
+<li>
+<p><a id="VUID-vkBuildMicromapsEXT-dstMicromap-07465" href="#VUID-vkBuildMicromapsEXT-dstMicromap-07465"></a> <span class="vuid">VUID-vkBuildMicromapsEXT-dstMicromap-07465</span><br>
+
+The range of memory backing the <code>dstMicromap</code> member of any element
+of <code>pInfos</code> that is accessed by this command <strong>must</strong> not overlap the
+memory backing the <code>dstMicromap</code> member of any other element of
+<code>pInfos</code>, which is accessed by this command</p>
+</li>
+<li>
+<p><a id="VUID-vkBuildMicromapsEXT-dstMicromap-07466" href="#VUID-vkBuildMicromapsEXT-dstMicromap-07466"></a> <span class="vuid">VUID-vkBuildMicromapsEXT-dstMicromap-07466</span><br>
+
+The range of memory backing the <code>dstMicromap</code> member of any element
+of <code>pInfos</code> that is accessed by this command <strong>must</strong> not overlap the
+memory backing the <code>scratchData</code> member of any element of
+<code>pInfos</code> (including the same element), which is accessed by this
+command</p>
+</li>
+<li>
+<p><a id="VUID-vkBuildMicromapsEXT-scratchData-07467" href="#VUID-vkBuildMicromapsEXT-scratchData-07467"></a> <span class="vuid">VUID-vkBuildMicromapsEXT-scratchData-07467</span><br>
+
+The range of memory backing the <code>scratchData</code> member of any element
+of <code>pInfos</code> that is accessed by this command <strong>must</strong> not overlap the
+memory backing the <code>scratchData</code> member of any other element of
+<code>pInfos</code>, which is accessed by this command</p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkBuildMicromapsEXT-pInfos-07552" href="#VUID-vkBuildMicromapsEXT-pInfos-07552"></a> <span class="vuid">VUID-vkBuildMicromapsEXT-pInfos-07552</span><br>
+
+For each element of <code>pInfos</code>, the <code>buffer</code> used to create its
+<code>dstMicromap</code> member <strong>must</strong> be bound to host-visible device memory</p>
+</li>
+<li>
+<p><a id="VUID-vkBuildMicromapsEXT-pInfos-07553" href="#VUID-vkBuildMicromapsEXT-pInfos-07553"></a> <span class="vuid">VUID-vkBuildMicromapsEXT-pInfos-07553</span><br>
+
+For each element of <code>pInfos</code>, all referenced addresses of
+<code>pInfos</code>[i].<code>data.hostAddress</code> <strong>must</strong> be valid host memory</p>
+</li>
+<li>
+<p><a id="VUID-vkBuildMicromapsEXT-pInfos-07554" href="#VUID-vkBuildMicromapsEXT-pInfos-07554"></a> <span class="vuid">VUID-vkBuildMicromapsEXT-pInfos-07554</span><br>
+
+For each element of <code>pInfos</code>, all referenced addresses of
+<code>pInfos</code>[i].<code>triangleArray.hostAddress</code> <strong>must</strong> be valid host
+memory</p>
+</li>
+<li>
+<p><a id="VUID-vkBuildMicromapsEXT-micromapHostCommands-07555" href="#VUID-vkBuildMicromapsEXT-micromapHostCommands-07555"></a> <span class="vuid">VUID-vkBuildMicromapsEXT-micromapHostCommands-07555</span><br>
+
+The <a href="../features.html#features-micromapHostCommands" class="xref page">    <code>VkPhysicalDeviceOpacityMicromapFeaturesEXT</code>::<code>micromapHostCommands</code></a>
+feature <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-vkBuildMicromapsEXT-pInfos-07556" href="#VUID-vkBuildMicromapsEXT-pInfos-07556"></a> <span class="vuid">VUID-vkBuildMicromapsEXT-pInfos-07556</span><br>
+
+If <code>pInfos</code>[i].<code>mode</code> is <code>VK_BUILD_MICROMAP_MODE_BUILD_EXT</code>,
+all addresses between <code>pInfos</code>[i].<code>scratchData.hostAddress</code> and
+<code>pInfos</code>[i].<code>scratchData.hostAddress</code> + N - 1 <strong>must</strong> be valid
+host memory, where N is given by the <code>buildScratchSize</code> member of
+the <a href="../resources.html#VkMicromapBuildSizesInfoEXT" class="xref page">VkMicromapBuildSizesInfoEXT</a> structure returned from a call to
+<a href="../resources.html#vkGetMicromapBuildSizesEXT" class="xref page">vkGetMicromapBuildSizesEXT</a> with an identical
+<a href="#VkMicromapBuildInfoEXT">VkMicromapBuildInfoEXT</a> structure and primitive count</p>
+</li>
+<li>
+<p><a id="VUID-vkBuildMicromapsEXT-pInfos-07557" href="#VUID-vkBuildMicromapsEXT-pInfos-07557"></a> <span class="vuid">VUID-vkBuildMicromapsEXT-pInfos-07557</span><br>
+
+For each element of <code>pInfos</code>, the <code>buffer</code> used to create its
+<code>dstMicromap</code> member <strong>must</strong> be bound to memory that was not allocated
+with multiple instances</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkBuildMicromapsEXT-device-parameter" href="#VUID-vkBuildMicromapsEXT-device-parameter"></a> <span class="vuid">VUID-vkBuildMicromapsEXT-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkBuildMicromapsEXT-deferredOperation-parameter" href="#VUID-vkBuildMicromapsEXT-deferredOperation-parameter"></a> <span class="vuid">VUID-vkBuildMicromapsEXT-deferredOperation-parameter</span><br>
+ If <code>deferredOperation</code> is not <a href="../../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, <code>deferredOperation</code> <strong>must</strong> be a valid <a href="../VK_KHR_deferred_host_operations/deferred_host_operations.html#VkDeferredOperationKHR" class="xref page">VkDeferredOperationKHR</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkBuildMicromapsEXT-pInfos-parameter" href="#VUID-vkBuildMicromapsEXT-pInfos-parameter"></a> <span class="vuid">VUID-vkBuildMicromapsEXT-pInfos-parameter</span><br>
+ <code>pInfos</code> <strong>must</strong> be a valid pointer to an array of <code>infoCount</code> valid <a href="#VkMicromapBuildInfoEXT">VkMicromapBuildInfoEXT</a> structures</p>
+</li>
+<li>
+<p><a id="VUID-vkBuildMicromapsEXT-infoCount-arraylength" href="#VUID-vkBuildMicromapsEXT-infoCount-arraylength"></a> <span class="vuid">VUID-vkBuildMicromapsEXT-infoCount-arraylength</span><br>
+ <code>infoCount</code> <strong>must</strong> be greater than <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-vkBuildMicromapsEXT-deferredOperation-parent" href="#VUID-vkBuildMicromapsEXT-deferredOperation-parent"></a> <span class="vuid">VUID-vkBuildMicromapsEXT-deferredOperation-parent</span><br>
+ If <code>deferredOperation</code> is a valid handle, it <strong>must</strong> have been created, allocated, or retrieved from <code>device</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+<li>
+<p><code>VK_OPERATION_DEFERRED_KHR</code></p>
+</li>
+<li>
+<p><code>VK_OPERATION_NOT_DEFERRED_KHR</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_OUT_OF_DEVICE_MEMORY</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To copy or compact a micromap on the host, call:</p>
+</div>
+<div id="vkCopyMicromapEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_opacity_micromap
+VkResult vkCopyMicromapEXT(
+    VkDevice                                    device,
+    VkDeferredOperationKHR                      deferredOperation,
+    const VkCopyMicromapInfoEXT*                pInfo);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the device which owns the micromaps.</p>
+</li>
+<li>
+<p><code>deferredOperation</code> is an optional <a href="../VK_KHR_deferred_host_operations/deferred_host_operations.html#VkDeferredOperationKHR" class="xref page">VkDeferredOperationKHR</a> to
+<a href="../VK_KHR_deferred_host_operations/deferred_host_operations.html#deferred-host-operations-requesting" class="xref page">request deferral</a> for this
+command.</p>
+</li>
+<li>
+<p><code>pInfo</code> is a pointer to a <a href="#VkCopyMicromapInfoEXT">VkCopyMicromapInfoEXT</a> structure
+defining the copy operation.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This command fulfills the same task as <a href="#vkCmdCopyMicromapEXT">vkCmdCopyMicromapEXT</a> but is
+executed by the host.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCopyMicromapEXT-deferredOperation-03678" href="#VUID-vkCopyMicromapEXT-deferredOperation-03678"></a> <span class="vuid">VUID-vkCopyMicromapEXT-deferredOperation-03678</span><br>
+
+Any previous deferred operation that was associated with
+<code>deferredOperation</code> <strong>must</strong> be complete</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMicromapEXT-buffer-07558" href="#VUID-vkCopyMicromapEXT-buffer-07558"></a> <span class="vuid">VUID-vkCopyMicromapEXT-buffer-07558</span><br>
+
+The <code>buffer</code> used to create <code>pInfo-&gt;src</code> <strong>must</strong> be bound to
+host-visible device memory</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMicromapEXT-buffer-07559" href="#VUID-vkCopyMicromapEXT-buffer-07559"></a> <span class="vuid">VUID-vkCopyMicromapEXT-buffer-07559</span><br>
+
+The <code>buffer</code> used to create <code>pInfo-&gt;dst</code> <strong>must</strong> be bound to
+host-visible device memory</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMicromapEXT-micromapHostCommands-07560" href="#VUID-vkCopyMicromapEXT-micromapHostCommands-07560"></a> <span class="vuid">VUID-vkCopyMicromapEXT-micromapHostCommands-07560</span><br>
+
+The <a href="../features.html#features-micromapHostCommands" class="xref page">    <code>VkPhysicalDeviceOpacityMicromapFeaturesEXT</code>::<code>micromapHostCommands</code></a>
+feature <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMicromapEXT-buffer-07561" href="#VUID-vkCopyMicromapEXT-buffer-07561"></a> <span class="vuid">VUID-vkCopyMicromapEXT-buffer-07561</span><br>
+
+The <code>buffer</code> used to create <code>pInfo-&gt;src</code> <strong>must</strong> be bound to
+memory that was not allocated with multiple instances</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMicromapEXT-buffer-07562" href="#VUID-vkCopyMicromapEXT-buffer-07562"></a> <span class="vuid">VUID-vkCopyMicromapEXT-buffer-07562</span><br>
+
+The <code>buffer</code> used to create <code>pInfo-&gt;dst</code> <strong>must</strong> be bound to
+memory that was not allocated with multiple instances</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCopyMicromapEXT-device-parameter" href="#VUID-vkCopyMicromapEXT-device-parameter"></a> <span class="vuid">VUID-vkCopyMicromapEXT-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMicromapEXT-deferredOperation-parameter" href="#VUID-vkCopyMicromapEXT-deferredOperation-parameter"></a> <span class="vuid">VUID-vkCopyMicromapEXT-deferredOperation-parameter</span><br>
+ If <code>deferredOperation</code> is not <a href="../../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, <code>deferredOperation</code> <strong>must</strong> be a valid <a href="../VK_KHR_deferred_host_operations/deferred_host_operations.html#VkDeferredOperationKHR" class="xref page">VkDeferredOperationKHR</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMicromapEXT-pInfo-parameter" href="#VUID-vkCopyMicromapEXT-pInfo-parameter"></a> <span class="vuid">VUID-vkCopyMicromapEXT-pInfo-parameter</span><br>
+ <code>pInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkCopyMicromapInfoEXT">VkCopyMicromapInfoEXT</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMicromapEXT-deferredOperation-parent" href="#VUID-vkCopyMicromapEXT-deferredOperation-parent"></a> <span class="vuid">VUID-vkCopyMicromapEXT-deferredOperation-parent</span><br>
+ If <code>deferredOperation</code> is a valid handle, it <strong>must</strong> have been created, allocated, or retrieved from <code>device</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+<li>
+<p><code>VK_OPERATION_DEFERRED_KHR</code></p>
+</li>
+<li>
+<p><code>VK_OPERATION_NOT_DEFERRED_KHR</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_OUT_OF_DEVICE_MEMORY</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To copy host accessible memory to a micromap, call:</p>
+</div>
+<div id="vkCopyMemoryToMicromapEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_opacity_micromap
+VkResult vkCopyMemoryToMicromapEXT(
+    VkDevice                                    device,
+    VkDeferredOperationKHR                      deferredOperation,
+    const VkCopyMemoryToMicromapInfoEXT*        pInfo);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the device which owns <code>pInfo-&gt;dst</code>.</p>
+</li>
+<li>
+<p><code>deferredOperation</code> is an optional <a href="../VK_KHR_deferred_host_operations/deferred_host_operations.html#VkDeferredOperationKHR" class="xref page">VkDeferredOperationKHR</a> to
+<a href="../VK_KHR_deferred_host_operations/deferred_host_operations.html#deferred-host-operations-requesting" class="xref page">request deferral</a> for this
+command.</p>
+</li>
+<li>
+<p><code>pInfo</code> is a pointer to a <a href="#VkCopyMemoryToMicromapInfoEXT">VkCopyMemoryToMicromapInfoEXT</a>
+structure defining the copy operation.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This command fulfills the same task as <a href="#vkCmdCopyMemoryToMicromapEXT">vkCmdCopyMemoryToMicromapEXT</a>
+but is executed by the host.</p>
+</div>
+<div class="paragraph">
+<p>This command can accept micromaps produced by either
+<a href="#vkCmdCopyMicromapToMemoryEXT">vkCmdCopyMicromapToMemoryEXT</a> or <a href="#vkCopyMicromapToMemoryEXT">vkCopyMicromapToMemoryEXT</a>.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCopyMemoryToMicromapEXT-deferredOperation-03678" href="#VUID-vkCopyMemoryToMicromapEXT-deferredOperation-03678"></a> <span class="vuid">VUID-vkCopyMemoryToMicromapEXT-deferredOperation-03678</span><br>
+
+Any previous deferred operation that was associated with
+<code>deferredOperation</code> <strong>must</strong> be complete</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMemoryToMicromapEXT-pInfo-07563" href="#VUID-vkCopyMemoryToMicromapEXT-pInfo-07563"></a> <span class="vuid">VUID-vkCopyMemoryToMicromapEXT-pInfo-07563</span><br>
+
+<code>pInfo-&gt;src.hostAddress</code> <strong>must</strong> be a valid host pointer</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMemoryToMicromapEXT-pInfo-07564" href="#VUID-vkCopyMemoryToMicromapEXT-pInfo-07564"></a> <span class="vuid">VUID-vkCopyMemoryToMicromapEXT-pInfo-07564</span><br>
+
+<code>pInfo-&gt;src.hostAddress</code> <strong>must</strong> be aligned to 16 bytes</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMemoryToMicromapEXT-buffer-07565" href="#VUID-vkCopyMemoryToMicromapEXT-buffer-07565"></a> <span class="vuid">VUID-vkCopyMemoryToMicromapEXT-buffer-07565</span><br>
+
+The <code>buffer</code> used to create <code>pInfo-&gt;dst</code> <strong>must</strong> be bound to
+host-visible device memory</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMemoryToMicromapEXT-micromapHostCommands-07566" href="#VUID-vkCopyMemoryToMicromapEXT-micromapHostCommands-07566"></a> <span class="vuid">VUID-vkCopyMemoryToMicromapEXT-micromapHostCommands-07566</span><br>
+
+The <a href="../features.html#features-micromapHostCommands" class="xref page">    <code>VkPhysicalDeviceOpacityMicromapFeaturesEXT</code>::<code>micromapHostCommands</code></a>
+feature <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMemoryToMicromapEXT-buffer-07567" href="#VUID-vkCopyMemoryToMicromapEXT-buffer-07567"></a> <span class="vuid">VUID-vkCopyMemoryToMicromapEXT-buffer-07567</span><br>
+
+The <code>buffer</code> used to create <code>pInfo-&gt;dst</code> <strong>must</strong> be bound to
+memory that was not allocated with multiple instances</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCopyMemoryToMicromapEXT-device-parameter" href="#VUID-vkCopyMemoryToMicromapEXT-device-parameter"></a> <span class="vuid">VUID-vkCopyMemoryToMicromapEXT-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMemoryToMicromapEXT-deferredOperation-parameter" href="#VUID-vkCopyMemoryToMicromapEXT-deferredOperation-parameter"></a> <span class="vuid">VUID-vkCopyMemoryToMicromapEXT-deferredOperation-parameter</span><br>
+ If <code>deferredOperation</code> is not <a href="../../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, <code>deferredOperation</code> <strong>must</strong> be a valid <a href="../VK_KHR_deferred_host_operations/deferred_host_operations.html#VkDeferredOperationKHR" class="xref page">VkDeferredOperationKHR</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMemoryToMicromapEXT-pInfo-parameter" href="#VUID-vkCopyMemoryToMicromapEXT-pInfo-parameter"></a> <span class="vuid">VUID-vkCopyMemoryToMicromapEXT-pInfo-parameter</span><br>
+ <code>pInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkCopyMemoryToMicromapInfoEXT">VkCopyMemoryToMicromapInfoEXT</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMemoryToMicromapEXT-deferredOperation-parent" href="#VUID-vkCopyMemoryToMicromapEXT-deferredOperation-parent"></a> <span class="vuid">VUID-vkCopyMemoryToMicromapEXT-deferredOperation-parent</span><br>
+ If <code>deferredOperation</code> is a valid handle, it <strong>must</strong> have been created, allocated, or retrieved from <code>device</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+<li>
+<p><code>VK_OPERATION_DEFERRED_KHR</code></p>
+</li>
+<li>
+<p><code>VK_OPERATION_NOT_DEFERRED_KHR</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_OUT_OF_DEVICE_MEMORY</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To copy a micromap to host accessible memory, call:</p>
+</div>
+<div id="vkCopyMicromapToMemoryEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_opacity_micromap
+VkResult vkCopyMicromapToMemoryEXT(
+    VkDevice                                    device,
+    VkDeferredOperationKHR                      deferredOperation,
+    const VkCopyMicromapToMemoryInfoEXT*        pInfo);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the device which owns <code>pInfo-&gt;src</code>.</p>
+</li>
+<li>
+<p><code>deferredOperation</code> is an optional <a href="../VK_KHR_deferred_host_operations/deferred_host_operations.html#VkDeferredOperationKHR" class="xref page">VkDeferredOperationKHR</a> to
+<a href="../VK_KHR_deferred_host_operations/deferred_host_operations.html#deferred-host-operations-requesting" class="xref page">request deferral</a> for this
+command.</p>
+</li>
+<li>
+<p><code>pInfo</code> is a pointer to a <a href="#VkCopyMicromapToMemoryInfoEXT">VkCopyMicromapToMemoryInfoEXT</a>
+structure defining the copy operation.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This command fulfills the same task as <a href="#vkCmdCopyMicromapToMemoryEXT">vkCmdCopyMicromapToMemoryEXT</a>
+but is executed by the host.</p>
+</div>
+<div class="paragraph">
+<p>This command produces the same results as
+<a href="#vkCmdCopyMicromapToMemoryEXT">vkCmdCopyMicromapToMemoryEXT</a>, but writes its result directly to a host
+pointer, and is executed on the host rather than the device.
+The output <strong>may</strong> not necessarily be bit-for-bit identical, but it can be
+equally used by either <a href="#vkCmdCopyMemoryToMicromapEXT">vkCmdCopyMemoryToMicromapEXT</a> or
+<a href="#vkCopyMemoryToMicromapEXT">vkCopyMemoryToMicromapEXT</a>.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCopyMicromapToMemoryEXT-deferredOperation-03678" href="#VUID-vkCopyMicromapToMemoryEXT-deferredOperation-03678"></a> <span class="vuid">VUID-vkCopyMicromapToMemoryEXT-deferredOperation-03678</span><br>
+
+Any previous deferred operation that was associated with
+<code>deferredOperation</code> <strong>must</strong> be complete</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMicromapToMemoryEXT-buffer-07568" href="#VUID-vkCopyMicromapToMemoryEXT-buffer-07568"></a> <span class="vuid">VUID-vkCopyMicromapToMemoryEXT-buffer-07568</span><br>
+
+The <code>buffer</code> used to create <code>pInfo-&gt;src</code> <strong>must</strong> be bound to
+host-visible device memory</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMicromapToMemoryEXT-pInfo-07569" href="#VUID-vkCopyMicromapToMemoryEXT-pInfo-07569"></a> <span class="vuid">VUID-vkCopyMicromapToMemoryEXT-pInfo-07569</span><br>
+
+<code>pInfo-&gt;dst.hostAddress</code> <strong>must</strong> be a valid host pointer</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMicromapToMemoryEXT-pInfo-07570" href="#VUID-vkCopyMicromapToMemoryEXT-pInfo-07570"></a> <span class="vuid">VUID-vkCopyMicromapToMemoryEXT-pInfo-07570</span><br>
+
+<code>pInfo-&gt;dst.hostAddress</code> <strong>must</strong> be aligned to 16 bytes</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMicromapToMemoryEXT-micromapHostCommands-07571" href="#VUID-vkCopyMicromapToMemoryEXT-micromapHostCommands-07571"></a> <span class="vuid">VUID-vkCopyMicromapToMemoryEXT-micromapHostCommands-07571</span><br>
+
+The <a href="../features.html#features-micromapHostCommands" class="xref page">    <code>VkPhysicalDeviceOpacityMicromapFeaturesEXT</code>::<code>micromapHostCommands</code></a>
+feature <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMicromapToMemoryEXT-buffer-07572" href="#VUID-vkCopyMicromapToMemoryEXT-buffer-07572"></a> <span class="vuid">VUID-vkCopyMicromapToMemoryEXT-buffer-07572</span><br>
+
+The <code>buffer</code> used to create <code>pInfo-&gt;src</code> <strong>must</strong> be bound to
+memory that was not allocated with multiple instances</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCopyMicromapToMemoryEXT-device-parameter" href="#VUID-vkCopyMicromapToMemoryEXT-device-parameter"></a> <span class="vuid">VUID-vkCopyMicromapToMemoryEXT-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMicromapToMemoryEXT-deferredOperation-parameter" href="#VUID-vkCopyMicromapToMemoryEXT-deferredOperation-parameter"></a> <span class="vuid">VUID-vkCopyMicromapToMemoryEXT-deferredOperation-parameter</span><br>
+ If <code>deferredOperation</code> is not <a href="../../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, <code>deferredOperation</code> <strong>must</strong> be a valid <a href="../VK_KHR_deferred_host_operations/deferred_host_operations.html#VkDeferredOperationKHR" class="xref page">VkDeferredOperationKHR</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMicromapToMemoryEXT-pInfo-parameter" href="#VUID-vkCopyMicromapToMemoryEXT-pInfo-parameter"></a> <span class="vuid">VUID-vkCopyMicromapToMemoryEXT-pInfo-parameter</span><br>
+ <code>pInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkCopyMicromapToMemoryInfoEXT">VkCopyMicromapToMemoryInfoEXT</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCopyMicromapToMemoryEXT-deferredOperation-parent" href="#VUID-vkCopyMicromapToMemoryEXT-deferredOperation-parent"></a> <span class="vuid">VUID-vkCopyMicromapToMemoryEXT-deferredOperation-parent</span><br>
+ If <code>deferredOperation</code> is a valid handle, it <strong>must</strong> have been created, allocated, or retrieved from <code>device</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+<li>
+<p><code>VK_OPERATION_DEFERRED_KHR</code></p>
+</li>
+<li>
+<p><code>VK_OPERATION_NOT_DEFERRED_KHR</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_OUT_OF_DEVICE_MEMORY</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To query micromap size parameters on the host, call:</p>
+</div>
+<div id="vkWriteMicromapsPropertiesEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_opacity_micromap
+VkResult vkWriteMicromapsPropertiesEXT(
+    VkDevice                                    device,
+    uint32_t                                    micromapCount,
+    const VkMicromapEXT*                        pMicromaps,
+    VkQueryType                                 queryType,
+    size_t                                      dataSize,
+    void*                                       pData,
+    size_t                                      stride);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the device which owns the micromaps in <code>pMicromaps</code>.</p>
+</li>
+<li>
+<p><code>micromapCount</code> is the count of micromaps for which to query the
+property.</p>
+</li>
+<li>
+<p><code>pMicromaps</code> is a pointer to an array of existing previously built
+micromaps.</p>
+</li>
+<li>
+<p><code>queryType</code> is a <a href="../queries.html#VkQueryType" class="xref page">VkQueryType</a> value specifying the property to
+be queried.</p>
+</li>
+<li>
+<p><code>dataSize</code> is the size in bytes of the buffer pointed to by
+<code>pData</code>.</p>
+</li>
+<li>
+<p><code>pData</code> is a pointer to an application-allocated buffer where the
+results will be written.</p>
+</li>
+<li>
+<p><code>stride</code> is the stride in bytes between results for individual
+queries within <code>pData</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This command fulfills the same task as
+<a href="#vkCmdWriteMicromapsPropertiesEXT">vkCmdWriteMicromapsPropertiesEXT</a> but is executed by the host.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkWriteMicromapsPropertiesEXT-pMicromaps-07501" href="#VUID-vkWriteMicromapsPropertiesEXT-pMicromaps-07501"></a> <span class="vuid">VUID-vkWriteMicromapsPropertiesEXT-pMicromaps-07501</span><br>
+
+All micromaps in <code>pMicromaps</code> <strong>must</strong> have been constructed prior to
+the execution of this command</p>
+</li>
+<li>
+<p><a id="VUID-vkWriteMicromapsPropertiesEXT-pMicromaps-07502" href="#VUID-vkWriteMicromapsPropertiesEXT-pMicromaps-07502"></a> <span class="vuid">VUID-vkWriteMicromapsPropertiesEXT-pMicromaps-07502</span><br>
+
+All micromaps in <code>pMicromaps</code> <strong>must</strong> have been constructed with
+<code>VK_BUILD_MICROMAP_ALLOW_COMPACTION_BIT_EXT</code> if <code>queryType</code> is
+<code>VK_QUERY_TYPE_MICROMAP_COMPACTED_SIZE_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkWriteMicromapsPropertiesEXT-queryType-07503" href="#VUID-vkWriteMicromapsPropertiesEXT-queryType-07503"></a> <span class="vuid">VUID-vkWriteMicromapsPropertiesEXT-queryType-07503</span><br>
+
+<code>queryType</code> <strong>must</strong> be <code>VK_QUERY_TYPE_MICROMAP_COMPACTED_SIZE_EXT</code>
+or <code>VK_QUERY_TYPE_MICROMAP_SERIALIZATION_SIZE_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkWriteMicromapsPropertiesEXT-queryType-10071" href="#VUID-vkWriteMicromapsPropertiesEXT-queryType-10071"></a> <span class="vuid">VUID-vkWriteMicromapsPropertiesEXT-queryType-10071</span><br>
+
+If <code>queryType</code> is
+<code>VK_QUERY_TYPE_MICROMAP_SERIALIZATION_SIZE_EXT</code> or
+<code>VK_QUERY_TYPE_MICROMAP_COMPACTED_SIZE_EXT</code> then <code>stride</code> <strong>must</strong>
+be a multiple of the size of <code>VkDeviceSize</code></p>
+</li>
+<li>
+<p><a id="VUID-vkWriteMicromapsPropertiesEXT-queryType-10072" href="#VUID-vkWriteMicromapsPropertiesEXT-queryType-10072"></a> <span class="vuid">VUID-vkWriteMicromapsPropertiesEXT-queryType-10072</span><br>
+
+If <code>queryType</code> is
+<code>VK_QUERY_TYPE_MICROMAP_SERIALIZATION_SIZE_EXT</code> or
+<code>VK_QUERY_TYPE_MICROMAP_COMPACTED_SIZE_EXT</code> then <code>pData</code> <strong>must</strong>
+point to a <code>VkDeviceSize</code></p>
+</li>
+<li>
+<p><a id="VUID-vkWriteMicromapsPropertiesEXT-dataSize-07576" href="#VUID-vkWriteMicromapsPropertiesEXT-dataSize-07576"></a> <span class="vuid">VUID-vkWriteMicromapsPropertiesEXT-dataSize-07576</span><br>
+
+<code>dataSize</code> <strong>must</strong> be greater than or equal to
+<span class="eq"><code>micromapCount</code>*<code>stride</code></span></p>
+</li>
+<li>
+<p><a id="VUID-vkWriteMicromapsPropertiesEXT-buffer-07577" href="#VUID-vkWriteMicromapsPropertiesEXT-buffer-07577"></a> <span class="vuid">VUID-vkWriteMicromapsPropertiesEXT-buffer-07577</span><br>
+
+The <code>buffer</code> used to create each micromap in <code>pMicromaps</code> <strong>must</strong>
+be bound to host-visible device memory</p>
+</li>
+<li>
+<p><a id="VUID-vkWriteMicromapsPropertiesEXT-micromapHostCommands-07578" href="#VUID-vkWriteMicromapsPropertiesEXT-micromapHostCommands-07578"></a> <span class="vuid">VUID-vkWriteMicromapsPropertiesEXT-micromapHostCommands-07578</span><br>
+
+The <a href="../features.html#features-micromapHostCommands" class="xref page">    <code>VkPhysicalDeviceOpacityMicromapFeaturesEXT</code>::<code>micromapHostCommands</code></a>
+feature <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-vkWriteMicromapsPropertiesEXT-buffer-07579" href="#VUID-vkWriteMicromapsPropertiesEXT-buffer-07579"></a> <span class="vuid">VUID-vkWriteMicromapsPropertiesEXT-buffer-07579</span><br>
+
+The <code>buffer</code> used to create each micromap in <code>pMicromaps</code> <strong>must</strong>
+be bound to memory that was not allocated with multiple instances</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkWriteMicromapsPropertiesEXT-device-parameter" href="#VUID-vkWriteMicromapsPropertiesEXT-device-parameter"></a> <span class="vuid">VUID-vkWriteMicromapsPropertiesEXT-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkWriteMicromapsPropertiesEXT-pMicromaps-parameter" href="#VUID-vkWriteMicromapsPropertiesEXT-pMicromaps-parameter"></a> <span class="vuid">VUID-vkWriteMicromapsPropertiesEXT-pMicromaps-parameter</span><br>
+ <code>pMicromaps</code> <strong>must</strong> be a valid pointer to an array of <code>micromapCount</code> valid <a href="../resources.html#VkMicromapEXT" class="xref page">VkMicromapEXT</a> handles</p>
+</li>
+<li>
+<p><a id="VUID-vkWriteMicromapsPropertiesEXT-queryType-parameter" href="#VUID-vkWriteMicromapsPropertiesEXT-queryType-parameter"></a> <span class="vuid">VUID-vkWriteMicromapsPropertiesEXT-queryType-parameter</span><br>
+ <code>queryType</code> <strong>must</strong> be a valid <a href="../queries.html#VkQueryType" class="xref page">VkQueryType</a> value</p>
+</li>
+<li>
+<p><a id="VUID-vkWriteMicromapsPropertiesEXT-pData-parameter" href="#VUID-vkWriteMicromapsPropertiesEXT-pData-parameter"></a> <span class="vuid">VUID-vkWriteMicromapsPropertiesEXT-pData-parameter</span><br>
+ <code>pData</code> <strong>must</strong> be a valid pointer to an array of <code>dataSize</code> bytes</p>
+</li>
+<li>
+<p><a id="VUID-vkWriteMicromapsPropertiesEXT-micromapCount-arraylength" href="#VUID-vkWriteMicromapsPropertiesEXT-micromapCount-arraylength"></a> <span class="vuid">VUID-vkWriteMicromapsPropertiesEXT-micromapCount-arraylength</span><br>
+ <code>micromapCount</code> <strong>must</strong> be greater than <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-vkWriteMicromapsPropertiesEXT-dataSize-arraylength" href="#VUID-vkWriteMicromapsPropertiesEXT-dataSize-arraylength"></a> <span class="vuid">VUID-vkWriteMicromapsPropertiesEXT-dataSize-arraylength</span><br>
+ <code>dataSize</code> <strong>must</strong> be greater than <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-vkWriteMicromapsPropertiesEXT-pMicromaps-parent" href="#VUID-vkWriteMicromapsPropertiesEXT-pMicromaps-parent"></a> <span class="vuid">VUID-vkWriteMicromapsPropertiesEXT-pMicromaps-parent</span><br>
+ Each element of <code>pMicromaps</code> <strong>must</strong> have been created, allocated, or retrieved from <code>device</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_OUT_OF_DEVICE_MEMORY</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="displacement-micromap"><a class="anchor" href="#displacement-micromap"></a>Displacement Micromap</h3>
+<div class="paragraph">
+<p>A displacement micromap in an acceleration structure includes information in
+the <a href="../accelstructures.html#VkAccelerationStructureTrianglesDisplacementMicromapNV" class="xref page">VkAccelerationStructureTrianglesDisplacementMicromapNV</a> to define a
+base triangle and displacement directions then uses displacement information
+encoded in the micromap to apply to those values to generate the final
+position.</p>
+</div>
+<div class="sect3">
+<h4 id="_displacement_base_triangle"><a class="anchor" href="#_displacement_base_triangle"></a>Displacement Base Triangle</h4>
+<div class="paragraph">
+<p>If <code>displacementBiasAndScaleBuffer</code> is provided the bias and scale are
+fetched from that buffer.
+If <code>displacementBiasAndScaleBuffer</code> is zero the bias and scale are
+assumed to be 0.0 and 1.0, respectively.</p>
+</div>
+<div class="paragraph">
+<p>Given an input position from the geometry, the base position and
+displacement vector used by the displacement are computed by:</p>
+</div>
+<div class="paragraph">
+<p><span class="eq">basePosition = inputPosition +  displacementVector × bias</span></p>
+</div>
+<div class="paragraph">
+<p><span class="eq">baseDisplacementVector = displacementVector × scale</span></p>
+</div>
+<div class="paragraph">
+<p>The parameters of each micro-vertex are derived from a combination of the
+base triangle parameters extracted from the bottom-level acceleration
+structure, the barycentrics of that micro-vertex, and the displacement value
+fetched from the displacement micromap corresponding to that micro-vertex.</p>
+</div>
+<div class="paragraph">
+<p><span class="eq">microVertexBasePosition = lerp(basePositions, microVertexBarycentrics)</span></p>
+</div>
+<div class="paragraph">
+<p><span class="eq">microVertexDisplacementVector = lerp(displacementVectors,
+microVertexBarycentrics)</span></p>
+</div>
+<div class="paragraph">
+<p><span class="eq">microVertexDisplacedPosition = microVertexBasePosition + 
+microVertexDisplacementVector × micromapDisplacementValue</span></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="displacement-micromap-encoding"><a class="anchor" href="#displacement-micromap-encoding"></a>Displacement Micromap Encoding</h4>
+<div class="paragraph">
+<p>Displacement amounts are stored in displacement blocks, each covering a
+triangular region of microvertices.
+Depending on the subdivision level and encoding format, one or more
+displacement blocks combine to store all displacement values for a given
+displacement micromap.</p>
+</div>
+<div class="paragraph">
+<p>Displacement blocks are organized along a space filling curve within a
+displacement micromap if more than one block is required, then
+micro-vertices are organized along the same space filling curve within a
+displacement micromap.</p>
+</div>
+<div class="paragraph">
+<p>The space-filling curve is purely hierarchical with recursive splitting,
+similar to that for opacity micromaps but operating on vertices instead of
+triangles.
+To maintain that the hierarchical ordering is contiguous while keeping
+continuous winding, some triangles are flipped and wound differently.</p>
+</div>
+<div class="paragraph">
+<p>The <code>VK_DISPLACEMENT_MICROMAP_FORMAT_64_TRIANGLES_64_BYTES_NV</code> format is
+an uncompressed, packed format which covers 64 microtriangles (subdivision
+level 3) in a block.
+The block contains 45 displacement values encoded as 11 bit unorm values and
+stored tightly packed in the vertex order described above, occupying 495
+bits.
+This is followed by 15 unused bits then 2 reserved bits which <strong>must</strong> be 0.
+If this block is used to store displacement for a subdivision level below 3
+the later unused values are ignored.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Section</th>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Entries</th>
+<th class="tableblock halign-left valign-top">Bits per entry</th>
+<th class="tableblock halign-left valign-top">Starting bit offset</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Displacement amounts</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Vertex 0 - 44</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">45</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">11</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Unused</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">15</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">495</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Reserved</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Must be 0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">510</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>The <code>VK_DISPLACEMENT_MICROMAP_FORMAT_256_TRIANGLES_128_BYTES_NV</code> and
+<code>VK_DISPLACEMENT_MICROMAP_FORMAT_1024_TRIANGLES_128_BYTES_NV</code> formats
+store displacements in a compressed form to save space.
+Both formats use the same compression algorithm, differing in the number of
+bits used in the different fields.</p>
+</div>
+<div class="paragraph">
+<p>The compression algorithm works by starting with fully specified anchor
+vertices, then for each level, predicting the value for the displacement and
+encoding the correction for that value, using fewer bits for each level of
+subdivision.</p>
+</div>
+<div class="paragraph">
+<p>When adding a vertex in the recursive subdivision process between two
+adjacent displacement values, the predicted value is given by the rounded
+average of the two adjacent values as integers:</p>
+</div>
+<div class="paragraph">
+<p><span class="eq">prediction = (A +  B +  1) / 2</span></p>
+</div>
+<div class="paragraph">
+<p>The decoded value after applying the correction is given by:</p>
+</div>
+<div class="paragraph">
+<p><span class="eq">decoded = prediction +  ( SignExtend(correction) &lt;&lt; shift )</span></p>
+</div>
+<div class="paragraph">
+<p>where <span class="eq">correction</span> is given by the corrections field for a given level
+and micro vertex and <span class="eq">shift</span> is given by the shifts field indexed from
+the level then by 4 values, selected from interior or the 3 edges in vertex
+order in that order.</p>
+</div>
+<div class="paragraph">
+<p>The bit encoding for
+<code>VK_DISPLACEMENT_MICROMAP_FORMAT_256_TRIANGLES_128_BYTES_NV</code></p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Section</th>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Entries</th>
+<th class="tableblock halign-left valign-top">Bits per entry</th>
+<th class="tableblock halign-left valign-top">Starting bit offset</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Anchors</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Vertex 0 - 2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">11</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Corrections</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Level 1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">11</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">33</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Level 2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">9</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">11</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">66</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Level 3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">30</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">165</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Level 4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">108</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">465</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Unused</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1005</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Shifts</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Level 4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1006</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Level 3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1018</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Reserved</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Must be 0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1022</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>The bit encoding for
+<code>VK_DISPLACEMENT_MICROMAP_FORMAT_1024_TRIANGLES_128_BYTES_NV</code></p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Section</th>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Entries</th>
+<th class="tableblock halign-left valign-top">Bits per entry</th>
+<th class="tableblock halign-left valign-top">Starting bit offset</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Anchors</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Vertex 0 - 2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">11</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Corrections</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Level 1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">11</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">33</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Level 2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">9</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">8</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">66</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Level 3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">30</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">138</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Level 4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">108</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">258</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Level 5</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">408</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">474</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Unused</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">88</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">882</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Shifts</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Level 5</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">970</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Level 4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">986</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Level 3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1002</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Level 2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1014</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Reserved</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Must be 0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1022</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

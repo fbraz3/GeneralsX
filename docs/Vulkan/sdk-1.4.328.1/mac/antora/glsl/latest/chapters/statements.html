@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Statements and Structure :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:glsl" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="glsl" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">OpenGL Shading Language Specification</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="preamble.html">Preamble</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="overview.html">Overview of Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="basics.html">Basics</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="variables.html">Variables and Types</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="operators.html">Operators and Expressions</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="statements.html">Statements and Structure</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="builtins.html">Built-In Variables</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="builtinfunctions.html">Built-In Functions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="grammar.html">Shading Language Grammar</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="acknowledgements.html">Acknowledgments</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="references.html">Normative References</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="spirvmappings.html">Non-Normative SPIR-V Mappings</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">OpenGL Shading Language Specification</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">OpenGL Shading Language Specification</a></li>
+    <li><a href="statements.html">Statements and Structure</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/GLSL/antora/modules/ROOT/pages/chapters/statements.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Statements and Structure</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>The fundamental building blocks of the OpenGL Shading Language are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>statements and declarations</p>
+</li>
+<li>
+<p>function definitions</p>
+</li>
+<li>
+<p>selection (<strong>if</strong>-<strong>else</strong> and <strong>switch</strong>-<strong>case</strong>-<strong>default</strong>)</p>
+</li>
+<li>
+<p>iteration (<strong>for</strong>, <strong>while</strong>, and <strong>do</strong>-<strong>while</strong>)</p>
+</li>
+<li>
+<p>jumps (<strong>discard</strong>, <strong>return</strong>, <strong>break</strong>, and <strong>continue</strong>)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The overall structure of a shader is as follows</p>
+</div>
+<div class="openblock bnf">
+<div class="content">
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><em>translation-unit</em> : </dt>
+<dd>
+<p><em>global-declaration</em><br>
+<em>translation-unit</em> <em>global-declaration</em></p>
+</dd>
+<dt class="hdlist1"><em>global-declaration</em> : </dt>
+<dd>
+<p><em>function-definition</em><br>
+<em>declaration</em></p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>That is, a shader is a sequence of declarations and function bodies.
+Function bodies are defined as</p>
+</div>
+<div class="openblock bnf">
+<div class="content">
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><em>function-definition</em> : </dt>
+<dd>
+<p><em>function-prototype</em> <strong>{</strong> <em>statement-list</em> <strong>}</strong></p>
+</dd>
+<dt class="hdlist1"><em>statement-list</em> : </dt>
+<dd>
+<p><em>statement</em><br>
+<em>statement-list</em> <em>statement</em></p>
+</dd>
+<dt class="hdlist1"><em>statement</em> : </dt>
+<dd>
+<p><em>compound-statement</em><br>
+<em>simple-statement</em></p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Curly braces are used to group sequences of statements into compound
+statements.</p>
+</div>
+<div class="openblock bnf">
+<div class="content">
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><em>compound-statement</em> : </dt>
+<dd>
+<p><strong>{</strong> <em>statement-list</em> <strong>}</strong></p>
+</dd>
+<dt class="hdlist1"><em>simple-statement</em> : </dt>
+<dd>
+<p><em>declaration-statement</em><br>
+<em>expression-statement</em><br>
+<em>selection-statement</em><br>
+<em>iteration-statement</em><br>
+<em>jump-statement</em></p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Simple declaration, expression, and jump statements end in a semi-colon.</p>
+</div>
+<div class="paragraph">
+<p>This above is slightly simplified, and the complete grammar specified in
+&#8220;<a href="grammar.html#shading-language-grammar" class="xref page">Shading Language Grammar</a>&#8221; should be used as
+the definitive specification.</p>
+</div>
+<div class="paragraph">
+<p>Declarations and expressions have already been discussed.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="function-definitions"><a class="anchor" href="#function-definitions"></a>Function Definitions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>As indicated by the grammar above, a valid shader is a sequence of global
+declarations and function definitions.
+A function is declared as the following example shows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// prototype
+returnType functionName (type0 arg0, type1 arg1, ..., typen argn);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>and a function is defined like</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// definition
+returnType functionName (type0 arg0, type1 arg1, ..., typen argn)
+{
+    // do some computation
+    return returnValue;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>where <em>returnType</em> must be present and cannot be void, or:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">void functionName (type0 arg0, type1 arg1, ..., typen argn)
+{
+    // do some computation
+    return; // optional
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If the type of <em>returnValue</em> does not match <em>returnType</em>, there must be an
+implicit conversion in &#8220;<a href="variables.html#implicit-conversions" class="xref page">Implicit Conversions</a>&#8221;
+that converts the type of <em>returnValue</em> to <em>returnType</em>, or a compile-time
+error will result.</p>
+</div>
+<div class="paragraph">
+<p>Each of the <em>typeN</em> must include a type and can optionally include parameter
+qualifiers.
+The formal argument names (<em>args</em> above) in the declarations are optional
+for both the declaration and definition forms.</p>
+</div>
+<div class="paragraph">
+<p>A function is called by using its name followed by a list of arguments in
+parentheses.</p>
+</div>
+<div class="paragraph">
+<p>Arrays are allowed as arguments and as the return type.
+In both cases, the array must be
+explicitly
+sized.
+An array is passed or returned by using just its name, without brackets, and
+the size of the array must match the size specified in the function&#8217;s
+declaration.</p>
+</div>
+<div class="paragraph">
+<p>Structures are also allowed as argument types.
+The return type can also be a structure.</p>
+</div>
+<div class="paragraph">
+<p>See &#8220;<a href="grammar.html#shading-language-grammar" class="xref page">Shading Language Grammar</a>&#8221; for the
+definitive reference on the syntax to declare and define functions.</p>
+</div>
+<div class="paragraph">
+<p>All functions must be either declared with a prototype or defined with a
+body before they are called.
+For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">float myfunc (float f,      // f is an input parameter
+              out float g); // g is an output parameter</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Functions that return no value must be declared as <strong>void</strong>.
+A <strong>void</strong> function can only use <strong>return</strong> without a return argument, even if
+the return argument has <strong>void</strong> type.
+Return statements only accept values:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">void func1() { }
+void func2() { return func1(); } // illegal return statement</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Only a precision qualifier is allowed on the return type of a function.
+Formal parameters can have parameter, precision, and memory qualifiers, but
+no other qualifiers.</p>
+</div>
+<div class="paragraph">
+<p>Functions that accept no input arguments need not use <strong>void</strong> in the argument
+list because prototypes (or definitions) are required and therefore there is
+no ambiguity when an empty argument list &#8220;( )&#8221; is declared.
+The idiom &#8220;(<strong>void</strong>)&#8221; as a parameter list is provided for convenience.</p>
+</div>
+<div class="paragraph">
+<p>Function names can be overloaded.
+The same function name can be used for multiple functions, as long as the
+parameter types differ.
+If a function name is declared twice with the same parameter types, then the
+return types and all qualifiers must also match, and it is the same function
+being declared.</p>
+</div>
+<div class="paragraph">
+<p>For example,</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">vec4 f(in vec4 x, out vec4 y);       // (A)
+vec4 f(in vec4 x, out uvec4 y);      // (B) okay, different argument type
+vec4 f(in ivec4 x, out dvec4 y);     // (C) okay, different argument type
+int f(in vec4 x, out vec4 y);        // error, only return type differs
+vec4 f(in vec4 x, in vec4 y);        // error, only qualifier differs
+vec4 f(const in vec4 x, out vec4 y); // error, only qualifier differs</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When function calls are resolved, an exact type match for all the arguments
+is sought.
+If an exact match is found, all other functions are ignored, and the exact
+match is used.
+If no exact match is found, then the implicit conversions in section
+&#8220;<a href="variables.html#implicit-conversions" class="xref page">Implicit Conversions</a>&#8221; will be applied to find a
+match.
+Mismatched types on input parameters (<strong>in</strong> or <strong>inout</strong> or default) <strong>must</strong>
+have a conversion from the calling argument type to the formal parameter
+type.
+Mismatched types on output parameters (<strong>out</strong> or <strong>inout</strong>) must have a
+conversion from the formal parameter type to the calling argument type.</p>
+</div>
+<div class="paragraph">
+<p>If implicit conversions can be used to find more than one matching function,
+a single best-matching function is sought.
+To determine a best match, the conversions between calling argument and
+formal parameter types are compared for each function argument and pair of
+matching functions.
+After these comparisons are performed, each pair of matching functions are
+compared.
+A function declaration <em>A</em> is considered a better match than function
+declaration <em>B</em> if</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>for at least one function argument, the conversion for that argument in
+<em>A</em> is better than the corresponding conversion in <em>B</em>; and</p>
+</li>
+<li>
+<p>there is no function argument for which the conversion in <em>B</em> is better
+than the corresponding conversion in <em>A</em>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If a single function declaration is considered a better match than every
+other matching function declaration, it will be used.
+Otherwise, a compile-time semantic error for an ambiguous overloaded
+function call occurs.</p>
+</div>
+<div class="paragraph">
+<p>To determine whether the conversion for a single argument in one match is
+better than that for another match, the following rules are applied, in
+order:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>An exact match is better than a match involving any implicit conversion.</p>
+</li>
+<li>
+<p>A match involving an implicit conversion from <strong>float</strong> to <strong>double</strong> is
+better than a match involving any other implicit conversion.</p>
+</li>
+<li>
+<p>A match involving an implicit conversion from either <strong>int</strong> or <strong>uint</strong> to
+<strong>float</strong> is better than a match involving an implicit conversion from
+either <strong>int</strong> or <strong>uint</strong> to <strong>double</strong>.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>If none of the rules above apply to a particular pair of conversions,
+neither conversion is considered better than the other.</p>
+</div>
+<div class="paragraph">
+<p>For the example function prototypes (A), (B), and &#169; above, the following
+examples show how the rules apply to different sets of calling argument
+types:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">f(vec4, vec4)   // exact match of vec4 f(in vec4 x, out vec4 y)
+f(vec4, uvec4)  // exact match of vec4 f(in vec4 x, out uvec4 y)
+f(vec4, ivec4)  // matched to vec4 f(in vec4 x, out vec4 y)
+                // (C) not relevant, can't convert vec4 to
+                // ivec4. (A) better than (B) for 2nd
+                // argument (rule 3), same on first argument.
+f(ivec4, vec4); // NOT matched. All three match by implicit
+                // conversion. (C) is better than (A) and (B)
+                // on the first argument. (A) is better than
+                // (B) and (C).</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>User-defined functions can have multiple declarations, but only one
+definition.</p>
+</div>
+<div class="paragraph">
+<p>A shader can redefine built-in functions.
+If a built-in function is redeclared in a shader (i.e., a prototype is
+visible) before a call to it, then the linker will only attempt to resolve
+that call within the set of shaders that are linked with it.</p>
+</div>
+<div class="paragraph">
+<p>The function <em>main</em> is used as the entry point to a shader executable.
+A shader need not contain a function named <em>main</em>, but one shader in a set
+of shaders linked together to form a single shader executable must, or a
+link-time error results.
+This function takes no arguments, returns no value, and must be declared as
+type <strong>void</strong>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">void main()
+{
+    ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The function <em>main</em> can contain uses of <strong>return</strong>.
+See &#8220;<a href="#jumps">Jumps</a>&#8221; for more details.</p>
+</div>
+<div class="paragraph">
+<p>It is a compile-time or link-time error to declare or define a function
+<strong>main</strong> with any other parameters or return type.</p>
+</div>
+<div class="sect2">
+<h3 id="function-calling-conventions"><a class="anchor" href="#function-calling-conventions"></a>Function Calling Conventions</h3>
+<div class="paragraph">
+<p>Functions are called by value-return.
+This means input arguments are copied into the function at call time, and
+output arguments are copied back to the caller before function exit.
+Because the function works with local copies of parameters, there are no
+issues regarding aliasing of variables within a function.
+To control what parameters are copied in and/or out through a function
+definition or declaration:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The keyword <strong>in</strong> is used as a qualifier to denote a parameter is to be
+copied in, but not copied out.</p>
+</li>
+<li>
+<p>The keyword <strong>out</strong> is used as a qualifier to denote a parameter is to be
+copied out, but not copied in.
+This should be used whenever possible to avoid unnecessarily copying
+parameters in.</p>
+</li>
+<li>
+<p>The keyword <strong>inout</strong> is used as a qualifier to denote the parameter is to
+be both copied in and copied out.
+It means the same thing as specifying both <strong>in</strong> and <strong>out</strong>.</p>
+</li>
+<li>
+<p>A function parameter declared with no such qualifier means the same
+thing as specifying <strong>in</strong>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>All arguments are evaluated at call time, exactly once, in order, from left
+to right.
+Evaluation of an <strong>in</strong> parameter results in a value that is copied to the
+formal parameter.
+Evaluation of an <strong>out</strong> parameter results in an l-value that is used to copy
+out a value when the function returns.
+Evaluation of an <strong>inout</strong> parameter results in both a value and an l-value;
+the value is copied to the formal parameter at call time and the l-value is
+used to copy out a value when the function returns.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Note</div>
+<div class="paragraph">
+<p>Because <strong>out</strong> parameters are not copied into a function, they begin the function
+uninitialized. At the end of the function, the values are copied out to the
+caller unconditionally which, if the value has not been set in the function,
+will result in the passed argument becoming uninitialized in the caller.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The order in which output parameters are copied back to the caller is
+undefined.</p>
+</div>
+<div class="paragraph">
+<p>If the function matching described in the previous section required argument
+type conversions, these conversions are applied at copy-in and copy-out
+times.</p>
+</div>
+<div class="paragraph">
+<p>In a function, writing to an input-only parameter is allowed.
+Only the function&#8217;s copy is modified.
+This can be prevented by declaring a parameter with the <strong>const</strong> qualifier.</p>
+</div>
+<div class="paragraph">
+<p>When calling a function, expressions that do not evaluate to l-values cannot
+be passed to parameters declared as <strong>out</strong> or <strong>inout</strong>, or a compile-time error
+results.</p>
+</div>
+<div class="paragraph">
+<p>The syntax for function prototypes can be informally expressed as:</p>
+</div>
+<div class="openblock bnf">
+<div class="content">
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><em>function-prototype</em> : </dt>
+<dd>
+<p><em>return-type</em> <em>function-name</em> <strong>(</strong> <em>parameter-qualifiers</em>
+<em>type-specifier</em> <em>name</em> <em>array-specifier</em> <strong>,</strong> &#8230;&#8203;
+<strong>)</strong></p>
+</dd>
+<dt class="hdlist1"><em>return-type</em> : </dt>
+<dd>
+<p><em>type-specifier</em><br>
+<em>precision-qualifier</em> <em>type-specifier</em></p>
+</dd>
+<dt class="hdlist1"><em>parameter-qualifiers</em> : </dt>
+<dd>
+<p><em>empty</em><br>
+<em>parameter-qualifiers</em> <em>parameter-qualifier</em></p>
+</dd>
+<dt class="hdlist1"><em>parameter-qualifier</em> : </dt>
+<dd>
+<p><strong>const</strong><br>
+<strong>in</strong><br>
+<strong>out</strong><br>
+<strong>inout</strong><br>
+<strong>precise</strong><br>
+<em>memory-qualifier</em><br>
+<em>precision-qualifier</em></p>
+</dd>
+<dt class="hdlist1"><em>name</em> : </dt>
+<dd>
+<p>empty<br>
+<em>identifier</em></p>
+</dd>
+<dt class="hdlist1"><em>array-specifier</em> : </dt>
+<dd>
+<p>empty<br>
+<strong>[</strong> <em>integral-constant-expression</em> <strong>]</strong></p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>The <strong>const</strong> qualifier cannot be used with <strong>out</strong> or <strong>inout</strong>, or
+a compile-time error results.
+The above is used both for function declarations (i.e., prototypes) and for
+function definitions.
+Hence, function definitions can have unnamed arguments.</p>
+</div>
+<div class="paragraph">
+<p>Static, and hence dynamic, recursion is not allowed.
+Static recursion is present if the static function-call graph of a program
+contains cycles.
+This includes all potential function calls through variables declared as
+<strong>subroutine</strong> <strong>uniform</strong> (described below).
+It is a compile-time or link-time error if a single compilation unit
+(shader) contains either static recursion or the potential for recursion
+through subroutine variables.
+Dynamic recursion occurs if at any time control flow has entered but not
+exited a single function more than once.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="subroutines"><a class="anchor" href="#subroutines"></a>Subroutines</h3>
+<div class="paragraph">
+<p>Subroutines provide a mechanism allowing shaders to be compiled in a manner
+where the target of one or more function calls can be changed at run-time
+without requiring any shader recompilation.
+For example, a single shader may be compiled with support for multiple
+illumination algorithms to handle different kinds of lights or surface
+materials.
+An application using such a shader may switch illumination algorithms by
+changing the value of its subroutine uniforms.
+To use subroutines, a subroutine type is declared, one or more functions are
+associated with that subroutine type, and a subroutine variable of that type
+is declared.
+The function currently assigned to the variable function is then called by
+using function calling syntax replacing a function name with the name of the
+subroutine variable.
+Subroutine variables are uniforms, and are assigned to specific functions
+only through commands (<strong>UniformSubroutinesuiv</strong>) in the OpenGL API.</p>
+</div>
+<div class="paragraph">
+<p>Subroutine functionality is not available when generating SPIR-V.</p>
+</div>
+<div class="paragraph">
+<p>Subroutine types are declared using a statement similar to a function
+declaration, with the <strong>subroutine</strong> keyword, as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">subroutine returnType subroutineTypeName(type0 arg0, type1 arg1,
+                                         ..., typen argn);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>As with function declarations, the formal argument names (<em>args</em> above) are
+optional.
+Functions are associated with subroutine types of matching declarations by
+defining the function with the <strong>subroutine</strong> keyword and a list of subroutine
+types the function matches:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">subroutine(subroutineTypeName0, ..., subroutineTypeNameN)
+returnType functionName(type0 arg0, type1 arg1, ..., typen argn)
+{ ... } // function body</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>It is a compile-time error if arguments and return type don&#8217;t match between
+the function and each associated subroutine type.</p>
+</div>
+<div class="paragraph">
+<p>Functions declared with <strong>subroutine</strong> must include a body.
+An overloaded function cannot be declared with <strong>subroutine</strong>; a program will
+fail to compile or link if any shader or stage contains two or more
+functions with the same name if the name is associated with a subroutine
+type.</p>
+</div>
+<div class="paragraph">
+<p>A function declared with <strong>subroutine</strong> can also be called directly with a
+static use of <em>functionName</em>, as is done with non-subroutine function
+declarations and calls.</p>
+</div>
+<div class="paragraph">
+<p>Subroutine type variables are required to be <em>subroutine uniforms</em>, and are
+declared with a specific subroutine type in a subroutine uniform variable
+declaration:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">subroutine uniform subroutineTypeName subroutineVarName;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Subroutine uniform variables are called the same way functions are called.
+When a subroutine variable (or an element of a subroutine variable array) is
+associated with a particular function, all function calls through that
+variable will call that particular function.</p>
+</div>
+<div class="paragraph">
+<p>Unlike other uniform variables, subroutine uniform variables are scoped to
+the shader execution stage the variable is declared in.</p>
+</div>
+<div class="paragraph">
+<p>Subroutine variables may be declared as explicitly-sized arrays, which can
+be indexed only with dynamically uniform expressions.</p>
+</div>
+<div class="paragraph">
+<p>It is a compile-time error to use the <strong>subroutine</strong> keyword in any places
+other than (as shown above) to</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>declare a subroutine type at global scope,</p>
+</li>
+<li>
+<p>declare a function as a subroutine, or</p>
+</li>
+<li>
+<p>declare a subroutine variable at global scope.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="selection"><a class="anchor" href="#selection"></a>Selection</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Conditional control flow in the shading language is done by either <strong>if</strong>,
+<strong>if</strong>-<strong>else</strong>, or <strong>switch</strong> statements:</p>
+</div>
+<div class="openblock bnf">
+<div class="content">
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><em>selection-statement</em> : </dt>
+<dd>
+<p><strong>if</strong> <strong>(</strong> <em>bool-expression</em> <strong>)</strong> <em>statement</em><br>
+<strong>if</strong> <strong>(</strong> <em>bool-expression</em> <strong>)</strong> <em>statement</em> <strong>else</strong> <em>statement</em><br>
+<strong>switch</strong> <strong>(</strong> <em>init-expression</em> <strong>)</strong> <strong>{</strong> <em>switch-statement-list<sub>opt</sub></em> <strong>}</strong></p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Where <em>switch-statement-list</em> is a nested scope containing a list of zero or
+more <em>switch-statement</em> and other statements defined by the language, where
+<em>switch-statement</em> adds some forms of labels.
+That is</p>
+</div>
+<div class="openblock bnf">
+<div class="content">
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><em>switch-statement-list</em> : </dt>
+<dd>
+<p><em>switch-statement</em><br>
+<em>switch-statement-list</em> <em>switch-statement</em></p>
+</dd>
+<dt class="hdlist1"><em>switch-statement</em> : </dt>
+<dd>
+<p><strong>case</strong> <em>constant-expression</em> <strong>:</strong><br>
+<strong>default</strong> <strong>:</strong> <em>statement</em></p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Note the above grammar&#8217;s purpose is to aid discussion in this section; the
+normative grammar is in &#8220;<a href="grammar.html#shading-language-grammar" class="xref page">Shading Language Grammar</a>&#8221;.</p>
+</div>
+<div class="paragraph">
+<p>If an <strong>if</strong>-expression evaluates to <strong>true</strong>, then the first <em>statement</em> is
+executed.
+If it evaluates to <strong>false</strong> and there is an <strong>else</strong> part then the second
+<em>statement</em> is executed.</p>
+</div>
+<div class="paragraph">
+<p>Any expression whose type evaluates to a Boolean can be used as the
+conditional expression <em>bool-expression</em>.
+Vector types are not accepted as the expression to <strong>if</strong>.</p>
+</div>
+<div class="paragraph">
+<p>Conditionals can be nested.</p>
+</div>
+<div class="paragraph">
+<p>The type of <em>init-expression</em> in a <strong>switch</strong> statement must be a scalar
+integer.
+The type of the <em>constant-expression</em> value in a case label also must be a
+scalar integer.
+When any pair of these values is tested for &#8220;equal value&#8221; and the types do
+not match, an implicit conversion will be done to convert the <strong>int</strong> to a
+<strong>uint</strong> (see &#8220;<a href="variables.html#implicit-conversions" class="xref page">Implicit Conversions</a>&#8221;) before the
+compare is done.
+If a <strong>case</strong> label has a <em>constant-expression</em> of equal value to
+<em>init-expression</em>, execution will continue after that label.
+Otherwise, if there is a <strong>default</strong> label, execution will continue after that
+label.
+Otherwise, execution skips the rest of the switch statement.
+It is a compile-time error to have more than one <strong>default</strong> or a replicated
+<em>constant-expression</em>.
+A <strong>break</strong> statement not nested in a loop or other switch statement (either
+not nested or nested only in <strong>if</strong> or <strong>if</strong>-<strong>else</strong> statements) will also skip
+the rest of the switch statement.
+Fall through labels are allowed, but it is a compile-time error to have no
+statement between a label and the end of the switch statement.
+No statements are allowed in a switch statement before the first <strong>case</strong>
+statement.</p>
+</div>
+<div class="paragraph">
+<p>The <strong>case</strong> and <strong>default</strong> labels can only appear within a <strong>switch</strong> statement.
+No <strong>case</strong> or <strong>default</strong> labels can be nested inside other statements or
+compound statements within their corresponding <strong>switch</strong>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="iteration"><a class="anchor" href="#iteration"></a>Iteration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>For, while, and do loops are allowed as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">for (init-expression; condition-expression; loop-expression)
+    sub-statement
+while (condition-expression)
+    sub-statement
+do
+    statement
+while (condition-expression)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>See &#8220;<a href="grammar.html#shading-language-grammar" class="xref page">Shading Language Grammar</a>&#8221; for the
+definitive specification of loops.</p>
+</div>
+<div class="paragraph">
+<p>The <strong>for</strong> loop first evaluates the <em>init-expression</em>, then the
+<em>condition-expression</em>.
+If the <em>condition-expression</em> evaluates to <strong>true</strong>, then the body of the loop
+is executed.
+After the body is executed, a <strong>for</strong> loop will then evaluate the
+<em>loop-expression</em>, and then loop back to evaluate the
+<em>condition-expression</em>, repeating until the <em>condition-expression</em> evaluates
+to <strong>false</strong>.
+The loop is then exited, skipping its body and skipping its
+<em>loop-expression</em>.
+Variables modified by the <em>loop-expression</em> maintain their value after the
+loop is exited, provided they are still in scope.
+Variables declared in <em>init-expression</em> or <em>condition-expression</em> are only
+in scope until the end of the sub-statement of the <strong>for</strong> loop.</p>
+</div>
+<div class="paragraph">
+<p>The <strong>while</strong> loop first evaluates the <em>condition-expression</em>.
+If <strong>true</strong>, then the body is executed.
+This is then repeated, until the <em>condition-expression</em> evaluates to
+<strong>false</strong>, exiting the loop and skipping its body.
+Variables declared in the <em>condition-expression</em> are only in scope until the
+end of the sub-statement of the <strong>while</strong> loop.</p>
+</div>
+<div class="paragraph">
+<p>The <strong>do</strong>-<strong>while</strong> loop first executes the body, then executes the
+<em>condition-expression</em>.
+This is repeated until <em>condition-expression</em> evaluates to <strong>false</strong>, and then
+the loop is exited.</p>
+</div>
+<div class="paragraph">
+<p>Expressions for <em>condition-expression</em> must evaluate to a Boolean.</p>
+</div>
+<div class="paragraph">
+<p>Both the <em>condition-expression</em> and the <em>init-expression</em> can declare and
+initialize a variable, except in the <strong>do</strong>-<strong>while</strong> loop, which cannot declare
+a variable in its <em>condition-expression</em>.
+The variable&#8217;s scope lasts only until the end of the sub-statement that
+forms the body of the loop.</p>
+</div>
+<div class="paragraph">
+<p>Loops can be nested.</p>
+</div>
+<div class="paragraph">
+<p>Non-terminating loops are allowed.
+The consequences of very long or non-terminating loops are platform
+dependent.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="jumps"><a class="anchor" href="#jumps"></a>Jumps</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>These are the jumps:</p>
+</div>
+<div class="openblock bnf">
+<div class="content">
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><em>jump_statement</em> : </dt>
+<dd>
+<p><strong>continue</strong> <strong>;</strong><br>
+<strong>break</strong> <strong>;</strong><br>
+<strong>return</strong> <strong>;</strong><br>
+<strong>return</strong> <em>expression</em> <strong>;</strong><br>
+<strong>discard</strong> <strong>;</strong> // in the fragment shader language only</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>There is no &#8220;goto&#8221; or other non-structured flow of control.</p>
+</div>
+<div class="paragraph">
+<p>The <strong>continue</strong> jump is used only in loops.
+It skips the remainder of the body of the inner-most loop of which it is
+inside.
+For <strong>while</strong> and <strong>do</strong>-<strong>while</strong> loops, this jump is to the next evaluation of
+the loop <em>condition-expression</em> from which the loop continues as previously
+defined.
+For <strong>for</strong> loops, the jump is to the <em>loop-expression</em>, followed by the
+<em>condition-expression</em>.</p>
+</div>
+<div class="paragraph">
+<p>The <strong>break</strong> jump can also be used only in loops and <strong>switch</strong> statements.
+It is simply an immediate exit of the inner-most loop or <strong>switch</strong> statements
+containing the <strong>break</strong>.
+No further execution of <em>condition-expression</em>, <em>loop-expression</em>, or
+<em>switch-statement</em> is done.</p>
+</div>
+<div class="paragraph">
+<p>The <strong>discard</strong> keyword is only allowed within fragment shaders.
+It can be used within a fragment shader to abandon the operation on the
+current fragment.
+This keyword causes the fragment to be discarded and no updates to any
+buffers will occur.
+Any prior writes to other buffers such as shader storage buffers are
+unaffected.
+Control flow exits the shader, and subsequent implicit or explicit
+derivatives are undefined when this control flow is non-uniform (meaning
+different fragments within the primitive take different control paths).
+It would typically be used within a conditional statement, for example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">if (intensity &lt; 0.0)
+    discard;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A fragment shader may test a fragment&#8217;s alpha value and discard the fragment
+based on that test.
+However, it should be noted that coverage testing occurs after the fragment
+shader runs, and the coverage test can change the alpha value.</p>
+</div>
+<div class="paragraph">
+<p>The <strong>return</strong> jump causes immediate exit of the current function.
+If it has <em>expression</em> then that is the return value for the function.</p>
+</div>
+<div class="paragraph">
+<p>The function <em>main</em> can use <strong>return</strong>.
+This simply causes <em>main</em> to exit in the same way as when the end of the
+function had been reached.
+It does not imply a use of <strong>discard</strong> in a fragment shader.
+Using <strong>return</strong> in <em>main</em> before defining outputs will have the same behavior
+as reaching the end of <em>main</em> before defining outputs.</p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

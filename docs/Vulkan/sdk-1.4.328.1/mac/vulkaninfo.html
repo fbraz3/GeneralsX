@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="icon" href="images/Vulkan_LogoBug_48px_Nov17.png">
+<link rel="stylesheet" href="github-markdown.css">
+</head>
+<body>
+<article class="markdown-body">
+<!-- markdownlint-disable MD041 -->
+
+<!-- Copyright 2015-2023 LunarG, Inc. -->
+
+<p><a href="https://www.khronos.org/vulkan/" TARGET="_blank"><img src="https://vulkan.lunarg.com/img/Vulkan_100px_Dec16.png" title="https://www.khronos.org/vulkan/" alt="Khronos Vulkan" /></a></p>
+<p><a href="https://creativecommons.org/licenses/by-nd/4.0/" TARGET="_blank"><img src="https://i.creativecommons.org/l/by-nd/4.0/88x31.png" title="Creative Commons License" alt="Creative Commons" /></a></p>
+<h1 id="vulkan-information">Vulkan Information</h1>
+<p>Vulkan Info is a program provided in the SDK which outputs various types of Vulkan information such as:</p>
+<ul>
+<li>device properties of identified GPUs</li>
+<li>Vulkan extensions supported by each GPU</li>
+<li>recognized layers</li>
+<li>supported image formats and format properties.</li>
+</ul>
+<h2 id="running-vulkan-info">Running Vulkan Info</h2>
+<p>After downloading and installing the SDK and setting up the runtime environment (see the <a href="./getting_started.html#user-content-download-the-sdk">Getting Started</a> documentation) you will be able to run the Vulkan Info program from a command prompt.</p>
+<pre><code>vulkaninfo
+</code></pre>
+<p>Executing <code>vulkaninfo</code> without specifying the type of output will default to human-readable output to the console.</p>
+<p>Note: The Vulkan Info binary found in the Windows Vulkan SDK is named <code>vulkaninfoSDK.exe</code>. This is so it doesn't get confused with the Vulkan Info distributed by an IVH, as it is installed with the Vulkan Runtime Package. Since the SDK does not install Vulkan Info to the path, the Windows command line version used will be from the IHV distribution. To run the SDK version, either use the start menu shortcuts or navigate to the <code>VulkanSDK/Bin</code> directory and run <code>vulkaninfoSDK.exe</code> directly.</p>
+<pre><code>vulkaninfo --html
+</code></pre>
+<p>To organize output in a convenient HTML format use the <code>--html</code> option. Executing <code>vulkaninfo</code> with the <code>--html</code> option produces a file called <code>vulkaninfo.html</code> and can be found in your build directory.</p>
+<pre><code>vulkaninfo --json
+</code></pre>
+<p>Produce a json version of vulkaninfo output conforming to the <a href="https://schema.khronos.org/vulkan/" TARGET="_blank">Vulkan Profiles schema</a>, saved as "VP_VULKANINFO_[DEVICE_NAME]_[DRIVER_VERSION].json", of the first gpu in the system.</p>
+<p>JSON output can be specified with the <code>-j</code> option and for multi-GPU systems, a single GPU can be targeted using the <code>--json=</code><em><code>GPU-number</code></em> option where the <em><code>GPU-number</code></em> indicates the GPU of interest (e.g., <code>--json=0</code>). To determine the GPU number corresponding to a particular GPU, execute <code>vulkaninfo --summary</code> option (or none at all) first; doing so will summarize all GPUs in the system.</p>
+<p>Use the <code>--help</code> or <code>-h</code> option to produce a list of all available Vulkan Info options.</p>
+<pre><code>vulkaninfo - Summarize Vulkan information in relation to the current environment.
+
+USAGE:
+    vulkaninfo --summary
+    vulkaninfo -o &lt;filename&gt; | --output &lt;filename&gt;
+    vulkaninfo -j | -j=&lt;gpu-number&gt; | --json | --json=&lt;gpu-number&gt;
+    vulkaninfo --text
+    vulkaninfo --html
+    vulkaninfo --show-formats
+    vulkaninfo --show-tool-props
+
+OPTIONS:
+[-h, --help]        Print this help.
+[--summary]         Show a summary of the instance and GPU&#39;s on a system.
+[-o &lt;filename&gt;, --output &lt;filename&gt;]
+                    Print output to a new file whose name is specified by filename.
+                    File will be written to the current working directory.
+[--text]            Produce a text version of vulkaninfo output to stdout. This is
+                    the default output.
+[--html]            Produce an html version of vulkaninfo output, saved as
+                    \&quot;vulkaninfo.html\&quot; in the directory in which the command
+                    is run.
+[-j, --json]        Produce a json version of vulkaninfo output conforming to the Vulkan
+                    Profiles schema, saved as
+                    \&quot;VP_VULKANINFO_[DEVICE_NAME]_[DRIVER_VERSION].json\&quot;
+                    of the first gpu in the system.
+[-j=&lt;gpu-number&gt;, --json=&lt;gpu-number&gt;]
+                    For a multi-gpu system, a single gpu can be targeted by
+                    specifying the gpu-number associated with the gpu of
+                    interest. This number can be determined by running
+                    vulkaninfo without any options specified.
+[--show-tool-props] Show the active VkPhysicalDeviceToolPropertiesEXT that vulkaninfo finds.
+[--show-formats]    Display the format properties of each physical device.
+                    Note: This only affects text output.
+</code></pre>
+<h3 id="windows">Windows</h3>
+<p>Vulkan Info can also be found as a shortcut under the Start Menu.</p>
+<ul>
+<li><code>Start Menu -&gt; Vulkan SDK</code><em><code>version</code></em><code>-&gt; vulkaninfo</code></li>
+</ul>
+<p>Note: In order to review and/or save the output produced when using Visual Studio execute <code>vulkaninfo</code> with the JSON option, you will have to redirect output to a file by modifying the command line arguments in the debug options.</p>
+<p>Note: The Vulkan Info binary found in the Vulkan SDK is renamed to <code>vulkaninfoSDK.exe</code>. This was done to demark any Vulkan Info version installed by the Vulkan Runtime Package, which is from an IHV distribution. When using command line on Windows, the Vulkan info version used will be from the IHV distribution, not the SDK. To run the SDK version, either use the start menu shortcuts or navigate to the <code>VulkanSDK/Bin</code> directory and run <code>vulkaninfoSDK.exe</code> directly.</p>
+<h3 id="ios-devices">iOS Devices</h3>
+<p>Vulkan Info is now avaialble for iOS devices, but must be built manually.</p>
+<p>The Vulkan Info project contains a folder at <a href="https://github.com/KhronosGroup/Vulkan-Tools/tree/main/vulkaninfo/iOS" TARGET="_blank">vulkaninfo/ios</a> that contains an XCode project that will build Vulkan Info for iOS devices. In order to deploy to an iOS device, the developer must be a member of the <a href="https://developer.apple.com/programs/" TARGET="_blank">Apple Developer Program</a>. In addition, Vulkan Info makes use of the <a href="https://github.com/KhronosGroup/MoltenVK" TARGET="_blank">MoltenVK</a> libraries, which is a seperate project from Vulkan-Tools and you will need to add the MoltenVK libraries to your XCode project manually. See the <a href="https://vulkan.lunarg.com/doc/sdk/latest/mac/getting_started.html" TARGET="_blank">LunarG Getting Started with the macOS SDK</a> guide for more information about using MoltenVK in the Vulkan SDK.</p>
+<p>When Vulkan Info is run on an iOS device, it will create the standard vulkaninfo.json file and also a portability.json file. An HTML file is also created, and is displayed in a webview on the iOS device when the application is run. These files are located on the iOS device, and are available via the <a href="https://support.apple.com/en-us/HT201301" TARGET="_blank">iOS application file sharing mechanism</a> via iTunes for Windows or macOS. You can also access these files using the macOS Finder or Windows Explorer when the device is attached to the host computer via a USB cable. Select the device, and navigate to the "vulkaninfo" folder to access these files. There is currently no supported means to access these files on an iOS device from a Linux host computer.</p>
+</article>
+</body>
+</html>

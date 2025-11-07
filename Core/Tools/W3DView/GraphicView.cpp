@@ -44,7 +44,6 @@
 #include "dazzle.h"
 #include "SoundScene.h"
 #include "WWAudio.h"
-#include "metalmap.h"
 #include "dx8wrapper.h"
 #include "matrix3.h"
 

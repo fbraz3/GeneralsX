@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>API Boilerplate :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:spec" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="spec" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Specification</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/fundamentals.html">Fundamentals</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/initialization.html">Initialization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/devsandqueues.html">Devices and Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/cmdbuffers.html">Command Buffers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/synchronization.html">Synchronization and Cache Control</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/renderpass.html">Render Pass</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/shaders.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/pipelines.html">Pipelines</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/memory.html">Memory Allocation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/resources.html">Resource Creation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/samplers.html">Samplers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/descriptorsets.html">Resource Descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/interfaces.html">Shader Interfaces</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/textures.html">Image Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/fragmentdensitymapops.html">Fragment Density Map Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_ARM_tensors/tensorops.html">Tensor Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/queries.html">Queries</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/clears.html">Clear Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/copies.html">Copy Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/drawing.html">Drawing Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/fxvertex.html">Fixed-Function Vertex Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/tessellation.html">Tessellation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/geometry.html">Geometry Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_NV_mesh_shader/mesh.html">Mesh Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_HUAWEI_cluster_culling_shader/clusterculling.html">Cluster Culling Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/vertexpostproc.html">Fixed-Function Vertex Post-Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/primsrast.html">Rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/fragops.html">Fragment Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/framebuffer.html">The Framebuffer</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/dispatch.html">Dispatching Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/device_generated_commands/generatedcommands.html">Device-Generated Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/sparsemem.html">Sparse Resources</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_KHR_surface/wsi.html">Window System Integration (WSI)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_KHR_deferred_host_operations/deferred_host_operations.html">Deferred Host Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_EXT_private_data.html">Private Data</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/accelstructures.html">Acceleration Structures</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_EXT_opacity_micromap/micromaps.html">Micromap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/raytraversal.html">Ray Traversal</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/raytracing.html">Ray Tracing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_NV_memory_decompression.html">Memory Decompression</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/videocoding.html">Video Coding</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_NV_optical_flow/optical_flow.html">Optical Flow</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/executiongraphs.html">Execution Graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_NV_external_compute_queue/VK_NV_external_compute_queue.html">External Compute Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_ARM_data_graph/graphs.html">Data graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/extensions.html">Extending Vulkan</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/features.html">Features</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/limits.html">Limits</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/formats.html">Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/capabilities.html">Additional Capabilities</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/debugging.html">Debugging</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="spirvenv.html">Vulkan Environment for SPIR-V</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="memorymodel.html">Memory Model</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="compressedtex.html">Compressed Image Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="versions.html">Core Revisions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="extensions.html">Layers &amp; Extensions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="roadmap.html">Vulkan Roadmap Milestones</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="deprecation.html">Deprecation</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="boilerplate.html">API Boilerplate</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="invariance.html">Invariance</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="glossary.html">Lexicon</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="credits.html">Credits (Informative)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Specification</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Specification</a></li>
+    <li><a href="boilerplate.html">API Boilerplate</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/spec/modules/ROOT/pages/appendices/boilerplate.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">API Boilerplate</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This appendix defines Vulkan API features that are infrastructure required
+for a complete functional description of Vulkan, but do not logically belong
+elsewhere in the Specification.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="boilerplate-headers"><a class="anchor" href="#boilerplate-headers"></a>Vulkan Header Files</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Vulkan is defined as an API in the C99 language.
+Khronos provides a corresponding set of header files for applications using
+the API, which may be used in either C or C++ code.
+The interface descriptions in the specification are the same as the
+interfaces defined in these header files, and both are derived from the
+<code>vk.xml</code> XML API Registry, which is the canonical machine-readable
+description of the Vulkan API.
+The Registry, scripts used for processing it into various forms, and
+documentation of the registry schema are available as described at
+<a href="https://registry.khronos.org/vulkan/#apiregistry" class="bare">https://registry.khronos.org/vulkan/#apiregistry</a> .</p>
+</div>
+<div class="paragraph">
+<p>Language bindings for other languages can be defined using the information
+in the Specification and the Registry.
+Khronos does not provide any such bindings, but third-party developers have
+created some additional bindings.</p>
+</div>
+<div class="sect2">
+<h3 id="boilerplate-vulkan-h"><a class="anchor" href="#boilerplate-vulkan-h"></a>Vulkan Combined API Header <code>vulkan.h</code> (Informative)</h3>
+<div class="paragraph">
+<p>Applications normally will include the header <code>vulkan.h</code>.
+In turn, <code>vulkan.h</code> always includes the following headers:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#boilerplate-platform-macros"><code>vk_platform.h</code></a>, defining
+platform-specific macros and headers.</p>
+</li>
+<li>
+<p><a href="#boilerplate-vulkan-core"><code>vulkan_core.h</code></a>, defining APIs for the
+Vulkan core and all registered extensions <em>other</em> than
+<a href="#boilerplate-wsi-header">window system-specific</a> and
+<a href="#boilerplate-provisional-header">provisional</a> extensions, which are
+included in separate header files.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In addition, specific preprocessor macros defined at the time
+<code>vulkan.h</code> is included cause header files for the corresponding window
+system-specific and provisional interfaces to be included, as described
+below.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="boilerplate-platform-macros"><a class="anchor" href="#boilerplate-platform-macros"></a>Vulkan Platform-Specific Header <code>vk_platform.h</code> (Informative)</h3>
+<div class="paragraph">
+<p>Platform-specific macros and interfaces are defined in <code>vk_platform.h</code>.
+These macros are used to control platform-dependent behavior, and their
+exact definitions are under the control of specific platforms and Vulkan
+implementations.</p>
+</div>
+<div class="sect3">
+<h4 id="boilerplate-platform-specific-calling-conventions"><a class="anchor" href="#boilerplate-platform-specific-calling-conventions"></a>Platform-Specific Calling Conventions</h4>
+<div class="paragraph">
+<p>On many platforms the following macros are empty strings, causing platform-
+and compiler-specific default calling conventions to be used.</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p><code>VKAPI_ATTR</code> is a macro placed before the return type in Vulkan API
+function declarations.
+This macro controls calling conventions for C++11 and GCC/Clang-style
+compilers.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p><code>VKAPI_CALL</code> is a macro placed after the return type in Vulkan API
+function declarations.
+This macro controls calling conventions for MSVC-style compilers.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p><code>VKAPI_PTR</code> is a macro placed between the '(' and '*' in Vulkan API
+function pointer declarations.
+This macro also controls calling conventions, and typically has the same
+definition as <code>VKAPI_ATTR</code> or <code>VKAPI_CALL</code>, depending on the
+compiler.</p>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>With these macros, a Vulkan function declaration takes the form of:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">VKAPI_ATTR &lt;return_type&gt; VKAPI_CALL &lt;command_name&gt;(&lt;command_parameters&gt;);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Additionally, a Vulkan function pointer type declaration takes the form of:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">typedef &lt;return_type&gt; (VKAPI_PTR *PFN_&lt;command_name&gt;)(&lt;command_parameters&gt;);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="boilerplate-platform-specific-header-control"><a class="anchor" href="#boilerplate-platform-specific-header-control"></a>Platform-Specific Header Control</h4>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>If the <code>VK_NO_STDINT_H</code> macro is defined by the application at compile
+time, extended integer types used by the Vulkan API, such as <code>uint8_t</code>,
+<strong>must</strong> also be defined by the application.
+Otherwise, the Vulkan headers will not compile.
+If <code>VK_NO_STDINT_H</code> is not defined, the system <code>&lt;stdint.h&gt;</code> is used to
+define these types.
+There is a fallback path when Microsoft Visual Studio version 2008 and
+earlier versions are detected at compile time.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>If the <code>VK_NO_STDDEF_H</code> macro is defined by the application at compile
+time, <code>size_t</code>, <strong>must</strong> also be defined by the application.
+Otherwise, the Vulkan headers will not compile.
+If <code>VK_NO_STDDEF_H</code> is not defined, the system <code>&lt;stddef.h&gt;</code> is used to
+define this type.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="boilerplate-vulkan-core"><a class="anchor" href="#boilerplate-vulkan-core"></a>Vulkan Core API Header <code>vulkan_core.h</code></h3>
+<div class="paragraph">
+<p>Applications that do not make use of window system-specific extensions may
+simply include <code>vulkan_core.h</code> instead of <code>vulkan.h</code>, although there is
+usually no reason to do so.
+In addition to the Vulkan API, <code>vulkan_core.h</code> also defines and / or uses a
+small number of C preprocessor macros that are described below.</p>
+</div>
+<div class="sect3">
+<h4 id="_vulkan_header_file_compile_time_controls"><a class="anchor" href="#_vulkan_header_file_compile_time_controls"></a>Vulkan Header File Compile Time Controls</h4>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>If the <code>VK_NO_PROTOTYPES</code> macro is defined by an application at compile
+time, prototypes for Vulkan APIs will not be included.
+Only typedefs for API function pointers will be defined.</p>
+</div>
+<div class="paragraph">
+<p>This is intended for applications using their own function loader and
+dispatch mechanism.</p>
+</div>
+<div class="paragraph">
+<p>If the macro is not defined by the application, prototypes for Vulkan APIs
+will be included.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>If the <code>VK_ONLY_EXPORTED_PROTOTYPES</code> macro is defined by an application
+at compile time, only prototypes for Vulkan APIs tagged as `"exported"`in
+the API XML will be included.
+For non-tagged APIs, only typedefs for API function pointers will be
+defined.</p>
+</div>
+<div class="paragraph">
+<p>This is intended to match APIs which are statically exported by the Vulkan
+loader.
+At present, the exported APIs are only those defined by Vulkan core
+versions.</p>
+</div>
+<div class="paragraph">
+<p>If the macro is not defined by the application, prototypes for all Vulkan
+APIs will be included.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_vulkan_header_file_version_number"><a class="anchor" href="#_vulkan_header_file_version_number"></a>Vulkan Header File Version Number</h4>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p><code>VK_HEADER_VERSION</code> is the version number of the <code>vulkan_core.h</code> header.
+This value is kept synchronized with the patch version of the released
+Specification.</p>
+</div>
+<div id="VK_HEADER_VERSION" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+// Version of this file
+#define VK_HEADER_VERSION 321</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p><code>VK_HEADER_VERSION_COMPLETE</code> is the complete version number of the
+<code>vulkan_core.h</code> header, comprising the major, minor, and patch versions.
+The major/minor values are kept synchronized with the complete version of
+the released Specification.
+This value is intended for use by automated tools to identify exactly which
+version of the header was used during their generation.</p>
+</div>
+<div class="paragraph">
+<p>Applications should not use this value as their
+<a href="../chapters/initialization.html#VkApplicationInfo" class="xref page">VkApplicationInfo</a>::<code>apiVersion</code>.
+Instead applications should explicitly select a specific fixed major/minor
+API version using, for example, one of the <code>VK_API_VERSION_</code>*_* values.</p>
+</div>
+<div id="VK_HEADER_VERSION_COMPLETE" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+// Complete version of this file
+#define VK_HEADER_VERSION_COMPLETE VK_MAKE_API_VERSION(0, 1, 4, VK_HEADER_VERSION)</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p><code>VK_API_VERSION</code> is now commented out of <code>vulkan_core.h</code> and <strong>cannot</strong> be
+used.</p>
+</div>
+<div id="VK_API_VERSION" class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+This functionality is deprecated by <a href="versions.html#versions-1.0" class="xref page">Vulkan Version 1.0</a>. See <a href="deprecation.html#deprecation-version-macros" class="xref page">Deprecated Functionality</a> for more information.
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+//#define VK_API_VERSION VK_MAKE_API_VERSION(0, 1, 0, 0) // Patch version should always be set to 0</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_vulkan_handle_macros"><a class="anchor" href="#_vulkan_handle_macros"></a>Vulkan Handle Macros</h4>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p><code>VK_DEFINE_HANDLE</code> defines a <a href="../chapters/fundamentals.html#fundamentals-objectmodel-overview" class="xref page">dispatchable handle</a> type.</p>
+</div>
+<div id="VK_DEFINE_HANDLE" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+#define VK_DEFINE_HANDLE(object) typedef struct object##_T* object;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>object</code> is the name of the resulting C type.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The only dispatchable handle types are those related to device and instance
+management, such as <a href="../chapters/devsandqueues.html#VkDevice" class="xref page">VkDevice</a>.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p><code>VK_DEFINE_NON_DISPATCHABLE_HANDLE</code> defines a
+<a href="../chapters/fundamentals.html#fundamentals-objectmodel-overview" class="xref page">non-dispatchable handle</a> type.</p>
+</div>
+<div id="VK_DEFINE_NON_DISPATCHABLE_HANDLE" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+#ifndef VK_DEFINE_NON_DISPATCHABLE_HANDLE
+    #if (VK_USE_64_BIT_PTR_DEFINES==1)
+        #define VK_DEFINE_NON_DISPATCHABLE_HANDLE(object) typedef struct object##_T *object;
+    #else
+        #define VK_DEFINE_NON_DISPATCHABLE_HANDLE(object) typedef uint64_t object;
+    #endif
+#endif</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>object</code> is the name of the resulting C type.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Most Vulkan handle types, such as <a href="../chapters/resources.html#VkBuffer" class="xref page">VkBuffer</a>, are non-dispatchable.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The <code>vulkan_core.h</code> header allows the
+<a href="#VK_DEFINE_NON_DISPATCHABLE_HANDLE">VK_DEFINE_NON_DISPATCHABLE_HANDLE</a> and <a href="#VK_NULL_HANDLE">VK_NULL_HANDLE</a> definitions
+to be overridden by the application.
+If <a href="#VK_DEFINE_NON_DISPATCHABLE_HANDLE">VK_DEFINE_NON_DISPATCHABLE_HANDLE</a> is already defined when
+<code>vulkan_core.h</code> is compiled, the default definitions for
+<a href="#VK_DEFINE_NON_DISPATCHABLE_HANDLE">VK_DEFINE_NON_DISPATCHABLE_HANDLE</a> and <a href="#VK_NULL_HANDLE">VK_NULL_HANDLE</a> are
+skipped.
+This allows the application to define a binary-compatible custom handle
+which <strong>may</strong> provide more type-safety or other features needed by the
+application.
+Applications <strong>must</strong> not define handles in a way that is not binary compatible
+- where binary compatibility is platform dependent.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p><code>VK_NULL_HANDLE</code> is a reserved value representing a non-valid object
+handle.
+It may be passed to and returned from Vulkan commands only when
+<a href="../chapters/fundamentals.html#fundamentals-validusage-handles" class="xref page">specifically allowed</a>.</p>
+</div>
+<div id="VK_NULL_HANDLE" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+#ifndef VK_DEFINE_NON_DISPATCHABLE_HANDLE
+    #if (VK_USE_64_BIT_PTR_DEFINES==1)
+        #if (defined(__cplusplus) &amp;&amp; (__cplusplus &gt;= 201103L)) || (defined(_MSVC_LANG) &amp;&amp; (_MSVC_LANG &gt;= 201103L))
+            #define VK_NULL_HANDLE nullptr
+        #else
+            #define VK_NULL_HANDLE ((void*)0)
+        #endif
+    #else
+        #define VK_NULL_HANDLE 0ULL
+    #endif
+#endif
+#ifndef VK_NULL_HANDLE
+    #define VK_NULL_HANDLE 0
+#endif</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p><code>VK_USE_64_BIT_PTR_DEFINES</code> defines whether the default non-dispatchable
+handles are declared using either a 64-bit pointer type or a 64-bit unsigned
+integer type.</p>
+</div>
+<div class="paragraph">
+<p><code>VK_USE_64_BIT_PTR_DEFINES</code> is set to '1' to use a 64-bit pointer type
+or any other value to use a 64-bit unsigned integer type.</p>
+</div>
+<div id="VK_USE_64_BIT_PTR_DEFINES" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+#ifndef VK_USE_64_BIT_PTR_DEFINES
+    #if defined(__LP64__) || defined(_WIN64) || (defined(__x86_64__) &amp;&amp; !defined(__ILP32__) ) || defined(_M_X64) || defined(__ia64) || defined (_M_IA64) || defined(__aarch64__) || defined(__powerpc64__) || (defined(__riscv) &amp;&amp; __riscv_xlen == 64)
+        #define VK_USE_64_BIT_PTR_DEFINES 1
+    #else
+        #define VK_USE_64_BIT_PTR_DEFINES 0
+    #endif
+#endif</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The <code>vulkan_core.h</code> header allows the <code>VK_USE_64_BIT_PTR_DEFINES</code>
+definition to be overridden by the application.
+This allows the application to select either a 64-bit pointer type or a
+64-bit unsigned integer type for non-dispatchable handles in the case where
+the predefined preprocessor check does not identify the desired
+configuration.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>This macro was introduced starting with the Vulkan 1.2.174 headers, and its
+availability can be checked at compile time by requiring
+<code><code>VK_HEADER_VERSION</code> &gt;= 174</code>.</p>
+</div>
+<div class="paragraph">
+<p>It is not available if you are using older headers, such as may be shipped
+with an older Vulkan SDK.
+Developers requiring this functionality may wish to include a copy of the
+current Vulkan headers with their project in this case.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="boilerplate-wsi-header"><a class="anchor" href="#boilerplate-wsi-header"></a>Window System-Specific Header Control (Informative)</h2>
+<div class="sectionbody">
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To use a Vulkan extension supporting a platform-specific window system,
+header files for that window system <strong>must</strong> be included at compile time, or
+platform-specific types <strong>must</strong> be forward-declared.
+The Vulkan header files are unable to determine whether or not an external
+header is available at compile time, so platform-specific extensions are
+provided in separate headers from the core API and platform-independent
+extensions, allowing applications to decide which ones they need to be
+defined and how the external headers are included.</p>
+</div>
+<div class="paragraph">
+<p>Extensions dependent on particular sets of platform headers, or that
+forward-declare platform-specific types, are declared in a header named for
+that platform.
+Before including these platform-specific Vulkan headers, applications <strong>must</strong>
+include both <code>vulkan_core.h</code> and any external native headers the platform
+extensions depend on.</p>
+</div>
+<div class="paragraph">
+<p>As a convenience for applications that do not need the flexibility of
+separate platform-specific Vulkan headers, <code>vulkan.h</code> includes
+<code>vulkan_core.h</code>, and then conditionally includes platform-specific Vulkan
+headers and the external headers they depend on.
+Applications control which platform-specific headers are included by
+#defining macros before including <code>vulkan.h</code>.</p>
+</div>
+<div class="paragraph">
+<p>The correspondence between platform-specific extensions, external headers
+they require, the platform-specific header which declares them, and the
+preprocessor macros which enable inclusion by <code>vulkan.h</code> are shown in
+the <a href="#boilerplate-wsi-header-table">following table</a>.</p>
+</div>
+<table id="boilerplate-wsi-header-table" class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 1. Window System Extensions and Headers</caption>
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Extension Name</th>
+<th class="tableblock halign-left valign-top">Window System Name</th>
+<th class="tableblock halign-left valign-top">Platform-specific Header</th>
+<th class="tableblock halign-left valign-top">Required External Headers</th>
+<th class="tableblock halign-left valign-top">Controlling <code>vulkan.h</code> Macro</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="extensions.html#VK_KHR_android_surface" class="xref page">VK_KHR_android_surface</a></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Android</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_android.h</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_USE_PLATFORM_ANDROID_KHR</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="extensions.html#VK_KHR_wayland_surface" class="xref page">VK_KHR_wayland_surface</a></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Wayland</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_wayland.h</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;wayland-client.h&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_USE_PLATFORM_WAYLAND_KHR</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="extensions.html#VK_KHR_win32_surface" class="xref page">VK_KHR_win32_surface</a></code>,
+  <code><a href="extensions.html#VK_KHR_external_memory_win32" class="xref page">VK_KHR_external_memory_win32</a></code>,
+  <code><a href="extensions.html#VK_KHR_win32_keyed_mutex" class="xref page">VK_KHR_win32_keyed_mutex</a></code>,
+  <code><a href="extensions.html#VK_KHR_external_semaphore_win32" class="xref page">VK_KHR_external_semaphore_win32</a></code>,
+  <code><a href="extensions.html#VK_KHR_external_fence_win32" class="xref page">VK_KHR_external_fence_win32</a></code>,
+  <code><a href="extensions.html#VK_NV_external_memory_win32" class="xref page">VK_NV_external_memory_win32</a></code>,
+  <code><a href="extensions.html#VK_NV_win32_keyed_mutex" class="xref page">VK_NV_win32_keyed_mutex</a></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Microsoft Windows</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_win32.h</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;windows.h&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_USE_PLATFORM_WIN32_KHR</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="extensions.html#VK_KHR_xcb_surface" class="xref page">VK_KHR_xcb_surface</a></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">X11 Xcb</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_xcb.h</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;xcb/xcb.h&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_USE_PLATFORM_XCB_KHR</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="extensions.html#VK_KHR_xlib_surface" class="xref page">VK_KHR_xlib_surface</a></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">X11 Xlib</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_xlib.h</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;X11/Xlib.h&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_USE_PLATFORM_XLIB_KHR</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="extensions.html#VK_EXT_directfb_surface" class="xref page">VK_EXT_directfb_surface</a></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DirectFB</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_directfb.h</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;directfb/directfb.h&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_USE_PLATFORM_DIRECTFB_EXT</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="extensions.html#VK_EXT_acquire_xlib_display" class="xref page">VK_EXT_acquire_xlib_display</a></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">X11 XRAndR</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_xlib_xrandr.h</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;X11/Xlib.h&gt;</code>,
+                                                                                       <code>&lt;X11/extensions<wbr>/Xrandr.h&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_USE_PLATFORM_XLIB_XRANDR_EXT</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="extensions.html#VK_GGP_stream_descriptor_surface" class="xref page">VK_GGP_stream_descriptor_surface</a></code>,
+  <code><a href="extensions.html#VK_GGP_frame_token" class="xref page">VK_GGP_frame_token</a></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Google Games Platform</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_ggp.h</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;ggp_c/vulkan_types.h&gt;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_USE_PLATFORM_GGP</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="extensions.html#VK_MVK_ios_surface" class="xref page">VK_MVK_ios_surface</a></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">iOS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_ios.h</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_USE_PLATFORM_IOS_MVK</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="extensions.html#VK_MVK_macos_surface" class="xref page">VK_MVK_macos_surface</a></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">macOS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_macos.h</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_USE_PLATFORM_MACOS_MVK</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="extensions.html#VK_OHOS_surface" class="xref page">VK_OHOS_surface</a></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OHOS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_ohos.h</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_USE_PLATFORM_OHOS</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="extensions.html#VK_NN_vi_surface" class="xref page">VK_NN_vi_surface</a></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VI</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_vi.h</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_USE_PLATFORM_VI_NN</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="extensions.html#VK_FUCHSIA_imagepipe_surface" class="xref page">VK_FUCHSIA_imagepipe_surface</a></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Fuchsia</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_fuchsia.h</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;zircon/types.h&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_USE_PLATFORM_FUCHSIA</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="extensions.html#VK_EXT_metal_surface" class="xref page">VK_EXT_metal_surface</a></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Metal on CoreAnimation</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_metal.h</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_USE_PLATFORM_METAL_EXT</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="extensions.html#VK_QNX_screen_surface" class="xref page">VK_QNX_screen_surface</a></code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">QNX Screen</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_screen.h</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;screen/screen.h&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_USE_PLATFORM_SCREEN_QNX</code></p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>This section describes the purpose of the headers independently of the
+specific underlying functionality of the window system extensions
+themselves.
+Each extension name will only link to a description of that extension when
+viewing a specification built with that extension included.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="boilerplate-provisional-header"><a class="anchor" href="#boilerplate-provisional-header"></a>Provisional Extension Header Control (Informative)</h2>
+<div class="sectionbody">
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p><em>Provisional</em> extensions <strong>should</strong> not be used in production applications.
+The functionality defined by such extensions <strong>may</strong> change in ways that break
+backwards compatibility between revisions, and before final release of a
+non-provisional version of that extension.</p>
+</div>
+<div class="paragraph">
+<p>Provisional extensions are defined in a separate <em>provisional header</em>,
+<code>vulkan_beta.h</code>, allowing applications to decide whether or not to include
+them.
+The mechanism is similar to <a href="#boilerplate-wsi-header">window system-specific headers</a>: before including <code>vulkan_beta.h</code>, applications <strong>must</strong> include
+<code>vulkan_core.h</code>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Sometimes a provisional extension will include a subset of its interfaces in
+<code>vulkan_core.h</code>.
+This may occur if the provisional extension is promoted from an existing
+vendor or EXT extension and some of the existing interfaces are defined as
+aliases of the provisional extension interfaces.
+All other interfaces of that provisional extension which are not aliased
+will be included in <code>vulkan_beta.h</code>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>As a convenience for applications, <code>vulkan.h</code> conditionally includes
+<code>vulkan_beta.h</code>.
+Applications <strong>can</strong> control inclusion of <code>vulkan_beta.h</code> by #defining the
+macro <code>VK_ENABLE_BETA_EXTENSIONS</code> before including <code>vulkan.h</code>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Starting in version 1.2.171 of the Specification, all provisional enumerants
+are protected by the macro <code>VK_ENABLE_BETA_EXTENSIONS</code>.
+Applications needing to use provisional extensions must always define this
+macro, even if they are explicitly including <code>vulkan_beta.h</code>.
+This is a minor change to behavior, affecting only provisional extensions.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>This section describes the purpose of the provisional header independently
+of the specific provisional extensions which are contained in that header at
+any given time.
+The extension appendices for provisional extensions note their provisional
+status, and link back to this section for more information.
+Provisional extensions are intended to provide early access for
+bleeding-edge developers, with the understanding that extension interfaces
+may change in response to developer feedback.
+Provisional extensions are very likely to eventually be updated and released
+as non-provisional extensions, but there is no guarantee this will happen,
+or how long it will take if it does happen.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="boilerplate-video-std-headers"><a class="anchor" href="#boilerplate-video-std-headers"></a>Video Std Headers</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Performing video coding operations usually involves the application having
+to provide various parameters, data structures, or other syntax elements
+specific to the particular video compression standard used, and the
+associated semantics are covered by the specification of those.</p>
+</div>
+<div class="paragraph">
+<p>The interface descriptions of these are available in the header files
+derived from the <code>video.xml</code> XML file, which is the canonical
+machine-readable description of data structures and enumerations that are
+associated with the externally-provided video compression standards.</p>
+</div>
+<table id="boilerplate-video-std-header-table" class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 2. Video Std Headers</caption>
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Video Std Header Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Header File</th>
+<th class="tableblock halign-left valign-top">Related Extensions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_video_codecs_common</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Codec-independent common definitions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;vk_video/vulkan_video_codecs_common.h&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_video_codec_h264std</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ITU-T H.264 common definitions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;vk_video/vulkan_video_codec_h264std.h&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="extensions.html#VK_KHR_video_decode_h264" class="xref page">VK_KHR_video_decode_h264</a>, <a href="extensions.html#VK_KHR_video_encode_h264" class="xref page">VK_KHR_video_encode_h264</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_video_codec_h264std_decode</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ITU-T H.264 decode-specific definitions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;vk_video/vulkan_video_codec_h264std_decode.h&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="extensions.html#VK_KHR_video_decode_h264" class="xref page">VK_KHR_video_decode_h264</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_video_codec_h264std_encode</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ITU-T H.264 encode-specific definitions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;vk_video/vulkan_video_codec_h264std_encode.h&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="extensions.html#VK_KHR_video_encode_h264" class="xref page">VK_KHR_video_encode_h264</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_video_codec_h265std</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ITU-T H.265 common definitions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;vk_video/vulkan_video_codec_h265std.h&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="extensions.html#VK_KHR_video_decode_h265" class="xref page">VK_KHR_video_decode_h265</a>, <a href="extensions.html#VK_KHR_video_encode_h265" class="xref page">VK_KHR_video_encode_h265</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_video_codec_h265std_decode</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ITU-T H.265 decode-specific definitions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;vk_video/vulkan_video_codec_h265std_decode.h&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="extensions.html#VK_KHR_video_decode_h265" class="xref page">VK_KHR_video_decode_h265</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_video_codec_h265std_encode</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ITU-T H.265 encode-specific definitions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;vk_video/vulkan_video_codec_h265std_encode.h&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="extensions.html#VK_KHR_video_encode_h265" class="xref page">VK_KHR_video_encode_h265</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_video_codec_vp9std</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VP9 common definitions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;vk_video/vulkan_video_codec_vp9std.h&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="extensions.html#VK_KHR_video_decode_vp9" class="xref page">VK_KHR_video_decode_vp9</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_video_codec_vp9std_decode</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VP9 decode-specific definitions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;vk_video/vulkan_video_codec_vp9std_decode.h&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="extensions.html#VK_KHR_video_decode_vp9" class="xref page">VK_KHR_video_decode_vp9</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_video_codec_av1std</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AV1 common definitions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;vk_video/vulkan_video_codec_av1std.h&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="extensions.html#VK_KHR_video_decode_av1" class="xref page">VK_KHR_video_decode_av1</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_video_codec_av1std_decode</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AV1 decode-specific definitions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;vk_video/vulkan_video_codec_av1std_decode.h&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="extensions.html#VK_KHR_video_decode_av1" class="xref page">VK_KHR_video_decode_av1</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vulkan_video_codec_av1std_encode</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AV1 encode-specific definitions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>&lt;vk_video/vulkan_video_codec_av1std_encode.h&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="extensions.html#VK_KHR_video_encode_av1" class="xref page">VK_KHR_video_encode_av1</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>VK_EXT_swapchain_maintenance1 :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:features" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="features" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Feature Descriptions</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Vulkan Roadmap and Feature Descriptions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Roadmap.html">Vulkan Roadmap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Feature Descriptions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMDX_shader_enqueue.html">VK_AMDX_shader_enqueue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_anti_lag.html">VK_AMD_anti_lag</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_shader_early_and_late_fragment_tests.html">VK_AMD_shader_early_and_late_fragment_tests</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ANDROID_external_format_resolve.html">VK_ANDROID_external_format_resolve</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_pipeline_opacity_micromap.html">VK_ARM_pipeline_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_render_pass_striped.html">VK_ARM_render_pass_striped</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_tensors.html">VK_ARM_tensors</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_dynamic_state.html">VK_EXT_attachment_feedback_loop_dynamic_state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_layout.html">VK_EXT_attachment_feedback_loop_layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_calibrated_timestamps.html">VK_EXT_calibrated_timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_bias_control.html">VK_EXT_depth_bias_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_clamp_control.html">VK_EXT_depth_clamp_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_descriptor_buffer.html">VK_EXT_descriptor_buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_fault.html">VK_EXT_device_fault</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_generated_commands.html">VK_EXT_device_generated_commands</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_dynamic_rendering_unused_attachments.html">VK_EXT_dynamic_rendering_unused_attachments</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_extended_dynamic_state3.html">VK_EXT_extended_dynamic_state3</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_acquire_unmodified.html">VK_EXT_external_memory_acquire_unmodified</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_metal.html">VK_EXT_external_memory_metal</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_fragment_density_map_offset.html">VK_EXT_fragment_density_map_offset</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_frame_boundary.html">Proposal: <code>VK_EXT_frame_boundary</code></a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_graphics_pipeline_library.html">VK_EXT_graphics_pipeline_library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_host_image_copy.html">VK_EXT_host_image_copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_2d_array_of_3d.html">VK_EXT_image_2d_array_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_compression_control.html">VK_EXT_image_compression_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_sliced_view_of_3d.html">VK_EXT_image_sliced_view_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_layer_settings.html">VK_EXT_layer_settings</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_dithering.html">VK_EXT_legacy_dithering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_vertex_attributes.html">VK_EXT_legacy_vertex_attributes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_map_memory_placed.html">VK_EXT_map_memory_placed</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mesh_shader.html">VK_EXT_mesh_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_metal_objects.html">VK_EXT_metal_objects</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_multisampled_render_to_single_sampled.html">VK_EXT_multisampled_render_to_single_sampled</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mutable_descriptor_type.html">VK_EXT_mutable_descriptor_type</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_non_seamless_cube_map.html">VK_EXT_non_seamless_cube_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_opacity_micromap.html">VK_EXT_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_library_group_handles.html">VK_EXT_pipeline_library_group_handles</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_protected_access.html">VK_EXT_pipeline_protected_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_present_mode_fifo_latest_ready.html">VK_EXT_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_primitives_generated_query.html">VK_EXT_primitives_generated_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_rasterization_order_attachment_access.html">VK_EXT_rasterization_order_attachment_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_float8.html">VK_EXT_shader_float8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_module_identifier.html">VK_EXT_shader_module_identifier</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_object.html">VK_EXT_shader_object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_replicated_composites.html">VK_EXT_shader_replicated_composites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_tile_image.html">VK_EXT_shader_tile_image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_subpass_merge_feedback.html">VK_EXT_subpass_merge_feedback</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_surface_maintenance1.html">VK_EXT_surface_maintenance1</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="VK_EXT_swapchain_maintenance1.html">VK_EXT_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_zero_initialize_device_memory.html">VK_EXT_zero_initialize_device_memory</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_GOOGLE_surfaceless_query.html">VK_GOOGLE_surfaceless_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_cluster_culling_shader.html">VK_HUAWEI_cluster_culling_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_invocation_mask.html">VK_HUAWEI_invocation_mask</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_compute_shader_derivatives.html">VK_KHR_compute_shader_derivatives</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_cooperative_matrix.html">VK_KHR_cooperative_matrix</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering.html">VK_KHR_dynamic_rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering_local_read.html">VK_KHR_dynamic_rendering_local_read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shader_barycentric.html">VK_KHR_fragment_shader_barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shading_rate.html">VK_KHR_fragment_shading_rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_load_store_op_none.html">VK_KHR_load_store_op_none</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance5.html">VK_KHR_maintenance5</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance6.html">VK_KHR_maintenance6</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance7.html">VK_KHR_maintenance7</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance8.html">VK_KHR_maintenance8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance9.html">Proposal Template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_map_memory2.html">VK_KHR_map_memory2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_pipeline_binary.html">VK_KHR_pipeline_binary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_id2.html">VK_KHR_present_id2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_mode_fifo_latest_ready.html">VK_KHR_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_wait2.html">VK_KHR_present_wait2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_ray_tracing_position_fetch.html">VK_KHR_ray_tracing_position_fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_bfloat16.html">VK_KHR_shader_bfloat16</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_expect_assume.html">VK_KHR_shader_expect_assume</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_float_controls2.html">VK_KHR_shader_float_controls2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_integer_dot_product.html">VK_KHR_shader_integer_dot_product</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_maximal_reconvergence.html">VK_KHR_shader_maximal_reconvergence</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_quad_control.html">VK_KHR_shader_quad_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_relaxed_extended_instruction.html">VK_KHR_shader_relaxed_extended_instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_subgroup_rotate.html">Subgroup rotation instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_surface_maintenance1.html">VK_KHR_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_swapchain_maintenance1.html">VK_KHR_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_unified_image_layouts.html">VK_KHR_unified_image_layouts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_vertex_attribute_divisor.html">VK_KHR_vertex_attribute_divisor</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_av1.html">VK_KHR_video_decode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h264.html">VK_KHR_video_decode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h265.html">VK_KHR_video_decode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_queue.html">VK_KHR_video_decode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_vp9.html">VK_KHR_video_decode_vp9</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_av1.html">VK_KHR_video_encode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h264.html">VK_KHR_video_encode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h265.html">VK_KHR_video_encode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_intra_refresh.html">VK_KHR_video_encode_intra_refresh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_quantization_map.html">VK_KHR_video_encode_quantization_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_queue.html">VK_KHR_video_encode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance1.html">VK_KHR_video_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance2.html">VK_KHR_video_maintenance2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_queue.html">VK_KHR_video_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_LUNARG_direct_driver_loading.html">VK_LUNARG_direct_driver_loading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_MSFT_layered_driver.html">VK_MSFT_layered_driver</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cluster_acceleration_structure.html">VK_NV_cluster_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_matrix2.html">VK_NV_cooperative_matrix2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_vector.html">VK_NV_cooperative_vector</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_display_stereo.html">VK_NV_display_stereo</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_external_compute_queue.html">VK_NV_external_compute_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_partitioned_acceleration_structure.html">VK_NV_partitioned_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_linear_swept_spheres.html">VK_NV_ray_tracing_linear_swept_spheres</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_validation.html">VK_NV_ray_tracing_validation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_image_processing.html">VK_QCOM_image_processing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_memory_heap.html">VK_QCOM_tile_memory_heap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_properties.html">VK_QCOM_tile_properties</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_shading.html">VK_QCOM_tile_shading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_VERSION_1_4.html">Vulkan 1.4</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Feature Descriptions</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Feature Descriptions</a></li>
+    <li>Feature Descriptions</li>
+    <li><a href="VK_EXT_swapchain_maintenance1.html">VK_EXT_swapchain_maintenance1</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/features/modules/features/pages/proposals/VK_EXT_swapchain_maintenance1.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">VK_EXT_swapchain_maintenance1</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_problem_statement">1. Problem Statement</a>
+<ul class="sectlevel2">
+<li><a href="#_recycling_present_semaphores">1.1. Recycling Present Semaphores</a></li>
+<li><a href="#_swapchain_recreation_on_present_mode_change">1.2. Swapchain Recreation on Present Mode Change</a></li>
+<li><a href="#_upfront_memory_allocation">1.3. Upfront Memory Allocation</a></li>
+<li><a href="#_scaling_behavior">1.4. Scaling Behavior</a></li>
+<li><a href="#_releasing_acquired_images">1.5. Releasing Acquired Images</a></li>
+</ul>
+</li>
+<li><a href="#_solution_space">2. Solution Space</a>
+<ul class="sectlevel2">
+<li><a href="#_recycling_present_semaphores_2">2.1. Recycling Present Semaphores</a></li>
+<li><a href="#_swapchain_recreation_on_present_mode_change_2">2.2. Swapchain Recreation on Present Mode Change</a></li>
+<li><a href="#_upfront_memory_allocation_2">2.3. Upfront Memory Allocation</a></li>
+<li><a href="#_scaling_behavior_2">2.4. Scaling Behavior</a></li>
+<li><a href="#_releasing_acquired_images_2">2.5. Releasing Acquired Images</a></li>
+</ul>
+</li>
+<li><a href="#_proposal">3. Proposal</a>
+<ul class="sectlevel2">
+<li><a href="#_feature">3.1. Feature</a></li>
+<li><a href="#_present_fence">3.2. Present Fence</a></li>
+<li><a href="#_switching_present_modes">3.3. Switching Present Modes</a></li>
+<li><a href="#_swapchain_memory_allocation">3.4. Swapchain Memory Allocation</a></li>
+<li><a href="#_scaling_behavior_3">3.5. Scaling Behavior</a></li>
+<li><a href="#_releasing_acquired_images_3">3.6. Releasing Acquired Images</a></li>
+</ul>
+</li>
+<li><a href="#_issues">4. Issues</a>
+<ul class="sectlevel2">
+<li><a href="#_resolved_should_there_be_a_surface_capability_bit_to_advertise_the_present_fence_functionality">4.1. RESOLVED: Should there be a surface capability bit to advertise the present fence functionality?</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This proposal investigates and addresses a number of practical issues with the
+<code>VK_KHR_swapchain</code> specification.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>1. Problem Statement</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The following is a list of issues considered in this proposal:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>It is not directly known when a semaphore used for presentation can be
+recycled.</p>
+</li>
+<li>
+<p>Switching present modes requires a swapchain recreation</p>
+</li>
+<li>
+<p>Upfront memory allocation is costly in startup time and memory</p>
+</li>
+<li>
+<p>Unknown behavior when presenting a swapchain image to a surface with
+different dimensions</p>
+</li>
+<li>
+<p>Impossible to release acquired images without presenting them</p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_recycling_present_semaphores"><a class="anchor" href="#_recycling_present_semaphores"></a>1.1. Recycling Present Semaphores</h3>
+<div class="paragraph">
+<p>With <code>VK_KHR_swapchain</code>, there is no way to provide feedback as to when a
+semaphore used for presentation can be freed or recycled.
+The application would have to infer this information from when the fence of the
+<em>next</em> call to <code>vkAcquireNextImageKHR</code> that returns the presented image&#8217;s index
+has been signaled.
+This is needlessly complicated.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_swapchain_recreation_on_present_mode_change"><a class="anchor" href="#_swapchain_recreation_on_present_mode_change"></a>1.2. Swapchain Recreation on Present Mode Change</h3>
+<div class="paragraph">
+<p>Currently, when changing present modes, the Vulkan swapchain is required to be
+recreated.
+This is unnecessary if otherwise the swapchain is not changed, as the present
+mode does not affect the actual swapchain images and their associated memory.
+This is realistically affecting apps that switch between
+VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR and
+VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR (in single-buffer applications).
+In that case, a flicker is noticed as the swapchain is recreated and the old
+contents of the swapchain is discarded.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_upfront_memory_allocation"><a class="anchor" href="#_upfront_memory_allocation"></a>1.3. Upfront Memory Allocation</h3>
+<div class="paragraph">
+<p>Currently, Vulkan allows the application to record commands using any image
+from the swapchain.
+Additionally, the application may use <code>VkBindImageMemorySwapchainInfoKHR</code> at
+any time to bind an image to swapchain memory.
+This requires swapchain implementations to allocate memory for all images
+upfront.
+This is costly both in startup time, and potentially memory if all images are
+not eventually acquired.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_scaling_behavior"><a class="anchor" href="#_scaling_behavior"></a>1.4. Scaling Behavior</h3>
+<div class="paragraph">
+<p>It is desirable for the application to specify a scaling behavior for when the
+swapchain extents do not match the surface&#8217;s, such as during window resizing,
+instead of receiving <code>VK_ERROR_OUT_OF_DATE_KHR</code>.</p>
+</div>
+<div class="paragraph">
+<p>See the proposal document for <code>VK_EXT_surface_maintenance1</code> for details.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_releasing_acquired_images"><a class="anchor" href="#_releasing_acquired_images"></a>1.5. Releasing Acquired Images</h3>
+<div class="paragraph">
+<p>When the swapchain needs to be recreated, it may be possible that an
+application has acquired images from the old swapchain that it is no longer
+interested in presenting to.
+However, it is unable to release those images before recreating the swapchain.
+As a result, the application is forced to present to an old swapchain that may
+no longer match the surface.
+Additionally, the memory allocated for the old and new swapchains coexist,
+increasing peak memory usage.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution Space</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>There are generally two possible approaches to resolving these problems:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Have the application directly interface with the window system, bypassing
+<code>VK_KHR_swapchain</code>.</p>
+</li>
+<li>
+<p>Improve upon <code>VK_KHR_swapchain</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The benefits of the first approach are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Total control of the swapchain implementation by the application, which
+would allow for prompt fixes of future issue</p>
+</li>
+<li>
+<p>Works on existing drivers, removing any need for fallbacks</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>However, this approach results in duplicated effort among applications.
+A potential library with a swapchain implementation can be conceived which
+could be updated and shipped with applications independently from driver
+updates, though it lacks the benefit of driver updates bringing fixes and
+optimizations to all applications.</p>
+</div>
+<div class="paragraph">
+<p>This proposal considers the second approach with the goal of improving the
+larger Vulkan ecosystem while leveraging existing swapchain implementations
+which most applications have come to rely on.</p>
+</div>
+<div class="sect2">
+<h3 id="_recycling_present_semaphores_2"><a class="anchor" href="#_recycling_present_semaphores_2"></a>2.1. Recycling Present Semaphores</h3>
+<div class="paragraph">
+<p>There are three potential solutions for this:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A status query for present operations, potentially identified through ids
+assigned with <code>VK_KHR_present_id</code>.</p>
+</li>
+<li>
+<p>A wait function similar to <code>vkWaitForPresentKHR</code></p>
+</li>
+<li>
+<p>A fence passed to <code>vkQueuePresentKHR</code> that signals when the presentation
+engine no longer accesses the present semaphores</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The last solution is adopted as it provides more power to the application
+(wait, in addition to query), as well as fitting better with event loops, other
+Vulkan APIs and future work to enable timeline semaphores.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_swapchain_recreation_on_present_mode_change_2"><a class="anchor" href="#_swapchain_recreation_on_present_mode_change_2"></a>2.2. Swapchain Recreation on Present Mode Change</h3>
+<div class="paragraph">
+<p>Each present mode may require a different number of images.
+Additionally, the <code>VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR</code> and
+<code>VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR</code> present modes may require a
+different image memory layout compared with the rest of the present modes.
+Switching between non-shared present modes may or may not be possible on some
+implementations.</p>
+</div>
+<div class="paragraph">
+<p>Regarding image count, potential solutions are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Specify all potential present modes at swapchain creation time</p>
+<div class="ulist">
+<ul>
+<li>
+<p>The swapchain would then allocate as many images to satisfy all present
+modes</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Increase the number of swapchain images as necessary when present mode is
+changed</p>
+<div class="ulist">
+<ul>
+<li>
+<p>This requires the application to use <code>vkGetSwapchainImagesKHR</code> after each
+change in present mode and adjust accordingly</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Regarding the subsets of switchable present modes that the implementation
+supports, potential solutions are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Specify a particular behavior for <code>VkSwapchainCreateInfoKHR::oldSwapchain</code>
+when the only change is in the present mode</p>
+<div class="ulist">
+<ul>
+<li>
+<p>This is not straightforward and is error-prone</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Allow modifying present modes as needed, such as during a
+<code>vkQueuePresentKHR</code> call</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Implementations may support switching between present modes only in
+disjoint subsets.
+This subsets can be queried.
+Alternatively, Vulkan could divide the present modes into shared and
+non-shared, with the latter conditional to a feature flag.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The adopted solution in this proposal is to allow applications to specify a
+potential set of present modes at swapchain creation time.
+A query must be used to determine whether these present modes are compatible
+for dynamic switching.
+Then, the application would pass the desired present mode to
+<code>vkQueuePresentKHR</code>.</p>
+</div>
+<div class="paragraph">
+<p>With the solution to the "Upfront Memory Allocation" problem, the application
+can avoid paying any extra memory cost due to higher image counts until a
+present mode that uses that many images is used.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_upfront_memory_allocation_2"><a class="anchor" href="#_upfront_memory_allocation_2"></a>2.3. Upfront Memory Allocation</h3>
+<div class="paragraph">
+<p>This can be explicitly opted in with a new swapchain create flag.
+Using this flag would prohibit problematic scenarios, such as using
+<code>VkBindImageMemorySwapchainInfoKHR</code> with an image index that has never been
+acquired, or recording command buffers using those swapchain images.</p>
+</div>
+<div class="paragraph">
+<p>This amortizes the cost of memory allocation between the first few frames,
+using CPU time that may otherwise have gone idle waiting for the GPU.
+This will additionally resolve a number of memory issues:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If a present mode is specified at swapchain creation time which requires a
+larger number of images, but that is never actually used, the extra
+images would not have to consume memory.</p>
+</li>
+<li>
+<p>When resizing the swapchain, peak memory increase is avoided by not
+actually allocating memory for the new swapchain.
+First memory allocation for the new swapchain could happen after some of
+the images from the old swapchain have been destroyed.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_scaling_behavior_2"><a class="anchor" href="#_scaling_behavior_2"></a>2.4. Scaling Behavior</h3>
+<div class="paragraph">
+<p>The <code>VK_EXT_surface_maintenance1</code> extension introduces scaling and gravity
+behavior enums whose support can be queried from the surface.
+At swapchain creation time, one of the supported behavior can be specified by
+the application.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_releasing_acquired_images_2"><a class="anchor" href="#_releasing_acquired_images_2"></a>2.5. Releasing Acquired Images</h3>
+<div class="paragraph">
+<p>There are a number of ways the applications could partially work around this
+issue, such as by deferring image acquisition, or recreating the swapchain only
+once all images from the old swapchain are presented.</p>
+</div>
+<div class="paragraph">
+<p>However, in all implementations, releasing an acquired image without presenting
+it is no more complex than presenting it.
+The adopted solution is to expose this functionality in this extension.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>3. Proposal</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Introduced by this API are:</p>
+</div>
+<div class="sect2">
+<h3 id="_feature"><a class="anchor" href="#_feature"></a>3.1. Feature</h3>
+<div class="paragraph">
+<p>Advertising whether the implementation supports the functionality in this
+extension:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           swapchainMaintenance1;
+} VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_present_fence"><a class="anchor" href="#_present_fence"></a>3.2. Present Fence</h3>
+<div class="paragraph">
+<p>To associate fences with the present operations for each swapchain, chain the
+following to <code>VkPresentInfoKHR</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkSwapchainPresentFenceInfoEXT {
+    VkStructureType    sType;
+    void*              pNext;
+    uint32_t           swapchainCount;
+    VkFence*           pFences;
+} VkSwapchainPresentFenceInfoEXT;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>With <code>swapchainCount</code> matching
+<code>VkSwapchainPresentFenceInfoEXT::swapchainCount</code>, each swapchain being
+presented to will signal the fence once the application is allowed to destroy
+or recycle the semaphores passed to <code>vkPresentInfoKHR::pWaitSemaphores</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_switching_present_modes"><a class="anchor" href="#_switching_present_modes"></a>3.3. Switching Present Modes</h3>
+<div class="paragraph">
+<p>During creation of the swapchain, all potential present modes are specified by
+chaining the following to <code>VkSwapchainCreateInfoKHR</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkSwapchainPresentModesCreateInfoEXT {
+    VkStructureType    sType;
+    void*              pNext;
+    uint32_t           presentModeCount;
+    VkPresentModeKHR*  pPresentModes;
+} VkSwapchainPresentModesCreateInfoEXT;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The present modes given in <code>pPresentModes</code> must be compatible for mode
+switching.
+This can be queried by use of <code>VkSurfacePresentModeCompatibilityEXT</code> from the
+<code>VK_EXT_surface_maintenance1</code> extension.</p>
+</div>
+<div class="paragraph">
+<p>The present mode can be changed by chaining the following to
+<code>VkPresentInfoKHR</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkSwapchainPresentModeInfoEXT {
+    VkStructureType    sType;
+    void*              pNext;
+    uint32_t           swapchainCount;
+    VkPresentModeKHR*  pPresentModes;
+} VkSwapchainPresentModeInfoEXT;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Where the elements of <code>pPresentModes</code> can take any present mode specified in
+<code>VkSwapchainPresentModesCreateInfoEXT</code> during the creation of the respective
+swapchain.
+If not specified, the swapchain will continue to operate according to the last
+specified present mode.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_swapchain_memory_allocation"><a class="anchor" href="#_swapchain_memory_allocation"></a>3.4. Swapchain Memory Allocation</h3>
+<div class="paragraph">
+<p>To allow the swapchain to defer memory allocation for each image until it is
+acquired through <code>vkAcquireNextImageKHR</code>, specify the
+<code>VK_SWAPCHAIN_CREATE_DEFERRED_MEMORY_ALLOCATION_BIT_EXT</code> flag in
+<code>VkSwapchainCreateInfoKHR::flags</code>.
+In that case, the application may still use <code>vkGetSwapchainImagesKHR</code> to
+retrieve the image handles, but it may not use any image whose index has never
+been returned by <code>vkAcquireNextImageKHR</code>; this includes recording commands
+using such an image, or binding another image to its memory through
+<code>VkBindImageMemorySwapchainInfoKHR</code>.</p>
+</div>
+<div class="paragraph">
+<p>As memory allocation for each image is deferred, so should the application
+defer the above operations for each image until it is first acquired.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_scaling_behavior_3"><a class="anchor" href="#_scaling_behavior_3"></a>3.5. Scaling Behavior</h3>
+<div class="paragraph">
+<p>To specify the scaling behavior of the swapchain, chain the following to
+<code>VkSwapchainCreateInfoKHR</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkSwapchainPresentScalingCreateInfoEXT {
+    VkStructureType                 sType;
+    void*                           pNext;
+    VkPresentScalingFlagsEXT        scalingBehavior;
+    VkPresentGravityFlagsEXT        presentGravityX;
+    VkPresentGravityFlagsEXT        presentGravityY;
+} VkSwapchainPresentScalingCreateInfoEXT;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The values specified in <code>scalingBehavior</code>, <code>presentGravityX</code> and
+<code>presentGravityY</code> must be supported by the surface.
+This can be queried by use of <code>VkSurfacePresentScalingCapabilitiesEXT</code> from the
+<code>VK_EXT_surface_maintenance1</code> extension.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_releasing_acquired_images_3"><a class="anchor" href="#_releasing_acquired_images_3"></a>3.6. Releasing Acquired Images</h3>
+<div class="paragraph">
+<p>To release previously acquired images back to the swapchain, call
+<code>vkReleaseSwapchainImagesEXT</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VKAPI_ATTR VkResult VKAPI_CALL vkReleaseSwapchainImagesEXT(
+    VkDevice                                    device,
+    const VkReleaseSwapchainImagesInfoEXT*      pReleaseInfo);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>VkReleaseSwapchainImagesInfoEXT</code> is defined as:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkReleaseSwapchainImagesInfoEXT {
+    VkStructureType    sType;
+    const void*        pNext;
+    VkSwapchainKHR     swapchain;
+    deUint32           imageIndexCount;
+    const deUint32*    pImageIndices;
+} VkReleaseSwapchainImagesInfoEXT;</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_issues"><a class="anchor" href="#_issues"></a>4. Issues</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_resolved_should_there_be_a_surface_capability_bit_to_advertise_the_present_fence_functionality"><a class="anchor" href="#_resolved_should_there_be_a_surface_capability_bit_to_advertise_the_present_fence_functionality"></a>4.1. RESOLVED: Should there be a surface capability bit to advertise the present fence functionality?</h3>
+<div class="paragraph">
+<p>No.
+Present fences fix a critical hole in the swapchain programming model and hence
+are a required feature of this maintenance extension.</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

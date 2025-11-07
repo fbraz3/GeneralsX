@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Build Guides :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:samples" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="samples" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../README.html">Vulkan Samples</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../samples/README.html">Samples overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../samples/vulkan_basics.html">Vulkan basics</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../shaders/README.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../framework/README.html">Sample framework</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../components/README.html">Framework components</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/api/README.html">Api usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/api/compute_nbody/README.html">Compute N-body</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../samples/api/hpp_compute_nbody/README.html">Compute N-body (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/api/dynamic_uniform_buffers/README.html">Dynamic uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../samples/api/hpp_dynamic_uniform_buffers/README.html">Dynamic Uniform Buffers (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/api/hdr/README.html">HDR</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../samples/api/hpp_hdr/README.html">HDR (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/api/hello_triangle/README.html">Hello Triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../samples/api/hpp_hello_triangle/README.html">Hello Triangle (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/api/hello_triangle_1_3/README.html">Hello Triangle 1.3</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../samples/api/hpp_hello_triangle_1_3/README.html">Hello Triangle 1.3(Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/api/instancing/README.html">Instancing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../samples/api/hpp_instancing/README.html">Instancing (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/api/separate_image_sampler/README.html">Separate image sampler</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../samples/api/hpp_separate_image_sampler/README.html">Separate image sampler (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/api/terrain_tessellation/README.html">Terrain tessellation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../samples/api/hpp_terrain_tessellation/README.html">Terrain tessellation (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/api/texture_loading/README.html">Texture loading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../samples/api/hpp_texture_loading/README.html">Texture loading (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/api/texture_mipmap_generation/README.html">Texture mipmap generation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../samples/api/hpp_texture_mipmap_generation/README.html">Texture mipmap generation (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/api/timestamp_queries/README.html">Timestamp queries</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../samples/api/hpp_timestamp_queries/README.html">Timestamp queries (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/api/oit_linked_lists/README.html">OIT linked lists</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../samples/api/hpp_oit_linked_lists/README.html">OIT linked lists (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/api/oit_depth_peeling/README.html">OIT depth peeling</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../samples/api/hpp_oit_depth_peeling/README.html">OIT depth peeling (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/extensions/README.html">Extension usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/buffer_device_address/README.html">Buffer device address</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/calibrated_timestamps/README.html">Calibrated timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/conditional_rendering/README.html">Conditional rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/conservative_rasterization/README.html">Conservative rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/debug_utils/README.html">Debug utils</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/descriptor_buffer_basic/README.html">Descriptor buffer basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/descriptor_indexing/README.html">Descriptor indexing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/dynamic_line_rasterization/README.html">Dynamic line rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/dynamic_primitive_clipping/README.html">Dynamic primitive clipping</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/dynamic_rendering/README.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/dynamic_rendering_local_read/README.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/extended_dynamic_state2/README.html">Extended dynamic state2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/fragment_shader_barycentric/README.html">Fragment shader barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/fragment_shading_rate/README.html">Fragment shading rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/fragment_shading_rate_dynamic/README.html">Fragment shading rate dynamic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/full_screen_exclusive/README.html">Full screen exclusive</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/graphics_pipeline_library/README.html">Graphics pipeline library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/gshader_to_mshader/README.html">Geometry shader to mesh shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/host_image_copy/README.html">Host image copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/logic_op_dynamic_state/README.html">Logic op dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/memory_budget/README.html">Memory budget</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/mesh_shader_culling/README.html">Mesh shader culling</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/extensions/mesh_shading/README.html">Mesh shading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../samples/extensions/hpp_mesh_shading/README.html">Mesh shading (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/open_cl_interop/README.html">OpenCL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/open_cl_interop_arm/README.html">OpenCL interop (Arm)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/open_gl_interop/README.html">OpenGL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/portability/README.html">Portability</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/extensions/push_descriptors/README.html">Push descriptors</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../samples/extensions/hpp_push_descriptors/README.html">Push descriptors (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/ray_tracing_basic/README.html">Raytracing basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/ray_tracing_extended/README.html">Raytracing extended</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/ray_queries/README.html">Ray queries</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/ray_tracing_reflection/README.html">Ray tracing reflection</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/ray_tracing_position_fetch/README.html">Ray tracing position fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/shader_object/README.html">Shader Object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/shader_debugprintf/README.html">Shader Debug Printf</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/sparse_image/README.html">Sparse Image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/synchronization_2/README.html">Synchronization 2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/timeline_semaphore/README.html">Timeline semaphore</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/vertex_dynamic_state/README.html">Vertex dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/extensions/dynamic_multisample_rasterization/README.html">Dynamic multisample rasterization</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/performance/README.html">Performance samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/performance/16bit_arithmetic/README.html">16bit arithmetic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/performance/16bit_storage_input_output/README.html">16bit storage input output</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/performance/afbc/README.html">AFBC</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/performance/async_compute/README.html">Async compute</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/performance/command_buffer_usage/README.html">Command buffer usage</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/performance/constant_data/README.html">Constant data</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/performance/descriptor_management/README.html">Descriptor management</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/performance/image_compression_control/README.html">Image compression control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/performance/layout_transitions/README.html">Layout transitions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/performance/msaa/README.html">MSAA</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/performance/multithreading_render_passes/README.html">Multithreading render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/performance/multi_draw_indirect/README.html">Multi draw indirect</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/performance/pipeline_barriers/README.html">Pipeline barriers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/performance/pipeline_cache/README.html">Pipeline cache</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../samples/performance/hpp_pipeline_cache/README.html">Pipeline cache (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/performance/render_passes/README.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/performance/specialization_constants/README.html">Specialization constants</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/performance/subpasses/README.html">Subpasses</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/performance/surface_rotation/README.html">Surface rotation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/performance/swapchain_images/README.html">Swapchain images</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../samples/performance/hpp_swapchain_images/README.html">Swapchain images (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/performance/texture_compression_basisu/README.html">Texture compression basisu</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/performance/texture_compression_comparison/README.html">Texture compression comparison</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../samples/performance/hpp_texture_compression_comparison/README.html">Texture compression comparison (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/performance/wait_idle/README.html">Wait idle</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/tooling/README.html">Tooling samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/tooling/profiles/README.html">Profiles</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../samples/general/README.html">General samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/general/mobile_nerf/README.html">Mobile NeRF</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../samples/general/mobile_nerf_rayquery/README.html">Mobile NeRF Ray Query</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="README.html">General documentation</a>
+<ul class="nav-list">
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="build.html">Build guide</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="memory_limits.html">Memory limits</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="misc.html">Miscellaneous</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Samples</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../README.html">Vulkan Samples</a></li>
+    <li><a href="README.html">General documentation</a></li>
+    <li><a href="build.html">Build guide</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Samples/antora/modules/ROOT/pages/docs/build.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Build Guides</h1>
+<div class="sect1">
+<h2 id="_cmake_options"><a class="anchor" href="#_cmake_options"></a>CMake Options</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The following options are used to change the build configuration</p>
+</div>
+<div class="sect2">
+<h3 id="_vkb"><a class="anchor" href="#_vkb"></a>VKB_<sample_name></sample_name></h3>
+<div class="paragraph">
+<p>Choose whether to include a sample at build time.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>ON</code> - Build Sample</p>
+</li>
+<li>
+<p><code>OFF</code> - Exclude Sample</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Default:</strong> <code>ON</code></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vkb_build_samples"><a class="anchor" href="#_vkb_build_samples"></a>VKB_BUILD_SAMPLES</h3>
+<div class="paragraph">
+<p>Choose whether to build the samples.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>ON</code> - Build All Samples</p>
+</li>
+<li>
+<p><code>OFF</code> - Skip building Samples</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Default:</strong> <code>ON</code></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vkb_build_tests"><a class="anchor" href="#_vkb_build_tests"></a>VKB_BUILD_TESTS</h3>
+<div class="paragraph">
+<p>Choose whether to build the tests</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>ON</code> - Build All Tests</p>
+</li>
+<li>
+<p><code>OFF</code> - Skip building Tests</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Default:</strong> <code>OFF</code></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vkb_validation_layers"><a class="anchor" href="#_vkb_validation_layers"></a>VKB_VALIDATION_LAYERS</h3>
+<div class="paragraph">
+<p>Enable Validation Layers</p>
+</div>
+<div class="paragraph">
+<p><strong>Default:</strong> <code>OFF</code></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vkb_validation_layers_gpu_assisted"><a class="anchor" href="#_vkb_validation_layers_gpu_assisted"></a>VKB_VALIDATION_LAYERS_GPU_ASSISTED</h3>
+<div class="paragraph">
+<p>Enable <a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/main/docs/gpu_validation.md">GPU assisted validation layers</a>, used primarily for VK_EXT_descriptor_indexing.</p>
+</div>
+<div class="paragraph">
+<p><strong>Default:</strong> <code>OFF</code></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vkb_validation_layers_best_practices"><a class="anchor" href="#_vkb_validation_layers_best_practices"></a>VKB_VALIDATION_LAYERS_BEST_PRACTICES</h3>
+<div class="paragraph">
+<p>Enable <a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/main/docs/best_practices.md">best practices validation layers</a>.</p>
+</div>
+<div class="paragraph">
+<p><strong>Default:</strong> <code>OFF</code></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vkb_validation_layers_synchronization"><a class="anchor" href="#_vkb_validation_layers_synchronization"></a>VKB_VALIDATION_LAYERS_SYNCHRONIZATION</h3>
+<div class="paragraph">
+<p>Enable <a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/main/docs/synchronization_usage.md">synchronization validation layers</a>.</p>
+</div>
+<div class="paragraph">
+<p><strong>Default:</strong> <code>OFF</code></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vkb_vulkan_debug"><a class="anchor" href="#_vkb_vulkan_debug"></a>VKB_VULKAN_DEBUG</h3>
+<div class="paragraph">
+<p>Enable VK_EXT_debug_utils or VK_EXT_debug_marker, if supported.
+This enables debug names for Vulkan objects, and markers/labels in command buffers.
++ See the <a href="../samples/extensions/debug_utils/README.html" class="xref page">debug utils sample</a> for more information.</p>
+</div>
+<div class="paragraph">
+<p><strong>Default:</strong> <code>ON</code></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vkb_warnings_as_errors"><a class="anchor" href="#_vkb_warnings_as_errors"></a>VKB_WARNINGS_AS_ERRORS</h3>
+<div class="paragraph">
+<p>Treat all warnings as errors</p>
+</div>
+<div class="paragraph">
+<p><strong>Default:</strong> <code>ON</code></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vkb_profiling"><a class="anchor" href="#_vkb_profiling"></a>VKB_PROFILING</h3>
+<div class="paragraph">
+<p>Enable profiling using the <a href="https://github.com/wolfpld/tracy">Tracy profiler</a>.</p>
+</div>
+<div class="paragraph">
+<p>We currently use Tracy v0.10.0 if you do not use the correct Tracy Profiler version as the Tracy Client version used in Sample you will get a protocol mismatch error.</p>
+</div>
+<div class="paragraph">
+<p>Windows users can download the profiler from the <a href="https://github.com/wolfpld/tracy/releases/tag/v0.10">Tracy v0.10.0 release page</a>
+Other platforms require the user to build the profiler from source see the <a href="https://github.com/wolfpld/tracy/releases/download/v0.10/tracy.pdf">Tracy documentation (pdf)</a> for more information on how to build for your platform.</p>
+</div>
+<div class="paragraph">
+<p>Tracy is not currently enabled for Android builds. In the future, we may add support for this.</p>
+</div>
+<div class="paragraph">
+<p><strong>Default:</strong> <code>OFF</code></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_quality_assurance"><a class="anchor" href="#_quality_assurance"></a>Quality Assurance</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>We use a small set of tools to provide a level of quality to the project.
+These tools are part of our CI/CD process.
+If your local environment does not have the same versions of the tools we use in the CI you may see some errors or warnings pop-up when pushing.</p>
+</div>
+<div class="paragraph">
+<p>For up-to date version information please see the repositories for the individual tools</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Doxygen <a href="https://github.com/KhronosGroupActions/doxygen">Doxygen Repository</a></p>
+</li>
+<li>
+<p>Clang Format / Clang Tidy <a href="https://github.com/KhronosGroupActions/clang-tools">Clang Tools Repository</a></p>
+</li>
+<li>
+<p>Snake Case Check <a href="https://github.com/KhronosGroupActions/snake-case-check">Snake Case Check Repository</a></p>
+</li>
+<li>
+<p>Android NDK <a href="https://github.com/KhronosGroupActions/android-ndk-build">Android NDK Repository</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_3d_models"><a class="anchor" href="#_3d_models"></a>3D models</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Most of the samples require 3D models downloaded from <a href="https://github.com/KhronosGroup/Vulkan-Samples-Assets" class="bare">https://github.com/KhronosGroup/Vulkan-Samples-Assets</a>.
+That repository is referenced as a git submodule by this project so if you followed the clone instructions in the <a href="../README.html" class="xref page">project readme</a> you will already have the models locally under <code>./assets/</code>.</p>
+</div>
+<div class="paragraph">
+<p>On Android, Gradle will run CMake which will sync assets to the device if there has been a change.</p>
+</div>
+<div class="paragraph">
+<p>However, to sync them manually you may run the following command to ensure up to date assets are on the device:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">adb push --sync assets /sdcard/Android/data/com.khronos.vulkan_samples/files/
+adb push --sync shaders /sdcard/Android/data/com.khronos.vulkan_samples/files/</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_performance_data"><a class="anchor" href="#_performance_data"></a>Performance data</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In order for performance data to be displayed, profiling needs to be enabled on the device.
+Some devices may disable it by default.</p>
+</div>
+<div class="paragraph">
+<p>Profiling can be enabled via adb:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">adb shell setprop security.perf_harden 0</code></pre>
+</div>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>Performance data is captured using HWCPipe.
+For details on this project and how to integrate it in your pipeline, visit: <a href="https://github.com/ARM-software/HWCPipe" class="bare">https://github.com/ARM-software/HWCPipe</a></p>
+</div>
+</blockquote>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_windows"><a class="anchor" href="#_windows"></a>Windows</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_dependencies"><a class="anchor" href="#_dependencies"></a>Dependencies</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>CMake v3.12+</p>
+</li>
+<li>
+<p>Python 3</p>
+</li>
+<li>
+<p>Visual Studio 2017 or above</p>
+</li>
+<li>
+<p><a href="#cmake-options">CMake Options</a></p>
+</li>
+<li>
+<p><a href="#3d-models">3D models</a></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_clang_format_and_visual_studio"><a class="anchor" href="#_clang_format_and_visual_studio"></a>Clang Format and Visual Studio</h3>
+<div class="paragraph">
+<p>It is recommended to use <code>clang-format-15</code>, which is compatible with the styles in our <code>.clang-format</code> file.
+It is also used by CI and is a basic version installed with Visual Studio 2022.</p>
+</div>
+<div class="paragraph">
+<p>Go to the <a href="http://releases.llvm.org/download.html">LLVM downloads page</a> to get clang.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_build_with_cmake_and_visual_studio"><a class="anchor" href="#_build_with_cmake_and_visual_studio"></a>Build with CMake and Visual Studio</h3>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>Please make sure, when running any sample, that you either:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Enable <a href="https://docs.microsoft.com/en-us/windows/uwp/get-started/enable-your-device-for-development">Developer Mode</a></p>
+</li>
+<li>
+<p>Run Command Prompt or Visual Studio as administrator</p>
+</li>
+</ul>
+</div>
+</blockquote>
+</div>
+<div class="paragraph">
+<p><code>Step 1.</code> The following command will generate the VS project</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">cmake -G "Visual Studio 15 2017 Win64" -S . -Bbuild/windows</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>(Prior to CMake v3.13)</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">cmake -G "Visual Studio 15 2017 Win64" . -Bbuild/windows</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>(New in CMake v3.14.
+Visual Studio 2019 must be installed)</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc"> cmake -G "Visual Studio 16 2019" -A x64 -S . -Bbuild/windows</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>(New in CMake v3.21.
+Visual Studio 2022 must be installed)</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc"> cmake -G "Visual Studio 17 2022" -A x64 -S . -Bbuild/windows</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Open the <strong>vulkan_samples.sln</strong> VS project inside build/windows and build with Ctrl-Shift-B. To run Vulkan Samples, use Visual Studio&#8217;s Debug Properties selection and set the Debugging Command Arguments to --help. Click the "Local Windows Debugger" button and you should see the help output in the terminal. For convenience, the default setting is to run the hello_triangle sample; just edit that to your desired sample to run.</p>
+</div>
+<div class="paragraph">
+<p>Alternatively, for command line builds use the steps below:</p>
+</div>
+<div class="paragraph">
+<p><code>Step 2.</code> Build the Visual Studio project</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">cmake --build build/windows --config Release --target vulkan_samples</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Step 3.</code> Run the <strong>Vulkan Samples</strong> application</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">build\windows\app\bin\Release\AMD64\vulkan_samples.exe</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_linux"><a class="anchor" href="#_linux"></a>Linux</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_dependencies_2"><a class="anchor" href="#_dependencies_2"></a>Dependencies</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>CMake v3.12+</p>
+</li>
+<li>
+<p>C&#43;&#43;20 Compiler</p>
+</li>
+<li>
+<p><a href="#cmake-options">CMake Options</a></p>
+</li>
+<li>
+<p><a href="#3d-models">3D models</a></p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">sudo apt-get install cmake g++ xorg-dev libglu1-mesa-dev libwayland-dev libxkbcommon-dev</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_build_with_cmake"><a class="anchor" href="#_build_with_cmake"></a>Build with CMake</h3>
+<div class="paragraph">
+<p><code>Step 1.</code> The following command will generate the project</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">cmake -G "Unix Makefiles" -Bbuild/linux -DCMAKE_BUILD_TYPE=Release</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Step 2.</code> Build the project</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">cmake --build build/linux --config Release --target vulkan_samples -j$(nproc)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Step 3.</code> Run the <strong>Vulkan Samples</strong> application to display the help message</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">./build/linux/app/bin/Release/x86_64/vulkan_samples --help</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_macos"><a class="anchor" href="#_macos"></a>macOS</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_dependencies_3"><a class="anchor" href="#_dependencies_3"></a>Dependencies</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>CMake v3.12+ (Apple Silicon requires at least 3.19.2)</p>
+</li>
+<li>
+<p>Xcode v12 for Apple Silicon</p>
+</li>
+<li>
+<p>Command Line Tools (CLT) for Xcode <code>xcode-select --install</code></p>
+</li>
+<li>
+<p><a href="https://sdk.lunarg.com/sdk/download/latest/mac/vulkan_sdk.dmg">Vulkan SDK</a> - Download and Install the Vulkan SDK with default options</p>
+</li>
+<li>
+<p><a href="#cmake-options">CMake Options</a></p>
+</li>
+<li>
+<p><a href="#3d-models">3D models</a></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_set_your_environment_variables"><a class="anchor" href="#_set_your_environment_variables"></a>Set your environment variables</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">source /PATH/TO/VULKAN/SDK/setup-env.sh</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_build_with_cmake_and_xcode"><a class="anchor" href="#_build_with_cmake_and_xcode"></a>Build with CMake and Xcode</h3>
+<div class="paragraph">
+<p><code>Step 1.</code> The following command will generate the project</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">cmake -G Xcode -Bbuild/mac-xcode -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_SYSROOT=macosx</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Open the <strong>vulkan_samples</strong> Xcode project inside build/mac-xcode and build with command-B.  To run Vulkan Samples, use Xcode&#8217;s edit-scheme selection and set the arguments to --help. Click the "Play" button and you should see the help output in the terminal. For convenience, the default setting is to run the hello_triangle sample; just edit that to your desired sample to run.</p>
+</div>
+<div class="paragraph">
+<p>Alternatively, for command line builds use the steps below:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">cmake -Bbuild/mac -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_SYSROOT=macosx</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Step 2.</code> Build the project</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">cmake --build build/mac --config Release --target vulkan_samples -j$(sysctl -n hw.ncpu)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Step 3.</code> Run the <strong>Vulkan Samples</strong> application to display the help message</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">./build/mac/app/bin/Release/&lt;arm64|x86_64&gt;/vulkan_samples --help</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_ios"><a class="anchor" href="#_ios"></a>iOS</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_dependencies_4"><a class="anchor" href="#_dependencies_4"></a>Dependencies</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>CMake v3.28+ (Apple xcframeworks require at least 3.28)</p>
+</li>
+<li>
+<p>Xcode v12 for Apple Silicon</p>
+</li>
+<li>
+<p>Command Line Tools (CLT) for Xcode <code>xcode-select --install</code></p>
+</li>
+<li>
+<p><a href="https://sdk.lunarg.com/sdk/download/latest/mac/vulkan_sdk.dmg">Vulkan SDK</a> - Download and Install the Vulkan SDK making sure "Development libraries for iOS" is selected</p>
+</li>
+<li>
+<p>Vulkan at least version 1.3.278 to get the frameworks</p>
+</li>
+<li>
+<p><a href="#cmake-options">CMake Options</a></p>
+</li>
+<li>
+<p><a href="#3d-models">3D models</a></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_set_your_environment_variables_2"><a class="anchor" href="#_set_your_environment_variables_2"></a>Set your environment variables</h3>
+<div class="paragraph">
+<p>NB: For iOS you must run the setup-env.sh located inside the Vulkan SDK&#8217;s iOS directory</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">source /PATH/TO/VULKAN/SDK/iOS/setup-env.sh</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_build_with_cmake_and_xcode_2"><a class="anchor" href="#_build_with_cmake_and_xcode_2"></a>Build with CMake and Xcode</h3>
+<div class="paragraph">
+<p><code>Step 1.</code> The following command will generate the project</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">cmake -G Xcode -Bbuild/ios -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphoneos -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 -DCMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH=YES -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_IOS_INSTALL_COMBINED=NO -DCMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM="XXXX" -DMACOSX_BUNDLE_GUI_IDENTIFIER="com.YYYY.vulkansamples"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>NB:  You MUST change the XXXX in the above to your TeamID (or Organizational Unit identifier in your Apple Development certificate) for code signing, and YYYY to your bundle identifier. iOS will NOT allow the application to run without code signing and bundle identifier setup.</p>
+</div>
+<div class="paragraph">
+<p>Alternatively, you can build for the iOS Simulator without code signing or specifying a bundle identifier (a default bundle id will be used). However, depending on your host architecture, you MUST select either arm64 (Apple Silicon) or x86_64 in the command below</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">cmake -G Xcode -Bbuild/ios-sim -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphonesimulator -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 -DCMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH=YES -DCMAKE_OSX_ARCHITECTURES=&lt;arm64|x86_64&gt; -DCMAKE_IOS_INSTALL_COMBINED=NO</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Step 2.</code> Build the project</p>
+</div>
+<div class="paragraph">
+<p>It&#8217;s recommended to open the <strong>vulkan_samples</strong> Xcode project that is generated inside build/ios or build/ios-sim and build with command-B.</p>
+</div>
+<div class="paragraph">
+<p>Alternatively, you can build with cmake as shown here</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">cmake --build build/ios --config Release --target vulkan_samples -j$(sysctl -n hw.ncpu) -- -sdk iphoneos -allowProvisioningUpdates</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Step 3.</code> Run the <strong>Vulkan Samples</strong> application</p>
+</div>
+<div class="paragraph">
+<p>To run Vulkan Samples, one must have an iOS physical or simulator device provisioned and working with Xcode.  Open the Xcode project and ensure that can build/install to a device through Xcode normally.
+Once the bundle is created from the build command in Step 2, use the edit-scheme selection in Xcode and set the arguments to --help.
+Click the "Play" button and you should see the help output in the terminal.
+For convenience, the default setting is to run the hello_triangle sample; just edit that to your desired sample to run.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_android"><a class="anchor" href="#_android"></a>Android</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_dependencies_5"><a class="anchor" href="#_dependencies_5"></a>Dependencies</h3>
+<div class="paragraph">
+<p>For all dependencies set the following environment variables:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>JDK 8+ <code>JAVA_HOME=&lt;SYSTEM_DIR&gt;/java</code></p>
+</li>
+<li>
+<p>Android SDK <code>ANDROID_HOME=&lt;WORK_DIR&gt;/android-sdk</code></p>
+</li>
+<li>
+<p>CMake v3.16+</p>
+</li>
+<li>
+<p>Android NDK r23+ <code>ANDROID_NDK_HOME=&lt;WORK_DIR&gt;/android-ndk</code></p>
+</li>
+<li>
+<p><a href="#cmake-options">CMake Options</a></p>
+</li>
+<li>
+<p><a href="#3d-models">3D models</a></p>
+</li>
+<li>
+<p><a href="#performance-data">Performance data</a></p>
+</li>
+</ul>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>We use this environment in the CI <a href="https://github.com/KhronosGroupActions/android-ndk-build">Android NDK Repository</a></p>
+</div>
+</blockquote>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_android_studio_recommended"><a class="anchor" href="#_android_studio_recommended"></a>Android Studio (Recommended)</h3>
+<div class="paragraph">
+<p>It is highly recommended to install <a href="https://d.android.com/studio">Android Studio</a> to build, run and trace the sample project. Building via Android Studio requires at least Ladybug 2024.2.1.</p>
+</div>
+<div class="paragraph">
+<p>Android Studio uses the following plugins/tools to build samples:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Android Gradle Plugin</p>
+</li>
+<li>
+<p>CMake Plugin, which installs and uses Ninja</p>
+</li>
+<li>
+<p>NDK</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Their versions are configured in the <a href="https://github.com/KhronosGroup/Vulkan-Samples/blob/main/bldsys/cmake/template/gradle/build.gradle.in">build.gradle.in</a> and <a href="https://github.com/KhronosGroup/Vulkan-Samples/blob/main/bldsys/cmake/template/gradle/app.build.gradle.in">app.build.gradle.in files</a>;
+when updating these versions, refer to <a href="https://developer.android.com/studio/projects/install-ndk#default-ndk-per-agp">the official documentation for the recommended combinations</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_build_with_gradle"><a class="anchor" href="#_build_with_gradle"></a>Build with Gradle</h3>
+<div class="sect3">
+<h4 id="_generate_the_gradle_project"><a class="anchor" href="#_generate_the_gradle_project"></a>Generate the gradle project</h4>
+<div class="paragraph">
+<p>To generate the gradle project, run the following command:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">./scripts/generate.py android</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A new folder will be created in the root directory at <code>build\android_gradle</code></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_install_dependencies"><a class="anchor" href="#_install_dependencies"></a>Install dependencies</h4>
+<div class="paragraph">
+<p><a href="https://d.android.com/reference/tools/gradle-api">Android Gradle Plugin</a> (used by Android Studio) may not auto install dependencies.
+You will need to install them if they have not been installed:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Find the configured versions in <code>build/android_gradle/app/build.gradle</code>, or its template file <a href="https://github.com/KhronosGroup/Vulkan-Samples/blob/main/bldsys/cmake/template/gradle/app.build.gradle.in"><code>bldsys/cmake/template/gradle/app.build.gradle.in</code></a></p>
+</li>
+<li>
+<p><a href="https://d.android.com/studio/projects/install-ndk">Install them with Android Studio</a> or <a href="https://d.android.com/studio/projects/configure-agp-ndk?language=agp4-1#command-line">sdkmanager command line tool</a>.
+For example, to install AGP port CMake 3.22.1 and NDK version 25.1.8937393 on Linux, do the following:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc"> yes | ${your-sdk}/cmdline-tools/latest/bin/sdkmanager --licenses
+ ${your-sdk}/cmdline-tools/latest/bin/sdkmanager --install "ndk;25.1.8937393" --channel=3
+ ${your-sdk}/cmdline-tools/latest/bin/sdkmanager --install "cmake;3.22.1" --channel=3</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_build_the_project"><a class="anchor" href="#_build_the_project"></a>Build the project</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">cd build/android_gradle</code></pre>
+</div>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>Prefer a release build for better performance unless you want to actively debug the application.</p>
+</div>
+</blockquote>
+</div>
+<div class="paragraph">
+<p>For a release build:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">gradle assembleRelease</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For a debug build:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">gradle assembleDebug</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_install_the_apk_on_the_device"><a class="anchor" href="#_install_the_apk_on_the_device"></a>Install the apk on the device</h4>
+<div class="paragraph">
+<p>You can now install the apk on a connected device using the Android Debug Bridge:</p>
+</div>
+<div class="paragraph">
+<p>For a release build:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">adb install app/build/outputs/apk/release/vulkan_samples-release.apk</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For a debug build:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">adb install app/build/outputs/apk/debug/vulkan_samples-debug.apk</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_build_with_android_studio"><a class="anchor" href="#_build_with_android_studio"></a>Build with Android Studio</h3>
+<div class="paragraph">
+<p>With <a href="https://d.android.com/studio">Android Studio</a> you can open the <code>build/android_gradle/build.gradle</code> project, compile and run the project from here.
+The lastest Android Studio release is recommended.</p>
+</div>
+<div class="paragraph">
+<p>If you have agreed with the licenses previously on your development system, Android Studio will automatically install, at the start up time, CMake and NDK with the version configured in your <code>build/android-gradle/build.gradle</code>.
+Otherwise (or if the installation failed), you need to install the required CMake and NDK manually, refer to <a href="https://d.android.com/studio/projects/install-ndk">the official instructions</a> for the detailed steps.
+The default installed locations are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>$SDK-ROOT-DIR/ndk/$ndkVersion for NDK.</p>
+</li>
+<li>
+<p>$SDK-ROOT-DIR/cmake/$cmake-version for CMake.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Android Studio will use the above default locations without any environment variable requirement;
+if you want to use the same NDK and CMake versions for other purpose, you can simply configure your environment variables to these locations.
+If you do set up the NDK and CMake environment variables, Android Studio will use them instead of the default locations.</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

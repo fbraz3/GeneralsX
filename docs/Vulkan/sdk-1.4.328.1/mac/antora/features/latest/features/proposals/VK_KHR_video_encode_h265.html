@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>VK_KHR_video_encode_h265 :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:features" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="features" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Feature Descriptions</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Vulkan Roadmap and Feature Descriptions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Roadmap.html">Vulkan Roadmap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Feature Descriptions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMDX_shader_enqueue.html">VK_AMDX_shader_enqueue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_anti_lag.html">VK_AMD_anti_lag</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_shader_early_and_late_fragment_tests.html">VK_AMD_shader_early_and_late_fragment_tests</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ANDROID_external_format_resolve.html">VK_ANDROID_external_format_resolve</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_pipeline_opacity_micromap.html">VK_ARM_pipeline_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_render_pass_striped.html">VK_ARM_render_pass_striped</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_tensors.html">VK_ARM_tensors</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_dynamic_state.html">VK_EXT_attachment_feedback_loop_dynamic_state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_layout.html">VK_EXT_attachment_feedback_loop_layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_calibrated_timestamps.html">VK_EXT_calibrated_timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_bias_control.html">VK_EXT_depth_bias_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_clamp_control.html">VK_EXT_depth_clamp_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_descriptor_buffer.html">VK_EXT_descriptor_buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_fault.html">VK_EXT_device_fault</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_generated_commands.html">VK_EXT_device_generated_commands</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_dynamic_rendering_unused_attachments.html">VK_EXT_dynamic_rendering_unused_attachments</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_extended_dynamic_state3.html">VK_EXT_extended_dynamic_state3</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_acquire_unmodified.html">VK_EXT_external_memory_acquire_unmodified</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_metal.html">VK_EXT_external_memory_metal</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_fragment_density_map_offset.html">VK_EXT_fragment_density_map_offset</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_frame_boundary.html">Proposal: <code>VK_EXT_frame_boundary</code></a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_graphics_pipeline_library.html">VK_EXT_graphics_pipeline_library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_host_image_copy.html">VK_EXT_host_image_copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_2d_array_of_3d.html">VK_EXT_image_2d_array_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_compression_control.html">VK_EXT_image_compression_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_sliced_view_of_3d.html">VK_EXT_image_sliced_view_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_layer_settings.html">VK_EXT_layer_settings</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_dithering.html">VK_EXT_legacy_dithering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_vertex_attributes.html">VK_EXT_legacy_vertex_attributes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_map_memory_placed.html">VK_EXT_map_memory_placed</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mesh_shader.html">VK_EXT_mesh_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_metal_objects.html">VK_EXT_metal_objects</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_multisampled_render_to_single_sampled.html">VK_EXT_multisampled_render_to_single_sampled</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mutable_descriptor_type.html">VK_EXT_mutable_descriptor_type</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_non_seamless_cube_map.html">VK_EXT_non_seamless_cube_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_opacity_micromap.html">VK_EXT_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_library_group_handles.html">VK_EXT_pipeline_library_group_handles</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_protected_access.html">VK_EXT_pipeline_protected_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_present_mode_fifo_latest_ready.html">VK_EXT_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_primitives_generated_query.html">VK_EXT_primitives_generated_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_rasterization_order_attachment_access.html">VK_EXT_rasterization_order_attachment_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_float8.html">VK_EXT_shader_float8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_module_identifier.html">VK_EXT_shader_module_identifier</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_object.html">VK_EXT_shader_object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_replicated_composites.html">VK_EXT_shader_replicated_composites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_tile_image.html">VK_EXT_shader_tile_image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_subpass_merge_feedback.html">VK_EXT_subpass_merge_feedback</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_surface_maintenance1.html">VK_EXT_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_swapchain_maintenance1.html">VK_EXT_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_zero_initialize_device_memory.html">VK_EXT_zero_initialize_device_memory</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_GOOGLE_surfaceless_query.html">VK_GOOGLE_surfaceless_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_cluster_culling_shader.html">VK_HUAWEI_cluster_culling_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_invocation_mask.html">VK_HUAWEI_invocation_mask</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_compute_shader_derivatives.html">VK_KHR_compute_shader_derivatives</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_cooperative_matrix.html">VK_KHR_cooperative_matrix</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering.html">VK_KHR_dynamic_rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering_local_read.html">VK_KHR_dynamic_rendering_local_read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shader_barycentric.html">VK_KHR_fragment_shader_barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shading_rate.html">VK_KHR_fragment_shading_rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_load_store_op_none.html">VK_KHR_load_store_op_none</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance5.html">VK_KHR_maintenance5</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance6.html">VK_KHR_maintenance6</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance7.html">VK_KHR_maintenance7</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance8.html">VK_KHR_maintenance8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance9.html">Proposal Template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_map_memory2.html">VK_KHR_map_memory2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_pipeline_binary.html">VK_KHR_pipeline_binary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_id2.html">VK_KHR_present_id2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_mode_fifo_latest_ready.html">VK_KHR_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_wait2.html">VK_KHR_present_wait2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_ray_tracing_position_fetch.html">VK_KHR_ray_tracing_position_fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_bfloat16.html">VK_KHR_shader_bfloat16</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_expect_assume.html">VK_KHR_shader_expect_assume</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_float_controls2.html">VK_KHR_shader_float_controls2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_integer_dot_product.html">VK_KHR_shader_integer_dot_product</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_maximal_reconvergence.html">VK_KHR_shader_maximal_reconvergence</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_quad_control.html">VK_KHR_shader_quad_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_relaxed_extended_instruction.html">VK_KHR_shader_relaxed_extended_instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_subgroup_rotate.html">Subgroup rotation instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_surface_maintenance1.html">VK_KHR_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_swapchain_maintenance1.html">VK_KHR_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_unified_image_layouts.html">VK_KHR_unified_image_layouts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_vertex_attribute_divisor.html">VK_KHR_vertex_attribute_divisor</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_av1.html">VK_KHR_video_decode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h264.html">VK_KHR_video_decode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h265.html">VK_KHR_video_decode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_queue.html">VK_KHR_video_decode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_vp9.html">VK_KHR_video_decode_vp9</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_av1.html">VK_KHR_video_encode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h264.html">VK_KHR_video_encode_h264</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h265.html">VK_KHR_video_encode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_intra_refresh.html">VK_KHR_video_encode_intra_refresh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_quantization_map.html">VK_KHR_video_encode_quantization_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_queue.html">VK_KHR_video_encode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance1.html">VK_KHR_video_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance2.html">VK_KHR_video_maintenance2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_queue.html">VK_KHR_video_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_LUNARG_direct_driver_loading.html">VK_LUNARG_direct_driver_loading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_MSFT_layered_driver.html">VK_MSFT_layered_driver</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cluster_acceleration_structure.html">VK_NV_cluster_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_matrix2.html">VK_NV_cooperative_matrix2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_vector.html">VK_NV_cooperative_vector</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_display_stereo.html">VK_NV_display_stereo</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_external_compute_queue.html">VK_NV_external_compute_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_partitioned_acceleration_structure.html">VK_NV_partitioned_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_linear_swept_spheres.html">VK_NV_ray_tracing_linear_swept_spheres</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_validation.html">VK_NV_ray_tracing_validation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_image_processing.html">VK_QCOM_image_processing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_memory_heap.html">VK_QCOM_tile_memory_heap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_properties.html">VK_QCOM_tile_properties</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_shading.html">VK_QCOM_tile_shading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_VERSION_1_4.html">Vulkan 1.4</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Feature Descriptions</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Feature Descriptions</a></li>
+    <li>Feature Descriptions</li>
+    <li><a href="VK_KHR_video_encode_h265.html">VK_KHR_video_encode_h265</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/features/modules/features/pages/proposals/VK_KHR_video_encode_h265.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">VK_KHR_video_encode_h265</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_problem_statement">1. Problem Statement</a></li>
+<li><a href="#_solution_space">2. Solution Space</a></li>
+<li><a href="#_proposal">3. Proposal</a>
+<ul class="sectlevel2">
+<li><a href="#_video_std_headers">3.1. Video Std Headers</a></li>
+<li><a href="#_h_265_encode_profiles">3.2. H.265 Encode Profiles</a></li>
+<li><a href="#_h_265_encode_capabilities">3.3. H.265 Encode Capabilities</a></li>
+<li><a href="#_h_265_encode_parameter_sets">3.4. H.265 Encode Parameter Sets</a></li>
+<li><a href="#_h_265_encoding_parameters">3.5. H.265 Encoding Parameters</a></li>
+<li><a href="#_h_265_reference_lists">3.6. H.265 Reference Lists</a></li>
+<li><a href="#_h_265_rate_control">3.7. H.265 Rate Control</a></li>
+</ul>
+</li>
+<li><a href="#_examples">4. Examples</a>
+<ul class="sectlevel2">
+<li><a href="#_select_queue_family_with_h_265_encode_support">4.1. Select queue family with H.265 encode support</a></li>
+<li><a href="#_check_support_and_query_the_capabilities_for_an_h_265_encode_profile">4.2. Check support and query the capabilities for an H.265 encode profile</a></li>
+<li><a href="#_create_and_update_h_265_video_session_parameters_objects">4.3. Create and update H.265 video session parameters objects</a></li>
+<li><a href="#_record_h_265_encode_operation_producing_an_i_frame_that_is_also_set_up_as_a_reference">4.4. Record H.265 encode operation producing an I frame that is also set up as a reference</a></li>
+<li><a href="#_record_h_265_encode_operation_producing_a_p_frame_with_a_single_forward_reference">4.5. Record H.265 encode operation producing a P frame with a single forward reference</a></li>
+<li><a href="#_record_h_265_encode_operation_producing_a_b_frame_with_a_forward_and_a_backward_reference">4.6. Record H.265 encode operation producing a B frame with a forward and a backward reference</a></li>
+<li><a href="#_change_the_rate_control_configuration_of_an_h_265_encode_session_with_optional_h_265_controls">4.7. Change the rate control configuration of an H.265 encode session with optional H.265 controls</a></li>
+</ul>
+</li>
+<li><a href="#_issues">5. Issues</a>
+<ul class="sectlevel2">
+<li><a href="#_resolved_in_what_form_should_codec_specific_parameters_be_provided">5.1. RESOLVED: In what form should codec-specific parameters be provided?</a></li>
+<li><a href="#_resolved_why_the_vulkan_video_codec_h265std_video_std_header_does_not_have_a_version_number">5.2. RESOLVED: Why the <code>vulkan_video_codec_h265std</code> video std header does not have a version number?</a></li>
+<li><a href="#_resolved_what_are_the_requirements_for_the_codec_specific_input_parameters">5.3. RESOLVED: What are the requirements for the codec-specific input parameters?</a></li>
+<li><a href="#_resolved_do_we_want_to_allow_the_application_to_specify_separate_reference_lists_for_each_slice_segment">5.4. RESOLVED: Do we want to allow the application to specify separate reference lists for each slice segment?</a></li>
+<li><a href="#_resolved_are_generalized_p_and_b_frames_aka_low_delay_b_frames_supported">5.5. RESOLVED: Are generalized P and B frames (aka low delay B frames) supported?</a></li>
+<li><a href="#_resolved_what_codec_specific_parameters_are_guaranteed_to_not_be_overridden_by_implementations">5.6. RESOLVED: What codec-specific parameters are guaranteed to not be overridden by implementations?</a></li>
+<li><a href="#_resolved_can_implementations_override_the_values_of_pic_width_in_luma_samples_andor_pic_height_in_luma_samples">5.7. RESOLVED: Can implementations override the values of <code>pic_width_in_luma_samples</code> and/or <code>pic_height_in_luma_samples</code>?</a></li>
+<li><a href="#_resolved_how_is_reference_picture_setup_requested_for_h_265_encode_operations">5.8. RESOLVED: How is reference picture setup requested for H.265 encode operations?</a></li>
+</ul>
+</li>
+<li><a href="#_further_functionality">6. Further Functionality</a></li>
+</ul>
+</div>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This document outlines a proposal to enable performing H.265/HEVC video encode operations in Vulkan.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>1. Problem Statement</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>VK_KHR_video_queue</code> extension introduces support for video coding operations and the <code>VK_KHR_video_encode_queue</code> extension further extends this with APIs specific to video encoding.</p>
+</div>
+<div class="paragraph">
+<p>The goal of this proposal is to build upon this infrastructure to introduce support for encoding elementary video stream sequences compliant with the H.265/HEVC video compression standard.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution Space</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>As the <code>VK_KHR_video_queue</code> and <code>VK_KHR_video_encode_queue</code> extensions already laid down the architecture for how codec-specific video encode extensions need to be designed, this extension only needs to define the APIs to provide the necessary codec-specific parameters at various points during the use of the codec-independent APIs. In particular:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>APIs allowing to specify H.265 video, sequence, and picture parameter sets (VPS, SPS, PPS) to be stored in video session parameters objects</p>
+</li>
+<li>
+<p>APIs allowing to specify H.265 information specific to the encoded picture, including references to previously stored VPS, SPS, and PPS entries</p>
+</li>
+<li>
+<p>APIs allowing to specify H.265 reference picture information specific to the active reference pictures and optional reconstructed picture used in video encode operations</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Codec-specific encoding parameters are specified by the application through custom definitions provided by a video std header dedicated to H.265 video encoding.</p>
+</div>
+<div class="paragraph">
+<p>This proposal uses the common H.265 definitions first utilized by the <code>VK_KHR_video_decode_h265</code> extension and augments it with another video std header specific to H.265 encoding. Thus this extension uses the following video std headers:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>vulkan_video_codec_h265std</code> - containing common definitions for all H.265 video coding operations</p>
+</li>
+<li>
+<p><code>vulkan_video_codec_h265std_encode</code> - containing definitions specific to H.265 video encoding operations</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These headers can be included as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">#include &lt;vk_video/vulkan_video_codec_h265std.h&gt;
+#include &lt;vk_video/vulkan_video_codec_h265std_encode.h&gt;</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>3. Proposal</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_video_std_headers"><a class="anchor" href="#_video_std_headers"></a>3.1. Video Std Headers</h3>
+<div class="paragraph">
+<p>This extension uses the new <code>vulkan_video_codec_h265std_encode</code> video std header. Implementations must always support at least version 1.0.0 of this video std header.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_h_265_encode_profiles"><a class="anchor" href="#_h_265_encode_profiles"></a>3.2. H.265 Encode Profiles</h3>
+<div class="paragraph">
+<p>This extension introduces the new video codec operation <code>VK_VIDEO_CODEC_OPERATION_ENCODE_H265_BIT_KHR</code>. This flag can be used to check whether a particular queue family supports encoding H.265/HEVC content, as returned in <code>VkQueueFamilyVideoPropertiesKHR</code>.</p>
+</div>
+<div class="paragraph">
+<p>An H.265 encode profile can be defined through a <code>VkVideoProfileInfoKHR</code> structure using this new video codec operation and by including the following new codec-specific profile information structure in the <code>pNext</code> chain:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoEncodeH265ProfileInfoKHR {
+    VkStructureType                              sType;
+    const void*                                  pNext;
+    StdVideoH265ProfileIdc                       stdProfileIdc;
+} VkVideoEncodeH265ProfileInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>stdProfileIdc</code> specifies the H.265 profile indicator.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_h_265_encode_capabilities"><a class="anchor" href="#_h_265_encode_capabilities"></a>3.3. H.265 Encode Capabilities</h3>
+<div class="paragraph">
+<p>Applications need to include the following new structure in the <code>pNext</code> chain of <code>VkVideoCapabilitiesKHR</code> when calling the <code>vkGetPhysicalDeviceVideoCapabilitiesKHR</code> command to retrieve the capabilities specific to H.265 video encoding:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoEncodeH265CapabilitiesKHR {
+    VkStructureType                                sType;
+    void*                                          pNext;
+    VkVideoEncodeH265CapabilityFlagsKHR            flags;
+    StdVideoH265LevelIdc                           maxLevelIdc;
+    uint32_t                                       maxSliceSegmentCount;
+    VkExtent2D                                     maxTiles;
+    VkVideoEncodeH265CtbSizeFlagsKHR               ctbSizes;
+    VkVideoEncodeH265TransformBlockSizeFlagsKHR    transformBlockSizes;
+    uint32_t                                       maxPPictureL0ReferenceCount;
+    uint32_t                                       maxBPictureL0ReferenceCount;
+    uint32_t                                       maxL1ReferenceCount;
+    uint32_t                                       maxSubLayerCount;
+    VkBool32                                       expectDyadicTemporalSubLayerPattern;
+    int32_t                                        minQp;
+    int32_t                                        maxQp;
+    VkBool32                                       prefersGopRemainingFrames;
+    VkBool32                                       requiresGopRemainingFrames;
+    VkVideoEncodeH265StdFlagsKHR                   stdSyntaxFlags;
+} VkVideoEncodeH265CapabilitiesKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>flags</code> indicates support for various H.265 encoding capabilities:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_VIDEO_ENCODE_H265_CAPABILITY_HRD_COMPLIANCE_BIT_KHR</code> - support for generating HRD compliant bitstreams when the related HRD parameters are present</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_H265_CAPABILITY_PREDICTION_WEIGHT_TABLE_GENERATED_BIT_KHR</code> - support for generating the weight tables used by the encoding process, when necessary, instead of the application having to provide them</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_H265_CAPABILITY_ROW_UNALIGNED_SLICE_SEGMENT_BIT_KHR</code> - support for slice segments that do not start/finish at CTB row boundaries</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_H265_CAPABILITY_DIFFERENT_SLICE_SEGMENT_TYPE_BIT_KHR</code> - support for different slice segment types within a frame</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_H265_CAPABILITY_B_FRAME_IN_L0_LIST_BIT_KHR</code> - support for including B pictures in the L0 reference list</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_H265_CAPABILITY_B_FRAME_IN_L1_LIST_BIT_KHR</code> - support for including B pictures in the L1 reference list</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_H265_CAPABILITY_PER_PICTURE_TYPE_MIN_MAX_QP_BIT_KHR</code> - support for using different min/max QP values for each picture type when rate control is enabled</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_H265_CAPABILITY_PER_SLICE_SEGMENT_CONSTANT_QP_BIT_KHR</code> - support for using different constant QP values for each slice segment of a frame when rate control is disabled</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_H265_CAPABILITY_MULTIPLE_TILES_PER_SLICE_SEGMENT_BIT_KHR</code> - support for encoding multiple tiles per slice segment</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_H265_CAPABILITY_MULTIPLE_SLICE_SEGMENTS_PER_TILE_BIT_KHR</code> - support for encoding multiple slice segments per tile</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><code>maxLevelIdc</code> indicates the maximum supported H.265 level indicator.</p>
+</div>
+<div class="paragraph">
+<p><code>maxSliceSegmentCount</code> indicates the implementation&#8217;s upper bound on the number of H.265 slice segments that an encoded frame can contain, although the actual maximum may be smaller for a given frame depending on its dimensions and some of the capability flags described earlier.</p>
+</div>
+<div class="paragraph">
+<p>The fields of <code>maxTiles</code> indicate the maximum number of H.265 tile columns and rows, respectively.</p>
+</div>
+<div class="paragraph">
+<p><code>ctbSizes</code> and <code>transformBlockSizes</code> are bitmasks that indicate the set of CTB and transform block sizes supported by the implementation, respectively.</p>
+</div>
+<div class="paragraph">
+<p><code>maxPPictureL0ReferenceCount</code>, <code>maxBPictureL0ReferenceCount</code>, and <code>maxL1ReferenceCount</code> indicate the maximum number of reference frames that the encoded frames can refer to through the L0 and L1 reference lists depending on the type of the picture (P or B), respectively. These capabilities do not restrict the number of references the application can include in the L0 and L1 reference lists as, in practice, implementations may restrict the effective number of used references based on the encoded content and/or the capabilities of the encoder implementation. However, they do indirectly indicate whether encoding P or B pictures are supported. In particular:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If <code>maxPPictureL0ReferenceCount</code> is zero, then encoding P pictures is not supported by the implementation</p>
+</li>
+<li>
+<p>If both <code>maxBPictureL0ReferenceCount</code> and <code>maxL1ReferenceCount</code> are zero, then encoding B pictures is not supported by the implementation</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The H.265/HEVC video compression standard supports so called generalized B pictures (also known as low delay B pictures) that use both L0 and L1 references referring to only past frames. This can make the use of P pictures moot. Hence, certain implementations may only advertise support for encoding B pictures (but not P pictures). This, however, should not limit applications in encoding frames which use only forward references.</p>
+</div>
+<div class="paragraph">
+<p><code>maxSubLayerCount</code> indicates the number of supported H.265 sub-layers, while <code>expectDyadicTemporalSubLayerPattern</code> indicates whether the multi-layer rate control algorithm of the implementation (if support is indicated by <code>VkVideoEncodeCapabilitiesKHR::maxRateControlLayers</code> being greater than one for the given H.265 encode profile) expects the application to use a dyadic temporal sub-layer pattern for accurate operation.</p>
+</div>
+<div class="paragraph">
+<p><code>minQp</code> and <code>maxQp</code> indicate the supported range of QP values that can be used in the rate control configurations or as the constant QP to be used when rate control is disabled.</p>
+</div>
+<div class="paragraph">
+<p><code>prefersGopRemainingFrames</code> and <code>requiresGopRemainingFrames</code> indicate whether the implementation prefers or requires, respectively, that the application tracks the remaining number of frames (for each type) in the current GOP (group of pictures), as some implementations may need this information for the accurate operation of their rate control algorithm.</p>
+</div>
+<div class="paragraph">
+<p><code>stdSyntaxFlags</code> contains a set of flags that provide information to the application about which video std parameters or parameter values are supported to be used directly as specified by the application. These flags do not restrict what video std parameter values the application can specify, rather, they provide guarantees about respecting those.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_h_265_encode_parameter_sets"><a class="anchor" href="#_h_265_encode_parameter_sets"></a>3.4. H.265 Encode Parameter Sets</h3>
+<div class="paragraph">
+<p>The use of video session parameters objects is mandatory when encoding H.265 video streams. Applications need to include the following new structure in the <code>pNext</code> chain of <code>VkVideoSessionParametersCreateInfoKHR</code> when creating video session parameters objects for H.265 encode use, to specify the parameter set capacity of the created objects:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoEncodeH265SessionParametersCreateInfoKHR {
+    VkStructureType                                        sType;
+    const void*                                            pNext;
+    uint32_t                                               maxStdVPSCount;
+    uint32_t                                               maxStdSPSCount;
+    uint32_t                                               maxStdPPSCount;
+    const VkVideoEncodeH265SessionParametersAddInfoKHR*    pParametersAddInfo;
+} VkVideoEncodeH265SessionParametersCreateInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The optional <code>pParametersAddInfo</code> member also allows specifying an initial set of parameter sets to add to the created object:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoEncodeH265SessionParametersAddInfoKHR {
+    VkStructureType                            sType;
+    const void*                                pNext;
+    uint32_t                                   stdVPSCount;
+    const StdVideoH265VideoParameterSet*       pStdVPSs;
+    uint32_t                                   stdSPSCount;
+    const StdVideoH265SequenceParameterSet*    pStdSPSs;
+    uint32_t                                   stdPPSCount;
+    const StdVideoH265PictureParameterSet*     pStdPPSs;
+} VkVideoEncodeH265SessionParametersAddInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This structure can also be included in the <code>pNext</code> chain of <code>VkVideoSessionParametersUpdateInfoKHR</code> used in video session parameters update operations to add further parameter sets to an object after its creation.</p>
+</div>
+<div class="paragraph">
+<p>Individual parameter sets are stored using parameter set IDs as their keys, specifically:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>H.265 VPS entries are identified using a <code>vps_video_parameter_set_id</code> value</p>
+</li>
+<li>
+<p>H.265 SPS entries are identified using a pair of <code>sps_video_parameter_set_id</code> and <code>sps_seq_parameter_set_id</code> values</p>
+</li>
+<li>
+<p>H.265 PPS entries are identified using a triplet of <code>sps_video_parameter_set_id</code>, <code>pps_seq_parameter_set_id</code>, and <code>pps_pic_parameter_set_id</code> values</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Please note the inclusion of the VPS ID in the PPS key. This is needed because a PPS is not uniquely identified by its ID and the ID of the parent SPS, as multiple SPS entries may exist with the same ID that have different parent VPS IDs. In order to ensure the uniqueness of keys, all APIs referring to a PPS in this proposal also take the parent VPS ID of the SPS the PPS in question belongs to, to specify the full hierarchy of IDs.</p>
+</div>
+<div class="paragraph">
+<p>The H.265/HEVC video compression standard always requires a VPS, SPS, and PPS, hence the application has to add an instance of each parameter set to the used parameters object before being able to record video encode operations.</p>
+</div>
+<div class="paragraph">
+<p>Furthermore, the H.265/HEVC video compression standard also allows modifying existing parameter sets, but as parameters already stored in video session parameters objects cannot be changed in Vulkan, the application has to create new parameters objects in such cases, as described in the proposal for <code>VK_KHR_video_queue</code>.</p>
+</div>
+<div class="paragraph">
+<p>As implementations can override parameters in the VPS, SPS, and PPS entries stored in video session parameters objects, as described in the proposal for <code>VK_KHR_video_encode_queue</code>, this proposal introduces additional structures specific to H.265 encode to be used with the <code>vkGetEncodedVideoSessionParametersKHR</code> command.</p>
+</div>
+<div class="paragraph">
+<p>First, the following new structure has to be included in the <code>pNext</code> chain of <code>VkVideoEncodeSessionParametersGetInfoKHR</code> to identify the H.265 parameter sets that the command is expected to return feedback information or encoded parameter set data for:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoEncodeH265SessionParametersGetInfoKHR {
+    VkStructureType    sType;
+    const void*        pNext;
+    VkBool32           writeStdVPS;
+    VkBool32           writeStdSPS;
+    VkBool32           writeStdPPS;
+    uint32_t           stdVPSId;
+    uint32_t           stdSPSId;
+    uint32_t           stdPPSId;
+} VkVideoEncodeH265SessionParametersGetInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>writeStdVPS</code>, <code>writeStdSPS</code>, and <code>writeStdPPS</code> specify whether VPS, SPS, or PPS feedback/bitstream data is requested. Any combination can be requested, if needed.</p>
+</div>
+<div class="paragraph">
+<p><code>stdVPSId</code>, <code>stdSPSId</code>, and <code>stdPPSId</code> are used to identify the VPS, SPS, and/or PPS to request data for. Naturally, <code>stdPPSId</code> is only relevant for PPS queries, and <code>stdSPSId</code> is only relevant for SPS and/or PPS queries.</p>
+</div>
+<div class="paragraph">
+<p>When requesting feedback using the <code>vkGetEncodedVideoSessionParametersKHR</code> command, the following new structure can be included in the <code>pNext</code> chain of <code>VkVideoEncodeSessionParametersFeedbackInfoKHR</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoEncodeH265SessionParametersFeedbackInfoKHR {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           hasStdVPSOverrides;
+    VkBool32           hasStdSPSOverrides;
+    VkBool32           hasStdPPSOverrides;
+} VkVideoEncodeH265SessionParametersFeedbackInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The resulting values of <code>hasStdVPSOverrides</code>, <code>hasStdSPSOverrides</code>, and <code>hasStdPPSOverrides</code> indicate whether overrides were applied to the VPS, SPS, and/or PPS, respectively, if the corresponding <code>writeStd</code> field was set in the input parameters.</p>
+</div>
+<div class="paragraph">
+<p>When requesting encoded bitstream data using the <code>vkGetEncodedVideoSessionParametersKHR</code> command, the output host data buffer will be filled with the encoded bitstream of the requested H.265 parameter sets.</p>
+</div>
+<div class="paragraph">
+<p>As described in great detail in the proposal for the <code>VK_KHR_video_encode_queue</code> extension, the application may have the option to encode the parameters otherwise stored in video session parameters object on its own. However, this may not result in a compliant bitstream if the implementation applied overrides to VPS, SPS, or PPS parameters, thus it is generally recommended for applications to use the encoded parameter set data retrieved using the <code>vkGetEncodedVideoSessionParametersKHR</code> command.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_h_265_encoding_parameters"><a class="anchor" href="#_h_265_encoding_parameters"></a>3.5. H.265 Encoding Parameters</h3>
+<div class="paragraph">
+<p>Encode parameters specific to H.265 need to be provided by the application through the <code>pNext</code> chain of <code>VkVideoEncodeInfoKHR</code>, using the following new structure:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoEncodeH265PictureInfoKHR {
+    VkStructureType                                    sType;
+    const void*                                        pNext;
+    uint32_t                                           naluSliceSegmentEntryCount;
+    const VkVideoEncodeH265NaluSliceSegmentInfoKHR*    pNaluSliceSegmentEntries;
+    const StdVideoEncodeH265PictureInfo*               pStdPictureInfo;
+} VkVideoEncodeH265PictureInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>naluSliceSegmentEntryCount</code> specifies the number of slice segments to encode for the frame and the elements of the <code>pNaluSliceSegmentEntries</code> array provide additional information for each slice segment, as described later.</p>
+</div>
+<div class="paragraph">
+<p><code>pStdPictureInfo</code> points to the codec-specific encode parameters defined in the <code>vulkan_video_codec_h265std_encode</code> video std header.</p>
+</div>
+<div class="paragraph">
+<p>The active VPS, SPS, and PPS (sourced from the bound video session parameters object) are identified by the <code>sps_video_parameter_set_id</code>, <code>pps_seq_parameter_set_id</code>, and <code>pps_pic_parameter_set_id</code> parameters.</p>
+</div>
+<div class="paragraph">
+<p>The structure pointed to by <code>pStdPictureInfo&#8594;pRefLists</code> specifies the codec-specific parameters related to the reference lists. In particular, it specifies the DPB slots corresponding to the elements of the L0 and L1 reference lists, as well as reference list modification information.</p>
+</div>
+<div class="paragraph">
+<p>The parameters of individual slice segments are provided through instances of the following new structure:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoEncodeH265NaluSliceSegmentInfoKHR {
+    VkStructureType                                sType;
+    const void*                                    pNext;
+    int32_t                                        constantQp;
+    const StdVideoEncodeH265SliceSegmentHeader*    pStdSliceSegmentHeader;
+} VkVideoEncodeH265NaluSliceSegmentInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>constantQp</code> specifies the constant QP value to use for the slice when rate control is disabled.</p>
+</div>
+<div class="paragraph">
+<p><code>pStdSliceSegmentHeader</code> points to the codec-specific encode parameters to use in the slice segment header.</p>
+</div>
+<div class="paragraph">
+<p>Picture information specific to H.265 for the active reference pictures and the optional reconstructed picture need to be provided by the application through the <code>pNext</code> chain of corresponding elements of <code>VkVideoEncodeInfoKHR::pReferenceSlots</code> and the <code>pNext</code> chain of <code>VkVideoEncodeInfoKHR::pSetupReferenceSlot</code>, respectively, using the following new structure:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoEncodeH265DpbSlotInfoKHR {
+    VkStructureType                           sType;
+    const void*                               pNext;
+    const StdVideoEncodeH265ReferenceInfo*    pStdReferenceInfo;
+} VkVideoEncodeH265DpbSlotInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>pStdReferenceInfo</code> points to the codec-specific reference picture parameters defined in the <code>vulkan_video_codec_h265std_encode</code> video std header.</p>
+</div>
+<div class="paragraph">
+<p>It is the application&#8217;s responsibility to specify codec-specific parameters that are compliant with the rules defined by the H.265/HEVC video compression standard. While it is not illegal, from the API usage&#8217;s point of view, to specify non-compliant inputs, they may cause the video encode operation to complete unsuccessfully and will cause the output bitstream and the reconstructed picture, if one is specified, to have undefined contents after the execution of the operation.</p>
+</div>
+<div class="paragraph">
+<p>Implementations may override some of these parameters in order to conform to any restrictions of the encoder implementation, but that will not affect the overall operation of the encoding. The application has the option to also opt-in for additional optimizing overrides that can result in better performance or efficiency tailored to the usage scenario by creating the video session with the new <code>VK_VIDEO_SESSION_CREATE_ALLOW_ENCODE_PARAMETER_OPTIMIZATIONS_BIT_KHR</code> flag.</p>
+</div>
+<div class="paragraph">
+<p>For more information about individual H.265 bitstream syntax elements, calculate derived values, and, in general, how to interpret these parameters, please refer to the corresponding sections of the <a href="https://www.itu.int/rec/T-REC-H.265-202108-S/">ITU-T H.265 Specification</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_h_265_reference_lists"><a class="anchor" href="#_h_265_reference_lists"></a>3.6. H.265 Reference Lists</h3>
+<div class="paragraph">
+<p>In order to populate the L0 and L1 reference lists used to encode predictive pictures, the application has to set the corresponding elements of the <code>RefPicList0</code> and <code>RefPicList1</code> array members of the structure pointed to by <code>VkVideoEncodeH265PictureInfoKHR::pStdPictureInfo&#8594;pRefLists</code> to the DPB slot indices of the reference pictures, while all unused elements of <code>RefPicList0</code> and <code>RefPicList1</code> have to be set to <code>STD_VIDEO_H265_NO_REFERENCE_PICTURE</code>. As usual, the reference picture resources are specified by including them in the list of active reference pictures according to the codec-independent semantics defined by the <code>VK_KHR_video_encode_queue</code> extension.</p>
+</div>
+<div class="paragraph">
+<p>In all cases the set of DPB slot indices referenced by the L0 and L1 reference lists and the list of active reference pictures specified in <code>VkVideoEncodeInfoKHR::pReferenceSlots</code> must match, but the order in which the active reference pictures are included in the <code>pReferenceSlots</code> array does not matter.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_h_265_rate_control"><a class="anchor" href="#_h_265_rate_control"></a>3.7. H.265 Rate Control</h3>
+<div class="paragraph">
+<p>This proposal adds a set of optional rate control parameters specific to H.265 encoding that provide additional guidance to the implementation&#8217;s rate control algorithm.</p>
+</div>
+<div class="paragraph">
+<p>When rate control is not disabled and not set to implementation-default behavior, the application can include the following new structure in the <code>pNext</code> chain of <code>VkVideoEncodeRateControlInfoKHR</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoEncodeH265RateControlInfoKHR {
+    VkStructureType                         sType;
+    const void*                             pNext;
+    VkVideoEncodeH265RateControlFlagsKHR    flags;
+    uint32_t                                gopFrameCount;
+    uint32_t                                idrPeriod;
+    uint32_t                                consecutiveBFrameCount;
+    uint32_t                                subLayerCount;
+} VkVideoEncodeH265RateControlInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>flags</code> can include one or more of the following flags:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_VIDEO_ENCODE_H265_RATE_CONTROL_ATTEMPT_HRD_COMPLIANCE_BIT_KHR</code> can be used to indicate that the application would like the implementation&#8217;s rate control algorithm to attempt to produce an HRD compliant bitstream when possible</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_H265_RATE_CONTROL_REGULAR_GOP_BIT_KHR</code> can be used to indicate that the application intends to use a regular GOP structure according to the parameters specified in <code>gopFrameCount</code>, <code>idrPeriod</code>, and <code>consecutiveBFrameCount</code></p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_H265_RATE_CONTROL_REFERENCE_PATTERN_FLAT_BIT_KHR</code> can be used to indicate that the application intends to follow a flat reference pattern in the GOP where each P frame uses the last non-B frame as reference, and each B frame uses the last and next non-B frame as forward and backward references, respectively</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_H265_RATE_CONTROL_REFERENCE_PATTERN_DYADIC_BIT_KHR</code> can be used to indicate that the application intends to follow a dyadic reference pattern</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_H265_RATE_CONTROL_TEMPORAL_SUB_LAYER_PATTERN_DYADIC_BIT_KHR</code> can be used to indicate that the application intends to follow a dyadic temporal sub-layer pattern when using multiple temporal sub-layers</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><code>gopFrameCount</code>, <code>idrPeriod</code>, and <code>consecutiveBFrameCount</code> specify the GOP size, IDR period, and the number of consecutive B frames between non-B frames, respectively, that define the typical structure of the GOP the implementation&#8217;s rate control algorithm should expect. If <code>VK_VIDEO_ENCODE_H265_RATE_CONTROL_REGULAR_GOP_BIT_KHR</code> is also specified in <code>flags</code>, the implementation will expect all GOPs to follow this structure, while otherwise it may assume that the application will diverge from these values from time to time. If any of these values are zero, then the implementation&#8217;s rate control algorithm will not make any assumptions about the corresponding parameter of the GOP structure.</p>
+</div>
+<div class="paragraph">
+<p><code>subLayerCount</code> indicates the number of H.265 temporal sub-layers that the application intends to use and it is expected to match the number of rate control layers when multi-layer rate control is used.</p>
+</div>
+<div class="paragraph">
+<p>The following new structure can be included in the <code>pNext</code> chain of <code>VkVideoEncodeRateControlLayerInfoKHR</code> to specify additional per-rate-control-layer guidance parameters specific to H.265 encode:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoEncodeH265RateControlLayerInfoKHR {
+    VkStructureType                  sType;
+    const void*                      pNext;
+    VkBool32                         useMinQp;
+    VkVideoEncodeH265QpKHR           minQp;
+    VkBool32                         useMaxQp;
+    VkVideoEncodeH265QpKHR           maxQp;
+    VkBool32                         useMaxFrameSize;
+    VkVideoEncodeH265FrameSizeKHR    maxFrameSize;
+} VkVideoEncodeH265RateControlLayerInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When <code>useMinQp</code> is set to <code>VK_TRUE</code>, <code>minQp</code> specifies the lower bound on the QP values, for each picture type, that the implementation&#8217;s rate control algorithm should use. Similarly, when <code>useMaxQp</code> is set to <code>VK_TRUE</code>, <code>maxQp</code> specifies the upper bound on the QP values.</p>
+</div>
+<div class="paragraph">
+<p>When <code>useMaxFrameSize</code> is set to <code>VK_TRUE</code>, <code>maxFrameSize</code> specifies the maximum frame size in bytes, for each picture type, that the implementation&#8217;s rate control algorithm should target.</p>
+</div>
+<div class="paragraph">
+<p>Some implementations may benefit from or require additional guidance on the remaining number of frames in the currently encoded GOP, as indicated by the <code>prefersGopRemainingFrames</code> and <code>requiresGopRemainingFrames</code> capabilities, respectively. This may be the case either due to the implementation not being able to track the current position of the encoded stream within the GOP, or because the implementation may be able to use this information to better react to dynamic changes to the GOP structure. This proposal solves this by introducing the following new structure that can be included in the <code>pNext</code> chain of <code>VkVideoBeginCodingInfoKHR</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoEncodeH265GopRemainingFrameInfoKHR {
+    VkStructureType    sType;
+    const void*        pNext;
+    VkBool32           useGopRemainingFrames;
+    uint32_t           gopRemainingI;
+    uint32_t           gopRemainingP;
+    uint32_t           gopRemainingB;
+} VkVideoEncodeH265GopRemainingFrameInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When <code>useGopRemainingFrames</code> is set to <code>VK_TRUE</code>, the implementation&#8217;s rate control algorithm may use the values specified in <code>gopRemainingI</code>, <code>gopRemainingP</code>, and <code>gopRemainingB</code> as a guidance on the number of remaining frames of the corresponding type in the currently encoded GOP.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_examples"><a class="anchor" href="#_examples"></a>4. Examples</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_select_queue_family_with_h_265_encode_support"><a class="anchor" href="#_select_queue_family_with_h_265_encode_support"></a>4.1. Select queue family with H.265 encode support</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">uint32_t queueFamilyIndex;
+uint32_t queueFamilyCount;
+
+vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &amp;queueFamilyCount, NULL);
+
+VkQueueFamilyProperties2* props = calloc(queueFamilyCount,
+    sizeof(VkQueueFamilyProperties2));
+VkQueueFamilyVideoPropertiesKHR* videoProps = calloc(queueFamilyCount,
+    sizeof(VkQueueFamilyVideoPropertiesKHR));
+
+for (queueFamilyIndex = 0; queueFamilyIndex &lt; queueFamilyCount; ++queueFamilyIndex) {
+    props[queueFamilyIndex].sType = VK_STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2;
+    props[queueFamilyIndex].pNext = &amp;videoProps[queueFamilyIndex];
+
+    videoProps[queueFamilyIndex].sType = VK_STRUCTURE_TYPE_QUEUE_FAMILY_VIDEO_PROPERTIES_KHR;
+}
+
+vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &amp;queueFamilyCount, props);
+
+for (queueFamilyIndex = 0; queueFamilyIndex &lt; queueFamilyCount; ++queueFamilyIndex) {
+    if ((props[queueFamilyIndex].queueFamilyProperties.queueFlags &amp; VK_QUEUE_VIDEO_ENCODE_BIT_KHR) != 0 &amp;&amp;
+        (videoProps[queueFamilyIndex].videoCodecOperations &amp; VK_VIDEO_CODEC_OPERATION_ENCODE_H265_BIT_KHR) != 0) {
+        break;
+    }
+}
+
+if (queueFamilyIndex &lt; queueFamilyCount) {
+    // Found appropriate queue family
+    ...
+} else {
+    // Did not find a queue family with the needed capabilities
+    ...
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_check_support_and_query_the_capabilities_for_an_h_265_encode_profile"><a class="anchor" href="#_check_support_and_query_the_capabilities_for_an_h_265_encode_profile"></a>4.2. Check support and query the capabilities for an H.265 encode profile</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkResult result;
+
+VkVideoEncodeH265ProfileInfoKHR encodeH265ProfileInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_PROFILE_INFO_KHR,
+    .pNext = NULL,
+    .stdProfileIdc = STD_VIDEO_H265_PROFILE_IDC_MAIN
+};
+
+VkVideoProfileInfoKHR profileInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR,
+    .pNext = &amp;encodeH265ProfileInfo,
+    .videoCodecOperation = VK_VIDEO_CODEC_OPERATION_ENCODE_H265_BIT_KHR,
+    .chromaSubsampling = VK_VIDEO_CHROMA_SUBSAMPLING_420_BIT_KHR,
+    .lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR,
+    .chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR
+};
+
+VkVideoEncodeH265CapabilitiesKHR encodeH265Capabilities = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_CAPABILITIES_KHR,
+    .pNext = NULL,
+};
+
+VkVideoEncodeCapabilitiesKHR encodeCapabilities = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_CAPABILITIES_KHR,
+    .pNext = &amp;encodeH265Capabilities
+}
+
+VkVideoCapabilitiesKHR capabilities = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR,
+    .pNext = &amp;encodeCapabilities
+};
+
+result = vkGetPhysicalDeviceVideoCapabilitiesKHR(physicalDevice, &amp;profileInfo, &amp;capabilities);
+
+if (result == VK_SUCCESS) {
+    // Profile is supported, check additional capabilities
+    ...
+} else {
+    // Profile is not supported, result provides additional information about why
+    ...
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_create_and_update_h_265_video_session_parameters_objects"><a class="anchor" href="#_create_and_update_h_265_video_session_parameters_objects"></a>4.3. Create and update H.265 video session parameters objects</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkVideoSessionParametersKHR videoSessionParams = VK_NULL_HANDLE;
+
+VkVideoEncodeH265SessionParametersCreateInfoKHR encodeH265CreateInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_SESSION_PARAMETERS_CREATE_INFO_KHR,
+    .pNext = NULL,
+    .maxStdVPSCount = ... // VPS capacity
+    .maxStdSPSCount = ... // SPS capacity
+    .maxStdPPSCount = ... // PPS capacity
+    .pParametersAddInfo = ... // parameters to add at creation time or NULL
+};
+
+VkVideoSessionParametersCreateInfoKHR createInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_PARAMETERS_CREATE_INFO_KHR,
+    .pNext = &amp;encodeH265CreateInfo,
+    .flags = 0,
+    .videoSessionParametersTemplate = ... // template to use or VK_NULL_HANDLE
+    .videoSession = videoSession
+};
+
+vkCreateVideoSessionParametersKHR(device, &amp;createInfo, NULL, &amp;videoSessionParams);
+
+...
+
+StdVideoH265VideoParameterSet vps = {};
+// parse and populate VPS parameters
+...
+
+StdVideoH265SequenceParameterSet sps = {};
+// parse and populate SPS parameters
+...
+
+StdVideoH265PictureParameterSet pps = {};
+// parse and populate PPS parameters
+...
+
+VkVideoEncodeH265SessionParametersAddInfoKHR encodeH265AddInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_SESSION_PARAMETERS_ADD_INFO_KHR,
+    .pNext = NULL,
+    .stdVPSCount = 1,
+    .pStdVPSs = &amp;vps,
+    .stdSPSCount = 1,
+    .pStdSPSs = &amp;sps,
+    .stdPPSCount = 1,
+    .pStdPPSs = &amp;pps
+};
+
+VkVideoSessionParametersUpdateInfoKHR updateInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_PARAMETERS_UPDATE_INFO_KHR,
+    .pNext = &amp;encodeH265AddInfo,
+    .updateSequenceCount = 1 // incremented for each subsequent update
+};
+
+vkUpdateVideoSessionParametersKHR(device, &amp;videoSessionParams, &amp;updateInfo);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_record_h_265_encode_operation_producing_an_i_frame_that_is_also_set_up_as_a_reference"><a class="anchor" href="#_record_h_265_encode_operation_producing_an_i_frame_that_is_also_set_up_as_a_reference"></a>4.4. Record H.265 encode operation producing an I frame that is also set up as a reference</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Bound reference resource list provided has to include reconstructed picture resource
+vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+
+StdVideoEncodeH265ReferenceInfo stdReferenceInfo = {};
+// Populate H.265 reference picture info for the reconstructed picture
+stdReferenceInfo.pic_type = STD_VIDEO_H265_PICTURE_TYPE_I;
+...
+
+VkVideoEncodeH265DpbSlotInfoKHR encodeH265DpbSlotInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_DPB_SLOT_INFO_KHR,
+    .pNext = NULL,
+    .pStdReferenceInfo = &amp;stdReferenceInfo
+};
+
+VkVideoReferenceSlotInfoKHR setupSlotInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR,
+    .pNext = &amp;encodeH265DpbSlotInfo
+    ...
+};
+
+StdVideoEncodeH265ReferenceListsInfo stdRefListInfo = {};
+// No references are used so just initialize the RefPicLists
+for (uint32_t i = 0; i &lt; STD_VIDEO_H265_MAX_NUM_LIST_REF; ++i) {
+    stdRefListInfo.RefPicList0[i] = STD_VIDEO_H265_NO_REFERENCE_PICTURE;
+    stdRefListInfo.RefPicList1[i] = STD_VIDEO_H265_NO_REFERENCE_PICTURE;
+}
+// Populate other H.265 reference list parameters
+...
+
+StdVideoEncodeH265PictureInfo stdPictureInfo = {};
+// Populate H.265 picture info for the encode input picture
+...
+// Make sure that the reconstructed picture is requested to be set up as reference
+stdPictureInfo.flags.is_reference = 1;
+...
+stdPictureInfo.pic_type = STD_VIDEO_H265_PICTURE_TYPE_I;
+...
+stdPictureInfo.pRefLists = &amp;stdRefListInfo;
+...
+
+VkVideoEncodeH265PictureInfoKHR encodeH265PictureInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_PICTURE_INFO_KHR,
+    .pNext = NULL,
+    .naluSliceSegmentEntryCount = ... // number of slice segments to encode
+    .pNaluSliceSegmentEntries = ... // pointer to the array of slice segment parameters
+    .pStdPictureInfo = &amp;stdPictureInfo
+};
+
+VkVideoEncodeInfoKHR encodeInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_INFO_KHR,
+    .pNext = &amp;encodeH265PictureInfo,
+    ...
+    .pSetupReferenceSlot = &amp;setupSlotInfo,
+    ...
+};
+
+vkCmdEncodeVideoKHR(commandBuffer, &amp;encodeInfo);
+
+vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_record_h_265_encode_operation_producing_a_p_frame_with_a_single_forward_reference"><a class="anchor" href="#_record_h_265_encode_operation_producing_a_p_frame_with_a_single_forward_reference"></a>4.5. Record H.265 encode operation producing a P frame with a single forward reference</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Bound reference resource list provided has to include the used reference picture resource
+vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+
+StdVideoEncodeH265ReferenceInfo stdForwardReferenceInfo = {};
+// Populate H.265 reference picture info for the forward referenced picture
+...
+
+VkVideoEncodeH265DpbSlotInfoKHR encodeH265DpbSlotInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_DPB_SLOT_INFO_KHR,
+    .pNext = NULL,
+    .pStdReferenceInfo = &amp;stdForwardReferenceInfo
+};
+
+VkVideoReferenceSlotInfoKHR referenceSlotInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR,
+    .pNext = &amp;encodeH265DpbSlotInfo,
+    .slotIndex = ... // DPB slot index of the forward reference picture
+    ...
+};
+
+StdVideoEncodeH265ReferenceListsInfo stdRefListInfo = {};
+// Initialize the RefPicLists and add the forward reference to the L0 list
+for (uint32_t i = 0; i &lt; STD_VIDEO_H265_MAX_NUM_LIST_REF; ++i) {
+    stdRefListInfo.RefPicList0[i] = STD_VIDEO_H265_NO_REFERENCE_PICTURE;
+    stdRefListInfo.RefPicList1[i] = STD_VIDEO_H265_NO_REFERENCE_PICTURE;
+}
+stdRefListInfo.RefPicList0[0] = ... // DPB slot index of the forward reference picture
+// Populate other H.265 reference list parameters
+...
+
+StdVideoEncodeH265PictureInfo stdPictureInfo = {};
+// Populate H.265 picture info for the encode input picture
+...
+stdPictureInfo.pic_type = STD_VIDEO_H265_PICTURE_TYPE_P;
+...
+stdPictureInfo.pRefLists = &amp;stdRefListInfo;
+...
+
+VkVideoEncodeH265PictureInfoKHR encodeH265PictureInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_PICTURE_INFO_KHR,
+    .pNext = NULL,
+    .naluSliceSegmentEntryCount = ... // number of slice segments to encode
+    .pNaluSliceSegmentEntries = ... // pointer to the array of slice segment parameters
+    .pStdPictureInfo = &amp;stdPictureInfo
+};
+
+VkVideoEncodeInfoKHR encodeInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_INFO_KHR,
+    .pNext = &amp;encodeH265PictureInfo,
+    ...
+    .referenceSlotCount = 1,
+    .pReferenceSlots = &amp;referenceSlotInfo
+};
+
+vkCmdEncodeVideoKHR(commandBuffer, &amp;encodeInfo);
+
+vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_record_h_265_encode_operation_producing_a_b_frame_with_a_forward_and_a_backward_reference"><a class="anchor" href="#_record_h_265_encode_operation_producing_a_b_frame_with_a_forward_and_a_backward_reference"></a>4.6. Record H.265 encode operation producing a B frame with a forward and a backward reference</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Bound reference resource list provided has to include the used reference picture resources
+vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+
+StdVideoEncodeH265ReferenceInfo stdForwardReferenceInfo = {};
+// Populate H.265 reference picture info for the forward referenced picture
+...
+
+StdVideoEncodeH265ReferenceInfo stdBackwardReferenceInfo = {};
+// Populate H.265 reference picture info for the backward referenced picture
+...
+
+VkVideoEncodeH265DpbSlotInfoKHR encodeH265DpbSlotInfo[] = {
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_DPB_SLOT_INFO_KHR,
+        .pNext = NULL,
+        .pStdReferenceInfo = &amp;stdForwardReferenceInfo
+    },
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_DPB_SLOT_INFO_KHR,
+        .pNext = NULL,
+        .pStdReferenceInfo = &amp;stdBackwardReferenceInfo
+    }
+};
+
+VkVideoReferenceSlotInfoKHR referenceSlotInfo[] = {
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR,
+        .pNext = &amp;encodeH265DpbSlotInfo[0],
+        .slotIndex = ... // DPB slot index of the forward reference picture
+        ...
+    },
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR,
+        .pNext = &amp;encodeH265DpbSlotInfo[1],
+        .slotIndex = ... // DPB slot index of the backward reference picture
+        ...
+    }
+};
+
+StdVideoEncodeH265ReferenceListsInfo stdRefListInfo = {};
+// Initialize the RefPicLists, add the forward reference to the L0 list,
+// and add the backward reference to the L1 list
+for (uint32_t i = 0; i &lt; STD_VIDEO_H265_MAX_NUM_LIST_REF; ++i) {
+    stdRefListInfo.RefPicList0[i] = STD_VIDEO_H265_NO_REFERENCE_PICTURE;
+    stdRefListInfo.RefPicList1[i] = STD_VIDEO_H265_NO_REFERENCE_PICTURE;
+}
+stdRefListInfo.RefPicList0[0] = ... // DPB slot index of the forward reference picture
+stdRefListInfo.RefPicList1[0] = ... // DPB slot index of the backward reference picture
+// Populate other H.265 reference list parameters
+...
+
+StdVideoEncodeH265PictureInfo stdPictureInfo = {};
+// Populate H.265 picture info for the encode input picture
+...
+stdPictureInfo.pic_type = STD_VIDEO_H265_PICTURE_TYPE_B;
+...
+stdPictureInfo.pRefLists = &amp;stdRefListInfo;
+...
+
+VkVideoEncodeH265PictureInfoKHR encodeH265PictureInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_PICTURE_INFO_KHR,
+    .pNext = NULL,
+    .naluSliceSegmentEntryCount = ... // number of slice segments to encode
+    .pNaluSliceSegmentEntries = ... // pointer to the array of slice segment parameters
+    .pStdPictureInfo = &amp;stdPictureInfo
+};
+
+VkVideoEncodeInfoKHR encodeInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_INFO_KHR,
+    .pNext = &amp;encodeH265PictureInfo,
+    ...
+    .referenceSlotCount = sizeof(referenceSlotInfo) / sizeof(referenceSlotInfo[0]),
+    .pReferenceSlots = &amp;referenceSlotInfo[0]
+};
+
+vkCmdEncodeVideoKHR(commandBuffer, &amp;encodeInfo);
+
+vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_change_the_rate_control_configuration_of_an_h_265_encode_session_with_optional_h_265_controls"><a class="anchor" href="#_change_the_rate_control_configuration_of_an_h_265_encode_session_with_optional_h_265_controls"></a>4.7. Change the rate control configuration of an H.265 encode session with optional H.265 controls</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+
+// Include the optional H.265 rate control layer information
+// In this example we restrict the QP range to be used by the implementation
+VkVideoEncodeH265RateControlLayerInfoKHR rateControlLayersH265[] = {
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_RATE_CONTROL_LAYER_INFO_KHR,
+        .pNext = NULL,
+        .useMinQp = VK_TRUE,
+        .minQp = { /* min I frame QP */, /* min P frame QP */, /* min B frame QP */ },
+        .useMaxQp = VK_TRUE,
+        .minQp = { /* max I frame QP */, /* max P frame QP */, /* max B frame QP */ },
+        .useMaxFrameSize = VK_FALSE,
+        .maxFrameSize = { 0, 0, 0 }
+    },
+    ...
+};
+
+VkVideoEncodeRateControlLayerInfoKHR rateControlLayers[] = {
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_RATE_CONTROL_LAYER_INFO_KHR,
+        .pNext = &amp;rateControlLayersH265[0],
+        ...
+    },
+    ...
+};
+
+// Include the optional H.265 global rate control information
+VkVideoEncodeH265RateControlInfoKHR rateControlInfoH265 = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_RATE_CONTROL_INFO_KHR,
+    .pNext = NULL,
+    .flags = VK_VIDEO_ENCODE_H265_RATE_CONTROL_REGULAR_GOP_BIT_KHR // Indicate the use of a regular GOP structure...
+           | VK_VIDEO_ENCODE_H265_RATE_CONTROL_TEMPORAL_SUB_LAYER_PATTERN_DYADIC_BIT_KHR, // ... and a dyadic temporal sub-layer pattern
+    // Indicate a GOP structure of the form IBBBPBBBPBBBI with an IDR frame at the beginning of every 10th GOP
+    .gopFrameCount = 12,
+    .idrPeriod = 120,
+    .consecutiveBFrameCount = 3,
+    // This example uses multiple temporal sub-layers with per layer rate control
+    .subLayerCount = sizeof(rateControlLayers) / sizeof(rateControlLayers[0])
+};
+
+VkVideoEncodeRateControlInfoKHR rateControlInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_RATE_CONTROL_INFO_KHR,
+    .pNext = &amp;rateControlInfoH265,
+    ...
+    .layerCount = sizeof(rateControlLayers) / sizeof(rateControlLayers[0]),
+    .pLayers = rateControlLayers,
+    ...
+};
+
+// Change the rate control configuration for the video session
+VkVideoCodingControlInfoKHR controlInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_CODING_CONTROL_INFO_KHR,
+    .pNext = &amp;rateControlInfo,
+    .flags = VK_VIDEO_CODING_CONTROL_ENCODE_RATE_CONTROL_BIT_KHR
+};
+
+vkCmdControlVideoCodingKHR(commandBuffer, &amp;controlInfo);
+
+...
+
+vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_issues"><a class="anchor" href="#_issues"></a>5. Issues</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_resolved_in_what_form_should_codec_specific_parameters_be_provided"><a class="anchor" href="#_resolved_in_what_form_should_codec_specific_parameters_be_provided"></a>5.1. RESOLVED: In what form should codec-specific parameters be provided?</h3>
+<div class="paragraph">
+<p>In the form of structures defined by the <code>vulkan_video_codec_h265std_encode</code> and <code>vulkan_video_codec_h265std</code> video std headers. Applications are responsible to populate the structures defined by the video std headers. It is also the application&#8217;s responsibility to maintain and manage these data structures, as needed, to be able to provide them as inputs to video encode operations where needed.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_why_the_vulkan_video_codec_h265std_video_std_header_does_not_have_a_version_number"><a class="anchor" href="#_resolved_why_the_vulkan_video_codec_h265std_video_std_header_does_not_have_a_version_number"></a>5.2. RESOLVED: Why the <code>vulkan_video_codec_h265std</code> video std header does not have a version number?</h3>
+<div class="paragraph">
+<p>The <code>vulkan_video_codec_h265std</code> video std header was introduced to share common definitions used in both H.265/HEVC video decoding and video encoding, as the two functionalities were designed in parallel. However, as no video coding extension uses this video std header directly, only as a dependency of the video std header specific to the particular video coding operation, no separate versioning scheme was deemed necessary.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_what_are_the_requirements_for_the_codec_specific_input_parameters"><a class="anchor" href="#_resolved_what_are_the_requirements_for_the_codec_specific_input_parameters"></a>5.3. RESOLVED: What are the requirements for the codec-specific input parameters?</h3>
+<div class="paragraph">
+<p>It is legal from an API usage perspective for the application to provide any values for the codec-specific input parameters (parameter sets, picture information, etc.). However, if the input data does not conform to the requirements of the H.265/HEVC video compression standard, then video encode operations may complete unsuccessfully and, in general, the outputs produced by the video encode operation will have undefined contents.</p>
+</div>
+<div class="paragraph">
+<p>In addition, certain commands may return the <code>VK_ERROR_INVALID_VIDEO_STD_PARAMETERS_KHR</code> error if any of the specified codec-specific parameters do not adhere to the syntactic or semantic requirements of the H.265/HEVC video compression standard or if values derived from parameters according to the rules defined by the H.265/HEVC video compression standard do not adhere to the capabilities of the H.265/HEVC video compression standard or the implementation. In particular, in this extension the following commands may return this error code:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>vkCreateVideoSessionParametersKHR</code> or <code>vkUpdateVideoSessionParametersKHR</code> - if the specified parameter sets are invalid according to these rules</p>
+</li>
+<li>
+<p><code>vkEndCommandBuffer</code> - if the codec-specific picture information provided to video encode operations are invalid according to these rules</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Generating errors in the cases above, however, is not required so applications should not rely on receiving an error code for the purposes of verifying the correctness of the used codec-specific parameters.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_do_we_want_to_allow_the_application_to_specify_separate_reference_lists_for_each_slice_segment"><a class="anchor" href="#_resolved_do_we_want_to_allow_the_application_to_specify_separate_reference_lists_for_each_slice_segment"></a>5.4. RESOLVED: Do we want to allow the application to specify separate reference lists for each slice segment?</h3>
+<div class="paragraph">
+<p>Not in this extension. While the H.265/HEVC video compression standard seems to support this, such flexibility is not exposed here for the sake of simplicity. If the need arises to support per slice segment reference lists, a layered extension can introduce the necessary APIs to enable it.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_are_generalized_p_and_b_frames_aka_low_delay_b_frames_supported"><a class="anchor" href="#_resolved_are_generalized_p_and_b_frames_aka_low_delay_b_frames_supported"></a>5.5. RESOLVED: Are generalized P and B frames (aka low delay B frames) supported?</h3>
+<div class="paragraph">
+<p>Yes, in fact, some implementations do not support encoding P frames but do support encoding B frames with forward-only references. In order to maximize portability, applications should check for B frame support and use low delay B frames to encode frames with forward-only references even when P frame support is not available on a given implementation.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_what_codec_specific_parameters_are_guaranteed_to_not_be_overridden_by_implementations"><a class="anchor" href="#_resolved_what_codec_specific_parameters_are_guaranteed_to_not_be_overridden_by_implementations"></a>5.6. RESOLVED: What codec-specific parameters are guaranteed to not be overridden by implementations?</h3>
+<div class="paragraph">
+<p>This proposal only requires that implementations do not override the <code>pic_type</code> and <code>slice_type</code> parameters, as the used picture and slice types are fundamental to the general operation of H.265 encoding. In addition, bits set in the <code>stdSyntaxFlags</code> capability provide additional guarantees about other Video Std parameters that the implementation will use without overriding them. No further restrictions are included in this extension regarding codec-specific parameter overrides, however, future extensions may include capability flags providing additional guarantees based on the needs of the users of the API.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_can_implementations_override_the_values_of_pic_width_in_luma_samples_andor_pic_height_in_luma_samples"><a class="anchor" href="#_resolved_can_implementations_override_the_values_of_pic_width_in_luma_samples_andor_pic_height_in_luma_samples"></a>5.7. RESOLVED: Can implementations override the values of <code>pic_width_in_luma_samples</code> and/or <code>pic_height_in_luma_samples</code>?</h3>
+<div class="paragraph">
+<p>Yes. Implementations may have limitations on the size of the coding blocks they can produce within CTBs amongst other implementation-specific alignment limitations which may require overriding the values of <code>pic_width_in_luma_samples</code> and/or <code>pic_height_in_luma_samples</code>. This can be safely done without affecting the effective coded extent of the encoded frames by making corresponding adjustments to the values of <code>conf_win_right_offset</code> and/or <code>conf_win_bottom_offset</code>. Allowing implementations to perform such codec-specific parameter overrides enables better portability and avoids the need for application developers having to navigate an unnecessarily complex set of capabilities that would otherwise be necessary to account for the quirks of individual hardware implementations.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_how_is_reference_picture_setup_requested_for_h_265_encode_operations"><a class="anchor" href="#_resolved_how_is_reference_picture_setup_requested_for_h_265_encode_operations"></a>5.8. RESOLVED: How is reference picture setup requested for H.265 encode operations?</h3>
+<div class="paragraph">
+<p>As specifying a reconstructed picture DPB slot and resource is always required per the latest revision of the video extensions, additional codec syntax controls whether reference picture setup is requested and, in response, the DPB slot is activated with the reconstructed picture.</p>
+</div>
+<div class="paragraph">
+<p>For H.265 encode, reference picture setup is requested and the DPB slot specified for the reconstructed picture is activated with the picture if and only if the <code>StdVideoEncodeH265PictureInfo::flags.is_reference</code> flag is set.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_further_functionality"><a class="anchor" href="#_further_functionality"></a>6. Further Functionality</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Future extensions can further extend the capabilities provided here, e.g. exposing support for encode modes allowing per-slice-segment input and/or output.</p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

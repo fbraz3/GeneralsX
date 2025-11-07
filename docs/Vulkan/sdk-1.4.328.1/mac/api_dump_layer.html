@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="icon" href="images/Vulkan_LogoBug_48px_Nov17.png">
+<link rel="stylesheet" href="github-markdown.css">
+</head>
+<body>
+<article class="markdown-body">
+<!-- markdownlint-disable MD041 -->
+
+<p align="left"><img src="https://vulkan.lunarg.com/img/NewLunarGLogoBlack.png" alt="LunarG" width=263 height=113 /></p>
+
+<p>Copyright © 2015-2022 LunarG, Inc.</p>
+<p><a href="https://creativecommons.org/licenses/by-nd/4.0/" TARGET="_blank"><img src="https://i.creativecommons.org/l/by-nd/4.0/88x31.png" title="Creative Commons License" alt="Creative Commons" /></a></p>
+<h1 id="vk_layer_lunarg_api_dump">VK_LAYER_LUNARG_api_dump</h1>
+<p>The <code>VK_LAYER_LUNARG_api_dump</code> utility layer prints API calls, parameters, and values to the identified output stream.</p>
+<p><br></br></p>
+<h2 id="configuring-the-api-dump-layer">Configuring the API Dump Layer</h2>
+<p>For an overview of how to configure layers, refer to the <a href="./layer_configuration.html">Layers Overview and Configuration</a> document.</p>
+<p>The API Dump Layer settings are documented in the <a href="./api_dump_layer.html#user-content-layer-details">Layer Details</a> section below.</p>
+<p>The API Dump Layer can also be enabled and configured using vkconfig. See the <a href="./vkconfig.html">vkconfig</a> documentation for more information.</p>
+<h2 id="enabling-the-api-dump-layer">Enabling the API Dump Layer</h2>
+<h3 id="desktop-linuxwindowsmacos">Desktop (Linux/Windows/MacOS)</h3>
+<p>You must add the location of the <code>VK_LAYER_LUNARG_api_dump.json</code> file and corresponding <code>VkLayer_api_dump</code> library to your <code>VK_LAYER_PATH</code> in order for the Vulkan loader to be able to find the layer.</p>
+<p>Then, you must also enable the layer in one of two ways:</p>
+<ul>
+<li>Directly in your application using the layer's name during vkCreateInstance</li>
+<li>Indirectly by using the <code>VK_INSTANCE_LAYERS</code> environment variable.</li>
+</ul>
+<h4 id="setting-vk_layer_path">Setting <code>VK_LAYER_PATH</code></h4>
+<p><strong>Windows</strong></p>
+<p>If your source was located in: <code>C:\my_folder\vulkantools</code> and your build folder was build64, then you would add it to the layer path in the following way:</p>
+<pre><code>set VK_LAYER_PATH=C:\my_folder\vulkantools\build64\layersvt\Debug;%VK_LAYER_PATH%
+</code></pre>
+<p><strong>Linux/MacOS</strong></p>
+<p>If your source was located in: <code>/my_folder/vulkantools</code> and your build folder was build, then you would add it to the layer path in the following way:</p>
+<pre><code>export VK_LAYER_PATH=/my_folder/vulkantools/build/layersvt:$VK_LAYER_PATH
+</code></pre>
+<h4 id="enabling-the-layer-with-vk_instance_layers">Enabling the layer with <code>VK_INSTANCE_LAYERS</code></h4>
+<p>To force the layer to be enabled for Vulkan applications, you can set the <code>VK_INSTANCE_LAYERS</code> environment variable in the following way:</p>
+<p><strong>Windows</strong></p>
+<pre><code>set VK_INSTANCE_LAYERS=VK_LAYER_LUNARG_api_dump
+</code></pre>
+<p><strong>Linux/MacOS</strong></p>
+<pre><code>export VK_INSTANCE_LAYERS=VK_LAYER_LUNARG_api_dump
+</code></pre>
+<p><br></br></p>
+<h3 id="android">Android</h3>
+<h4 id="permissions">Permissions</h4>
+<p>You may need to grant permissions to your application to write to system storage, even if it normally does not. This depends on whether or not you modify API Dump to output to a file or just leave it to output to text.</p>
+<p>If you're building with Android Studio, you do this by:</p>
+<ul>
+<li>Click on "Run" in the menu</li>
+<li>Choose "Edit Configurations..."</li>
+<li>In the dialog box, look for the "Install Flags:" text box</li>
+<li>Enter -g</li>
+<li>Click "Apply"</li>
+</ul>
+<p>If this does not work, you may still require enabling permissions for your application from the settings menu.</p>
+<p>Failure to do so will result in your application crashing during vkCreateInstance since the layer will attempt, but fail, to create the capture file.</p>
+<h4 id="globally-enabling-the-layer">Globally Enabling the Layer</h4>
+<p>Use ADB to enable the layer for your project by:</p>
+<pre><code>adb shell &quot;setprop debug.vulkan.layers &#39;VK_LAYER_LUNARG_api_dump&#39;&quot;
+</code></pre>
+<p>When done, disable the layer using:</p>
+<pre><code>adb shell &quot;setprop debug.vulkan.layers &#39;&#39;&quot;
+</code></pre>
+<p><br></br></p>
+<h3 id="applying-environment-settings-on-android">Applying Environment Settings on Android</h3>
+<p>On Android, you must use properties to set the layer environment variables. The format of the properties to set takes the following form:</p>
+<pre><code>debug. + (lower-case environment variable with &#39;vk_&#39; stripped)
+</code></pre>
+<p>The easiest way to set a property is from the ADB shell:</p>
+<pre><code>adb shell &quot;setprop &lt;property_name&gt; &#39;&lt;property_value&gt;&#39;&quot;
+</code></pre>
+<p><strong>For example:</strong></p>
+<p>To set the API Dump output log filename, which on desktop uses <code>VK_API_DUMP_LOG_FILENAME</code> set the following property:</p>
+<pre><code>debug.vulkan.api_dump.log_filename
+</code></pre>
+<p>Which you can set in the following way:</p>
+<pre><code>adb shell &quot;setprop debug.vulkan.api_dump.log_filename &#39;/sdcard/Android/vk_apidump.txt&#39;&quot;
+</code></pre>
+<p><br></br></p>
+<h2 id="layer-properties">Layer Properties</h2>
+<ul>
+<li>API Version: 1.4.328</li>
+<li>Implementation Version: 2</li>
+<li>Layer Manifest: <code>VkLayer_api_dump.json</code>
+<ul>
+<li>File Format: 1.2.0</li>
+<li>Layer Binary: <code>libVkLayer_api_dump.so</code></li>
+</ul></li>
+<li>Variables:
+<ul>
+<li><code>vk_layer_settings.txt</code> namespace: <code>lunarg_api_dump</code></li>
+<li>Environment Variable prefix: <code>VK_LUNARG_API_DUMP_</code></li>
+<li>Android system property prefix: <code>adb setprop debug.vulkan.lunarg_api_dump.</code></li>
+</ul></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+<li>Number of Layer Settings: 16</li>
+<li>Number of Layer Presets: 5</li>
+</ul>
+<h2 id="layer-settings-overview">Layer Settings Overview</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Label</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Default Value</th>
+<th>Platforms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#output-range">Output Range</a></td>
+<td><code>output_range</code></td>
+<td><code>STRING</code></td>
+<td><code>0-0</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><a href="#output-format">Output Format</a></td>
+<td><code>output_format</code></td>
+<td><code>ENUM</code></td>
+<td><code>text</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#pre-dump-the-parameters.">Pre-dump the parameters.</a></td>
+<td><code>pre_dump</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><a href="#output-to-file">Output to File</a></td>
+<td><code>file</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#log-filename">Log Filename</a></td>
+<td><code>log_filename</code></td>
+<td><code>SAVE_FILE</code></td>
+<td><code>stdout</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><a href="#log-flush-after-write">Log Flush After Write</a></td>
+<td><code>flush</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td><a href="#name-size">Name Size</a></td>
+<td><code>name_size</code></td>
+<td><code>INT</code></td>
+<td><code>32</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><a href="#show-types">Show Types</a></td>
+<td><code>show_types</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#type-size">Type Size</a></td>
+<td><code>type_size</code></td>
+<td><code>INT</code></td>
+<td><code>0</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><a href="#show-timestamp">Show Timestamp</a></td>
+<td><code>timestamp</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td><a href="#show-shader">Show Shader</a></td>
+<td><code>show_shader</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><a href="#show-parameter-details">Show Parameter Details</a></td>
+<td><code>detailed</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td><a href="#hide-addresses">Hide Addresses</a></td>
+<td><code>no_addr</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><a href="#use-spaces">Use Spaces</a></td>
+<td><code>use_spaces</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#indent-size">Indent Size</a></td>
+<td><code>indent_size</code></td>
+<td><code>INT</code></td>
+<td><code>4</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><a href="#show-thread-and-frame">Show Thread and Frame</a></td>
+<td><code>show_thread_and_frame</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="layer-settings-details">Layer Settings Details</h2>
+<h3 id="output-range">Output Range</h3>
+<p>Comma separated list of frames to output or a range of frames with a start, count, and optional interval separated by a dash. A count of 0 will output every frame after the start of the range. Example: "5-8-2" will output frame 5, continue until frame 13, dumping every other frame. Example: "3,8-2" will output frames 3, 8, and 9.</p>
+<ul>
+<li>Key: <code>output_range</code></li>
+<li>Type: <code>STRING</code></li>
+<li>Default Value: <code>0-0</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "0-0" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_api_dump", "output_range", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_api_dump.output_range = 0-0</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_API_DUMP_OUTPUT_RANGE=0-0<br>export VK_API_DUMP_OUTPUT_RANGE=0-0<br>export VK_OUTPUT_RANGE=0-0<br>export VK_APIDUMP_OUTPUT_RANGE=0-0</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_api_dump.output_range 0-0<br>adb setprop debug.vulkan.api_dump.output_range 0-0<br>adb setprop debug.vulkan.output_range 0-0</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="output-format">Output Format</h3>
+<p>Specifies the format used for output; can be HTML, JSON, or Text (default -- outputs plain text).</p>
+<p>Sub-setting: <em><a href="#pre-dump-the-parameters.">Pre-dump the parameters.</a></em>,</p>
+<ul>
+<li>Key: <code>output_format</code></li>
+<li>Type: <code>ENUM</code></li>
+<li>Default Value: <code>text</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Enum Value</th>
+<th>Label</th>
+<th>Description</th>
+<th>Platforms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>text</code></td>
+<td>Text</td>
+<td>Plain text</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><code>html</code></td>
+<td>HTML</td>
+<td>HTML</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td><code>json</code></td>
+<td>JSON</td>
+<td>Json</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "text" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_api_dump", "output_format", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_api_dump.output_format = text</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_API_DUMP_OUTPUT_FORMAT=text<br>export VK_API_DUMP_OUTPUT_FORMAT=text<br>export VK_OUTPUT_FORMAT=text<br>export VK_APIDUMP_OUTPUT_FORMAT=text</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_api_dump.output_format text<br>adb setprop debug.vulkan.api_dump.output_format text<br>adb setprop debug.vulkan.output_format text</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="pre-dump-the-parameters">Pre-dump the parameters.</h3>
+<p>Setting this to true causes parameters to calls be logged before the function as well as after the function.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#output-format">Output Format</a></td>
+<td><code>output_format</code></td>
+<td>ENUM</td>
+<td>text</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>pre_dump</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_api_dump", "pre_dump", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_api_dump.pre_dump = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_API_DUMP_PRE_DUMP=false<br>export VK_API_DUMP_PRE_DUMP=false<br>export VK_PRE_DUMP=false<br>export VK_APIDUMP_PRE_DUMP=false</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_api_dump.pre_dump false<br>adb setprop debug.vulkan.api_dump.pre_dump false<br>adb setprop debug.vulkan.pre_dump false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="output-to-file">Output to File</h3>
+<p>Setting this to true indicates that output should be written to file instead of stdout.</p>
+<p>Sub-setting: <em><a href="#log-filename">Log Filename</a></em>,</p>
+<ul>
+<li>Key: <code>file</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_api_dump", "file", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_api_dump.file = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_API_DUMP_FILE=false<br>export VK_API_DUMP_FILE=false<br>export VK_FILE=false</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_api_dump.file false<br>adb setprop debug.vulkan.api_dump.file false<br>adb setprop debug.vulkan.file false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="log-filename">Log Filename</h3>
+<p>Specifies the file to dump to when output files are enabled.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#output-to-file">Output to File</a></td>
+<td><code>file</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>log_filename</code></li>
+<li>Type: <code>SAVE_FILE</code></li>
+<li>Default Value: <code>stdout</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "stdout" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_api_dump", "log_filename", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_api_dump.log_filename = stdout</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_API_DUMP_LOG_FILENAME=stdout<br>export VK_API_DUMP_LOG_FILENAME=stdout<br>export VK_LOG_FILENAME=stdout<br>export VK_APIDUMP_LOG_FILENAME=stdout</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_api_dump.log_filename stdout<br>adb setprop debug.vulkan.api_dump.log_filename stdout<br>adb setprop debug.vulkan.log_filename stdout</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="log-flush-after-write">Log Flush After Write</h3>
+<p>Setting this to true causes IO to be flushed after each API call that is written.</p>
+<ul>
+<li>Key: <code>flush</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_api_dump", "flush", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_api_dump.flush = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_API_DUMP_FLUSH=true<br>export VK_API_DUMP_FLUSH=true<br>export VK_FLUSH=true<br>export VK_APIDUMP_FLUSH=true</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_api_dump.flush true<br>adb setprop debug.vulkan.api_dump.flush true<br>adb setprop debug.vulkan.flush true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="name-size">Name Size</h3>
+<p>The number of characters the name of a variable should consume, assuming more are not required.</p>
+<ul>
+<li>Key: <code>name_size</code></li>
+<li>Type: <code>INT</code></li>
+<li>Default Value: <code>32</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>int32_t data[] = { 32 };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_api_dump", "name_size", VK_LAYER_SETTING_TYPE_INT32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_api_dump.name_size = 32</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_API_DUMP_NAME_SIZE=32<br>export VK_API_DUMP_NAME_SIZE=32<br>export VK_NAME_SIZE=32</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_api_dump.name_size 32<br>adb setprop debug.vulkan.api_dump.name_size 32<br>adb setprop debug.vulkan.name_size 32</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="show-types">Show Types</h3>
+<p>Dump types in addition to values.</p>
+<p>Sub-setting: <em><a href="#type-size">Type Size</a></em>,</p>
+<ul>
+<li>Key: <code>show_types</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_api_dump", "show_types", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_api_dump.show_types = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_API_DUMP_SHOW_TYPES=true<br>export VK_API_DUMP_SHOW_TYPES=true<br>export VK_SHOW_TYPES=true</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_api_dump.show_types true<br>adb setprop debug.vulkan.api_dump.show_types true<br>adb setprop debug.vulkan.show_types true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="type-size">Type Size</h3>
+<p>The number of characters the name of a type should consume, assuming more are not required.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#show-types">Show Types</a></td>
+<td><code>show_types</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>type_size</code></li>
+<li>Type: <code>INT</code></li>
+<li>Default Value: <code>0</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>int32_t data[] = { 0 };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_api_dump", "type_size", VK_LAYER_SETTING_TYPE_INT32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_api_dump.type_size = 0</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_API_DUMP_TYPE_SIZE=0<br>export VK_API_DUMP_TYPE_SIZE=0<br>export VK_TYPE_SIZE=0</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_api_dump.type_size 0<br>adb setprop debug.vulkan.api_dump.type_size 0<br>adb setprop debug.vulkan.type_size 0</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="show-timestamp">Show Timestamp</h3>
+<p>Show the timestamp of function calls since start in microseconds.</p>
+<ul>
+<li>Key: <code>timestamp</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_api_dump", "timestamp", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_api_dump.timestamp = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_API_DUMP_TIMESTAMP=false<br>export VK_API_DUMP_TIMESTAMP=false<br>export VK_TIMESTAMP=false<br>export VK_APIDUMP_TIMESTAMP=false</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_api_dump.timestamp false<br>adb setprop debug.vulkan.api_dump.timestamp false<br>adb setprop debug.vulkan.timestamp false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="show-shader">Show Shader</h3>
+<p>Dump the shader binary code in pCode.</p>
+<ul>
+<li>Key: <code>show_shader</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_api_dump", "show_shader", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_api_dump.show_shader = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_API_DUMP_SHOW_SHADER=false<br>export VK_API_DUMP_SHOW_SHADER=false<br>export VK_SHOW_SHADER=false</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_api_dump.show_shader false<br>adb setprop debug.vulkan.api_dump.show_shader false<br>adb setprop debug.vulkan.show_shader false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="show-parameter-details">Show Parameter Details</h3>
+<p>Dump parameter details in addition to API calls.</p>
+<ul>
+<li>Key: <code>detailed</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_api_dump", "detailed", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_api_dump.detailed = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_API_DUMP_DETAILED=true<br>export VK_API_DUMP_DETAILED=true<br>export VK_DETAILED=true<br>export VK_APIDUMP_DETAILED=true</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_api_dump.detailed true<br>adb setprop debug.vulkan.api_dump.detailed true<br>adb setprop debug.vulkan.detailed true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="hide-addresses">Hide Addresses</h3>
+<p>Dump "address" in place of hex addresses.</p>
+<ul>
+<li>Key: <code>no_addr</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_api_dump", "no_addr", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_api_dump.no_addr = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_API_DUMP_NO_ADDR=false<br>export VK_API_DUMP_NO_ADDR=false<br>export VK_NO_ADDR=false<br>export VK_APIDUMP_NO_ADDR=false</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_api_dump.no_addr false<br>adb setprop debug.vulkan.api_dump.no_addr false<br>adb setprop debug.vulkan.no_addr false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="use-spaces">Use Spaces</h3>
+<p>Setting this to true causes all tab characters to be replaced with spaces.</p>
+<p>Sub-setting: <em><a href="#indent-size">Indent Size</a></em>,</p>
+<ul>
+<li>Key: <code>use_spaces</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_api_dump", "use_spaces", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_api_dump.use_spaces = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_API_DUMP_USE_SPACES=true<br>export VK_API_DUMP_USE_SPACES=true<br>export VK_USE_SPACES=true</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_api_dump.use_spaces true<br>adb setprop debug.vulkan.api_dump.use_spaces true<br>adb setprop debug.vulkan.use_spaces true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="indent-size">Indent Size</h3>
+<p>Specifies the number of spaces that a tab is equal to.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#use-spaces">Use Spaces</a></td>
+<td><code>use_spaces</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>indent_size</code></li>
+<li>Type: <code>INT</code></li>
+<li>Default Value: <code>4</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>int32_t data[] = { 4 };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_api_dump", "indent_size", VK_LAYER_SETTING_TYPE_INT32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_api_dump.indent_size = 4</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_API_DUMP_INDENT_SIZE=4<br>export VK_API_DUMP_INDENT_SIZE=4<br>export VK_INDENT_SIZE=4</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_api_dump.indent_size 4<br>adb setprop debug.vulkan.api_dump.indent_size 4<br>adb setprop debug.vulkan.indent_size 4</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="show-thread-and-frame">Show Thread and Frame</h3>
+<p>Show the thread and frame of each function called.</p>
+<ul>
+<li>Key: <code>show_thread_and_frame</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_api_dump", "show_thread_and_frame", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_api_dump.show_thread_and_frame = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_API_DUMP_SHOW_THREAD_AND_FRAME=true<br>export VK_API_DUMP_SHOW_THREAD_AND_FRAME=true<br>export VK_SHOW_THREAD_AND_FRAME=true</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_api_dump.show_thread_and_frame true<br>adb setprop debug.vulkan.api_dump.show_thread_and_frame true<br>adb setprop debug.vulkan.show_thread_and_frame true</pre></td>
+</tr>
+</tbody>
+</table>
+<h2 id="layer-presets">Layer Presets</h2>
+<h3 id="default">Default</h3>
+<h4 id="preset-setting-values">Preset Setting Values:</h4>
+<ul>
+<li>Output Range: 0-0</li>
+<li>Output Format: text</li>
+<li>Pre-dump the parameters.: false</li>
+<li>Output to File: false</li>
+<li>Log Filename: stdout</li>
+<li>Log Flush After Write: true</li>
+<li>Name Size: 32</li>
+<li>Show Types: true</li>
+<li>Type Size: 0</li>
+<li>Show Timestamp: false</li>
+<li>Show Shader: false</li>
+<li>Show Parameter Details: true</li>
+<li>Hide Addresses: false</li>
+<li>Use Spaces: true</li>
+<li>Indent Size: 4</li>
+<li>Show Thread and Frame: true</li>
+</ul>
+<h3 id="console-output">Console Output</h3>
+<p>Output API dump to stdout</p>
+<h4 id="preset-setting-values-1">Preset Setting Values:</h4>
+<ul>
+<li>Output Format: text</li>
+<li>Log Filename: stdout</li>
+<li>Output to File: false</li>
+</ul>
+<h3 id="text-output">Text Output</h3>
+<p>Output API dump to a text file</p>
+<h4 id="preset-setting-values-2">Preset Setting Values:</h4>
+<ul>
+<li>Output Format: text</li>
+<li>Log Filename: ${VK_LOCAL}/vk_apidump.txt</li>
+<li>Output to File: true</li>
+</ul>
+<h3 id="html-output">HTML Output</h3>
+<p>Output API dump to a HTML file</p>
+<h4 id="preset-setting-values-3">Preset Setting Values:</h4>
+<ul>
+<li>Output Format: html</li>
+<li>Log Filename: ${VK_LOCAL}/vk_apidump.html</li>
+<li>Output to File: true</li>
+</ul>
+<h3 id="json-output">JSON Output</h3>
+<p>Output API dump to a JSON file</p>
+<h4 id="preset-setting-values-4">Preset Setting Values:</h4>
+<ul>
+<li>Output Format: json</li>
+<li>Log Filename: ${VK_LOCAL}/vk_apidump.json</li>
+<li>Output to File: true</li>
+</ul>
+</article>
+</body>
+</html>

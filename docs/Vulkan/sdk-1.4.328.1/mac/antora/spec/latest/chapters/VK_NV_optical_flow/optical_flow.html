@@ -1,0 +1,1886 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Optical Flow :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:spec" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="spec" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../index.html">Vulkan Specification</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../fundamentals.html">Fundamentals</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../initialization.html">Initialization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../devsandqueues.html">Devices and Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../cmdbuffers.html">Command Buffers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../synchronization.html">Synchronization and Cache Control</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../renderpass.html">Render Pass</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../shaders.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../pipelines.html">Pipelines</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../memory.html">Memory Allocation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../resources.html">Resource Creation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../samplers.html">Samplers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../descriptorsets.html">Resource Descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../interfaces.html">Shader Interfaces</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../textures.html">Image Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../fragmentdensitymapops.html">Fragment Density Map Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_ARM_tensors/tensorops.html">Tensor Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../queries.html">Queries</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../clears.html">Clear Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../copies.html">Copy Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../drawing.html">Drawing Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../fxvertex.html">Fixed-Function Vertex Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../tessellation.html">Tessellation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../geometry.html">Geometry Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_NV_mesh_shader/mesh.html">Mesh Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_HUAWEI_cluster_culling_shader/clusterculling.html">Cluster Culling Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../vertexpostproc.html">Fixed-Function Vertex Post-Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../primsrast.html">Rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../fragops.html">Fragment Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../framebuffer.html">The Framebuffer</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../dispatch.html">Dispatching Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../device_generated_commands/generatedcommands.html">Device-Generated Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../sparsemem.html">Sparse Resources</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_KHR_surface/wsi.html">Window System Integration (WSI)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_KHR_deferred_host_operations/deferred_host_operations.html">Deferred Host Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_EXT_private_data.html">Private Data</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../accelstructures.html">Acceleration Structures</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_EXT_opacity_micromap/micromaps.html">Micromap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../raytraversal.html">Ray Traversal</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../raytracing.html">Ray Tracing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_NV_memory_decompression.html">Memory Decompression</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../videocoding.html">Video Coding</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="optical_flow.html">Optical Flow</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../executiongraphs.html">Execution Graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_NV_external_compute_queue/VK_NV_external_compute_queue.html">External Compute Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_ARM_data_graph/graphs.html">Data graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../extensions.html">Extending Vulkan</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../features.html">Features</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../limits.html">Limits</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../formats.html">Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../capabilities.html">Additional Capabilities</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../debugging.html">Debugging</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/spirvenv.html">Vulkan Environment for SPIR-V</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/memorymodel.html">Memory Model</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/compressedtex.html">Compressed Image Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/versions.html">Core Revisions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/extensions.html">Layers &amp; Extensions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/roadmap.html">Vulkan Roadmap Milestones</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/deprecation.html">Deprecation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/boilerplate.html">API Boilerplate</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/invariance.html">Invariance</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/glossary.html">Lexicon</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/credits.html">Credits (Informative)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Specification</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../../index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../index.html">Vulkan Specification</a></li>
+    <li><a href="optical_flow.html">Optical Flow</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/spec/modules/ROOT/pages/chapters/VK_NV_optical_flow/optical_flow.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Optical Flow</h1>
+<div class="sect1">
+<h2 id="_optical_flow_queues"><a class="anchor" href="#_optical_flow_queues"></a>Optical Flow Queues</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><code><a href="../../appendices/extensions.html#VK_NV_optical_flow" class="xref page">VK_NV_optical_flow</a></code> adds an optical flow queue type bit
+<code>VK_QUEUE_OPTICAL_FLOW_BIT_NV</code> to <a href="../devsandqueues.html#VkQueueFlagBits" class="xref page">VkQueueFlagBits</a>.
+Optical flow operations are supported by queues with an advertised queue
+capability of <code>VK_QUEUE_OPTICAL_FLOW_BIT_NV</code>.
+As in the case of other queue types, an application <strong>must</strong> use
+<a href="../devsandqueues.html#vkGetPhysicalDeviceQueueFamilyProperties" class="xref page">vkGetPhysicalDeviceQueueFamilyProperties</a> to query whether the physical
+device has support for the Optical Flow Queue.
+When the implementation reports the <code>VK_QUEUE_OPTICAL_FLOW_BIT_NV</code> bit
+for a queue family, it advertises general support for Vulkan queue
+operations described in <a href="../devsandqueues.html#devsandqueues" class="xref page">Devices and Queues</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="opticalflow-formats"><a class="anchor" href="#opticalflow-formats"></a>Optical Flow Image Formats</h2>
+<div class="sectionbody">
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To enumerate the supported image formats for a specific optical flow usage,
+call:</p>
+</div>
+<div id="vkGetPhysicalDeviceOpticalFlowImageFormatsNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_optical_flow
+VkResult vkGetPhysicalDeviceOpticalFlowImageFormatsNV(
+    VkPhysicalDevice                            physicalDevice,
+    const VkOpticalFlowImageFormatInfoNV*       pOpticalFlowImageFormatInfo,
+    uint32_t*                                   pFormatCount,
+    VkOpticalFlowImageFormatPropertiesNV*       pImageFormatProperties);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>physicalDevice</code> is the physical device being queried.</p>
+</li>
+<li>
+<p><a id="opticalflow-getimageformat-pOpticalFlowImageFormatInfo"></a>
+<code>pOpticalFlowImageFormatInfo</code> is a pointer to a
+<a href="#VkOpticalFlowImageFormatInfoNV">VkOpticalFlowImageFormatInfoNV</a> structure specifying the optical
+flow usage for which information is returned.</p>
+</li>
+<li>
+<p><a id="opticalflow-getimageformat-pFormatCount"></a> <code>pFormatCount</code> is a
+pointer to an integer related to the number of optical flow properties
+available or queried, as described below.</p>
+</li>
+<li>
+<p><a id="opticalflow-getimageformat-pImageFormatProperties"></a>
+<code>pImageFormatProperties</code> is a pointer to an array of
+<a href="#VkOpticalFlowImageFormatPropertiesNV">VkOpticalFlowImageFormatPropertiesNV</a> structures in which supported
+formats and image parameters are returned.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If <code>pImageFormatProperties</code> is <code>NULL</code>, then the number of optical flow
+properties supported for the given <code>physicalDevice</code> is returned in
+<code>pFormatCount</code>.
+Otherwise, <code>pFormatCount</code> <strong>must</strong> point to a variable set by the
+application to the number of elements in the <code>pImageFormatProperties</code>
+array, and on return the variable is overwritten with the number of values
+actually written to <code>pImageFormatProperties</code>.
+If the value of <code>pFormatCount</code> is less than the number of optical flow
+properties supported, at most <code>pFormatCount</code> values will be written to
+<code>pImageFormatProperties</code>, and <code>VK_INCOMPLETE</code> will be returned
+instead of <code>VK_SUCCESS</code>, to indicate that not all the available values
+were returned.</p>
+</div>
+<div class="paragraph">
+<p>Before creating an image to be used as an optical flow frame, obtain the
+supported image creation parameters by querying with
+<a href="../formats.html#vkGetPhysicalDeviceFormatProperties2" class="xref page">vkGetPhysicalDeviceFormatProperties2</a> and
+<a href="../capabilities.html#vkGetPhysicalDeviceImageFormatProperties2" class="xref page">vkGetPhysicalDeviceImageFormatProperties2</a> using one of the reported
+formats and adding <a href="#VkOpticalFlowImageFormatInfoNV">VkOpticalFlowImageFormatInfoNV</a> to the <code>pNext</code>
+chain of <a href="../capabilities.html#VkPhysicalDeviceImageFormatInfo2" class="xref page">VkPhysicalDeviceImageFormatInfo2</a>.</p>
+</div>
+<div class="paragraph">
+<p>When querying the parameters with
+<a href="../capabilities.html#vkGetPhysicalDeviceImageFormatProperties2" class="xref page">vkGetPhysicalDeviceImageFormatProperties2</a> for images used for optical
+flow operations, the <a href="#VkOpticalFlowImageFormatInfoNV">VkOpticalFlowImageFormatInfoNV</a>::<code>usage</code> field
+<strong>must</strong> contain one or more of the bits defined in
+<a href="#VkOpticalFlowUsageFlagBitsNV">VkOpticalFlowUsageFlagBitsNV</a>.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkGetPhysicalDeviceOpticalFlowImageFormatsNV-physicalDevice-parameter" href="#VUID-vkGetPhysicalDeviceOpticalFlowImageFormatsNV-physicalDevice-parameter"></a> <span class="vuid">VUID-vkGetPhysicalDeviceOpticalFlowImageFormatsNV-physicalDevice-parameter</span><br>
+ <code>physicalDevice</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkPhysicalDevice" class="xref page">VkPhysicalDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkGetPhysicalDeviceOpticalFlowImageFormatsNV-pOpticalFlowImageFormatInfo-parameter" href="#VUID-vkGetPhysicalDeviceOpticalFlowImageFormatsNV-pOpticalFlowImageFormatInfo-parameter"></a> <span class="vuid">VUID-vkGetPhysicalDeviceOpticalFlowImageFormatsNV-pOpticalFlowImageFormatInfo-parameter</span><br>
+ <code>pOpticalFlowImageFormatInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkOpticalFlowImageFormatInfoNV">VkOpticalFlowImageFormatInfoNV</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkGetPhysicalDeviceOpticalFlowImageFormatsNV-pFormatCount-parameter" href="#VUID-vkGetPhysicalDeviceOpticalFlowImageFormatsNV-pFormatCount-parameter"></a> <span class="vuid">VUID-vkGetPhysicalDeviceOpticalFlowImageFormatsNV-pFormatCount-parameter</span><br>
+ <code>pFormatCount</code> <strong>must</strong> be a valid pointer to a <code>uint32_t</code> value</p>
+</li>
+<li>
+<p><a id="VUID-vkGetPhysicalDeviceOpticalFlowImageFormatsNV-pImageFormatProperties-parameter" href="#VUID-vkGetPhysicalDeviceOpticalFlowImageFormatsNV-pImageFormatProperties-parameter"></a> <span class="vuid">VUID-vkGetPhysicalDeviceOpticalFlowImageFormatsNV-pImageFormatProperties-parameter</span><br>
+ If the value referenced by <code>pFormatCount</code> is not <code>0</code>, and <code>pImageFormatProperties</code> is not <code>NULL</code>, <code>pImageFormatProperties</code> <strong>must</strong> be a valid pointer to an array of <code>pFormatCount</code> <a href="#VkOpticalFlowImageFormatPropertiesNV">VkOpticalFlowImageFormatPropertiesNV</a> structures</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+<li>
+<p><code>VK_INCOMPLETE</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_EXTENSION_NOT_PRESENT</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_INITIALIZATION_FAILED</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_FORMAT_NOT_SUPPORTED</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p><code>VK_FORMAT_B8G8R8A8_UNORM</code>, <code>VK_FORMAT_R8_UNORM</code> and
+<code>VK_FORMAT_G8_B8R8_2PLANE_420_UNORM</code> are initially supported for images
+with <a href="#opticalflow-usage">optical usage</a>
+<code>VK_OPTICAL_FLOW_USAGE_INPUT_BIT_NV</code>.</p>
+</div>
+<div class="paragraph">
+<p><code>VK_FORMAT_R16G16_SFIXED5_NV</code> is initially supported for images with
+<a href="#opticalflow-usage">optical flow usage</a>
+<code>VK_OPTICAL_FLOW_USAGE_OUTPUT_BIT_NV</code>,
+<code>VK_OPTICAL_FLOW_USAGE_HINT_BIT_NV</code> and
+<code>VK_OPTICAL_FLOW_USAGE_GLOBAL_FLOW_BIT_NV</code>.</p>
+</div>
+<div class="paragraph">
+<p><code>VK_FORMAT_R8_UINT</code> and <code>VK_FORMAT_R32_UINT</code> are initially supported
+for images with <a href="#opticalflow-usage">optical flow usage</a>
+<code>VK_OPTICAL_FLOW_USAGE_COST_BIT_NV</code>.
+It is recommended to use <code>VK_FORMAT_R8_UINT</code> because of the lower
+bandwidth.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#VkOpticalFlowImageFormatInfoNV">VkOpticalFlowImageFormatInfoNV</a> structure is defined as:</p>
+</div>
+<div id="VkOpticalFlowImageFormatInfoNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_optical_flow
+typedef struct VkOpticalFlowImageFormatInfoNV {
+    VkStructureType              sType;
+    const void*                  pNext;
+    VkOpticalFlowUsageFlagsNV    usage;
+} VkOpticalFlowImageFormatInfoNV;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><a id="opticalflow-usage"></a> <code>usage</code> is a bitmask of
+<a href="#VkOpticalFlowUsageFlagBitsNV">VkOpticalFlowUsageFlagBitsNV</a> describing the intended optical flow
+usage of the image.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkOpticalFlowImageFormatInfoNV-sType-sType" href="#VUID-VkOpticalFlowImageFormatInfoNV-sType-sType"></a> <span class="vuid">VUID-VkOpticalFlowImageFormatInfoNV-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_OPTICAL_FLOW_IMAGE_FORMAT_INFO_NV</code></p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowImageFormatInfoNV-usage-parameter" href="#VUID-VkOpticalFlowImageFormatInfoNV-usage-parameter"></a> <span class="vuid">VUID-VkOpticalFlowImageFormatInfoNV-usage-parameter</span><br>
+ <code>usage</code> <strong>must</strong> be a valid combination of <a href="#VkOpticalFlowUsageFlagBitsNV">VkOpticalFlowUsageFlagBitsNV</a> values</p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowImageFormatInfoNV-usage-requiredbitmask" href="#VUID-VkOpticalFlowImageFormatInfoNV-usage-requiredbitmask"></a> <span class="vuid">VUID-VkOpticalFlowImageFormatInfoNV-usage-requiredbitmask</span><br>
+ <code>usage</code> <strong>must</strong> not be <code>0</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Bits which <strong>can</strong> be set in <a href="#VkOpticalFlowImageFormatInfoNV">VkOpticalFlowImageFormatInfoNV</a>::<code>usage</code>,
+controlling optical flow usage, are:</p>
+</div>
+<div id="VkOpticalFlowUsageFlagBitsNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_optical_flow
+typedef enum VkOpticalFlowUsageFlagBitsNV {
+    VK_OPTICAL_FLOW_USAGE_UNKNOWN_NV = 0,
+    VK_OPTICAL_FLOW_USAGE_INPUT_BIT_NV = 0x00000001,
+    VK_OPTICAL_FLOW_USAGE_OUTPUT_BIT_NV = 0x00000002,
+    VK_OPTICAL_FLOW_USAGE_HINT_BIT_NV = 0x00000004,
+    VK_OPTICAL_FLOW_USAGE_COST_BIT_NV = 0x00000008,
+    VK_OPTICAL_FLOW_USAGE_GLOBAL_FLOW_BIT_NV = 0x00000010,
+} VkOpticalFlowUsageFlagBitsNV;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_OPTICAL_FLOW_USAGE_INPUT_BIT_NV</code> specifies that the image <strong>can</strong>
+be used as input or reference frame for an optical flow operation.</p>
+</li>
+<li>
+<p><code>VK_OPTICAL_FLOW_USAGE_OUTPUT_BIT_NV</code> specifies that the image <strong>can</strong>
+be used as output flow vector map for an optical flow operation.</p>
+</li>
+<li>
+<p><code>VK_OPTICAL_FLOW_USAGE_HINT_BIT_NV</code> specifies that the image <strong>can</strong> be
+used as hint flow vector map for an optical flow operation.</p>
+</li>
+<li>
+<p><code>VK_OPTICAL_FLOW_USAGE_COST_BIT_NV</code> specifies that the image <strong>can</strong> be
+used as output cost map for an optical flow operation.</p>
+</li>
+<li>
+<p><code>VK_OPTICAL_FLOW_USAGE_GLOBAL_FLOW_BIT_NV</code> specifies that the image
+<strong>can</strong> be used as global flow vector for an optical flow operation.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div id="VkOpticalFlowUsageFlagsNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_optical_flow
+typedef VkFlags   VkOpticalFlowUsageFlagsNV;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>VkOpticalFlowUsageFlagsNV</code> is a bitmask type for setting a mask of zero
+or more <a href="#VkOpticalFlowUsageFlagBitsNV">VkOpticalFlowUsageFlagBitsNV</a>.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#VkOpticalFlowImageFormatPropertiesNV">VkOpticalFlowImageFormatPropertiesNV</a> structure is defined as:</p>
+</div>
+<div id="VkOpticalFlowImageFormatPropertiesNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_optical_flow
+typedef struct VkOpticalFlowImageFormatPropertiesNV {
+    VkStructureType    sType;
+    const void*        pNext;
+    VkFormat           format;
+} VkOpticalFlowImageFormatPropertiesNV;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><a id="opticalflow-format"></a> <code>format</code> is a <a href="../formats.html#VkFormat" class="xref page">VkFormat</a> that specifies
+the format that can be used with the specified optical flow image
+usages.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkOpticalFlowImageFormatPropertiesNV-sType-sType" href="#VUID-VkOpticalFlowImageFormatPropertiesNV-sType-sType"></a> <span class="vuid">VUID-VkOpticalFlowImageFormatPropertiesNV-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_OPTICAL_FLOW_IMAGE_FORMAT_PROPERTIES_NV</code></p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowImageFormatPropertiesNV-pNext-pNext" href="#VUID-VkOpticalFlowImageFormatPropertiesNV-pNext-pNext"></a> <span class="vuid">VUID-VkOpticalFlowImageFormatPropertiesNV-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="opticalflow-session"><a class="anchor" href="#opticalflow-session"></a>Optical Flow Session</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="opticalflow-session-object"><a class="anchor" href="#opticalflow-session-object"></a>Optical Flow Session Object</h3>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Optical flow session objects are abstracted and represented by
+<a href="#VkOpticalFlowSessionNV">VkOpticalFlowSessionNV</a> handles:</p>
+</div>
+<div id="VkOpticalFlowSessionNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_optical_flow
+VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkOpticalFlowSessionNV)</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="opticalflow-session-creation"><a class="anchor" href="#opticalflow-session-creation"></a>Creating an Optical Flow Session</h4>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To create an optical flow session object, call:</p>
+</div>
+<div id="vkCreateOpticalFlowSessionNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_optical_flow
+VkResult vkCreateOpticalFlowSessionNV(
+    VkDevice                                    device,
+    const VkOpticalFlowSessionCreateInfoNV*     pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkOpticalFlowSessionNV*                     pSession);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the logical device that creates the optical flow session
+object.</p>
+</li>
+<li>
+<p><code>pCreateInfo</code> is a pointer to a
+<a href="#VkOpticalFlowSessionCreateInfoNV">VkOpticalFlowSessionCreateInfoNV</a> structure containing parameters
+specifying the creation of the optical flow session.</p>
+</li>
+<li>
+<p><code>pAllocator</code> controls host memory allocation as described in the
+<a href="../memory.html#memory-allocation" class="xref page">Memory Allocation</a> chapter.</p>
+</li>
+<li>
+<p><code>pSession</code> is a pointer to a <a href="#VkOpticalFlowSessionNV">VkOpticalFlowSessionNV</a> handle
+specifying the optical flow session object which will be created by this
+function when it returns <code>VK_SUCCESS</code></p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCreateOpticalFlowSessionNV-device-parameter" href="#VUID-vkCreateOpticalFlowSessionNV-device-parameter"></a> <span class="vuid">VUID-vkCreateOpticalFlowSessionNV-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateOpticalFlowSessionNV-pCreateInfo-parameter" href="#VUID-vkCreateOpticalFlowSessionNV-pCreateInfo-parameter"></a> <span class="vuid">VUID-vkCreateOpticalFlowSessionNV-pCreateInfo-parameter</span><br>
+ <code>pCreateInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkOpticalFlowSessionCreateInfoNV">VkOpticalFlowSessionCreateInfoNV</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateOpticalFlowSessionNV-pAllocator-parameter" href="#VUID-vkCreateOpticalFlowSessionNV-pAllocator-parameter"></a> <span class="vuid">VUID-vkCreateOpticalFlowSessionNV-pAllocator-parameter</span><br>
+ If <code>pAllocator</code> is not <code>NULL</code>, <code>pAllocator</code> <strong>must</strong> be a valid pointer to a valid <a href="../memory.html#VkAllocationCallbacks" class="xref page">VkAllocationCallbacks</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateOpticalFlowSessionNV-pSession-parameter" href="#VUID-vkCreateOpticalFlowSessionNV-pSession-parameter"></a> <span class="vuid">VUID-vkCreateOpticalFlowSessionNV-pSession-parameter</span><br>
+ <code>pSession</code> <strong>must</strong> be a valid pointer to a <a href="#VkOpticalFlowSessionNV">VkOpticalFlowSessionNV</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateOpticalFlowSessionNV-device-queuecount" href="#VUID-vkCreateOpticalFlowSessionNV-device-queuecount"></a> <span class="vuid">VUID-vkCreateOpticalFlowSessionNV-device-queuecount</span><br>
+ The device <strong>must</strong> have been created with at least <code>1</code> queue</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_INITIALIZATION_FAILED</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#VkOpticalFlowSessionCreateInfoNV">VkOpticalFlowSessionCreateInfoNV</a> structure is defined as:</p>
+</div>
+<div id="VkOpticalFlowSessionCreateInfoNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_optical_flow
+typedef struct VkOpticalFlowSessionCreateInfoNV {
+    VkStructureType                      sType;
+    void*                                pNext;
+    uint32_t                             width;
+    uint32_t                             height;
+    VkFormat                             imageFormat;
+    VkFormat                             flowVectorFormat;
+    VkFormat                             costFormat;
+    VkOpticalFlowGridSizeFlagsNV         outputGridSize;
+    VkOpticalFlowGridSizeFlagsNV         hintGridSize;
+    VkOpticalFlowPerformanceLevelNV      performanceLevel;
+    VkOpticalFlowSessionCreateFlagsNV    flags;
+} VkOpticalFlowSessionCreateInfoNV;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>width</code> is the width in pixels of the input or reference frame to be
+bound to this optical flow session.</p>
+</li>
+<li>
+<p><code>height</code> is the height in pixels of the input or reference frame to
+be bound to this optical flow session.</p>
+</li>
+<li>
+<p><code>imageFormat</code> is the <a href="../formats.html#VkFormat" class="xref page">VkFormat</a> of the input and reference frame
+to be bound to this optical flow session.</p>
+</li>
+<li>
+<p><code>flowVectorFormat</code> is the <a href="../formats.html#VkFormat" class="xref page">VkFormat</a> of the flow vector maps
+(output or hint) to be bound to this optical flow session.</p>
+</li>
+<li>
+<p><code>costFormat</code> is the <a href="../formats.html#VkFormat" class="xref page">VkFormat</a> of the cost maps to be bound to
+this optical flow session.</p>
+</li>
+<li>
+<p><code>outputGridSize</code> is exactly one bit of
+<a href="#VkOpticalFlowGridSizeFlagsNV">VkOpticalFlowGridSizeFlagsNV</a> specifying the grid size of the
+output flow and cost maps to be bound to this optical flow session.
+The size of the output flow and cost maps is determined by
+<code>VkOpticalFlowSessionCreateInfoNV</code>::<code>width</code> and
+<code>VkOpticalFlowSessionCreateInfoNV</code>::<code>height</code> divided by
+<code>VkOpticalFlowSessionCreateInfoNV</code>::<code>outputGridSize</code>.</p>
+</li>
+<li>
+<p><code>hintGridSize</code> is one exactly bit of
+<a href="#VkOpticalFlowGridSizeFlagsNV">VkOpticalFlowGridSizeFlagsNV</a> specifying the grid size of the hint
+flow vector maps to be bound to this optical flow session.
+The size of the hint maps is determined by
+<code>VkOpticalFlowSessionCreateInfoNV</code>::<code>width</code> and
+<code>VkOpticalFlowSessionCreateInfoNV</code>::<code>height</code> divided by
+<code>VkOpticalFlowSessionCreateInfoNV</code>::<code>hintGridSize</code>.</p>
+</li>
+<li>
+<p><code>performanceLevel</code> is the <a href="#VkOpticalFlowPerformanceLevelNV">VkOpticalFlowPerformanceLevelNV</a> used
+for this optical flow session.</p>
+</li>
+<li>
+<p><code>flags</code> are the <a href="#VkOpticalFlowSessionCreateFlagsNV">VkOpticalFlowSessionCreateFlagsNV</a> used for
+this optical flow session.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-width-07581" href="#VUID-VkOpticalFlowSessionCreateInfoNV-width-07581"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-width-07581</span><br>
+
+<code>width</code> <strong>must</strong> be greater than or equal to
+<code>VkPhysicalDeviceOpticalFlowPropertiesNV</code>::<code>minWidth</code> and less
+than or equal to
+<code>VkPhysicalDeviceOpticalFlowPropertiesNV</code>::<code>maxWidth</code></p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-height-07582" href="#VUID-VkOpticalFlowSessionCreateInfoNV-height-07582"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-height-07582</span><br>
+
+<code>height</code> <strong>must</strong> be greater than or equal to
+<code>VkPhysicalDeviceOpticalFlowPropertiesNV</code>::<code>minHeight</code> and less
+than or equal to
+<code>VkPhysicalDeviceOpticalFlowPropertiesNV</code>::<code>maxHeight</code></p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-imageFormat-07583" href="#VUID-VkOpticalFlowSessionCreateInfoNV-imageFormat-07583"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-imageFormat-07583</span><br>
+
+<code>imageFormat</code> <strong>must</strong> be one of the formats returned by
+<a href="#vkGetPhysicalDeviceOpticalFlowImageFormatsNV">vkGetPhysicalDeviceOpticalFlowImageFormatsNV</a> for
+<code>VK_OPTICAL_FLOW_USAGE_INPUT_BIT_NV</code></p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-flowVectorFormat-07584" href="#VUID-VkOpticalFlowSessionCreateInfoNV-flowVectorFormat-07584"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-flowVectorFormat-07584</span><br>
+
+<code>flowVectorFormat</code> <strong>must</strong> be one of the formats returned by
+<a href="#vkGetPhysicalDeviceOpticalFlowImageFormatsNV">vkGetPhysicalDeviceOpticalFlowImageFormatsNV</a> for
+<code>VK_OPTICAL_FLOW_USAGE_OUTPUT_BIT_NV</code></p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-costFormat-07585" href="#VUID-VkOpticalFlowSessionCreateInfoNV-costFormat-07585"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-costFormat-07585</span><br>
+
+<code>costFormat</code> <strong>must</strong> be one of the formats returned by
+<a href="#vkGetPhysicalDeviceOpticalFlowImageFormatsNV">vkGetPhysicalDeviceOpticalFlowImageFormatsNV</a> for
+<code>VK_OPTICAL_FLOW_USAGE_COST_BIT_NV</code> if
+<code>VK_OPTICAL_FLOW_SESSION_CREATE_ENABLE_COST_BIT_NV</code> is set in
+<code>flags</code></p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-outputGridSize-07586" href="#VUID-VkOpticalFlowSessionCreateInfoNV-outputGridSize-07586"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-outputGridSize-07586</span><br>
+
+<code>outputGridSize</code> <strong>must</strong> be exactly one of the bits reported in
+<code>VkPhysicalDeviceOpticalFlowPropertiesNV</code>::<code>supportedOutputGridSizes</code></p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-hintGridSize-07587" href="#VUID-VkOpticalFlowSessionCreateInfoNV-hintGridSize-07587"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-hintGridSize-07587</span><br>
+
+<code>hintGridSize</code> <strong>must</strong> be exactly one of the bits reported in
+<code>VkPhysicalDeviceOpticalFlowPropertiesNV</code>::<code>supportedHintGridSizes</code>
+if <code>VK_OPTICAL_FLOW_SESSION_CREATE_ENABLE_HINT_BIT_NV</code> is set in
+<code>flags</code></p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-flags-07588" href="#VUID-VkOpticalFlowSessionCreateInfoNV-flags-07588"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-flags-07588</span><br>
+
+<code>VK_OPTICAL_FLOW_SESSION_CREATE_ENABLE_HINT_BIT_NV</code> <strong>must</strong> not be set
+in <code>flags</code> if
+<code>VkPhysicalDeviceOpticalFlowPropertiesNV</code>::<code>hintSupported</code> is
+<code>VK_FALSE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-flags-07589" href="#VUID-VkOpticalFlowSessionCreateInfoNV-flags-07589"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-flags-07589</span><br>
+
+<code>VK_OPTICAL_FLOW_SESSION_CREATE_ENABLE_COST_BIT_NV</code> <strong>must</strong> not be set
+in <code>flags</code> if
+<code>VkPhysicalDeviceOpticalFlowPropertiesNV</code>::<code>costSupported</code> is
+<code>VK_FALSE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-flags-07590" href="#VUID-VkOpticalFlowSessionCreateInfoNV-flags-07590"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-flags-07590</span><br>
+
+<code>VK_OPTICAL_FLOW_SESSION_CREATE_ENABLE_GLOBAL_FLOW_BIT_NV</code> <strong>must</strong> not
+be set in <code>flags</code> if
+<code>VkPhysicalDeviceOpticalFlowPropertiesNV</code>::<code>globalFlowSupported</code>
+is <code>VK_FALSE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-flags-07591" href="#VUID-VkOpticalFlowSessionCreateInfoNV-flags-07591"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-flags-07591</span><br>
+
+<code>VK_OPTICAL_FLOW_SESSION_CREATE_ALLOW_REGIONS_BIT_NV</code> <strong>must</strong> not be
+set in <code>flags</code> if
+<code>VkPhysicalDeviceOpticalFlowPropertiesNV</code>::<code>maxNumRegionsOfInterest</code>
+is 0</p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-flags-07592" href="#VUID-VkOpticalFlowSessionCreateInfoNV-flags-07592"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-flags-07592</span><br>
+
+<code>VK_OPTICAL_FLOW_SESSION_CREATE_BOTH_DIRECTIONS_BIT_NV</code> <strong>must</strong> not be
+set in <code>flags</code> if
+<code>VkPhysicalDeviceOpticalFlowPropertiesNV</code>::<code>bidirectionalFlowSupported</code>
+is <code>VK_FALSE</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-sType-sType" href="#VUID-VkOpticalFlowSessionCreateInfoNV-sType-sType"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_OPTICAL_FLOW_SESSION_CREATE_INFO_NV</code></p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-pNext-pNext" href="#VUID-VkOpticalFlowSessionCreateInfoNV-pNext-pNext"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code> or a pointer to a valid instance of <a href="#VkOpticalFlowSessionCreatePrivateDataInfoNV">VkOpticalFlowSessionCreatePrivateDataInfoNV</a></p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-sType-unique" href="#VUID-VkOpticalFlowSessionCreateInfoNV-sType-unique"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-sType-unique</span><br>
+ The <code>sType</code> value of each structure in the <code>pNext</code> chain <strong>must</strong> be unique</p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-imageFormat-parameter" href="#VUID-VkOpticalFlowSessionCreateInfoNV-imageFormat-parameter"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-imageFormat-parameter</span><br>
+ <code>imageFormat</code> <strong>must</strong> be a valid <a href="../formats.html#VkFormat" class="xref page">VkFormat</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-flowVectorFormat-parameter" href="#VUID-VkOpticalFlowSessionCreateInfoNV-flowVectorFormat-parameter"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-flowVectorFormat-parameter</span><br>
+ <code>flowVectorFormat</code> <strong>must</strong> be a valid <a href="../formats.html#VkFormat" class="xref page">VkFormat</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-costFormat-parameter" href="#VUID-VkOpticalFlowSessionCreateInfoNV-costFormat-parameter"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-costFormat-parameter</span><br>
+ If <code>costFormat</code> is not <code>0</code>, <code>costFormat</code> <strong>must</strong> be a valid <a href="../formats.html#VkFormat" class="xref page">VkFormat</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-outputGridSize-parameter" href="#VUID-VkOpticalFlowSessionCreateInfoNV-outputGridSize-parameter"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-outputGridSize-parameter</span><br>
+ <code>outputGridSize</code> <strong>must</strong> be a valid combination of <a href="#VkOpticalFlowGridSizeFlagBitsNV">VkOpticalFlowGridSizeFlagBitsNV</a> values</p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-outputGridSize-requiredbitmask" href="#VUID-VkOpticalFlowSessionCreateInfoNV-outputGridSize-requiredbitmask"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-outputGridSize-requiredbitmask</span><br>
+ <code>outputGridSize</code> <strong>must</strong> not be <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-hintGridSize-parameter" href="#VUID-VkOpticalFlowSessionCreateInfoNV-hintGridSize-parameter"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-hintGridSize-parameter</span><br>
+ <code>hintGridSize</code> <strong>must</strong> be a valid combination of <a href="#VkOpticalFlowGridSizeFlagBitsNV">VkOpticalFlowGridSizeFlagBitsNV</a> values</p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-performanceLevel-parameter" href="#VUID-VkOpticalFlowSessionCreateInfoNV-performanceLevel-parameter"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-performanceLevel-parameter</span><br>
+ If <code>performanceLevel</code> is not <code>0</code>, <code>performanceLevel</code> <strong>must</strong> be a valid <a href="#VkOpticalFlowPerformanceLevelNV">VkOpticalFlowPerformanceLevelNV</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreateInfoNV-flags-parameter" href="#VUID-VkOpticalFlowSessionCreateInfoNV-flags-parameter"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreateInfoNV-flags-parameter</span><br>
+ <code>flags</code> <strong>must</strong> be a valid combination of <a href="#VkOpticalFlowSessionCreateFlagBitsNV">VkOpticalFlowSessionCreateFlagBitsNV</a> values</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#VkOpticalFlowSessionCreatePrivateDataInfoNV">VkOpticalFlowSessionCreatePrivateDataInfoNV</a> structure is for NV
+internal use only and is defined as:</p>
+</div>
+<div id="VkOpticalFlowSessionCreatePrivateDataInfoNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_optical_flow
+typedef struct VkOpticalFlowSessionCreatePrivateDataInfoNV {
+    VkStructureType    sType;
+    void*              pNext;
+    uint32_t           id;
+    uint32_t           size;
+    const void*        pPrivateData;
+} VkOpticalFlowSessionCreatePrivateDataInfoNV;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>id</code> is an identifier for data which is passed at a memory location
+specified in
+<code>VkOpticalFlowSessionCreatePrivateDataInfoNV</code>::<code>pPrivateData</code>.</p>
+</li>
+<li>
+<p><code>size</code> is the size of data in bytes which is passed at a memory
+location specified in
+<code>VkOpticalFlowSessionCreatePrivateDataInfoNV</code>::<code>pPrivateData</code>.</p>
+</li>
+<li>
+<p><code>pPrivateData</code> is a pointer to NV internal data.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreatePrivateDataInfoNV-sType-sType" href="#VUID-VkOpticalFlowSessionCreatePrivateDataInfoNV-sType-sType"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreatePrivateDataInfoNV-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_OPTICAL_FLOW_SESSION_CREATE_PRIVATE_DATA_INFO_NV</code></p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowSessionCreatePrivateDataInfoNV-pPrivateData-parameter" href="#VUID-VkOpticalFlowSessionCreatePrivateDataInfoNV-pPrivateData-parameter"></a> <span class="vuid">VUID-VkOpticalFlowSessionCreatePrivateDataInfoNV-pPrivateData-parameter</span><br>
+ <code>pPrivateData</code> <strong>must</strong> be a pointer value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Optical flow vectors are generated block-wise, one vector for each block of
+NxN pixels (referred to as grid).</p>
+</div>
+<div class="paragraph">
+<p>Bits which <strong>can</strong> be set in
+<a href="#VkOpticalFlowSessionCreateInfoNV">VkOpticalFlowSessionCreateInfoNV</a>::<code>outputGridSize</code> and
+<a href="#VkOpticalFlowSessionCreateInfoNV">VkOpticalFlowSessionCreateInfoNV</a>::<code>hintGridSize</code>, or which are
+returned in
+<a href="../limits.html#VkPhysicalDeviceOpticalFlowPropertiesNV" class="xref page">VkPhysicalDeviceOpticalFlowPropertiesNV</a>::<code>supportedOutputGridSizes</code>
+and
+<a href="../limits.html#VkPhysicalDeviceOpticalFlowPropertiesNV" class="xref page">VkPhysicalDeviceOpticalFlowPropertiesNV</a>::<code>supportedHintGridSizes</code>
+controlling optical flow grid sizes, are:</p>
+</div>
+<div id="VkOpticalFlowGridSizeFlagBitsNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_optical_flow
+typedef enum VkOpticalFlowGridSizeFlagBitsNV {
+    VK_OPTICAL_FLOW_GRID_SIZE_UNKNOWN_NV = 0,
+    VK_OPTICAL_FLOW_GRID_SIZE_1X1_BIT_NV = 0x00000001,
+    VK_OPTICAL_FLOW_GRID_SIZE_2X2_BIT_NV = 0x00000002,
+    VK_OPTICAL_FLOW_GRID_SIZE_4X4_BIT_NV = 0x00000004,
+    VK_OPTICAL_FLOW_GRID_SIZE_8X8_BIT_NV = 0x00000008,
+} VkOpticalFlowGridSizeFlagBitsNV;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_OPTICAL_FLOW_GRID_SIZE_1X1_BIT_NV</code> specifies that grid is 1x1
+pixel.</p>
+</li>
+<li>
+<p><code>VK_OPTICAL_FLOW_GRID_SIZE_2X2_BIT_NV</code> specifies that grid is 2x2
+pixel.</p>
+</li>
+<li>
+<p><code>VK_OPTICAL_FLOW_GRID_SIZE_4X4_BIT_NV</code> specifies that grid is 4x4
+pixel.</p>
+</li>
+<li>
+<p><code>VK_OPTICAL_FLOW_GRID_SIZE_8X8_BIT_NV</code> specifies that grid is 8x8
+pixel.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div id="VkOpticalFlowGridSizeFlagsNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_optical_flow
+typedef VkFlags   VkOpticalFlowGridSizeFlagsNV;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>VkOpticalFlowGridSizeFlagsNV</code> is a bitmask type for setting a mask of
+zero or more <a href="#VkOpticalFlowGridSizeFlagBitsNV">VkOpticalFlowGridSizeFlagBitsNV</a>.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Optical flow exposes performance levels which the application <strong>can</strong> choose
+based on the desired performance and quality requirement.</p>
+</div>
+<div class="paragraph">
+<p>The optical flow performance level types are defined with the following:</p>
+</div>
+<div id="VkOpticalFlowPerformanceLevelNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_optical_flow
+typedef enum VkOpticalFlowPerformanceLevelNV {
+    VK_OPTICAL_FLOW_PERFORMANCE_LEVEL_UNKNOWN_NV = 0,
+    VK_OPTICAL_FLOW_PERFORMANCE_LEVEL_SLOW_NV = 1,
+    VK_OPTICAL_FLOW_PERFORMANCE_LEVEL_MEDIUM_NV = 2,
+    VK_OPTICAL_FLOW_PERFORMANCE_LEVEL_FAST_NV = 3,
+} VkOpticalFlowPerformanceLevelNV;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_OPTICAL_FLOW_PERFORMANCE_LEVEL_SLOW_NV</code> is a level with slower
+performance but higher quality.</p>
+</li>
+<li>
+<p><code>VK_OPTICAL_FLOW_PERFORMANCE_LEVEL_MEDIUM_NV</code> is a level with medium
+performance and medium quality.</p>
+</li>
+<li>
+<p><code>VK_OPTICAL_FLOW_PERFORMANCE_LEVEL_FAST_NV</code> is a preset with higher
+performance but lower quality.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Bits which <strong>can</strong> be set in
+<a href="#VkOpticalFlowSessionCreateInfoNV">VkOpticalFlowSessionCreateInfoNV</a>::<code>flags</code>, controlling optical
+flow session operations, are:</p>
+</div>
+<div id="VkOpticalFlowSessionCreateFlagBitsNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_optical_flow
+typedef enum VkOpticalFlowSessionCreateFlagBitsNV {
+    VK_OPTICAL_FLOW_SESSION_CREATE_ENABLE_HINT_BIT_NV = 0x00000001,
+    VK_OPTICAL_FLOW_SESSION_CREATE_ENABLE_COST_BIT_NV = 0x00000002,
+    VK_OPTICAL_FLOW_SESSION_CREATE_ENABLE_GLOBAL_FLOW_BIT_NV = 0x00000004,
+    VK_OPTICAL_FLOW_SESSION_CREATE_ALLOW_REGIONS_BIT_NV = 0x00000008,
+    VK_OPTICAL_FLOW_SESSION_CREATE_BOTH_DIRECTIONS_BIT_NV = 0x00000010,
+} VkOpticalFlowSessionCreateFlagBitsNV;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_OPTICAL_FLOW_SESSION_CREATE_ENABLE_HINT_BIT_NV</code> specifies that a
+<a href="../resources.html#VkImageView" class="xref page">VkImageView</a> with external flow vectors will be used as hints in
+performing the motion search and <strong>must</strong> be bound to
+<code>VK_OPTICAL_FLOW_SESSION_BINDING_POINT_HINT_NV</code>.</p>
+</li>
+<li>
+<p><code>VK_OPTICAL_FLOW_SESSION_CREATE_ENABLE_COST_BIT_NV</code> specifies that
+the cost for the forward flow is generated in a <a href="../resources.html#VkImageView" class="xref page">VkImageView</a> which
+<strong>must</strong> be bound to <code>VK_OPTICAL_FLOW_SESSION_BINDING_POINT_COST_NV</code>.
+Additionally, if
+<code>VK_OPTICAL_FLOW_SESSION_CREATE_BOTH_DIRECTIONS_BIT_NV</code> is also set,
+the cost for backward flow is generated in a <a href="../resources.html#VkImageView" class="xref page">VkImageView</a> which
+<strong>must</strong> be bound to
+<code>VK_OPTICAL_FLOW_SESSION_BINDING_POINT_BACKWARD_COST_NV</code>.
+The cost is the confidence level of the flow vector for each grid in the
+frame.
+The Cost implies how (in)accurate the flow vector is.
+Higher cost value implies the flow vector to be less accurate and
+vice-versa.</p>
+</li>
+<li>
+<p><code>VK_OPTICAL_FLOW_SESSION_CREATE_ENABLE_GLOBAL_FLOW_BIT_NV</code> specifies
+that a global flow vector is estimated from forward flow in a single
+pixel <a href="../resources.html#VkImageView" class="xref page">VkImageView</a> which <strong>must</strong> be bound to
+<code>VK_OPTICAL_FLOW_SESSION_BINDING_POINT_GLOBAL_FLOW_NV</code>.</p>
+</li>
+<li>
+<p><code>VK_OPTICAL_FLOW_SESSION_CREATE_ALLOW_REGIONS_BIT_NV</code> specifies that
+regions of interest <strong>can</strong> be specified in
+<a href="#VkOpticalFlowExecuteInfoNV">VkOpticalFlowExecuteInfoNV</a>.</p>
+</li>
+<li>
+<p><code>VK_OPTICAL_FLOW_SESSION_CREATE_BOTH_DIRECTIONS_BIT_NV</code> specifies
+that backward flow is generated in addition to forward flow which is
+always generated.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p><code>VkOpticalFlowSessionCreateFlagsNV</code> is a bitmask type for setting a mask
+of zero or more <a href="#VkOpticalFlowSessionCreateFlagBitsNV">VkOpticalFlowSessionCreateFlagBitsNV</a>.</p>
+</div>
+<div id="VkOpticalFlowSessionCreateFlagsNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_optical_flow
+typedef VkFlags   VkOpticalFlowSessionCreateFlagsNV;</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="opticalflow-session-destruction"><a class="anchor" href="#opticalflow-session-destruction"></a>Destroying an Optical Flow Session</h4>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To destroy an optical flow session object, call:</p>
+</div>
+<div id="vkDestroyOpticalFlowSessionNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_optical_flow
+void vkDestroyOpticalFlowSessionNV(
+    VkDevice                                    device,
+    VkOpticalFlowSessionNV                      session,
+    const VkAllocationCallbacks*                pAllocator);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the device that was used for the creation of the optical
+flow session.</p>
+</li>
+<li>
+<p><code>session</code> is the optical flow session to be destroyed.</p>
+</li>
+<li>
+<p><code>pAllocator</code> controls host memory allocation as described in the
+<a href="../memory.html#memory-allocation" class="xref page">Memory Allocation</a> chapter.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkDestroyOpticalFlowSessionNV-device-parameter" href="#VUID-vkDestroyOpticalFlowSessionNV-device-parameter"></a> <span class="vuid">VUID-vkDestroyOpticalFlowSessionNV-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkDestroyOpticalFlowSessionNV-session-parameter" href="#VUID-vkDestroyOpticalFlowSessionNV-session-parameter"></a> <span class="vuid">VUID-vkDestroyOpticalFlowSessionNV-session-parameter</span><br>
+ <code>session</code> <strong>must</strong> be a valid <a href="#VkOpticalFlowSessionNV">VkOpticalFlowSessionNV</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkDestroyOpticalFlowSessionNV-pAllocator-parameter" href="#VUID-vkDestroyOpticalFlowSessionNV-pAllocator-parameter"></a> <span class="vuid">VUID-vkDestroyOpticalFlowSessionNV-pAllocator-parameter</span><br>
+ If <code>pAllocator</code> is not <code>NULL</code>, <code>pAllocator</code> <strong>must</strong> be a valid pointer to a valid <a href="../memory.html#VkAllocationCallbacks" class="xref page">VkAllocationCallbacks</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkDestroyOpticalFlowSessionNV-session-parent" href="#VUID-vkDestroyOpticalFlowSessionNV-session-parent"></a> <span class="vuid">VUID-vkDestroyOpticalFlowSessionNV-session-parent</span><br>
+ <code>session</code> <strong>must</strong> have been created, allocated, or retrieved from <code>device</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="opticalflow-session-binding-images"><a class="anchor" href="#opticalflow-session-binding-images"></a>Binding Vulkan Image Views to an Optical Flow Session</h3>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To bind a Vulkan image to an optical flow session object, call:</p>
+</div>
+<div id="vkBindOpticalFlowSessionImageNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_optical_flow
+VkResult vkBindOpticalFlowSessionImageNV(
+    VkDevice                                    device,
+    VkOpticalFlowSessionNV                      session,
+    VkOpticalFlowSessionBindingPointNV          bindingPoint,
+    VkImageView                                 view,
+    VkImageLayout                               layout);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the device which owns the optical flow session object
+<code>session</code>.</p>
+</li>
+<li>
+<p><code>session</code> is the optical flow session object to which the image view
+is to be bound.</p>
+</li>
+<li>
+<p><code>bindingPoint</code> specifies the binding point
+<a href="#VkOpticalFlowSessionBindingPointNV">VkOpticalFlowSessionBindingPointNV</a> to which the image view is
+bound.</p>
+</li>
+<li>
+<p><code>view</code> is a <a href="../resources.html#VkImageView" class="xref page">VkImageView</a> to be bound.</p>
+</li>
+<li>
+<p><code>layout</code> <strong>must</strong> specify the layout that the image subresources
+accessible from <code>view</code> will be in at the time the optical flow
+vectors are calculated with <a href="#vkCmdOpticalFlowExecuteNV">vkCmdOpticalFlowExecuteNV</a> on a
+<code>VkDevice</code>.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkBindOpticalFlowSessionImageNV-device-parameter" href="#VUID-vkBindOpticalFlowSessionImageNV-device-parameter"></a> <span class="vuid">VUID-vkBindOpticalFlowSessionImageNV-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkBindOpticalFlowSessionImageNV-session-parameter" href="#VUID-vkBindOpticalFlowSessionImageNV-session-parameter"></a> <span class="vuid">VUID-vkBindOpticalFlowSessionImageNV-session-parameter</span><br>
+ <code>session</code> <strong>must</strong> be a valid <a href="#VkOpticalFlowSessionNV">VkOpticalFlowSessionNV</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkBindOpticalFlowSessionImageNV-bindingPoint-parameter" href="#VUID-vkBindOpticalFlowSessionImageNV-bindingPoint-parameter"></a> <span class="vuid">VUID-vkBindOpticalFlowSessionImageNV-bindingPoint-parameter</span><br>
+ <code>bindingPoint</code> <strong>must</strong> be a valid <a href="#VkOpticalFlowSessionBindingPointNV">VkOpticalFlowSessionBindingPointNV</a> value</p>
+</li>
+<li>
+<p><a id="VUID-vkBindOpticalFlowSessionImageNV-view-parameter" href="#VUID-vkBindOpticalFlowSessionImageNV-view-parameter"></a> <span class="vuid">VUID-vkBindOpticalFlowSessionImageNV-view-parameter</span><br>
+ If <code>view</code> is not <a href="../../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, <code>view</code> <strong>must</strong> be a valid <a href="../resources.html#VkImageView" class="xref page">VkImageView</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkBindOpticalFlowSessionImageNV-layout-parameter" href="#VUID-vkBindOpticalFlowSessionImageNV-layout-parameter"></a> <span class="vuid">VUID-vkBindOpticalFlowSessionImageNV-layout-parameter</span><br>
+ <code>layout</code> <strong>must</strong> be a valid <a href="../resources.html#VkImageLayout" class="xref page">VkImageLayout</a> value</p>
+</li>
+<li>
+<p><a id="VUID-vkBindOpticalFlowSessionImageNV-session-parent" href="#VUID-vkBindOpticalFlowSessionImageNV-session-parent"></a> <span class="vuid">VUID-vkBindOpticalFlowSessionImageNV-session-parent</span><br>
+ <code>session</code> <strong>must</strong> have been created, allocated, or retrieved from <code>device</code></p>
+</li>
+<li>
+<p><a id="VUID-vkBindOpticalFlowSessionImageNV-view-parent" href="#VUID-vkBindOpticalFlowSessionImageNV-view-parent"></a> <span class="vuid">VUID-vkBindOpticalFlowSessionImageNV-view-parent</span><br>
+ If <code>view</code> is a valid handle, it <strong>must</strong> have been created, allocated, or retrieved from <code>device</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_INITIALIZATION_FAILED</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The optical flow session binding points are defined with the following:</p>
+</div>
+<div id="VkOpticalFlowSessionBindingPointNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_optical_flow
+typedef enum VkOpticalFlowSessionBindingPointNV {
+    VK_OPTICAL_FLOW_SESSION_BINDING_POINT_UNKNOWN_NV = 0,
+    VK_OPTICAL_FLOW_SESSION_BINDING_POINT_INPUT_NV = 1,
+    VK_OPTICAL_FLOW_SESSION_BINDING_POINT_REFERENCE_NV = 2,
+    VK_OPTICAL_FLOW_SESSION_BINDING_POINT_HINT_NV = 3,
+    VK_OPTICAL_FLOW_SESSION_BINDING_POINT_FLOW_VECTOR_NV = 4,
+    VK_OPTICAL_FLOW_SESSION_BINDING_POINT_BACKWARD_FLOW_VECTOR_NV = 5,
+    VK_OPTICAL_FLOW_SESSION_BINDING_POINT_COST_NV = 6,
+    VK_OPTICAL_FLOW_SESSION_BINDING_POINT_BACKWARD_COST_NV = 7,
+    VK_OPTICAL_FLOW_SESSION_BINDING_POINT_GLOBAL_FLOW_NV = 8,
+} VkOpticalFlowSessionBindingPointNV;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_OPTICAL_FLOW_SESSION_BINDING_POINT_INPUT_NV</code> specifies the
+binding point for the input frame.</p>
+</li>
+<li>
+<p><code>VK_OPTICAL_FLOW_SESSION_BINDING_POINT_REFERENCE_NV</code> specifies the
+binding point for the input reference frame.</p>
+</li>
+<li>
+<p><code>VK_OPTICAL_FLOW_SESSION_BINDING_POINT_HINT_NV</code> specifies the
+binding point for the optional external hint flow vectors.</p>
+</li>
+<li>
+<p><code>VK_OPTICAL_FLOW_SESSION_BINDING_POINT_FLOW_VECTOR_NV</code> specifies the
+binding point for output flow vectors of default forward flow
+calculation.</p>
+</li>
+<li>
+<p><code>VK_OPTICAL_FLOW_SESSION_BINDING_POINT_BACKWARD_FLOW_VECTOR_NV</code>
+specifies the binding point for the optional output flow vector map of
+optional backward flow calculation.</p>
+</li>
+<li>
+<p><code>VK_OPTICAL_FLOW_SESSION_BINDING_POINT_COST_NV</code> specifies the
+binding point for the optional output cost map of default forward flow
+calculation.</p>
+</li>
+<li>
+<p><code>VK_OPTICAL_FLOW_SESSION_BINDING_POINT_BACKWARD_COST_NV</code> specifies
+the binding point for the optional output cost map of optional backward
+flow calculation.</p>
+</li>
+<li>
+<p><code>VK_OPTICAL_FLOW_SESSION_BINDING_POINT_GLOBAL_FLOW_NV</code> specifies the
+binding point for the optional global flow value of default forward flow
+calculation.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="opticalflow-operations"><a class="anchor" href="#opticalflow-operations"></a>Optical Flow Execution</h3>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Default direction of flow estimation is forward which calculates the optical
+flow from input frame to reference frame.
+Optionally backward flow estimation can be additionally calculated.
+An output flow vector (Vx, Vy) means that current pixel (x, y) of input
+frame can be found at location (x+Vx, y+Vy) in reference frame.
+A backward flow vector (Vx, Vy) means that current pixel (x, y) of reference
+frame can be found at location (x+Vx, y+Vy) in input frame.</p>
+</div>
+<div class="paragraph">
+<p>To calculate optical flow vectors from two input frames, call:</p>
+</div>
+<div id="vkCmdOpticalFlowExecuteNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_optical_flow
+void vkCmdOpticalFlowExecuteNV(
+    VkCommandBuffer                             commandBuffer,
+    VkOpticalFlowSessionNV                      session,
+    const VkOpticalFlowExecuteInfoNV*           pExecuteInfo);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer into which the command will be
+recorded.</p>
+</li>
+<li>
+<p><code>session</code> is the optical flow session object on which this command
+is operating.</p>
+</li>
+<li>
+<p><code>pExecuteInfo</code> Info is a pointer to a
+<a href="#VkOpticalFlowExecuteInfoNV">VkOpticalFlowExecuteInfoNV</a>.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdOpticalFlowExecuteNV-commandBuffer-parameter" href="#VUID-vkCmdOpticalFlowExecuteNV-commandBuffer-parameter"></a> <span class="vuid">VUID-vkCmdOpticalFlowExecuteNV-commandBuffer-parameter</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be a valid <a href="../cmdbuffers.html#VkCommandBuffer" class="xref page">VkCommandBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdOpticalFlowExecuteNV-session-parameter" href="#VUID-vkCmdOpticalFlowExecuteNV-session-parameter"></a> <span class="vuid">VUID-vkCmdOpticalFlowExecuteNV-session-parameter</span><br>
+ <code>session</code> <strong>must</strong> be a valid <a href="#VkOpticalFlowSessionNV">VkOpticalFlowSessionNV</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdOpticalFlowExecuteNV-pExecuteInfo-parameter" href="#VUID-vkCmdOpticalFlowExecuteNV-pExecuteInfo-parameter"></a> <span class="vuid">VUID-vkCmdOpticalFlowExecuteNV-pExecuteInfo-parameter</span><br>
+ <code>pExecuteInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkOpticalFlowExecuteInfoNV">VkOpticalFlowExecuteInfoNV</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdOpticalFlowExecuteNV-commandBuffer-recording" href="#VUID-vkCmdOpticalFlowExecuteNV-commandBuffer-recording"></a> <span class="vuid">VUID-vkCmdOpticalFlowExecuteNV-commandBuffer-recording</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be in the <a href="../cmdbuffers.html#commandbuffers-lifecycle" class="xref page">recording state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdOpticalFlowExecuteNV-commandBuffer-cmdpool" href="#VUID-vkCmdOpticalFlowExecuteNV-commandBuffer-cmdpool"></a> <span class="vuid">VUID-vkCmdOpticalFlowExecuteNV-commandBuffer-cmdpool</span><br>
+ The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> support optical flow operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdOpticalFlowExecuteNV-renderpass" href="#VUID-vkCmdOpticalFlowExecuteNV-renderpass"></a> <span class="vuid">VUID-vkCmdOpticalFlowExecuteNV-renderpass</span><br>
+ This command <strong>must</strong> only be called outside of a render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdOpticalFlowExecuteNV-videocoding" href="#VUID-vkCmdOpticalFlowExecuteNV-videocoding"></a> <span class="vuid">VUID-vkCmdOpticalFlowExecuteNV-videocoding</span><br>
+ This command <strong>must</strong> only be called outside of a video coding scope</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdOpticalFlowExecuteNV-commonparent" href="#VUID-vkCmdOpticalFlowExecuteNV-commonparent"></a> <span class="vuid">VUID-vkCmdOpticalFlowExecuteNV-commonparent</span><br>
+ Both of <code>commandBuffer</code>, and <code>session</code> <strong>must</strong> have been created, allocated, or retrieved from the same <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to the <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Command Properties</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><a href="../cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
+<th class="tableblock halign-left valign-top"><a href="../renderpass.html#vkCmdBeginRenderPass" class="xref page">Render Pass Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="../videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="../devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
+<th class="tableblock halign-left valign-top"><a href="../fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Opticalflow</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Action</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#VkOpticalFlowExecuteInfoNV">VkOpticalFlowExecuteInfoNV</a> structure is defined as:</p>
+</div>
+<div id="VkOpticalFlowExecuteInfoNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_optical_flow
+typedef struct VkOpticalFlowExecuteInfoNV {
+    VkStructureType                sType;
+    void*                          pNext;
+    VkOpticalFlowExecuteFlagsNV    flags;
+    uint32_t                       regionCount;
+    const VkRect2D*                pRegions;
+} VkOpticalFlowExecuteInfoNV;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="../fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>flags</code> are the <a href="#VkOpticalFlowExecuteFlagsNV">VkOpticalFlowExecuteFlagsNV</a> used for this
+command.</p>
+</li>
+<li>
+<p><code>regionCount</code> is the number of regions of interest specified in
+<code>pRegions</code>.</p>
+</li>
+<li>
+<p><code>pRegions</code> is a pointer to <code>regionCount</code> <code>VkRect2D</code> regions
+of interest.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkOpticalFlowExecuteInfoNV-regionCount-07593" href="#VUID-VkOpticalFlowExecuteInfoNV-regionCount-07593"></a> <span class="vuid">VUID-VkOpticalFlowExecuteInfoNV-regionCount-07593</span><br>
+
+<code>regionCount</code> <strong>must</strong> be 0 if
+<code>VK_OPTICAL_FLOW_SESSION_CREATE_ALLOW_REGIONS_BIT_NV</code> was not set
+for <code>VkOpticalFlowSessionNV</code> on which this command is operating</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkOpticalFlowExecuteInfoNV-sType-sType" href="#VUID-VkOpticalFlowExecuteInfoNV-sType-sType"></a> <span class="vuid">VUID-VkOpticalFlowExecuteInfoNV-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_OPTICAL_FLOW_EXECUTE_INFO_NV</code></p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowExecuteInfoNV-pNext-pNext" href="#VUID-VkOpticalFlowExecuteInfoNV-pNext-pNext"></a> <span class="vuid">VUID-VkOpticalFlowExecuteInfoNV-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowExecuteInfoNV-flags-parameter" href="#VUID-VkOpticalFlowExecuteInfoNV-flags-parameter"></a> <span class="vuid">VUID-VkOpticalFlowExecuteInfoNV-flags-parameter</span><br>
+ <code>flags</code> <strong>must</strong> be a valid combination of <a href="#VkOpticalFlowExecuteFlagBitsNV">VkOpticalFlowExecuteFlagBitsNV</a> values</p>
+</li>
+<li>
+<p><a id="VUID-VkOpticalFlowExecuteInfoNV-pRegions-parameter" href="#VUID-VkOpticalFlowExecuteInfoNV-pRegions-parameter"></a> <span class="vuid">VUID-VkOpticalFlowExecuteInfoNV-pRegions-parameter</span><br>
+ If <code>regionCount</code> is not <code>0</code>, <code>pRegions</code> <strong>must</strong> be a valid pointer to an array of <code>regionCount</code> <a href="../fundamentals.html#VkRect2D" class="xref page">VkRect2D</a> structures</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Bits which <strong>can</strong> be set in <a href="#VkOpticalFlowExecuteInfoNV">VkOpticalFlowExecuteInfoNV</a>::<code>flags</code>,
+controlling optical flow execution, are:</p>
+</div>
+<div id="VkOpticalFlowExecuteFlagBitsNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_optical_flow
+typedef enum VkOpticalFlowExecuteFlagBitsNV {
+    VK_OPTICAL_FLOW_EXECUTE_DISABLE_TEMPORAL_HINTS_BIT_NV = 0x00000001,
+} VkOpticalFlowExecuteFlagBitsNV;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_OPTICAL_FLOW_EXECUTE_DISABLE_TEMPORAL_HINTS_BIT_NV</code> specifies
+that temporal hints from previously generated flow vectors are not used.
+If temporal hints are enabled, optical flow vectors from previous
+<a href="#vkCmdOpticalFlowExecuteNV">vkCmdOpticalFlowExecuteNV</a> call are automatically used as hints for
+the current <a href="#vkCmdOpticalFlowExecuteNV">vkCmdOpticalFlowExecuteNV</a> call, to take advantage of
+temporal correlation in a video sequence.
+Temporal hints should be disabled if there is a-priori knowledge of no
+temporal correlation (e.g. a scene change, independent successive frame
+pairs).</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p><code>VkOpticalFlowExecuteFlagsNV</code> is a bitmask type for setting a mask of
+zero or more <a href="#VkOpticalFlowExecuteFlagBitsNV">VkOpticalFlowExecuteFlagBitsNV</a>.</p>
+</div>
+<div id="VkOpticalFlowExecuteFlagsNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_optical_flow
+typedef VkFlags   VkOpticalFlowExecuteFlagsNV;</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Non-Normative SPIR-V Mappings :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:glsl" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="glsl" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">OpenGL Shading Language Specification</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="preamble.html">Preamble</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="overview.html">Overview of Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="basics.html">Basics</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="variables.html">Variables and Types</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="operators.html">Operators and Expressions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="statements.html">Statements and Structure</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="builtins.html">Built-In Variables</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="builtinfunctions.html">Built-In Functions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="grammar.html">Shading Language Grammar</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="acknowledgements.html">Acknowledgments</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="references.html">Normative References</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="spirvmappings.html">Non-Normative SPIR-V Mappings</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">OpenGL Shading Language Specification</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">OpenGL Shading Language Specification</a></li>
+    <li><a href="spirvmappings.html">Non-Normative SPIR-V Mappings</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/GLSL/antora/modules/ROOT/pages/chapters/spirvmappings.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Non-Normative SPIR-V Mappings</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This appendix includes:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>a comparison of feature differences with SPIR-V versus without, for both Vulkan and OpenGL</p>
+</li>
+<li>
+<p>a discussion of how GLSL features logically map to SPIR-V features.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_feature_comparisons"><a class="anchor" href="#_feature_comparisons"></a>Feature Comparisons</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The following features are removed for both OpenGL and Vulkan:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>subroutines</p>
+</li>
+<li>
+<p>shared and packed block layouts</p>
+</li>
+<li>
+<p>the already deprecated texturing functions (e.g., <code>texture2D()</code>)</p>
+</li>
+<li>
+<p>the already deprecated noise functions (e.g., <code>noise1()</code>)</p>
+</li>
+<li>
+<p>compatibility-profile features</p>
+</li>
+<li>
+<p><em>gl_DepthRangeParameters</em> and <em>gl_NumSamples</em></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Vulkan removed the following features, which are still present for OpenGL:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Default uniforms, for non-opaque types:
+The <strong>UniformConstant</strong> storage class can be used on individual
+variables at global scope. (That is, uniforms don&#8217;t have to be in a
+block, unless they are built-in members that are in block in GLSL
+version 4.5 or above.)</p>
+</li>
+<li>
+<p>GLSL atomic-counter bindings have the <em>offset</em> layout qualifier &#8594;
+SPIR-V <strong>AtomicCounter</strong> storage class using the <strong>Offset</strong> decoration</p>
+</li>
+<li>
+<p>GLSL <em>origin_lower_left</em> &#8594; SPIR-V <strong>OriginLowerLeft</strong></p>
+</li>
+<li>
+<p>special rules for locations for input doubles in the vertex shader</p>
+</li>
+<li>
+<p><em>gl_VertexID</em> and <em>gl_InstanceID</em> (more detail follows)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The following features are added for both OpenGL and Vulkan:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>specialization constants</p>
+</li>
+<li>
+<p><em>offset</em> can organize members in a different order than declaration order</p>
+</li>
+<li>
+<p><em>offset</em> and <em>align</em> layout qualifiers for uniform/buffer blocks for
+versions that did not support them</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Vulkan Only: The following features are added:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>push-constant buffers</p>
+</li>
+<li>
+<p>shader combining of separate textures and samplers (SPIR-V <strong>OpTypeSampler</strong>)</p>
+</li>
+<li>
+<p>descriptor sets (<strong>DescriptorSet</strong> must be 0, if present)</p>
+</li>
+<li>
+<p><em>gl_VertexIndex</em> and <em>gl_InstanceIndex</em></p>
+</li>
+<li>
+<p>subpass-input targets and input attachments (<em>input_attachment_index</em>)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The following features are changed in both OpenGL and Vulkan:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>gl_FragColor</em> will no longer indicate an implicit broadcast</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Vulkan Only: The following features are changed:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>precision qualifiers (<strong>mediump</strong> and <strong>lowp</strong>) will be respected for all
+versions, not dropped for desktop versions (default precision for
+desktop versions is <strong>highp</strong> for all types)</p>
+</li>
+<li>
+<p>arrays of uniforms and buffer blocks take only one binding number for
+the entire object, not one per array element</p>
+</li>
+<li>
+<p>the default origin is <em>origin_upper_left</em> instead of <em>origin_lower_left</em></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Vulkan does not allow multi-dimensional arrays of resources like
+UBOs and SSBOs in its SPIR-V environment spec. SPIR-V supports
+it and OpenGL already allows this for GLSL shaders. SPIR-V
+for OpenGL also allows it.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_mapping_from_glsl_to_spir_v"><a class="anchor" href="#_mapping_from_glsl_to_spir_v"></a>Mapping from GLSL to SPIR-V</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_specialization_constants"><a class="anchor" href="#_specialization_constants"></a>Specialization Constants</h3>
+<div class="paragraph">
+<p>SPIR-V specialization constants, which can be set later by the client API,
+can be declared using <code>layout(constant_id=&#8230;&#8203;)</code>. For example, to make a
+specialization constant with a default value of 12:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>layout(constant_id = 17) const int arraySize = 12;</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Above, <code>17</code> is the ID by which the API or other tools can later refer to
+this specific specialization constant.  The API or an intermediate tool can
+then change its value to another constant integer before it is fully
+lowered to executable code.  If it is never changed before final lowering,
+it will retain the value of 12.</p>
+</div>
+<div class="paragraph">
+<p>Specialization constants have const semantics, except they don&#8217;t fold.
+Hence, an array can be declared with <code>arraySize</code> from above:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>vec4 data[arraySize];  // legal, even though arraySize might change</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Specialization constants can be in expressions:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>vec4 data2[arraySize + 2];</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This will make <code>data2</code> be sized by 2 more than whatever constant value
+<code>arraySize</code> has when it is time to lower the shader to executable code.</p>
+</div>
+<div class="paragraph">
+<p>An expression formed with specialization constants also behaves in the
+shader like a specialization constant, not a like a constant.</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>arraySize + 2       // a specialization constant (with no constant_id)</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Such expressions can be used in the same places as a constant.</p>
+</div>
+<div class="paragraph">
+<p>The <em>constant_id</em> can only be applied to a scalar integer, a scalar floating-point
+or a scalar Boolean.</p>
+</div>
+<div class="paragraph">
+<p>Only basic operators and constructors can be applied to a specialization
+constant and still result in a specialization constant:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>layout(constant_id = 17) const int arraySize = 12;
+sin(float(arraySize));    // result is not a specialization constant</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>While SPIR-V specialization constants are only for scalars, a vector
+can be made by operations on scalars:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>layout(constant_id = 18) const int scX = 1;
+layout(constant_id = 19) const int scZ = 1;
+const ivec3 scVec = ivec3(scX, 1, scZ);  // partially specialized vector</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A built-in variable can have a <em>constant_id</em> attached to it:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>layout(constant_id = 18) gl_MaxImageUnits;</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This makes it behave as a specialization constant.  It is not a full
+redeclaration; all other characteristics are left intact from the
+original built-in declaration.</p>
+</div>
+<div class="paragraph">
+<p>The built-in vector <em>gl_WorkGroupSize</em> can be specialized using special
+layout <code>local_size_{xyz}_id</code> applied to the <strong>in</strong> qualifier.  For example:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>layout(local_size_x_id = 18, local_size_z_id = 19) in;</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This leaves <em>gl_WorkGroupSize.y</em> as a non-specialization constant, with
+<em>gl_WorkGroupSize</em> being a partially specialized vector.  Its <em>x</em> and <em>z</em>
+components can be later specialized using the ID&#8217;s 18 and 19.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vulkan_only_push_constants"><a class="anchor" href="#_vulkan_only_push_constants"></a>Vulkan Only: Push Constants</h3>
+<div class="paragraph">
+<p>Push constants reside in a uniform block declared using the new
+layout-qualifier-id <em>push_constant</em> applied to a uniform-block declaration.
+The API writes a set of constants to a push-constant buffer, and the shader
+reads them from a <em>push_constant</em> block:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>layout(push_constant) uniform BlockName {
+    int member1;
+    float member2;
+    ...
+} InstanceName; // optional instance name
+... = InstanceName.member2; // read a push constant</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The memory accounting used for the <em>push_constant</em> uniform block is different
+than for other uniform blocks:  There is a separate small pool of memory
+it must fit within.  By default, a <em>push_constant</em> buffer follows the std430
+packing rules.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vulkan_only_descriptor_sets"><a class="anchor" href="#_vulkan_only_descriptor_sets"></a>Vulkan Only: Descriptor Sets</h3>
+<div class="paragraph">
+<p>Each shader resource in a descriptor set is assigned a tuple of (set
+number, binding number, array element) that defines its location within
+a descriptor set layout.
+In GLSL, the set number and binding number are assigned via the <em>set</em>
+and <em>binding</em> layout qualifiers respectively, and the array element is
+implicitly assigned consecutively starting with index equal to zero for
+the first element of an array (and array element is zero for non-array
+variables):</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>// Assign set number = M, binding number = N, array element = 0
+layout (set=M, binding=N) uniform sampler2D variableName;</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>// Assign set number = M, binding number = N for all array elements,
+// and array element = i for the ith member of an array of size I.
+layout (set=M, binding=N) uniform sampler2D variableNameArray[I];</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For example, two combined texture/sampler objects can be declared in two
+different descriptor sets as follows</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>layout(set = 0, binding = 0) uniform sampler2D ts3;
+layout(set = 1, binding = 0) uniform sampler2D ts4;</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>See the API documentation for more detail on the operation model of
+descriptor sets.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vulkan_only_samplers_images_textures_and_buffers"><a class="anchor" href="#_vulkan_only_samplers_images_textures_and_buffers"></a>Vulkan Only: Samplers, Images, Textures, and Buffers</h3>
+<div class="sect3">
+<h4 id="_storage_images"><a class="anchor" href="#_storage_images"></a>Storage Images</h4>
+<div class="paragraph">
+<p>Storage images are declared in GLSL shader source using uniform image
+variables of the appropriate dimensionality as well as a format layout
+qualifier (if necessary):</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>layout (set=m, binding=n, r32f) uniform image2D myStorageImage;</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Which maps to the following SPIR-V:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>        ...
+%1 = OpExtInstImport "GLSL.std.450"
+        ...
+        OpName %9 "myStorageImage"
+        OpDecorate %9 DescriptorSet m
+        OpDecorate %9 Binding n
+%2 = OpTypeVoid
+%3 = OpTypeFunction %2
+%6 = OpTypeFloat 32
+%7 = OpTypeImage %6 2D 0 0 0 2 R32f
+%8 = OpTypePointer UniformConstant %7
+%9 = OpVariable %8 UniformConstant
+        ...</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_samplers"><a class="anchor" href="#_samplers"></a>Samplers</h4>
+<div class="paragraph">
+<p>SPIR-V samplers are declared in GLSL shader source using uniform <strong>sampler</strong> and
+<strong>samplerShadow</strong> types:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>layout (set=m, binding=n) uniform sampler mySampler;</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Which maps to the following SPIR-V:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>        ...
+%1 = OpExtInstImport "GLSL.std.450"
+        ...
+        OpName %8 "mySampler"
+        OpDecorate %8 DescriptorSet m
+        OpDecorate %8 Binding n
+%2 = OpTypeVoid
+%3 = OpTypeFunction %2
+%6 = OpTypeSampler
+%7 = OpTypePointer UniformConstant %6
+%8 = OpVariable %7 UniformConstant
+        ...</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_textures_sampled_images"><a class="anchor" href="#_textures_sampled_images"></a>Textures (Sampled Images)</h4>
+<div class="paragraph">
+<p>Textures are declared in GLSL shader source using uniform texture
+variables of the appropriate dimensionality:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>layout (set=m, binding=n) uniform texture2D mySampledImage;</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Which maps to the following SPIR-V:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>        ...
+%1 = OpExtInstImport "GLSL.std.450"
+        ...
+        OpName %9 "mySampledImage"
+        OpDecorate %9 DescriptorSet m
+        OpDecorate %9 Binding n
+%2 = OpTypeVoid
+%3 = OpTypeFunction %2
+%6 = OpTypeFloat 32
+%7 = OpTypeImage %6 2D 0 0 0 1 Unknown
+%8 = OpTypePointer UniformConstant %7
+%9 = OpVariable %8 UniformConstant
+        ...</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_combined_texture_and_samplers"><a class="anchor" href="#_combined_texture_and_samplers"></a>Combined Texture and Samplers</h4>
+<div class="paragraph">
+<p>Combined textures and samplers are declared in GLSL shader source using
+uniform texture-combined sampler variables of the appropriate dimensionality:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>layout (set=m, binding=n) uniform sampler2D myCombinedImageSampler;</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Which maps to the following SPIR-V:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>        ...
+%1 = OpExtInstImport "GLSL.std.450"
+        ...
+        OpName %10 "myCombinedImageSampler"
+        OpDecorate %10 DescriptorSet m
+        OpDecorate %10 Binding n
+%2 = OpTypeVoid
+%3 = OpTypeFunction %2
+%6 = OpTypeFloat 32
+%7 = OpTypeImage %6 2D 0 0 0 1 Unknown
+%8 = OpTypeSampledImage %7
+%9 = OpTypePointer UniformConstant %8
+%10 = OpVariable %9 UniformConstant
+        ...</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note that a combined image sampler descriptor can be referred to as just
+an image or sampler in the shader as per the above sections.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_combining_separate_samplers_and_textures"><a class="anchor" href="#_combining_separate_samplers_and_textures"></a>Combining Separate Samplers and Textures</h4>
+<div class="paragraph">
+<p>A sampler, declared with the keyword <strong>sampler</strong>, contains just filtering
+information, containing neither a texture nor an image:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>uniform sampler s;    // a handle to filtering information</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A texture, declared with keywords like <strong>texture2D</strong>, contains just image
+information, not filtering information:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>uniform texture2D t;  // a handle to a texture (an image in SPIR-V)</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Constructors can then be used to combine a sampler and a texture at the
+point of making a texture lookup call:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>texture(sampler2D(t, s), ...);</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note, <code>layout()</code> information is omitted above for clarity of this feature.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_texture_buffers_uniform_texel_buffers"><a class="anchor" href="#_texture_buffers_uniform_texel_buffers"></a>Texture Buffers (Uniform Texel Buffers)</h4>
+<div class="paragraph">
+<p>Texture buffers are declared in GLSL shader source using uniform
+textureBuffer variables:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>layout (set=m, binding=n) uniform textureBuffer myUniformTexelBuffer;</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Which maps to the following SPIR-V:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>        ...
+%1 = OpExtInstImport "GLSL.std.450"
+        ...
+        OpName %9 "myUniformTexelBuffer"
+        OpDecorate %9 DescriptorSet m
+        OpDecorate %9 Binding n
+%2 = OpTypeVoid
+%3 = OpTypeFunction %2
+%6 = OpTypeFloat 32
+%7 = OpTypeImage %6 Buffer 0 0 0 1 Unknown
+%8 = OpTypePointer UniformConstant %7
+%9 = OpVariable %8 UniformConstant
+        ...</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_image_buffers_storage_texel_buffers"><a class="anchor" href="#_image_buffers_storage_texel_buffers"></a>Image Buffers (Storage Texel Buffers)</h4>
+<div class="paragraph">
+<p>Image buffers are declared in GLSL shader source using uniform
+imageBuffer variables:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>layout (set=m, binding=n, r32f) uniform imageBuffer myStorageTexelBuffer;</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Which maps to the following SPIR-V:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>        ...
+%1 = OpExtInstImport "GLSL.std.450"
+        ...
+        OpName %9 "myStorageTexelBuffer"
+        OpDecorate %9 DescriptorSet m
+        OpDecorate %9 Binding n
+%2 = OpTypeVoid
+%3 = OpTypeFunction %2
+%6 = OpTypeFloat 32
+%7 = OpTypeImage %6 Buffer 0 0 0 2 R32f
+%8 = OpTypePointer UniformConstant %7
+%9 = OpVariable %8 UniformConstant
+        ...</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_storage_buffers"><a class="anchor" href="#_storage_buffers"></a>Storage Buffers</h4>
+<div class="paragraph">
+<p>Storage buffers are declared in GLSL shader source using buffer storage
+qualifier and block syntax:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>layout (set=m, binding=n) buffer myStorageBuffer
+{
+    vec4 myElement[];
+};</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Which maps to the following SPIR-V:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>        ...
+%1 = OpExtInstImport "GLSL.std.450"
+        ...
+        OpName %9 "myStorageBuffer"
+        OpMemberName %9 0 "myElement"
+        OpName %11 ""
+        OpDecorate %8 ArrayStride 16
+        OpMemberDecorate %9 0 Offset 0
+        OpDecorate %9 BufferBlock
+        OpDecorate %11 DescriptorSet m
+        OpDecorate %11 Binding n
+%2 = OpTypeVoid
+%3 = OpTypeFunction %2
+%6 = OpTypeFloat 32
+%7 = OpTypeVector %6 4
+%8 = OpTypeRuntimeArray %7
+%9 = OpTypeStruct %8
+%10 = OpTypePointer Uniform %9
+%11 = OpVariable %10 Uniform
+        ...</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_uniform_buffers"><a class="anchor" href="#_uniform_buffers"></a>Uniform Buffers</h4>
+<div class="paragraph">
+<p>Uniform buffers are declared in GLSL shader source using the uniform storage
+qualifier and block syntax:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>layout (set=m, binding=n) uniform myUniformBuffer
+{
+    vec4 myElement[32];
+};</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Which maps to the following SPIR-V:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>        ...
+%1 = OpExtInstImport "GLSL.std.450"
+        ...
+        OpName %11 "myUniformBuffer"
+        OpMemberName %11 0 "myElement"
+        OpName %13 ""
+        OpDecorate %10 ArrayStride 16
+        OpMemberDecorate %11 0 Offset 0
+        OpDecorate %11 Block
+        OpDecorate %13 DescriptorSet m
+        OpDecorate %13 Binding n
+%2 = OpTypeVoid
+%3 = OpTypeFunction %2
+%6 = OpTypeFloat 32
+%7 = OpTypeVector %6 4
+%8 = OpTypeInt 32 0
+%9 = OpConstant %8 32
+%10 = OpTypeArray %7 %9
+%11 = OpTypeStruct %10
+%12 = OpTypePointer Uniform %11
+%13 = OpVariable %12 Uniform
+        ...</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_subpass_inputs"><a class="anchor" href="#_subpass_inputs"></a>Subpass Inputs</h4>
+<div class="paragraph">
+<p>Within a rendering pass, a subpass can write results to an output target
+that can then be read by the next subpass as an input subpass.  The
+"Subpass Input" feature regards the ability to read an output target.</p>
+</div>
+<div class="paragraph">
+<p>Subpass inputs are read through a new set of types, available only
+to fragment shaders:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>subpassInput
+subpassInputMS
+isubpassInput
+isubpassInputMS
+usubpassInput
+usubpassInputMS</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Unlike sampler and image objects, subpass inputs are implicitly addressed
+by the fragment&#8217;s (<em>x</em>, <em>y</em>, <em>layer</em>) coordinate.</p>
+</div>
+<div class="paragraph">
+<p>Input attachments are decorated with their input attachment index in
+addition to descriptor set and binding numbers.</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>layout (input_attachment_index=i, set=m, binding=n) uniform subpassInput myInputAttachment;</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Which maps to the following SPIR-V:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>        ...
+%1 = OpExtInstImport "GLSL.std.450"
+        ...
+        OpName %9 "myInputAttachment"
+        OpDecorate %9 DescriptorSet m
+        OpDecorate %9 Binding n
+        OpDecorate %9 InputAttachmentIndex i
+%2 = OpTypeVoid
+%3 = OpTypeFunction %2
+%6 = OpTypeFloat 32
+%7 = OpTypeImage %6 SubpassData 0 0 0 2 Unknown
+%8 = OpTypePointer UniformConstant %7
+%9 = OpVariable %8 UniformConstant
+        ...</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>An <em>input_attachment_index</em> of i selects the ith entry in the input pass
+list. (See API specification for more information.)</p>
+</div>
+<div class="paragraph">
+<p>These objects support reading the subpass input through the following
+functions:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>gvec4 subpassLoad(gsubpassInput   subpass);
+gvec4 subpassLoad(gsubpassInputMS subpass, int sample);</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mapping_variables"><a class="anchor" href="#_mapping_variables"></a>Mapping Variables</h3>
+<div class="sect3">
+<h4 id="_gl_fragcolor"><a class="anchor" href="#_gl_fragcolor"></a><em>gl_FragColor</em></h4>
+<div class="paragraph">
+<p>The fragment-stage built-in <em>gl_FragColor</em>, which implies a broadcast to all
+outputs, is not present in SPIR-V. Shaders where writing to <em>gl_FragColor</em>
+is allowed can still write to it, but it only means to write to an output:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>of the same type as <em>gl_FragColor</em></p>
+</li>
+<li>
+<p>decorated with location 0</p>
+</li>
+<li>
+<p>not decorated as a built-in variable.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>There is no implicit broadcast.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_vulkan_gl_vertexindex_and_gl_instanceindex"><a class="anchor" href="#_vulkan_gl_vertexindex_and_gl_instanceindex"></a>Vulkan <em>gl_VertexIndex</em> and <em>gl_InstanceIndex</em></h4>
+<div class="paragraph">
+<p>Adds two new built-in variables, <em>gl_VertexIndex</em> and <em>gl_InstanceIndex</em> to
+replace the existing built-in variables <em>gl_VertexID</em> and <em>gl_InstanceID</em>.</p>
+</div>
+<div class="paragraph">
+<p>In the situations where the indexing is relative to some base offset,
+these built-in variables are defined, for Vulkan, to take on values as
+follows:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>gl_VertexIndex             base, base+1, base+2, ...
+gl_InstanceIndex           base, base+1, base+2, ...</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Where it depends on the situation what the base actually is.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_storage_classes"><a class="anchor" href="#_storage_classes"></a>Storage Classes:</h4>
+<div class="literalblock">
+<div class="content">
+<pre>uniform sampler2D...;        -&gt; UniformConstant
+uniform blockN { ... } ...;  -&gt; Uniform, with Block decoration
+in / out variable            -&gt; Input/Output, possibly with block (below)
+in / out block...            -&gt; Input/Output, with Block decoration
+buffer  blockN { ... } ...;  -&gt; Uniform, with BufferBlock decoration
+shared                       -&gt; Workgroup
+&lt;normal global&gt;              -&gt; Private</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>Vulkan Only: buffer  blockN { ... } ...;  -&gt; StorageBuffer, when requested
+OpenGL Only: uniform variable (non-block) -&gt; UniformConstant
+OpenGL Only: ... uniform atomic_uint ...  -&gt; AtomicCounter</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_inputoutput"><a class="anchor" href="#_inputoutput"></a>Input/Output</h4>
+<div class="paragraph">
+<p>Mapping of input/output blocks or variables is the same for all versions
+of GLSL or ESSL. To the extent variables or members are available in a
+version, its location is as follows:</p>
+</div>
+<div class="paragraph">
+<p>These are mapped to SPIR-V individual variables, with similarly spelled
+built-in decorations (except as noted):</p>
+</div>
+<div class="paragraph">
+<p>Any stage:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>in gl_VertexIndex          (Vulkan only)
+in gl_VertexID             (OpenGL only)
+in gl_InstanceIndex        (Vulkan only)
+in gl_InstanceID           (OpenGL only)
+in gl_InvocationID
+in gl_PatchVerticesIn      (PatchVertices)
+in gl_PrimitiveIDIn        (PrimitiveID)
+in/out gl_PrimitiveID      (in/out based only on storage qualifier)
+in gl_TessCoord</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>in/out gl_Layer
+in/out gl_ViewportIndex</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>patch in/out gl_TessLevelOuter  (uses Patch decoration)
+patch in/out gl_TessLevelInner  (uses Patch decoration)</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Compute stage only:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>in gl_NumWorkGroups
+in gl_WorkGroupSize
+in gl_WorkGroupID
+in gl_LocalInvocationID
+in gl_GlobalInvocationID
+in gl_LocalInvocationIndex</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Fragment stage only:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>in gl_FragCoord
+in gl_FrontFacing
+in gl_ClipDistance
+in gl_CullDistance
+in gl_PointCoord
+in gl_SampleID
+in gl_SamplePosition
+in gl_HelperInvocation
+out gl_FragDepth
+in gl_SampleMaskIn        (SampleMask)
+out gl_SampleMask         (in/out based only on storage qualifier)</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>These are mapped to SPIR-V blocks, as implied by the pseudo code, with
+the members decorated with similarly spelled built-in decorations:</p>
+</div>
+<div class="paragraph">
+<p>Non-fragment stage:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>in/out gl_PerVertex {   // some subset of these members will be used
+    gl_Position
+    gl_PointSize
+    gl_ClipDistance
+    gl_CullDistance
+}                       // name of block is for debug only</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>There is at most one input and one output block per stage in SPIR-V.
+The subset and order of members will match between stages sharing an
+interface.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vulkan_only_mapping_of_precision_qualifiers"><a class="anchor" href="#_vulkan_only_mapping_of_precision_qualifiers"></a>Vulkan Only: Mapping of Precision Qualifiers</h3>
+<div class="literalblock">
+<div class="content">
+<pre>lowp     -&gt; RelaxedPrecision, on storage variable and operation
+mediump  -&gt; RelaxedPrecision, on storage variable and operation
+highp    -&gt; 32-bit, same as int or float</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>portability tool/mode  -&gt; OpQuantizeToF16</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mapping_of_precise"><a class="anchor" href="#_mapping_of_precise"></a>Mapping of <strong>precise</strong>:</h3>
+<div class="literalblock">
+<div class="content">
+<pre>precise -&gt; NoContraction</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_opengl_mapping_of_atomic_uint_offset_layout_qualifier"><a class="anchor" href="#_opengl_mapping_of_atomic_uint_offset_layout_qualifier"></a>OpenGL Mapping of <strong>atomic_uint</strong> <em>offset</em> layout qualifier</h3>
+<div class="literalblock">
+<div class="content">
+<pre>offset         -&gt;  Offset (decoration)</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mapping_of_images"><a class="anchor" href="#_mapping_of_images"></a>Mapping of Images</h3>
+<div class="literalblock">
+<div class="content">
+<pre>imageLoad()   -&gt; OpImageRead
+imageStore()  -&gt; OpImageWrite
+texelFetch()  -&gt; OpImageFetch
+subpassInput  -&gt; OpTypeImage with Dim of SubpassData (Vulkan only)
+subpassLoad() -&gt; OpImageRead                         (Vulkan only)</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>imageAtomicXXX(params, data)  -&gt; %ptr = OpImageTexelPointer params
+                                        OpAtomicXXX %ptr, data</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>XXXQueryXXX(combined) -&gt; %image = OpImage combined
+                                OpXXXQueryXXX %image</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mapping_of_layouts"><a class="anchor" href="#_mapping_of_layouts"></a>Mapping of Layouts</h3>
+<div class="literalblock">
+<div class="content">
+<pre>std140/std430  -&gt;  explicit Offset, ArrayStride, and MatrixStride
+                    Decoration on struct members
+shared/packed  -&gt;  not allowed
+&lt;default&gt;      -&gt;  not shared, but std140 or std430
+xfb_offset     -&gt;  Offset Decoration on the object or struct member
+xfb_buffer     -&gt;  XfbBuffer Decoration on the object
+xfb_stride     -&gt;  XfbStride Decoration on the object
+any xfb_*      -&gt;  the Xfb Execution Mode is set
+captured XFB   -&gt;  has both XfbBuffer and Offset
+non-captured   -&gt;  lacking XfbBuffer or Offset</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>max_vertices   -&gt;  OutputVertices</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mapping_of_barriers"><a class="anchor" href="#_mapping_of_barriers"></a>Mapping of barriers</h3>
+<div class="literalblock">
+<div class="content">
+<pre>barrier() (compute) -&gt; OpControlBarrier(/*Execution*/Workgroup,
+                                        /*Memory*/Workgroup,
+                                        /*Semantics*/AcquireRelease |
+                                                    WorkgroupMemory)</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>barrier() (tess control) -&gt; OpControlBarrier(/*Execution*/Workgroup,
+                                            /*Memory*/Invocation,
+                                            /*Semantics*/None)</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>memoryBarrier() -&gt; OpMemoryBarrier(/*Memory*/Device,
+                                    /*Semantics*/AcquireRelease |
+                                                UniformMemory |
+                                                WorkgroupMemory |
+                                                ImageMemory)</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>memoryBarrierBuffer() -&gt; OpMemoryBarrier(/*Memory*/Device,
+                                        /*Semantics*/AcquireRelease |
+                                                    UniformMemory)</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>memoryBarrierShared() -&gt; OpMemoryBarrier(/*Memory*/Device,
+                                        /*Semantics*/AcquireRelease |
+                                                    WorkgroupMemory)</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>memoryBarrierImage() -&gt; OpMemoryBarrier(/*Memory*/Device,
+                                        /*Semantics*/AcquireRelease |
+                                                    ImageMemory)</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>groupMemoryBarrier() -&gt; OpMemoryBarrier(/*Memory*/Workgroup,
+                                        /*Semantics*/AcquireRelease |
+                                                    UniformMemory |
+                                                    WorkgroupMemory |
+                                                    ImageMemory)</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mapping_of_atomics"><a class="anchor" href="#_mapping_of_atomics"></a>Mapping of atomics</h3>
+<div class="literalblock">
+<div class="content">
+<pre>all atomic builtin functions -&gt; Semantics = None(Relaxed)</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>atomicExchange()             -&gt; OpAtomicExchange
+imageAtomicExchange()        -&gt; OpAtomicExchange
+atomicCompSwap()             -&gt; OpAtomicCompareExchange
+imageAtomicCompSwap()        -&gt; OpAtomicCompareExchange
+N/A                          -&gt; OpAtomicCompareExchangeWeak</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_opengl_only_mapping_of_atomics"><a class="anchor" href="#_opengl_only_mapping_of_atomics"></a>OpenGL Only: Mapping of Atomics</h3>
+<div class="literalblock">
+<div class="content">
+<pre>atomicCounterIncrement -&gt; OpAtomicIIncrement
+atomicCounterDecrement -&gt; OpAtomicIDecrement
+atomicCounter          -&gt; OpAtomicLoad</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mapping_of_other_instructions"><a class="anchor" href="#_mapping_of_other_instructions"></a>Mapping of other instructions</h3>
+<div class="literalblock">
+<div class="content">
+<pre>%     -&gt; OpUMod/OpSMod
+mod() -&gt; OpFMod
+N/A   -&gt; OpSRem/OpFRem</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>pack/unpack (conversion)    -&gt; pack/unpack in GLSL extended instructions
+pack/unpack (no conversion) -&gt; OpBitcast</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>VK_KHR_video_decode_av1 :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:features" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="features" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Feature Descriptions</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Vulkan Roadmap and Feature Descriptions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Roadmap.html">Vulkan Roadmap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Feature Descriptions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMDX_shader_enqueue.html">VK_AMDX_shader_enqueue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_anti_lag.html">VK_AMD_anti_lag</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_shader_early_and_late_fragment_tests.html">VK_AMD_shader_early_and_late_fragment_tests</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ANDROID_external_format_resolve.html">VK_ANDROID_external_format_resolve</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_pipeline_opacity_micromap.html">VK_ARM_pipeline_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_render_pass_striped.html">VK_ARM_render_pass_striped</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_tensors.html">VK_ARM_tensors</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_dynamic_state.html">VK_EXT_attachment_feedback_loop_dynamic_state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_layout.html">VK_EXT_attachment_feedback_loop_layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_calibrated_timestamps.html">VK_EXT_calibrated_timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_bias_control.html">VK_EXT_depth_bias_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_clamp_control.html">VK_EXT_depth_clamp_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_descriptor_buffer.html">VK_EXT_descriptor_buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_fault.html">VK_EXT_device_fault</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_generated_commands.html">VK_EXT_device_generated_commands</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_dynamic_rendering_unused_attachments.html">VK_EXT_dynamic_rendering_unused_attachments</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_extended_dynamic_state3.html">VK_EXT_extended_dynamic_state3</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_acquire_unmodified.html">VK_EXT_external_memory_acquire_unmodified</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_metal.html">VK_EXT_external_memory_metal</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_fragment_density_map_offset.html">VK_EXT_fragment_density_map_offset</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_frame_boundary.html">Proposal: <code>VK_EXT_frame_boundary</code></a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_graphics_pipeline_library.html">VK_EXT_graphics_pipeline_library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_host_image_copy.html">VK_EXT_host_image_copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_2d_array_of_3d.html">VK_EXT_image_2d_array_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_compression_control.html">VK_EXT_image_compression_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_sliced_view_of_3d.html">VK_EXT_image_sliced_view_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_layer_settings.html">VK_EXT_layer_settings</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_dithering.html">VK_EXT_legacy_dithering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_vertex_attributes.html">VK_EXT_legacy_vertex_attributes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_map_memory_placed.html">VK_EXT_map_memory_placed</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mesh_shader.html">VK_EXT_mesh_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_metal_objects.html">VK_EXT_metal_objects</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_multisampled_render_to_single_sampled.html">VK_EXT_multisampled_render_to_single_sampled</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mutable_descriptor_type.html">VK_EXT_mutable_descriptor_type</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_non_seamless_cube_map.html">VK_EXT_non_seamless_cube_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_opacity_micromap.html">VK_EXT_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_library_group_handles.html">VK_EXT_pipeline_library_group_handles</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_protected_access.html">VK_EXT_pipeline_protected_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_present_mode_fifo_latest_ready.html">VK_EXT_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_primitives_generated_query.html">VK_EXT_primitives_generated_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_rasterization_order_attachment_access.html">VK_EXT_rasterization_order_attachment_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_float8.html">VK_EXT_shader_float8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_module_identifier.html">VK_EXT_shader_module_identifier</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_object.html">VK_EXT_shader_object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_replicated_composites.html">VK_EXT_shader_replicated_composites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_tile_image.html">VK_EXT_shader_tile_image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_subpass_merge_feedback.html">VK_EXT_subpass_merge_feedback</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_surface_maintenance1.html">VK_EXT_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_swapchain_maintenance1.html">VK_EXT_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_zero_initialize_device_memory.html">VK_EXT_zero_initialize_device_memory</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_GOOGLE_surfaceless_query.html">VK_GOOGLE_surfaceless_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_cluster_culling_shader.html">VK_HUAWEI_cluster_culling_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_invocation_mask.html">VK_HUAWEI_invocation_mask</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_compute_shader_derivatives.html">VK_KHR_compute_shader_derivatives</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_cooperative_matrix.html">VK_KHR_cooperative_matrix</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering.html">VK_KHR_dynamic_rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering_local_read.html">VK_KHR_dynamic_rendering_local_read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shader_barycentric.html">VK_KHR_fragment_shader_barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shading_rate.html">VK_KHR_fragment_shading_rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_load_store_op_none.html">VK_KHR_load_store_op_none</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance5.html">VK_KHR_maintenance5</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance6.html">VK_KHR_maintenance6</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance7.html">VK_KHR_maintenance7</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance8.html">VK_KHR_maintenance8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance9.html">Proposal Template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_map_memory2.html">VK_KHR_map_memory2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_pipeline_binary.html">VK_KHR_pipeline_binary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_id2.html">VK_KHR_present_id2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_mode_fifo_latest_ready.html">VK_KHR_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_wait2.html">VK_KHR_present_wait2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_ray_tracing_position_fetch.html">VK_KHR_ray_tracing_position_fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_bfloat16.html">VK_KHR_shader_bfloat16</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_expect_assume.html">VK_KHR_shader_expect_assume</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_float_controls2.html">VK_KHR_shader_float_controls2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_integer_dot_product.html">VK_KHR_shader_integer_dot_product</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_maximal_reconvergence.html">VK_KHR_shader_maximal_reconvergence</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_quad_control.html">VK_KHR_shader_quad_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_relaxed_extended_instruction.html">VK_KHR_shader_relaxed_extended_instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_subgroup_rotate.html">Subgroup rotation instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_surface_maintenance1.html">VK_KHR_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_swapchain_maintenance1.html">VK_KHR_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_unified_image_layouts.html">VK_KHR_unified_image_layouts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_vertex_attribute_divisor.html">VK_KHR_vertex_attribute_divisor</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_av1.html">VK_KHR_video_decode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h264.html">VK_KHR_video_decode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h265.html">VK_KHR_video_decode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_queue.html">VK_KHR_video_decode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_vp9.html">VK_KHR_video_decode_vp9</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_av1.html">VK_KHR_video_encode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h264.html">VK_KHR_video_encode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h265.html">VK_KHR_video_encode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_intra_refresh.html">VK_KHR_video_encode_intra_refresh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_quantization_map.html">VK_KHR_video_encode_quantization_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_queue.html">VK_KHR_video_encode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance1.html">VK_KHR_video_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance2.html">VK_KHR_video_maintenance2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_queue.html">VK_KHR_video_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_LUNARG_direct_driver_loading.html">VK_LUNARG_direct_driver_loading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_MSFT_layered_driver.html">VK_MSFT_layered_driver</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cluster_acceleration_structure.html">VK_NV_cluster_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_matrix2.html">VK_NV_cooperative_matrix2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_vector.html">VK_NV_cooperative_vector</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_display_stereo.html">VK_NV_display_stereo</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_external_compute_queue.html">VK_NV_external_compute_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_partitioned_acceleration_structure.html">VK_NV_partitioned_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_linear_swept_spheres.html">VK_NV_ray_tracing_linear_swept_spheres</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_validation.html">VK_NV_ray_tracing_validation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_image_processing.html">VK_QCOM_image_processing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_memory_heap.html">VK_QCOM_tile_memory_heap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_properties.html">VK_QCOM_tile_properties</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_shading.html">VK_QCOM_tile_shading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_VERSION_1_4.html">Vulkan 1.4</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Feature Descriptions</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Feature Descriptions</a></li>
+    <li>Feature Descriptions</li>
+    <li><a href="VK_KHR_video_decode_av1.html">VK_KHR_video_decode_av1</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/features/modules/features/pages/proposals/VK_KHR_video_decode_av1.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">VK_KHR_video_decode_av1</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_problem_statement">1. Problem Statement</a></li>
+<li><a href="#_solution_space">2. Solution Space</a></li>
+<li><a href="#_proposal">3. Proposal</a>
+<ul class="sectlevel2">
+<li><a href="#_video_std_headers">3.1. Video Std Headers</a></li>
+<li><a href="#_av1_decode_profiles">3.2. AV1 Decode Profiles</a></li>
+<li><a href="#_av1_decode_capabilities">3.3. AV1 Decode Capabilities</a></li>
+<li><a href="#_av1_decode_parameter_sets">3.4. AV1 Decode Parameter Sets</a></li>
+<li><a href="#_av1_decoding_parameters">3.5. AV1 Decoding Parameters</a></li>
+<li><a href="#_av1_reference_management">3.6. AV1 Reference Management</a></li>
+</ul>
+</li>
+<li><a href="#_examples">4. Examples</a>
+<ul class="sectlevel2">
+<li><a href="#_select_queue_family_with_av1_decode_support">4.1. Select queue family with AV1 decode support</a></li>
+<li><a href="#_check_support_and_query_the_capabilities_for_an_av1_decode_profile">4.2. Check support and query the capabilities for an AV1 decode profile</a></li>
+<li><a href="#_create_av1_video_session_parameters_objects">4.3. Create AV1 video session parameters objects</a></li>
+<li><a href="#_record_av1_decode_operation_video_session_without_dpb_slots">4.4. Record AV1 decode operation (video session without DPB slots)</a></li>
+<li><a href="#_record_av1_decode_operation_without_reference_picture_list">4.5. Record AV1 decode operation without reference picture list</a></li>
+<li><a href="#_record_av1_decode_operation_with_reference_picture_list">4.6. Record AV1 decode operation with reference picture list</a></li>
+</ul>
+</li>
+<li><a href="#_issues">5. Issues</a>
+<ul class="sectlevel2">
+<li><a href="#_resolved_in_what_form_should_codec_specific_parameters_be_provided">5.1. RESOLVED: In what form should codec-specific parameters be provided?</a></li>
+<li><a href="#_resolved_what_are_the_requirements_for_the_codec_specific_input_parameters_and_bitstream_data">5.2. RESOLVED: What are the requirements for the codec-specific input parameters and bitstream data?</a></li>
+<li><a href="#_resolved_what_type_of_av1_parameter_sets_do_we_want_to_store_in_video_session_parameters_objects">5.3. RESOLVED: What type of AV1 parameter sets do we want to store in video session parameters objects?</a></li>
+<li><a href="#_resolved_what_should_be_the_contents_of_the_input_bitstream_buffer_when_decoding_an_av1_frame">5.4. RESOLVED: What should be the contents of the input bitstream buffer when decoding an AV1 frame?</a></li>
+<li><a href="#_resolved_does_the_application_need_to_specify_the_offsets_of_individual_tiles">5.5. RESOLVED: Does the application need to specify the offsets of individual tiles?</a></li>
+<li><a href="#_resolved_does_the_application_also_need_to_specify_the_sizes_of_individual_tiles">5.6. RESOLVED: Does the application also need to specify the sizes of individual tiles?</a></li>
+<li><a href="#_resolved_does_the_application_also_need_to_specify_the_offset_of_the_frame_header_obu">5.7. RESOLVED: Does the application also need to specify the offset of the frame header OBU?</a></li>
+<li><a href="#_resolved_does_the_application_also_need_to_specify_the_offsets_of_the_tile_group_obus_and_the_range_of_tiles_they_cover">5.8. RESOLVED: Does the application also need to specify the offsets of the tile group OBUs and the range of tiles they cover?</a></li>
+<li><a href="#_resolved_how_do_av1_references_map_to_dpb_slot_indices">5.9. RESOLVED: How do AV1 references map to DPB slot indices?</a></li>
+<li><a href="#_resolved_does_av1_decode_support_the_coincide_mode">5.10. RESOLVED: Does AV1 decode support the <em>coincide</em> mode?</a></li>
+<li><a href="#_resolved_should_film_grain_be_a_capability_or_part_of_the_video_profile_definition">5.11. RESOLVED: Should film grain be a capability or part of the video profile definition?</a></li>
+<li><a href="#_resolved_do_the_additional_memory_requirements_imposed_by_av1_film_grain_support_affect_the_memory_requirements_of_images_created_with_vk_image_create_video_profile_independent_bit_khr">5.12. RESOLVED: Do the additional memory requirements imposed by AV1 film grain support affect the memory requirements of images created with <code>VK_IMAGE_CREATE_VIDEO_PROFILE_INDEPENDENT_BIT_KHR</code>?</a></li>
+<li><a href="#_resolved_does_the_application_has_to_send_frame_obus_that_have_show_existing_frame_set_for_decoding">5.13. RESOLVED: Does the application has to send frame OBUs that have <code>show_existing_frame</code> set for decoding?</a></li>
+<li><a href="#_resolved_are_any_of_the_frame_width_minus_1_frame_height_minus_1_render_width_minus_1_and_render_height_minus_1_parameters_from_the_frame_header_redundant_with_respect_to_the_decoded_frame_size_specified_in_vkvideodecodeinfokhrdstpictureresource_codedextent">5.14. RESOLVED: Are any of the <code>frame_width_minus_1</code>, <code>frame_height_minus_1</code>, <code>render_width_minus_1</code>, and <code>render_height_minus_1</code> parameters from the frame header redundant with respect to the decoded frame size specified in <code>VkVideoDecodeInfoKHR::dstPictureResource.codedExtent</code>?</a></li>
+<li><a href="#_resolved_are_the_extents_in_superblocks_specified_by_the_width_in_sbs_minus_1_and_height_in_sbs_minus_1_tile_parameters_necessary">5.15. RESOLVED: Are the extents in superblocks specified by the <code>width_in_sbs_minus_1</code> and <code>height_in_sbs_minus_1</code> tile parameters necessary?</a></li>
+<li><a href="#_resolved_what_codec_specific_parameters_need_to_be_specified_for_the_active_reference_pictures">5.16. RESOLVED: What codec-specific parameters need to be specified for the active reference pictures?</a></li>
+<li><a href="#_resolved_how_is_reference_picture_setup_requested_for_av1_decode_operations">5.17. RESOLVED: How is reference picture setup requested for AV1 decode operations?</a></li>
+<li><a href="#_resolved_are_film_grain_parameters_tracked_as_part_of_dpb_slot_reference_picture_metadata">5.18. RESOLVED: Are film grain parameters tracked as part of DPB slot reference picture metadata?</a></li>
+<li><a href="#_resolved_should_the_size_of_the_gmtype_and_gm_params_arrays_be_std_video_av1_num_ref_frames_or_std_video_av1_refs_per_frame">5.19. RESOLVED: Should the size of the <code>GmType</code> and <code>gm_params</code> arrays be <code>STD_VIDEO_AV1_NUM_REF_FRAMES</code> or <code>STD_VIDEO_AV1_REFS_PER_FRAME</code>?</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This document outlines a proposal to enable performing AV1 video decode operations in Vulkan.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>1. Problem Statement</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>VK_KHR_video_queue</code> extension introduces support for video coding operations and the <code>VK_KHR_video_decode_queue</code> extension further extends this with APIs specific to video decoding.</p>
+</div>
+<div class="paragraph">
+<p>The goal of this proposal is to build upon this infrastructure to introduce support for decoding elementary video stream sequences compliant with the AV1 video compression standard.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution Space</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>As the <code>VK_KHR_video_queue</code> and <code>VK_KHR_video_decode_queue</code> extensions already laid down the architecture for how codec-specific video decode extensions need to be designed, this extension only needs to define the APIs to provide the necessary codec-specific parameters at various points during the use of the codec-independent APIs. In particular:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>APIs allowing to specify AV1 sequence headers to be stored in video session parameters objects</p>
+</li>
+<li>
+<p>APIs allowing to specify AV1 information specific to the decoded picture</p>
+</li>
+<li>
+<p>APIs allowing to specify AV1 reference picture information specific to the active reference pictures and optional reconstructed picture used in video decode operations</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The following options have been considered to choose the structure of these definitions:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Allow specifying packed codec-specific data to the APIs in the form they appear in bitstreams</p>
+</li>
+<li>
+<p>Specify codec-specific parameters through custom type definitions that the application can populate after parsing the corresponding data elements in the bitstreams</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Option (1) would allow for a simpler API, but it requires implementations to include an appropriate parser for these data elements. As decoding applications typically parse these data elements for other reasons anyway, this proposal choses option (2) to enable the application to provide the needed parameters through custom definitions provided by a video std header dedicated to AV1 video decoding.</p>
+</div>
+<div class="paragraph">
+<p>The following additional options have been considered to choose the way this video std header is defined:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Include all definitions in this AV1 video decode std header</p>
+</li>
+<li>
+<p>Add a separate video std header that includes AV1 parameter definitions that can be shared across video decoding and video encoding use cases that the AV1 video decode std header depends on, and only include decode-specific definitions in the AV1 video decode std header</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>For consistency with existing codec-specific decode extensions, this extension uses option (2) and introduces the following new video std headers:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>vulkan_video_codec_av1std</code> - containing common definitions for all AV1 video coding operations</p>
+</li>
+<li>
+<p><code>vulkan_video_codec_av1std_decode</code> - containing definitions specific to AV1 video decoding operations</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These headers can be included as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">#include &lt;vk_video/vulkan_video_codec_av1std.h&gt;
+#include &lt;vk_video/vulkan_video_codec_av1std_decode.h&gt;</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>3. Proposal</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_video_std_headers"><a class="anchor" href="#_video_std_headers"></a>3.1. Video Std Headers</h3>
+<div class="paragraph">
+<p>This extension uses the new <code>vulkan_video_codec_av1std_decode</code> video std header. Implementations must always support at least version 1.0.0 of this video std header.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_av1_decode_profiles"><a class="anchor" href="#_av1_decode_profiles"></a>3.2. AV1 Decode Profiles</h3>
+<div class="paragraph">
+<p>This extension introduces the new video codec operation <code>VK_VIDEO_CODEC_OPERATION_DECODE_AV1_BIT_KHR</code>. This flag can be used to check whether a particular queue family supports decoding AV1 content, as returned in <code>VkQueueFamilyVideoPropertiesKHR</code>.</p>
+</div>
+<div class="paragraph">
+<p>An AV1 decode profile can be defined through a <code>VkVideoProfileInfoKHR</code> structure using this new video codec operation and by including the following new codec-specific profile information structure in the <code>pNext</code> chain:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoDecodeAV1ProfileInfoKHR {
+    VkStructureType           sType;
+    const void*               pNext;
+    StdVideoAV1Profile        stdProfile;
+    VkBool32                  filmGrainSupport;
+} VkVideoDecodeAV1ProfileInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>stdProfile</code> specifies the AV1 profile.</p>
+</div>
+<div class="paragraph">
+<p><code>filmGrainSupport</code> specifies whether AV1 film grain can be used with the video profile.</p>
+</div>
+<div class="paragraph">
+<p>If the application knows in advance that the decoded content does not use AV1 film grain or if the application would prefer applying film grain manually onto the decode output picture (e.g. using shaders), then setting <code>filmGrainSupport</code> to <code>VK_FALSE</code> in the video profile may reduce the memory requirements of video sessions and/or video picture resources.</p>
+</div>
+<div class="paragraph">
+<p>Some implementations may not support AV1 film grain. On such implementations <code>vkGetPhysicalDeviceVideoCapabilitiesKHR</code> will return <code>VK_ERROR_VIDEO_PROFILE_CODEC_NOT_SUPPORTED_KHR</code> when called with an AV1 decode profile having <code>filmGrainSupport</code> set to <code>VK_TRUE</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_av1_decode_capabilities"><a class="anchor" href="#_av1_decode_capabilities"></a>3.3. AV1 Decode Capabilities</h3>
+<div class="paragraph">
+<p>Applications need to include the following new structure in the <code>pNext</code> chain of <code>VkVideoCapabilitiesKHR</code> when calling the <code>vkGetPhysicalDeviceVideoCapabilitiesKHR</code> command to retrieve the capabilities specific to AV1 video decoding:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoDecodeAV1CapabilitiesKHR {
+    VkStructureType         sType;
+    void*                   pNext;
+    StdVideoAV1Level        maxLevel;
+} VkVideoDecodeAV1CapabilitiesKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>maxLevel</code> indicates the maximum supported AV1 level.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_av1_decode_parameter_sets"><a class="anchor" href="#_av1_decode_parameter_sets"></a>3.4. AV1 Decode Parameter Sets</h3>
+<div class="paragraph">
+<p>The use of video session parameters objects is mandatory when decoding AV1 video streams. Applications need to include the following new structure in the <code>pNext</code> chain of <code>VkVideoSessionParametersCreateInfoKHR</code> when creating video session parameters objects for AV1 decode use, to specify the sequence header data of the created object:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoDecodeAV1SessionParametersCreateInfoKHR {
+    VkStructureType                     sType;
+    const void*                         pNext;
+    const StdVideoAV1SequenceHeader*    pStdSequenceHeader;
+} VkVideoDecodeAVSessionParametersCreateInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>pStdSequenceHeader</code> specifies the AV1 sequence header to store in the created video session parameters object.</p>
+</div>
+<div class="paragraph">
+<p>As AV1 decode video session parameters objects can only store a single AV1 sequence header, they do not support updates using the <code>vkUpdateVideoSessionParametersKHR</code> command. Applications should create a new video session parameters object for each new sequence header decoded from the incoming bitstream.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_av1_decoding_parameters"><a class="anchor" href="#_av1_decoding_parameters"></a>3.5. AV1 Decoding Parameters</h3>
+<div class="paragraph">
+<p>Decode parameters specific to AV1 need to be provided by the application through the <code>pNext</code> chain of <code>VkVideoDecodeInfoKHR</code>, using the following new structure:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoDecodeAV1PictureInfoKHR {
+    VkStructureType                     sType;
+    const void*                         pNext;
+    const StdVideoDecodeAV1PictureInfo* pStdPictureInfo;
+    int32_t                             referenceNameSlotIndices[VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR];
+    uint32_t                            frameHeaderOffset;
+    uint32_t                            tileCount;
+    const uint32_t*                     pTileOffsets;
+    const uint32_t*                     pTileSizes;
+} VkVideoDecodeAV1PictureInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>pStdPictureInfo</code> points to the codec-specific decode parameters defined in the <code>vulkan_video_codec_av1std_decode</code> video std header (including the AV1 frame header parameters).</p>
+</div>
+<div class="paragraph">
+<p>The <code>referenceNameSlotIndices</code> array provides a mapping from AV1 reference names to the DPB slot indices currently associated with the used reference picture resources. Multiple AV1 reference names may refer to the same DPB slot, while unused AV1 reference names are indicated by specifying a negative DPB slot index in the corresponding element of the array. As this array only provides a mapping for reference pictures used for inter-frame coding, for a given AV1 reference name <code>frame</code> (as defined in the enumeration type <code>StdVideoAV1ReferenceName</code>) the corresponding DPB slot index is specified in <code>referenceNameSlotIndices[frame - STD_VIDEO_AV1_REFERENCE_NAME_LAST_FRAME]</code>. Further details are provided about the AV1 reference management model later, in a dedicated section of this proposal.</p>
+</div>
+<div class="paragraph">
+<p><code>frameHeaderOffset</code> specifies the relative offset of the frame header OBU within the video bitstream buffer range used by the video decode operation.</p>
+</div>
+<div class="paragraph">
+<p>The <code>pTileOffsets</code> and <code>pTileSizes</code> arrays contain the relative offset and size of individual tiles of the picture within the video bitstream buffer range used by the video decode operation.</p>
+</div>
+<div class="paragraph">
+<p>The active sequence header is the one stored in the bound video session parameters object.</p>
+</div>
+<div class="paragraph">
+<p>Picture information specific to AV1 for the active reference pictures and the optional reconstructed picture need to be provided by the application through the <code>pNext</code> chain of corresponding elements of <code>VkVideoDecodeInfoKHR::pReferenceSlots</code> and the <code>pNext</code> chain of <code>VkVideoDecodeInfoKHR::pSetupReferenceSlot</code>, respectively, using the following new structure:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoDecodeAV1DpbSlotInfoKHR {
+    VkStructureType                         sType;
+    const void*                             pNext;
+    const StdVideoDecodeAV1ReferenceInfo*   pStdReferenceInfo;
+} VkVideoDecodeAV1DpbSlotInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>pStdReferenceInfo</code> points to the codec-specific reference picture parameters defined in the <code>vulkan_video_codec_av1std_decode</code> video std header.</p>
+</div>
+<div class="paragraph">
+<p>It is the application&#8217;s responsibility to specify video bitstream buffer data and codec-specific parameters that are compliant with the rules defined by the AV1 video compression standard. While it is not illegal, from the API usage&#8217;s point of view, to specify non-compliant inputs, they may cause the video decode operation to complete unsuccessfully and will cause the output pictures (decode output and reconstructed pictures) to have undefined contents after the execution of the operation.</p>
+</div>
+<div class="paragraph">
+<p>For more information about how to parse individual AV1 bitstream syntax elements, calculate derived values, and, in general, how to interpret these parameters, please refer to the corresponding sections of the <a href="https://aomediacodec.github.io/av1-spec/av1-spec.pdf">AV1 Specification</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_av1_reference_management"><a class="anchor" href="#_av1_reference_management"></a>3.6. AV1 Reference Management</h3>
+<div class="paragraph">
+<p>The AV1 video compression standard supports each frame to reference up to 7 + 1 reference pictures for sample prediction. The seven "real" reference pictures are identified with so called AV1 reference names (<code>LAST_FRAME</code>, <code>LAST2_FRAME</code>, <code>LAST3_FRAME</code>, <code>GOLDEN_FRAME</code>, <code>BWDREF_FRAME</code>, <code>ALTREF2_FRAME</code>, and <code>ALTREF_FRAME</code>) identifying different types of forward and backward references. Each AV1 reference name has associated semantics that affect how the reference picture data is used for inter-frame sample prediction. In addition, there is a special AV1 reference name called <code>INTRA_FRAME</code> that corresponds to the currently decoded frame used for intra-frame sample prediction.</p>
+</div>
+<div class="paragraph">
+<p>The AV1 decoder model also incorporates the concept of a VBI which has 8 slots and maintains the set of reference pictures and associated metadata that can be included in the list of active reference pictures when decoding subsequent frames. The reference frame update process detailed in section 7.20 of the AV1 specification allows associating multiple VBI slots with the same reference picture and logically replicating the metadata associated with the activated reference picture across these VBI slots.</p>
+</div>
+<div class="paragraph">
+<p>The VBI model, however, is only an intermediate step of the reference picture resource management, as the AV1 decoder model maps these in the end to actual frame buffer resources stored in a buffer pool. While the AV1 specification defines this buffer pool to have at most 10 entries, this specific size is only a consequence of logical model.</p>
+</div>
+<div class="paragraph">
+<p>In Vulkan, DPB slot management and association with video picture resources is entirely application-controlled. Accordingly, this proposal provides a direct mapping from AV1 reference names to active DPB slot indices using the <code>VkVideoDecodeAV1PictureInfoKHR::referenceNameSlotIndices</code> array, effectively bypassing the reference name to VBI slot and the VBI slot to buffer pool resource mapping. Applications are responsible for determining this mapping based on the codec syntax elements <code>last_frame_idx</code>, <code>gold_frame_idx</code>, and <code>ref_frame_idx</code> (whichever is applicable), and the DPB slot (and DPB picture resource) management strategy they choose.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_examples"><a class="anchor" href="#_examples"></a>4. Examples</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_select_queue_family_with_av1_decode_support"><a class="anchor" href="#_select_queue_family_with_av1_decode_support"></a>4.1. Select queue family with AV1 decode support</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">uint32_t queueFamilyIndex;
+uint32_t queueFamilyCount;
+
+vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &amp;queueFamilyCount, NULL);
+
+VkQueueFamilyProperties2* props = calloc(queueFamilyCount,
+    sizeof(VkQueueFamilyProperties2));
+VkQueueFamilyVideoPropertiesKHR* videoProps = calloc(queueFamilyCount,
+    sizeof(VkQueueFamilyVideoPropertiesKHR));
+
+for (queueFamilyIndex = 0; queueFamilyIndex &lt; queueFamilyCount; ++queueFamilyIndex) {
+    props[queueFamilyIndex].sType = VK_STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2;
+    props[queueFamilyIndex].pNext = &amp;videoProps[queueFamilyIndex];
+
+    videoProps[queueFamilyIndex].sType = VK_STRUCTURE_TYPE_QUEUE_FAMILY_VIDEO_PROPERTIES_KHR;
+}
+
+vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &amp;queueFamilyCount, props);
+
+for (queueFamilyIndex = 0; queueFamilyIndex &lt; queueFamilyCount; ++queueFamilyIndex) {
+    if ((props[queueFamilyIndex].queueFamilyProperties.queueFlags &amp; VK_QUEUE_VIDEO_DECODE_BIT_KHR) != 0 &amp;&amp;
+        (videoProps[queueFamilyIndex].videoCodecOperations &amp; VK_VIDEO_CODEC_OPERATION_DECODE_AV1_BIT_KHR) != 0) {
+        break;
+    }
+}
+
+if (queueFamilyIndex &lt; queueFamilyCount) {
+    // Found appropriate queue family
+    ...
+} else {
+    // Did not find a queue family with the needed capabilities
+    ...
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_check_support_and_query_the_capabilities_for_an_av1_decode_profile"><a class="anchor" href="#_check_support_and_query_the_capabilities_for_an_av1_decode_profile"></a>4.2. Check support and query the capabilities for an AV1 decode profile</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkResult result;
+
+VkVideoDecodeAV1ProfileInfoKHR decodeAV1ProfileInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_PROFILE_INFO_KHR,
+    .pNext = NULL,
+    .stdProfile = STD_VIDEO_AV1_PROFILE_MAIN,
+    .filmGrainSupport = VK_TRUE
+};
+
+VkVideoProfileInfoKHR profileInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR,
+    .pNext = &amp;decodeAV1ProfileInfo,
+    .videoCodecOperation = VK_VIDEO_CODEC_OPERATION_DECODE_AV1_BIT_KHR,
+    .chromaSubsampling = VK_VIDEO_CHROMA_SUBSAMPLING_420_BIT_KHR,
+    .lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR,
+    .chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR
+};
+
+VkVideoDecodeAV1CapabilitiesKHR decodeAV1Capabilities = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_CAPABILITIES_KHR,
+    .pNext = NULL,
+};
+
+VkVideoDecodeCapabilitiesKHR decodeCapabilities = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR,
+    .pNext = &amp;decodeAV1Capabilities
+}
+
+VkVideoCapabilitiesKHR capabilities = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR,
+    .pNext = &amp;decodeCapabilities
+};
+
+result = vkGetPhysicalDeviceVideoCapabilitiesKHR(physicalDevice, &amp;profileInfo, &amp;capabilities);
+
+if (result == VK_SUCCESS) {
+    // Profile is supported, check additional capabilities
+    ...
+} else {
+    // Profile is not supported, result provides additional information about why
+    ...
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_create_av1_video_session_parameters_objects"><a class="anchor" href="#_create_av1_video_session_parameters_objects"></a>4.3. Create AV1 video session parameters objects</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkVideoSessionParametersKHR videoSessionParams = VK_NULL_HANDLE;
+
+StdVideoAV1SequenceHeader sequenceHeader = {};
+// parse and populate sequence header parameters
+...
+
+VkVideoDecodeAV1SessionParametersCreateInfoKHR decodeAV1CreateInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_SESSION_PARAMETERS_CREATE_INFO_KHR,
+    .pNext = NULL,
+    .pStdSequenceHeader = &amp;sequenceHeader
+};
+
+VkVideoSessionParametersCreateInfoKHR createInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_PARAMETERS_CREATE_INFO_KHR,
+    .pNext = &amp;decodeAV1CreateInfo,
+    .flags = 0,
+    .videoSessionParametersTemplate = VK_NULL_HANDLE,
+    .videoSession = videoSession
+};
+
+vkCreateVideoSessionParametersKHR(device, &amp;createInfo, NULL, &amp;videoSessionParams);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_record_av1_decode_operation_video_session_without_dpb_slots"><a class="anchor" href="#_record_av1_decode_operation_video_session_without_dpb_slots"></a>4.4. Record AV1 decode operation (video session without DPB slots)</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+
+StdVideoDecodeAV1PictureInfo stdPictureInfo = {};
+// parse and populate picture info from frame header data
+...
+
+VkVideoDecodeAV1PictureInfoKHR decodeAV1PictureInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_PICTURE_INFO_KHR,
+    .pNext = NULL,
+    .pStdPictureInfo = &amp;stdPictureInfo,
+    .frameHeaderOffset = ... // frame header OBU offset relative to the bitstream buffer range
+    .tileCount = ... // number of tiles
+    .pTileOffsets = ... // array of tile offsets relative to the bitstream buffer range
+    .pTileSizes = ... // array of tile sizes
+};
+
+// As no references are used, make sure that no DPB slot indices are associated with
+// the AV1 reference names
+for (uint32_t i = 0; i &lt; VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR; ++i) {
+    decodeAV1PictureInfo.referenceNameSlotIndices[i] = -1;
+}
+
+VkVideoDecodeInfoKHR decodeInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR,
+    .pNext = &amp;decodeAV1PictureInfo,
+    ...
+    // reconstructed picture is not needed if video session was created without DPB slots
+    .pSetupReferenceSlot = NULL,
+    .referenceSlotCount = 0,
+    .pReferenceSlots = NULL
+};
+
+vkCmdDecodeVideoKHR(commandBuffer, &amp;decodeInfo);
+
+vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_record_av1_decode_operation_without_reference_picture_list"><a class="anchor" href="#_record_av1_decode_operation_without_reference_picture_list"></a>4.5. Record AV1 decode operation without reference picture list</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+
+StdVideoDecodeAV1ReferenceInfo stdReferenceInfo = {};
+// parse and populate reconstructed reference picture info from frame data
+...
+
+VkVideoDecodeAV1DpbSlotInfoKHR decodeAV1DpbSlotInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_DPB_SLOT_INFO_KHR,
+    .pNext = NULL,
+    .pStdReferenceInfo = &amp;stdReferenceInfo
+};
+
+VkVideoReferenceSlotInfoKHR setupSlotInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR,
+    .pNext = &amp;decodeAV1DpbSlotInfo
+    ...
+};
+
+StdVideoDecodeAV1PictureInfo stdPictureInfo = {};
+// parse and populate picture info from frame header data
+...
+if (stdPictureInfo.refresh_frame_flags != 0) {
+    // reconstructed picture will activate DPB slot
+} else {
+    // reconstructed picture and slot may only be used by implementations as transient resource
+}
+
+VkVideoDecodeAV1PictureInfoKHR decodeAV1PictureInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_PICTURE_INFO_KHR,
+    .pNext = NULL,
+    .pStdPictureInfo = &amp;stdPictureInfo,
+    .frameHeaderOffset = ... // frame header OBU offset relative to the bitstream buffer range
+    .tileCount = ... // number of tiles
+    .pTileOffsets = ... // array of tile offsets relative to the bitstream buffer range
+    .pTileSizes = ... // array of tile sizes
+};
+
+// As no references are used, make sure that no DPB slot indices are associated with
+// the AV1 reference names
+for (uint32_t i = 0; i &lt; VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR; ++i) {
+    decodeAV1PictureInfo.referenceNameSlotIndices[i] = -1;
+}
+
+VkVideoDecodeInfoKHR decodeInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR,
+    .pNext = &amp;decodeAV1PictureInfo,
+    ...
+    .pSetupReferenceSlot = &amp;setupSlotInfo,
+    ...
+};
+
+vkCmdDecodeVideoKHR(commandBuffer, &amp;decodeInfo);
+
+vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_record_av1_decode_operation_with_reference_picture_list"><a class="anchor" href="#_record_av1_decode_operation_with_reference_picture_list"></a>4.6. Record AV1 decode operation with reference picture list</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+
+StdVideoDecodeAV1ReferenceInfo stdReferenceInfo[] = {};
+// populate reference picture info for each active reference picture
+...
+
+VkVideoDecodeAV1DpbSlotInfoKHR decodeAV1DpbSlotInfo[] = {
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_DPB_SLOT_INFO_KHR,
+        .pNext = NULL,
+        .pStdReferenceInfo = &amp;stdReferenceInfo[0]
+    },
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_DPB_SLOT_INFO_KHR,
+        .pNext = NULL,
+        .pStdReferenceInfo = &amp;stdReferenceInfo[1]
+    },
+    ...
+};
+
+
+VkVideoReferenceSlotInfoKHR referenceSlotInfo[] = {
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR,
+        .pNext = &amp;decodeAV1DpbSlotInfo[0],
+        ...
+    },
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR,
+        .pNext = &amp;decodeAV1DpbSlotInfo[1],
+        ...
+    },
+    ...
+};
+
+StdVideoDecodeAV1PictureInfo stdPictureInfo = {};
+// parse and populate picture info from frame header data
+...
+if (stdPictureInfo.refresh_frame_flags != 0) {
+    // reconstructed picture will activate DPB slot
+} else {
+    // reconstructed picture and slot may only be used as transient resource by implementations
+}
+
+VkVideoDecodeAV1PictureInfoKHR decodeAV1PictureInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_PICTURE_INFO_KHR,
+    .pNext = NULL,
+    .pStdPictureInfo = &amp;stdPictureInfo,
+    .frameHeaderOffset = ... // frame header OBU offset relative to the bitstream buffer range
+    .tileCount = ... // number of tiles
+    .pTileOffsets = ... // array of tile offsets relative to the bitstream buffer range
+    .pTileSizes = ... // array of tile sizes
+};
+
+// Initialize AV1 reference name to DPB slot index mapping and add mapping
+// corresponding to the active reference picture list
+for (uint32_t i = 0; i &lt; VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR; ++i) {
+    decodeAV1PictureInfo.referenceNameSlotIndices[i] = -1;
+}
+// NOTE: This is just an example, the actually used AV1 reference names come from the frame header
+decodeAV1PictureInfo.referenceNameSlotIndices[STD_VIDEO_AV1_REFERENCE_NAME_GOLDEN_FRAME - STD_VIDEO_AV1_REFERENCE_NAME_LAST_FRAME] =
+    referenceSlotInfo[0].slotIndex;
+decodeAV1PictureInfo.referenceNameSlotIndices[STD_VIDEO_AV1_REFERENCE_NAME_LAST_FRAME - STD_VIDEO_AV1_REFERENCE_NAME_LAST_FRAME] =
+    referenceSlotInfo[1].slotIndex;
+...
+
+VkVideoDecodeInfoKHR decodeInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR,
+    .pNext = &amp;decodeAV1PictureInfo,
+    ...
+    .referenceSlotCount = sizeof(referenceSlotInfo) / sizeof(referenceSlotInfo[0]),
+    .pReferenceSlots = &amp;referenceSlotInfo[0]
+};
+
+vkCmdDecodeVideoKHR(commandBuffer, &amp;decodeInfo);
+
+vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_issues"><a class="anchor" href="#_issues"></a>5. Issues</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_resolved_in_what_form_should_codec_specific_parameters_be_provided"><a class="anchor" href="#_resolved_in_what_form_should_codec_specific_parameters_be_provided"></a>5.1. RESOLVED: In what form should codec-specific parameters be provided?</h3>
+<div class="paragraph">
+<p>In the form of structures defined by the <code>vulkan_video_codec_av1std_decode</code> and <code>vulkan_video_codec_av1std</code> video std headers.</p>
+</div>
+<div class="paragraph">
+<p>While it is anticipated that AV1 video encoding will need additional AV1 sequence header parameters and a different set picture parameters, thus more parameters are defined by this proposal as AV1 video decode specific definitions, there remains a significant number of definitions that can be reused across AV1 video decode and encode operations which justify having a common AV1 video std header.</p>
+</div>
+<div class="paragraph">
+<p>Applications are responsible to parse sequence header, frame header, and tile group data and use the parsed data to populate the structures defined by the video std headers. It is also the application&#8217;s responsibility to maintain and manage these data structures, as needed, to be able to provide them as inputs to video decode operations where needed.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_what_are_the_requirements_for_the_codec_specific_input_parameters_and_bitstream_data"><a class="anchor" href="#_resolved_what_are_the_requirements_for_the_codec_specific_input_parameters_and_bitstream_data"></a>5.2. RESOLVED: What are the requirements for the codec-specific input parameters and bitstream data?</h3>
+<div class="paragraph">
+<p>It is legal from an API usage perspective for the application to provide any values for the codec-specific input parameters (parameter sets, picture information, etc.) or video bitstream data. However, if the input data does not conform to the requirements of the AV1 video compression standard, then video decode operations may complete unsuccessfully and, in general, the outputs produced by the video decode operation will have undefined contents.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_what_type_of_av1_parameter_sets_do_we_want_to_store_in_video_session_parameters_objects"><a class="anchor" href="#_resolved_what_type_of_av1_parameter_sets_do_we_want_to_store_in_video_session_parameters_objects"></a>5.3. RESOLVED: What type of AV1 parameter sets do we want to store in video session parameters objects?</h3>
+<div class="paragraph">
+<p>Only sequence headers. As AV1 does not have identifiers for these, each video session parameters object will only ever store a single AV1 sequence header and thus applications have to create separate video session parameters objects for each sequence.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_what_should_be_the_contents_of_the_input_bitstream_buffer_when_decoding_an_av1_frame"><a class="anchor" href="#_resolved_what_should_be_the_contents_of_the_input_bitstream_buffer_when_decoding_an_av1_frame"></a>5.4. RESOLVED: What should be the contents of the input bitstream buffer when decoding an AV1 frame?</h3>
+<div class="paragraph">
+<p>One or more frame OBUs, each consisting of a frame header OBU and a tile group OBU. The tile group OBUs need to include all tiles of the frame.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_does_the_application_need_to_specify_the_offsets_of_individual_tiles"><a class="anchor" href="#_resolved_does_the_application_need_to_specify_the_offsets_of_individual_tiles"></a>5.5. RESOLVED: Does the application need to specify the offsets of individual tiles?</h3>
+<div class="paragraph">
+<p>Yes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_does_the_application_also_need_to_specify_the_sizes_of_individual_tiles"><a class="anchor" href="#_resolved_does_the_application_also_need_to_specify_the_sizes_of_individual_tiles"></a>5.6. RESOLVED: Does the application also need to specify the sizes of individual tiles?</h3>
+<div class="paragraph">
+<p>Yes. Especially as the tiles may be spread across multiple tile group OBUs.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_does_the_application_also_need_to_specify_the_offset_of_the_frame_header_obu"><a class="anchor" href="#_resolved_does_the_application_also_need_to_specify_the_offset_of_the_frame_header_obu"></a>5.7. RESOLVED: Does the application also need to specify the offset of the frame header OBU?</h3>
+<div class="paragraph">
+<p>Due to the base address alignment requirements of the bitstream buffer, having the frame header OBU at offset zero within the application provided bitstream buffer range may require an additional copy on the application side which would be suboptimal. There are at least two possible options to avoid that:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Add a parameter to the AV1 decode picture information structure indicating the offset of the frame header OBU</p>
+</li>
+<li>
+<p>Require <code>minBitstreamBufferOffsetAlignment</code> to be <code>1</code> for AV1 decode profiles</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This proposal follows option (1) and adds an explicit frame header OBU offset parameter for the application to be able to place bitstream data into the buffer at any offset typically dictated by the input content, while also allowing implementations to parse any data, if needed, from the frame header OBU.</p>
+</div>
+<div class="paragraph">
+<p>If the frame is split across multiple tile group OBUs, then multiple frame header OBUs may be present in the bitstream, but as those all have to match it is sufficient to specify the offset of either of them.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_does_the_application_also_need_to_specify_the_offsets_of_the_tile_group_obus_and_the_range_of_tiles_they_cover"><a class="anchor" href="#_resolved_does_the_application_also_need_to_specify_the_offsets_of_the_tile_group_obus_and_the_range_of_tiles_they_cover"></a>5.8. RESOLVED: Does the application also need to specify the offsets of the tile group OBUs and the range of tiles they cover?</h3>
+<div class="paragraph">
+<p>No. Implementations only need the offsets and sizes of individual tiles but do not care about the grouping of tiles into tile group OBUs.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_how_do_av1_references_map_to_dpb_slot_indices"><a class="anchor" href="#_resolved_how_do_av1_references_map_to_dpb_slot_indices"></a>5.9. RESOLVED: How do AV1 references map to DPB slot indices?</h3>
+<div class="paragraph">
+<p>AV1 associates different semantics to the various types of references referred to by a frame (<code>INTRA_FRAME..ALTREF_FRAME</code>).</p>
+</div>
+<div class="paragraph">
+<p>The AV1 <code>ref_frame_idx</code> array provides a mapping table from the AV1 reference names <code>LAST_FRAME..ALTREF_FRAME</code> to reference picture slot numbers. These numbers are indices used to address various state vectors, and the so called VBI (virtual buffer index) that maps individual reference picture slots to reference picture resources (BufferPool entries).</p>
+</div>
+<div class="paragraph">
+<p>While conceptually the AV1 VBI is similar to the Vulkan DPB model, it has certain behaviors that render using the VBI directly as the Vulkan DPB impossible. In particular:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The reference frame update process described in section 7.20 of the AV1 specification allows the video stream to activate multiple VBI slots with the currently reconstructed picture through setting multiple bits in the <code>refresh_frame_flags</code> syntax element, but the Vulkan DPB model does not allow activating multiple DPB slots at once with the same video picture resource</p>
+</li>
+<li>
+<p>As a result, multiple slots of the AV1 VBI can refer to the same reference picture resource at any given time, which is also not allowed in the Vulkan DPB model</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Accordingly, the AV1 VBI cannot be used directly as the Vulkan DPB and, as such, the AV1 reference picture slots are not equivalent with the Vulkan DPB slot indices.</p>
+</div>
+<div class="paragraph">
+<p>This means that there is a need for some form of mapping from AV1 reference names to Vulkan DPB slot indices. The following options were considered to enable this:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Require the application to provide an already remapped form of the <code>ref_frame_idx</code> array (and any other codec-specific parameters that provide per AV1 reference name information) to the implementation where the AV1 reference picture slots (VBI slot indices) are already replaced with Vulkan DPB slot indices</p>
+</li>
+<li>
+<p>Require the application to provide a mapping table from AV1 reference picture slots (VBI slot indices) to Vulkan DPB slot indices</p>
+</li>
+<li>
+<p>Require the application to provide a mapping table from AV1 reference names (<code>LAST_FRAME..ALTREF_FRAME</code>) to Vulkan DPB slot indices</p>
+</li>
+<li>
+<p>Require the application to specify the AV1 reference name (<code>LAST_FRAME..ALTREF_FRAME</code>) as part of the set of Video Std reference picture information parameters</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Option (1) would avoid introducing any new parameters, but would make the semantics of the <code>ref_frame_idx</code> array (and all other codec-specific parameters that provide per AV1 reference name information) differ from the one defined in the AV1 specification, which could be awkward to describe and thus could be confusing for users of the API.</p>
+</div>
+<div class="paragraph">
+<p>In the model proposed by option (2), translation from AV1 reference names to Vulkan DPB slot indices would happen in two steps:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>First, <code>ref_frame_idx</code> maps the AV1 reference name (<code>LAST_FRAME..ALTREF_FRAME</code>) to AV1 picture resource slots (VBI indices)</p>
+</li>
+<li>
+<p>Second, a new VBI mapping table would map the AV1 picture resource slots (VBI indices) to Vulkan DPB slot indices</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Accordingly, option (2) would be fairly straightforward and mostly self-explanatory, but would require reintroducing the VBI concept defined in Annex E of the AV1 specification with the BufferPool resources being replaced by Vulkan DPB slots, and the translation itself would need to happen in two steps, per above.</p>
+</div>
+<div class="paragraph">
+<p>Option (3) is similar to option (2), but the new mapping table would instead map AV1 reference names (<code>LAST_FRAME..ALTREF_FRAME</code>) directly to Vulkan DPB slot indices, which avoids the need to introduce the concept of VBI and the need for a two-step mapping.</p>
+</div>
+<div class="paragraph">
+<p>Such a mapping table seems pretty arbitrary. In addition, unlike the VBI based mapping table in option (2), most entries of this mapping table would be irrelevant to implementations, as decoding only needs to know the DPB slot indices corresponding to the AV1 reference names actually used by the active reference picture list for the currently decoded frame.</p>
+</div>
+<div class="paragraph">
+<p>Option (4) solves the shortcomings of option (3) by instead of providing a mapping from AV1 reference names (<code>LAST_FRAME..ALTREF_FRAME</code>) to Vulkan DPB slot indices, it specifies the AV1 reference name for each active reference picture, and provides a mapping between Vulkan DPB slot indices and AV1 reference names through that. This is, however, not possible in practice, because there is not always a 1-to-1 mapping between AV1 reference names and DPB slot indices, as multiple AV1 reference names may map to the same DPB slot index.</p>
+</div>
+<div class="paragraph">
+<p>This proposal chooses option (3), because having a mapping directly from AV1 reference names to Vulkan DPB slot indices is sufficient.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_does_av1_decode_support_the_coincide_mode"><a class="anchor" href="#_resolved_does_av1_decode_support_the_coincide_mode"></a>5.10. RESOLVED: Does AV1 decode support the <em>coincide</em> mode?</h3>
+<div class="paragraph">
+<p>AV1 film grain is an example where the image contents of the decode output picture and the reconstructed picture will need to be different, thus in such cases using <em>coincide</em> mode is not really an option. However, requiring <em>distinct</em> mode in all cases would be overly restrictive, as implementations may be able to support <em>coincide</em> mode when film grain is not used, or if the frames using film grain may not need to be set up as reference, hence this proposal does not restrict implementations to support <em>coincide</em> mode when applicable and only requires the use of <em>distinct</em> mode in the specific decode operations that do apply film grain. In fact, this proposal changes general codec-independent behavior by allowing <em>distinct</em> mode to be used for AV1 film grain enabled frames (by specifying a different decode output and reconstructed picture resource) even if the implementation does not report support for <em>distinct</em> mode in the video decode profile capabilities.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_should_film_grain_be_a_capability_or_part_of_the_video_profile_definition"><a class="anchor" href="#_resolved_should_film_grain_be_a_capability_or_part_of_the_video_profile_definition"></a>5.11. RESOLVED: Should film grain be a capability or part of the video profile definition?</h3>
+<div class="paragraph">
+<p>As AV1 film grain may have implications on the overall behavior of the decoding process, this proposal includes it in the video profile definition similar to how the picture layout for interlaced content is also part of the video profile definition for H.264 decode.</p>
+</div>
+<div class="paragraph">
+<p>Whether the application intends to use film grain or not may affect the memory requirements of video sessions and/or video picture resources, thus including film grain support in the video profile definition enables implementations to minimize the memory needs of decoding when film grain is not expected to be used.</p>
+</div>
+<div class="paragraph">
+<p>It is understood that not all applications may know in advance whether the decoded bitstream will use film grain or not. In such cases applications have at least the following options:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Conservatively enable film grain support in the video profile</p>
+</li>
+<li>
+<p>Use other methods to apply film grain onto the decode output picture (e.g. using shaders)</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Option (2) may anyway be necessary to support implementations that do not support AV1 decode profiles with film grain support.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_do_the_additional_memory_requirements_imposed_by_av1_film_grain_support_affect_the_memory_requirements_of_images_created_with_vk_image_create_video_profile_independent_bit_khr"><a class="anchor" href="#_resolved_do_the_additional_memory_requirements_imposed_by_av1_film_grain_support_affect_the_memory_requirements_of_images_created_with_vk_image_create_video_profile_independent_bit_khr"></a>5.12. RESOLVED: Do the additional memory requirements imposed by AV1 film grain support affect the memory requirements of images created with <code>VK_IMAGE_CREATE_VIDEO_PROFILE_INDEPENDENT_BIT_KHR</code>?</h3>
+<div class="paragraph">
+<p>Potentially. Video profile independent image resources need to be compatible with all video profiles supported by the implementation, thus if the implementation has additional memory requirements for such resources (e.g. an image usable both as decode output picture and reconstructed picture) in order to support AV1 film grain, then those may apply to certain video profile independent image resources, in line with the general expectations laid out about video profile independent resources in the <code>VK_KHR_video_maintenance1</code> extension.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_does_the_application_has_to_send_frame_obus_that_have_show_existing_frame_set_for_decoding"><a class="anchor" href="#_resolved_does_the_application_has_to_send_frame_obus_that_have_show_existing_frame_set_for_decoding"></a>5.13. RESOLVED: Does the application has to send frame OBUs that have <code>show_existing_frame</code> set for decoding?</h3>
+<div class="paragraph">
+<p>No. Such frame OBUs do not contain any actual payload that is relevant to implementations.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_are_any_of_the_frame_width_minus_1_frame_height_minus_1_render_width_minus_1_and_render_height_minus_1_parameters_from_the_frame_header_redundant_with_respect_to_the_decoded_frame_size_specified_in_vkvideodecodeinfokhrdstpictureresource_codedextent"><a class="anchor" href="#_resolved_are_any_of_the_frame_width_minus_1_frame_height_minus_1_render_width_minus_1_and_render_height_minus_1_parameters_from_the_frame_header_redundant_with_respect_to_the_decoded_frame_size_specified_in_vkvideodecodeinfokhrdstpictureresource_codedextent"></a>5.14. RESOLVED: Are any of the <code>frame_width_minus_1</code>, <code>frame_height_minus_1</code>, <code>render_width_minus_1</code>, and <code>render_height_minus_1</code> parameters from the frame header redundant with respect to the decoded frame size specified in <code>VkVideoDecodeInfoKHR::dstPictureResource.codedExtent</code>?</h3>
+<div class="paragraph">
+<p>Yes. None of those parameters are necessary for decoding, as the <code>codedExtent</code> of the decode output picture provides sufficient information to implementations.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_are_the_extents_in_superblocks_specified_by_the_width_in_sbs_minus_1_and_height_in_sbs_minus_1_tile_parameters_necessary"><a class="anchor" href="#_resolved_are_the_extents_in_superblocks_specified_by_the_width_in_sbs_minus_1_and_height_in_sbs_minus_1_tile_parameters_necessary"></a>5.15. RESOLVED: Are the extents in superblocks specified by the <code>width_in_sbs_minus_1</code> and <code>height_in_sbs_minus_1</code> tile parameters necessary?</h3>
+<div class="paragraph">
+<p>Yes. Video APIs use different conventions for these parameters. This proposal expects the syntax values specified through the <code>pWidthInSbsMinus1</code> and <code>pHeightInSbsMinus1</code> array pointer members of the <code>StdVideoAV1TileInfo</code> structure.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_what_codec_specific_parameters_need_to_be_specified_for_the_active_reference_pictures"><a class="anchor" href="#_resolved_what_codec_specific_parameters_need_to_be_specified_for_the_active_reference_pictures"></a>5.16. RESOLVED: What codec-specific parameters need to be specified for the active reference pictures?</h3>
+<div class="paragraph">
+<p>Certain frame header OBU parameters of the referenced frames and a subset of the reference frame state tracked according to section 7.20 of the AV1 specification. These are needed by implementations that may not track them as part of the video session state.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_how_is_reference_picture_setup_requested_for_av1_decode_operations"><a class="anchor" href="#_resolved_how_is_reference_picture_setup_requested_for_av1_decode_operations"></a>5.17. RESOLVED: How is reference picture setup requested for AV1 decode operations?</h3>
+<div class="paragraph">
+<p>As specifying a reconstructed picture DPB slot and resource is always required per the latest revision of the video extensions, additional codec syntax controls whether the DPB slot is activated with the reconstructed picture.</p>
+</div>
+<div class="paragraph">
+<p>In the case of AV1 decode, reference picture setup depends on the value of <code>StdVideoDecodeAV1PictureInfo::refresh_frame_flags</code>. A non-zero <code>refresh_frame_flags</code> indicates that the VBI needs to be updated such as for each set bit the corresponding VBI slot is associated with the decoded picture&#8217;s information, such as CDF data among others. While VBI slot management is outside of the scope of this proposal, and the responsibility of the application, a non-zero <code>refresh_frame_flags</code> value inherently also implies the need for reference picture setup and thus the activation of a DPB slot with the reconstructed picture.</p>
+</div>
+<div class="paragraph">
+<p>Accordingly, for AV1 decode, reference picture setup is requested and the DPB slot specified for the reconstructed picture is activated with the picture if and only if <code>StdVideoDecodeAV1PictureInfo::refresh_frame_flags</code> is not zero.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_are_film_grain_parameters_tracked_as_part_of_dpb_slot_reference_picture_metadata"><a class="anchor" href="#_resolved_are_film_grain_parameters_tracked_as_part_of_dpb_slot_reference_picture_metadata"></a>5.18. RESOLVED: Are film grain parameters tracked as part of DPB slot reference picture metadata?</h3>
+<div class="paragraph">
+<p>No. Implementations do not usually track this in the AV1 decode sessions and the application is anyway expected to specify the effective film grain parameters through the <code>StdVideoAV1FilmGrain</code> structure. It is thus the application&#8217;s responsibility to ensure that they provide these. This also means that AV1 decoder implementations will ignore the <code>update_grain</code> and <code>film_grain_params_ref_idx</code> parameters which are defined only for the purposes of being used by a future AV1 encoder extension.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_should_the_size_of_the_gmtype_and_gm_params_arrays_be_std_video_av1_num_ref_frames_or_std_video_av1_refs_per_frame"><a class="anchor" href="#_resolved_should_the_size_of_the_gmtype_and_gm_params_arrays_be_std_video_av1_num_ref_frames_or_std_video_av1_refs_per_frame"></a>5.19. RESOLVED: Should the size of the <code>GmType</code> and <code>gm_params</code> arrays be <code>STD_VIDEO_AV1_NUM_REF_FRAMES</code> or <code>STD_VIDEO_AV1_REFS_PER_FRAME</code>?</h3>
+<div class="paragraph">
+<p><code>STD_VIDEO_AV1_NUM_REF_FRAMES</code>, i.e. eight, in order to match the indexing scheme used by the AV1 specification. In practice, element index zero will not be used, because the AV1 specification only defines these for the AV1 reference names between <code>LAST_FRAME</code> and <code>ALTREF_FRAME</code> (i.e. between indices 1 and 7), but it was deemed that diverging from the indexing scheme used by the AV1 specification could be the source of confusion.</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

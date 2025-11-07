@@ -1,0 +1,2146 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>VK_EXT_descriptor_buffer :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:features" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="features" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Feature Descriptions</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Vulkan Roadmap and Feature Descriptions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Roadmap.html">Vulkan Roadmap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Feature Descriptions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMDX_shader_enqueue.html">VK_AMDX_shader_enqueue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_anti_lag.html">VK_AMD_anti_lag</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_shader_early_and_late_fragment_tests.html">VK_AMD_shader_early_and_late_fragment_tests</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ANDROID_external_format_resolve.html">VK_ANDROID_external_format_resolve</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_pipeline_opacity_micromap.html">VK_ARM_pipeline_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_render_pass_striped.html">VK_ARM_render_pass_striped</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_tensors.html">VK_ARM_tensors</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_dynamic_state.html">VK_EXT_attachment_feedback_loop_dynamic_state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_layout.html">VK_EXT_attachment_feedback_loop_layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_calibrated_timestamps.html">VK_EXT_calibrated_timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_bias_control.html">VK_EXT_depth_bias_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_clamp_control.html">VK_EXT_depth_clamp_control</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="VK_EXT_descriptor_buffer.html">VK_EXT_descriptor_buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_fault.html">VK_EXT_device_fault</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_generated_commands.html">VK_EXT_device_generated_commands</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_dynamic_rendering_unused_attachments.html">VK_EXT_dynamic_rendering_unused_attachments</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_extended_dynamic_state3.html">VK_EXT_extended_dynamic_state3</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_acquire_unmodified.html">VK_EXT_external_memory_acquire_unmodified</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_metal.html">VK_EXT_external_memory_metal</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_fragment_density_map_offset.html">VK_EXT_fragment_density_map_offset</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_frame_boundary.html">Proposal: <code>VK_EXT_frame_boundary</code></a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_graphics_pipeline_library.html">VK_EXT_graphics_pipeline_library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_host_image_copy.html">VK_EXT_host_image_copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_2d_array_of_3d.html">VK_EXT_image_2d_array_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_compression_control.html">VK_EXT_image_compression_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_sliced_view_of_3d.html">VK_EXT_image_sliced_view_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_layer_settings.html">VK_EXT_layer_settings</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_dithering.html">VK_EXT_legacy_dithering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_vertex_attributes.html">VK_EXT_legacy_vertex_attributes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_map_memory_placed.html">VK_EXT_map_memory_placed</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mesh_shader.html">VK_EXT_mesh_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_metal_objects.html">VK_EXT_metal_objects</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_multisampled_render_to_single_sampled.html">VK_EXT_multisampled_render_to_single_sampled</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mutable_descriptor_type.html">VK_EXT_mutable_descriptor_type</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_non_seamless_cube_map.html">VK_EXT_non_seamless_cube_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_opacity_micromap.html">VK_EXT_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_library_group_handles.html">VK_EXT_pipeline_library_group_handles</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_protected_access.html">VK_EXT_pipeline_protected_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_present_mode_fifo_latest_ready.html">VK_EXT_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_primitives_generated_query.html">VK_EXT_primitives_generated_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_rasterization_order_attachment_access.html">VK_EXT_rasterization_order_attachment_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_float8.html">VK_EXT_shader_float8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_module_identifier.html">VK_EXT_shader_module_identifier</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_object.html">VK_EXT_shader_object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_replicated_composites.html">VK_EXT_shader_replicated_composites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_tile_image.html">VK_EXT_shader_tile_image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_subpass_merge_feedback.html">VK_EXT_subpass_merge_feedback</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_surface_maintenance1.html">VK_EXT_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_swapchain_maintenance1.html">VK_EXT_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_zero_initialize_device_memory.html">VK_EXT_zero_initialize_device_memory</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_GOOGLE_surfaceless_query.html">VK_GOOGLE_surfaceless_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_cluster_culling_shader.html">VK_HUAWEI_cluster_culling_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_invocation_mask.html">VK_HUAWEI_invocation_mask</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_compute_shader_derivatives.html">VK_KHR_compute_shader_derivatives</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_cooperative_matrix.html">VK_KHR_cooperative_matrix</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering.html">VK_KHR_dynamic_rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering_local_read.html">VK_KHR_dynamic_rendering_local_read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shader_barycentric.html">VK_KHR_fragment_shader_barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shading_rate.html">VK_KHR_fragment_shading_rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_load_store_op_none.html">VK_KHR_load_store_op_none</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance5.html">VK_KHR_maintenance5</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance6.html">VK_KHR_maintenance6</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance7.html">VK_KHR_maintenance7</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance8.html">VK_KHR_maintenance8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance9.html">Proposal Template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_map_memory2.html">VK_KHR_map_memory2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_pipeline_binary.html">VK_KHR_pipeline_binary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_id2.html">VK_KHR_present_id2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_mode_fifo_latest_ready.html">VK_KHR_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_wait2.html">VK_KHR_present_wait2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_ray_tracing_position_fetch.html">VK_KHR_ray_tracing_position_fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_bfloat16.html">VK_KHR_shader_bfloat16</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_expect_assume.html">VK_KHR_shader_expect_assume</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_float_controls2.html">VK_KHR_shader_float_controls2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_integer_dot_product.html">VK_KHR_shader_integer_dot_product</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_maximal_reconvergence.html">VK_KHR_shader_maximal_reconvergence</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_quad_control.html">VK_KHR_shader_quad_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_relaxed_extended_instruction.html">VK_KHR_shader_relaxed_extended_instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_subgroup_rotate.html">Subgroup rotation instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_surface_maintenance1.html">VK_KHR_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_swapchain_maintenance1.html">VK_KHR_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_unified_image_layouts.html">VK_KHR_unified_image_layouts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_vertex_attribute_divisor.html">VK_KHR_vertex_attribute_divisor</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_av1.html">VK_KHR_video_decode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h264.html">VK_KHR_video_decode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h265.html">VK_KHR_video_decode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_queue.html">VK_KHR_video_decode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_vp9.html">VK_KHR_video_decode_vp9</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_av1.html">VK_KHR_video_encode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h264.html">VK_KHR_video_encode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h265.html">VK_KHR_video_encode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_intra_refresh.html">VK_KHR_video_encode_intra_refresh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_quantization_map.html">VK_KHR_video_encode_quantization_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_queue.html">VK_KHR_video_encode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance1.html">VK_KHR_video_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance2.html">VK_KHR_video_maintenance2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_queue.html">VK_KHR_video_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_LUNARG_direct_driver_loading.html">VK_LUNARG_direct_driver_loading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_MSFT_layered_driver.html">VK_MSFT_layered_driver</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cluster_acceleration_structure.html">VK_NV_cluster_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_matrix2.html">VK_NV_cooperative_matrix2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_vector.html">VK_NV_cooperative_vector</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_display_stereo.html">VK_NV_display_stereo</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_external_compute_queue.html">VK_NV_external_compute_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_partitioned_acceleration_structure.html">VK_NV_partitioned_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_linear_swept_spheres.html">VK_NV_ray_tracing_linear_swept_spheres</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_validation.html">VK_NV_ray_tracing_validation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_image_processing.html">VK_QCOM_image_processing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_memory_heap.html">VK_QCOM_tile_memory_heap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_properties.html">VK_QCOM_tile_properties</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_shading.html">VK_QCOM_tile_shading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_VERSION_1_4.html">Vulkan 1.4</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Feature Descriptions</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Feature Descriptions</a></li>
+    <li>Feature Descriptions</li>
+    <li><a href="VK_EXT_descriptor_buffer.html">VK_EXT_descriptor_buffer</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/features/modules/features/pages/proposals/VK_EXT_descriptor_buffer.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">VK_EXT_descriptor_buffer</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_problem_statement">1. Problem Statement</a></li>
+<li><a href="#_solution_space">2. Solution Space</a></li>
+<li><a href="#_proposal">3. Proposal</a>
+<ul class="sectlevel2">
+<li><a href="#_modeling_a_descriptor_set_as_memory">3.1. Modeling a descriptor set as memory</a></li>
+<li><a href="#_putting_descriptors_in_memory">3.2. Putting Descriptors in Memory</a></li>
+<li><a href="#_pipeline_creation">3.3. Pipeline creation</a></li>
+<li><a href="#_descriptor_binding">3.4. Descriptor Binding</a></li>
+<li><a href="#_descriptor_updates">3.5. Descriptor Updates</a></li>
+<li><a href="#_push_descriptors">3.6. Push descriptors</a></li>
+<li><a href="#_capturereplay">3.7. Capture/Replay</a></li>
+<li><a href="#_device_features">3.8. Device Features</a></li>
+<li><a href="#_device_properties">3.9. Device Properties</a></li>
+</ul>
+</li>
+<li><a href="#_mapping_to_directx_12_descriptor_heaps">4. Mapping to DirectX® 12 Descriptor Heaps</a>
+<ul class="sectlevel2">
+<li><a href="#_descriptor_heap_creation">4.1. Descriptor Heap Creation</a></li>
+<li><a href="#_descriptor_creation">4.2. Descriptor Creation</a></li>
+<li><a href="#_descriptor_heap_queries">4.3. Descriptor Heap Queries</a></li>
+<li><a href="#_descriptor_copies">4.4. Descriptor Copies</a></li>
+<li><a href="#_descriptor_binding_2">4.5. Descriptor Binding</a></li>
+</ul>
+</li>
+<li><a href="#_porting_existing_vulkan_applications">5. Porting existing Vulkan applications</a></li>
+<li><a href="#_example">6. Example</a></li>
+<li><a href="#_issues">7. Issues</a>
+<ul class="sectlevel2">
+<li><a href="#_resolved_how_do_immutable_samplers_work">7.1. RESOLVED: How do immutable samplers work?</a></li>
+<li><a href="#_resolved_should_we_support_dynamic_buffers">7.2. RESOLVED: Should we support dynamic buffers?</a></li>
+<li><a href="#_unresolved_how_does_this_interact_with_descriptor_set_invalidation">7.3. UNRESOLVED: How does this interact with descriptor set invalidation?</a></li>
+<li><a href="#_resolved_should_vkgetdescriptoroffset_take_an_arrayoffset_parameter_or_should_we_make_guarantees_about_how_arrays_work">7.4. RESOLVED: Should <code>vkGetDescriptorOffset</code> take an <code>arrayOffset</code> parameter, or should we make guarantees about how arrays work?</a></li>
+<li><a href="#_resolved_now_that_descriptors_are_in_regular_memory_should_there_be_a_limit_on_the_size_of_inline_uniforms">7.5. RESOLVED: Now that descriptors are in regular memory, should there be a limit on the size of “inline uniforms”?</a></li>
+<li><a href="#_resolved_why_are_view_objects_required_when_dx12_has_no_such_requirement">7.6. RESOLVED: Why are view objects required when DX12 has no such requirement?</a></li>
+<li><a href="#_resolved_should_vkgetdescriptorext_vkgetdescriptorsetlayoutbindingoffsetext_be_arrayed">7.7. RESOLVED: Should <code>vkGetDescriptorEXT</code> / <code>vkGetDescriptorSetLayoutBindingOffsetEXT</code> be arrayed?</a></li>
+<li><a href="#_resolved_should_we_support_combined_imagesampler_descriptors_with_this_extension">7.8. RESOLVED: Should we support combined image/sampler descriptors with this extension?</a></li>
+<li><a href="#_resolved_how_does_this_interact_with_variable_descriptor_count">7.9. RESOLVED: How does this interact with variable descriptor count?</a></li>
+<li><a href="#_resolved_should_we_require_descriptors_to_be_retrieved_for_null_handle_or_is_memset0_sufficient">7.10. RESOLVED: Should we require descriptors to be retrieved for <code>NULL_HANDLE</code> or is <code>memset(0)</code> sufficient?</a></li>
+<li><a href="#_resolved_how_can_ycbcr_descriptors_be_obtained">7.11. RESOLVED: How can YCbCr descriptors be obtained?</a></li>
+<li><a href="#_resolved_how_should_we_expect_capturereplay_tooling_e_g_renderdocvktrace_to_use_this">7.12. RESOLVED: How should we expect capture/replay tooling (e.g. RenderDoc/vktrace) to use this?</a></li>
+<li><a href="#_resolved_on_some_platforms_descriptor_sets_occupy_a_4gb_range_allowing_the_set_pointer_to_be_32_bit_rather_than_64_bit_how_can_this_be_guaranteed_for_descriptor_buffers">7.13. RESOLVED: On some platforms, descriptor sets occupy a 4GB range, allowing the set pointer to be 32-bit, rather than 64-bit. How can this be guaranteed for descriptor buffers?</a></li>
+<li><a href="#_resolved_should_the_alignment_be_separate_from_the_size">7.14. RESOLVED: Should the alignment be separate from the size?</a></li>
+<li><a href="#_resolved_what_is_the_fast_path_for_constant_data_in_this_new_model_previously_most_vendors_have_recommended_dynamic_ubos_as_a_fast_path_but_those_go_away_in_this_extension">7.15. RESOLVED: What is the fast path for constant data in this new model? Previously most vendors have recommended dynamic UBOs as a fast path, but those go away in this extension.</a></li>
+<li><a href="#_resolved_should_applications_be_able_to_mix_sets_and_buffers">7.16. RESOLVED: Should applications be able to mix sets and buffers?</a></li>
+<li><a href="#_resolved_should_we_use_buffer_device_addresses_for_the_buffer_arguments">7.17. RESOLVED: Should we use buffer device addresses for the buffer arguments?</a></li>
+<li><a href="#_resolved_how_does_this_interact_with_vk_ext_pipeline_robustness">7.18. RESOLVED: How does this interact with VK_EXT_pipeline_robustness?</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This document outlines a proposal to make the management of descriptor memory more explicit, allowing descriptors to be present in buffer memory, allowing the data and memory to be managed alongside other buffer objects.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>1. Problem Statement</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>With more “bindless” models of descriptor management, applications are ever increasing the number of descriptors that end up in descriptor sets.
+Managing allocations this large, and ensuring they end up in device local memory for fast access, is becoming an increasingly awkward problem to manage in the driver.
+Developers moving to Vulkan are starting to hit bottlenecks that they simply don’t encounter on other platforms.</p>
+</div>
+<div class="paragraph">
+<p>In other scenarios, making sure descriptors <strong>do not</strong> end up in device memory is important.
+Copying descriptors in Vulkan is considered rather esoteric, but it is a fairly common strategy in other APIs and implementing a similar style in Vulkan can lead to problems.
+There is no hint to let an implementation know that a descriptor set will only be used for purposes of copying (i.e. staging buffer).
+If a descriptor set is mapped to device local memory (BAR) or uncached memory, reading from the descriptor set on the host can have a catastrophic effect on performance.
+On top of this, some applications rely on being able to copy several tens of thousand individual descriptors every frame.
+The overhead to set up this many calls to <code>vkUpdateDescriptorSets</code> is not ideal.</p>
+</div>
+<div class="paragraph">
+<p>In contrast to this, developers are managing uploads for other large resources (e.g. images, buffers) in application code and generally doing a good job of it – typically this is not identified as a problem area.
+Developers approaching Vulkan are often confused by the way in which descriptor pools work - and several have made requests to manage things more explicitly.
+The key things that we’ve had requests for are (relevant Vulkan issues in brackets):</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Explicit allocation management</p>
+</li>
+<li>
+<p>Better mapping to DirectX 12</p>
+</li>
+<li>
+<p>Host-only descriptor pools</p>
+</li>
+<li>
+<p>GPU descriptor updates</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution Space</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>There are several more-or-less invasive options that could work here:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Add relevant flags and other information to descriptor pools</p>
+</li>
+<li>
+<p>Like 1, but enable memory binding for descriptor pools</p>
+</li>
+<li>
+<p>Bypass descriptor pools, and allow direct creation and memory binding for descriptor sets</p>
+</li>
+<li>
+<p>Bypass descriptor sets, and use descriptor set layouts in buffers</p>
+</li>
+<li>
+<p>Bypass descriptor set layouts, and use blobs of memory in buffers that shaders access with explicit layouts</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_VALVE_mutable_descriptor_type">VK_VALVE_mutable_descriptor_type</a> includes support for option 1,
+through the use of <code>VK_DESCRIPTOR_SET_LAYOUT_CREATE_HOST_ONLY_POOL_BIT_VALVE</code> and <code>VK_DESCRIPTOR_POOL_CREATE_HOST_ONLY_BIT_VALVE</code>.
+However, this does not fully solve the problem of memory management since we can only <strong>avoid</strong> allocating device memory for descriptors.
+Being able to control where shader-accessible descriptors are allocated is still unavailable to applications.</p>
+</div>
+<div class="paragraph">
+<p>Option 2 attempts to redefine what a descriptor pool is, and it would seem like a very awkward abstraction.
+The whole point of the descriptor pool is to allocate and manage memory on the behalf of the application.</p>
+</div>
+<div class="paragraph">
+<p>Option 3 and 4 are similarly invasive, but move descriptor pools out of the way, making things a lot clearer.
+The major downside to this is that it potentially blocks out older implementations; however this is likely the same set of implementations that wouldn’t see a benefit from this proposal anyway (i.e. “non-bindless" hardware).</p>
+</div>
+<div class="paragraph">
+<p>Option 4 has the advantage of having a smaller surface area than option 3 and allows applications to use existing buffer management functions in both Vulkan and in their own code.
+Being able to use buffers directly means that applications are in control of where the memory is allocated and can control if memory is:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host-only (plain malloc)</p>
+</li>
+<li>
+<p>Host-only but shader-visible (<code>VkDeviceMemory</code> with <code>HOST_VISIBLE_BIT</code>)</p>
+</li>
+<li>
+<p>Device local and shader-visible (resizable BAR on discrete GPUs, unified memory on integrated)</p>
+</li>
+<li>
+<p>Device local only (GPU copies descriptors)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Option 5 is more invasive than Option 4 and requires shader-side changes.</p>
+</div>
+<div class="paragraph">
+<p>In order to keep the required changes in this extension to the API only, the extra steps in Option 5 are deferred to a future planned extension, and this proposal focuses on Option 4.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>3. Proposal</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_modeling_a_descriptor_set_as_memory"><a class="anchor" href="#_modeling_a_descriptor_set_as_memory"></a>3.1. Modeling a descriptor set as memory</h3>
+<div class="paragraph">
+<p>Descriptors in Vulkan as it stands are generally considered quite abstract.
+They do not have a size, and when creating descriptor pools it is only specified how many descriptors can be allocated.</p>
+</div>
+<div class="paragraph">
+<p>This abstraction is removed by the proposal and it assumes that a <code>VkDescriptorSetLayout</code> can be expressed as a list of binding points with a known:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Byte offset</p>
+</li>
+<li>
+<p>Element size</p>
+</li>
+<li>
+<p>Number of elements tightly packed</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The element size depends on the descriptor type and is a property of the physical device.</p>
+</div>
+<div class="paragraph">
+<p>Implementations are free to control the byte offset, and so can freely repack descriptors for optimal memory access.
+For exact control over byte offsets for different descriptors, descriptor indexing should be used, since arrays have guaranteed packing.</p>
+</div>
+<div class="paragraph">
+<p>If we think in terms of <code>VkDescriptorPool</code> with this model, an implementation of that could be something like an arena allocator where size is derived from the descriptor counts,
+and a <code>VkDescriptorSet</code> with <code>VkDescriptorSetLayout</code> just allocates a certain number of bytes from the pool.
+This is essentially the same model as <code>VkBuffer</code> and <code>VkImage</code> allocation.</p>
+</div>
+<div class="paragraph">
+<p>When we call <code>vkCmdBindDescriptorSets</code>, what we are really doing is binding a buffer of a certain size.
+The shader compiler looks at <code>VkPipelineLayout</code> and based on the <code>DescriptorSet</code> and <code>Binding</code> decorations, it can look up that a descriptor can be read from the bound descriptor set at a specific offset.</p>
+</div>
+<div class="paragraph">
+<p>As <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_descriptor_indexing">VK_EXT_descriptor_indexing</a> is required, its descriptor limits apply.</p>
+</div>
+<div class="sect3">
+<h4 id="_next_level_update_after_bind"><a class="anchor" href="#_next_level_update_after_bind"></a>3.1.1. Next level update-after-bind</h4>
+<div class="paragraph">
+<p>With descriptor being modeled as buffer memory, we remove all pretense of the implementation being able to consume descriptors when recording the command buffer.
+In the Vulkan 1.0 descriptor model, descriptors must be valid when descriptor sets are bound and remain valid, which means implementations are free to consume the descriptors, repack them, and so on if they desire.
+With descriptor indexing, the <code>UPDATE_AFTER_BIND_BIT</code> and <code>PARTIALLY_BOUND_BIT</code> flags imply a buffer like model where descriptors must not be consumed unless dynamically used by shaders.
+With descriptor buffers, this model is implied and it is not allowed to specify a descriptor set layout being both update-after-bind and descriptor buffer capable.</p>
+</div>
+<div class="paragraph">
+<p>As descriptors can be updated in the GPU timeline, descriptor buffers go a bit further than update-after-bind.
+In the existing update-after-bind model, descriptors can only be consumed correctly if they were written before queue submits.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_dropping_support_for_abstract_descriptor_types"><a class="anchor" href="#_dropping_support_for_abstract_descriptor_types"></a>3.1.2. Dropping support for abstract descriptor types</h4>
+<div class="paragraph">
+<p>Some descriptor types are a bit more abstract in nature. Dynamic uniform buffers and dynamic storage buffers for example have a component to them that does not consume descriptor memory, but function more like push constants.
+Descriptor types which cannot be expressed in terms of descriptors in memory are not supported with descriptor buffers,
+but rapidly changing descriptors can be replaced with existing alternatives such as:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Push constants</p>
+</li>
+<li>
+<p>Place buffer device address in push constants</p>
+</li>
+<li>
+<p>Push descriptors</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Update-after-bind has similar restrictions already.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_one_buffer_many_offsets"><a class="anchor" href="#_one_buffer_many_offsets"></a>3.1.3. One buffer, many offsets</h4>
+<div class="paragraph">
+<p>While binding descriptor sets as memory is possible on a wide range of hardware, descriptors are still considered "special" memory by many implementations, and it may not be possible to bind many different buffers at the same time.
+Some possible restrictions can be:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Limited address space for descriptors</p>
+</li>
+<li>
+<p>Descriptor sets are accessed with offset from one or more base pointers</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In Vulkan, applications are guaranteed at least 4 descriptor sets, but many implementations go beyond this.
+At the same time, it might not be possible to bind that many different descriptor buffers.</p>
+</div>
+<div class="paragraph">
+<p>In D3D12 for example, this problem manifests itself as <code>ID3D12GraphicsCommandList::SetDescriptorHeaps()</code>.</p>
+</div>
+<div class="paragraph">
+<p>Similarly, this extension will work on a model where applications allocate large descriptor buffers, and bind those buffers to the command buffer.
+From there, descriptor sets are expressed as offsets into the bound buffers.</p>
+</div>
+<div class="paragraph">
+<p>It is expected that changing a descriptor buffer binding is a fairly heavy operation on some implementations and should be avoided.
+Changing offsets however, is very efficient.</p>
+</div>
+<div class="paragraph">
+<p>A limited address space can be expressed with special memory types that allocate from a dedicated address space region.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_no_mixing_and_matching_descriptor_buffers_and_older_model"><a class="anchor" href="#_no_mixing_and_matching_descriptor_buffers_and_older_model"></a>3.1.4. No mixing and matching descriptor buffers and older model</h4>
+<div class="paragraph">
+<p>The implication of descriptor buffers is that applications will now take more control over which descriptor buffers are bound to a command buffer.
+Without descriptor buffers, this is something implementations were able to hide from applications, so it is not possible to mix and match these models in one draw or dispatch.
+It is possible to mix and match the two models in different draw or dispatches, but it is equivalent to changing the descriptor buffer bindings and should be avoided if possible.</p>
+</div>
+<div class="paragraph">
+<p>In terms of state invalidation, whenever a descriptor buffer offset is bound, it invalidates all bindings for descriptor sets and vice versa.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_putting_descriptors_in_memory"><a class="anchor" href="#_putting_descriptors_in_memory"></a>3.2. Putting Descriptors in Memory</h3>
+<div class="paragraph">
+<p>This extension introduces new commands to put shader-accessible descriptors directly in memory.
+Properties of descriptor set layouts may vary based on enabled device features, so new device-level functions are added to query the properties of layouts.
+These calls are invariant across the lifetime of the device, and between <a href="https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VkDevice">VkDevice</a> objects created from the same physical device(s), with the same creation parameters.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">void vkGetDescriptorSetLayoutSizeEXT(
+    VkDevice                                    device,
+    VkDescriptorSetLayout                       layout,
+    VkDeviceSize*                               pLayoutSizeInBytes);
+
+void vkGetDescriptorSetLayoutBindingOffsetEXT(
+    VkDevice                                    device,
+    VkDescriptorSetLayout                       layout,
+    uint32_t                                    binding,
+    VkDeviceSize*                               pOffset);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Applications are responsible for writing data into memory, but the application does not control the memory location directly – descriptor set layouts dictate where each descriptor lives, so that the shader interface continues to work as-is with set and binding numbers.</p>
+</div>
+<div class="paragraph">
+<p>The size and offset of descriptors is exposed to applications, so they know how to copy it into memory.
+This is important since applications are free to copy descriptors on the device itself.</p>
+</div>
+<div class="paragraph">
+<p>The sizes for different descriptor types are defined in the properties: <code>samplerDescriptorSize</code>, <code>combinedImageSamplerDescriptorSize</code>, <code>sampledImageDescriptorSize</code>, <code>storageImageDescriptorSize</code>, <code>uniformTexelBufferDescriptorSize</code>, <code>robustUniformTexelBufferDescriptorSize</code>, <code>storageTexelBufferDescriptorSize</code>, <code>robustStorageTexelBufferDescriptorSize</code>, <code>uniformBufferDescriptorSize</code>, <code>robustUniformBufferDescriptorSize</code>, <code>storageBufferDescriptorSize</code>, <code>robustStorageBufferDescriptorSize</code>, <code>inputAttachmentDescriptorSize</code>, <code>accelerationStructureDescriptorSize</code>, <code>combinedImageSamplerDensityMapDescriptorSize</code>.</p>
+</div>
+<div class="paragraph">
+<p>Descriptor arrays have guaranteed packing, such that each element of an array for a given binding has an offset from that binding’s base offset equal to the size of the descriptor multiplied by the array offset.
+Bindings can be moved around as the driver sees fit, but variable-sized descriptor arrays must be packed at the end.</p>
+</div>
+<div class="paragraph">
+<p>For use cases where layouts contain a variable-sized descriptor count, the size returned reflects the upper bound described in the descriptor set layout.
+The size required for a descriptor set layout with a variable size descriptor array can be obtained by adding the product of the number of descriptors that are actually used and the size of the descriptor.</p>
+</div>
+<div class="paragraph">
+<p>Descriptor set layouts used for this purpose must be created with a new create flag:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT = 0x00000010</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Layouts created with this flag must not be used to create a <a href="https://docs.vulkan.org/spec/latest/chapters/descriptorsets.html#VkDescriptorSet">VkDescriptorSet</a> and must not include dynamic uniform buffers or dynamic storage buffers.
+Applications can achieve the same dynamic offsetting by either updating a descriptor buffer, using push constants, or by using push descriptors.
+The blob of memory corresponding to a descriptor is obtained from resource views directly.
+How applications get that data into device memory is entirely up to them, but the offset must match that obtained from the layout.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkDescriptorAddressInfoEXT {
+    VkStructureType                                 sType;
+    const void*                                     pNext;
+    VkDeviceAddress                                 address;
+    VkDeviceSize                                    range;
+    VkFormat                                        format;
+} VkDescriptorAddressInfoEXT;
+
+typedef union VkDescriptorDataEXT {
+    const VkSampler*                                pSampler;
+    const VkDescriptorImageInfo*                    pCombinedImageSampler;
+    const VkDescriptorImageInfo*                    pInputAttachmentImage;
+    const VkDescriptorImageInfo*                    pSampledImage;
+    const VkDescriptorImageInfo*                    pStorageImage;
+    const VkDescriptorAddressInfoEXT*               pUniformTexelBuffer;
+    const VkDescriptorAddressInfoEXT*               pStorageTexelBuffer;
+    const VkDescriptorAddressInfoEXT*               pUniformBuffer;
+    const VkDescriptorAddressInfoEXT*               pStorageBuffer;
+    VkDeviceAddress                                 accelerationStructure;
+} VkDescriptorDataEXT;
+
+typedef struct VkDescriptorGetInfoEXT {
+    VkStructureType                                 sType;
+    const void*                                     pNext;
+    VkDescriptorType                                type;
+    VkDescriptorDataEXT                             data;
+} VkDescriptorGetInfoEXT;
+
+void vkGetDescriptorEXT(
+    VkDevice                                        device
+    const VkDescriptorGetInfoEXT*                   pCreateInfo,
+    size_t                                          dataSize,
+    void*                                           pDescriptor);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>These APIs extract raw descriptor blob data from objects. The data obtained from these calls can be freely copied around.
+Note that these calls do not know anything about descriptor set layouts. It is the application&#8217;s responsibility to write descriptors to a suitable location.</p>
+</div>
+<div class="paragraph">
+<p>A notable change here is that there is no longer any need for <a href="https://docs.vulkan.org/spec/latest/chapters/resources.html#VkBufferView">VkBufferView</a> objects.
+Texel buffers are built from buffer device addresses and format instead.
+This improvement is motivated by DX12 portability.
+In some use cases, texel buffers are linearly allocated and having to create and manage a large number of unique view objects is problematic.
+With descriptor buffers, this style of API is now feasible in Vulkan.</p>
+</div>
+<div class="paragraph">
+<p>A similar improvement is that uniform buffers and storage buffer also take buffer device addresses.</p>
+</div>
+<div class="paragraph">
+<p>Acceleration structure descriptors are also built from device addresses, or handles retrieved from <code>vkGetAccelerationStructureHandleNV</code> when using <code>VkAccelerationStructureNV</code> objects.</p>
+</div>
+<div class="paragraph">
+<p>Inline uniform buffers do not have a descriptor data getter API associated with them.
+Instead, the descriptor data is copied directly into the buffer offset obtained by <code>vkGetDescriptorSetLayoutBindingOffsetEXT</code>.
+As the name suggests, inline uniform buffers are embedded into the descriptor set itself.</p>
+</div>
+<div class="paragraph">
+<p>As descriptors are now in regular memory, drivers cannot hide copies of immutable samplers that end up in descriptor sets from the application.
+As such, applications are required to provide these samplers as if they were not provided immutably.
+These samplers must have identical parameters to the immutable samplers in the descriptor set layout.
+Alternatively, applications can use dedicated descriptor sets for immutable samplers that do not require app-managed memory, by <a href="#embedded-immutable-samplers">embedding them in a special descriptor set</a>.</p>
+</div>
+<div class="paragraph">
+<p>If the <code>descriptorBufferImageLayoutIgnored</code> feature is enabled, the <code>imageLayout</code> in <a href="https://docs.vulkan.org/spec/latest/chapters/resources.html#VkDescriptorImageInfo">VkDescriptorImageInfo</a> is ignored, otherwise it specifies the layout that the descriptor will be used with.
+<code>type</code> must not be <code>VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC</code> or <code>VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC</code>.
+'format' in <code>VkDescriptorAddressInfoEXT</code> is ignored for non-texel buffers.</p>
+</div>
+<div class="paragraph">
+<p>The <code>combinedImageSamplerDescriptorSingleArray</code> property indicates that the implementation does not require an array of <code>VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER</code> descriptors to be written into a descriptor buffer as an array of image descriptors, immediately followed by an array of sampler descriptors. If <code>VK_FALSE</code>, applications are expected to write the first <code>sampledImageDescriptorSize</code> bytes of the data returned through <code>pDescriptor</code> to the first array, and the remaining <code>samplerDescriptorSize</code> bytes of the data to the second array.
+On these implementations, variable descriptor counts of combined image samplers may be supported, but it is not useful as the descriptor set size must assume the upper bound.</p>
+</div>
+<div class="sect3">
+<h4 id="embedded-immutable-samplers"><a class="anchor" href="#embedded-immutable-samplers"></a>3.2.1. Embedded Immutable Samplers</h4>
+<div class="paragraph">
+<p>Immutable samplers can be embedded into descriptor layouts, allowing them to be bound without disturbing descriptor buffer bindings or requiring device memory backing.
+Descriptor set layouts must be created with a new flag for this purpose:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VK_DESCRIPTOR_SET_LAYOUT_CREATE_EMBEDDED_IMMUTABLE_SAMPLERS_BIT_EXT = 0x00000020</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When this flag is used, this set layout can only contain descriptor bindings with a <code>descriptorType</code> of <code>VK_DESCRIPTOR_TYPE_SAMPLER</code>, a <code>descriptorCount</code> of <code>1</code> (i.e. not arrayed), and a valid <code>VkSampler used in `pImmutableSamplers</code>.
+Note that arrays of immutable samplers are not supported, as implementations typically need these in memory to allow dynamic indexing - whereas no device memory is directly associated with these sets.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pipeline_creation"><a class="anchor" href="#_pipeline_creation"></a>3.3. Pipeline creation</h3>
+<div class="paragraph">
+<p>To use pipelines with descriptor buffers a new <code>VkPipelineCreateFlag</code> must be used:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VK_PIPELINE_CREATE_DESCRIPTOR_BUFFER_BIT_EXT = 0x20000000</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_descriptor_binding"><a class="anchor" href="#_descriptor_binding"></a>3.4. Descriptor Binding</h3>
+<div class="paragraph">
+<p>Descriptor buffers are bound to the command buffer directly (similar to vertex buffers).</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkDescriptorBufferBindingPushDescriptorBufferHandleEXT {
+    VkStructureType                             sType;
+    const void*                                 pNext;
+    VkBuffer                                    buffer;
+} VkDescriptorBufferBindingPushDescriptorBufferHandleEXT;
+
+typedef struct VkDescriptorBufferBindingInfoEXT {
+    VkStructureType                             sType;
+    const void*                                 pNext;
+    VkDeviceAddress                             address;
+    VkBufferUsageFlags                          usage;
+} VkDescriptorBufferBindingInfoEXT;
+
+vkCmdBindDescriptorBuffersEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    bufferCount,
+    const VkDescriptorBufferBindingInfoEXT*     pBindingInfos);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Unlike binding descriptor sets, there’s no invalidating going on with this binding – a buffer remains bound and is interpreted by a pipeline in the manner the pipeline expects, irrespective of what layout was used to construct the buffer for each set.</p>
+</div>
+<div class="paragraph">
+<p>There must be no more than <code>maxSamplerDescriptorBufferBindings</code> descriptor buffers containing sampler descriptor data bound.
+Such buffers must be created with <code>VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT</code>.</p>
+</div>
+<div class="paragraph">
+<p>There must be no more than <code>maxResourceDescriptorBufferBindings</code> descriptor buffers containing resource descriptors bound.
+Such buffers must be bound with <code>VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT</code>.</p>
+</div>
+<div class="paragraph">
+<p>If a buffer contains both usage flags, it counts once against both limits.</p>
+</div>
+<div class="paragraph">
+<p>If the <code>bufferlessPushDescriptors</code> property is <code>VK_FALSE</code> and a buffer contains the <code>VK_BUFFER_USAGE_PUSH_DESCRIPTORS_DESCRIPTOR_BUFFER_BIT</code> usage flag, a <code>VkDescriptorBufferBindingPushDescriptorBufferHandleEXT</code> structure must be added to the <code>pNext</code> chain of <code>VkDescriptorBufferBindingInfoEXT</code>.</p>
+</div>
+<div class="paragraph">
+<p><code>bufferCount</code> must be less than or equal to <code>maxDescriptorBufferBindings</code>.</p>
+</div>
+<div class="paragraph">
+<p>Any previously bound buffers at binding points greater than or equal to <code>bufferCount</code> are unbound.</p>
+</div>
+<div class="paragraph">
+<p>Each entry in <code>pBindingInfos</code> contains the device address of a descriptor buffer and the usage flags that the buffer was created with.</p>
+</div>
+<div class="paragraph">
+<p>Changing buffers may be an expensive operation and should be done infrequently (if ever).</p>
+</div>
+<div class="paragraph">
+<p>The maximum available range of each binding to a shader is <code>maxSamplerDescriptorBufferRange</code> and/or <code>maxResourceDescriptorBufferRange</code>.</p>
+</div>
+<div class="paragraph">
+<p>The <code>samplerDescriptorBufferAddressSpaceSize</code>, <code>resourceDescriptorBufferAddressSpaceSize</code>, and <code>descriptorBufferAddressSpaceSize</code> properties
+give the upper bound for the total amount of address space used for descriptor buffers.</p>
+</div>
+<div class="paragraph">
+<p>Buffers used for this purpose need to be created with a new usage flags:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT  = 0x00200000
+VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT = 0x00400000</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT</code> specifies that the buffer will be used to contain sampler descriptors when bound as a descriptor buffer.
+<code>VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT</code> specifies that the buffer will be used to contain resource descriptors, i.e. non-sampler descriptors, when bound as a descriptor buffer.
+Buffers containing <code>VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER</code> descriptors must have been created with both <code>VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT</code> and <code>VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT</code>.</p>
+</div>
+<div class="paragraph">
+<p>Each descriptor set is associated with a buffer and an offset into that buffer which can be set by:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdSetDescriptorBufferOffsetsEXT(
+    VkCommandBuffer                             commandBuffer,
+    VkPipelineBindPoint                         pipelineBindPoint,
+    VkPipelineLayout                            layout,
+    uint32_t                                    firstSet,
+    uint32_t                                    setCount,
+    const uint32_t*                             pBufferIndices,
+    const VkDeviceSize*                         pOffsets);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>vkCmdSetDescriptorBufferOffsetsEXT</code> causes the sets numbered [firstSet.. firstSet+setCount-1] to use the bindings stored in the buffer bound at pBufferIndices[i] at an offset of pOffsets[i] for subsequent bound pipeline commands set by pipelineBindPoint. Any bindings that were previously applied via these sets, or calls to <code>vkCmdBindDescriptorSets</code>, are no longer valid. Calling vkCmdBindDescriptorSets invalidates bindings previously applied via <code>vkCmdSetDescriptorBufferOffsetsEXT</code>.</p>
+</div>
+<div class="paragraph">
+<p>Setting offsets should be a cheap operation and can be performed frequently.
+The offsets must be aligned to <code>descriptorBufferOffsetAlignment</code>.</p>
+</div>
+<div class="paragraph">
+<p><a href="#embedded-immutable-samplers">Embedded Immutable Samplers</a> can be bound using:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdBindDescriptorBufferEmbeddedSamplersEXT(
+    VkCommandBuffer                             commandBuffer,
+    VkPipelineBindPoint                         pipelineBindPoint,
+    VkPipelineLayout                            layout,
+    uint32_t                                    set)
+);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>vkCmdBindDescriptorBufferEmbeddedSamplersEXT</code> binds the embedded immutable samplers in <code>layout</code> at set index <code>set</code> to the same set in the command buffer.
+Set bindings are invalidated in the same manner as they are for <code>vkCmdSetDescriptorBufferOffsetEXT</code>.
+The <code>VkDescriptorSetLayout</code> at index <code>set</code> of <code>layout</code> must have been created with the <code>VK_DESCRIPTOR_SET_LAYOUT_CREATE_EMBEDDED_IMMUTABLE_SAMPLERS_BIT_EXT</code> bit.
+There must be no more than <code>maxEmbeddedImmutableSamplerBindings</code> embedded immutable sampler sets bound.
+Like DX12, there is a limit to how many unique embedded immutable samplers may be alive in a device at any one point. This limit is designed to match DX12.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_descriptor_updates"><a class="anchor" href="#_descriptor_updates"></a>3.5. Descriptor Updates</h3>
+<div class="paragraph">
+<p>As descriptors are just a blob of memory, descriptor updates can be performed by any operation on either the host or device that can access memory, enabling a form of GPU descriptor update.
+Descriptor buffer reads can be synchronized using a new access bit in the relevant shader stage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VK_ACCESS_2_DESCRIPTOR_BUFFER_READ_BIT_EXT = 0x20000000000ULL</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note that host writes are implicitly made visible to all stages in <code>vkQueueSubmit</code>, so this access flag is only relevant when performing GPU-side updates of descriptors.</p>
+</div>
+<div class="paragraph">
+<p>If the <code>allowSamplerImageViewPostSubmitCreation</code> property is <code>VK_FALSE</code> there are special requirements for when descriptor data for <code>VkSampler</code> or <code>VkImageView</code> objects can be used.
+Those objects must have been created before any <code>vkQueueSubmit</code> (or <code>vkQueueSubmit2</code>) call that executes a command buffer which accesses descriptor data for them.</p>
+</div>
+<div class="paragraph">
+<p>For example, if <code>allowSamplerImageViewPostSubmitCreation</code> is <code>VK_FALSE</code>, this is disallowed:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Call <code>vkQueueSubmit()</code> which is waiting for a timeline semaphore</p>
+</li>
+<li>
+<p>Create a <code>VkImageView</code></p>
+</li>
+<li>
+<p>Update the descriptor buffer used by the previous submission from the host using the descriptor data of the new <code>VkImageView</code></p>
+</li>
+<li>
+<p>Signal the semaphore from the host</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_push_descriptors"><a class="anchor" href="#_push_descriptors"></a>3.6. Push descriptors</h3>
+<div class="paragraph">
+<p>Support for descriptor buffers combined with push descriptors is supported if the <code>descriptorBufferPushDescriptors</code> feature bit is set.</p>
+</div>
+<div class="paragraph">
+<p>To support push descriptors on certain implementations, additional buffer usage flags are added:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VK_BUFFER_USAGE_PUSH_DESCRIPTORS_DESCRIPTOR_BUFFER_BIT_EXT = 0x04000000</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If the application desires to use push descriptors and descriptor buffers together,
+a descriptor set layout must be declared with <code>VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR</code> and <code>VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT</code> bits set.</p>
+</div>
+<div class="paragraph">
+<p>If the <code>bufferlessPushDescriptors</code> property is <code>VK_FALSE</code>, there are special requirements for using push descriptors with descriptor buffers.
+<code>VK_BUFFER_USAGE_PUSH_DESCRIPTORS_DESCRIPTOR_BUFFER_BIT_EXT</code> is a special buffer flag which is required for certain implementations in order for push descriptors to interoperate with descriptor buffers.
+When pushing descriptors using this kind of set layout, it is required that a descriptor buffer is bound to the command list with the <code>VK_BUFFER_USAGE_PUSH_DESCRIPTORS_DESCRIPTOR_BUFFER_BIT_EXT</code> usage flag.
+The intention here is that implementation can reserve scratch space in descriptor buffers for the purposes of dealing with push descriptors.
+The mechanics here are highly magical and implementation defined in nature and is considered too burdensome to expect that applications deal with it.</p>
+</div>
+<div class="paragraph">
+<p>Binding a buffer that was created with <code>VK_BUFFER_USAGE_PUSH_DESCRIPTORS_DESCRIPTOR_BUFFER_BIT_EXT</code> requires the application to record any current push descriptors again.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_capturereplay"><a class="anchor" href="#_capturereplay"></a>3.7. Capture/Replay</h3>
+<div class="paragraph">
+<p>When creating a resource with the capture/replay feature enabled, an opaque handle can be obtained which can be passed into creation calls in a future replay, causing descriptors to be created with the same data.</p>
+</div>
+<div class="paragraph">
+<p>New flags to be supplied when creating buffers, images, and samplers to be captured/replayed:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VK_BUFFER_CREATE_DESCRIPTOR_BUFFER_CAPTURE_REPLAY_BIT_EXT                 = 0x00000020
+VK_IMAGE_CREATE_DESCRIPTOR_BUFFER_CAPTURE_REPLAY_BIT_EXT                  = 0x00010000
+VK_IMAGE_VIEW_CREATE_DESCRIPTOR_BUFFER_CAPTURE_REPLAY_BIT_EXT             = 0x00000004
+VK_SAMPLER_CREATE_DESCRIPTOR_BUFFER_CAPTURE_REPLAY_BIT_EXT                = 0x00000008
+VK_ACCELERATION_STRUCTURE_CREATE_DESCRIPTOR_BUFFER_CAPTURE_REPLAY_BIT_EXT = 0x00000008</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>There are separate commands to get opaque data for buffers, images, and samplers:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkResult vkGetBufferOpaqueCaptureDescriptorDataEXT(
+    VkDevice                                    device,
+    const VkBufferCaptureDescriptorDataInfoEXT* pInfo,
+    void*                                       pData);
+
+typedef struct VkBufferCaptureDescriptorDataInfoEXT {
+    VkStructureType    sType;
+    const void*        pNext;
+    VkBuffer           buffer;
+} VkBufferCaptureDescriptorDataInfoEXT;
+
+VkResult vkGetImageOpaqueCaptureDescriptorDataEXT(
+    VkDevice                                   device,
+    const VkImageCaptureDescriptorDataInfoEXT* pInfo,
+    void*                                      pData);
+
+typedef struct VkImageCaptureDescriptorDataInfoEXT {
+    VkStructureType    sType;
+    const void*        pNext;
+    VkImage            image;
+} VkImageCaptureDescriptorDataInfoEXT;
+
+VkResult vkGetImageViewOpaqueCaptureDescriptorDataEXT(
+    VkDevice                                       device,
+    const VkImageViewCaptureDescriptorDataInfoEXT* pInfo,
+    void*                                          pData);
+
+typedef struct VkImageViewCaptureDescriptorDataInfoEXT {
+    VkStructureType    sType;
+    const void*        pNext;
+    VkImageView        imageView;
+} VkImageViewCaptureDescriptorDataInfoEXT;
+
+VkResult vkGetSamplerOpaqueCaptureDescriptorDataEXT(
+    VkDevice                                     device,
+    const VkSamplerCaptureDescriptorDataInfoEXT* pInfo,
+    void*                                        pData);
+
+typedef struct VkSamplerCaptureDescriptorDataInfoEXT {
+    VkStructureType    sType;
+    const void*        pNext;
+    VkSampler          sampler;
+} VkSamplerCaptureDescriptorDataInfoEXT;
+
+VkResult vkGetAccelerationStructureOpaqueCaptureDescriptorDataEXT(
+    VkDevice                                                   device,
+    const VkAccelerationStructureCaptureDescriptorDataInfoEXT* pInfo,
+    void*                                                      pData);
+
+typedef struct VkAccelerationStructureCaptureDescriptorDataInfoEXT {
+    VkStructureType                  sType;
+    const void*                      pNext;
+    VkAccelerationStructureKHR       accelerationStructure;
+    VkAccelerationStructureNV        accelerationStructureNV;
+} VkAccelerationStructureCaptureDescriptorDataInfoEXT;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Once queried, this must be provided to buffer/image/imageview/sampler/acceleration structure creation in a similar manner to buffer device address creation, by chaining the following structure to buffer, image, imageview, sampler, or acceleration structure creation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkOpaqueCaptureDescriptorDataCreateInfoEXT {
+    VkStructureType    sType;
+    const void*        pNext;
+    const void*        opaqueCaptureDescriptorData;
+} VkOpaqueCaptureDescriptorDataCreateInfoEXT;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In each case, the size of the capture data is sized to the <code>bufferCaptureReplayDescriptorDataSize</code>, <code>imageCaptureReplayDescriptorDataSize</code>, <code>imageViewCaptureReplayDescriptorDataSize</code>, <code>samplerCaptureReplayDescriptorDataSize</code>, or <code>accelerationStructureCaptureReplayDescriptorDataSize</code> limits as appropriate.</p>
+</div>
+<div class="paragraph">
+<p>In addition, <a href="https://docs.vulkan.org/spec/latest/chapters/memory.html#vkGetDeviceMemoryOpaqueCaptureAddress">vkGetDeviceMemoryOpaqueCaptureAddress</a> must be used to capture the opaque address and replay it with <a href="https://docs.vulkan.org/spec/latest/chapters/memory.html#VkMemoryOpaqueCaptureAddressAllocateInfo">VkMemoryOpaqueCaptureAddressAllocateInfo</a>, for any memory used by resources with these handles.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_device_features"><a class="anchor" href="#_device_features"></a>3.8. Device Features</h3>
+<div class="paragraph">
+<p>The following features are exposed:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDeviceDescriptorBufferFeaturesEXT {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           descriptorBuffer;
+    VkBool32           descriptorBufferCaptureReplay;
+    VkBool32           descriptorBufferImageLayoutIgnored;
+    VkBool32           descriptorBufferPushDescriptors;
+} VkPhysicalDeviceDescriptorBufferFeaturesEXT;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If the <code>descriptorBuffer</code> feature is enabled, <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_AMD_shader_fragment_mask">VK_AMD_shader_fragment_mask</a> must not be enabled.
+If the <code>descriptorBufferImageLayoutIgnored</code> feature is enabled, the image layout provided when getting a descriptor is ignored.
+The <code>descriptorBufferCaptureReplay</code> feature is primarily for capture replay tools, and allows opaque data to be captured and replayed, allowing the same descriptor handles to be used on replay.
+If the <code>descriptorBufferPushDescriptors</code> features is enabled push descriptors can be used with descriptor buffers.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_device_properties"><a class="anchor" href="#_device_properties"></a>3.9. Device Properties</h3>
+<div class="paragraph">
+<p>The following properties are exposed:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDeviceDescriptorBufferPropertiesEXT {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           combinedImageSamplerDescriptorSingleArray;
+    VkBool32           bufferlessPushDescriptors;
+    VkBool32           allowSamplerImageViewPostSubmitCreation;
+    VkDeviceSize       descriptorBufferOffsetAlignment;
+    uint32_t           maxDescriptorBufferBindings;
+    uint32_t           maxResourceDescriptorBufferBindings;
+    uint32_t           maxSamplerDescriptorBufferBindings;
+    uint32_t           maxEmbeddedImmutableSamplerBindings;
+    uint32_t           maxEmbeddedImmutableSamplers;
+    size_t             bufferCaptureReplayDescriptorDataSize;
+    size_t             imageCaptureReplayDescriptorDataSize;
+    size_t             imageViewCaptureReplayDescriptorDataSize;
+    size_t             samplerCaptureReplayDescriptorDataSize;
+    size_t             accelerationStructureCaptureReplayDescriptorDataSize;
+    size_t             samplerDescriptorSize;
+    size_t             combinedImageSamplerDescriptorSize;
+    size_t             sampledImageDescriptorSize;
+    size_t             storageImageDescriptorSize;
+    size_t             uniformTexelBufferDescriptorSize;
+    size_t             robustUniformTexelBufferDescriptorSize;
+    size_t             storageTexelBufferDescriptorSize;
+    size_t             robustStorageTexelBufferDescriptorSize;
+    size_t             uniformBufferDescriptorSize;
+    size_t             robustUniformBufferDescriptorSize;
+    size_t             storageBufferDescriptorSize;
+    size_t             robustStorageBufferDescriptorSize;
+    size_t             inputAttachmentDescriptorSize;
+    size_t             accelerationStructureDescriptorSize;
+    VkDeviceSize       maxSamplerDescriptorBufferRange;
+    VkDeviceSize       maxResourceDescriptorBufferRange;
+    VkDeviceSize       samplerDescriptorBufferAddressSpaceSize;
+    VkDeviceSize       resourceDescriptorBufferAddressSpaceSize;
+    VkDeviceSize       descriptorBufferAddressSpaceSize;
+} VkPhysicalDeviceDescriptorBufferPropertiesEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>descriptorBufferOffsetAlignment</code> describes the alignment required, in bytes, when setting offsets into the descriptor buffer.</p>
+</li>
+<li>
+<p><code>combinedImageSamplerDescriptorSingleArray</code> indicates that the implementation does not require an array of <code>VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER</code> descriptors to be written into a descriptor buffer as an array of image descriptors, immediately followed by an array of sampler descriptors.</p>
+</li>
+<li>
+<p><code>bufferlessPushDescriptors</code> indicates that the implementation does not require a buffer created with <code>VK_BUFFER_USAGE_PUSH_DESCRIPTORS_DESCRIPTOR_BUFFER_BIT_EXT</code> to be bound when using push descriptors.</p>
+</li>
+<li>
+<p><code>allowSamplerImageViewPostSubmitCreation</code> indicates that the implementation does not restrict when the <code>VkSampler</code> or <code>VkImageView</code> objects used to retrieve descriptor data can be created in relation to command buffer submission. If this value is <code>VK_FALSE</code>, then the application must create any <code>VkSampler</code> or <code>VkImageView</code> objects whose descriptor data is accessed during the execution of a command buffer, before the <code>vkQueueSubmit</code> (or <code>vkQueueSubmit2</code>) call that submits that command buffer.</p>
+</li>
+<li>
+<p><code>maxDescriptorBufferBindings</code> defines the maximum total number of descriptor buffers and embedded immutable sampler sets that can be bound.</p>
+</li>
+<li>
+<p><code>maxResourceDescriptorBufferBindings</code> defines the maximum number of resource descriptor buffers that can be bound.</p>
+</li>
+<li>
+<p><code>maxSamplerDescriptorBufferBindings</code> defines the maximum number of sampler descriptor buffers that can be bound.</p>
+</li>
+<li>
+<p><code>maxEmbeddedImmutableSamplerBindings</code> defines the maximum number of embedded immutable samplers sets that can be bound.</p>
+</li>
+<li>
+<p><code>maxEmbeddedImmutableSamplers</code> describes the maximum number of unique immutable samplers in descriptor set layouts created with <code>VK_DESCRIPTOR_SET_LAYOUT_CREATE_EMBEDDED_IMMUTABLE_SAMPLERS_BIT_EXT</code>, and pipeline layouts created from them, which can simultaneously exist on a device.</p>
+</li>
+<li>
+<p><code>bufferCaptureReplayDescriptorDataSize</code>, <code>imageCaptureReplayDescriptorDataSize</code>, <code>imageViewCaptureReplayDescriptorDataSize</code>, <code>samplerCaptureReplayDescriptorDataSize</code>, and <code>accelerationStructureCaptureReplayDescriptorDataSize</code> define the maximum size, in bytes, of the opaque data used for capture replay with each respective object type.</p>
+</li>
+<li>
+<p><code>samplerDescriptorSize</code> describes the size, in bytes, of a VK_DESCRIPTOR_TYPE_SAMPLER descriptor.</p>
+</li>
+<li>
+<p><code>combinedImageSamplerDescriptorSize</code> describes the size, in bytes, of a VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER descriptor.</p>
+</li>
+<li>
+<p><code>sampledImageDescriptorSize</code> describes the size, in bytes, of a VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE descriptor.</p>
+</li>
+<li>
+<p><code>storageImageDescriptorSize</code> describes the size, in bytes, of a VK_DESCRIPTOR_TYPE_STORAGE_IMAGE descriptor.</p>
+</li>
+<li>
+<p><code>uniformTexelBufferDescriptorSize</code> describes the size, in bytes, of a VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER descriptor.</p>
+</li>
+<li>
+<p><code>robustUniformTexelBufferDescriptorSize</code> describes the size, in bytes, of a VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER descriptor when robust buffer access is enabled.</p>
+</li>
+<li>
+<p><code>storageTexelBufferDescriptorSize</code> describes the size, in bytes, of a VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER descriptor.</p>
+</li>
+<li>
+<p><code>robustStorageTexelBufferDescriptorSize</code> describes the size, in bytes, of a VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER descriptor when robust buffer access is enabled.</p>
+</li>
+<li>
+<p><code>uniformBufferDescriptorSize</code> describes the size, in bytes, of a VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER descriptor.</p>
+</li>
+<li>
+<p><code>robustUniformBufferDescriptorSize</code> describes the size, in bytes, of a VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER descriptor when robust buffer access is enabled.</p>
+</li>
+<li>
+<p><code>storageBufferDescriptorSize</code> describes the size, in bytes, of a VK_DESCRIPTOR_TYPE_STORAGE_BUFFER descriptor.</p>
+</li>
+<li>
+<p><code>robustStorageBufferDescriptorSize</code> describes the size, in bytes, of a VK_DESCRIPTOR_TYPE_STORAGE_BUFFER descriptor when robust buffer access is enabled.</p>
+</li>
+<li>
+<p><code>inputAttachmentDescriptorSize</code> describes the size, in bytes, of a VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT descriptor.</p>
+</li>
+<li>
+<p><code>accelerationStructureDescriptorSize</code> describes the size, in bytes, of a VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR/VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV descriptor.</p>
+</li>
+<li>
+<p><code>maxSamplerDescriptorBufferRange</code> describes the accessible range, in bytes, of a sampler buffer when bound.</p>
+</li>
+<li>
+<p><code>maxResourceDescriptorBufferRange</code> describes the accessible range, in bytes, of a resource buffer when bound.</p>
+</li>
+<li>
+<p><code>samplerDescriptorBufferAddressSpaceSize</code> describes the total amount of address space available, in bytes, for descriptor buffers containing samplers.</p>
+</li>
+<li>
+<p><code>resourceDescriptorBufferAddressSpaceSize</code> describes the total amount of address space available, in bytes, for descriptor buffers containing resources.</p>
+</li>
+<li>
+<p><code>descriptorBufferAddressSpaceSize</code> describes the total amount of address space available, in bytes, for all descriptor buffers.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_VALVE_mutable_descriptor_type">VK_VALVE_mutable_descriptor_type</a> is used,
+a descriptor is considered to be a union of all the enabled types, so the size of a descriptor is the maximum of all enabled types.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDeviceDescriptorBufferDensityMapPropertiesEXT {
+    VkStructureType    sType;
+    void*              pNext;
+    size_t             combinedImageSamplerDensityMapDescriptorSize;
+} VkPhysicalDeviceDescriptorBufferDensityMapPropertiesEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>combinedImageSamplerDensityMapDescriptorSize</code> describes the size, in bytes, of a VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER descriptor when using the VK_SAMPLER_CREATE_SUBSAMPLED_BIT_EXT flag of the <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_fragment_density_map">VK_EXT_fragment_density_map</a> extension.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_mapping_to_directx_12_descriptor_heaps"><a class="anchor" href="#_mapping_to_directx_12_descriptor_heaps"></a>4. Mapping to DirectX® 12 Descriptor Heaps</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In DirectX 12 (DX12), descriptors are allocated into descriptor heaps, which work almost completely differently to anything currently in Vulkan.
+This extension aims to reduce one aspect of the divergence between the two.
+Below is a rough description of the mapping from DX12 to this extension.
+Applications looking to port between the two APIs will likely have more information available than the DX12 API provides, and can likely take shortcuts (highlighted where possible).
+This doesn’t solve the overall limits for object counts, and so it’s not possible to trivially emulate every corner of the DX12 API.</p>
+</div>
+<div class="sect2">
+<h3 id="_descriptor_heap_creation"><a class="anchor" href="#_descriptor_heap_creation"></a>4.1. Descriptor Heap Creation</h3>
+<div class="paragraph">
+<p>DX12 has the following command to create a heap:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct D3D12_DESCRIPTOR_HEAP_DESC {
+  D3D12_DESCRIPTOR_HEAP_TYPE  Type;
+  UINT                        NumDescriptors;
+  D3D12_DESCRIPTOR_HEAP_FLAGS Flags;
+  UINT                        NodeMask;
+} D3D12_DESCRIPTOR_HEAP_DESC;
+
+HRESULT CreateDescriptorHeap(
+  const D3D12_DESCRIPTOR_HEAP_DESC *pDescriptorHeapDesc,
+  REFIID                           riid,
+  void                             **ppvHeap
+);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Implementing the equivalent functionality in Vulkan would mean the following operations:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Create a <code>VkDescriptorSetLayout</code> with <code>VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT</code>. The count would be up to 1000000 for resources, and 2048 for samplers.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>If <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_VALVE_mutable_descriptor_type">VK_VALVE_mutable_descriptor_type</a> is supported, we only need one descriptor set layout which supports all descriptor types for the heap type.</p>
+</li>
+<li>
+<p>Otherwise, there are two alternatives:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Create up to 6 descriptor set layouts of the relevant descriptor types the application cares about (<code>STORAGE_BUFFER</code>, <code>UNIFORM_BUFFER</code>, <code>SAMPLED_IMAGE</code>, <code>STORAGE_IMAGE</code>, <code>UNIFORM_TEXEL_BUFFER</code>, <code>STORAGE_TEXEL_BUFFER</code>).</p>
+</li>
+<li>
+<p>Create one descriptor set layout with 6 fixed-size arrays instead of using variable descriptor counts. This means <code>NumDescriptors</code> is effectively ignored.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Create a <code>VkBuffer</code>, size equal to <code>NumDescriptors</code> multiplied by the descriptor size within it, and its device mask set per <code>NodeMask</code>.</p>
+</li>
+<li>
+<p>If <code>Flags</code> includes <code>D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE</code>, allocate <code>DEVICE_LOCAL</code> memory.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>If this memory can be <code>DEVICE_LOCAL</code> and <code>HOST_VISIBLE</code>, then that can be mapped directly for the CPU pointer and used as the heap CPU pointer.</p>
+</li>
+<li>
+<p>Otherwise, <code>HOST_VISIBLE</code> staging memory should be allocated for a parallel buffer.
+Copying from this staging buffer to the main descriptor buffer should be done at each submit where the staging buffer has been modified.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>If Flags does not include <code>D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE</code>, allocate <code>HOST_VISIBLE</code> memory that can be used for staging copies to <code>DEVICE_LOCAL</code> memory.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Alternatively, plain <code>malloc</code> can be used if descriptor copies are implemented as <code>memcpy</code>.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Copying descriptors ala <code>CopyDescriptorsSimple()</code> is implemented with either memcpy or staging copies.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This model would support the full TIER_3 resource binding feature in DX12 and shader model 6.6 direct heap access, but can be simplified a lot for applications with DX11-style binding models.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_descriptor_creation"><a class="anchor" href="#_descriptor_creation"></a>4.2. Descriptor Creation</h3>
+<div class="paragraph">
+<p>Unlike DX12, Vulkan (and this extension) requires view objects and sampler objects to exist and have their lifetimes managed by the application.
+These objects need to be kept alive for the descriptor itself to be valid.
+How this is managed precisely is going to depend on the application’s usage patterns, though <a href="https://github.com/HansKristian-Work/vkd3d-proton">vkd3d-proton</a> suggests one viable option.
+The scheme used by vkd3d-proton involves keeping a hash map of the views associated with each resource object (or the device for samplers), using creation parameters as a key, so that their lifetime is tied to the underlying resource and can be reused.
+When actually creating the UAV/SRV/Sampler, the object should be looked up in the relevant hash map, and created there if necessary.
+The descriptor itself is then written directly to the provided CPU pointer.
+Note that 'VkBufferView' objects are not used and have been replaced by an explicit address, range, and format.
+This is very important since applications have a tendency to linearly allocate texel buffers and might end up rapidly create these views at different offsets.
+If applications were forced to hold on to all unique 'VkBufferView' objects, things get out of hand quickly.
+vkd3d-proton currently works around this problem by quantizing the texel buffer offset and range, and instead performs offset/range checks per access in shaders to keep the number of objects low, which is obviously not desirable.</p>
+</div>
+<div class="paragraph">
+<p>For image views on the other hand, the number of unique views in flight per resource tends to be constrained and manageable.
+In terms of performance characteristics, creating SRVs and UAVs is already far more expensive in DX12 than copying descriptors.
+The style observed in most DX12 applications is that view objects are created in non-shader visible heaps, which are then streamed into shader visible heaps.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_descriptor_heap_queries"><a class="anchor" href="#_descriptor_heap_queries"></a>4.3. Descriptor Heap Queries</h3>
+<div class="paragraph">
+<p>Descriptor heaps provide methods to query the “start” pointer for the descriptor heap on both the CPU and GPU.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandleForHeapStart();
+D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandleForHeapStart();
+UINT GetDescriptorHandleIncrementSize(
+  D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapType
+);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>GetGPUDescriptorHandleForHeapStart</code> should be the <code>VkDeviceAddress</code> for the device-local buffer.
+<code>GetCPUDescriptorHandleForHeapStart</code> should be the mapped host address for the host-visible buffer.
+<code>GetDescriptorHandleIncrementSize</code> should be the size of the largest descriptor possible in the buffer.</p>
+</div>
+<div class="paragraph">
+<p>However, this model can fall through fairly quickly if the descriptor set layout is more complicated.
+When more than one descriptor array is used to emulate the union-style descriptor heap of DX12,
+it is not possible to provide a unique pointer to host memory that is suitable for copying.</p>
+</div>
+<div class="paragraph">
+<p>An engine abstraction that takes descriptor heap and offset separately is much easier to implement overall and avoids all these pitfalls.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_descriptor_copies"><a class="anchor" href="#_descriptor_copies"></a>4.4. Descriptor Copies</h3>
+<div class="paragraph">
+<p>D3D12-style descriptor copies can be performed using <code>memcpy</code> on the host-visible descriptor buffer memory,
+but applications need to make sure the memory that is being read from is cached on the host.
+Alternatively, it is possible to use staging buffer copies.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_descriptor_binding_2"><a class="anchor" href="#_descriptor_binding_2"></a>4.5. Descriptor Binding</h3>
+<div class="paragraph">
+<p>Binding descriptors to shaders in DX12 consists of two operations: setting the descriptor heaps, and setting tables as offsets into those heaps.</p>
+</div>
+<div class="paragraph">
+<p><code>SetDescriptorHeaps</code> allows applications to set one sampler heap, and one CBV/SRV/UAV heap (containing other resources).
+This command should straightforwardly map to <code>vkCmdBindDescriptorBuffersEXT</code>, with each heap being bound as a separate buffer.</p>
+</div>
+<div class="paragraph">
+<p><code>Set{Graphics|Compute}RootDescriptorTable</code> allows applications to set various offsets to the descriptor heap, to be more or less used like descriptor sets in Vulkan.
+This command will map fairly directly to <code>vkCmdSetDescriptorBufferOffsetsEXT</code>, but if implementing DX12 root signatures natively, this approach will not work easily.
+The core assumption of DX12 is that the heap is a big array and a table offset should be seen more as an index offset into that big array.
+<code>descriptorBufferOffsetAlignment</code> might be larger than one descriptor, so binding at the desired offset might not be possible.
+Descriptor buffer offsets are better suited for suballocating individual descriptor sets rather than slicing existing descriptor sets.</p>
+</div>
+<div class="paragraph">
+<p>An engine abstraction can decide to take this into account when allocating descriptor sets:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>In DX12 path, a root signature has N tables, which needs to allocate M descriptors each.</p>
+</li>
+<li>
+<p>In Vulkan path, a "root signature" translates to a <code>VkPipelineLayout</code>, which in turn translates to N `VkDescriptorSetLayout`s which require M bytes in the descriptor buffer each.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If native DX12 root signature compatibility is required however, the suggested implementation is to bind the heap in its entirety with a single <code>vkCmdSetDescriptorBufferOffsetEXT</code> of 0.
+The shader declares global unsized arrays and from there we can implement shader model 6.6 by just indexing into the descriptor array directly.
+For older models, descriptor table offsets can translate to u32 push constants that add an extra offset, meaning that we promote legacy root signatures to shader model 6.6.
+This is a fairly invasive process and it is only expected that translation layers would go to this length.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_porting_existing_vulkan_applications"><a class="anchor" href="#_porting_existing_vulkan_applications"></a>5. Porting existing Vulkan applications</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Porting an existing Vulkan application to the new API should require minimal additional code, and ideally should allow the removal of older code.</p>
+</div>
+<div class="paragraph">
+<p>Applications should be uploading descriptors in the exact same manner they upload other resource data (e.g. new textures, constants, etc.).
+All advice about how to upload resources (e.g. use staging buffers, use the DMA queue asynchronously, etc.) apply in the exact same manner for descriptors as they do for anything else.</p>
+</div>
+<div class="paragraph">
+<p>When porting an application then, the aim should not be to create a new separate path for descriptor uploads, but to directly hook into existing resource upload paths.
+This amortizes the cost of descriptor uploads with other data uploads and reduces the amount of code dedicated to descriptor management.
+Any improvements to data uploads then automatically apply to descriptor uploads.
+For strategies where resizable BAR or unified memory can be used, none of this is necessary and uploading descriptors becomes <code>memcpy</code>.</p>
+</div>
+<div class="paragraph">
+<p>For descriptor management, pools are removed. Instead of allocating descriptor sets from pools, applications can instead allocate from a custom allocator, which is backed by a big descriptor buffer.
+The size to allocate for a set would be obtained from <code>vkGetDescriptorSetLayoutSizeEXT</code> and alignment from <code>descriptorBufferOffsetAlignment</code>.
+A linear or arena allocator would be a good match for this.</p>
+</div>
+<div class="paragraph">
+<p>Instead of updating descriptor sets with <code>vkUpdateDescriptorSets</code>, <code>vkGetDescriptorEXT</code> could point directly to the mapped descriptor buffer, or a scratch buffer can be used and copied later.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_example"><a class="anchor" href="#_example"></a>6. Example</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This example intends to show:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>How to create descriptor set layouts</p>
+</li>
+<li>
+<p>How to use immutable samplers with descriptor buffers</p>
+</li>
+<li>
+<p>How to use embedded immutable samplers</p>
+</li>
+<li>
+<p>How to use push descriptors</p>
+</li>
+<li>
+<p>How to allocate enough descriptor buffer memory</p>
+</li>
+<li>
+<p>How to bind ranges of descriptor buffers to descriptor sets</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkSampler immutableSamplers[4]; // Create these somehow.
+
+// When using descriptor buffers, it is generally a good idea to separate out samplers and resources into separate sets,
+// since descriptor buffers containing samplers might be very limited in size.
+const VkDescriptorSetLayoutBinding setLayout0[] =
+{
+    {
+        0,                                      // binding
+        VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,       // descriptorType
+        2,                                      // descriptorCount
+        VK_SHADER_STAGE_FRAGMENT_BIT,           // stageFlags
+        NULL                                    // pImmutableSamplers
+    },
+    {
+        1,                                       // binding
+        VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, // descriptorType
+        2,                                       // descriptorCount
+        VK_SHADER_STAGE_FRAGMENT_BIT,            // stageFlags
+        NULL                                     // pImmutableSamplers
+    }
+};
+
+const VkDescriptorSetLayoutBinding setLayout1[] =
+{
+    {
+        0,                                      // binding
+        VK_DESCRIPTOR_TYPE_SAMPLER,             // descriptorType
+        2,                                      // descriptorCount
+        VK_SHADER_STAGE_FRAGMENT_BIT,           // stageFlags
+        &amp;immutableSamplers[0],                  // pImmutableSamplers
+    },
+    {
+        1,                                       // binding
+        VK_DESCRIPTOR_TYPE_SAMPLER,              // descriptorType
+        2,                                       // descriptorCount
+        VK_SHADER_STAGE_FRAGMENT_BIT,            // stageFlags
+        NULL,
+    }
+};
+
+const VkDescriptorSetLayoutBinding setLayout2[] =
+{
+    // binding to a single image descriptor
+    {
+        0,                                      // binding
+        VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,      // descriptorType
+        1,                                      // descriptorCount
+        VK_SHADER_STAGE_FRAGMENT_BIT,           // stageFlags
+        NULL                                    // pImmutableSamplers
+    }
+};
+
+// Embedded immutable samplers are internally allocated and we do not need to allocate anything.
+const VkDescriptorSetLayoutBinding setLayout3[] =
+{
+    {
+        0,                                      // binding
+        VK_DESCRIPTOR_TYPE_SAMPLER,             // descriptorType
+        1,                                      // descriptorCount
+        VK_SHADER_STAGE_FRAGMENT_BIT,           // stageFlags
+        &amp;immutableSamplers[2],                  // pImmutableSamplers
+    },
+    {
+        1,                                       // binding
+        VK_DESCRIPTOR_TYPE_SAMPLER,              // descriptorType
+        1,                                       // descriptorCount
+        VK_SHADER_STAGE_FRAGMENT_BIT,            // stageFlags
+        &amp;immutableSamplers[3],                   // pImmutableSamplers
+    }
+};
+
+// Descriptor set layouts are created as normal, but we use the descriptor buffer flag on the set layouts.
+VkDescriptorSetLayout layout0 =
+    create_descriptor_set_layout({ .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT, .pBindings = setLayout0, .bindingCount = 2 });
+VkDescriptorSetLayout layout1 =
+    create_descriptor_set_layout({ .flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT, .pBindings = setLayout1, .bindingCount = 2 });
+VkDescriptorSetLayout layout2 =
+    create_descriptor_set_layout({ .flags =
+            VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT |
+            VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR,
+        .pBindings = setLayout2, .bindingCount = 1 });
+VkDescriptorSetLayout layout3 =
+    create_descriptor_set_layout({ .flags =
+            VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT |
+            VK_DESCRIPTOR_SET_LAYOUT_CREATE_EMBEDDED_IMMUTABLE_SAMPLERS_BIT_EXT,
+        .pBindings = setLayout3, .bindingCount = 2 });
+
+// Use 5 descriptor set layouts, mostly here to demonstrate how multiple sets can refer to one descriptor buffer.
+// Also, use embedded sampler sets and push constants for completion.
+VkPipelineLayout layout = create_pipeline_layout({ .layouts = { layout0, layout0, layout1, layout2, layout3 }});
+
+// Query how big the descriptor set layout is.
+VkDeviceSize layoutSizes[2];
+vkGetDescriptorSetLayoutSizeEXT(device, layout0, &amp;layoutSizes[0]);
+vkGetDescriptorSetLayoutSizeEXT(device, layout1, &amp;layoutSizes[1]);
+
+// Align the descriptor set size so it is suitable for suballocation within a descriptor buffer.
+layoutSizes[0] = align(layoutSizes[0], props.descriptorBufferOffsetAlignment);
+layoutSizes[1] = align(layoutSizes[1], props.descriptorBufferOffsetAlignment);
+
+// Query individual offsets into the descriptor set.
+VkDeviceSize layoutOffsets[2][2];
+vkGetDescriptorSetLayoutBindingOffsetEXT(device, layout0, 0, &amp;layoutOffsets[0][0]);
+vkGetDescriptorSetLayoutBindingOffsetEXT(device, layout0, 1, &amp;layoutOffsets[0][1]);
+vkGetDescriptorSetLayoutBindingOffsetEXT(device, layout1, 0, &amp;layoutOffsets[1][0]);
+vkGetDescriptorSetLayoutBindingOffsetEXT(device, layout1, 1, &amp;layoutOffsets[1][1]);
+
+#define SET_COUNT 64
+
+// Allocate the equivalent of a big descriptor pool.
+// The size is arbitrary and should be large and be able to hold all descriptors used by app,
+// for this sample, we allocate the smallest possible descriptor buffer for the number of sets we need.
+// The most compatible thing to do is 1 resource buffer, 1 sampler buffer.
+Buffer resourceBuffer = create_buffer({
+    .size = layoutSizes[0] * 2 * SET_COUNT,
+    .usage = VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT |
+        (props.bufferlessPushDescriptors ? 0 : VK_BUFFER_USAGE_PUSH_DESCRIPTORS_DESCRIPTOR_BUFFER_BIT),
+    .properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT });
+
+Buffer samplerBuffer = create_buffer({
+    .size = layoutSizes[1] * SET_COUNT,
+    .usage = VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT,
+    .properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT });
+
+const VkDescriptorBufferBindingPushDescriptorBufferHandleEXT push_descriptor_buffer_handle = {
+    VK_STRUCTURE_TYPE_DESCRIPTOR_BUFFER_BINDING_PUSH_DESCRIPTOR_BUFFER_HANDLE_EXT, NULL, resourceBuffer.handle};
+
+const VkDescriptorBufferBindingInfoEXT binding_infos[2] = {
+    { VK_STRUCTURE_TYPE_DESCRIPTOR_BUFFER_BINDING_INFO_EXT, (props.bufferlessPushDescriptors ? NULL : &amp;push_descriptor_buffer_handle),
+        resourceBuffer.deviceAddress,
+        VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | (props.bufferlessPushDescriptors ? 0 : VK_BUFFER_USAGE_PUSH_DESCRIPTORS_DESCRIPTOR_BUFFER_BIT) },
+    { VK_STRUCTURE_TYPE_DESCRIPTOR_BUFFER_BINDING_INFO_EXT, NULL, samplerBuffer.deviceAddress,
+        VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT }
+};
+
+// Bind the descriptor buffers once, from here, we will offset into the buffer for different descriptor sets.
+vkCmdBindDescriptorBuffersEXT(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, 0, 2, binding_infos);
+
+// Allocate these somehow, not particularly important to this example.
+VkImageView views[SET_COUNT][2][2];
+VkSampler samplers[SET_COUNT][2];
+VkDeviceAddress bufferAddressTexelBuffer;
+
+// No buffers are associated with embedded immutable samplers. This maps to DX12 static samplers.
+// There is no vkCmdBindPipelineLayout(), so this is the way to do it in Vulkan.
+vkCmdBindDescriptorBufferEmbeddedSamplersEXT(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 4);
+
+for (int i = 0; i &lt; SET_COUNT; i++)
+{
+    // This refers to the buffers we bound in vkCmdBindDescriptorBuffersEXT.
+    // Allocate descriptor sets linearly.
+    const uint32_t bufferIndices[] = { 0, 0, 1 };
+    const VkDeviceSize offsets[] = { 2 * i * layoutSizes[0], (2 * i + 1) * layoutSizes[0], i * layoutSizes[1] };
+
+    // Set 0: Resource set pulled from buffer 0
+    // Set 1: Resource set pulled from buffer 0
+    // Set 2: Sampler set pulled from buffer 1
+    // Set 3: Push descriptors
+    // Set 4: Embedded samplers
+
+    vkCmdSetDescriptorBufferOffsetsEXT(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 3,
+        bufferIndices, offsets);
+
+    VkWriteDescriptorSet ssbo_write = { /* Fill in as desired, details not interesting here. */ };
+    vkCmdPushDescriptorSetKHR(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 3, 1, &amp;ssbo_write);
+
+    VkDescriptorImageInfo image_info = {};
+    VkDescriptorAddressInfoEXT addr_info = { VK_STRUCTURE_TYPE_DESCRIPTOR_ADDRESS_INFO_EXT };
+    VkDescriptorGetInfoEXT info = { VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT };
+
+    for (int j = 0; j &lt; 2; j++)
+    {
+        info.type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+        info.pSampledImage = &amp;image_info;
+        // If descriptorBufferImageLayoutIgnored is enabled, this is ignored, convenient!
+        image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        // Offset is based on the binding offset + the offset within the descriptor set layout we queried earlier.
+        // For array indexing, use the descriptor size from physical device property.
+        // set j, binding 0, element k
+        for (int k = 0; k &lt; 2; k++)
+        {
+            image_info.imageView = views[i][j][k];
+            vkGetDescriptorEXT(device, &amp;info, props.sampledImageDescriptorSize,
+            resourceBuffer.hostPointer + offsets[j] + layoutOffsets[0][0] + k * props.sampledImageDescriptorSize);
+        }
+
+        // set j, binding 1, element k
+        info.type = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
+        info.data.pUniformBuffer = &amp;addr_info;
+        for (int k = 0; k &lt; 2; k++)
+        {
+            addr_info.range = 1024;
+            addr_info.address = bufferAddressTexelBuffer + (4 * i + 2 * j + k) * addr_info.range;
+            // No VkBufferView needed, how convenient!
+            addr_info.format = VK_FORMAT_R8G8B8A8_UNORM;
+            vkGetDescriptorEXT(device, &amp;info, props.uniformTexelBufferDescriptorSize,
+            resourceBuffer.hostPointer + offsets[j] + layoutOffsets[0][1] + k * props.uniformTexelBufferDescriptorSize);
+        }
+    }
+
+    // For immutable samplers, we have to emit the buffer payload.
+    // In practice, the immutable samplers must work even if implementation just ignores pImmutableSamplers.
+    info.type = VK_DESCRIPTOR_TYPE_SAMPLER;
+    // set 2, binding 0, element k
+    for (int k = 0; k &lt; 2; k++)
+    {
+        info.data.pSampler = &amp;immutableSamplers[k];
+        vkGetDescriptorEXT(device, &amp;info, props.samplerDescriptorSize,
+        samplerBuffer.hostPointer + offsets[2] + layoutOffsets[1][0] + k * props.samplerDescriptorSize);
+    }
+
+    // set 2, binding 1, element k
+    for (int k = 0; k &lt; 2; k++)
+    {
+        info.data.pSampler = &amp;samplers[i][k];
+        vkGetDescriptorEXT(device, &amp;info, props.samplerDescriptorSize,
+        samplerBuffer.hostPointer + offsets[2] + layoutOffsets[1][1] + k * props.samplerDescriptorSize);
+    }
+
+    vkCmdDraw(...);
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_issues"><a class="anchor" href="#_issues"></a>7. Issues</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_resolved_how_do_immutable_samplers_work"><a class="anchor" href="#_resolved_how_do_immutable_samplers_work"></a>7.1. RESOLVED: How do immutable samplers work?</h3>
+<div class="paragraph">
+<p>There may be cases where a driver needs immutable samplers stored as part of the descriptor, rather than solely existing as a part of the pipeline.
+With descriptor sets, this could be hidden from the application as the driver controlled how writes were performed – not so with this API.
+To fix this, samplers must be used to populate these descriptor bindings as if they were not immutable, and they must have been created with identical parameters.</p>
+</div>
+<div class="paragraph">
+<p>For partity with DX12, a special kind of descriptor set - embedded immutable samplers - are supported as an alternative which follow DX12 restrictions.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_should_we_support_dynamic_buffers"><a class="anchor" href="#_resolved_should_we_support_dynamic_buffers"></a>7.2. RESOLVED: Should we support dynamic buffers?</h3>
+<div class="paragraph">
+<p>No, these have very specialized support paths in some drivers, and end up being more pain than it’s worth to support.
+Applications can achieve the same using device addresses in push constants, or pipelined descriptor buffer updates.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_unresolved_how_does_this_interact_with_descriptor_set_invalidation"><a class="anchor" href="#_unresolved_how_does_this_interact_with_descriptor_set_invalidation"></a>7.3. UNRESOLVED: How does this interact with descriptor set invalidation?</h3>
+<div class="paragraph">
+<p>There’s some extra complication with whether descriptor set layouts work with buffers or sets (<code>VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT</code>) that will need sorting.
+Shouldn’t be too difficult and will likely just be along the lines of invalidating sets that don’t match in this regard when binding a new pipeline layout, but it’s too much detail for this design document.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_should_vkgetdescriptoroffset_take_an_arrayoffset_parameter_or_should_we_make_guarantees_about_how_arrays_work"><a class="anchor" href="#_resolved_should_vkgetdescriptoroffset_take_an_arrayoffset_parameter_or_should_we_make_guarantees_about_how_arrays_work"></a>7.4. RESOLVED: Should <code>vkGetDescriptorOffset</code> take an <code>arrayOffset</code> parameter, or should we make guarantees about how arrays work?</h3>
+<div class="paragraph">
+<p>Guarantees about how arrays work makes it much easier to work with GPU-side updates, as it avoids having to either add a “get offset” shader intrinsic, or for apps to keep a mapping when doing GPU copies.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_now_that_descriptors_are_in_regular_memory_should_there_be_a_limit_on_the_size_of_inline_uniforms"><a class="anchor" href="#_resolved_now_that_descriptors_are_in_regular_memory_should_there_be_a_limit_on_the_size_of_inline_uniforms"></a>7.5. RESOLVED: Now that descriptors are in regular memory, should there be a limit on the size of “inline uniforms”?</h3>
+<div class="paragraph">
+<p>We should allow developers to put as many constants into descriptor buffers as they want, thus removing the limit, at least when it interacts with this extension.
+This is likely to remove an indirection compared to putting these in a uniform buffer.
+Potentially we might want to at least have it match the uniform buffer limit rather than being independent.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_why_are_view_objects_required_when_dx12_has_no_such_requirement"><a class="anchor" href="#_resolved_why_are_view_objects_required_when_dx12_has_no_such_requirement"></a>7.6. RESOLVED: Why are view objects required when DX12 has no such requirement?</h3>
+<div class="paragraph">
+<p>DX12 has dedicated heap objects which allow implementations to hide a lot of implementation detail behind them; without them, some vendors rely on view objects to store metadata.
+Introducing heaps to Vulkan as-is was too complex alongside the other changes in this extension, when the primary goal is to enable explicit memory management, rather than precise DX12 compatibility.
+If this turns out to be a significant problem, a future extension could be developed to bridge this gap.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_should_vkgetdescriptorext_vkgetdescriptorsetlayoutbindingoffsetext_be_arrayed"><a class="anchor" href="#_resolved_should_vkgetdescriptorext_vkgetdescriptorsetlayoutbindingoffsetext_be_arrayed"></a>7.7. RESOLVED: Should <code>vkGetDescriptorEXT</code> / <code>vkGetDescriptorSetLayoutBindingOffsetEXT</code> be arrayed?</h3>
+<div class="paragraph">
+<p>No – there is no reason why pulling this loop into the driver should provide any benefit.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_should_we_support_combined_imagesampler_descriptors_with_this_extension"><a class="anchor" href="#_resolved_should_we_support_combined_imagesampler_descriptors_with_this_extension"></a>7.8. RESOLVED: Should we support combined image/sampler descriptors with this extension?</h3>
+<div class="paragraph">
+<p>While some consider these deprecated, removing them would prevent some applications being able to port to this extension.
+Additionally, YCbCr support currently <em>relies</em> on this descriptor type, which is required on some platforms.
+It might be possible to remove that requirement in the YCbCr feature, but it is a lot of work for a fairly low payoff.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_how_does_this_interact_with_variable_descriptor_count"><a class="anchor" href="#_resolved_how_does_this_interact_with_variable_descriptor_count"></a>7.9. RESOLVED: How does this interact with variable descriptor count?</h3>
+<div class="paragraph">
+<p>The variable flag is allowed; <code>vkGetDescriptorSetLayoutSize</code> returns a size assuming the maximum size will be used - but developers are free to use the set with a buffer sized for a smaller number of descriptors.  The exception to this is when <code>combinedImageSamplerDescriptorSingleArray</code> is <code>VK_FALSE</code> and the binding contains <code>VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER</code> descriptors; in this case the image and sampler descriptors are still arranged in the descriptor buffer as though the maximum number of descriptors are used, and so the buffer must be sized accordingly.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_should_we_require_descriptors_to_be_retrieved_for_null_handle_or_is_memset0_sufficient"><a class="anchor" href="#_resolved_should_we_require_descriptors_to_be_retrieved_for_null_handle_or_is_memset0_sufficient"></a>7.10. RESOLVED: Should we require descriptors to be retrieved for <code>NULL_HANDLE</code> or is <code>memset(0)</code> sufficient?</h3>
+<div class="paragraph">
+<p>Some vendors use non-zero values for null descriptors, so applications can retrieve these using <code>VK_NULL_HANDLE</code> with <code>vkGetDescriptorEXT</code>.
+For descriptor types which take buffer devices addresses, a <code>0</code> address is used instead.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_how_can_ycbcr_descriptors_be_obtained"><a class="anchor" href="#_resolved_how_can_ycbcr_descriptors_be_obtained"></a>7.11. RESOLVED: How can YCbCr descriptors be obtained?</h3>
+<div class="paragraph">
+<p>YCbCr descriptors can have multiple descriptors associated with them; applications must allow for this space.
+<code>VkSamplerYcbcrConversionImageFormatProperties::combinedImageSamplerDescriptorCount</code> determines how many descriptors each image format requires.
+When calling <code>vkGetDescriptorEXT</code> for a YCbCr combined descriptor, applications must provide a pointer to enough memory for this many combined sampled image descriptors, and factor this in when copying descriptors.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_how_should_we_expect_capturereplay_tooling_e_g_renderdocvktrace_to_use_this"><a class="anchor" href="#_resolved_how_should_we_expect_capturereplay_tooling_e_g_renderdocvktrace_to_use_this"></a>7.12. RESOLVED: How should we expect capture/replay tooling (e.g. RenderDoc/vktrace) to use this?</h3>
+<div class="paragraph">
+<p>A capture replay bit on image/buffer creation will be added to enable descriptors to be reused between runs. This allows capture tools to capture the buffer data as bound, and replay with the same descriptors, rather than attempting to do a mapping.
+Some sort of GPU feedback is still desirable on capture to determine which handles are accessed, but this will be similar to the situation with descriptor indexing.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_on_some_platforms_descriptor_sets_occupy_a_4gb_range_allowing_the_set_pointer_to_be_32_bit_rather_than_64_bit_how_can_this_be_guaranteed_for_descriptor_buffers"><a class="anchor" href="#_resolved_on_some_platforms_descriptor_sets_occupy_a_4gb_range_allowing_the_set_pointer_to_be_32_bit_rather_than_64_bit_how_can_this_be_guaranteed_for_descriptor_buffers"></a>7.13. RESOLVED: On some platforms, descriptor sets occupy a 4GB range, allowing the set pointer to be 32-bit, rather than 64-bit. How can this be guaranteed for descriptor buffers?</h3>
+<div class="paragraph">
+<p>This could be done a number of ways – e.g. having unique memory types that guarantee allocation in a 4GB range.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_should_the_alignment_be_separate_from_the_size"><a class="anchor" href="#_resolved_should_the_alignment_be_separate_from_the_size"></a>7.14. RESOLVED: Should the alignment be separate from the size?</h3>
+<div class="paragraph">
+<p>No - the alignment of a descriptor is always the size of the descriptor.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_what_is_the_fast_path_for_constant_data_in_this_new_model_previously_most_vendors_have_recommended_dynamic_ubos_as_a_fast_path_but_those_go_away_in_this_extension"><a class="anchor" href="#_resolved_what_is_the_fast_path_for_constant_data_in_this_new_model_previously_most_vendors_have_recommended_dynamic_ubos_as_a_fast_path_but_those_go_away_in_this_extension"></a>7.15. RESOLVED: What is the fast path for constant data in this new model? Previously most vendors have recommended dynamic UBOs as a fast path, but those go away in this extension.</h3>
+<div class="paragraph">
+<p>The crucial part of getting data into a shader quickly is mostly dominated by number of indirections, and cache behavior.
+Static accesses with fewer indirections and minimal memory model interactions (e.g. read-only and not <code>NonPrivate</code>) will be fastest.
+Push constants should be favored for small amounts of data.
+For larger amounts of data, applications should favor allocating buffers and putting data into those buffers according with whichever of the below API mechanisms is most straightforward for their use case, with some potential degradation at each step.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Push constants</p>
+</li>
+<li>
+<p>Pointer to data in push constants</p>
+</li>
+<li>
+<p>Inline uniform data in descriptor buffers</p>
+</li>
+<li>
+<p>Push descriptors</p>
+</li>
+<li>
+<p>Uniform buffer in descriptor memory</p>
+</li>
+<li>
+<p>Storage buffer in descriptor memory</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This order listed above is not necessarily true for all IHVs.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_should_applications_be_able_to_mix_sets_and_buffers"><a class="anchor" href="#_resolved_should_applications_be_able_to_mix_sets_and_buffers"></a>7.16. RESOLVED: Should applications be able to mix sets and buffers?</h3>
+<div class="paragraph">
+<p>Originally the intention was to support this, but at least one vendor cannot support this natively.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_should_we_use_buffer_device_addresses_for_the_buffer_arguments"><a class="anchor" href="#_resolved_should_we_use_buffer_device_addresses_for_the_buffer_arguments"></a>7.17. RESOLVED: Should we use buffer device addresses for the buffer arguments?</h3>
+<div class="paragraph">
+<p>Buffer parameters in recent extensions have been using device address arguments, so this extension aims to be consistent. Part of the reason for this though, is so that the base address can be modified with a single pointer argument instead of object + offset.
+However, this extension explicitly uses a separate command for setting the offset dynamically compared to the base address, to allow for the application to set the base address statically.
+Having the base address specified with a device address is still useful for consistency though.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_how_does_this_interact_with_vk_ext_pipeline_robustness"><a class="anchor" href="#_resolved_how_does_this_interact_with_vk_ext_pipeline_robustness"></a>7.18. RESOLVED: How does this interact with VK_EXT_pipeline_robustness?</h3>
+<div class="paragraph">
+<p>There is no way to request robust and non-robust descriptors separately, or specify robust/non-robust descriptors in the set layout, so if
+the <code>robustBufferAccess</code> feature is enabled then robust descriptors are always used.</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

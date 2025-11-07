@@ -1,0 +1,1719 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Built-In Variables :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:glsl" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="glsl" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">OpenGL Shading Language Specification</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="preamble.html">Preamble</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="overview.html">Overview of Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="basics.html">Basics</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="variables.html">Variables and Types</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="operators.html">Operators and Expressions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="statements.html">Statements and Structure</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="builtins.html">Built-In Variables</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="builtinfunctions.html">Built-In Functions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="grammar.html">Shading Language Grammar</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="acknowledgements.html">Acknowledgments</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="references.html">Normative References</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="spirvmappings.html">Non-Normative SPIR-V Mappings</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">OpenGL Shading Language Specification</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">OpenGL Shading Language Specification</a></li>
+    <li><a href="builtins.html">Built-In Variables</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/GLSL/antora/modules/ROOT/pages/chapters/builtins.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Built-In Variables</h1>
+<div class="sect1">
+<h2 id="built-in-language-variables"><a class="anchor" href="#built-in-language-variables"></a>Built-In Language Variables</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Some operations occur outside shader functionality and need to provide
+values to or receive values from shader executables.
+Shaders communicate with fixed-function pipeline stages, and
+optionally with other shader executables, through the use of built-in input
+and output variables.</p>
+</div>
+<div class="sect2">
+<h3 id="vertex-shader-special-variables"><a class="anchor" href="#vertex-shader-special-variables"></a>Vertex Shader Special Variables</h3>
+<div class="paragraph">
+<p>The built-in vertex shader variables are intrinsically declared as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">in int gl_VertexID;       // only present when not targeting Vulkan
+in int gl_InstanceID;     // only present when not targeting Vulkan
+in int gl_VertexIndex;    // only present when targeting Vulkan
+in int gl_InstanceIndex;  // only present when targeting Vulkan
+in int gl_DrawID;
+in int gl_BaseVertex;
+in int gl_BaseInstance;
+
+out gl_PerVertex {
+    vec4 gl_Position;
+    float gl_PointSize;
+    float gl_ClipDistance[];
+    float gl_CullDistance[];
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The variable <em>gl_Position</em> is intended for writing the homogeneous vertex
+position.
+It can be written at any time during shader execution.
+This value will be used by primitive assembly, clipping, culling, and other
+fixed functionality operations, if present, that operate on primitives after
+vertex processing has occurred.
+Its value is undefined after the vertex processing stage if the vertex
+shader executable does not write <em>gl_Position</em>.</p>
+</div>
+<div class="paragraph">
+<p>The variable <em>gl_PointSize</em> is intended for a shader to write the size of
+the point to be rasterized.
+It is measured in pixels.
+If <em>gl_PointSize</em> is not written to, its value is undefined in subsequent
+pipe stages.</p>
+</div>
+<div class="paragraph">
+<p>The variable <em>gl_ClipDistance</em> is intended for writing clip distances, and
+provides the forward compatible mechanism for controlling user clipping.
+The element <em>gl_ClipDistance[i]</em> specifies a clip distance for each half-space
+<em>i</em>.
+A distance of 0 means the vertex is on the boundary of the half-space, a positive distance means
+the vertex is inside the clip volume, and a negative distance means the point
+is outside the clip volume.
+The clip distances will be linearly interpolated across the primitive and
+the portion of the primitive with interpolated distances less than 0 will be
+clipped.</p>
+</div>
+<div class="paragraph">
+<p>The <em>gl_ClipDistance</em> array is predeclared as unsized and must be either explicitly
+sized by the shader redeclaring it with a size or implicitly sized by
+indexing it only with constant integral expressions.
+This needs to size the array to include all the clip half-spaces that are enabled
+via the API; if the size does not include all enabled half-spaces,
+results are undefined.
+The size can be at most <em>gl_MaxClipDistances</em>.
+The number of varying components (see <em>gl_MaxVaryingComponents)</em> consumed by
+<em>gl_ClipDistance</em> will match the size of the array, no matter how many
+half-spaces are enabled.
+The shader must also set all values in <em>gl_ClipDistance</em> that have been
+enabled via the API, or results are undefined.
+Values written into <em>gl_ClipDistance</em> for half-spaces that are not enabled have
+no effect.</p>
+</div>
+<div class="paragraph">
+<p>The variable <em>gl_CullDistance</em> provides a mechanism for controlling user
+culling.
+The element <em>gl_CullDistance[i]</em> specifies a cull distance for half-space <em>i</em>.
+A distance of 0 means the vertex is on the boundary of the half-space, a positive distance means
+the vertex is inside the cull volume, and a negative distance means the
+point is outside the cull volume.
+Primitives whose vertices all have a negative cull distance for half-spaces <em>i</em>
+will be discarded.</p>
+</div>
+<div class="paragraph">
+<p>The <em>gl_CullDistance</em> array is predeclared as unsized and must be either explicitly
+sized by the shader redeclaring it with a size or implicitly sized by
+indexing it only with constant integral expressions.
+The size determines the number and set of enabled cull distances and can be
+at most <em>gl_MaxCullDistances</em>.
+The number of varying components (see <em>gl_MaxVaryingComponents</em>) consumed by
+<em>gl_CullDistance</em> will match the size of the array.
+Shaders writing <em>gl_CullDistance</em> must write all enabled distances, or
+culling results are undefined.</p>
+</div>
+<div class="paragraph">
+<p>As an output variable, <em>gl_CullDistance</em> provides the place for the shader
+to write these distances.
+As an input in all but the fragment language, it reads the values written in
+the previous shader stage.
+In the fragment language, <em>gl_CullDistance</em> array contains linearly
+interpolated values for the vertex values written by a shader to the
+<em>gl_CullDistance</em> vertex output variable.</p>
+</div>
+<div class="paragraph">
+<p>It is a compile-time or link-time error for the set of shaders forming a
+program to have the sum of the sizes of the <em>gl_ClipDistance</em> and
+<em>gl_CullDistance</em> arrays to be larger than
+<em>gl_MaxCombinedClipAndCullDistances</em>.</p>
+</div>
+<div class="paragraph">
+<p>The variable <em>gl_VertexID</em> is a vertex shader input variable that holds an
+integer index for the vertex, as defined under &#8220;Shader Inputs&#8221; in section
+11.1.3.9 &#8220;Shader Inputs&#8221; of the <a href="references.html#references" class="xref page">OpenGL Specification</a>.
+It is only present when not targeting Vulkan.
+Even when present, the value of <em>gl_VertexID</em> is not always defined.</p>
+</div>
+<div class="paragraph">
+<p>The variable <em>gl_InstanceID</em> is a vertex shader input variable that holds
+the instance number of the current primitive in an instanced draw call (see
+&#8220;Shader Inputs&#8221; in section 11.1.3.9 &#8220;Shader Inputs&#8221; of the
+<a href="references.html#references" class="xref page">OpenGL Specification</a>).
+It is only present when not targeting Vulkan.
+If the current primitive does not come from an instanced draw call, the
+value of <em>gl_InstanceID</em> is zero.</p>
+</div>
+<div class="paragraph">
+<p>The variable <em>gl_VertexIndex</em> is a vertex language input variable that
+holds an integer index for the vertex, relative to a base.
+It is only present when targeting Vulkan.
+Even when present, the value of <em>gl_VertexIndex</em> is not always defined.</p>
+</div>
+<div class="paragraph">
+<p>The variable <em>gl_InstanceIndex</em> is a vertex language input variable that
+holds the instance number of the current primitive in an instanced draw
+call, relative to a base.
+It is only present when targeting Vulkan.
+If the current primitive does not come from an instanced draw call,
+the value of gl_InstanceIndex is zero.</p>
+</div>
+<div class="paragraph">
+<p>The variable <em>gl_DrawID</em> is a vertex shader input variable that holds the
+integer index of the drawing command to which the current vertex belongs
+(see &#8220;Shader Inputs&#8221; in section 11.1.3.9 of the <a href="references.html#references" class="xref page">OpenGL Specification</a>).
+If the vertex is not invoked by a <strong>Multi</strong>* form of a draw command, then the
+value of <em>gl_DrawID</em> is zero.</p>
+</div>
+<div class="paragraph">
+<p>The variable <em>gl_BaseVertex</em> is a vertex shader input variable that holds
+the integer value passed to the baseVertex parameter of the command that
+resulted in the current shader invocation (see &#8220;Shader Inputs&#8221; in section
+11.1.3.9 of the <a href="references.html#references" class="xref page">OpenGL Specification</a>).</p>
+</div>
+<div class="paragraph">
+<p>The variable <em>gl_BaseInstance</em> is a vertex shader input variable that holds
+the integer value passed to the baseInstance parameter of the command that
+resulted in the current shader invocation (see &#8220;Shader Inputs&#8221; in section
+11.1.3.9 of the <a href="references.html#references" class="xref page">OpenGL Specification</a>).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="tessellation-control-shader-special-variables"><a class="anchor" href="#tessellation-control-shader-special-variables"></a>Tessellation Control Shader Special Variables</h3>
+<div class="paragraph">
+<p>In the tessellation control shader, built-in variables are intrinsically
+declared as:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">in gl_PerVertex {
+    vec4 gl_Position;
+    float gl_PointSize;
+    float gl_ClipDistance[];
+    float gl_CullDistance[];
+} gl_in[gl_MaxPatchVertices];
+
+in int gl_PatchVerticesIn;
+in int gl_PrimitiveID;
+in int gl_InvocationID;
+
+out gl_PerVertex {
+    vec4 gl_Position;
+    float gl_PointSize;
+    float gl_ClipDistance[];
+    float gl_CullDistance[];
+} gl_out[];
+
+patch out float gl_TessLevelOuter[4];
+patch out float gl_TessLevelInner[2];</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="tessellation-control-input-variables"><a class="anchor" href="#tessellation-control-input-variables"></a>Tessellation Control Input Variables</h4>
+<div class="paragraph">
+<p><em>gl_Position</em>, <em>gl_PointSize</em>, <em>gl_ClipDistance</em>, and <em>gl_CullDistance</em>
+contain the values written in the previous shader stage to the corresponding
+outputs.</p>
+</div>
+<div class="paragraph">
+<p><em>gl_PatchVerticesIn</em> contains the number of vertices in the input patch
+being processed by the shader.
+A single shader can read patches of differing sizes, so the value of
+<em>gl_PatchVerticesIn</em> may differ between patches.</p>
+</div>
+<div class="paragraph">
+<p><em>gl_PrimitiveID</em> contains the number of primitives processed by the shader
+since the current set of rendering primitives was started.</p>
+</div>
+<div class="paragraph">
+<p><em>gl_InvocationID</em> contains the number of the output patch vertex assigned to
+the tessellation control shader invocation.
+It is assigned integer values in the range [0, N-1], where N is the number
+of output patch vertices per primitive.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="tessellation-control-output-variables"><a class="anchor" href="#tessellation-control-output-variables"></a>Tessellation Control Output Variables</h4>
+<div class="paragraph">
+<p><em>gl_Position</em>, <em>gl_PointSize</em>, <em>gl_ClipDistance</em>, and <em>gl_CullDistance</em> are
+used in the same fashion as the corresponding output variables in the vertex
+shader.</p>
+</div>
+<div class="paragraph">
+<p>The values written to <em>gl_TessLevelOuter</em> and <em>gl_TessLevelInner</em> are
+assigned to the corresponding outer and inner tessellation levels of the
+output patch.
+They are used by the tessellation primitive generator to control primitive
+tessellation and may be read by tessellation evaluation shaders.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="tessellation-evaluation-shader-special-variables"><a class="anchor" href="#tessellation-evaluation-shader-special-variables"></a>Tessellation Evaluation Shader Special Variables</h3>
+<div class="paragraph">
+<p>In the tessellation evaluation shader, built-in variables are intrinsically
+declared as:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">in gl_PerVertex {
+    vec4 gl_Position;
+    float gl_PointSize;
+    float gl_ClipDistance[];
+    float gl_CullDistance[];
+} gl_in[gl_MaxPatchVertices];
+
+in int gl_PatchVerticesIn;
+in int gl_PrimitiveID;
+in vec3 gl_TessCoord;
+patch in float gl_TessLevelOuter[4];
+patch in float gl_TessLevelInner[2];
+
+out gl_PerVertex {
+    vec4 gl_Position;
+    float gl_PointSize;
+    float gl_ClipDistance[];
+    float gl_CullDistance[];
+};</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="tessellation-evaluation-input-variables"><a class="anchor" href="#tessellation-evaluation-input-variables"></a>Tessellation Evaluation Input Variables</h4>
+<div class="paragraph">
+<p><em>gl_Position</em>, <em>gl_PointSize</em>, <em>gl_ClipDistance</em>, and <em>gl_CullDistance</em>
+contain the values written in the previous shader stage to the corresponding
+outputs.</p>
+</div>
+<div class="paragraph">
+<p><em>gl_PatchVerticesIn</em> and <em>gl_PrimitiveID</em> are defined in the same fashion as
+the corresponding input variables in the tessellation control shader.</p>
+</div>
+<div class="paragraph">
+<p><em>gl_TessCoord</em> specifies a three-component <em>(u,v,w)</em> vector identifying the
+position of the vertex being processed by the shader relative to the
+primitive being tessellated.
+Its values will obey the properties</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">gl_TessCoord.x == 1.0 - (1.0 - gl_TessCoord.x) // two operations performed
+gl_TessCoord.y == 1.0 - (1.0 - gl_TessCoord.y) // two operations performed
+gl_TessCoord.z == 1.0 - (1.0 - gl_TessCoord.z) // two operations performed</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>to aid in replicating subdivision computations.</p>
+</div>
+<div class="paragraph">
+<p>If a tessellation control shader is active, the input variables
+<em>gl_TessLevelOuter</em> and <em>gl_TessLevelInner</em> are filled with the
+corresponding outputs written by the tessellation control shader.
+Otherwise, they are assigned with default tessellation levels specified in
+section 11.2.3.3 &#8220;Tessellation Evaluation Shader Inputs&#8221; of the
+<a href="references.html#references" class="xref page">OpenGL Specification</a>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="tessellation-evaluation-output-variables"><a class="anchor" href="#tessellation-evaluation-output-variables"></a>Tessellation Evaluation Output Variables</h4>
+<div class="paragraph">
+<p><em>gl_Position</em>, <em>gl_PointSize</em>, <em>gl_ClipDistance</em>, and <em>gl_CullDistance</em> are
+used in the same fashion as the corresponding output variables in the vertex
+shader.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="geometry-shader-special-variables"><a class="anchor" href="#geometry-shader-special-variables"></a>Geometry Shader Special Variables</h3>
+<div class="paragraph">
+<p>In the geometry shader, built-in variables are intrinsically declared as:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">in gl_PerVertex {
+    vec4 gl_Position;
+    float gl_PointSize;
+    float gl_ClipDistance[];
+    float gl_CullDistance[];
+} gl_in[];
+
+in int gl_PrimitiveIDIn;
+in int gl_InvocationID;
+
+out gl_PerVertex {
+    vec4 gl_Position;
+    float gl_PointSize;
+    float gl_ClipDistance[];
+    float gl_CullDistance[];
+};
+
+out int gl_PrimitiveID;
+out int gl_Layer;
+out int gl_ViewportIndex;</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="geometry-shader-input-variables"><a class="anchor" href="#geometry-shader-input-variables"></a>Geometry Shader Input Variables</h4>
+<div class="paragraph">
+<p><em>gl_Position</em>, <em>gl_PointSize</em>, <em>gl_ClipDistance</em>, and <em>gl_CullDistance</em>
+contain the values written in the previous shader stage to the corresponding
+outputs.</p>
+</div>
+<div class="paragraph">
+<p><em>gl_PrimitiveIDIn</em> contains the number of primitives processed by the shader
+since the current set of rendering primitives was started.</p>
+</div>
+<div class="paragraph">
+<p><em>gl_InvocationID</em> contains the invocation number assigned to the geometry
+shader invocation.
+It is assigned integer values in the range [0, N-1], where N is the number
+of geometry shader invocations per primitive.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="geometry-shader-output-variables"><a class="anchor" href="#geometry-shader-output-variables"></a>Geometry Shader Output Variables</h4>
+<div class="paragraph">
+<p><em>gl_Position</em>, <em>gl_PointSize</em>, <em>gl_ClipDistance</em>, and <em>gl_CullDistance</em> are
+used in the same fashion as the corresponding output variables in the vertex
+shader.</p>
+</div>
+<div class="paragraph">
+<p><em>gl_PrimitiveID</em> is filled with a single integer that serves as a primitive
+identifier to the fragment shader.
+This is then available to fragment shaders, which will select the written
+primitive ID from the provoking vertex of the primitive being shaded.
+If a fragment shader using <em>gl_PrimitiveID</em> is active and a geometry shader
+is also active, the geometry shader must write to <em>gl_PrimitiveID</em> or the
+fragment shader input <em>gl_PrimitiveID</em> is undefined.
+See section 11.3.4.5 &#8220;Geometry Shader Outputs&#8221; of the
+<a href="references.html#references" class="xref page">OpenGL Specification</a> for more information.</p>
+</div>
+<div class="paragraph">
+<p><em>gl_Layer</em> is used to select a specific layer (or face and layer of a cube
+map) of a multi-layer framebuffer attachment.
+The actual layer used will come from one of the vertices in the primitive
+being shaded.
+Which vertex the layer comes from is determined as discussed in section
+11.3.4.6 &#8220;Layer and Viewport Selection&#8221; of the <a href="references.html#references" class="xref page">OpenGL Specification</a>
+but may be undefined, so it is best to write the same layer value for all
+vertices of a primitive.
+If a shader statically assigns a value to <em>gl_Layer</em>, layered rendering mode
+is enabled.
+See section 11.3.4.5 &#8220;Geometry Shader Outputs&#8221; and section 9.4.9 &#8220;Layered
+Framebuffers&#8221; of the <a href="references.html#references" class="xref page">OpenGL Specification</a> for more information.
+If a shader statically assigns a value to <em>gl_Layer</em>, and there is an
+execution path through the shader that does not set <em>gl_Layer</em>, then the
+value of <em>gl_Layer</em> is undefined for executions of the shader that take that
+path.</p>
+</div>
+<div class="paragraph">
+<p>The output variable <em>gl_Layer</em> takes on a special value when used with an
+array of cube map textures.
+Instead of only referring to the layer, it is used to select a cube map face
+and a layer.
+Setting <em>gl_Layer</em> to the value <em>layer*6+face</em> will render to face <em>face</em> of
+the cube defined in layer <em>layer</em>.
+The face values are defined in table 9.3 of section 9.4.9 &#8220;Layered
+Framebuffers&#8221; of the <a href="references.html#references" class="xref page">OpenGL Specification</a>,
+but repeated below for clarity.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Face Value</th>
+<th class="tableblock halign-left valign-top">Resulting Target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TEXTURE_CUBE_MAP_POSITIVE_X</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TEXTURE_CUBE_MAP_NEGATIVE_X</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TEXTURE_CUBE_MAP_POSITIVE_Y</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TEXTURE_CUBE_MAP_NEGATIVE_Y</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TEXTURE_CUBE_MAP_POSITIVE_Z</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TEXTURE_CUBE_MAP_NEGATIVE_Z</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>For example, to render to the positive <em>y</em> cube map face located in the 5th
+layer of the cube map array, <em>gl_Layer</em> should be set to <em>5 * 6 + 2</em>.</p>
+</div>
+<div class="paragraph">
+<p>The output variable <em>gl_ViewportIndex</em> provides the index of the viewport to
+which the next primitive emitted from the geometry shader should be drawn.
+Primitives generated by the geometry shader will undergo viewport
+transformation and scissor testing using the viewport transformation and
+scissor rectangle selected by the value of <em>gl_ViewportIndex</em>.
+The viewport index used will come from one of the vertices in the primitive
+being shaded.
+However, which vertex the viewport index comes from is
+implementation-dependent, so it is best to use the same viewport index for
+all vertices of the primitive.
+If a geometry shader does not assign a value to <em>gl_ViewportIndex</em>, viewport
+transform and scissor rectangle zero will be used.
+If a geometry shader statically assigns a value to <em>gl_ViewportIndex</em> and
+there is a path through the shader that does not assign a value to
+<em>gl_ViewportIndex</em>, the value of <em>gl_ViewportIndex</em> is undefined for
+executions of the shader that take that path.
+See section 11.3.4.6 &#8220;Layer and Viewport Selection&#8221; of the
+<a href="references.html#references" class="xref page">OpenGL Specification</a> for more information.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="fragment-shader-special-variables"><a class="anchor" href="#fragment-shader-special-variables"></a>Fragment Shader Special Variables</h3>
+<div class="paragraph">
+<p>The built-in special variables that are accessible from a fragment shader
+are intrinsically declared as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">in vec4 gl_FragCoord;
+in bool gl_FrontFacing;
+in float gl_ClipDistance[];
+in float gl_CullDistance[];
+in vec2 gl_PointCoord;
+in int gl_PrimitiveID;
+in int gl_SampleID;
+in vec2 gl_SamplePosition;
+in int gl_SampleMaskIn[];
+in int gl_Layer;
+in int gl_ViewportIndex;
+in bool gl_HelperInvocation;
+
+out float gl_FragDepth;
+out int gl_SampleMask[];</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The output of the fragment shader executable is processed by the fixed
+function operations at the back end of the API pipeline.</p>
+</div>
+<div class="paragraph">
+<p>The fixed functionality computed depth for a fragment may be obtained by
+reading <em>gl_FragCoord.z</em>, described below.</p>
+</div>
+<div class="paragraph">
+<p>Writing to <em>gl_FragDepth</em> will establish the depth value for the fragment
+being processed.
+If depth buffering is enabled, and no shader writes <em>gl_FragDepth</em>, then the
+fixed function value for depth will be used as the fragment&#8217;s depth value.
+If a shader statically assigns a value to <em>gl_FragDepth</em>, and there is an
+execution path through the shader that does not set <em>gl_FragDepth</em>, then the
+value of the fragment&#8217;s depth may be undefined for executions of the shader
+that take that path.
+That is, if the set of linked fragment shaders statically contain a write to
+<em>gl_FragDepth</em>, then it is responsible for always writing it.</p>
+</div>
+<div class="paragraph">
+<p>If a shader executes the <strong>discard</strong> keyword, the fragment is discarded, and
+the values of any user-defined fragment outputs, <em>gl_FragDepth</em>, and
+<em>gl_SampleMask</em> become irrelevant.</p>
+</div>
+<div class="paragraph">
+<p>The variable <em>gl_FragCoord</em> is available as an input variable from within
+fragment shaders and it holds the window relative coordinates (<em>x</em>, <em>y</em>,
+<em>z</em>, <em>1/w</em>) values for the fragment.
+If multi-sampling, this value can be for any location within the pixel, or
+one of the fragment samples.
+The use of <strong>centroid</strong> does not further restrict this value to be inside the
+current primitive.
+This value is the result of the fixed functionality that interpolates
+primitives after vertex processing to generate fragments.
+The <em>z</em> component is the depth value that would be used for the fragment&#8217;s
+depth if no shader contained any writes to <em>gl_FragDepth</em>.
+This is useful for invariance if a shader conditionally computes
+<em>gl_FragDepth</em> but otherwise wants the fixed functionality fragment depth.</p>
+</div>
+<div class="paragraph">
+<p>Fragment shaders have access to the input built-in variable
+<em>gl_FrontFacing</em>, whose value is <strong>true</strong> if the fragment belongs to a
+front-facing primitive.
+One use of this is to emulate two-sided lighting by selecting one of two
+colors calculated by a vertex or geometry shader.</p>
+</div>
+<div class="paragraph">
+<p>The values in <em>gl_PointCoord</em> are two-dimensional coordinates indicating
+where within a point primitive the current fragment is located, when point
+sprites are enabled.
+They range from 0.0 to 1.0 across the point.
+If the current primitive is not a point, or if point sprites are not
+enabled, then the values read from <em>gl_PointCoord</em> are undefined.</p>
+</div>
+<div class="paragraph">
+<p>For both the input array <em>gl_SampleMaskIn[]</em> and the output array
+<em>gl_SampleMask[]</em>, bit <em>B</em> of mask <em>M</em> (<em>gl_SampleMaskIn[M]</em> or
+<em>gl_SampleMask[M]</em>) corresponds to sample <em>32*M+B</em>.
+These arrays have <strong>ceil</strong>(<em>s</em>/32) elements, where <em>s</em> is the maximum number
+of color samples supported by the implementation.</p>
+</div>
+<div class="paragraph">
+<p>The input variable <em>gl_SampleMaskIn</em> indicates the set of samples covered by
+the primitive generating the fragment during multisample rasterization.
+It has a sample bit set if and only if the sample is considered covered for
+this fragment shader invocation.</p>
+</div>
+<div class="paragraph">
+<p>The output array <em>gl_SampleMask[]</em> sets the sample mask for the fragment
+being processed.
+Coverage for the current fragment will become the logical AND of the
+coverage mask and the output <em>gl_SampleMask</em>.
+This array must be sized in the fragment shader either implicitly or
+explicitly, to be no larger than the implementation-dependent maximum
+sample-mask (as an array of 32bit elements), determined by the maximum
+number of samples..
+If the fragment shader statically assigns a value to <em>gl_SampleMask</em>, the
+sample mask will be undefined for any array elements of any fragment shader
+invocations that fail to assign a value.
+If a shader does not statically assign a value to <em>gl_SampleMask</em>, the
+sample mask has no effect on the processing of a fragment.</p>
+</div>
+<div class="paragraph">
+<p>The input variable <em>gl_SampleID</em> is filled with the sample number of the
+sample currently being processed.
+This variable is in the range <em>0</em> to <em>gl_NumSamples-1</em>, where
+<em>gl_NumSamples</em> is the total number of samples in the framebuffer, or 1 if
+rendering to a non-multisample framebuffer.
+Any static use of this variable in a fragment shader causes the entire
+shader to be evaluated per-sample.</p>
+</div>
+<div class="paragraph">
+<p>The input variable <em>gl_SamplePosition</em> contains the position of the current
+sample within the multisample draw buffer.
+The <em>x</em> and <em>y</em> components of <em>gl_SamplePosition</em> contain the sub-pixel
+coordinate of the current sample and will have values in the range 0.0 to
+1.0.
+Any static use of this variable in a fragment shader causes the entire
+shader to be evaluated per sample.</p>
+</div>
+<div class="paragraph">
+<p>The value <em>gl_HelperInvocation</em> is <strong>true</strong> if the fragment shader invocation
+is considered a <em>helper invocation</em> and is <strong>false</strong> otherwise.
+A helper invocation is a fragment shader invocation that is created solely
+for the purposes of evaluating derivatives for use in non-helper fragment
+shader invocations.
+Such derivatives are computed implicitly in the built-in function
+<strong>texture</strong>() (see &#8220;<a href="builtinfunctions.html#texture-functions" class="xref page">Texture Functions</a>&#8221;), and
+explicitly in the derivative functions in
+&#8220;<a href="builtinfunctions.html#derivative-functions" class="xref page">Derivative Functions</a>&#8221;, for example <strong>dFdx</strong>() and
+<strong>dFdy</strong>().</p>
+</div>
+<div class="paragraph">
+<p>Fragment shader helper invocations execute the same shader code as
+non-helper invocations, but will not have side effects that modify the
+framebuffer or other shader-accessible memory.
+In particular:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Fragments corresponding to helper invocations are discarded when shader
+execution is complete, without updating the framebuffer.</p>
+</li>
+<li>
+<p>Stores to image and buffer variables performed by helper invocations
+have no effect on the underlying image or buffer memory.</p>
+</li>
+<li>
+<p>Atomic operations to image, buffer, or atomic counter variables
+performed by helper invocations have no effect on the underlying image
+or buffer memory.
+The values returned by such atomic operations are undefined.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Helper invocations may be generated for pixels not covered by a primitive
+being rendered.
+While fragment shader inputs qualified with <strong>centroid</strong> are normally required
+to be sampled in the intersection of the pixel and the primitive, the
+requirement is ignored for such pixels since there is no intersection
+between the pixel and primitive.</p>
+</div>
+<div class="paragraph">
+<p>Helper invocations may also be generated for fragments that are covered by a
+primitive being rendered when the fragment is killed by early fragment tests
+(using the <strong>early_fragment_tests</strong> qualifier) or where the implementation is
+able to determine that executing the fragment shader would have no effect
+other than assisting in computing derivatives for other fragment shader
+invocations.</p>
+</div>
+<div class="paragraph">
+<p>The set of helper invocations generated when processing any set of
+primitives is implementation-dependent.</p>
+</div>
+<div class="paragraph">
+<p><em>gl_ClipDistance</em> contains linearly interpolated values for the vertex-
+pipeline values written by a shader to the <em>gl_ClipDistance</em> output
+variable. Only elements in this array that have clipping enabled will
+have defined values.</p>
+</div>
+<div class="paragraph">
+<p><em>gl_CullDistance</em> contains linearly interpolated values for the vertex-
+pipeline values written by a shader to the <em>gl_CullDistance</em> output
+variable.</p>
+</div>
+<div class="paragraph">
+<p>The input variable <em>gl_PrimitiveID</em> is filled with the value written to the
+<em>gl_PrimitiveID</em> geometry shader output, if a geometry shader is present.
+Otherwise, it is filled with the number of primitives processed by the
+shader since the current set of rendering primitives was started.</p>
+</div>
+<div class="paragraph">
+<p>The input variable <em>gl_Layer</em> is filled with the value written to the
+<em>gl_Layer</em> geometry shader output, if a geometry shader is present.
+If the geometry stage does not dynamically assign a value to <em>gl_Layer</em>, the
+value of <em>gl_Layer</em> in the fragment stage will be undefined.
+If the geometry stage makes no static assignment to <em>gl_Layer</em>, the input
+value in the fragment stage will be zero.
+Otherwise, the fragment stage will read the same value written by the
+geometry stage, even if that value is out of range.
+If a fragment shader contains a static access to <em>gl_Layer</em>, it will count
+against the implementation defined limit for the maximum number of inputs to
+the fragment stage.</p>
+</div>
+<div class="paragraph">
+<p>The input variable <em>gl_ViewportIndex</em> is filled with the value written to
+the output variable <em>gl_ViewportIndex</em> in the geometry stage, if a geometry
+shader is present.
+If the geometry stage does not dynamically assign a value to
+<em>gl_ViewportIndex</em>, the value of <em>gl_ViewportIndex</em> in the fragment shader
+will be undefined.
+If the geometry stage makes no static assignment to <em>gl_ViewportIndex</em>, the
+fragment stage will read zero.
+Otherwise, the fragment stage will read the same value written by the
+geometry stage, even if that value is out of range.
+If a fragment shader contains a static access to <em>gl_ViewportIndex</em>, it will
+count against the implementation defined limit for the maximum number of
+inputs to the fragment stage.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="compute-shader-special-variables"><a class="anchor" href="#compute-shader-special-variables"></a>Compute Shader Special Variables</h3>
+<div class="paragraph">
+<p>In the compute shader, built-in variables are declared as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// workgroup dimensions
+in uvec3 gl_NumWorkGroups;
+const uvec3 gl_WorkGroupSize;
+
+// workgroup and invocation IDs
+in uvec3 gl_WorkGroupID;
+in uvec3 gl_LocalInvocationID;
+
+// derived variables
+in uvec3 gl_GlobalInvocationID;
+in uint gl_LocalInvocationIndex;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The built-in variable <em>gl_NumWorkGroups</em> is a compute-shader input variable
+containing the number of workgroups in each dimension of the dispatch that
+will execute the compute shader.
+Its content is equal to the values specified in the <em>num_groups_x</em>,
+<em>num_groups_y</em>, and <em>num_groups_z</em> parameters passed to the
+<em>DispatchCompute</em> API entry point.</p>
+</div>
+<div class="paragraph">
+<p>The built-in constant <em>gl_WorkGroupSize</em> is a compute-shader constant
+containing the workgroup size of the shader.
+The size of the workgroup in the <em>X</em>, <em>Y</em>, and <em>Z</em> dimensions is stored in
+the <em>x</em>, <em>y</em>, and <em>z</em> components.
+The constant values in <em>gl_WorkGroupSize</em> will match those specified in the
+required <strong>local_size_x</strong>, <strong>local_size_y</strong>, and <strong>local_size_z</strong> layout
+qualifiers for the current shader.
+This is a constant so that it can be used to size arrays of memory that can
+be shared within the workgroup.
+It is a compile-time error to use <em>gl_WorkGroupSize</em> in a shader that does
+not declare a fixed workgroup size, or before that shader has declared a
+fixed workgroup size, using <strong>local_size_x</strong>, <strong>local_size_y</strong>, and
+<strong>local_size_z</strong>. Use of variables whose values are derived from
+<em>gl_WorkGroupSize</em>, however, is not constrained to follow a declaration of the
+fixed workgroup size.</p>
+</div>
+<div class="paragraph">
+<p>The built-in variable <em>gl_WorkGroupID</em> is a compute-shader input variable
+containing the three-dimensional index of the workgroup that the
+current invocation is executing in.
+The possible values range across the parameters passed into
+<em>DispatchCompute</em>, i.e., from (0, 0, 0) to (<em>gl_NumWorkGroups.x</em> - 1,
+<em>gl_NumWorkGroups.y</em> - 1, <em>gl_NumWorkGroups.z</em> -1).</p>
+</div>
+<div class="paragraph">
+<p>The built-in variable <em>gl_LocalInvocationID</em> is a compute-shader input
+variable containing the three-dimensional index of the current work item
+within the workgroup.
+The possible values for this variable range across the workgroup
+size, i.e., (0,0,0) to (<em>gl_WorkGroupSize.x</em> - 1, <em>gl_WorkGroupSize.y</em> - 1,
+<em>gl_WorkGroupSize.z</em> - 1). Use of <em>gl_LocalInvocationID</em> is allowed
+before declarations of <strong>local_size_x</strong>, <strong>local_size_y</strong>, and <strong>local_size_z</strong>.</p>
+</div>
+<div class="paragraph">
+<p>The built-in variable <em>gl_GlobalInvocationID</em> is a compute shader input
+variable containing the global index of the current work item.
+This value uniquely identifies this invocation from all other invocations
+across all workgroups initiated by the current <em>DispatchCompute</em> call.
+This is computed as:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">gl_GlobalInvocationID =
+    gl_WorkGroupID * gl_WorkGroupSize + gl_LocalInvocationID;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The built-in variable <em>gl_LocalInvocationIndex</em> is a compute shader input
+variable that contains the one-dimensional representation of the
+<em>gl_LocalInvocationID</em>.
+This is computed as:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">gl_LocalInvocationIndex =
+    gl_LocalInvocationID.z * gl_WorkGroupSize.x * gl_WorkGroupSize.y +
+    gl_LocalInvocationID.y * gl_WorkGroupSize.x +
+    gl_LocalInvocationID.x;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Use of <em>gl_LocalInvocationIndex</em> is allowed before declarations of
+<strong>local_size_x</strong>, <strong>local_size_y</strong>, and <strong>local_size_z</strong>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="compatibility-profile-built-in-language-variables"><a class="anchor" href="#compatibility-profile-built-in-language-variables"></a>Compatibility Profile Built-In Language Variables</h3>
+<div class="paragraph">
+<p>When using the compatibility profile, the GL can provide fixed functionality
+behavior for the vertex and fragment programmable pipeline stages.
+For example, mixing a fixed functionality vertex stage with a programmable
+fragment stage.</p>
+</div>
+<div class="paragraph">
+<p>The following built-in vertex, tessellation control, tessellation
+evaluation, and geometry output variables are available to specify inputs
+for the subsequent programmable shader stage or the fixed functionality
+fragment stage.
+A particular one should be written to if any functionality in a
+corresponding fragment shader or fixed pipeline uses it or state derived
+from it.
+Otherwise, behavior is undefined.
+The following members are added to the output <em>gl_PerVertex</em> block in these
+languages:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">out gl_PerVertex { // part of the gl_PerVertex block described in 7.1
+    // in addition to other gl_PerVertex members...
+    vec4  gl_ClipVertex;
+    vec4  gl_FrontColor;
+    vec4  gl_BackColor;
+    vec4  gl_FrontSecondaryColor;
+    vec4  gl_BackSecondaryColor;
+    vec4  gl_TexCoord[];
+    float gl_FogFragCoord;
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The output variable <em>gl_ClipVertex</em> provides a place for vertex and geometry
+shaders to write the coordinate to be used with the user clipping half-spaces.
+Writing to <em>gl_ClipDistance</em> is the preferred method for user clipping.
+It is a compile-time or link-time error for the set of shaders forming a
+program to statically read or write both <em>gl_ClipVertex</em> and either
+<em>gl_ClipDistance</em> or <em>gl_CullDistance</em>.
+If neither <em>gl_ClipVertex</em> nor <em>gl_ClipDistance</em> is written, their values
+are undefined and any clipping against user clip half-spaces is also undefined.</p>
+</div>
+<div class="paragraph">
+<p>Similarly to what was previously described for the core profile, the
+<em>gl_PerVertex</em> block can be redeclared in a shader to explicitly include
+these additional members.
+For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">out gl_PerVertex {
+    vec4 gl_Position;    // will use gl_Position
+    vec4 gl_FrontColor;  // will consume gl_color in the fragment shader
+    vec4 gl_BackColor;
+    vec4 gl_TexCoord[3]; // 3 elements of gl_TexCoord will be used
+}; // no other aspects of the fixed interface will be used</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The user must ensure the clip vertex and user clipping half-spaces are defined in
+the same coordinate space.</p>
+</div>
+<div class="paragraph">
+<p>The output variables <em>gl_FrontColor</em>, <em>glFrontSecondaryColor</em>,
+<em>gl_BackColor</em>, and <em>glBackSecondaryColor</em> assign primary and secondary
+colors for front and back faces of primitives containing the vertex being
+processed.
+The output variable <em>gl_TexCoord</em> assigns texture coordinates for the vertex
+being processed.</p>
+</div>
+<div class="paragraph">
+<p>For <em>gl_FogFragCoord</em>, the value written will be used as the &#8220;c&#8221; value in
+section 16.4 &#8220;Fog&#8221; of the Compatibility profile of the
+<a href="references.html#references" class="xref page">OpenGL Specification</a>, by the fixed functionality pipeline.
+For example, if the z-coordinate of the fragment in eye space is desired as
+&#8220;c&#8221;, then that&#8217;s what the vertex shader executable should write into
+<em>gl_FogFragCoord</em>.</p>
+</div>
+<div class="paragraph">
+<p>As with all arrays, indices used to subscript <em>gl_TexCoord</em> must either be a
+constant integral expressions, or this array must be redeclared by the
+shader with a size.
+The size can be at most <em>gl_MaxTextureCoords</em>.
+Using indices close to 0 may aid the implementation in preserving varying
+resources.
+The redeclaration of <em>gl_TexCoord</em> can also be done at global scope as, for
+example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">in vec4 gl_TexCoord[3];
+out vec4 gl_TexCoord[4];</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>(This treatment is a special case for <em>gl_TexCoord[]</em>, not a general method
+for redeclaring members of blocks.) It is a compile-time error to redeclare
+<em>gl_TexCoord[]</em> at global scope if there is a redeclaration of the
+corresponding built-in block; only one form of redeclaration is allowed
+within a shader (and hence within a stage, as block redeclarations must
+match across all shaders using it).</p>
+</div>
+<div class="paragraph">
+<p>In the tessellation control, evaluation, and geometry shaders, the outputs
+of the previous stage described above are also available in the input
+<em>gl_PerVertex</em> block in these languages.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">in gl_PerVertex { // part of the gl_PerVertex block described in 7.1
+    // in addition to other gl_PerVertex members...
+    vec4  gl_ClipVertex;
+    vec4  gl_FrontColor;
+    vec4  gl_BackColor;
+    vec4  gl_FrontSecondaryColor;
+    vec4  gl_BackSecondaryColor;
+    vec4  gl_TexCoord[];
+    float gl_FogFragCoord;
+} gl_in[];</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>These can be redeclared to establish an explicit pipeline interface, the
+same way as described above for the output block <em>gl_PerVertex</em>, and the
+input redeclaration must match the output redeclaration of the previous
+stage.
+However, when a built-in interface block with an instance name is redeclared
+(e.g. <em>gl_in</em>), the instance name must be included in the redeclaration.
+It is a compile-time error to not include the built-in instance name or to
+change its name.
+For example,</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">in gl_PerVertex {
+    vec4 gl_ClipVertex;
+    vec4 gl_FrontColor;
+} gl_in[]; // must be present and must be "gl_in[]"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Built-in block arrays predeclared with a size can be redeclared with unsized syntax.
+This keeps their size equal to the original predeclared size.</p>
+</div>
+<div class="paragraph">
+<p>Treatment of <em>gl_TexCoord[]</em> redeclaration is also identical to that
+described for the output block <em>gl_TexCoord[]</em> redeclaration.</p>
+</div>
+<div class="paragraph">
+<p>The following fragment input block is also available in a fragment shader
+when using the compatibility profile:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">in gl_PerFragment {
+    in float gl_FogFragCoord;
+    in vec4  gl_TexCoord[];
+    in vec4  gl_Color;
+    in vec4  gl_SecondaryColor;
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The values in <em>gl_Color</em> and <em>gl_SecondaryColor</em> will be derived
+automatically by the system from <em>gl_FrontColor</em>, <em>gl_BackColor</em>,
+<em>gl_FrontSecondaryColor</em>, and <em>gl_BackSecondaryColor</em> based on which face is
+visible in the primitive producing the fragment.
+If fixed functionality is used for vertex processing, then <em>gl_FogFragCoord</em>
+will either be the z-coordinate of the fragment in eye space, or the
+interpolation of the fog coordinate, as described in section 16.4 &#8220;Fog&#8221; of
+the Compatibility profile of the <a href="references.html#references" class="xref page">OpenGL Specification</a>.
+The <em>gl_TexCoord[]</em> values are the interpolated <em>gl_TexCoord[]</em> values from
+a vertex shader or the texture coordinates of any fixed pipeline based
+vertex functionality.</p>
+</div>
+<div class="paragraph">
+<p>Indices to the fragment shader <em>gl_TexCoord</em> array are as described above in
+the vertex shader text.</p>
+</div>
+<div class="paragraph">
+<p>As described above for the input and output <em>gl_PerVertex</em> blocks, the
+<em>gl_PerFragment</em> block can be redeclared to create an explicit interface to
+another program.
+When matching these interfaces between separate programs, members in the
+<em>gl_PerVertex</em> output block must be declared if and only if the
+corresponding fragment shader members generated from them are present in the
+<em>gl_PerFragment</em> input block.
+These matches are described in detail in section 7.4.1 &#8220;Shader Interface
+Matching&#8221; of the <a href="references.html#references" class="xref page">OpenGL Specification</a>.
+If they don&#8217;t match within a program, a link-time error will result.
+If the mismatch is between two programs, values passed between programs are
+undefined.
+Unlike with all other block matching, the order of declaration within
+<em>gl_PerFragment</em> does not have to match across shaders and does not have to
+correspond with order of declaration in a matching <em>gl_PerVertex</em>
+redeclaration.</p>
+</div>
+<div class="paragraph">
+<p>The following fragment output variables are available in a fragment shader
+when using the compatibility profile:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">out vec4 gl_FragColor;
+out vec4 gl_FragData[gl_MaxDrawBuffers];</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Writing to <em>gl_FragColor</em> specifies the fragment color that will be used by
+the subsequent fixed functionality pipeline.
+If subsequent fixed functionality consumes fragment color and an execution
+of the fragment shader executable does not write a value to <em>gl_FragColor</em>
+then the fragment color consumed is undefined.</p>
+</div>
+<div class="paragraph">
+<p>The variable <em>gl_FragData</em> is an array.
+Writing to <em>gl_FragData[n]</em> specifies the fragment data that will be used by
+the subsequent fixed functionality pipeline for data <em>n</em>.
+If subsequent fixed functionality consumes fragment data and an execution of
+a fragment shader executable does not write a value to it, then the fragment
+data consumed is undefined.</p>
+</div>
+<div class="paragraph">
+<p>If a shader statically assigns a value to <em>gl_FragColor</em>, it may not assign
+a value to any element of <em>gl_FragData</em>.
+If a shader statically writes a value to any element of <em>gl_FragData</em>, it
+may not assign a value to <em>gl_FragColor</em>.
+That is, a shader may assign values to either <em>gl_FragColor</em> or
+<em>gl_FragData</em>, but not both.
+Multiple shaders linked together must also consistently write just one of
+these variables.
+Similarly, if user-declared output variables are in use (statically assigned
+to), then the built-in variables <em>gl_FragColor</em> and <em>gl_FragData</em> may not be
+assigned to.
+These incorrect usages all generate compile-time or link-time errors.</p>
+</div>
+<div class="paragraph">
+<p>If a shader executes the <strong>discard</strong> keyword, the fragment is discarded, and
+the values of <em>gl_FragDepth</em> and <em>gl_FragColor</em> become irrelevant.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="compatibility-profile-vertex-shader-built-in-inputs"><a class="anchor" href="#compatibility-profile-vertex-shader-built-in-inputs"></a>Compatibility Profile Vertex Shader Built-In Inputs</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The following predeclared input names can be used from within a vertex
+shader to access the current values of OpenGL state when using the
+compatibility profile.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">in vec4 gl_Color;
+in vec4 gl_SecondaryColor;
+in vec3 gl_Normal;
+in vec4 gl_Vertex;
+in vec4 gl_MultiTexCoord0;
+in vec4 gl_MultiTexCoord1;
+in vec4 gl_MultiTexCoord2;
+in vec4 gl_MultiTexCoord3;
+in vec4 gl_MultiTexCoord4;
+in vec4 gl_MultiTexCoord5;
+in vec4 gl_MultiTexCoord6;
+in vec4 gl_MultiTexCoord7;
+in float gl_FogCoord;</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="built-in-constants"><a class="anchor" href="#built-in-constants"></a>Built-In Constants</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The following built-in constants are declared in all shaders.
+The actual values used are implementation-dependent, but must be at least
+the value shown.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">//
+// Implementation-dependent constants. The example values below
+// are the minimum values allowed for these maximums.
+//</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">const int gl_MaxVertexAttribs = 16;
+const int gl_MaxVertexUniformVectors = 256;
+const int gl_MaxVertexUniformComponents = 1024;
+const int gl_MaxVertexOutputComponents = 64;
+const int gl_MaxVaryingComponents = 60;
+const int gl_MaxVaryingVectors = 15;
+const int gl_MaxVertexTextureImageUnits = 16;
+const int gl_MaxVertexImageUniforms = 0;
+const int gl_MaxVertexAtomicCounters = 0;
+const int gl_MaxVertexAtomicCounterBuffers = 0;
+
+const int gl_MaxTessPatchComponents = 120;
+const int gl_MaxPatchVertices = 32;
+const int gl_MaxTessGenLevel = 64;
+
+const int gl_MaxTessControlInputComponents = 128;
+const int gl_MaxTessControlOutputComponents = 128;
+const int gl_MaxTessControlTextureImageUnits = 16;
+const int gl_MaxTessControlUniformComponents = 1024;
+const int gl_MaxTessControlTotalOutputComponents = 4096;
+const int gl_MaxTessControlImageUniforms = 0;
+const int gl_MaxTessControlAtomicCounters = 0;
+const int gl_MaxTessControlAtomicCounterBuffers = 0;
+
+const int gl_MaxTessEvaluationInputComponents = 128;
+const int gl_MaxTessEvaluationOutputComponents = 128;
+const int gl_MaxTessEvaluationTextureImageUnits = 16;
+const int gl_MaxTessEvaluationUniformComponents = 1024;
+const int gl_MaxTessEvaluationImageUniforms = 0;
+const int gl_MaxTessEvaluationAtomicCounters = 0;
+const int gl_MaxTessEvaluationAtomicCounterBuffers = 0;
+
+const int gl_MaxGeometryInputComponents = 64;
+const int gl_MaxGeometryOutputComponents = 128;
+const int gl_MaxGeometryImageUniforms = 0;
+const int gl_MaxGeometryTextureImageUnits = 16;
+const int gl_MaxGeometryOutputVertices = 256;
+const int gl_MaxGeometryTotalOutputComponents = 1024;
+const int gl_MaxGeometryUniformComponents = 1024;
+const int gl_MaxGeometryVaryingComponents = 64;            // deprecated
+const int gl_MaxGeometryAtomicCounters = 0;
+const int gl_MaxGeometryAtomicCounterBuffers = 0;
+
+const int gl_MaxFragmentImageUniforms = 8;
+const int gl_MaxFragmentInputComponents = 128;
+const int gl_MaxFragmentUniformVectors = 256;
+const int gl_MaxFragmentUniformComponents = 1024;
+const int gl_MaxFragmentAtomicCounters = 8;
+const int gl_MaxFragmentAtomicCounterBuffers = 1;
+
+const int gl_MaxDrawBuffers = 8;
+const int gl_MaxTextureImageUnits = 16;
+const int gl_MinProgramTexelOffset = -8;
+const int gl_MaxProgramTexelOffset = 7;
+const int gl_MaxImageUnits = 8;
+const int gl_MaxSamples = 4;
+const int gl_MaxImageSamples = 0;
+const int gl_MaxClipDistances = 8;
+const int gl_MaxCullDistances = 8;
+const int gl_MaxViewports = 16;
+
+const int gl_MaxComputeImageUniforms = 8;
+const ivec3 gl_MaxComputeWorkGroupCount = { 65535, 65535, 65535 };
+const ivec3 gl_MaxComputeWorkGroupSize = { 1024, 1024, 64 };
+const int gl_MaxComputeUniformComponents = 1024;
+const int gl_MaxComputeTextureImageUnits = 16;
+const int gl_MaxComputeAtomicCounters = 8;
+const int gl_MaxComputeAtomicCounterBuffers = 8;
+
+const int gl_MaxCombinedTextureImageUnits = 96;
+const int gl_MaxCombinedImageUniforms = 48;
+const int gl_MaxCombinedImageUnitsAndFragmentOutputs = 8;  // deprecated
+const int gl_MaxCombinedShaderOutputResources = 16;
+const int gl_MaxCombinedAtomicCounters = 8;
+const int gl_MaxCombinedAtomicCounterBuffers = 1;
+const int gl_MaxCombinedClipAndCullDistances = 8;
+const int gl_MaxAtomicCounterBindings = 1;
+const int gl_MaxAtomicCounterBufferSize = 32;
+
+const int gl_MaxTransformFeedbackBuffers = 4;
+const int gl_MaxTransformFeedbackInterleavedComponents = 64;
+
+const highp int gl_MaxInputAttachments = 1;  // only present when targeting Vulkan</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The constant <em>gl_MaxVaryingFloats</em> is removed in the core profile, use
+<em>gl_MaxVaryingComponents</em> instead.</p>
+</div>
+<div class="sect2">
+<h3 id="compatibility-profile-built-in-constants"><a class="anchor" href="#compatibility-profile-built-in-constants"></a>Compatibility Profile Built-In Constants</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">const int gl_MaxTextureUnits = 2;
+const int gl_MaxTextureCoords = 8;
+const int gl_MaxClipPlanes = 8;
+const int gl_MaxVaryingFloats = 60;</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="built-in-uniform-state"><a class="anchor" href="#built-in-uniform-state"></a>Built-In Uniform State</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Built-in uniform state is not available when generating SPIR-V.
+Otherwise, as an aid to accessing OpenGL processing state, the following
+uniform variables are built into the OpenGL Shading Language.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">//
+// Depth range in window coordinates,
+// section 13.6.1 "Controlling the Viewport" in the
+// OpenGL Specification.
+//
+// Note: Depth-range state is only for viewport 0.
+//
+struct gl_DepthRangeParameters {
+    float near; // n
+    float far;  // f
+    float diff; // f - n
+};
+uniform gl_DepthRangeParameters gl_DepthRange;
+uniform int gl_NumSamples;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>These variables are only guaranteed to be available in the fragment stage.
+In other stages, their presence and function is implementation-defined.</p>
+</div>
+<div class="sect2">
+<h3 id="compatibility-profile-state"><a class="anchor" href="#compatibility-profile-state"></a>Compatibility Profile State</h3>
+<div class="paragraph">
+<p>These variables are present only in the compatibility profile.
+They are not available to compute shaders, but are available to all other
+shaders.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">//
+// compatibility profile only
+//
+uniform mat4 gl_ModelViewMatrix;
+uniform mat4 gl_ProjectionMatrix;
+uniform mat4 gl_ModelViewProjectionMatrix;
+uniform mat4 gl_TextureMatrix[gl_MaxTextureCoords];
+
+//
+// compatibility profile only
+//
+uniform mat3 gl_NormalMatrix; // transpose of the inverse of the
+                              // upper leftmost 3x3 of gl_ModelViewMatrix
+
+uniform mat4 gl_ModelViewMatrixInverse;
+uniform mat4 gl_ProjectionMatrixInverse;
+uniform mat4 gl_ModelViewProjectionMatrixInverse;
+uniform mat4 gl_TextureMatrixInverse[gl_MaxTextureCoords];
+
+uniform mat4 gl_ModelViewMatrixTranspose;
+uniform mat4 gl_ProjectionMatrixTranspose;
+uniform mat4 gl_ModelViewProjectionMatrixTranspose;
+uniform mat4 gl_TextureMatrixTranspose[gl_MaxTextureCoords];
+
+uniform mat4 gl_ModelViewMatrixInverseTranspose;
+uniform mat4 gl_ProjectionMatrixInverseTranspose;
+uniform mat4 gl_ModelViewProjectionMatrixInverseTranspose;
+uniform mat4 gl_TextureMatrixInverseTranspose[gl_MaxTextureCoords];
+
+//
+// compatibility profile only
+//
+uniform float gl_NormalScale;
+
+//
+// compatibility profile only
+//
+uniform vec4 gl_ClipPlane[gl_MaxClipPlanes];
+
+//
+// compatibility profile only
+//
+struct gl_PointParameters {
+    float size;
+    float sizeMin;
+    float sizeMax;
+    float fadeThresholdSize;
+    float distanceConstantAttenuation;
+    float distanceLinearAttenuation;
+    float distanceQuadraticAttenuation;
+};
+
+uniform gl_PointParameters gl_Point;
+
+//
+// compatibility profile only
+//
+struct gl_MaterialParameters {
+ vec4 emission;   // Ecm
+ vec4 ambient;    // Acm
+ vec4 diffuse;    // Dcm
+ vec4 specular;   // Scm
+ float shininess; // Srm
+};
+uniform gl_MaterialParameters gl_FrontMaterial;
+uniform gl_MaterialParameters gl_BackMaterial;
+
+//
+// compatibility profile only
+//
+struct gl_LightSourceParameters {
+    vec4 ambient;               // Acli
+    vec4 diffuse;               // Dcli
+    vec4 specular;              // Scli
+    vec4 position;              // Ppli
+    vec4 halfVector;            // Derived: Hi
+    vec3 spotDirection;         // Sdli
+    float spotExponent;         // Srli
+    float spotCutoff;           // Crli
+                                // (range: [0.0,90.0], 180.0)
+    float spotCosCutoff;        // Derived: cos(Crli)
+                                // (range: [1.0,0.0],-1.0)
+    float constantAttenuation;  // K0
+    float linearAttenuation;    // K1
+    float quadraticAttenuation; // K2
+};
+
+uniform gl_LightSourceParameters gl_LightSource[gl_MaxLights];
+
+struct gl_LightModelParameters {
+    vec4 ambient;                  // Acs
+};
+
+uniform gl_LightModelParameters gl_LightModel;
+
+//
+// compatibility profile only
+//
+// Derived state from products of light and material.
+//
+
+struct gl_LightModelProducts {
+    vec4 sceneColor; // Derived. Ecm + Acm * Acs
+};
+
+uniform gl_LightModelProducts gl_FrontLightModelProduct;
+uniform gl_LightModelProducts gl_BackLightModelProduct;
+
+struct gl_LightProducts {
+    vec4 ambient; // Acm * Acli
+    vec4 diffuse; // Dcm * Dcli
+    vec4 specular; // Scm * Scli
+};
+
+uniform gl_LightProducts gl_FrontLightProduct[gl_MaxLights];
+uniform gl_LightProducts gl_BackLightProduct[gl_MaxLights];
+
+//
+// compatibility profile only
+//
+uniform vec4 gl_TextureEnvColor[gl_MaxTextureUnits];
+uniform vec4 gl_EyePlaneS[gl_MaxTextureCoords];
+uniform vec4 gl_EyePlaneT[gl_MaxTextureCoords];
+uniform vec4 gl_EyePlaneR[gl_MaxTextureCoords];
+uniform vec4 gl_EyePlaneQ[gl_MaxTextureCoords];
+uniform vec4 gl_ObjectPlaneS[gl_MaxTextureCoords];
+uniform vec4 gl_ObjectPlaneT[gl_MaxTextureCoords];
+uniform vec4 gl_ObjectPlaneR[gl_MaxTextureCoords];
+uniform vec4 gl_ObjectPlaneQ[gl_MaxTextureCoords];
+
+//
+// compatibility profile only
+//
+struct gl_FogParameters {
+    vec4 color;
+    float density;
+    float start;
+    float end;
+    float scale; // Derived: 1.0 / (end - start)
+};
+
+uniform gl_FogParameters gl_Fog;</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="redeclaring-built-in-blocks"><a class="anchor" href="#redeclaring-built-in-blocks"></a>Redeclaring Built-In Blocks</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <em>gl_PerVertex</em> block can be redeclared in a shader to explicitly
+indicate what subset of the fixed pipeline interface will be used.
+This is necessary to establish the interface between multiple programs.
+For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">out gl_PerVertex {
+    vec4 gl_Position;   // will use gl_Position
+    float gl_PointSize; // will use gl_PointSize
+    vec4 t;             // error, only gl_PerVertex members allowed
+}; // no other members of gl_PerVertex will be used</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This establishes the output interface the shader will use with the
+subsequent pipeline stage.
+It must be a subset of the built-in members of <em>gl_PerVertex</em>.
+Such a redeclaration can also add the <strong>invariant</strong> qualifier, interpolation
+qualifiers, and the layout qualifiers <strong>xfb_offset</strong>, <strong>xfb_buffer</strong>, and
+<strong>xfb_stride</strong>.
+It can also add an array size for unsized arrays.
+For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">out layout(xfb_buffer = 1, xfb_stride = 16) gl_PerVertex {
+    vec4 gl_Position;
+    layout(xfb_offset = 0) float gl_ClipDistance[4];
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Other layout qualifiers, like <strong>location</strong>, cannot be added to such a
+redeclaration, unless specifically stated.</p>
+</div>
+<div class="paragraph">
+<p>If a built-in interface block is redeclared, it must appear in the shader
+before any use of any member included in the built-in declaration, or a
+compile-time error will result.
+It is also a compile-time error to redeclare the block more than once or to
+redeclare a built-in block and then use a member from that built-in block
+that was not included in the redeclaration.
+Also, if a built-in interface block is redeclared, no member of the built-in
+declaration can be redeclared outside the block redeclaration.
+If multiple shaders using members of a built-in block belonging to the same
+interface are linked together in the same program, they must all redeclare
+the built-in block in the same way, as described in
+&#8220;<a href="variables.html#interface-blocks" class="xref page">Interface Blocks</a>&#8221; for interface block matching, or a
+link-time error will result.
+It will also be a link-time error if some shaders in a program redeclare a
+specific built-in interface block while another shader in that program does
+not redeclare that interface block yet still uses a member of that interface
+block.
+If a built-in block interface is formed across shaders in different
+programs, the shaders must all redeclare the built-in block in the same way
+(as described for a single program), or the values passed along the
+interface are undefined.</p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

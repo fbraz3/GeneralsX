@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>VK_ANDROID_external_format_resolve :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:features" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="features" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Feature Descriptions</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Vulkan Roadmap and Feature Descriptions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Roadmap.html">Vulkan Roadmap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Feature Descriptions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMDX_shader_enqueue.html">VK_AMDX_shader_enqueue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_anti_lag.html">VK_AMD_anti_lag</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_shader_early_and_late_fragment_tests.html">VK_AMD_shader_early_and_late_fragment_tests</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="VK_ANDROID_external_format_resolve.html">VK_ANDROID_external_format_resolve</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_pipeline_opacity_micromap.html">VK_ARM_pipeline_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_render_pass_striped.html">VK_ARM_render_pass_striped</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_tensors.html">VK_ARM_tensors</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_dynamic_state.html">VK_EXT_attachment_feedback_loop_dynamic_state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_layout.html">VK_EXT_attachment_feedback_loop_layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_calibrated_timestamps.html">VK_EXT_calibrated_timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_bias_control.html">VK_EXT_depth_bias_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_clamp_control.html">VK_EXT_depth_clamp_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_descriptor_buffer.html">VK_EXT_descriptor_buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_fault.html">VK_EXT_device_fault</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_generated_commands.html">VK_EXT_device_generated_commands</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_dynamic_rendering_unused_attachments.html">VK_EXT_dynamic_rendering_unused_attachments</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_extended_dynamic_state3.html">VK_EXT_extended_dynamic_state3</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_acquire_unmodified.html">VK_EXT_external_memory_acquire_unmodified</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_metal.html">VK_EXT_external_memory_metal</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_fragment_density_map_offset.html">VK_EXT_fragment_density_map_offset</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_frame_boundary.html">Proposal: <code>VK_EXT_frame_boundary</code></a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_graphics_pipeline_library.html">VK_EXT_graphics_pipeline_library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_host_image_copy.html">VK_EXT_host_image_copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_2d_array_of_3d.html">VK_EXT_image_2d_array_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_compression_control.html">VK_EXT_image_compression_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_sliced_view_of_3d.html">VK_EXT_image_sliced_view_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_layer_settings.html">VK_EXT_layer_settings</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_dithering.html">VK_EXT_legacy_dithering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_vertex_attributes.html">VK_EXT_legacy_vertex_attributes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_map_memory_placed.html">VK_EXT_map_memory_placed</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mesh_shader.html">VK_EXT_mesh_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_metal_objects.html">VK_EXT_metal_objects</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_multisampled_render_to_single_sampled.html">VK_EXT_multisampled_render_to_single_sampled</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mutable_descriptor_type.html">VK_EXT_mutable_descriptor_type</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_non_seamless_cube_map.html">VK_EXT_non_seamless_cube_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_opacity_micromap.html">VK_EXT_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_library_group_handles.html">VK_EXT_pipeline_library_group_handles</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_protected_access.html">VK_EXT_pipeline_protected_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_present_mode_fifo_latest_ready.html">VK_EXT_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_primitives_generated_query.html">VK_EXT_primitives_generated_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_rasterization_order_attachment_access.html">VK_EXT_rasterization_order_attachment_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_float8.html">VK_EXT_shader_float8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_module_identifier.html">VK_EXT_shader_module_identifier</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_object.html">VK_EXT_shader_object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_replicated_composites.html">VK_EXT_shader_replicated_composites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_tile_image.html">VK_EXT_shader_tile_image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_subpass_merge_feedback.html">VK_EXT_subpass_merge_feedback</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_surface_maintenance1.html">VK_EXT_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_swapchain_maintenance1.html">VK_EXT_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_zero_initialize_device_memory.html">VK_EXT_zero_initialize_device_memory</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_GOOGLE_surfaceless_query.html">VK_GOOGLE_surfaceless_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_cluster_culling_shader.html">VK_HUAWEI_cluster_culling_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_invocation_mask.html">VK_HUAWEI_invocation_mask</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_compute_shader_derivatives.html">VK_KHR_compute_shader_derivatives</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_cooperative_matrix.html">VK_KHR_cooperative_matrix</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering.html">VK_KHR_dynamic_rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering_local_read.html">VK_KHR_dynamic_rendering_local_read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shader_barycentric.html">VK_KHR_fragment_shader_barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shading_rate.html">VK_KHR_fragment_shading_rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_load_store_op_none.html">VK_KHR_load_store_op_none</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance5.html">VK_KHR_maintenance5</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance6.html">VK_KHR_maintenance6</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance7.html">VK_KHR_maintenance7</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance8.html">VK_KHR_maintenance8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance9.html">Proposal Template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_map_memory2.html">VK_KHR_map_memory2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_pipeline_binary.html">VK_KHR_pipeline_binary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_id2.html">VK_KHR_present_id2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_mode_fifo_latest_ready.html">VK_KHR_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_wait2.html">VK_KHR_present_wait2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_ray_tracing_position_fetch.html">VK_KHR_ray_tracing_position_fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_bfloat16.html">VK_KHR_shader_bfloat16</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_expect_assume.html">VK_KHR_shader_expect_assume</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_float_controls2.html">VK_KHR_shader_float_controls2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_integer_dot_product.html">VK_KHR_shader_integer_dot_product</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_maximal_reconvergence.html">VK_KHR_shader_maximal_reconvergence</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_quad_control.html">VK_KHR_shader_quad_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_relaxed_extended_instruction.html">VK_KHR_shader_relaxed_extended_instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_subgroup_rotate.html">Subgroup rotation instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_surface_maintenance1.html">VK_KHR_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_swapchain_maintenance1.html">VK_KHR_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_unified_image_layouts.html">VK_KHR_unified_image_layouts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_vertex_attribute_divisor.html">VK_KHR_vertex_attribute_divisor</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_av1.html">VK_KHR_video_decode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h264.html">VK_KHR_video_decode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h265.html">VK_KHR_video_decode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_queue.html">VK_KHR_video_decode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_vp9.html">VK_KHR_video_decode_vp9</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_av1.html">VK_KHR_video_encode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h264.html">VK_KHR_video_encode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h265.html">VK_KHR_video_encode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_intra_refresh.html">VK_KHR_video_encode_intra_refresh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_quantization_map.html">VK_KHR_video_encode_quantization_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_queue.html">VK_KHR_video_encode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance1.html">VK_KHR_video_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance2.html">VK_KHR_video_maintenance2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_queue.html">VK_KHR_video_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_LUNARG_direct_driver_loading.html">VK_LUNARG_direct_driver_loading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_MSFT_layered_driver.html">VK_MSFT_layered_driver</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cluster_acceleration_structure.html">VK_NV_cluster_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_matrix2.html">VK_NV_cooperative_matrix2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_vector.html">VK_NV_cooperative_vector</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_display_stereo.html">VK_NV_display_stereo</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_external_compute_queue.html">VK_NV_external_compute_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_partitioned_acceleration_structure.html">VK_NV_partitioned_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_linear_swept_spheres.html">VK_NV_ray_tracing_linear_swept_spheres</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_validation.html">VK_NV_ray_tracing_validation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_image_processing.html">VK_QCOM_image_processing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_memory_heap.html">VK_QCOM_tile_memory_heap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_properties.html">VK_QCOM_tile_properties</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_shading.html">VK_QCOM_tile_shading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_VERSION_1_4.html">Vulkan 1.4</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Feature Descriptions</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Feature Descriptions</a></li>
+    <li>Feature Descriptions</li>
+    <li><a href="VK_ANDROID_external_format_resolve.html">VK_ANDROID_external_format_resolve</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/features/modules/features/pages/proposals/VK_ANDROID_external_format_resolve.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">VK_ANDROID_external_format_resolve</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_problem_statement">1. Problem Statement</a></li>
+<li><a href="#_solution_space">2. Solution Space</a></li>
+<li><a href="#_proposal">3. Proposal</a>
+<ul class="sectlevel2">
+<li><a href="#_dynamic_rendering">3.1. Dynamic Rendering</a></li>
+<li><a href="#_render_pass_objects">3.2. Render Pass Objects</a></li>
+<li><a href="#_input_attachments">3.3. Input Attachments</a></li>
+<li><a href="#_format_resolve_properties">3.4. Format Resolve Properties</a></li>
+<li><a href="#_device_features">3.5. Device Features</a></li>
+<li><a href="#_device_properties">3.6. Device Properties</a></li>
+</ul>
+</li>
+<li><a href="#_examples">4. Examples</a>
+<ul class="sectlevel2">
+<li><a href="#_creation_of_a_render_pass_object">4.1. Creation of a Render Pass Object</a></li>
+<li><a href="#_dynamic_rendering_2">4.2. Dynamic Rendering</a></li>
+</ul>
+</li>
+<li><a href="#_issues">5. Issues</a>
+<ul class="sectlevel2">
+<li><a href="#_gl_ext_yuv_target_had_a_shader_extension_but_this_does_not_why">5.1. GL_EXT_yuv_target had a shader extension, but this does not, why?</a></li>
+<li><a href="#_who_is_responsible_for_conversions_to_and_from_ycbcr_color_spaces">5.2. Who is responsible for conversions to and from YC<sub>B</sub>C<sub>R</sub> color spaces?</a></li>
+<li><a href="#_how_do_attachment_clears_work">5.3. How do attachment clears work?</a></li>
+<li><a href="#_what_is_the_expected_channel_order_for_yuv_output">5.4. What is the expected channel order for YUV output?</a></li>
+<li><a href="#_how_is_resampling_performed_for_null_attachments_when_nullcolorattachmentwithexternalformatresolve_is_supported">5.5. How is resampling performed for null attachments when <code>nullColorAttachmentWithExternalFormatResolve</code> is supported?</a></li>
+<li><a href="#_is_there_a_way_we_could_better_unify_the_two_options_for_the_nullcolorattachmentwithexternalformatresolve_path">5.6. Is there a way we could better unify the two options for the <code>nullColorAttachmentWithExternalFormatResolve</code> path?</a></li>
+<li><a href="#_how_can_contents_of_an_external_image_be_preserved_when_rendering_if_nullcolorattachmentwithexternalformatresolve_is_vk_false">5.7. How can contents of an external image be preserved when rendering if <code>nullColorAttachmentWithExternalFormatResolve</code> is <code>VK_FALSE</code>?</a></li>
+</ul>
+</li>
+<li><a href="#_future_work">6. Future Work</a></li>
+</ul>
+</div>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This extension enables rendering to Android Hardware Buffers with external formats which cannot be directly represented as renderable in Vulkan, including YC<sub>B</sub>C<sub>R</sub> formats.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>1. Problem Statement</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Applications can render to unknown formats on Android today in OpenGL ES using GL_EXT_yuv_target, which enables direct rendering to images with an unknown external YC<sub>B</sub>C<sub>R</sub> format.
+In order to support these applications running on top of Vulkan (either via porting or through ANGLE), similar functionality is required for Vulkan.</p>
+</div>
+<div class="paragraph">
+<p>One issue that needs to be overcome however, is that GL_EXT_yuv_target is very opaque, and in OpenGL ES this allows implementations to hide a lot of gnarly details.
+For Vulkan, it is much harder to hide those details, so an alternative which meets the needs of all potential implementations is required, including those that have no direct support for rendering to YC<sub>B</sub>C<sub>R</sub> images.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution Space</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Any solution needs to meet the following requirements:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>It must provide functionality on par with that provided by GL_EXT_yuv_target</p>
+</li>
+<li>
+<p>It must be possible to emulate GL_EXT_yuv_target in ANGLE via this extension</p>
+</li>
+<li>
+<p>It must be cleanly implementable on all implementations</p>
+</li>
+<li>
+<p>It must perform well on implementations that support direct YC<sub>B</sub>C<sub>R</sub> rendering</p>
+</li>
+<li>
+<p>It must be relatively straightforward for applications to use</p>
+</li>
+<li>
+<p>It must support render pass objects and dynamic rendering</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The naive solution would be to directly allow rendering to YC<sub>B</sub>C<sub>R</sub> images in Vulkan; this would meet most requirements but likely fail at being cleanly implementable, or a lot of awkward detail would need to be exposed to developers.</p>
+</div>
+<div class="paragraph">
+<p>Another idea that has been suggested would be to enable something via a similar mechanism used for resolving multisampled images at the end of a render pass; resolve operations.
+Care is needed to ensure implementations can still use direct rendering, but it should be able to meet all of the above requirements.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>3. Proposal</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This extension extends both render pass objects and dynamic rendering functionality.</p>
+</div>
+<div class="sect2">
+<h3 id="_dynamic_rendering"><a class="anchor" href="#_dynamic_rendering"></a>3.1. Dynamic Rendering</h3>
+<div class="paragraph">
+<p>When using dynamic rendering, a new resolve mode is added to specify that the resolve attachment will have an external format:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">    VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_BIT_ANDROID;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When this resolve mode is specified, the <code>resolveImageView</code> member of <a href="https://docs.vulkan.org/spec/latest/chapters/renderpass.html#VkRenderingAttachmentInfo">VkRenderingAttachmentInfo</a> used as a color attachment must be set to a <code>VkImageView</code> created with an image with a non-zero external format.
+If chroma planes of the external format are subsampled, the implementation will reduce the relevant planes by either averaging the corresponding values in the color attachment, or by simply selecting one of the values as representative.
+Implementations may resolve a color attachment to an external format resolve attachment at any time, or bypass writing to a color attachment altogether.</p>
+</div>
+<div class="paragraph">
+<p>With the resolve mode set to <code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_BIT_ANDROID</code>, the following additional constraints also apply:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If <code>nullColorAttachmentWithExternalFormatResolve</code> property is <code>VK_TRUE</code>, <code>imageView</code> must be <code>VK_NULL_HANDLE</code>.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Values in the color attachment during rendering are loaded from the external format attachment, resampling to the fragment rate as necessary.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>If <code>imageView</code> is not <code>NULL</code>, it must be a single sampled image with a layer count of <code>1</code>.</p>
+</li>
+<li>
+<p>The <code>layerCount</code> and <code>colorAttachmentCount</code> members of <a href="https://docs.vulkan.org/spec/latest/chapters/renderpass.html#VkRenderingInfo">VkRenderingInfo</a> must be 1.</p>
+</li>
+<li>
+<p>The <code>viewMask</code> member of <a href="https://docs.vulkan.org/spec/latest/chapters/renderpass.html#VkRenderingInfo">VkRenderingInfo</a> must be 0.</p>
+</li>
+<li>
+<p>There must not be a fragment density map image</p>
+</li>
+<li>
+<p>There must not be a fragment shading rate image</p>
+</li>
+<li>
+<p>The fragment shading rate must be 1x1</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Implementations may need to know that an external format YC<sub>B</sub>C<sub>R</sub> format is being used when creating a pipeline, so when dynamic rendering is used, <a href="https://docs.vulkan.org/spec/latest/chapters/resources.html#VkExternalFormatANDROID">VkExternalFormatANDROID</a> can be chained to <code>VkGraphicsPipelineCreateInfo</code>, indicating the format of the resolve image.
+When rendering, the format of the resolve image specified here and the actual image view used for that color resolve attachment must be the same.
+Graphics pipelines that include a <a href="https://docs.vulkan.org/spec/latest/chapters/resources.html#VkExternalFormatANDROID">VkExternalFormatANDROID</a> structure with a non-zero value must only write to a single color attachment, must not export depth or stencil from the fragment shader, and must disable blending.</p>
+</div>
+<div class="sect3">
+<h4 id="_inheritance_info"><a class="anchor" href="#_inheritance_info"></a>3.1.1. Inheritance Info</h4>
+<div class="paragraph">
+<p>When dynamic rendering is used with secondary command buffer inheritance, the external format <strong>must</strong> be made known to the secondary command buffers by including <a href="https://docs.vulkan.org/spec/latest/chapters/resources.html#VkExternalFormatANDROID">VkExternalFormatANDROID</a> in the <code>pNext</code> chain of <a href="https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VkCommandBufferInheritanceInfo">VkCommandBufferInheritanceInfo</a>, and the external format must match that in the render pass instance.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_render_pass_objects"><a class="anchor" href="#_render_pass_objects"></a>3.2. Render Pass Objects</h3>
+<div class="paragraph">
+<p>For render pass objects, color resolve attachments can similarly be repurposed for external YC<sub>B</sub>C<sub>R</sub> format resolves by setting a color resolve attachment in a subpass to an attachment with an external format.
+These can only be used with <a href="https://docs.vulkan.org/spec/latest/chapters/renderpass.html#VkSubpassDescription2">VkSubpassDescription2</a>, and similar restrictions apply to this as they do to dynamic rendering:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The resolve attachment must be an attachment that has a format of <code>VK_FORMAT_UNDEFINED</code> and includes a <a href="https://docs.vulkan.org/spec/latest/chapters/resources.html#VkExternalFormatANDROID">VkExternalFormatANDROID</a> structure in its <code>pNext</code> chain</p>
+<div class="ulist">
+<ul>
+<li>
+<p>This format must match that for the image view bound via the framebuffer</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>If <code>nullColorAttachmentWithExternalFormatResolve</code> property is <code>VK_TRUE</code>, the <code>attachment</code> member of the corresponding color attachment must be <code>VK_ATTACHMENT_UNUSED</code>.</p>
+</li>
+<li>
+<p>If the color attachment is not <code>VK_ATTACHMENT_UNUSED</code>, it must be a single sampled attachment.</p>
+</li>
+<li>
+<p><code>viewMask</code> must be 0.</p>
+</li>
+<li>
+<p><code>colorAttachmentCount</code> must be 1.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Color attachment values written during rendering are resolved in the same manner as specified for <code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_BIT_ANDROID</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_input_attachments"><a class="anchor" href="#_input_attachments"></a>3.3. Input Attachments</h3>
+<div class="paragraph">
+<p>If the <code>nullColorAttachmentWithExternalFormatResolve</code> property is <code>VK_FALSE</code>, applications can bind the color attachment as they normally would with any other color attachment, with value reads working as expected.
+Using an external format image as an input attachment is only valid when the feature bits queried via <a href="https://docs.vulkan.org/spec/latest/chapters/memory.html#vkGetAndroidHardwareBufferPropertiesANDROID">vkGetAndroidHardwareBufferPropertiesANDROID</a> advertise this functionality.</p>
+</div>
+<div class="paragraph">
+<p>However, if the <code>nullColorAttachmentWithExternalFormatResolve</code> property is <code>VK_TRUE</code>, applications cannot do that as there is no attachment to use.
+Instead, the resolve attachment itself should be bound as the input attachment (both the attachment reference and the descriptor).
+When using a resolve attachment in this specific configuration, it can be synchronized as if it were actually the color attachment, allowing for subpass self-dependencies.
+If the implementation supports this property, an external format image can be used as an input attachment without the typically required feature bits advertised by <a href="https://docs.vulkan.org/spec/latest/chapters/memory.html#vkGetAndroidHardwareBufferPropertiesANDROID">vkGetAndroidHardwareBufferPropertiesANDROID</a>.</p>
+</div>
+<div class="paragraph">
+<p>If an external format resolve image is read as an input attachment and has subsampled chroma planes, these are resampled per above to provide values at the expected rate.
+Their values are not converted via color space transforms - as with resolves the application must transform these themselves.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_format_resolve_properties"><a class="anchor" href="#_format_resolve_properties"></a>3.4. Format Resolve Properties</h3>
+<div class="paragraph">
+<p>Not all external formats will be usable for an external format resolve; the following property structure indicates whether an external format is supported for resolves or not:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkAndroidHardwareBufferFormatResolvePropertiesANDROID {
+    VkStructureType     sType;
+    void*               pNext;
+    VkFormat            colorAttachmentFormat;
+} VkAndroidHardwareBufferFormatResolvePropertiesANDROID;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>External formats that can be resolved to will indicate a format that color attachments should use when rendering.
+If it is not resolvable, it will be set to <code>VK_FORMAT_UNDEFINED</code>.</p>
+</div>
+<div class="paragraph">
+<p>Any Android hardware buffer that is renderable must be either renderable via existing format paths or via this extension.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>For implementations that expose <code>nullColorAttachmentWithExternalFormatResolve</code>, the format should not be used to create images, but does still serve two additional purposes.</p>
+</div>
+<div class="paragraph">
+<p>Firstly, the numeric type of the format indicates the type that is needed in the shader (e.g. an <code>UNORM</code> format indicates a floating-point color output).</p>
+</div>
+<div class="paragraph">
+<p>In addition to that, it indicates the precision of data while the color output remains in the color buffer; as such it should always have a per-channel precision equal to or greater than that of the hardware buffer format.
+Implementations that directly render to the resolve attachment and never store data in an intermediate color buffer can set this to a type large enough that it guarantees it will not interfere with the precision of the final value.
+As there is no expectation of data remaining in the color buffer, applications should expect a minimum precision according to the lowest precision of each channel between the color buffer format and the format of the Android hardware buffer.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_device_features"><a class="anchor" href="#_device_features"></a>3.5. Device Features</h3>
+<div class="paragraph">
+<p>The following single feature is exposes all the functionality in this extension:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDeviceExternalFormatResolveFeaturesANDROID {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           externalFormatResolve;
+} VkPhysicalDeviceExternalFormatResolveFeaturesANDROID;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>externalFormatResolve</code> must be supported if this extension is advertised.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_device_properties"><a class="anchor" href="#_device_properties"></a>3.6. Device Properties</h3>
+<div class="paragraph">
+<p>The following properties are exposed:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDeviceExternalFormatResolvePropertiesANDROID {
+    VkStructureType     sType;
+    void*               pNext;
+    VkBool32            nullColorAttachmentWithExternalFormatResolve;
+    VkChromaLocation    externalFormatResolveChromaOffsetX;
+    VkChromaLocation    externalFormatResolveChromaOffsetY;
+} VkPhysicalDeviceExternalFormatResolvePropertiesANDROID;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If <code>nullColorAttachmentWithExternalFormatResolve</code> is <code>VK_TRUE</code>, applications must omit the color attachment by setting <code>VkRenderingAttachmentInfo::imageView</code> to <code>NULL</code> for dynamic rendering, or using <code>VK_ATTACHMENT_UNUSED</code> for the color attachment when creating a render pass object.</p>
+</li>
+<li>
+<p><code>externalFormatResolveChromaOffsetX</code> indicates the chroma offset in the X axis that an implementation uses when resolving to or loading from resolve attachments with an external format.</p>
+</li>
+<li>
+<p><code>externalFormatResolveChromaOffsetY</code> indicates the chroma offset in the Y axis that an implementation uses when resolving to or loading from resolve attachments with an external format.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The chroma offsets are consistent between reads and writes inside the Vulkan implementation, but may be inconsistent with other systems writing that data; this may lead to slight inaccuracies when reading from input attachments without writing to them first. If this accuracy is a concern, YC<sub>B</sub>C<sub>R</sub> sampling can be used for the initial read, where the offset is configurable, rather than reading as an input attachment.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_examples"><a class="anchor" href="#_examples"></a>4. Examples</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_creation_of_a_render_pass_object"><a class="anchor" href="#_creation_of_a_render_pass_object"></a>4.1. Creation of a Render Pass Object</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Create two attachments, a resolve and color attachment
+VkAttachmentDescription2 attachments[2] = {
+    {
+        VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2,
+        &amp;externalFormat,
+        0,
+        VK_FORMAT_UNDEFINED,
+        1,
+        VK_LOAD_OP_LOAD,
+        VK_STORE_OP_STORE,
+        VK_LOAD_OP_LOAD,
+        VK_STORE_OP_STORE,
+        VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+        VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL
+    },
+    {
+        VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2,
+        NULL,
+        0,
+        resolveFormatProperties.colorAttachmentFormat,
+        1,
+        VK_LOAD_OP_LOAD,
+        VK_STORE_OP_STORE,
+        VK_LOAD_OP_LOAD,
+        VK_STORE_OP_STORE,
+        VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+        VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL
+     }
+};
+
+// Resolve attachment always specified
+VkAttachmentReference2 resolveAttachment = {
+    VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2,
+    NULL,
+    0,
+    VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+    0};
+
+// Color attachment must be UNUSED if nullColorAttachmentWithExternalFormatResolve is VK_TRUE
+VkAttachmentReference2 colorAttachment = {
+    VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2,
+    NULL,
+    nullColorAttachmentWithExternalFormatResolve ? VK_ATTACHMENT_UNUSED : 1,
+    VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+    0};
+
+// No changes to subpass creation
+VkSubpassDescription2 subpass = {
+    VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2,
+    NULL,
+    0,
+    VK_PIPELINE_BIND_POINT_GRAPHICS,
+    0,
+    0,
+    NULL,
+    1,
+    &amp;colorAttachment,
+    &amp;resolveAttachment,
+    NULL,
+    0,
+    NULL};
+
+// Only add the color attachment information if nullColorAttachmentWithExternalFormatResolve is VK_FALSE
+VkRenderPassCreateInfo2 createInfo = {
+    VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2,
+    NULL,
+    0,
+    nullColorAttachmentWithExternalFormatResolve ? 1 : 2,
+    &amp;attachments,
+    1,
+    &amp;subpass,
+    0,
+    0,
+    NULL};
+
+VkRenderPass renderPass;
+vkCreateRenderPass2(device, &amp;createInfo, NULL, &amp;renderPass);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dynamic_rendering_2"><a class="anchor" href="#_dynamic_rendering_2"></a>4.2. Dynamic Rendering</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Do not attach a color image view if nullColorAttachmentWithExternalFormatResolve is VK_TRUE
+// Other setup is identical either way
+VkRenderingAttachmentInfo colorAttachment = {
+    VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+    NULL,
+    nullColorAttachmentWithExternalFormatResolve ? VK_NULL_HANDLE : colorImageView;
+    VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+    VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_BIT_ANDROID,
+    externalResolveImageView,
+    VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+    VK_LOAD_OP_LOAD,
+    VK_STORE_OP_STORE,
+    clearValue};
+
+VkRect2D renderArea = { ... };
+VkRenderingInfo renderingInfo = {
+    VK_STRUCTURE_TYPE_RENDERING_INFO,
+    NULL,
+    0,
+    renderArea,
+    1,
+    0,
+    1,
+    &amp;colorAttachment,
+    NULL,
+    NULL};
+
+vkCmdBeginRendering(commandBuffer, renderingInfo);</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_issues"><a class="anchor" href="#_issues"></a>5. Issues</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_gl_ext_yuv_target_had_a_shader_extension_but_this_does_not_why"><a class="anchor" href="#_gl_ext_yuv_target_had_a_shader_extension_but_this_does_not_why"></a>5.1. GL_EXT_yuv_target had a shader extension, but this does not, why?</h3>
+<div class="paragraph">
+<p>The GLSL portion of that extension consisted of two parts:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>A designation that a color output would be used as yuv</p>
+</li>
+<li>
+<p>YUV conversion helper functions</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>For the helper functions, no implementation can accelerate these operations in shader code; so they have been omitted in favor of high level language translation (e.g. glslang) providing these functions.</p>
+</div>
+<div class="paragraph">
+<p>The yuv output marker was necessary in GLSL because it substantially affected compilation, and this is the only way OpenGL ES had to make such information known to the compiler.
+In Vulkan however there is a pipeline object we can use instead; the pipeline contains enough information to make this information available at the API level.
+This does mean this extension will not work with VK_EXT_shader_object or any similar extension without further work.
+All of this is a deliberate choice due to time constraints.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_who_is_responsible_for_conversions_to_and_from_ycbcr_color_spaces"><a class="anchor" href="#_who_is_responsible_for_conversions_to_and_from_ycbcr_color_spaces"></a>5.2. Who is responsible for conversions to and from YC<sub>B</sub>C<sub>R</sub> color spaces?</h3>
+<div class="paragraph">
+<p>The application is responsible for these conversions; the implementation is only responsible for resampling the values between different sampling rates on the chroma planes.
+Output value expectations match those of GL_EXT_yuv_target.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_how_do_attachment_clears_work"><a class="anchor" href="#_how_do_attachment_clears_work"></a>5.3. How do attachment clears work?</h3>
+<div class="paragraph">
+<p>Attachment clears operate as if they were writes to the color attachment, which means that as with color attachment writes, values must be in the correct color space for the external format and in the expected channel order.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_what_is_the_expected_channel_order_for_yuv_output"><a class="anchor" href="#_what_is_the_expected_channel_order_for_yuv_output"></a>5.4. What is the expected channel order for YUV output?</h3>
+<div class="paragraph">
+<p>In GL_EXT_yuv_target, the expected mapping was for the Y, C<sub>B</sub>, and C<sub>R</sub> channels to map to the R, G, and B channels of the output, respectively.
+However, Vulkan established a convention that C<sub>B</sub> and C<sub>R</sub> should map to B and R channels, matching their chroma designation.</p>
+</div>
+<div class="paragraph">
+<p>This extension matches the Vulkan convention, requiring the Y, C<sub>B</sub>, and C<sub>R</sub> channels to map to the G, B, and R channels in the output, respectively.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The channel order and color space of an imported external format are opaque to the Vulkan implementation.
+Therefore, all external resolve and input attachment accesses are treated as if they were color images in the ycbcr identity model, without range expansion.
+For example, images with four components are treated as R = Cr, G = Y, and B = Cb. This means that effectively:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Input attachment reads present color components as vec4(R, G, B, A) to the shader and yuv components as (V, Y, U, A)</p>
+</li>
+<li>
+<p>External format resolve takes color components from the shader out variable as vec4(R, G, B, A) and yuv components as (V, Y, U, A)</p>
+</li>
+<li>
+<p>Clear color given to begin rendering/render pass are taken as (R, G, B, A) for color components and (V, Y, U, A) for yuv components</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Implementations must not expose an external formats representing a depth or stencil format.
+Applications must import depth images with <a href="https://docs.vulkan.org/spec/latest/chapters/formats.html#VkFormat">VkFormat</a> in order to render to them.
+Images without depth, color, or yuv components are beyond the scope of Vulkan interface and are defined by the format for which effective color components it should be used as, such as for the RAW10 format.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_how_is_resampling_performed_for_null_attachments_when_nullcolorattachmentwithexternalformatresolve_is_supported"><a class="anchor" href="#_how_is_resampling_performed_for_null_attachments_when_nullcolorattachmentwithexternalformatresolve_is_supported"></a>5.5. How is resampling performed for null attachments when <code>nullColorAttachmentWithExternalFormatResolve</code> is supported?</h3>
+<div class="paragraph">
+<p>The nearest sample is read from subsampled planes to populate the values in the fragment shader.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_is_there_a_way_we_could_better_unify_the_two_options_for_the_nullcolorattachmentwithexternalformatresolve_path"><a class="anchor" href="#_is_there_a_way_we_could_better_unify_the_two_options_for_the_nullcolorattachmentwithexternalformatresolve_path"></a>5.6. Is there a way we could better unify the two options for the <code>nullColorAttachmentWithExternalFormatResolve</code> path?</h3>
+<div class="paragraph">
+<p>This could likely be done, but has been skipped due to time constraints.
+A future extension should be able to do a better job of unifying these paths.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_how_can_contents_of_an_external_image_be_preserved_when_rendering_if_nullcolorattachmentwithexternalformatresolve_is_vk_false"><a class="anchor" href="#_how_can_contents_of_an_external_image_be_preserved_when_rendering_if_nullcolorattachmentwithexternalformatresolve_is_vk_false"></a>5.7. How can contents of an external image be preserved when rendering if <code>nullColorAttachmentWithExternalFormatResolve</code> is <code>VK_FALSE</code>?</h3>
+<div class="paragraph">
+<p>When a render pass starts, it loads data from the color attachment if <code>nullColorAttachmentWithExternalFormatResolve</code> is <code>VK_FALSE</code>, rather than unresolving from the external image.
+This can lead to data not being preserved when beginning a new render.</p>
+</div>
+<div class="paragraph">
+<p>If the contents of the external image are only being rendered by the application using external format resolves, then the color attachment data will contain any unresolved data from those previous renders if <code>VK_STORE_OP_STORE</code> is used, preserving rendering data.
+However, if the contents of the external image are not reflected in the color attachment, applications need to manually unresolve the image in a separate pass, before rendering begins.</p>
+</div>
+<div class="paragraph">
+<p>If the contents do not need to be preserved when rendering begins, rendering can be performed as usual with no specific requirements.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_future_work"><a class="anchor" href="#_future_work"></a>6. Future Work</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This extension is fairly limited, as it is meant to match GL_EXT_yuv_target and do no more due to time constraints.
+Further extensions could be introduced to expand the functionality to include things like multisampling, storing both color and YC<sub>B</sub>C<sub>R</sub> images, tighter controls on precision, and color space conversions.</p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

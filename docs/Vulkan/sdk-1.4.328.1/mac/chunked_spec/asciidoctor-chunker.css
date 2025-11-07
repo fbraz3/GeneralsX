@@ -1,0 +1,42 @@
+.nav {
+  margin: 0;
+  max-width: 150px;
+  min-width: 90px;
+  justify-content: center;
+  align-content: center;
+  font-size: 40px;
+  color: #ccc;
+  text-align: center;
+  text-decoration: none;
+  text-rendering: auto;
+  -webkit-transition: all 350ms ease;
+  -moz-transition: all 350ms ease;
+  -o-transition: all 350ms ease;
+  transition: all 350ms ease
+}
+
+.nav:hover {
+  text-decoration: none;
+  color: #444
+}
+
+.nav-next {
+  float: right;
+  display: block;
+}
+
+.nav-prev {
+  float: left;
+  display: block;
+}
+
+#toc li {
+  padding: 0.07rem;
+}
+
+li.current {
+  border-radius: 0.5rem;
+  background-color: rgb(226, 231, 235);
+  /* rgb(226, 231, 235); */
+  /* rgb(255, 247, 229); */
+}

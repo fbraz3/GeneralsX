@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>VK_EXT_shader_tile_image :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:features" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="features" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Feature Descriptions</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Vulkan Roadmap and Feature Descriptions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Roadmap.html">Vulkan Roadmap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Feature Descriptions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMDX_shader_enqueue.html">VK_AMDX_shader_enqueue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_anti_lag.html">VK_AMD_anti_lag</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_shader_early_and_late_fragment_tests.html">VK_AMD_shader_early_and_late_fragment_tests</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ANDROID_external_format_resolve.html">VK_ANDROID_external_format_resolve</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_pipeline_opacity_micromap.html">VK_ARM_pipeline_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_render_pass_striped.html">VK_ARM_render_pass_striped</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_tensors.html">VK_ARM_tensors</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_dynamic_state.html">VK_EXT_attachment_feedback_loop_dynamic_state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_layout.html">VK_EXT_attachment_feedback_loop_layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_calibrated_timestamps.html">VK_EXT_calibrated_timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_bias_control.html">VK_EXT_depth_bias_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_clamp_control.html">VK_EXT_depth_clamp_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_descriptor_buffer.html">VK_EXT_descriptor_buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_fault.html">VK_EXT_device_fault</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_generated_commands.html">VK_EXT_device_generated_commands</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_dynamic_rendering_unused_attachments.html">VK_EXT_dynamic_rendering_unused_attachments</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_extended_dynamic_state3.html">VK_EXT_extended_dynamic_state3</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_acquire_unmodified.html">VK_EXT_external_memory_acquire_unmodified</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_metal.html">VK_EXT_external_memory_metal</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_fragment_density_map_offset.html">VK_EXT_fragment_density_map_offset</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_frame_boundary.html">Proposal: <code>VK_EXT_frame_boundary</code></a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_graphics_pipeline_library.html">VK_EXT_graphics_pipeline_library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_host_image_copy.html">VK_EXT_host_image_copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_2d_array_of_3d.html">VK_EXT_image_2d_array_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_compression_control.html">VK_EXT_image_compression_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_sliced_view_of_3d.html">VK_EXT_image_sliced_view_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_layer_settings.html">VK_EXT_layer_settings</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_dithering.html">VK_EXT_legacy_dithering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_vertex_attributes.html">VK_EXT_legacy_vertex_attributes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_map_memory_placed.html">VK_EXT_map_memory_placed</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mesh_shader.html">VK_EXT_mesh_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_metal_objects.html">VK_EXT_metal_objects</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_multisampled_render_to_single_sampled.html">VK_EXT_multisampled_render_to_single_sampled</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mutable_descriptor_type.html">VK_EXT_mutable_descriptor_type</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_non_seamless_cube_map.html">VK_EXT_non_seamless_cube_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_opacity_micromap.html">VK_EXT_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_library_group_handles.html">VK_EXT_pipeline_library_group_handles</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_protected_access.html">VK_EXT_pipeline_protected_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_present_mode_fifo_latest_ready.html">VK_EXT_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_primitives_generated_query.html">VK_EXT_primitives_generated_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_rasterization_order_attachment_access.html">VK_EXT_rasterization_order_attachment_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_float8.html">VK_EXT_shader_float8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_module_identifier.html">VK_EXT_shader_module_identifier</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_object.html">VK_EXT_shader_object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_replicated_composites.html">VK_EXT_shader_replicated_composites</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_tile_image.html">VK_EXT_shader_tile_image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_subpass_merge_feedback.html">VK_EXT_subpass_merge_feedback</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_surface_maintenance1.html">VK_EXT_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_swapchain_maintenance1.html">VK_EXT_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_zero_initialize_device_memory.html">VK_EXT_zero_initialize_device_memory</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_GOOGLE_surfaceless_query.html">VK_GOOGLE_surfaceless_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_cluster_culling_shader.html">VK_HUAWEI_cluster_culling_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_invocation_mask.html">VK_HUAWEI_invocation_mask</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_compute_shader_derivatives.html">VK_KHR_compute_shader_derivatives</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_cooperative_matrix.html">VK_KHR_cooperative_matrix</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering.html">VK_KHR_dynamic_rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering_local_read.html">VK_KHR_dynamic_rendering_local_read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shader_barycentric.html">VK_KHR_fragment_shader_barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shading_rate.html">VK_KHR_fragment_shading_rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_load_store_op_none.html">VK_KHR_load_store_op_none</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance5.html">VK_KHR_maintenance5</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance6.html">VK_KHR_maintenance6</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance7.html">VK_KHR_maintenance7</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance8.html">VK_KHR_maintenance8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance9.html">Proposal Template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_map_memory2.html">VK_KHR_map_memory2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_pipeline_binary.html">VK_KHR_pipeline_binary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_id2.html">VK_KHR_present_id2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_mode_fifo_latest_ready.html">VK_KHR_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_wait2.html">VK_KHR_present_wait2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_ray_tracing_position_fetch.html">VK_KHR_ray_tracing_position_fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_bfloat16.html">VK_KHR_shader_bfloat16</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_expect_assume.html">VK_KHR_shader_expect_assume</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_float_controls2.html">VK_KHR_shader_float_controls2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_integer_dot_product.html">VK_KHR_shader_integer_dot_product</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_maximal_reconvergence.html">VK_KHR_shader_maximal_reconvergence</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_quad_control.html">VK_KHR_shader_quad_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_relaxed_extended_instruction.html">VK_KHR_shader_relaxed_extended_instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_subgroup_rotate.html">Subgroup rotation instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_surface_maintenance1.html">VK_KHR_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_swapchain_maintenance1.html">VK_KHR_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_unified_image_layouts.html">VK_KHR_unified_image_layouts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_vertex_attribute_divisor.html">VK_KHR_vertex_attribute_divisor</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_av1.html">VK_KHR_video_decode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h264.html">VK_KHR_video_decode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h265.html">VK_KHR_video_decode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_queue.html">VK_KHR_video_decode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_vp9.html">VK_KHR_video_decode_vp9</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_av1.html">VK_KHR_video_encode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h264.html">VK_KHR_video_encode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h265.html">VK_KHR_video_encode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_intra_refresh.html">VK_KHR_video_encode_intra_refresh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_quantization_map.html">VK_KHR_video_encode_quantization_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_queue.html">VK_KHR_video_encode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance1.html">VK_KHR_video_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance2.html">VK_KHR_video_maintenance2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_queue.html">VK_KHR_video_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_LUNARG_direct_driver_loading.html">VK_LUNARG_direct_driver_loading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_MSFT_layered_driver.html">VK_MSFT_layered_driver</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cluster_acceleration_structure.html">VK_NV_cluster_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_matrix2.html">VK_NV_cooperative_matrix2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_vector.html">VK_NV_cooperative_vector</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_display_stereo.html">VK_NV_display_stereo</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_external_compute_queue.html">VK_NV_external_compute_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_partitioned_acceleration_structure.html">VK_NV_partitioned_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_linear_swept_spheres.html">VK_NV_ray_tracing_linear_swept_spheres</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_validation.html">VK_NV_ray_tracing_validation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_image_processing.html">VK_QCOM_image_processing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_memory_heap.html">VK_QCOM_tile_memory_heap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_properties.html">VK_QCOM_tile_properties</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_shading.html">VK_QCOM_tile_shading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_VERSION_1_4.html">Vulkan 1.4</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Feature Descriptions</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Feature Descriptions</a></li>
+    <li>Feature Descriptions</li>
+    <li><a href="VK_EXT_shader_tile_image.html">VK_EXT_shader_tile_image</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/features/modules/features/pages/proposals/VK_EXT_shader_tile_image.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">VK_EXT_shader_tile_image</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_problem_statement">1. Problem Statement</a></li>
+<li><a href="#_solution_space">2. Solution Space</a>
+<ul class="sectlevel2">
+<li><a href="#_high_level_choices">2.1. High-level choices</a></li>
+<li><a href="#_implementation_choices">2.2. Implementation choices</a></li>
+</ul>
+</li>
+<li><a href="#_proposal">3. Proposal</a>
+<ul class="sectlevel2">
+<li><a href="#_concept">3.1. Concept</a></li>
+<li><a href="#_api_changes">3.2. API changes</a></li>
+<li><a href="#_spir_v_changes">3.3. SPIR-V changes</a></li>
+<li><a href="#_glsl_changes">3.4. GLSL changes</a></li>
+<li><a href="#_hlsl_changes">3.5. HLSL Changes</a></li>
+</ul>
+</li>
+<li><a href="#_examples">4. Examples</a>
+<ul class="sectlevel2">
+<li><a href="#_color_reads">4.1. Color reads</a></li>
+</ul>
+</li>
+<li><a href="#_alternate_proposals">5. Alternate Proposals</a>
+<ul class="sectlevel2">
+<li><a href="#_proposal_b_optypetileimage">5.1. Proposal B: OpTypeTileImage</a></li>
+<li><a href="#_proposal_c_storage_class_pls_style">5.2. Proposal C: Storage Class / PLS style</a></li>
+</ul>
+</li>
+<li><a href="#_non_coherent_access">6. Non-coherent access</a>
+<ul class="sectlevel2">
+<li><a href="#_api_changes_2">6.1. API Changes</a></li>
+<li><a href="#_barrier_proposal_a_memorybarrier_via_vkcmdpipelinebarrier2">6.2. Barrier Proposal A: MemoryBarrier via vkCmdPipelineBarrier2</a></li>
+<li><a href="#_barrier_proposal_b_imagememorybarrier_via_vkcmdpipelinebarrier2">6.3. Barrier Proposal B: ImageMemoryBarrier via vkCmdPipelineBarrier2</a></li>
+<li><a href="#_barrier_proposal_c_new_simple_api_for_tile_image_barriers">6.4. Barrier Proposal C: New simple API for tile image barriers</a></li>
+<li><a href="#_spir_v_and_glsl_changes">6.5. SPIR-V and GLSL changes</a></li>
+</ul>
+</li>
+<li><a href="#_issues">7. Issues</a>
+<ul class="sectlevel2">
+<li><a href="#_1_resolved_should_we_allow_early_fragment_tests">7.1. 1. RESOLVED: Should we allow early fragment tests?</a></li>
+<li><a href="#_2_resolved_should_depth_stencil_fetch_be_a_separate_extension">7.2. 2. RESOLVED: Should depth / stencil fetch be a separate extension?</a></li>
+<li><a href="#_3_resolved_what_should_we_name_these_variables_what_should_the_extension_be_named">7.3. 3. RESOLVED: What should we name these variables? What should the extension be named?</a></li>
+<li><a href="#_4_resolved_are_there_any_non_obvious_interactions_with_the_suspendresume_functionality_in_vk_khr_dynamic_rendering">7.4. 4. RESOLVED: Are there any non-obvious interactions with the suspend/resume functionality in <code>VK_KHR_dynamic_rendering</code>?</a></li>
+<li><a href="#_5_resolved_enable_disable_raster_order_access">7.5. 5. RESOLVED: Enable / Disable raster order access</a></li>
+<li><a href="#_7_resolved_should_this_extension_reuse_optypeimage_or_introduce_a_new_type_for_declaring_tile_images">7.6. 7. RESOLVED: Should this extension reuse OpTypeImage, or introduce a new type for declaring tile images?</a></li>
+<li><a href="#_8_resolved_should_color_depth_and_stencil_reads_use_the_same_spir_v_opcode">7.7. 8. RESOLVED: Should Color, Depth, and Stencil reads use the same SPIR-V opcode?</a></li>
+<li><a href="#_9_resolved_should_depth_and_stencil_read_opcodes_consume_an_image_operand_specifying_the_attachment_or_should_it_be_implicit">7.8. 9. RESOLVED: Should Depth and Stencil read opcodes consume an image operand specifying the attachment, or should it be implicit?</a></li>
+<li><a href="#_10_resolved_should_this_extension_reuse_the_image_dim_subpassdata_or_introduce_a_new_dim">7.9. 10. RESOLVED: Should this extension reuse the image Dim SubpassData or introduce a new Dim?</a></li>
+<li><a href="#_11_resolved_should_this_extension_require_applications_to_create_and_bind_descriptors_for_tile_images">7.10. 11. RESOLVED: Should this extension require applications to create and bind descriptors for tile images?</a></li>
+<li><a href="#_12_resolved_what_does_undefined_value_mean_for_tile_image_reads">7.11. 12. RESOLVED: What does 'undefined value' mean for tile image reads?</a></li>
+</ul>
+</li>
+<li><a href="#_further_functionality">8. Further Functionality</a>
+<ul class="sectlevel2">
+<li><a href="#_fragment_shading_rate_interactions">8.1. Fragment Shading Rate interactions</a></li>
+<li><a href="#_allow_non_aliased_tile_image_variables_andor_image_format_redeclaration">8.2. Allow non-aliased Tile Image variables and/or image format redeclaration</a></li>
+<li><a href="#_tile_image_size_query">8.3. Tile Image size query</a></li>
+<li><a href="#_memoryless_attachments">8.4. Memoryless attachments</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><code>VK_EXT_shader_tile_image</code> is a device extension that explicitly enables access to on-chip pixel data. For GPUs supporting this extension, it is a replacement for many use-cases for subpasses, which are not available when the <code>VK_KHR_dynamic_rendering</code> extension is used.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>1. Problem Statement</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Some implementations, in particular tile-based GPUs, want to allow applications to effectively exploit local, e.g. on-chip, memory.
+A classic example would be optimizing G-buffer based deferred shading techniques where the G-buffer is produced and consumed on-chip.</p>
+</div>
+<div class="paragraph">
+<p>Subpasses were designed to support such use-cases with an API mechanism that was portable across all implementations. In practice, that has led to some problems, including:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>the high level abstraction is far removed from the mental model an application developer needs to have to be able to optimize for keeping data on-chip</p>
+</li>
+<li>
+<p>the subpass design affects other parts of the API and is seen as a 'tax' on applications that do not target implementations that benefit from on-chip storage</p>
+</li>
+<li>
+<p>developers wanting to optimize for a specific class of GPUs often need to make GPU specific optimization choices, so the abstraction does not add much</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These problems motivated <code>VK_KHR_dynamic_rendering</code>, which offers an alternative API without subpasses. But keeping data on-chip is still an important optimization for a class of GPUs.</p>
+</div>
+<div class="paragraph">
+<p>This proposal aims to provide the most essential functionality of subpasses, but in an explicit manner.
+The abstractions in this proposal are a closer match to what the underlying GPU implementation does and should make it easier to communicate best practices and performance guarantees to developers.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution Space</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_high_level_choices"><a class="anchor" href="#_high_level_choices"></a>2.1. High-level choices</h3>
+<div class="paragraph">
+<p>The solution space can be split in two axes: scope and abstraction level.</p>
+</div>
+<div class="paragraph">
+<p>The abstraction level is a question of whether we want an API that is only targeted at tile-based GPUs or if we should have a higher-level API that would allow the feature to be supported on a wider range of GPUs.
+The main argument for a higher abstraction level is application portability.
+Arguments against additional abstractions include:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>It would be hard for developers to reason about performance expectations, for the same reasons that it is hard to do this for subpasses</p>
+</li>
+<li>
+<p>"Framebuffer fetch" and "programmable blend" semantics are naturally expressed as direct reads from color attachments, and adding abstractions just obfuscate what (some) GPU hardware is doing</p>
+</li>
+<li>
+<p>GPUs that are not tile-based would not gain much from exposing this - at least not unless the scope is expanded - so the abstractions add little practical value</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>There are two choices broadly based on what the functionality is for, and which GPUs are able to support it:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>An explicit API to allow certain tile-based GPUs to expose on-chip memory with fast raster order access.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Provides framebuffer fetch and Pixel Local Storage functionality and forms the basis for Tile Shader like functionality.</p>
+</li>
+<li>
+<p>This is mainly targeted at GPUs which defer fragment shading into framebuffer tiles where each tile is typically processed just once.</p>
+</li>
+<li>
+<p>This addresses use cases such as keeping G-buffer data on-chip.</p>
+</li>
+<li>
+<p>No DRAM bandwidth paid for render targets which are cleared on load, consumed within the render pass, and content discarded at end of render pass.</p>
+</li>
+<li>
+<p>Raster order access (coherent access) to framebuffer data from fragment shader is efficient or even "free" - depending on the GPU.</p>
+</li>
+<li>
+<p>No descriptors needed for render target access.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>A slightly higher level API to enable broad GPU support for framebuffer fetch like functionality within draw calls in dynamic render passes.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Provides framebuffer fetch like functionality.</p>
+</li>
+<li>
+<p>This is intended to be supported by a wide range of GPUs. The GPUs in general have optimized support for framebuffer fetch within a render pass.</p>
+</li>
+<li>
+<p>This addresses use cases such a programmable image composition, or programmable resolve.</p>
+</li>
+<li>
+<p>Attachment data is not guaranteed to be on-chip within a render pass and may spill to DRAM. Implementations may opportunistically cache data in their cache hierarchy.</p>
+</li>
+<li>
+<p>Raster order access to framebuffer data from fragment shader is not "free". Many implementations may prefer non-coherent access with explicit synchronization from applications.</p>
+</li>
+<li>
+<p>Descriptors need to be bound for render target access (at least for some implementations).</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This proposal targets the first choice.</p>
+</div>
+<div class="paragraph">
+<p>The options for scope include:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>"Framebuffer fetch" equivalent, i.e. enable access to the previously written pixel in the local framebuffer region</p>
+</li>
+<li>
+<p>"Pixel local storage" equivalent, i.e. as above with the addition of pixel format reinterpretation</p>
+</li>
+<li>
+<p>"Tile shader" equivalent, i.e. enable access to a region larger than 1x1 pixels</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This proposal targets the first option, but adds building blocks to enable future enhancements.
+The reasoning behind this choice is that:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>It should be possible to support this extension on existing GPUs</p>
+</li>
+<li>
+<p>Many use-cases that benefit from subpasses could be implemented with this functionality</p>
+</li>
+<li>
+<p>Ease of integration; this option requires the least amount of changes to rendering engines</p>
+</li>
+<li>
+<p>Time to market; several IHVs would like at least the subpass equivalent functionality to be implemented alongside <code>VK_KHR_dynamic_rendering</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_implementation_choices"><a class="anchor" href="#_implementation_choices"></a>2.2. Implementation choices</h3>
+<div class="paragraph">
+<p>It is useful to provide tile image access for all attachment types.
+But implementations may manage depth/stencil differently than color, which could add constraints.
+We will therefore expose separate feature bits for color, depth, and stencil access.</p>
+</div>
+<div class="paragraph">
+<p>Tile image variables currently have to 'alias' a color attachment location, and their format is implicitly specified to match the color attachment format.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>3. Proposal</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_concept"><a class="anchor" href="#_concept"></a>3.1. Concept</h3>
+<div class="paragraph">
+<p>images = image$ path = image$/proposals/tile_image.svg</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="../_images/proposals/tile_image.svg" alt="tile image">
+</div>
+<div class="title">Figure 1. Tile Image</div>
+</div>
+<div class="paragraph">
+<p>Introduce the concept of a 'tile image'. When the extension is enabled, the framebuffer is logically divided into a grid of non-overlapping tiles called tile images.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_api_changes"><a class="anchor" href="#_api_changes"></a>3.2. API changes</h3>
+<div class="paragraph">
+<p>Add a new feature struct <code>VkPhysicalDeviceShaderTileImageFeaturesEXT</code> containing:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>shaderTileImageColorReadAccess</code></p>
+</li>
+<li>
+<p><code>shaderTileImageDepthReadAccess</code></p>
+</li>
+<li>
+<p><code>shaderTileImageStencilReadAccess</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><code>shaderTileImageColorReadAccess</code> is mandatory if this extension is supported.</p>
+</div>
+<div class="paragraph">
+<p><code>shaderTileImageColorReadAccess</code> provides the ability to access current (rasterization order) color values from tile memory via tile images.
+There is no support for the storage format to be redefined as part of this feature.
+Output data is still written via Fragment Output variables.
+Since the framebuffer format is not redeclared, fixed-function blending works as normal.</p>
+</div>
+<div class="paragraph">
+<p>Existing shaders do not to need to be modified to write to color attachments.</p>
+</div>
+<div class="paragraph">
+<p>Reading color values using the functionality in this extension guarantees that the access is in rasterization order.
+See the spec (Fragment Shader Tile Image Reads) for details on which samples reads qualify for coherent read access.</p>
+</div>
+<div class="paragraph">
+<p><code>shaderTileImageDepthReadAccess</code> and <code>shaderTileImageStencilReadAccess</code> provide similar ability to read the depth and stencil values of any sample location covered by the fragment.
+Depth and stencil fetches use implicit tile images.
+If no depth / stencil attachment is present then the values returned by fetches are undefined.
+Early fragment tests are disallowed if depth or stencil fetch is used.</p>
+</div>
+<div class="paragraph">
+<p>Reading depth/stencil values have similar rasterization order and synchronization guarantees as color.</p>
+</div>
+<div class="sect3">
+<h4 id="_explicit_synchronization"><a class="anchor" href="#_explicit_synchronization"></a>3.2.1. Explicit Synchronization</h4>
+<div class="paragraph">
+<p>When non-coherent tile image reads are enabled, writes via color, depth and
+stencil attachments are not automatically made visible to the corresponding
+attachment reads via tile images.
+For the writes to be made visible, an explicit memory dependency must be
+inserted between when the attachment is written to and when it is read from
+by later fragments.
+Such memory dependencies must be inserted every time a fragment will read
+values at a particular sample (x, y, layer, sample) coordinate, if those
+values have been written since the most recent pipeline barrier; or since
+the start of the render pass instance, if there have been no pipeline
+barriers since the start of the render pass instance.
+When such memory dependencies are used the values at all sample locations
+inside the fragment area are made visible, regardless of coverage.</p>
+</div>
+<div class="paragraph">
+<p>To insert a memory dependency for explicit render pass tile image
+synchronization, <a href="https://docs.vulkan.org/spec/latest/chapters/synchronization.html#vkCmdPipelineBarrier">vkCmdPipelineBarrier</a>
+and <a href="https://docs.vulkan.org/spec/latest/chapters/synchronization.html#vkCmdPipelineBarrier2">vkCmdPipelineBarrier2</a>
+can now be called inside a render pass instance started with
+<a href="https://docs.vulkan.org/spec/latest/chapters/renderpass.html#vkCmdBeginRendering">vkCmdBeginRendering</a>.
+The following restrictions apply for such pipeline barriers:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>dependencyFlags</code> must include <code>VK_DEPENDENCY_BY_REGION_BIT</code>.</p>
+</li>
+<li>
+<p>The pipeline barriers can include only memory barriers.
+That is, buffer memory barriers and image memory barriers must not be
+used.</p>
+</li>
+<li>
+<p>The stages in the <code>srcStageMask</code> and <code>dstStageMask</code> members of <a href="https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VkMemoryBarrier2">VkMemoryBarrier2</a> are restricted to framebuffer
+space stages.</p>
+</li>
+<li>
+<p>The access types in the <code>srcAccessMask</code> and <code>dstAccessMask</code> members of <a href="https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VkMemoryBarrier2">VkMemoryBarrier2</a> are restricted to the
+following types: <code>VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT</code>,
+<code>VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT</code>,
+<code>VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT</code>, and
+<code>VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT</code>.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_spir_v_changes"><a class="anchor" href="#_spir_v_changes"></a>3.3. SPIR-V changes</h3>
+<div class="paragraph">
+<p>This proposal leverages <code>OpTypeImage</code> and makes 'TileImageDataEXT' another <code>Dim</code> similar to <code>SubpassData</code>.</p>
+</div>
+<div class="paragraph">
+<p>Specifically:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>Dim</code> is extended with <code>TileImageDataEXT</code>.</p>
+</li>
+<li>
+<p><code>OpTypeImage</code> gets the additional constraint that if <code>Dim</code> is <code>TileImageDataEXT</code>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>Sampled</code> <strong>must</strong> be <code>2</code></p>
+</li>
+<li>
+<p><code>Image Format</code> must be <code>Unknown</code> as the format is implicitly specified by the color attachment</p>
+<div class="ulist">
+<ul>
+<li>
+<p>(We could relax this in a further extension if we wanted to support format reinterpretation in the shader.)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>Execution Model</code> must be <code>Fragment</code></p>
+</li>
+<li>
+<p><code>Arrayed</code> must be <code>0</code></p>
+</li>
+<li>
+<p>Extend the use of <code>Location</code> such that it specifies the color attachment index</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Add <code>OpColorAttachmentReadEXT</code>, which is similar to <code>OpImageRead</code> but helps disambiguate between color/depth/stencil.</p>
+</li>
+<li>
+<p>Add <code>OpDepthAttachmentReadEXT</code> and <code>OpStencilAttachmentReadEXT</code> to read depth/stencil</p>
+<div class="ulist">
+<ul>
+<li>
+<p>These take an optional <code>Sample</code> parameter for MSAA use-cases</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Add a <code>TileImageEXT</code> Storage Class that is only supported for variables of <code>OpTypeImage</code> with <code>Dim</code> equal to <code>TileImageDataEXT</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_glsl_changes"><a class="anchor" href="#_glsl_changes"></a>3.4. GLSL changes</h3>
+<div class="paragraph">
+<p>Main changes:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>New type: <code>attachmentEXT</code></p>
+</li>
+<li>
+<p>The <code>location</code> layout qualifier is used to specify the corresponding color attachment</p>
+</li>
+<li>
+<p>New storage qualifier (supported only in fragment shaders): <code>tileImageEXT</code></p>
+</li>
+<li>
+<p>New functions: <code>colorAttachmentReadEXT</code>, <code>depthAttachmentReadEXT</code>, <code>stencilAttachmentReadEXT</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Mapping to SPIR-V:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>attachmentEXT</code> maps to <code>OpTypeImage</code> with <code>Dim</code> equal to <code>TileImageDataEXT</code></p>
+</li>
+<li>
+<p><code>colorAttachmentReadEXT</code> maps to <code>OpColorAttachmentReadEXT</code></p>
+</li>
+<li>
+<p><code>depthAttachmentReadEXT</code> maps to <code>OpDepthAttachmentReadEXT</code></p>
+</li>
+<li>
+<p><code>stencilAttachmentReadEXT</code> maps to <code>OpStencilAttachmentReadEXT</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Function signatures:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// color
+gvec4 colorAttachmentReadEXT(gattachment attachmentEXT);
+gvec4 colorAttachmentReadEXT(gattachment attachmentEXT, int sample);
+
+// depth
+highp float depthAttachmentReadEXT();
+highp float depthAttachmentReadEXT(int sample);
+
+// stencil
+lowp uint stencilAttachmentReadEXT();
+lowp uint stencilAttachmentReadEXT(int sample);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hlsl_changes"><a class="anchor" href="#_hlsl_changes"></a>3.5. HLSL Changes</h3>
+
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_examples"><a class="anchor" href="#_examples"></a>4. Examples</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_color_reads"><a class="anchor" href="#_color_reads"></a>4.1. Color reads</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// ------ Subpass Example --------
+layout( set = 0, binding = 0, input_attachment_index = 0 ) uniform highp subpassInput color0;
+layout( set = 0, binding = 1, input_attachment_index = 1 ) uniform highp subpassInput color1;
+
+layout( location = 0 ) out vec4 fragColor;
+
+void main()
+{
+    vec4 value = subpassLoad(color0) + subpassLoad(color1);
+    fragColor = value;
+}
+
+// ----- Equivalent Tile Image approach ------
+
+// NOTES:
+// 'tileImageEXT' is a storage qualifier.
+// 'attachmentEXT' is an opaque type; similar to subpassInput
+// 'aliased' means that the variable shares _tile image_ with the corresponding attachment; there is no in-memory aliasing
+
+layout( location = 0 /* aliased to color attachment 0 */ ) tileImageEXT highp attachmentEXT color0;
+layout( location = 1 /* aliased to color attachment 1 */ ) tileImageEXT highp attachmentEXT color1;
+
+layout( location = 0 ) out vec4 fragColor;
+
+void main()
+{
+    vec4 value = colorAttachmentReadEXT(color0) + colorAttachmentReadEXT(color1);
+    fragColor = value;
+}</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_depth_reads"><a class="anchor" href="#_depth_reads"></a>4.1.1. Depth reads</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">void main()
+{
+    // read sample 0: works for non-MSAA or MSAA targets
+    highp float last_depth = depthAttachmentReadEXT();
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_alternate_proposals"><a class="anchor" href="#_alternate_proposals"></a>5. Alternate Proposals</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The following proposals explore alternate ways to expose the functionality for reading from the tile memory for color data - reading depth and stencil and the API changes are kept unchanged from the main proposal.</p>
+</div>
+<div class="sect2">
+<h3 id="_proposal_b_optypetileimage"><a class="anchor" href="#_proposal_b_optypetileimage"></a>5.1. Proposal B: OpTypeTileImage</h3>
+<div class="sect3">
+<h4 id="_spir_v_changes_2"><a class="anchor" href="#_spir_v_changes_2"></a>5.1.1. SPIR-V Changes</h4>
+<div class="paragraph">
+<p>Add new type: <code>TileImage</code>. We have two options for defining <code>TileImage</code>:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><code>TileImage</code> variables which are instanced per-pixel (or per-sample in case of multisampled framebuffers)</p>
+</li>
+<li>
+<p><code>TileImage</code> defines a 2D array of pixels similar to an image but in tile memory.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Note: Defining this as a 2D array fits well for future <code>Tile Shaders</code> functionality where tile shader invocations on a tile can access any location within a TileImage on the tile.</p>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Add new instruction: <code>OpTypeTileImage</code>. The instruction declares a <code>tile image</code>. <code>Tile image</code> is an opaque type. <code>OpTypeTileImage</code> has the following operands:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>Image Format</code>: the imageformat. This must be set to <code>Unknown</code> as the format is implicitly specified by the color attachment.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>(We could relax this in a further extension if we wanted to support format reinterpretation in the shader.)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>MS</code> : indicates whether the content is multisampled. 0 - single-sampled. 1 - multisampled.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><code>Tile image</code> variables must be decorated with <code>Location</code> which specifies the color attachment index.
+<code>Execution Model</code> must be <code>Fragment</code>.</p>
+</div>
+<div class="paragraph">
+<p>Add <code>OpTileImageRead</code>, <code>OpDepthTileImageRead</code>, <code>OpStencilTileImageRead</code> to read from color, depth, stencil tile images.
+Add <code>Tile</code> storage class.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_glsl_changes_2"><a class="anchor" href="#_glsl_changes_2"></a>5.1.2. GLSL Changes</h4>
+<div class="paragraph">
+<p>GLSL changes remain the same as in the main proposal except the mapping changes to <code>OpTypeTileImage</code> instead of <code>OpTypeImage</code>:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>tileImage</code> maps to <code>OpTypeTileImage</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_proposal_c_storage_class_pls_style"><a class="anchor" href="#_proposal_c_storage_class_pls_style"></a>5.2. Proposal C: Storage Class / PLS style</h3>
+<div class="sect3">
+<h4 id="_spir_v_changes_3"><a class="anchor" href="#_spir_v_changes_3"></a>5.2.1. SPIR-V Changes</h4>
+<div class="paragraph">
+<p>Introduce <code>TileImage</code> as a new storage class.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Variables declared with <code>TileImage</code> must have <code>Location</code> decoration specified - this specifies the attachment index to alias to.</p>
+</li>
+<li>
+<p>If image format reinterpretation is to be supported then a new <code>Imageformat</code> decoration is specified.</p>
+</li>
+<li>
+<p><code>TileImage</code> storage class variables are multisampled with the sample count of the framebuffer if multisampling is enabled.</p>
+</li>
+<li>
+<p>Reading of TileImage variables is done via <code>OpTileImageRead</code>.</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>OpTileImageRead</code> which accepts a <code>sample</code> parameter for MSAA use cases.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>If aggregate types are to be supported in <code>TileImage</code> storage class, we would need the following:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>Location</code> and <code>Imageformat</code> must only be applied to non-structure type (that is, scalars or vectors or arrays of scalars or arrays of vectors).</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_glsl_changes_3"><a class="anchor" href="#_glsl_changes_3"></a>5.2.2. GLSL Changes</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>New storage class <code>tileImage</code>.</p>
+</li>
+<li>
+<p>Add support for grouping <code>tileImage</code> variable declarations into an interface block.</p>
+</li>
+<li>
+<p>layout <code>location</code> must be specified for the variables.</p>
+</li>
+<li>
+<p>Add new builtin function <code>tileImageRead</code>, which accepts an optional parameter <code>sample</code></p>
+</li>
+<li>
+<p>If reinterpretation of formats is supported (within the same draw call), then we need <code>tileImageIn</code> and <code>tileImageOut</code> (or make <code>tileImage</code> an auxiliary storage specifier, similar to <code>patch</code> so we could use <code>tileImage in</code> and <code>tileImage out</code>).</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_non_coherent_access"><a class="anchor" href="#_non_coherent_access"></a>6. Non-coherent access</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Some implementations have a penalty for support raster order access to tile image data. To support this functionality on such implementations we would add the following changes to the base proposal:</p>
+</div>
+<div class="sect2">
+<h3 id="_api_changes_2"><a class="anchor" href="#_api_changes_2"></a>6.1. API Changes</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>A property bit <code>shaderTileImagePreferCoherentReadAccess</code> indicating whether the implementation prefers coherent read accesses are used.</p>
+</li>
+<li>
+<p>Support for specifying the barriers - three broad options (see next section)</p>
+</li>
+<li>
+<p>Note: The gains from tile image feature with raster order access enabled are expected to match the gains from subpasses.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_barrier_proposal_a_memorybarrier_via_vkcmdpipelinebarrier2"><a class="anchor" href="#_barrier_proposal_a_memorybarrier_via_vkcmdpipelinebarrier2"></a>6.2. Barrier Proposal A: MemoryBarrier via vkCmdPipelineBarrier2</h3>
+<div class="paragraph">
+<p><code>vkCmdPipelineBarrier2</code> would be allowed within dynamic render passes to specify a <code>VkMemoryBarrier2</code> with some restrictions. The enums <code>VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT</code> and <code>VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT</code> are reused for tileimage read accesses.</p>
+</div>
+<div class="paragraph">
+<p>This approach would allow synchronizing all color attachments, or depth stencil attachment, but does not support synchronizing individual color attachments.</p>
+</div>
+<div class="paragraph">
+<p>Example synchronizing two draw calls, where the first writes to color attachments and the second reads via the tileimage variables.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdDraw(...);
+
+VkMemoryBarrier2 memoryBarrier = {
+        ...
+        .srcStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .srcAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+        .dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+        .dstAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT
+};
+
+VkDependencyInfo dependencyInfo {
+        ...
+        VK_DEPENDENCY_BY_REGION, //dependency flags
+        1, //memory barrier count
+        &amp;memoryBarrier, //memory barrier
+        ...
+};
+
+vkCmdPipelineBarrier2(commandBuffer, &amp;dependencyInfo);
+
+vkCmdDraw(...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_barrier_proposal_b_imagememorybarrier_via_vkcmdpipelinebarrier2"><a class="anchor" href="#_barrier_proposal_b_imagememorybarrier_via_vkcmdpipelinebarrier2"></a>6.3. Barrier Proposal B: ImageMemoryBarrier via vkCmdPipelineBarrier2</h3>
+<div class="paragraph">
+<p><code>vkCmdPipelineBarrier2</code> would be allowed within dynamic render passes to specify a <code>VkMemoryBarrier2</code> with some restrictions. The enums <code>VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT</code> and <code>VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT</code> are reused to express tileimage read accesses.</p>
+</div>
+<div class="paragraph">
+<p>This approach would allow synchronizing individual color attachments, or depth or stencil attachment.</p>
+</div>
+<div class="paragraph">
+<p>Example synchronizing two draw calls, where the first writes to color attachments and the second reads via the tileimage variables.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdDraw(...);
+
+VkImageMemoryBarrier2 imageMemoryBarrier = {
+        ...
+        .srcStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .srcAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+        .dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+        .dstAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT,
+        .oldLayout = ..., //layouts not allowed to be changed.
+        .newLayout ...,
+        .image = .., //image and subresource identifying the specific attachment.
+        .subresourceRange = ..
+};
+
+VkDependencyInfo dependencyInfo {
+        ...
+        VK_DEPENDENCY_BY_REGION, //dependency flags
+        ...
+        1, //image memory barrier count
+        &amp;imageMemoryBarrier, //memory barrier
+        ...
+};
+
+vkCmdPipelineBarrier2(commandBuffer, &amp;dependencyInfo);
+
+vkCmdDraw(...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_barrier_proposal_c_new_simple_api_for_tile_image_barriers"><a class="anchor" href="#_barrier_proposal_c_new_simple_api_for_tile_image_barriers"></a>6.4. Barrier Proposal C: New simple API for tile image barriers</h3>
+<div class="paragraph">
+<p>New API entry point <code>vkCmdTileBarrierEXT(..)</code> where the application can specify which attachments to synchronize. This can be easily extended to tile shader if an implementation desires explicit barriers - by specifying all of tile memory needs to be synchronized and explicitly specifying tile-wide synchronization.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">//New Vulkan function and types
+vkCmdTileBarrierEXT(
+    VkCommandBuffer             commandBuffer,
+    VkDependencyFlags           dependencyFlags,
+    VkTileMemoryTypeFlagsEXT    tileMemoryMask);
+
+typedef enum VkTileMemoryTypeFlagsBitsEXT {
+    VK_TILE_IMAGE_COLOR_ATTACHMENTS_BIT = 0x00000001,
+    VK_TILE_IMAGE_DEPTH_STENCIL_ATTACHMENT_BIT = 0x00000002,
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Example synchronizing two draw calls, where the first writes to color attachments and the second reads via the tile image variables.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdDraw(...);
+
+vkCmdTileBarrierEXT(commandBuffer,
+    VK_DEPENDENCY_BY_REGION,
+    VK_TILE_IMAGE_COLOR_ATTACHMENTS_BIT);
+
+vkCmdDraw(...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_spir_v_and_glsl_changes"><a class="anchor" href="#_spir_v_and_glsl_changes"></a>6.5. SPIR-V and GLSL changes</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Tile Image data variables can optionally be specified with "noncoherent" layout qualifier in GLSL. For Depth and Stencil we could use a special fragment shader layout qualifier (similar to early_fragment_tests) to indicate depth and stencil access is "noncoherent".</p>
+</li>
+<li>
+<p>Three new Execution modes in SPIR-V to specify that color, depth or stencil reads via the functionality in this extension are non-coherent (that is the reads are no longer guaranteed to be in raster order with respect to write operations from prior fragments).</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_issues"><a class="anchor" href="#_issues"></a>7. Issues</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_1_resolved_should_we_allow_early_fragment_tests"><a class="anchor" href="#_1_resolved_should_we_allow_early_fragment_tests"></a>7.1. 1. RESOLVED: Should we allow early fragment tests?</h3>
+<div class="paragraph">
+<p>Early fragment tests are disallowed if reading frag depth / stencil.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_2_resolved_should_depth_stencil_fetch_be_a_separate_extension"><a class="anchor" href="#_2_resolved_should_depth_stencil_fetch_be_a_separate_extension"></a>7.2. 2. RESOLVED: Should depth / stencil fetch be a separate extension?</h3>
+<div class="paragraph">
+<p>Access to depth / stencil is defined differently than color, but we suggest keeping them together - with separate feature bits.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_3_resolved_what_should_we_name_these_variables_what_should_the_extension_be_named"><a class="anchor" href="#_3_resolved_what_should_we_name_these_variables_what_should_the_extension_be_named"></a>7.3. 3. RESOLVED: What should we name these variables? What should the extension be named?</h3>
+<div class="paragraph">
+<p>Other APIs have similar but not identical concepts, so a unique name is useful.</p>
+</div>
+<div class="paragraph">
+<p>We call these resources tile images.
+On typical implementations supporting this extension, the framebuffer is divided into tiles and fragment processing is deferred such that each framebuffer tile is typically visited just once.
+A tile image is a view of a framebuffer attachment, restricted to the tile being processed.</p>
+</div>
+<div class="paragraph">
+<p>Note that fragment shaders still can only color, depth, and stencil values from their fragment location and not the entire tile.</p>
+</div>
+<div class="paragraph">
+<p>The extension is called VK_EXT_shader_tile_image.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_4_resolved_are_there_any_non_obvious_interactions_with_the_suspendresume_functionality_in_vk_khr_dynamic_rendering"><a class="anchor" href="#_4_resolved_are_there_any_non_obvious_interactions_with_the_suspendresume_functionality_in_vk_khr_dynamic_rendering"></a>7.4. 4. RESOLVED: Are there any non-obvious interactions with the suspend/resume functionality in <code>VK_KHR_dynamic_rendering</code>?</h3>
+<div class="paragraph">
+<p>Not at present.
+If we were to allow non-aliased tile image variables, then implementations would have to be able to guarantee that those variables never have to 'spill' from tile image.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_5_resolved_enable_disable_raster_order_access"><a class="anchor" href="#_5_resolved_enable_disable_raster_order_access"></a>7.5. 5. RESOLVED: Enable / Disable raster order access</h3>
+<div class="paragraph">
+<p>Some implementations pay a performance cost to guarantee raster order access. We need to give them a way to disable raster order access and add support for barriers to explicitly perform synchronization.</p>
+</div>
+<div class="paragraph">
+<p>Three proposals have been added to the Non-coherent access section in this document. The spec changes currently choose Barrier Proposal A: MemoryBarrier via vkCmdPipelineBarrier2.</p>
+</div>
+<div class="paragraph">
+<p>Vulkan barriers have been difficult for developers to use, so Barrier Proposal C might offer a simpler API.</p>
+</div>
+<div class="paragraph">
+<p>Consensus was to keep things consistent with existing barriers in Vulkan, so Barrier Proposal A was chosen.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_7_resolved_should_this_extension_reuse_optypeimage_or_introduce_a_new_type_for_declaring_tile_images"><a class="anchor" href="#_7_resolved_should_this_extension_reuse_optypeimage_or_introduce_a_new_type_for_declaring_tile_images"></a>7.6. 7. RESOLVED: Should this extension reuse OpTypeImage, or introduce a new type for declaring tile images?</h3>
+<div class="paragraph">
+<p>OpTypeImage is reused with a special Dim for tile images, following what was done for subpass attachments.</p>
+</div>
+<div class="paragraph">
+<p>An alternative would have been to make tile images their own type, and introduce an OpTypeTileImage type.
+That would require less special-casing of OpTypeImage, but comes with higher initial burden in tooling.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_8_resolved_should_color_depth_and_stencil_reads_use_the_same_spir_v_opcode"><a class="anchor" href="#_8_resolved_should_color_depth_and_stencil_reads_use_the_same_spir_v_opcode"></a>7.7. 8. RESOLVED: Should Color, Depth, and Stencil reads use the same SPIR-V opcode?</h3>
+<div class="paragraph">
+<p>No. The extension introduces separate opcodes.</p>
+</div>
+<div class="paragraph">
+<p>Tile based GPUs which guarantee framebuffer residency in tile memory can offer efficient raster order access to color, depth, stencil data with relatively low overhead.
+Some GPU implementations would have a significant performance penalty in raster order access if the implementation cannot determine from the SPIR-V shader whether a specific access is color, depth, or stencil.</p>
+</div>
+<div class="paragraph">
+<p>This design choice is in-line with other API extensions (GL framebuffer fetch and framebuffer fetch depth stencil) and other APIs where depth/stencil access is clearly disambiguated.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_9_resolved_should_depth_and_stencil_read_opcodes_consume_an_image_operand_specifying_the_attachment_or_should_it_be_implicit"><a class="anchor" href="#_9_resolved_should_depth_and_stencil_read_opcodes_consume_an_image_operand_specifying_the_attachment_or_should_it_be_implicit"></a>7.8. 9. RESOLVED: Should Depth and Stencil read opcodes consume an image operand specifying the attachment, or should it be implicit?</h3>
+<div class="paragraph">
+<p>No operand is necessary as there is depth and stencil uniquely identify the attachments unlike with color.</p>
+</div>
+<div class="paragraph">
+<p>The other options considered were:</p>
+</div>
+<div class="olist upperalpha">
+<ol class="upperalpha" type="A">
+<li>
+<p>Allow depth and stencil tile images to be declared as variables. Tile images are defined to map to the color attachment specified via the <code>Location</code> decoration - some equivalent needs to be defined for depth and stencil. Pixel Local Storage like functionality of supporting format reinterpretation is only supported for color attachments, and hence must be disallowed for depth and stencil. There is very little benefit to declaring the depth and stencil variables given these restrictions.</p>
+</li>
+<li>
+<p>Depth and stencil tile images are exposed as built-in variables.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Given the design choice made for issue 8, the alternate options do not add any value.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_10_resolved_should_this_extension_reuse_the_image_dim_subpassdata_or_introduce_a_new_dim"><a class="anchor" href="#_10_resolved_should_this_extension_reuse_the_image_dim_subpassdata_or_introduce_a_new_dim"></a>7.9. 10. RESOLVED: Should this extension reuse the image Dim SubpassData or introduce a new Dim?</h3>
+<div class="paragraph">
+<p>The extension introduces a new Dim.</p>
+</div>
+<div class="paragraph">
+<p>This extension is intended to serve as foundation for further functionality - for example Pixel Local Storage like format reinterpretation, or to define the tile size and allow tile shaders to access any pixel within the tile.
+In SPIR-V, input attachments use images with Dim of SubpassData. We use a new Dim so we can easily distinguish whether an image is an input attachment or a tile image.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_11_resolved_should_this_extension_require_applications_to_create_and_bind_descriptors_for_tile_images"><a class="anchor" href="#_11_resolved_should_this_extension_require_applications_to_create_and_bind_descriptors_for_tile_images"></a>7.10. 11. RESOLVED: Should this extension require applications to create and bind descriptors for tile images?</h3>
+<div class="paragraph">
+<p>No.
+Some GPUs internally require descriptors to be able to access framebuffer data. The input attachments in Vulkan subpasses help these GPU implementations.</p>
+</div>
+<div class="paragraph">
+<p>Other GPUs do not require apps to bind such descriptors. The intent with this extension is to provide functionality roughly in the lines of GL_EXT_shader_framebuffer_fetch, GL_EXT_shader_pixel_local_storage - which do not require apps to manage and bind descriptors.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_12_resolved_what_does_undefined_value_mean_for_tile_image_reads"><a class="anchor" href="#_12_resolved_what_does_undefined_value_mean_for_tile_image_reads"></a>7.11. 12. RESOLVED: What does 'undefined value' mean for tile image reads?</h3>
+<div class="paragraph">
+<p>It simply means that the value has no well-defined meaning to an application. It does <em>not</em> mean that the value is random nor that it could have been leaked from other contexts, processes, or memory other than the framebuffer attachments.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_further_functionality"><a class="anchor" href="#_further_functionality"></a>8. Further Functionality</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_fragment_shading_rate_interactions"><a class="anchor" href="#_fragment_shading_rate_interactions"></a>8.1. Fragment Shading Rate interactions</h3>
+<div class="paragraph">
+<p>With <code>VK_KHR_fragment_shading_rate</code> multi-pixel fragments read some implementation-defined pixel from the input attachments. We could define stronger requirements in this extension.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_allow_non_aliased_tile_image_variables_andor_image_format_redeclaration"><a class="anchor" href="#_allow_non_aliased_tile_image_variables_andor_image_format_redeclaration"></a>8.2. Allow non-aliased Tile Image variables and/or image format redeclaration</h3>
+<div class="paragraph">
+<p>This would provide "Pixel local storage" equivalent functionality.</p>
+</div>
+<div class="paragraph">
+<p>A possible approach for that would be to specify the format as layout parameter - similar to image access:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">layout(r11f_g11f_b10f) tile readonly highp tileImage normal;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tile_image_size_query"><a class="anchor" href="#_tile_image_size_query"></a>8.3. Tile Image size query</h3>
+<div class="paragraph">
+<p>If we were to allow non-aliased Tile Image variables, we would need to expose some limits on tile image size and tile dimensions so that applications can make performance trade-offs on tile size vs storage requirements.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_memoryless_attachments"><a class="anchor" href="#_memoryless_attachments"></a>8.4. Memoryless attachments</h3>
+<div class="paragraph">
+<p>We have lazily allocated images in Vulkan, but they do not guarantee that memory is not allocated.</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Loading Models :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../_/css/site.css">
+    <link rel="stylesheet" href="../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../.."><img class="navbar-item" alt="Vulkan White Label" src="../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="90_FAQ.html">FAQ</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li><a href="08_Loading_models.html">Loading models</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Tutorial/antora/modules/ROOT/pages/08_Loading_models.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Loading Models</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Your program is now ready to render textured 3D meshes, but the current geometry in the <code>vertices</code> and <code>indices</code> arrays is not very interesting yet.
+In this chapter, we&#8217;re going to extend the program to load the vertices and indices from an actual model file to make the graphics card actually do some work.</p>
+</div>
+<div class="paragraph">
+<p>Many graphics API tutorials have the reader write their own OBJ loader in a chapter like this.
+The problem with this is that any remotely interesting 3D application will soon require features that are not supported by this file format, like skeletal animation.
+We <em>will</em> load mesh data from an OBJ model in this chapter, but we&#8217;ll focus more on integrating the mesh data with the program itself rather than the details of loading it from a file.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_library"><a class="anchor" href="#_library"></a>Library</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>We will use the <a href="https://github.com/syoyo/tinyobjloader">tinyobjloader</a> library to load vertices and faces from an OBJ file.
+It&#8217;s fast and it&#8217;s easy to integrate because it&#8217;s a single file library like stb_image.
+This was mentioned in the <a href="02_Development_environment.adoc">Development
+Enviornment</a> chapter and should be part of the dependencies for this portion
+of the tutorial.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_sample_mesh"><a class="anchor" href="#_sample_mesh"></a>Sample mesh</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this chapter, we won&#8217;t be enabling lighting yet, so it helps to use a sample model that has lighting baked into the texture.
+An easy way to find such models is to look for 3D scans on <a href="https://sketchfab.com/">Sketchfab</a>.
+Many of the models on that site are available in OBJ format with a permissive license.</p>
+</div>
+<div class="paragraph">
+<p>For this tutorial, I&#8217;ve decided to go with the <a href="https://sketchfab.com/3d-models/viking-room-a49f1b8e4f5c4ecf9e1fe7d81915ad38">Viking room</a> model by <a href="https://sketchfab.com/nigelgoh">nigelgoh</a> (<a href="https://web.archive.org/web/20200428202538/https://sketchfab.com/3d-models/viking-room-a49f1b8e4f5c4ecf9e1fe7d81915ad38">CC BY 4.0</a>).
+I tweaked the size and orientation of the model to use it as a drop-in replacement for the current geometry:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="_attachments/viking_room.obj" class="xref attachment">viking_room.obj</a></p>
+</li>
+<li>
+<p><a href="_attachments/viking_room.png" class="xref attachment">viking_room.png</a></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Feel free to use your own model, but make sure that it only consists of one material and that is has dimensions of about 1.5 x 1.5 x 1.5 units.
+If it is larger than that, then you&#8217;ll have to change the view matrix.
+Put the model file in a new <code>models</code> directory next to <code>shaders</code> and <code>textures</code>, and put the texture image in the <code>textures</code> directory.</p>
+</div>
+<div class="paragraph">
+<p>Put two new configuration variables in your program to define the model and texture paths:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">constexpr uint32_t WIDTH = 800;
+constexpr uint32_t HEIGHT = 600;
+constexpr uint64_t FenceTimeout = 100000000;
+const std::string MODEL_PATH = "models/viking_room.obj";
+const std::string TEXTURE_PATH = "textures/viking_room.png";</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And update <code>createTextureImage</code> to use this path variable:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">stbi_uc* pixels = stbi_load(TEXTURE_PATH.c_str(), &amp;texWidth, &amp;texHeight, &amp;texChannels, STBI_rgb_alpha);</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_loading_vertices_and_indices"><a class="anchor" href="#_loading_vertices_and_indices"></a>Loading vertices and indices</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>We&#8217;re going to load the vertices and indices from the model file now, so you should remove the global <code>vertices</code> and <code>indices</code> arrays now.
+Replace them with non-const containers as class members:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">std::vector&lt;Vertex&gt; vertices;
+std::vector&lt;uint32_t&gt; indices;
+vk::raii::Buffer vertexBuffer = nullptr;
+vk::raii::DeviceMemory vertexBufferMemory = nullptr;
+vk::raii::Buffer indexBuffer = nullptr;
+vk::raii::DeviceMemory indexBufferMemory = nullptr;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should change the type of the indices from <code>uint16_t</code> to <code>uint32_t</code>, because there are going to be a lot more vertices than 65535.
+Remember to also change the <code>vkCmdBindIndexBuffer</code> parameter:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">commandBuffers[currentFrame]-&gt;bindIndexBuffer( **indexBuffer, 0, vk::IndexType::eUint32 );</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The tinyobjloader library is included in the same way as STB libraries.
+Include the <code>tiny_obj_loader.h</code> file and make sure to define <code>TINYOBJLOADER_IMPLEMENTATION</code> in one source file to include the function bodies and avoid linker errors:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">#define TINYOBJLOADER_IMPLEMENTATION
+#include &lt;tiny_obj_loader.h&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We&#8217;re now going to write a <code>loadModel</code> function that uses this library to populate the <code>vertices</code> and <code>indices</code> containers with the vertex data from the mesh.
+It should be called somewhere before the vertex and index buffers are created:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void initVulkan() {
+    ...
+    loadModel();
+    createVertexBuffer();
+    createIndexBuffer();
+    ...
+}
+
+...
+
+void loadModel() {
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A model is loaded into the library&#8217;s data structures by calling the <code>tinyobj::LoadObj</code> function:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void loadModel() {
+    tinyobj::attrib_t attrib;
+    std::vector&lt;tinyobj::shape_t&gt; shapes;
+    std::vector&lt;tinyobj::material_t&gt; materials;
+    std::string warn, err;
+
+    if (!tinyobj::LoadObj(&amp;attrib, &amp;shapes, &amp;materials, &amp;warn, &amp;err, MODEL_PATH.c_str())) {
+        throw std::runtime_error(warn + err);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>An OBJ file consists of positions, normals, texture coordinates and faces.
+Faces consist of an arbitrary amount of vertices, where each vertex refers to a position, normal and/or texture coordinate by index.
+This makes it possible to not just reuse entire vertices, but also individual attributes.</p>
+</div>
+<div class="paragraph">
+<p>The <code>attrib</code> container holds all of the positions, normals and texture coordinates in its <code>attrib.vertices</code>, <code>attrib.normals</code> and <code>attrib.texcoords</code> vectors.
+The <code>shapes</code> container contains all of the separate objects and their faces.
+Each face consists of an array of vertices, and each vertex contains the indices of the position, normal and texture coordinate attributes.
+OBJ models can also define a material and texture per face, but we will be ignoring those.</p>
+</div>
+<div class="paragraph">
+<p>The <code>err</code> string contains errors and the <code>warn</code> string contains warnings that occurred while loading the file, like a missing material definition.
+Loading only really failed if the <code>LoadObj</code> function returns <code>false</code>.
+As mentioned above, faces in OBJ files can actually contain an arbitrary number of vertices, whereas our application can only render triangles.
+Luckily the <code>LoadObj</code> has an optional parameter to automatically triangulate such faces, which is enabled by default.</p>
+</div>
+<div class="paragraph">
+<p>We&#8217;re going to combine all of the faces in the file into a single model, so just iterate over all of the shapes:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">for (const auto&amp; shape : shapes) {
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The triangulation feature has already made sure that there are three vertices per face, so we can now directly iterate over the vertices and dump them straight into our <code>vertices</code> vector:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">for (const auto&amp; shape : shapes) {
+    for (const auto&amp; index : shape.mesh.indices) {
+        Vertex vertex{};
+
+        vertices.push_back(vertex);
+        indices.push_back(indices.size());
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For simplicity, we will assume that every vertex is unique for now, hence the simple auto-increment indices.
+The <code>index</code> variable is of type <code>tinyobj::index_t</code>, which contains the <code>vertex_index</code>, <code>normal_index</code> and <code>texcoord_index</code> members.
+We need to use these indices to look up the actual vertex attributes in the <code>attrib</code> arrays:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vertex.pos = {
+    attrib.vertices[3 * index.vertex_index + 0],
+    attrib.vertices[3 * index.vertex_index + 1],
+    attrib.vertices[3 * index.vertex_index + 2]
+};
+
+vertex.texCoord = {
+    attrib.texcoords[2 * index.texcoord_index + 0],
+    attrib.texcoords[2 * index.texcoord_index + 1]
+};
+
+vertex.color = {1.0f, 1.0f, 1.0f};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Unfortunately the <code>attrib.vertices</code> array is an array of <code>float</code> values instead of something like <code>glm::vec3</code>, so you need to multiply the index by <code>3</code>.
+Similarly, there are two texture coordinate components per entry.
+The offsets of <code>0</code>, <code>1</code> and <code>2</code> are used to access the X, Y and Z components, or the U and V components in the case of texture coordinates.</p>
+</div>
+<div class="paragraph">
+<p>Run your program now with optimization enabled (e.g.
+<code>Release</code> mode in Visual Studio and with the <code>-O3</code> compiler flag for GCC`).
+This is necessary, because otherwise loading the model will be very slow.
+You should see something like the following:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/inverted_texture_coordinates.png" alt="inverted texture coordinates">
+</div>
+</div>
+<div class="paragraph">
+<p>Great, the geometry looks correct, but what&#8217;s going on with the texture?
+The OBJ format assumes a coordinate system where a vertical coordinate of <code>0</code> means the bottom of the image, however we&#8217;ve uploaded our image into Vulkan in a top to bottom orientation where <code>0</code> means the top of the image.
+Solve this by flipping the vertical component of the texture coordinates:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vertex.texCoord = {
+    attrib.texcoords[2 * index.texcoord_index + 0],
+    1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When you run your program again, you should now see the correct result:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/drawing_model.png" alt="drawing model">
+</div>
+</div>
+<div class="paragraph">
+<p>All that hard work is finally beginning to pay off with a demo like this!</p>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>As the model rotates you may notice that the rear (backside of the walls) looks a bit funny.
+This is normal and is simply because the model is not really designed to be viewed from that side.</p>
+</div>
+</blockquote>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_vertex_deduplication"><a class="anchor" href="#_vertex_deduplication"></a>Vertex deduplication</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Unfortunately, we&#8217;re not really taking advantage of the index buffer yet.
+The <code>vertices</code> vector contains a lot of duplicated vertex data, because many vertices are included in multiple triangles.
+We should keep only the unique vertices and use the index buffer to reuse them whenever they come up.
+A straightforward way to implement this is to use a <code>map</code> or <code>unordered_map</code> to keep track of the unique vertices and respective indices:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">#include &lt;unordered_map&gt;
+
+...
+
+std::unordered_map&lt;Vertex, uint32_t&gt; uniqueVertices{};
+
+for (const auto&amp; shape : shapes) {
+    for (const auto&amp; index : shape.mesh.indices) {
+        Vertex vertex{};
+
+        ...
+
+        if (uniqueVertices.count(vertex) == 0) {
+            uniqueVertices[vertex] = static_cast&lt;uint32_t&gt;(vertices.size());
+            vertices.push_back(vertex);
+        }
+
+        indices.push_back(uniqueVertices[vertex]);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Every time we read a vertex from the OBJ file, we check if we&#8217;ve already seen a vertex with the exact same position and texture coordinates before.
+If not, we add it to <code>vertices</code> and store its index in the <code>uniqueVertices</code> container.
+After that we add the index of the new vertex to <code>indices</code>.
+If we&#8217;ve seen the exact same vertex before, then we look up its index in <code>uniqueVertices</code> and store that index in <code>indices</code>.</p>
+</div>
+<div class="paragraph">
+<p>The program will fail to compile right now, because using a user-defined type like our <code>Vertex</code> struct as key in a hash table requires us to implement two functions: equality test and hash calculation.
+The former is easy to implement by overriding the <code>==</code> operator in the <code>Vertex</code> struct:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">bool operator==(const Vertex&amp; other) const {
+    return pos == other.pos &amp;&amp; color == other.color &amp;&amp; texCoord == other.texCoord;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A hash function for <code>Vertex</code> is implemented by specifying a template specialization for <code>std::hash&lt;T&gt;</code>.
+Hash functions are a complex topic, but <a href="https://en.cppreference.com/w/cpp/utility/hash">cppreference.com recommends</a> the following approach combining the fields of a struct to create a decent quality hash function:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">namespace std {
+    template&lt;&gt; struct hash&lt;Vertex&gt; {
+        size_t operator()(Vertex const&amp; vertex) const {
+            return ((hash&lt;glm::vec3&gt;()(vertex.pos) ^
+                   (hash&lt;glm::vec3&gt;()(vertex.color) &lt;&lt; 1)) &gt;&gt; 1) ^
+                   (hash&lt;glm::vec2&gt;()(vertex.texCoord) &lt;&lt; 1);
+        }
+    };
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This code should be placed outside the <code>Vertex</code> struct.
+The hash functions for the GLM types need to be included using the following header:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">#define GLM_ENABLE_EXPERIMENTAL
+#include &lt;glm/gtx/hash.hpp&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The hash functions are defined in the <code>gtx</code> folder, which means that it is technically still an experimental extension to GLM.
+Therefore, you need to define <code>GLM_ENABLE_EXPERIMENTAL</code> to use it.
+It means that the API could change with a new version of GLM in the future, but in practice the API is very stable.</p>
+</div>
+<div class="paragraph">
+<p>You should now be able to successfully compile and run your program.
+If you check the size of <code>vertices</code>, then you&#8217;ll see that it has shrunk down from 1,500,000 to 265,645!
+That means that each vertex is reused in an average number of ~6 triangles.
+This definitely saves us a lot of GPU memory.</p>
+</div>
+<div class="paragraph">
+<p>In the <a href="09_Generating_Mipmaps.html" class="xref page">next chapter,</a> we&#8217;ll learn about a technique to improve texture rendering.</p>
+</div>
+<div class="paragraph">
+<p><a href="_attachments/28_model_loading.cpp">C&#43;&#43; code</a> /
+<a href="_attachments/27_shader_depth.slang">slang shader</a> /
+<a href="_attachments/27_shader_depth.vert">GLSL Vertex shader</a> /
+<a href="_attachments/27_shader_depth.frag">GLSL Fragment shader</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+<script src="../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../.." data-snippet-length="100" data-stylesheet="../../_/css/search.css"></script>
+<script async src="../../search-index.js"></script>
+<script async src="../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

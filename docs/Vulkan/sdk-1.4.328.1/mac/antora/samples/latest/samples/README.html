@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Samples overview :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:samples" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="samples" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../README.html">Vulkan Samples</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="README.html">Samples overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="vulkan_basics.html">Vulkan basics</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../shaders/README.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../framework/README.html">Sample framework</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../components/README.html">Framework components</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="api/README.html">Api usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="api/compute_nbody/README.html">Compute N-body</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="api/hpp_compute_nbody/README.html">Compute N-body (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="api/dynamic_uniform_buffers/README.html">Dynamic uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="api/hpp_dynamic_uniform_buffers/README.html">Dynamic Uniform Buffers (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="api/hdr/README.html">HDR</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="api/hpp_hdr/README.html">HDR (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="api/hello_triangle/README.html">Hello Triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="api/hpp_hello_triangle/README.html">Hello Triangle (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="api/hello_triangle_1_3/README.html">Hello Triangle 1.3</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="api/hpp_hello_triangle_1_3/README.html">Hello Triangle 1.3(Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="api/instancing/README.html">Instancing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="api/hpp_instancing/README.html">Instancing (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="api/separate_image_sampler/README.html">Separate image sampler</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="api/hpp_separate_image_sampler/README.html">Separate image sampler (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="api/terrain_tessellation/README.html">Terrain tessellation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="api/hpp_terrain_tessellation/README.html">Terrain tessellation (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="api/texture_loading/README.html">Texture loading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="api/hpp_texture_loading/README.html">Texture loading (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="api/texture_mipmap_generation/README.html">Texture mipmap generation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="api/hpp_texture_mipmap_generation/README.html">Texture mipmap generation (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="api/timestamp_queries/README.html">Timestamp queries</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="api/hpp_timestamp_queries/README.html">Timestamp queries (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="api/oit_linked_lists/README.html">OIT linked lists</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="api/hpp_oit_linked_lists/README.html">OIT linked lists (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="api/oit_depth_peeling/README.html">OIT depth peeling</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="api/hpp_oit_depth_peeling/README.html">OIT depth peeling (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="extensions/README.html">Extension usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/buffer_device_address/README.html">Buffer device address</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/calibrated_timestamps/README.html">Calibrated timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/conditional_rendering/README.html">Conditional rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/conservative_rasterization/README.html">Conservative rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/debug_utils/README.html">Debug utils</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/descriptor_buffer_basic/README.html">Descriptor buffer basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/descriptor_indexing/README.html">Descriptor indexing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/dynamic_line_rasterization/README.html">Dynamic line rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/dynamic_primitive_clipping/README.html">Dynamic primitive clipping</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/dynamic_rendering/README.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/dynamic_rendering_local_read/README.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/extended_dynamic_state2/README.html">Extended dynamic state2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/fragment_shader_barycentric/README.html">Fragment shader barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/fragment_shading_rate/README.html">Fragment shading rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/fragment_shading_rate_dynamic/README.html">Fragment shading rate dynamic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/full_screen_exclusive/README.html">Full screen exclusive</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/graphics_pipeline_library/README.html">Graphics pipeline library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/gshader_to_mshader/README.html">Geometry shader to mesh shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/host_image_copy/README.html">Host image copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/logic_op_dynamic_state/README.html">Logic op dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/memory_budget/README.html">Memory budget</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/mesh_shader_culling/README.html">Mesh shader culling</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="extensions/mesh_shading/README.html">Mesh shading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="extensions/hpp_mesh_shading/README.html">Mesh shading (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/open_cl_interop/README.html">OpenCL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/open_cl_interop_arm/README.html">OpenCL interop (Arm)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/open_gl_interop/README.html">OpenGL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/portability/README.html">Portability</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="extensions/push_descriptors/README.html">Push descriptors</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="extensions/hpp_push_descriptors/README.html">Push descriptors (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/ray_tracing_basic/README.html">Raytracing basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/ray_tracing_extended/README.html">Raytracing extended</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/ray_queries/README.html">Ray queries</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/ray_tracing_reflection/README.html">Ray tracing reflection</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/ray_tracing_position_fetch/README.html">Ray tracing position fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/shader_object/README.html">Shader Object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/shader_debugprintf/README.html">Shader Debug Printf</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/sparse_image/README.html">Sparse Image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/synchronization_2/README.html">Synchronization 2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/timeline_semaphore/README.html">Timeline semaphore</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/vertex_dynamic_state/README.html">Vertex dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/dynamic_multisample_rasterization/README.html">Dynamic multisample rasterization</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="performance/README.html">Performance samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="performance/16bit_arithmetic/README.html">16bit arithmetic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="performance/16bit_storage_input_output/README.html">16bit storage input output</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="performance/afbc/README.html">AFBC</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="performance/async_compute/README.html">Async compute</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="performance/command_buffer_usage/README.html">Command buffer usage</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="performance/constant_data/README.html">Constant data</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="performance/descriptor_management/README.html">Descriptor management</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="performance/image_compression_control/README.html">Image compression control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="performance/layout_transitions/README.html">Layout transitions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="performance/msaa/README.html">MSAA</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="performance/multithreading_render_passes/README.html">Multithreading render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="performance/multi_draw_indirect/README.html">Multi draw indirect</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="performance/pipeline_barriers/README.html">Pipeline barriers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="performance/pipeline_cache/README.html">Pipeline cache</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="performance/hpp_pipeline_cache/README.html">Pipeline cache (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="performance/render_passes/README.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="performance/specialization_constants/README.html">Specialization constants</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="performance/subpasses/README.html">Subpasses</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="performance/surface_rotation/README.html">Surface rotation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="performance/swapchain_images/README.html">Swapchain images</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="performance/hpp_swapchain_images/README.html">Swapchain images (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="performance/texture_compression_basisu/README.html">Texture compression basisu</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="performance/texture_compression_comparison/README.html">Texture compression comparison</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="performance/hpp_texture_compression_comparison/README.html">Texture compression comparison (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="performance/wait_idle/README.html">Wait idle</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="tooling/README.html">Tooling samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="tooling/profiles/README.html">Profiles</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="general/README.html">General samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="general/mobile_nerf/README.html">Mobile NeRF</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="general/mobile_nerf_rayquery/README.html">Mobile NeRF Ray Query</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../docs/README.html">General documentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../docs/build.html">Build guide</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../docs/memory_limits.html">Memory limits</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../docs/misc.html">Miscellaneous</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Samples</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../README.html">Vulkan Samples</a></li>
+    <li><a href="README.html">Samples overview</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Samples/antora/modules/ROOT/pages/samples/README.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Samples overview</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_introduction">Introduction</a></li>
+<li><a href="#performance-samples">Performance samples</a></li>
+<li><a href="#api-samples">API samples</a></li>
+<li><a href="#extension-samples">Extension samples</a></li>
+<li><a href="#tooling-samples">Tooling Samples</a></li>
+</ul>
+</div>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This readme lists all Vulkan samples currently available in this repository.
+They are grouped into multiple categories.
+Many samples come with a tutorial, which can be found in their respective folders.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="performance-samples"><a class="anchor" href="#performance-samples"></a>Performance samples</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The goal of these samples is to demonstrate how to use certain features and functions to achieve optimal performance.
+To visualize this, they also include real-time profiling information.</p>
+</div>
+<div class="sect2">
+<h3 id="_afbc"><a class="anchor" href="#_afbc"></a><a href="performance/afbc/README.html" class="xref page">AFBC</a></h3>
+<div class="paragraph">
+<p>AFBC (Arm Frame Buffer Compression) is a real-time lossless compression algorithm found in Arm Mali GPUs, designed to tackle the ever-growing demand for higher resolution graphics.
+This format is applied to the framebuffers that are to be written to the GPU.
+This technology can offer bandwidth reductions of <a href="https://developer.arm.com/Architectures/Arm%20Frame%20Buffer%20Compression">up to 50%</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_command_buffer_usage"><a class="anchor" href="#_command_buffer_usage"></a><a href="performance/command_buffer_usage/README.html" class="xref page">Command buffer usage</a></h3>
+<div class="paragraph">
+<p>This sample demonstrates how to use and manage secondary command buffers, and how to record them concurrently.
+Implementing multi-threaded recording of draw calls can help reduce CPU frame time.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_constant_data"><a class="anchor" href="#_constant_data"></a><a href="performance/constant_data/README.html" class="xref page">Constant data</a></h3>
+<div class="paragraph">
+<p>The Vulkan API exposes a few different ways in which we can send uniform data into our shaders.
+There are enough methods that it raises the question "Which one is fastest?", and more often than not the answer is "It depends".
+The main issue for developers is that the fastest methods may differ between the various vendors, so often there is no "one size fits all" solution.
+This sample aims to highlight this issue, and help move the Vulkan ecosystem to a point where we are better equipped to solve this for developers.
+This is done by having an interactive way to toggle different constant data methods that the Vulkan API expose to us.
+This can then be run on a platform of the developers choice to see the performance implications that each of them bring.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_descriptor_management"><a class="anchor" href="#_descriptor_management"></a><a href="performance/descriptor_management/README.html" class="xref page">Descriptor management</a></h3>
+<div class="paragraph">
+<p>An application using Vulkan will have to implement a system to manage descriptor pools and sets.
+The most straightforward and flexible approach is to re-create them for each frame, but doing so might be very inefficient, especially on mobile platforms.
+The problem of descriptor management is intertwined with that of buffer management, that is choosing how to pack data in <code>VkBuffer</code> objects.
+This sample will explore a few options to improve both descriptor and buffer management.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hpp_pipeline_cache"><a class="anchor" href="#_hpp_pipeline_cache"></a><a href="performance/hpp_pipeline_cache/README.html" class="xref page">HPP Pipeline cache</a></h3>
+<div class="paragraph">
+<p>A transcoded version of the Performance sample <a href="performance/pipeline_cache/README.html" class="xref page">Pipeline cache</a> that illustrates the usage of the C&#43;&#43; bindings of vulkan provided by vulkan.hpp.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hpp_swapchain_images"><a class="anchor" href="#_hpp_swapchain_images"></a><a href="performance/hpp_swapchain_images/README.html" class="xref page">HPP Swapchain images</a></h3>
+<div class="paragraph">
+<p>A transcoded version of the Performance sample<a href="performance/swapchain_images/README.html" class="xref page">Swapchain images</a> that illustrates the usage of the C&#43;&#43; bindings of vulkan provided by vulkan.hpp.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hpp_texture_compression_comparison"><a class="anchor" href="#_hpp_texture_compression_comparison"></a><a href="performance/hpp_texture_compression_comparison/README.html" class="xref page">HPP Texture compression comparison</a></h3>
+<div class="paragraph">
+<p>A transcoded version of the Performance sample <a href="performance/texture_compression_comparison/README.html" class="xref page">Texture compression comparison</a> that illustrates the usage of the C&#43;&#43; bindings of vulkan provided by vulkan.hpp.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_image_compression_control"><a class="anchor" href="#_image_compression_control"></a><a href="performance/image_compression_control/README.html" class="xref page">Image compression control</a></h3>
+<div class="paragraph">
+<p>This sample shows how to use the extensions <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_image_compression_control"><code>VK_EXT_image_compression_control</code></a> and <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_image_compression_control_swapchain"><code>VK_EXT_image_compression_control_swapchain</code></a> to select between different levels of image compression.
+The UI shows the impact compression has on image size and bandwidth, illustrating the benefits of fixed-rate (visually lossless) compression.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_layout_transitions"><a class="anchor" href="#_layout_transitions"></a><a href="performance/layout_transitions/README.html" class="xref page">Layout transitions</a></h3>
+<div class="paragraph">
+<p>Vulkan requires the application to manage image layouts, so that all render pass attachments are in the correct layout when the render pass begins.
+This is usually done using pipeline barriers or the <code>initialLayout</code> and <code>finalLayout</code> parameters of the render pass.
+If the rendering pipeline is complex, transitioning each image to its correct layout is not trivial, as it requires some sort of state tracking.
+If previous image contents are not needed, there is an easy way out, that is setting <code>oldLayout</code>/<code>initialLayout</code> to <code>VK_IMAGE_LAYOUT_UNDEFINED</code>.
+While this is functionally correct, it can have performance implications as it may prevent the GPU from performing some optimizations.
+This sample will cover an example of such optimizations and how to avoid the performance overhead from using sub-optimal layouts.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_msaa"><a class="anchor" href="#_msaa"></a><a href="performance/msaa/README.html" class="xref page">MSAA</a></h3>
+<div class="paragraph">
+<p>Aliasing is the result of under-sampling a signal.
+In graphics this means computing the color of a pixel at a resolution that results in artifacts, commonly jaggies at model edges.
+Multisample anti-aliasing (MSAA) is an efficient technique that reduces pixel sampling error.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_multi_threaded_recording_with_multiple_render_passes"><a class="anchor" href="#_multi_threaded_recording_with_multiple_render_passes"></a><a href="performance/multithreading_render_passes/README.html" class="xref page">Multi-threaded recording with multiple render passes</a></h3>
+<div class="paragraph">
+<p>Ideally you render all stages of your frame in a single render pass.
+However, in some cases different stages can&#8217;t be performed in the same render pass.
+This sample shows how multi-threading can help to boost performance when using multiple render passes to render a single frame.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pipeline_barriers"><a class="anchor" href="#_pipeline_barriers"></a><a href="performance/pipeline_barriers/README.html" class="xref page">Pipeline barriers</a></h3>
+<div class="paragraph">
+<p>Vulkan gives the application significant control over memory access for resources.
+Pipeline barriers are particularly convenient for synchronizing memory accesses between render passes.
+Having barriers is required whenever there is a memory dependency - the application should not assume that render passes are executed in order.
+However, having too many or too strict barriers can affect the application&#8217;s performance.
+This sample will cover how to set up pipeline barriers efficiently, with a focus on pipeline stages.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pipeline_cache"><a class="anchor" href="#_pipeline_cache"></a><a href="performance/pipeline_cache/README.html" class="xref page">Pipeline cache</a></h3>
+<div class="paragraph">
+<p>Vulkan gives applications the ability to save internal representation of a pipeline (graphics or compute) to enable recreating the same pipeline later.
+This sample will look in detail at the implementation and performance implications of the pipeline creation, caching and management.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_render_passes"><a class="anchor" href="#_render_passes"></a><a href="performance/render_passes/README.html" class="xref page">Render passes</a></h3>
+<div class="paragraph">
+<p>Vulkan render-passes use attachments to describe input and output render targets.
+This sample shows how loading and storing attachments might affect performance on mobile.
+During the creation of a render-pass, you can specify various color attachments and a depth-stencil attachment.
+Each of those is described by a <a href="https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkAttachmentDescription.html"><code>VkAttachmentDescription</code></a> struct, which contains attributes to specify the <a href="https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkAttachmentLoadOp.html">load operation</a> (<code>loadOp</code>) and the <a href="https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkAttachmentStoreOp.html">store operation</a> (<code>storeOp</code>).
+This sample lets you choose between different combinations of these operations at runtime.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_specialization_constants"><a class="anchor" href="#_specialization_constants"></a><a href="performance/specialization_constants/README.html" class="xref page">Specialization constants</a></h3>
+<div class="paragraph">
+<p>Vulkan exposes a number of methods for setting values within shader code during run-time, this includes UBOs and Specialization Constants.
+This sample compares these two methods and the performance impact of them.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_sub_passes"><a class="anchor" href="#_sub_passes"></a><a href="performance/subpasses/README.html" class="xref page">Sub passes</a></h3>
+<div class="paragraph">
+<p>Vulkan introduces the concept of <em>subpasses</em> to subdivide a single <a href="performance/render_passes/README.html" class="xref page">render pass</a> into separate logical phases.
+The benefit of using subpasses over multiple render passes is that a GPU is able to perform various optimizations.
+Tile-based renderers, for example, can take advantage of tile memory, which being on chip is decisively faster than external memory, potentially saving a considerable amount of bandwidth.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_surface_rotation"><a class="anchor" href="#_surface_rotation"></a><a href="performance/surface_rotation/README.html" class="xref page">Surface rotation</a></h3>
+<div class="paragraph">
+<p>Mobile devices can be rotated, therefore the logical orientation of the application window and the physical orientation of the display may not match.
+Applications then need to be able to operate in two modes: portrait and landscape.
+The difference between these two modes can be simplified to just a change in resolution.
+However, some display subsystems always work on the "native" (or "physical") orientation of the display panel.
+Since the device has been rotated, to achieve the desired effect the application output must also rotate.
+In this sample we focus on the rotation step, and analyze the performance implications of implementing it correctly with Vulkan.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_swapchain_images"><a class="anchor" href="#_swapchain_images"></a><a href="performance/swapchain_images/README.html" class="xref page">Swapchain images</a></h3>
+<div class="paragraph">
+<p>Vulkan gives the application some significant control over the number of swapchain images to be created.
+This sample analyzes the available options and their performance implications.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_wait_idle"><a class="anchor" href="#_wait_idle"></a><a href="performance/wait_idle/README.html" class="xref page">Wait idle</a></h3>
+<div class="paragraph">
+<p>This sample compares two methods for synchronizing between the CPU and GPU, <code>WaitIdle</code> and <code>Fences</code> demonstrating which one is the best option in order to avoid stalling.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_16_bit_storage_inputoutput"><a class="anchor" href="#_16_bit_storage_inputoutput"></a><a href="performance/16bit_storage_input_output/README.html" class="xref page">16-bit storage InputOutput</a></h3>
+<div class="paragraph">
+<p>This sample compares bandwidth consumption when using FP32 varyings compared to using FP16 varyings with <code>VK_KHR_16bit_storage</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_16_bit_arithmetic"><a class="anchor" href="#_16_bit_arithmetic"></a><a href="performance/16bit_arithmetic/README.html" class="xref page">16-bit arithmetic</a></h3>
+<div class="paragraph">
+<p>This sample compares arithmetic throughput for 32-bit arithmetic operations and 16-bit arithmetic.
+The sample also shows how to enable 16-bit storage for SSBOs and push constants.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_async_compute"><a class="anchor" href="#_async_compute"></a><a href="performance/async_compute/README.html" class="xref page">Async compute</a></h3>
+<div class="paragraph">
+<p>This sample demonstrates using multiple Vulkan queues to get better hardware utilization with compute post-processing workloads.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_basis_universal_supercompressed_gpu_textures"><a class="anchor" href="#_basis_universal_supercompressed_gpu_textures"></a><a href="performance/texture_compression_basisu/README.html" class="xref page">Basis Universal supercompressed GPU textures</a></h3>
+<div class="paragraph">
+<p>This sample demonstrates how to use Basis universal supercompressed GPU textures in a Vulkan application.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_gpu_rendering_and_multi_draw_indirect"><a class="anchor" href="#_gpu_rendering_and_multi_draw_indirect"></a><a href="performance/multi_draw_indirect/README.html" class="xref page">GPU Rendering and Multi-Draw Indirect</a></h3>
+<div class="paragraph">
+<p>This sample demonstrates how to reduce CPU usage by offloading draw call generation and frustum culling to the GPU.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_texture_compression_comparison"><a class="anchor" href="#_texture_compression_comparison"></a><a href="performance/texture_compression_comparison/README.html" class="xref page">Texture compression comparison</a></h3>
+<div class="paragraph">
+<p>This sample demonstrates how to use different types of compressed GPU textures in a Vulkan application, and shows  the timing benefits of each.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="api-samples"><a class="anchor" href="#api-samples"></a>API samples</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The goal of these samples is to demonstrate how to use a given Vulkan feature at the API level with as little abstraction as possible.</p>
+</div>
+<div class="sect2">
+<h3 id="_compute_shader_n_body_simulation"><a class="anchor" href="#_compute_shader_n_body_simulation"></a><a href="api/compute_nbody/README.html" class="xref page">Compute shader N-Body simulation</a></h3>
+<div class="paragraph">
+<p>Compute shader example that uses two passes and shared compute shader memory for simulating a N-Body particle system.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dynamic_uniform_buffers"><a class="anchor" href="#_dynamic_uniform_buffers"></a><a href="api/dynamic_uniform_buffers/README.html" class="xref page">Dynamic Uniform buffers</a></h3>
+<div class="paragraph">
+<p>Dynamic uniform buffers are used for rendering multiple objects with separate matrices stored in a single uniform buffer object, that are addressed dynamically.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_high_dynamic_range"><a class="anchor" href="#_high_dynamic_range"></a><a href="api/hdr/README.html" class="xref page">High dynamic range</a></h3>
+<div class="paragraph">
+<p>Implements a high dynamic range rendering pipeline using 16/32 bit floating point precision for all calculations.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hello_triangle"><a class="anchor" href="#_hello_triangle"></a><a href="api/hello_triangle/README.html" class="xref page">Hello Triangle</a></h3>
+<div class="paragraph">
+<p>A self-contained (minimal use of framework) sample that illustrates the rendering of a triangle using unextended Vulkan 1.1.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hello_triangle_1_3"><a class="anchor" href="#_hello_triangle_1_3"></a><a href="api/hello_triangle_1_3/README.html" class="xref page">Hello Triangle 1.3</a></h3>
+<div class="paragraph">
+<p>A self-contained (minimal use of framework) sample that illustrates the rendering of a triangle using Vulkan 1.3 features.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hpp_compute_shader_n_body_simulation"><a class="anchor" href="#_hpp_compute_shader_n_body_simulation"></a><a href="api/hpp_compute_nbody/README.html" class="xref page">HPP Compute shader N-Body simulation</a></h3>
+<div class="paragraph">
+<p>A transcoded version of the API sample <a href="api/compute_nbody/README.html" class="xref page">Compute N-Body</a> that illustrates the usage of the C&#43;&#43; bindings of Vulkan provided by Vulkan-Hpp.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hpp_dynamic_uniform_buffers"><a class="anchor" href="#_hpp_dynamic_uniform_buffers"></a><a href="api/hpp_dynamic_uniform_buffers/README.html" class="xref page">HPP Dynamic Uniform Buffers</a></h3>
+<div class="paragraph">
+<p>A transcoded version of the API sample <a href="api/dynamic_uniform_buffers/README.html" class="xref page">Dynamic Uniform buffers</a> that illustrates the usage of the C&#43;&#43; bindings of Vulkan provided by Vulkan-Hpp.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hpp_high_dynamic_range"><a class="anchor" href="#_hpp_high_dynamic_range"></a><a href="api/hpp_hdr/README.html" class="xref page">HPP High dynamic range</a></h3>
+<div class="paragraph">
+<p>A transcoded version of the API sample <a href="api/hdr/README.html" class="xref page">High dynamic range</a> that illustrates the usage of the C&#43;&#43; bindings of Vulkan provided by Vulkan-Hpp.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hpp_hello_triangle"><a class="anchor" href="#_hpp_hello_triangle"></a><a href="api/hpp_hello_triangle/README.html" class="xref page">HPP Hello Triangle</a></h3>
+<div class="paragraph">
+<p>A transcoded version of the API sample <a href="api/hello_triangle/README.html" class="xref page">Hello Triangle</a> that illustrates the usage of the C&#43;&#43; bindings of Vulkan provided by Vulkan-Hpp.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hpp_hello_triangle_1_3"><a class="anchor" href="#_hpp_hello_triangle_1_3"></a><a href="api/hpp_hello_triangle_1_3/README.html" class="xref page">HPP Hello Triangle 1.3</a></h3>
+<div class="paragraph">
+<p>A transcoded version of the API sample <a href="api/hello_triangle_1_3/README.html" class="xref page">Hello Triangle 1.3</a> that illustrates the usage of the C&#43;&#43; bindings of Vulkan provided by Vulkan-Hpp.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hpp_instancing"><a class="anchor" href="#_hpp_instancing"></a><a href="api/hpp_instancing/README.html" class="xref page">HPP Instancing</a></h3>
+<div class="paragraph">
+<p>A transcoded version of the API sample <a href="api/instancing/README.html" class="xref page">Instancing</a> that illustrates the usage of the C&#43;&#43; bindings of Vulkan provided by Vulkan-Hpp.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hpp_oit_depth_peeling"><a class="anchor" href="#_hpp_oit_depth_peeling"></a><a href="api/hpp_oit_depth_peeling/README.html" class="xref page">HPP OIT Depth Peeling</a></h3>
+<div class="paragraph">
+<p>A transcoded version of the API sample <a href="api/oit_depth_peeling/README.html" class="xref page">OIT Depth Peeling</a> that illustrates the usage of the C&#43;&#43; bindings of Vulkan provided by Vulkan-Hpp.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hpp_oit_linked_lists"><a class="anchor" href="#_hpp_oit_linked_lists"></a><a href="api/hpp_oit_linked_lists/README.html" class="xref page">HPP OIT Linked Lists</a></h3>
+<div class="paragraph">
+<p>A transcoded version of the API sample <a href="api/oit_linked_lists/README.html" class="xref page">OIT Linked Lists</a> that illustrates the usage of the C&#43;&#43; bindings of Vulkan provided by Vulkan-Hpp.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hpp_separate_image_sampler"><a class="anchor" href="#_hpp_separate_image_sampler"></a><a href="api/hpp_separate_image_sampler/README.html" class="xref page">HPP Separate image sampler</a></h3>
+<div class="paragraph">
+<p>A transcoded version of the API sample <a href="api/separate_image_sampler/README.html" class="xref page">Separate image sampler</a> that illustrates the usage of the C&#43;&#43; bindings of vulkan provided by Vulkan-Hpp.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hpp_terrain_tessellation"><a class="anchor" href="#_hpp_terrain_tessellation"></a><a href="api/hpp_terrain_tessellation/README.html" class="xref page">HPP Terrain Tessellation</a></h3>
+<div class="paragraph">
+<p>A transcoded version of the API sample <a href="api/terrain_tessellation/README.html" class="xref page">Terrain Tessellation</a> that illustrates the usage of the C&#43;&#43; bindings of vulkan provided by Vulkan-Hpp.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hpp_texture_loading"><a class="anchor" href="#_hpp_texture_loading"></a><a href="api/hpp_texture_loading/README.html" class="xref page">HPP Texture Loading</a></h3>
+<div class="paragraph">
+<p>A transcoded version of the API sample <a href="api/texture_loading/README.html" class="xref page">Texture loading</a> that illustrates the usage of the C&#43;&#43; bindings of vulkan provided by Vulkan-Hpp.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hpp_texture_run_time_mip_map_generation"><a class="anchor" href="#_hpp_texture_run_time_mip_map_generation"></a><a href="api/hpp_texture_mipmap_generation/README.html" class="xref page">HPP Texture run-time mip-map generation</a></h3>
+<div class="paragraph">
+<p>A transcoded version of the API sample <a href="api/texture_mipmap_generation/README.html" class="xref page">Texture run-time mip-map generation</a> that illustrates the usage of the C&#43;&#43; bindings of vulkan provided by Vulkan-Hpp.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hpp_timestamp_queries"><a class="anchor" href="#_hpp_timestamp_queries"></a><a href="api/hpp_timestamp_queries/README.html" class="xref page">HPP Timestamp queries</a></h3>
+<div class="paragraph">
+<p>A transcoded version of the API sample<a href="api/timestamp_queries/README.html" class="xref page">Timestamp queries</a> that illustrates the usage of the C&#43;&#43; bindings of vulkan provided by Vulkan-Hpp.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_instancing"><a class="anchor" href="#_instancing"></a><a href="api/instancing/README.html" class="xref page">Instancing</a></h3>
+<div class="paragraph">
+<p>Uses the instancing feature for rendering many instances of the same mesh from a single vertex buffer with variable parameters and textures.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_separate_image_sampler"><a class="anchor" href="#_separate_image_sampler"></a><a href="api/separate_image_sampler/README.html" class="xref page">Separate image sampler</a></h3>
+<div class="paragraph">
+<p>Separate image and samplers, both in the application and the shaders.
+The sample demonstrates how to use different samplers for the same image without the need to recreate descriptors.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_terrain_tessellation"><a class="anchor" href="#_terrain_tessellation"></a><a href="api/terrain_tessellation/README.html" class="xref page">Terrain Tessellation</a></h3>
+<div class="paragraph">
+<p>Uses a tessellation shader for rendering a terrain with dynamic level-of-detail and frustum culling.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_texture_loading"><a class="anchor" href="#_texture_loading"></a><a href="api/texture_loading/README.html" class="xref page">Texture loading</a></h3>
+<div class="paragraph">
+<p>Loading and rendering of a 2D texture map from a file.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_texture_run_time_mip_map_generation"><a class="anchor" href="#_texture_run_time_mip_map_generation"></a><a href="api/texture_mipmap_generation/README.html" class="xref page">Texture run-time mip-map generation</a></h3>
+<div class="paragraph">
+<p>Generates a complete mip-chain for a texture at runtime instead of loading it from a file.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_timestamp_queries"><a class="anchor" href="#_timestamp_queries"></a><a href="api/timestamp_queries/README.html" class="xref page">Timestamp queries</a></h3>
+<div class="paragraph">
+<p>Using timestamp queries for profiling GPU workloads.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_swapchain_recreation"><a class="anchor" href="#_swapchain_recreation"></a><a href="api/swapchain_recreation/README.html" class="xref page">Swapchain recreation</a></h3>
+<div class="paragraph">
+<p>A sample that implements best practices in handling swapchain recreation, for example due to window resizing or present mode changes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_order_independent_transparency_with_per_pixel_ordered_linked_lists"><a class="anchor" href="#_order_independent_transparency_with_per_pixel_ordered_linked_lists"></a><a href="api/oit_linked_lists/README.html" class="xref page">Order-independent transparency with per-pixel ordered linked lists</a></h3>
+<div class="paragraph">
+<p>A sample that implements an order-independent transparency algorithm using per-pixel ordered linked lists.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_order_independent_transparency_with_depth_peeling"><a class="anchor" href="#_order_independent_transparency_with_depth_peeling"></a><a href="api/oit_depth_peeling/README.html" class="xref page">Order-independent transparency with depth peeling</a></h3>
+<div class="paragraph">
+<p>A sample that implements order-independent transparency with depth peeling.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="extension-samples"><a class="anchor" href="#extension-samples"></a>Extension samples</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The goal of these samples is to demonstrate how to use a particular Vulkan extension at the API level with as little abstraction as possible.</p>
+</div>
+<div class="sect2">
+<h3 id="_conservative_rasterization"><a class="anchor" href="#_conservative_rasterization"></a><a href="extensions/conservative_rasterization/README.html" class="xref page">Conservative Rasterization</a></h3>
+<div class="paragraph">
+<p><strong>Extension</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_EXT_conservative_rasterization"><code>VK_EXT_conservative_rasterization</code></a></p>
+</div>
+<div class="paragraph">
+<p>Uses conservative rasterization to change the way fragments are generated.
+Enables overestimation to generate fragments for every pixel touched instead of only pixels that are fully covered.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dynamic_rendering"><a class="anchor" href="#_dynamic_rendering"></a><a href="extensions/dynamic_rendering/README.html" class="xref page">Dynamic Rendering</a></h3>
+<div class="paragraph">
+<p><strong>Extension</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_KHR_dynamic_rendering"><code>VK_KHR_dynamic_rendering</code></a></p>
+</div>
+<div class="paragraph">
+<p>Demonstrates how to use Dynamic Rendering.
+Read the blog post here for discussion: (<a href="https://www.khronos.org/blog/streamlining-render-passes" class="bare">https://www.khronos.org/blog/streamlining-render-passes</a>)</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dynamic_rendering_local_read"><a class="anchor" href="#_dynamic_rendering_local_read"></a><a href="extensions/dynamic_rendering_local_read/README.html" class="xref page">Dynamic Rendering local read</a></h3>
+<div class="paragraph">
+<p><strong>Extension</strong>: <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#VK_KHR_dynamic_rendering_local_read"><code>VK_KHR_dynamic_rendering_local_read</code></a></p>
+</div>
+<div class="paragraph">
+<p>Demonstrates how to use Dynamic Rendering with local reads to fully replace render passses with multiple subpasses.
+See this <a href="https://www.khronos.org/blog/streamlining-subpasses">this blogpost</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_push_descriptors"><a class="anchor" href="#_push_descriptors"></a><a href="extensions/push_descriptors/README.html" class="xref page">Push Descriptors</a></h3>
+<div class="paragraph">
+<p><strong>Extension</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_KHR_push_descriptor"><code>VK_KHR_push_descriptor</code></a></p>
+</div>
+<div class="paragraph">
+<p>Push descriptors apply the push constants concept to descriptor sets.
+Instead of creating per-object descriptor sets, this example passes descriptors at command buffer creation time.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hpp_push_descriptors"><a class="anchor" href="#_hpp_push_descriptors"></a><a href="extensions/hpp_push_descriptors/README.html" class="xref page">HPP Push Descriptors</a></h3>
+<div class="paragraph">
+<p>A transcoded version of the Extensions sample <a href="extensions/push_descriptors/README.html" class="xref page">Push Descriptors</a> that illustrates the usage of the C&#43;&#43; bindings of vulkan provided by Vulkan-Hpp.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_debug_utilities"><a class="anchor" href="#_debug_utilities"></a><a href="extensions/debug_utils/README.html" class="xref page">Debug Utilities</a></h3>
+<div class="paragraph">
+<p><strong>Extension</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_EXT_debug_utils"><code>VK_EXT_debug_utils</code></a></p>
+</div>
+<div class="paragraph">
+<p>Uses the debug utilities extension to name and group Vulkan objects (command buffers, images, etc.).
+This information makes debugging in tools like RenderDoc significantly easier.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_memory_budget"><a class="anchor" href="#_memory_budget"></a><a href="extensions/memory_budget/README.html" class="xref page">Memory Budget</a></h3>
+<div class="paragraph">
+<p><strong>Extension</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_EXT_memory_budget"><code>VK_EXT_memory_budget</code></a></p>
+</div>
+<div class="paragraph">
+<p>Uses the memory budget extension to monitor the allocated memory in the GPU and demonstrates how to use it.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_shader_culling"><a class="anchor" href="#_mesh_shader_culling"></a><a href="extensions/mesh_shader_culling/README.html" class="xref page">Mesh Shader Culling</a></h3>
+<div class="paragraph">
+<p><strong>Extension</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_EXT_mesh_shader"><code>VK_EXT_mesh_shader</code></a></p>
+</div>
+<div class="paragraph">
+<p>Uses the mesh shader extension to demonstrate how to do basic culling utilizing both a mesh and a task shader.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_basic_ray_queries"><a class="anchor" href="#_basic_ray_queries"></a><a href="extensions/ray_queries/README.html" class="xref page">Basic ray queries</a></h3>
+<div class="paragraph">
+<p><strong>Extensions</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_KHR_ray_query"><code>VK_KHR_ray_query</code></a>, <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_KHR_acceleration_structure"><code>VK_KHR_acceleration_structure</code></a></p>
+</div>
+<div class="paragraph">
+<p>Render a sponza scene using the ray query extension.
+Shows how to set up all data structures required for ray queries, including the bottom and top level acceleration structures for the geometry and a standard vertex/fragment shader pipeline.
+Shadows are cast dynamically by ray queries being cast by the fragment shader.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_basic_hardware_accelerated_ray_tracing"><a class="anchor" href="#_basic_hardware_accelerated_ray_tracing"></a><a href="extensions/ray_tracing_basic/README.html" class="xref page">Basic hardware accelerated ray tracing</a></h3>
+<div class="paragraph">
+<p><strong>Extensions</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_KHR_ray_tracing_pipeline"><code>VK_KHR_ray_tracing_pipeline</code></a>, <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_KHR_acceleration_structure"><code>VK_KHR_acceleration_structure</code></a></p>
+</div>
+<div class="paragraph">
+<p>Render a basic scene using the official cross-vendor ray tracing extension.
+Shows how to setup all data structures required for ray tracing, including the bottom and top level acceleration structures for the geometry, the shader binding table and the ray tracing pipelines with shader groups for ray generation, ray hits, and ray misses.
+After dispatching the rays, the final result is copied to the swapchain image.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_extended_hardware_accelerated_ray_tracing"><a class="anchor" href="#_extended_hardware_accelerated_ray_tracing"></a><a href="extensions/ray_tracing_extended/README.html" class="xref page">Extended hardware accelerated ray tracing</a></h3>
+<div class="paragraph">
+<p><strong>Extensions</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_KHR_ray_tracing_pipeline"><code>VK_KHR_ray_tracing_pipeline</code></a>, <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_KHR_acceleration_structure"><code>VK_KHR_acceleration_structure</code></a></p>
+</div>
+<div class="paragraph">
+<p>Render Sponza with Ambient Occlusion.
+Place a vase in center.
+Generate a particle fire that  demonstrates the TLAS (Top Level Acceleration Structure) animation for the same underlying geometry.
+Procedurally generate a transparent quad and deform the geometry of the quad in the BLAS (Bottom Level Acceleration  Structure) to demonstrate how to animate with deforming geometry.
+Shows how to rebuild the acceleration structure and when to set it to fast rebuild vs fast traversal.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mesh_shading"><a class="anchor" href="#_mesh_shading"></a><a href="extensions/mesh_shading/README.html" class="xref page">Mesh shading</a></h3>
+<div class="paragraph">
+<p><strong>Extensions</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VK_KHR_mesh_shader.html"><code>VK_EXT_mesh_shader</code></a></p>
+</div>
+<div class="paragraph">
+<p>Renders a triangle with the most simple of all possible mesh shader pipeline examples.
+There is no vertex shader,  there is only a mesh and fragment shader.
+The mesh shader creates the vertices for the triangle.
+The mesh shading  pipeline includes the task and mesh shaders before going into the fragment shader.
+This replaces the vertex /  geometry shader standard pipeline.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hpp_mesh_shading"><a class="anchor" href="#_hpp_mesh_shading"></a><a href="extensions/hpp_mesh_shading/README.html" class="xref page">HPP Mesh shading</a></h3>
+<div class="paragraph">
+<p>A transcoded version of the Extensions sample <a href="extensions/mesh_shading/README.html" class="xref page">Mesh shading</a> that illustrates the usage of the C&#43;&#43; bindings of vulkan provided by Vulkan-Hpp.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_opengl_interoperability"><a class="anchor" href="#_opengl_interoperability"></a><a href="extensions/open_gl_interop/README.html" class="xref page">OpenGL interoperability</a></h3>
+<div class="paragraph">
+<p><strong>Extensions</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VK_KHR_external_memory.html"><code>VK_KHR_external_memory</code></a>, <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VK_KHR_external_semaphore.html"><code>VK_KHR_external_semaphore</code></a></p>
+</div>
+<div class="paragraph">
+<p>Render a procedural image using OpenGL and incorporate that rendered content into a Vulkan scene.
+Demonstrates using the same backing memory for a texture in both OpenGL and Vulkan and how to synchronize the APIs using shared semaphores and barriers.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_opencl_interoperability"><a class="anchor" href="#_opencl_interoperability"></a><a href="extensions/open_cl_interop/README.html" class="xref page">OpenCL interoperability</a></h3>
+<div class="paragraph">
+<p><strong>Extensions</strong>: <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_KHR_external_memory.html"><code>VK_KHR_external_memory</code></a>, <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_KHR_external_semaphore.html"><code>VK_KHR_external_semaphore</code></a></p>
+</div>
+<div class="paragraph">
+<p>This sample shows how to do Vulkan and OpenCL interoperability using cross vendor extensions in both apis. The sample uses OpenCL to update an image that is then displayed in Vulkan. This is done by sharing the memory for that image across the two apis. The sample also shares semaphores for doing cross api synchronization.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_opencl_interoperability_arm"><a class="anchor" href="#_opencl_interoperability_arm"></a><a href="extensions/open_cl_interop_arm/README.html" class="xref page">OpenCL interoperability (Arm)</a></h3>
+<div class="paragraph">
+<p><strong>Extensions</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VK_ANDROID_external_memory_android_hardware_buffer.html"><code>VK_ANDROID_external_memory_android_hardware_buffer</code></a></p>
+</div>
+<div class="paragraph">
+<p>This sample demonstrates usage of OpenCL extensions available on Arm devices.
+Fill a procedural texture using OpenCL and display it using Vulkan.
+In this sample data sharing between APIs is achieved using Android Hardware Buffers.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_timeline_semaphore"><a class="anchor" href="#_timeline_semaphore"></a><a href="extensions/timeline_semaphore/README.html" class="xref page">Timeline semaphore</a></h3>
+<div class="paragraph">
+<p><strong>Extensions</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VK_KHR_timeline_semaphore.html"><code>VK_KHR_timeline_semaphore</code></a></p>
+</div>
+<div class="paragraph">
+<p>Demonstrates various use cases which are enabled with timeline semaphores.
+The sample implements "Game of Life" in an esoteric way, using out-of-order signal and wait, multiple waits on same semaphore in different queues, waiting and signalling semaphore on host.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_buffer_device_address"><a class="anchor" href="#_buffer_device_address"></a><a href="extensions/buffer_device_address/README.html" class="xref page">Buffer device address</a></h3>
+<div class="paragraph">
+<p><strong>Extensions</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VK_KHR_buffer_device_address.html"><code>VK_KHR_buffer_device_address</code></a></p>
+</div>
+<div class="paragraph">
+<p>Demonstrates how to use the buffer device address feature, which enables extreme flexibility in how buffer memory is accessed.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_synchronization2"><a class="anchor" href="#_synchronization2"></a><a href="extensions/synchronization_2/README.html" class="xref page">Synchronization2</a></h3>
+<div class="paragraph">
+<p><strong>Extension</strong> <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_KHR_synchronization2"><code>VK_KHR_synchronization2</code></a></p>
+</div>
+<div class="paragraph">
+<p>Demonstrates the use of the reworked synchronization api introduced with <code>VK_KHR_synchronization2</code>.
+Based on the compute shading N-Body particle system, this sample uses the new extension to streamline the memory barriers used for the compute and graphics work submissions.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_descriptor_indexing"><a class="anchor" href="#_descriptor_indexing"></a><a href="extensions/descriptor_indexing/README.html" class="xref page">Descriptor indexing</a></h3>
+<div class="paragraph">
+<p><strong>Extensions</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VK_EXT_descriptor_indexing.html"><code>VK_EXT_descriptor_indexing</code></a></p>
+</div>
+<div class="paragraph">
+<p>Demonstrates how to use descriptor indexing to enable update-after-bind and non-dynamically uniform indexing of descriptors.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_fragment_shading_rate"><a class="anchor" href="#_fragment_shading_rate"></a><a href="extensions/fragment_shading_rate/README.html" class="xref page">Fragment shading rate</a></h3>
+<div class="paragraph">
+<p><strong>Extension</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VK_KHR_fragment_shading_rate.html"><code>VK_KHR_fragment_shading_rate</code></a></p>
+</div>
+<div class="paragraph">
+<p>Uses a special framebuffer attachment to control fragment shading rates for different framebuffer regions.
+This allows explicit control over the number of fragment shader invocations for each pixel covered by a fragment, which is e.g.
+useful for foveated rendering.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_fragment_shading_rate_dynamic"><a class="anchor" href="#_fragment_shading_rate_dynamic"></a><a href="extensions/fragment_shading_rate_dynamic/README.html" class="xref page">Fragment shading rate_dynamic</a></h3>
+<div class="paragraph">
+<p><strong>Extension</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VK_KHR_fragment_shading_rate.html"><code>VK_KHR_fragment_shading_rate</code></a></p>
+</div>
+<div class="paragraph">
+<p>Render a simple scene showing the basics of shading rate dynamic.
+This sample shows low and high frequency textures  over several cubes.
+It creates a sample rate map based upon this frequency every frame.
+Then it uses that dynamic  sample rate map as a base for the next frame.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_ray_tracing_reflection_shadow_rays"><a class="anchor" href="#_ray_tracing_reflection_shadow_rays"></a><a href="extensions/ray_tracing_reflection/README.html" class="xref page">Ray tracing: reflection, shadow rays</a></h3>
+<div class="paragraph">
+<p><strong>Extensions</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_KHR_ray_tracing_pipeline"><code>VK_KHR_ray_tracing_pipeline</code></a>, <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_KHR_acceleration_structure"><code>VK_KHR_acceleration_structure</code></a>, <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VK_EXT_descriptor_indexing.html"><code>VK_EXT_descriptor_indexing</code></a>, <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VK_EXT_scalar_block_layout.html"><code>VK_EXT_scalar_block_layout</code></a></p>
+</div>
+<div class="paragraph">
+<p>Render a simple scene showing the basics of ray tracing, including reflection and shadow rays.
+The sample creates some geometries and create a bottom acceleration structure for each, then make instances of those, using different materials and placing them at different locations.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_ray_tracing_position_fetch"><a class="anchor" href="#_ray_tracing_position_fetch"></a><a href="extensions/ray_tracing_position_fetch/README.html" class="xref page">Ray tracing position fetch</a></h3>
+<div class="paragraph">
+<p><strong>Extensions</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/html/vkspec.html#VK_KHR_ray_tracing_position_fetch"><code>VK_KHR_ray_tracing_position_fetch</code></a></p>
+</div>
+<div class="paragraph">
+<p>Shows how to use the ray tracing position fetch extension to directly access vertex positions for a hit triangle from the acceleration structure, instead of having to explicitly pass and unpack that information</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_portability"><a class="anchor" href="#_portability"></a><a href="extensions/portability/README.html" class="xref page">Portability</a></h3>
+<div class="paragraph">
+<p><strong>Extensions</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/html/vkspec.html#VK_KHR_portability_subset"><code>VK_KHR_portability_subset</code></a></p>
+</div>
+<div class="paragraph">
+<p>Demonstrate how to include non-conformant portable Vulkan implementations by using the portability extension to  include those implementations in the device query.
+An example of a non-conformant portable Vulkan implementation is  MoltenVk: <a href="https://github.com/KhronosGroup/MoltenVK">MoltenVk</a>.
+Also demonstrate use of beta extension which allows  for querying which features of the full Vulkan spec are not currently supported by the non-conformant Vulkan  implementation.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_graphics_pipeline_library"><a class="anchor" href="#_graphics_pipeline_library"></a><a href="extensions/graphics_pipeline_library/README.html" class="xref page">Graphics pipeline library</a></h3>
+<div class="paragraph">
+<p><strong>Extension</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VK_EXT_graphics_pipeline_library.html"><code>VK_EXT_graphics_pipeline_library</code></a></p>
+</div>
+<div class="paragraph">
+<p>Uses the graphics pipeline library extensions to improve run-time pipeline creation.
+Instead of creating the whole pipeline at once, this sample makes use of that extension to pre-build shared pipeline parts such as vertex input state and fragment output state.
+These building blocks are then used to create pipelines at runtime, improving build times compared to traditional pipeline creation.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_conditional_rendering"><a class="anchor" href="#_conditional_rendering"></a><a href="extensions/conditional_rendering/README.html" class="xref page">Conditional rendering</a></h3>
+<div class="paragraph">
+<p><strong>Extension</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VK_EXT_conditional_rendering.html"><code>VK_EXT_conditional_rendering</code></a></p>
+</div>
+<div class="paragraph">
+<p>Demonstrate how to do conditional rendering, dynamically discarding rendering commands without having to update command buffers.
+This is done by sourcing conditional rendering blocks from a dedicated buffer that can be updated without having to touch command buffers.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vertex_input_dynamic_state"><a class="anchor" href="#_vertex_input_dynamic_state"></a><a href="extensions/vertex_dynamic_state/README.html" class="xref page">Vertex input dynamic state</a></h3>
+<div class="paragraph">
+<p><strong>Extension</strong>: <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_EXT_vertex_input_dynamic_state.html"><code>VK_EXT_vertex_input_dynamic_state</code></a></p>
+</div>
+<div class="paragraph">
+<p>Demonstrate how to use vertex input bindings and attribute descriptions dynamically, which can reduce the number of pipeline objects that are needed to be created.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_extended_dynamic_state_2"><a class="anchor" href="#_extended_dynamic_state_2"></a><a href="extensions/extended_dynamic_state2/README.html" class="xref page">Extended dynamic state 2</a></h3>
+<div class="paragraph">
+<p><strong>Extension</strong>: <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_EXT_extended_dynamic_state2.html"><code>VK_EXT_extended_dynamic_state2</code></a></p>
+</div>
+<div class="paragraph">
+<p>Demonstrate how to use depth bias, primitive restart, rasterizer discard and patch control points dynamically, which can reduce the number of pipeline objects that are needed to be created.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_logic_operations_dynamic_state"><a class="anchor" href="#_logic_operations_dynamic_state"></a><a href="extensions/logic_op_dynamic_state/README.html" class="xref page">Logic operations dynamic state</a></h3>
+<div class="paragraph">
+<p><strong>Extension</strong>: <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_EXT_extended_dynamic_state2.html"><code>VK_EXT_extended_dynamic_state2</code></a></p>
+</div>
+<div class="paragraph">
+<p>Demonstrate how to use logical operations dynamically, which can reduce the number of pipeline objects that are needed to be created or allow to change the pipeline state dynamically (change type of the logical operation).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_patch_control_points"><a class="anchor" href="#_patch_control_points"></a><a href="extensions/patch_control_points/README.html" class="xref page">Patch control points</a></h3>
+<div class="paragraph">
+<p><strong>Extension</strong>: <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_EXT_extended_dynamic_state2.html"><code>VK_EXT_extended_dynamic_state2</code></a></p>
+</div>
+<div class="paragraph">
+<p>Demonstrate how to use patch control points dynamically, which can reduce the number of pipeline objects that are needed to be created.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_fragment_shader_barycentric"><a class="anchor" href="#_fragment_shader_barycentric"></a><a href="extensions/fragment_shader_barycentric/README.html" class="xref page">Fragment shader barycentric</a></h3>
+<div class="paragraph">
+<p><strong>Extension</strong>: <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_KHR_fragment_shader_barycentric.html"><code>VK_KHR_fragment_shader_barycentric</code></a></p>
+</div>
+<div class="paragraph">
+<p>Demonstrate how to use fragment shader barycentric feature, which allows accessing barycentric coordinates for each processed fragment.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_basic_descriptor_buffer"><a class="anchor" href="#_basic_descriptor_buffer"></a><a href="extensions/descriptor_buffer_basic/README.html" class="xref page">Basic descriptor buffer</a></h3>
+<div class="paragraph">
+<p><strong>Extension</strong>: <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VK_ext_descriptor_buffer"><code>VK_EXT_descriptor_buffer</code></a></p>
+</div>
+<div class="paragraph">
+<p>Demonstrate how to use the new extension to replace descriptor sets with resource descriptor buffers</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_color_write_enable"><a class="anchor" href="#_color_write_enable"></a><a href="extensions/color_write_enable/README.html" class="xref page">Color write enable</a></h3>
+<div class="paragraph">
+<p><strong>Extension</strong>: <a href="https://https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_EXT_color_write_enable.html"><code>VK_EXT_color_write_enable</code></a></p>
+</div>
+<div class="paragraph">
+<p>Demonstrate how to create multiple color blend attachments and then toggle them dynamically.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_geometry_shader_to_mesh_shader"><a class="anchor" href="#_geometry_shader_to_mesh_shader"></a><a href="extensions/gshader_to_mshader/README.html" class="xref page">Geometry shader to mesh shader</a></h3>
+<div class="paragraph">
+<p><strong>Extension:</strong> <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_EXT_mesh_shader.html"><code>VK_EXT_mesh_shader</code></a></p>
+</div>
+<div class="paragraph">
+<p>Demonstrates how a mesh shader can be used to achieve the same results as with geometry shader, it loads model from a file and visualizes its normals.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_shader_object"><a class="anchor" href="#_shader_object"></a><a href="extensions/shader_object/README.html" class="xref page">Shader object</a></h3>
+<div class="paragraph">
+<p><strong>Extension:</strong> <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_EXT_shader_object.html"><code>VK_EXT_shader_object</code></a></p>
+</div>
+<div class="paragraph">
+<p>Demonstrate how to use shader objects.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dynamic_blending"><a class="anchor" href="#_dynamic_blending"></a><a href="#././extensions/dynamic_blending">Dynamic blending</a></h3>
+<div class="paragraph">
+<p><strong>Extension:</strong> <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_EXT_extended_dynamic_state.html"><code>VK_EXT_extended_dynamic_state3</code></a></p>
+</div>
+<div class="paragraph">
+<p>Demonstrate how to use the blending related functions available in the VK_EXT_extended_dynamic_state3 extension.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dynamic_line_rasterization"><a class="anchor" href="#_dynamic_line_rasterization"></a><a href="extensions/dynamic_line_rasterization/README.html" class="xref page">Dynamic line rasterization</a></h3>
+<div class="paragraph">
+<p><strong>Extensions:</strong> <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_EXT_line_rasterization.html"><code>VK_EXT_line_rasterization</code></a>, <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_EXT_extended_dynamic_state3.html"><code>VK_EXT_extended_dynamic_state3</code></a></p>
+</div>
+<div class="paragraph">
+<p>Demonstrate methods for dynamically customizing the appearance of the rendered lines.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_shader_debug_printf"><a class="anchor" href="#_shader_debug_printf"></a><a href="extensions/shader_debugprintf/README.html" class="xref page">Shader Debug Printf</a></h3>
+<div class="paragraph">
+<p><strong>Extension</strong>: <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_KHR_shader_non_semantic_info.html"><code>VK_KHR_shader_non_semantic_info</code></a></p>
+</div>
+<div class="paragraph">
+<p>Demonstrates how to use <a href="https://en.wikipedia.org/wiki/Printf">Printf</a> statements in a shader to output per-invocation values. This can help find issues with shaders in combination with graphics debugging tools.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dynamic_depth_clipping_and_primitive_clipping"><a class="anchor" href="#_dynamic_depth_clipping_and_primitive_clipping"></a><a href="extensions/dynamic_primitive_clipping/README.html" class="xref page">Dynamic depth clipping and primitive clipping</a></h3>
+<div class="paragraph">
+<p><strong>Extension:</strong> <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_EXT_extended_dynamic_state3.html"><code>VK_EXT_extended_dynamic_state3</code></a></p>
+</div>
+<div class="paragraph">
+<p>Rendering using primitive clipping and depth clipping configured by dynamic pipeline state.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_host_image_copies"><a class="anchor" href="#_host_image_copies"></a><a href="extensions/host_image_copy/README.html" class="xref page">Host image copies</a></h3>
+<div class="paragraph">
+<p><strong>Extension:</strong> <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_EXT_host_image_copy.html"><code>VK_EXT_extended_dynamic_state3</code></a></p>
+</div>
+<div class="paragraph">
+<p>Demonstrate the use of the host image extension to directly copy from a host buffer to an image on the device without going through a staging buffer.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dynamic_multisample_rasterization"><a class="anchor" href="#_dynamic_multisample_rasterization"></a><a href="extensions/dynamic_multisample_rasterization/README.html" class="xref page">Dynamic multisample rasterization</a></h3>
+<div class="paragraph">
+<p><strong>Extensions:</strong> <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_EXT_extended_dynamic_state3.html"><code>VK_EXT_line_rasterization</code></a>, <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_EXT_extended_dynamic_state3.html"><code>VK_EXT_extended_dynamic_state3</code></a></p>
+</div>
+<div class="paragraph">
+<p>Demonstrate how to use dynamic multisample rasterization (MSAA)</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="tooling-samples"><a class="anchor" href="#tooling-samples"></a>Tooling Samples</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The goal of these samples is to demonstrate usage of tooling functions and libraries that are not directly part of the api.</p>
+</div>
+<div class="sect2">
+<h3 id="_profiles_library"><a class="anchor" href="#_profiles_library"></a><a href="tooling/profiles/README.html" class="xref page">Profiles Library</a></h3>
+<div class="paragraph">
+<p>Use the <a href="https://github.com/KhronosGroup/Vulkan-Profiles">Vulkan Profiles library</a> to simplify instance and device setup.
+The library defines a common baseline of features, extensions, etc.</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

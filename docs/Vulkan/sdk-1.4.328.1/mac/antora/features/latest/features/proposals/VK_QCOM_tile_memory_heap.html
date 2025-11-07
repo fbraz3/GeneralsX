@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>VK_QCOM_tile_memory_heap :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:features" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="features" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Feature Descriptions</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Vulkan Roadmap and Feature Descriptions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Roadmap.html">Vulkan Roadmap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Feature Descriptions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMDX_shader_enqueue.html">VK_AMDX_shader_enqueue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_anti_lag.html">VK_AMD_anti_lag</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_shader_early_and_late_fragment_tests.html">VK_AMD_shader_early_and_late_fragment_tests</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ANDROID_external_format_resolve.html">VK_ANDROID_external_format_resolve</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_pipeline_opacity_micromap.html">VK_ARM_pipeline_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_render_pass_striped.html">VK_ARM_render_pass_striped</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_tensors.html">VK_ARM_tensors</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_dynamic_state.html">VK_EXT_attachment_feedback_loop_dynamic_state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_layout.html">VK_EXT_attachment_feedback_loop_layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_calibrated_timestamps.html">VK_EXT_calibrated_timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_bias_control.html">VK_EXT_depth_bias_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_clamp_control.html">VK_EXT_depth_clamp_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_descriptor_buffer.html">VK_EXT_descriptor_buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_fault.html">VK_EXT_device_fault</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_generated_commands.html">VK_EXT_device_generated_commands</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_dynamic_rendering_unused_attachments.html">VK_EXT_dynamic_rendering_unused_attachments</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_extended_dynamic_state3.html">VK_EXT_extended_dynamic_state3</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_acquire_unmodified.html">VK_EXT_external_memory_acquire_unmodified</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_metal.html">VK_EXT_external_memory_metal</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_fragment_density_map_offset.html">VK_EXT_fragment_density_map_offset</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_frame_boundary.html">Proposal: <code>VK_EXT_frame_boundary</code></a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_graphics_pipeline_library.html">VK_EXT_graphics_pipeline_library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_host_image_copy.html">VK_EXT_host_image_copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_2d_array_of_3d.html">VK_EXT_image_2d_array_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_compression_control.html">VK_EXT_image_compression_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_sliced_view_of_3d.html">VK_EXT_image_sliced_view_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_layer_settings.html">VK_EXT_layer_settings</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_dithering.html">VK_EXT_legacy_dithering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_vertex_attributes.html">VK_EXT_legacy_vertex_attributes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_map_memory_placed.html">VK_EXT_map_memory_placed</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mesh_shader.html">VK_EXT_mesh_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_metal_objects.html">VK_EXT_metal_objects</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_multisampled_render_to_single_sampled.html">VK_EXT_multisampled_render_to_single_sampled</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mutable_descriptor_type.html">VK_EXT_mutable_descriptor_type</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_non_seamless_cube_map.html">VK_EXT_non_seamless_cube_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_opacity_micromap.html">VK_EXT_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_library_group_handles.html">VK_EXT_pipeline_library_group_handles</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_protected_access.html">VK_EXT_pipeline_protected_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_present_mode_fifo_latest_ready.html">VK_EXT_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_primitives_generated_query.html">VK_EXT_primitives_generated_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_rasterization_order_attachment_access.html">VK_EXT_rasterization_order_attachment_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_float8.html">VK_EXT_shader_float8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_module_identifier.html">VK_EXT_shader_module_identifier</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_object.html">VK_EXT_shader_object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_replicated_composites.html">VK_EXT_shader_replicated_composites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_tile_image.html">VK_EXT_shader_tile_image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_subpass_merge_feedback.html">VK_EXT_subpass_merge_feedback</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_surface_maintenance1.html">VK_EXT_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_swapchain_maintenance1.html">VK_EXT_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_zero_initialize_device_memory.html">VK_EXT_zero_initialize_device_memory</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_GOOGLE_surfaceless_query.html">VK_GOOGLE_surfaceless_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_cluster_culling_shader.html">VK_HUAWEI_cluster_culling_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_invocation_mask.html">VK_HUAWEI_invocation_mask</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_compute_shader_derivatives.html">VK_KHR_compute_shader_derivatives</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_cooperative_matrix.html">VK_KHR_cooperative_matrix</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering.html">VK_KHR_dynamic_rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering_local_read.html">VK_KHR_dynamic_rendering_local_read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shader_barycentric.html">VK_KHR_fragment_shader_barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shading_rate.html">VK_KHR_fragment_shading_rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_load_store_op_none.html">VK_KHR_load_store_op_none</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance5.html">VK_KHR_maintenance5</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance6.html">VK_KHR_maintenance6</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance7.html">VK_KHR_maintenance7</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance8.html">VK_KHR_maintenance8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance9.html">Proposal Template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_map_memory2.html">VK_KHR_map_memory2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_pipeline_binary.html">VK_KHR_pipeline_binary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_id2.html">VK_KHR_present_id2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_mode_fifo_latest_ready.html">VK_KHR_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_wait2.html">VK_KHR_present_wait2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_ray_tracing_position_fetch.html">VK_KHR_ray_tracing_position_fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_bfloat16.html">VK_KHR_shader_bfloat16</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_expect_assume.html">VK_KHR_shader_expect_assume</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_float_controls2.html">VK_KHR_shader_float_controls2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_integer_dot_product.html">VK_KHR_shader_integer_dot_product</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_maximal_reconvergence.html">VK_KHR_shader_maximal_reconvergence</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_quad_control.html">VK_KHR_shader_quad_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_relaxed_extended_instruction.html">VK_KHR_shader_relaxed_extended_instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_subgroup_rotate.html">Subgroup rotation instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_surface_maintenance1.html">VK_KHR_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_swapchain_maintenance1.html">VK_KHR_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_unified_image_layouts.html">VK_KHR_unified_image_layouts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_vertex_attribute_divisor.html">VK_KHR_vertex_attribute_divisor</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_av1.html">VK_KHR_video_decode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h264.html">VK_KHR_video_decode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h265.html">VK_KHR_video_decode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_queue.html">VK_KHR_video_decode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_vp9.html">VK_KHR_video_decode_vp9</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_av1.html">VK_KHR_video_encode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h264.html">VK_KHR_video_encode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h265.html">VK_KHR_video_encode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_intra_refresh.html">VK_KHR_video_encode_intra_refresh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_quantization_map.html">VK_KHR_video_encode_quantization_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_queue.html">VK_KHR_video_encode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance1.html">VK_KHR_video_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance2.html">VK_KHR_video_maintenance2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_queue.html">VK_KHR_video_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_LUNARG_direct_driver_loading.html">VK_LUNARG_direct_driver_loading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_MSFT_layered_driver.html">VK_MSFT_layered_driver</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cluster_acceleration_structure.html">VK_NV_cluster_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_matrix2.html">VK_NV_cooperative_matrix2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_vector.html">VK_NV_cooperative_vector</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_display_stereo.html">VK_NV_display_stereo</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_external_compute_queue.html">VK_NV_external_compute_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_partitioned_acceleration_structure.html">VK_NV_partitioned_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_linear_swept_spheres.html">VK_NV_ray_tracing_linear_swept_spheres</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_validation.html">VK_NV_ray_tracing_validation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_image_processing.html">VK_QCOM_image_processing</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_memory_heap.html">VK_QCOM_tile_memory_heap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_properties.html">VK_QCOM_tile_properties</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_shading.html">VK_QCOM_tile_shading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_VERSION_1_4.html">Vulkan 1.4</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Feature Descriptions</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Feature Descriptions</a></li>
+    <li>Feature Descriptions</li>
+    <li><a href="VK_QCOM_tile_memory_heap.html">VK_QCOM_tile_memory_heap</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/features/modules/features/pages/proposals/VK_QCOM_tile_memory_heap.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">VK_QCOM_tile_memory_heap</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_problem_statement">1. Problem Statement</a></li>
+<li><a href="#_solution_space">2. Solution Space</a></li>
+<li><a href="#_proposal">3. Proposal</a>
+<ul class="sectlevel2">
+<li><a href="#_tile_memory_heap">3.1. Tile Memory Heap</a></li>
+<li><a href="#_properties">3.2. Properties</a></li>
+<li><a href="#_binding_tile_memory">3.3. Binding Tile Memory</a></li>
+<li><a href="#_vkimages">3.4. VkImages</a></li>
+<li><a href="#_vkbuffers">3.5. VkBuffers</a></li>
+<li><a href="#_tile_memory_requirements">3.6. Tile memory Requirements</a></li>
+<li><a href="#_allocating_and_aliasing_tile_memory">3.7. Allocating and aliasing tile memory</a></li>
+<li><a href="#_interactions_with_vk_qcom_tile_properties">3.8. Interactions with VK_QCOM_tile_properties</a></li>
+<li><a href="#_interactions_with_vk_qcom_tile_shading">3.9. Interactions with VK_QCOM_tile_shading</a></li>
+<li><a href="#_forbidden_usage">3.10. Forbidden Usage</a></li>
+</ul>
+</li>
+<li><a href="#_examples">4. Examples</a>
+<ul class="sectlevel2">
+<li><a href="#_creating_a_tile_memory_vkimage">4.1. Creating a tile memory VkImage</a></li>
+<li><a href="#_creating_a_tile_memory_vkbuffer">4.2. Creating a tile memory VkBuffer</a></li>
+<li><a href="#_recording_commands_with_tile_memory">4.3. Recording Commands with tile memory</a></li>
+<li><a href="#_questions">4.4. Questions</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This document details API design ideas for the VK_QCOM_tile_memory_heap extension. This extension allows applications to directly allocate and manage tile memory.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>1. Problem Statement</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Most mobile GPUs utilize high-bandwidth Tile Memory within a render pass to optimize attachment memory access. The attachments are evicted from tiled memory no later than the end of the render pass, in accordance with the store ops. However, popular-rendering techniques, such as deferred rendering, use resources across render passes, often accessing them multiple times within the application&#8217;s frame. This leads to shuffling those resources in and out of tile memory, increasing power cost and reducing performance.</p>
+</div>
+<div class="paragraph">
+<p>For tilers that support persisting resources in tile memory across render passes, the implementation must track and provide a best guess as to which of them would see the most gains from staying resident, avoiding extra loads and stores. However, this requires non-trivial host overhead in tracking costs and may end up not choosing the best candidates.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution Space</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A few different solutions were considered:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Allow applications to provide priority to resources as they are being recorded within a Command Buffer. Higher priority resources would be optimal candidates for tile memory and lower priorities would be less optimal candidates for tile memory.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>CONS: While this helps solve the problem with choosing the optimal resources for staying resident, this does not solve the problem of implementation overhead. It would still need to use the same algorithms as before to prioritize resources, just allowing external prioritization to come from the app.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Allow applications to provide an explicit list of resources during Command Buffer record time to dynamically change the layout and resources within tile memory.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>CONS: This approach requires a couple of new API calls. One new API call to see if a resource is eligible to be placed in Tile Memory. An additional API call would be needed to be specify resources during Command Buffer recording time. This API may be difficult for applications to implement, adding complex tracking to their object management.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Allow applications to manage Tile Memory directly through a new Heap/Mem Type and bind this memory to resources such as VkImage and VkBuffers.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Giving app explicit control over the heap solves both problems of implementation overhead and suboptimal selections of resources. It is also less complicated to implement for applications that do not need to perform the expense of a complex object tracking model.</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>3. Proposal</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This extension uses solution 3 which allows applications to manage persistent tile memory explicitly and bind the memory to resources such as VkImage and VkBuffers. Resources that are bound to this tile memory are expected to have more optimal device accesses across render passes where they would have otherwise been needed to be swapped to system memory.</p>
+</div>
+<div class="sect2">
+<h3 id="_tile_memory_heap"><a class="anchor" href="#_tile_memory_heap"></a>3.1. Tile Memory Heap</h3>
+<div class="paragraph">
+<p>This extension exposes a partition of Tile Memory as a single VkMemoryHeap. A new memory heap flag is added to indicate the Tile Memory heap:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef enum VkMemoryHeapFlagBits {
+    /* ... */
+    VK_MEMORY_HEAP_TILE_MEMORY_BIT_QCOM = 0x00000008,
+} VkMemoryHeapFlagBits;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_MEMORY_HEAP_TILE_MEMORY_BIT_QCOM</code> specifies that the heap corresponds to tile memory.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The contents within this heap can be persisted across the command buffers executed in a single command buffer submission batch within a <code>vkQueueSubmit()</code> or <code>vkQueueSubmit2()</code> call. After the command buffers complete execution, the contents of this memory is discarded and considered undefined, ready to be used for executing with another command buffer submission batch.</p>
+</div>
+<div class="paragraph">
+<p>Implementations may extend this command buffer submission batch boundary to a queue submit boundary denoted by the <code>queueSubmitBoundary</code> property.</p>
+</div>
+<div class="paragraph">
+<p>Tile memory may be used simultaneously by command buffers in other Queues without invalidating the contents. Contents in tile memory are only visible between command buffers executing within the same Queue.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_properties"><a class="anchor" href="#_properties"></a>3.2. Properties</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDeviceTileMemoryHeapPropertiesQCOM {
+    VkStructureType sType;
+    void*           pNext;
+    VkBool32        queueSubmitBoundary;
+    VkBool32        tileBufferTransfers;
+} VkPhysicalDeviceTileMemoryHeapPropertiesQCOM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>queueSubmitBoundary</code> when set to <code>VK_TRUE</code>, indicates VkMemoryHeaps with the bit <code>VK_MEMORY_HEAP_TILE_MEMORY_BIT_QCOM</code> discards memory contents after all commands complete within a queue submit. When <code>VK_FALSE</code>, this memory is discarded after all commands complete within a command buffer submission batch.</p>
+</li>
+<li>
+<p><code>tileBufferTransfers</code> when set to <code>VK_TRUE</code>, indicates VkBuffers bound to tile memory support <code>VK_BUFFER_USAGE_TRANSFER_SRC_BIT</code> and <code>VK_BUFFER_USAGE_TRANSFER_DST_BIT</code> usage. When <code>VK_FALSE</code>, VkBuffers bound to tile memory do not support transfer usage.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><code>VkPhysicalDeviceTileMemoryHeapPropertiesQCOM</code> extends <code>VkPhysicalDeviceProperties2</code> which should be queried to determine when tile memory is discarded.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_binding_tile_memory"><a class="anchor" href="#_binding_tile_memory"></a>3.3. Binding Tile Memory</h3>
+<div class="paragraph">
+<p>The entire range of memory in the tile memory heap is not available to the application, even if images or buffers are bound to those ranges.</p>
+</div>
+<div class="paragraph">
+<p>In order to access tile memory during commands, a <code>VkDeviceMemory</code> object allocated from the tile memory heap must be bound to the Command Buffer. The bound tile memory object describes the range of Tile Memory that the application is allowed to access from offset 0.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkTileMemoryBindInfoQCOM {
+    VkStructureType sType;
+    void*           pNext;
+    VkDeviceMemory  memory
+} VkTileMemoryBindInfoQCOM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>memory</code> is the <code>VkDeviceMemory</code> object describing the tile memory that can be accessed by the application for all subsequent commands in the command buffer. The bound range of tile memory is [0, N) where N is the size of the allocation in bytes.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><code>memory</code> must be allocated out of a VkMemoryHeap with the <code>VK_MEMORY_HEAP_TILE_MEMORY_BIT_QCOM</code> bit set.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">void vkCmdBindTileMemoryQCOM(
+    VkCommandBuffer                 commandBuffer,
+    const VkTileMemoryBindInfoQCOM* pTileMemoryBindInfo);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>vkCmdBindTileMemoryQCOM()</code> must be called outside Render Pass Scope and extends <code>VkCommandBufferInheritanceInfo</code>.</p>
+</div>
+<div class="paragraph">
+<p>Tile memory contents for ranges outside the currently bound <code>VkDeviceMemory</code> are discarded and become undefined if an action command is executed. This means that applications must bind the range of tile memory that should be preserved before issuing an action command. Only the tile memory resources that are also bound to this VkDeviceMemory object are allowed to be accessed.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+For example, if a rendering or compute command uses N bytes of tile memory, then the application should bind a VkDeviceMemory object that was allocated with at least N bytes. This means that the range of tile memory from [0, N) is reserved for the application and the implementation may use any remaining (if any) tile memory starting from N for internal optimizations for all subsequent commands recorded in the command buffer. This means that applications should slot in their most frequently used tile objects at the start of the heap.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Secondary command buffers must also have tile memory bound for its contents to not be discarded during the first action command executed by the secondary. If a secondary command buffer is executed within a render pass instance, then <code>VkTileMemoryBindInfoQCOM</code> must be provided as an extended structure to <code>VkCommandBufferInheritanceInfo</code> with the currently bound memory object in the primary. Otherwise, the secondary command buffer calls <code>vkCmdBindTileMemoryQCOM()</code> directly and behaves the same as a primary command buffer.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vkimages"><a class="anchor" href="#_vkimages"></a>3.4. VkImages</h3>
+<div class="paragraph">
+<p>VkImages can be bound to Tile Memory to make it backed by tile memory. A VkImage bound to Tile Memory must have been created with a new bit in VkImageUsageFlags to its <code>vkCreateImage()</code> call.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef enum VkImageUsageFlagBits {
+    /* ... */
+        VK_IMAGE_USAGE_TILE_MEMORY_BIT_QCOM = 0x08000000,
+} VkImageUsageFlagBits</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_IMAGE_USAGE_TILE_MEMORY_BIT_QCOM</code> indicates that the VkImage can be bound to VkDeviceMemory allocated from the Tile Memory heap.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Images created with <code>VK_IMAGE_USAGE_TILE_MEMORY_BIT_QCOM</code> have further restrictions on their limits and capabilities compared to images created without this bit. Creation of images with usage including <code>VK_IMAGE_USAGE_TILE_MEMORY_BIT_QCOM</code> may not be supported unless parameters meet all of the constraints:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>flags</code> is <code>0</code> or only includes <code>VK_IMAGE_CREATE_ALIAS_BIT</code></p>
+</li>
+<li>
+<p><code>imageType</code> is <code>VK_IMAGE_TYPE_2D</code></p>
+</li>
+<li>
+<p><code>mipLevels</code> is 1</p>
+</li>
+<li>
+<p><code>arrayLayers</code> is 1</p>
+</li>
+<li>
+<p><code>samples</code> is <code>VK_SAMPLE_COUNT_1_BIT</code></p>
+</li>
+<li>
+<p><code>tiling</code> is <code>VK_IMAGE_TILING_OPTIMAL</code></p>
+</li>
+<li>
+<p><code>usage</code> includes <code>VK_IMAGE_USAGE_TILE_MEMORY_BIT_QCOM</code> and any combination of the following <code>VK_IMAGE_USAGE_SAMPLED_BIT</code>, <code>VK_IMAGE_USAGE_STORAGE_BIT</code>, <code>VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</code>, <code>VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code>, <code>VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Implementations may support additional limits and capabilities beyond those listed above. To determine the set of valid image creation parameter for a given format, call <code>vkGetPhysicalDeviceImageFormatProperties()</code> with <code>VK_IMAGE_USAGE_TILE_MEMORY_BIT_QCOM</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vkbuffers"><a class="anchor" href="#_vkbuffers"></a>3.5. VkBuffers</h3>
+<div class="paragraph">
+<p>VkBuffers can be bound to Tile Memory to make it backed by tile memory. A VkBuffer bound to Tile Memory must have been created with a new bit in VkBufferUsageFlags to its <code>vkCreateBuffer()</code> call:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef enum VkBufferUsageFlagBits  {
+    /* ... */
+        VK_BUFFER_USAGE_TILE_MEMORY_BIT_QCOM = 0x08000000,
+} VkBufferUsageFlagBits
+
+typedef enum VkBufferUsageFlagBits2 {
+    /* ... */
+        VK_BUFFER_USAGE_TILE_MEMORY_BIT_QCOM = 0x08000000,
+} VkBufferUsageFlagBits2</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_BUFFER_USAGE_TILE_MEMORY_BIT_QCOM</code> indicates that the VkBuffer can be bound to VkDeviceMemory allocated from the Tile Memory heap.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The following usages are permitted with tile memory VkBuffers:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>flags</code> is <code>0</code></p>
+</li>
+<li>
+<p><code>usage</code> includes <code>VK_BUFFER_USAGE_TILE_MEMORY_BIT_QCOM</code> and any combination of the following: <code>VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT</code>, <code>VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT</code>, <code>VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT</code>, <code>VK_BUFFER_USAGE_STORAGE_BUFFER_BIT</code>, <code>VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Additionally transfer usage is supported when <code>tileBufferTransfers</code> is set to <code>VK_TRUE</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tile_memory_requirements"><a class="anchor" href="#_tile_memory_requirements"></a>3.6. Tile memory Requirements</h3>
+<div class="paragraph">
+<p>Images bound to Tile Memory heaps may require different size and alignment requirements from other heaps. To determine the Tile Memory requirements for a resource, applications can send the new following structure to <code>vkGetImageMemoryRequirements2()</code> or <code>vkGetBufferMemoryRequirements2()</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkTileMemoryRequirementsQCOM {
+    VkStructureType sType;
+    const void*     pNext;
+    VkDeviceSize    size;
+    VkDeviceSize    alignment;
+} VkTileMemoryRequirementsQCOM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>size</code> is the size in bytes this resource takes in tile memory.</p>
+</li>
+<li>
+<p><code>alignment</code> is the alignment in bytes this resource requires in tile memory.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If the VkImage or VkBuffer cannot be bound to a Tile Memory heap, <code>size</code> and <code>alignment</code> must be set to 0 by the implementation.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_allocating_and_aliasing_tile_memory"><a class="anchor" href="#_allocating_and_aliasing_tile_memory"></a>3.7. Allocating and aliasing tile memory</h3>
+<div class="paragraph">
+<p>Existing <code>size</code> and <code>alignment</code> guarantees in the spec do not apply by default to Tile Memory. Applications must use memory requirements specified in <code>VkTileMemoryRequirementsQCOM</code> for resources that are bound to Tile Memory.</p>
+</div>
+<div class="paragraph">
+<p>Tile memory heap, unlike other heaps, is an atomic global resource. VkDeviceMemory will always return an address at the start of the heap&#8217;s range and its contents are aliased with other VkDeviceMemory objects bound to the same range. Applications can access the contents simultaneously from aliased resources following the existing memory aliasing rules within the same Queue.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Given the size of Tile Memory is small compared to other heaps and may only fit an image or two, the expected usage is to alias object bindings then time slice access to them during device execution. For example, if you wanted to persist a image through the execution of a few render passes in a command buffer, then discard the contents and persist a separate image across other render passes or into the next command buffer, then the application should alias these images in the heap since they are not required to be persisted simultaneously.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_interactions_with_vk_qcom_tile_properties"><a class="anchor" href="#_interactions_with_vk_qcom_tile_properties"></a>3.8. Interactions with VK_QCOM_tile_properties</h3>
+<div class="paragraph">
+<p>Tile properties are dependent on the amount of tile memory available to the implementation. Before VK_QCOM_tile_memory_heap, this amount of tile memory was static but now the amount of tile memory available to the implementation may change from Render Pass to Render Pass which can alter tile properties.</p>
+</div>
+<div class="paragraph">
+<p>To specify the amount of tile memory in use during a Render Pass the following structure was added:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkTileMemorySizeInfoQCOM {
+    VkStructureType sType;
+    const void*     pNext;
+    VkDeviceSize    size;
+} VkTileMemorySizeInfoQCOM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>size</code> is the size in bytes of tile memory that the Render Pass uses.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><code>VkTileMemorySizeInfoQCOM</code> extends <code>VkRenderPassCreateInfo</code>, <code>VkRenderPassCreateInfo2</code>,and <code>VkRenderingInfo</code></p>
+</div>
+<div class="paragraph">
+<p>Applications must specify this new structure when querying tile properties via the VK_QCOM_tile_properties extension. This structure is not required to be provided outside of this case.</p>
+</div>
+<div class="paragraph">
+<p>The tile memory <code>VkDeviceMemory</code> bound during a Render Pass that relies on tile properties must be equal to the <code>size</code> specified in this structure.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_interactions_with_vk_qcom_tile_shading"><a class="anchor" href="#_interactions_with_vk_qcom_tile_shading"></a>3.9. Interactions with VK_QCOM_tile_shading</h3>
+<div class="paragraph">
+<p>VK_QCOM_tile_shading can be used alongside VK_QCOM_tile_memory_heap to further optimize efficient GPU memory access. Existing tile memory VkImage or VkBuffer memory contents
+can be read or written while in a tile shading pass within the tile memory defined boundary. Furthermore, VkImage or VkBuffer memory contents that were updated in a tile shading pass can be accessed in
+future non-tile shading passes within the tile memory defined boundary. This allows resources that are bound to tile memory to persist within and past the tile shading pass.</p>
+</div>
+<div class="paragraph">
+<p>For example, if a tile shading pass produced a VkImage and then that same VkImage was later consumed in future non-tile shading passes within the tile memory heap&#8217;s defined boundary,
+it may be better to keep this VkImage in tile memory and persist it past the tile shading pass where it was produced.
+VK_QCOM_tile_memory_heap allows this behavior by binding the VkImage to tile memory and persisting the memory with bound tile memory in the command buffers.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+As described in the interactions with <code>VK_QCOM_tile_properties</code>, applications must ensure that the reserved <code>size</code> provided by <code>VkTileMemorySizeInfoQCOM</code> matches with the bound tile memory in tile shading passes.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_forbidden_usage"><a class="anchor" href="#_forbidden_usage"></a>3.10. Forbidden Usage</h3>
+<div class="paragraph">
+<p>Resolve attachments must not be bound to tile memory.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_examples"><a class="anchor" href="#_examples"></a>4. Examples</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_creating_a_tile_memory_vkimage"><a class="anchor" href="#_creating_a_tile_memory_vkimage"></a>4.1. Creating a tile memory VkImage</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkImageCreateInfo imageCreateInfo = {};
+
+... // Fill in VkImageCreateInfo structure
+
+// Add tile memory usage
+imageCreateInfo.usage |= VK_IMAGE_USAGE_TILE_MEMORY_BIT_QCOM
+
+vkCreateImage(..., &amp;imageCreateInfo);
+
+// Get tile memory Requirements
+VkTileMemoryRequirementsQCOM tileMemReqs = {};
+VkMemoryRequirements2 memoryReqs = {};
+
+memoryReqs.pNext = &amp;tileMemReqs;
+
+...
+
+vkGetImageMemoryRequirements2(..., &amp;memoryReqs);
+
+if (tileMemReqs.size &gt; 0)
+{
+        // Supported
+        VkMemoryAllocateInfo memoryAllocInfo = {};
+        VkDeviceMemory tileMemory = {};
+
+        memoryAllocInfo.allocationSize = tileMemReqs.size;
+        memoryAllocInfo.memoryTypeIndex = FindTileMemoryType();
+
+        // Allocate Memory from the tile memory Heap
+        vkAllocateMemory(..., &amp;memoryAllocInfo, &amp;tileMemory);
+
+        // Bind tile memory to the VkImage
+        vkBindImageMemory(..., vkImage, tileMemory);
+}
+else
+{
+        // Fallback path. Not supported.
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_creating_a_tile_memory_vkbuffer"><a class="anchor" href="#_creating_a_tile_memory_vkbuffer"></a>4.2. Creating a tile memory VkBuffer</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkBufferCreateInfo bufferCreateInfo = {}
+
+... // Fill in VkBufferCreateInfo structure
+
+// Add tile memory usage
+bufferCreateInfo.usage |= VK_BUFFER_USAGE_TILE_MEMORY_BIT_QCOM;
+
+vkCreateBuffer(..., &amp;bufferCreateInfo);
+
+// Get tile memory Requirements
+VkTileMemoryRequirementsQCOM tileMemReqs = {};
+VkMemoryRequirements2 memoryReqs = {};
+
+memoryReqs.pNext = &amp;tileMemReqs;
+
+...
+
+vkGetBufferMemoryRequirements2(..., &amp;memoryReqs);
+
+if (tileMemReqs.size &gt; 0)
+{
+        // Supported
+        VkMemoryAllocateInfo memoryAllocInfo = {};
+        VkDeviceMemory tileMemory = {};
+
+        memoryAllocInfo.allocationSize = tileMemReqs.size;
+        memoryAllocInfo.memoryTypeIndex = FindTileMemoryType();
+
+        // Allocate Memory from the tile memory Heap
+        vkAllocateMemory(..., &amp;memoryAllocInfo, &amp;tileMemory);
+
+        // Bind tile memory to the VkBuffer
+        vkBindBufferMemory(..., VkBuffer, tileMemory);
+}
+else
+{
+        // Fallback path. Not supported.
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_recording_commands_with_tile_memory"><a class="anchor" href="#_recording_commands_with_tile_memory"></a>4.3. Recording Commands with tile memory</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkDeviceMemory tileMemoryObject4Mb;
+VkMemoryAllocateInfo allocateInfo = {};
+VkTileMemoryBindInfoQCOM tileMemoryBindInfo = {};
+
+allocateInfo.allocationSize = 4MB;
+allocateInfo.memTypeIndex = [memory type that corresponds to a tile memory heap]
+
+// Allocate 4MB of tile memory
+vkAllocateMemory(..., &amp;allocateInfo, ..., &amp;tileMemoryObject4Mb)
+
+vkBeginCommandBuffer(vkCommandBufferA, ...);
+
+// Application does not use any tile memory in the following 2 Dispatch commands
+vkCmdDispatch(vkCommandBufferA, ...);
+vkCmdDispatch(vkCommandBufferA, ...);
+
+// Bind 4MB of tile memory to use in the next Rendering and Dispatch command
+tileMemoryBindInfo.memory = tileMemoryObject4Mb;
+vkCmdBindTileMemoryQCOM(vkCommandBufferA, &amp;tileMemoryBindInfo);
+vkCmdBeginRendering(vkCommandBufferA, ...);
+vkCmdDispatch(vkCommandBufferA, ...);
+
+// Application does not use any tile memory in the following Dynamic Rendering command
+vkCmdBindTileMemoryQCOM(vkCommandBufferA, VK_NULL_HANDLE);
+vkCmdBeginRendering(vkCommandBufferA, ...);
+
+// The bound tile memory object (if any) is implicitly unbound here
+vkEndCommandBuffer(vkCommandBufferA);
+
+...</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_questions"><a class="anchor" href="#_questions"></a>4.4. Questions</h3>
+<div class="paragraph">
+<p>None.</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

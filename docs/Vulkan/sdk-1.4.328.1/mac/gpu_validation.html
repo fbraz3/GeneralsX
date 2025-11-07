@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="icon" href="images/Vulkan_LogoBug_48px_Nov17.png">
+<link rel="stylesheet" href="github-markdown.css">
+</head>
+<body>
+<article class="markdown-body">
+<!-- markdownlint-disable MD041 -->
+
+<!-- Copyright 2015-2025 Valve Corporation -->
+
+<!-- Copyright 2015-2025 LunarG, Inc. -->
+
+<p><a href="https://www.khronos.org/vulkan/" TARGET="_blank"><img src="https://vulkan.lunarg.com/img/Vulkan_100px_Dec16.png" title="https://www.khronos.org/vulkan/" alt="Khronos Vulkan" /></a></p>
+<h1 id="gpu-assisted-validation">GPU Assisted Validation</h1>
+<p>While most validation can be done on the CPU, some things like the content of a buffer or how a shader invocation accesses a descriptor array cannot be known until a command buffer is executed. The Validation Layers have a dedicated tool to perform validation in those cases: <strong>GPU Assisted Validation</strong> (aka GPU-AV).</p>
+<p>GPU-AV directly inspects GPU resources and instrument shaders to validate their run time invocations, and reports back any error. Due to dedicated state tracking, shader instrumentation, necessity to read back data from the GPU, etc, there is a performance overhead, so <strong>GPU-AV is off by default</strong>.</p>
+<h2 id="how-to-use">How to use</h2>
+<p>For an overview of how to configure layers, refer to the <a href="./layer_configuration.html">Layers Overview and Configuration</a> document.</p>
+<p>The GPU-AV settings are managed by configuring the Validation Layer. These settings are described in the <a href="./khronos_validation_layer.html#user-content-layer-details">VK_LAYER_KHRONOS_validation</a> document.</p>
+<p>GPU-AV settings can also be managed using the <a href="./vkconfig.html">Vulkan Configurator</a> included with the Vulkan SDK.</p>
+<blockquote>
+<p>Note - it is <strong>highly</strong> recommended to not have both normal Core validation and GPU-AV on together as performance will be slow.</p>
+</blockquote>
+<h2 id="requirements">Requirements</h2>
+<p>There are several limitations that may impede the operation of GPU Assisted Validation:</p>
+<ul>
+<li>Vulkan 1.1+ required</li>
+<li>A Descriptor Slot
+<ul>
+<li>GPU-AV requires one descriptor set, which means if an application is using all sets in <code>VkPhysicalDeviceLimits::maxBoundDescriptorSets</code>, GPU-AV will not work.</li>
+<li>GPU-AV will reduce the returned value of <code>maxBoundDescriptorSets</code> by one.</li>
+</ul></li>
+<li><code>fragmentStoresAndAtomics</code> and <code>vertexPipelineStoresAndAtomics</code> so we can write out information from those stages.</li>
+<li><code>timelineSemaphore</code> so we don't have a big <code>vkQueueWaitIdle</code> after each submission.</li>
+</ul>
+<p>There are various other feature requirements, but if not met, GPU-AV will turn off the parts of GPU-AV for you automatically (and produce a warning message).</p>
+<p>If a feature is not enabled, we will try to enable it for you at device creation time.</p>
+<h2 id="reality">Reality</h2>
+<p>There are 5 goals we constantly think about when developing GPU-AV</p>
+<ol>
+<li>It is fast enough to use</li>
+<li>It won't crash on you</li>
+<li>It is accurate (no false positive!)</li>
+<li>It has good error messages</li>
+<li>It actually catches your invalid code</li>
+</ol>
+<p>The development of GPU-AV has taught us showed that to perfectly validate your GPU workload, it can be painfully slow (like multiple seconds a frame slow).</p>
+<p>There are 2 main reasons people use GPU-AV: <code>regression mode</code> and <code>debug mode</code></p>
+<h3 id="regression-mode">Regression Mode</h3>
+<p>If you find yourself turning on GPU-AV all the time to "make sure no hidden issues" then this is you. You likely want to have things fast and can compromise not having have try and track multiple error in a single shader.</p>
+<p><strong>By default</strong>, we assume this is the use case and why we have the "Safe Mode" setting turned <strong>off</strong> by default.</p>
+<p>By assuming things "should likely be working", we can make GPU-AV much faster</p>
+<h3 id="debug-mode">Debug Mode</h3>
+<p>We realize if we don't stop your Device Lost, no one else will. If you are stuck on a nasty bug and need the extra help, this is for you.</p>
+<p><strong>Please turn off Safe Mode</strong>, this will sacrifice performance, but GPU-AV will try to stop things from crashing. We have a way to <a href="./gpu_av_selective_shader.html">select the bad shader</a> as this will <strong>greatly</strong> improve performance if we only need to validate a smaller surface area.</p>
+<h4 id="force-on-robustness">Force on Robustness</h4>
+<p>There is also a "Force robustness on" setting we provide in GPU-AV, this has 2 main purposes</p>
+<ol>
+<li>A way for developers to toggle this on and off</li>
+<li>Improve GPU-AV performance by assuming the developer relies on <a href="https://docs.vulkan.org/guide/latest/robustness.html" TARGET="_blank">robust behavior to work</a></li>
+</ol>
+<h2 id="internal-details">Internal Details</h2>
+<p>The state of GPU-AV is constantly evolving as we find out what does and doesn't work.</p>
+<p>The following are extra information around GPU-AV for those who want to know:</p>
+<ul>
+<li><a href="./gpu_av_development.html">General development advice</a></li>
+<li><a href="./gpu_av_descriptor_indexing.html">How descriptor indexing works</a></li>
+<li><a href="./gpu_av_post_process.html">How post processing works</a></li>
+<li><a href="./gpu_av_shader_instrumentation.html">How shader instrumentation works</a></li>
+</ul>
+</article>
+</body>
+</html>

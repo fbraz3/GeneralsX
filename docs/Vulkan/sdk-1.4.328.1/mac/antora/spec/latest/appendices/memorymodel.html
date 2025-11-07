@@ -1,0 +1,2307 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Memory Model :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:spec" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="spec" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Specification</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/fundamentals.html">Fundamentals</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/initialization.html">Initialization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/devsandqueues.html">Devices and Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/cmdbuffers.html">Command Buffers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/synchronization.html">Synchronization and Cache Control</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/renderpass.html">Render Pass</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/shaders.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/pipelines.html">Pipelines</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/memory.html">Memory Allocation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/resources.html">Resource Creation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/samplers.html">Samplers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/descriptorsets.html">Resource Descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/interfaces.html">Shader Interfaces</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/textures.html">Image Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/fragmentdensitymapops.html">Fragment Density Map Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_ARM_tensors/tensorops.html">Tensor Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/queries.html">Queries</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/clears.html">Clear Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/copies.html">Copy Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/drawing.html">Drawing Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/fxvertex.html">Fixed-Function Vertex Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/tessellation.html">Tessellation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/geometry.html">Geometry Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_NV_mesh_shader/mesh.html">Mesh Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_HUAWEI_cluster_culling_shader/clusterculling.html">Cluster Culling Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/vertexpostproc.html">Fixed-Function Vertex Post-Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/primsrast.html">Rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/fragops.html">Fragment Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/framebuffer.html">The Framebuffer</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/dispatch.html">Dispatching Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/device_generated_commands/generatedcommands.html">Device-Generated Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/sparsemem.html">Sparse Resources</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_KHR_surface/wsi.html">Window System Integration (WSI)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_KHR_deferred_host_operations/deferred_host_operations.html">Deferred Host Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_EXT_private_data.html">Private Data</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/accelstructures.html">Acceleration Structures</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_EXT_opacity_micromap/micromaps.html">Micromap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/raytraversal.html">Ray Traversal</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/raytracing.html">Ray Tracing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_NV_memory_decompression.html">Memory Decompression</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/videocoding.html">Video Coding</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_NV_optical_flow/optical_flow.html">Optical Flow</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/executiongraphs.html">Execution Graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_NV_external_compute_queue/VK_NV_external_compute_queue.html">External Compute Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_ARM_data_graph/graphs.html">Data graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/extensions.html">Extending Vulkan</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/features.html">Features</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/limits.html">Limits</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/formats.html">Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/capabilities.html">Additional Capabilities</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/debugging.html">Debugging</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="spirvenv.html">Vulkan Environment for SPIR-V</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="memorymodel.html">Memory Model</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="compressedtex.html">Compressed Image Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="versions.html">Core Revisions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="extensions.html">Layers &amp; Extensions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="roadmap.html">Vulkan Roadmap Milestones</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="deprecation.html">Deprecation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="boilerplate.html">API Boilerplate</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="invariance.html">Invariance</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="glossary.html">Lexicon</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="credits.html">Credits (Informative)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Specification</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Specification</a></li>
+    <li><a href="memorymodel.html">Memory Model</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/spec/modules/ROOT/pages/appendices/memorymodel.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Memory Model</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>This memory model describes synchronizations provided by all
+implementations; however, some of the synchronizations defined require extra
+features to be supported by the implementation.
+See <a href="../chapters/features.html#VkPhysicalDeviceVulkanMemoryModelFeatures" class="xref page">VkPhysicalDeviceVulkanMemoryModelFeatures</a>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-agent"><a class="anchor" href="#memory-model-agent"></a>Agent</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><em>Operation</em> is a general term for any task that is executed on the system.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>An operation is by definition something that is executed.
+Thus if an instruction is skipped due to control flow, it does not
+constitute an operation.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Each operation is executed by a particular <em>agent</em>.
+Possible agents include each shader invocation, each host thread, and each
+fixed-function stage of the pipeline.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-memory-location"><a class="anchor" href="#memory-model-memory-location"></a>Memory Location</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A <em>memory location</em> identifies unique storage for 8 bits of data.
+Memory operations access a <em>set of memory locations</em> consisting of one or
+more memory locations at a time, e.g. an operation accessing a 32-bit
+integer in memory would read/write a set of four memory locations.
+Memory operations that access whole aggregates <strong>may</strong> access any padding bytes
+between elements or members, but no padding bytes at the end of the
+aggregate.
+Two sets of memory locations <em>overlap</em> if the intersection of their sets of
+memory locations is non-empty.
+A memory operation <strong>must</strong> not affect memory at a memory location not within
+its set of memory locations.</p>
+</div>
+<div class="paragraph">
+<p>Memory locations for buffers and images are explicitly allocated in
+<a href="../chapters/memory.html#VkDeviceMemory" class="xref page">VkDeviceMemory</a> objects, and are implicitly allocated for SPIR-V
+variables in each shader invocation.</p>
+</div>
+<div class="paragraph">
+<p>Variables with <code>Workgroup</code> storage class that point to a block-decorated
+type share a set of memory locations.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-allocation"><a class="anchor" href="#memory-model-allocation"></a>Allocation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The values stored in newly allocated memory locations are determined by a
+SPIR-V variable&#8217;s initializer, if present, or else are <strong>undefined</strong>.
+At the time an allocation is created there have been no
+<a href="#memory-model-memory-operation">memory operations</a> to any of its memory
+locations.
+The initialization is not considered to be a memory operation.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>For tessellation control shader output variables, a consequence of
+initialization not being considered a memory operation is that some
+implementations may need to insert a barrier between the initialization of
+the output variables and any reads of those variables.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-memory-operation"><a class="anchor" href="#memory-model-memory-operation"></a>Memory Operation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>For an operation A and memory location M:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="memory-model-access-read"></a> A <em>reads</em> M if and only if the data stored
+in M is an input to A.</p>
+</li>
+<li>
+<p><a id="memory-model-access-write"></a> A <em>writes</em> M if and only if the data
+output from A is stored to M.</p>
+</li>
+<li>
+<p><a id="memory-model-access-access"></a> A <em>accesses</em> M if and only if it either
+reads or writes (or both) M.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>A write whose value is the same as what was already in those memory
+locations is still considered to be a write and has all the same effects.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-references"><a class="anchor" href="#memory-model-references"></a>Reference</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A <em>reference</em> is an object that a particular agent <strong>can</strong> use to access a set
+of memory locations.
+On the host, a reference is a host virtual address.
+On the device, a reference is:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The descriptor that a variable is bound to, for variables in Image,
+Uniform, or StorageBuffer storage classes.
+If the variable is an array (or array of arrays, etc.) then each element
+of the array <strong>may</strong> be a unique reference.</p>
+</li>
+<li>
+<p>The address range for a buffer in <code>PhysicalStorageBuffer</code> storage
+class, where the base of the address range is queried with
+<a href="../chapters/resources.html#vkGetBufferDeviceAddress" class="xref page">vkGetBufferDeviceAddress</a>
+and the length of the range is the size of the buffer.</p>
+</li>
+<li>
+<p>A single common reference for all variables with <code>Workgroup</code> storage
+class that point to a block-decorated type.</p>
+</li>
+<li>
+<p>The variable itself for non-block-decorated type variables in
+<code>Workgroup</code> storage class.</p>
+</li>
+<li>
+<p>The variable itself for variables in other storage classes.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Two memory accesses through distinct references <strong>may</strong> require availability
+and visibility operations as defined
+<a href="#memory-model-location-ordered">below</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-program-order"><a class="anchor" href="#memory-model-program-order"></a>Program-Order</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A <em>dynamic instance</em> of an instruction is defined in SPIR-V
+(<a href="https://registry.khronos.org/spir-v/specs/unified1/SPIRV.html#DynamicInstance" class="bare">https://registry.khronos.org/spir-v/specs/unified1/SPIRV.html#DynamicInstance</a>)
+as a way of referring to a particular execution of a static instruction.
+Program-order is an ordering on dynamic instances of instructions executed
+by a single shader invocation:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>(Basic block): If instructions A and B are in the same basic block, and
+A is listed in the module before B, then the n&#8217;th dynamic instance of A
+is program-ordered before the n&#8217;th dynamic instance of B.</p>
+</li>
+<li>
+<p>(Branch): The dynamic instance of a branch or switch instruction is
+program-ordered before the dynamic instance of the OpLabel instruction
+to which it transfers control.</p>
+</li>
+<li>
+<p>(Call entry): The dynamic instance of an <code>OpFunctionCall</code> instruction
+is program-ordered before the dynamic instances of the
+<code>OpFunctionParameter</code> instructions and the body of the called
+function.</p>
+</li>
+<li>
+<p>(Call exit): The dynamic instance of the instruction following an
+<code>OpFunctionCall</code> instruction is program-ordered after the dynamic
+instance of the return instruction executed by the called function.</p>
+</li>
+<li>
+<p>(Transitive Closure): If dynamic instance A of any instruction is
+program-ordered before dynamic instance B of any instruction and B is
+program-ordered before dynamic instance C of any instruction then A is
+program-ordered before C.</p>
+</li>
+<li>
+<p>(Complete definition): No other dynamic instances are program-ordered.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For instructions executed on the host, the source language defines the
+program-order relation (e.g. as &#8220;sequenced-before&#8221;).</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="shader-call-related"><a class="anchor" href="#shader-call-related"></a>Shader Call Related</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Shader-call-related is an equivalence relation on invocations defined as the
+symmetric and transitive closure of:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A is shader-call-related to B if A is created by an
+<a href="../chapters/raytracing.html#ray-tracing-shader-call" class="xref page">shader call</a> instruction executed by B.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="shader-call-order"><a class="anchor" href="#shader-call-order"></a>Shader Call Order</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Shader-call-order is a partial order on dynamic instances of instructions
+executed by invocations that are shader-call-related:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>(Program order): If dynamic instance A is program-ordered before B, then
+A is shader-call-ordered before B.</p>
+</li>
+<li>
+<p>(Shader call entry): If A is a dynamic instance of an
+<a href="../chapters/raytracing.html#ray-tracing-shader-call" class="xref page">shader call</a> instruction and B is a dynamic
+instance executed by an invocation that is created by A, then A is
+shader-call-ordered before B.</p>
+</li>
+<li>
+<p>(Shader call exit): If A is a dynamic instance of an
+<a href="../chapters/raytracing.html#ray-tracing-shader-call" class="xref page">shader call</a> instruction, B is the next
+dynamic instance executed by the same invocation, and C is a dynamic
+instance executed by an invocation that is created by A, then C is
+shader-call-ordered before B.</p>
+</li>
+<li>
+<p>(Transitive closure): If A is shader-call-ordered-before B and B is
+shader-call-ordered-before C, then A is shader-call-ordered-before C.</p>
+</li>
+<li>
+<p>(Complete definition): No other dynamic instances are
+shader-call-ordered.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-scope"><a class="anchor" href="#memory-model-scope"></a>Scope</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Atomic and barrier instructions include scopes which identify sets of shader
+invocations that <strong>must</strong> obey the requested ordering and atomicity rules of
+the operation, as defined below.</p>
+</div>
+<div class="paragraph">
+<p>The various scopes are described in detail in <a href="../chapters/shaders.html#shaders-scope" class="xref page">the Shaders chapter</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-atomic-operation"><a class="anchor" href="#memory-model-atomic-operation"></a>Atomic Operation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>An <em>atomic operation</em> on the device is any SPIR-V operation whose name
+begins with <code>OpAtomic</code>.
+An atomic operation on the host is any operation performed with an
+std::atomic typed object.</p>
+</div>
+<div class="paragraph">
+<p>Each atomic operation has a memory <a href="#memory-model-scope">scope</a> and a
+<a href="#memory-model-memory-semantics">semantics</a>.
+Informally, the scope determines which other agents it is atomic with
+respect to, and the <a href="#memory-model-memory-semantics">semantics</a> constrains
+its ordering against other memory accesses.
+Device atomic operations have explicit scopes and semantics.
+Each host atomic operation implicitly uses the <code>CrossDevice</code> scope, and
+uses a memory semantics equivalent to a C++ std::memory_order value of
+relaxed, acquire, release, acq_rel, or seq_cst.</p>
+</div>
+<div class="paragraph">
+<p>Two atomic operations A and B are <em>potentially-mutually-ordered</em> if and only
+if all of the following are true:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>They access the same set of memory locations.</p>
+</li>
+<li>
+<p>They use the same reference.</p>
+</li>
+<li>
+<p>A is in the instance of B&#8217;s memory scope.</p>
+</li>
+<li>
+<p>B is in the instance of A&#8217;s memory scope.</p>
+</li>
+<li>
+<p>A and B are not the same operation (irreflexive).</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Two atomic operations A and B are <em>mutually-ordered</em> if and only if they are
+potentially-mutually-ordered and any of the following are true:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A and B are both device operations.</p>
+</li>
+<li>
+<p>A and B are both host operations.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>If two atomic operations are not mutually-ordered, and if their sets of
+memory locations overlap, then each <strong>must</strong> be synchronized against the other
+as if they were non-atomic operations.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-scoped-modification-order"><a class="anchor" href="#memory-model-scoped-modification-order"></a>Scoped Modification Order</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>For a given atomic write A, all atomic writes that are mutually-ordered with
+A occur in an order known as A&#8217;s <em>scoped modification order</em>.
+A&#8217;s scoped modification order relates no other operations.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Invocations outside the instance of A&#8217;s memory scope <strong>may</strong> observe the values
+at A&#8217;s set of memory locations becoming visible to it in an order that
+disagrees with the scoped modification order.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>It is valid to have non-atomic operations or atomics in a different scope
+instance to the same set of memory locations, as long as they are
+synchronized against each other as if they were non-atomic (if they are not,
+it is treated as a <a href="#memory-model-access-data-race">data race</a>).
+That means this definition of A&#8217;s scoped modification order could include
+atomic operations that occur much later, after intervening non-atomics.
+That is a bit non-intuitive, but it helps to keep this definition simple and
+non-circular.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-memory-semantics"><a class="anchor" href="#memory-model-memory-semantics"></a>Memory Semantics</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Non-atomic memory operations, by default, <strong>may</strong> be observed by one agent in a
+different order than they were written by another agent.</p>
+</div>
+<div class="paragraph">
+<p>Atomics and some synchronization operations include <em>memory semantics</em>,
+which are flags that constrain the order in which other memory accesses
+(including non-atomic memory accesses and
+<a href="#memory-model-availability-visibility">availability and visibility operations</a>) performed by the same agent <strong>can</strong> be observed by other agents,
+or <strong>can</strong> observe accesses by other agents.</p>
+</div>
+<div class="paragraph">
+<p>Device instructions that include semantics are <code>OpAtomic*</code>,
+<code>OpControlBarrier</code>, <code>OpMemoryBarrier</code>, and <code>OpMemoryNamedBarrier</code>.
+Host instructions that include semantics are some std::atomic methods and
+memory fences.</p>
+</div>
+<div class="paragraph">
+<p>SPIR-V supports the following memory semantics:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Relaxed: No constraints on order of other memory accesses.</p>
+</li>
+<li>
+<p>Acquire: A memory read with this semantic performs an <em>acquire
+operation</em>.
+A memory barrier with this semantic is an <em>acquire barrier</em>.</p>
+</li>
+<li>
+<p>Release: A memory write with this semantic performs a <em>release
+operation</em>.
+A memory barrier with this semantic is a <em>release barrier</em>.</p>
+</li>
+<li>
+<p>AcquireRelease: A memory read-modify-write operation with this semantic
+performs both an acquire operation and a release operation, and inherits
+the limitations on ordering from both of those operations.
+A memory barrier with this semantic is both a release and acquire
+barrier.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>SPIR-V does not support &#8220;consume&#8221; semantics on the device.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The memory semantics operand also includes <em>storage class semantics</em> which
+indicate which storage classes are constrained by the synchronization.
+SPIR-V storage class semantics include:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>UniformMemory</p>
+</li>
+<li>
+<p>WorkgroupMemory</p>
+</li>
+<li>
+<p>ImageMemory</p>
+</li>
+<li>
+<p>OutputMemory</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Each SPIR-V memory operation accesses a single storage class.
+Semantics in synchronization operations can include a combination of storage
+classes.</p>
+</div>
+<div class="paragraph">
+<p>The UniformMemory storage class semantic applies to accesses to memory in
+the
+PhysicalStorageBuffer,
+<code>ShaderRecordBufferKHR</code>,
+Uniform and StorageBuffer storage classes.
+The WorkgroupMemory storage class semantic applies to accesses to memory in
+the Workgroup storage class.
+The ImageMemory storage class semantic applies to accesses to memory in the
+Image storage class.
+The OutputMemory storage class semantic applies to accesses to memory in the
+Output storage class.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Informally, these constraints limit how memory operations can be reordered,
+and these limits apply not only to the order of accesses as performed in the
+agent that executes the instruction, but also to the order the effects of
+writes become visible to all other agents within the same instance of the
+instruction&#8217;s memory scope.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Release and acquire operations in different threads <strong>can</strong> act as
+synchronization operations, to guarantee that writes that happened before
+the release are visible after the acquire.
+(This is not a formal definition, just an Informative forward reference.)</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The OutputMemory storage class semantic is only useful in tessellation
+control shaders, which is the only execution model where output variables
+are shared between invocations.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The memory semantics operand <strong>can</strong> also include availability and visibility
+flags, which apply availability and visibility operations as described in
+<a href="#memory-model-availability-visibility">availability and visibility</a>.
+The availability/visibility flags are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>MakeAvailable: Semantics <strong>must</strong> be Release or AcquireRelease.
+Performs an availability operation before the release operation or
+barrier.</p>
+</li>
+<li>
+<p>MakeVisible: Semantics <strong>must</strong> be Acquire or AcquireRelease.
+Performs a visibility operation after the acquire operation or barrier.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The specifics of these operations are defined in
+<a href="#memory-model-availability-visibility-semantics">Availability and Visibility Semantics</a>.</p>
+</div>
+<div class="paragraph">
+<p>Host atomic operations <strong>may</strong> support a different list of memory semantics and
+synchronization operations, depending on the host architecture and source
+language.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-release-sequence"><a class="anchor" href="#memory-model-release-sequence"></a>Release Sequence</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>After an atomic operation A performs a release operation on a set of memory
+locations M, the <em>release sequence headed by A</em> is the longest continuous
+subsequence of A&#8217;s scoped modification order that consists of:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>the atomic operation A as its first element</p>
+</li>
+<li>
+<p>atomic read-modify-write operations on M by any agent</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The atomics in the last bullet <strong>must</strong> be mutually-ordered with A by virtue of
+being in A&#8217;s scoped modification order.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>This intentionally omits &#8220;atomic writes to M performed by the same agent
+that performed A&#8221;, which is present in the corresponding C++ definition.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-synchronizes-with"><a class="anchor" href="#memory-model-synchronizes-with"></a>Synchronizes-With</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><em>Synchronizes-with</em> is a relation between operations, where each operation
+is either an atomic operation or a memory barrier (aka fence on the host).</p>
+</div>
+<div class="paragraph">
+<p>If A and B are atomic operations, then A synchronizes-with B if and only if
+all of the following are true:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A performs a release operation</p>
+</li>
+<li>
+<p>B performs an acquire operation</p>
+</li>
+<li>
+<p>A and B are mutually-ordered</p>
+</li>
+<li>
+<p>B reads a value written by A or by an operation in the release sequence
+headed by A</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><code>OpControlBarrier</code>, <code>OpMemoryBarrier</code>, and <code>OpMemoryNamedBarrier</code>
+are <em>memory barrier</em> instructions in SPIR-V.</p>
+</div>
+<div class="paragraph">
+<p>If A is a release barrier and B is an atomic operation that performs an
+acquire operation, then A synchronizes-with B if and only if all of the
+following are true:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>there exists an atomic write X (with any memory semantics)</p>
+</li>
+<li>
+<p>A is program-ordered before X</p>
+</li>
+<li>
+<p>X and B are mutually-ordered</p>
+</li>
+<li>
+<p>B reads a value written by X or by an operation in the release sequence
+headed by X</p>
+<div class="ulist">
+<ul>
+<li>
+<p>If X is relaxed, it is still considered to head a hypothetical release
+sequence for this rule</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>A and B are in the instance of each other&#8217;s memory scopes</p>
+</li>
+<li>
+<p>X&#8217;s storage class is in A&#8217;s semantics.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If A is an atomic operation that performs a release operation and B is an
+acquire barrier, then A synchronizes-with B if and only if all of the
+following are true:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>there exists an atomic read X (with any memory semantics)</p>
+</li>
+<li>
+<p>X is program-ordered before B</p>
+</li>
+<li>
+<p>X and A are mutually-ordered</p>
+</li>
+<li>
+<p>X reads a value written by A or by an operation in the release sequence
+headed by A</p>
+</li>
+<li>
+<p>A and B are in the instance of each other&#8217;s memory scopes</p>
+</li>
+<li>
+<p>X&#8217;s storage class is in B&#8217;s semantics.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If A is a release barrier and B is an acquire barrier, then A
+synchronizes-with B if all of the following are true:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>there exists an atomic write X (with any memory semantics)</p>
+</li>
+<li>
+<p>A is program-ordered before X</p>
+</li>
+<li>
+<p>there exists an atomic read Y (with any memory semantics)</p>
+</li>
+<li>
+<p>Y is program-ordered before B</p>
+</li>
+<li>
+<p>X and Y are mutually-ordered</p>
+</li>
+<li>
+<p>Y reads the value written by X or by an operation in the release
+sequence headed by X</p>
+<div class="ulist">
+<ul>
+<li>
+<p>If X is relaxed, it is still considered to head a hypothetical release
+sequence for this rule</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>A and B are in the instance of each other&#8217;s memory scopes</p>
+</li>
+<li>
+<p>X&#8217;s and Y&#8217;s storage class is in A&#8217;s and B&#8217;s semantics.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>NOTE: X and Y <strong>must</strong> have the same storage class, because they are
+mutually ordered.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If A is a release barrier, B is an acquire barrier, and C is a control
+barrier (where A <strong>can</strong> equal C, and B <strong>can</strong> equal C), then A synchronizes-with
+B if all of the following are true:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A is program-ordered before (or equals) C</p>
+</li>
+<li>
+<p>C is program-ordered before (or equals) B</p>
+</li>
+<li>
+<p>A and B are in the instance of each other&#8217;s memory scopes</p>
+</li>
+<li>
+<p>A and B are in the instance of C&#8217;s execution scope</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>This is similar to the barrier-barrier synchronization above, but with a
+control barrier filling the role of the relaxed atomics.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Let F be an ordering of fragment shader invocations, such that invocation
+F<sub>1</sub> is ordered before invocation F<sub>2</sub> if and only if F<sub>1</sub> and F<sub>2</sub> overlap
+as described in <a href="../chapters/shaders.html#shaders-scope-fragment-interlock" class="xref page">Fragment Shader Interlock</a> and F<sub>1</sub> executes the interlocked code before F<sub>2</sub>.</p>
+</div>
+<div class="paragraph">
+<p>If A is an <code>OpEndInvocationInterlockEXT</code> instruction and B is an
+<code>OpBeginInvocationInterlockEXT</code> instruction, then A synchronizes-with B
+if the agent that executes A is ordered before the agent that executes B in
+F. A and B are both considered to have <code>FragmentInterlock</code> memory scope
+and semantics of UniformMemory and ImageMemory, and A is considered to have
+Release semantics and B is considered to have Acquire semantics.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p><code>OpBeginInvocationInterlockEXT</code> and <code>OpBeginInvocationInterlockEXT</code> do
+not perform implicit availability or visibility operations.
+Usually, shaders using fragment shader interlock will declare the relevant
+resources as <code>coherent</code> to get implicit
+<a href="#memory-model-instruction-av-vis">per-instruction availability and visibility operations</a>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>If A is a release barrier and B is an acquire barrier, then A
+synchronizes-with B if all of the following are true:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A is shader-call-ordered-before B</p>
+</li>
+<li>
+<p>A and B are in the instance of each other&#8217;s memory scopes</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>No other release and acquire barriers synchronize-with each other.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-system-synchronizes-with"><a class="anchor" href="#memory-model-system-synchronizes-with"></a>System-Synchronizes-With</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><em>System-synchronizes-with</em> is a relation between arbitrary operations on the
+device or host.
+Certain operations system-synchronize-with each other, which informally
+means the first operation occurs before the second and that the
+synchronization is performed without using application-visible memory
+accesses.</p>
+</div>
+<div class="paragraph">
+<p>If there is an <a href="../chapters/synchronization.html#synchronization-dependencies-execution" class="xref page">execution dependency</a> between two operations A and B, then the operation in the first
+synchronization scope system-synchronizes-with the operation in the second
+synchronization scope.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>This covers all Vulkan synchronization primitives, including device
+operations executing before a synchronization primitive is signaled, wait
+operations happening before subsequent device operations, signal operations
+happening before host operations that wait on them, and host operations
+happening before <a href="../chapters/cmdbuffers.html#vkQueueSubmit" class="xref page">vkQueueSubmit</a>.
+The list is spread throughout the synchronization chapter, and is not
+repeated here.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>System-synchronizes-with implicitly includes all storage class semantics and
+has <code>CrossDevice</code> scope.</p>
+</div>
+<div class="paragraph">
+<p>If A system-synchronizes-with B, we also say A is
+<em>system-synchronized-before</em> B and B is <em>system-synchronized-after</em> A.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-non-private"><a class="anchor" href="#memory-model-non-private"></a>Private vs. Non-Private</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>By default, non-atomic memory operations are treated as <em>private</em>, meaning
+such a memory operation is not intended to be used for communication with
+other agents.
+Memory operations with the <code>NonPrivatePointer</code>, <code>NonPrivateTexel</code>
+, or <code>NonPrivateElementARM</code>
+bit set are treated as <em>non-private</em>, and are intended to be used for
+communication with other agents.</p>
+</div>
+<div class="paragraph">
+<p>More precisely, for private memory operations to be
+<a href="#memory-model-location-ordered">Location-Ordered</a> between distinct agents
+requires using system-synchronizes-with rather than shader-based
+synchronization.
+Private memory operations still obey program-order.</p>
+</div>
+<div class="paragraph">
+<p>Atomic operations are always considered non-private.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-inter-thread-happens-before"><a class="anchor" href="#memory-model-inter-thread-happens-before"></a>Inter-Thread-Happens-Before</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let SC be a non-empty set of storage class semantics.
+Then (using template syntax) operation A <em>inter-thread-happens-before</em>&lt;SC&gt;
+operation B if and only if any of the following is true:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A system-synchronizes-with B</p>
+</li>
+<li>
+<p>A synchronizes-with B, and both A and B have all of SC in their
+semantics</p>
+</li>
+<li>
+<p>A is an operation on memory in a storage class in SC or that has all of
+SC in its semantics, B is a release barrier or release atomic with all
+of SC in its semantics, and A is program-ordered before B</p>
+</li>
+<li>
+<p>A is an acquire barrier or acquire atomic with all of SC in its
+semantics, B is an operation on memory in a storage class in SC or that
+has all of SC in its semantics, and A is program-ordered before B</p>
+</li>
+<li>
+<p>A and B are both host operations and A inter-thread-happens-before B as
+defined in the host language specification</p>
+</li>
+<li>
+<p>A inter-thread-happens-before&lt;SC&gt; some X and X
+inter-thread-happens-before&lt;SC&gt; B</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-happens-before"><a class="anchor" href="#memory-model-happens-before"></a>Happens-Before</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Operation A <em>happens-before</em> operation B if and only if any of the following
+is true:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A is program-ordered before B</p>
+</li>
+<li>
+<p>A inter-thread-happens-before&lt;SC&gt; B for some set of storage classes SC</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><em>Happens-after</em> is defined similarly.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Unlike C++, happens-before is not always sufficient for a write to be
+visible to a read.
+Additional <a href="#memory-model-availability-visibility">availability and visibility</a> operations <strong>may</strong> be required for writes to be
+<a href="#memory-model-visible-to">visible-to</a> other memory accesses.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Happens-before is not transitive, but each of program-order and
+inter-thread-happens-before&lt;SC&gt; are transitive.
+These can be thought of as covering the &#8220;single-threaded&#8221; case and the
+&#8220;multi-threaded&#8221; case, and it is not necessary (and not valid) to form
+chains between the two.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-availability-visibility"><a class="anchor" href="#memory-model-availability-visibility"></a>Availability and Visibility</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><em>Availability</em> and <em>visibility</em> are states of a write operation, which
+(informally) track how far the write has permeated the system, i.e. which
+agents and references are able to observe the write.
+Availability state is per <em>memory domain</em>.
+Visibility state is per (agent,reference) pair.
+Availability and visibility states are per-memory location for each write.</p>
+</div>
+<div class="paragraph">
+<p>Memory domains are named according to the agents whose memory accesses use
+the domain.
+Domains used by shader invocations are organized hierarchically into
+multiple smaller memory domains which correspond to the different
+<a href="../chapters/shaders.html#shaders-scope" class="xref page">scopes</a>.
+Each memory domain is considered the <em>dual</em> of a scope, and vice versa.
+The memory domains defined in Vulkan include:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>host</em> - accessible by host agents</p>
+</li>
+<li>
+<p><em>device</em> - accessible by all device agents for a particular device</p>
+</li>
+<li>
+<p><em>shader</em> - accessible by shader agents for a particular device,
+corresponding to the <code>Device</code> scope</p>
+</li>
+<li>
+<p><em>queue family instance</em> - accessible by shader agents in a single queue
+family, corresponding to the <code>QueueFamily</code> scope.</p>
+</li>
+<li>
+<p><em>fragment interlock instance</em> - accessible by fragment shader agents
+that <a href="../chapters/shaders.html#shaders-scope-fragment-interlock" class="xref page">overlap</a>, corresponding to the
+<code>FragmentInterlock</code> scope.</p>
+</li>
+<li>
+<p><em>shader call instance</em> - accessible by shader agents that are
+<a href="#shader-call-related">shader-call-related</a>, corresponding to the
+<code>ShaderCallKHR</code> scope.</p>
+</li>
+<li>
+<p><em>workgroup instance</em> - accessible by shader agents in the same
+workgroup, corresponding to the <code>Workgroup</code> scope.</p>
+</li>
+<li>
+<p><em>subgroup instance</em> - accessible by shader agents in the same subgroup,
+corresponding to the <code>Subgroup</code> scope.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The memory domains are nested in the order listed above,
+except for shader call instance domain,
+with memory domains later in the list nested in the domains earlier in the
+list.
+The shader call instance domain is at an implementation-dependent location
+in the list, and is nested according to that location.
+The shader call instance domain is not broader than the queue family
+instance domain.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Memory domains do not correspond to storage classes or device-local and
+host-local <a href="../chapters/memory.html#VkDeviceMemory" class="xref page">VkDeviceMemory</a> allocations, rather they indicate whether a
+write can be made visible only to agents in the same subgroup, same
+workgroup,
+overlapping fragment shader invocation,
+shader-call-related ray tracing invocation,
+in any shader invocation, or anywhere on the device, or host.
+The shader, queue family instance,
+fragment interlock instance,
+shader call instance,
+workgroup instance, and subgroup instance domains are only used for
+shader-based availability/visibility operations, in other cases writes can
+be made available from/visible to the shader via the device domain.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p><em>Availability operations</em>, <em>visibility operations</em>, and <em>memory domain
+operations</em> alter the state of the write operations that happen-before them,
+and which are included in their <em>source scope</em> to be available or visible to
+their <em>destination scope</em>.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>For an availability operation, the source scope is a set of
+(agent,reference,memory location) tuples, and the destination scope is a
+set of memory domains.</p>
+</li>
+<li>
+<p>For a memory domain operation, the source scope is a memory domain and
+the destination scope is a memory domain.</p>
+</li>
+<li>
+<p>For a visibility operation, the source scope is a set of memory domains
+and the destination scope is a set of (agent,reference,memory location)
+tuples.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>How the scopes are determined depends on the specific operation.
+Availability and memory domain operations expand the set of memory domains
+to which the write is available.
+Visibility operations expand the set of (agent,reference,memory location)
+tuples to which the write is visible.</p>
+</div>
+<div class="paragraph">
+<p>Recall that availability and visibility states are per-memory location, and
+let W be a write operation to one or more locations performed by agent A via
+reference R. Let L be one of the locations written.
+(W,L) (the write W to L), is initially not available to any memory domain
+and only visible to (A,R,L).
+An availability operation AV that happens-after W and that includes (A,R,L)
+in its source scope makes (W,L) <em>available</em> to the memory domains in its
+destination scope.</p>
+</div>
+<div class="paragraph">
+<p>A memory domain operation DOM that happens-after AV and for which (W,L) is
+available in the source scope makes (W,L) available in the destination
+memory domain.</p>
+</div>
+<div class="paragraph">
+<p>A visibility operation VIS that happens-after AV (or DOM) and for which
+(W,L) is available in any domain in the source scope makes (W,L) <em>visible</em>
+to all (agent,reference,L) tuples included in its destination scope.</p>
+</div>
+<div class="paragraph">
+<p>If write W<sub>2</sub> happens-after W, and their sets of memory locations overlap,
+then W will not be available/visible to all agents/references for those
+memory locations that overlap (and future AV/DOM/VIS ops cannot revive W&#8217;s
+write to those locations).</p>
+</div>
+<div class="paragraph">
+<p>Availability, memory domain, and visibility operations are treated like
+other non-atomic memory accesses for the purpose of
+<a href="#memory-model-memory-semantics">memory semantics</a>, meaning they can be
+ordered by release-acquire sequences or memory barriers.</p>
+</div>
+<div class="paragraph">
+<p>An <em>availability chain</em> is a sequence of availability operations to
+increasingly broad memory domains, where element N+1 of the chain is
+performed in the dual scope instance of the destination memory domain of
+element N and element N happens-before element N+1.
+An example is an availability operation with destination scope of the
+workgroup instance domain that happens-before an availability operation to
+the shader domain performed by an invocation in the same workgroup.
+An availability chain AVC that happens-after W and that includes (A,R,L) in
+the source scope makes (W,L) <em>available</em> to the memory domains in its final
+destination scope.
+An availability chain with a single element is just the availability
+operation.</p>
+</div>
+<div class="paragraph">
+<p>Similarly, a <em>visibility chain</em> is a sequence of visibility operations from
+increasingly narrow memory domains, where element N of the chain is
+performed in the dual scope instance of the source memory domain of element
+N+1 and element N happens-before element N+1.
+An example is a visibility operation with source scope of the shader domain
+that happens-before a visibility operation with source scope of the
+workgroup instance domain performed by an invocation in the same workgroup.
+A visibility chain VISC that happens-after AVC (or DOM) and for which (W,L)
+is available in any domain in the source scope makes (W,L) <em>visible</em> to all
+(agent,reference,L) tuples included in its final destination scope.
+A visibility chain with a single element is just the visibility operation.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-vulkan-availability-visibility"><a class="anchor" href="#memory-model-vulkan-availability-visibility"></a>Availability, Visibility, and Domain Operations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The following operations generate availability, visibility, and domain
+operations.
+When multiple availability/visibility/domain operations are described, they
+are system-synchronized-with each other in the order listed.</p>
+</div>
+<div class="paragraph">
+<p>An operation that performs a <a href="../chapters/synchronization.html#synchronization-dependencies-memory" class="xref page">memory dependency</a> generates:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If the source access mask includes <code>VK_ACCESS_HOST_WRITE_BIT</code>, then
+the dependency includes a memory domain operation from host domain to
+device domain.</p>
+</li>
+<li>
+<p>An availability operation with source scope of all writes in the first
+<a href="../chapters/synchronization.html#synchronization-dependencies-access-scopes" class="xref page">access scope</a> of the
+dependency and a destination scope of the device domain.</p>
+</li>
+<li>
+<p>A visibility operation with source scope of the device domain and
+destination scope of the second access scope of the dependency.</p>
+</li>
+<li>
+<p>If the destination access mask includes <code>VK_ACCESS_HOST_READ_BIT</code> or
+<code>VK_ACCESS_HOST_WRITE_BIT</code>, then the dependency includes a memory
+domain operation from device domain to host domain.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><a href="../chapters/memory.html#vkFlushMappedMemoryRanges" class="xref page">vkFlushMappedMemoryRanges</a> performs an availability operation, with a
+source scope of (agents,references) = (all host threads, all mapped memory
+ranges passed to the command), and destination scope of the host domain.</p>
+</div>
+<div class="paragraph">
+<p><a href="../chapters/memory.html#vkInvalidateMappedMemoryRanges" class="xref page">vkInvalidateMappedMemoryRanges</a> performs a visibility operation, with a
+source scope of the host domain and a destination scope of
+(agents,references) = (all host threads, all mapped memory ranges passed to
+the command).</p>
+</div>
+<div class="paragraph">
+<p><a href="../chapters/cmdbuffers.html#vkQueueSubmit" class="xref page">vkQueueSubmit</a> performs a memory domain operation from host to device,
+and a visibility operation with source scope of the device domain and
+destination scope of all agents and references on the device.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-availability-visibility-semantics"><a class="anchor" href="#memory-model-availability-visibility-semantics"></a>Availability and Visibility Semantics</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A memory barrier or atomic operation via agent A that includes MakeAvailable
+in its semantics performs an availability operation whose source scope
+includes agent A and all references in the storage classes in that
+instruction&#8217;s storage class semantics, and all memory locations, and whose
+destination scope is a set of memory domains selected as specified below.
+The implicit availability operation is program-ordered between the barrier
+or atomic and all other operations program-ordered before the barrier or
+atomic.</p>
+</div>
+<div class="paragraph">
+<p>A memory barrier or atomic operation via agent A that includes MakeVisible
+in its semantics performs a visibility operation whose source scope is a set
+of memory domains selected as specified below, and whose destination scope
+includes agent A and all references in the storage classes in that
+instruction&#8217;s storage class semantics, and all memory locations.
+The implicit visibility operation is program-ordered between the barrier or
+atomic and all other operations program-ordered after the barrier or atomic.</p>
+</div>
+<div class="paragraph">
+<p>The memory domains are selected based on the memory scope of the instruction
+as follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>Device</code> scope uses the shader domain</p>
+</li>
+<li>
+<p><code>QueueFamily</code> scope uses the queue family instance domain</p>
+</li>
+<li>
+<p><code>FragmentInterlock</code> scope uses the fragment interlock instance domain</p>
+</li>
+<li>
+<p><code>ShaderCallKHR</code> scope uses the shader call instance domain</p>
+</li>
+<li>
+<p><code>Workgroup</code> scope uses the workgroup instance domain</p>
+</li>
+<li>
+<p><code>Subgroup</code> uses the subgroup instance domain</p>
+</li>
+<li>
+<p><code>Invocation</code> perform no availability/visibility operations.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>When an availability operation performed by an agent A includes a memory
+domain D in its destination scope, where D corresponds to scope instance S,
+it also includes the memory domains that correspond to each smaller scope
+instance S' that is a subset of S and that includes A. Similarly for
+visibility operations.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-instruction-av-vis"><a class="anchor" href="#memory-model-instruction-av-vis"></a>Per-Instruction Availability and Visibility Semantics</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A memory write instruction that includes <code>MakePointerAvailable</code>, or an
+image write instruction that includes <code>MakeTexelAvailable</code>,
+or a tensor write instruction that includes <code>MakeElementAvailableARM</code>,
+performs an availability operation whose source scope includes the agent and
+reference used to perform the write and the memory locations written by the
+instruction, and whose destination scope is a set of memory domains selected
+by the Scope operand specified in
+<a href="#memory-model-availability-visibility-semantics">Availability and Visibility Semantics</a>.
+The implicit availability operation is program-ordered between the write and
+all other operations program-ordered after the write.</p>
+</div>
+<div class="paragraph">
+<p>A memory read instruction that includes <code>MakePointerVisible</code>, or an image
+read instruction that includes <code>MakeTexelVisible</code>,
+or a tensor read instruction that includes <code>MakeElementVisibleARM</code>
+performs a visibility operation whose source scope is a set of memory
+domains selected by the Scope operand as specified in
+<a href="#memory-model-availability-visibility-semantics">Availability and Visibility Semantics</a>, and whose destination scope includes the agent and
+reference used to perform the read and the memory locations read by the
+instruction.
+The implicit visibility operation is program-ordered between read and all
+other operations program-ordered before the read.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Although reads with per-instruction visibility only perform visibility ops
+from the shader or
+fragment interlock instance or
+shader call instance or
+workgroup instance or subgroup instance domain, they will also see writes
+that were made visible via the device domain, i.e. those writes previously
+performed by non-shader agents and made visible via API commands.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>It is expected that all invocations in a subgroup execute on the same
+processor with the same path to memory, and thus availability and visibility
+operations with subgroup scope can be expected to be &#8220;free&#8221;.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-location-ordered"><a class="anchor" href="#memory-model-location-ordered"></a>Location-Ordered</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let X and Y be memory accesses to overlapping sets of memory locations M,
+where X != Y. Let (A<sub>X</sub>,R<sub>X</sub>) be the agent and reference used for X, and
+(A<sub>Y</sub>,R<sub>Y</sub>) be the agent and reference used for Y. For now, let &#8220;&#8594;&#8221;
+denote happens-before and &#8220;&#8594;<sup>rcpo</sup>&#8221; denote the reflexive closure of
+program-ordered before.</p>
+</div>
+<div class="paragraph">
+<p>If D<sub>1</sub> and D<sub>2</sub> are different memory domains, then let DOM(D<sub>1</sub>,D<sub>2</sub>) be a
+memory domain operation from D<sub>1</sub> to D<sub>2</sub>.
+Otherwise, let DOM(D,D) be a placeholder such that X&#8594;DOM(D,D)&#8594;Y if and
+only if X&#8594;Y.</p>
+</div>
+<div class="paragraph">
+<p>X is <em>location-ordered</em> before Y for a location L in M if and only if any of
+the following is true:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A<sub>X</sub> == A<sub>Y</sub> and R<sub>X</sub> == R<sub>Y</sub> and X&#8594;Y</p>
+<div class="ulist">
+<ul>
+<li>
+<p>NOTE: this case means no availability/visibility ops are required when
+it is the same (agent,reference).</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>X is a read, both X and Y are non-private, and X&#8594;Y</p>
+</li>
+<li>
+<p>X is a read, and X (transitively) system-synchronizes with Y</p>
+</li>
+<li>
+<p>If R<sub>X</sub> == R<sub>Y</sub> and A<sub>X</sub> and A<sub>Y</sub> access a common memory domain D (e.g.
+are in the same workgroup instance if D is the workgroup instance
+domain), and both X and Y are non-private:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X is a write, Y is a write, AVC(A<sub>X</sub>,R<sub>X</sub>,D,L) is an availability chain
+making (X,L) available to domain D, and X&#8594;<sup>rcpo</sup>AVC(A<sub>X</sub>,R<sub>X</sub>,D,L)&#8594;Y</p>
+</li>
+<li>
+<p>X is a write, Y is a read, AVC(A<sub>X</sub>,R<sub>X</sub>,D,L) is an availability chain
+making (X,L) available to domain D, VISC(A<sub>Y</sub>,R<sub>Y</sub>,D,L) is a visibility
+chain making writes to L available in domain D visible to Y, and
+X&#8594;<sup>rcpo</sup>AVC(A<sub>X</sub>,R<sub>X</sub>,D,L)&#8594;VISC(A<sub>Y</sub>,R<sub>Y</sub>,D,L)&#8594;<sup>rcpo</sup>Y</p>
+</li>
+<li>
+<p>If
+<a href="../chapters/features.html#VkPhysicalDeviceVulkanMemoryModelFeatures" class="xref page">VkPhysicalDeviceVulkanMemoryModelFeatures</a>::<code>vulkanMemoryModelAvailabilityVisibilityChains</code>
+is <code>VK_FALSE</code>, then AVC and VISC <strong>must</strong> each only have a single
+element in the chain, in each sub-bullet above.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Let D<sub>X</sub> and D<sub>Y</sub> each be either the device domain or the host domain,
+depending on whether A<sub>X</sub> and A<sub>Y</sub> execute on the device or host:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X is a write and Y is a write, and
+X&#8594;AV(A<sub>X</sub>,R<sub>X</sub>,D<sub>X</sub>,L)&#8594;DOM(D<sub>X</sub>,D<sub>Y</sub>)&#8594;Y</p>
+</li>
+<li>
+<p>X is a write and Y is a read, and
+X&#8594;AV(A<sub>X</sub>,R<sub>X</sub>,D<sub>X</sub>,L)&#8594;DOM(D<sub>X</sub>,D<sub>Y</sub>)&#8594;VIS(A<sub>Y</sub>,R<sub>Y</sub>,D<sub>Y</sub>,L)&#8594;Y</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The final bullet (synchronization through device/host domain) requires
+API-level synchronization operations, since the device/host domains are not
+accessible via shader instructions.
+And &#8220;device domain&#8221; is not to be confused with &#8220;device scope&#8221;, which
+synchronizes through the &#8220;shader domain&#8221;.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-access-data-race"><a class="anchor" href="#memory-model-access-data-race"></a>Data Race</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let X and Y be operations that access overlapping sets of memory locations
+M, where X != Y, and at least one of X and Y is a write, and X and Y are not
+mutually-ordered atomic operations.
+If there does not exist a location-ordered relation between X and Y for each
+location in M, then there is a <em>data race</em>.</p>
+</div>
+<div class="paragraph">
+<p>Applications <strong>must</strong> ensure that no data races occur during the execution of
+their application.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Data races can only occur due to instructions that are actually executed.
+For example, an instruction skipped due to control flow must not contribute
+to a data race.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-visible-to"><a class="anchor" href="#memory-model-visible-to"></a>Visible-To</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let X be a write and Y be a read whose sets of memory locations overlap, and
+let M be the set of memory locations that overlap.
+Let M<sub>2</sub> be a non-empty subset of M. Then X is <em>visible-to</em> Y for memory
+locations M<sub>2</sub> if and only if all of the following are true:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>X is location-ordered before Y for each location L in M<sub>2</sub>.</p>
+</li>
+<li>
+<p>There does not exist another write Z to any location L in M<sub>2</sub> such that
+X is location-ordered before Z for location L and Z is location-ordered
+before Y for location L.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If X is visible-to Y, then Y reads the value written by X for locations
+M<sub>2</sub>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>It is possible for there to be a write between X and Y that overwrites a
+subset of the memory locations, but the remaining memory locations (M<sub>2</sub>)
+will still be visible-to Y.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-acyclicity"><a class="anchor" href="#memory-model-acyclicity"></a>Acyclicity</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><em>Reads-from</em> is a relation between operations, where the first operation is
+a write, the second operation is a read, and the second operation reads the
+value written by the first operation.
+<em>From-reads</em> is a relation between operations, where the first operation is
+a read, the second operation is a write, and the first operation reads a
+value written earlier than the second operation in the second operation&#8217;s
+scoped modification order or location order (or the first operation reads
+from the initial value, and the second operation is any write to the same
+locations).</p>
+</div>
+<div class="paragraph">
+<p>Then the implementation <strong>must</strong> guarantee that no cycles exist in the union of
+the following relations:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>location-ordered</p>
+</li>
+<li>
+<p>scoped modification order (over all atomic writes)</p>
+</li>
+<li>
+<p>reads-from</p>
+</li>
+<li>
+<p>from-reads</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>This is a &#8220;consistency&#8221; axiom, which informally guarantees that sequences
+of operations cannot violate causality.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="sect2">
+<h3 id="memory-model-scoped-modification-order-coherence"><a class="anchor" href="#memory-model-scoped-modification-order-coherence"></a>Scoped Modification Order Coherence</h3>
+<div class="paragraph">
+<p>Let A and B be mutually-ordered atomic operations, where A is
+location-ordered before B. Then the following rules are a consequence of
+acyclicity:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If A and B are both reads and A does not read the initial value, then
+the write that A takes its value from <strong>must</strong> be earlier in its own scoped
+modification order than (or the same as) the write that B takes its
+value from (no cycles between location-order, reads-from, and
+from-reads).</p>
+</li>
+<li>
+<p>If A is a read and B is a write and A does not read the initial value,
+then A <strong>must</strong> take its value from a write earlier than B in B&#8217;s scoped
+modification order (no cycles between location-order, scope modification
+order, and reads-from).</p>
+</li>
+<li>
+<p>If A is a write and B is a read, then B <strong>must</strong> take its value from A or a
+write later than A in A&#8217;s scoped modification order (no cycles between
+location-order, scoped modification order, and from-reads).</p>
+</li>
+<li>
+<p>If A and B are both writes, then A <strong>must</strong> be earlier than B in A&#8217;s scoped
+modification order (no cycles between location-order and scoped
+modification order).</p>
+</li>
+<li>
+<p>If A is a write and B is a read-modify-write and B reads the value
+written by A, then B comes immediately after A in A&#8217;s scoped
+modification order (no cycles between scoped modification order and
+from-reads).</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-shader-io"><a class="anchor" href="#memory-model-shader-io"></a>Shader I/O</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If a shader invocation A in a shader stage other than <code>Vertex</code> performs a
+memory read operation X from an object in storage class
+<code>CallableDataKHR</code>, <code>IncomingCallableDataKHR</code>, <code>RayPayloadKHR</code>,
+<code>HitAttributeKHR</code>, <code>IncomingRayPayloadKHR</code>, or
+<code>Input</code>, then X is system-synchronized-after all writes to the
+corresponding
+<code>CallableDataKHR</code>, <code>IncomingCallableDataKHR</code>, <code>RayPayloadKHR</code>,
+<code>HitAttributeKHR</code>, <code>IncomingRayPayloadKHR</code>, or
+<code>Output</code> storage variable(s) in the shader invocation(s) that contribute
+to generating invocation A, and those writes are all visible-to X.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>It is not necessary for the upstream shader invocations to have completed
+execution, they only need to have generated the output that is being read.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-deallocation"><a class="anchor" href="#memory-model-deallocation"></a>Deallocation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A call to <a href="../chapters/memory.html#vkFreeMemory" class="xref page">vkFreeMemory</a> <strong>must</strong> happen-after all memory operations on all
+memory locations in that <a href="../chapters/memory.html#VkDeviceMemory" class="xref page">VkDeviceMemory</a> object.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Normally, device memory operations in a given queue are synchronized with
+<a href="../chapters/memory.html#vkFreeMemory" class="xref page">vkFreeMemory</a> by having a host thread wait on a fence signaled by that
+queue, and the wait happens-before the call to <a href="../chapters/memory.html#vkFreeMemory" class="xref page">vkFreeMemory</a> on the
+host.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The deallocation of SPIR-V variables is managed by the system and
+happens-after all operations on those variables.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-informative-descriptions"><a class="anchor" href="#memory-model-informative-descriptions"></a>Descriptions (Informative)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This subsection offers more easily understandable consequences of the memory
+model for app/compiler developers.</p>
+</div>
+<div class="paragraph">
+<p>Let SC be the storage class(es) specified by a release or acquire operation
+or barrier.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>An atomic write with release semantics must not be reordered against any
+read or write to SC that is program-ordered before it (regardless of the
+storage class the atomic is in).</p>
+</li>
+<li>
+<p>An atomic read with acquire semantics must not be reordered against any
+read or write to SC that is program-ordered after it (regardless of the
+storage class the atomic is in).</p>
+</li>
+<li>
+<p>Any write to SC program-ordered after a release barrier must not be
+reordered against any read or write to SC program-ordered before that
+barrier.</p>
+</li>
+<li>
+<p>Any read from SC program-ordered before an acquire barrier must not be
+reordered against any read or write to SC program-ordered after the
+barrier.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>A control barrier (even if it has no memory semantics) must not be reordered
+against any memory barriers.</p>
+</div>
+<div class="paragraph">
+<p>This memory model allows memory accesses with and without availability and
+visibility operations, as well as atomic operations, all to be performed on
+the same memory location.
+This is critical to allow it to reason about memory that is reused in
+multiple ways, e.g. across the lifetime of different shader invocations or
+draw calls.
+While GLSL (and legacy SPIR-V) applies the &#8220;coherent&#8221; decoration to
+variables (for historical reasons), this model treats each memory access
+instruction as having optional implicit availability/visibility operations.
+GLSL to SPIR-V compilers should map all (non-atomic) operations on a
+coherent variable to Make{Pointer,Texel}{Available}{Visible} flags in this
+model.</p>
+</div>
+<div class="paragraph">
+<p>Atomic operations implicitly have availability/visibility operations, and
+the scope of those operations is taken from the atomic operation&#8217;s scope.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-tessellation-output-ordering"><a class="anchor" href="#memory-model-tessellation-output-ordering"></a>Tessellation Output Ordering</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>For SPIR-V that uses the Vulkan Memory Model, the <code>OutputMemory</code> storage
+class is used to synchronize accesses to tessellation control output
+variables.
+For legacy SPIR-V that does not enable the Vulkan Memory Model via
+<code>OpMemoryModel</code>, tessellation outputs can be ordered using a control
+barrier with no particular memory scope or semantics, as defined below.</p>
+</div>
+<div class="paragraph">
+<p>Let X and Y be memory operations performed by shader invocations A<sub>X</sub> and
+A<sub>Y</sub>.
+Operation X is <em>tessellation-output-ordered</em> before operation Y if and only
+if all of the following are true:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>There is a dynamic instance of an <code>OpControlBarrier</code> instruction C
+such that X is program-ordered before C in A<sub>X</sub> and C is program-ordered
+before Y in A<sub>Y</sub>.</p>
+</li>
+<li>
+<p>A<sub>X</sub> and A<sub>Y</sub> are in the same instance of C&#8217;s execution scope.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If shader invocations A<sub>X</sub> and A<sub>Y</sub> in the <code>TessellationControl</code>
+execution model execute memory operations X and Y, respectively, on the
+<code>Output</code> storage class, and X is tessellation-output-ordered before Y
+with a scope of <code>Workgroup</code>, then X is location-ordered before Y, and if
+X is a write and Y is a read then X is visible-to Y.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="memory-model-cooperative-matrix"><a class="anchor" href="#memory-model-cooperative-matrix"></a>Cooperative Matrix Memory Access</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>For each dynamic instance of a cooperative matrix load instruction
+(<code>OpCooperativeMatrixLoadKHR</code>
+, <code>OpCooperativeMatrixLoadNV</code>
+, <code>OpCooperativeMatrixLoadTensorNV</code>
+), some implementation-dependent invocation(s) within the instance of the
+matrix&#8217;s scope perform a non-atomic load from each memory location that is
+defined to be accessed by the instruction.</p>
+</div>
+<div class="paragraph">
+<p>For each memory location accessed by a dynamic instance of a cooperative
+matrix store instruction (<code>OpCooperativeMatrixStoreKHR</code>
+, <code>OpCooperativeMatrixStoreNV</code>
+, <code>OpCooperativeMatrixStoreTensorNV</code>
+), a single implementation-dependent invocation within the instance of the
+matrix&#8217;s scope performs a non-atomic store to that memory location.</p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

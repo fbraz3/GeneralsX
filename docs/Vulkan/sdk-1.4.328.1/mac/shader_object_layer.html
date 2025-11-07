@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="icon" href="images/Vulkan_LogoBug_48px_Nov17.png">
+<link rel="stylesheet" href="github-markdown.css">
+</head>
+<body>
+<article class="markdown-body">
+<!-- markdownlint-disable MD041 -->
+
+<p align="left"><img src="https://vulkan.lunarg.com/img/NewLunarGLogoBlack.png" alt="LunarG" width=263 height=113 /></p>
+
+<p>Copyright © 2015-2024 LunarG, Inc.</p>
+<p><a href="https://creativecommons.org/licenses/by-nd/4.0/" TARGET="_blank"><img src="https://i.creativecommons.org/l/by-nd/4.0/88x31.png" title="Creative Commons License" alt="Creative Commons" /></a></p>
+<h1 id="vk_layer_khronos_shader_object">VK_LAYER_KHRONOS_shader_object</h1>
+<p>The <code>Shader object</code> extension Layer implements the <code>VK_EXT_shader_object</code> extension. By default, it will disable itself if the underlying driver provides the extension.</p>
+<p>The <code>VK_EXT_shader_object</code> extension requires the <code>VK_KHR_maintenance2</code> and <code>VK_KHR_dynamic_rendering</code> extensions, this layer will not work on devices that do not implement them.</p>
+<p>Because the <code>VK_KHR_dynamic_rendering</code> extension is not supported on most Android devices, this layer is not implemented for Android.</p>
+<h2 id="configuring-the-shader-object-layer">Configuring the Shader object layer</h2>
+<p>For an overview of how to configure layers, refer to the <a href="./layer_configuration.html">Layers Overview and Configuration</a> document.</p>
+<p>The Shader object Layer settings are documented in the <a href="./shader_object_layer.html#user-content-layer-details">Layer Details</a> section below.</p>
+<p>The Shader object Layer can also be enabled and configured using vkconfig. See the <a href="./vkconfig.html">vkconfig</a> documentation for more information.</p>
+<h2 id="enabling-the-layer">Enabling the Layer</h2>
+<h3 id="desktop-linuxwindowsmacos">Desktop (Linux/Windows/MacOS)</h3>
+<p>You must add the location of the generated <code>VK_LAYER_KHRONOS_shader_object.json</code> file and corresponding <code>VkLayer_shader_object</code> library to your <code>VK_LAYER_PATH</code> in order for the Vulkan loader to be able to find the layer.</p>
+<p>Then, you must also enable the layer in one of two ways:</p>
+<ul>
+<li>Directly in your application using the layer's name during vkCreateInstance</li>
+<li>Indirectly by using the <code>VK_INSTANCE_LAYERS</code> environment variable.</li>
+</ul>
+<h4 id="setting-the-vk_layer_path">Setting the <code>VK_LAYER_PATH</code></h4>
+<p><strong>Windows</strong></p>
+<p>If your source was located in: <code>C:\my_folder\ExtensionLayer</code> and your build folder was build64, then you would add it to the layer path in the following way:</p>
+<pre><code>set VK_LAYER_PATH=C:\my_folder\ExtensionLayer\build64\layers\Debug;%VK_LAYER_PATH%
+</code></pre>
+<p><strong>Linux/MacOS</strong></p>
+<p>If your source was located in: <code>/my_folder/ExtensionLayer</code> and your build folder was build, then you would add it to the layer path in the following way:</p>
+<pre><code>export VK_LAYER_PATH=/my_folder/ExtensionLayer/build/layers:$VK_LAYER_PATH
+</code></pre>
+<p>Forcing the layer with <code>VK_INSTANCE_LAYERS</code></p>
+<p>To force the layer to be enabled for Vulkan applications, you can set the <code>VK_INSTANCE_LAYERS</code> environment variable in the following way:</p>
+<p><strong>Windows</strong></p>
+<pre><code>set VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_shader_object
+</code></pre>
+<p><strong>Linux/MacOS</strong></p>
+<pre><code>export VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_shader_object
+</code></pre>
+<p>To force the layer to be enabled for Vulkan applications, even though the Vulkan implementation supports <code>VK_EXT_shader_object</code> extension, you can set the <code>VK_SHADER_OBJECT_FORCE_ENABLE</code> environment variable in the following way:</p>
+<p><strong>Windows</strong></p>
+<pre><code>set VK_SHADER_OBJECT_FORCE_ENABLE=true
+</code></pre>
+<p><strong>Linux/MacOS</strong></p>
+<pre><code>export VK_SHADER_OBJECT_FORCE_ENABLE=true
+</code></pre>
+<p>To disable pipeline pre-caching to reduce memory overhead, you can set the <code>VK_SHADER_OBJECT_DISABLE_PIPELINE_PRE_CACHING</code> environment variable in the following way:</p>
+<p><strong>Windows</strong></p>
+<pre><code>set VK_SHADER_OBJECT_DISABLE_PIPELINE_PRE_CACHING=true
+</code></pre>
+<p><strong>Linux/MacOS</strong></p>
+<pre><code>export VK_SHADER_OBJECT_DISABLE_PIPELINE_PRE_CACHING=true
+</code></pre>
+<br>
+
+<h3 id="settings-priority">Settings Priority</h3>
+<p>If you have a setting defined in both the Settings File as well as an Environment Variable, the Environment Variable value will <strong>always</strong> override the Settings File value. This is intended to let you dynamically change settings without having to adjust the Settings File.</p>
+<br>
+
+<h2 id="layer-properties">Layer Properties</h2>
+<ul>
+<li>API Version: 1.4.328</li>
+<li>Implementation Version: 1</li>
+<li>Layer Manifest: <code>VkLayer_khronos_shader_object.json</code>
+<ul>
+<li>File Format: 1.2.0</li>
+<li>Layer Binary: <code>libVkLayer_khronos_shader_object.so</code></li>
+</ul></li>
+<li>Variables:
+<ul>
+<li><code>vk_layer_settings.txt</code> namespace: <code>khronos_shader_object</code></li>
+<li>Environment Variable prefix: <code>VK_KHRONOS_SHADER_OBJECT_</code></li>
+<li>Android system property prefix: <code>adb setprop debug.vulkan.khronos_shader_object.</code></li>
+</ul></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></li>
+<li>Number of Layer Settings: 2</li>
+<li>Number of Layer Presets: 1</li>
+</ul>
+<h2 id="layer-settings-overview">Layer Settings Overview</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Label</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Default Value</th>
+<th>Platforms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#force-enable">Force Enable</a></td>
+<td><code>force_enable</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="even">
+<td><a href="#disable-pipeline-pre-caching">Disable Pipeline Pre-Caching</a></td>
+<td><code>disable_pipeline_pre_caching</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="layer-settings-details">Layer Settings Details</h2>
+<h3 id="force-enable">Force Enable</h3>
+<p>Force the layer to be active even if the underlying driver also implements the shader object extension.</p>
+<ul>
+<li>Key: <code>force_enable</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_shader_object", "force_enable", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_shader_object.force_enable = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_SHADER_OBJECT_FORCE_ENABLE=false<br>export VK_SHADER_OBJECT_FORCE_ENABLE=false<br>export VK_FORCE_ENABLE=false<br>export VK_SHADER_OBJECT_FORCE_ENABLE=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="disable-pipeline-pre-caching">Disable Pipeline Pre-Caching</h3>
+<p>Disable the layer from pre-caching pipelines, reducing the memory overhead.</p>
+<ul>
+<li>Key: <code>disable_pipeline_pre_caching</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_shader_object", "disable_pipeline_pre_caching", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_shader_object.disable_pipeline_pre_caching = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_SHADER_OBJECT_DISABLE_PIPELINE_PRE_CACHING=false<br>export VK_SHADER_OBJECT_DISABLE_PIPELINE_PRE_CACHING=false<br>export VK_DISABLE_PIPELINE_PRE_CACHING=false<br>export VK_SHADER_OBJECT_DISABLE_PIPELINE_PRE_CACHING=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h2 id="layer-presets">Layer Presets</h2>
+<h3 id="default">Default</h3>
+<h4 id="preset-setting-values">Preset Setting Values:</h4>
+<ul>
+<li>Force Enable: false</li>
+<li>Disable Pipeline Pre-Caching: false</li>
+</ul>
+</article>
+</body>
+</html>

@@ -1,0 +1,1769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="icon" href="images/Vulkan_LogoBug_48px_Nov17.png">
+<link rel="stylesheet" href="github-markdown.css">
+</head>
+<body>
+<article class="markdown-body">
+<!-- markdownlint-disable MD041 -->
+
+<p align="left"><img src="https://vulkan.lunarg.com/img/NewLunarGLogoBlack.png" alt="LunarG" width=263 height=113 /></p>
+<p align="left">Copyright © 2015-2022 LunarG, Inc.</p>
+
+<p><a href="https://creativecommons.org/licenses/by-nd/4.0/" TARGET="_blank"><img src="https://i.creativecommons.org/l/by-nd/4.0/88x31.png" title="Creative Commons License" alt="Creative Commons" /></a></p>
+<p align="center"><img src="./images/logo.png" width=400 /></p>
+
+<h1 id="vk_layer_khronos_profiles">VK_LAYER_KHRONOS_profiles</h1>
+<h2 id="overview">Overview</h2>
+<h3 id="vulkan-capabilities-test-coverage-with-the-khronos-profiles-layer">Vulkan capabilities test coverage with the Khronos Profiles Layer</h3>
+<p>The Khronos Profiles Layer helps test across a wide range of hardware capabilities without requiring a physical copy of every device. It can be applied without modifying any application binaries, and in a fully automated fashion. The <em>Profiles layer</em> is a Vulkan layer that can override the values returned by your application's queries of the GPU. Profiles layer uses a JSON text configuration file to make your application see a different driver/GPU than is actually in your system. This capability is useful to verify that your application both a) properly queries the limits from Vulkan, and b) obeys those limits.</p>
+<p>The <em>Profiles layer</em> is available pre-built in the <a href="./vkconfig.html">Vulkan Configurator</a> included with the Vulkan SDK.</p>
+<p>The role of the <em>Profiles layer</em> is to "simulate" a Vulkan implementation by modifying the features and resources of a more-capable implementation. The <em>Profiles layer</em> does not add capabilities to your existing Vulkan implementation by "emulating" additional capabilities with software; e.g. the <em>Profiles layer</em> cannot add geometry shader capability to an actual device that doesn't already provide it. Also, the Profiles layer does not "enforce" the features being simulated. You can use the Validation Layer in conjunction with the Profiles Layer to identify where your application is not adhering to the features being simulated by the Profiles Layer.</p>
+<h2 id="configuring-the-profiles-layer">Configuring the Profiles Layer</h2>
+<p>For an overview of how to configure layers, refer to the <a href="./layer_configuration.html">Layers Overview and Configuration</a> document.</p>
+<p>The Profiles Layer settings are documented in detail in the <a href="./profiles_layer.html#user-content-layer-details">VK_LAYER_KHRONOS_profiless</a> document.</p>
+<p>The Profiles Layer can also be enabled and configured using <em>Vulkan Configurator</em>. See the <a href="./vkconfig.html"><em>Vulkan Configurator</em></a> documentation for more information.</p>
+<h3 id="using-the-profiles-layer-with-vulkan-configurator">Using the Profiles layer with Vulkan Configurator</h3>
+<p>The <em>Profiles Layer</em> can be controlled using environment variables or more intuitively using the <em>Vulkan Configurator</em> GUI application.</p>
+<p><img src="https://github.com/KhronosGroup/Vulkan-Profiles/raw/main/images/vkconfig.png" alt="Vulkan Configurator" /> <em>The built-in Portability layers configurations in Vulkan Configurator using the Validation and the Profiles layers</em></p>
+<p>The <em>Portability</em> layers configuration in <em>Vulkan Configurator</em> checks that a Vulkan application follows the requirements of a <em>Vulkan Profile</em>. This layers configuration relies on the <em>Vulkan Profiles</em> layer to override the Vulkan device capabilities and the <em>Vulkan Validation Layer</em> to check that the Vulkan application doesn't rely on capabilities not supported by the selected profile.</p>
+<p>The input to the <em>Profiles layer</em> is a profiles file that is using the flexible JSON syntax. The profiles file format is defined by a formal JSON schema, so any profiles file may be verified to be correct using freely available JSON validators. Examination of the schema file reveals the extent of parameters that are available for configuration.</p>
+<p>To use the Profiles Layer Vulkan version 1.1 is required.</p>
+<p>Example of a <em>Profiles layer</em> JSON profiles file: <a href="https://github.com/KhronosGroup/Vulkan-Profiles/blob/main/profiles/test/data/VP_LUNARG_test_structure_simple.json" TARGET="_blank">VP_LUNARG_test_structure_simple.json</a></p>
+<h3 id="android">Android</h3>
+<p>To enable, use a system property with the path of the profiles file to load:</p>
+<pre><code>adb shell setprop debug.vulkan.khronos_profiles.profile_file &lt;path/to/profiles/JSON/file&gt;
+</code></pre>
+<p>Optional: use system properties to enable debugging output and exit-on-error:</p>
+<pre><code>adb shell setprop debug.vulkan.khronos_profiles.debug_reports DEBUG_REPORT_DEBUG_BIT
+adb shell setprop debug.vulkan.khronos_profiles.debug_fail_on_error true
+</code></pre>
+<h4 id="settings-file">Settings File</h4>
+<p>Layer options may also be specified through a layer settings file on Android using the <code>debug.vulkan.khronos_profiles.settings_path</code> system property.</p>
+<pre><code>adb shell setprop debug.vulkan.khronos_profiles.settings_path &lt;/path/to/vk_layer_settings.txt&gt;
+</code></pre>
+<h2 id="technical-details">Technical Details</h2>
+<p>The <em>Profiles Layer</em> is a Vulkan layer that can modify the results of Vulkan PhysicalDevice queries based on a profiles file (JSON format), thus simulating some of the capabilities of a device by overriding the capabilities of the actual device under test.</p>
+<p>Please note that this device simulation layer "simulates", rather than "emulates". By that we mean that the layer cannot add emulated capabilities that do not already exist in the system's underlying actual device. The <em>Profiles layer</em> will not enable a less-capable device to emulate a more-capable device.</p>
+<p>Application code can be tested to verify it responds correctly to the capabilities reported by the simulated device. That could include:</p>
+<ul>
+<li>Properly querying the capabilities of the device.</li>
+<li>Properly complying with the limits reported from the device.</li>
+<li>Verifying all necessary capabilities are reported present, rather than assuming they are available.</li>
+<li>Exercising fall-back code paths, if optional capabilities are not available.</li>
+</ul>
+<p>The <code>fail_on_error</code> option can be used to make sure the device supports the requested capabilities. In this case if an application erroneously attempts to overcommit a resource, or use a disabled feature, the Profiles layer will return <code>VK_ERROR_INITIALIZATION_FAILED</code> from <code>vkEnumeratePhysicalDevices()</code>.</p>
+<p>The <em>Profiles layer</em> will work together with other Vulkan layers, such as the Validation layer. When configuring the order of the layers, the Profiles layer should be "last"; i.e.: closest to the driver, furthest from the application. That allows the Validation layer to see the results of the Profiles layer, and enable Validation to flag incorrect API usage beyond the simulated capabilities.</p>
+<p>If you find issues, please report to <a href="https://github.com/KhronosGroup/Vulkan-Profiles/issues" TARGET="_blank">Khronos' Vulkan-Profiles GitHub repository</a>.</p>
+<h3 id="profiles-layer-operation-and-profiles-file">Profiles Layer operation and profiles file</h3>
+<p>At application startup, during <code>vkEnumeratePhysicalDevices()</code>, the <em>Profiles layer</em> initializes its internal tables from the actual physical device in the system, then loads the profiles file, which specifies override values to apply to those internal tables.</p>
+<p>JSON file formats consumed by the Profiles layer are specified by the following <a href="https://schema.khronos.org/vulkan/" TARGET="_blank">JSON schemas</a>.</p>
+<p>The schema permits additional top-level sections to be optionally included in profiles files; any additional top-level sections will be ignored by the <em>Profiles layer</em>.</p>
+<p>The schemas define basic range checking for common Vulkan data types, but they cannot detect whether a particular profile is illogical. If a profile defines capabilities beyond what the actual device is natively capable of providing and the <code>fail_on_error</code> option is not used, the results are undefined. The <em>Profiles layer</em> has some simple checking of profile values and writes debug messages (if enabled) for values that are incompatible with the capabilities of the actual device.</p>
+<p>This version of the Profiles layer currently supports Vulkan v1.3 and below including all Vulkan extensions. If the application requests an unsupported version of the Vulkan API, the Profiles layer will emit an error message.</p>
+<p>When a Vulkan extension gets promoted so can the structures it defines. It is invalid for a profile to specify a structure and its promoted version at the same time. In this case the Profiles layer will use the promoted version of the structure and emit a warning.</p>
+<h3 id="vk_khr_portability_subset-emulation"><code>VK_KHR_portability_subset</code> Emulation</h3>
+<p>The <em>Profiles layer</em> provides the ability to emulate the <code>VK_KHR_portability_subset</code> extension on devices that do not implement this extension. This feature allows users to test their application with limitations found on non-conformant Vulkan implementations. To turn on this feature, enable it as described <a href="#emulate-vk_khr_portability_subset">below</a>.</p>
+<h2 id="layer-properties">Layer Properties</h2>
+<ul>
+<li>API Version: 1.4.328</li>
+<li>Implementation Version: 1.3.0</li>
+<li>Layer Manifest: <code>VkLayer_khronos_profiles.json</code>
+<ul>
+<li>File Format: 1.2.1</li>
+<li>Layer Binary: <code>libVkLayer_khronos_profiles.so</code></li>
+</ul></li>
+<li>Variables:
+<ul>
+<li><code>vk_layer_settings.txt</code> namespace: <code>khronos_profiles</code></li>
+<li>Environment Variable prefix: <code>VK_KHRONOS_PROFILES_</code></li>
+<li>Android system property prefix: <code>adb setprop debug.vulkan.khronos_profiles.</code></li>
+</ul></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></li>
+<li>Number of Layer Settings: 30</li>
+<li>Number of Layer Presets: 3</li>
+</ul>
+<h2 id="layer-settings-overview">Layer Settings Overview</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Label</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Default Value</th>
+<th>Platforms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#emulate-a-vulkan-profile">Emulate a Vulkan Profile</a></td>
+<td><code>profile_emulation</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#loading-directory">Loading Directory</a></td>
+<td><code>profile_dirs</code></td>
+<td><code>LOAD_FOLDER</code></td>
+<td>``</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#name">Name</a></td>
+<td><code>profile_name</code></td>
+<td><code>ENUM</code></td>
+<td><code>${VP_DEFAULT}</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#schema-validation">Schema Validation</a></td>
+<td><code>profile_validation</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="odd">
+<td><a href="#simulate-profile-capabilities">Simulate Profile Capabilities</a></td>
+<td><code>simulate_capabilities</code></td>
+<td><code>FLAGS</code></td>
+<td><code>SIMULATE_API_VERSION_BIT, SIMULATE_FEATURES_BIT, SIMULATE_PROPERTIES_BIT</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#unspecified-features">Unspecified Features</a></td>
+<td><code>default_feature_values</code></td>
+<td><code>ENUM</code></td>
+<td><code>DEFAULT_FEATURE_VALUES_DEVICE</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#unknown-features">Unknown Features</a></td>
+<td><code>unknown_feature_values</code></td>
+<td><code>ENUM</code></td>
+<td><code>UNKNOWN_FEATURE_VALUES_UNCHANGED</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="even">
+<td><a href="#emulate-vk_khr_portability_subset">Emulate VK_KHR_portability_subset</a></td>
+<td><code>emulate_portability</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#constantalphacolorblendfactors">constantAlphaColorBlendFactors</a></td>
+<td><code>constantAlphaColorBlendFactors</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#events">events</a></td>
+<td><code>events</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#imageviewformatreinterpretation">imageViewFormatReinterpretation</a></td>
+<td><code>imageViewFormatReinterpretation</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#imageviewformatswizzle">imageViewFormatSwizzle</a></td>
+<td><code>imageViewFormatSwizzle</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#imageview2don3dimage">imageView2DOn3DImage</a></td>
+<td><code>imageView2DOn3DImage</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#multisamplearrayimage">multisampleArrayImage</a></td>
+<td><code>multisampleArrayImage</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#mutablecomparisonsamplers">mutableComparisonSamplers</a></td>
+<td><code>mutableComparisonSamplers</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#pointpolygons">pointPolygons</a></td>
+<td><code>pointPolygons</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#samplermiplodbias">samplerMipLodBias</a></td>
+<td><code>samplerMipLodBias</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#separatestencilmaskref">separateStencilMaskRef</a></td>
+<td><code>separateStencilMaskRef</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#shadersamplerateinterpolationfunctions">shaderSampleRateInterpolationFunctions</a></td>
+<td><code>shaderSampleRateInterpolationFunctions</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#tessellationisolines">tessellationIsolines</a></td>
+<td><code>tessellationIsolines</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#trianglefans">triangleFans</a></td>
+<td><code>triangleFans</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#vertexattributeaccessbeyondstride">vertexAttributeAccessBeyondStride</a></td>
+<td><code>vertexAttributeAccessBeyondStride</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="odd">
+<td>        <a href="#minvertexinputbindingstridealignment">minVertexInputBindingStrideAlignment</a></td>
+<td><code>minVertexInputBindingStrideAlignment</code></td>
+<td><code>INT</code></td>
+<td><code>4</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="even">
+<td><a href="#exclude-device-extensions">Exclude Device Extensions</a></td>
+<td><code>exclude_device_extensions</code></td>
+<td><code>LIST</code></td>
+<td>``</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="odd">
+<td><a href="#exclude-formats">Exclude Formats</a></td>
+<td><code>exclude_formats</code></td>
+<td><code>LIST</code></td>
+<td>``</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="even">
+<td><a href="#debug-actions">Debug Actions</a></td>
+<td><code>debug_actions</code></td>
+<td><code>FLAGS</code></td>
+<td><code>DEBUG_ACTION_STDOUT_BIT</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#log-filename">Log Filename</a></td>
+<td><code>debug_filename</code></td>
+<td><code>SAVE_FILE</code></td>
+<td><code>profiles_layer_log.txt</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#clear-log-at-launch">Clear Log at Launch</a></td>
+<td><code>debug_file_clear</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="odd">
+<td><a href="#fail-on-error">Fail on Error</a></td>
+<td><code>debug_fail_on_error</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="even">
+<td><a href="#message-types">Message Types</a></td>
+<td><code>debug_reports</code></td>
+<td><code>FLAGS</code></td>
+<td><code>DEBUG_REPORT_NOTIFICATION_BIT, DEBUG_REPORT_WARNING_BIT, DEBUG_REPORT_ERROR_BIT</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="layer-settings-details">Layer Settings Details</h2>
+<h3 id="emulate-a-vulkan-profile">Emulate a Vulkan Profile</h3>
+<p>Emulate a Vulkan Profile on the Developer System.</p>
+<p>Sub-settings: <em><a href="#loading-directory">Loading Directory</a></em>, <em><a href="#name">Name</a></em>, and <em><a href="#schema-validation">Schema Validation</a></em>.</p>
+<ul>
+<li>Key: <code>profile_emulation</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "profile_emulation", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.profile_emulation = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_PROFILE_EMULATION=true<br>export VK_PROFILES_PROFILE_EMULATION=true<br>export VK_PROFILE_EMULATION=true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="loading-directory">Loading Directory</h3>
+<p>Select the location all the profiles.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#emulate-a-vulkan-profile">Emulate a Vulkan Profile</a></td>
+<td><code>profile_emulation</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>profile_dirs</code></li>
+<li>Type: <code>LOAD_FOLDER</code></li>
+<li>Default Value:</li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "profile_dirs", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.profile_dirs = </pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_PROFILE_DIRS=<br>export VK_PROFILES_PROFILE_DIRS=<br>export VK_PROFILE_DIRS=</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="name">Name</h3>
+<p>Name of the profile specified by the profile file to use.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#emulate-a-vulkan-profile">Emulate a Vulkan Profile</a></td>
+<td><code>profile_emulation</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>profile_name</code></li>
+<li>Type: <code>ENUM</code></li>
+<li>Default Value: <code>${VP_DEFAULT}</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "${VP_DEFAULT}" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "profile_name", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.profile_name = ${VP_DEFAULT}</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_PROFILE_NAME=${VP_DEFAULT}<br>export VK_PROFILES_PROFILE_NAME=${VP_DEFAULT}<br>export VK_PROFILE_NAME=${VP_DEFAULT}</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="schema-validation">Schema Validation</h3>
+<p>Validate the profile files against the Vulkan SDK profile schema if the file is found.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#emulate-a-vulkan-profile">Emulate a Vulkan Profile</a></td>
+<td><code>profile_emulation</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>profile_validation</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "profile_validation", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.profile_validation = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_PROFILE_VALIDATION=false<br>export VK_PROFILES_PROFILE_VALIDATION=false<br>export VK_PROFILE_VALIDATION=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="simulate-profile-capabilities">Simulate Profile Capabilities</h3>
+<p>Control of the simulated capabilities of the Vulkan physical device from the selected Vulkan Profile.</p>
+<ul>
+<li>Key: <code>simulate_capabilities</code></li>
+<li>Type: <code>FLAGS</code></li>
+<li>Default Value: <code>SIMULATE_API_VERSION_BIT, SIMULATE_FEATURES_BIT, SIMULATE_PROPERTIES_BIT</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Flags</th>
+<th>Label</th>
+<th>Description</th>
+<th>Platforms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SIMULATE_API_VERSION_BIT</code></td>
+<td>Version</td>
+<td>The Vulkan device will report the API version from the selected Profile. It also overrides the <code>api-version</code> set in VkPhysicalDeviceProperties.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="even">
+<td><code>SIMULATE_FEATURES_BIT</code></td>
+<td>Features</td>
+<td>The Vulkan device will report the features from the selected Profile.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="odd">
+<td><code>SIMULATE_PROPERTIES_BIT</code></td>
+<td>Properties</td>
+<td>The Vulkan device will report the properties from the selected Profile.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="even">
+<td><code>SIMULATE_EXTENSIONS_BIT</code></td>
+<td>Device Extensions</td>
+<td>The Vulkan device will report the extensions from the selected Profile.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="odd">
+<td><code>SIMULATE_FORMATS_BIT</code></td>
+<td>Formats</td>
+<td>The Vulkan device will report the formats from the selected Profile.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="even">
+<td><code>SIMULATE_VIDEO_CAPABILITIES_BIT</code></td>
+<td>Video Capabilities</td>
+<td>The Vulkan device will report video capabilities from the selected Profile.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="odd">
+<td><code>SIMULATE_VIDEO_FORMATS_BIT</code></td>
+<td>Video Formats</td>
+<td>The Vulkan device will report video formats from the selected Profile.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "SIMULATE_API_VERSION_BIT, SIMULATE_FEATURES_BIT, SIMULATE_PROPERTIES_BIT" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "simulate_capabilities", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.simulate_capabilities = SIMULATE_API_VERSION_BIT, SIMULATE_FEATURES_BIT, SIMULATE_PROPERTIES_BIT</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_SIMULATE_CAPABILITIES=SIMULATE_API_VERSION_BIT, SIMULATE_FEATURES_BIT, SIMULATE_PROPERTIES_BIT<br>export VK_PROFILES_SIMULATE_CAPABILITIES=SIMULATE_API_VERSION_BIT, SIMULATE_FEATURES_BIT, SIMULATE_PROPERTIES_BIT<br>export VK_SIMULATE_CAPABILITIES=SIMULATE_API_VERSION_BIT, SIMULATE_FEATURES_BIT, SIMULATE_PROPERTIES_BIT</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="unspecified-features">Unspecified Features</h3>
+<p>Feature values when not specified in the select Vulkan profiles.</p>
+<ul>
+<li>Key: <code>default_feature_values</code></li>
+<li>Type: <code>ENUM</code></li>
+<li>Default Value: <code>DEFAULT_FEATURE_VALUES_DEVICE</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Enum Value</th>
+<th>Label</th>
+<th>Description</th>
+<th>Platforms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>DEFAULT_FEATURE_VALUES_DEVICE</code></td>
+<td>Use Device Values</td>
+<td>When a feature is not mentioned in the select Vulkan profiles, set is to the physical device value.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="even">
+<td><code>DEFAULT_FEATURE_VALUES_FALSE</code></td>
+<td>Use False</td>
+<td>When a feature is not mentioned in the select Vulkan profiles, set it to false.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "DEFAULT_FEATURE_VALUES_DEVICE" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "default_feature_values", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.default_feature_values = DEFAULT_FEATURE_VALUES_DEVICE</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_DEFAULT_FEATURE_VALUES=DEFAULT_FEATURE_VALUES_DEVICE<br>export VK_PROFILES_DEFAULT_FEATURE_VALUES=DEFAULT_FEATURE_VALUES_DEVICE<br>export VK_DEFAULT_FEATURE_VALUES=DEFAULT_FEATURE_VALUES_DEVICE</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="unknown-features">Unknown Features</h3>
+<p>Feature values when unrecongnized by Vulkan profiles.</p>
+<ul>
+<li>Key: <code>unknown_feature_values</code></li>
+<li>Type: <code>ENUM</code></li>
+<li>Default Value: <code>UNKNOWN_FEATURE_VALUES_UNCHANGED</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Enum Value</th>
+<th>Label</th>
+<th>Description</th>
+<th>Platforms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>UNKNOWN_FEATURE_VALUES_UNCHANGED</code></td>
+<td>Unmodified</td>
+<td>When a feature is not recognized by Vulkan profiles, skip it.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="even">
+<td><code>UNKNOWN_FEATURE_VALUES_DEVICE</code></td>
+<td>Use Device Values</td>
+<td>When a feature is not recognized by Vulkan profiles, attempt to load device values.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "UNKNOWN_FEATURE_VALUES_UNCHANGED" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "unknown_feature_values", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.unknown_feature_values = UNKNOWN_FEATURE_VALUES_UNCHANGED</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_UNKNOWN_FEATURE_VALUES=UNKNOWN_FEATURE_VALUES_UNCHANGED<br>export VK_PROFILES_UNKNOWN_FEATURE_VALUES=UNKNOWN_FEATURE_VALUES_UNCHANGED<br>export VK_UNKNOWN_FEATURE_VALUES=UNKNOWN_FEATURE_VALUES_UNCHANGED</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="emulate-vk_khr_portability_subset">Emulate VK_KHR_portability_subset</h3>
+<p>Emulate the VK_KHR_portability_subset extension on the device.</p>
+<p>Sub-settings: <em><a href="#constantalphacolorblendfactors">constantAlphaColorBlendFactors</a></em>, <em><a href="#events">events</a></em>, <em><a href="#imageviewformatreinterpretation">imageViewFormatReinterpretation</a></em>, <em><a href="#imageviewformatswizzle">imageViewFormatSwizzle</a></em>, <em><a href="#imageview2don3dimage">imageView2DOn3DImage</a></em>, <em><a href="#multisamplearrayimage">multisampleArrayImage</a></em>, <em><a href="#mutablecomparisonsamplers">mutableComparisonSamplers</a></em>, <em><a href="#pointpolygons">pointPolygons</a></em>, <em><a href="#samplermiplodbias">samplerMipLodBias</a></em>, <em><a href="#separatestencilmaskref">separateStencilMaskRef</a></em>, <em><a href="#shadersamplerateinterpolationfunctions">shaderSampleRateInterpolationFunctions</a></em>, <em><a href="#tessellationisolines">tessellationIsolines</a></em>, <em><a href="#trianglefans">triangleFans</a></em>, and <em><a href="#vertexattributeaccessbeyondstride">vertexAttributeAccessBeyondStride</a></em>.</p>
+<ul>
+<li>Key: <code>emulate_portability</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "emulate_portability", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.emulate_portability = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_EMULATE_PORTABILITY=true<br>export VK_PROFILES_EMULATE_PORTABILITY=true<br>export VK_EMULATE_PORTABILITY=true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="constantalphacolorblendfactors">constantAlphaColorBlendFactors</h3>
+<p>Indicates whether this implementation supports constant alpha Blend Factors used as source or destination color Blending.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#emulate-vk_khr_portability_subset">Emulate VK_KHR_portability_subset</a></td>
+<td><code>emulate_portability</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>constantAlphaColorBlendFactors</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "constantAlphaColorBlendFactors", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.constantAlphaColorBlendFactors = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_CONSTANTALPHACOLORBLENDFACTORS=false<br>export VK_PROFILES_CONSTANTALPHACOLORBLENDFACTORS=false<br>export VK_CONSTANTALPHACOLORBLENDFACTORS=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="events">events</h3>
+<p>Indicates whether this implementation supports synchronization using Events.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#emulate-vk_khr_portability_subset">Emulate VK_KHR_portability_subset</a></td>
+<td><code>emulate_portability</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>events</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "events", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.events = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_EVENTS=false<br>export VK_PROFILES_EVENTS=false<br>export VK_EVENTS=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="imageviewformatreinterpretation">imageViewFormatReinterpretation</h3>
+<p>Indicates whether this implementation supports a VkImageView being created with a texel format containing a different number of components, or a different number of bits in each component, than the texel format of the underlying VkImage.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#emulate-vk_khr_portability_subset">Emulate VK_KHR_portability_subset</a></td>
+<td><code>emulate_portability</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>imageViewFormatReinterpretation</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "imageViewFormatReinterpretation", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.imageViewFormatReinterpretation = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_IMAGEVIEWFORMATREINTERPRETATION=false<br>export VK_PROFILES_IMAGEVIEWFORMATREINTERPRETATION=false<br>export VK_IMAGEVIEWFORMATREINTERPRETATION=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="imageviewformatswizzle">imageViewFormatSwizzle</h3>
+<p>Indicates whether this implementation supports remapping format components using VkImageViewCreateInfo::components.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#emulate-vk_khr_portability_subset">Emulate VK_KHR_portability_subset</a></td>
+<td><code>emulate_portability</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>imageViewFormatSwizzle</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "imageViewFormatSwizzle", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.imageViewFormatSwizzle = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_IMAGEVIEWFORMATSWIZZLE=false<br>export VK_PROFILES_IMAGEVIEWFORMATSWIZZLE=false<br>export VK_IMAGEVIEWFORMATSWIZZLE=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="imageview2don3dimage">imageView2DOn3DImage</h3>
+<p>Indicates whether this implementation supports a VkImage being created with the VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT flag set, permitting a 2D or 2D array image view to be created on a 3D VkImage.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#emulate-vk_khr_portability_subset">Emulate VK_KHR_portability_subset</a></td>
+<td><code>emulate_portability</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>imageView2DOn3DImage</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "imageView2DOn3DImage", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.imageView2DOn3DImage = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_IMAGEVIEW2DON3DIMAGE=false<br>export VK_PROFILES_IMAGEVIEW2DON3DIMAGE=false<br>export VK_IMAGEVIEW2DON3DIMAGE=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="multisamplearrayimage">multisampleArrayImage</h3>
+<p>Indicates whether this implementation supports a VkImage being created as a 2D array with multiple samples per texel.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#emulate-vk_khr_portability_subset">Emulate VK_KHR_portability_subset</a></td>
+<td><code>emulate_portability</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>multisampleArrayImage</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "multisampleArrayImage", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.multisampleArrayImage = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_MULTISAMPLEARRAYIMAGE=false<br>export VK_PROFILES_MULTISAMPLEARRAYIMAGE=false<br>export VK_MULTISAMPLEARRAYIMAGE=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="mutablecomparisonsamplers">mutableComparisonSamplers</h3>
+<p>Indicates whether this implementation allows descriptors with comparison samplers to be updated.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#emulate-vk_khr_portability_subset">Emulate VK_KHR_portability_subset</a></td>
+<td><code>emulate_portability</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>mutableComparisonSamplers</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "mutableComparisonSamplers", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.mutableComparisonSamplers = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_MUTABLECOMPARISONSAMPLERS=false<br>export VK_PROFILES_MUTABLECOMPARISONSAMPLERS=false<br>export VK_MUTABLECOMPARISONSAMPLERS=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="pointpolygons">pointPolygons</h3>
+<p>Indicates whether this implementation supports Rasterization using a point Polygon Mode.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#emulate-vk_khr_portability_subset">Emulate VK_KHR_portability_subset</a></td>
+<td><code>emulate_portability</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>pointPolygons</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "pointPolygons", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.pointPolygons = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_POINTPOLYGONS=false<br>export VK_PROFILES_POINTPOLYGONS=false<br>export VK_POINTPOLYGONS=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="samplermiplodbias">samplerMipLodBias</h3>
+<p>Indicates whether this implementation supports setting a mipmap LOD bias value when creating a sampler.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#emulate-vk_khr_portability_subset">Emulate VK_KHR_portability_subset</a></td>
+<td><code>emulate_portability</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>samplerMipLodBias</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "samplerMipLodBias", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.samplerMipLodBias = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_SAMPLERMIPLODBIAS=false<br>export VK_PROFILES_SAMPLERMIPLODBIAS=false<br>export VK_SAMPLERMIPLODBIAS=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="separatestencilmaskref">separateStencilMaskRef</h3>
+<p>Indicates whether this implementation supports separate front and back Stencil Test reference values.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#emulate-vk_khr_portability_subset">Emulate VK_KHR_portability_subset</a></td>
+<td><code>emulate_portability</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>separateStencilMaskRef</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "separateStencilMaskRef", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.separateStencilMaskRef = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_SEPARATESTENCILMASKREF=false<br>export VK_PROFILES_SEPARATESTENCILMASKREF=false<br>export VK_SEPARATESTENCILMASKREF=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="shadersamplerateinterpolationfunctions">shaderSampleRateInterpolationFunctions</h3>
+<p>Indicates whether this implementation supports fragment shaders which use the InterpolationFunction capability.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#emulate-vk_khr_portability_subset">Emulate VK_KHR_portability_subset</a></td>
+<td><code>emulate_portability</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>shaderSampleRateInterpolationFunctions</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "shaderSampleRateInterpolationFunctions", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.shaderSampleRateInterpolationFunctions = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_SHADERSAMPLERATEINTERPOLATIONFUNCTIONS=false<br>export VK_PROFILES_SHADERSAMPLERATEINTERPOLATIONFUNCTIONS=false<br>export VK_SHADERSAMPLERATEINTERPOLATIONFUNCTIONS=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="tessellationisolines">tessellationIsolines</h3>
+<p>Indicates whether this implementation supports isoline output from the Tessellation stage of a graphics pipeline. This member is only meaningful if tessellationShader are supported.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#emulate-vk_khr_portability_subset">Emulate VK_KHR_portability_subset</a></td>
+<td><code>emulate_portability</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>tessellationIsolines</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "tessellationIsolines", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.tessellationIsolines = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_TESSELLATIONISOLINES=false<br>export VK_PROFILES_TESSELLATIONISOLINES=false<br>export VK_TESSELLATIONISOLINES=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="trianglefans">triangleFans</h3>
+<p>Indicates whether this implementation supports Triangle Fans primitive topology.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#emulate-vk_khr_portability_subset">Emulate VK_KHR_portability_subset</a></td>
+<td><code>emulate_portability</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>triangleFans</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "triangleFans", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.triangleFans = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_TRIANGLEFANS=false<br>export VK_PROFILES_TRIANGLEFANS=false<br>export VK_TRIANGLEFANS=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="vertexattributeaccessbeyondstride">vertexAttributeAccessBeyondStride</h3>
+<p>Indicates whether this implementation supports accessing a vertex input attribute beyond the stride of the corresponding vertex input binding.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#emulate-vk_khr_portability_subset">Emulate VK_KHR_portability_subset</a></td>
+<td><code>emulate_portability</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<p>Sub-setting: <em><a href="#minvertexinputbindingstridealignment">minVertexInputBindingStrideAlignment</a></em>,</p>
+<ul>
+<li>Key: <code>vertexAttributeAccessBeyondStride</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "vertexAttributeAccessBeyondStride", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.vertexAttributeAccessBeyondStride = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_VERTEXATTRIBUTEACCESSBEYONDSTRIDE=false<br>export VK_PROFILES_VERTEXATTRIBUTEACCESSBEYONDSTRIDE=false<br>export VK_VERTEXATTRIBUTEACCESSBEYONDSTRIDE=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="minvertexinputbindingstridealignment">minVertexInputBindingStrideAlignment</h3>
+<p>Indicates whether this implementation supports accessing a vertex input attribute beyond the stride of the corresponding vertex input binding.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#vertexattributeaccessbeyondstride">vertexAttributeAccessBeyondStride</a></td>
+<td><code>vertexAttributeAccessBeyondStride</code></td>
+<td>BOOL</td>
+<td>false</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>minVertexInputBindingStrideAlignment</code></li>
+<li>Type: <code>INT</code></li>
+<li>Default Value: <code>4</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>int32_t data[] = { 4 };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "minVertexInputBindingStrideAlignment", VK_LAYER_SETTING_TYPE_INT32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.minVertexInputBindingStrideAlignment = 4</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_MINVERTEXINPUTBINDINGSTRIDEALIGNMENT=4<br>export VK_PROFILES_MINVERTEXINPUTBINDINGSTRIDEALIGNMENT=4<br>export VK_MINVERTEXINPUTBINDINGSTRIDEALIGNMENT=4</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="exclude-device-extensions">Exclude Device Extensions</h3>
+<p>Removes the listed device extensions from being reported by the Vulkan physical device.</p>
+<ul>
+<li>Key: <code>exclude_device_extensions</code></li>
+<li>Type: <code>LIST</code></li>
+<li>Default Value:</li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "exclude_device_extensions", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.exclude_device_extensions = </pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_EXCLUDE_DEVICE_EXTENSIONS=<br>export VK_PROFILES_EXCLUDE_DEVICE_EXTENSIONS=<br>export VK_EXCLUDE_DEVICE_EXTENSIONS=</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="exclude-formats">Exclude Formats</h3>
+<p>Removes the format feature flags from being reported by the Vulkan physical device.</p>
+<ul>
+<li>Key: <code>exclude_formats</code></li>
+<li>Type: <code>LIST</code></li>
+<li>Default Value:</li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "exclude_formats", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.exclude_formats = </pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_EXCLUDE_FORMATS=<br>export VK_PROFILES_EXCLUDE_FORMATS=<br>export VK_EXCLUDE_FORMATS=</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="debug-actions">Debug Actions</h3>
+<p>This indicates what action is to be taken when a layer wants to report information.</p>
+<ul>
+<li>Key: <code>debug_actions</code></li>
+<li>Type: <code>FLAGS</code></li>
+<li>Default Value: <code>DEBUG_ACTION_STDOUT_BIT</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Flags</th>
+<th>Label</th>
+<th>Description</th>
+<th>Platforms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>DEBUG_ACTION_STDOUT_BIT</code></td>
+<td>Log to stdout</td>
+<td>Log messages using the stdout.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="even">
+<td><code>DEBUG_ACTION_OUTPUT_BIT</code></td>
+<td>Log to OutputDebugString</td>
+<td>Log messages using the Windows OutputDebugString for Vulkan Studio output display.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code></td>
+</tr>
+<tr class="odd">
+<td><code>DEBUG_ACTION_FILE_BIT</code></td>
+<td>Log to File</td>
+<td>Log messages to a file.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="even">
+<td><code>DEBUG_ACTION_BREAKPOINT_BIT</code></td>
+<td>Break</td>
+<td>Trigger a breakpoint if a debugger is in use.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "DEBUG_ACTION_STDOUT_BIT" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "debug_actions", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.debug_actions = DEBUG_ACTION_STDOUT_BIT</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_DEBUG_ACTIONS=DEBUG_ACTION_STDOUT_BIT<br>export VK_PROFILES_DEBUG_ACTIONS=DEBUG_ACTION_STDOUT_BIT<br>export VK_DEBUG_ACTIONS=DEBUG_ACTION_STDOUT_BIT</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="log-filename">Log Filename</h3>
+<p>Specifies the output filename.</p>
+<ul>
+<li>Key: <code>debug_filename</code></li>
+<li>Type: <code>SAVE_FILE</code></li>
+<li>Default Value: <code>profiles_layer_log.txt</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "profiles_layer_log.txt" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "debug_filename", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.debug_filename = profiles_layer_log.txt</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_DEBUG_FILENAME=profiles_layer_log.txt<br>export VK_PROFILES_DEBUG_FILENAME=profiles_layer_log.txt<br>export VK_DEBUG_FILENAME=profiles_layer_log.txt</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="clear-log-at-launch">Clear Log at Launch</h3>
+<p>Discard the content of the log file between each layer run.</p>
+<ul>
+<li>Key: <code>debug_file_clear</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "debug_file_clear", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.debug_file_clear = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_DEBUG_FILE_CLEAR=true<br>export VK_PROFILES_DEBUG_FILE_CLEAR=true<br>export VK_DEBUG_FILE_CLEAR=true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="fail-on-error">Fail on Error</h3>
+<p>If the device doesn't support the capabilities of the selected Profile, the layer fail to load. When enabled, vkEnumeratePhysicalDevices will fail when the selected Profile is not supported.</p>
+<ul>
+<li>Key: <code>debug_fail_on_error</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "debug_fail_on_error", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.debug_fail_on_error = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_DEBUG_FAIL_ON_ERROR=false<br>export VK_PROFILES_DEBUG_FAIL_ON_ERROR=false<br>export VK_DEBUG_FAIL_ON_ERROR=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="message-types">Message Types</h3>
+<p>This is a comma-delineated list of options telling the layer what types of messages it should report back.</p>
+<ul>
+<li>Key: <code>debug_reports</code></li>
+<li>Type: <code>FLAGS</code></li>
+<li>Default Value: <code>DEBUG_REPORT_NOTIFICATION_BIT, DEBUG_REPORT_WARNING_BIT, DEBUG_REPORT_ERROR_BIT</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Flags</th>
+<th>Label</th>
+<th>Description</th>
+<th>Platforms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>DEBUG_REPORT_NOTIFICATION_BIT</code></td>
+<td>Notification</td>
+<td>Report notifications.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="even">
+<td><code>DEBUG_REPORT_WARNING_BIT</code></td>
+<td>Warning</td>
+<td>Report warnings from using the API in a manner which may lead to undefined behavior or to warn the user of common trouble spots. A warning does NOT necessarily signify illegal application behavior.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="odd">
+<td><code>DEBUG_REPORT_ERROR_BIT</code></td>
+<td>Error</td>
+<td>Report errors in API usage.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "DEBUG_REPORT_NOTIFICATION_BIT, DEBUG_REPORT_WARNING_BIT, DEBUG_REPORT_ERROR_BIT" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_profiles", "debug_reports", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_profiles.debug_reports = DEBUG_REPORT_NOTIFICATION_BIT, DEBUG_REPORT_WARNING_BIT, DEBUG_REPORT_ERROR_BIT</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_PROFILES_DEBUG_REPORTS=DEBUG_REPORT_NOTIFICATION_BIT, DEBUG_REPORT_WARNING_BIT, DEBUG_REPORT_ERROR_BIT<br>export VK_PROFILES_DEBUG_REPORTS=DEBUG_REPORT_NOTIFICATION_BIT, DEBUG_REPORT_WARNING_BIT, DEBUG_REPORT_ERROR_BIT<br>export VK_DEBUG_REPORTS=DEBUG_REPORT_NOTIFICATION_BIT, DEBUG_REPORT_WARNING_BIT, DEBUG_REPORT_ERROR_BIT</pre></td>
+</tr>
+</tbody>
+</table>
+<h2 id="layer-presets">Layer Presets</h2>
+<h3 id="default">Default</h3>
+<h4 id="preset-setting-values">Preset Setting Values:</h4>
+<ul>
+<li>Emulate a Vulkan Profile: true</li>
+<li>Loading Directory:</li>
+<li>Name: ${VP_DEFAULT}</li>
+<li>Schema Validation: false</li>
+<li>Simulate Profile Capabilities: SIMULATE_API_VERSION_BIT, SIMULATE_FEATURES_BIT, SIMULATE_PROPERTIES_BIT</li>
+<li>Emulate VK_KHR_portability_subset: true</li>
+<li>constantAlphaColorBlendFactors: false</li>
+<li>events: false</li>
+<li>imageViewFormatReinterpretation: false</li>
+<li>imageViewFormatSwizzle: false</li>
+<li>imageView2DOn3DImage: false</li>
+<li>multisampleArrayImage: false</li>
+<li>mutableComparisonSamplers: false</li>
+<li>pointPolygons: false</li>
+<li>samplerMipLodBias: false</li>
+<li>separateStencilMaskRef: false</li>
+<li>shaderSampleRateInterpolationFunctions: false</li>
+<li>tessellationIsolines: false</li>
+<li>triangleFans: false</li>
+<li>vertexAttributeAccessBeyondStride: false</li>
+<li>minVertexInputBindingStrideAlignment: 4</li>
+<li>Exclude Device Extensions:</li>
+<li>Exclude Formats:</li>
+<li>Debug Actions: DEBUG_ACTION_STDOUT_BIT</li>
+<li>Fail on Error: false</li>
+<li>Message Types: DEBUG_REPORT_NOTIFICATION_BIT, DEBUG_REPORT_WARNING_BIT, DEBUG_REPORT_ERROR_BIT</li>
+</ul>
+<h3 id="emulate-a-vulkan-conformant-profile">Emulate a Vulkan Conformant Profile</h3>
+<p>Emulate a Conformant Vulkan Profile</p>
+<h4 id="preset-setting-values-1">Preset Setting Values:</h4>
+<ul>
+<li>Emulate a Vulkan Profile: true</li>
+<li>Loading Directory: ${VULKAN_CONTENT}/VK_LAYER_KHRONOS_profiles</li>
+<li>Name: VP_LUNARG_desktop_baseline_2023</li>
+<li>Simulate Profile Capabilities: SIMULATE_API_VERSION_BIT, SIMULATE_FEATURES_BIT, SIMULATE_PROPERTIES_BIT</li>
+<li>Emulate VK_KHR_portability_subset: false</li>
+</ul>
+<h3 id="emulate-a-vulkan-portability-profile">Emulate a Vulkan Portability Profile</h3>
+<p>Emulate a Vulkan Profile with Vulkan Portability</p>
+<h4 id="preset-setting-values-2">Preset Setting Values:</h4>
+<ul>
+<li>Emulate a Vulkan Profile: true</li>
+<li>Loading Directory: ${VULKAN_CONTENT}/VK_LAYER_KHRONOS_profiles</li>
+<li>Name: VP_LUNARG_desktop_baseline_2023</li>
+<li>Simulate Profile Capabilities: SIMULATE_API_VERSION_BIT, SIMULATE_FEATURES_BIT, SIMULATE_PROPERTIES_BIT</li>
+<li>Emulate VK_KHR_portability_subset: true</li>
+<li>vertexAttributeAccessBeyondStride: true</li>
+<li>separateStencilMaskRef: true</li>
+<li>mutableComparisonSamplers: true</li>
+<li>multisampleArrayImage: true</li>
+<li>imageViewFormatSwizzle: true</li>
+<li>imageViewFormatReinterpretation: true</li>
+<li>events: true</li>
+<li>constantAlphaColorBlendFactors: true</li>
+</ul>
+</article>
+</body>
+</html>

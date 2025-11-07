@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="icon" href="images/Vulkan_LogoBug_48px_Nov17.png">
+<link rel="stylesheet" href="github-markdown.css">
+</head>
+<body>
+<article class="markdown-body">
+<!-- markdownlint-disable MD041 -->
+
+<p align="left"><img src="https://vulkan.lunarg.com/img/NewLunarGLogoBlack.png" alt="LunarG" width=263 height=113 /></p>
+<p align="left">Copyright &copy; 2015-2022 LunarG, Inc.</p>
+
+<p><a href="https://creativecommons.org/licenses/by-nd/4.0/" TARGET="_blank"><img src="https://i.creativecommons.org/l/by-nd/4.0/88x31.png" title="Creative Commons License" alt="Creative Commons" /></a></p>
+<h1 id="vk_layer_lunarg_screenshot">VK_LAYER_LUNARG_screenshot</h1>
+<p>The <code>VK_LAYER_LUNARG_screenshot</code> layer records frames to image files.</p>
+<h2 id="configuring-the-screenshot-layer">Configuring the Screenshot Layer</h2>
+<p>For an overview of how to configure layers, refer to the <a href="./layer_configuration.html">Layers Overview and Configuration</a> document.</p>
+<p>The Screenshot Layer settings are documented in the <a href="./screenshot_layer.html#user-content-layer-details">Layer Details</a> section below.</p>
+<p>The Screenshot Layer can also be enabled and configured using the <a href="./vkconfig.html">Vulkan Configurator</a> included with the Vulkan SDK.</p>
+<h2 id="android">Android</h2>
+<p>Frame numbers can be specified with the debug.vulkan.screenshot.frames property:</p>
+<pre><code>adb shell setprop debug.vulkan.screenshot.frames &lt;framenumbers&gt;
+</code></pre>
+<p>The directory in which to create the image files can be specified with the debug.vulkan.screenshot.dir property:</p>
+<pre><code>adb shell setprop debug.vulkan.screenshot.dir &lt;directory&gt;
+</code></pre>
+<p>If debug.vulkan.screenshot.dir is not set or it is set to an empty string, the value of debug.vulkan.screenshot.dir will default to "/sdcard/Android".</p>
+<p>For production builds, if the files are to be written to external storage, make sure your application is able to read and write external storage by adding the following to AndroidManifest.xml:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode xml"><code class="sourceCode xml"><a class="sourceLine" id="cb3-1" title="1"><span class="co">&lt;!-- This allows writing log files to sdcard --&gt;</span></a>
+<a class="sourceLine" id="cb3-2" title="2"><span class="kw">&lt;uses-permission</span><span class="ot"> android:name=</span><span class="st">&quot;android.permission.READ_EXTERNAL_STORAGE&quot;</span><span class="kw">/&gt;</span></a>
+<a class="sourceLine" id="cb3-3" title="3"><span class="kw">&lt;uses-permission</span><span class="ot"> android:name=</span><span class="st">&quot;android.permission.WRITE_EXTERNAL_STORAGE&quot;</span><span class="kw">/&gt;</span></a></code></pre></div>
+<p>You may also need to grant it access with package manager. For example, using the Vulkan Cube demo from <a href="https://github.com/KhronosGroup/Vulkan-Tools" TARGET="_blank">Khronos/Vulkan-Tools</a>:</p>
+<pre><code>adb shell pm grant com.example.VkCube android.permission.READ_EXTERNAL_STORAGE
+adb shell pm grant com.example.VkCube android.permission.WRITE_EXTERNAL_STORAGE
+</code></pre>
+<h2 id="layer-settings">Layer Settings</h2>
+<p>The options for this layer are specified in VK_LAYER_LUNARG_screenshot.json. The layer option details are documented in the <a href="./screenshot_layer.html#user-content-layer-details">screenshot layer documentation</a>.</p>
+<h2 id="layer-properties">Layer Properties</h2>
+<ul>
+<li>API Version: 1.4.328</li>
+<li>Implementation Version: 1</li>
+<li>Layer Manifest: <code>VkLayer_screenshot.json</code>
+<ul>
+<li>File Format: 1.2.0</li>
+<li>Layer Binary: <code>libVkLayer_screenshot.so</code></li>
+</ul></li>
+<li>Variables:
+<ul>
+<li><code>vk_layer_settings.txt</code> namespace: <code>lunarg_screenshot</code></li>
+<li>Environment Variable prefix: <code>VK_LUNARG_SCREENSHOT_</code></li>
+<li>Android system property prefix: <code>adb setprop debug.vulkan.lunarg_screenshot.</code></li>
+</ul></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+<li>Number of Layer Settings: 3</li>
+<li>Number of Layer Presets: 1</li>
+</ul>
+<h2 id="layer-settings-overview">Layer Settings Overview</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Label</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Default Value</th>
+<th>Platforms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#frames">Frames</a></td>
+<td><code>frames</code></td>
+<td><code>STRING</code></td>
+<td>``</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><a href="#directory">Directory</a></td>
+<td><code>dir</code></td>
+<td><code>SAVE_FOLDER</code></td>
+<td>``</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td><a href="#format">Format</a></td>
+<td><code>format</code></td>
+<td><code>ENUM</code></td>
+<td><code>USE_SWAPCHAIN_COLORSPACE</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="layer-settings-details">Layer Settings Details</h2>
+<h3 id="frames">Frames</h3>
+<p>Specifies list of frames to output as screenshots. It is specified as a comma-separated list of frames or a range of frames with a start, count, and optional interval separated by a dash. Setting the variable to "all" will output every frame. Example: "5-8-2" will output frame 5, continue until frame 13, dumping every other frame. Example: "3,8-2" will output frames 3, 8, and 9. If it is not set or it set to an empty string, no screenshots are created.</p>
+<ul>
+<li>Key: <code>frames</code></li>
+<li>Type: <code>STRING</code></li>
+<li>Default Value:</li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_screenshot", "frames", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_screenshot.frames = </pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_SCREENSHOT_FRAMES=<br>export VK_SCREENSHOT_FRAMES=<br>export VK_FRAMES=<br>export VK_SCREENSHOT_FRAMES=</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_screenshot.frames <br>adb setprop debug.vulkan.screenshot.frames <br>adb setprop debug.vulkan.frames </pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="directory">Directory</h3>
+<p>Specifies the directory in which to create the screenshot files. If it is not set or is set to an empty string, the files will be created in the current working directory.</p>
+<ul>
+<li>Key: <code>dir</code></li>
+<li>Type: <code>SAVE_FOLDER</code></li>
+<li>Default Value:</li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_screenshot", "dir", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_screenshot.dir = </pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_SCREENSHOT_DIR=<br>export VK_SCREENSHOT_DIR=<br>export VK_DIR=<br>export VK_SCREENSHOT_DIR=</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_screenshot.dir <br>adb setprop debug.vulkan.screenshot.dir <br>adb setprop debug.vulkan.dir </pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="format">Format</h3>
+<p>Specify a color space for the output. If it is not set, set to null, or set to USE_SWAPCHAIN_COLORSPACE the format will be set to use the same color space as the swapchain object.</p>
+<ul>
+<li>Key: <code>format</code></li>
+<li>Type: <code>ENUM</code></li>
+<li>Default Value: <code>USE_SWAPCHAIN_COLORSPACE</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Enum Value</th>
+<th>Label</th>
+<th>Description</th>
+<th>Platforms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>UNORM</code></td>
+<td>UNORM</td>
+<td>N/A</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><code>SNORM</code></td>
+<td>SNORM</td>
+<td>N/A</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td><code>USCALED</code></td>
+<td>USCALED</td>
+<td>N/A</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><code>SSCALED</code></td>
+<td>SSCALED</td>
+<td>N/A</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td><code>UINT</code></td>
+<td>UINT</td>
+<td>N/A</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><code>SINT</code></td>
+<td>SINT</td>
+<td>N/A</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td><code>SRGB</code></td>
+<td>SRGB</td>
+<td>N/A</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><code>USE_SWAPCHAIN_COLORSPACE</code></td>
+<td>USE_SWAPCHAIN_COLORSPACE</td>
+<td>N/A</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "USE_SWAPCHAIN_COLORSPACE" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_screenshot", "format", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_screenshot.format = USE_SWAPCHAIN_COLORSPACE</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_SCREENSHOT_FORMAT=USE_SWAPCHAIN_COLORSPACE<br>export VK_SCREENSHOT_FORMAT=USE_SWAPCHAIN_COLORSPACE<br>export VK_FORMAT=USE_SWAPCHAIN_COLORSPACE<br>export VK_SCREENSHOT_FORMAT=USE_SWAPCHAIN_COLORSPACE</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_screenshot.format USE_SWAPCHAIN_COLORSPACE<br>adb setprop debug.vulkan.screenshot.format USE_SWAPCHAIN_COLORSPACE<br>adb setprop debug.vulkan.format USE_SWAPCHAIN_COLORSPACE</pre></td>
+</tr>
+</tbody>
+</table>
+<h2 id="layer-presets">Layer Presets</h2>
+<h3 id="default">Default</h3>
+<h4 id="preset-setting-values">Preset Setting Values:</h4>
+<ul>
+<li>Frames:</li>
+<li>Directory:</li>
+<li>Format: USE_SWAPCHAIN_COLORSPACE</li>
+</ul>
+</article>
+</body>
+</html>

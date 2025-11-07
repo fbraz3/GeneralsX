@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="icon" href="images/Vulkan_LogoBug_48px_Nov17.png">
+<link rel="stylesheet" href="github-markdown.css">
+</head>
+<body>
+<article class="markdown-body">
+<!-- markdownlint-disable MD041 -->
+
+<p align="left"><img src="https://vulkan.lunarg.com/img/NewLunarGLogoBlack.png" alt="LunarG" width=263 height=113 /></p>
+<p align="left">Copyright © 2015-2022 LunarG, Inc.</p>
+
+<p><a href="https://creativecommons.org/licenses/by-nd/4.0/" TARGET="_blank"><img src="https://i.creativecommons.org/l/by-nd/4.0/88x31.png" title="Creative Commons License" alt="Creative Commons" /></a></p>
+<h1 id="vulkan-profiles-api-library">Vulkan Profiles API library</h1>
+<ul>
+<li><a href="#vulkan-profiles-api-library">Vulkan Profiles API library</a>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#building">Building</a>
+<ul>
+<li><a href="#generating-the-library-with-a-custom-set-of-vulkan-profiles">Generating the library with a custom set of Vulkan Profiles</a></li>
+</ul></li>
+<li><a href="#basic-usage">Basic usage</a></li>
+<li><a href="#advanced-usages">Advanced usages</a>
+<ul>
+<li><a href="#specifying-the-api-version">Specifying the API version</a></li>
+<li><a href="#specifying-additional-extensions">Specifying additional extensions</a></li>
+<li><a href="#specifying-additional-features">Specifying additional features</a></li>
+<li><a href="#disabling-robust-access">Disabling robust access</a></li>
+</ul></li>
+<li><a href="#api-reference">API reference</a>
+<ul>
+<li><a href="#preprocessor-definitions">Preprocessor definitions</a></li>
+<li><a href="#profile-support-and-usage">Profile support and usage</a>
+<ul>
+<li><a href="#checking-instance-level-support">Checking instance level support</a></li>
+<li><a href="#creating-instance-with-profile">Creating instance with profile</a></li>
+<li><a href="#checking-device-level-support">Checking device level support</a></li>
+<li><a href="#creating-device-with-profile">Creating device with profile</a></li>
+</ul></li>
+<li><a href="#profile-queries">Profile queries</a>
+<ul>
+<li><a href="#query-profiles">Query profiles</a></li>
+<li><a href="#query-profile-required-profiles">Query profile required profiles</a></li>
+<li><a href="#query-profile-with-multiple-variants">Query profile with multiple variants</a></li>
+<li><a href="#query-profile-vulkan-api-version">Query profile Vulkan API version</a></li>
+<li><a href="#query-profile-fallbacks">Query profile fallbacks</a></li>
+<li><a href="#query-profile-instance-extensions">Query profile instance extensions</a></li>
+<li><a href="#query-profile-device-extensions">Query profile device extensions</a></li>
+<li><a href="#query-profile-features">Query profile features</a></li>
+<li><a href="#query-profile-device-properties">Query profile device properties</a></li>
+<li><a href="#query-profile-queue-family-properties">Query profile queue family properties</a></li>
+<li><a href="#query-profile-format-properties">Query profile format properties</a></li>
+<li><a href="#query-profile-video-profiles">Query profile video profiles</a></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+<h2 id="overview">Overview</h2>
+<p>The Vulkan Profiles library is a helper library that provides the following set of convenience APIs to developers:</p>
+<ul>
+<li>Capability introspection APIs to query the extensions, features, properties, and formats required by a particular Vulkan profile.</li>
+<li>APIs to verify instance-level and device-level support for a particular Vulkan profile or a set of capabilities blocks of a Vulkan Profile.</li>
+<li>Instance and device creation APIs that automatically enable the extensions and features required by selected Vulkan Profiles and selected specific Vulkan Profiles capabilities blocks. Enabling a Vulkan Profile can be thought as explicitly elevating the minimum Vulkan capabilities requirements for the user system.</li>
+</ul>
+<h2 id="building">Building</h2>
+<p>The Vulkan Profiles library is provided as a generated header-only C++ library (<code>vulkan/vulkan_profiles.hpp</code>) that is bundled with the Vulkan SDK. C++ applications thus can simply use the Vulkan Profiles library by including this header-only C++ library.</p>
+<p>The library is primarily designed to be dynamically linked to the Vulkan implementation (loader or ICD). If applications want to dynamically load Vulkan then they have to make sure (one way or another) that the Vulkan API symbols seen by the Vulkan Profiles header-only library are valid and correspond to the dynamically loaded entry points.</p>
+<p>In order to enable support for other language bindings, the library is also available in a header + source pair (<code>vulkan/vulkan_profiles.h</code> and <code>vulkan_profiles.cpp</code>). There is no build configuration for this variant of the library as it's not meant to be used as a standalone static or dynamic library. Instead, developers can drop the files into their own project to build the Vulkan profiles library into it. This may also come handy if the developer would like to optimize compilation times by not having to include the rather large header-only library in multiple source files.</p>
+<p>The profile definitions are enabled depending on the pre-processor definitions coming from the Vulkan headers; thus the application has to make sure to configure the right set of pre-processor definitions. As an example, the <code>VP_ANDROID_baseline_2021</code> profile depends on the <code>VK_KHR_android_surface</code> instance extension; thus in order to use this profile the application must define <code>VK_USE_PLATFORM_ANDROID_KHR</code>.</p>
+<h3 id="generating-the-library-with-a-custom-set-of-vulkan-profiles">Generating the library with a custom set of Vulkan Profiles</h3>
+<p>For many use cases, existing Vulkan Profiles are not very useful, a Vulkan application may require to create it's own Vulkan Profiles to better represent the ecosystem devices the Vulkan application is designed to run on and the rendering code paths.</p>
+<p>For this purpose, the Vulkan SDK ships with the <code>gen_profiles_solution.py</code> python script in the <code>share/vulkan/registry</code> directory. To use this script, simply copy your Vulkan Profiles in a <code>profiles</code> directory and use the command:</p>
+<pre><code>    python gen_profiles_solution.py --registry ./vk.xml --input ./profiles --output-library-inc . --output-library-src .
+</code></pre>
+<p>When <code>--output-library-src</code> is not specified, the header-only library is generated but not the header + source pair.</p>
+<p>For more information about the Vulkan Profiles library generation, use the command:</p>
+<pre><code>    python gen_profiles_solution.py --help
+</code></pre>
+<h2 id="basic-usage">Basic usage</h2>
+<p>The typically expected usage of the Vulkan Profiles library is for applications to target a specific profile with their application and leave it to the Vulkan Profiles library to enable any necessary extensions and features required by that profile.</p>
+<p>The Vulkan Header version 1.3.278 introduced the <code>VpCapabilities</code> object which broke backward compatibility with previous version of the library. The <code>VpCapabilities</code> object enables using the Profiles API library with Vulkan functions provided external. While this new API remains at the <code>BETA</code> development stage, it's protected by the <code>VP_USE_OBJECT</code> <code>#define</code> which must be defined to use the new API described bellow.</p>
+<p>In order to use the Profiles API library, the application first has to create a <code>VpCapabilities</code> object as follows:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1">    VpCapabilities capabilities = VK_NULL_HANDLE;</a>
+<a class="sourceLine" id="cb3-2" title="2"></a>
+<a class="sourceLine" id="cb3-3" title="3">    VpCapabilitiesCreateInfo createInfo;</a>
+<a class="sourceLine" id="cb3-4" title="4">    createInfo.apiVersion = VK_API_VERSION_1_1;</a>
+<a class="sourceLine" id="cb3-5" title="5">    createInfo.flags = VP_PROFILE_CREATE_STATIC_BIT;</a>
+<a class="sourceLine" id="cb3-6" title="6">    createInfo.pVulkanFunctions = <span class="kw">nullptr</span>;</a>
+<a class="sourceLine" id="cb3-7" title="7"></a>
+<a class="sourceLine" id="cb3-8" title="8">    vpCreateCapabilities(&amp;createInfo, <span class="kw">nullptr</span>, &amp;capabilities);</a></code></pre></div>
+<p>Then the application has to make sure that the Vulkan implementation supports the selected profile as follows:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb4-1" title="1">    VkResult result = VK_SUCCESS;</a>
+<a class="sourceLine" id="cb4-2" title="2">    VkBool32 supported = VK_FALSE;</a>
+<a class="sourceLine" id="cb4-3" title="3">    VpProfileProperties profile{</a>
+<a class="sourceLine" id="cb4-4" title="4">        VP_KHR_ROADMAP_2022_NAME,</a>
+<a class="sourceLine" id="cb4-5" title="5">        VP_KHR_ROADMAP_2022_SPEC_VERSION</a>
+<a class="sourceLine" id="cb4-6" title="6">    };</a>
+<a class="sourceLine" id="cb4-7" title="7"></a>
+<a class="sourceLine" id="cb4-8" title="8">    result = vpGetInstanceProfileSupport(capabilities, <span class="kw">nullptr</span>, &amp;profile, &amp;supported);</a>
+<a class="sourceLine" id="cb4-9" title="9">    <span class="cf">if</span> (result != VK_SUCCESS) {</a>
+<a class="sourceLine" id="cb4-10" title="10">        <span class="co">// something went wrong</span></a>
+<a class="sourceLine" id="cb4-11" title="11">        ...</a>
+<a class="sourceLine" id="cb4-12" title="12">    }</a>
+<a class="sourceLine" id="cb4-13" title="13">    <span class="cf">else</span> <span class="cf">if</span> (supported != VK_TRUE) {</a>
+<a class="sourceLine" id="cb4-14" title="14">        <span class="co">// profile is not supported at the instance level</span></a>
+<a class="sourceLine" id="cb4-15" title="15">        ...</a>
+<a class="sourceLine" id="cb4-16" title="16">    }</a></code></pre></div>
+<p>The above code example verifies the instance-level profile requirements of the <code>VP_KHR_roadmap_2022</code> profile, including required API version and instance extensions.</p>
+<p>If the profile is supported by the Vulkan implementation at the instance level, then a Vulkan instance can be created with the instance extensions required by the profile as follows:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb5-1" title="1">    VkApplicationInfo vkAppInfo{ VK_STRUCTURE_TYPE_APPLICATION_INFO };</a>
+<a class="sourceLine" id="cb5-2" title="2">    <span class="co">// Set API version to the minimum API version required by the profile</span></a>
+<a class="sourceLine" id="cb5-3" title="3">    vkAppInfo.apiVersion = VP_KHR_ROADMAP_2022_MIN_API_VERSION;</a>
+<a class="sourceLine" id="cb5-4" title="4">    VkInstanceCreateInfo vkCreateInfo{ VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };</a>
+<a class="sourceLine" id="cb5-5" title="5">    vkCreateInfo.pApplicationInfo = &amp;vkAppInfo;</a>
+<a class="sourceLine" id="cb5-6" title="6">    <span class="co">// set up your own instance creation parameters, except instance extensions</span></a>
+<a class="sourceLine" id="cb5-7" title="7">    <span class="co">// as those will come from the profile</span></a>
+<a class="sourceLine" id="cb5-8" title="8">    ...</a>
+<a class="sourceLine" id="cb5-9" title="9"></a>
+<a class="sourceLine" id="cb5-10" title="10">    VpInstanceCreateInfo vpCreateInfo{};</a>
+<a class="sourceLine" id="cb5-11" title="11">    vpCreateInfo.pCreateInfo = &amp;vkCreateInfo;</a>
+<a class="sourceLine" id="cb5-12" title="12">    vpCreateInfo.enabledFullProfileCount = <span class="dv">1</span>;</a>
+<a class="sourceLine" id="cb5-13" title="13">    vpCreateInfo.pEnabledFullProfiles = &amp;profile;</a>
+<a class="sourceLine" id="cb5-14" title="14"></a>
+<a class="sourceLine" id="cb5-15" title="15">    VkInstance instance = VK_NULL_HANDLE;</a>
+<a class="sourceLine" id="cb5-16" title="16">    result = vpCreateInstance(capabilities, &amp;vpCreateInfo, <span class="kw">nullptr</span>, &amp;instance);</a>
+<a class="sourceLine" id="cb5-17" title="17">    <span class="cf">if</span> (result != VK_SUCCESS) {</a>
+<a class="sourceLine" id="cb5-18" title="18">        <span class="co">// something went wrong</span></a>
+<a class="sourceLine" id="cb5-19" title="19">        ...</a>
+<a class="sourceLine" id="cb5-20" title="20">    }</a></code></pre></div>
+<p>The above code example will create a Vulkan instance with the API version and instance extensions required by the profile (unless the application overrides any of them, as explained later).</p>
+<p>Make sure to set the <code>apiVersion</code> in the <code>VkApplicationInfo</code> structure at least to the minimum API version required by the profile, as seen above, to ensure the correct Vulkan API version is used.</p>
+<p>Once a Vulkan instance is created, the application can check whether individual physical devices support the selected profile as follows:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb6-1" title="1">    result = vpGetPhysicalDeviceProfileSupport(capabilities, instance, physicalDevice,</a>
+<a class="sourceLine" id="cb6-2" title="2">                                               &amp;profile, &amp;supported);</a>
+<a class="sourceLine" id="cb6-3" title="3">    <span class="cf">if</span> (result != VK_SUCCESS) {</a>
+<a class="sourceLine" id="cb6-4" title="4">        <span class="co">// something went wrong</span></a>
+<a class="sourceLine" id="cb6-5" title="5">        ...</a>
+<a class="sourceLine" id="cb6-6" title="6">    }</a>
+<a class="sourceLine" id="cb6-7" title="7">    <span class="cf">else</span> <span class="cf">if</span> (supported != VK_TRUE) {</a>
+<a class="sourceLine" id="cb6-8" title="8">        <span class="co">// profile is not supported at the device level</span></a>
+<a class="sourceLine" id="cb6-9" title="9">        ...</a>
+<a class="sourceLine" id="cb6-10" title="10">    }</a></code></pre></div>
+<p>Finally, once a physical device supporting the profile is selected, a Vulkan device can be created with the device extensions and features required by the profile as follows:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb7-1" title="1">    VkDeviceCreateInfo vkCreateInfo{ VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };</a>
+<a class="sourceLine" id="cb7-2" title="2">    <span class="co">// set up your own device creation parameters, except device extensions</span></a>
+<a class="sourceLine" id="cb7-3" title="3">    <span class="co">// and device features as those will come from the profile</span></a>
+<a class="sourceLine" id="cb7-4" title="4">    ...</a>
+<a class="sourceLine" id="cb7-5" title="5"></a>
+<a class="sourceLine" id="cb7-6" title="6">    VpDeviceCreateInfo vpCreateInfo{};</a>
+<a class="sourceLine" id="cb7-7" title="7">    vpCreateInfo.pCreateInfo = &amp;vkCreateInfo;</a>
+<a class="sourceLine" id="cb7-8" title="8">    vpCreateInfo.enabledFullProfileCount = <span class="dv">1</span>;</a>
+<a class="sourceLine" id="cb7-9" title="9">    vpCreateInfo.pEnabledFullProfiles = &amp;profile;</a>
+<a class="sourceLine" id="cb7-10" title="10"></a>
+<a class="sourceLine" id="cb7-11" title="11">    VkDevice device = VK_NULL_HANDLE;</a>
+<a class="sourceLine" id="cb7-12" title="12">    result = vpCreateDevice(capabilities, physicalDevice, &amp;vpCreateInfo, <span class="kw">nullptr</span>, &amp;device);</a>
+<a class="sourceLine" id="cb7-13" title="13">    <span class="cf">if</span> (result != VK_SUCCESS) {</a>
+<a class="sourceLine" id="cb7-14" title="14">        <span class="co">// something went wrong</span></a>
+<a class="sourceLine" id="cb7-15" title="15">        ...</a>
+<a class="sourceLine" id="cb7-16" title="16">    }</a></code></pre></div>
+<h2 id="advanced-usages">Advanced usages</h2>
+<h3 id="specifying-the-api-version">Specifying the API version</h3>
+<p>By default, it's expected that the application either does not provide its own <code>VkApplicationInfo</code> when calling <code>vpCreateInstance</code> or it sets its <code>apiVersion</code> to the minimum API version required by the profile as defined by the corresponding <code>&lt;VP_VENDOR_NAME&gt;_MIN_API_VERSION</code> preprocessor definition.</p>
+<p>If the application would like to use a different API version, then it should use its own <code>apiVersion</code> in <code>VkApplicationInfo</code> at instance creation time instead (e.g. to request a newer API version).</p>
+<p>Using an older version than the one required by the profile may result in unexpected behavior if any of the features required by the profile are not present in the specified version of the Vulkan API.</p>
+<h3 id="specifying-additional-extensions">Specifying additional extensions</h3>
+<p>If the application would like to specify additional extensions besides the ones defined by the profile, the Vulkan application developers can continue using the <code>enabledExtensionCount</code> and <code>ppEnabledExtensionNames</code>:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb8-1" title="1">    VkInstanceCreateInfo vkCreateInfo{ VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };</a>
+<a class="sourceLine" id="cb8-2" title="2">    ...</a>
+<a class="sourceLine" id="cb8-3" title="3">    <span class="co">// Specify additional extensions to use beyond the profile-defined ones</span></a>
+<a class="sourceLine" id="cb8-4" title="4">    vkCreateInfo.enabledExtensionCount = ...</a>
+<a class="sourceLine" id="cb8-5" title="5">    vkCreateInfo.ppEnabledExtensionNames = ...</a>
+<a class="sourceLine" id="cb8-6" title="6"></a>
+<a class="sourceLine" id="cb8-7" title="7">    VpInstanceCreateInfo vpCreateInfo{};</a>
+<a class="sourceLine" id="cb8-8" title="8">    vpCreateInfo.pCreateInfo = &amp;vkCreateInfo;</a>
+<a class="sourceLine" id="cb8-9" title="9">    vpCreateInfo.enabledFullProfileCount = <span class="dv">1</span>;</a>
+<a class="sourceLine" id="cb8-10" title="10">    vpCreateInfo.pEnabledFullProfiles = &amp;profile;</a>
+<a class="sourceLine" id="cb8-11" title="11">    ...</a></code></pre></div>
+<h3 id="specifying-additional-features">Specifying additional features</h3>
+<p>By default, profile-defined feature structures must not be specified as part of the <code>pNext</code> chain of <code>VkDeviceCreateInfo</code> when using <code>vpCreateDevice</code>, as the profile-defined feature structures are automatically added to the <code>pNext</code> chain, and duplicate feature structures would otherwise result in undefined behavior.</p>
+<p>If the application needs to specify additional features, the feature structures must be specified as part of the <code>pNext</code> chain of <code>VkDeviceCreateInfo</code> and the additional enabled features will be merged to the required profile features:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb9-1" title="1">    <span class="co">// We want to use our own VkPhysicalDeviceVulkan11Features structure,</span></a>
+<a class="sourceLine" id="cb9-2" title="2">    <span class="co">// merging any feature enablement in that structure as defined by</span></a>
+<a class="sourceLine" id="cb9-3" title="3">    <span class="co">// the profile</span></a>
+<a class="sourceLine" id="cb9-4" title="4">    VkPhysicalDeviceVulkan11Features overriddenVulkan11Features{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES };</a>
+<a class="sourceLine" id="cb9-5" title="5">    ...</a>
+<a class="sourceLine" id="cb9-6" title="6"></a>
+<a class="sourceLine" id="cb9-7" title="7">    VkDeviceCreateInfo vkCreateInfo{ VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };</a>
+<a class="sourceLine" id="cb9-8" title="8">    <span class="co">// Include overridden features in the pNext chain of VkDeviceCreateInfo</span></a>
+<a class="sourceLine" id="cb9-9" title="9">    vkCreateInfo.pNext = &amp;overriddenVulkan11Features;</a>
+<a class="sourceLine" id="cb9-10" title="10">    ...</a>
+<a class="sourceLine" id="cb9-11" title="11"></a>
+<a class="sourceLine" id="cb9-12" title="12">    VpDeviceCreateInfo vpCreateInfo{};</a>
+<a class="sourceLine" id="cb9-13" title="13">    vpCreateInfo.pCreateInfo = &amp;vkCreateInfo;</a>
+<a class="sourceLine" id="cb9-14" title="14">    vpCreateInfo.enabledFullProfileCount = <span class="dv">1</span>;</a>
+<a class="sourceLine" id="cb9-15" title="15">    vpCreateInfo.pEnabledFullProfiles = &amp;profile;</a>
+<a class="sourceLine" id="cb9-16" title="16">    ...</a></code></pre></div>
+<h3 id="disabling-robust-access">Disabling robust access</h3>
+<p>Many profiles require robust buffer and/or image access; however, applications often prefer to opt out from these features for performance reasons. This can be requested by overriding individual features as explained in the previous section; however, as it's quite a common usage pattern, explicit device creation flags are provided to make it easier to do so.</p>
+<p>If the <code>VP_DEVICE_CREATE_DISABLE_ROBUST_BUFFER_ACCESS_BIT</code> flag is specified, then the <code>robustBufferAccess</code> feature (defined by <code>VkPhysicalDeviceFeatures</code>) and the <code>robustBufferAccess2</code> feature (defined by <code>VkPhysicalDeviceRobustness2FeaturesEXT</code>) are disabled, unless the application provides its own overridden feature structures containing the features.</p>
+<p>If the <code>VP_DEVICE_CREATE_DISABLE_ROBUST_IMAGE_ACCESS_BIT</code> flag is specified, then the <code>robustImageAccess</code> feature (defined by <code>VkPhysicalDeviceImageRobustnessFeatures</code> and <code>VkPhysicalDeviceVulkan13Features</code>) and the <code>robustImageAccess2</code> feature (defined by <code>VkPhysicalDeviceRobustness2FeaturesEXT</code>) are disabled, unless the application provides its own overridden feature structures containing the features.</p>
+<p>Using <code>VP_DEVICE_CREATE_DISABLE_ROBUST_ACCESS_BIT</code> disables both buffer and image robustness features.</p>
+<h2 id="api-reference">API reference</h2>
+<h3 id="preprocessor-definitions">Preprocessor definitions</h3>
+<p>Each profile defines the following set of preprocessor definitions:</p>
+<ul>
+<li><code>&lt;VP_VENDOR_name&gt;</code> - Defined to <code>1</code> in the presence of the profile</li>
+<li><code>&lt;VP_VENDOR_NAME&gt;_NAME</code> - The character string name of the profile</li>
+<li><code>&lt;VP_VENDOR_NAME&gt;_SPEC_VERSION</code> - The version of the profile definition</li>
+<li><code>&lt;VP_VENDOR_NAME&gt;_MIN_API_VERSION</code> - The minimum Vulkan API version required by the profile</li>
+</ul>
+<p>Where:</p>
+<ul>
+<li><code>&lt;VP_VENDOR_name&gt;</code> is the name of the profile</li>
+<li><code>&lt;VP_VENDOR_NAME&gt;</code> is the upper-case name of the profile</li>
+</ul>
+<h3 id="profile-support-and-usage">Profile support and usage</h3>
+<p>The Vulkan Profile library offers a set of APIs to verify support for a particular Vulkan profile and to create Vulkan instances and devices using the extensions and features required by the profile.</p>
+<h4 id="checking-instance-level-support">Checking instance level support</h4>
+<p>In order to query whether the Vulkan implementation supports the necessary instance level requirements (API version and instance extensions) of a particular profile, use the following command:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb10-1" title="1">VkResult vpGetInstanceProfileSupport(</a>
+<a class="sourceLine" id="cb10-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb10-3" title="3">    <span class="at">const</span> <span class="dt">char</span>*                     pLayerName,</a>
+<a class="sourceLine" id="cb10-4" title="4">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb10-5" title="5">    VkBool32*                       pSupported);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pLayerName</code> is either <code>NULL</code> or a pointer to a null-terminated UTF-8 string naming the layer to retrieve extensions from (analogous to the corresponding parameter of <code>vkEnumerateInstanceExtensionProperties</code>).</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the profile to check support for.</li>
+<li><code>pSupported</code> is a pointer to a <code>VkBool32</code>, which is set to <code>VK_TRUE</code> to indicate support, and <code>VK_FALSE</code> otherwise.</li>
+</ul>
+<p>The <code>VpProfileProperties</code> structure is defined as follows:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb11-1" title="1"><span class="kw">typedef</span> <span class="kw">struct</span> VpProfileProperties {</a>
+<a class="sourceLine" id="cb11-2" title="2">    <span class="dt">char</span>                            profileName[VP_MAX_PROFILE_NAME_SIZE];</a>
+<a class="sourceLine" id="cb11-3" title="3">    <span class="dt">uint32_t</span>                        specVersion;</a>
+<a class="sourceLine" id="cb11-4" title="4">} VpProfileProperties;</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>profileName</code> is the name of the profile</li>
+<li><code>specVersion</code> is the version of the profile specification</li>
+</ul>
+<p>When a profile supports multiple variants, it might be useful to know what capabilities blocks where used to verify the profile or what capabilities blocks are not supported when the profile is not verified on the platform. This is done using the following command:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb12-1" title="1">VkResult vpGetInstanceProfileVariantsSupport(</a>
+<a class="sourceLine" id="cb12-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb12-3" title="3">    <span class="at">const</span> <span class="dt">char</span>*                     pLayerName,</a>
+<a class="sourceLine" id="cb12-4" title="4">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb12-5" title="5">    VkBool32*                       pSupported,</a>
+<a class="sourceLine" id="cb12-6" title="6">    <span class="dt">uint32_t</span>*                       pPropertyCount,</a>
+<a class="sourceLine" id="cb12-7" title="7">    VpBlockProperties*              pProperties);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pLayerName</code> is either <code>NULL</code> or a pointer to a null-terminated UTF-8 string naming the layer to retrieve extensions from (analogous to the corresponding parameter of <code>vkEnumerateInstanceExtensionProperties</code>).</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the profile to check support for.</li>
+<li><code>pSupported</code> is a pointer to a <code>VkBool32</code>, which is set to <code>VK_TRUE</code> to indicate support, and <code>VK_FALSE</code> otherwise.</li>
+<li><code>pPropertyCount</code> is a pointer to an integer related to the number of <code>VpBlockProperties</code>. If <code>pSupported</code> is set to <code>VK_TRUE</code>, then the value</li>
+<li><code>pProperties</code> is a pointer to an array of <code>VpBlockProperties</code> structures. If <code>pSupported</code> is set to <code>VK_TRUE</code>, then the array of blocks contains the blocks used to validate the profile. It <code>pSupported</code> is set to <code>VK_FALSE</code>, then the array contains the blocks not supported on the platform.</li>
+</ul>
+<p>The <code>VpBlockProperties</code> structure is defined as follows:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb13-1" title="1"><span class="kw">typedef</span> <span class="kw">struct</span> VpBlockProperties {</a>
+<a class="sourceLine" id="cb13-2" title="2">    VpProfileProperties             profiles;</a>
+<a class="sourceLine" id="cb13-3" title="3">    <span class="dt">uint32_t</span>                        apiVersion;</a>
+<a class="sourceLine" id="cb13-4" title="4">    <span class="dt">char</span>                            blockName[VP_MAX_PROFILE_NAME_SIZE];</a>
+<a class="sourceLine" id="cb13-5" title="5">} VpBlockProperties;</a></code></pre></div>
+<h4 id="creating-instance-with-profile">Creating instance with profile</h4>
+<p>The Vulkan Profiles library provides the following helper function that enables easier adoption of profiles by automatically including profile requirements in the Vulkan instance creation process:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb14-1" title="1">VkResult vpCreateInstance(</a>
+<a class="sourceLine" id="cb14-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb14-3" title="3">    <span class="at">const</span> VpInstanceCreateInfo*     pCreateInfo,</a>
+<a class="sourceLine" id="cb14-4" title="4">    <span class="at">const</span> VkAllocationCallbacks*    pAllocator,</a>
+<a class="sourceLine" id="cb14-5" title="5">    VkInstance*                     pInstance);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pCreateInfo</code> is a pointer to the <code>VpInstanceCreateInfo</code> structure specifying the instance creation info, as described below.</li>
+<li><code>pAllocator</code> controls host memory allocation and is analogous to the corresponding parameter of <code>vkCreateInstance</code>.</li>
+<li><code>pInstance</code> points to a <code>VkInstance</code> handle in which the resulting instance is returned.</li>
+</ul>
+<p>The <code>VpInstanceCreateInfo</code> structure is defined as follows:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb15-1" title="1"><span class="kw">typedef</span> <span class="kw">struct</span> VpInstanceCreateInfo {</a>
+<a class="sourceLine" id="cb15-2" title="2">    <span class="at">const</span> VkInstanceCreateInfo*     pCreateInfo;</a>
+<a class="sourceLine" id="cb15-3" title="3">    VpInstanceCreateFlags           flags;</a>
+<a class="sourceLine" id="cb15-4" title="4">    <span class="dt">uint32_t</span>                        enabledFullProfileCount;</a>
+<a class="sourceLine" id="cb15-5" title="5">    <span class="at">const</span> VpProfileProperties*      pEnabledFullProfiles;</a>
+<a class="sourceLine" id="cb15-6" title="6">    <span class="dt">uint32_t</span>                        enabledProfileBlockCount;</a>
+<a class="sourceLine" id="cb15-7" title="7">    <span class="at">const</span> VpBlockProperties*        pEnabledProfileBlocks;</a>
+<a class="sourceLine" id="cb15-8" title="8">} VpInstanceCreateInfo;</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>pCreateInfo</code> is a pointer to the <code>VkInstanceCreateInfo</code> structure specifying the usual Vulkan instance creation info.</li>
+<li><code>flags</code> is reserved for future use.</li>
+<li><code>enabledFullProfileCount</code> an integer related to the number of profiles to enable listed in <code>pEnabledFullProfiles</code>.</li>
+<li><code>pEnabledFullProfiles</code> is a pointer to an array of <code>VpProfileProperties</code> structure specifying the profiles to enable. If not profiles is enabled, the value is nullptr.</li>
+<li><code>enabledProfileBlockCount</code> an integer related to the number of profile capabilities blocks to enable listed in <code>pEnabledProfileBlocks</code>.</li>
+<li><code>pEnabledProfileBlocks</code> is a pointer to an array of <code>VpBlockProperties</code> structure specifying the profiles capabilities blocks to enable. If not capabilities block is enabled, the value is <code>NULL</code>.</li>
+</ul>
+<p>The behavior of <code>vpCreateInstance</code> is to enable all extensions and features listed by the profiles, the capabilities blocks and in the <code>pNext</code> chain of <code>VkInstanceCreateInfo</code>.</p>
+<p>If the application-provided <code>VkInstanceCreateInfo</code> does not specify a <code>VkApplicationInfo</code> structure then a <code>VkApplicationInfo</code> with an <code>apiVersion</code> field equaling the minimum required API version of the profile will be added. If the application does provide a <code>VkApplicationInfo</code> it has to make sure that its <code>apiVersion</code> field is greater than or equal to the minimum required API version of the profile (e.g. by using the corresponding preprocessor definition).</p>
+<h4 id="checking-device-level-support">Checking device level support</h4>
+<p>In order to query whether a Vulkan physical device supports the necessary device level requirements (API version, device extensions, device features and properties/limits) of a particular profile, use the following command:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb16-1" title="1">VkResult vpGetPhysicalDeviceProfileSupport(</a>
+<a class="sourceLine" id="cb16-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb16-3" title="3">    VkInstance                      instance,</a>
+<a class="sourceLine" id="cb16-4" title="4">    VkPhysicalDevice                physicalDevice,</a>
+<a class="sourceLine" id="cb16-5" title="5">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb16-6" title="6">    VkBool32*                       pSupported);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>instance</code> is the Vulkan instance.</li>
+<li><code>physicalDevice</code> is the physical device to check support on.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the profile to check support for.</li>
+<li><code>pSupported</code> is a pointer to a <code>VkBool32</code>, which is set to <code>VK_TRUE</code> to indicate support, and <code>VK_FALSE</code> otherwise.</li>
+</ul>
+<p>The <code>VpProfileProperties</code> structure is defined as follows:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb17-1" title="1"><span class="kw">typedef</span> <span class="kw">struct</span> VpProfileProperties {</a>
+<a class="sourceLine" id="cb17-2" title="2">    <span class="dt">char</span>                            profileName[VP_MAX_PROFILE_NAME_SIZE];</a>
+<a class="sourceLine" id="cb17-3" title="3">    <span class="dt">uint32_t</span>                        specVersion;</a>
+<a class="sourceLine" id="cb17-4" title="4">} VpProfileProperties;</a></code></pre></div>
+<p>When a profile supports multiple variants, it might be useful to know what capabilities blocks where used to verify the profile or what capabilities blocks are not supported when the profile is not verified on the platform. This is done using the following command:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb18-1" title="1">VkResult vpGetPhysicalDeviceProfileVariantsSupport(</a>
+<a class="sourceLine" id="cb18-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb18-3" title="3">    VkInstance                      instance,</a>
+<a class="sourceLine" id="cb18-4" title="4">    VkPhysicalDevice                physicalDevice,</a>
+<a class="sourceLine" id="cb18-5" title="5">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb18-6" title="6">    VkBool32*                       pSupported,</a>
+<a class="sourceLine" id="cb18-7" title="7">    <span class="dt">uint32_t</span>*                       pPropertyCount,</a>
+<a class="sourceLine" id="cb18-8" title="8">    VpBlockProperties*              pProperties);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>instance</code> is the Vulkan instance.</li>
+<li><code>physicalDevice</code> is the physical device to check support on.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the profile to check support for.</li>
+<li><code>pSupported</code> is a pointer to a <code>VkBool32</code>, which is set to <code>VK_TRUE</code> to indicate support, and <code>VK_FALSE</code> otherwise.</li>
+<li><code>pPropertyCount</code> is a pointer to an integer related to the number of <code>VpBlockProperties</code>. If <code>pSupported</code> is set to <code>VK_TRUE</code>, then the value</li>
+<li><code>pProperties</code> is a pointer to an array of <code>VpBlockProperties</code> structures. If <code>pSupported</code> is set to <code>VK_TRUE</code>, then the array of blocks contains the blocks used to validate the profile. It <code>pSupported</code> is set to <code>VK_FALSE</code>, then the array contains the blocks not supported on the platform.</li>
+</ul>
+<p>The <code>VpBlockProperties</code> structure is defined as follows:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb19-1" title="1"><span class="kw">typedef</span> <span class="kw">struct</span> VpBlockProperties {</a>
+<a class="sourceLine" id="cb19-2" title="2">    VpProfileProperties             profiles;</a>
+<a class="sourceLine" id="cb19-3" title="3">    <span class="dt">uint32_t</span>                        apiVersion;</a>
+<a class="sourceLine" id="cb19-4" title="4">    <span class="dt">char</span>                            blockName[VP_MAX_PROFILE_NAME_SIZE];</a>
+<a class="sourceLine" id="cb19-5" title="5">} VpBlockProperties;</a></code></pre></div>
+<h4 id="creating-device-with-profile">Creating device with profile</h4>
+<p>The Vulkan Profiles library provides the following helper function that enables easier adoption of profiles by automatically including profile requirements in the Vulkan device creation process:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb20-1" title="1">VkResult vpCreateDevice(</a>
+<a class="sourceLine" id="cb20-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb20-3" title="3">    VkPhysicalDevice                physicalDevice,</a>
+<a class="sourceLine" id="cb20-4" title="4">    <span class="at">const</span> VpDeviceCreateInfo*       pCreateInfo,</a>
+<a class="sourceLine" id="cb20-5" title="5">    <span class="at">const</span> VkAllocationCallbacks*    pAllocator,</a>
+<a class="sourceLine" id="cb20-6" title="6">    VkDevice*                       pDevice);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>physicalDevice</code> is the physical device to create the logical device for.</li>
+<li><code>pCreateInfo</code> is a pointer to the <code>VpDeviceCreateInfo</code> structure specifying the device creation info, as described below.</li>
+<li><code>pAllocator</code> controls host memory allocation and is analogous to the corresponding parameter of <code>vkCreateDevice</code>.</li>
+<li><code>pDevice</code> points to a <code>VkDevice</code> handle in which the resulting device is returned.</li>
+</ul>
+<p>The <code>VpDeviceCreateInfo</code> structure is defined as follows:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb21-1" title="1"><span class="kw">typedef</span> <span class="kw">struct</span> VpDeviceCreateInfo {</a>
+<a class="sourceLine" id="cb21-2" title="2">    <span class="at">const</span> VkDeviceCreateInfo*   pCreateInfo;</a>
+<a class="sourceLine" id="cb21-3" title="3">    VpDeviceCreateFlags         flags;</a>
+<a class="sourceLine" id="cb21-4" title="4">    <span class="dt">uint32_t</span>                    enabledFullProfileCount;</a>
+<a class="sourceLine" id="cb21-5" title="5">    <span class="at">const</span> VpProfileProperties*  pEnabledFullProfiles;</a>
+<a class="sourceLine" id="cb21-6" title="6">    <span class="dt">uint32_t</span>                    enabledProfileBlockCount;</a>
+<a class="sourceLine" id="cb21-7" title="7">    <span class="at">const</span> VpBlockProperties*    pEnabledProfileBlocks;</a>
+<a class="sourceLine" id="cb21-8" title="8">} VpDeviceCreateInfo;</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>pCreateInfo</code> is a pointer to the <code>VkDeviceCreateInfo</code> structure specifying the usual Vulkan device creation info.</li>
+<li><code>flags</code> is a bitmask of <code>VpDeviceCreateFlagBits</code> indicating the behavior of the instance.</li>
+<li><code>enabledFullProfileCount</code> an integer related to the number of profiles to enable listed in <code>pEnabledFullProfiles</code>.</li>
+<li><code>pEnabledFullProfiles</code> is a pointer to an array of <code>VpProfileProperties</code> structure specifying the profiles to enable. If not profiles is enabled, the value is <code>NULL</code>.</li>
+<li><code>enabledProfileBlockCount</code> an integer related to the number of profile capabilities blocks to enable listed in <code>pEnabledProfileBlocks</code>.</li>
+<li><code>pEnabledProfileBlocks</code> is a pointer to an array of <code>VpBlockProperties</code> structure specifying the profiles capabilities blocks to enable. If not capabilities block is enabled, the value is <code>NULL</code>.</li>
+</ul>
+<p>The <code>VpDeviceCreateFlagBits</code> enumeration is defined as follows:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb22-1" title="1"><span class="kw">typedef</span> <span class="kw">enum</span> VpDeviceCreateFlagBits {</a>
+<a class="sourceLine" id="cb22-2" title="2">    VP_DEVICE_CREATE_DISABLE_ROBUST_BUFFER_ACCESS_BIT = <span class="bn">0x0000001</span>,</a>
+<a class="sourceLine" id="cb22-3" title="3">    VP_DEVICE_CREATE_DISABLE_ROBUST_IMAGE_ACCESS_BIT = <span class="bn">0x0000002</span>,</a>
+<a class="sourceLine" id="cb22-4" title="4">    VP_DEVICE_CREATE_DISABLE_ROBUST_ACCESS = VP_DEVICE_CREATE_DISABLE_ROBUST_BUFFER_ACCESS_BIT | VP_DEVICE_CREATE_DISABLE_ROBUST_IMAGE_ACCESS_BIT,</a>
+<a class="sourceLine" id="cb22-5" title="5"></a>
+<a class="sourceLine" id="cb22-6" title="6">    VP_DEVICE_CREATE_FLAG_BITS_MAX_ENUM = <span class="bn">0x7FFFFFFF</span></a>
+<a class="sourceLine" id="cb22-7" title="7">} VpDeviceCreateFlagBits;</a>
+<a class="sourceLine" id="cb22-8" title="8"><span class="kw">typedef</span> VkFlags VpDeviceCreateFlags;</a></code></pre></div>
+<p>The behavior of <code>vpCreateDevice</code> is to enable all extensions and features listed by the profiles, the capabilities blocks and in the <code>pNext</code> chain of <code>VkDeviceCreateInfo</code>.</p>
+<p>If the application specifies the <code>VP_DEVICE_CREATE_DISABLE_ROBUST_BUFFER_ACCESS_BIT</code>, then the implement will disable buffer robustness.</p>
+<p>If the application specifies the <code>VP_DEVICE_CREATE_DISABLE_ROBUST_IMAGE_ACCESS_BIT</code>, then the implement will disable image robustness.</p>
+<p>If the application specifies the <code>VP_DEVICE_CREATE_DISABLE_ROBUST_ACCESS</code>, then the implement will disable all robustness features.</p>
+<h3 id="profile-queries">Profile queries</h3>
+<p>The Vulkan Profile library offers a set of APIs to query the capabilities defined in a particular Vulkan profile, and may be used both for development-time checking of profile capabilities and for facilitating the construction of custom extension and feature configurations that use only a subset of the capabilities required by the profile.</p>
+<h4 id="query-profiles">Query profiles</h4>
+<p>In order to query the list of available profiles, use the following command:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb23-1" title="1">VkResult vpGetProfiles(</a>
+<a class="sourceLine" id="cb23-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb23-3" title="3">    <span class="dt">uint32_t</span>*                       pPropertyCount,</a>
+<a class="sourceLine" id="cb23-4" title="4">    VpProfileProperties*            pProperties);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pPropertyCount</code> is a pointer to an integer related to the number of profiles available or queried, as described below.</li>
+<li><code>pProperties</code> is either <code>NULL</code> or a pointer to an array of <code>VpProfileProperties</code> structures.</li>
+</ul>
+<p>If <code>pProperties</code> is <code>NULL</code>, then the number of profiles available is returned in <code>pPropertyCount</code>. Otherwise, <code>pPropertyCount</code> must point to a variable set by the user to the number of elements in the <code>pProperties</code> array, and on return the variable is overwritten with the number of structures actually written to <code>pProperties</code>. If <code>pPropertyCount</code> is less than the number of profiles available, at most <code>pPropertyCount</code> structures will be written, and <code>VK_INCOMPLETE</code> will be returned instead of <code>VK_SUCCESS</code>, to indicate that not all the available properties were returned.</p>
+<h4 id="query-profile-required-profiles">Query profile required profiles</h4>
+<p>Some profiles require other profiles. In order to query the list of required profiles for a given profile, use the following command:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb24-1" title="1">VkResult vpGetProfileRequiredProfiles(</a>
+<a class="sourceLine" id="cb24-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb24-3" title="3">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb24-4" title="4">    <span class="dt">uint32_t</span>*                       pPropertyCount,</a>
+<a class="sourceLine" id="cb24-5" title="5">    VpProfileProperties*            pProperties);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the profile whose required profiles are queried.</li>
+<li><code>pPropertyCount</code> is a pointer to an integer related to the number of required profiles available or queried, as described below.</li>
+<li><code>pProperties</code> is either <code>NULL</code> or a pointer to an array of <code>VpProfileProperties</code> structures.</li>
+</ul>
+<p>If <code>pProperties</code> is <code>NULL</code>, then the number of required profiles available for the specified profile is returned in <code>pPropertyCount</code>. Otherwise, <code>pPropertyCount</code> must point to a variable set by the user to the number of elements in the <code>pProperties</code> array, and on return the variable is overwritten with the number of structures actually written to <code>pProperties</code>. If <code>pPropertyCount</code> is less than the number of required profiles available for the specified profile, at most <code>pPropertyCount</code> structures will be written, and <code>VK_INCOMPLETE</code> will be returned instead of <code>VK_SUCCESS</code>, to indicate that not all the available properties were returned.</p>
+<h4 id="query-profile-with-multiple-variants">Query profile with multiple variants</h4>
+<p>There are two types of profiles: monolithic profiles which represents a single set of capabilities and profiles with multiple variants which can be supported using differents set of Vulkan capabilities.</p>
+<p>In order to query whether a Vulkan profile has multiple variants, use the following command:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb25-1" title="1">VkResult vpHasMultipleVariantsProfile(</a>
+<a class="sourceLine" id="cb25-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb25-3" title="3">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb25-4" title="4">    VkBool32*                       pHasMultipleVariants);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the profile whose property is queried.</li>
+<li><code>pHasMultipleVariants</code> is a pointer to a <code>VkBook32</code> indicating whether the profiles has multiple variants.</li>
+</ul>
+<h4 id="query-profile-vulkan-api-version">Query profile Vulkan API version</h4>
+<p>A profile requires a specific Vulkan API version. The minimum valid Vulkan API version of a profile, is the version of the Vulkan Header in which all the Vulkan capabilities specified in the profile were defined. However, a Vulkan Profile may require a newer Vulkan API version to explicitly not support Vulkan drivers considered too old, for example.</p>
+<p>In order to query the required Vulkan API version for a given profile, use the following command:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb26-1" title="1"><span class="dt">uint32_t</span> vpGetProfileAPIVersion(</a>
+<a class="sourceLine" id="cb26-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb26-3" title="3">    <span class="at">const</span> VpProfileProperties*      pProfile);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the profile whose required Vulkan API version is queried.</li>
+</ul>
+<p>If a profile requires other profiles, <code>vpGetProfileAPIVersion</code> will look for the required Vulkan API version of each profile and return the newest Vulkan API version among all the profiles.</p>
+<h4 id="query-profile-fallbacks">Query profile fallbacks</h4>
+<p>Some profiles have recommended fallback profiles, i.e. profiles to use as a fallback in case the original profile is not supported. In order to query the list of fallback profiles for a given profile, use the following command:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb27-1" title="1">VkResult vpGetProfileFallbacks(</a>
+<a class="sourceLine" id="cb27-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb27-3" title="3">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb27-4" title="4">    <span class="dt">uint32_t</span>*                       pPropertyCount,</a>
+<a class="sourceLine" id="cb27-5" title="5">    VpProfileProperties*            pProperties);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the profile whose fallback profiles are queried.</li>
+<li><code>pPropertyCount</code> is a pointer to an integer related to the number of fallback profiles available or queried, as described below.</li>
+<li><code>pProperties</code> is either <code>NULL</code> or a pointer to an array of <code>VpProfileProperties</code> structures.</li>
+</ul>
+<p>If <code>pProperties</code> is <code>NULL</code>, then the number of fallback profiles available for the specified profile is returned in <code>pPropertyCount</code>. Otherwise, <code>pPropertyCount</code> must point to a variable set by the user to the number of elements in the <code>pProperties</code> array, and on return the variable is overwritten with the number of structures actually written to <code>pProperties</code>. If <code>pPropertyCount</code> is less than the number of fallback profiles available for the specified profile, at most <code>pPropertyCount</code> structures will be written, and <code>VK_INCOMPLETE</code> will be returned instead of <code>VK_SUCCESS</code>, to indicate that not all the available properties were returned.</p>
+<h4 id="query-profile-instance-extensions">Query profile instance extensions</h4>
+<p>In order to query the list of instance extensions required by a profile, use the following command:</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb28-1" title="1">VkResult vpGetProfileInstanceExtensionProperties(</a>
+<a class="sourceLine" id="cb28-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb28-3" title="3">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb28-4" title="4">    <span class="at">const</span> <span class="dt">char</span>*                     pBlockName,</a>
+<a class="sourceLine" id="cb28-5" title="5">    <span class="dt">uint32_t</span>*                       pPropertyCount,</a>
+<a class="sourceLine" id="cb28-6" title="6">    VkExtensionProperties*          pProperties);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the queried profile.</li>
+<li><code>pBlockName</code> is either <code>NULL</code> or a pointer to a null-terminated UTF-8 string naming identifying a capabilities block of a profile.</li>
+<li><code>pPropertyCount</code> is a pointer to an integer related to the number of instance extensions available or queried, as described below.</li>
+<li><code>pProperties</code> is either <code>NULL</code> or a pointer to an array of <code>VkExtensionProperties</code> structures.</li>
+</ul>
+<p>If <code>pBlockName</code> is <code>NULL</code>, then the query returns the list of <code>VkExtensionProperties</code> of all capabilities blocks referenced by the profile <code>pProfile</code>. Otherwise the query returns the list of <code>VkExtensionProperties</code> referenced by the <code>pBlockName</code> capabilities block. If <code>pProperties</code> is <code>NULL</code>, then the number of instance extensions required by the profile is returned in <code>pPropertyCount</code>. Otherwise, <code>pPropertyCount</code> must point to a variable set by the user to the number of elements in the <code>pProperties</code> array, and on return the variable is overwritten with the number of structures actually written to <code>pProperties</code>. If <code>pPropertyCount</code> is less than the number of instance extensions required by the profile, at most <code>pPropertyCount</code> structures will be written, and <code>VK_INCOMPLETE</code> will be returned instead of <code>VK_SUCCESS</code>, to indicate that not all the available properties were returned.</p>
+<h4 id="query-profile-device-extensions">Query profile device extensions</h4>
+<p>In order to query the list of device extensions required by a profile, use the following command:</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb29-1" title="1">VkResult vpGetProfileDeviceExtensionProperties(</a>
+<a class="sourceLine" id="cb29-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb29-3" title="3">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb29-4" title="4">    <span class="at">const</span> <span class="dt">char</span>*                     pBlockName,</a>
+<a class="sourceLine" id="cb29-5" title="5">    <span class="dt">uint32_t</span>*                       pPropertyCount,</a>
+<a class="sourceLine" id="cb29-6" title="6">    VkExtensionProperties*          pProperties);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the queried profile.</li>
+<li><code>pBlockName</code> is either <code>NULL</code> or a pointer to a null-terminated UTF-8 string naming identifying a capabilities block of a profile.</li>
+<li><code>pPropertyCount</code> is a pointer to an integer related to the number of device extensions available or queried, as described below.</li>
+<li><code>pProperties</code> is either <code>NULL</code> or a pointer to an array of <code>VkExtensionProperties</code> structures.</li>
+</ul>
+<p>If <code>pBlockName</code> is <code>NULL</code>, then the query returns the list of <code>VkExtensionProperties</code> of all capabilities blocks referenced by the profile <code>pProfile</code>. Otherwise the query returns the list of <code>VkExtensionProperties</code> referenced by the <code>pBlockName</code> capabilities block. If <code>pProperties</code> is <code>NULL</code>, then the number of device extensions required by the profile is returned in <code>pPropertyCount</code>. Otherwise, <code>pPropertyCount</code> must point to a variable set by the user to the number of elements in the <code>pProperties</code> array, and on return the variable is overwritten with the number of structures actually written to <code>pProperties</code>. If <code>pPropertyCount</code> is less than the number of device extensions required by the profile, at most <code>pPropertyCount</code> structures will be written, and <code>VK_INCOMPLETE</code> will be returned instead of <code>VK_SUCCESS</code>, to indicate that not all the available properties were returned.</p>
+<h4 id="query-profile-features">Query profile features</h4>
+<p>In order to query the structure types of the Vulkan device feature structures for which the profile defines requirements, use the following command:</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb30-1" title="1">VkResult vpGetProfileFeatureStructureTypes(</a>
+<a class="sourceLine" id="cb30-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb30-3" title="3">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb30-4" title="4">    <span class="at">const</span> <span class="dt">char</span>*                     pBlockName,</a>
+<a class="sourceLine" id="cb30-5" title="5">    <span class="dt">uint32_t</span>*                       pStructureTypeCount,</a>
+<a class="sourceLine" id="cb30-6" title="6">    VkStructureType*                pStructureTypes);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the queried profile.</li>
+<li><code>pBlockName</code> is either <code>NULL</code> or a pointer to a null-terminated UTF-8 string naming identifying a capabilities block of a profile.</li>
+<li><code>pStructureTypeCount</code> is a pointer to an integer related to the number of device feature structure types available or queried, as described below.</li>
+<li><code>pStructureTypes</code> is either <code>NULL</code> or a pointer to an array of <code>VkStructureType</code> values.</li>
+</ul>
+<p>If <code>pBlockName</code> is <code>NULL</code>, then the query returns the list of feature <code>VkStructureType</code> of all capabilities blocks referenced by the profile <code>pProfile</code>. Otherwise the query returns the list of <code>VkExtensionProperties</code> referenced by the <code>pBlockName</code> capabilities block. If <code>pStructureTypes</code> is <code>NULL</code>, then the number of device feature structure types defined by the profile is returned in <code>pStructureTypeCount</code>. Otherwise, <code>pStructureTypeCount</code> must point to a variable set by the user to the number of elements in the <code>pStructureTypes</code> array, and on return the variable is overwritten with the number of values actually written to <code>pStructureTypes</code>. If <code>pStructureTypeCount</code> is less than the number of device feature structure types defined by the profile, at most <code>pStructureTypeCount</code> values will be written, and <code>VK_INCOMPLETE</code> will be returned instead of <code>VK_SUCCESS</code>, to indicate that not all the available values were returned.</p>
+<p>In order to query the device features required by a profile, use the following command:</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb31-1" title="1">VkResult vpGetProfileFeatures(</a>
+<a class="sourceLine" id="cb31-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb31-3" title="3">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb31-4" title="4">    <span class="at">const</span> <span class="dt">char</span>*                     pBlockName,</a>
+<a class="sourceLine" id="cb31-5" title="5">    <span class="dt">void</span>*                           pNext);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the queried profile.</li>
+<li><code>pBlockName</code> is either <code>NULL</code> or a pointer to a null-terminated UTF-8 string naming identifying a capabilities block of a profile.</li>
+<li><code>pNext</code> is a <code>pNext</code> chain of Vulkan device feature structures (with or without a <code>VkPhysicalDeviceFeatures2</code> feature structure).</li>
+</ul>
+<p>If <code>pBlockName</code> is <code>NULL</code>, then the query fills the structures in <code>pNext</code> chain of all capabilities blocks referenced by the profile <code>pProfile</code>. Otherwise the query fills the structures in <code>pNext</code> chain referenced by the <code>pBlockName</code> capabilities block. If the <code>pNext</code> chain contains a Vulkan device feature structure for which the profile defines corresponding feature requirements, then the structure is modified to include those features. Other fields of the Vulkan device feature structure not defined by the profile will be left unmodified, and structures not defined in the profile will be ignored (left unmodified as a whole).</p>
+<h4 id="query-profile-device-properties">Query profile device properties</h4>
+<p>In order to query the structure types of the Vulkan device property structures for which the profile defines requirements, use the following command:</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb32-1" title="1">VkResult vpGetProfilePropertyStructureTypes(</a>
+<a class="sourceLine" id="cb32-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb32-3" title="3">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb32-4" title="4">    <span class="at">const</span> <span class="dt">char</span>*                     pBlockName,</a>
+<a class="sourceLine" id="cb32-5" title="5">    <span class="dt">uint32_t</span>*                       pStructureTypeCount,</a>
+<a class="sourceLine" id="cb32-6" title="6">    VkStructureType*                pStructureTypes);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the queried profile.</li>
+<li><code>pBlockName</code> is either <code>NULL</code> or a pointer to a null-terminated UTF-8 string naming identifying a capabilities block of a profile.</li>
+<li><code>pStructureTypeCount</code> is a pointer to an integer related to the number of device property structure types available or queried, as described below.</li>
+<li><code>pStructureTypes</code> is either <code>NULL</code> or a pointer to an array of <code>VkStructureType</code> enums.</li>
+</ul>
+<p>If <code>pBlockName</code> is <code>NULL</code>, then the query returns the list of property <code>VkStructureType</code> of all capabilities blocks referenced by the profile <code>pProfile</code>. Otherwise the query returns the list of <code>VkStructureType</code> referenced by the <code>pBlockName</code> capabilities block. If <code>pStructureTypes</code> is <code>NULL</code>, then the number of device property structure types defined by the profile is returned in <code>pStructureTypeCount</code>. Otherwise, <code>pStructureTypeCount</code> must point to a variable set by the user to the number of elements in the <code>pStructureTypes</code> array, and on return the variable is overwritten with the number of values actually written to <code>pStructureTypes</code>. If <code>pStructureTypeCount</code> is less than the number of device property structure types defined by the profile, at most <code>pStructureTypeCount</code> values will be written, and <code>VK_INCOMPLETE</code> will be returned instead of <code>VK_SUCCESS</code>, to indicate that not all the available values were returned.</p>
+<p>In order to query the device properties required by a profile, use the following command:</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb33-1" title="1">VkResult vpGetProfileProperties(</a>
+<a class="sourceLine" id="cb33-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb33-3" title="3">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb33-4" title="4">    <span class="at">const</span> <span class="dt">char</span>*                     pBlockName,</a>
+<a class="sourceLine" id="cb33-5" title="5">    <span class="dt">void</span>*                           pNext);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the queried profile.</li>
+<li><code>pBlockName</code> is either <code>NULL</code> or a pointer to a null-terminated UTF-8 string naming identifying a capabilities block of a profile.</li>
+<li><code>pNext</code> is a <code>pNext</code> chain of Vulkan device property structures (with or without a <code>VkPhysicalDeviceProperties2</code> property structure).</li>
+</ul>
+<p>If <code>pBlockName</code> is <code>NULL</code> and the <code>pProfile</code> referenced a profile with multiple variants, the execution of the function fail and return <code>VK_ERROR_UNKNOWN</code>. If <code>pBlockName</code> is <code>NULL</code>, then the query fills the structures in <code>pNext</code> chain of all capabilities blocks referenced by the profile <code>pProfile</code>. Otherwise the query fills the structures in <code>pNext</code> chain referenced by the <code>pBlockName</code> capabilities block. If the <code>pNext</code> chain contains a Vulkan device property structure for which the profile defines corresponding property/limit requirements then the structure is modified to include those properties/limits. Other fields of the Vulkan device property structure not defined by the profile will be left unmodified and structures not defined in the profile will be ignored (left unmodified as a whole).</p>
+<h4 id="query-profile-queue-family-properties">Query profile queue family properties</h4>
+<p>In order to query the structure types of the Vulkan queue family property structures for which the profile defines requirements, use the following command:</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb34-1" title="1">VkResult vpGetProfileQueueFamilyStructureTypes(</a>
+<a class="sourceLine" id="cb34-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb34-3" title="3">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb34-4" title="4">    <span class="at">const</span> <span class="dt">char</span>*                     pBlockName,</a>
+<a class="sourceLine" id="cb34-5" title="5">    <span class="dt">uint32_t</span>*                       pStructureTypeCount,</a>
+<a class="sourceLine" id="cb34-6" title="6">    VkStructureType*                pStructureTypes);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the queried profile.</li>
+<li><code>pBlockName</code> is either <code>NULL</code> or a pointer to a null-terminated UTF-8 string naming identifying a capabilities block of a profile.</li>
+<li><code>pStructureTypeCount</code> is a pointer to an integer related to the number of queue family property structure types available or queried, as described below.</li>
+<li><code>pStructureTypes</code> is either <code>NULL</code> or a pointer to an array of <code>VkStructureType</code> enums.</li>
+</ul>
+<p>If <code>pBlockName</code> is <code>NULL</code>, then the query returns the list of queue family property <code>VkStructureType</code> of all capabilities blocks referenced by the profile <code>pProfile</code>. Otherwise the query returns the list of <code>VkStructureType</code> referenced by the <code>pBlockName</code> capabilities block. If <code>pStructureTypes</code> is <code>NULL</code>, then the number of queue family property structure types defined by the profile is returned in <code>pStructureTypeCount</code>. Otherwise, <code>pStructureTypeCount</code> must point to a variable set by the user to the number of elements in the <code>pStructureTypes</code> array, and on return the variable is overwritten with the number of values actually written to <code>pStructureTypes</code>. If <code>pStructureTypeCount</code> is less than the number of queue family property structure types defined by the profile, at most <code>pStructureTypeCount</code> values will be written, and <code>VK_INCOMPLETE</code> will be returned instead of <code>VK_SUCCESS</code>, to indicate that not all the available values were returned.</p>
+<p>In order to query the queue family properties required by a profile, use the following command:</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb35-1" title="1">VkResult vpGetProfileQueueFamilyProperties(</a>
+<a class="sourceLine" id="cb35-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb35-3" title="3">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb35-4" title="4">    <span class="at">const</span> <span class="dt">char</span>*                     pBlockName,</a>
+<a class="sourceLine" id="cb35-5" title="5">    <span class="dt">uint32_t</span>*                       pPropertyCount,</a>
+<a class="sourceLine" id="cb35-6" title="6">    VkQueueFamilyProperties2KHR*    pProperties);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the queried profile.</li>
+<li><code>pBlockName</code> is either <code>NULL</code> or a pointer to a null-terminated UTF-8 string naming identifying a capabilities block of a profile.</li>
+<li><code>pPropertyCount</code> is a pointer to an integer related to the number of queue family properties available or queried, as described below.</li>
+<li><code>pProperties</code> is either <code>NULL</code> or a pointer to an array of <code>VkQueueFamilyProperties2KHR</code> structures and corresponding <code>pNext</code> chains.</li>
+</ul>
+<p>If <code>pBlockName</code> is <code>NULL</code> and the <code>pProfile</code> referenced a profile with multiple variants, the execution of the function fail and return <code>VK_ERROR_UNKNOWN</code>. If <code>pBlockName</code> is <code>NULL</code>, then the query fills the structures in <code>pNext</code> chain of all capabilities blocks referenced by the profile <code>pProfile</code>. Otherwise the query fills the structures in <code>pNext</code> chain referenced by the <code>pBlockName</code> capabilities block. If <code>pProperties</code> is <code>NULL</code>, then the number of queue families defined by the profile is returned in <code>pPropertyCount</code>. Otherwise, <code>pPropertyCount</code> must point to a variable set by the user to the number of elements in the <code>pProperties</code> array, and on return the variable is overwritten with the number of structures actually written to <code>pProperties</code>. If <code>pPropertyCount</code> is less than the number of queue families defined by the profile, at most <code>pPropertyCount</code> structures will be written, and <code>VK_INCOMPLETE</code> will be returned instead of <code>VK_SUCCESS</code>, to indicate that not all the available properties were returned. If any element of <code>pProperties</code> or its <code>pNext</code> chain contains a Vulkan queue family property structure for which the profile defines corresponding queue family property requirements then the structure is modified to include those properties. Other fields of the Vulkan queue family property structure not defined by the profile will be left unmodified and structures not defined in the profile will be ignored (left unmodified as a whole).</p>
+<h4 id="query-profile-format-properties">Query profile format properties</h4>
+<p>In order to query the structure types of the Vulkan format property structures for which the profile defines requirements, use the following command:</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb36-1" title="1">VkResult vpGetProfileFormatStructureTypes(</a>
+<a class="sourceLine" id="cb36-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb36-3" title="3">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb36-4" title="4">    <span class="at">const</span> <span class="dt">char</span>*                     pBlockName,</a>
+<a class="sourceLine" id="cb36-5" title="5">    <span class="dt">uint32_t</span>*                       pStructureTypeCount,</a>
+<a class="sourceLine" id="cb36-6" title="6">    VkStructureType*                pStructureTypes);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the queried profile.</li>
+<li><code>pBlockName</code> is either <code>NULL</code> or a pointer to a null-terminated UTF-8 string naming identifying a capabilities block of a profile.</li>
+<li><code>pStructureTypeCount</code> is a pointer to an integer related to the number of format property structure types available or queried, as described below.</li>
+<li><code>pStructureTypes</code> is either <code>NULL</code> or a pointer to an array of <code>VkStructureType</code> enums.</li>
+</ul>
+<p>If <code>pBlockName</code> is <code>NULL</code>, then the query returns the list of format property <code>VkStructureType</code> of all capabilities blocks referenced by the profile <code>pProfile</code>. Otherwise the query returns the list of <code>VkStructureType</code> referenced by the <code>pBlockName</code> capabilities block. If <code>pStructureTypes</code> is <code>NULL</code>, then the number of format property structure types defined by the profile is returned in <code>pStructureTypeCount</code>. Otherwise, <code>pStructureTypeCount</code> must point to a variable set by the user to the number of elements in the <code>pStructureTypes</code> array, and on return the variable is overwritten with the number of values actually written to <code>pStructureTypes</code>. If <code>pStructureTypeCount</code> is less than the number of format property structure types defined by the profile, at most <code>pStructureTypeCount</code> values will be written, and <code>VK_INCOMPLETE</code> will be returned instead of <code>VK_SUCCESS</code>, to indicate that not all the available values were returned.</p>
+<p>In order to query the list of formats required by a profile, use the following command:</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb37-1" title="1">VkResult vpGetProfileFormats(</a>
+<a class="sourceLine" id="cb37-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb37-3" title="3">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb37-4" title="4">    <span class="at">const</span> <span class="dt">char</span>*                     pBlockName,</a>
+<a class="sourceLine" id="cb37-5" title="5">    <span class="dt">uint32_t</span>*                       pFormatCount,</a>
+<a class="sourceLine" id="cb37-6" title="6">    VkFormat*                       pFormats);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the queried profile.</li>
+<li><code>pBlockName</code> is either <code>NULL</code> or a pointer to a null-terminated UTF-8 string naming identifying a capabilities block of a profile.</li>
+<li><code>pFormatCount</code> is a pointer to an integer related to the number of formats available or queried, as described below.</li>
+<li><code>pFormats</code> is either <code>NULL</code> or a pointer to an array of <code>VkFormat</code> values.</li>
+</ul>
+<p>If <code>pBlockName</code> is <code>NULL</code>, then the query returns the formats of all capabilities blocks referenced by the profile <code>pProfile</code>. Otherwise the query returns the formats referenced by the <code>pBlockName</code> capabilities block of the profile. If <code>pFormats</code> is <code>NULL</code>, then the number of formats required by the profile is returned in <code>pFormatCount</code>. Otherwise, <code>pFormatCount</code> must point to a variable set by the user to the number of elements in the <code>pFormats</code> array, and on return the variable is overwritten with the number of values actually written to <code>pFormats</code>. If <code>pFormatCount</code> is less than the number of formats required by the profile, at most <code>pFormatCount</code> values will be written, and <code>VK_INCOMPLETE</code> will be returned instead of <code>VK_SUCCESS</code>, to indicate that not all the available values were returned.</p>
+<p>In order to query the format properties required by a profile for a specific format, use the following command:</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb38-1" title="1">VkResult vpGetProfileFormatProperties(</a>
+<a class="sourceLine" id="cb38-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb38-3" title="3">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb38-4" title="4">    <span class="at">const</span> <span class="dt">char</span>*                     pBlockName,</a>
+<a class="sourceLine" id="cb38-5" title="5">    VkFormat                        format,</a>
+<a class="sourceLine" id="cb38-6" title="6">    <span class="dt">void</span>*                           pNext);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the queried profile.</li>
+<li><code>pBlockName</code> is either <code>NULL</code> or a pointer to a null-terminated UTF-8 string naming identifying a capabilities block of a profile.</li>
+<li><code>format</code> is the format for which required properties are queried.</li>
+<li><code>pNext</code> is a <code>pNext</code> chain of Vulkan format property structures (with or without <code>VkPhysicalDeviceFormatProperties2</code> or <code>VkPhysicalDeviceFormatProperties3</code> property structures).</li>
+</ul>
+<p>If <code>pBlockName</code> is <code>NULL</code>, then the query fills the structures in <code>pNext</code> chain of all capabilities blocks referenced by the profile <code>pProfile</code>. Otherwise the query fills the structures in <code>pNext</code> chain referenced by the <code>pBlockName</code> capabilities block. If the <code>pNext</code> chain contains a Vulkan format property structure for which the profile defines corresponding requirements then the structure is modified to include those properties. Other fields of the Vulkan format property structure not defined by the profile will be left unmodified and structures not defined in the profile will be ignored (left unmodified as a whole).</p>
+<h4 id="query-profile-video-profiles">Query profile video profiles</h4>
+<p>In order to query the list of video profile names required by a profile, use the following command:</p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb39-1" title="1">VkResult vpGetProfileVideoProfiles(</a>
+<a class="sourceLine" id="cb39-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb39-3" title="3">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb39-4" title="4">    <span class="at">const</span> <span class="dt">char</span>*                     pBlockName,</a>
+<a class="sourceLine" id="cb39-5" title="5">    <span class="dt">uint32_t</span>*                       pVideoProfileCount,</a>
+<a class="sourceLine" id="cb39-6" title="6">    VpVideoProfileProperties*       pVideoProfiles);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the queried profile.</li>
+<li><code>pBlockName</code> is either <code>NULL</code> or a pointer to a null-terminated UTF-8 string naming identifying a capabilities block of a profile.</li>
+<li><code>pVideoProfileCount</code> is a pointer to an integer related to the number of video profiles available or queried, as described below.</li>
+<li><code>pVideoProfiles</code> is either <code>NULL</code> or a pointer to an array of <code>VpVideoProfileProperties</code> structures.</li>
+</ul>
+<p>If <code>pBlockName</code> is <code>NULL</code>, then the query returns the list of video profiles of all capabilities blocks referenced by the profile <code>pProfile</code>. Otherwise the query returns the list of video profiles defined by the <code>pBlockName</code> capabilities block. If <code>pVideoProfiles</code> is <code>NULL</code>, then the number of video profiles defined by the profile is returned in <code>pVideoProfileCount</code>. Otherwise, <code>pVideoProfileCount</code> must point to a variable set by the user to the number of elements in the <code>pVideoProfiles</code> array, and on return the variable is overwritten with the number of structures actually written to <code>pVideoProfiles</code>. If <code>pVideoProfileCount</code> is less than the number of video profiles defined by the profile, at most <code>pVideoProfileCount</code> structures will be written, and <code>VK_INCOMPLETE</code> will be returned instead of <code>VK_SUCCESS</code>, to indicate that not all the available properties were returned.</p>
+<p>In order to query the structure types of the Vulkan video profile info structures the profile defines for a specific video profile, use the following command:</p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb40-1" title="1">VkResult vpGetProfileVideoProfileInfoStructureTypes(</a>
+<a class="sourceLine" id="cb40-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb40-3" title="3">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb40-4" title="4">    <span class="at">const</span> <span class="dt">char</span>*                     pBlockName,</a>
+<a class="sourceLine" id="cb40-5" title="5">    <span class="dt">uint32_t</span>                        videoProfileIndex,</a>
+<a class="sourceLine" id="cb40-6" title="6">    <span class="dt">uint32_t</span>*                       pStructureTypeCount,</a>
+<a class="sourceLine" id="cb40-7" title="7">    VkStructureType*                pStructureTypes);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the queried profile.</li>
+<li><code>pBlockName</code> is either <code>NULL</code> or a pointer to a null-terminated UTF-8 string naming identifying a capabilities block of a profile.</li>
+<li><code>videoProfileIndex</code> is the index of the video profile to query.</li>
+<li><code>pStructureTypeCount</code> is a pointer to an integer related to the number of video profile info structure types available or queried, as described below.</li>
+<li><code>pStructureTypes</code> is either <code>NULL</code> or a pointer to an array of <code>VkStructureType</code> enums.</li>
+</ul>
+<p>If <code>pBlockName</code> is <code>NULL</code>, then <code>videoProfileIndex</code> specifies the index of the video profile to query within the list of video profiles of all capabilities blocks defined by the profile. Otherwise <code>videoProfileIndex</code> specifies the index of the video profile to query within the list of video profiles defined by the capabilities block identified by <code>pBlockName</code>. If <code>videoProfileIndex</code> is greater than or equal to the number of video profiles defined by all capabilities blocks or the specified capabilities block, respectively, then <code>VK_ERROR_UNKNOWN</code> will be returned. If <code>pStructureTypes</code> is <code>NULL</code>, then the number of video profile info structure types defined by the profile for the selected video profile is returned in <code>pStructureTypeCount</code>. Otherwise, <code>pStructureTypeCount</code> must point to a variable set by the user to the number of elements in the <code>pStructureTypes</code> array, and on return the variable is overwritten with the number of values actually written to <code>pStructureTypes</code>. If <code>pStructureTypeCount</code> is less than the number of video profile info structure types defined by the profile for the selected video profile, at most <code>pStructureTypeCount</code> values will be written, and <code>VK_INCOMPLETE</code> will be returned instead of <code>VK_SUCCESS</code>, to indicate that not all the available values were returned.</p>
+<p>In order to query the video profile info structures the profile defines for a specific video profile, use the following command:</p>
+<div class="sourceCode" id="cb41"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb41-1" title="1">VkResult vpGetProfileVideoProfileInfo(</a>
+<a class="sourceLine" id="cb41-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb41-3" title="3">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb41-4" title="4">    <span class="at">const</span> <span class="dt">char</span>*                     pBlockName,</a>
+<a class="sourceLine" id="cb41-5" title="5">    <span class="dt">uint32_t</span>                        videoProfileIndex,</a>
+<a class="sourceLine" id="cb41-6" title="6">    VkVideoProfileInfoKHR*          pVideoProfileInfo);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the queried profile.</li>
+<li><code>pBlockName</code> is either <code>NULL</code> or a pointer to a null-terminated UTF-8 string naming identifying a capabilities block of a profile.</li>
+<li><code>videoProfileIndex</code> is the index of the video profile to query.</li>
+<li><code>pVideoProfileInfo</code> is a pointer to a <code>VkVideoProfileInfoKHR</code> structure and corresponding <code>pNext</code> chain to fill with the video profile info of the selected video profile.</li>
+</ul>
+<p>If <code>pBlockName</code> is <code>NULL</code>, then <code>videoProfileIndex</code> specifies the index of the video profile to query within the list of video profiles of all capabilities blocks defined by the profile. Otherwise <code>videoProfileIndex</code> specifies the index of the video profile to query within the list of video profiles defined by the capabilities block identified by <code>pBlockName</code>. If <code>videoProfileIndex</code> is greater than or equal to the number of video profiles defined by all capabilities blocks or the specified capabilities block, respectively, then <code>VK_ERROR_UNKNOWN</code> will be returned. If the <code>pNext</code> chain of <code>pVideoProfileInfo</code> contains a Vulkan video profile info structure defined by the profile for the selected video profile, then the structure is filled with the corresponding video profile info.</p>
+<p>In order to query the structure types of the Vulkan video capability structures the profile defines for a specific video profile, use the following command:</p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb42-1" title="1">VkResult vpGetProfileVideoCapabilityStructureTypes(</a>
+<a class="sourceLine" id="cb42-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb42-3" title="3">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb42-4" title="4">    <span class="at">const</span> <span class="dt">char</span>*                     pBlockName,</a>
+<a class="sourceLine" id="cb42-5" title="5">    <span class="dt">uint32_t</span>                        videoProfileIndex,</a>
+<a class="sourceLine" id="cb42-6" title="6">    <span class="dt">uint32_t</span>*                       pStructureTypeCount,</a>
+<a class="sourceLine" id="cb42-7" title="7">    VkStructureType*                pStructureTypes);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the queried profile.</li>
+<li><code>pBlockName</code> is either <code>NULL</code> or a pointer to a null-terminated UTF-8 string naming identifying a capabilities block of a profile.</li>
+<li><code>videoProfileIndex</code> is the index of the video profile to query.</li>
+<li><code>pStructureTypeCount</code> is a pointer to an integer related to the number of video capability structure types available or queried, as described below.</li>
+<li><code>pStructureTypes</code> is either <code>NULL</code> or a pointer to an array of <code>VkStructureType</code> enums.</li>
+</ul>
+<p>If <code>pBlockName</code> is <code>NULL</code>, then <code>videoProfileIndex</code> specifies the index of the video profile to query within the list of video profiles of all capabilities blocks defined by the profile. Otherwise <code>videoProfileIndex</code> specifies the index of the video profile to query within the list of video profiles defined by the capabilities block identified by <code>pBlockName</code>. If <code>videoProfileIndex</code> is greater than or equal to the number of video profiles defined by all capabilities blocks or the specified capabilities block, respectively, then <code>VK_ERROR_UNKNOWN</code> will be returned. If <code>pStructureTypes</code> is <code>NULL</code>, then the number of video capability structure types defined by the profile for the selected video profile is returned in <code>pStructureTypeCount</code>. Otherwise, <code>pStructureTypeCount</code> must point to a variable set by the user to the number of elements in the <code>pStructureTypes</code> array, and on return the variable is overwritten with the number of values actually written to <code>pStructureTypes</code>. If <code>pStructureTypeCount</code> is less than the number of video capability structure types defined by the profile for the selected video profile, at most <code>pStructureTypeCount</code> values will be written, and <code>VK_INCOMPLETE</code> will be returned instead of <code>VK_SUCCESS</code>, to indicate that not all the available values were returned.</p>
+<p>In order to query the video capabilities the profile requires for a specific video profile, use the following command:</p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb43-1" title="1">VkResult vpGetProfileVideoCapabilities(</a>
+<a class="sourceLine" id="cb43-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb43-3" title="3">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb43-4" title="4">    <span class="at">const</span> <span class="dt">char</span>*                     pBlockName,</a>
+<a class="sourceLine" id="cb43-5" title="5">    <span class="dt">uint32_t</span>                        videoProfileIndex,</a>
+<a class="sourceLine" id="cb43-6" title="6">    <span class="dt">void</span>*                           pNext);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the queried profile.</li>
+<li><code>pBlockName</code> is either <code>NULL</code> or a pointer to a null-terminated UTF-8 string naming identifying a capabilities block of a profile.</li>
+<li><code>videoProfileIndex</code> is the index of the video profile to query.</li>
+<li><code>pNext</code> is a <code>pNext</code> chain of Vulkan video capability structures (with or without a <code>VkVideoCapabilitiesKHR</code> video capability structure).</li>
+</ul>
+<p>If <code>pBlockName</code> is <code>NULL</code>, then <code>videoProfileIndex</code> specifies the index of the video profile to query within the list of video profiles of all capabilities blocks defined by the profile. Otherwise <code>videoProfileIndex</code> specifies the index of the video profile to query within the list of video profiles defined by the capabilities block identified by <code>pBlockName</code>. If <code>videoProfileIndex</code> is greater than or equal to the number of video profiles defined by all capabilities blocks or the specified capabilities block, respectively, then <code>VK_ERROR_UNKNOWN</code> will be returned. If the <code>pNext</code> chain contains a Vulkan video capability structure defined by the profile for the selected video profile, then the structure is modified to include those video capabilities. Other fields of the Vulkan video capability structure not defined by the profile for the selected video profile will be left unmodified and structures not defined in the profile for the selected video profile will be ignored (left unmodified as a whole).</p>
+<p>In order to query the structure types of the Vulkan video format property structures the profile defines for a specific video profile, use the following command:</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb44-1" title="1">VkResult vpGetProfileVideoFormatStructureTypes(</a>
+<a class="sourceLine" id="cb44-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb44-3" title="3">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb44-4" title="4">    <span class="at">const</span> <span class="dt">char</span>*                     pBlockName,</a>
+<a class="sourceLine" id="cb44-5" title="5">    <span class="dt">uint32_t</span>                        videoProfileIndex,</a>
+<a class="sourceLine" id="cb44-6" title="6">    <span class="dt">uint32_t</span>*                       pStructureTypeCount,</a>
+<a class="sourceLine" id="cb44-7" title="7">    VkStructureType*                pStructureTypes);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the queried profile.</li>
+<li><code>pBlockName</code> is either <code>NULL</code> or a pointer to a null-terminated UTF-8 string naming identifying a capabilities block of a profile.</li>
+<li><code>videoProfileIndex</code> is the index of the video profile to query.</li>
+<li><code>pStructureTypeCount</code> is a pointer to an integer related to the number of video format property structure types available or queried, as described below.</li>
+<li><code>pStructureTypes</code> is either <code>NULL</code> or a pointer to an array of <code>VkStructureType</code> enums.</li>
+</ul>
+<p>If <code>pBlockName</code> is <code>NULL</code>, then <code>videoProfileIndex</code> specifies the index of the video profile to query within the list of video profiles of all capabilities blocks defined by the profile. Otherwise <code>videoProfileIndex</code> specifies the index of the video profile to query within the list of video profiles defined by the capabilities block identified by <code>pBlockName</code>. If <code>videoProfileIndex</code> is greater than or equal to the number of video profiles defined by all capabilities blocks or the specified capabilities block, respectively, then <code>VK_ERROR_UNKNOWN</code> will be returned. If <code>pStructureTypes</code> is <code>NULL</code>, then the number of video format property structure types defined by the profile for the selected video profile is returned in <code>pStructureTypeCount</code>. Otherwise, <code>pStructureTypeCount</code> must point to a variable set by the user to the number of elements in the <code>pStructureTypes</code> array, and on return the variable is overwritten with the number of values actually written to <code>pStructureTypes</code>. If <code>pStructureTypeCount</code> is less than the number of video format property structure types defined by the profile for the selected video profile, at most <code>pStructureTypeCount</code> values will be written, and <code>VK_INCOMPLETE</code> will be returned instead of <code>VK_SUCCESS</code>, to indicate that not all the available values were returned.</p>
+<p>In order to query the video format properties the profile requires for a specific video profile, use the following command:</p>
+<div class="sourceCode" id="cb45"><pre class="sourceCode C++"><code class="sourceCode cpp"><a class="sourceLine" id="cb45-1" title="1">VkResult vpGetProfileVideoFormatProperties(</a>
+<a class="sourceLine" id="cb45-2" title="2">    VpCapabilities                  capabilities,</a>
+<a class="sourceLine" id="cb45-3" title="3">    <span class="at">const</span> VpProfileProperties*      pProfile,</a>
+<a class="sourceLine" id="cb45-4" title="4">    <span class="at">const</span> <span class="dt">char</span>*                     pBlockName,</a>
+<a class="sourceLine" id="cb45-5" title="5">    <span class="dt">uint32_t</span>                        videoProfileIndex,</a>
+<a class="sourceLine" id="cb45-6" title="6">    <span class="dt">uint32_t</span>*                       pPropertyCount,</a>
+<a class="sourceLine" id="cb45-7" title="7">    VkVideoFormatPropertiesKHR*     pProperties);</a></code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>capabilities</code> must be one of the capabilities handles returned from a call to <code>vpCreateCapabilities</code>.</li>
+<li><code>pProfile</code> is a pointer to the <code>VpProfileProperties</code> structure specifying the queried profile.</li>
+<li><code>pBlockName</code> is either <code>NULL</code> or a pointer to a null-terminated UTF-8 string naming identifying a capabilities block of a profile.</li>
+<li><code>videoProfileIndex</code> is the index of the video profile to query.</li>
+<li><code>pPropertyCount</code> is a pointer to an integer related to the number of video format properties available or queried, as described below.</li>
+<li><code>pProperties</code> is either <code>NULL</code> or a pointer to an array of <code>VkVideoFormatPropertiesKHR</code> structures and corresponding <code>pNext</code> chains.</li>
+</ul>
+<p>If <code>pBlockName</code> is <code>NULL</code>, then <code>videoProfileIndex</code> specifies the index of the video profile to query within the list of video profiles of all capabilities blocks defined by the profile. Otherwise <code>videoProfileIndex</code> specifies the index of the video profile to query within the list of video profiles defined by the capabilities block identified by <code>pBlockName</code>. If <code>videoProfileIndex</code> is greater than or equal to the number of video profiles defined by all capabilities blocks or the specified capabilities block, respectively, then <code>VK_ERROR_UNKNOWN</code> will be returned. If any element of <code>pProperties</code> or its <code>pNext</code> chain contains a Vulkan video format property structure defined by the profile for the selected video profile, then the structure is modified to include those video format properties. Other fields of the Vulkan video format property structure not defined by the profile for the selected video profile will be left unmodified and structures not defined in the profile for the selected video profile will be ignored (left unmodified as a whole).</p>
+</article>
+</body>
+</html>

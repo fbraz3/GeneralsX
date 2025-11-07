@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Swap chain :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../90_FAQ.html">FAQ</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li><a href="../00_Setup/00_Base_code.html">Drawing a triangle</a></li>
+    <li><a href="00_Window_surface.html">Presentation</a></li>
+    <li><a href="01_Swap_chain.html">Swap chain</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Tutorial/antora/modules/ROOT/pages/03_Drawing_a_triangle/01_Presentation/01_Swap_chain.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Swap chain</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Vulkan does not have the concept of a "default framebuffer," hence it
+requires an infrastructure that will own the buffers we will render to
+before we visualize them on the screen. This infrastructure is
+known as the <strong>swap chain</strong> and must be created explicitly in Vulkan. The swap
+chain is essentially a queue of images that are waiting to be presented to the
+screen. Our application will acquire such an image to draw to it, and then
+return it to the queue. How exactly the queue works. The conditions for
+presenting an image from the queue depend on how the swap chain is set up. However,
+the general purpose of the swap chain is to synchronize the presentation of
+images with the refresh rate of the screen.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_checking_for_swap_chain_support"><a class="anchor" href="#_checking_for_swap_chain_support"></a>Checking for swap chain support</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Not all graphics cards are capable of presenting images directly to a screen for
+various reasons, for example, because they are designed for servers and don&#8217;t
+have any display outputs. Secondly, since image presentation is heavily tied
+into the window system and the surfaces associated with windows, it is not
+ part of the Vulkan core. You have to enable the <code>VK_KHR_swapchain</code>
+device extension after querying for its support.</p>
+</div>
+<div class="paragraph">
+<p>For that purpose we&#8217;ll first extend the <code>createLogicalDevice</code> function to
+check if this extension is supported. We&#8217;ve previously seen how to list the
+extensions that are supported by a <code>VkPhysicalDevice</code>, so doing that should
+be fairly straightforward. Note that the Vulkan header file provides a nice
+macro <code>VK_KHR_SWAPCHAIN_EXTENSION_NAME</code> that is defined as
+<code>VK_KHR_swapchain</code>. The advantage of using this macro is that the compiler
+will catch misspellings.</p>
+</div>
+<div class="paragraph">
+<p>First declare a list of required device extensions, similar to the list of
+validation layers to enable.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">std::vector&lt;const char*&gt; deviceExtensions = {
+    vk::KHRSwapchainExtensionName,
+    vk::KHRSpirv14ExtensionName,
+    vk::KHRSynchronization2ExtensionName,
+    vk::KHRCreateRenderpass2ExtensionName
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>It should be noted that the availability of a presentation queue,
+as we checked in the previous chapter, implies that the swap chain extension
+must be supported. However, the extension does have to be explicitly enabled.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_enabling_device_extensions"><a class="anchor" href="#_enabling_device_extensions"></a>Enabling device extensions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Using a swapchain requires enabling the <code>VK_KHR_swapchain</code> extension first.
+Enabling the extension just requires a small change to the logical device
+creation structure:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">deviceCreateInfo.enabledExtensionCount = deviceExtensions.size();
+deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Alternatively, we can do this at the construction and keep this very succinct:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">std::vector deviceExtensions = { vk::KHRSwapchainExtensionName };
+float                     queuePriority = 0.0f;
+vk::DeviceQueueCreateInfo deviceQueueCreateInfo( {}, graphicsIndex, 1, &amp;queuePriority );
+vk::DeviceCreateInfo      deviceCreateInfo( {}, deviceQueueCreateInfo, {}, deviceExtensions );</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_querying_details_of_swap_chain_support"><a class="anchor" href="#_querying_details_of_swap_chain_support"></a>Querying details of swap chain support</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Just checking if a swap chain is available is not enough because it may not
+ be compatible with our window surface. Creating a swap chain also
+involves a lot more settings than instance and device creation, so we need to
+query for some more details before we&#8217;re able to proceed.</p>
+</div>
+<div class="paragraph">
+<p>There are basically three kinds of properties we need to check:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Basic surface capabilities (min/max number of images in swap chain, min/max
+width and height of images)</p>
+</li>
+<li>
+<p>Surface formats (pixel format, color space)</p>
+</li>
+<li>
+<p>Available presentation modes</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This section covers how to query the structs that include this information. The
+meaning of these structs and exactly which data they contain is discussed in the
+next section.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s start with the basic surface capabilities. These properties are
+straightforward to query and are returned into a single
+<code>VkSurfaceCapabilitiesKHR</code> struct.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">auto surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR( surface );</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This function takes the specified <code>VkPhysicalDevice</code> and <code>VkSurfaceKHR</code> window
+surface into account when determining the supported capabilities. All the
+support querying functions have these two as first parameters because they are
+the core components of the swap chain.</p>
+</div>
+<div class="paragraph">
+<p>The next step is about querying the supported surface formats.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">std::vector&lt;vk::SurfaceFormatKHR&gt; availableFormats = physicalDevice.getSurfaceFormatsKHR( surface );</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Make sure that the vector is resized to hold all the available formats.</p>
+</div>
+<div class="paragraph">
+<p>Finally, querying the supported presentation modes works exactly the same way
+with <code>vkGetPhysicalDeviceSurfacePresentModesKHR</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">std::vector&lt;vk::PresentModeKHR&gt; availablePresentModes = physicalDevice.getSurfacePresentModesKHR( surface );</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>All the details are available now. Swap chain support is enough for this
+tutorial if there is at least one supported image format and one supported
+presentation mode given the window surface we have.
+It is important that we only try to query for swap chain support after verifying
+that the extension is available.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_choosing_the_right_settings_for_the_swap_chain"><a class="anchor" href="#_choosing_the_right_settings_for_the_swap_chain"></a>Choosing the right settings for the swap chain</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>There may still be many different modes of varying optimality in the swap
+chain. We&#8217;ll now write a couple of functions to find the right settings for the best
+possible swap chain. There are three types of settings to determine:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Surface format (color depth)</p>
+</li>
+<li>
+<p>Presentation mode (conditions for "swapping" images to the screen)</p>
+</li>
+<li>
+<p>Swap extent (resolution of images in swapchain)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For each of these settings, we&#8217;ll have an ideal value in mind that we&#8217;ll go with
+if it&#8217;s available, and otherwise we&#8217;ll create some logic to find the next best
+thing.</p>
+</div>
+<div class="sect2">
+<h3 id="_surface_format"><a class="anchor" href="#_surface_format"></a>Surface format</h3>
+<div class="paragraph">
+<p>The function for this setting starts out like this. We&#8217;ll later pass the
+<code>formats</code> member of the <code>SwapChainSupportDetails</code> struct as argument.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::SurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector&lt;vk::SurfaceFormatKHR&gt;&amp; availableFormats) {
+        return availableFormats[0];
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Each <code>VkSurfaceFormatKHR</code> entry contains a <code>format</code> and a <code>colorSpace</code> member. The
+<code>format</code> member specifies the color channels and types. For example,
+<code>VK_FORMAT_B8G8R8A8_SRGB</code> means that we store the B, G, R and alpha channels in
+that order with an 8-bit unsigned integer for a total of 32 bits per pixel. The
+<code>colorSpace</code> member indicates if the SRGB color space is supported or not using
+the <code>VK_COLOR_SPACE_SRGB_NONLINEAR_KHR</code> flag. Note that this flag used to be
+called <code>VK_COLORSPACE_SRGB_NONLINEAR_KHR</code> in old versions of the specification.</p>
+</div>
+<div class="paragraph">
+<p>For the color space we&#8217;ll use SRGB if it is available, because it <a href="http://stackoverflow.com/questions/12524623/">results in more accurate perceived colors</a>. It is also pretty much the standard color space for images, like the textures we&#8217;ll use later on.
+Because of that we should also use an SRGB color format, of which one of the most common ones is <code>VK_FORMAT_B8G8R8A8_SRGB</code>.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s go through the list and see if the preferred combination is available:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">for (const auto&amp; availableFormat : availableFormats) {
+    if (availableFormat.format == vk::Format::eB8G8R8A8Srgb &amp;&amp; availableFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear) {
+        return availableFormat;
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If that also fails, then we could start ranking the available formats based on
+how "good" they are, but in most cases it&#8217;s okay to just settle with the first
+format that is specified.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::SurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector&lt;vk::SurfaceFormatKHR&gt;&amp; availableFormats) {
+    for (const auto&amp; availableFormat : availableFormats) {
+        if (availableFormat.format == vk::Format::eB8G8R8A8Srgb &amp;&amp; availableFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear) {
+            return availableFormat;
+        }
+    }
+
+    return availableFormats[0];
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_presentation_mode"><a class="anchor" href="#_presentation_mode"></a>Presentation mode</h3>
+<div class="paragraph">
+<p>The presentation mode is arguably the most important setting for the swap chain,
+because it represents the actual conditions for showing images to the screen.
+There are four possible modes available in Vulkan:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_PRESENT_MODE_IMMEDIATE_KHR</code>: Images submitted by your application are
+transferred to the screen right away, which may result in tearing.</p>
+</li>
+<li>
+<p><code>VK_PRESENT_MODE_FIFO_KHR</code>: The swap chain is a queue where the display takes
+an image from the front of the queue when the display is refreshed, and the
+program inserts rendered images at the back of the queue. If the queue is full,
+then the program has to wait. This is most similar to vertical sync as found in
+modern games. The moment that the display is refreshed is known as "vertical
+blank".</p>
+</li>
+<li>
+<p><code>VK_PRESENT_MODE_FIFO_RELAXED_KHR</code>: This mode only differs from the previous
+one if the application is late and the queue was empty at the last vertical
+blank. Instead of waiting for the next vertical blank, the image is transferred
+right away when it finally arrives. This may result in visible tearing.</p>
+</li>
+<li>
+<p><code>VK_PRESENT_MODE_MAILBOX_KHR</code>: This is another variation of the second mode.
+Instead of blocking the application when the queue is full, the images that are
+already queued are simply replaced with the newer ones. This mode can be used to
+render frames as fast as possible while still avoiding tearing, resulting in
+fewer latency issues than standard vertical sync. This is commonly known as
+"triple buffering," although the existence of three buffers alone does not
+necessarily mean that the framerate is unlocked.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Only the <code>VK_PRESENT_MODE_FIFO_KHR</code> mode is guaranteed to be available, so we&#8217;ll
+again have to write a function that looks for the best mode that is available:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PresentModeKHR chooseSwapPresentMode(const std::vector&lt;vk::PresentModeKHR&gt;&amp; availablePresentModes) {
+    return vk::PresentModeKHR::eFifo;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>I think that <code>VK_PRESENT_MODE_MAILBOX_KHR</code> is a very nice trade-off if
+energy usage is not a concern. It allows us to avoid tearing while still
+maintaining fairly low latency by rendering new images that are as
+up to date as possible right until the vertical blank. On mobile devices,
+where energy usage is more important, you will probably want to use
+<code>VK_PRESENT_MODE_FIFO_KHR</code> instead. Now, let&#8217;s look through the list to see
+if <code>VK_PRESENT_MODE_MAILBOX_KHR</code> is available:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PresentModeKHR chooseSwapPresentMode(const std::vector&lt;vk::PresentModeKHR&gt;&amp; availablePresentModes) {
+    for (const auto&amp; availablePresentMode : availablePresentModes) {
+        if (availablePresentMode == vk::PresentModeKHR::eMailbox) {
+            return availablePresentMode;
+        }
+    }
+    return vk::PresentModeKHR::eFifo;
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_swap_extent"><a class="anchor" href="#_swap_extent"></a>Swap extent</h3>
+<div class="paragraph">
+<p>That leaves only one major property, for which we&#8217;ll add one last function:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR&amp; capabilities) {
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The swap extent is the resolution of the swap chain images, and it&#8217;s almost
+always exactly equal to the resolution of the window that we&#8217;re drawing to <em>in
+pixels</em> (more on that in a moment). The range of the possible resolutions is
+defined in the <code>VkSurfaceCapabilitiesKHR</code> structure. Vulkan tells us to match
+the resolution of the window by setting the width and height in the
+<code>currentExtent</code> member. However, some window managers do allow us to differ here,
+and this is indicated by setting the width and height in <code>currentExtent</code> to a
+special value: the maximum value of <code>uint32_t</code>. In that case we&#8217;ll pick the
+resolution that best matches the window within the <code>minImageExtent</code> and
+<code>maxImageExtent</code> bounds. But we must specify the resolution in the correct unit.</p>
+</div>
+<div class="paragraph">
+<p>GLFW uses two units when measuring sizes: pixels and
+<a href="https://www.glfw.org/docs/latest/intro_guide.html#coordinate_systems">screen coordinates</a>.
+For example, the resolution <code>{WIDTH, HEIGHT}</code> that we specified earlier when
+creating the window is measured in screen coordinates. But Vulkan works with
+pixels, so the swap chain extent must be specified in pixels as well.
+Unfortunately, if you are using a high DPI display (like Apple&#8217;s Retina
+display), screen coordinates don&#8217;t correspond to pixels. Instead, due to the
+higher pixel density, the resolution of the window in pixel will be larger than
+the resolution in screen coordinates. So if Vulkan doesn&#8217;t fix the swap extent
+for us, we can&#8217;t just use the original <code>{WIDTH, HEIGHT}</code>. Instead, we must use
+<code>glfwGetFramebufferSize</code> to query the resolution of the window in pixel before
+matching it against the minimum and maximum image extent.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">#include &lt;cstdint&gt; // Necessary for uint32_t
+#include &lt;limits&gt; // Necessary for std::numeric_limits
+#include &lt;algorithm&gt; // Necessary for std::clamp
+
+...
+
+vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR&amp; capabilities) {
+    if (capabilities.currentExtent.width != std::numeric_limits&lt;uint32_t&gt;::max()) {
+        return capabilities.currentExtent;
+    }
+    int width, height;
+    glfwGetFramebufferSize(window, &amp;width, &amp;height);
+
+    return {
+        std::clamp&lt;uint32_t&gt;(width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
+        std::clamp&lt;uint32_t&gt;(height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)
+    };
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>clamp</code> function is used here to bound the values of <code>width</code> and
+<code>height</code> between the allowed minimum and maximum extents that are supported
+by the implementation.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_creating_the_swap_chain"><a class="anchor" href="#_creating_the_swap_chain"></a>Creating the swap chain</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Now that we have all of these helper functions helping us with the choices we
+have to make at runtime, we finally have all the information necessary to
+create a working swap chain.</p>
+</div>
+<div class="paragraph">
+<p>Create a <code>createSwapChain</code> function that starts out with the results of these
+calls and make sure to call it from <code>initVulkan</code> after logical device creation.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void initVulkan() {
+    createInstance();
+    setupDebugMessenger();
+    createSurface();
+    pickPhysicalDevice();
+    createLogicalDevice();
+    createSwapChain();
+}
+
+void createSwapChain() {
+    auto surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR( surface );
+    swapChainImageFormat = chooseSwapSurfaceFormat(physicalDevice.getSurfaceFormatsKHR( surface ));
+    swapChainExtent = chooseSwapExtent(surfaceCapabilities);
+    auto minImageCount = std::max( 3u, surfaceCapabilities.minImageCount );
+    minImageCount = ( surfaceCapabilities.maxImageCount &gt; 0 &amp;&amp; minImageCount &gt; surfaceCapabilities.maxImageCount ) ? surfaceCapabilities.maxImageCount : minImageCount;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Aside from these properties, we also have to decide how many images we
+would like to have in the swap chain. The implementation specifies the
+minimum number that it requires to function:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">uint32_t imageCount = surfaceCapabilities.minImageCount;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>However, simply sticking to this minimum means that we may sometimes have
+to wait on the driver to complete internal operations before we can acquire
+another image to render to. Therefore, it is recommended to request at least
+one more image than the minimum:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">uint32_t imageCount = surfaceCapabilities.minImageCount + 1;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We should also make sure to not exceed the maximum number of images while
+doing this, where <code>0</code> is a special value that means that there is no maximum:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">if (surfaceCapabilities.maxImageCount &gt; 0 &amp;&amp; imageCount &gt; surfaceCapabilities.maxImageCount) {
+    imageCount = surfaceCapabilities.maxImageCount;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>As is tradition with Vulkan objects, creating the swap chain object requires
+filling in a large structure, to be fair, the swapchain is a fairly complex
+object so it is among the larger createInfo structures in Vulkan:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::SwapchainCreateInfoKHR swapChainCreateInfo{
+    .flags = vk::SwapchainCreateFlagsKHR(), .
+    surface = surface, .minImageCount = minImageCount,
+    .imageFormat = swapChainImageFormat, .imageColorSpace = vk::ColorSpaceKHR::eSrgbNonlinear,
+    .imageExtent = swapChainExtent, .imageArrayLayers =1,
+    .imageUsage = vk::ImageUsageFlagBits::eColorAttachment, .imageSharingMode = vk::SharingMode::eExclusive,
+    .preTransform = surfaceCapabilities.currentTransform, .compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque,
+    .presentMode = chooseSwapPresentMode(physicalDevice.getSurfacePresentModesKHR( surface )),
+    .clipped = true, .oldSwapchain = nullptr };</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>he <code>imageArrayLayers</code> specifies the number of layers each image consists of.
+This is always <code>1</code> unless you are developing a stereoscopic 3D application. The
+<code>imageUsage</code> bit field specifies what kind of operations we&#8217;ll use the images in
+the swap chain for. In this tutorial, we&#8217;re going to render directly to them,
+which means that they&#8217;re used as color attachment. It is also possible that
+you&#8217;ll render images to a separate image first to perform operations like
+post-processing. In that case you may use a value like
+<code>VK_IMAGE_USAGE_TRANSFER_DST_BIT</code> instead and use a memory operation to transfer
+the rendered image to a swap chain image.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">uint32_t queueFamilyIndices[] = {graphicsFamily, presentFamily};
+
+if (graphicsFamily != presentFamily) {
+    createInfo.imageSharingMode = vk::SharingMode::eConcurrent;
+    createInfo.queueFamilyIndexCount = 2;
+    createInfo.pQueueFamilyIndices = queueFamilyIndices;
+} else {
+    createInfo.imageSharingMode = vk::SharingMode::eExclusive;
+    createInfo.queueFamilyIndexCount = 0; // Optional
+    createInfo.pQueueFamilyIndices = nullptr; // Optional
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Next, we need to specify how to handle swap chain images that will be used
+across multiple queue families. That will be the case in our application if the
+graphics queue family is different from the presentation queue. We&#8217;ll be drawing
+on the images in the swap chain from the graphics queue and then submitting them
+on the presentation queue. There are two ways to handle images that are
+accessed from multiple queues:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SHARING_MODE_EXCLUSIVE</code>: An image is owned by one queue family at a time,
+and ownership must be explicitly transferred before using it in another queue
+family. This option offers the best performance.</p>
+</li>
+<li>
+<p><code>VK_SHARING_MODE_CONCURRENT</code>: Images can be used across multiple queue
+families without explicit ownership transfers.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If the queue families differ, then we&#8217;ll be using the concurrent mode in this
+tutorial to avoid having to do the ownership chapters, because these involve
+some concepts that are better explained at a later time. Concurrent mode
+requires you to specify in advance between which queue families ownership will
+be shared using the <code>queueFamilyIndexCount</code> and <code>pQueueFamilyIndices</code>
+parameters. If the graphics queue family and presentation queue family are the
+same, which will be the case on most hardware, then we should stick to exclusive
+mode. Concurrent mode requires you to specify at least two distinct
+queue families.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">createInfo.preTransform = surfaceCapabilities.currentTransform;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We can specify that a certain transform should be applied to images in the swap
+chain if it is supported (<code>supportedTransforms</code> in <code>capabilities</code>), like a
+90-degree clockwise rotation or horizontal flip. To specify that you do not want
+any transformation, simply specify the current transformation.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">createInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>compositeAlpha</code> field specifies if the alpha channel should be used for
+blending with other windows in the window system. You&#8217;ll almost always want to
+simply ignore the alpha channel, hence <code>VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">createInfo.presentMode = presentMode;
+createInfo.clipped = vk::True;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>presentMode</code> member speaks for itself. If the <code>clipped</code> member is set to
+<code>VK_TRUE</code> then that means that we don&#8217;t care about the color of pixels that are
+obscured, for example, because another window is in front of them. Unless you
+really need to be able to read these pixels back and get predictable results,
+you&#8217;ll get the best performance by enabling clipping.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">createInfo.oldSwapchain = VK_NULL_HANDLE;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>That leaves one last field, <code>oldSwapChain</code>. With Vulkan, it&#8217;s possible that
+your swap chain becomes invalid or unoptimized while your application is
+running, for example, because the window was resized. In that case, the swap chain
+actually needs to be recreated from scratch, and a reference to the old one must
+be specified in this field. This is a complex topic that we&#8217;ll learn more about
+in <a href="../04_Swap_chain_recreation.html" class="xref page">a future chapter</a>. For now, we&#8217;ll assume that we&#8217;ll only ever create
+one swap chain.</p>
+</div>
+<div class="paragraph">
+<p>Now add a class member to store the <code>VkSwapchainKHR</code> object:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">VkSwapchainKHR swapChain;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Creating the swap chain is now as simple as calling <code>vkCreateSwapchainKHR</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">swapChain = vk::raii::SwapchainKHR( device, swapChainCreateInfo );
+swapChainImages = swapChain.getImages();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The parameters are the logical device, swap chain creation info, optional custom
+allocators and a pointer to the variable to store the handle in.</p>
+</div>
+<div class="paragraph">
+<p>Now run the application to ensure that the swap chain is created
+successfully! If at this point you get an access violation error in
+<code>vkCreateSwapchainKHR</code> or see a message like <code>Failed to find
+'vkGetInstanceProcAddress' in layer SteamOverlayVulkanLayer.dll</code>, then see
+the <a href="../../90_FAQ.html" class="xref page">FAQ entry</a> about the Steam overlay layer.</p>
+</div>
+<div class="paragraph">
+<p>Try removing the <code>createInfo.imageExtent = extent;</code> line with validation layers
+enabled. You&#8217;ll see that one of the validation layers immediately catches the
+mistake and a helpful message is printed:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../_images/images/swap_chain_validation_layer.png" alt="swap chain validation layer">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_retrieving_the_swap_chain_images"><a class="anchor" href="#_retrieving_the_swap_chain_images"></a>Retrieving the swap chain images</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The swap chain has been created now, so all that remains is retrieving the
+handles of the `VkImage`s in it. We&#8217;ll reference these during rendering
+operations in later chapters.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">std::vector&lt;vk::Image&gt; swapChainImages = swapChainImages = swapChain-&gt;getImages();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>One last thing, store the format and extent we&#8217;ve chosen for the swap chain
+images in member variables. We&#8217;ll need them in future chapters.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::raii::SwapchainKHR swapChain = nullptr;
+std::vector&lt;vk::Image&gt; swapChainImages;
+vk::Format swapChainImageFormat = vk::Format::eUndefined;
+vk::Extent2D swapChainExtent;
+
+...
+
+swapChainImageFormat = surfaceFormat.format;
+swapChainExtent = extent;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We now have a set of images that can be drawn onto and can be presented to the
+window. The <a href="02_Image_views.html" class="xref page">next chapter</a> will begin to cover how we can set up the images as
+render targets, and then we start looking into the actual graphics pipeline and
+drawing commands!</p>
+</div>
+<div class="paragraph">
+<p><a href="../../_attachments/06_swap_chain_creation.cpp">C&#43;&#43; code</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

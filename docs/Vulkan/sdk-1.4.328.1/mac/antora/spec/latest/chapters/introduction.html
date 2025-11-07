@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Introduction :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:spec" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="spec" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Specification</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="fundamentals.html">Fundamentals</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="initialization.html">Initialization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="devsandqueues.html">Devices and Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="cmdbuffers.html">Command Buffers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="synchronization.html">Synchronization and Cache Control</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="renderpass.html">Render Pass</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="shaders.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="pipelines.html">Pipelines</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="memory.html">Memory Allocation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="resources.html">Resource Creation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="samplers.html">Samplers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="descriptorsets.html">Resource Descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="interfaces.html">Shader Interfaces</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="textures.html">Image Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="fragmentdensitymapops.html">Fragment Density Map Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_ARM_tensors/tensorops.html">Tensor Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="queries.html">Queries</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="clears.html">Clear Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="copies.html">Copy Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="drawing.html">Drawing Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="fxvertex.html">Fixed-Function Vertex Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="tessellation.html">Tessellation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="geometry.html">Geometry Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_NV_mesh_shader/mesh.html">Mesh Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_HUAWEI_cluster_culling_shader/clusterculling.html">Cluster Culling Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="vertexpostproc.html">Fixed-Function Vertex Post-Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="primsrast.html">Rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="fragops.html">Fragment Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="framebuffer.html">The Framebuffer</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="dispatch.html">Dispatching Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="device_generated_commands/generatedcommands.html">Device-Generated Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="sparsemem.html">Sparse Resources</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_KHR_surface/wsi.html">Window System Integration (WSI)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_KHR_deferred_host_operations/deferred_host_operations.html">Deferred Host Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_EXT_private_data.html">Private Data</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="accelstructures.html">Acceleration Structures</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_EXT_opacity_micromap/micromaps.html">Micromap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="raytraversal.html">Ray Traversal</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="raytracing.html">Ray Tracing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_NV_memory_decompression.html">Memory Decompression</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="videocoding.html">Video Coding</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_NV_optical_flow/optical_flow.html">Optical Flow</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="executiongraphs.html">Execution Graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_NV_external_compute_queue/VK_NV_external_compute_queue.html">External Compute Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_ARM_data_graph/graphs.html">Data graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="extensions.html">Extending Vulkan</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="features.html">Features</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="limits.html">Limits</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="formats.html">Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="capabilities.html">Additional Capabilities</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="debugging.html">Debugging</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/spirvenv.html">Vulkan Environment for SPIR-V</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/memorymodel.html">Memory Model</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/compressedtex.html">Compressed Image Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/versions.html">Core Revisions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/extensions.html">Layers &amp; Extensions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/roadmap.html">Vulkan Roadmap Milestones</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/deprecation.html">Deprecation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/boilerplate.html">API Boilerplate</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/invariance.html">Invariance</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/glossary.html">Lexicon</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/credits.html">Credits (Informative)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Specification</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Specification</a></li>
+    <li><a href="introduction.html">Introduction</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/spec/modules/ROOT/pages/chapters/introduction.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Introduction</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This document, referred to as the
+&#8220;Vulkan Specification&#8221; or just the &#8220;Specification&#8221; hereafter, describes
+the Vulkan
+Application Programming Interface (API).
+Vulkan is a <a href="http://www.open-std.org/jtc1/sc22/wg14/www/standards">C99</a> API
+designed for explicit control of low-level graphics and compute
+functionality.</p>
+</div>
+<div class="paragraph">
+<p>The canonical version of the Specification is available in the official
+<a href="https://registry.khronos.org/vulkan/">Vulkan Registry</a>
+(<a href="https://registry.khronos.org/vulkan/" class="bare">https://registry.khronos.org/vulkan/</a>).
+The source files used to generate the Vulkan specification are stored in the
+<a href="https://github.com/KhronosGroup/Vulkan-Docs">Vulkan Documentation Repository</a>
+(<a href="https://github.com/KhronosGroup/Vulkan-Docs" class="bare">https://github.com/KhronosGroup/Vulkan-Docs</a>).</p>
+</div>
+<div class="paragraph">
+<p>The source repository additionally has a public issue tracker and allows the
+submission of pull requests that improve the specification.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="introduction-conventions"><a class="anchor" href="#introduction-conventions"></a>Document Conventions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The Vulkan specification is intended for use by both implementors of the API
+and application developers seeking to make use of the API, forming a
+contract between these parties.
+Specification text may address either party; typically the intended audience
+can be inferred from context, though some sections are defined to address
+only one of these parties.
+(For example, <a href="fundamentals.html#fundamentals-validusage" class="xref page">Valid Usage</a> sections only address application
+developers).
+Any requirements, prohibitions, recommendations or options defined in
+specification text are imposed only on the audience of that text.</p>
+</div>
+<div class="sect2">
+<h3 id="introduction-normative-requirements"><a class="anchor" href="#introduction-normative-requirements"></a>Normative Requirements</h3>
+<div class="paragraph">
+<p>The Vulkan Specification uses a combination of
+<a href="#introduction-normative-terminology">normative terminology</a> and
+<a href="#introduction-normative-descriptions">normative descriptions</a> to express
+the requirements that it imposes on applications and implementations.
+An application which complies with all normative requirements imposed on
+applications is said to make <strong>valid use</strong> of the API; failing to comply with
+such requirements results in <strong>undefined</strong> behavior, as discussed in the
+<a href="fundamentals.html#fundamentals-validusage" class="xref page">Valid Usage</a> section below.
+In the context of this document, an implementation which complies with all
+normative requirements imposed on implementations is said to be
+<strong>conformant</strong>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The Khronos Group imposes additional requirements on implementors who wish
+to make public statements describing their Vulkan implementations as
+conformant.
+These include signing the Vulkan Adopter&#8217;s Agreement, paying the associated
+fee, and making a successful conformance test submission to the Khronos
+Conformance Process.
+For details see the
+<a href="https://www.khronos.org/legal/khronos-trademark-guidelines">Khronos Trademark
+Guidelines</a> (<a href="https://www.khronos.org/legal/khronos-trademark-guidelines" class="bare">https://www.khronos.org/legal/khronos-trademark-guidelines</a>).</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="sect3">
+<h4 id="introduction-normative-terminology"><a class="anchor" href="#introduction-normative-terminology"></a>Normative Terminology</h4>
+<div class="paragraph">
+<p>Within this specification, the key words <strong>must</strong>, <strong>required</strong>, <strong>should</strong>, <strong>may</strong>,
+and <strong>optional</strong> are to be interpreted as described in
+<a href="https://www.ietf.org/rfc/rfc2119.txt">RFC 2119 - Key words for use in RFCs to
+Indicate Requirement Levels</a> (<a href="https://www.ietf.org/rfc/rfc2119.txt" class="bare">https://www.ietf.org/rfc/rfc2119.txt</a>).
+The additional key word <strong>optionally</strong> is an alternate form of <strong>optional</strong>, for
+use where grammatically appropriate.
+These key words are highlighted in the specification to indicate that they
+are being used in a specific technical sense.</p>
+</div>
+<div class="paragraph">
+<p>The additional key words <strong>can</strong> and <strong>cannot</strong> are to be interpreted as
+describing the capabilities of an application, as follows:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">can</dt>
+<dd>
+<p>This word means that the application is able to perform the action
+described.</p>
+</dd>
+<dt class="hdlist1">cannot</dt>
+<dd>
+<p>This word means that the API and/or the execution environment provide no
+mechanism through which the application can express or accomplish the action
+described.</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>These key words are never used in text addressing implementors.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>There is an important distinction between <strong>cannot</strong> and <strong>must not</strong>, as used
+in this Specification.
+<strong>Cannot</strong> refers to something the API provides no way for the application to
+express or accomplish.
+<strong>Must not</strong> describes something that the application is able to express, but
+that is not valid use of the API, and will have <strong>undefined</strong> and potentially
+unrecoverable consequences.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="introduction-normative-descriptions"><a class="anchor" href="#introduction-normative-descriptions"></a>Normative Descriptions</h4>
+<div class="paragraph">
+<p>In the Vulkan Specification, the normative term <strong>must</strong> is primarily used to
+describe <strong>application</strong> behavior, and in particular to constrain what inputs
+or commands issued by the application to the implementation are considered
+valid.</p>
+</div>
+<div class="paragraph">
+<p>To constrain <strong>implementation</strong> behavior, the specification sometimes uses
+<strong>must</strong>, but more often simply describes the behavior of the implementation in
+response to specified commands and inputs.
+Unless explicitly stated otherwise, such references to implementation
+behavior describe the behavior of <strong>conformant</strong> implementations, and express
+normative requirements which an implementation must satisfy in order to
+conform to the specification.
+For example, if the specification says &#8220;Under <strong>specified condition</strong>, the
+error code <code>VK_ERROR_FEATURE_NOT_PRESENT</code> is returned&#8221;, that behavior
+is a requirement of the specification, and an implementation which does not
+return that error code under that condition is not conformant.</p>
+</div>
+<div class="paragraph">
+<p>When the normative terms <strong>may</strong>, <strong>should</strong>, or <strong>optional</strong> are used to describe
+implementation behavior, they define alternative or optional behaviors which
+a conformant implementation may or may not exhibit.
+Such statements are also normative.
+For example, if the specification says "Under <strong>specified condition</strong>, the
+implementation <strong>should</strong> return A but <strong>may</strong> instead return B", then an
+implementation that returns either A or B under that condition is conformant
+(assuming it does not violate other normative requirements), while an
+implementation that returns anything else is not.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="introduction-normative-references"><a class="anchor" href="#introduction-normative-references"></a>Normative References</h3>
+<div class="paragraph">
+<p>References to external documents are considered normative references if the
+Specification uses <a href="#introduction-normative-terminology">normative terminology</a> or <a href="#introduction-normative-descriptions">normative descriptions</a> to refer to them or their requirements, either as a whole or
+in part.</p>
+</div>
+<div class="paragraph">
+<p>The following documents are referenced by normative sections of the
+specification:</p>
+</div>
+<div id="ieee-754" class="paragraph">
+<p>IEEE.
+August, 2008.
+<em>IEEE Standard for Floating-Point Arithmetic</em>.
+IEEE Std 754-2008.
+<a href="https://dx.doi.org/10.1109/IEEESTD.2008.4610935" class="bare">https://dx.doi.org/10.1109/IEEESTD.2008.4610935</a> .</p>
+</div>
+<div class="paragraph">
+<p><a id="data-format"></a> Andrew Garrard.
+<em>Khronos Data Format Specification, version 1.3</em>.
+<a href="https://registry.khronos.org/DataFormat/specs/1.3/dataformat.1.3.html" class="bare">https://registry.khronos.org/DataFormat/specs/1.3/dataformat.1.3.html</a> .</p>
+</div>
+<div class="paragraph">
+<p><a id="spirv-extended"></a> John Kessenich.
+<em>SPIR-V Extended Instructions for GLSL, Version 1.00</em> (February 10, 2016).
+<a href="https://registry.khronos.org/spir-v/" class="bare">https://registry.khronos.org/spir-v/</a> .</p>
+</div>
+<div class="paragraph">
+<p><a id="spirv-spec"></a> John Kessenich, Boaz Ouriel, and Raun Krisch.
+<em>SPIR-V Specification, Version 1.5, Revision 3, Unified</em> (April 24, 2020).
+<a href="https://registry.khronos.org/spir-v/" class="bare">https://registry.khronos.org/spir-v/</a> .</p>
+</div>
+<div id="itu-t-h264" class="paragraph">
+<p>ITU-T.
+<em>H.264 Advanced Video Coding for Generic Audiovisual Services</em> (August,
+2021).
+<a href="https://www.itu.int/rec/T-REC-H.264-202108-I/" class="bare">https://www.itu.int/rec/T-REC-H.264-202108-I/</a> .</p>
+</div>
+<div id="itu-t-h265" class="paragraph">
+<p>ITU-T.
+<em>H.265 High Efficiency Video Coding</em> (August, 2021).
+<a href="https://www.itu.int/rec/T-REC-H.265-202108-S/" class="bare">https://www.itu.int/rec/T-REC-H.265-202108-S/</a> .</p>
+</div>
+<div id="google-vp9" class="paragraph">
+<p>Google.
+<em>VP9 Bitstream &amp; Decoding Process Specification</em> (February 22, 2017).
+<a href="https://storage.googleapis.com/downloads.webmproject.org/docs/vp9/vp9-bitstream-specification-v0.7-20170222-draft.pdf" class="bare">https://storage.googleapis.com/downloads.webmproject.org/docs/vp9/vp9-bitstream-specification-v0.7-20170222-draft.pdf</a> .</p>
+</div>
+<div id="aomedia-av1" class="paragraph">
+<p>Alliance for Open Media.
+<em>AV1 Bitstream &amp; Decoding Process Specification</em> (January 8, 2019).
+<a href="https://aomediacodec.github.io/av1-spec/av1-spec.pdf" class="bare">https://aomediacodec.github.io/av1-spec/av1-spec.pdf</a> .</p>
+</div>
+<div class="paragraph">
+<p><a id="vulkan-registry"></a> Jon Leech.
+<em>The Khronos Vulkan API Registry</em> (February 26, 2023).
+<a href="https://registry.khronos.org/vulkan/specs/latest/registry.html" class="bare">https://registry.khronos.org/vulkan/specs/latest/registry.html</a> .</p>
+</div>
+<div class="paragraph">
+<p><a id="vulkan-styleguide"></a> Jon Leech and Tobias Hector.
+<em>Vulkan Documentation and Extensions: Procedures and Conventions</em> (February
+26, 2023).
+<a href="https://registry.khronos.org/vulkan/specs/latest/styleguide.html" class="bare">https://registry.khronos.org/vulkan/specs/latest/styleguide.html</a> .</p>
+</div>
+<div id="LoaderInterfaceArchitecture" class="paragraph">
+<p><em>Architecture of the Vulkan Loader Interfaces</em> (October, 2021).
+<a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/main/docs/LoaderInterfaceArchitecture.md" class="bare">https://github.com/KhronosGroup/Vulkan-Loader/blob/main/docs/LoaderInterfaceArchitecture.md</a>
+.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="introduction-informative-language"><a class="anchor" href="#introduction-informative-language"></a>Informative Language</h3>
+<div class="paragraph">
+<p>Some language in the specification is purely informative, intended to
+provide background information or make suggestions to implementors or
+developers.
+Such language does not impose normative requirements on implementations or
+applications.</p>
+</div>
+<div class="paragraph">
+<p>All NOTEs are implicitly informative.</p>
+</div>
+<div class="paragraph">
+<p>If an entire chapter, section, or appendix contains only informative
+language, its title will be suffixed with &#8220;(Informative)&#8221;.
+Unless so noted in the title, all chapters, sections, and appendices in this
+document are normative.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="introduction-technical-terminology"><a class="anchor" href="#introduction-technical-terminology"></a>Technical Terminology</h3>
+<div class="paragraph">
+<p>The Vulkan Specification makes use of common engineering and graphics terms
+such as <strong>Pipeline</strong>, <strong>Shader</strong>, and <strong>Host</strong> to identify and describe Vulkan API
+constructs and their attributes, states, and behaviors.
+The <a href="../appendices/glossary.html#glossary" class="xref page">Glossary</a> defines the basic meanings of these terms in the
+context of the Specification.
+The Specification text provides fuller definitions of the terms and may
+elaborate, extend, or clarify the <a href="../appendices/glossary.html#glossary" class="xref page">Glossary</a> definitions.
+When a term defined in the <a href="../appendices/glossary.html#glossary" class="xref page">Glossary</a> is used in normative
+language within the Specification, the definitions within the Specification
+govern and supersede any meanings the terms may have in other technical
+contexts (i.e. outside the Specification).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="introduction-ratified"><a class="anchor" href="#introduction-ratified"></a>Ratification</h3>
+<div class="paragraph">
+<p><em>Ratification</em> of a Vulkan core version or extension is a status conferred
+by vote of the Khronos Board of Promoters, bringing that core version or
+extension under the umbrella of the Khronos IP Rights Policy.</p>
+</div>
+<div class="paragraph">
+<p>All Vulkan core versions and <code>KHR</code> extensions (including provisional
+specifications) are ratified, as are some multi-vendor <code>EXT</code> extensions.
+Ratification status of extensions is described in the <a href="../appendices/extensions.html#extensions" class="xref page">Layers &amp; Extensions (Informative)</a> appendix.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Ratification status is primarily of interest to IHVs developing GPU hardware
+and Vulkan implementations.
+For developers, ratification does not necessarily mean that an extension is
+&#8220;better&#8221;, has a more stable API, or is more widely supported than
+alternative ways of achieving that functionality.</p>
+</div>
+<div class="paragraph">
+<p>Interactions between ratified and non-ratified extensions are not themselves
+ratified.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

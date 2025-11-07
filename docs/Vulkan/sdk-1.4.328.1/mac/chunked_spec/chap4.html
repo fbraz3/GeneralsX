@@ -1,0 +1,2746 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.23">
+<meta name="author" content="The Khronos® Vulkan  Working Group">
+<title>Vulkan® 1.4.328 - A Specification (with all registered extensions)</title>
+<link rel="stylesheet" href="style0.css" type="text/css">
+<link rel="stylesheet" href="style1.css" type="text/css">
+<link rel="stylesheet" href="style2.css" type="text/css">
+
+<!-- dragged in by font-awesome css included by asciidoctor, but preloaded in this extension for convenience -->
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.woff2?v=4.7.0" as="font" type="font/woff2" crossorigin="">
+
+<!-- Note: Chrome needs crossorigin="" even for same-origin fonts -->
+<link rel="preload" href="../katex/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Main-Italic.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Typewriter-Regular.woff2" as="font" type="font/woff2" crossorigin=""><link rel="stylesheet" href="../katex/katex.min.css">
+<!--ChunkedSearchJSMarker-->
+<link href="chunked.css?4" rel="stylesheet">
+<script>var searchindexurl = 'search.index.js?4' + (document.title.replace(/[^0-9.]/g, ''));</script>
+<script src="chunked.js?4"></script>
+<link rel="stylesheet" href="style3.css" type="text/css">
+<script>
+    function hideElement(e){
+        e.setAttribute("hidden", "");
+        e.classList.add("hidden");
+    }
+
+    function unhideElement(e){
+        e.classList.remove("hidden");
+        e.removeAttribute("hidden");
+    }
+
+    function hideLoadableContent(){
+        unhideElement( document.getElementById("loading_msg") );
+        for( var loadable of document.getElementsByClassName("loadable") ) hideElement(loadable);
+    }
+
+    function unhideLoadableContent(){
+        hideElement( document.getElementById("loading_msg") );
+        for( var loadable of document.getElementsByClassName("loadable") ) unhideElement(loadable);
+    }
+
+    window.addEventListener("load", unhideLoadableContent);
+</script>
+<link rel="stylesheet" href="asciidoctor-chunker.css" type="text/css"></head>
+<body class="book toc2 toc-left">
+<div style="text-align: center;">
+    <span class="image"><img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+Cjxzdmcgdmlld0JveD0iMCAwIDExNTAgMzI2IiB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHhtbDpzcGFjZT0icHJlc2VydmUiIHN0eWxlPSJmaWxsLXJ1bGU6ZXZlbm9kZDtjbGlwLXJ1bGU6ZXZlbm9kZDtzdHJva2UtbGluZWpvaW46cm91bmQ7c3Ryb2tlLW1pdGVybGltaXQ6MS40MTQyMTsiPgogICAgPGcgaWQ9IkFydGJvYXJkMSIgdHJhbnNmb3JtPSJtYXRyaXgoMC45NTUxNSwwLDAsMC44ODgyODMsLTQwLjExNjMsLTMwLjIwMTYpIj4KICAgICAgICA8cmVjdCB4PSI0MiIgeT0iMzQiIHdpZHRoPSIxMjA0IiBoZWlnaHQ9IjM2NyIgc3R5bGU9ImZpbGw6bm9uZTsiLz4KICAgICAgICA8ZyB0cmFuc2Zvcm09Im1hdHJpeCgxLjA0Njk2LDAsMCwxLjEyNTc3LC00Ni45OTEzLC01MC40MzI1KSI+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik03MjQuMSwzODUuMDZMNjgzLjUzLDM4NS4wNkM2ODMuNTMsMzg1LjA2IDY4My41MywyODYuMDkgNjgzLjUzLDI1NS40QzY5Ni40OSwyNjIuNjIgNzEzLjYyLDI3NS45NCA3MjQuMSwyODguNzJMNzI0LjEsMzg1LjA2WiIgc3R5bGU9ImZpbGw6cmdiKDE3MiwyMiw0NCk7ZmlsbC1ydWxlOm5vbnplcm87Ii8+CiAgICAgICAgICAgIDxnPgogICAgICAgICAgICAgICAgPHBhdGggZD0iTTM4MS43NSwzODUuMDZMMzMxLjE3LDM4NS4wNkwyNjUuMTYsMTgxLjAzTDMxMS4xNywxODEuMDNMMzU2LjYxLDMyNC40OEwzNTcuMTgsMzI0LjQ4TDQwMy4xOCwxODEuMDNMNDQ5LjQ3LDE4MS4wM0wzODEuNzUsMzg1LjA2WiIgc3R5bGU9ImZpbGw6cmdiKDE3MiwyMiw0NCk7ZmlsbC1ydWxlOm5vbnplcm87Ii8+CiAgICAgICAgICAgICAgICA8cGF0aCBkPSJNNTg1LjUxLDM4NS4wNkw1NDYuOTMsMzg1LjA2TDU0Ni45MywzNjQuNDlMNTQ2LjA4LDM2NC40OUM1NDAuOTMsMzczLjA3IDUzNC4yNywzNzkuMjYgNTI2LjA3LDM4My4wN0M1MTcuODgsMzg2Ljg4IDUwOS41LDM4OC43OCA1MDAuOTIsMzg4Ljc4QzQ5MC4wNiwzODguNzggNDgxLjE2LDM4Ny4zNSA0NzQuMiwzODQuNUM0NjcuMjUsMzgxLjY1IDQ2MS43NywzNzcuNTkgNDU3Ljc3LDM3Mi4zNkM0NTMuNzYsMzY3LjEyIDQ1MC45NSwzNjAuNzQgNDQ5LjMzLDM1My4yMUM0NDcuNzIsMzQ1LjY5IDQ0Ni45MSwzMzcuMzUgNDQ2LjkxLDMyOC4yMUw0NDYuOTEsMjM3LjMzTDQ4Ny40OSwyMzcuMzNMNDg3LjQ5LDMyMC43N0M0ODcuNDksMzMyLjk2IDQ4OS40LDM0Mi4wNiA0OTMuMjEsMzQ4LjA2QzQ5Ny4wMiwzNTQuMDcgNTAzLjc4LDM1Ny4wNiA1MTMuNSwzNTcuMDZDNTI0LjU1LDM1Ny4wNiA1MzIuNTUsMzUzLjc4IDUzNy41LDM0Ny4yQzU0Mi40NiwzNDAuNjIgNTQ0LjkzLDMyOS44MSA1NDQuOTMsMzE0Ljc2TDU0NC45MywyMzcuMzJMNTg1LjUyLDIzNy4zMkw1ODUuNTIsMzg1LjA2TDU4NS41MSwzODUuMDZaIiBzdHlsZT0iZmlsbDpyZ2IoMTcyLDIyLDQ0KTtmaWxsLXJ1bGU6bm9uemVybzsiLz4KICAgICAgICAgICAgPC9nPgogICAgICAgICAgICA8cGF0aCBkPSJNNzMwLjg0LDI5Ni4xOUw3MzAuNzQsMjkwLjQ3TDc4MS44OSwyMzcuMzNMODI5LjkxLDIzNy4zM0w3NzQuMTgsMjkxLjYyTDgzNi4xOSwzODUuMDZMNzg3LjA0LDM4NS4wNkw3MzAuODQsMjk2LjE5WiIgc3R5bGU9ImZpbGw6cmdiKDE3MiwyMiw0NCk7ZmlsbC1ydWxlOm5vbnplcm87Ii8+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik04NDMuNjIsMjgyLjc2Qzg0NC4xOSwyNzMuMjQgODQ2LjU4LDI2NS4zMyA4NTAuNzcsMjU5LjA0Qzg1NC45NiwyNTIuNzUgODYwLjI5LDI0Ny43MSA4NjYuNzcsMjQzLjlDODczLjI1LDI0MC4wOSA4ODAuNTQsMjM3LjM3IDg4OC42NCwyMzUuNzZDODk2LjczLDIzNC4xNCA5MDQuODgsMjMzLjMzIDkxMy4wNywyMzMuMzNDOTIwLjUsMjMzLjMzIDkyOC4wMiwyMzMuODUgOTM1LjY0LDIzNC45Qzk0My4yNywyMzUuOTUgOTUwLjIxLDIzOCA5NTYuNSwyNDEuMDVDOTYyLjc4LDI0NC4xIDk2Ny45MywyNDguMzQgOTcxLjk0LDI1My43NkM5NzUuOTQsMjU5LjE5IDk3Ny45NCwyNjYuMzggOTc3Ljk0LDI3NS4zNEw5NzcuOTQsMzUyLjIxQzk3Ny45NCwzNTguODggOTc4LjMyLDM2NS4yNyA5NzkuMDgsMzcxLjM2Qzk3OS44NCwzNzcuNDYgOTgxLjE4LDM4Mi4wMyA5ODMuMDksMzg1LjA4TDk0MS45NCwzODUuMDhDOTQxLjE4LDM4Mi44IDk0MC41NiwzODAuNDYgOTQwLjA4LDM3OC4wOEM5MzkuNjEsMzc1LjcgOTM5LjI3LDM3My4yOCA5MzkuMDgsMzcwLjc5QzkzMi42LDM3Ny40NyA5MjQuOTcsMzgyLjEzIDkxNi4yMSwzODQuOEM5MDcuNDUsMzg3LjQ2IDg5OC40OSwzODguOCA4ODkuMzUsMzg4LjhDODgyLjMsMzg4LjggODc1LjcyLDM4Ny45NCA4NjkuNjQsMzg2LjIzQzg2My41NCwzODQuNTIgODU4LjIsMzgxLjg1IDg1My42NCwzNzguMjNDODQ5LjA2LDM3NC42MSA4NDUuNDgsMzcwLjA0IDg0Mi45MiwzNjQuNTFDODQwLjM1LDM1OC45OSA4MzkuMDYsMzUyLjQyIDgzOS4wNiwzNDQuOEM4MzkuMDYsMzM2LjQyIDg0MC41NCwzMjkuNTEgODQzLjQ5LDMyNC4wOEM4NDYuNDUsMzE4LjY1IDg1MC4yNSwzMTQuMzIgODU0LjkzLDMxMS4wOEM4NTkuNiwzMDcuODQgODY0LjkzLDMwNS40MSA4NzAuOTMsMzAzLjc5Qzg3Ni45MywzMDIuMTcgODgyLjk4LDMwMC44OCA4ODkuMDcsMjk5LjkzQzg5NS4xNywyOTguOTkgOTAxLjE3LDI5OC4yMiA5MDcuMDgsMjk3LjY1QzkxMi45OSwyOTcuMDggOTE4LjIyLDI5Ni4yMiA5MjIuNzksMjk1LjA4QzkyNy4zNywyOTMuOTMgOTMwLjk4LDI5Mi4yNyA5MzMuNjUsMjkwLjA3QzkzNi4zMiwyODcuODggOTM3LjU2LDI4NC42OSA5MzcuMzcsMjgwLjVDOTM3LjM3LDI3Ni4xMiA5MzYuNjUsMjcyLjY0IDkzNS4yMiwyNzAuMDdDOTMzLjc5LDI2Ny41IDkzMS44OSwyNjUuNSA5MjkuNTEsMjY0LjA3QzkyNy4xMywyNjIuNjQgOTI0LjM3LDI2MS42OSA5MjEuMjIsMjYxLjIxQzkxOC4wNywyNjAuNzMgOTE0LjcsMjYwLjQ5IDkxMS4wOCwyNjAuNDlDOTAzLjA4LDI2MC40OSA4OTYuNzksMjYyLjIgODkyLjIyLDI2NS42NEM4ODcuNjUsMjY5LjA3IDg4NC45OCwyNzQuNzggODg0LjIyLDI4Mi43OUw4NDMuNjIsMjgyLjc5TDg0My42MiwyODIuNzZaTTkzNy4zNSwzMTIuNzdDOTM1LjYzLDMxNC4zIDkzMy40OSwzMTUuNDggOTMwLjkyLDMxNi4zNEM5MjguMzUsMzE3LjIxIDkyNS41OSwzMTcuOTIgOTIyLjYzLDMxOC40OUM5MTkuNjgsMzE5LjA2IDkxNi41OCwzMTkuNTQgOTEzLjM1LDMxOS45MkM5MTAuMTEsMzIwLjMgOTA2Ljg3LDMyMC43NyA5MDMuNjMsMzIxLjM1QzkwMC41OCwzMjEuOTIgODk3LjU4LDMyMi42OSA4OTQuNjMsMzIzLjYzQzg5MS42OCwzMjQuNTkgODg5LjEsMzI1Ljg3IDg4Ni45MSwzMjcuNDlDODg0LjcyLDMyOS4xMSA4ODIuOTYsMzMxLjE2IDg4MS42MiwzMzMuNjNDODgwLjI5LDMzNi4xMSA4NzkuNjIsMzM5LjI1IDg3OS42MiwzNDMuMDZDODc5LjYyLDM0Ni42OCA4ODAuMjksMzQ5LjczIDg4MS42MiwzNTIuMkM4ODIuOTYsMzU0LjY4IDg4NC43NywzNTYuNjMgODg3LjA1LDM1OC4wNkM4ODkuMzQsMzU5LjQ5IDg5MiwzNjAuNDkgODk1LjA1LDM2MS4wNkM4OTguMSwzNjEuNjMgOTAxLjI0LDM2MS45MSA5MDQuNDgsMzYxLjkxQzkxMi40OCwzNjEuOTEgOTE4LjY4LDM2MC41OCA5MjMuMDYsMzU3LjkyQzkyNy40NCwzNTUuMjUgOTMwLjY5LDM1Mi4wNiA5MzIuNzcsMzQ4LjM0QzkzNC44NiwzNDQuNjMgOTM2LjE2LDM0MC44NyA5MzYuNjIsMzM3LjA2QzkzNy4xLDMzMy4yNSA5MzcuMzMsMzMwLjIgOTM3LjM0LDMyNy45Mkw5MzcuMzQsMzEyLjc3TDkzNy4zNSwzMTIuNzdaIiBzdHlsZT0iZmlsbDpyZ2IoMTcyLDIyLDQ0KTtmaWxsLXJ1bGU6bm9uemVybzsiLz4KICAgICAgICAgICAgPHBhdGggZD0iTTEwMDQuMjEsMjM3LjMzTDEwNDIuOCwyMzcuMzNMMTA0Mi44LDI1Ny45TDEwNDMuNjUsMjU3LjlDMTA0OC43OSwyNDkuMzMgMTA1NS40NiwyNDMuMDkgMTA2My42NSwyMzkuMTlDMTA3MS44NCwyMzUuMjggMTA4MC4yMywyMzMuMzMgMTA4OC43OSwyMzMuMzNDMTA5OS42NiwyMzMuMzMgMTEwOC41NiwyMzQuODEgMTExNS41MiwyMzcuNzZDMTEyMi40NywyNDAuNzIgMTEyNy45NCwyNDQuODEgMTEzMS45NSwyNTAuMDVDMTEzNS45NSwyNTUuMjkgMTEzOC43NiwyNjEuNjcgMTE0MC4zOCwyNjkuMTlDMTE0MiwyNzYuNzIgMTE0Mi44MSwyODUuMDUgMTE0Mi44MSwyOTQuMkwxMTQyLjgxLDM4NS4wN0wxMTAyLjI0LDM4NS4wN0wxMTAyLjI0LDMwMS42M0MxMTAyLjI0LDI4OS40MyAxMTAwLjMzLDI4MC4zNCAxMDk2LjUzLDI3NC4zNEMxMDkyLjcxLDI2OC4zNCAxMDg1Ljk1LDI2NS4zNCAxMDc2LjIzLDI2NS4zNEMxMDY1LjE4LDI2NS4zNCAxMDU3LjE5LDI2OC42MyAxMDUyLjIzLDI3NS4yQzEwNDcuMjcsMjgxLjc2IDEwNDQuOCwyOTIuNTggMTA0NC44LDMwNy42M0wxMDQ0LjgsMzg1LjA3TDEwMDQuMjIsMzg1LjA3TDEwMDQuMjIsMjM3LjMzTDEwMDQuMjEsMjM3LjMzWiIgc3R5bGU9ImZpbGw6cmdiKDE3MiwyMiw0NCk7ZmlsbC1ydWxlOm5vbnplcm87Ii8+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik02MTIuMzcsMjExLjg0TDYxMi4zNywzODUuMDdMNjUyLjk1LDM4NS4wN0w2NTIuOTUsMjM0LjIxQzYzOS45MywyMjYuMjMgNjI2LjM2LDIxOC43NCA2MTIuMzcsMjExLjg0WiIgc3R5bGU9ImZpbGw6cmdiKDE3MiwyMiw0NCk7ZmlsbC1ydWxlOm5vbnplcm87Ii8+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik0xOTguNDMsMjE5LjIxQzIyMS45NSwxNTAuMzIgMzYyLjU4LDEyNS4wNSA1MTIuNTgsMTYyLjc4QzYwMi41NSwxODUuNCA2NzYuMDcsMjI5LjI4IDcyNC4wOSwyNzIuNjdDNzAyLjMsMjE1LjEyIDU5Ni42NSwxMzMuMDggNDUxLjE4LDEwNC45NkMyODYuNyw3My4xNiAxMjQuNDcsMTAxLjExIDEwNC4zOSwxNzQuMUM4OS44OSwyMjYuODMgMTUzLjU3LDI4OC42IDI1Mi4wNSwzMzAuODRDMjA3LjgxLDI5NS4wMiAxODYuMjksMjU0Ljc4IDE5OC40MywyMTkuMjFaIiBzdHlsZT0iZmlsbDpyZ2IoMTcyLDIyLDQ0KTtmaWxsLXJ1bGU6bm9uemVybzsiLz4KICAgICAgICAgICAgPHBhdGggZD0iTTcyNC4xNiwyNDcuNjJMNzI0LjE2LDE4MS4wM0w2ODMuNTcsMTgxLjAzTDY4My41NywyMDEuMjVDNzAwLjg4LDIxNi43MSA3MTQuNjEsMjMyLjQ1IDcyNC4xNiwyNDcuNjJaIiBzdHlsZT0iZmlsbDpyZ2IoMTcyLDIyLDQ0KTtmaWxsLXJ1bGU6bm9uemVybzsiLz4KICAgICAgICA8L2c+CiAgICAgICAgPGcgdHJhbnNmb3JtPSJtYXRyaXgoMS4wNDY5NiwwLDAsMS4xMjU3NywtNDYuOTkxMywtNTAuNDMyNSkiPgogICAgICAgICAgICA8cGF0aCBkPSJNMTIxNC45OCwzNjMuNDNDMTIxNC45OCwzNzUuNjkgMTIwNS4zNSwzODUuMzIgMTE5Mi44MywzODUuMzJDMTE4MC40MywzODUuMzIgMTE3MC41NCwzNzUuNjkgMTE3MC41NCwzNjMuNDNDMTE3MC41NCwzNTEuNDMgMTE4MC40MywzNDEuOCAxMTkyLjgzLDM0MS44QzEyMDUuMzUsMzQxLjggMTIxNC45OCwzNTEuNDMgMTIxNC45OCwzNjMuNDNaTTExNzYuMDgsMzYzLjQzQzExNzYuMDgsMzczLjA2IDExODMuMiwzODAuNyAxMTkyLjk2LDM4MC43QzEyMDIuNDUsMzgwLjcgMTIwOS40NCwzNzMuMDUgMTIwOS40NCwzNjMuNTZDMTIwOS40NCwzNTMuOTMgMTIwMi40NSwzNDYuMTUgMTE5Mi44MiwzNDYuMTVDMTE4My4yLDM0Ni4xNiAxMTc2LjA4LDM1My45NCAxMTc2LjA4LDM2My40M1pNMTE4OS4zOSwzNzQuNzdMMTE4NC4zOCwzNzQuNzdMMTE4NC4zOCwzNTMuMTRDMTE4Ni4zNiwzNTIuNzQgMTE4OS4xMywzNTIuNDggMTE5Mi42OSwzNTIuNDhDMTE5Ni43OCwzNTIuNDggMTE5OC42MiwzNTMuMTQgMTIwMC4yMSwzNTQuMDZDMTIwMS40LDM1NC45OCAxMjAyLjMyLDM1Ni43IDEyMDIuMzIsMzU4LjgxQzEyMDIuMzIsMzYxLjE4IDEyMDAuNDcsMzYzLjAzIDExOTcuODQsMzYzLjgyTDExOTcuODQsMzY0LjA4QzExOTkuOTUsMzY0Ljg3IDEyMDEuMTQsMzY2LjQ1IDEyMDEuOCwzNjkuMzVDMTIwMi40NiwzNzIuNjUgMTIwMi44NSwzNzMuOTcgMTIwMy4zOCwzNzQuNzZMMTE5Ny45NywzNzQuNzZDMTE5Ny4zMSwzNzMuOTcgMTE5Ni45MiwzNzEuOTkgMTE5Ni4yNiwzNjkuNDlDMTE5NS44NiwzNjcuMTIgMTE5NC41NSwzNjYuMDYgMTE5MS43OCwzNjYuMDZMMTE4OS40MSwzNjYuMDZMMTE4OS40MSwzNzQuNzdMMTE4OS4zOSwzNzQuNzdaTTExODkuNTMsMzYyLjUxTDExOTEuOSwzNjIuNTFDMTE5NC42NywzNjIuNTEgMTE5Ni45MSwzNjEuNTkgMTE5Ni45MSwzNTkuMzRDMTE5Ni45MSwzNTcuMzYgMTE5NS40NiwzNTYuMDQgMTE5Mi4yOSwzNTYuMDRDMTE5MC45NywzNTYuMDQgMTE5MC4wNSwzNTYuMTcgMTE4OS41MiwzNTYuM0wxMTg5LjUyLDM2Mi41MUwxMTg5LjUzLDM2Mi41MVoiIHN0eWxlPSJmaWxsOnJnYigxNzIsMjIsNDQpO2ZpbGwtcnVsZTpub256ZXJvOyIvPgogICAgICAgIDwvZz4KICAgIDwvZz4KPC9zdmc+Cg==" alt="Vulkan Logo" width="50%">
+    </span>
+</div>
+<div id="header">
+<h1>Vulkan<sup>®</sup> 1.4.328 - A Specification (with all registered extensions)</h1>
+<div class="details">
+<span id="author" class="author">The Khronos<sup>®</sup> Vulkan  Working Group</span><br>
+<span id="revnumber">version 1.4.328,</span>
+<span id="revdate">2025-10-08 21:55:58Z</span>
+<br><span id="revremark">from git branch: Git branch not available commit: Git commit not available</span>
+</div>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="index.html">Titlepage</a></li><li><a href="chap1.html">1. Preamble</a></li>
+<li><a href="chap2.html">2. Introduction</a>
+<ul class="sectlevel2">
+<li><a href="chap2.html#introduction-conventions">2.1. Document Conventions</a></li>
+</ul>
+</li>
+<li><a href="chap3.html">3. Fundamentals</a>
+<ul class="sectlevel2">
+<li><a href="chap3.html#fundamentals-host-environment">3.1. Host and Device Environment</a></li>
+<li><a href="chap3.html#fundamentals-execmodel">3.2. Execution Model</a></li>
+<li><a href="chap3.html#fundamentals-objectmodel-overview">3.3. Object Model</a></li>
+<li><a href="chap3.html#fundamentals-abi">3.4. Application Binary Interface</a></li>
+<li><a href="chap3.html#fundamentals-commandsyntax">3.5. Command Syntax and Duration</a></li>
+<li><a href="chap3.html#fundamentals-threadingbehavior">3.6. Threading Behavior</a></li>
+<li><a href="chap3.html#fundamentals-validusage">3.7. Valid Usage</a></li>
+<li><a href="chap3.html#fundamentals-returncodes">3.8. <code>VkResult</code> Return Codes</a></li>
+<li><a href="chap3.html#fundamentals-numerics">3.9. Numeric Representation and Computation</a></li>
+<li><a href="chap3.html#fundamentals-fixedconv">3.10. Fixed-Point Data Conversions</a></li>
+<li><a href="chap3.html#fundamentals-strings">3.11. String Representation</a></li>
+<li><a href="chap3.html#fundamentals-common-objects">3.12. Common Object Types</a></li>
+<li><a href="chap3.html#fundamentals-api-name-aliases">3.13. API Name Aliases</a></li>
+</ul>
+</li>
+<li class="current"><a href="chap4.html">4. Initialization</a>
+<ul class="sectlevel2">
+<li class="current"><a href="chap4.html#initialization-functionpointers">4.1. Command Function Pointers</a></li>
+<li class="current"><a href="chap4.html#initialization-instances">4.2. Instances</a></li>
+</ul>
+</li>
+<li><a href="chap5.html">5. Devices and Queues</a>
+<ul class="sectlevel2">
+<li><a href="chap5.html#devsandqueues-physical-device-enumeration">5.1. Physical Devices</a></li>
+<li><a href="chap5.html#devsandqueues-devices">5.2. Devices</a></li>
+<li><a href="chap5.html#devsandqueues-queues">5.3. Queues</a></li>
+</ul>
+</li>
+<li><a href="chap6.html">6. Command Buffers</a>
+<ul class="sectlevel2">
+<li><a href="chap6.html#commandbuffers-lifecycle">6.1. Command Buffer Lifecycle</a></li>
+<li><a href="chap6.html#commandbuffers-pools">6.2. Command Pools</a></li>
+<li><a href="chap6.html#commandbuffer-allocation">6.3. Command Buffer Allocation and Management</a></li>
+<li><a href="chap6.html#commandbuffers-recording">6.4. Command Buffer Recording</a></li>
+<li><a href="chap6.html#commandbuffers-submission">6.5. Command Buffer Submission</a></li>
+<li><a href="chap6.html#commandbuffers-submission-progress">6.6. Queue Forward Progress</a></li>
+<li><a href="chap6.html#commandbuffers-secondary">6.7. Secondary Command Buffer Execution</a></li>
+<li><a href="chap6.html#commandbuffers-nested">6.8. Nested Command Buffers</a></li>
+<li><a href="chap6.html#commandbuffers-devicemask">6.9. Command Buffer Device Mask</a></li>
+</ul>
+</li>
+<li><a href="chap7.html">7. Synchronization and Cache Control</a>
+<ul class="sectlevel2">
+<li><a href="chap7.html#synchronization-dependencies">7.1. Execution and Memory Dependencies</a></li>
+<li><a href="chap7.html#synchronization-implicit">7.2. Implicit Synchronization Guarantees</a></li>
+<li><a href="chap7.html#synchronization-fences">7.3. Fences</a></li>
+<li><a href="chap7.html#synchronization-semaphores">7.4. Semaphores</a></li>
+<li><a href="chap7.html#synchronization-events">7.5. Events</a></li>
+<li><a href="chap7.html#synchronization-pipeline-barriers">7.6. Pipeline Barriers</a></li>
+<li><a href="chap7.html#synchronization-memory-barriers">7.7. Memory Barriers</a></li>
+<li><a href="chap7.html#synchronization-wait-idle">7.8. Wait Idle Operations</a></li>
+<li><a href="chap7.html#synchronization-submission-host-writes">7.9. Host Write Ordering Guarantees</a></li>
+<li><a href="chap7.html#synchronization-device-group">7.10. Synchronization and Multiple Physical Devices</a></li>
+<li><a href="chap7.html#calibrated-timestamps">7.11. Calibrated Timestamps</a></li>
+</ul>
+</li>
+<li><a href="chap8.html">8. Render Pass</a>
+<ul class="sectlevel2">
+<li><a href="chap8.html#renderpass-objects">8.1. Render Pass Objects</a></li>
+<li><a href="chap8.html#renderpass-creation">8.2. Render Pass Creation</a></li>
+<li><a href="chap8.html#renderpass-compatibility">8.3. Render Pass Compatibility</a></li>
+<li><a href="chap8.html#_framebuffers">8.4. Framebuffers</a></li>
+<li><a href="chap8.html#renderpass-load-operations">8.5. Render Pass Load Operations</a></li>
+<li><a href="chap8.html#renderpass-store-operations">8.6. Render Pass Store Operations</a></li>
+<li><a href="chap8.html#renderpass-resolve-operations">8.7. Render Pass Multisample Resolve Operations</a></li>
+<li><a href="chap8.html#renderpass-commands">8.8. Render Pass Commands</a></li>
+<li><a href="chap8.html#renderpass-creation-feedback">8.9. Render Pass Creation Feedback</a></li>
+<li><a href="chap8.html#common-render-pass-data-races">8.10. Common Render Pass Data Races (Informative)</a></li>
+<li><a href="chap8.html#renderpass-tile-shading">8.11. Tile Shading Render Pass</a></li>
+</ul>
+</li>
+<li><a href="chap9.html">9. Shaders</a>
+<ul class="sectlevel2">
+<li><a href="chap9.html#shaders-objects">9.1. Shader Objects</a></li>
+<li><a href="chap9.html#shader-modules">9.2. Shader Modules</a></li>
+<li><a href="chap9.html#shaders-identifiers">9.3. Shader Module Identifiers</a></li>
+<li><a href="chap9.html#shaders-binding">9.4. Binding Shaders</a></li>
+<li><a href="chap9.html#shaders-execution">9.5. Shader Execution</a></li>
+<li><a href="chap9.html#shaders-execution-memory-access-bounds">9.6. Shader Out-of-Bounds Memory Access</a></li>
+<li><a href="chap9.html#shaders-execution-memory-ordering">9.7. Shader Memory Access Ordering</a></li>
+<li><a href="chap9.html#shaders-inputs">9.8. Shader Inputs and Outputs</a></li>
+<li><a href="chap9.html#shaders-task">9.9. Task Shaders</a></li>
+<li><a href="chap9.html#shaders-mesh">9.10. Mesh Shaders</a></li>
+<li><a href="chap9.html#shaders-cluster-culling">9.11. Cluster Culling Shaders</a></li>
+<li><a href="chap9.html#shaders-vertex">9.12. Vertex Shaders</a></li>
+<li><a href="chap9.html#shaders-tessellation-control">9.13. Tessellation Control Shaders</a></li>
+<li><a href="chap9.html#shaders-tessellation-evaluation">9.14. Tessellation Evaluation Shaders</a></li>
+<li><a href="chap9.html#shaders-geometry">9.15. Geometry Shaders</a></li>
+<li><a href="chap9.html#shaders-fragment">9.16. Fragment Shaders</a></li>
+<li><a href="chap9.html#shaders-compute">9.17. Compute Shaders</a></li>
+<li><a href="chap9.html#shaders-ray-generation">9.18. Ray Generation Shaders</a></li>
+<li><a href="chap9.html#shaders-intersection">9.19. Intersection Shaders</a></li>
+<li><a href="chap9.html#shaders-any-hit">9.20. Any-Hit Shaders</a></li>
+<li><a href="chap9.html#shaders-closest-hit">9.21. Closest Hit Shaders</a></li>
+<li><a href="chap9.html#shaders-miss">9.22. Miss Shaders</a></li>
+<li><a href="chap9.html#shaders-callable">9.23. Callable Shaders</a></li>
+<li><a href="chap9.html#shaders-interpolation-decorations">9.24. Interpolation Decorations</a></li>
+<li><a href="chap9.html#shaders-staticuse">9.25. Static Use</a></li>
+<li><a href="chap9.html#shaders-scope">9.26. Scope</a></li>
+<li><a href="chap9.html#shaders-group-operations">9.27. Group Operations</a></li>
+<li><a href="chap9.html#shaders-quad-operations">9.28. Quad Group Operations</a></li>
+<li><a href="chap9.html#shaders-derivative-operations">9.29. Derivative Operations</a></li>
+<li><a href="chap9.html#shaders-helper-invocations">9.30. Helper Invocations</a></li>
+<li><a href="chap9.html#cooperative-matrices">9.31. Cooperative Matrices</a></li>
+<li><a href="chap9.html#_cooperative_vectors">9.32. Cooperative Vectors</a></li>
+<li><a href="chap9.html#shaders-validation-cache">9.33. Validation Cache</a></li>
+<li><a href="chap9.html#cuda-modules">9.34. CUDA Modules</a></li>
+</ul>
+</li>
+<li><a href="chap10.html">10. Pipelines</a>
+<ul class="sectlevel2">
+<li><a href="chap10.html#pipelines-multiple">10.1. Multiple Pipeline Creation</a></li>
+<li><a href="chap10.html#pipelines-creation-flags">10.2. Pipeline Creation Flags</a></li>
+<li><a href="chap10.html#pipelines-compute">10.3. Compute Pipelines</a></li>
+<li><a href="chap10.html#pipelines-graphics">10.4. Graphics Pipelines</a></li>
+<li><a href="chap10.html#pipelines-ray-tracing">10.5. Ray Tracing Pipelines</a></li>
+<li><a href="chap10.html#pipelines-destruction">10.6. Pipeline Destruction</a></li>
+<li><a href="chap10.html#pipelines-pipeline-derivatives">10.7. Pipeline Derivatives</a></li>
+<li><a href="chap10.html#pipelines-cache">10.8. Pipeline Cache</a></li>
+<li><a href="chap10.html#pipelines-binaries">10.9. Pipeline Binaries</a></li>
+<li><a href="chap10.html#pipelines-specialization-constants">10.10. Specialization Constants</a></li>
+<li><a href="chap10.html#pipelines-library">10.11. Pipeline Libraries</a></li>
+<li><a href="chap10.html#pipelines-binding">10.12. Pipeline Binding</a></li>
+<li><a href="chap10.html#pipelines-dynamic-state">10.13. Dynamic State</a></li>
+<li><a href="chap10.html#pipelines-shader-information">10.14. Pipeline Properties and Shader Information</a></li>
+<li><a href="chap10.html#pipelines-compiler-control">10.15. Pipeline Compiler Control</a></li>
+<li><a href="chap10.html#pipelines-creation-feedback">10.16. Pipeline Creation Feedback</a></li>
+</ul>
+</li>
+<li><a href="chap11.html">11. Memory Allocation</a>
+<ul class="sectlevel2">
+<li><a href="chap11.html#memory-host">11.1. Host Memory</a></li>
+<li><a href="chap11.html#memory-device">11.2. Device Memory</a></li>
+</ul>
+</li>
+<li><a href="chap12.html">12. Resource Creation</a>
+<ul class="sectlevel2">
+<li><a href="chap12.html#resources-buffers">12.1. Buffers</a></li>
+<li><a href="chap12.html#resources-buffer-views">12.2. Buffer Views</a></li>
+<li><a href="chap12.html#resources-buffer-device-addresses">12.3. Buffer Device Addresses</a></li>
+<li><a href="chap12.html#resources-images">12.4. Images</a></li>
+<li><a href="chap12.html#resources-image-layouts">12.5. Image Layouts</a></li>
+<li><a href="chap12.html#resources-image-views">12.6. Image Views</a></li>
+<li><a href="chap12.html#resources-acceleration-structures">12.7. Acceleration Structures</a></li>
+<li><a href="chap12.html#resources-micromaps">12.8. Micromaps</a></li>
+<li><a href="chap12.html#resources-association">12.9. Resource Memory Association</a></li>
+<li><a href="chap12.html#resources-sharing">12.10. Resource Sharing Mode</a></li>
+<li><a href="chap12.html#resources-memory-aliasing">12.11. Memory Aliasing</a></li>
+<li><a href="chap12.html#resources-buffer-collection-fuchsia">12.12. Buffer Collections</a></li>
+<li><a href="chap12.html#resources-tensors">12.13. Tensors</a></li>
+<li><a href="chap12.html#resources-tensor-views">12.14. Tensor Views</a></li>
+</ul>
+</li>
+<li><a href="chap13.html">13. Images</a>
+<ul class="sectlevel2">
+<li><a href="chap13.html#images-coordinate-validation">13.1. Image Coordinate Validation</a></li>
+<li><a href="chap13.html#images-reads">13.2. Image Reads</a></li>
+<li><a href="chap13.html#images-writes">13.3. Image Writes</a></li>
+</ul>
+</li>
+<li><a href="chap14.html">14. Samplers</a>
+<ul class="sectlevel2">
+<li><a href="chap14.html#samplers-YCbCr-conversion">14.1. Sampler Y′C<sub>B</sub>C<sub>R</sub> Conversion</a></li>
+</ul>
+</li>
+<li><a href="chap15.html">15. Resource Descriptors</a>
+<ul class="sectlevel2">
+<li><a href="chap15.html#descriptorsets-types">15.1. Descriptor Types</a></li>
+<li><a href="chap15.html#descriptorsets-sets">15.2. Descriptor Sets</a></li>
+<li><a href="chap15.html#descriptorsets-physical-storage-buffer">15.3. Physical Storage Buffer Access</a></li>
+<li><a href="chap15.html#descriptorbuffers">15.4. Descriptor Buffers</a></li>
+</ul>
+</li>
+<li><a href="chap16.html">16. Shader Interfaces</a>
+<ul class="sectlevel2">
+<li><a href="chap16.html#interfaces-iointerfaces">16.1. Shader Input and Output Interfaces</a></li>
+<li><a href="chap16.html#interfaces-vertexinput">16.2. Vertex Input Interface</a></li>
+<li><a href="chap16.html#interfaces-fragmentoutput">16.3. Fragment Output Interface</a></li>
+<li><a href="chap16.html#interfaces-legacy-dithering">16.4. Legacy Dithering</a></li>
+<li><a href="chap16.html#interfaces-fragmenttileimage">16.5. Fragment Tile Image Interface</a></li>
+<li><a href="chap16.html#interfaces-tile-attachment">16.6. Tile Attachment Interface</a></li>
+<li><a href="chap16.html#interfaces-inputattachment">16.7. Fragment Input Attachment Interface</a></li>
+<li><a href="chap16.html#interfaces-raypipeline">16.8. Ray Tracing Pipeline Interface</a></li>
+<li><a href="chap16.html#interfaces-resources">16.9. Shader Resource Interface</a></li>
+<li><a href="chap16.html#interfaces-builtin-variables">16.10. Built-In Variables</a></li>
+</ul>
+</li>
+<li><a href="chap17.html">17. Image Operations</a>
+<ul class="sectlevel2">
+<li><a href="chap17.html#_image_operations_overview">17.1. Image Operations Overview</a></li>
+<li><a href="chap17.html#textures-input">17.2. Sampling Operations</a></li>
+<li><a href="chap17.html#textures-normalized-operations">17.3. Normalized Texel Coordinate Operations</a></li>
+<li><a href="chap17.html#textures-unnormalized-operations">17.4. Unnormalized Texel Coordinate Operations</a></li>
+<li><a href="chap17.html#textures-integer-coordinate-operations">17.5. Integer Texel Coordinate Operations</a></li>
+<li><a href="chap17.html#textures-sample-operations">17.6. Image Sample Operations</a></li>
+<li><a href="chap17.html#textures-footprint">17.7. Texel Footprint Evaluation</a></li>
+<li><a href="chap17.html#textures-weightimage">17.8. Weight Image Sampling</a></li>
+<li><a href="chap17.html#textures-blockmatch">17.9. Block Matching</a></li>
+<li><a href="chap17.html#textures-boxfilter">17.10. Box Filter Sampling</a></li>
+<li><a href="chap17.html#textures-instructions">17.11. Image Operation Steps</a></li>
+<li><a href="chap17.html#textures-queries">17.12. Image Query Instructions</a></li>
+</ul>
+</li>
+<li><a href="chap18.html">18. Fragment Density Map Operations</a>
+<ul class="sectlevel2">
+<li><a href="chap18.html#_fragment_density_map_operations_overview">18.1. Fragment Density Map Operations Overview</a></li>
+<li><a href="chap18.html#fragmentdensitymap-fetch-density-value">18.2. Fetch Density Value</a></li>
+<li><a href="chap18.html#fragmentdensitymap-conversion-to-fragment-area">18.3. Fragment Area Conversion</a></li>
+</ul>
+</li>
+<li><a href="chap19.html">19. Tensor Operations</a>
+<ul class="sectlevel2">
+<li><a href="chap19.html#_tensor_operations_overview">19.1. Tensor Operations Overview</a></li>
+<li><a href="chap19.html#_tensor_element_input_operations">19.2. Tensor Element Input Operations</a></li>
+<li><a href="chap19.html#_tensor_element_output_operations">19.3. Tensor Element Output Operations</a></li>
+<li><a href="chap19.html#tensors-queries">19.4. Tensor Query Instructions</a></li>
+</ul>
+</li>
+<li><a href="chap20.html">20. Queries</a>
+<ul class="sectlevel2">
+<li><a href="chap20.html#queries-pools">20.1. Query Pools</a></li>
+<li><a href="chap20.html#queries-operation">20.2. Query Operation</a></li>
+<li><a href="chap20.html#queries-occlusion">20.3. Occlusion Queries</a></li>
+<li><a href="chap20.html#queries-pipestats">20.4. Pipeline Statistics Queries</a></li>
+<li><a href="chap20.html#queries-timestamps">20.5. Timestamp Queries</a></li>
+<li><a href="chap20.html#queries-performance">20.6. Performance Queries</a></li>
+<li><a href="chap20.html#queries-transform-feedback">20.7. Transform Feedback Queries</a></li>
+<li><a href="chap20.html#queries-primitives-generated">20.8. Primitives Generated Queries</a></li>
+<li><a href="chap20.html#queries-mesh-shader">20.9. Mesh Shader Queries</a></li>
+<li><a href="chap20.html#queries-performance-intel">20.10. Intel Performance Queries</a></li>
+<li><a href="chap20.html#queries-result-status-only">20.11. Result Status Queries</a></li>
+<li><a href="chap20.html#queries-video-encode-feedback">20.12. Video Encode Feedback Queries</a></li>
+</ul>
+</li>
+<li><a href="chap21.html">21. Clear Commands</a>
+<ul class="sectlevel2">
+<li><a href="chap21.html#clears-outside">21.1. Clearing Images Outside a Render Pass Instance</a></li>
+<li><a href="chap21.html#clears-inside">21.2. Clearing Images Inside a Render Pass Instance</a></li>
+<li><a href="chap21.html#clears-values">21.3. Clear Values</a></li>
+<li><a href="chap21.html#clears-filling-buffers">21.4. Filling Buffers</a></li>
+<li><a href="chap21.html#clears-updating-buffers">21.5. Updating Buffers</a></li>
+</ul>
+</li>
+<li><a href="chap22.html">22. Copy Commands</a>
+<ul class="sectlevel2">
+<li><a href="chap22.html#copies-buffers">22.1. Copying Data Between Buffers</a></li>
+<li><a href="chap22.html#copies-images">22.2. Copying Data Between Images</a></li>
+<li><a href="chap22.html#copies-buffers-images">22.3. Copying Data Between Buffers and Images</a></li>
+<li><a href="chap22.html#indirect-copies">22.4. Indirect Copies</a></li>
+<li><a href="chap22.html#copies-imagescaling">22.5. Image Copies With Scaling</a></li>
+<li><a href="chap22.html#copies-resolve">22.6. Resolving Multisample Images</a></li>
+<li><a href="chap22.html#copies-buffer-markers">22.7. Buffer Markers</a></li>
+<li><a href="chap22.html#copies-tensors">22.8. Copying Data Between Tensors</a></li>
+</ul>
+</li>
+<li><a href="chap23.html">23. Drawing Commands</a>
+<ul class="sectlevel2">
+<li><a href="chap23.html#drawing-primitive-topologies">23.1. Primitive Topologies</a></li>
+<li><a href="chap23.html#drawing-effective-primitive-topology">23.2. Effective Primitive Topology</a></li>
+<li><a href="chap23.html#drawing-primitive-order">23.3. Primitive Order</a></li>
+<li><a href="chap23.html#drawing-primitive-shading">23.4. Programmable Primitive Shading</a></li>
+<li><a href="chap23.html#drawing-conditional-rendering">23.5. Conditional Rendering</a></li>
+<li><a href="chap23.html#drawing-mesh-shading">23.6. Programmable Mesh Shading</a></li>
+<li><a href="chap23.html#drawing-cluster-culling-shading">23.7. Programmable Cluster Culling Shading</a></li>
+</ul>
+</li>
+<li><a href="chap24.html">24. Fixed-Function Vertex Processing</a>
+<ul class="sectlevel2">
+<li><a href="chap24.html#fxvertex-attrib">24.1. Vertex Attributes</a></li>
+<li><a href="chap24.html#fxvertex-input">24.2. Vertex Input Description</a></li>
+<li><a href="chap24.html#fxvertex-attribute_divisor">24.3. Vertex Attribute Divisor in Instanced Rendering</a></li>
+<li><a href="chap24.html#fxvertex-input-address-calculation">24.4. Vertex Input Address Calculation</a></li>
+</ul>
+</li>
+<li><a href="chap25.html">25. Tessellation</a>
+<ul class="sectlevel2">
+<li><a href="chap25.html#_tessellator">25.1. Tessellator</a></li>
+<li><a href="chap25.html#_tessellator_patch_discard">25.2. Tessellator Patch Discard</a></li>
+<li><a href="chap25.html#tessellation-tessellator-spacing">25.3. Tessellator Spacing</a></li>
+<li><a href="chap25.html#tessellation-primitive-order">25.4. Tessellation Primitive Ordering</a></li>
+<li><a href="chap25.html#tessellation-vertex-winding-order">25.5. Tessellator Vertex Winding Order</a></li>
+<li><a href="chap25.html#tessellation-triangle-tessellation">25.6. Triangle Tessellation</a></li>
+<li><a href="chap25.html#tessellation-quad-tessellation">25.7. Quad Tessellation</a></li>
+<li><a href="chap25.html#tessellation-isoline-tessellation">25.8. Isoline Tessellation</a></li>
+<li><a href="chap25.html#tessellation-point-mode">25.9. Tessellation Point Mode</a></li>
+<li><a href="chap25.html#_tessellation_pipeline_state">25.10. Tessellation Pipeline State</a></li>
+</ul>
+</li>
+<li><a href="chap26.html">26. Geometry Shading</a>
+<ul class="sectlevel2">
+<li><a href="chap26.html#geometry-input">26.1. Geometry Shader Input Primitives</a></li>
+<li><a href="chap26.html#geometry-output">26.2. Geometry Shader Output Primitives</a></li>
+<li><a href="chap26.html#geometry-invocations">26.3. Multiple Invocations of Geometry Shaders</a></li>
+<li><a href="chap26.html#geometry-ordering">26.4. Geometry Shader Primitive Ordering</a></li>
+<li><a href="chap26.html#geometry-passthrough">26.5. Geometry Shader Passthrough</a></li>
+</ul>
+</li>
+<li><a href="chap27.html">27. Mesh Shading</a>
+<ul class="sectlevel2">
+<li><a href="chap27.html#mesh-task-input">27.1. Task Shader Input</a></li>
+<li><a href="chap27.html#mesh-task-output">27.2. Task Shader Output</a></li>
+<li><a href="chap27.html#mesh-generation">27.3. Mesh Generation</a></li>
+<li><a href="chap27.html#mesh-input">27.4. Mesh Shader Input</a></li>
+<li><a href="chap27.html#mesh-output">27.5. Mesh Shader Output</a></li>
+<li><a href="chap27.html#mesh-output-perview">27.6. Mesh Shader Per-View Outputs</a></li>
+<li><a href="chap27.html#mesh-ordering">27.7. Mesh Shader Primitive Ordering</a></li>
+</ul>
+</li>
+<li><a href="chap28.html">28. Cluster Culling Shading</a>
+<ul class="sectlevel2">
+<li><a href="chap28.html#cluster-culling-input">28.1. Cluster Culling Shader Input</a></li>
+<li><a href="chap28.html#cluster-culling-output">28.2. Cluster Culling Shader Output</a></li>
+<li><a href="chap28.html#cluster-culling-cluster-ordering">28.3. Cluster Culling Shader Cluster Ordering</a></li>
+<li><a href="chap28.html#cluster-culling-primitive-ordering">28.4. Cluster Culling Shader Primitive Ordering</a></li>
+</ul>
+</li>
+<li><a href="chap29.html">29. Fixed-Function Vertex Post-Processing</a>
+<ul class="sectlevel2">
+<li><a href="chap29.html#vertexpostproc-transform-feedback">29.1. Transform Feedback</a></li>
+<li><a href="chap29.html#vertexpostproc-viewport-swizzle">29.2. Viewport Swizzle</a></li>
+<li><a href="chap29.html#vertexpostproc-flatshading">29.3. Flat Shading</a></li>
+<li><a href="chap29.html#vertexpostproc-clipping">29.4. Primitive Clipping</a></li>
+<li><a href="chap29.html#vertexpostproc-clipping-shader-outputs">29.5. Clipping Shader Outputs</a></li>
+<li><a href="chap29.html#vertexpostproc-viewportwscaling">29.6. Controlling Viewport W Scaling</a></li>
+<li><a href="chap29.html#vertexpostproc-coord-transform">29.7. Coordinate Transformations</a></li>
+<li><a href="chap29.html#vertexpostproc-renderpass-transform">29.8. Render Pass Transform</a></li>
+<li><a href="chap29.html#vertexpostproc-viewport">29.9. Controlling the Viewport</a></li>
+</ul>
+</li>
+<li><a href="chap30.html">30. Rasterization</a>
+<ul class="sectlevel2">
+<li><a href="chap30.html#primsrast-discard">30.1. Discarding Primitives Before Rasterization</a></li>
+<li><a href="chap30.html#primsrast-stream">30.2. Controlling the Vertex Stream Used for Rasterization</a></li>
+<li><a href="chap30.html#primsrast-order">30.3. Rasterization Order</a></li>
+<li><a href="chap30.html#primsrast-multisampling">30.4. Multisampling</a></li>
+<li><a href="chap30.html#primsrast-samplelocations">30.5. Custom Sample Locations</a></li>
+<li><a href="chap30.html#primsrast-fragment-shading-rate">30.6. Fragment Shading Rates</a></li>
+<li><a href="chap30.html#primsrast-shading-rate-image">30.7. Shading Rate Image</a></li>
+<li><a href="chap30.html#primsrast-sampleshading">30.8. Sample Shading</a></li>
+<li><a href="chap30.html#primsrast-barycentric">30.9. Barycentric Interpolation</a></li>
+<li><a href="chap30.html#primsrast-points">30.10. Points</a></li>
+<li><a href="chap30.html#primsrast-lines">30.11. Line Segments</a></li>
+<li><a href="chap30.html#primsrast-polygons">30.12. Polygons</a></li>
+</ul>
+</li>
+<li><a href="chap31.html">31. Fragment Operations</a>
+<ul class="sectlevel2">
+<li><a href="chap31.html#fragops-discard-rectangles">31.1. Discard Rectangles Test</a></li>
+<li><a href="chap31.html#fragops-scissor">31.2. Scissor Test</a></li>
+<li><a href="chap31.html#fragops-exclusive-scissor">31.3. Exclusive Scissor Test</a></li>
+<li><a href="chap31.html#fragops-samplemask">31.4. Sample Mask Test</a></li>
+<li><a href="chap31.html#fragops-shader">31.5. Fragment Shading</a></li>
+<li><a href="chap31.html#fragops-covg">31.6. Multisample Coverage</a></li>
+<li><a href="chap31.html#fragops-ds-state">31.7. Depth and Stencil Operations</a></li>
+<li><a href="chap31.html#fragops-dbt">31.8. Depth Bounds Test</a></li>
+<li><a href="chap31.html#fragops-stencil">31.9. Stencil Test</a></li>
+<li><a href="chap31.html#fragops-depth">31.10. Depth Test</a></li>
+<li><a href="chap31.html#fragops-rep-frag-test">31.11. Representative Fragment Test</a></li>
+<li><a href="chap31.html#fragops-samplecount">31.12. Sample Counting</a></li>
+<li><a href="chap31.html#fragops-coverage-to-color">31.13. Fragment Coverage to Color</a></li>
+<li><a href="chap31.html#fragops-coverage-reduction">31.14. Coverage Reduction</a></li>
+</ul>
+</li>
+<li><a href="chap32.html">32. The Framebuffer</a>
+<ul class="sectlevel2">
+<li><a href="chap32.html#framebuffer-blending">32.1. Blending</a></li>
+<li><a href="chap32.html#framebuffer-logicop">32.2. Logical Operations</a></li>
+<li><a href="chap32.html#framebuffer-color-write-mask">32.3. Color Write Mask</a></li>
+<li><a href="chap32.html#framebuffer-color-write-enable">32.4. Color Write Enable</a></li>
+<li><a href="chap32.html#framebuffer-queries">32.5. Framebuffer Query Instructions</a></li>
+</ul>
+</li>
+<li><a href="chap33.html">33. Dispatching Commands</a>
+<ul class="sectlevel2">
+<li><a href="chap33.html#cudadispatch">33.1. Dispatch Command for CUDA PTX Kernels</a></li>
+</ul>
+</li>
+<li><a href="chap34.html">34. Device-Generated Commands</a>
+<ul class="sectlevel2">
+<li><a href="chap34.html#indirectmdslayout">34.1. Indirect Commands Layout</a></li>
+<li><a href="chap34.html#_indirect_commands_generation_and_execution">34.2. Indirect Commands Generation and Execution</a></li>
+</ul>
+</li>
+<li><a href="chap35.html">35. Sparse Resources</a>
+<ul class="sectlevel2">
+<li><a href="chap35.html#sparsememory-sparseresourcefeatures">35.1. Sparse Resource Features</a></li>
+<li><a href="chap35.html#sparsememory-fully-resident">35.2. Sparse Buffers and Fully-Resident Images</a></li>
+<li><a href="chap35.html#sparsememory-partially-resident-buffers">35.3. Sparse Partially-Resident Buffers</a></li>
+<li><a href="chap35.html#sparsememory-partially-resident-images">35.4. Sparse Partially-Resident Images</a></li>
+<li><a href="chap35.html#sparsememory-sparse-memory-aliasing">35.5. Sparse Memory Aliasing</a></li>
+<li><a href="chap35.html#_sparse_resource_implementation_guidelines_informative">35.6. Sparse Resource Implementation Guidelines (Informative)</a></li>
+<li><a href="chap35.html#sparsememory-resourceapi">35.7. Sparse Resource API</a></li>
+</ul>
+</li>
+<li><a href="chap36.html">36. Window System Integration (WSI)</a>
+<ul class="sectlevel2">
+<li><a href="chap36.html#_wsi_platform">36.1. WSI Platform</a></li>
+<li><a href="chap36.html#_wsi_surface">36.2. WSI Surface</a></li>
+<li><a href="chap36.html#display">36.3. Presenting Directly to Display Devices</a></li>
+<li><a href="chap36.html#_querying_for_wsi_support">36.4. Querying for WSI Support</a></li>
+<li><a href="chap36.html#_surface_queries">36.5. Surface Queries</a></li>
+<li><a href="chap36.html#_full_screen_exclusive_control">36.6. Full Screen Exclusive Control</a></li>
+<li><a href="chap36.html#_device_group_queries">36.7. Device Group Queries</a></li>
+<li><a href="chap36.html#_display_timing_queries">36.8. Display Timing Queries</a></li>
+<li><a href="chap36.html#present-wait2">36.9. Present Wait</a></li>
+<li><a href="chap36.html#wsi-swapchain">36.10. WSI Swapchain</a></li>
+<li><a href="chap36.html#_hdr_metadata">36.11. HDR Metadata</a></li>
+<li><a href="chap36.html#lag-control">36.12. Lag Control</a></li>
+<li><a href="chap36.html#present-barrier">36.13. Present Barrier</a></li>
+</ul>
+</li>
+<li><a href="chap37.html">37. Deferred Host Operations</a>
+<ul class="sectlevel2">
+<li><a href="chap37.html#deferred-host-operations-requesting">37.1. Requesting Deferral</a></li>
+<li><a href="chap37.html#_deferred_host_operations_api">37.2. Deferred Host Operations API</a></li>
+</ul>
+</li>
+<li><a href="chap38.html">38. Private Data</a></li>
+<li><a href="chap39.html">39. Acceleration Structures</a>
+<ul class="sectlevel2">
+<li><a href="chap39.html#acceleration-structure-def">39.1. Acceleration Structures</a></li>
+<li><a href="chap39.html#cluster-geometry">39.2. Cluster Level Acceleration Structures</a></li>
+<li><a href="chap39.html#partitioned-tlas">39.3. Partitioned Top Level Acceleration Structures</a></li>
+<li><a href="chap39.html#host-acceleration-structure">39.4. Host Acceleration Structure Operations</a></li>
+</ul>
+</li>
+<li><a href="chap40.html">40. Compressed triangle data</a>
+<ul class="sectlevel2">
+<li><a href="chap40.html#dense-geometry-format">40.1. Dense Geometry Format Version 1 (DGF1)</a></li>
+</ul>
+</li>
+<li><a href="chap41.html">41. Micromap</a>
+<ul class="sectlevel2">
+<li><a href="chap41.html#micromap-def">41.1. Micromaps</a></li>
+<li><a href="chap41.html#host-micromap">41.2. Host Micromap Operations</a></li>
+</ul>
+</li>
+<li><a href="chap42.html">42. Ray Traversal</a>
+<ul class="sectlevel2">
+<li><a href="chap42.html#ray-intersection-candidate-determination">42.1. Ray Intersection Candidate Determination</a></li>
+<li><a href="chap42.html#ray-intersection-culling">42.2. Ray Intersection Culling</a></li>
+<li><a href="chap42.html#ray-intersection-confirmation">42.3. Ray Intersection Confirmation</a></li>
+<li><a href="chap42.html#ray-closest-hit-determination">42.4. Ray Closest Hit Determination</a></li>
+<li><a href="chap42.html#ray-result-determination">42.5. Ray Result Determination</a></li>
+</ul>
+</li>
+<li><a href="chap43.html">43. Ray Tracing</a>
+<ul class="sectlevel2">
+<li><a href="chap43.html#ray-tracing-shader-call">43.1. Shader Call Instructions</a></li>
+<li><a href="chap43.html#ray-tracing-commands">43.2. Ray Tracing Commands</a></li>
+<li><a href="chap43.html#shader-binding-table">43.3. Shader Binding Table</a></li>
+<li><a href="chap43.html#ray-tracing-pipeline-stack">43.4. Ray Tracing Pipeline Stack</a></li>
+<li><a href="chap43.html#ray-tracing-capture-replay">43.5. Ray Tracing Capture Replay</a></li>
+<li><a href="chap43.html#ray-tracing-validation">43.6. Ray Tracing Validation</a></li>
+</ul>
+</li>
+<li><a href="chap44.html">44. Memory Decompression</a></li>
+<li><a href="chap45.html">45. Video Coding</a>
+<ul class="sectlevel2">
+<li><a href="chap45.html#video-picture-resources">45.1. Video Picture Resources</a></li>
+<li><a href="chap45.html#dpb">45.2. Decoded Picture Buffer</a></li>
+<li><a href="chap45.html#video-profiles">45.3. Video Profiles</a></li>
+<li><a href="chap45.html#video-capabilities">45.4. Video Capabilities</a></li>
+<li><a href="chap45.html#video-session">45.5. Video Sessions</a></li>
+<li><a href="chap45.html#video-profile-compatibility">45.6. Video Profile Compatibility</a></li>
+<li><a href="chap45.html#video-session-parameters">45.7. Video Session Parameters</a></li>
+<li><a href="chap45.html#video-coding-scope">45.8. Video Coding Scope</a></li>
+<li><a href="chap45.html#video-coding-control">45.9. Video Coding Control</a></li>
+<li><a href="chap45.html#video-inline-queries">45.10. Inline Queries</a></li>
+<li><a href="chap45.html#video-decode-operations">45.11. Video Decode Operations</a></li>
+<li><a href="chap45.html#decode-h264">45.12. H.264 Decode Operations</a></li>
+<li><a href="chap45.html#decode-h265">45.13. H.265 Decode Operations</a></li>
+<li><a href="chap45.html#decode-vp9">45.14. VP9 Decode Operations</a></li>
+<li><a href="chap45.html#decode-av1">45.15. AV1 Decode Operations</a></li>
+<li><a href="chap45.html#video-encode-operations">45.16. Video Encode Operations</a></li>
+<li><a href="chap45.html#encode-intra-refresh">45.17. Video Encode Intra Refresh</a></li>
+<li><a href="chap45.html#encode-rate-control">45.18. Video Encode Rate Control</a></li>
+<li><a href="chap45.html#encode-quantization-map">45.19. Video Encode Quantization Maps</a></li>
+<li><a href="chap45.html#encode-rgb-conversion">45.20. Video Encode R′G′B′ Conversion</a></li>
+<li><a href="chap45.html#encode-h264">45.21. H.264 Encode Operations</a></li>
+<li><a href="chap45.html#encode-h265">45.22. H.265 Encode Operations</a></li>
+<li><a href="chap45.html#encode-av1">45.23. AV1 Encode Operations</a></li>
+</ul>
+</li>
+<li><a href="chap46.html">46. Optical Flow</a>
+<ul class="sectlevel2">
+<li><a href="chap46.html#_optical_flow_queues">46.1. Optical Flow Queues</a></li>
+<li><a href="chap46.html#opticalflow-formats">46.2. Optical Flow Image Formats</a></li>
+<li><a href="chap46.html#opticalflow-session">46.3. Optical Flow Session</a></li>
+</ul>
+</li>
+<li><a href="chap47.html">47. Execution Graphs</a>
+<ul class="sectlevel2">
+<li><a href="chap47.html#_pipeline_creation">47.1. Pipeline Creation</a></li>
+<li><a href="chap47.html#_initializing_scratch_memory">47.2. Initializing Scratch Memory</a></li>
+<li><a href="chap47.html#_dispatching_a_graph">47.3. Dispatching a Graph</a></li>
+<li><a href="chap47.html#_shader_enqueue">47.4. Shader Enqueue</a></li>
+</ul>
+</li>
+<li><a href="chap48.html">48. External Compute Queues</a></li>
+<li><a href="chap49.html">49. Data graphs</a>
+<ul class="sectlevel2">
+<li><a href="chap49.html#graphs-pipelines">49.1. Pipeline Creation</a></li>
+<li><a href="chap49.html#_sessions">49.2. Sessions</a></li>
+<li><a href="chap49.html#_dispatch">49.3. Dispatch</a></li>
+<li><a href="chap49.html#graphs-properties">49.4. Properties</a></li>
+<li><a href="chap49.html#graphs-processing-engines">49.5. Processing Engines</a></li>
+<li><a href="chap49.html#graphs-operations">49.6. Operations</a></li>
+</ul>
+</li>
+<li><a href="chap50.html">50. Extending Vulkan</a>
+<ul class="sectlevel2">
+<li><a href="chap50.html#extendingvulkan-functionalitylevels">50.1. Functionality Levels</a></li>
+<li><a href="chap50.html#extendingvulkan-instanceanddeviceversions">50.2. Instance and Device Versions</a></li>
+<li><a href="chap50.html#extendingvulkan-coreversions">50.3. Core Versions</a></li>
+<li><a href="chap50.html#extendingvulkan-layers">50.4. Layers</a></li>
+<li><a href="chap50.html#extendingvulkan-extensions">50.5. Extensions</a></li>
+<li><a href="chap50.html#extendingvulkan-extensions-extensiondependencies">50.6. Extension Dependencies</a></li>
+<li><a href="chap50.html#_compatibility_guarantees_informative">50.7. Compatibility Guarantees (Informative)</a></li>
+</ul>
+</li>
+<li><a href="chap51.html">51. Features</a>
+<ul class="sectlevel2">
+<li><a href="chap51.html#features-requirements">51.1. Feature Requirements</a></li>
+<li><a href="chap51.html#profile-features">51.2. Profile Features</a></li>
+</ul>
+</li>
+<li><a href="chap52.html">52. Limits</a>
+<ul class="sectlevel2">
+<li><a href="chap52.html#limits-minmax">52.1. Limit Requirements</a></li>
+<li><a href="chap52.html#limits-multisample">52.2. Additional Multisampling Capabilities</a></li>
+<li><a href="chap52.html#profile-limits">52.3. Profile Limits</a></li>
+</ul>
+</li>
+<li><a href="chap53.html">53. Formats</a>
+<ul class="sectlevel2">
+<li><a href="chap53.html#formats-definition">53.1. Format Definition</a></li>
+<li><a href="chap53.html#formats-properties">53.2. Format Properties</a></li>
+<li><a href="chap53.html#features-required-format-support">53.3. Required Format Support</a></li>
+</ul>
+</li>
+<li><a href="chap54.html">54. Additional Capabilities</a>
+<ul class="sectlevel2">
+<li><a href="chap54.html#capabilities-image">54.1. Additional Image Capabilities</a></li>
+<li><a href="chap54.html#capabilities-buffer">54.2. Additional Buffer Capabilities</a></li>
+<li><a href="chap54.html#capabilities-tensor">54.3. Additional Tensor Capabilities</a></li>
+<li><a href="chap54.html#capabilities-semaphore">54.4. Optional Semaphore Capabilities</a></li>
+<li><a href="chap54.html#capabilities-fence">54.5. Optional Fence Capabilities</a></li>
+<li><a href="chap54.html#features-timestamp-calibration">54.6. Timestamp Calibration Capabilities</a></li>
+</ul>
+</li>
+<li><a href="chap55.html">55. Debugging</a>
+<ul class="sectlevel2">
+<li><a href="chap55.html#debugging-debug-utils">55.1. Debug Utilities</a></li>
+<li><a href="chap55.html#debugging-debug-markers">55.2. Debug Markers</a></li>
+<li><a href="chap55.html#debugging-debug-report-callbacks">55.3. Debug Report Callbacks</a></li>
+<li><a href="chap55.html#_device_loss_debugging">55.4. Device Loss Debugging</a></li>
+<li><a href="chap55.html#debugging-tooling-info">55.5. Active Tooling Information</a></li>
+<li><a href="chap55.html#_frame_boundary">55.6. Frame Boundary</a></li>
+</ul>
+</li>
+<li><a href="chap56.html">Appendix A: Vulkan Environment for SPIR-V</a>
+<ul class="sectlevel2">
+<li><a href="chap56.html#_versions_and_formats">Versions and Formats</a></li>
+<li><a href="chap56.html#spirvenv-capabilities">Capabilities</a></li>
+<li><a href="chap56.html#spirvenv-module-validation">Validation Rules Within a Module</a></li>
+<li><a href="chap56.html#spirvenv-precision-operation">Precision and Operation of SPIR-V Instructions</a></li>
+<li><a href="chap56.html#spirvenv-buffer-indexing">Buffer Indexing Calculations</a></li>
+<li><a href="chap56.html#spirvenv-image-signedness">Signedness of SPIR-V Image Accesses</a></li>
+<li><a href="chap56.html#spirvenv-format-type-matching">Image Format and Type Matching</a></li>
+<li><a href="chap56.html#spirvenv-image-dimensions">Compatibility Between SPIR-V Image Dimensions and Vulkan ImageView Types</a></li>
+<li><a href="chap56.html#spirvenv-image-formats">Compatibility Between SPIR-V Image Formats and Vulkan Formats</a></li>
+<li><a href="chap56.html#spirenv-ray-query-precision-operation">Ray Query Precision and Operation</a></li>
+<li><a href="chap56.html#spirvenv-tensor-formats">Compatibility Between SPIR-V Tensor Element Types And Vulkan Formats</a></li>
+</ul>
+</li>
+<li><a href="chap57.html">Appendix B: Memory Model</a>
+<ul class="sectlevel2">
+<li><a href="chap57.html#memory-model-agent">Agent</a></li>
+<li><a href="chap57.html#memory-model-memory-location">Memory Location</a></li>
+<li><a href="chap57.html#memory-model-allocation">Allocation</a></li>
+<li><a href="chap57.html#memory-model-memory-operation">Memory Operation</a></li>
+<li><a href="chap57.html#memory-model-references">Reference</a></li>
+<li><a href="chap57.html#memory-model-program-order">Program-Order</a></li>
+<li><a href="chap57.html#shader-call-related">Shader Call Related</a></li>
+<li><a href="chap57.html#shader-call-order">Shader Call Order</a></li>
+<li><a href="chap57.html#memory-model-scope">Scope</a></li>
+<li><a href="chap57.html#memory-model-atomic-operation">Atomic Operation</a></li>
+<li><a href="chap57.html#memory-model-scoped-modification-order">Scoped Modification Order</a></li>
+<li><a href="chap57.html#memory-model-memory-semantics">Memory Semantics</a></li>
+<li><a href="chap57.html#memory-model-release-sequence">Release Sequence</a></li>
+<li><a href="chap57.html#memory-model-synchronizes-with">Synchronizes-With</a></li>
+<li><a href="chap57.html#memory-model-system-synchronizes-with">System-Synchronizes-With</a></li>
+<li><a href="chap57.html#memory-model-non-private">Private vs. Non-Private</a></li>
+<li><a href="chap57.html#memory-model-inter-thread-happens-before">Inter-Thread-Happens-Before</a></li>
+<li><a href="chap57.html#memory-model-happens-before">Happens-Before</a></li>
+<li><a href="chap57.html#memory-model-availability-visibility">Availability and Visibility</a></li>
+<li><a href="chap57.html#memory-model-vulkan-availability-visibility">Availability, Visibility, and Domain Operations</a></li>
+<li><a href="chap57.html#memory-model-availability-visibility-semantics">Availability and Visibility Semantics</a></li>
+<li><a href="chap57.html#memory-model-instruction-av-vis">Per-Instruction Availability and Visibility Semantics</a></li>
+<li><a href="chap57.html#memory-model-location-ordered">Location-Ordered</a></li>
+<li><a href="chap57.html#memory-model-access-data-race">Data Race</a></li>
+<li><a href="chap57.html#memory-model-visible-to">Visible-To</a></li>
+<li><a href="chap57.html#memory-model-acyclicity">Acyclicity</a></li>
+<li><a href="chap57.html#memory-model-shader-io">Shader I/O</a></li>
+<li><a href="chap57.html#memory-model-deallocation">Deallocation</a></li>
+<li><a href="chap57.html#memory-model-informative-descriptions">Descriptions (Informative)</a></li>
+<li><a href="chap57.html#memory-model-tessellation-output-ordering">Tessellation Output Ordering</a></li>
+<li><a href="chap57.html#memory-model-cooperative-matrix">Cooperative Matrix Memory Access</a></li>
+</ul>
+</li>
+<li><a href="chap58.html">Appendix C: Compressed Image Formats</a>
+<ul class="sectlevel2">
+<li><a href="chap58.html#appendix-compressedtex-bc">Block-Compressed Image Formats</a></li>
+<li><a href="chap58.html#appendix-compressedtex-etc2">ETC Compressed Image Formats</a></li>
+<li><a href="chap58.html#appendix-compressedtex-astc">ASTC Compressed Image Formats</a></li>
+<li><a href="chap58.html#appendix-compressedtex-pvrtc">PVRTC Compressed Image Formats</a></li>
+</ul>
+</li>
+<li><a href="chap59.html">Appendix D: Core Revisions (Informative)</a>
+<ul class="sectlevel2">
+<li><a href="chap59.html#versions-1.4">Vulkan Version 1.4</a></li>
+<li><a href="chap59.html#versions-1.3">Vulkan Version 1.3</a></li>
+<li><a href="chap59.html#versions-1.2">Vulkan Version 1.2</a></li>
+<li><a href="chap59.html#versions-1.1">Vulkan Version 1.1</a></li>
+<li><a href="chap59.html#versions-1.0">Vulkan Version 1.0</a></li>
+</ul>
+</li>
+<li><a href="chap60.html">Appendix E: Layers &amp; Extensions (Informative)</a>
+<ul class="sectlevel2">
+<li><a href="chap60.html#_extension_dependencies">Extension Dependencies</a></li>
+<li><a href="chap60.html#_extension_interactions">Extension Interactions</a></li>
+<li><a href="chap60.html#current-extension-appendices-list">List of Current Extensions</a></li>
+<li><a href="chap60.html#provisional-extension-appendices-list">List of Provisional Extensions</a></li>
+<li><a href="chap60.html#deprecated-extension-appendices-list">List of Deprecated Extensions</a></li>
+</ul>
+</li>
+<li><a href="chap61.html">Appendix F: Vulkan Roadmap Milestones</a>
+<ul class="sectlevel2">
+<li><a href="chap61.html#roadmap-2022">Roadmap 2022</a></li>
+<li><a href="chap61.html#roadmap-2024">Roadmap 2024</a></li>
+</ul>
+</li>
+<li><a href="chap62.html">Appendix G: Deprecation</a>
+<ul class="sectlevel2">
+<li><a href="chap62.html#_deprecated_functionality">Deprecated Functionality</a></li>
+</ul>
+</li>
+<li><a href="chap63.html">Appendix H: API Boilerplate</a>
+<ul class="sectlevel2">
+<li><a href="chap63.html#boilerplate-headers">Vulkan Header Files</a></li>
+<li><a href="chap63.html#boilerplate-wsi-header">Window System-Specific Header Control (Informative)</a></li>
+<li><a href="chap63.html#boilerplate-provisional-header">Provisional Extension Header Control (Informative)</a></li>
+<li><a href="chap63.html#boilerplate-video-std-headers">Video Std Headers</a></li>
+</ul>
+</li>
+<li><a href="chap64.html">Appendix I: Invariance</a>
+<ul class="sectlevel2">
+<li><a href="chap64.html#_repeatability">Repeatability</a></li>
+<li><a href="chap64.html#_multi_pass_algorithms">Multi-Pass Algorithms</a></li>
+<li><a href="chap64.html#_invariance_rules">Invariance Rules</a></li>
+<li><a href="chap64.html#_tessellation_invariance">Tessellation Invariance</a></li>
+</ul>
+</li>
+<li><a href="chap65.html">Appendix J: Lexicon</a>
+<ul class="sectlevel2">
+<li><a href="chap65.html#glossary">Glossary</a></li>
+<li><a href="chap65.html#lexicon-common-abbreviations">Common Abbreviations</a></li>
+<li><a href="chap65.html#lexicon-video-abbreviations">Video-Specific Abbreviations</a></li>
+<li><a href="chap65.html#lexicon-prefixes">Prefixes</a></li>
+</ul>
+</li>
+<li><a href="chap66.html">Appendix K: Credits (Informative)</a>
+<ul class="sectlevel2">
+<li><a href="chap66.html#_working_group_contributors_to_vulkan">Working Group Contributors to Vulkan</a></li>
+<li><a href="chap66.html#_other_credits">Other Credits</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="loading_msg" class="hidden" hidden=""><p>Loading… please wait.</p></div>
+<!--ChunkedSearchboxMarker-->
+<div class="searchbox"><label for="searchbox">Search: </label><input id="searchbox" type="text" disabled="disabled" value="Loading Search Data"><div id="resultsdiv"><ol id="results"></ol></div></div>
+<div id="content" class="loadable"><div class="sect1">
+<h2 id="initialization"><a class="anchor" href="chap4.html"></a>4. Initialization</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before using Vulkan, an application <strong class="purple">must</strong> initialize it by loading the
+Vulkan commands, and creating a <code>VkInstance</code> object.</p>
+</div>
+<div class="sect2">
+<h3 id="initialization-functionpointers"><a class="anchor" href="chap4.html#initialization-functionpointers"></a>4.1. Command Function Pointers</h3>
+<div class="paragraph">
+<p>Vulkan commands are not necessarily exposed by static linking on a platform.
+Commands to query function pointers for Vulkan commands are described below.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tbody><tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>When extensions are <a href="chap50.html#extendingvulkan-compatibility-promotion">promoted</a> or
+otherwise incorporated into another extension or Vulkan core version,
+command <a href="chap50.html#extendingvulkan-compatibility-aliases">aliases</a> may be included.
+Whilst the behavior of each command alias is identical, the behavior of
+retrieving each alias’s function pointer is not.
+A function pointer for a given alias can only be retrieved if the extension
+or version that introduced that alias is supported and enabled, irrespective
+of whether any other alias is available.</p>
+</div>
+</td>
+</tr>
+</tbody></table>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Function pointers for all Vulkan commands <strong class="purple">can</strong> be obtained by calling:</p>
+</div>
+<div id="vkGetInstanceProcAddr" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_VERSION_1_0</span>
+<span class="n">PFN_vkVoidFunction</span> <span class="nf">vkGetInstanceProcAddr</span><span class="p">(</span>
+    <span class="n">VkInstance</span>                                  <span class="n">instance</span><span class="p">,</span>
+    <span class="k">const</span> <span class="kt">char</span><span class="o">*</span>                                 <span class="n">pName</span><span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>instance</code> is the instance that the function pointer will be
+compatible with, or <code>NULL</code> for commands not dependent on any instance.</p>
+</li>
+<li>
+<p><code>pName</code> is the name of the command to obtain.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><code>vkGetInstanceProcAddr</code> itself is obtained in a platform- and loader-
+specific manner.
+Typically, the loader library will export this command as a function symbol,
+so applications <strong class="purple">can</strong> link against the loader library, or load it dynamically
+and look up the symbol using platform-specific APIs.</p>
+</div>
+<div class="paragraph">
+<p>The table below defines the various use cases for
+<code>vkGetInstanceProcAddr</code> and expected return value (“fp” is “function
+pointer”) for each case.
+A valid returned function pointer (“fp”) <strong class="purple">must</strong> not be <code>NULL</code>.</p>
+</div>
+<div class="paragraph">
+<p>The returned function pointer is of type <a href="chap4.html#PFN_vkVoidFunction">PFN_vkVoidFunction</a>, and <strong class="purple">must</strong>
+be cast to the type of the command being queried before use.</p>
+</div>
+<table id="vkGetInstanceProcAddr-behavior" class="tableblock frame-all grid-all" style="width: 80%;">
+<caption class="title">Table 1. <code>vkGetInstanceProcAddr</code> behavior</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><code>instance</code></th>
+<th class="tableblock halign-left valign-top"><code>pName</code></th>
+<th class="tableblock halign-left valign-top">return value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">*<sup>1</sup></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>NULL</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">undefined</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">invalid non-<code>NULL</code> instance</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">*<sup>1</sup></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">undefined</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>NULL</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>global command</em><sup>2</sup></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">fp</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>NULL</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="chap4.html#vkGetInstanceProcAddr">vkGetInstanceProcAddr</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">fp<sup>5</sup></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">instance</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="chap4.html#vkGetInstanceProcAddr">vkGetInstanceProcAddr</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">fp</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">instance</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">core <em>dispatchable command</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">fp<sup>3</sup></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">instance</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">enabled instance extension dispatchable command for <code>instance</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">fp<sup>3</sup></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">instance</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">available device extension<sup>4</sup> dispatchable command for <code>instance</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">fp<sup>3</sup></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top" colspan="2"><p class="tableblock">any other case, not covered above</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>NULL</code></p></td>
+</tr>
+</tbody>
+</table>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>"*" means any representable value for the parameter (including valid
+values, invalid values, and <code>NULL</code>).</p>
+</dd>
+<dt class="hdlist1">2</dt>
+<dd>
+<p>    The global commands are:
+<a href="chap4.html#vkEnumerateInstanceVersion">vkEnumerateInstanceVersion</a>,
+    <a href="chap50.html#vkEnumerateInstanceExtensionProperties">vkEnumerateInstanceExtensionProperties</a>,
+    <a href="chap50.html#vkEnumerateInstanceLayerProperties">vkEnumerateInstanceLayerProperties</a>, and <a href="chap4.html#vkCreateInstance">vkCreateInstance</a>.
+    Dispatchable commands are all other commands which are not global.</p>
+</dd>
+<dt class="hdlist1">3</dt>
+<dd>
+<p>The returned function pointer <strong class="purple">must</strong> only be called with a dispatchable
+object (the first parameter) that is <code>instance</code> or a child of
+<code>instance</code>, e.g. <a href="chap4.html#VkInstance">VkInstance</a>, <a href="chap5.html#VkPhysicalDevice">VkPhysicalDevice</a>,
+<a href="chap5.html#VkDevice">VkDevice</a>, <a href="chap5.html#VkQueue">VkQueue</a>, or <a href="chap6.html#VkCommandBuffer">VkCommandBuffer</a>.</p>
+</dd>
+<dt class="hdlist1">4</dt>
+<dd>
+<p>An “available device extension” is a device extension supported by any
+physical device enumerated by <code>instance</code>.</p>
+</dd>
+<dt class="hdlist1">5</dt>
+<dd>
+<p>Starting with Vulkan 1.2,
+    <code>vkGetInstanceProcAddr</code> can resolve itself with a <code>NULL</code> instance
+    pointer.</p>
+</dd>
+</dl>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkGetInstanceProcAddr-instance-parameter" href="chap4.html#VUID-vkGetInstanceProcAddr-instance-parameter"></a> <span class="vuid">VUID-vkGetInstanceProcAddr-instance-parameter</span><br>
+ If <code>instance</code> is not <code>NULL</code>, <code>instance</code> <strong class="purple">must</strong> be a valid <a href="chap4.html#VkInstance">VkInstance</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkGetInstanceProcAddr-pName-parameter" href="chap4.html#VUID-vkGetInstanceProcAddr-pName-parameter"></a> <span class="vuid">VUID-vkGetInstanceProcAddr-pName-parameter</span><br>
+ <code>pName</code> <strong class="purple">must</strong> be a null-terminated UTF-8 string</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>In order to support systems with multiple Vulkan implementations, the
+function pointers returned by <a href="chap4.html#vkGetInstanceProcAddr">vkGetInstanceProcAddr</a> <strong class="purple">may</strong> point to
+dispatch code that calls a different real implementation for different
+<a href="chap5.html#VkDevice">VkDevice</a> objects or their child objects.
+The overhead of the internal dispatch for <a href="chap5.html#VkDevice">VkDevice</a> objects can be
+avoided by obtaining device-specific function pointers for any commands that
+use a device or device-child object as their dispatchable object.
+Such function pointers <strong class="purple">can</strong> be obtained by calling:</p>
+</div>
+<div id="vkGetDeviceProcAddr" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_VERSION_1_0</span>
+<span class="n">PFN_vkVoidFunction</span> <span class="nf">vkGetDeviceProcAddr</span><span class="p">(</span>
+    <span class="n">VkDevice</span>                                    <span class="n">device</span><span class="p">,</span>
+    <span class="k">const</span> <span class="kt">char</span><span class="o">*</span>                                 <span class="n">pName</span><span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The table below defines the various use cases for <code>vkGetDeviceProcAddr</code>
+and expected return value (“fp” is “function pointer”) for each case.
+A valid returned function pointer (“fp”) <strong class="purple">must</strong> not be <code>NULL</code>.</p>
+</div>
+<div class="paragraph">
+<p>The returned function pointer is of type <a href="chap4.html#PFN_vkVoidFunction">PFN_vkVoidFunction</a>, and <strong class="purple">must</strong>
+be cast to the type of the command being queried before use.
+The function pointer <strong class="purple">must</strong> only be called with a dispatchable object (the
+first parameter) that is <code>device</code> or a child of <code>device</code>.</p>
+</div>
+<table id="vkGetDeviceProcAddr-behavior" class="tableblock frame-all grid-all" style="width: 80%;">
+<caption class="title">Table 2. <code>vkGetDeviceProcAddr</code> behavior</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><code>device</code></th>
+<th class="tableblock halign-left valign-top"><code>pName</code></th>
+<th class="tableblock halign-left valign-top">return value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>NULL</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">*<sup>1</sup></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">undefined</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">invalid device</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">*<sup>1</sup></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">undefined</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">device</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>NULL</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">undefined</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">device</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">requested core version<sup>2</sup> device-level dispatchable command<sup>3</sup></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">fp<sup>4</sup></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">device</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">enabled extension device-level dispatchable command<sup>3</sup></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">fp<sup>4</sup></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top" colspan="2"><p class="tableblock">any other case, not covered above</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>NULL</code></p></td>
+</tr>
+</tbody>
+</table>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>"*" means any representable value for the parameter (including valid
+values, invalid values, and <code>NULL</code>).</p>
+</dd>
+<dt class="hdlist1">2</dt>
+<dd>
+<p>Device-level commands which are part of the core version specified by
+<a href="chap4.html#VkApplicationInfo">VkApplicationInfo</a>::<code>apiVersion</code> when creating the instance
+will always return a valid function pointer.
+If the <a href="chap51.html#features-maintenance5"><code>maintenance5</code></a> feature is enabled,
+core commands beyond that version which are supported by the
+implementation will return <code>NULL</code>, otherwise the implementation <strong class="purple">may</strong>
+either return <code>NULL</code> or a function pointer.
+If a function pointer is returned, it <strong class="purple">must</strong> not be called.</p>
+</dd>
+<dt class="hdlist1">3</dt>
+<dd>
+<p>In this function, device-level excludes all physical-device-level
+commands.</p>
+</dd>
+<dt class="hdlist1">4</dt>
+<dd>
+<p>The returned function pointer <strong class="purple">must</strong> only be called with a dispatchable
+object (the first parameter) that is <code>device</code> or a child of
+<code>device</code> e.g. <a href="chap5.html#VkDevice">VkDevice</a>, <a href="chap5.html#VkQueue">VkQueue</a>, or
+<a href="chap6.html#VkCommandBuffer">VkCommandBuffer</a>.</p>
+</dd>
+</dl>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkGetDeviceProcAddr-device-parameter" href="chap4.html#VUID-vkGetDeviceProcAddr-device-parameter"></a> <span class="vuid">VUID-vkGetDeviceProcAddr-device-parameter</span><br>
+ <code>device</code> <strong class="purple">must</strong> be a valid <a href="chap5.html#VkDevice">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkGetDeviceProcAddr-pName-parameter" href="chap4.html#VUID-vkGetDeviceProcAddr-pName-parameter"></a> <span class="vuid">VUID-vkGetDeviceProcAddr-pName-parameter</span><br>
+ <code>pName</code> <strong class="purple">must</strong> be a null-terminated UTF-8 string</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The definition of <a href="chap4.html#PFN_vkVoidFunction">PFN_vkVoidFunction</a> is:</p>
+</div>
+<div id="PFN_vkVoidFunction" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_VERSION_1_0</span>
+<span class="k">typedef</span> <span class="nf">void</span> <span class="p">(</span><span class="n">VKAPI_PTR</span> <span class="o">*</span><span class="n">PFN_vkVoidFunction</span><span class="p">)(</span><span class="kt">void</span><span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This type is returned from command function pointer queries, and <strong class="purple">must</strong> be
+cast to an actual command function pointer before use.</p>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_extending_physical_device_core_functionality"><a class="anchor" href="chap4.html#_extending_physical_device_core_functionality"></a>4.1.1. Extending Physical Device Core Functionality</h4>
+<div class="paragraph">
+<p>New core physical-device-level functionality <strong class="purple">can</strong> be used when both
+<a href="chap5.html#VkPhysicalDeviceProperties">VkPhysicalDeviceProperties</a>::<code>apiVersion</code> and
+<a href="chap4.html#VkApplicationInfo">VkApplicationInfo</a>::<code>apiVersion</code> are greater than or equal to the
+version of Vulkan that added the new functionality.
+The Vulkan version supported by a physical device <strong class="purple">can</strong> be obtained by
+calling <a href="chap5.html#vkGetPhysicalDeviceProperties">vkGetPhysicalDeviceProperties</a>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="initialization-phys-dev-extensions"><a class="anchor" href="chap4.html#initialization-phys-dev-extensions"></a>4.1.2. Extending Physical Device From Device Extensions</h4>
+<div class="paragraph">
+<p>When the <code><a href="chap60.html#VK_KHR_get_physical_device_properties2">VK_KHR_get_physical_device_properties2</a></code> extension is
+enabled,
+or when both the instance and the physical-device versions are at least 1.1,
+physical-device-level functionality of a device extension <strong class="purple">can</strong> be used with
+a physical device if the corresponding extension is enumerated by
+<a href="chap50.html#vkEnumerateDeviceExtensionProperties">vkEnumerateDeviceExtensionProperties</a> for that physical device, even
+before a logical device has been created.</p>
+</div>
+<div class="paragraph">
+<p>To obtain a function pointer for a physical-device-level command from a
+device extension, an application <strong class="purple">can</strong> use <a href="chap4.html#vkGetInstanceProcAddr">vkGetInstanceProcAddr</a>.
+This function pointer <strong class="purple">may</strong> point to dispatch code, which calls a different
+real implementation for different <code>VkPhysicalDevice</code> objects.
+Applications <strong class="purple">must</strong> not use a <a href="chap5.html#VkPhysicalDevice">VkPhysicalDevice</a> in any command added by
+an extension or core version that is not supported by that physical device.</p>
+</div>
+<div class="paragraph">
+<p>Device extensions <strong class="purple">may</strong> define structures that <strong class="purple">can</strong> be added to the
+<code>pNext</code> chain of physical-device-level commands.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="initialization-instances"><a class="anchor" href="chap4.html#initialization-instances"></a>4.2. Instances</h3>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>There is no global state in Vulkan and all per-application state is stored
+in a <code>VkInstance</code> object.
+Creating a <code>VkInstance</code> object initializes the Vulkan library and allows
+the application to pass information about itself to the implementation.</p>
+</div>
+<div class="paragraph">
+<p>Instances are represented by <code>VkInstance</code> handles:</p>
+</div>
+<div id="VkInstance" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_VERSION_1_0</span>
+<span class="n">VK_DEFINE_HANDLE</span><span class="p">(</span><span class="n">VkInstance</span><span class="p">)</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To query the version of instance-level functionality supported by the
+implementation, call:</p>
+</div>
+<div id="vkEnumerateInstanceVersion" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_VERSION_1_1</span>
+<span class="n">VkResult</span> <span class="nf">vkEnumerateInstanceVersion</span><span class="p">(</span>
+    <span class="kt">uint32_t</span><span class="o">*</span>                                   <span class="n">pApiVersion</span><span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>pApiVersion</code> is a pointer to a <code>uint32_t</code>, which is the version
+of Vulkan supported by instance-level functionality, encoded as
+described in <a href="chap50.html#extendingvulkan-coreversions-versionnumbers">Version Numbers</a>.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tbody><tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The intended behavior of <a href="chap4.html#vkEnumerateInstanceVersion">vkEnumerateInstanceVersion</a> is that an
+implementation <strong class="purple">should</strong> not need to perform memory allocations and <strong class="purple">should</strong>
+unconditionally return <code>VK_SUCCESS</code>.
+The loader, and any enabled layers, <strong class="purple">may</strong> return
+<code>VK_ERROR_OUT_OF_HOST_MEMORY</code> in the case of a failed memory allocation.</p>
+</div>
+</td>
+</tr>
+</tbody></table>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkEnumerateInstanceVersion-pApiVersion-parameter" href="chap4.html#VUID-vkEnumerateInstanceVersion-pApiVersion-parameter"></a> <span class="vuid">VUID-vkEnumerateInstanceVersion-pApiVersion-parameter</span><br>
+ <code>pApiVersion</code> <strong class="purple">must</strong> be a valid pointer to a <code>uint32_t</code> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="chap3.html#fundamentals-successcodes">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="chap3.html#fundamentals-errorcodes">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_UNKNOWN</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_VALIDATION_FAILED</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To create an instance object, call:</p>
+</div>
+<div id="vkCreateInstance" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_VERSION_1_0</span>
+<span class="n">VkResult</span> <span class="nf">vkCreateInstance</span><span class="p">(</span>
+    <span class="k">const</span> <span class="n">VkInstanceCreateInfo</span><span class="o">*</span>                 <span class="n">pCreateInfo</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">VkAllocationCallbacks</span><span class="o">*</span>                <span class="n">pAllocator</span><span class="p">,</span>
+    <span class="n">VkInstance</span><span class="o">*</span>                                 <span class="n">pInstance</span><span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>pCreateInfo</code> is a pointer to a <a href="chap4.html#VkInstanceCreateInfo">VkInstanceCreateInfo</a> structure
+controlling creation of the instance.</p>
+</li>
+<li>
+<p><code>pAllocator</code> controls host memory allocation as described in the
+<a href="chap11.html#memory-allocation">Memory Allocation</a> chapter.</p>
+</li>
+<li>
+<p><code>pInstance</code> points a <a href="chap4.html#VkInstance">VkInstance</a> handle in which the resulting
+instance is returned.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><code>vkCreateInstance</code> verifies that the requested layers exist.
+If not, <code>vkCreateInstance</code> will return <code>VK_ERROR_LAYER_NOT_PRESENT</code>.
+Next <code>vkCreateInstance</code> verifies that the requested extensions are
+supported (e.g. in the implementation or in any enabled instance layer) and
+if any requested extension is not supported, <code>vkCreateInstance</code> <strong class="purple">must</strong>
+return <code>VK_ERROR_EXTENSION_NOT_PRESENT</code>.
+After verifying and enabling the instance layers and extensions the
+<code>VkInstance</code> object is created and returned to the application.
+If a requested extension is only supported by a layer, both the layer and
+the extension need to be specified at <code>vkCreateInstance</code> time for the
+creation to succeed.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCreateInstance-ppEnabledExtensionNames-01388" href="chap4.html#VUID-vkCreateInstance-ppEnabledExtensionNames-01388"></a> <span class="vuid">VUID-vkCreateInstance-ppEnabledExtensionNames-01388</span><br>
+
+All <a href="chap50.html#extendingvulkan-extensions-extensiondependencies">required
+extensions</a> for each extension in the
+<a href="chap4.html#VkInstanceCreateInfo">VkInstanceCreateInfo</a>::<code>ppEnabledExtensionNames</code> list <strong class="purple">must</strong>
+also be present in that list</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCreateInstance-pCreateInfo-parameter" href="chap4.html#VUID-vkCreateInstance-pCreateInfo-parameter"></a> <span class="vuid">VUID-vkCreateInstance-pCreateInfo-parameter</span><br>
+ <code>pCreateInfo</code> <strong class="purple">must</strong> be a valid pointer to a valid <a href="chap4.html#VkInstanceCreateInfo">VkInstanceCreateInfo</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateInstance-pAllocator-parameter" href="chap4.html#VUID-vkCreateInstance-pAllocator-parameter"></a> <span class="vuid">VUID-vkCreateInstance-pAllocator-parameter</span><br>
+ If <code>pAllocator</code> is not <code>NULL</code>, <code>pAllocator</code> <strong class="purple">must</strong> be a valid pointer to a valid <a href="chap11.html#VkAllocationCallbacks">VkAllocationCallbacks</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateInstance-pInstance-parameter" href="chap4.html#VUID-vkCreateInstance-pInstance-parameter"></a> <span class="vuid">VUID-vkCreateInstance-pInstance-parameter</span><br>
+ <code>pInstance</code> <strong class="purple">must</strong> be a valid pointer to a <a href="chap4.html#VkInstance">VkInstance</a> handle</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="chap3.html#fundamentals-successcodes">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="chap3.html#fundamentals-errorcodes">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_EXTENSION_NOT_PRESENT</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_INCOMPATIBLE_DRIVER</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_INITIALIZATION_FAILED</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_LAYER_NOT_PRESENT</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_OUT_OF_DEVICE_MEMORY</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_UNKNOWN</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_VALIDATION_FAILED</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkInstanceCreateInfo</code> structure is defined as:</p>
+</div>
+<div id="VkInstanceCreateInfo" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_VERSION_1_0</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="nc">VkInstanceCreateInfo</span> <span class="p">{</span>
+    <span class="n">VkStructureType</span>             <span class="n">sType</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">void</span><span class="o">*</span>                 <span class="n">pNext</span><span class="p">;</span>
+    <span class="n">VkInstanceCreateFlags</span>       <span class="n">flags</span><span class="p">;</span>
+    <span class="k">const</span> <span class="n">VkApplicationInfo</span><span class="o">*</span>    <span class="n">pApplicationInfo</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>                    <span class="n">enabledLayerCount</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="k">const</span><span class="o">*</span>          <span class="n">ppEnabledLayerNames</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>                    <span class="n">enabledExtensionCount</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="k">const</span><span class="o">*</span>          <span class="n">ppEnabledExtensionNames</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">VkInstanceCreateInfo</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="chap3.html#VkStructureType">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>flags</code> is a bitmask of <a href="chap4.html#VkInstanceCreateFlagBits">VkInstanceCreateFlagBits</a> indicating
+the behavior of the instance.</p>
+</li>
+<li>
+<p><code>pApplicationInfo</code> is <code>NULL</code> or a pointer to a
+<code>VkApplicationInfo</code> structure.
+If not <code>NULL</code>, this information helps implementations recognize behavior
+inherent to classes of applications.
+<a href="chap4.html#VkApplicationInfo">VkApplicationInfo</a> is defined in detail below.</p>
+</li>
+<li>
+<p><code>enabledLayerCount</code> is the number of global layers to enable.</p>
+</li>
+<li>
+<p><code>ppEnabledLayerNames</code> is a pointer to an array of
+<code>enabledLayerCount</code> null-terminated UTF-8 strings containing the
+names of layers to enable for the created instance.
+The layers are loaded in the order they are listed in this array, with
+the first array element being the closest to the application, and the
+last array element being the closest to the driver.
+See the <a href="chap50.html#extendingvulkan-layers">Layers</a> section for further details.</p>
+</li>
+<li>
+<p><code>enabledExtensionCount</code> is the number of global extensions to
+enable.</p>
+</li>
+<li>
+<p><code>ppEnabledExtensionNames</code> is a pointer to an array of
+<code>enabledExtensionCount</code> null-terminated UTF-8 strings containing the
+names of extensions to enable.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>To capture events that occur while creating or destroying an instance, an
+application <strong class="purple">can</strong> link a
+<a href="chap55.html#VkDebugReportCallbackCreateInfoEXT">VkDebugReportCallbackCreateInfoEXT</a> structure
+or a
+<a href="chap55.html#VkDebugUtilsMessengerCreateInfoEXT">VkDebugUtilsMessengerCreateInfoEXT</a> structure
+to the <code>pNext</code> chain of the <code>VkInstanceCreateInfo</code> structure passed
+to <code>vkCreateInstance</code>.
+This callback is only valid for the duration of the <a href="chap4.html#vkCreateInstance">vkCreateInstance</a>
+and the <a href="chap4.html#vkDestroyInstance">vkDestroyInstance</a> call.
+Use
+<a href="chap55.html#vkCreateDebugReportCallbackEXT">vkCreateDebugReportCallbackEXT</a>
+or
+<a href="chap55.html#vkCreateDebugUtilsMessengerEXT">vkCreateDebugUtilsMessengerEXT</a>
+to create persistent callback objects.</p>
+</div>
+<div class="paragraph">
+<p>An application can add additional drivers by including the
+<a href="chap4.html#VkDirectDriverLoadingListLUNARG">VkDirectDriverLoadingListLUNARG</a> structure in the <code>pNext</code> chain of
+the <code>VkInstanceCreateInfo</code> structure passed to <code>vkCreateInstance</code>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tbody><tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p><a href="chap4.html#VkDirectDriverLoadingListLUNARG">VkDirectDriverLoadingListLUNARG</a> allows applications to ship drivers
+with themselves.
+Only drivers that are designed to work with it should be used, such as
+drivers that implement Vulkan in software or that implement Vulkan by
+translating it to a different API.
+Any driver that requires installation should not be used, such as hardware
+drivers.</p>
+</div>
+</td>
+</tr>
+</tbody></table>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkInstanceCreateInfo-pNext-04925" href="chap4.html#VUID-VkInstanceCreateInfo-pNext-04925"></a> <span class="vuid">VUID-VkInstanceCreateInfo-pNext-04925</span><br>
+
+If the <code>pNext</code> chain of <code>VkInstanceCreateInfo</code> includes a
+<a href="chap55.html#VkDebugReportCallbackCreateInfoEXT">VkDebugReportCallbackCreateInfoEXT</a> structure, the list of enabled
+extensions in <code>ppEnabledExtensionNames</code> <strong class="purple">must</strong> contain
+<code><a href="chap60.html#VK_EXT_debug_report">VK_EXT_debug_report</a></code></p>
+</li>
+<li>
+<p><a id="VUID-VkInstanceCreateInfo-pNext-04926" href="chap4.html#VUID-VkInstanceCreateInfo-pNext-04926"></a> <span class="vuid">VUID-VkInstanceCreateInfo-pNext-04926</span><br>
+
+If the <code>pNext</code> chain of <code>VkInstanceCreateInfo</code> includes a
+<a href="chap55.html#VkDebugUtilsMessengerCreateInfoEXT">VkDebugUtilsMessengerCreateInfoEXT</a> structure, the list of enabled
+extensions in <code>ppEnabledExtensionNames</code> <strong class="purple">must</strong> contain
+<code><a href="chap60.html#VK_EXT_debug_utils">VK_EXT_debug_utils</a></code></p>
+</li>
+<li>
+<p><a id="VUID-VkInstanceCreateInfo-pNext-06779" href="chap4.html#VUID-VkInstanceCreateInfo-pNext-06779"></a> <span class="vuid">VUID-VkInstanceCreateInfo-pNext-06779</span><br>
+
+If the <code>pNext</code> chain includes a
+<a href="chap11.html#VkExportMetalObjectCreateInfoEXT">VkExportMetalObjectCreateInfoEXT</a> structure, its
+<code>exportObjectType</code> member <strong class="purple">must</strong> be either
+<code>VK_EXPORT_METAL_OBJECT_TYPE_METAL_DEVICE_BIT_EXT</code> or
+<code>VK_EXPORT_METAL_OBJECT_TYPE_METAL_COMMAND_QUEUE_BIT_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkInstanceCreateInfo-flags-06559" href="chap4.html#VUID-VkInstanceCreateInfo-flags-06559"></a> <span class="vuid">VUID-VkInstanceCreateInfo-flags-06559</span><br>
+
+If <code>flags</code> has the
+<code>VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR</code> bit set, the list
+of enabled extensions in <code>ppEnabledExtensionNames</code> <strong class="purple">must</strong> contain
+<code><a href="chap60.html#VK_KHR_portability_enumeration">VK_KHR_portability_enumeration</a></code></p>
+</li>
+<li>
+<p><a id="VUID-VkInstanceCreateInfo-pNext-09400" href="chap4.html#VUID-VkInstanceCreateInfo-pNext-09400"></a> <span class="vuid">VUID-VkInstanceCreateInfo-pNext-09400</span><br>
+
+If the <code>pNext</code> chain of <code>VkInstanceCreateInfo</code> includes a
+<a href="chap4.html#VkDirectDriverLoadingListLUNARG">VkDirectDriverLoadingListLUNARG</a> structure, the list of enabled
+extensions in <code>ppEnabledExtensionNames</code> <strong class="purple">must</strong> contain
+<a href="chap60.html#VK_LUNARG_direct_driver_loading">VK_LUNARG_direct_driver_loading</a></p>
+</li>
+<li>
+<p><a id="VUID-VkInstanceCreateInfo-pNext-10242" href="chap4.html#VUID-VkInstanceCreateInfo-pNext-10242"></a> <span class="vuid">VUID-VkInstanceCreateInfo-pNext-10242</span><br>
+
+If the <code>pNext</code> chain of <code>VkInstanceCreateInfo</code> includes a
+<a href="chap4.html#VkLayerSettingsCreateInfoEXT">VkLayerSettingsCreateInfoEXT</a> structure, the list of enabled
+extensions in <code>ppEnabledExtensionNames</code> <strong class="purple">must</strong> contain
+<a href="chap60.html#VK_EXT_layer_settings">VK_EXT_layer_settings</a></p>
+</li>
+<li>
+<p><a id="VUID-VkInstanceCreateInfo-pNext-10243" href="chap4.html#VUID-VkInstanceCreateInfo-pNext-10243"></a> <span class="vuid">VUID-VkInstanceCreateInfo-pNext-10243</span><br>
+
+If the <code>pNext</code> chain of <code>VkInstanceCreateInfo</code> includes a
+<a href="chap4.html#VkValidationFeaturesEXT">VkValidationFeaturesEXT</a> structure, the list of enabled extensions
+in <code>ppEnabledExtensionNames</code> <strong class="purple">must</strong> contain
+<a href="chap60.html#VK_EXT_validation_features">VK_EXT_validation_features</a></p>
+</li>
+<li>
+<p><a id="VUID-VkInstanceCreateInfo-pNext-10244" href="chap4.html#VUID-VkInstanceCreateInfo-pNext-10244"></a> <span class="vuid">VUID-VkInstanceCreateInfo-pNext-10244</span><br>
+
+If the <code>pNext</code> chain of <code>VkInstanceCreateInfo</code> includes a
+<a href="chap4.html#VkValidationFlagsEXT">VkValidationFlagsEXT</a> structure, the list of enabled extensions in
+<code>ppEnabledExtensionNames</code> <strong class="purple">must</strong> contain
+<a href="chap60.html#VK_EXT_validation_flags">VK_EXT_validation_flags</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkInstanceCreateInfo-sType-sType" href="chap4.html#VUID-VkInstanceCreateInfo-sType-sType"></a> <span class="vuid">VUID-VkInstanceCreateInfo-sType-sType</span><br>
+ <code>sType</code> <strong class="purple">must</strong> be <code>VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO</code></p>
+</li>
+<li>
+<p><a id="VUID-VkInstanceCreateInfo-pNext-pNext" href="chap4.html#VUID-VkInstanceCreateInfo-pNext-pNext"></a> <span class="vuid">VUID-VkInstanceCreateInfo-pNext-pNext</span><br>
+ Each <code>pNext</code> member of any structure (including this one) in the <code>pNext</code> chain <strong class="purple">must</strong> be either <code>NULL</code> or a pointer to a valid instance of <a href="chap55.html#VkDebugReportCallbackCreateInfoEXT">VkDebugReportCallbackCreateInfoEXT</a>, <a href="chap55.html#VkDebugUtilsMessengerCreateInfoEXT">VkDebugUtilsMessengerCreateInfoEXT</a>, <a href="chap4.html#VkDirectDriverLoadingListLUNARG">VkDirectDriverLoadingListLUNARG</a>, <a href="chap11.html#VkExportMetalObjectCreateInfoEXT">VkExportMetalObjectCreateInfoEXT</a>, <a href="chap4.html#VkLayerSettingsCreateInfoEXT">VkLayerSettingsCreateInfoEXT</a>, <a href="chap4.html#VkValidationFeaturesEXT">VkValidationFeaturesEXT</a>, or <a href="chap4.html#VkValidationFlagsEXT">VkValidationFlagsEXT</a></p>
+</li>
+<li>
+<p><a id="VUID-VkInstanceCreateInfo-sType-unique" href="chap4.html#VUID-VkInstanceCreateInfo-sType-unique"></a> <span class="vuid">VUID-VkInstanceCreateInfo-sType-unique</span><br>
+ The <code>sType</code> value of each structure in the <code>pNext</code> chain <strong class="purple">must</strong> be unique, with the exception of structures of type <a href="chap55.html#VkDebugUtilsMessengerCreateInfoEXT">VkDebugUtilsMessengerCreateInfoEXT</a>, <a href="chap11.html#VkExportMetalObjectCreateInfoEXT">VkExportMetalObjectCreateInfoEXT</a>, or <a href="chap4.html#VkLayerSettingsCreateInfoEXT">VkLayerSettingsCreateInfoEXT</a></p>
+</li>
+<li>
+<p><a id="VUID-VkInstanceCreateInfo-flags-parameter" href="chap4.html#VUID-VkInstanceCreateInfo-flags-parameter"></a> <span class="vuid">VUID-VkInstanceCreateInfo-flags-parameter</span><br>
+ <code>flags</code> <strong class="purple">must</strong> be a valid combination of <a href="chap4.html#VkInstanceCreateFlagBits">VkInstanceCreateFlagBits</a> values</p>
+</li>
+<li>
+<p><a id="VUID-VkInstanceCreateInfo-pApplicationInfo-parameter" href="chap4.html#VUID-VkInstanceCreateInfo-pApplicationInfo-parameter"></a> <span class="vuid">VUID-VkInstanceCreateInfo-pApplicationInfo-parameter</span><br>
+ If <code>pApplicationInfo</code> is not <code>NULL</code>, <code>pApplicationInfo</code> <strong class="purple">must</strong> be a valid pointer to a valid <a href="chap4.html#VkApplicationInfo">VkApplicationInfo</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-VkInstanceCreateInfo-ppEnabledLayerNames-parameter" href="chap4.html#VUID-VkInstanceCreateInfo-ppEnabledLayerNames-parameter"></a> <span class="vuid">VUID-VkInstanceCreateInfo-ppEnabledLayerNames-parameter</span><br>
+ If <code>enabledLayerCount</code> is not <code>0</code>, <code>ppEnabledLayerNames</code> <strong class="purple">must</strong> be a valid pointer to an array of <code>enabledLayerCount</code> null-terminated UTF-8 strings</p>
+</li>
+<li>
+<p><a id="VUID-VkInstanceCreateInfo-ppEnabledExtensionNames-parameter" href="chap4.html#VUID-VkInstanceCreateInfo-ppEnabledExtensionNames-parameter"></a> <span class="vuid">VUID-VkInstanceCreateInfo-ppEnabledExtensionNames-parameter</span><br>
+ If <code>enabledExtensionCount</code> is not <code>0</code>, <code>ppEnabledExtensionNames</code> <strong class="purple">must</strong> be a valid pointer to an array of <code>enabledExtensionCount</code> null-terminated UTF-8 strings</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div id="VkInstanceCreateFlagBits" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_VERSION_1_0</span>
+<span class="k">typedef</span> <span class="k">enum</span> <span class="n">VkInstanceCreateFlagBits</span> <span class="p">{</span>
+  <span class="c1">// Provided by VK_KHR_portability_enumeration</span>
+    <span class="n">VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR</span> <span class="o">=</span> <span class="mh">0x00000001</span><span class="p">,</span>
+<span class="p">}</span> <span class="n">VkInstanceCreateFlagBits</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR</code> specifies that
+the instance will enumerate available Vulkan Portability-compliant
+physical devices and groups in addition to the Vulkan physical devices
+and groups that are enumerated by default.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div id="VkInstanceCreateFlags" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_VERSION_1_0</span>
+<span class="k">typedef</span> <span class="n">VkFlags</span> <span class="n">VkInstanceCreateFlags</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>VkInstanceCreateFlags</code> is a bitmask type for setting a mask of zero or
+more <a href="chap4.html#VkInstanceCreateFlagBits">VkInstanceCreateFlagBits</a>.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>When creating a Vulkan instance for which you wish to disable validation
+checks, add a <a href="chap4.html#VkValidationFlagsEXT">VkValidationFlagsEXT</a> structure to the <code>pNext</code> chain
+of the <a href="chap4.html#VkInstanceCreateInfo">VkInstanceCreateInfo</a> structure, specifying the checks to be
+disabled.</p>
+</div>
+<div id="VkValidationFlagsEXT" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_EXT_validation_flags</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="nc">VkValidationFlagsEXT</span> <span class="p">{</span>
+    <span class="n">VkStructureType</span>                <span class="n">sType</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">void</span><span class="o">*</span>                    <span class="n">pNext</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>                       <span class="n">disabledValidationCheckCount</span><span class="p">;</span>
+    <span class="k">const</span> <span class="n">VkValidationCheckEXT</span><span class="o">*</span>    <span class="n">pDisabledValidationChecks</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">VkValidationFlagsEXT</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="chap3.html#VkStructureType">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>disabledValidationCheckCount</code> is the number of checks to disable.</p>
+</li>
+<li>
+<p><code>pDisabledValidationChecks</code> is a pointer to an array of
+<a href="chap4.html#VkValidationCheckEXT">VkValidationCheckEXT</a> values specifying the validation checks to be
+disabled.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkValidationFlagsEXT-sType-sType" href="chap4.html#VUID-VkValidationFlagsEXT-sType-sType"></a> <span class="vuid">VUID-VkValidationFlagsEXT-sType-sType</span><br>
+ <code>sType</code> <strong class="purple">must</strong> be <code>VK_STRUCTURE_TYPE_VALIDATION_FLAGS_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkValidationFlagsEXT-pDisabledValidationChecks-parameter" href="chap4.html#VUID-VkValidationFlagsEXT-pDisabledValidationChecks-parameter"></a> <span class="vuid">VUID-VkValidationFlagsEXT-pDisabledValidationChecks-parameter</span><br>
+ <code>pDisabledValidationChecks</code> <strong class="purple">must</strong> be a valid pointer to an array of <code>disabledValidationCheckCount</code> valid <a href="chap4.html#VkValidationCheckEXT">VkValidationCheckEXT</a> values</p>
+</li>
+<li>
+<p><a id="VUID-VkValidationFlagsEXT-disabledValidationCheckCount-arraylength" href="chap4.html#VUID-VkValidationFlagsEXT-disabledValidationCheckCount-arraylength"></a> <span class="vuid">VUID-VkValidationFlagsEXT-disabledValidationCheckCount-arraylength</span><br>
+ <code>disabledValidationCheckCount</code> <strong class="purple">must</strong> be greater than <code>0</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Possible values of elements of the
+<a href="chap4.html#VkValidationFlagsEXT">VkValidationFlagsEXT</a>::<code>pDisabledValidationChecks</code> array,
+specifying validation checks to be disabled, are:</p>
+</div>
+<div id="VkValidationCheckEXT" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_EXT_validation_flags</span>
+<span class="k">typedef</span> <span class="k">enum</span> <span class="n">VkValidationCheckEXT</span> <span class="p">{</span>
+    <span class="n">VK_VALIDATION_CHECK_ALL_EXT</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">VK_VALIDATION_CHECK_SHADERS_EXT</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+<span class="p">}</span> <span class="n">VkValidationCheckEXT</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_VALIDATION_CHECK_ALL_EXT</code> specifies that all validation checks
+are disabled.</p>
+</li>
+<li>
+<p><code>VK_VALIDATION_CHECK_SHADERS_EXT</code> specifies that shader validation
+is disabled.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>When creating a Vulkan instance for which you wish to enable or disable
+specific validation features, add a <a href="chap4.html#VkValidationFeaturesEXT">VkValidationFeaturesEXT</a> structure
+to the <code>pNext</code> chain of the <a href="chap4.html#VkInstanceCreateInfo">VkInstanceCreateInfo</a> structure,
+specifying the features to be enabled or disabled.</p>
+</div>
+<div id="VkValidationFeaturesEXT" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_EXT_validation_features</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="nc">VkValidationFeaturesEXT</span> <span class="p">{</span>
+    <span class="n">VkStructureType</span>                         <span class="n">sType</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">void</span><span class="o">*</span>                             <span class="n">pNext</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>                                <span class="n">enabledValidationFeatureCount</span><span class="p">;</span>
+    <span class="k">const</span> <span class="n">VkValidationFeatureEnableEXT</span><span class="o">*</span>     <span class="n">pEnabledValidationFeatures</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>                                <span class="n">disabledValidationFeatureCount</span><span class="p">;</span>
+    <span class="k">const</span> <span class="n">VkValidationFeatureDisableEXT</span><span class="o">*</span>    <span class="n">pDisabledValidationFeatures</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">VkValidationFeaturesEXT</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="chap3.html#VkStructureType">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>enabledValidationFeatureCount</code> is the number of features to enable.</p>
+</li>
+<li>
+<p><code>pEnabledValidationFeatures</code> is a pointer to an array of
+<a href="chap4.html#VkValidationFeatureEnableEXT">VkValidationFeatureEnableEXT</a> values specifying the validation
+features to be enabled.</p>
+</li>
+<li>
+<p><code>disabledValidationFeatureCount</code> is the number of features to
+disable.</p>
+</li>
+<li>
+<p><code>pDisabledValidationFeatures</code> is a pointer to an array of
+<a href="chap4.html#VkValidationFeatureDisableEXT">VkValidationFeatureDisableEXT</a> values specifying the validation
+features to be disabled.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkValidationFeaturesEXT-pEnabledValidationFeatures-02967" href="chap4.html#VUID-VkValidationFeaturesEXT-pEnabledValidationFeatures-02967"></a> <span class="vuid">VUID-VkValidationFeaturesEXT-pEnabledValidationFeatures-02967</span><br>
+
+If the <code>pEnabledValidationFeatures</code> array contains
+<code>VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT</code>,
+then it <strong class="purple">must</strong> also contain
+<code>VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT</code> or
+<code>VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkValidationFeaturesEXT-sType-sType" href="chap4.html#VUID-VkValidationFeaturesEXT-sType-sType"></a> <span class="vuid">VUID-VkValidationFeaturesEXT-sType-sType</span><br>
+ <code>sType</code> <strong class="purple">must</strong> be <code>VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkValidationFeaturesEXT-pEnabledValidationFeatures-parameter" href="chap4.html#VUID-VkValidationFeaturesEXT-pEnabledValidationFeatures-parameter"></a> <span class="vuid">VUID-VkValidationFeaturesEXT-pEnabledValidationFeatures-parameter</span><br>
+ If <code>enabledValidationFeatureCount</code> is not <code>0</code>, <code>pEnabledValidationFeatures</code> <strong class="purple">must</strong> be a valid pointer to an array of <code>enabledValidationFeatureCount</code> valid <a href="chap4.html#VkValidationFeatureEnableEXT">VkValidationFeatureEnableEXT</a> values</p>
+</li>
+<li>
+<p><a id="VUID-VkValidationFeaturesEXT-pDisabledValidationFeatures-parameter" href="chap4.html#VUID-VkValidationFeaturesEXT-pDisabledValidationFeatures-parameter"></a> <span class="vuid">VUID-VkValidationFeaturesEXT-pDisabledValidationFeatures-parameter</span><br>
+ If <code>disabledValidationFeatureCount</code> is not <code>0</code>, <code>pDisabledValidationFeatures</code> <strong class="purple">must</strong> be a valid pointer to an array of <code>disabledValidationFeatureCount</code> valid <a href="chap4.html#VkValidationFeatureDisableEXT">VkValidationFeatureDisableEXT</a> values</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Possible values of elements of the
+<a href="chap4.html#VkValidationFeaturesEXT">VkValidationFeaturesEXT</a>::<code>pEnabledValidationFeatures</code> array,
+specifying validation features to be enabled, are:</p>
+</div>
+<div id="VkValidationFeatureEnableEXT" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_EXT_validation_features</span>
+<span class="k">typedef</span> <span class="k">enum</span> <span class="n">VkValidationFeatureEnableEXT</span> <span class="p">{</span>
+    <span class="n">VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+<span class="p">}</span> <span class="n">VkValidationFeatureEnableEXT</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT</code> specifies that
+GPU-assisted validation is enabled.
+Activating this feature instruments shader programs to generate
+additional diagnostic data.
+This feature is disabled by default.</p>
+</li>
+<li>
+<p><code>VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT</code>
+specifies that the validation layers reserve a descriptor set binding
+slot for their own use.
+The layer reports a value for
+<a href="chap52.html#VkPhysicalDeviceLimits">VkPhysicalDeviceLimits</a>::<code>maxBoundDescriptorSets</code> that is one
+less than the value reported by the device.
+If the device supports the binding of only one descriptor set, the
+validation layer does not perform GPU-assisted validation.
+This feature is disabled by default.</p>
+</li>
+<li>
+<p><code>VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT</code> specifies that
+Vulkan best-practices validation is enabled.
+Activating this feature enables the output of warnings related to common
+misuse of the API, but which are not explicitly prohibited by the
+specification.
+This feature is disabled by default.</p>
+</li>
+<li>
+<p><code>VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT</code> specifies that the
+layers will process <code>debugPrintfEXT</code> operations in shaders and send
+the resulting output to the debug callback.
+This feature is disabled by default.</p>
+</li>
+<li>
+<p><code>VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT</code>
+specifies that Vulkan synchronization validation is enabled.
+This feature reports resource access conflicts due to missing or
+incorrect synchronization operations between actions (Draw, Copy,
+Dispatch, Blit) reading or writing the same regions of memory.
+This feature is disabled by default.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Possible values of elements of the
+<a href="chap4.html#VkValidationFeaturesEXT">VkValidationFeaturesEXT</a>::<code>pDisabledValidationFeatures</code> array,
+specifying validation features to be disabled, are:</p>
+</div>
+<div id="VkValidationFeatureDisableEXT" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_EXT_validation_features</span>
+<span class="k">typedef</span> <span class="k">enum</span> <span class="n">VkValidationFeatureDisableEXT</span> <span class="p">{</span>
+    <span class="n">VK_VALIDATION_FEATURE_DISABLE_ALL_EXT</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">VK_VALIDATION_FEATURE_DISABLE_SHADERS_EXT</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">VK_VALIDATION_FEATURE_DISABLE_THREAD_SAFETY_EXT</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">VK_VALIDATION_FEATURE_DISABLE_API_PARAMETERS_EXT</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">VK_VALIDATION_FEATURE_DISABLE_OBJECT_LIFETIMES_EXT</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="n">VK_VALIDATION_FEATURE_DISABLE_CORE_CHECKS_EXT</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="n">VK_VALIDATION_FEATURE_DISABLE_UNIQUE_HANDLES_EXT</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
+    <span class="n">VK_VALIDATION_FEATURE_DISABLE_SHADER_VALIDATION_CACHE_EXT</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span>
+<span class="p">}</span> <span class="n">VkValidationFeatureDisableEXT</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_VALIDATION_FEATURE_DISABLE_ALL_EXT</code> specifies that all
+validation checks are disabled.</p>
+</li>
+<li>
+<p><code>VK_VALIDATION_FEATURE_DISABLE_SHADERS_EXT</code> specifies that shader
+validation, both runtime and standalone, is disabled.
+This validation occurs inside
+<a href="chap9.html#VkShaderCreateInfoEXT">VkShaderCreateInfoEXT</a> and
+<a href="chap9.html#VkShaderModuleCreateInfo">VkShaderModuleCreateInfo</a>.
+This feature is enabled by default.</p>
+</li>
+<li>
+<p><code>VK_VALIDATION_FEATURE_DISABLE_THREAD_SAFETY_EXT</code> specifies that
+thread safety validation is disabled.
+This feature is enabled by default.</p>
+</li>
+<li>
+<p><code>VK_VALIDATION_FEATURE_DISABLE_API_PARAMETERS_EXT</code> specifies that
+stateless parameter validation is disabled.
+This feature is enabled by default.</p>
+</li>
+<li>
+<p><code>VK_VALIDATION_FEATURE_DISABLE_OBJECT_LIFETIMES_EXT</code> specifies that
+object lifetime validation is disabled.
+This feature is enabled by default.</p>
+</li>
+<li>
+<p><code>VK_VALIDATION_FEATURE_DISABLE_CORE_CHECKS_EXT</code> specifies that core
+validation checks are disabled.
+This feature is enabled by default.
+If this feature is disabled,
+<code>VK_VALIDATION_FEATURE_DISABLE_SHADERS_EXT</code> is implied.</p>
+</li>
+<li>
+<p><code>VK_VALIDATION_FEATURE_DISABLE_UNIQUE_HANDLES_EXT</code> specifies that
+protection against duplicate non-dispatchable object handles is
+disabled.
+This feature is enabled by default.</p>
+</li>
+<li>
+<p><code>VK_VALIDATION_FEATURE_DISABLE_SHADER_VALIDATION_CACHE_EXT</code>
+specifies that there will be no caching of shader validation results and
+every shader will be validated on every application execution.
+Shader validation caching is enabled by default.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tbody><tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Disabling checks such as parameter validation and object lifetime validation
+prevents the reporting of error conditions that can cause other validation
+checks to behave incorrectly or crash.
+Some validation checks assume that their inputs are already valid and do not
+always revalidate them.</p>
+</div>
+</td>
+</tr>
+</tbody></table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tbody><tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The <code><a href="chap60.html#VK_EXT_validation_features">VK_EXT_validation_features</a></code> extension subsumes all the
+functionality provided in the <code><a href="chap60.html#VK_EXT_validation_flags">VK_EXT_validation_flags</a></code> extension.</p>
+</div>
+</td>
+</tr>
+</tbody></table>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To create a Vulkan instance with a specific configuration of layer settings,
+add <a href="chap4.html#VkLayerSettingsCreateInfoEXT">VkLayerSettingsCreateInfoEXT</a> structures to the <code>pNext</code> chain
+of the <a href="chap4.html#VkInstanceCreateInfo">VkInstanceCreateInfo</a> structure, specifying the settings to be
+configured.</p>
+</div>
+<div id="VkLayerSettingsCreateInfoEXT" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_EXT_layer_settings</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="nc">VkLayerSettingsCreateInfoEXT</span> <span class="p">{</span>
+    <span class="n">VkStructureType</span>             <span class="n">sType</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">void</span><span class="o">*</span>                 <span class="n">pNext</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>                    <span class="n">settingCount</span><span class="p">;</span>
+    <span class="k">const</span> <span class="n">VkLayerSettingEXT</span><span class="o">*</span>    <span class="n">pSettings</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">VkLayerSettingsCreateInfoEXT</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="chap3.html#VkStructureType">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>settingCount</code> is the number of settings to configure.</p>
+</li>
+<li>
+<p><code>pSettings</code> is a pointer to an array of <code>settingCount</code>
+<a href="chap4.html#VkLayerSettingEXT">VkLayerSettingEXT</a> values specifying the settings to be configured.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkLayerSettingsCreateInfoEXT-sType-sType" href="chap4.html#VUID-VkLayerSettingsCreateInfoEXT-sType-sType"></a> <span class="vuid">VUID-VkLayerSettingsCreateInfoEXT-sType-sType</span><br>
+ <code>sType</code> <strong class="purple">must</strong> be <code>VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkLayerSettingsCreateInfoEXT-pSettings-parameter" href="chap4.html#VUID-VkLayerSettingsCreateInfoEXT-pSettings-parameter"></a> <span class="vuid">VUID-VkLayerSettingsCreateInfoEXT-pSettings-parameter</span><br>
+ If <code>settingCount</code> is not <code>0</code>, <code>pSettings</code> <strong class="purple">must</strong> be a valid pointer to an array of <code>settingCount</code> valid <a href="chap4.html#VkLayerSettingEXT">VkLayerSettingEXT</a> structures</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The values of elements of the
+<a href="chap4.html#VkLayerSettingsCreateInfoEXT">VkLayerSettingsCreateInfoEXT</a>::<code>pSettings</code> array, specifying layer
+settings to be configured, are:</p>
+</div>
+<div id="VkLayerSettingEXT" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_EXT_layer_settings</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="nc">VkLayerSettingEXT</span> <span class="p">{</span>
+    <span class="k">const</span> <span class="kt">char</span><span class="o">*</span>              <span class="n">pLayerName</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">char</span><span class="o">*</span>              <span class="n">pSettingName</span><span class="p">;</span>
+    <span class="n">VkLayerSettingTypeEXT</span>    <span class="n">type</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>                 <span class="n">valueCount</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">void</span><span class="o">*</span>              <span class="n">pValues</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">VkLayerSettingEXT</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>pLayerName</code> is a pointer to a null-terminated UTF-8 string naming
+the layer to configure the setting from.</p>
+</li>
+<li>
+<p><code>pSettingName</code> is a pointer to a null-terminated UTF-8 string naming
+the setting to configure.
+Values of <code>pSettingName</code> that are unknown to the layer are ignored.</p>
+</li>
+<li>
+<p><code>type</code> is a <a href="chap4.html#VkLayerSettingTypeEXT">VkLayerSettingTypeEXT</a> value specifying the type of
+the <code>pValues</code> values.</p>
+</li>
+<li>
+<p><code>valueCount</code> is the number of values used to configure the layer
+setting.</p>
+</li>
+<li>
+<p><code>pValues</code> is a pointer to an array of <code>valueCount</code> values of the
+type indicated by <code>type</code> to configure the layer setting.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>When multiple <a href="chap4.html#VkLayerSettingsCreateInfoEXT">VkLayerSettingsCreateInfoEXT</a> structures are chained and
+the same <code>pSettingName</code> is referenced for the same <code>pLayerName</code>, the
+value of the first reference of the layer setting is used.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkLayerSettingEXT-valueCount-10070" href="chap4.html#VUID-VkLayerSettingEXT-valueCount-10070"></a> <span class="vuid">VUID-VkLayerSettingEXT-valueCount-10070</span><br>
+
+If <code>valueCount</code> is not <code>0</code>, <code>pValues</code> <strong class="purple">must</strong> be a valid pointer
+to an array of <code>valueCount</code> values of the type indicated by
+<code>type</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkLayerSettingEXT-pLayerName-parameter" href="chap4.html#VUID-VkLayerSettingEXT-pLayerName-parameter"></a> <span class="vuid">VUID-VkLayerSettingEXT-pLayerName-parameter</span><br>
+ <code>pLayerName</code> <strong class="purple">must</strong> be a null-terminated UTF-8 string</p>
+</li>
+<li>
+<p><a id="VUID-VkLayerSettingEXT-pSettingName-parameter" href="chap4.html#VUID-VkLayerSettingEXT-pSettingName-parameter"></a> <span class="vuid">VUID-VkLayerSettingEXT-pSettingName-parameter</span><br>
+ <code>pSettingName</code> <strong class="purple">must</strong> be a null-terminated UTF-8 string</p>
+</li>
+<li>
+<p><a id="VUID-VkLayerSettingEXT-type-parameter" href="chap4.html#VUID-VkLayerSettingEXT-type-parameter"></a> <span class="vuid">VUID-VkLayerSettingEXT-type-parameter</span><br>
+ <code>type</code> <strong class="purple">must</strong> be a valid <a href="chap4.html#VkLayerSettingTypeEXT">VkLayerSettingTypeEXT</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Possible values of <a href="chap4.html#VkLayerSettingEXT">VkLayerSettingEXT</a>::<code>type</code>, specifying the type
+of the data returned in <a href="chap4.html#VkLayerSettingEXT">VkLayerSettingEXT</a>::<code>pValues</code>, are:</p>
+</div>
+<div id="VkLayerSettingTypeEXT" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_EXT_layer_settings</span>
+<span class="k">typedef</span> <span class="k">enum</span> <span class="n">VkLayerSettingTypeEXT</span> <span class="p">{</span>
+    <span class="n">VK_LAYER_SETTING_TYPE_BOOL32_EXT</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">VK_LAYER_SETTING_TYPE_INT32_EXT</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">VK_LAYER_SETTING_TYPE_INT64_EXT</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">VK_LAYER_SETTING_TYPE_UINT32_EXT</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">VK_LAYER_SETTING_TYPE_UINT64_EXT</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="n">VK_LAYER_SETTING_TYPE_FLOAT32_EXT</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="n">VK_LAYER_SETTING_TYPE_FLOAT64_EXT</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
+    <span class="n">VK_LAYER_SETTING_TYPE_STRING_EXT</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span>
+<span class="p">}</span> <span class="n">VkLayerSettingTypeEXT</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_LAYER_SETTING_TYPE_BOOL32_EXT</code> specifies that the layer
+setting’s type is <a href="chap3.html#VkBool32">VkBool32</a>.</p>
+</li>
+<li>
+<p><code>VK_LAYER_SETTING_TYPE_INT32_EXT</code> specifies that the layer setting’s
+type is signed 32-bit integer.</p>
+</li>
+<li>
+<p><code>VK_LAYER_SETTING_TYPE_INT64_EXT</code> specifies that the layer setting’s
+type is signed 64-bit integer.</p>
+</li>
+<li>
+<p><code>VK_LAYER_SETTING_TYPE_UINT32_EXT</code> specifies that the layer
+setting’s type is unsigned 32-bit integer.</p>
+</li>
+<li>
+<p><code>VK_LAYER_SETTING_TYPE_UINT64_EXT</code> specifies that the layer
+setting’s type is unsigned 64-bit integer.</p>
+</li>
+<li>
+<p><code>VK_LAYER_SETTING_TYPE_FLOAT32_EXT</code> specifies that the layer
+setting’s type is 32-bit floating-point.</p>
+</li>
+<li>
+<p><code>VK_LAYER_SETTING_TYPE_FLOAT64_EXT</code> specifies that the layer
+setting’s type is 64-bit floating-point.</p>
+</li>
+<li>
+<p><code>VK_LAYER_SETTING_TYPE_STRING_EXT</code> specifies that the layer
+setting’s type is a pointer to a null-terminated UTF-8 string.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkDirectDriverLoadingListLUNARG</code> structure is defined as:</p>
+</div>
+<div id="VkDirectDriverLoadingListLUNARG" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_LUNARG_direct_driver_loading</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="nc">VkDirectDriverLoadingListLUNARG</span> <span class="p">{</span>
+    <span class="n">VkStructureType</span>                           <span class="n">sType</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">void</span><span class="o">*</span>                               <span class="n">pNext</span><span class="p">;</span>
+    <span class="n">VkDirectDriverLoadingModeLUNARG</span>           <span class="n">mode</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>                                  <span class="n">driverCount</span><span class="p">;</span>
+    <span class="k">const</span> <span class="n">VkDirectDriverLoadingInfoLUNARG</span><span class="o">*</span>    <span class="n">pDrivers</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">VkDirectDriverLoadingListLUNARG</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="chap3.html#VkStructureType">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>mode</code> controls the mode in which to load the provided drivers.</p>
+</li>
+<li>
+<p><code>driverCount</code> is the number of driver manifest paths.</p>
+</li>
+<li>
+<p><code>pDrivers</code> is a pointer to an array of <code>driverCount</code>
+<a href="chap4.html#VkDirectDriverLoadingInfoLUNARG">VkDirectDriverLoadingInfoLUNARG</a> structures.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>When creating a Vulkan instance for which additional drivers are to be
+included, add a <code>VkDirectDriverLoadingListLUNARG</code> structure to the pNext
+chain of the <a href="chap4.html#VkInstanceCreateInfo">VkInstanceCreateInfo</a> structure, and include in it the
+list of <code>VkDirectDriverLoadingInfoLUNARG</code> structures which contain the
+information necessary to load additional drivers.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDirectDriverLoadingListLUNARG-sType-sType" href="chap4.html#VUID-VkDirectDriverLoadingListLUNARG-sType-sType"></a> <span class="vuid">VUID-VkDirectDriverLoadingListLUNARG-sType-sType</span><br>
+ <code>sType</code> <strong class="purple">must</strong> be <code>VK_STRUCTURE_TYPE_DIRECT_DRIVER_LOADING_LIST_LUNARG</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDirectDriverLoadingListLUNARG-mode-parameter" href="chap4.html#VUID-VkDirectDriverLoadingListLUNARG-mode-parameter"></a> <span class="vuid">VUID-VkDirectDriverLoadingListLUNARG-mode-parameter</span><br>
+ <code>mode</code> <strong class="purple">must</strong> be a valid <a href="chap4.html#VkDirectDriverLoadingModeLUNARG">VkDirectDriverLoadingModeLUNARG</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkDirectDriverLoadingListLUNARG-pDrivers-parameter" href="chap4.html#VUID-VkDirectDriverLoadingListLUNARG-pDrivers-parameter"></a> <span class="vuid">VUID-VkDirectDriverLoadingListLUNARG-pDrivers-parameter</span><br>
+ <code>pDrivers</code> <strong class="purple">must</strong> be a valid pointer to an array of <code>driverCount</code> valid <a href="chap4.html#VkDirectDriverLoadingInfoLUNARG">VkDirectDriverLoadingInfoLUNARG</a> structures</p>
+</li>
+<li>
+<p><a id="VUID-VkDirectDriverLoadingListLUNARG-driverCount-arraylength" href="chap4.html#VUID-VkDirectDriverLoadingListLUNARG-driverCount-arraylength"></a> <span class="vuid">VUID-VkDirectDriverLoadingListLUNARG-driverCount-arraylength</span><br>
+ <code>driverCount</code> <strong class="purple">must</strong> be greater than <code>0</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkDirectDriverLoadingInfoLUNARG</code> structure is defined as:</p>
+</div>
+<div id="VkDirectDriverLoadingInfoLUNARG" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_LUNARG_direct_driver_loading</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="nc">VkDirectDriverLoadingInfoLUNARG</span> <span class="p">{</span>
+    <span class="n">VkStructureType</span>                     <span class="n">sType</span><span class="p">;</span>
+    <span class="kt">void</span><span class="o">*</span>                               <span class="n">pNext</span><span class="p">;</span>
+    <span class="n">VkDirectDriverLoadingFlagsLUNARG</span>    <span class="n">flags</span><span class="p">;</span>
+    <span class="n">PFN_vkGetInstanceProcAddrLUNARG</span>     <span class="n">pfnGetInstanceProcAddr</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">VkDirectDriverLoadingInfoLUNARG</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="chap3.html#VkStructureType">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>flags</code> is reserved for future use.</p>
+</li>
+<li>
+<p><code>pfnGetInstanceProcAddr</code> is a <a href="chap4.html#PFN_vkGetInstanceProcAddrLUNARG">PFN_vkGetInstanceProcAddrLUNARG</a>
+pointer to the driver <a href="chap4.html#vkGetInstanceProcAddr">vkGetInstanceProcAddr</a> function.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDirectDriverLoadingInfoLUNARG-sType-sType" href="chap4.html#VUID-VkDirectDriverLoadingInfoLUNARG-sType-sType"></a> <span class="vuid">VUID-VkDirectDriverLoadingInfoLUNARG-sType-sType</span><br>
+ <code>sType</code> <strong class="purple">must</strong> be <code>VK_STRUCTURE_TYPE_DIRECT_DRIVER_LOADING_INFO_LUNARG</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDirectDriverLoadingInfoLUNARG-flags-zerobitmask" href="chap4.html#VUID-VkDirectDriverLoadingInfoLUNARG-flags-zerobitmask"></a> <span class="vuid">VUID-VkDirectDriverLoadingInfoLUNARG-flags-zerobitmask</span><br>
+ <code>flags</code> <strong class="purple">must</strong> be <code>0</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Possible values of <a href="chap4.html#VkDirectDriverLoadingListLUNARG">VkDirectDriverLoadingListLUNARG</a>::<code>mode</code>,
+specifying the mode in which drivers are used, are:</p>
+</div>
+<div id="VkDirectDriverLoadingModeLUNARG" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_LUNARG_direct_driver_loading</span>
+<span class="k">typedef</span> <span class="k">enum</span> <span class="n">VkDirectDriverLoadingModeLUNARG</span> <span class="p">{</span>
+    <span class="n">VK_DIRECT_DRIVER_LOADING_MODE_EXCLUSIVE_LUNARG</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">VK_DIRECT_DRIVER_LOADING_MODE_INCLUSIVE_LUNARG</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+<span class="p">}</span> <span class="n">VkDirectDriverLoadingModeLUNARG</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_DIRECT_DRIVER_LOADING_MODE_EXCLUSIVE_LUNARG</code> specifies that the
+provided drivers are used instead of the system-loaded drivers.</p>
+</li>
+<li>
+<p><code>VK_DIRECT_DRIVER_LOADING_MODE_INCLUSIVE_LUNARG</code> specifies that the
+provided drivers are used in addition to the system-loaded drivers.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div id="VkDirectDriverLoadingFlagsLUNARG" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_LUNARG_direct_driver_loading</span>
+<span class="k">typedef</span> <span class="n">VkFlags</span> <span class="n">VkDirectDriverLoadingFlagsLUNARG</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>VkDirectDriverLoadingFlagsLUNARG</code> is a bitmask type for setting a mask,
+but is currently reserved for future use.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The type of <a href="chap4.html#PFN_vkGetInstanceProcAddrLUNARG">PFN_vkGetInstanceProcAddrLUNARG</a> is:</p>
+</div>
+<div id="PFN_vkGetInstanceProcAddrLUNARG" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_LUNARG_direct_driver_loading</span>
+<span class="k">typedef</span> <span class="nf">PFN_vkVoidFunction</span> <span class="p">(</span><span class="n">VKAPI_PTR</span> <span class="o">*</span><span class="n">PFN_vkGetInstanceProcAddrLUNARG</span><span class="p">)(</span>
+    <span class="n">VkInstance</span> <span class="n">instance</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">pName</span><span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>instance</code> is a <a href="chap4.html#VkInstance">VkInstance</a> handle.</p>
+</li>
+<li>
+<p><code>pName</code> is the name of a Vulkan command.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This type is compatible with the type of a pointer to the
+<a href="chap4.html#vkGetInstanceProcAddr">vkGetInstanceProcAddr</a> command, but is used only to specify device
+driver addresses in
+<a href="chap4.html#VkDirectDriverLoadingInfoLUNARG">VkDirectDriverLoadingInfoLUNARG</a>::<code>pfnGetInstanceProcAddr</code>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tbody><tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>This type exists only because of limitations in the XML schema and
+processing scripts, and its name may change in the future.
+Ideally we would use the <code>PFN_vkGetInstanceProcAddr</code> type generated in
+the <code>vulkan_core.h</code> header.</p>
+</div>
+</td>
+</tr>
+</tbody></table>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkApplicationInfo</code> structure is defined as:</p>
+</div>
+<div id="VkApplicationInfo" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_VERSION_1_0</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="nc">VkApplicationInfo</span> <span class="p">{</span>
+    <span class="n">VkStructureType</span>    <span class="n">sType</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">void</span><span class="o">*</span>        <span class="n">pNext</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">char</span><span class="o">*</span>        <span class="n">pApplicationName</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>           <span class="n">applicationVersion</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">char</span><span class="o">*</span>        <span class="n">pEngineName</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>           <span class="n">engineVersion</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>           <span class="n">apiVersion</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">VkApplicationInfo</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="chap3.html#VkStructureType">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>pApplicationName</code> is <code>NULL</code> or is a pointer to a null-terminated
+UTF-8 string containing the name of the application.</p>
+</li>
+<li>
+<p><code>applicationVersion</code> is an unsigned integer variable containing the
+developer-supplied version number of the application.</p>
+</li>
+<li>
+<p><code>pEngineName</code> is <code>NULL</code> or is a pointer to a null-terminated UTF-8
+string containing the name of the engine (if any) used to create the
+application.</p>
+</li>
+<li>
+<p><code>engineVersion</code> is an unsigned integer variable containing the
+developer-supplied version number of the engine used to create the
+application.</p>
+</li>
+<li>
+<p><code>apiVersion</code> <strong class="purple">must</strong> be the highest version of Vulkan that the
+application is designed to use, encoded as described in
+<a href="chap50.html#extendingvulkan-coreversions-versionnumbers">Version Numbers</a>.
+The patch version number specified in <code>apiVersion</code> is ignored when
+creating an instance object.
+The variant version of the instance <strong class="purple">must</strong> match that requested in
+<code>apiVersion</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Vulkan 1.0 implementations were required to return
+<code>VK_ERROR_INCOMPATIBLE_DRIVER</code> if <code>apiVersion</code> was larger than 1.0.
+Implementations that support Vulkan 1.1 or later <strong class="purple">must</strong> not return
+<code>VK_ERROR_INCOMPATIBLE_DRIVER</code> for any value of <code>apiVersion</code>
+.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tbody><tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Because Vulkan 1.0 implementations <strong class="purple">may</strong> fail with
+<code>VK_ERROR_INCOMPATIBLE_DRIVER</code>, applications <strong class="purple">should</strong> determine the
+version of Vulkan available before calling <a href="chap4.html#vkCreateInstance">vkCreateInstance</a>.
+If the <a href="chap4.html#vkGetInstanceProcAddr">vkGetInstanceProcAddr</a> returns <code>NULL</code> for
+<a href="chap4.html#vkEnumerateInstanceVersion">vkEnumerateInstanceVersion</a>, it is a Vulkan 1.0 implementation.
+Otherwise, the application <strong class="purple">can</strong> call <a href="chap4.html#vkEnumerateInstanceVersion">vkEnumerateInstanceVersion</a> to
+determine the version of Vulkan.</p>
+</div>
+</td>
+</tr>
+</tbody></table>
+</div>
+<div class="paragraph">
+<p>As long as the instance supports at least Vulkan 1.1, an application <strong class="purple">can</strong>
+use different versions of Vulkan with an instance than it does with a device
+or physical device.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tbody><tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The Khronos validation layers will treat <code>apiVersion</code> as the highest API
+version the application targets, and will validate API usage against the
+minimum of that version and the implementation version (instance or device,
+depending on context).
+If an application tries to use functionality from a greater version than
+this, a validation error will be triggered.</p>
+</div>
+<div class="paragraph">
+<p>For example, if the instance supports Vulkan 1.1 and three physical devices
+support Vulkan 1.0, Vulkan 1.1, and Vulkan 1.2, respectively, and if the
+application sets <code>apiVersion</code> to 1.2, the application <strong class="purple">can</strong> use the
+following versions of Vulkan:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Vulkan 1.0 <strong class="purple">can</strong> be used with the instance and with all physical devices.</p>
+</li>
+<li>
+<p>Vulkan 1.1 <strong class="purple">can</strong> be used with the instance and with the physical devices
+that support Vulkan 1.1 and Vulkan 1.2.</p>
+</li>
+<li>
+<p>Vulkan 1.2 <strong class="purple">can</strong> be used with the physical device that supports Vulkan
+1.2.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If we modify the above example so that the application sets <code>apiVersion</code>
+to 1.1, then the application <strong class="purple">must</strong> not use Vulkan 1.2 functionality on the
+physical device that supports Vulkan 1.2.</p>
+</div>
+</td>
+</tr>
+</tbody></table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tbody><tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Providing a <code>NULL</code> <a href="chap4.html#VkInstanceCreateInfo">VkInstanceCreateInfo</a>::<code>pApplicationInfo</code> or
+providing an <code>apiVersion</code> of 0 is equivalent to providing an
+<code>apiVersion</code> of
+<code>VK_MAKE_API_VERSION(0,1,0,0)</code>.</p>
+</div>
+</td>
+</tr>
+</tbody></table>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkApplicationInfo-apiVersion-04010" href="chap4.html#VUID-VkApplicationInfo-apiVersion-04010"></a> <span class="vuid">VUID-VkApplicationInfo-apiVersion-04010</span><br>
+
+If <code>apiVersion</code> is not <code>0</code>, then it <strong class="purple">must</strong> be greater than or equal
+to <a href="chap50.html#VK_API_VERSION_1_0">VK_API_VERSION_1_0</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkApplicationInfo-sType-sType" href="chap4.html#VUID-VkApplicationInfo-sType-sType"></a> <span class="vuid">VUID-VkApplicationInfo-sType-sType</span><br>
+ <code>sType</code> <strong class="purple">must</strong> be <code>VK_STRUCTURE_TYPE_APPLICATION_INFO</code></p>
+</li>
+<li>
+<p><a id="VUID-VkApplicationInfo-pNext-pNext" href="chap4.html#VUID-VkApplicationInfo-pNext-pNext"></a> <span class="vuid">VUID-VkApplicationInfo-pNext-pNext</span><br>
+ <code>pNext</code> <strong class="purple">must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkApplicationInfo-pApplicationName-parameter" href="chap4.html#VUID-VkApplicationInfo-pApplicationName-parameter"></a> <span class="vuid">VUID-VkApplicationInfo-pApplicationName-parameter</span><br>
+ If <code>pApplicationName</code> is not <code>NULL</code>, <code>pApplicationName</code> <strong class="purple">must</strong> be a null-terminated UTF-8 string</p>
+</li>
+<li>
+<p><a id="VUID-VkApplicationInfo-pEngineName-parameter" href="chap4.html#VUID-VkApplicationInfo-pEngineName-parameter"></a> <span class="vuid">VUID-VkApplicationInfo-pEngineName-parameter</span><br>
+ If <code>pEngineName</code> is not <code>NULL</code>, <code>pEngineName</code> <strong class="purple">must</strong> be a null-terminated UTF-8 string</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To destroy an instance, call:</p>
+</div>
+<div id="vkDestroyInstance" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_VERSION_1_0</span>
+<span class="kt">void</span> <span class="nf">vkDestroyInstance</span><span class="p">(</span>
+    <span class="n">VkInstance</span>                                  <span class="n">instance</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">VkAllocationCallbacks</span><span class="o">*</span>                <span class="n">pAllocator</span><span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>instance</code> is the handle of the instance to destroy.</p>
+</li>
+<li>
+<p><code>pAllocator</code> controls host memory allocation as described in the
+<a href="chap11.html#memory-allocation">Memory Allocation</a> chapter.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Prior to destroying an instance, an application is responsible for
+destroying/freeing any Vulkan objects with explicit <code>vkDestroy*</code> or
+<code>vkFree*</code> commands that were created using that instance, or any
+<a href="chap5.html#VkPhysicalDevice">VkPhysicalDevice</a> object retrieved from it, as the first parameter of
+the corresponding <code>vkCreate*</code> or <code>vkAllocate*</code> command.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkDestroyInstance-instance-00629" href="chap4.html#VUID-vkDestroyInstance-instance-00629"></a> <span class="vuid">VUID-vkDestroyInstance-instance-00629</span><br>
+
+All child objects that were created with <code>instance</code> or with a
+<a href="chap5.html#VkPhysicalDevice">VkPhysicalDevice</a> retrieved from it, and that <strong class="purple">can</strong> be destroyed or
+freed, <strong class="purple">must</strong> have been destroyed or freed prior to destroying
+<code>instance</code></p>
+</li>
+<li>
+<p><a id="VUID-vkDestroyInstance-instance-00630" href="chap4.html#VUID-vkDestroyInstance-instance-00630"></a> <span class="vuid">VUID-vkDestroyInstance-instance-00630</span><br>
+
+If <code>VkAllocationCallbacks</code> were provided when <code>instance</code> was
+created, a compatible set of callbacks <strong class="purple">must</strong> be provided here</p>
+</li>
+<li>
+<p><a id="VUID-vkDestroyInstance-instance-00631" href="chap4.html#VUID-vkDestroyInstance-instance-00631"></a> <span class="vuid">VUID-vkDestroyInstance-instance-00631</span><br>
+
+If no <code>VkAllocationCallbacks</code> were provided when <code>instance</code> was
+created, <code>pAllocator</code> <strong class="purple">must</strong> be <code>NULL</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkDestroyInstance-instance-parameter" href="chap4.html#VUID-vkDestroyInstance-instance-parameter"></a> <span class="vuid">VUID-vkDestroyInstance-instance-parameter</span><br>
+ If <code>instance</code> is not <code>NULL</code>, <code>instance</code> <strong class="purple">must</strong> be a valid <a href="chap4.html#VkInstance">VkInstance</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkDestroyInstance-pAllocator-parameter" href="chap4.html#VUID-vkDestroyInstance-pAllocator-parameter"></a> <span class="vuid">VUID-vkDestroyInstance-pAllocator-parameter</span><br>
+ If <code>pAllocator</code> is not <code>NULL</code>, <code>pAllocator</code> <strong class="purple">must</strong> be a valid pointer to a valid <a href="chap11.html#VkAllocationCallbacks">VkAllocationCallbacks</a> structure</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>instance</code> <strong class="purple">must</strong> be externally synchronized</p>
+</li>
+<li>
+<p>Host access to all <code>VkPhysicalDevice</code> objects enumerated from <code>instance</code> <strong class="purple">must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+<nav>
+  <a rel="prev" href="chap3.html" class="nav nav-prev" title="Previous page" aria-label="Previous page" aria-keyshortcuts="Left">
+        <i class="fa fa-angle-left"></i>
+     </a>
+  <a rel="next" href="chap5.html" class="nav nav-next" title="Next page" aria-label="Next page" aria-keyshortcuts="Right">
+        <i class="fa fa-angle-right"></i>
+     </a>
+  <div style="clear: both"></div>
+</nav>
+
+
+
+
+</body>
+  <script>
+  function isInViewport(ele) {
+    const rect = ele.getBoundingClientRect();
+    return (
+        rect.top >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
+    );
+  }
+  function yPosition (ele) {
+    const rect = ele.getBoundingClientRect();
+    return (rect.top - 20); // 20px above
+  }
+  let curr = document.getElementsByClassName('current');
+  if (!isInViewport(curr[curr.length - 1])) {
+    document.getElementById('toc').scrollTo({
+      top: yPosition(curr[0]),
+      left: 0,
+      behavior: 'smooth'
+    });
+  }
+
+  /* For page navigation */
+  function gotoPage(selector) {
+    const button = document.querySelector(selector);
+    if (button)
+      window.location.href = button.href;
+  }
+  document.addEventListener('keydown', e => {
+    switch (e.key) {
+      case 'ArrowRight':
+        e.preventDefault();
+        gotoPage('.nav-next');
+        break;
+      case 'ArrowLeft':
+        e.preventDefault();
+        gotoPage('.nav-prev');
+        break;
+    }
+  });
+  </script>
+  </html>

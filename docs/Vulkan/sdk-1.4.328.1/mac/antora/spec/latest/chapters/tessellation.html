@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Tessellation :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:spec" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="spec" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Specification</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="fundamentals.html">Fundamentals</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="initialization.html">Initialization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="devsandqueues.html">Devices and Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="cmdbuffers.html">Command Buffers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="synchronization.html">Synchronization and Cache Control</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="renderpass.html">Render Pass</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="shaders.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="pipelines.html">Pipelines</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="memory.html">Memory Allocation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="resources.html">Resource Creation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="samplers.html">Samplers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="descriptorsets.html">Resource Descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="interfaces.html">Shader Interfaces</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="textures.html">Image Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="fragmentdensitymapops.html">Fragment Density Map Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_ARM_tensors/tensorops.html">Tensor Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="queries.html">Queries</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="clears.html">Clear Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="copies.html">Copy Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="drawing.html">Drawing Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="fxvertex.html">Fixed-Function Vertex Processing</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="tessellation.html">Tessellation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="geometry.html">Geometry Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_NV_mesh_shader/mesh.html">Mesh Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_HUAWEI_cluster_culling_shader/clusterculling.html">Cluster Culling Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="vertexpostproc.html">Fixed-Function Vertex Post-Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="primsrast.html">Rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="fragops.html">Fragment Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="framebuffer.html">The Framebuffer</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="dispatch.html">Dispatching Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="device_generated_commands/generatedcommands.html">Device-Generated Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="sparsemem.html">Sparse Resources</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_KHR_surface/wsi.html">Window System Integration (WSI)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_KHR_deferred_host_operations/deferred_host_operations.html">Deferred Host Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_EXT_private_data.html">Private Data</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="accelstructures.html">Acceleration Structures</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_EXT_opacity_micromap/micromaps.html">Micromap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="raytraversal.html">Ray Traversal</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="raytracing.html">Ray Tracing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_NV_memory_decompression.html">Memory Decompression</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="videocoding.html">Video Coding</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_NV_optical_flow/optical_flow.html">Optical Flow</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="executiongraphs.html">Execution Graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_NV_external_compute_queue/VK_NV_external_compute_queue.html">External Compute Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_ARM_data_graph/graphs.html">Data graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="extensions.html">Extending Vulkan</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="features.html">Features</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="limits.html">Limits</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="formats.html">Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="capabilities.html">Additional Capabilities</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="debugging.html">Debugging</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/spirvenv.html">Vulkan Environment for SPIR-V</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/memorymodel.html">Memory Model</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/compressedtex.html">Compressed Image Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/versions.html">Core Revisions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/extensions.html">Layers &amp; Extensions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/roadmap.html">Vulkan Roadmap Milestones</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/deprecation.html">Deprecation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/boilerplate.html">API Boilerplate</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/invariance.html">Invariance</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/glossary.html">Lexicon</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/credits.html">Credits (Informative)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Specification</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Specification</a></li>
+    <li><a href="tessellation.html">Tessellation</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/spec/modules/ROOT/pages/chapters/tessellation.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Tessellation</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Tessellation involves three pipeline stages.
+First, a <a href="shaders.html#shaders-tessellation-control" class="xref page">tessellation control shader</a>
+transforms control points of a patch and <strong>can</strong> produce per-patch data.
+Second, a fixed-function tessellator generates multiple primitives
+corresponding to a tessellation of the patch in (u,v) or (u,v,w) parameter
+space.
+Third, a <a href="shaders.html#shaders-tessellation-evaluation" class="xref page">tessellation evaluation shader</a>
+transforms the vertices of the tessellated patch, for example to compute
+their positions and attributes as part of the tessellated surface.
+The tessellator is enabled when the pipeline contains both a tessellation
+control shader and a tessellation evaluation shader.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_tessellator"><a class="anchor" href="#_tessellator"></a>Tessellator</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If a pipeline includes both tessellation shaders (control and evaluation),
+the tessellator consumes each input patch (after vertex shading) and
+produces a new set of independent primitives (points, lines, or triangles).
+These primitives are logically produced by subdividing a geometric primitive
+(rectangle or triangle) according to the per-patch outer and inner
+tessellation levels written by the tessellation control shader.
+These levels are specified using the <a href="interfaces.html#interfaces-builtin-variables" class="xref page">built-in variables</a> <code>TessLevelOuter</code> and <code>TessLevelInner</code>, respectively.
+This subdivision is performed in an implementation-dependent manner.
+If no tessellation shaders are present in the pipeline, the tessellator is
+disabled and incoming primitives are passed through without modification.</p>
+</div>
+<div class="paragraph">
+<p>The type of subdivision performed by the tessellator is specified by an
+<code>OpExecutionMode</code> instruction using one of the <code>Triangles</code>,
+<code>Quads</code>, or <code>IsoLines</code> execution modes.
+When using <a href="shaders.html#shaders-objects" class="xref page">shader objects</a>, this instruction <strong>must</strong> be
+specified in the tessellation evaluation shader, and <strong>may</strong> also be specified
+in the tessellation control shader.
+When using pipelines, this
+instruction <strong>may</strong> be specified in either the tessellation evaluation or
+tessellation control shader.
+When using shader objects, tessellation-related modes that are <strong>required</strong>
+<strong>must</strong> be specified in the tessellation evaluation shader, and <strong>may</strong> also be
+specified in the tessellation control shader.
+Other tessellation-related modes <strong>may</strong> be specified in the tessellation
+evaluation shader.
+When using pipelines, other
+tessellation-related execution modes <strong>can</strong> also be specified in either the
+tessellation control or tessellation evaluation shaders.</p>
+</div>
+<div class="paragraph">
+<p>Any tessellation-related modes specified in both the tessellation control
+and tessellation evaluation shaders <strong>must</strong> be the same.</p>
+</div>
+<div class="paragraph">
+<p>Tessellation execution modes include:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>Triangles</code>, <code>Quads</code>, and <code>IsoLines</code>.
+These control the type of subdivision and topology of the output
+primitives.
+When using <a href="shaders.html#shaders-objects" class="xref page">shader objects</a>, one mode <strong>must</strong> be set in
+at least the tessellation evaluation stage.
+When using pipelines, one
+mode <strong>must</strong> be set in at least one of the tessellation shader stages.
+If the <code><a href="../appendices/extensions.html#VK_KHR_portability_subset" class="xref page">VK_KHR_portability_subset</a></code> extension is enabled, and
+<a href="features.html#VkPhysicalDevicePortabilitySubsetFeaturesKHR" class="xref page">VkPhysicalDevicePortabilitySubsetFeaturesKHR</a>::<code>tessellationIsolines</code>
+is <code>VK_FALSE</code>, then isoline tessellation is not supported by the
+implementation, and <code>IsoLines</code> <strong>must</strong> not be used in either
+tessellation shader stage.</p>
+</li>
+<li>
+<p><code>VertexOrderCw</code> and <code>VertexOrderCcw</code>.
+These control the orientation of triangles generated by the tessellator.
+When using <a href="shaders.html#shaders-objects" class="xref page">shader objects</a>, one mode <strong>must</strong> be set in
+at least the tessellation evaluation stage.
+When using pipelines, one
+mode <strong>must</strong> be set in at least one of the tessellation shader stages.</p>
+</li>
+<li>
+<p><code>PointMode</code>.
+Controls generation of points rather than triangles or lines.
+This functionality defaults to disabled, and is enabled if either shader
+stage includes the execution mode.
+When using <a href="shaders.html#shaders-objects" class="xref page">shader objects</a>, if <code>PointMode</code> is set
+in the tessellation control stage, it <strong>must</strong> be identically set in the
+tessellation evaluation stage.
+If the <code><a href="../appendices/extensions.html#VK_KHR_portability_subset" class="xref page">VK_KHR_portability_subset</a></code> extension is enabled, and
+<a href="features.html#VkPhysicalDevicePortabilitySubsetFeaturesKHR" class="xref page">VkPhysicalDevicePortabilitySubsetFeaturesKHR</a>::<code>tessellationPointMode</code>
+is <code>VK_FALSE</code>, then point mode tessellation is not supported by the
+implementation, and <code>PointMode</code> <strong>must</strong> not be used in either
+tessellation shader stage.</p>
+</li>
+<li>
+<p><code>SpacingEqual</code>, <code>SpacingFractionalEven</code>, and
+<code>SpacingFractionalOdd</code>.
+Controls the spacing of segments on the edges of tessellated primitives.
+When using <a href="shaders.html#shaders-objects" class="xref page">shader objects</a>, one mode <strong>must</strong> be set in
+at least the tessellation evaluation stage.
+When using pipelines, one
+mode <strong>must</strong> be set in at least one of the tessellation shader stages.</p>
+</li>
+<li>
+<p><code>OutputVertices</code>.
+Controls the size of the output patch of the tessellation control
+shader.
+When using <a href="shaders.html#shaders-objects" class="xref page">shader objects</a>, one value <strong>must</strong> be set
+in at least the tessellation control stage.
+When using pipelines, one
+value <strong>must</strong> be set in at least one of the tessellation shader stages.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For triangles, the tessellator subdivides a triangle primitive into smaller
+triangles.
+For quads, the tessellator subdivides a rectangle primitive into smaller
+triangles.
+For isolines, the tessellator subdivides a rectangle primitive into a
+collection of line segments arranged in strips stretching across the
+rectangle in the <span class="eq">u</span> dimension (i.e. the coordinates in <code>TessCoord</code>
+are of the form <span class="eq">(0,x)</span> through <span class="eq">(1,x)</span> for all tessellation
+evaluation shader invocations that share a line).</p>
+</div>
+<div class="paragraph">
+<p>Each vertex produced by the tessellator has an associated (u,v,w) or (u,v)
+position in a normalized parameter space, with parameter values in the range
+<span class="eq">[0,1]</span>, as illustrated
+in figures <a href="#img-tessellation-topology-ul">Figure 15. Domain parameterization for tessellation primitive modes (upper-left origin)</a> and
+<a href="#img-tessellation-topology-ll">Figure 16. Domain parameterization for tessellation primitive modes (lower-left origin)</a>.
+The domain space <strong>can</strong> have either an upper-left or lower-left origin,
+selected by the <code>domainOrigin</code> member of
+<a href="#VkPipelineTessellationDomainOriginStateCreateInfo">VkPipelineTessellationDomainOriginStateCreateInfo</a>.</p>
+</div>
+<div id="img-tessellation-topology-ul" class="imageblock text-center">
+<div class="content">
+<img src="../_images/tessparamUL.svg" alt="tessparamUL">
+</div>
+<div class="title">Figure 1. Domain parameterization for tessellation primitive modes (upper-left origin)</div>
+</div>
+<div id="img-tessellation-topology-ll" class="imageblock text-center">
+<div class="content">
+<img src="../_images/tessparam.svg" alt="tessparam">
+</div>
+<div class="title">Figure 2. Domain parameterization for tessellation primitive modes (lower-left origin)</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Caption</div>
+<div class="paragraph">
+<p>In the domain parameterization diagrams, the coordinates illustrate the
+value of <code>TessCoord</code> at the corners of the domain.
+The labels on the edges indicate the inner (IL0 and IL1) and outer (OL0
+through OL3) tessellation level values used to control the number of
+subdivisions along each edge of the domain.</p>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>For triangles, the vertex&#8217;s position is a barycentric coordinate
+<span class="eq">(u,v,w)</span>, where <span class="eq">u +  v +  w = 1.0</span>, and indicates the
+relative influence of the three vertices of the triangle on the position of
+the vertex.
+For quads and isolines, the position is a <span class="eq">(u,v)</span> coordinate indicating
+the relative horizontal and vertical position of the vertex relative to the
+subdivided rectangle.
+The subdivision process is explained in more detail in subsequent sections.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_tessellator_patch_discard"><a class="anchor" href="#_tessellator_patch_discard"></a>Tessellator Patch Discard</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A patch is discarded by the tessellator if any relevant outer tessellation
+level is less than or equal to zero.</p>
+</div>
+<div class="paragraph">
+<p>Patches will also be discarded if any relevant outer tessellation level
+corresponds to a floating-point <span class="eq">NaN</span> (not a number) in implementations
+supporting <span class="eq">NaN</span>.</p>
+</div>
+<div class="paragraph">
+<p>No new primitives are generated and the tessellation evaluation shader is
+not executed for patches that are discarded.
+For <code>Quads</code>, all four outer levels are relevant.
+For <code>Triangles</code> and <code>IsoLines</code>, only the first three or two outer
+levels, respectively, are relevant.
+Negative inner levels will not cause a patch to be discarded; they will be
+clamped as described below.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="tessellation-tessellator-spacing"><a class="anchor" href="#tessellation-tessellator-spacing"></a>Tessellator Spacing</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Each of the tessellation levels is used to determine the number and spacing
+of segments used to subdivide a corresponding edge.
+The method used to derive the number and spacing of segments is specified by
+an <code>OpExecutionMode</code> in the tessellation control or tessellation
+evaluation shader using one of the identifiers <code>SpacingEqual</code>,
+<code>SpacingFractionalEven</code>, or <code>SpacingFractionalOdd</code>.</p>
+</div>
+<div class="paragraph">
+<p>If <code>SpacingEqual</code> is used, the floating-point tessellation level is first
+clamped to <span class="eq">[1, <code>maxLevel</code>]</span>, where <span class="eq"><code>maxLevel</code></span> is the
+implementation-dependent maximum tessellation level
+(<code>VkPhysicalDeviceLimits</code>::<code>maxTessellationGenerationLevel</code>).
+The result is rounded up to the nearest integer <span class="eq">n</span>, and the
+corresponding edge is divided into <span class="eq">n</span> segments of equal length in (u,v)
+space.</p>
+</div>
+<div class="paragraph">
+<p>If <code>SpacingFractionalEven</code> is used, the tessellation level is first
+clamped to <span class="eq">[2, <code>maxLevel</code>]</span> and then rounded up to the nearest even
+integer <span class="eq">n</span>.
+If <code>SpacingFractionalOdd</code> is used, the tessellation level is clamped to
+<span class="eq">[1, <code>maxLevel</code> - 1]</span> and then rounded up to the nearest odd integer
+<span class="eq">n</span>.
+If <span class="eq">n</span> is one, the edge will not be subdivided.
+Otherwise, the corresponding edge will be divided into <span class="eq">n - 2</span> segments
+of equal length, and two additional segments of equal length that are
+typically shorter than the other segments.
+The length of the two additional segments relative to the others will
+decrease monotonically with <span class="eq">n - f</span>, where <span class="eq">f</span> is the clamped
+floating-point tessellation level.
+When <span class="eq">n - f</span> is zero, the additional segments will have equal length to
+the other segments.
+As <span class="eq">n - f</span> approaches 2.0, the relative length of the additional
+segments approaches zero.
+The two additional segments <strong>must</strong> be placed symmetrically on opposite sides
+of the subdivided edge.
+The relative location of these two segments is implementation-dependent, but
+<strong>must</strong> be identical for any pair of subdivided edges with identical values of
+<span class="eq">f</span>.</p>
+</div>
+<div class="paragraph">
+<p>When tessellating triangles or quads using <a href="#tessellation-point-mode">point mode</a> with fractional odd spacing, the tessellator <strong>may</strong> produce <em>interior
+vertices</em> that are positioned on the edge of the patch if an inner
+tessellation level is less than or equal to one.
+Such vertices are considered distinct from vertices produced by subdividing
+the outer edge of the patch, even if there are pairs of vertices with
+identical coordinates.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="tessellation-primitive-order"><a class="anchor" href="#tessellation-primitive-order"></a>Tessellation Primitive Ordering</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Few guarantees are provided for the relative ordering of primitives produced
+by tessellation, as they pertain to <a href="drawing.html#drawing-primitive-order" class="xref page">primitive order</a>.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The output primitives generated from each input primitive are passed to
+subsequent pipeline stages in an implementation-dependent order.</p>
+</li>
+<li>
+<p>All output primitives generated from a given input primitive are passed
+to subsequent pipeline stages before any output primitives generated
+from subsequent input primitives.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="tessellation-vertex-winding-order"><a class="anchor" href="#tessellation-vertex-winding-order"></a>Tessellator Vertex Winding Order</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When the tessellator produces triangles (in the <code>Triangles</code> or <code>Quads</code>
+modes), the orientation of all triangles is specified with an
+<code>OpExecutionMode</code> of <code>VertexOrderCw</code> or <code>VertexOrderCcw</code> in the
+tessellation control or tessellation evaluation shaders.
+If the order is <code>VertexOrderCw</code>, the vertices of all generated triangles
+will have clockwise ordering in (u,v) or (u,v,w) space.
+If the order is <code>VertexOrderCcw</code>, the vertices will have
+counter-clockwise ordering in that space.</p>
+</div>
+<div class="paragraph">
+<p>If the tessellation domain has an upper-left origin, the vertices of a
+triangle have counter-clockwise ordering if</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p><span class="eq">a = u<sub>0</sub> v<sub>1</sub> - u<sub>1</sub> v<sub>0</sub> +  u<sub>1</sub> v<sub>2</sub> - u<sub>2</sub> v<sub>1</sub>
++  u<sub>2</sub> v<sub>0</sub> - u<sub>0</sub> v<sub>2</sub></span></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>is negative, and clockwise ordering if <span class="eq">a</span> is positive.
+<span class="eq">u<sub>i</sub></span> and <span class="eq">v<sub>i</sub></span> are the <span class="eq">u</span> and <span class="eq">v</span> coordinates in
+normalized parameter space of the <span class="eq">i</span>th vertex of the triangle.
+If the tessellation domain has a lower-left origin, the vertices of a
+triangle have counter-clockwise ordering if <span class="eq">a</span> is positive, and
+clockwise ordering if <span class="eq">a</span> is negative.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The value <span class="eq">a</span> is proportional (with a positive factor) to the signed
+area of the triangle.</p>
+</div>
+<div class="paragraph">
+<p>In <code>Triangles</code> mode, even though the vertex coordinates have a <span class="eq">w</span>
+value, it does not participate directly in the computation of <span class="eq">a</span>, being
+an affine combination of <span class="eq">u</span> and <span class="eq">v</span>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="tessellation-triangle-tessellation"><a class="anchor" href="#tessellation-triangle-tessellation"></a>Triangle Tessellation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If the tessellation primitive mode is <code>Triangles</code>, an equilateral
+triangle is subdivided into a collection of triangles covering the area of
+the original triangle.
+First, the original triangle is subdivided into a collection of concentric
+equilateral triangles.
+The edges of each of these triangles are subdivided, and the area between
+each triangle pair is filled by triangles produced by joining the vertices
+on the subdivided edges.
+The number of concentric triangles and the number of subdivisions along each
+triangle except the outermost is derived from the first inner tessellation
+level.
+The edges of the outermost triangle are subdivided independently, using the
+first, second, and third outer tessellation levels to control the number of
+subdivisions of the <span class="eq">u = 0</span> (left), <span class="eq">v = 0</span> (bottom), and <span class="eq">w =
+0</span> (right) edges, respectively.
+The second inner tessellation level and the fourth outer tessellation level
+have no effect in this mode.</p>
+</div>
+<div class="paragraph">
+<p>If the first inner tessellation level and all three outer tessellation
+levels are exactly one after clamping and rounding, only a single triangle
+with <span class="eq">(u,v,w)</span> coordinates of <span class="eq">(0,0,1)</span>, <span class="eq">(1,0,0)</span>, and
+<span class="eq">(0,1,0)</span> is generated.
+If the inner tessellation level is one and any of the outer tessellation
+levels is greater than one, the inner tessellation level is treated as
+though it were originally specified as <span class="eq">1 +  ε</span> and will
+result in a two- or three-segment subdivision depending on the tessellation
+spacing.
+When used with fractional odd spacing, the three-segment subdivision <strong>may</strong>
+produce <em>inner vertices</em> positioned on the edge of the triangle.</p>
+</div>
+<div class="paragraph">
+<p>If any tessellation level is greater than one, tessellation begins by
+producing a set of concentric inner triangles and subdividing their edges.
+First, the three outer edges are temporarily subdivided using the clamped
+and rounded first inner tessellation level and the specified tessellation
+spacing, generating <span class="eq">n</span> segments.
+For the outermost inner triangle, the inner triangle is degenerate&#8201;&#8212;&#8201;a
+single point at the center of the triangle&#8201;&#8212;&#8201;if <span class="eq">n</span> is two.
+Otherwise, for each corner of the outer triangle, an inner triangle corner
+is produced at the intersection of two lines extended perpendicular to the
+corner&#8217;s two adjacent edges running through the vertex of the subdivided
+outer edge nearest that corner.
+If <span class="eq">n</span> is three, the edges of the inner triangle are not subdivided and
+it is the final triangle in the set of concentric triangles.
+Otherwise, each edge of the inner triangle is divided into <span class="eq">n - 2</span>
+segments, with the <span class="eq">n - 1</span> vertices of this subdivision produced by
+intersecting the inner edge with lines perpendicular to the edge running
+through the <span class="eq">n - 1</span> innermost vertices of the subdivision of the outer
+edge.
+Once the outermost inner triangle is subdivided, the previous subdivision
+process repeats itself, using the generated triangle as an outer triangle.
+This subdivision process is illustrated in <a href="#img-innertri">Inner Triangle Tessellation</a>.</p>
+</div>
+<div id="img-innertri" class="imageblock text-center">
+<div class="content">
+<img src="../_images/innertri.svg" alt="innertri">
+</div>
+<div class="title">Figure 3. Inner Triangle Tessellation</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Caption</div>
+<div class="paragraph">
+<p>In the <a href="#img-innertri">Inner Triangle Tessellation</a> diagram, inner
+tessellation levels of (a) four and (b) five are shown (not to scale).
+Solid black circles depict vertices along the edges of the concentric
+triangles.
+The edges of inner triangles are subdivided by intersecting the edge with
+segments perpendicular to the edge passing through each inner vertex of the
+subdivided outer edge.
+Dotted lines depict edges connecting corresponding vertices on the inner and
+outer triangle edges.</p>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Once all the concentric triangles are produced and their edges are
+subdivided, the area between each pair of adjacent inner triangles is filled
+completely with a set of non-overlapping triangles.
+In this subdivision, two of the three vertices of each triangle are taken
+from adjacent vertices on a subdivided edge of one triangle; the third is
+one of the vertices on the corresponding edge of the other triangle.
+If the innermost triangle is degenerate (i.e., a point), the triangle
+containing it is subdivided into six triangles by connecting each of the six
+vertices on that triangle with the center point.
+If the innermost triangle is not degenerate, that triangle is added to the
+set of generated triangles as-is.</p>
+</div>
+<div class="paragraph">
+<p>After the area corresponding to any inner triangles is filled, the
+tessellator generates triangles to cover the area between the outermost
+triangle and the outermost inner triangle.
+To do this, the temporary subdivision of the outer triangle edge above is
+discarded.
+Instead, the <span class="eq">u = 0</span>, <span class="eq">v = 0</span>, and <span class="eq">w = 0</span> edges are subdivided
+according to the first, second, and third outer tessellation levels,
+respectively, and the tessellation spacing.
+The original subdivision of the first inner triangle is retained.
+The area between the outer and first inner triangles is completely filled by
+non-overlapping triangles as described above.
+If the first (and only) inner triangle is degenerate, a set of triangles is
+produced by connecting each vertex on the outer triangle edges with the
+center point.</p>
+</div>
+<div class="paragraph">
+<p>After all triangles are generated, each vertex in the subdivided triangle is
+assigned a barycentric (u,v,w) coordinate based on its location relative to
+the three vertices of the outer triangle.</p>
+</div>
+<div class="paragraph">
+<p>The algorithm used to subdivide the triangular domain in (u,v,w) space into
+individual triangles is implementation-dependent.
+However, the set of triangles produced will completely cover the domain, and
+no portion of the domain will be covered by multiple triangles.</p>
+</div>
+<div class="paragraph">
+<p>Output triangles are generated with a topology similar to
+<a href="drawing.html#drawing-triangle-lists" class="xref page">triangle lists</a>, except that the order in which
+each triangle is generated, and the order in which the vertices are
+generated for each triangle, are implementation-dependent.
+However, the order of vertices in each triangle is consistent across the
+domain as described in <a href="#tessellation-vertex-winding-order">Tessellator Vertex Winding Order</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="tessellation-quad-tessellation"><a class="anchor" href="#tessellation-quad-tessellation"></a>Quad Tessellation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If the tessellation primitive mode is <code>Quads</code>, a rectangle is subdivided
+into a collection of triangles covering the area of the original rectangle.
+First, the original rectangle is subdivided into a regular mesh of
+rectangles, where the number of rectangles along the <span class="eq">u = 0</span> and <span class="eq">u
+= 1</span> (vertical) and <span class="eq">v = 0</span> and <span class="eq">v = 1</span> (horizontal) edges are
+derived from the first and second inner tessellation levels, respectively.
+All rectangles, except those adjacent to one of the outer rectangle edges,
+are decomposed into triangle pairs.
+The outermost rectangle edges are subdivided independently, using the first,
+second, third, and fourth outer tessellation levels to control the number of
+subdivisions of the <span class="eq">u = 0</span> (left), <span class="eq">v = 0</span> (bottom), <span class="eq">u = 1</span>
+(right), and <span class="eq">v = 1</span> (top) edges, respectively.
+The area between the inner rectangles of the mesh and the outer rectangle
+edges are filled by triangles produced by joining the vertices on the
+subdivided outer edges to the vertices on the edge of the inner rectangle
+mesh.</p>
+</div>
+<div class="paragraph">
+<p>If both clamped inner tessellation levels and all four clamped outer
+tessellation levels are exactly one, only a single triangle pair covering
+the outer rectangle is generated.
+Otherwise, if either clamped inner tessellation level is one, that
+tessellation level is treated as though it was originally specified as
+<span class="eq">1 +  ε</span> and will result in a two- or three-segment
+subdivision depending on the tessellation spacing.
+When used with fractional odd spacing, the three-segment subdivision <strong>may</strong>
+produce <em>inner vertices</em> positioned on the edge of the rectangle.</p>
+</div>
+<div class="paragraph">
+<p>If any tessellation level is greater than one, tessellation begins by
+subdividing the <span class="eq">u = 0</span> and <span class="eq">u = 1</span> edges of the outer rectangle
+into <span class="eq">m</span> segments using the clamped and rounded first inner tessellation
+level and the tessellation spacing.
+The <span class="eq">v = 0</span> and <span class="eq">v = 1</span> edges are subdivided into <span class="eq">n</span> segments
+using the second inner tessellation level.
+Each vertex on the <span class="eq">u = 0</span> and <span class="eq">v = 0</span> edges are joined with the
+corresponding vertex on the <span class="eq">u = 1</span> and <span class="eq">v = 1</span> edges to produce a
+set of vertical and horizontal lines that divide the rectangle into a grid
+of smaller rectangles.
+The primitive generator emits a pair of non-overlapping triangles covering
+each such rectangle not adjacent to an edge of the outer rectangle.
+The boundary of the region covered by these triangles forms an inner
+rectangle, the edges of which are subdivided by the grid vertices that lie
+on the edge.
+If either <span class="eq">m</span> or <span class="eq">n</span> is two, the inner rectangle is degenerate, and
+one or both of the rectangle&#8217;s <em>edges</em> consist of a single point.
+This subdivision is illustrated in Figure <a href="#img-innerquad">Inner Quad Tessellation</a>.</p>
+</div>
+<div id="img-innerquad" class="imageblock text-center">
+<div class="content">
+<img src="../_images/innerquad.svg" alt="innerquad">
+</div>
+<div class="title">Figure 4. Inner Quad Tessellation</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Caption</div>
+<div class="paragraph">
+<p>In the <a href="#img-innerquad">Inner Quad Tessellation</a> diagram, inner quad
+tessellation levels of (a) <span class="eq">(4,2)</span> and (b) <span class="eq">(7,4)</span> are shown.
+The regions highlighted in red in figure (b) depict the 10 inner rectangles,
+each of which will be subdivided into two triangles.
+Solid black circles depict vertices on the boundary of the outer and inner
+rectangles, where the inner rectangle of figure (a) is degenerate (a single
+line segment).
+Dotted lines depict the horizontal and vertical edges connecting
+corresponding vertices on the inner and outer rectangle edges.</p>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>After the area corresponding to the inner rectangle is filled, the
+tessellator <strong>must</strong> produce triangles to cover the area between the inner and
+outer rectangles.
+To do this, the subdivision of the outer rectangle edge above is discarded.
+Instead, the <span class="eq">u = 0</span>, <span class="eq">v = 0</span>, <span class="eq">u = 1</span>, and <span class="eq">v = 1</span> edges
+are subdivided according to the first, second, third, and fourth outer
+tessellation levels, respectively, and the tessellation spacing.
+The original subdivision of the inner rectangle is retained.
+The area between the outer and inner rectangles is completely filled by
+non-overlapping triangles.
+Two of the three vertices of each triangle are adjacent vertices on a
+subdivided edge of one rectangle; the third is one of the vertices on the
+corresponding edge of the other rectangle.
+If either edge of the innermost rectangle is degenerate, the area near the
+corresponding outer edges is filled by connecting each vertex on the outer
+edge with the single vertex making up the <em>inner edge</em>.</p>
+</div>
+<div class="paragraph">
+<p>The algorithm used to subdivide the rectangular domain in (u,v) space into
+individual triangles is implementation-dependent.
+However, the set of triangles produced will completely cover the domain, and
+no portion of the domain will be covered by multiple triangles.</p>
+</div>
+<div class="paragraph">
+<p>Output triangles are generated with a topology similar to
+<a href="drawing.html#drawing-triangle-lists" class="xref page">triangle lists</a>, except that the order in which
+each triangle is generated, and the order in which the vertices are
+generated for each triangle, are implementation-dependent.
+However, the order of vertices in each triangle is consistent across the
+domain as described in <a href="#tessellation-vertex-winding-order">Tessellator Vertex Winding Order</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="tessellation-isoline-tessellation"><a class="anchor" href="#tessellation-isoline-tessellation"></a>Isoline Tessellation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If the tessellation primitive mode is <code>IsoLines</code>, a set of independent
+horizontal line segments is drawn.
+The segments are arranged into connected strips called <em>isolines</em>, where the
+vertices of each isoline have a constant v coordinate and u coordinates
+covering the full range <span class="eq">[0,1]</span>.
+The number of isolines generated is derived from the first outer
+tessellation level; the number of segments in each isoline is derived from
+the second outer tessellation level.
+Both inner tessellation levels and the third and fourth outer tessellation
+levels have no effect in this mode.</p>
+</div>
+<div class="paragraph">
+<p>As with quad tessellation above, isoline tessellation begins with a
+rectangle.
+The <span class="eq">u = 0</span> and <span class="eq">u = 1</span> edges of the rectangle are subdivided
+according to the first outer tessellation level.
+For the purposes of this subdivision, the tessellation spacing mode is
+ignored and treated as equal_spacing.
+An isoline is drawn connecting each vertex on the <span class="eq">u = 0</span> rectangle edge
+to the corresponding vertex on the <span class="eq">u = 1</span> rectangle edge, except that
+no line is drawn between <span class="eq">(0,1)</span> and <span class="eq">(1,1)</span>.
+If the number of isolines on the subdivided <span class="eq">u = 0</span> and <span class="eq">u = 1</span>
+edges is <span class="eq">n</span>, this process will result in <span class="eq">n</span> equally spaced lines
+with constant v coordinates of 0, \(\frac{1}{n}, \frac{2}{n},
+\ldots, \frac{n-1}{n}\).</p>
+</div>
+<div class="paragraph">
+<p>Each of the <span class="eq">n</span> isolines is then subdivided according to the second
+outer tessellation level and the tessellation spacing, resulting in <span class="eq">m</span>
+line segments.
+Each segment of each line is emitted by the tessellator.
+These line segments are generated with a topology similar to
+<a href="drawing.html#drawing-line-lists" class="xref page">line lists</a>, except that the order in which each line
+is generated, and the order in which the vertices are generated for each
+line segment, are implementation-dependent.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>If the <code><a href="../appendices/extensions.html#VK_KHR_portability_subset" class="xref page">VK_KHR_portability_subset</a></code> extension is enabled, and
+<a href="features.html#VkPhysicalDevicePortabilitySubsetFeaturesKHR" class="xref page">VkPhysicalDevicePortabilitySubsetFeaturesKHR</a>::<code>tessellationIsolines</code>
+is <code>VK_FALSE</code>, then isoline tessellation is not supported by the
+implementation.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="tessellation-point-mode"><a class="anchor" href="#tessellation-point-mode"></a>Tessellation Point Mode</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>For all primitive modes, the tessellator is capable of generating points
+instead of lines or triangles.
+If the tessellation control or tessellation evaluation shader specifies the
+<code>OpExecutionMode</code> <code>PointMode</code>, the primitive generator will generate
+one point for each distinct vertex produced by tessellation, rather than
+emitting triangles or lines.
+Otherwise, the tessellator will produce a collection of line segments or
+triangles according to the primitive mode.
+These points are generated with a topology similar to <a href="drawing.html#drawing-point-lists" class="xref page">point lists</a>, except the order in which the points are generated for each
+input primitive is <strong>undefined</strong>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>If the <code><a href="../appendices/extensions.html#VK_KHR_portability_subset" class="xref page">VK_KHR_portability_subset</a></code> extension is enabled, and
+<a href="features.html#VkPhysicalDevicePortabilitySubsetFeaturesKHR" class="xref page">VkPhysicalDevicePortabilitySubsetFeaturesKHR</a>::<code>tessellationPointMode</code>
+is <code>VK_FALSE</code>, then tessellation point mode is not supported by the
+implementation.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_tessellation_pipeline_state"><a class="anchor" href="#_tessellation_pipeline_state"></a>Tessellation Pipeline State</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>pTessellationState</code> member of <a href="pipelines.html#VkGraphicsPipelineCreateInfo" class="xref page">VkGraphicsPipelineCreateInfo</a> is
+a pointer to a <code>VkPipelineTessellationStateCreateInfo</code> structure.</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkPipelineTessellationStateCreateInfo</code> structure is defined as:</p>
+</div>
+<div id="VkPipelineTessellationStateCreateInfo" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+typedef struct VkPipelineTessellationStateCreateInfo {
+    VkStructureType                           sType;
+    const void*                               pNext;
+    VkPipelineTessellationStateCreateFlags    flags;
+    uint32_t                                  patchControlPoints;
+} VkPipelineTessellationStateCreateInfo;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>flags</code> is reserved for future use.</p>
+</li>
+<li>
+<p><code>patchControlPoints</code> is the number of control points per patch.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkPipelineTessellationStateCreateInfo-patchControlPoints-01214" href="#VUID-VkPipelineTessellationStateCreateInfo-patchControlPoints-01214"></a> <span class="vuid">VUID-VkPipelineTessellationStateCreateInfo-patchControlPoints-01214</span><br>
+
+<code>patchControlPoints</code> <strong>must</strong> be greater than zero and less than or
+equal to <code>VkPhysicalDeviceLimits</code>::<code>maxTessellationPatchSize</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkPipelineTessellationStateCreateInfo-sType-sType" href="#VUID-VkPipelineTessellationStateCreateInfo-sType-sType"></a> <span class="vuid">VUID-VkPipelineTessellationStateCreateInfo-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO</code></p>
+</li>
+<li>
+<p><a id="VUID-VkPipelineTessellationStateCreateInfo-pNext-pNext" href="#VUID-VkPipelineTessellationStateCreateInfo-pNext-pNext"></a> <span class="vuid">VUID-VkPipelineTessellationStateCreateInfo-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code> or a pointer to a valid instance of <a href="#VkPipelineTessellationDomainOriginStateCreateInfo">VkPipelineTessellationDomainOriginStateCreateInfo</a></p>
+</li>
+<li>
+<p><a id="VUID-VkPipelineTessellationStateCreateInfo-sType-unique" href="#VUID-VkPipelineTessellationStateCreateInfo-sType-unique"></a> <span class="vuid">VUID-VkPipelineTessellationStateCreateInfo-sType-unique</span><br>
+ The <code>sType</code> value of each structure in the <code>pNext</code> chain <strong>must</strong> be unique</p>
+</li>
+<li>
+<p><a id="VUID-VkPipelineTessellationStateCreateInfo-flags-zerobitmask" href="#VUID-VkPipelineTessellationStateCreateInfo-flags-zerobitmask"></a> <span class="vuid">VUID-VkPipelineTessellationStateCreateInfo-flags-zerobitmask</span><br>
+ <code>flags</code> <strong>must</strong> be <code>0</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div id="VkPipelineTessellationStateCreateFlags" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+typedef VkFlags VkPipelineTessellationStateCreateFlags;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>VkPipelineTessellationStateCreateFlags</code> is a bitmask type for setting a
+mask, but is currently reserved for future use.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkPipelineTessellationDomainOriginStateCreateInfo</code> structure is
+defined as:</p>
+</div>
+<div id="VkPipelineTessellationDomainOriginStateCreateInfo" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_1
+typedef struct VkPipelineTessellationDomainOriginStateCreateInfo {
+    VkStructureType               sType;
+    const void*                   pNext;
+    VkTessellationDomainOrigin    domainOrigin;
+} VkPipelineTessellationDomainOriginStateCreateInfo;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent</p>
+</div>
+<div id="VkPipelineTessellationDomainOriginStateCreateInfoKHR" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_maintenance2
+typedef VkPipelineTessellationDomainOriginStateCreateInfo VkPipelineTessellationDomainOriginStateCreateInfoKHR;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>domainOrigin</code> is a <a href="#VkTessellationDomainOrigin">VkTessellationDomainOrigin</a> value
+controlling the origin of the tessellation domain space.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If the <code>VkPipelineTessellationDomainOriginStateCreateInfo</code> structure is
+included in the <code>pNext</code> chain of
+<a href="#VkPipelineTessellationStateCreateInfo">VkPipelineTessellationStateCreateInfo</a>, it controls the origin of the
+tessellation domain.
+If this structure is not present, it is as if <code>domainOrigin</code> was
+<code>VK_TESSELLATION_DOMAIN_ORIGIN_UPPER_LEFT</code>.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkPipelineTessellationDomainOriginStateCreateInfo-sType-sType" href="#VUID-VkPipelineTessellationDomainOriginStateCreateInfo-sType-sType"></a> <span class="vuid">VUID-VkPipelineTessellationDomainOriginStateCreateInfo-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO</code></p>
+</li>
+<li>
+<p><a id="VUID-VkPipelineTessellationDomainOriginStateCreateInfo-domainOrigin-parameter" href="#VUID-VkPipelineTessellationDomainOriginStateCreateInfo-domainOrigin-parameter"></a> <span class="vuid">VUID-VkPipelineTessellationDomainOriginStateCreateInfo-domainOrigin-parameter</span><br>
+ <code>domainOrigin</code> <strong>must</strong> be a valid <a href="#VkTessellationDomainOrigin">VkTessellationDomainOrigin</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The possible tessellation domain origins are specified by the
+<a href="#VkTessellationDomainOrigin">VkTessellationDomainOrigin</a> enumeration:</p>
+</div>
+<div id="VkTessellationDomainOrigin" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_1
+typedef enum VkTessellationDomainOrigin {
+    VK_TESSELLATION_DOMAIN_ORIGIN_UPPER_LEFT = 0,
+    VK_TESSELLATION_DOMAIN_ORIGIN_LOWER_LEFT = 1,
+  // Provided by VK_KHR_maintenance2
+    VK_TESSELLATION_DOMAIN_ORIGIN_UPPER_LEFT_KHR = VK_TESSELLATION_DOMAIN_ORIGIN_UPPER_LEFT,
+  // Provided by VK_KHR_maintenance2
+    VK_TESSELLATION_DOMAIN_ORIGIN_LOWER_LEFT_KHR = VK_TESSELLATION_DOMAIN_ORIGIN_LOWER_LEFT,
+} VkTessellationDomainOrigin;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent</p>
+</div>
+<div id="VkTessellationDomainOriginKHR" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_maintenance2
+typedef VkTessellationDomainOrigin VkTessellationDomainOriginKHR;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_TESSELLATION_DOMAIN_ORIGIN_UPPER_LEFT</code> specifies that the origin
+of the domain space is in the upper left corner, as shown in figure
+<a href="#img-tessellation-topology-ul">Figure 15. Domain parameterization for tessellation primitive modes (upper-left origin)</a>.</p>
+</li>
+<li>
+<p><code>VK_TESSELLATION_DOMAIN_ORIGIN_LOWER_LEFT</code> specifies that the origin
+of the domain space is in the lower left corner, as shown in figure
+<a href="#img-tessellation-topology-ll">Figure 16. Domain parameterization for tessellation primitive modes (lower-left origin)</a>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This enum affects how the <code>VertexOrderCw</code> and <code>VertexOrderCcw</code>
+tessellation execution modes are interpreted, since the winding is defined
+relative to the orientation of the domain.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To <a href="pipelines.html#pipelines-dynamic-state" class="xref page">dynamically set</a> the origin of the
+tessellation domain space, call:</p>
+</div>
+<div id="vkCmdSetTessellationDomainOriginEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_extended_dynamic_state3 with VK_KHR_maintenance2 or VK_VERSION_1_1, VK_EXT_shader_object
+void vkCmdSetTessellationDomainOriginEXT(
+    VkCommandBuffer                             commandBuffer,
+    VkTessellationDomainOrigin                  domainOrigin);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer into which the command will be
+recorded.</p>
+</li>
+<li>
+<p><code>domainOrigin</code> specifies the origin of the tessellation domain
+space.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This command sets the origin of the tessellation domain space for subsequent
+drawing commands
+when drawing using <a href="shaders.html#shaders-objects" class="xref page">shader objects</a>, or
+when the graphics pipeline is created with
+<code>VK_DYNAMIC_STATE_TESSELLATION_DOMAIN_ORIGIN_EXT</code> set in
+<a href="pipelines.html#VkPipelineDynamicStateCreateInfo" class="xref page">VkPipelineDynamicStateCreateInfo</a>::<code>pDynamicStates</code>.
+Otherwise, this state is specified by the
+<a href="#VkPipelineTessellationDomainOriginStateCreateInfo">VkPipelineTessellationDomainOriginStateCreateInfo</a>::<code>domainOrigin</code>
+value used to create the currently active pipeline.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdSetTessellationDomainOriginEXT-None-09423" href="#VUID-vkCmdSetTessellationDomainOriginEXT-None-09423"></a> <span class="vuid">VUID-vkCmdSetTessellationDomainOriginEXT-None-09423</span><br>
+
+At least one of the following <strong>must</strong> be true:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>The <a href="#features-extendedDynamicState3TessellationDomainOrigin"><code>extendedDynamicState3TessellationDomainOrigin</code></a> feature is
+enabled</p>
+</li>
+<li>
+<p>The <a href="features.html#features-shaderObject" class="xref page"><code>shaderObject</code></a> feature is enabled</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdSetTessellationDomainOriginEXT-commandBuffer-parameter" href="#VUID-vkCmdSetTessellationDomainOriginEXT-commandBuffer-parameter"></a> <span class="vuid">VUID-vkCmdSetTessellationDomainOriginEXT-commandBuffer-parameter</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be a valid <a href="cmdbuffers.html#VkCommandBuffer" class="xref page">VkCommandBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdSetTessellationDomainOriginEXT-domainOrigin-parameter" href="#VUID-vkCmdSetTessellationDomainOriginEXT-domainOrigin-parameter"></a> <span class="vuid">VUID-vkCmdSetTessellationDomainOriginEXT-domainOrigin-parameter</span><br>
+ <code>domainOrigin</code> <strong>must</strong> be a valid <a href="#VkTessellationDomainOrigin">VkTessellationDomainOrigin</a> value</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdSetTessellationDomainOriginEXT-commandBuffer-recording" href="#VUID-vkCmdSetTessellationDomainOriginEXT-commandBuffer-recording"></a> <span class="vuid">VUID-vkCmdSetTessellationDomainOriginEXT-commandBuffer-recording</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be in the <a href="cmdbuffers.html#commandbuffers-lifecycle" class="xref page">recording state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdSetTessellationDomainOriginEXT-commandBuffer-cmdpool" href="#VUID-vkCmdSetTessellationDomainOriginEXT-commandBuffer-cmdpool"></a> <span class="vuid">VUID-vkCmdSetTessellationDomainOriginEXT-commandBuffer-cmdpool</span><br>
+ The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> support graphics operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdSetTessellationDomainOriginEXT-videocoding" href="#VUID-vkCmdSetTessellationDomainOriginEXT-videocoding"></a> <span class="vuid">VUID-vkCmdSetTessellationDomainOriginEXT-videocoding</span><br>
+ This command <strong>must</strong> only be called outside of a video coding scope</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>commandBuffer</code> <strong>must</strong> be externally synchronized</p>
+</li>
+<li>
+<p>Host access to the <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Command Properties</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><a href="cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
+<th class="tableblock halign-left valign-top"><a href="renderpass.html#vkCmdBeginRenderPass" class="xref page">Render Pass Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
+<th class="tableblock halign-left valign-top"><a href="fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Both</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Graphics</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">State</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

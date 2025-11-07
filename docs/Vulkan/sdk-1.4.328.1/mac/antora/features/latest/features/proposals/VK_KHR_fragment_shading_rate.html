@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>VK_KHR_fragment_shading_rate :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:features" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="features" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Feature Descriptions</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Vulkan Roadmap and Feature Descriptions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Roadmap.html">Vulkan Roadmap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Feature Descriptions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMDX_shader_enqueue.html">VK_AMDX_shader_enqueue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_anti_lag.html">VK_AMD_anti_lag</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_shader_early_and_late_fragment_tests.html">VK_AMD_shader_early_and_late_fragment_tests</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ANDROID_external_format_resolve.html">VK_ANDROID_external_format_resolve</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_pipeline_opacity_micromap.html">VK_ARM_pipeline_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_render_pass_striped.html">VK_ARM_render_pass_striped</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_tensors.html">VK_ARM_tensors</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_dynamic_state.html">VK_EXT_attachment_feedback_loop_dynamic_state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_layout.html">VK_EXT_attachment_feedback_loop_layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_calibrated_timestamps.html">VK_EXT_calibrated_timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_bias_control.html">VK_EXT_depth_bias_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_clamp_control.html">VK_EXT_depth_clamp_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_descriptor_buffer.html">VK_EXT_descriptor_buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_fault.html">VK_EXT_device_fault</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_generated_commands.html">VK_EXT_device_generated_commands</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_dynamic_rendering_unused_attachments.html">VK_EXT_dynamic_rendering_unused_attachments</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_extended_dynamic_state3.html">VK_EXT_extended_dynamic_state3</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_acquire_unmodified.html">VK_EXT_external_memory_acquire_unmodified</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_metal.html">VK_EXT_external_memory_metal</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_fragment_density_map_offset.html">VK_EXT_fragment_density_map_offset</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_frame_boundary.html">Proposal: <code>VK_EXT_frame_boundary</code></a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_graphics_pipeline_library.html">VK_EXT_graphics_pipeline_library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_host_image_copy.html">VK_EXT_host_image_copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_2d_array_of_3d.html">VK_EXT_image_2d_array_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_compression_control.html">VK_EXT_image_compression_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_sliced_view_of_3d.html">VK_EXT_image_sliced_view_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_layer_settings.html">VK_EXT_layer_settings</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_dithering.html">VK_EXT_legacy_dithering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_vertex_attributes.html">VK_EXT_legacy_vertex_attributes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_map_memory_placed.html">VK_EXT_map_memory_placed</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mesh_shader.html">VK_EXT_mesh_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_metal_objects.html">VK_EXT_metal_objects</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_multisampled_render_to_single_sampled.html">VK_EXT_multisampled_render_to_single_sampled</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mutable_descriptor_type.html">VK_EXT_mutable_descriptor_type</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_non_seamless_cube_map.html">VK_EXT_non_seamless_cube_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_opacity_micromap.html">VK_EXT_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_library_group_handles.html">VK_EXT_pipeline_library_group_handles</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_protected_access.html">VK_EXT_pipeline_protected_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_present_mode_fifo_latest_ready.html">VK_EXT_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_primitives_generated_query.html">VK_EXT_primitives_generated_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_rasterization_order_attachment_access.html">VK_EXT_rasterization_order_attachment_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_float8.html">VK_EXT_shader_float8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_module_identifier.html">VK_EXT_shader_module_identifier</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_object.html">VK_EXT_shader_object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_replicated_composites.html">VK_EXT_shader_replicated_composites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_tile_image.html">VK_EXT_shader_tile_image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_subpass_merge_feedback.html">VK_EXT_subpass_merge_feedback</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_surface_maintenance1.html">VK_EXT_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_swapchain_maintenance1.html">VK_EXT_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_zero_initialize_device_memory.html">VK_EXT_zero_initialize_device_memory</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_GOOGLE_surfaceless_query.html">VK_GOOGLE_surfaceless_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_cluster_culling_shader.html">VK_HUAWEI_cluster_culling_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_invocation_mask.html">VK_HUAWEI_invocation_mask</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_compute_shader_derivatives.html">VK_KHR_compute_shader_derivatives</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_cooperative_matrix.html">VK_KHR_cooperative_matrix</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering.html">VK_KHR_dynamic_rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering_local_read.html">VK_KHR_dynamic_rendering_local_read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shader_barycentric.html">VK_KHR_fragment_shader_barycentric</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shading_rate.html">VK_KHR_fragment_shading_rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_load_store_op_none.html">VK_KHR_load_store_op_none</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance5.html">VK_KHR_maintenance5</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance6.html">VK_KHR_maintenance6</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance7.html">VK_KHR_maintenance7</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance8.html">VK_KHR_maintenance8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance9.html">Proposal Template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_map_memory2.html">VK_KHR_map_memory2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_pipeline_binary.html">VK_KHR_pipeline_binary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_id2.html">VK_KHR_present_id2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_mode_fifo_latest_ready.html">VK_KHR_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_wait2.html">VK_KHR_present_wait2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_ray_tracing_position_fetch.html">VK_KHR_ray_tracing_position_fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_bfloat16.html">VK_KHR_shader_bfloat16</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_expect_assume.html">VK_KHR_shader_expect_assume</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_float_controls2.html">VK_KHR_shader_float_controls2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_integer_dot_product.html">VK_KHR_shader_integer_dot_product</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_maximal_reconvergence.html">VK_KHR_shader_maximal_reconvergence</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_quad_control.html">VK_KHR_shader_quad_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_relaxed_extended_instruction.html">VK_KHR_shader_relaxed_extended_instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_subgroup_rotate.html">Subgroup rotation instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_surface_maintenance1.html">VK_KHR_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_swapchain_maintenance1.html">VK_KHR_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_unified_image_layouts.html">VK_KHR_unified_image_layouts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_vertex_attribute_divisor.html">VK_KHR_vertex_attribute_divisor</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_av1.html">VK_KHR_video_decode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h264.html">VK_KHR_video_decode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h265.html">VK_KHR_video_decode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_queue.html">VK_KHR_video_decode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_vp9.html">VK_KHR_video_decode_vp9</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_av1.html">VK_KHR_video_encode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h264.html">VK_KHR_video_encode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h265.html">VK_KHR_video_encode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_intra_refresh.html">VK_KHR_video_encode_intra_refresh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_quantization_map.html">VK_KHR_video_encode_quantization_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_queue.html">VK_KHR_video_encode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance1.html">VK_KHR_video_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance2.html">VK_KHR_video_maintenance2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_queue.html">VK_KHR_video_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_LUNARG_direct_driver_loading.html">VK_LUNARG_direct_driver_loading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_MSFT_layered_driver.html">VK_MSFT_layered_driver</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cluster_acceleration_structure.html">VK_NV_cluster_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_matrix2.html">VK_NV_cooperative_matrix2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_vector.html">VK_NV_cooperative_vector</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_display_stereo.html">VK_NV_display_stereo</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_external_compute_queue.html">VK_NV_external_compute_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_partitioned_acceleration_structure.html">VK_NV_partitioned_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_linear_swept_spheres.html">VK_NV_ray_tracing_linear_swept_spheres</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_validation.html">VK_NV_ray_tracing_validation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_image_processing.html">VK_QCOM_image_processing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_memory_heap.html">VK_QCOM_tile_memory_heap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_properties.html">VK_QCOM_tile_properties</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_shading.html">VK_QCOM_tile_shading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_VERSION_1_4.html">Vulkan 1.4</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Feature Descriptions</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Feature Descriptions</a></li>
+    <li>Feature Descriptions</li>
+    <li><a href="VK_KHR_fragment_shading_rate.html">VK_KHR_fragment_shading_rate</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/features/modules/features/pages/proposals/VK_KHR_fragment_shading_rate.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">VK_KHR_fragment_shading_rate</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_problem_statement">1. Problem Statement</a></li>
+<li><a href="#_solution_space">2. Solution Space</a></li>
+<li><a href="#_proposal">3. Proposal</a>
+<ul class="sectlevel2">
+<li><a href="#_per_draw_state">3.1. Per-Draw state</a></li>
+<li><a href="#_per_triangle_state">3.2. Per-Triangle state</a></li>
+<li><a href="#_per_region_state">3.3. Per-Region state</a></li>
+<li><a href="#_reading_the_final_rate">3.4. Reading the final rate</a></li>
+<li><a href="#_properties">3.5. Properties</a></li>
+<li><a href="#_available_shading_rates">3.6. Available shading rates</a></li>
+<li><a href="#_features">3.7. Features</a></li>
+</ul>
+</li>
+<li><a href="#_examples">4. Examples</a></li>
+<li><a href="#_issues">5. Issues</a>
+<ul class="sectlevel2">
+<li><a href="#_resolved_should_the_result_of_combiners_be_required_to_be_a_valid_rate">5.1. RESOLVED: Should the result of combiners be required to be a valid rate?</a></li>
+<li><a href="#_resolved_should_the_various_limits_on_state_setting_be_validated">5.2. RESOLVED: Should the various limits on state setting be validated?</a></li>
+<li><a href="#_resolved_should_we_describe_the_final_combiner_operation_as_a_multiplication_or_addition_related_should_the_per_draw_fragment_shading_rate_be_set_as_flags_or_raw_values">5.3. RESOLVED: Should we describe the final combiner operation as a multiplication or addition? Related, should the per-draw fragment shading rate be set as flags or raw values?</a></li>
+<li><a href="#_resolved_when_no_fragment_shading_rate_is_provided_should_the_default_rate_1_1_take_part_in_combination_operation">5.4. RESOLVED: When no fragment shading rate is provided, should the default rate {1, 1} take part in combination operation?</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This extension adds the ability to change the rate at which fragments are shaded. Rather than the usual single fragment invocation for each pixel covered by a primitive, multiple pixels can be shaded by a single fragment shader invocation.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>1. Problem Statement</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Rendering resolutions are continually getting higher and higher, but as resolutions increase, the requirements on device performance increase at the same rate.
+However with a move from e.g. a 4K resolution to an 8K resolution, effectively doubling visual fidelity, this quadruples the requirements on device performance in order to keep up.
+In many cases, this extra pixel fidelity is not necessarily perceptible - and uniformly increasing the rate at which pixels are generated results in unnecessary work being performed, and it would be useful to reclaim some of that performance to improve the overall experience for an end user. This could be due to low-detail objects, triangles with a low delta between pixels, or something like VR where a user will not perceive detail in their peripheral vision.</p>
+</div>
+<div class="paragraph">
+<p>There are three potential bottlenecks as resolution requirements increase: the rasterizer&#8217;s ability to generate pixels, fragment shading, and bandwidth. This proposal focuses on reducing the shading rate, as this is the primary bottleneck on many implementations; though implementations may be able to take advantage of this to reduce workloads in other areas.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution Space</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Current solutions to address this require a uniform rate to be applied across the screen - things like MSAA, sample rate shading, and custom sample locations can be used to modify the rate at which shading occurs, but this is always applied uniformly across the screen; though steps can be taken to apply different rates to different sets of geometry by modifying state between draw calls.
+However, this requires careful state management, and requires awkward sorting of geometry/draws in order to achieve anything other than a natural per-draw rate.</p>
+</div>
+<div class="paragraph">
+<p>Different applications may want to change the rate per-draw, per-triangle, or per-screen-region.
+While it would be possible to modify the behavior of sample shading to be modifiable at different rates to solve this, multisample state is relatively complex, and could result in tricky edge cases for some applications.
+The alternative is to provide a new shading rate state that is independent of multisampling, and enable it to be set at each separate rate.
+In either case, per draw rate can be set by pipeline or dynamic state, but for per-triangle and per-screen-region use cases, new mechanisms will be needed. For per-triangle state, the usual way of setting this in the API is by providing data along with the provoking vertex. For the screen regions, two main options are viable - either an associated image which has sub regions identifying the state, or providing some sort of equation to be applied across the screen.</p>
+</div>
+<div class="paragraph">
+<p>Due to the complexity and potential fragility of multisample state, this proposal introduces new shading rate state to the API. As not all known use cases for screen-region state can be expressed as a straightforward equation, per-image state allowing arbitrary expression of regions is preferred.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>3. Proposal</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This extension introduces the concept of a fragment size to the API, where a given fragment can cover more than one pixel in the output attachments.
+Each fragment is still rasterized at a per-pixel rate, as it effectively has one sample per pixel - but when shaded, only one shader is invoked for the entire fragment.
+This is very similar to multisampling, where multiple samples are generated for each pixel, but on a wider scale.
+This state also interacts with multisampling, such that one fragment can cover multiple pixels, with multiple samples per pixel.
+Note though that enabling sample shading will effectively disable the fragment shading rate.</p>
+</div>
+<div class="sect2">
+<h3 id="_per_draw_state"><a class="anchor" href="#_per_draw_state"></a>3.1. Per-Draw state</h3>
+<div class="paragraph">
+<p>This state can be set per-draw as part of the pipeline by chaining the following structure to <a href="https://docs.vulkan.org/spec/latest/chapters/pipelines.html#VkGraphicsPipelineCreateInfo">VkGraphicsPipelineCreateInfo</a>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPipelineFragmentShadingRateStateCreateInfoKHR {
+    VkStructureType                       sType;
+    const void*                           pNext;
+    VkExtent2D                            fragmentSize;
+    VkFragmentShadingRateCombinerOpKHR    combinerOps[2];
+} VkPipelineFragmentShadingRateStateCreateInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>It can also be set dynamically by setting <code>VK_DYNAMIC_STATE_FRAGMENT_SHADING_RATE_KHR</code> on the pipeline and using:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">void vkCmdSetFragmentShadingRateKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkExtent2D*                           pFragmentSize,
+    const VkFragmentShadingRateCombinerOpKHR    combinerOps[2]);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In each case, the <a href="https://docs.vulkan.org/spec/latest/chapters/fundamentals.html#VkExtent2D">VkExtent2D</a> sets the base fragment size in the x and y dimensions for all fragments generated by draw calls using this state.</p>
+</div>
+<div class="paragraph">
+<p>As there are three rates at which the state can be set, rather than having these only set one at a time, applications can have all three rates set and define combiner operations to dictate how the final result is calculated.
+This allows applications to e.g. have a per-screen-region rate while also marking some triangles or objects as lower detail than the base rate.</p>
+</div>
+<div class="paragraph">
+<p>The per-draw and per-triangle rates are first combined according to the first combiner operation, and then the result of that is combined according to the second combiner operation.
+Available combiner operations are as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef enum VkFragmentShadingRateCombinerOpKHR {
+    VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR = 0,
+    VK_FRAGMENT_SHADING_RATE_COMBINER_OP_REPLACE_KHR = 1,
+    VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MIN_KHR = 2,
+    VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MAX_KHR = 3,
+    VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MUL_KHR = 4,
+} VkFragmentShadingRateCombinerOpKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>KEEP</code> will select the first rate in the combination, while <code>REPLACE</code> will select the second rate.
+<code>MIN</code> and <code>MAX</code> will select the minimum/maximum rate respectively, and do so separately for each dimension.
+So e.g. taking the max of <code>(1,2)</code> and <code>(2,1)</code> would result in <code>(2,2)</code>.</p>
+</div>
+<div class="paragraph">
+<p>The <code>MUL</code> operation multiples each dimension of the first input rate by the corresponding rate in the second input rate. So e.g. <code>(2,2)</code> and <code>(1,4)</code> would result in <code>(2,8)</code>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The Vulkan specification chose to define this as a MUL operation using linear values to make this clear; whereas the DirectX Variable Rate Shading specification defines it as an addition in log2 space using bit flags. This unfortunately resulted in a misunderstanding between vendors, giving rise to the <code>fragmentShadingRateStrictMultiplyCombiner</code> limit, which when <code>VK_FALSE</code> indicates this operation acts as an addition. Fortunately, this only practically changes the result of a single combination - where the sum of 1 and 1 is 2 instead of a product of 1. All other combinations are clamped to 2 or 4, giving the same result as a true multiplication would provide.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The result of the combiner operations will always be clamped to maximum supported rate of the implementation given the current draw state.</p>
+</div>
+<div class="paragraph">
+<p>When none of the above state is set, the fragment size is treated as 1 by 1, and the combiner ops are set to KEEP.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_per_triangle_state"><a class="anchor" href="#_per_triangle_state"></a>3.2. Per-Triangle state</h3>
+<div class="paragraph">
+<p>The per-triangle shading rate can be set by a new output in pre-rasterization shaders that is set on the provoking vertex:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top" colspan="2">BuiltIn</th>
+<th class="tableblock halign-left valign-top">Enabling Capabilities</th>
+<th class="tableblock halign-left valign-top">Enabled by Extension</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4432</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>PrimitiveShadingRateKHR</strong><br>
+Output primitive fragment shading rate.
+Only valid in the <strong>Vertex</strong>, <strong>Geometry</strong>, and <strong>MeshNV</strong> Execution Models.
+See the API specification for more detail.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>FragmentShadingRateKHR</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>SPV_KHR_fragment_shading_rate</strong></p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>This value is set to a single integer value according to four flag values:</p>
+</div>
+<table class="tableblock frame-all grid-all" style="width: 80%;">
+<colgroup>
+<col style="width: 4.7619%;">
+<col style="width: 71.4285%;">
+<col style="width: 23.8096%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-center valign-middle" colspan="2">Fragment Shading Rate Flags</th>
+<th class="tableblock halign-left valign-top">Enabling Capabilities</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Vertical2Pixels</strong> <br>
+Fragment invocation covers 2 pixels vertically.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>FragmentShadingRateKHR</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Vertical4Pixels</strong> <br>
+Fragment invocation covers 4 pixels vertically.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>FragmentShadingRateKHR</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Horizontal2Pixels</strong> <br>
+Fragment invocation covers 2 pixels horizontally.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>FragmentShadingRateKHR</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">8</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Horizontal4Pixels</strong> <br>
+Fragment invocation covers 4 pixels horizontally.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>FragmentShadingRateKHR</strong></p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Valid rate combinations must not include more than 1 horizontal and 1
+vertical rate.
+If no horizontal rate flags are set, it indicates a fragment shader covers one
+pixel horizontally.
+If no vertical rate flags are set, it indicates a fragment shader covers one
+pixel vertically.</p>
+</div>
+<div class="paragraph">
+<p>This functionality is gated behind a new capability:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top" colspan="2">Capability</th>
+<th class="tableblock halign-left valign-top">Implicitly Declares</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4422</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>FragmentShadingRateKHR</strong><br>
+Uses the <strong>PrimitiveShadingRateKHR</strong> or <strong>ShadingRateKHR</strong> Builtins.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Shader</strong></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_per_region_state"><a class="anchor" href="#_per_region_state"></a>3.3. Per-Region state</h3>
+<div class="paragraph">
+<p>The per-region state can be set through an image where a pixel in that image corresponds to a given region in the render.
+Using the same flag values as the per-triangle rate, the value of that pixel determines the per-region rate for the corresponding region.
+This image can be set per-subpass by chaining the following structure to <a href="https://docs.vulkan.org/spec/latest/chapters/renderpass.html#VkSubpassDescription2">VkSubpassDescription2</a>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkFragmentShadingRateAttachmentInfoKHR {
+    VkStructureType                  sType;
+    const void*                      pNext;
+    const VkAttachmentReference2*    pFragmentShadingRateAttachment;
+    VkExtent2D                       shadingRateAttachmentTexelSize;
+} VkFragmentShadingRateAttachmentInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>pFragmentShadingRateAttachment</code> selects the attachment description corresponding to the image, which must have dimensions at least equal to the framebuffer size divided by the texel size selected by <code>shadingRateAttachmentTexelSize</code>.
+<code>shadingRateAttachmentTexelSize</code> can be set to values supported by the implementation, which are advertised via <code>maxFragmentShadingRateAttachmentTexelSize</code>, <code>minFragmentShadingRateAttachmentTexelSize</code>, <code>maxFragmentShadingRateAttachmentTexelSizeAspectRatio</code>, and must be power-of-two values.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_reading_the_final_rate"><a class="anchor" href="#_reading_the_final_rate"></a>3.4. Reading the final rate</h3>
+<div class="paragraph">
+<p>In a fragment shader, the final calculated rate can be read through a new built-in:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top" colspan="2">BuiltIn</th>
+<th class="tableblock halign-left valign-top">Enabling Capabilities</th>
+<th class="tableblock halign-left valign-top">Enabled by Extension</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4444</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>ShadingRateKHR</strong><br>
+Input fragment shading rate for the current shader
+invocation.
+Only valid in the <strong>Fragment</strong> Execution Model.
+See the API specification for more detail.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>FragmentShadingRateKHR</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>SPV_KHR_fragment_shading_rate</strong></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_properties"><a class="anchor" href="#_properties"></a>3.5. Properties</h3>
+<div class="paragraph">
+<p>Properties of the implementation can be queried via a new properties structure:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDeviceFragmentShadingRatePropertiesKHR {
+    VkStructureType          sType;
+    void*                    pNext;
+    VkExtent2D               minFragmentShadingRateAttachmentTexelSize;
+    VkExtent2D               maxFragmentShadingRateAttachmentTexelSize;
+    uint32_t                 maxFragmentShadingRateAttachmentTexelSizeAspectRatio;
+    VkBool32                 primitiveFragmentShadingRateWithMultipleViewports;
+    VkBool32                 layeredShadingRateAttachments;
+    VkBool32                 fragmentShadingRateNonTrivialCombinerOps;
+    VkExtent2D               maxFragmentSize;
+    uint32_t                 maxFragmentSizeAspectRatio;
+    uint32_t                 maxFragmentShadingRateCoverageSamples;
+    VkSampleCountFlagBits    maxFragmentShadingRateRasterizationSamples;
+    VkBool32                 fragmentShadingRateWithShaderDepthStencilWrites;
+    VkBool32                 fragmentShadingRateWithSampleMask;
+    VkBool32                 fragmentShadingRateWithShaderSampleMask;
+    VkBool32                 fragmentShadingRateWithConservativeRasterization;
+    VkBool32                 fragmentShadingRateWithFragmentShaderInterlock;
+    VkBool32                 fragmentShadingRateWithCustomSampleLocations;
+    VkBool32                 fragmentShadingRateStrictMultiplyCombiner;
+} VkPhysicalDeviceFragmentShadingRatePropertiesKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The limits are somewhat complex, as this functionality interacts heavily with other state, however many of these states are informative only; the implementation will automatically reduce the fragment shading rate to <code>(1,1)</code> when they are violated.
+<code>minFragmentShadingRateAttachmentTexelSize</code>, <code>maxFragmentShadingRateAttachmentTexelSize</code>, <code>maxFragmentShadingRateAttachmentTexelSizeAspectRatio</code>, <code>primitiveFragmentShadingRateWithMultipleViewports</code>, <code>fragmentShadingRateNonTrivialCombinerOps</code>, and <code>layeredShadingRateAttachments</code> are the only hard limits.
+<code>fragmentShadingRateStrictMultiplyCombiner</code> affects the operation of certain combiner operations, and cannot be violated.</p>
+</div>
+<div class="paragraph">
+<p>These limits must be adhered to by an application for correct behavior:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>minFragmentShadingRateAttachmentTexelSize</code> advertises the minimum size of the texel region for the per-region rate supported by the implementation.</p>
+</li>
+<li>
+<p><code>maxFragmentShadingRateAttachmentTexelSize</code> advertises the maximum size of the texel region for the per-region rate supported by the implementation.</p>
+</li>
+<li>
+<p><code>maxFragmentShadingRateAttachmentTexelSizeAspectRatio</code> advertises the maximum aspect ratio of the texel region for the per-region rate supported by the implementation.</p>
+</li>
+<li>
+<p><code>primitiveFragmentShadingRateWithMultipleViewports</code> advertises whether applications can write the primitive fragment shading rate when multiple viewports are used. Does not affect multiview.</p>
+</li>
+<li>
+<p><code>layeredShadingRateAttachments</code> advertises whether applications can use separate shading rate attachments for independent layers when performing layered rendering. Does not affect multiview.</p>
+</li>
+<li>
+<p><code>fragmentShadingRateNonTrivialCombinerOps</code> advertises whether applications can set the combiner ops to anything other than <code>KEEP</code> or <code>REPLACE</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Violating these limits is not invalid - instead the implementation will automatically reduce the fragment shading rate to <code>(1,1)</code> if any of them are violated.
+This allows applications to ship one algorithm while still ensuring valid behavior.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>maxFragmentSize</code> determines the maximum supported fragment size.</p>
+</li>
+<li>
+<p><code>maxFragmentSizeAspectRatio</code> determines the maximum supported aspect ratio between dimensions for the fragment size.</p>
+</li>
+<li>
+<p><code>maxFragmentShadingRateCoverageSamples</code> determines the maximum total coverage samples for a fragment as a product of the fragment shading rate in each dimension and the multisample rate.</p>
+</li>
+<li>
+<p><code>maxFragmentShadingRateRasterizationSamples</code> determines the maximum multisample rate (<code>rasterizationSamples</code>) when using a fragment shading rate.</p>
+</li>
+<li>
+<p><code>fragmentShadingRateWithShaderDepthStencilWrites</code> determines if depth/stencil export from a shader can be used with fragment shading rate.</p>
+</li>
+<li>
+<p><code>fragmentShadingRateWithSampleMask</code> determines if the <code>pSampleMask</code> member of <a href="https://docs.vulkan.org/spec/latest/chapters/primsrast.html#VkPipelineMultisampleStateCreateInfo">VkPipelineMultisampleStateCreateInfo</a> can have any valid bits equal to 0 when using with fragment shading rate.</p>
+</li>
+<li>
+<p><code>fragmentShadingRateWithShaderSampleMask</code> determines if the sample mask (input or output) can be used in a shader with fragment shading rate.</p>
+</li>
+<li>
+<p><code>fragmentShadingRateWithConservativeRasterization</code> determines if conservative rasterization can be used with fragment shading rate.</p>
+</li>
+<li>
+<p><code>fragmentShadingRateWithFragmentShaderInterlock</code> determines if fragment shader interlock can be used with fragment shading rate.</p>
+</li>
+<li>
+<p><code>fragmentShadingRateWithCustomSampleLocations</code> determines if custom sample locations can be used with fragment shading rate.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This final limit cannot be violated:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>fragmentShadingRateStrictMultiplyCombiner</code> determines whether the operation of the MUL combiner operation is correct - if it is <code>VK_FALSE</code>, MUL acts as a sum operation.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+See the definition of <code>VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MUL_KHR</code> for more information.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_available_shading_rates"><a class="anchor" href="#_available_shading_rates"></a>3.6. Available shading rates</h3>
+<div class="paragraph">
+<p>To advertise precisely which shading rates are supported by an implementation, the following function is added to the specification:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkResult vkGetPhysicalDeviceFragmentShadingRatesKHR(
+    VkPhysicalDevice                            physicalDevice,
+    uint32_t*                                   pFragmentShadingRateCount,
+    VkPhysicalDeviceFragmentShadingRateKHR*     pFragmentShadingRates);
+
+typedef struct VkPhysicalDeviceFragmentShadingRateKHR {
+    VkStructureType       sType;
+    void*                 pNext;
+    VkSampleCountFlags    sampleCounts;
+    VkExtent2D            fragmentSize;
+} VkPhysicalDeviceFragmentShadingRateKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This function returns the full list of supported fragment shading rates ordered from largest fragment size to smallest, with all valid sample rates.
+Implementations must support the following rates:</p>
+</div>
+<table class="tableblock frame-all grid-all fit-content">
+<colgroup>
+<col>
+<col>
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><code>sampleCounts</code></th>
+<th class="tableblock halign-left valign-top"><code>fragmentSize</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_SAMPLE_COUNT_1_BIT | VK_SAMPLE_COUNT_4_BIT</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">{2,2}</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_SAMPLE_COUNT_1_BIT | VK_SAMPLE_COUNT_4_BIT</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">{2,1}</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">~0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">{1,1}</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>(1,1) is included for completeness only.
+Even if a shading rate advertises a given sample rate, valid sample rates are still subject to usual constraints on multisampling.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_features"><a class="anchor" href="#_features"></a>3.7. Features</h3>
+<div class="paragraph">
+<p>Each of the three rates is enabled by an independent feature:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDeviceFragmentShadingRateFeaturesKHR {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           pipelineFragmentShadingRate;
+    VkBool32           primitiveFragmentShadingRate;
+    VkBool32           attachmentFragmentShadingRate;
+} VkPhysicalDeviceFragmentShadingRateFeaturesKHR;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>pipelineFragmentShadingRate</code> indicates support for the per-draw fragment shading rate, both dynamic and pipeline state. This feature must be supported to support the extension.</p>
+</li>
+<li>
+<p><code>primitiveFragmentShadingRate</code> indicates support for the per-triangle fragment shading rate.</p>
+</li>
+<li>
+<p><code>attachmentFragmentShadingRate</code> indicates support for the per-screen-region fragment shading rate.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_examples"><a class="anchor" href="#_examples"></a>4. Examples</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Two concrete samples are available in the <a href="https://github.com/KhronosGroup/Vulkan-Samples">KhronosGroup/Vulkan-Samples</a> repository:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/fragment_shading_rate" class="bare">https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/fragment_shading_rate</a></p>
+</li>
+<li>
+<p><a href="https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/fragment_shading_rate_dynamic" class="bare">https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/fragment_shading_rate_dynamic</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_issues"><a class="anchor" href="#_issues"></a>5. Issues</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This section describes issues with the existing proposal – including both open issues that you have not addressed, and closed issues that are not self-evident from the proposal description.</p>
+</div>
+<div class="sect2">
+<h3 id="_resolved_should_the_result_of_combiners_be_required_to_be_a_valid_rate"><a class="anchor" href="#_resolved_should_the_result_of_combiners_be_required_to_be_a_valid_rate"></a>5.1. RESOLVED: Should the result of combiners be required to be a valid rate?</h3>
+<div class="paragraph">
+<p>This makes a number of combinations nigh impossible to use, so instead combined values are clamped, with strict rules on how they are clamped.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_should_the_various_limits_on_state_setting_be_validated"><a class="anchor" href="#_resolved_should_the_various_limits_on_state_setting_be_validated"></a>5.2. RESOLVED: Should the various limits on state setting be validated?</h3>
+<div class="paragraph">
+<p>Convention suggests they should be, but this makes the extension much harder to use - by asking implementations to clamp the rate to (1,1) instead, applications can ship the same functionality everywhere without having to modify their algorithm or assets.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_should_we_describe_the_final_combiner_operation_as_a_multiplication_or_addition_related_should_the_per_draw_fragment_shading_rate_be_set_as_flags_or_raw_values"><a class="anchor" href="#_resolved_should_we_describe_the_final_combiner_operation_as_a_multiplication_or_addition_related_should_the_per_draw_fragment_shading_rate_be_set_as_flags_or_raw_values"></a>5.3. RESOLVED: Should we describe the final combiner operation as a multiplication or addition? Related, should the per-draw fragment shading rate be set as flags or raw values?</h3>
+<div class="paragraph">
+<p>The primitive and image rates have to be bit flags to maintain compatibility with other APIs. There was significant confusion about the meaning of the final combiner operation as an addition of log2 values, so the choice was made to describe this as a multiplication of raw values, and the API values were set as real values to make this clearer.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_when_no_fragment_shading_rate_is_provided_should_the_default_rate_1_1_take_part_in_combination_operation"><a class="anchor" href="#_resolved_when_no_fragment_shading_rate_is_provided_should_the_default_rate_1_1_take_part_in_combination_operation"></a>5.4. RESOLVED: When no fragment shading rate is provided, should the default rate {1, 1} take part in combination operation?</h3>
+<div class="paragraph">
+<p>Yes.
+When no fragment shading rate is given in a certain stage, the default rate {1, 1} is used and participates in combination operations.
+For example, if per-draw/per-triangle/per-region shading rates are all enabled and <code>combinerOps</code> are <code>REPLACE</code>/<code>KEEP</code>, with a per-draw rate of {4, 2}, a per-region rate of {2, 2}, and no declaration of <code>FragmentShadingRateKHR</code> in the fragment shader (so it takes a default of {1, 1}), the final fragment size is {1, 1}.</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

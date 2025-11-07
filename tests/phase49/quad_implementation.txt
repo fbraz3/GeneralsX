@@ -1,0 +1,150 @@
+
+// ============================================================================
+// Phase 49: Colored Quad Geometry Implementation
+// ============================================================================
+// These methods implement quad geometry creation and destruction for the
+// first graphics rendering test. A quad consists of 6 vertices (2 triangles)
+// with position and color attributes.
+//
+// Triangle 1: v0 (Red), v1 (Green), v2 (Blue)
+// Triangle 2: v0 (Red), v2 (Blue), v3 (Yellow)
+// ============================================================================
+
+HRESULT DXVKGraphicsBackend::CreateQuadGeometry() {
+    if (m_device == VK_NULL_HANDLE) {
+        printf("[DXVK] ERROR: Device not initialized for quad geometry creation\n");
+        return E_FAIL;
+    }
+
+    printf("[DXVK] Creating colored quad geometry (Phase 49)...\n");
+
+    // Define quad vertices: 6 vertices = 2 triangles
+    // Vertex format: position (3x float) + color (3x float) = 24 bytes per vertex
+    struct Vertex {
+        float position[3];  // x, y, z
+        float color[3];     // r, g, b
+    };
+
+    // Quad in normalized device coordinates: [-1, 1] x [-1, 1]
+    // Triangle 1 (bottom-left):  v0 (red), v1 (green), v2 (blue)
+    // Triangle 2 (top-right):    v0 (red), v2 (blue), v3 (yellow)
+    Vertex quadVertices[6] = {
+        // Triangle 1 - bottom-left area
+        { {-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f} },  // v0: Red (bottom-left)
+        { {-0.5f,  0.5f, 0.0f}, {0.0f, 1.0f, 0.0f} },  // v1: Green (top-left)
+        { { 0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f} },  // v2: Blue (top-right)
+
+        // Triangle 2 - top-right area  
+        { {-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f} },  // v0: Red (bottom-left)
+        { { 0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f} },  // v2: Blue (top-right)
+        { { 0.5f, -0.5f, 0.0f}, {1.0f, 1.0f, 0.0f} },  // v3: Yellow (bottom-right)
+    };
+
+    size_t vertexBufferSize = sizeof(quadVertices);
+    m_quadVertexCount = 6;
+
+    // Step 1: Create VkBuffer for vertex data
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = vertexBufferSize;
+    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    VkResult result = vkCreateBuffer(m_device, &bufferInfo, nullptr, &m_quadVertexBuffer);
+    if (result != VK_SUCCESS) {
+        printf("[DXVK] ERROR: Failed to create quad vertex buffer (vkCreateBuffer returned %d)\n", result);
+        return E_FAIL;
+    }
+    printf("[DXVK] Quad vertex buffer created: handle=%p, size=%zu bytes\n",
+           (void*)m_quadVertexBuffer, vertexBufferSize);
+
+    // Step 2: Query memory requirements
+    VkMemoryRequirements memReqs{};
+    vkGetBufferMemoryRequirements(m_device, m_quadVertexBuffer, &memReqs);
+
+    printf("[DXVK] Memory requirements: size=%llu, alignment=%llu, memTypeBits=0x%x\n",
+           memReqs.size, memReqs.alignment, memReqs.memoryTypeBits);
+
+    // Step 3: Find suitable memory type (host-visible, host-coherent for simple upload)
+    uint32_t memTypeIndex = FindMemoryType(
+        memReqs.memoryTypeBits,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+    );
+
+    if (memTypeIndex == UINT32_MAX) {
+        printf("[DXVK] ERROR: Failed to find suitable memory type for quad buffer\n");
+        vkDestroyBuffer(m_device, m_quadVertexBuffer, nullptr);
+        m_quadVertexBuffer = VK_NULL_HANDLE;
+        return E_FAIL;
+    }
+
+    // Step 4: Allocate GPU memory
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memReqs.size;
+    allocInfo.memoryTypeIndex = memTypeIndex;
+
+    result = vkAllocateMemory(m_device, &allocInfo, nullptr, &m_quadVertexBufferMemory);
+    if (result != VK_SUCCESS) {
+        printf("[DXVK] ERROR: Failed to allocate quad vertex buffer memory (vkAllocateMemory returned %d)\n", result);
+        vkDestroyBuffer(m_device, m_quadVertexBuffer, nullptr);
+        m_quadVertexBuffer = VK_NULL_HANDLE;
+        return E_FAIL;
+    }
+    printf("[DXVK] Quad vertex buffer memory allocated: handle=%p, size=%llu bytes\n",
+           (void*)m_quadVertexBufferMemory, memReqs.size);
+
+    // Step 5: Bind buffer to memory
+    result = vkBindBufferMemory(m_device, m_quadVertexBuffer, m_quadVertexBufferMemory, 0);
+    if (result != VK_SUCCESS) {
+        printf("[DXVK] ERROR: Failed to bind quad vertex buffer to memory (vkBindBufferMemory returned %d)\n", result);
+        vkFreeMemory(m_device, m_quadVertexBufferMemory, nullptr);
+        vkDestroyBuffer(m_device, m_quadVertexBuffer, nullptr);
+        m_quadVertexBuffer = VK_NULL_HANDLE;
+        m_quadVertexBufferMemory = VK_NULL_HANDLE;
+        return E_FAIL;
+    }
+
+    // Step 6: Copy vertex data to GPU memory
+    void* data = nullptr;
+    result = vkMapMemory(m_device, m_quadVertexBufferMemory, 0, vertexBufferSize, 0, &data);
+    if (result != VK_SUCCESS) {
+        printf("[DXVK] ERROR: Failed to map quad vertex buffer memory (vkMapMemory returned %d)\n", result);
+        vkFreeMemory(m_device, m_quadVertexBufferMemory, nullptr);
+        vkDestroyBuffer(m_device, m_quadVertexBuffer, nullptr);
+        m_quadVertexBuffer = VK_NULL_HANDLE;
+        m_quadVertexBufferMemory = VK_NULL_HANDLE;
+        return E_FAIL;
+    }
+
+    memcpy(data, quadVertices, vertexBufferSize);
+    vkUnmapMemory(m_device, m_quadVertexBufferMemory);
+
+    printf("[DXVK] Quad geometry created successfully:\n");
+    printf("[DXVK]   - Vertex buffer: %p (%zu bytes)\n", (void*)m_quadVertexBuffer, vertexBufferSize);
+    printf("[DXVK]   - Memory: %p (%llu bytes)\n", (void*)m_quadVertexBufferMemory, memReqs.size);
+    printf("[DXVK]   - Vertex count: %u (2 triangles = 1 quad)\n", m_quadVertexCount);
+    printf("[DXVK]   - Vertex format: Position (3x float) + Color (3x float)\n");
+    printf("[DXVK]   - Geometry: Colored quad in [-0.5, 0.5] x [-0.5, 0.5] normalized coords\n");
+
+    return S_OK;
+}
+
+void DXVKGraphicsBackend::DestroyQuadGeometry() {
+    printf("[DXVK] Destroying quad geometry resources...\n");
+
+    if (m_quadVertexBuffer != VK_NULL_HANDLE) {
+        vkDestroyBuffer(m_device, m_quadVertexBuffer, nullptr);
+        m_quadVertexBuffer = VK_NULL_HANDLE;
+        printf("[DXVK] Quad vertex buffer destroyed\n");
+    }
+
+    if (m_quadVertexBufferMemory != VK_NULL_HANDLE) {
+        vkFreeMemory(m_device, m_quadVertexBufferMemory, nullptr);
+        m_quadVertexBufferMemory = VK_NULL_HANDLE;
+        printf("[DXVK] Quad vertex buffer memory freed\n");
+    }
+
+    m_quadVertexCount = 0;
+    printf("[DXVK] Quad geometry cleanup complete\n");
+}

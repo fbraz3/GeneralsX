@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Image view and sampler :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="00_Images.html">Images</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../90_FAQ.html">FAQ</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li><a href="00_Images.html">Texture mapping</a></li>
+    <li><a href="01_Image_view_and_sampler.html">Image view and sampler</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Tutorial/antora/modules/ROOT/pages/06_Texture_mapping/01_Image_view_and_sampler.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Image view and sampler</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this chapter, we&#8217;re going to create two more resources that are needed for the graphics pipeline to sample an image.
+The first resource is one that we&#8217;ve already seen before while working with the swap chain images, but the second one is new - it relates to how the shader will read texels from the image.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_texture_image_view"><a class="anchor" href="#_texture_image_view"></a>Texture image view</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>We&#8217;ve seen before, with the swap chain images and the framebuffer, that images are accessed through image views rather than directly.
+We will also need to create such an image view for the texture image.</p>
+</div>
+<div class="paragraph">
+<p>Add a class member to hold a <code>VkImageView</code> for the texture image and create a new function <code>createTextureImageView</code> where we&#8217;ll create it:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::raii::ImageView textureImageView = nullptr;
+
+...
+
+void initVulkan() {
+    ...
+    createTextureImage();
+    createTextureImageView();
+    createVertexBuffer();
+    ...
+}
+
+...
+
+void createTextureImageView() {
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The code for this function can be based directly on <code>createImageViews</code>.
+The only two changes you have to make are the <code>format</code> and the <code>image</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::ImageViewCreateInfo viewInfo({}, image, vk::ImageViewType::e2D, format, {}, { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 });</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>I&#8217;ve left out the explicit <code>viewInfo.components</code> initialization, because <code>VK_COMPONENT_SWIZZLE_IDENTITY</code> is defined as <code>0</code> anyway.
+Finish creating the image view by calling <code>vkCreateImageView</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::raii::ImageView( device, viewInfo );</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Because so much of the logic is duplicated from <code>createImageViews</code>, you may wish to abstract it into a new <code>createImageView</code> function:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::raii::ImageView createImageView(vk::raii::Image&amp; image, vk::Format format) {
+    vk::ImageViewCreateInfo viewInfo({}, image, vk::ImageViewType::e2D, format, {}, { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 });
+    return vk::raii::ImageView( device, viewInfo );
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>createTextureImageView</code> function can now be simplified to:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createTextureImageView() {
+    textureImageView = createImageView(textureImage, vk::Format::eR8G8B8A8Srgb);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And <code>createImageViews</code> can be simplified to:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createImageViews() {
+    swapChainImageViews.resize(swapChainImages.size());
+
+    for (uint32_t i = 0; i &lt; swapChainImages.size(); i++) {
+        swapChainImageViews[i] = createImageView(swapChainImages[i], swapChainImageFormat);
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_samplers"><a class="anchor" href="#_samplers"></a>Samplers</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>It is possible for shaders to read texels directly from images, but that is not very common when they are used as textures.
+Textures are usually accessed through samplers, which will apply filtering and transformations to compute the final color that is retrieved.</p>
+</div>
+<div class="paragraph">
+<p>These filters are helpful to deal with problems like oversampling.
+Consider a texture mapped to geometry with more fragments than texels.
+If you simply took the closest texel for the texture coordinate in each fragment, then you would get a result like the first image:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../_images/images/texture_filtering.png" alt="texture filtering">
+</div>
+</div>
+<div class="paragraph">
+<p>If you combined the 4 closest texels through linear interpolation, then you would get a smoother result like the one on the right.
+Of course your application may have art style requirements that fit the left style more (think Minecraft), but the right is preferred in conventional graphics applications.
+A sampler object automatically applies this filtering for you when reading a color from the texture.</p>
+</div>
+<div class="paragraph">
+<p>Undersampling is the opposite problem, where you have more texels than fragments.
+This will lead to artifacts when sampling high frequency patterns like a checkerboard texture at a sharp angle:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../_images/images/anisotropic_filtering.png" alt="anisotropic filtering">
+</div>
+</div>
+<div class="paragraph">
+<p>As shown in the left image, the texture turns into a blurry mess in the distance.
+The solution to this is <a href="https://en.wikipedia.org/wiki/Anisotropic_filtering">anisotropic filtering</a>, which can also be applied automatically by a sampler.</p>
+</div>
+<div class="paragraph">
+<p>Aside from these filters, a sampler can also take care of transformations.
+It determines what happens when you try to read texels outside the image through its <em>addressing mode</em>.
+The image below displays some possibilities:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../_images/images/texture_addressing.png" alt="texture addressing">
+</div>
+</div>
+<div class="paragraph">
+<p>We will now create a function <code>createTextureSampler</code> to set up such a sampler object.
+We&#8217;ll be using that sampler to read colors from the texture in the shader later on.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void initVulkan() {
+    ...
+    createTextureImage();
+    createTextureImageView();
+    createTextureSampler();
+    ...
+}
+
+...
+
+void createTextureSampler() {
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Samplers are configured through a <code>VkSamplerCreateInfo</code> structure, which specifies all filters and transformations that it should apply.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::SamplerCreateInfo samplerInfo( {}, vk::Filter::eLinear, vk::Filter::eLinear);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>magFilter</code> and <code>minFilter</code> fields specify how to interpolate texels that are magnified or minified.
+Magnification concerns the oversampling problem describes above, and minification concerns undersampling.
+The choices are <code>VK_FILTER_NEAREST</code> and <code>VK_FILTER_LINEAR</code>, corresponding to the modes demonstrated in the images above.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::SamplerCreateInfo samplerInfo( {}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eRepeat,
+                                    vk::SamplerAddressMode::eRepeat);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The addressing mode can be specified per axis using the <code>addressMode</code> fields.
+The available values are listed below.
+Most of these are demonstrated in the image above.
+Note that the axes are called U, V and W instead of X, Y and Z.
+This is a convention for texture space coordinates.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SAMPLER_ADDRESS_MODE_REPEAT</code>: Repeat the texture when going beyond the image dimensions.</p>
+</li>
+<li>
+<p><code>VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT</code>: Like repeat, but inverts the coordinates to mirror the image when going beyond the dimensions.</p>
+</li>
+<li>
+<p><code>VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE</code>: Take the color of the edge closest to the coordinate beyond the image dimensions.</p>
+</li>
+<li>
+<p><code>VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE</code>: Like clamp to edge, but instead uses the edge opposite to the closest edge.</p>
+</li>
+<li>
+<p><code>VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER</code>: Return a solid color when sampling beyond the dimensions of the image.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>It doesn&#8217;t really matter which addressing mode we use here, because we&#8217;re not going to sample outside of the image in this tutorial.
+However, the repeat mode is probably the most common mode, because it can be used to tile textures like floors and walls.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PhysicalDeviceProperties properties = physicalDevice.getProperties();
+        vk::SamplerCreateInfo samplerInfo( {}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eRepeat,
+                                            vk::SamplerAddressMode::eRepeat, vk::SamplerAddressMode::eRepeat, 0);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>These two fields specify if anisotropic filtering should be used.
+There is no reason not to use this unless performance is a concern.
+The <code>maxAnisotropy</code> field limits the number of texel samples that can be used to calculate the final color.
+A lower value results in better performance, but lower quality results.
+To figure out which value we can use, we need to retrieve the properties of the physical device like so:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PhysicalDeviceProperties properties = physicalDevice.getProperties();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you look at the documentation for the <code>VkPhysicalDeviceProperties</code> structure, you&#8217;ll see that it contains a <code>VkPhysicalDeviceLimits</code> member named <code>limits</code>.
+This struct in turn has a member called <code>maxSamplerAnisotropy</code> and this is the maximum value we can specify for <code>maxAnisotropy</code>.
+If we want to go for maximum quality, we can simply use that value directly:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PhysicalDeviceProperties properties = physicalDevice.getProperties();
+vk::SamplerCreateInfo samplerInfo( {}, vk::Filter::eLinear, vk::Filter::eLinear, vk::SamplerMipmapMode::eLinear, vk::SamplerAddressMode::eRepeat,
+                                    vk::SamplerAddressMode::eRepeat, vk::SamplerAddressMode::eRepeat, 0, 1,
+                                    properties.limits.maxSamplerAnisotropy, vk::False, vk::CompareOp::eAlways);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can either query the properties at the beginning of your program and pass them around to the functions that need them, or query them in the <code>createTextureSampler</code> function itself.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">samplerInfo.borderColor = vk::BorderColor::eIntOpaqueBlack;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>borderColor</code> field specifies which color is returned when sampling beyond the image with clamp to border addressing mode.
+It is possible to return black, white or transparent in either float or int formats.
+You cannot specify an arbitrary color.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">samplerInfo.unnormalizedCoordinates = vk::False;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>unnormalizedCoordinates</code> field specifies which coordinate system you want to use to address texels in an image.
+If this field is <code>VK_TRUE</code>, then you can simply use coordinates within the <code>[0, texWidth)</code> and <code>[0, texHeight)</code> range.
+If it is <code>VK_FALSE</code>, then the texels are addressed using the <code>[0, 1)</code> range on all axes.
+Real-world applications almost always use normalized coordinates, because then it&#8217;s possible to use textures of varying resolutions with the exact same coordinates.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">samplerInfo.compareEnable = vk::False;
+samplerInfo.compareOp = vk::CompareOp::eAlways;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If a comparison function is enabled, then texels will first be compared to a value, and the result of that comparison is used in filtering operations.
+This is mainly used for <a href="https://developer.nvidia.com/gpugems/GPUGems/gpugems_ch11.html">percentage-closer filtering</a> on shadow maps.
+We&#8217;ll look at this in a future chapter.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">samplerInfo.mipmapMode = vk::SamplerMipmapMode::eLinear;
+samplerInfo.mipLodBias = 0.0f;
+samplerInfo.minLod = 0.0f;
+samplerInfo.maxLod = 0.0f;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>All of these fields apply to mipmapping.
+We will look at mipmapping in a <a href="/Generating_Mipmaps">later chapter</a>, but basically it&#8217;s another type of filter that can be applied.</p>
+</div>
+<div class="paragraph">
+<p>The functioning of the sampler is now fully defined.
+Add a class member to hold the handle of the sampler object and create the sampler with <code>vkCreateSampler</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::raii::ImageView textureImageView = nullptr;
+vk::raii::Sampler textureSampler = nullptr;
+
+...
+
+void createTextureSampler() {
+    ...
+
+    textureSampler = vk::raii::Sampler(device, samplerInfo);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note the sampler does not reference a <code>VkImage</code> anywhere.
+The sampler is a distinct object that provides an interface to extract colors from a texture.
+It can be applied to any image you want, whether it is 1D, 2D or 3D.
+This is different from many older APIs, which combined texture images and filtering into a single state.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_anisotropy_device_feature"><a class="anchor" href="#_anisotropy_device_feature"></a>Anisotropy device feature</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If you run your program right now, you&#8217;ll see a validation layer message like this:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../_images/images/validation_layer_anisotropy.png" alt="validation layer anisotropy">
+</div>
+</div>
+<div class="paragraph">
+<p>That&#8217;s because anisotropic filtering is actually an optional device feature.
+We need to update the <code>createLogicalDevice</code> function to request it:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PhysicalDeviceFeatures deviceFeatures;
+deviceFeatures.samplerAnisotropy = vk::True;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And even though it is very unlikely that a modern graphics card will not support it, we should update <code>isDeviceSuitable</code> to check if it is available:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">bool isDeviceSuitable(VkPhysicalDevice device) {
+    ...
+
+    vk::PhysicalDeviceFeatures supportedFeatures = device.getPhysicalDeviceFeatures();
+
+    return indices.isComplete() &amp;&amp; extensionsSupported &amp;&amp; swapChainAdequate &amp;&amp; supportedFeatures.samplerAnisotropy;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>vkGetPhysicalDeviceFeatures</code> repurposes the <code>VkPhysicalDeviceFeatures</code> struct to indicate which features are supported rather than requested by setting the boolean values.</p>
+</div>
+<div class="paragraph">
+<p>Instead of enforcing the availability of anisotropic filtering, it&#8217;s also possible to simply not use it by conditional setting:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">samplerInfo.anisotropyEnable = VK_FALSE;
+samplerInfo.maxAnisotropy = 1.0f;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the <a href="02_Combined_image_sampler.html" class="xref page">next chapter</a> we will expose the image and sampler objects to the shaders to draw the texture onto the square.</p>
+</div>
+<div class="paragraph">
+<p><a href="../_attachments/25_sampler.cpp">C&#43;&#43; code</a> /
+<a href="../_attachments/22_shader_ubo.slang">slang shader</a> /
+<a href="../_attachments/22_shader_ubo.vert">GLSL Vertex shader</a> /
+<a href="../_attachments/22_shader_ubo.frag">GLSL Fragment shader</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

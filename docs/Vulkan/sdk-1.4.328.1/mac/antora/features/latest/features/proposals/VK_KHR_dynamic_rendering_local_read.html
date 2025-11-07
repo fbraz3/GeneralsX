@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>VK_KHR_dynamic_rendering_local_read :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:features" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="features" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Feature Descriptions</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Vulkan Roadmap and Feature Descriptions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Roadmap.html">Vulkan Roadmap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Feature Descriptions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMDX_shader_enqueue.html">VK_AMDX_shader_enqueue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_anti_lag.html">VK_AMD_anti_lag</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_shader_early_and_late_fragment_tests.html">VK_AMD_shader_early_and_late_fragment_tests</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ANDROID_external_format_resolve.html">VK_ANDROID_external_format_resolve</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_pipeline_opacity_micromap.html">VK_ARM_pipeline_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_render_pass_striped.html">VK_ARM_render_pass_striped</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_tensors.html">VK_ARM_tensors</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_dynamic_state.html">VK_EXT_attachment_feedback_loop_dynamic_state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_layout.html">VK_EXT_attachment_feedback_loop_layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_calibrated_timestamps.html">VK_EXT_calibrated_timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_bias_control.html">VK_EXT_depth_bias_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_clamp_control.html">VK_EXT_depth_clamp_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_descriptor_buffer.html">VK_EXT_descriptor_buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_fault.html">VK_EXT_device_fault</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_generated_commands.html">VK_EXT_device_generated_commands</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_dynamic_rendering_unused_attachments.html">VK_EXT_dynamic_rendering_unused_attachments</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_extended_dynamic_state3.html">VK_EXT_extended_dynamic_state3</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_acquire_unmodified.html">VK_EXT_external_memory_acquire_unmodified</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_metal.html">VK_EXT_external_memory_metal</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_fragment_density_map_offset.html">VK_EXT_fragment_density_map_offset</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_frame_boundary.html">Proposal: <code>VK_EXT_frame_boundary</code></a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_graphics_pipeline_library.html">VK_EXT_graphics_pipeline_library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_host_image_copy.html">VK_EXT_host_image_copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_2d_array_of_3d.html">VK_EXT_image_2d_array_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_compression_control.html">VK_EXT_image_compression_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_sliced_view_of_3d.html">VK_EXT_image_sliced_view_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_layer_settings.html">VK_EXT_layer_settings</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_dithering.html">VK_EXT_legacy_dithering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_vertex_attributes.html">VK_EXT_legacy_vertex_attributes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_map_memory_placed.html">VK_EXT_map_memory_placed</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mesh_shader.html">VK_EXT_mesh_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_metal_objects.html">VK_EXT_metal_objects</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_multisampled_render_to_single_sampled.html">VK_EXT_multisampled_render_to_single_sampled</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mutable_descriptor_type.html">VK_EXT_mutable_descriptor_type</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_non_seamless_cube_map.html">VK_EXT_non_seamless_cube_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_opacity_micromap.html">VK_EXT_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_library_group_handles.html">VK_EXT_pipeline_library_group_handles</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_protected_access.html">VK_EXT_pipeline_protected_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_present_mode_fifo_latest_ready.html">VK_EXT_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_primitives_generated_query.html">VK_EXT_primitives_generated_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_rasterization_order_attachment_access.html">VK_EXT_rasterization_order_attachment_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_float8.html">VK_EXT_shader_float8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_module_identifier.html">VK_EXT_shader_module_identifier</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_object.html">VK_EXT_shader_object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_replicated_composites.html">VK_EXT_shader_replicated_composites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_tile_image.html">VK_EXT_shader_tile_image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_subpass_merge_feedback.html">VK_EXT_subpass_merge_feedback</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_surface_maintenance1.html">VK_EXT_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_swapchain_maintenance1.html">VK_EXT_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_zero_initialize_device_memory.html">VK_EXT_zero_initialize_device_memory</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_GOOGLE_surfaceless_query.html">VK_GOOGLE_surfaceless_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_cluster_culling_shader.html">VK_HUAWEI_cluster_culling_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_invocation_mask.html">VK_HUAWEI_invocation_mask</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_compute_shader_derivatives.html">VK_KHR_compute_shader_derivatives</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_cooperative_matrix.html">VK_KHR_cooperative_matrix</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering.html">VK_KHR_dynamic_rendering</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering_local_read.html">VK_KHR_dynamic_rendering_local_read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shader_barycentric.html">VK_KHR_fragment_shader_barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shading_rate.html">VK_KHR_fragment_shading_rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_load_store_op_none.html">VK_KHR_load_store_op_none</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance5.html">VK_KHR_maintenance5</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance6.html">VK_KHR_maintenance6</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance7.html">VK_KHR_maintenance7</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance8.html">VK_KHR_maintenance8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance9.html">Proposal Template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_map_memory2.html">VK_KHR_map_memory2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_pipeline_binary.html">VK_KHR_pipeline_binary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_id2.html">VK_KHR_present_id2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_mode_fifo_latest_ready.html">VK_KHR_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_wait2.html">VK_KHR_present_wait2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_ray_tracing_position_fetch.html">VK_KHR_ray_tracing_position_fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_bfloat16.html">VK_KHR_shader_bfloat16</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_expect_assume.html">VK_KHR_shader_expect_assume</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_float_controls2.html">VK_KHR_shader_float_controls2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_integer_dot_product.html">VK_KHR_shader_integer_dot_product</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_maximal_reconvergence.html">VK_KHR_shader_maximal_reconvergence</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_quad_control.html">VK_KHR_shader_quad_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_relaxed_extended_instruction.html">VK_KHR_shader_relaxed_extended_instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_subgroup_rotate.html">Subgroup rotation instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_surface_maintenance1.html">VK_KHR_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_swapchain_maintenance1.html">VK_KHR_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_unified_image_layouts.html">VK_KHR_unified_image_layouts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_vertex_attribute_divisor.html">VK_KHR_vertex_attribute_divisor</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_av1.html">VK_KHR_video_decode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h264.html">VK_KHR_video_decode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h265.html">VK_KHR_video_decode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_queue.html">VK_KHR_video_decode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_vp9.html">VK_KHR_video_decode_vp9</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_av1.html">VK_KHR_video_encode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h264.html">VK_KHR_video_encode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h265.html">VK_KHR_video_encode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_intra_refresh.html">VK_KHR_video_encode_intra_refresh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_quantization_map.html">VK_KHR_video_encode_quantization_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_queue.html">VK_KHR_video_encode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance1.html">VK_KHR_video_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance2.html">VK_KHR_video_maintenance2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_queue.html">VK_KHR_video_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_LUNARG_direct_driver_loading.html">VK_LUNARG_direct_driver_loading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_MSFT_layered_driver.html">VK_MSFT_layered_driver</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cluster_acceleration_structure.html">VK_NV_cluster_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_matrix2.html">VK_NV_cooperative_matrix2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_vector.html">VK_NV_cooperative_vector</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_display_stereo.html">VK_NV_display_stereo</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_external_compute_queue.html">VK_NV_external_compute_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_partitioned_acceleration_structure.html">VK_NV_partitioned_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_linear_swept_spheres.html">VK_NV_ray_tracing_linear_swept_spheres</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_validation.html">VK_NV_ray_tracing_validation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_image_processing.html">VK_QCOM_image_processing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_memory_heap.html">VK_QCOM_tile_memory_heap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_properties.html">VK_QCOM_tile_properties</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_shading.html">VK_QCOM_tile_shading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_VERSION_1_4.html">Vulkan 1.4</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Feature Descriptions</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Feature Descriptions</a></li>
+    <li>Feature Descriptions</li>
+    <li><a href="VK_KHR_dynamic_rendering_local_read.html">VK_KHR_dynamic_rendering_local_read</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/features/modules/features/pages/proposals/VK_KHR_dynamic_rendering_local_read.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">VK_KHR_dynamic_rendering_local_read</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_problem_statement">1. Problem Statement</a></li>
+<li><a href="#_solution_space">2. Solution Space</a></li>
+<li><a href="#_proposal">3. Proposal</a>
+<ul class="sectlevel2">
+<li><a href="#_features">3.1. Features</a></li>
+<li><a href="#_dynamic_rendering_self_dependencies">3.2. Dynamic Rendering Self-Dependencies</a></li>
+<li><a href="#_color_attachment_remapping">3.3. Color Attachment Remapping</a></li>
+<li><a href="#_input_attachment_mapping">3.4. Input Attachment Mapping</a></li>
+<li><a href="#_read_only_input_attachments">3.5. Read-only Input Attachments</a></li>
+<li><a href="#_interactions_with_vk_ext_shader_object">3.6. Interactions with VK_EXT_shader_object</a></li>
+<li><a href="#_interactions_with_vk_ext_rasterization_order_attachment_access">3.7. Interactions with VK_EXT_rasterization_order_attachment_access</a></li>
+<li><a href="#_glsl_changes">3.8. GLSL Changes</a></li>
+<li><a href="#_hlsl_changes">3.9. HLSL Changes</a></li>
+</ul>
+</li>
+<li><a href="#_example_porting">4. Example: Porting</a>
+<ul class="sectlevel2">
+<li><a href="#_multiple_subpasses">4.1. Multiple Subpasses</a></li>
+<li><a href="#_dynamic_rendering_dependencies">4.2. Dynamic Rendering Dependencies</a></li>
+</ul>
+</li>
+<li><a href="#_issues">5. Issues</a>
+<ul class="sectlevel2">
+<li><a href="#_why_is_color_attachment_location_reordering_included">5.1. Why is color attachment location reordering included?</a></li>
+<li><a href="#_why_are_some_of_the_functions_of_multiple_subpasses_not_exposed">5.2. Why are some of the functions of multiple subpasses not exposed?</a></li>
+<li><a href="#_should_input_attachment_descriptors_be_required">5.3. Should input attachment descriptors be required?</a></li>
+<li><a href="#_should_this_extension_include_the_ability_for_fragment_shaders_to_reinterpret_the_format_of_a_colorinput_attachment_during_rendering">5.4. Should this extension include the ability for fragment shaders to reinterpret the format of a color/input attachment during rendering?</a></li>
+<li><a href="#_should_this_extension_advertise_local_reads_between_fragments_in_the_same_draw_call">5.5. Should this extension advertise local reads between fragments in the same draw call?</a></li>
+<li><a href="#_should_this_extension_allow_applications_to_access_local_data_from_resources_other_than_attachments">5.6. Should this extension allow applications to access local data from resources other than attachments?</a></li>
+<li><a href="#_should_read_only_input_attachments_be_specified_in_vkcmdbeginrendering_to_enable_pre_fetch_in_tilers">5.7. Should read-only input attachments be specified in <code>vkCmdBeginRendering</code> to enable pre-fetch in tilers?</a></li>
+<li><a href="#_why_are_color_attachment_location_and_input_attachment_index_remappings_provided_both_statically_and_dynamically">5.8. Why are color attachment location and input attachment index remappings provided both statically and dynamically?</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This extension enables reads from attachments and resources written by previous fragment shaders within a dynamic render pass.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>1. Problem Statement</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_dynamic_rendering.adoc">VK_KHR_dynamic_rendering</a> enabled a much more straightforward method for applications to setup rendering code without the need for a large dedicated object up front.
+That extension enabled a number of applications that do not use multiple subpasses to use a more streamlined method for getting rendering started.</p>
+</div>
+<div class="paragraph">
+<p>However, applications using multiple subpasses or wanting to do things like order independent transparency or simple deferred rendering cannot make use of <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_dynamic_rendering.adoc">VK_KHR_dynamic_rendering</a>, as there is no path for subpass dependencies to be expressed without breaking rendering across multiple separate render passes.</p>
+</div>
+<div class="paragraph">
+<p>Adding a method for applications using these techniques to express these in dynamic rendering would enable more developers to take advantage of this functionality without the complexity of setting up render pass objects.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution Space</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The solution to this problem has to involve some way of allowing the addition of local attachment reads to dynamic rendering, and the following additional constraints also exist:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The solution has to remain easy to use in keeping with dynamic rendering&#8217;s core goals.</p>
+</li>
+<li>
+<p>The solution should require minimal deviation from multi-pass code using render pass objects to enable easier porting.</p>
+</li>
+<li>
+<p>The solution should be implementable efficiently across all platforms, but allow space for vendor fast paths.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>3. Proposal</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_features"><a class="anchor" href="#_features"></a>3.1. Features</h3>
+<div class="paragraph">
+<p>The following feature advertises the full functionality of this extension:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR {
+    VkStructureType                 sType;
+    const void*                     pNext;
+    VkBool32                        dynamicRenderingLocalRead;
+} VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dynamic_rendering_self_dependencies"><a class="anchor" href="#_dynamic_rendering_self_dependencies"></a>3.2. Dynamic Rendering Self-Dependencies</h3>
+<div class="paragraph">
+<p>If the <code>dynamicRenderingLocalReads</code> feature is enabled, pipeline barriers are now allowed within dynamic rendering if they include <code>VK_DEPENDENCY_BY_REGION_BIT</code>, and source and destination stages are all framebuffer-space stages.
+When such a pipeline barrier is provided, any resources specified (or all if a memory barrier is used) can be read by a subsequent fragment shader in the same render pass if they were written to by any overlapping fragment location (x,y,layer/view,sample).
+These pipeline barriers cannot perform layout transitions or queue family transfers.
+Reading data outside of values written by a previous fragment shader has undefined behavior.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>When writing to storage resources the actual location in the resource is not relevant - only the fragment locations accessing the values.
+For instance, if a fragment at position (x=5,y=5) wrote to a storage image at position (x=6,y=6) and (x=21,y=700), then a subsequent fragment at (x=5,y=5) would be able to read (x=6,y=6) and (x=21,y=700) from the same storage image with an appropriate barrier between the accesses.
+In this same example, reading from (x=5,y=5) in the storage image would be a data race if any other fragment wrote to it.
+This allows applications to associate arbitrary amounts of data with a given pixel, and extends to the use of buffers or device addresses as well.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Images used for this purpose must be in either the <code>VK_IMAGE_LAYOUT_GENERAL</code> layout, or a new dedicated layout:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ_KHR = 1000232000;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This layout can be used for storage images, and render pass color, depth/stencil, and input attachments.
+Writes to attachments can only be made visible in this way via input attachments, and writes via other resource types will not be made visible via input attachments.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>While the same layout can be used for storage images and all attachments, there is still no way to write through one type of resource and then read through another in the same render pass instance.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_color_attachment_remapping"><a class="anchor" href="#_color_attachment_remapping"></a>3.3. Color Attachment Remapping</h3>
+<div class="paragraph">
+<p>In order to facilitate applications porting multi-pass rendering to dynamic rendering, the following functionality is added to allow remapping of color attachment locations during rendering:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkRenderingAttachmentLocationInfoKHR {
+    VkStructureType                 sType;
+    const void*                     pNext;
+    const uint32_t                  colorAttachmentCount;
+    const uint32_t*                 pColorAttachmentLocations;
+} VkRenderingAttachmentLocationInfoKHR;
+
+void vkCmdSetRenderingAttachmentLocationsKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkRenderingAttachmentLocationInfoKHR* pLocationInfo);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>As with render pass objects, this information must be provided both when creating a pipeline and during rendering, and must match between the two in order to be valid.</p>
+</div>
+<div class="paragraph">
+<p>This information can be provided during pipeline creation by chaining <code>VkRenderingAttachmentLocationInfoKHR</code> to <a href="https://docs.vulkan.org/spec/latest/chapters/pipelines.html#VkGraphicsPipelineCreateInfo">VkGraphicsPipelineCreateInfo</a> when the fragment output state subset is required.
+If this structure is not provided for pipeline creation, it is equivalent to setting the value of each element of <code>pColorAttachmentLocations</code> to the value of its index within the array, and <code>colorAttachmentCount</code> equal to the value of <a href="https://docs.vulkan.org/spec/latest/chapters/pipelines.html#VkPipelineRenderingCreateInfoKHR">VkPipelineRenderingCreateInfoKHR::colorAttachmentCount</a>.</p>
+</div>
+<div class="paragraph">
+<p><code>vkCmdSetRenderingAttachmentLocationsKHR</code> must only be called within a dynamic render pass instance.
+If this command is not called, the default state is that each element of <code>pColorAttachmentLocations</code> is equal to the value of its index within the array.</p>
+</div>
+<div class="paragraph">
+<p>The index of each element of <code>pColorAttachmentLocations</code> corresponds to the same index of a color attachment in a dynamic render pass, and the value of that element becomes the location that refers to it, providing a way to remap color attachment locations.
+This does not allow an application to wholesale swap out color attachments, but if an application can specify all color attachments that would be used during dynamic rendering as a superset, fragment shaders written for render pass objects can be reused without modification when porting to this extension, simply by remapping the attachments.
+Values in <code>pColorAttachmentLocations</code> must each be unique.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The color attachment remapping does not affect things like blend state or format mappings - these always correspond 1:1 with the render pass attachments.
+This means when porting from render pass objects, care must be taken to ensure these are reordered correctly, where before the values mapped to the reordered elements in the subpass.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>When issuing a draw call, the location mapping must match between the bound graphics pipeline and the command buffer state set by <code>vkCmdSetRenderingAttachmentLocationsKHR</code>.</p>
+</div>
+<div class="paragraph">
+<p><code>VkRenderingAttachmentLocationInfoKHR</code> can also be chained to <a href="https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VkCommandBufferInheritanceInfo">VkCommandBufferInheritanceInfo</a> when using secondary command buffers, to specify the color attachment location mapping in the primary command buffer when <a href="https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#vkCmdExecuteCommands">vkCmdExecuteCommands</a> is called.
+If <code>VkRenderingAttachmentLocationInfoKHR</code> is not provided in the inheritance info, it is equivalent to providing it with the value of each element of <code>pColorAttachmentLocations</code> set to the value of its index within the array, with the color attachment count equal to that specified by <a href="https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VkCommandBufferInheritanceRenderingInfo">VkCommandBufferInheritanceRenderingInfo::colorAttachmentCount</a>.
+This information must match between the inheritance info and the state when <a href="https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#vkCmdExecuteCommands">vkCmdExecuteCommands</a> is called if there is a currently active render pass instance.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+This functionality is provided primarily for porting existing content to the new API; new applications should maintain a consistent location for all attachments in their shaders during a render pass; this functionality can be considered immediately deprecated.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>While an attachment is mapped to <code>VK_ATTACHMENT_UNUSED</code> in command buffer state (either via <code>vkCmdSetRenderingAttachmentLocationsKHR</code> or inheritance state), it must not be cleared by <a href="https://docs.vulkan.org/spec/latest/chapters/clears.html#vkCmdClearAttachments">vkCmdClearAttachments</a>.
+Some implementations will update the render pass attachment bindings when remapping occurs, leaving unmapped attachments unavailable to be written to via the path that <a href="https://docs.vulkan.org/spec/latest/chapters/clears.html#vkCmdClearAttachments">vkCmdClearAttachments</a> would use.
+This is in line with render pass objects, where applications would not be able to clear an attachment outside of the current subpass.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_input_attachment_mapping"><a class="anchor" href="#_input_attachment_mapping"></a>3.4. Input Attachment Mapping</h3>
+<div class="paragraph">
+<p>There are two ways to map input attachments to other attachments during dynamic rendering; the simplest is to rely on the <code>InputAttachmentIndex</code> qualifier matching the location of the corresponding color attachment, or being omitted for a depth/stencil attachment.
+By default, a color attachment specified at index <em>i</em> in the API will be associated with an input attachment with <code>InputAttachmentIndex</code> equal to <em>i</em>.
+This mapping is not affected by the mappings set by <code>VkRenderingAttachmentLocationInfoKHR</code>.
+Any input attachment without an <code>InputAttachmentIndex</code> will be associated with the depth/stencil attachment.
+For applications where writing new shaders is viable, this allows a simple mapping without API intervention.</p>
+</div>
+<div class="paragraph">
+<p>For applications porting existing content from render pass objects where modifying shaders is not straightforward, functionality similar to <code>VkRenderingAttachmentLocationInfoKHR</code> is provided to allow remapping the input attachments to different attachments:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkRenderingInputAttachmentIndexInfoKHR {
+    VkStructureType                 sType;
+    const void*                     pNext;
+    const uint32_t                  colorAttachmentCount;
+    const uint32_t*                 pColorAttachmentInputIndices;
+    uint32_t*                       pDepthInputAttachmentIndex;
+    uint32_t*                       pStencilInputAttachmentIndex;
+} VkRenderingInputAttachmentIndexInfoKHR;
+
+void vkCmdSetRenderingInputAttachmentIndicesKHR(
+    VkCommandBuffer                                 commandBuffer,
+    const VkRenderingInputAttachmentIndexInfoKHR*   pInputAttachmentIndexInfo);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This information can be provided during pipeline creation by chaining <code>VkRenderingInputAttachmentIndexInfoKHR</code> to <a href="https://docs.vulkan.org/spec/latest/chapters/pipelines.html#VkGraphicsPipelineCreateInfo">VkGraphicsPipelineCreateInfo</a> when the fragment shader state subset is required.
+If this structure is not provided for pipeline creation, it is equivalent to setting the value of each element of <code>pColorAttachmentInputIndices</code> to the value of its index within the array, <code>colorAttachmentCount</code> to the value of <a href="https://docs.vulkan.org/spec/latest/chapters/pipelines.html#VkPipelineRenderingCreateInfoKHR">VkPipelineRenderingCreateInfoKHR::colorAttachmentCount</a>, and <code>pDepthInputAttachmentIndex</code> and <code>pStencilInputAttachmentIndex</code> to <code>NULL</code>.</p>
+</div>
+<div class="paragraph">
+<p><code>vkCmdSetRenderingInputAttachmentIndicesKHR</code> must only be called within a dynamic render pass instance.
+If this command is not called, the default state is that each element of <code>pColorAttachmentInputIndices</code> to the value of its index within the array, and <code>pDepthInputAttachmentIndex</code> and <code>pStencilInputAttachmentIndex</code> are set to <code>NULL</code>.</p>
+</div>
+<div class="paragraph">
+<p>The index of each element of <code>pColorAttachmentInputIndices</code> corresponds to the same index of a color attachment in a dynamic render pass, and the value of that element becomes the <code>InputAttachmentIndex</code> that refers to it, providing a way to remap input attachments to color attachments.
+Values in <code>pColorAttachmentInputIndices</code> must each be unique.</p>
+</div>
+<div class="paragraph">
+<p>If either of <code>pDepthInputAttachmentIndex</code> or <code>pStencilInputAttachmentIndex</code> are set to <code>NULL</code> it means that these are only accessible in the shader if the shader does not associate these input attachments with an <code>InputAttachmentIndex</code>.</p>
+</div>
+<div class="paragraph">
+<p>If <code>pDepthInputAttachmentIndex</code>, <code>pStencilInputAttachmentIndex</code>, or any element of <code>pColorAttachmentInputIndices</code> is set to <code>VK_ATTACHMENT_UNUSED</code> it indicates that the respective attachment is not associated with an input attachment index, and cannot be accessed as an input attachment in the shader.</p>
+</div>
+<div class="paragraph">
+<p>When issuing a draw call, the input attachment index mapping must match between the bound graphics pipeline and the command buffer state set by <code>vkCmdSetRenderingInputAttachmentIndicesKHR</code>.</p>
+</div>
+<div class="paragraph">
+<p><code>VkRenderingInputAttachmentIndexInfoKHR</code> can also be chained to <a href="https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VkCommandBufferInheritanceInfo">VkCommandBufferInheritanceInfo</a> when using secondary command buffers, to specify the input attachment index mapping in the primary command buffer when <a href="https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#vkCmdExecuteCommands">vkCmdExecuteCommands</a> is called.
+If <code>VkRenderingInputAttachmentIndexInfoKHR</code> is not provided in the inheritance info, it is equivalent to providing it with the value of each element of <code>pColorAttachmentInputIndices</code> set to the value of its index within the array, <code>colorAttachmentCount</code> set to the value of <a href="https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#VkCommandBufferInheritanceRenderingInfo">VkCommandBufferInheritanceRenderingInfo::colorAttachmentCount</a>, and <code>pDepthInputAttachmentIndex</code> and <code>pStencilInputAttachmentIndex</code> set to <code>NULL</code>.
+This information must match between the inheritance info and the state when <a href="https://docs.vulkan.org/spec/latest/chapters/cmdbuffers.html#vkCmdExecuteCommands">vkCmdExecuteCommands</a> is called if there is a currently active render pass instance.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The remapping functionality is provided primarily for porting existing content to the new API; new applications should set their index attachment indices consistently for all attachments in their shaders during a render pass; this functionality can be considered immediately deprecated.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_read_only_input_attachments"><a class="anchor" href="#_read_only_input_attachments"></a>3.5. Read-only Input Attachments</h3>
+<div class="paragraph">
+<p>One quirk of render pass objects is that users can specify input attachments that are only used as input attachments.
+For dynamic rendering, these cannot be specified by tagging them as another attachment type as enabled by the above structures.</p>
+</div>
+<div class="paragraph">
+<p>Rather than specifying them in the render pass, as they must be associated with a descriptor, implementations will unconditionally fetch values from the input attachment descriptor if the <code>InputAttachmentIndex</code> is not mapped to another attachment.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Some implementations may have to now provide a real descriptor when advertising this extension where they did not before - which may affect things like <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_descriptor_buffer">VK_EXT_descriptor_buffer</a>, where the size of the descriptor is advertised.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_interactions_with_vk_ext_shader_object"><a class="anchor" href="#_interactions_with_vk_ext_shader_object"></a>3.6. Interactions with <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_shader_object">VK_EXT_shader_object</a></h3>
+<div class="paragraph">
+<p>If <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_shader_object">VK_EXT_shader_object</a> is enabled, <code>vkCmdSetRenderingAttachmentLocationsKHR</code> and <code>vkCmdSetRenderingInputAttachmentIndicesKHR</code> are the only way to set the remapping state; the respective structures do not need to be chained to shader object creation or match any static state.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_interactions_with_vk_ext_rasterization_order_attachment_access"><a class="anchor" href="#_interactions_with_vk_ext_rasterization_order_attachment_access"></a>3.7. Interactions with <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_rasterization_order_attachment_access">VK_EXT_rasterization_order_attachment_access</a></h3>
+<div class="paragraph">
+<p>If <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_rasterization_order_attachment_access">VK_EXT_rasterization_order_attachment_access</a> is enabled, the pipeline depth/stencil state and color blend state bits can be used with dynamic rendering, with the same effect on input attachment reads as when used with render pass objects.
+Specifically, this allows local reads from input attachments to read values from previous fragments at overlapping locations within the same render pass (even the same draw), without a barrier.
+This interaction does not enable local reads between non-attachment resources without a barrier.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_glsl_changes"><a class="anchor" href="#_glsl_changes"></a>3.8. GLSL Changes</h3>
+<div class="paragraph">
+<p>A small change is made to GLSL to allow the <code>input_attachment_index</code> qualifier to be omitted when specifying a subpass input.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hlsl_changes"><a class="anchor" href="#_hlsl_changes"></a>3.9. HLSL Changes</h3>
+<div class="paragraph">
+<p>HLSL&#8217;s SPIR-V translation currently requires subpass inputs to specify the <code>vk::input_attachment_index()</code> attribute on <code>SubpassInput</code> variables, and this will be relaxed to allow it to be omitted.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_example_porting"><a class="anchor" href="#_example_porting"></a>4. Example: Porting</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>With a few lines of API code changes, it should be possible to trivially port most code using render pass objects to use dynamic rendering.
+There are some exceptions - code which would use more color attachments than fit within the limit for a single subpass or dynamic rendering, switch depth/stencil attachments, or use non-framebuffer-space subpass dependencies cannot be expressed this way, and must be split into multiple dynamic render passes.
+As an example, the following two pieces of code specify the same outcome:</p>
+</div>
+<div class="sect2">
+<h3 id="_multiple_subpasses"><a class="anchor" href="#_multiple_subpasses"></a>4.1. Multiple Subpasses</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Write out the setup code.
+
+vkCmdBeginRenderPass2(...);
+
+vkCmdDraw(...);
+
+vkCmdNextSubpass2(...);
+
+vkCmdDraw(...);
+
+vkCmdEndRenderPass2(...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dynamic_rendering_dependencies"><a class="anchor" href="#_dynamic_rendering_dependencies"></a>4.2. Dynamic Rendering Dependencies</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Write the setup code
+
+vkCmdBeginRendering(...);
+
+vkCmdDraw(...);
+
+vkCmdPipelineBarrier(...);
+
+vkCmdDraw(...);
+
+vkCmdEndRendering(...);</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_issues"><a class="anchor" href="#_issues"></a>5. Issues</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_why_is_color_attachment_location_reordering_included"><a class="anchor" href="#_why_is_color_attachment_location_reordering_included"></a>5.1. Why is color attachment location reordering included?</h3>
+<div class="paragraph">
+<p>With multiple subpasses in a render pass, applications can reassociate the locations between different subpasses, and this is included to enable simple porting of shaders that do this to this extension.
+It could be omitted but this would require pre-processing of shader code to replace the color indices to achieve the same effect, which is a big burden if an application is not already set up to do it.
+It is a small concession for developers to make it significantly easier to port code, without adding much burden on implementers.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_why_are_some_of_the_functions_of_multiple_subpasses_not_exposed"><a class="anchor" href="#_why_are_some_of_the_functions_of_multiple_subpasses_not_exposed"></a>5.2. Why are some of the functions of multiple subpasses not exposed?</h3>
+<div class="paragraph">
+<p>These extra bits of functionality require implementations to jump through hoops that may require splitting render passes internally; this extension is deliberately limited to functionality that all vendors can support without resorting to that, as it would increase the complexity of the API massively, particularly given this cannot be pre-computed without a dedicated object.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_should_input_attachment_descriptors_be_required"><a class="anchor" href="#_should_input_attachment_descriptors_be_required"></a>5.3. Should input attachment descriptors be required?</h3>
+<div class="paragraph">
+<p>Several vendors (including those considered tilers) need a separate descriptor to read these images, and not having them would increase driver complexity and may decrease performance - but we could revisit this.</p>
+</div>
+<div class="paragraph">
+<p>Note: <code>TRANSIENT</code> attachments still work with this extension, allowing a path to avoid the memory allocation, just as with render pass objects.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_should_this_extension_include_the_ability_for_fragment_shaders_to_reinterpret_the_format_of_a_colorinput_attachment_during_rendering"><a class="anchor" href="#_should_this_extension_include_the_ability_for_fragment_shaders_to_reinterpret_the_format_of_a_colorinput_attachment_during_rendering"></a>5.4. Should this extension include the ability for fragment shaders to reinterpret the format of a color/input attachment during rendering?</h3>
+<div class="paragraph">
+<p>Proposed: Separate extension.</p>
+</div>
+<div class="paragraph">
+<p>To make this work, something as simple as a decoration on a color output or input attachment stating that the format is ignored and raw bits are written would suffice, but that might be beyond the scope of this extension, and may not be supportable by all implementers.
+This would allow applications to port code using the OpenGL ES pixel local storage extensions to Vulkan, and would also allow more code using more attachments than are available to work by aliasing discarded attachments (though this might also necessitate explicit load/store commands).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_should_this_extension_advertise_local_reads_between_fragments_in_the_same_draw_call"><a class="anchor" href="#_should_this_extension_advertise_local_reads_between_fragments_in_the_same_draw_call"></a>5.5. Should this extension advertise local reads between fragments in the same draw call?</h3>
+<div class="paragraph">
+<p>This is not efficient or easily implementable in all cases for many vendors.
+For implementations that do support it, that feature is provided as an interaction with <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_rasterization_order_attachment_access.adoc">VK_EXT_rasterization_order_attachment_access</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_should_this_extension_allow_applications_to_access_local_data_from_resources_other_than_attachments"><a class="anchor" href="#_should_this_extension_allow_applications_to_access_local_data_from_resources_other_than_attachments"></a>5.6. Should this extension allow applications to access local data from resources other than attachments?</h3>
+<div class="paragraph">
+<p>Yes, this allows more flexibility for applications to implement functionality between fragments.
+This should not be a significant implementation burden, but it could be removed if that assumption turns out to be false.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_should_read_only_input_attachments_be_specified_in_vkcmdbeginrendering_to_enable_pre_fetch_in_tilers"><a class="anchor" href="#_should_read_only_input_attachments_be_specified_in_vkcmdbeginrendering_to_enable_pre_fetch_in_tilers"></a>5.7. Should read-only input attachments be specified in <code>vkCmdBeginRendering</code> to enable pre-fetch in tilers?</h3>
+<div class="paragraph">
+<p>This would make the API more complex for what is likely minimal gain.
+Applications can emulate this themselves by putting such data into a placeholder attachment that is never written, if there is space for another attachment.
+If there is not space for another attachment, the implementation would not be able to prefetch anyway.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_why_are_color_attachment_location_and_input_attachment_index_remappings_provided_both_statically_and_dynamically"><a class="anchor" href="#_why_are_color_attachment_location_and_input_attachment_index_remappings_provided_both_statically_and_dynamically"></a>5.8. Why are color attachment location and input attachment index remappings provided both statically and dynamically?</h3>
+<div class="paragraph">
+<p>Requiring this state to match between the pipeline and command buffer is in line with how render pass objects worked.
+Render pass objects are provided both in a pipeline and when beginning a renderpass, and different vendors consume these mappings at different points.
+Some vendors modify generated shader code to support these mappings, while others change hardware state when the commands execute.
+To accommodate both types of implementation without hurting performance when not using these mappings, this state is again required in both places.</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

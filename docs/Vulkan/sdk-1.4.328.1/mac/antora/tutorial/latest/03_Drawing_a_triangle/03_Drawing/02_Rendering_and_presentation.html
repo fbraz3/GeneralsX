@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Rendering and presentation :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../90_FAQ.html">FAQ</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li><a href="../00_Setup/00_Base_code.html">Drawing a triangle</a></li>
+    <li><a href="00_Framebuffers.html">Drawing</a></li>
+    <li><a href="02_Rendering_and_presentation.html">Rendering and presentation</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Tutorial/antora/modules/ROOT/pages/03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Rendering and presentation</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This is the chapter where everything is going to come together.
+We&#8217;re going to write the <code>drawFrame</code> function that will be called from the main loop to put the triangle on the screen.
+Let&#8217;s start by creating the function and call it from <code>mainLoop</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void mainLoop() {
+    while (!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
+        drawFrame();
+    }
+}
+
+...
+
+void drawFrame() {
+
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_outline_of_a_frame"><a class="anchor" href="#_outline_of_a_frame"></a>Outline of a frame</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>At a high level, rendering a frame in Vulkan consists of a common set of steps:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Wait for the previous frame to finish</p>
+</li>
+<li>
+<p>Acquire an image from the swap chain</p>
+</li>
+<li>
+<p>Record a command buffer which draws the scene onto that image</p>
+</li>
+<li>
+<p>Submit the recorded command buffer</p>
+</li>
+<li>
+<p>Present the swap chain image</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>While we will expand the drawing function in later chapters, for now this is the core of our render loop.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_synchronization"><a class="anchor" href="#_synchronization"></a>Synchronization</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A core design philosophy in Vulkan is that synchronization of execution on the GPU is explicit.
+The order of operations is up to us to define using various synchronization primitives which tell the driver the order we want things to run in.
+This means that many Vulkan API calls which start executing work on the GPU are asynchronous, the functions will return before the operation has finished.</p>
+</div>
+<div class="paragraph">
+<p>In this chapter, there are a number of events that we need to order explicitly because they happen on the GPU, such as:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Acquire an image from the swap chain</p>
+</li>
+<li>
+<p>Execute commands that draw onto the acquired image</p>
+</li>
+<li>
+<p>Present that image to the screen for presentation, returning it to the swapchain</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Each of these events is set in motion using a single function call, but are all executed asynchronously.
+The function calls will return before the operations are actually finished and the order of execution is also undefined.
+That is unfortunate, because each of the operations depends on the previous one finishing.
+Thus, we need to explore which primitives we can use to achieve the desired ordering.</p>
+</div>
+<div class="sect2">
+<h3 id="_semaphores"><a class="anchor" href="#_semaphores"></a>Semaphores</h3>
+<div class="paragraph">
+<p>A binary semaphore is used to add order between queue operations.
+Queue operations refer to the work we submit to a queue, either in a command buffer or from within a function as we will see later.
+Examples of queues are the graphics queue and the presentation queue.
+Semaphores are used both to order work inside the same queue and between different queues.</p>
+</div>
+<div class="paragraph">
+<p>There happens to be two kinds of semaphores in Vulkan, binary and timeline.
+Because only binary semaphores will be used in this tutorial, we will not discuss timeline semaphores.
+Further mention of the term semaphore exclusively refers to binary semaphores.</p>
+</div>
+<div class="paragraph">
+<p>A binary semaphore is either unsignaled or signaled.
+It begins life as unsignaled.
+The way we use a binary semaphore to order queue operations is by providing the
+same semaphore as a 'signal' semaphore in one queue operation and as a 'wait' semaphore in another queue operation.
+For example, let&#8217;s say we have semaphore S and queue operations A and B that we want to execute in order.
+What we tell Vulkan is that operation A will 'signal' semaphore S when it finishes executing, and operation B will 'wait' on semaphore S before it begins executing.
+When operation A finishes, semaphore S will be signaled, while operation B wont start until S is signaled.
+After operation B begins executing, semaphore S is automatically reset back to being unsignaled, allowing it to be used again.</p>
+</div>
+<div class="paragraph">
+<p>Pseudocode of what was just described:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>VkCommandBuffer A, B = ... // record command buffers
+VkSemaphore S = ... // create a semaphore
+
+// enqueue A, signal S when done - starts executing immediately
+vkQueueSubmit(work: A, signal: S, wait: None)
+
+// enqueue B, wait on S to start
+vkQueueSubmit(work: B, signal: None, wait: S)</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note that in this code snippet, both calls to <code>vkQueueSubmit()</code> return immediately - the waiting only happens on the GPU.
+The CPU continues running without blocking.
+To make the CPU wait, we need a different synchronization primitive, which we will now describe.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_fences"><a class="anchor" href="#_fences"></a>Fences</h3>
+<div class="paragraph">
+<p>A fence has a similar purpose, in that it is used to synchronize execution, but it is for ordering the execution on the CPU, otherwise known as the host.
+Concretely, if the host needs to know when the GPU has finished something, we
+use a fence.</p>
+</div>
+<div class="paragraph">
+<p>Similar to semaphores, fences are either in a signaled or unsignaled state.
+Whenever we submit work to execute, we can attach a fence to that work.
+When the work is finished, the fence will be signaled.
+Then we can make the host wait for the fence to be signaled, guaranteeing that the work has finished before the host continues.</p>
+</div>
+<div class="paragraph">
+<p>A concrete example is taking a screenshot.
+Say we have already done the necessary work on the GPU.
+Now need to transfer the image from the GPU over to the host and then save the memory to a file.
+We have command buffer A which executes the transfer and fence F.
+We submit command buffer A with fence F, then immediately tell the host to wait for F to signal.
+This causes the host to block until command buffer A finishes execution.
+Thus, we are safe to let the host save the file to disk, as the memory transfer has completed.</p>
+</div>
+<div class="paragraph">
+<p>Pseudocode for what was described:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>VkCommandBuffer A = ... // record command buffer with the transfer
+VkFence F = ... // create the fence
+
+// enqueue A, start work immediately, signal F when done
+vkQueueSubmit(work: A, fence: F)
+
+vkWaitForFence(F) // blocks execution until A has finished executing
+
+save_screenshot_to_disk() // can't run until the transfer has finished</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Unlike the semaphore example, this example <em>does</em> block host execution.
+This means the host won&#8217;t do anything except wait until the execution has finished.
+For this case, we had to make sure the transfer was complete before we could save the screenshot to disk.</p>
+</div>
+<div class="paragraph">
+<p>In general, it is preferable to not block the host unless necessary.
+We want to feed the GPU and the host with useful work to do.
+Waiting on fences to signal is not useful work.
+Thus, we prefer semaphores, or other synchronization primitives not yet covered, to synchronize our work.</p>
+</div>
+<div class="paragraph">
+<p>Fences must be reset manually to put them back into the unsignaled state.
+This is because fences are used to control the execution of the host, and so the host gets to decide when to reset the fence.
+Contrast this to semaphores which are used to order work on the GPU without the host being involved.</p>
+</div>
+<div class="paragraph">
+<p>In summary, semaphores are used to specify the execution order of operations on the GPU while fences are used to keep the CPU and GPU in sync with each-other.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_what_to_choose"><a class="anchor" href="#_what_to_choose"></a>What to choose?</h3>
+<div class="paragraph">
+<p>We have two synchronization primitives to use and conveniently two places to apply synchronization: Swapchain operations and waiting for the previous frame to finish.
+We want to use semaphores for swapchain operations because they happen on the GPU, thus we don&#8217;t want to make the host wait around if we can help it.
+For waiting on the previous frame to finish, we want to use fences for the opposite reason, because we need the host to wait.
+This is so we don&#8217;t draw more than one frame at a time.
+Because we re-record the command buffer every frame, we cannot record the
+next frame&#8217;s work to the command buffer until the current frame has finished
+executing. We don&#8217;t want to overwrite the current contents of the command
+buffer while the GPU is using it.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_creating_the_synchronization_objects"><a class="anchor" href="#_creating_the_synchronization_objects"></a>Creating the synchronization objects</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>We&#8217;ll need one semaphore to signal that an image has been acquired from the
+swapchain and is ready for rendering. Another one to signal that rendering
+has finished and presentation can happen, and a fence to make sure only one
+frame is rendered at a time.</p>
+</div>
+<div class="paragraph">
+<p>Create three class members to store these semaphore objects and fence object:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::raii::Semaphore presentCompleteSemaphore = nullptr;
+vk::raii::Semaphore renderFinishedSemaphore = nullptr;
+vk::raii::Fence drawFence = nullptr;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To create the semaphores, we&#8217;ll add the last <code>create</code> function for this part of the tutorial: <code>createSyncObjects</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void initVulkan() {
+    createInstance();
+    setupDebugMessenger();
+    createSurface();
+    pickPhysicalDevice();
+    createLogicalDevice();
+    createSwapChain();
+    createImageViews();
+    createGraphicsPipeline();
+    createCommandPool();
+    createCommandBuffer();
+    createSyncObjects();
+}
+
+...
+
+void createSyncObjects() {
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Creating semaphores requires filling in the <code>VkSemaphoreCreateInfo</code>, but in the current version of the API it doesn&#8217;t actually have any required fields besides <code>sType</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createSyncObjects() {
+    presentCompleteSemaphore = vk::raii::Semaphore(device, vk::SemaphoreCreateInfo());
+    renderFinishedSemaphore = vk::raii::Semaphore(device, vk::SemaphoreCreateInfo());
+    drawFence = vk::raii::Fence(device, {.flags = vk::FenceCreateFlagBits::eSignaled});
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Future versions of the Vulkan API or extensions may add functionality for the <code>flags</code> and <code>pNext</code> parameters like it does for the other structures.</p>
+</div>
+<div class="paragraph">
+<p>Onto the main drawing function!</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_waiting_for_the_previous_frame"><a class="anchor" href="#_waiting_for_the_previous_frame"></a>Waiting for the previous frame</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>At the start of the frame, we want to wait until the previous frame has finished, so that the command buffer and semaphores are available to use.
+To do that, we call <code>vkWaitForFences</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void drawFrame() {
+   auto [result, imageIndex] = swapChain.acquireNextImage( UINT64_MAX, *presentCompleteSemaphore, nullptr );
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>First, let&#8217;s grab an image from the framebuffer after the previous frame has
+finished.
+The first two parameters of <code>vkAcquireNextImageKHR</code> are the logical device and the swap chain from which we wish to acquire an image.
+The third parameter specifies a timeout in nanoseconds for an image to become available.
+Using the maximum value of a 64-bit unsigned integer means we effectively disable the timeout.</p>
+</div>
+<div class="paragraph">
+<p>The next two parameters specify synchronization objects that are to be signaled when the presentation engine is finished using the image.
+That&#8217;s the point in time where we can start drawing to it.
+It is possible to specify a semaphore, fence or both.
+We&#8217;re going to use our <code>imageAvailableSemaphore</code> for that purpose here.</p>
+</div>
+<div class="paragraph">
+<p>The last parameter specifies a variable to output the index of the swap chain image that has become available.
+The index refers to the <code>VkImage</code> in our <code>swapChainImages</code> array.
+We&#8217;re going to use that index to pick the <code>VkFrameBuffer</code>. Then we&#8217;ll record
+into that framebuffer.</p>
+</div>
+<div class="paragraph">
+<p>The <code>vkWaitForFences</code> function takes an array of fences and waits on the host for either any or all of the fences to be signaled before returning.
+The <code>VK_TRUE</code> we pass here indicates that we want to wait for all fences, but in the case of a single one it doesn&#8217;t matter.
+This function also has a timeout parameter that we set to the maximum value of a 64 bit unsigned integer, <code>UINT64_MAX</code>, which effectively disables the timeout.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_recording_the_command_buffer"><a class="anchor" href="#_recording_the_command_buffer"></a>Recording the command buffer</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>With the imageIndex specifying the swap chain image to use in hand, we can now record the command buffer.
+Now call the function <code>recordCommandBuffer</code> to record the commands we want.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">recordCommandBuffer(imageIndex);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We need to make sure that the fence is reset if the previous frame has
+already happened, so we know to wait on it later.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">device.resetFences(  *drawFence );</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>With a fully recorded command buffer, we can now submit it.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_submitting_the_command_buffer"><a class="anchor" href="#_submitting_the_command_buffer"></a>Submitting the command buffer</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Queue submission and synchronization is configured through parameters in the <code>VkSubmitInfo</code> structure.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PipelineStageFlags waitDestinationStageMask( vk::PipelineStageFlagBits::eColorAttachmentOutput );
+const vk::SubmitInfo submitInfo( **presentCompleteSemaphore, waitDestinationStageMask, **commandBuffer, **renderFinishedSemaphore );</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The first three parameters specify which semaphores to wait on before execution begins and in which stage(s) of the pipeline to wait.
+We want to wait for writing colors to the image until it&#8217;s available, so we&#8217;re specifying the stage of the graphics pipeline that writes to the color attachment.
+That means that theoretically, the implementation can already start executing our vertex shader and such while the image is not yet available.
+Each entry in the <code>waitStages</code> array corresponds to the semaphore with the same index in <code>pWaitSemaphores</code>.</p>
+</div>
+<div class="paragraph">
+<p>The next parameter specifies which command buffers to actually submit for
+execution. We simply submit the single command buffer we have.</p>
+</div>
+<div class="paragraph">
+<p>The <code>pSignalSemaphores</code> parameter specifies which semaphores to signal once the
+ command buffer(s) have finished execution.
+In our case we&#8217;re using the <code>renderFinishedSemaphore</code> for that purpose.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">graphicsQueue.submit(submitInfo, *drawFence);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We can now submit the command buffer to the graphics queue using <code>vkQueueSubmit</code>.
+The function takes an array of <code>VkSubmitInfo</code> structures as argument for efficiency when the workload is much larger.
+The last parameter references an optional fence that will be signaled when the command buffers finish execution.
+This allows us to know when it is safe for the command buffer to be reused, thus we want to give it <code>drawFence</code>.
+Now we want the CPU to wait while the GPU finishes rendering that frame we
+just submitted:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">while ( vk::Result::eTimeout == device.waitForFences( *drawFence, vk::True, UINT64_MAX ) )
+            ;</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_subpass_dependencies"><a class="anchor" href="#_subpass_dependencies"></a>Subpass dependencies</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This section is optional and far more explicit than is necessary.</p>
+</div>
+<div class="paragraph">
+<p>Remember that the subpasses in a render pass automatically take care of image layout transitions.
+These transitions are controlled by <em>subpass dependencies</em>, which specify memory and execution dependencies between subpasses.
+We have only a single subpass right now, but the operations right before and right after this subpass also count as implicit "subpasses".</p>
+</div>
+<div class="paragraph">
+<p>There are two built-in dependencies that take care of the transition at the start of the render pass and at the end of the render pass, but the former does not occur at the right time.
+It assumes that the transition occurs at the start of the pipeline, but we haven&#8217;t acquired the image yet at that point!
+There are two ways to deal with this problem.
+We could change the <code>waitStages</code> for the <code>imageAvailableSemaphore</code> to <code>VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT</code> to ensure that the render passes don&#8217;t begin until the image is available, or we can make the render pass wait for the <code>VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT</code> stage.
+I&#8217;ve decided to go with the second option here, because it&#8217;s a good excuse to have a look at subpass dependencies and how they work.</p>
+</div>
+<div class="paragraph">
+<p>Subpass dependencies are specified in <code>VkSubpassDependency</code> structs.
+Go to the <code>createRenderPass</code> function and add one:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::SubpassDependency dependency(VK_SUBPASS_EXTERNAL, {});</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The first two fields specify the indices of the dependency and the dependent subpass.
+The special value <code>VK_SUBPASS_EXTERNAL</code> refers to the implicit subpass before or after the render pass depending on whether it is specified in <code>srcSubpass</code> or <code>dstSubpass</code>.
+The index <code>0</code> refers to our subpass, which is the first and only one.
+The <code>dstSubpass</code> must always be higher than <code>srcSubpass</code> to prevent cycles in the dependency graph (unless one of the subpasses is <code>VK_SUBPASS_EXTERNAL</code>).</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::SubpassDependency dependency(VK_SUBPASS_EXTERNAL, {},
+        vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eColorAttachmentOutput,
+        {}, vk::AccessFlagBits::eColorAttachmentWrite);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The next two fields specify the operations to wait on and the operations that
+ should wait on this are in the color attachment stage.
+The last two fields specify the stages in which these operations occur and
+invovles the writing of the color attachment.
+We need to wait for the swap chain to finish reading from the image before we can access it.
+This can be accomplished by waiting on the color attachment output stage itself.</p>
+</div>
+<div class="paragraph">
+<p>These settings will prevent the transition from happening until it&#8217;s actually necessary (and allowed): when we want to start writing colors to it.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">renderPassInfo.dependencyCount = 1;
+renderPassInfo.pDependencies = &amp;dependency;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>VkRenderPassCreateInfo</code> struct has two fields to specify an array of dependencies.</p>
+</div>
+<div class="paragraph">
+<p>The above is completely optional and not reproduced in the
+<a href="../../../attachments/15_hello_triangle.cpp">demo code.</a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_presentation"><a class="anchor" href="#_presentation"></a>Presentation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The last step of drawing a frame is submitting the result back to the swap chain to have it eventually show up on the screen.
+Presentation is configured through a <code>VkPresentInfoKHR</code> structure at the end of the <code>drawFrame</code> function.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">const vk::PresentInfoKHR presentInfoKHR( **renderFinishedSemaphore, **swapChain, imageIndex );</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The first two parameters specify which semaphores to wait on before presentation can happen, just like <code>VkSubmitInfo</code>.
+Since we want to wait on the command buffer to finish execution, thus our triangle being drawn, we take the semaphores which will be signaled and wait on them, thus we use <code>signalSemaphores</code>.</p>
+</div>
+<div class="paragraph">
+<p>The next two parameters specify the swap chains to present images to and the index of the image for each swap chain.
+This will almost always be single.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">presentInfo.pResults = nullptr; // Optional</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>There is one last optional parameter called <code>pResults</code>.
+It allows you to specify an array of <code>VkResult</code> values to check for every swap chain if presentation was successful.
+It&#8217;s not necessary if you&#8217;re only using a single swap chain, because you can use the return value of the present function.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">result = presentQueue.presentKHR( presentInfoKHR );</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>vkQueuePresentKHR</code> function submits the request to present an image to the swap chain.
+We&#8217;ll add error handling for both <code>vkAcquireNextImageKHR</code> and <code>vkQueuePresentKHR</code> in the next chapter, because their failure does not necessarily mean that the program should terminate, unlike the functions we&#8217;ve seen so far.</p>
+</div>
+<div class="paragraph">
+<p>If you did everything correctly up to this point, then you should now see something resembling the following when you run your program:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../_images/images/triangle.png" alt="triangle">
+</div>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>This colored triangle may look a bit different from the one you&#8217;re used to seeing in graphics tutorials.
+That&#8217;s because this tutorial lets the shader interpolate in linear color space and converts to sRGB color space afterward.</p>
+</div>
+</blockquote>
+</div>
+<div class="paragraph">
+<p>Yay!
+Unfortunately, you&#8217;ll see that when validation layers are enabled, the program crashes as soon as you close it.
+The messages printed to the terminal from <code>debugCallback</code> tell us why:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../_images/images/semaphore_in_use.png" alt="semaphore in use">
+</div>
+</div>
+<div class="paragraph">
+<p>Remember that all the operations in <code>drawFrame</code> are asynchronous.
+That means that when we exit the loop in <code>mainLoop</code>, drawing and presentation operations may still be going on.
+Cleaning up resources while that is happening is a bad idea.</p>
+</div>
+<div class="paragraph">
+<p>To fix that problem, we should wait for the logical device to finish operations before exiting <code>mainLoop</code> and destroying the window:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void mainLoop() {
+    while (!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
+        drawFrame();
+    }
+
+    device.waitIdle();
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can also wait for operations in a specific command queue to be finished with <code>vkQueueWaitIdle</code>.
+These functions can be used as a very rudimentary way to perform synchronization.
+You&#8217;ll see that the program now exits without problems when closing the window.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_conclusion"><a class="anchor" href="#_conclusion"></a>Conclusion</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A little over 500 lines of code later, we&#8217;ve finally gotten to the stage of seeing something pop up on the screen!
+Bootstrapping a Vulkan program is definitely a lot of work, but the take-away message is that Vulkan gives you an immense amount of control through its explicitness.
+I recommend you to take some time now to reread the code and build a mental model of the purpose of all the Vulkan objects in the program and how they relate to each other.
+We&#8217;ll be building on top of that knowledge to extend the functionality of the program from this point on.</p>
+</div>
+<div class="paragraph">
+<p>Also, in a future chapter, we&#8217;ll talk about timeline semaphores and memory
+barriers and further refine our understanding of synchronization in Vulkan.
+ Synchronization is one of the biggest areas to take advantage of the true
+ power of Vulkan, so it is quite complex.  This, while complicated to
+ understand the first few times, is really the foundation for what comes
+ next.  It really gets easier from here when there&#8217;s more tools in your
+ toolbox to do things that are more nuanced.</p>
+</div>
+<div class="paragraph">
+<p>The <a href="03_Frames_in_flight.html" class="xref page">next chapter</a> will expand the render loop to handle multiple frames in flight.</p>
+</div>
+<div class="paragraph">
+<p><a href="../../_attachments/15_hello_triangle.cpp">C&#43;&#43; code</a> /
+<a href="../../_attachments/09_shader_base.slang">Slang shader</a> /
+<a href="../../_attachments/09_shader_base.vert">GLSL Vertex shader</a> /
+<a href="../../_attachments/09_shader_base.frag">GLSL Fragment shader</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

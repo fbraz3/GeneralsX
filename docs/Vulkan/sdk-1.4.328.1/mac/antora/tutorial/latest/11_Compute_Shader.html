@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Compute Shader :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../_/css/site.css">
+    <link rel="stylesheet" href="../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../.."><img class="navbar-item" alt="Vulkan White Label" src="../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="90_FAQ.html">FAQ</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li><a href="11_Compute_Shader.html">Compute Shader</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Tutorial/antora/modules/ROOT/pages/11_Compute_Shader.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Compute Shader</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this bonus chapter, we&#8217;ll take a look at compute shaders.
+Up until now, all previous chapters dealt with the traditional graphics part of the Vulkan pipeline.
+But unlike older APIs like OpenGL, compute shader support in Vulkan is mandatory.
+This means that you can use compute shaders on every Vulkan implementation available, no matter if it&#8217;s a high-end desktop GPU or a low-powered embedded device.</p>
+</div>
+<div class="paragraph">
+<p>This opens up the world of general purpose computing on graphics processor units (GPGPU), no matter where your application is running.
+GPGPU means that you can do general computations on your GPU, something that has traditionally been a domain of CPUs.
+But with GPUs having become more and more powerful and more flexible, many workloads that would require the general purpose capabilities of a CPU can now be done on the GPU in realtime.</p>
+</div>
+<div class="paragraph">
+<p>A few examples of where the compute capabilities of a GPU can be used are image manipulation, visibility testing, post-processing, advanced lighting calculations, animations, physics, (e.g.,
+for a particle system) and much more.
+And it&#8217;s even possible to use compute for non-visual computational only work that does not require any graphics output, e.g.,
+number crunching or AI related things.
+This is called "headless compute".</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_advantages"><a class="anchor" href="#_advantages"></a>Advantages</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Doing computationally expensive calculations on the GPU has several advantages.
+The most obvious one is offloading work from the CPU.
+Another one is not requiring moving data between the CPU&#8217;s main memory and the GPU&#8217;s memory.
+All the data can stay on the GPU without having to wait for slow transfers from the main memory.</p>
+</div>
+<div class="paragraph">
+<p>Aside from these, GPUs are heavily parallelized with some of them having tens of thousands of small compute units.
+This often makes them a better fit for highly parallel workflows than a CPU with a few large compute units.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_vulkan_pipeline"><a class="anchor" href="#_the_vulkan_pipeline"></a>The Vulkan pipeline</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>It&#8217;s important to know that compute is completely separated from the graphics part of the pipeline.
+This is visible in the following block diagram of the Vulkan pipeline from the official specification:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/vulkan_pipeline_block_diagram.png" alt="vulkan pipeline block diagram">
+</div>
+</div>
+<div class="paragraph">
+<p>In this diagram we can see the traditional graphics part of the pipeline on the left, and several stages on the right that are not part of this graphics pipeline, including the compute shader (stage).
+With the compute shader stage being detached from the graphics pipeline, we&#8217;ll be able to use it anywhere we see fit.
+This is very different from e.g.,
+the fragment shader which is always applied to the transformed output of the vertex shader.</p>
+</div>
+<div class="paragraph">
+<p>The center of the diagram also shows that e.g.,
+descriptor sets are also used by compute, so everything we learned about descriptor layouts, descriptor sets, and descriptors also applies here.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_an_example"><a class="anchor" href="#_an_example"></a>An example</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>An easy-to-understand example that we will implement in this chapter is a GPU-based particle system.
+Such systems are used in many games and often consist of thousands of particles that need to be updated at interactive frame rates.
+Rendering such a system requires two main parts: vertices, passed as vertex buffers, and a way to update them based on some equation.</p>
+</div>
+<div class="paragraph">
+<p>The "classical" CPU-based particle system would store particle data in the system&#8217;s main memory and then use the CPU to update them.
+After the update, the vertices need to be transferred to the GPU&#8217;s memory again so it can display the updated particles in the next frame.
+The most straight-forward way would be recreating the vertex buffer with the new data for each frame.
+This is very costly.
+Depending on your implementation, there are other options like mapping GPU
+memory so it can be written by the CPU. (Called "resizable BAR" on desktop
+systems, or unified memory on integrated GPUs) or just using a host local buffer (which would be the slowest method due to PCI-E bandwidth).
+But no matter what buffer update method you choose, you always require a "round-trip" to the CPU to update the particles.</p>
+</div>
+<div class="paragraph">
+<p>With a GPU-based particle system, this round-trip is no longer required.
+Vertices are only uploaded to the GPU at the start, and all updates are done in the GPU&#8217;s memory using compute shaders.
+One of the main reasons why this is faster is the much higher bandwidth between the GPU and its local memory.
+In a CPU-based scenario, you&#8217;d be limited by main memory and PCI-express bandwidth, which is often just a fraction of the GPU&#8217;s memory bandwidth.</p>
+</div>
+<div class="paragraph">
+<p>When doing this on a GPU with a dedicated compute queue, you can update particles in parallel to the rendering part of the graphics pipeline.
+This is called "async compute", and is an advanced topic not covered in this tutorial.</p>
+</div>
+<div class="paragraph">
+<p>Here is a screenshot from this chapter&#8217;s code.
+The particles shown here are updated by a compute shader directly on the GPU, without any CPU interaction:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/compute_shader_particles.png" alt="compute shader particles">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_data_manipulation"><a class="anchor" href="#_data_manipulation"></a>Data manipulation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this tutorial, we have already learned about different buffer types like vertex and index buffers for passing primitives and uniform buffers for passing data to a shader.
+And we also used images to do texture mapping.
+But up until now, we always wrote data using the CPU and only did reads on the GPU.</p>
+</div>
+<div class="paragraph">
+<p>An important concept introduced with compute shaders is the ability to arbitrarily read from <strong>and write to</strong> buffers.
+For this, Vulkan offers two dedicated storage types.</p>
+</div>
+<div class="sect2">
+<h3 id="_shader_storage_buffer_objects_ssbo"><a class="anchor" href="#_shader_storage_buffer_objects_ssbo"></a>Shader storage buffer objects (SSBO)</h3>
+<div class="paragraph">
+<p>A shader storage buffer (SSBO) allows shaders to read from and write to a buffer.
+Using this is similar to using uniform buffer objects.
+The biggest differences are that you can alias other buffer types to SSBOs and that they can be arbitrarily large.</p>
+</div>
+<div class="paragraph">
+<p>Going back to the GPU-based particle system, you might now wonder how to deal with vertices being updated (written) by the compute shader and read (drawn) by the vertex shader, as both usages would seemingly require different buffer types.</p>
+</div>
+<div class="paragraph">
+<p>But that&#8217;s not the case.
+In Vulkan, you can specify multiple usages for buffers and images.
+So for the particle vertex buffer to be used as a vertex buffer (in the graphics pass) and as a storage buffer (in the compute pass), you simply create the buffer with those two usage flags:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::BufferCreateInfo bufferInfo{};
+...
+bufferInfo.usage = vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eTransferDst;
+...
+
+shaderStorageBuffers[i] = vk::raii::Buffer(*device, bufferInfo);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The two flags <code>vk::BufferUsageFlagBits::eVertexBuffer</code> and <code>vk::BufferUsageFlagBits::eStorageBuffer</code> set with <code>bufferInfo.usage</code> tell the implementation that we want to use this buffer for two different scenarios: as a vertex buffer in the vertex shader and as a store buffer.
+Note that we also added the <code>vk::BufferUsageFlagBits::eTransferDst</code> flag in here so we can transfer data from the host to the GPU.
+This is crucial as we want the shader storage buffer to stay in GPU memory only (<code>vk::MemoryPropertyFlagBits::eDeviceLocal</code>) we need to transfer data from the host to this buffer.</p>
+</div>
+<div class="paragraph">
+<p>Here is the same code using the <code>createBuffer</code> helper function:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::raii::Buffer shaderStorageBufferTemp({});
+vk::raii::DeviceMemory shaderStorageBufferTempMemory({});
+createBuffer(bufferSize, vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, shaderStorageBufferTemp, shaderStorageBufferTempMemory);
+copyBuffer(stagingBuffer, shaderStorageBufferTemp, bufferSize);
+shaderStorageBuffers.emplace_back(std::move(shaderStorageBufferTemp));
+shaderStorageBuffersMemory.emplace_back(std::move(shaderStorageBufferTempMemory));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The SLang shader declaration for accessing such a buffer looks like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">struct Particle {
+	float2 position;
+	float2 velocity;
+    float4 color;
+};
+
+struct ParticleSSBO {
+    Particle particles;
+};
+StructuredBuffer&lt;ParticleSSBO&gt; particlesIn;
+RWStructuredBuffer&lt;ParticleSSBO&gt; particlesOut;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In this example we have a typed SSBO with each particle having a position and velocity value (see the <code>Particle</code> struct).
+The SSBO then contains an unbound number of particles as it is placed into a
+StructuredBuffer without upper limit, and it&#8217;s a read-only buffer for
+particlesIn.  For particlesOut, we place it into a RWStructedBuffer.
+Not having to specify the number of elements in an SSBO is one of the advantages over e.g.
+uniform buffers.</p>
+</div>
+<div class="paragraph">
+<p>Writing to such a storage buffer object in the compute shader is straight-forward and similar to how you&#8217;d write to the buffer on the C&#43;&#43; side:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">particlesOut[index].particles.position = particlesIn[index].particles.position + particlesIn[index].particles.velocity.xy * ubo.deltaTime;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_storage_images"><a class="anchor" href="#_storage_images"></a>Storage images</h3>
+<div class="paragraph">
+<p><em>Note that we won&#8217;t be doing image manipulation in this chapter.
+This paragraph is here to make readers aware that compute shaders can also be used for image manipulation.</em></p>
+</div>
+<div class="paragraph">
+<p>A storage image allows you to read from and write to an image.
+Typical use cases are applying image effects to textures, doing post-processing (which in turn is very similar) or generating mip-maps.</p>
+</div>
+<div class="paragraph">
+<p>This is similar for images:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::ImageCreateInfo imageInfo {};
+...
+imageInfo.usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eStorage;
+...
+
+textureImage = std::make_unique&lt;vk::raii::SwapchainKHR&gt;( *device, swapChainCreateInfo );</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The two flags <code>vk::ImageUsageFlagBits::eSampled</code> and <code>vk::ImageUsageFlagBits::eStorage</code> set with <code>imageInfo.usage</code> tell the implementation that we want to use this image for two different scenarios: as an image sampled in the fragment shader and as a storage image in the computer shader;</p>
+</div>
+<div class="paragraph">
+<p>The SLang shader declaration for storage image looks similar to sampled images
+used, e.g.,
+in the fragment shader:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">[vk::image_format("r32f")] Texture2D&lt;float&gt; inputImage;
+[vk::image_format("r32f")] RWTexture2D&lt;float&gt; outputImage;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A few differences here are additional attributes like <code>r32f</code> for the format of
+the image, the usage of the read-only Texture2D and read-write RWTexture2D
+designations.
+And last but not least we need to use the <code>RWTexture2D</code> type to declare a
+storage image.</p>
+</div>
+<div class="paragraph">
+<p>Reading from and writing to storage images in the compute shader is then done
+ array lookup syntax:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">float3 pixel = inputImage[int2(gl_GlobalInvocationID.xy)].rgb;
+outputImage[int2(gl_GlobalInvocationID.xy)] = pixel;</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_compute_queue_families"><a class="anchor" href="#_compute_queue_families"></a>Compute queue families</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In the <a href="03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.adoc">physical device and queue families chapter</a>,
+we have already learned about queue families and how to select a graphics queue family.
+Compute uses the queue family properties flag bit <code>vk::QueueFlagBits::eCompute</code>.
+So if we want to do compute work, we need to get a queue from a queue family that supports compute.</p>
+</div>
+<div class="paragraph">
+<p>Note that Vulkan requires an implementation which supports graphics operations to have at least one queue family that supports both graphics and compute operations, but it&#8217;s also possible that implementations offer a dedicated compute queue.
+This dedicated compute queue (that does not have the graphics bit) hints at an asynchronous compute queue.
+To keep this tutorial beginner-friendly though, we&#8217;ll use a queue that can do both graphics and compute operations.
+This will also save us from dealing with several advanced synchronization mechanisms.</p>
+</div>
+<div class="paragraph">
+<p>For our compute sample, we need to change the device creation code a bit:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">std::vector&lt;vk::QueueFamilyProperties&gt; queueFamilyProperties = physicalDevice-&gt;getQueueFamilyProperties();
+
+// get the first index into queueFamilyProperties which supports graphics and compute
+auto graphicsAndComputeQueueFamilyProperty =
+  std::find_if( queueFamilyProperties.begin(),
+                queueFamilyProperties.end(),
+                []( vk::QueueFamilyProperties const &amp; qfp ) { return (qfp.queueFlags &amp; vk::QueueFlagBits::eGraphics &amp;&amp; qfp.queueFlags &amp; vk::QueueFlagBits::eCompute); } );
+graphicsAndComputeIndex = static_cast&lt;uint32_t&gt;( std::distance( queueFamilyProperties.begin(), graphicsAndComputeQueueFamilyProperty ) );</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The changed queue family index selection code will now try to find a queue family that supports both graphics and compute.</p>
+</div>
+<div class="paragraph">
+<p>We can then get a compute queue from this queue family in <code>createLogicalDevice</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">computeQueue = std::make_unique&lt;vk::raii::Queue&gt;( *device, graphicsAndComputeIndex, 0 );</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_compute_shader_stage"><a class="anchor" href="#_the_compute_shader_stage"></a>The compute shader stage</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In the graphics samples, we have used different pipeline stages to load shaders and access descriptors.
+Compute shaders are accessed in a similar way by using the <code>vk::ShaderStageFlagBits::eCompute</code> pipeline.
+So loading a compute shader is just the same as loading a vertex shader, but with a different shader stage.
+We&#8217;ll talk about this in detail in the next paragraphs.
+Compute also introduces a new binding point type for descriptors and pipelines named <code>vk::PipelineBindPoint::eCompute</code> that we&#8217;ll have to use later on.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_loading_compute_shaders"><a class="anchor" href="#_loading_compute_shaders"></a>Loading compute shaders</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Loading compute shaders in our application is the same as loading any other shader.
+The only real difference is that we&#8217;ll need to use the <code>vk::ShaderStageFlagBits::eCompute</code> mentioned above.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">auto computeShaderCode = readFile("shaders/slang.spv");
+
+vk::PipelineShaderStageCreateInfo computeShaderStageInfo({}, vk::ShaderStageFlagBits::eCompute, shaderModule, "compMain");
+...</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_preparing_the_shader_storage_buffers"><a class="anchor" href="#_preparing_the_shader_storage_buffers"></a>Preparing the shader storage buffers</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Earlier on, we learned that we can use shader storage buffers to pass arbitrary data to compute shaders.
+For this example, we will upload an array of particles to the GPU, so we can manipulate it directly in the GPU&#8217;s memory.</p>
+</div>
+<div class="paragraph">
+<p>In the <a href="03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html" class="xref page">frames in flight</a> chapter, we talked about duplicating resources per frame in flight, so we can keep the CPU and the GPU busy.
+First, we declare a vector for the buffer object and the device memory backing it up:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">std::vector&lt;vk::raii::Buffer&gt; shaderStorageBuffers;
+std::vector&lt;vk::raii::DeviceMemory&gt; shaderStorageBuffersMemory;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the <code>createShaderStorageBuffers</code> we then clear those vectors to clean up
+any objects already created in their as is our RAII practice.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">shaderStorageBuffers.clear();
+shaderStorageBuffersMemory.clear();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>With this setup in place, we can start to move the initial particle information to the GPU.
+We first initialize a vector of particles on the host side:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Initialize particles
+std::default_random_engine rndEngine((unsigned)time(nullptr));
+std::uniform_real_distribution&lt;float&gt; rndDist(0.0f, 1.0f);
+
+// Initial particle positions on a circle
+std::vector&lt;Particle&gt; particles(PARTICLE_COUNT);
+for (auto&amp; particle : particles) {
+    float r = 0.25f * sqrtf(rndDist(rndEngine));
+    float theta = rndDist(rndEngine) * 2.0f * 3.14159265358979323846f;
+    float x = r * cosf(theta) * HEIGHT / WIDTH;
+    float y = r * sinf(theta);
+    particle.position = glm::vec2(x, y);
+    particle.velocity = normalize(glm::vec2(x,y)) * 0.00025f;
+    particle.color = glm::vec4(rndDist(rndEngine), rndDist(rndEngine), rndDist(rndEngine), 1.0f);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We then create a <a href="04_Vertex_buffers/02_Staging_buffer.html" class="xref page">staging buffer</a> in the host&#8217;s memory to hold the initial particle properties:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">    vk::DeviceSize bufferSize = sizeof(Particle) * PARTICLE_COUNT;
+
+    // Create a staging buffer used to upload data to the gpu
+    vk::raii::Buffer stagingBuffer({});
+    vk::raii::DeviceMemory stagingBufferMemory({});
+    createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
+
+    void* dataStaging = stagingBufferMemory.mapMemory(0, bufferSize);
+    memcpy(dataStaging, particles.data(), (size_t)bufferSize);
+    stagingBufferMemory.unmapMemory();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Using this staging buffer as a source, we then create the per-frame shader storage buffers and copy the particle properties from the staging buffer to each of these:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">    // Copy initial particle data to all storage buffers
+    for (size_t i = 0; i &lt; MAX_FRAMES_IN_FLIGHT; i++) {
+        vk::raii::Buffer shaderStorageBufferTemp({});
+        vk::raii::DeviceMemory shaderStorageBufferTempMemory({});
+        createBuffer(bufferSize, vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, shaderStorageBufferTemp, shaderStorageBufferTempMemory);
+        copyBuffer(stagingBuffer, shaderStorageBufferTemp, bufferSize);
+        shaderStorageBuffers.emplace_back(std::move(shaderStorageBufferTemp));
+        shaderStorageBuffersMemory.emplace_back(std::move(shaderStorageBufferTempMemory));
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_descriptors"><a class="anchor" href="#_descriptors"></a>Descriptors</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Setting up descriptors for compute is almost identical to graphics.
+The only difference is that descriptors need to have the <code>vk::ShaderStageFlagBits::eCompute</code> set to make them accessible by the compute stage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++"> std::array layoutBindings{
+            vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eCompute, nullptr),
+ };
+...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note that you can combine shader stages here, so if you want the descriptor to be accessible from the vertex and compute stage, e.g.,
+for a uniform buffer with parameters shared across them, you set the bits for both stages:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">layoutBindings[0].stageFlags = vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eCompute;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Here is the descriptor setup for our sample.
+The layout looks like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">std::array layoutBindings{
+    vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eCompute, nullptr),
+    vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute, nullptr),
+    vk::DescriptorSetLayoutBinding(2, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute, nullptr)
+};
+
+vk::DescriptorSetLayoutCreateInfo layoutInfo({}, layoutBindings.size(), layoutBindings.data());
+computeDescriptorSetLayout = std::make_unique&lt;vk::raii::DescriptorSetLayout&gt;( *device, layoutInfo );</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Looking at this setup, you might wonder why we have two layout bindings for shader storage buffer objects, even though we&#8217;ll only render a single particle system.
+This is because the particle positions are updated frame by frame based on a delta time.
+This means that each frame needs to know about the last frames' particle positions, so it can update them with a new delta time and write them to its own SSBO:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/compute_ssbo_read_write.svg" alt="compute ssbo read write">
+</div>
+</div>
+<div class="paragraph">
+<p>For that, the compute shader needs to have access to the last and current frame&#8217;s SSBOs.
+This is done by passing both to the compute shader in our descriptor setup.
+See the <code>storageBufferInfoLastFrame</code> and <code>storageBufferInfoCurrentFrame</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">for (size_t i = 0; i &lt; MAX_FRAMES_IN_FLIGHT; i++) {
+    vk::DescriptorBufferInfo bufferInfo(uniformBuffers[i], 0, sizeof(UniformBufferObject));
+
+    vk::DescriptorBufferInfo storageBufferInfoLastFrame(shaderStorageBuffers[(i - 1) % MAX_FRAMES_IN_FLIGHT], 0, sizeof(Particle) * PARTICLE_COUNT);
+    vk::DescriptorBufferInfo storageBufferInfoCurrentFrame(shaderStorageBuffers[i], 0, sizeof(Particle) * PARTICLE_COUNT);
+    std::array descriptorWrites{
+        vk::WriteDescriptorSet( computeDescriptorSets[i], 0, 0, 1, vk::DescriptorType::eUniformBuffer, nullptr, &amp;bufferInfo ),
+        vk::WriteDescriptorSet( computeDescriptorSets[i], 1, 0, 1, vk::DescriptorType::eStorageBuffer, nullptr, &amp;storageBufferInfoLastFrame),
+        vk::WriteDescriptorSet( computeDescriptorSets[i], 2, 0, 1, vk::DescriptorType::eStorageBuffer, nullptr, &amp;storageBufferInfoCurrentFrame),
+    };
+    device-&gt;updateDescriptorSets(descriptorWrites, {});
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Remember that we also have to request the descriptor types for the SSBOs from our descriptor pool:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">std::array poolSize {
+    vk::DescriptorPoolSize( vk::DescriptorType::eUniformBuffer, MAX_FRAMES_IN_FLIGHT),
+    vk::DescriptorPoolSize(  vk::DescriptorType::eStorageBuffer, MAX_FRAMES_IN_FLIGHT * 2)
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We need to double the number of <code>vk::DescriptorType::eStorageBuffer</code> types requested from the pool by two because our sets reference the SSBOs of the last and current frame.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_compute_pipelines"><a class="anchor" href="#_compute_pipelines"></a>Compute pipelines</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>As compute is not a part of the graphics pipeline, we can&#8217;t use <code>device&#8594;createGraphicsPipeline</code>.
+Instead, we need to create a dedicated compute pipeline with <code>device&#8594;createComputePipeline</code> for running our compute commands.
+Since a compute pipeline does not touch any of the rasterization state, it has a lot less state than a graphics pipeline:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PipelineLayoutCreateInfo pipelineLayoutInfo({}, 1, &amp;**computeDescriptorSetLayout);
+
+computePipelineLayout = std::make_unique&lt;vk::raii::PipelineLayout&gt;( *device, pipelineLayoutInfo );</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The setup is a lot simpler, as we only require one shader stage and a pipeline layout.
+The pipeline layout works the same as with the graphics pipeline:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::ComputePipelineCreateInfo pipelineInfo({}, computeShaderStageInfo, *computePipelineLayout);
+computePipeline = std::make_unique&lt;vk::raii::Pipeline&gt;(device-&gt;createComputePipeline( nullptr, pipelineInfo));</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_compute_space"><a class="anchor" href="#_compute_space"></a>Compute space</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before we get into how a compute shader works and how we submit compute workloads to the GPU, we need to talk about two important compute concepts: <strong>work groups</strong> and <strong>invocations</strong>.
+They define an abstract execution model for how compute workloads are processed by the compute hardware of the GPU in three dimensions (x, y, and z).</p>
+</div>
+<div class="paragraph">
+<p><strong>Work groups</strong> define how the compute workloads are formed and processed by the compute hardware of the GPU.
+You can think of them as work items the GPU has to work through.
+Work group dimensions are set by the application at command buffer time using a dispatch command.</p>
+</div>
+<div class="paragraph">
+<p>And each work group then is a collection of <strong>invocations</strong> that execute the same compute shader.
+Invocations can potentially run in parallel, and their dimensions are set in the compute shader.
+Invocations within a single workgroup have access to shared memory.</p>
+</div>
+<div class="paragraph">
+<p>This image shows the relation between these two in three dimensions:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/compute_space.svg" alt="compute space">
+</div>
+</div>
+<div class="paragraph">
+<p>The number of dimensions for work groups (defined by <code>computeCommandBuffers[currentFrame]&#8594;dispatch</code>) and invocations depends (defined by the local sizes in the compute shader) on how input data is structured.
+If you e.g.,
+work on a one-dimensional array, like we do in this chapter, you only have to specify the x dimension for both.</p>
+</div>
+<div class="paragraph">
+<p>As an example: If we dispatch a work group count of [64, 1, 1] with a compute shader local size of [32, 32, 1], our compute shader will be invoked 64 x 32 x 32 = 65,536 times.</p>
+</div>
+<div class="paragraph">
+<p>Note that the maximum count for work groups and local sizes differs from implementation to implementation, so you should always check the compute related <code>maxComputeWorkGroupCount</code>, <code>maxComputeWorkGroupInvocations</code> and <code>maxComputeWorkGroupSize</code> limits in <code>VkPhysicalDeviceLimits</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_compute_shaders"><a class="anchor" href="#_compute_shaders"></a>Compute shaders</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Now that we have learned about all the parts required to set up a compute shader pipeline, it&#8217;s time to take a look at compute shaders.
+All the things we learned about using GLSL shaders, e.g.,
+for vertex and fragment shaders also apply to compute shaders.
+The syntax is the same, and many concepts like passing data between the application and the shader are the same.
+But there are some important differences.</p>
+</div>
+<div class="paragraph">
+<p>A very basic compute shader for updating a linear array of particles may look like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">struct Particle {
+	float2 position;
+	float2 velocity;
+    float4 color;
+};
+
+struct UniformBuffer {
+    float deltaTime;
+};
+ConstantBuffer&lt;UniformBuffer&gt; ubo;
+
+struct ParticleSSBO {
+    Particle particles;
+};
+StructuredBuffer&lt;ParticleSSBO&gt; particlesIn;
+RWStructuredBuffer&lt;ParticleSSBO&gt; particlesOut;
+
+
+
+[shader("compute")]
+[numthreads(256,1,1)]
+void compMain(uint3 threadId : SV_DispatchThreadID)
+{
+    uint index = threadId.x;
+
+    particlesOut[index].particles.position = particlesIn[index].particles.position + particlesIn[index].particles.velocity.xy * ubo.deltaTime;
+    particlesOut[index].particles.velocity = particlesIn[index].particles.velocity;
+
+    // Flip movement at window border
+    if ((particlesOut[index].particles.position.x &lt;= -1.0) || (particlesOut[index].particles.position.x &gt;= 1.0)) {
+        particlesOut[index].particles.velocity.x = -particlesOut[index].particles.velocity.x;
+    }
+    if ((particlesOut[index].particles.position.y &lt;= -1.0) || (particlesOut[index].particles.position.y &gt;= 1.0)) {
+        particlesOut[index].particles.velocity.y = -particlesOut[index].particles.velocity.y;
+    }
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The top part of the shader contains the declarations for the shader&#8217;s input.
+First is a uniform buffer object at binding 0, something we already learned about in this tutorial.
+Below we declare our Particle structure that matches the declaration in the C&#43;&#43; code.
+Binding 1 then refers to the shader storage buffer object with the particle
+data from the last frame (see the descriptor setup). Binding 2 points to the
+SSBO for the current frame, which is the one we&#8217;ll be updating with this shader.</p>
+</div>
+<div class="paragraph">
+<p>An interesting thing is this compute-only declaration related to the compute space:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">[numthreads(256,1,1)]</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This defines the number of invocations of this compute shader in the current work group.
+As noted earlier, this is the local part of the compute space.
+Hence, the <code>local_</code> prefix.
+As we work on a linear 1D array of particles, we only need to specify a number for x dimension in <code>local_size_x</code>.</p>
+</div>
+<div class="paragraph">
+<p>The <code>compMain</code> function then reads from the last frame&#8217;s SSBO and writes the
+updated particle position to the SSBO for the current frame.
+Similar to other shader types, compute shaders have their own set of builtin input variables.
+Our passed in ThreadId is a variable that uniquely identifies the current
+compute shader invocation
+across the current dispatch.  It gains that capability by the
+<code>SV_DispatchThreadID</code> annotation.
+We use this to index into our particle array.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_running_compute_commands"><a class="anchor" href="#_running_compute_commands"></a>Running compute commands</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_dispatch"><a class="anchor" href="#_dispatch"></a>Dispatch</h3>
+<div class="paragraph">
+<p>Now it&#8217;s time to actually tell the GPU to do some compute.
+This is done by calling <code>computeCommandBuffers[currentFrame]&#8594;dispatch</code> inside a command buffer.
+While not perfectly true, a dispatch is for compute as a draw call like <code>commandBuffers[currentFrame]&#8594;draw</code> is for graphics.
+This dispatches a given number of compute work items in at max.
+three dimensions.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">computeCommandBuffers[currentFrame]-&gt;begin({});
+...
+
+computeCommandBuffers[currentFrame]-&gt;bindPipeline(vk::PipelineBindPoint::eCompute, *computePipeline);
+computeCommandBuffers[currentFrame]-&gt;bindDescriptorSets(vk::PipelineBindPoint::eCompute, *computePipelineLayout, 0, {computeDescriptorSets[currentFrame]}, {});
+
+computeCommandBuffers[currentFrame]-&gt;dispatch( PARTICLE_COUNT / 256, 1, 1 );
+
+...
+
+computeCommandBuffers[currentFrame]-&gt;end();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>computeCommandBuffers[currentFrame]&#8594;dispatch</code> will dispatch <code>PARTICLE_COUNT / 256</code> local work groups in the x dimension.
+As our particle array is linear, we leave the other two dimensions at one, resulting in a one-dimensional dispatch.
+But why do we divide the number of particles (in our array) by 256?
+That&#8217;s because in the previous paragraph, we defined that every compute shader in a work group will do 256 invocations.
+So if we were to have 4096 particles, we would dispatch 16 work groups, with each work group running 256 compute shader invocations.
+Getting the two numbers right usually takes some tinkering and profiling, depending on your workload and the hardware you&#8217;re running on.
+If your particle size is dynamic and can&#8217;t always be divided by e.g.,
+256, you can always use <code>gl_GlobalInvocationID</code> at the start of your compute shader and return from it if the global invocation index is greater than the number of your particles.</p>
+</div>
+<div class="paragraph">
+<p>And just as was the case for the compute pipeline, a compute command buffer has
+ a lot less state than a graphics command buffer.
+There&#8217;s no need to start a render pass or set a viewport.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_submitting_work"><a class="anchor" href="#_submitting_work"></a>Submitting work</h3>
+<div class="paragraph">
+<p>As our sample does both compute and graphics operations, we&#8217;ll be doing two submits to both the graphics and compute queue per frame (see the <code>drawFrame</code> function):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">...
+computeQueue-&gt;submit(submitInfo, **computeInFlightFences[currentFrame]);
+...
+graphicsQueue-&gt;submit(submitInfo, **inFlightFences[currentFrame]);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The first submit to the compute queue updates the particle positions using the compute shader, and the second submit will then use that updated data to draw the particle system.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_synchronizing_graphics_and_compute"><a class="anchor" href="#_synchronizing_graphics_and_compute"></a>Synchronizing graphics and compute</h3>
+<div class="paragraph">
+<p>Synchronization is an important part of Vulkan, even more so when doing compute in conjunction with graphics.
+Wrong or lacking synchronization may result in the vertex stage starting to draw (=read) particles while the compute shader hasn&#8217;t finished updating (=write) them (read-after-write hazard), or the compute shader could start updating particles that are still in use by the vertex part of the pipeline (write-after-read hazard).</p>
+</div>
+<div class="paragraph">
+<p>So we must make sure that those cases don&#8217;t happen by properly synchronizing the graphics and the compute load.
+There are different ways of doing so, depending on how you submit your
+compute workload, but in our case with two separate submits, we&#8217;ll be using
+<a href="03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.adoc">semaphores</a> and
+<a href="03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.adoc">fences</a> to ensure that the vertex shader won&#8217;t start fetching
+ vertices until the compute shader has finished updating them.</p>
+</div>
+<div class="paragraph">
+<p>This is necessary as even though the two submits are ordered one-after-another, there is no guarantee that they execute on the GPU in this order.
+Adding in wait and signal semaphores ensures this execution order.</p>
+</div>
+<div class="paragraph">
+<p>So we first add a new set of synchronization primitives for the compute work in <code>createSyncObjects</code>.
+The compute fences, just like the graphics fences, are created in the
+signaled state because otherwise, the first draw would time out while waiting
+ for the fences to be signaled as detailed
+ <a href="03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.adoc">here</a>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">std::vector&lt;std::unique_ptr&lt;vk::raii::Fence&gt;&gt; computeInFlightFences;
+std::vector&lt;std::unique_ptr&lt;vk::raii::Semaphore&gt;&gt; computeFinishedSemaphores;
+...
+computeInFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+computeFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+
+for (size_t i = 0; i &lt; MAX_FRAMES_IN_FLIGHT; i++) {
+    ...
+    computeFinishedSemaphores[i] = std::make_unique&lt;vk::raii::Semaphore&gt;(*device, vk::SemaphoreCreateInfo());
+    computeInFlightFences[i] = std::make_unique&lt;vk::raii::Fence&gt;(*device, vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled));
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We then use these to synchronize the compute buffer submission with the graphics submission:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">{
+    // Compute submission
+    while ( vk::Result::eTimeout == device-&gt;waitForFences( **computeInFlightFences[currentFrame], vk::True, FenceTimeout ) )
+        ;
+
+    updateUniformBuffer(currentFrame);
+    device-&gt;resetFences( **computeInFlightFences[currentFrame] );
+    computeCommandBuffers[currentFrame]-&gt;reset();
+    recordComputeCommandBuffer();
+
+    const vk::SubmitInfo submitInfo({}, {}, {**computeCommandBuffers[currentFrame]}, { **computeFinishedSemaphores[currentFrame]});
+    computeQueue-&gt;submit(submitInfo, **computeInFlightFences[currentFrame]);
+}
+{
+    // Graphics submission
+    while ( vk::Result::eTimeout == device-&gt;waitForFences( **inFlightFences[currentFrame], vk::True, FenceTimeout ) )
+...
+
+    device-&gt;resetFences(  **inFlightFences[currentFrame] );
+    commandBuffers[currentFrame]-&gt;reset();
+    recordCommandBuffer(imageIndex);
+
+    vk::Semaphore waitSemaphores[] = {**presentCompleteSemaphore[currentFrame], **computeFinishedSemaphores[currentFrame]};
+    vk::PipelineStageFlags waitDestinationStageMask[] = { vk::PipelineStageFlagBits::eVertexInput, vk::PipelineStageFlagBits::eColorAttachmentOutput };
+    const vk::SubmitInfo submitInfo( waitSemaphores, waitDestinationStageMask, {**commandBuffers[currentFrame]}, {**renderFinishedSemaphore[currentFrame]} );
+    graphicsQueue-&gt;submit(submitInfo, **inFlightFences[currentFrame]);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Similar to the sample in the
+<a href="03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.adoc">semaphore chapter</a>, this setup will immediately run the
+ compute shader as we haven&#8217;t specified any wait semaphores.
+Note that we&#8217;re using scoping braces above to ensure that the RAII temporary
+ variables we use get a chance to clean themselves up between the compute and
+  the graphics stage.
+This is fine, as we are waiting for the compute command buffer of the current frame to finish execution before the compute submission with the <code>device&#8594;waitForFences</code> command.</p>
+</div>
+<div class="paragraph">
+<p>The graphics submission, on the other hand, needs to wait for the compute work to finish so it doesn&#8217;t start fetching vertices while the compute buffer is still updating them.
+So we wait on the <code>computeFinishedSemaphores</code> for the current frame and have the graphics submission wait on the <code>vk::PipelineStageFlagBits::eVertexInput</code> stage, where vertices are consumed.</p>
+</div>
+<div class="paragraph">
+<p>But it also needs to wait for presentation, so the fragment shader won&#8217;t output to the color attachments until the image has been presented.
+So we also wait on the <code>imageAvailableSemaphores</code> on the current frame at the <code>vk::PipelineStageFlagBits::eColorAttachmentOutput</code> stage.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_timeline_semaphores_an_improved_synchronization_mechanism"><a class="anchor" href="#_timeline_semaphores_an_improved_synchronization_mechanism"></a>Timeline semaphores: An improved synchronization mechanism</h3>
+<div class="paragraph">
+<p>The synchronization approach described above uses binary semaphores, which have a simple signaled/unsignaled state. While this works well for many scenarios, Vulkan also offers a more powerful synchronization primitive: timeline semaphores.</p>
+</div>
+<div class="paragraph">
+<p>Timeline semaphores were introduced as an extension and later promoted to core in Vulkan 1.2. Unlike binary semaphores, timeline semaphores have a 64-bit unsigned integer counter value that can be waited on and signaled to specific values. This provides several advantages over binary semaphores:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Reusability</strong>: A single timeline semaphore can be used for multiple synchronization points, reducing the number of semaphores needed.</p>
+</li>
+<li>
+<p><strong>Host synchronization</strong>: Timeline semaphores can be signaled and waited on from the host (CPU) without submitting commands to a queue.</p>
+</li>
+<li>
+<p><strong>Out-of-order signaling</strong>: You can signal a timeline semaphore to a value higher than what&#8217;s currently being waited on, allowing for more flexible synchronization patterns.</p>
+</li>
+<li>
+<p><strong>Multiple pending signals</strong>: Unlike binary semaphores, which can only be pending-signaled once, timeline semaphores can have multiple pending signals.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s see how we can modify our particle system example to use timeline semaphores instead of binary semaphores:</p>
+</div>
+<div class="paragraph">
+<p>First, we need to enable the timeline semaphore feature when creating the logical device:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PhysicalDeviceTimelineSemaphoreFeaturesKHR timelineSemaphoreFeatures;
+timelineSemaphoreFeatures.timelineSemaphore = vk::True;
+// Chain this to your device creation info</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Instead of creating multiple binary semaphores, we create a single timeline semaphore:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::SemaphoreTypeCreateInfo semaphoreType{ .semaphoreType = vk::SemaphoreType::eTimeline, .initialValue = 0 };
+semaphore = vk::raii::Semaphore(device, {.pNext = &amp;semaphoreType});
+timelineValue = 0;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In our draw frame function, we use incrementing timeline values to coordinate work between compute and graphics:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Update timeline value for this frame
+uint64_t computeWaitValue = timelineValue;
+uint64_t computeSignalValue = ++timelineValue;
+uint64_t graphicsWaitValue = computeSignalValue;
+uint64_t graphicsSignalValue = ++timelineValue;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For the compute submission, we use a timeline semaphore submit info structure:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::TimelineSemaphoreSubmitInfo computeTimelineInfo{
+    .waitSemaphoreValueCount = 1,
+    .pWaitSemaphoreValues = &amp;computeWaitValue,
+    .signalSemaphoreValueCount = 1,
+    .pSignalSemaphoreValues = &amp;computeSignalValue
+};
+
+vk::PipelineStageFlags waitStages[] = {vk::PipelineStageFlagBits::eComputeShader};
+
+vk::SubmitInfo computeSubmitInfo{
+    .pNext = &amp;computeTimelineInfo,
+    .waitSemaphoreCount = 1,
+    .pWaitSemaphores = &amp;*semaphore,
+    .pWaitDstStageMask = waitStages,
+    .commandBufferCount = 1,
+    .pCommandBuffers = &amp;*computeCommandBuffers[currentFrame],
+    .signalSemaphoreCount = 1,
+    .pSignalSemaphores = &amp;*semaphore
+};
+
+computeQueue.submit(computeSubmitInfo, nullptr);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Similarly, for the graphics submission:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PipelineStageFlags waitStage = vk::PipelineStageFlagBits::eVertexInput;
+vk::TimelineSemaphoreSubmitInfo graphicsTimelineInfo{
+    .waitSemaphoreValueCount = 1,
+    .pWaitSemaphoreValues = &amp;graphicsWaitValue,
+    .signalSemaphoreValueCount = 1,
+    .pSignalSemaphoreValues = &amp;graphicsSignalValue
+};
+
+vk::SubmitInfo graphicsSubmitInfo{
+    .pNext = &amp;graphicsTimelineInfo,
+    .waitSemaphoreCount = 1,
+    .pWaitSemaphores = &amp;*semaphore,
+    .pWaitDstStageMask = &amp;waitStage,
+    .commandBufferCount = 1,
+    .pCommandBuffers = &amp;*commandBuffers[currentFrame],
+    .signalSemaphoreCount = 1,
+    .pSignalSemaphores = &amp;*semaphore
+};
+
+graphicsQueue.submit(graphicsSubmitInfo, nullptr);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Before presenting, we wait for the graphics work to complete:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::SemaphoreWaitInfo waitInfo{
+    .semaphoreCount = 1,
+    .pSemaphores = &amp;*semaphore,
+    .pValues = &amp;graphicsSignalValue
+};
+
+// Wait for graphics to complete before presenting
+while (vk::Result::eTimeout == device.waitSemaphores(waitInfo, UINT64_MAX))
+    ;
+
+vk::PresentInfoKHR presentInfo{
+    .waitSemaphoreCount = 0, // No binary semaphores needed
+    .pWaitSemaphores = nullptr,
+    .swapchainCount = 1,
+    .pSwapchains = &amp;*swapChain,
+    .pImageIndices = &amp;imageIndex
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This timeline semaphore approach offers several benefits over the binary semaphore implementation:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Simplified resource management</strong>: We only need a single semaphore instead of multiple semaphores per frame in flight.</p>
+</li>
+<li>
+<p><strong>More explicit synchronization</strong>: The timeline values make it clear which operations depend on each other.</p>
+</li>
+<li>
+<p><strong>Reduced overhead</strong>: With fewer synchronization objects, there&#8217;s less overhead in managing them.</p>
+</li>
+<li>
+<p><strong>More flexible synchronization patterns</strong>: Timeline semaphores enable more complex synchronization scenarios that would be difficult with binary semaphores.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Timeline semaphores are particularly useful in scenarios with multiple dependent operations, like our compute-then-graphics workflow, or when you need to synchronize between the host and device. They provide a more powerful and flexible synchronization mechanism that can simplify your code while enabling more complex synchronization patterns.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_drawing_the_particle_system"><a class="anchor" href="#_drawing_the_particle_system"></a>Drawing the particle system</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Earlier on, we learned that buffers in Vulkan can have multiple use-cases, and so we created the shader storage buffer that contains our particles with both the shader storage buffer bit and the vertex buffer bit.
+This means that we can use the shader storage buffer for drawing just as we used "pure" vertex buffers in the previous chapters.</p>
+</div>
+<div class="paragraph">
+<p>We first set up the vertex input state to match our particle structure:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">struct Particle {
+    ...
+
+    static std::array&lt;vk::VertexInputAttributeDescription, 2&gt; getAttributeDescriptions() {
+        return {
+            vk::VertexInputAttributeDescription( 0, 0, vk::Format::eR32G32Sfloat, offsetof(Particle, position) ),
+            vk::VertexInputAttributeDescription( 1, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(Particle, color) ),
+        };
+    }
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note that we don&#8217;t add <code>velocity</code> to the vertex input attributes, as this is only used by the compute shader.</p>
+</div>
+<div class="paragraph">
+<p>We then bind and draw it like we would with any vertex buffer:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">commandBuffers[currentFrame]-&gt;bindVertexBuffers(0, { *shaderStorageBuffers[currentFrame] }, {0});
+
+commandBuffers[currentFrame]-&gt;draw( PARTICLE_COUNT, 1, 0, 0 );</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_conclusion"><a class="anchor" href="#_conclusion"></a>Conclusion</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this chapter, we learned how to use compute shaders to offload work from the CPU to the GPU.
+Without compute shaders, many effects in modern games and applications would either not be possible or would run a lot slower.
+But even more than graphics, compute has a lot of use-cases, and this chapter only gives you a glimpse of what&#8217;s possible.
+So now that you know how to use compute shaders, you may want to take a look at some advanced compute topics like:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Shared memory</p>
+</li>
+<li>
+<p><a href="https://github.com/KhronosGroup/Vulkan-Samples/tree/master/samples/performance/async_compute">Asynchronous compute</a></p>
+</li>
+<li>
+<p>Atomic operations</p>
+</li>
+<li>
+<p><a href="https://www.khronos.org/blog/vulkan-subgroup-tutorial">Subgroups</a></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>You can find some advanced compute samples in the <a href="https://github.com/KhronosGroup/Vulkan-Samples/tree/master/samples/api">official Khronos Vulkan Samples repository</a>.</p>
+</div>
+<div class="paragraph">
+<p><a href="_attachments/31_compute_shader.cpp">C&#43;&#43; code</a> /
+<a href="_attachments/31_shader_compute.slang">slang shader</a> /
+<a href="_attachments/31_shader_compute.vert">GLSL Vertex shader</a> /
+<a href="_attachments/31_shader_compute.frag">GLSL Fragment shader</a> /
+<a href="_attachments/31_shader_compute.comp">GLSL Compute shader</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+<script src="../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../.." data-snippet-length="100" data-stylesheet="../../_/css/search.css"></script>
+<script async src="../../search-index.js"></script>
+<script async src="../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

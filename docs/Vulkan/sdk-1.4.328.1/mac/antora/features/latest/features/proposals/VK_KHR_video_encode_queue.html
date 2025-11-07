@@ -1,0 +1,2436 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>VK_KHR_video_encode_queue :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:features" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="features" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Feature Descriptions</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Vulkan Roadmap and Feature Descriptions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Roadmap.html">Vulkan Roadmap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Feature Descriptions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMDX_shader_enqueue.html">VK_AMDX_shader_enqueue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_anti_lag.html">VK_AMD_anti_lag</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_shader_early_and_late_fragment_tests.html">VK_AMD_shader_early_and_late_fragment_tests</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ANDROID_external_format_resolve.html">VK_ANDROID_external_format_resolve</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_pipeline_opacity_micromap.html">VK_ARM_pipeline_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_render_pass_striped.html">VK_ARM_render_pass_striped</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_tensors.html">VK_ARM_tensors</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_dynamic_state.html">VK_EXT_attachment_feedback_loop_dynamic_state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_layout.html">VK_EXT_attachment_feedback_loop_layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_calibrated_timestamps.html">VK_EXT_calibrated_timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_bias_control.html">VK_EXT_depth_bias_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_clamp_control.html">VK_EXT_depth_clamp_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_descriptor_buffer.html">VK_EXT_descriptor_buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_fault.html">VK_EXT_device_fault</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_generated_commands.html">VK_EXT_device_generated_commands</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_dynamic_rendering_unused_attachments.html">VK_EXT_dynamic_rendering_unused_attachments</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_extended_dynamic_state3.html">VK_EXT_extended_dynamic_state3</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_acquire_unmodified.html">VK_EXT_external_memory_acquire_unmodified</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_metal.html">VK_EXT_external_memory_metal</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_fragment_density_map_offset.html">VK_EXT_fragment_density_map_offset</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_frame_boundary.html">Proposal: <code>VK_EXT_frame_boundary</code></a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_graphics_pipeline_library.html">VK_EXT_graphics_pipeline_library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_host_image_copy.html">VK_EXT_host_image_copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_2d_array_of_3d.html">VK_EXT_image_2d_array_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_compression_control.html">VK_EXT_image_compression_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_sliced_view_of_3d.html">VK_EXT_image_sliced_view_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_layer_settings.html">VK_EXT_layer_settings</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_dithering.html">VK_EXT_legacy_dithering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_vertex_attributes.html">VK_EXT_legacy_vertex_attributes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_map_memory_placed.html">VK_EXT_map_memory_placed</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mesh_shader.html">VK_EXT_mesh_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_metal_objects.html">VK_EXT_metal_objects</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_multisampled_render_to_single_sampled.html">VK_EXT_multisampled_render_to_single_sampled</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mutable_descriptor_type.html">VK_EXT_mutable_descriptor_type</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_non_seamless_cube_map.html">VK_EXT_non_seamless_cube_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_opacity_micromap.html">VK_EXT_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_library_group_handles.html">VK_EXT_pipeline_library_group_handles</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_protected_access.html">VK_EXT_pipeline_protected_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_present_mode_fifo_latest_ready.html">VK_EXT_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_primitives_generated_query.html">VK_EXT_primitives_generated_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_rasterization_order_attachment_access.html">VK_EXT_rasterization_order_attachment_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_float8.html">VK_EXT_shader_float8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_module_identifier.html">VK_EXT_shader_module_identifier</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_object.html">VK_EXT_shader_object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_replicated_composites.html">VK_EXT_shader_replicated_composites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_tile_image.html">VK_EXT_shader_tile_image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_subpass_merge_feedback.html">VK_EXT_subpass_merge_feedback</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_surface_maintenance1.html">VK_EXT_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_swapchain_maintenance1.html">VK_EXT_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_zero_initialize_device_memory.html">VK_EXT_zero_initialize_device_memory</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_GOOGLE_surfaceless_query.html">VK_GOOGLE_surfaceless_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_cluster_culling_shader.html">VK_HUAWEI_cluster_culling_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_invocation_mask.html">VK_HUAWEI_invocation_mask</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_compute_shader_derivatives.html">VK_KHR_compute_shader_derivatives</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_cooperative_matrix.html">VK_KHR_cooperative_matrix</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering.html">VK_KHR_dynamic_rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering_local_read.html">VK_KHR_dynamic_rendering_local_read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shader_barycentric.html">VK_KHR_fragment_shader_barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shading_rate.html">VK_KHR_fragment_shading_rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_load_store_op_none.html">VK_KHR_load_store_op_none</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance5.html">VK_KHR_maintenance5</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance6.html">VK_KHR_maintenance6</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance7.html">VK_KHR_maintenance7</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance8.html">VK_KHR_maintenance8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance9.html">Proposal Template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_map_memory2.html">VK_KHR_map_memory2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_pipeline_binary.html">VK_KHR_pipeline_binary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_id2.html">VK_KHR_present_id2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_mode_fifo_latest_ready.html">VK_KHR_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_wait2.html">VK_KHR_present_wait2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_ray_tracing_position_fetch.html">VK_KHR_ray_tracing_position_fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_bfloat16.html">VK_KHR_shader_bfloat16</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_expect_assume.html">VK_KHR_shader_expect_assume</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_float_controls2.html">VK_KHR_shader_float_controls2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_integer_dot_product.html">VK_KHR_shader_integer_dot_product</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_maximal_reconvergence.html">VK_KHR_shader_maximal_reconvergence</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_quad_control.html">VK_KHR_shader_quad_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_relaxed_extended_instruction.html">VK_KHR_shader_relaxed_extended_instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_subgroup_rotate.html">Subgroup rotation instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_surface_maintenance1.html">VK_KHR_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_swapchain_maintenance1.html">VK_KHR_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_unified_image_layouts.html">VK_KHR_unified_image_layouts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_vertex_attribute_divisor.html">VK_KHR_vertex_attribute_divisor</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_av1.html">VK_KHR_video_decode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h264.html">VK_KHR_video_decode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h265.html">VK_KHR_video_decode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_queue.html">VK_KHR_video_decode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_vp9.html">VK_KHR_video_decode_vp9</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_av1.html">VK_KHR_video_encode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h264.html">VK_KHR_video_encode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h265.html">VK_KHR_video_encode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_intra_refresh.html">VK_KHR_video_encode_intra_refresh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_quantization_map.html">VK_KHR_video_encode_quantization_map</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_queue.html">VK_KHR_video_encode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance1.html">VK_KHR_video_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance2.html">VK_KHR_video_maintenance2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_queue.html">VK_KHR_video_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_LUNARG_direct_driver_loading.html">VK_LUNARG_direct_driver_loading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_MSFT_layered_driver.html">VK_MSFT_layered_driver</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cluster_acceleration_structure.html">VK_NV_cluster_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_matrix2.html">VK_NV_cooperative_matrix2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_vector.html">VK_NV_cooperative_vector</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_display_stereo.html">VK_NV_display_stereo</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_external_compute_queue.html">VK_NV_external_compute_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_partitioned_acceleration_structure.html">VK_NV_partitioned_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_linear_swept_spheres.html">VK_NV_ray_tracing_linear_swept_spheres</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_validation.html">VK_NV_ray_tracing_validation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_image_processing.html">VK_QCOM_image_processing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_memory_heap.html">VK_QCOM_tile_memory_heap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_properties.html">VK_QCOM_tile_properties</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_shading.html">VK_QCOM_tile_shading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_VERSION_1_4.html">Vulkan 1.4</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Feature Descriptions</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Feature Descriptions</a></li>
+    <li>Feature Descriptions</li>
+    <li><a href="VK_KHR_video_encode_queue.html">VK_KHR_video_encode_queue</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/features/modules/features/pages/proposals/VK_KHR_video_encode_queue.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">VK_KHR_video_encode_queue</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_problem_statement">1. Problem Statement</a></li>
+<li><a href="#_solution_space">2. Solution Space</a></li>
+<li><a href="#_proposal">3. Proposal</a>
+<ul class="sectlevel2">
+<li><a href="#_video_encode_queues">3.1. Video Encode Queues</a></li>
+<li><a href="#_video_encode_profiles">3.2. Video Encode Profiles</a></li>
+<li><a href="#_new_pipeline_stage_and_access_flags">3.3. New Pipeline Stage and Access Flags</a></li>
+<li><a href="#_new_buffer_and_image_usage_flags">3.4. New Buffer and Image Usage Flags</a></li>
+<li><a href="#_new_format_feature_flags">3.5. New Format Feature Flags</a></li>
+<li><a href="#_basic_operation">3.6. Basic Operation</a></li>
+<li><a href="#_encode_input_picture">3.7. Encode Input Picture</a></li>
+<li><a href="#_reconstructed_picture">3.8. Reconstructed Picture</a></li>
+<li><a href="#_reference_pictures">3.9. Reference Pictures</a></li>
+<li><a href="#_video_encode_parameter_overrides">3.10. Video Encode Parameter Overrides</a></li>
+<li><a href="#_capabilities">3.11. Capabilities</a></li>
+<li><a href="#_video_encode_quality_levels">3.12. Video Encode Quality Levels</a></li>
+<li><a href="#_video_encode_feedback_queries">3.13. Video Encode Feedback Queries</a></li>
+<li><a href="#_video_encode_rate_control">3.14. Video Encode Rate Control</a></li>
+<li><a href="#_usage_summary">3.15. Usage Summary</a></li>
+</ul>
+</li>
+<li><a href="#_examples">4. Examples</a>
+<ul class="sectlevel2">
+<li><a href="#_select_queue_family_with_video_encode_support_for_a_given_video_codec_operation">4.1. Select queue family with video encode support for a given video codec operation</a></li>
+<li><a href="#_check_support_and_query_the_capabilities_for_a_video_encode_profile">4.2. Check support and query the capabilities for a video encode profile</a></li>
+<li><a href="#_select_encode_input_and_dpb_formats_supported_by_the_video_encode_profile">4.3. Select encode input and DPB formats supported by the video encode profile</a></li>
+<li><a href="#_create_bitstream_buffer">4.4. Create bitstream buffer</a></li>
+<li><a href="#_create_encode_input_image_and_image_view">4.5. Create encode input image and image view</a></li>
+<li><a href="#_create_dpb_image_and_image_view">4.6. Create DPB image and image view</a></li>
+<li><a href="#_create_and_use_video_encode_feedback_query_pool_with_a_video_session">4.7. Create and use video encode feedback query pool with a video session</a></li>
+<li><a href="#_record_encode_operation_video_session_without_dpb_slots">4.8. Record encode operation (video session without DPB slots)</a></li>
+<li><a href="#_record_encode_operation_with_reconstructed_picture_information">4.9. Record encode operation with reconstructed picture information</a></li>
+<li><a href="#_record_encode_operation_with_reference_picture_list">4.10. Record encode operation with reference picture list</a></li>
+<li><a href="#_encode_codec_specific_parameters_stored_in_video_session_parameters_objects">4.11. Encode codec-specific parameters stored in video session parameters objects</a></li>
+<li><a href="#_change_the_rate_control_configuration_of_a_video_encode_session">4.12. Change the rate control configuration of a video encode session</a></li>
+<li><a href="#_change_the_video_encode_quality_level_used_by_a_video_encode_session">4.13. Change the video encode quality level used by a video encode session</a></li>
+<li><a href="#_initialize_a_video_encode_session_with_a_specific_quality_level_and_corresponding_recommended_rate_control_settings">4.14. Initialize a video encode session with a specific quality level and corresponding recommended rate control settings</a></li>
+</ul>
+</li>
+<li><a href="#_issues">5. Issues</a>
+<ul class="sectlevel2">
+<li><a href="#_resolved_why_is_there_no_vk_pipeline_stage_video_encode_bit_khr">5.1. RESOLVED: Why is there no <code>VK_PIPELINE_STAGE_VIDEO_ENCODE_BIT_KHR</code>?</a></li>
+<li><a href="#_resolved_how_can_layered_codec_specific_encode_extensions_enable_applications_to_provide_the_necessary_codec_specific_picture_information_parameter_sets_etc_that_may_be_needed_to_perform_the_video_coding_operations">5.2. RESOLVED: How can layered codec-specific encode extensions enable applications to provide the necessary codec-specific picture information, parameter sets, etc. that may be needed to perform the video coding operations?</a></li>
+<li><a href="#_resolved_can_vkcmdvideoencodekhr_only_encode_frames_what_about_field_encoding_slice_encoding_etc">5.3. RESOLVED: Can <code>vkCmdVideoEncodeKHR</code> only encode frames? What about field encoding, slice encoding, etc.?</a></li>
+<li><a href="#_resolved_what_is_the_effect_of_the_flags_provided_in_vkvideoencodeusageinfokhrvideousagehints_and_vkvideoencodeusageinfokhrvideocontenthints">5.4. RESOLVED: What is the effect of the flags provided in <code>VkVideoEncodeUsageInfoKHR::videoUsageHints</code> and <code>VkVideoEncodeUsageInfoKHR::videoContentHints</code>?</a></li>
+<li><a href="#_resolved_what_is_the_effect_of_the_tuning_mode_provided_in_vkvideoencodeusageinfokhrtuningmode">5.5. RESOLVED: What is the effect of the tuning mode provided in <code>VkVideoEncodeUsageInfoKHR::tuningMode</code>?</a></li>
+<li><a href="#_resolved_how_should_we_expose_video_encoding_feedback_values_e_g_encoded_bitstream_size">5.6. RESOLVED: How should we expose video encoding feedback values (e.g. encoded bitstream size)?</a></li>
+<li><a href="#_resolved_do_result_status_queries_need_to_be_used_in_conjunction_with_video_encode_feedback_queries">5.7. RESOLVED: Do result status queries need to be used in conjunction with video encode feedback queries?</a></li>
+<li><a href="#_resolved_why_is_there_a_need_to_allow_implementations_to_override_codec_specific_parameters">5.8. RESOLVED: Why is there a need to allow implementations to override codec-specific parameters?</a></li>
+<li><a href="#_resolved_can_the_application_disable_all_implementation_overrides">5.9. RESOLVED: Can the application disable all implementation overrides?</a></li>
+<li><a href="#_resolved_can_implementations_override_any_codec_specific_parameter">5.10. RESOLVED: Can implementations override any codec-specific parameter?</a></li>
+<li><a href="#_resolved_do_all_implementations_have_to_implement_the_same_rate_control_algorithms_corresponding_to_the_rate_control_modes_defined_by_this_proposal">5.11. RESOLVED: Do all implementations have to implement the same rate control algorithms corresponding to the rate control modes defined by this proposal?</a></li>
+<li><a href="#_resolved_do_rate_control_implementations_guarantee_to_respect_the_averagemax_bitrates_or_frame_sizes_configured_for_the_video_session">5.12. RESOLVED: Do rate control implementations guarantee to respect the average/max bitrates, or frame sizes configured for the video session?</a></li>
+<li><a href="#_resolved_are_video_session_parameters_objects_dependent_on_the_used_video_encode_quality_level">5.13. RESOLVED: Are video session parameters objects dependent on the used video encode quality level?</a></li>
+<li><a href="#_resolved_are_video_encode_quality_levels_and_rate_control_mutually_exclusive">5.14. RESOLVED: Are video encode quality levels and rate control mutually exclusive?</a></li>
+<li><a href="#_resolved_does_specifying_vkvideoencoderatecontrolinfokhr_in_the_pnext_chain_of_the_pbegincodinginfo_parameter_of_vkcmdbeginvideocodingkhr_change_the_current_rate_control_configuration">5.15. RESOLVED: Does specifying <code>VkVideoEncodeRateControlInfoKHR</code> in the <code>pNext</code> chain of the <code>pBeginCodingInfo</code> parameter of <code>vkCmdBeginVideoCodingKHR</code> change the current rate control configuration?</a></li>
+<li><a href="#_resolved_when_is_it_mandatory_to_specify_reconstructed_picture_information_in_vkvideoencodeinfokhrpsetupreferenceslot">5.16. RESOLVED: When is it mandatory to specify reconstructed picture information in <code>VkVideoEncodeInfoKHR::pSetupReferenceSlot</code>?</a></li>
+</ul>
+</li>
+<li><a href="#_further_functionality">6. Further Functionality</a></li>
+</ul>
+</div>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This document outlines a proposal to enable performing video encode operations in Vulkan.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>1. Problem Statement</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Integrating video encode operations into Vulkan applications enables a wide set of new usage scenarios including, but not limited to, the following examples:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Recording the output of rendering operations</p>
+</li>
+<li>
+<p>Efficiently transferring rendering results over network (video conferencing, game streaming, etc.)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>It is also not uncommon for Vulkan capable devices to feature dedicated hardware acceleration for video compression.</p>
+</div>
+<div class="paragraph">
+<p>The goal of this proposal is to enable these use cases, expose the underlying hardware capabilities, and provide tight integration with other functionalities of the Vulkan API.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution Space</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The following options have been considered:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Rely on external sharing capabilities to interact with existing video encode APIs</p>
+</li>
+<li>
+<p>Add new dedicated APIs to Vulkan specific to video encoding</p>
+</li>
+<li>
+<p>Build upon a common set of APIs that enable video coding operations in general</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>As discussed in the proposal for the <code>VK_KHR_video_queue</code> extension, reusing a common, shared infrastructure across all video coding functionalities that leverage existing Vulkan capabilities was preferred, hence this extension follows option 3.</p>
+</div>
+<div class="paragraph">
+<p>Further sub-options were considered whether a common set of APIs could be used to enable video encoding in general, upon which codec-specific extensions can be built. As the possibility of API reuse is similarly possible within the domain of video encoding as it is for video coding in general, this proposal follows the same principle to extend <code>VK_KHR_video_queue</code> with codec-independent video encoding capabilities.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>3. Proposal</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_video_encode_queues"><a class="anchor" href="#_video_encode_queues"></a>3.1. Video Encode Queues</h3>
+<div class="paragraph">
+<p>While <code>VK_KHR_video_queue</code> already includes support for a more fine grained query to determine the set of supported video codec operations for a given queue family, this extension introduces an explicit queue flag called <code>VK_QUEUE_VIDEO_ENCODE_BIT_KHR</code> to indicate support for video encoding.</p>
+</div>
+<div class="paragraph">
+<p>Applications can use this flag bit to identify video encode capable queue families in general, if needed, before querying more details about the individual video codec operations supported through the use of the <code>VkQueueFamilyVideoPropertiesKHR</code> structure. It also indicates support for the set of command buffer commands available on video encode queues, which include the following:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Pipeline barrier and event handling commands used for synchronization</p>
+</li>
+<li>
+<p>Basic query commands to begin, end, and reset queries</p>
+</li>
+<li>
+<p>Timestamp write commands</p>
+</li>
+<li>
+<p>Generic video coding commands</p>
+</li>
+<li>
+<p>The new video encode command introduced by this extension</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For the full list of individual commands supported by video encode queues, and whether any command is supported inside/outside of video coding scopes, refer to the manual page of the corresponding command.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_video_encode_profiles"><a class="anchor" href="#_video_encode_profiles"></a>3.2. Video Encode Profiles</h3>
+<div class="paragraph">
+<p>Video encode profiles are defined using a <code>VkVideoProfileInfoKHR</code> structure that specifies a <code>videoCodecOperation</code> value identifying a video encode operation. This extension does not introduce any video encode operation flags, as that is left to the codec-specific encode extensions.</p>
+</div>
+<div class="paragraph">
+<p>On the other hand, this extension allows the application to specify usage information specific to video encoding by chaining the following new structure to <code>VkVideoProfileInfoKHR</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoEncodeUsageInfoKHR {
+    VkStructureType               sType;
+    const void*                   pNext;
+    VkVideoEncodeUsageFlagsKHR    videoUsageHints;
+    VkVideoEncodeContentFlagsKHR  videoContentHints;
+    VkVideoEncodeTuningModeKHR    tuningMode;
+} VkVideoEncodeUsageInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This structure contains two hints specific to the encoding use case and the content to be encoded, respectively, as well as a tuning mode.</p>
+</div>
+<div class="paragraph">
+<p>The usage hint flags introduced by this extension are as follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_VIDEO_ENCODE_USAGE_TRANSCODING_BIT_KHR</code> should be used in video transcoding use cases</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_USAGE_STREAMING_BIT_KHR</code> should be used when encoding video content streamed over network</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_USAGE_RECORDING_BIT_KHR</code> should be used in real-time recording but offline consumption use cases</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_USAGE_CONFERENCING_BIT_KHR</code> should be used for video conferencing use cases</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The content hint flags introduced are as follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_VIDEO_ENCODE_CONTENT_CAMERA_BIT_KHR</code> should be used when encoding images captured using a camera</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_CONTENT_DESKTOP_BIT_KHR</code> should be used when encoding desktop screen captures</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_CONTENT_RENDERED_BIT_KHR</code> should be used when encoding rendered (e.g. game) content</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These usage hints do not provide any restrictions or guarantees, so any combination of flags can be used, but they allow the application to better communicate the intended use case scenario so that implementations can make appropriate choices based on it.</p>
+</div>
+<div class="paragraph">
+<p>Logically, however, it is part of the video profile definition, so capabilities may vary across video encode profiles that only differ in terms of video encode usage hints, and it also affects video profile compatibility between resources and video sessions, so the same <code>VkVideoEncodeUsageInfoKHR</code> structure has to be included everywhere where the specific video encode profile is used. The contemporary extension <code>VK_KHR_video_maintenance1</code>, however, does allow creating buffer and image resources that are compatible with multiple video profiles when they are created with the <code>VK_BUFFER_CREATE_VIDEO_PROFILE_INDEPENDENT_BIT_KHR</code> or <code>VK_IMAGE_CREATE_VIDEO_PROFILE_INDEPENDENT_BIT_KHR</code> flags, respectively, introduced by that extension.</p>
+</div>
+<div class="paragraph">
+<p>Unlike the hints, <code>tuningMode</code> is an explicit mode setting parameter that has functional implications and is expected to limit encoding capabilities to fit the usage scenario. The following tuning mode values are introduced by this extension:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_VIDEO_ENCODE_TUNING_MODE_DEFAULT_KHR</code> is the default tuning mode</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_TUNING_MODE_HIGH_QUALITY_KHR</code> tunes encoding for high quality and will likely impose latency and performance compromises</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_TUNING_MODE_LOW_LATENCY_KHR</code> tunes encoding for low latency and will likely impose quality compromises for better performance</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_TUNING_MODE_ULTRA_LOW_LATENCY_KHR</code> tunes encoding for ultra-low latency with further quality compromises for maximum performance</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_TUNING_MODE_LOSSLESS_KHR</code> tunes encoding to produce lossless output.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In practice, not all codecs and profiles will support every tuning mode. The new query command <code>vkGetPhysicalDeviceVideoEncodeQualityLevelPropertiesKHR</code>, as described later, may also return different recommended configuration parameters based on the tuning mode specified in the video profile in order to further aid application developers in choosing the most suitable settings for the encoding scenario at hand.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_new_pipeline_stage_and_access_flags"><a class="anchor" href="#_new_pipeline_stage_and_access_flags"></a>3.3. New Pipeline Stage and Access Flags</h3>
+<div class="paragraph">
+<p>This extension also introduces a new pipeline stage identified by the <code>VK_PIPELINE_STAGE_2_VIDEO_ENCODE_BIT_KHR</code> flag to enable synchronizing video encode operations with respect to other Vulkan operations.</p>
+</div>
+<div class="paragraph">
+<p>In addition, two new access flags are introduced to indicate reads and writes, respectively, performed by the video encode pipeline stage:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ACCESS_2_VIDEO_ENCODE_READ_BIT_KHR</code></p>
+</li>
+<li>
+<p><code>VK_ACCESS_2_VIDEO_ENCODE_WRITE_BIT_KHR</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>As these flags did no longer fit into the legacy 32-bit enums, this extension requires the <code>VK_KHR_synchronization2</code> extension and relies on the 64-bit versions of the pipeline stage and access mask flags to handle synchronization specific to video encode operations.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_new_buffer_and_image_usage_flags"><a class="anchor" href="#_new_buffer_and_image_usage_flags"></a>3.4. New Buffer and Image Usage Flags</h3>
+<div class="paragraph">
+<p>This extension introduces the following new buffer usage flags:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_BUFFER_USAGE_VIDEO_ENCODE_SRC_BIT_KHR</code> is reserved for future use</p>
+</li>
+<li>
+<p><code>VK_BUFFER_USAGE_VIDEO_ENCODE_DST_BIT_KHR</code> allows using the buffer as a video bitstream buffer in video encode operations</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This extension also introduces the following new image usage flags:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_IMAGE_USAGE_VIDEO_ENCODE_SRC_BIT_KHR</code> allows using the image as an encode input picture</p>
+</li>
+<li>
+<p><code>VK_IMAGE_USAGE_VIDEO_ENCODE_DST_BIT_KHR</code> is reserved for future use</p>
+</li>
+<li>
+<p><code>VK_IMAGE_USAGE_VIDEO_ENCODE_DPB_BIT_KHR</code> allows using the image as an encode DPB picture (reconstructed/reference picture)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Specifying these usage flags alone is not sufficient to create a buffer or image that is compatible with a video session created against any particular video profile. In fact, when specifying any of these usage flags at resource creation time, the application has to include a <code>VkVideoProfileListInfoKHR</code> structure in the <code>pNext</code> chain of the corresponding create info structure with <code>VkVideoProfileListInfoKHR::pProfiles</code> including a video encode profile. The created resources will be compatible only with the included video encode profiles (and a video encode profile, if one is also specified in the list).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_new_format_feature_flags"><a class="anchor" href="#_new_format_feature_flags"></a>3.5. New Format Feature Flags</h3>
+<div class="paragraph">
+<p>To indicate which formats are compatible with video encode usage, the following new format feature flags are introduced:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_FORMAT_FEATURE_VIDEO_ENCODE_INPUT_BIT_KHR</code> indicates support for encode input picture usage</p>
+</li>
+<li>
+<p><code>VK_FORMAT_FEATURE_VIDEO_ENCODE_DPB_BIT_KHR</code> indicates support for encode DPB picture usage</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The presence of the format flags alone, as returned by the various format queries, is not sufficient to indicate that an image with that format is usable with video encoding using any particular video encode profile. Actual compatibility with a specific video encode profile has to be verified using the <code>vkGetPhysicalDeviceVideoFormatPropertiesKHR</code> command.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_basic_operation"><a class="anchor" href="#_basic_operation"></a>3.6. Basic Operation</h3>
+<div class="paragraph">
+<p>Video encode operations can be recorded into command buffers allocated from command pools created against queue families that support the <code>VK_QUEUE_VIDEO_ENCODE_BIT_KHR</code> flag.</p>
+</div>
+<div class="paragraph">
+<p>Recording video encode operations happens through the use of the following new command:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VKAPI_ATTR void VKAPI_CALL vkCmdEncodeVideoKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkVideoEncodeInfoKHR*                 pEncodeInfo);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The common, codec-independent parameters of the video encode operation are provided using the following new structure:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoEncodeInfoKHR {
+    VkStructureType                       sType;
+    const void*                           pNext;
+    VkVideoEncodeFlagsKHR                 flags;
+    VkBuffer                              dstBuffer;
+    VkDeviceSize                          dstBufferOffset;
+    VkDeviceSize                          dstBufferRange;
+    VkVideoPictureResourceInfoKHR         srcPictureResource;
+    const VkVideoReferenceSlotInfoKHR*    pSetupReferenceSlot;
+    uint32_t                              referenceSlotCount;
+    const VkVideoReferenceSlotInfoKHR*    pReferenceSlots;
+    uint32_t                              precedingExternallyEncodedBytes;
+} VkVideoEncodeInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Executing such a video encode operation results in the compression of a single picture (unless otherwise defined by layered extensions), and, if there is an active <code>VK_QUERY_TYPE_RESULT_STATUS_ONLY_KHR</code> query, the status of the video encode operation is recorded into the active query slot.</p>
+</div>
+<div class="paragraph">
+<p>In addition to <code>VK_QUERY_TYPE_RESULT_STATUS_ONLY_KHR</code> queries, applications can use the new <code>VK_QUERY_TYPE_VIDEO_ENCODE_FEEDBACK_KHR</code> queries to retrieve additional feedback about the encoded picture including the offset and size of the bitstream written to the specified video bitstream buffer range, as discussed later.</p>
+</div>
+<div class="paragraph">
+<p>If the encode operation requires additional codec-specific parameters, then such parameters are provided in the <code>pNext</code> chain of the structure above. Whether such codec-specific information is necessary, and what it may contain is up to the codec-specific extensions.</p>
+</div>
+<div class="paragraph">
+<p><code>dstBuffer</code>, <code>dstBufferOffset</code>, and <code>dstBufferRange</code> provide information about the target video bitstream buffer range. The video encode operation writes the compressed picture data to this buffer range.</p>
+</div>
+<div class="paragraph">
+<p>The application has to create the video bitstream buffer with the new <code>VK_BUFFER_USAGE_VIDEO_ENCODE_DST_BIT_KHR</code> usage flag, and must also include the used video session&#8217;s video profile in the <code>VkVideoProfileListInfoKHR</code> structure specified at buffer creation time.</p>
+</div>
+<div class="paragraph">
+<p>The data written to the video bitstream buffer range depends on the specific video codec used, as defined by corresponding codec-specific extensions built upon this proposal.</p>
+</div>
+<div class="paragraph">
+<p>The <code>srcPictureResource</code>, <code>pSetupReferenceSlot</code>, and <code>pReferenceSlots</code> members specify the encode input picture, reconstructed picture, and reference pictures, respectively, used by the video encode operation, as discussed in later sections of this proposal.</p>
+</div>
+<div class="paragraph">
+<p>The <code>precedingExternallyEncodedBytes</code> member specifies the number of bytes externally encoded into the bitstream by the application. This value is used to update the implementation&#8217;s rate control algorithm for the rate control layer this encode operation belongs to, by accounting for the bitrate budget consumed by these externally encoded bytes. This parameter is respected by the implementation only if the <code>VK_VIDEO_ENCODE_CAPABILITY_PRECEDING_EXTERNALLY_ENCODED_BYTES_BIT_KHR</code> capability is supported.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_encode_input_picture"><a class="anchor" href="#_encode_input_picture"></a>3.7. Encode Input Picture</h3>
+<div class="paragraph">
+<p><code>srcPictureResource</code> defines the parameters of the video picture resource to use as the encode input picture. The video encode operation reads the picture data to compress from this video picture resource. As such it is a mandatory parameter of the operation.</p>
+</div>
+<div class="paragraph">
+<p>The application has to create the image view specified in <code>srcPictureResource.imageViewBinding</code> with the new <code>VK_IMAGE_USAGE_VIDEO_ENCODE_SRC_BIT_KHR</code> usage flag, and must also include the used video session&#8217;s video profile in the <code>VkVideoProfileListInfoKHR</code> structure specified at image creation time.</p>
+</div>
+<div class="paragraph">
+<p>The image subresource backing the encode input picture has to be in the new <code>VK_IMAGE_LAYOUT_VIDEO_ENCODE_SRC_KHR</code> layout at the time the video encode operation is executed.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_reconstructed_picture"><a class="anchor" href="#_reconstructed_picture"></a>3.8. Reconstructed Picture</h3>
+<div class="paragraph">
+<p><code>pSetupReferenceSlot</code> is an optional parameter specifying the video picture resource and DPB slot index to use for the reconstructed picture. Implementations use the reconstructed picture for one of the following purposes:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>When the encoded picture is requested to be set up as a reference, according to the codec-specific semantics, the video encode operation will perform picture reconstruction, output the results to this picture, and activate the reconstructed picture&#8217;s DPB slot with the picture in order to enable using the picture as a reference picture in future video encode operations.</p>
+</li>
+<li>
+<p>When the encoded picture is not requested to be set up as a reference, implementations may use the reconstructed picture&#8217;s resource and/or DPB slot for intermediate data required by the encoding process.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Accordingly, <code>pSetupReferenceSlot</code> must never be <code>NULL</code>, except when the video session was created without any DPB slots.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The original version of this extension only required the specification of the reconstructed picture information (i.e. a non-<code>NULL</code> <code>pSetupReferenceSlot</code>) when the application intended to set up a reference picture by activating a DPB slot. Consequently, the presence of reconstructed picture information always implied DPB slot activation. This was changed in revision 12 of the extension, and whether DPB slot activation happens is now subject to codec-specific semantics. More details on this change are discussed in the corresponding issue in this proposal document.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>In summary, for encoded pictures requested to be set up as reference, this parameter can be used to add new reference pictures to the DPB, and change the association between DPB slot indices and video picture resources. That also implies that the application has to specify a video picture resource in <code>pSetupReferenceSlot&#8594;pPictureResource</code> that was included in the set of bound reference picture resources specified when the video coding scope was started (in one of the elements of <code>VkVideoBeginCodingInfoKHR::pReferenceSlots</code>). No similar requirement exists for the encode input picture specified by <code>srcPictureResource</code> which can refer to any video picture resource.</p>
+</div>
+<div class="paragraph">
+<p>The application has to create the image view specified in <code>pSetupReferenceSlot&#8594;pPictureResource&#8594;imageViewBinding</code> with the new <code>VK_IMAGE_USAGE_VIDEO_ENCODE_DPB_BIT_KHR</code> usage flag, and must also include the used video session&#8217;s video profile in the <code>VkVideoProfileListInfoKHR</code> structure specified at image creation time.</p>
+</div>
+<div class="paragraph">
+<p>The image subresource backing the reconstructed picture has to be in the new <code>VK_IMAGE_LAYOUT_VIDEO_ENCODE_DPB_KHR</code> layout at the time the video encode operation is executed.</p>
+</div>
+<div class="paragraph">
+<p>If the video profile in use requires additional codec-specific parameters for the reconstructed picture, then such parameters are provided in the <code>pNext</code> chain of <code>pSetupReferenceSlot</code>. Whether such codec-specific reconstructed picture information is necessary, and what it may contain is up to the codec-specific extensions.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_reference_pictures"><a class="anchor" href="#_reference_pictures"></a>3.9. Reference Pictures</h3>
+<div class="paragraph">
+<p>If the video session allows, reference pictures can be specified in the <code>pReferenceSlots</code> array to provide predictions of the values of samples of the encoded picture.</p>
+</div>
+<div class="paragraph">
+<p>Each entry in the <code>pReferenceSlots</code> array adds one or more pictures, currently associated with the DPB slot specified in the element&#8217;s <code>slotIndex</code> member and stored in the video picture resource specified in the element&#8217;s <code>pPictureResource</code> member, to the list of active reference pictures to use in the video encode operation.</p>
+</div>
+<div class="paragraph">
+<p>The application has to make sure to specify each video picture resource used as a reference picture in a video encode operation, beforehand, in the set of bound reference picture resources specified when the video coding scope was started (in one of the elements of <code>VkVideoBeginCodingInfoKHR::pReferenceSlots</code>).</p>
+</div>
+<div class="paragraph">
+<p>The application has to create the image view specified in <code>pPictureResource&#8594;imageViewBinding</code> of the elements of <code>pReferenceSlots</code> with the new <code>VK_IMAGE_USAGE_VIDEO_ENCODE_DPB_BIT_KHR</code> usage flag, and must also include the used video session’s video profile in the <code>VkVideoProfileListInfoKHR</code> structure specified at image creation time.</p>
+</div>
+<div class="paragraph">
+<p>The image subresources backing the reference pictures have to be in the new <code>VK_IMAGE_LAYOUT_VIDEO_ENCODE_DPB_KHR</code> layout at the time the video encode operation is executed.</p>
+</div>
+<div class="paragraph">
+<p>Typically the number of elements in <code>pReferenceSlots</code> equals the number of reference pictures added, but in certain cases (depending on the used video codec and video profile) there may be multiple pictures in the same DPB slot resource.</p>
+</div>
+<div class="paragraph">
+<p>If the video profile in use requires additional codec-specific parameters for the reference pictures, then such parameters are provided in the <code>pNext</code> chain of the elements of <code>pReferenceSlots</code>. Whether such codec-specific reference picture information is necessary, and what it may contain is up to the codec-specific extensions.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_video_encode_parameter_overrides"><a class="anchor" href="#_video_encode_parameter_overrides"></a>3.10. Video Encode Parameter Overrides</h3>
+<div class="paragraph">
+<p>Encoder implementations usually only support a subset of the available encoding tools defined by the corresponding video compression standards. This may prevent some implementation from being able to respect certain codec-specific parameters, or specific parameter values.</p>
+</div>
+<div class="paragraph">
+<p>Enumerating exhaustively all of these constraints and potentially defining application-queryable capabilities corresponding to those is not practical, as it would potentially require separate capabilities for almost every single codec-specific parameter, parameter value, and combinations of those, as usually there are complicated interactions between those codec-specific parameters. Instead, this proposal approaches this problem from the other direction.</p>
+</div>
+<div class="paragraph">
+<p>Instead of defining capabilities for each of these constraints, implementations are allowed to override codec-specific parameter values or combinations thereof, so that the resulting overridden codec-specific parameters now comply to the constraints of the target implementation. This has multiple benefits:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Enables the video encode APIs to be supported on a much wider set of hardware implementations, as the codec-specific extensions layered on top of this extension would not have codec-specific requirements that assume implementations to support certain, potentially not universally available, encoding tools</p>
+</li>
+<li>
+<p>Enables implementations to expose all of the encoding tools they support for a particular video compression standard, which typically is not possible in other video APIs as, without overrides, implementations may not be able to expose a large set of their encoding tools just because they do not comply to the exact wording of the capabilities defined by that API</p>
+</li>
+<li>
+<p>Enables writing portable applications without getting lost in myriads of capabilities</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Allowing implementations to override codec-specific parameters does not mean, however, that implementations can do any overrides they wish. The base parameter override mechanism is reserved to deal with implementation limitations only. Thus, by default, implementations are expected to override codec-specific parameters only if it is absolutely paramount for the correct functioning of their encoder hardware.</p>
+</div>
+<div class="paragraph">
+<p>In certain cases, applications may want to allow the implementation to make its own choices about the certain codec-specific parameters that are not driven by implementation constraints, but rather aim to allow the implementation to choose parameters and encoding tools that better fit the usage scenario described by the video profile and other parameters, like the encode quality level, than the one the application specified. This proposal introduces a new video session creation flag called <code>VK_VIDEO_SESSION_CREATE_ALLOW_ENCODE_PARAMETER_OPTIMIZATIONS_BIT_KHR</code> that enables the application to opt in to such optimization overrides.</p>
+</div>
+<div class="paragraph">
+<p>There are certain rules that implementations need to follow in all cases where they may apply codec-specific parameter overrides. In particular:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Certain codec-specific parameters are defined by layered codec-specific extensions to be always respected, and thus cannot be overridden, which is generally expected to be the case for all parameters that may affect the overall behavior of video encoding, or any bitstream elements that are not encoded in any fashion by the implementation, so that applications still have the necessary freedom to encode such auxiliary bitstream elements the way they wish</p>
+</li>
+<li>
+<p>In a similar vein, implementation overrides cannot affect the compliance of the generated bitstream to the video compression standard</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The details of these rules can be found in the specification language of this extension, and any layered extension built upon it.</p>
+</div>
+<div class="paragraph">
+<p>In general, there are two categories of codec-specific parameters to which implementation overrides may be applied:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Codec-specific parameters stored in video session parameters objects, if any</p>
+</li>
+<li>
+<p>Codec-specific parameters provided to video encode commands</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Both of these codec-specific parameter categories may have an effect on the video bitstream data produced by video encode operations. However, parameters falling into the first category are particularly important as it is common for applications to encode the codec-specific parameters stored in video session parameters on their own.</p>
+</div>
+<div class="paragraph">
+<p>In order to enable the application to deal with parameter overrides applied to video session parameters, this proposal introduces the following new command:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VKAPI_ATTR VkResult VKAPI_CALL vkGetEncodedVideoSessionParametersKHR(
+    VkDevice                                        device,
+    const VkVideoEncodeSessionParametersGetInfoKHR* pVideoSessionParametersInfo,
+    VkVideoEncodeSessionParametersFeedbackInfoKHR*  pFeedbackInfo,
+    size_t*                                         pDataSize,
+    void*                                           pData);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The main input to this command is the video session parameters object in question, with layered extensions adding additional chainable structures to provide additional codec-specific input parameters:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoEncodeSessionParametersGetInfoKHR {
+    VkStructureType                sType;
+    const void*                    pNext;
+    VkVideoSessionParametersKHR    videoSessionParameters;
+} VkVideoEncodeSessionParametersGetInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This command has multiple purposes.</p>
+</div>
+<div class="paragraph">
+<p>First, by providing a non-<code>NULL</code> <code>pFeedbackInfo</code> parameter, the application can get feedback about whether the implementation applied any parameter overrides to the video session parameters in question through the following output structure:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoEncodeSessionParametersFeedbackInfoKHR {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           hasOverrides;
+} VkVideoEncodeSessionParametersFeedbackInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>hasOverrides</code> member will be set to <code>VK_TRUE</code> if implementation overrides were applied, and layered extensions may provide additional chainable output structures that return further (typically codec-specific) information about the applied overrides.</p>
+</div>
+<div class="paragraph">
+<p>When this feedback indicates that implementation overrides were applied, the application needs to retrieve the encoded video session parameters containing the overrides in order to be able to produce a compliant bitstream. This can be done in the usual fashion by providing a non-<code>NULL</code> <code>pDataSize</code> parameter to retrieve the size of the encoded parameter data, and then calling the command again with a non-<code>NULL</code> <code>pData</code> pointer to retrieve the data.</p>
+</div>
+<div class="paragraph">
+<p>The application can choose to use the <code>vkGetEncodedVideoSessionParametersKHR</code> command to encode the video session parameters even if the implementation did not override any of the parameters, but in this case it can also choose to encode the respective bitstream elements on its own.</p>
+</div>
+<div class="paragraph">
+<p>It is worth calling out though that if the application does not use this command to determine whether video session parameter overrides happened or does not use the encoded parameters retrievable using this command when video session parameter overrides happened, but rather just encodes the respective bitstream elements with its own choice of codec-specific parameters, then it risks the resulting video bitstream to end up being non-compliant with the video compression standard.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_capabilities"><a class="anchor" href="#_capabilities"></a>3.11. Capabilities</h3>
+<div class="paragraph">
+<p>Querying capabilities specific to video encoding happens through the query mechanisms introduced by the <code>VK_KHR_video_queue</code> extension.</p>
+</div>
+<div class="paragraph">
+<p>Support for individual video encode operations can be retrieved for each queue family using the <code>VkQueueFamilyVideoPropertiesKHR</code> structure, as discussed earlier.</p>
+</div>
+<div class="paragraph">
+<p>The application can also use the <code>vkGetPhysicalDeviceVideoCapabilitiesKHR</code> command to query the capabilities of a specific video encode profile. In case of video encode profiles, the following new structure has to be included in the <code>pNext</code> chain of the <code>VkVideoCapabilitiesKHR</code> structure used to retrieve the general video encode capabilities:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoEncodeCapabilitiesKHR {
+    VkStructureType                         sType;
+    void*                                   pNext;
+    VkVideoEncodeCapabilityFlagsKHR         flags;
+    VkVideoEncodeRateControlModeFlagsKHR    rateControlModes;
+    uint32_t                                maxRateControlLayers;
+    uint64_t                                maxBitrate;
+    uint32_t                                maxQualityLevels;
+    VkExtent2D                              encodeInputPictureGranularity;
+    VkVideoEncodeFeedbackFlagsKHR           supportedEncodeFeedbackFlags;
+} VkVideoEncodeCapabilitiesKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This structure contains a new encode-specific <code>flags</code> member that indicates support for various video encode capabilities, like the support for the <code>precedingExternallyEncodedBytes</code> parameter discussed before.</p>
+</div>
+<div class="paragraph">
+<p>The <code>rateControlModes</code> and <code>maxRateControlLayers</code> members provide information about the supported rate control modes and maximum number of rate control layers that can be used in a video session, as discussed later.</p>
+</div>
+<div class="paragraph">
+<p>The <code>maxBitrate</code> member provides information about the maximum bitrate supported for the video profile.</p>
+</div>
+<div class="paragraph">
+<p>The <code>maxQualityLevels</code> member specifies the number of different video encode quality level values supported by the video encode profile in question which are identified with numbers in the range <code>0..maxQualityLevels</code>. The number and implementation effect of the quality levels is expected to vary across video encode profiles, even in video encode profiles using the same video codec operation (e.g. due to the use of different tuning modes), as discussed later.</p>
+</div>
+<div class="paragraph">
+<p>The <code>encodeInputPictureGranularity</code> member indicates the granularity at which data from the encode input picture is used for encoding individual codec-specific coding blocks. If this capability is not <code>{1,1}</code>, then it is recommend for applications to initialize the data in the encode input picture at this granularity, as the encoder will use data in such padding texels during the encoding, which may affect the quality and efficiency of the encoding.</p>
+</div>
+<div class="paragraph">
+<p>The <code>supportedEncodeFeedbackFlags</code> member indicates the set of supported encode feedback flags for the <code>VK_QUERY_TYPE_VIDEO_ENCODE_FEEDBACK_KHR</code> queries described later.</p>
+</div>
+<div class="paragraph">
+<p>The <code>vkGetPhysicalDeviceVideoFormatPropertiesKHR</code> command can be used to query the supported image/picture formats for a given set of video profiles, as described in the <code>VK_KHR_video_queue</code> extension.</p>
+</div>
+<div class="paragraph">
+<p>In particular, if the application would like to query the list of format properties supported for encode input pictures, then it should include the new <code>VK_IMAGE_USAGE_VIDEO_ENCODE_SRC_BIT_KHR</code> usage flag in <code>VkPhysicalDeviceVideoFormatInfoKHR::imageUsage</code>.</p>
+</div>
+<div class="paragraph">
+<p>Similarly, to query the list of format properties supported for encode DPB pictures (reconstructed/reference pictures), then it should include the new <code>VK_IMAGE_USAGE_VIDEO_ENCODE_DPB_BIT_KHR</code> usage flag in <code>VkPhysicalDeviceVideoFormatInfoKHR::imageUsage</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_video_encode_quality_levels"><a class="anchor" href="#_video_encode_quality_levels"></a>3.12. Video Encode Quality Levels</h3>
+<div class="paragraph">
+<p>This proposal introduces the concept of video encode quality levels, which can be thought of as encoder presets that control the number and type of implementation-specific encoding tools and algorithms utilized in the encoding process. Implementations can expose support for one or more such video encode quality levels for each video profile. By default, video encode quality level index zero is used, unless otherwise specified.</p>
+</div>
+<div class="paragraph">
+<p>Generally, using higher video encode quality levels may produce higher quality video streams at the cost of additional processing time. However, as the final quality of an encoded picture depends on the contents of the encode input picture, the contents of the active reference pictures, the codec-specific encode parameters, and the particular implementation-specific tools used corresponding to the individual video encode quality levels, there are no guarantees that using a higher video encode quality level will always produce a higher quality encoded picture for any given set of inputs.</p>
+</div>
+<div class="paragraph">
+<p>The chosen quality level may also affect the optimization overrides applied by implementations when using the <code>VK_VIDEO_SESSION_CREATE_ALLOW_ENCODE_PARAMETER_OPTIMIZATIONS_BIT_KHR</code> flag, and thus codec-specific parameters stored in video session parameters may be affected by the used video encode quality level. As such, video session parameters objects are always created with respect to a specific video encode quality level. The application can choose to create a video session parameters object with a video encode quality level index different than the default quality level of zero by including the following new structure in the <code>pNext</code> chain of <code>VkVideoSessionParametersCreateInfoKHR</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoEncodeQualityLevelInfoKHR {
+    VkStructureType    sType;
+    const void*        pNext;
+    uint32_t           qualityLevel;
+} VkVideoEncodeQualityLevelInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Where <code>qualityLevel</code> specifies the used video encode quality level.</p>
+</div>
+<div class="paragraph">
+<p>Video sessions created against a video encode profile allow changing the used video encode quality level dynamically. After creation, the video session is configured with the default quality level of zero, which then can be changed by including the new <code>VK_VIDEO_CODING_CONTROL_ENCODE_QUALITY_LEVEL_BIT_KHR</code> flag in the <code>flags</code> member of the <code>VkVideoCodingControlInfoKHR</code> structure passed to the <code>vkCmdControlVideoCodingKHR</code> command and including an instance of the <code>VkVideoEncodeQualityLevelInfoKHR</code> structure in the <code>VkVideoCodingControlInfoKHR::pNext</code> chain specifying the new quality level to set for the video session.</p>
+</div>
+<div class="paragraph">
+<p>If video session parameters objects are used by a particular video encode command, then the video encode quality the parameters object was created with has to match the currently configured quality level for the bound video session.</p>
+</div>
+<div class="paragraph">
+<p>Implementations may have certain recommendations for encoding parameters and configuration (e.g. for rate control) specific to each supported video encode quality level. These recommendations and other quality level related properties can be queried for a specific video encode profile using the following new command:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VKAPI_ATTR VkResult VKAPI_CALL vkGetPhysicalDeviceVideoEncodeQualityLevelPropertiesKHR(
+    VkPhysicalDevice                                        physicalDevice,
+    const VkPhysicalDeviceVideoEncodeQualityLevelInfoKHR*   pQualityLevelInfo,
+    VkVideoEncodeQualityLevelPropertiesKHR*                 pQualityLevelProperties);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The input to the command is a structure that specifies the video encode profile and quality level to query properties for:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDeviceVideoEncodeQualityLevelInfoKHR {
+    VkStructureType                 sType;
+    const void*                     pNext;
+    const VkVideoProfileInfoKHR*    pVideoProfile;
+    uint32_t                        qualityLevel;
+} VkPhysicalDeviceVideoEncodeQualityLevelInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This proposal allows retrieving the following codec-independent quality level properties:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoEncodeQualityLevelPropertiesKHR {
+    VkStructureType                            sType;
+    void*                                      pNext;
+    VkVideoEncodeRateControlModeFlagBitsKHR    preferredRateControlMode;
+    uint32_t                                   preferredRateControlLayerCount;
+} VkVideoEncodeQualityLevelPropertiesKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Layered extensions may add additional (typically codec-specific) property structures that can be chained to the base output structure defined above.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_video_encode_feedback_queries"><a class="anchor" href="#_video_encode_feedback_queries"></a>3.13. Video Encode Feedback Queries</h3>
+<div class="paragraph">
+<p>The new <code>VK_QUERY_TYPE_VIDEO_ENCODE_FEEDBACK_KHR</code> query type works similarly to pipeline statistics from the perspective of being able to report multiple distinct values about the video encode operations they collect feedback about. When creating a query pool with this type the following new structure specifies the selected feedback values:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkQueryPoolVideoEncodeFeedbackCreateInfoKHR {
+    VkStructureType                         sType;
+    const void*                             pNext;
+    VkVideoEncodeFeedbackFlagsKHR           encodeFeedbackFlags;
+} VkQueryPoolVideoEncodeFeedbackCreateInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This extension adds support for the following video encode feedback flags:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_VIDEO_ENCODE_FEEDBACK_BITSTREAM_BUFFER_OFFSET_BIT_KHR</code> requests capturing the offset relative to <code>dstBufferOffset</code> where the bitstream data corresponding to the video encode operation is written to</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_FEEDBACK_BITSTREAM_BYTES_WRITTEN_BIT_KHR</code> requests capturing the number of bytes written by the video encode operation to the bitstream buffer</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_FEEDBACK_BITSTREAM_HAS_OVERRIDES_BIT_KHR</code> requests capturing information about whether the implementation overrode any codec-specific parameters in the generated bitstream data with respect to the parameter values supplied by the application</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>All implementations are expected to support <code>VK_VIDEO_ENCODE_FEEDBACK_BITSTREAM_BUFFER_OFFSET_BIT_KHR</code> and <code>VK_VIDEO_ENCODE_FEEDBACK_BITSTREAM_BYTES_WRITTEN_BIT_KHR</code>, but <code>VK_VIDEO_ENCODE_FEEDBACK_BITSTREAM_HAS_OVERRIDES_BIT_KHR</code> is optional, as not all implementations may be able to provide feedback about overrides performed on the encoded bitstream data.</p>
+</div>
+<div class="paragraph">
+<p>The reported offset for <code>VK_VIDEO_ENCODE_FEEDBACK_BITSTREAM_BUFFER_OFFSET_BIT_KHR</code> is currently defined to be always zero until otherwise defined by any layered extension.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_video_encode_rate_control"><a class="anchor" href="#_video_encode_rate_control"></a>3.14. Video Encode Rate Control</h3>
+<div class="paragraph">
+<p>A key aspect of video encoding is to control the size of the encoded bitstream. This happens through the application of rate control. Rate control settings consist of codec-independent and codec-specific parameters hence this extension only includes the common parameters.</p>
+</div>
+<div class="paragraph">
+<p>The following rate control modes are introduced by this extension:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_VIDEO_ENCODE_RATE_CONTROL_MODE_DISABLED_BIT_KHR</code> for disabling rate control</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_RATE_CONTROL_MODE_CBR_BIT_KHR</code> for constant bitrate (CBR) rate control</p>
+</li>
+<li>
+<p><code>VK_VIDEO_ENCODE_RATE_CONTROL_MODE_VBR_BIT_KHR</code> for variable bitrate (VBR) rate control</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In addition, the <code>VK_VIDEO_ENCODE_RATE_CONTROL_MODE_DEFAULT_KHR</code> constant is used to set rate control configuration to implementation-dependent default settings. This is the initial rate control mode that is set for newly created video sessions which leaves rate control entirely in the implementation&#8217;s control.</p>
+</div>
+<div class="paragraph">
+<p>Certain codecs define a concept typically referred to as <em>video coding layers</em>. The semantics of these layers are defined by the corresponding video compression standards. However, some implementations allow certain configuration parameters of rate control to be specified separately for each such video coding layer, thus this proposal introduces the concept of rate control layers which enable the application to explicitly control these parameters on a per layer basis.</p>
+</div>
+<div class="paragraph">
+<p>When a single rate control layer is configured, it is applied to all encoded pictures. In contrast, when multiple rate control layers are configured, then each rate control layer is applied only to encoded pictures targeting a specific video coding layer.</p>
+</div>
+<div class="paragraph">
+<p>After a video session is reset using <code>VK_VIDEO_CODING_CONTROL_RESET_BIT_KHR</code>, its rate control settings are initialized to implementation-specific defaults. Applications can change these by calling <code>vkCmdControlVideoCodingKHR</code> and specifying the <code>VK_VIDEO_CODING_CONTROL_ENCODE_RATE_CONTROL_BIT_KHR</code> flag. When this flag is present, the following new structure chained to the <code>pNext</code> chain of <code>VkVideoCodingControlInfoKHR</code> specifies the rate control configuration:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoEncodeRateControlInfoKHR {
+    VkStructureType                                sType;
+    const void*                                    pNext;
+    VkVideoEncodeRateControlFlagsKHR               flags;
+    VkVideoEncodeRateControlModeFlagBitsKHR        rateControlMode;
+    uint32_t                                       layerCount;
+    const VkVideoEncodeRateControlLayerInfoKHR*    pLayers;
+    uint32_t                                       virtualBufferSizeInMs;
+    uint32_t                                       initialVirtualBufferSizeInMs;
+} VkVideoEncodeRateControlInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>rateControlMode</code> specifies the rate control mode to set.</p>
+</div>
+<div class="paragraph">
+<p><code>layerCount</code> specifies the number of rate control layers to use from this point, and <code>pLayers</code> specifies the configuration of each layer. Rate control layers can only be specified when rate control is not disabled or is not set to the implementation-specific defaults.</p>
+</div>
+<div class="paragraph">
+<p><code>virtualBufferSizeInMs</code> and <code>initialVirtualBufferSizeInMs</code> specify the size and initial occupancy, respectively, in milliseconds of the leaky bucket model virtual buffer.</p>
+</div>
+<div class="paragraph">
+<p>The <code>VkVideoEncodeRateControlLayerInfoKHR</code> structure is defined as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoEncodeRateControlLayerInfoKHR {
+    VkStructureType    sType;
+    const void*        pNext;
+    uint64_t           averageBitrate;
+    uint64_t           maxBitrate;
+    uint32_t           frameRateNumerator;
+    uint32_t           frameRateDenominator;
+} VkVideoEncodeRateControlLayerInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>averageBitrate</code> and <code>maxBitrate</code> specify the target and peak bitrate that the rate control layer should use in bits/second. In case of CBR mode the two values have to match.</p>
+</div>
+<div class="paragraph">
+<p><code>frameRateNumerator</code> and <code>frameRateDenominator</code> specify the numerator and denominator of the frame rate used by the video sequence.</p>
+</div>
+<div class="paragraph">
+<p>The exact behavior of rate control is implementation-specific but it is typically constrained by the video compression standard corresponding to the used video profile. Implementations are expected to implement rate control as follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>In case of CBR mode the bitrate should stay as close to the specified <code>averageBitrate</code> as possible within the virtual buffer window.</p>
+</li>
+<li>
+<p>In case of VBR mode the bitrate should not exceed the value of <code>maxBitrate</code> while also trying to get close to the target bitrate specified by <code>averageBitrate</code> within the virtual buffer window.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Codec-specific video encode extensions can include both global and per-layer codec-specific rate control configurations by chaining codec-specific parameters to the <code>VkVideoEncodeRateControlInfoKHR</code> and <code>VkVideoEncodeRateControlLayerInfoKHR</code> structures, respectively.</p>
+</div>
+<div class="paragraph">
+<p>Some implementations do not track the current rate control configuration as part of the device state maintained in the video session object, but the current rate control configuration may affect the device commands recorded in response to video encode operations. In order to enable implementations to have access to the current rate control configuration when recording video encoding commands into command buffers, this proposal requires the current rate control configuration to be also specified when calling <code>vkCmdBeginVideoCodingKHR</code> by including the <code>VkVideoEncodeRateControlInfoKHR</code> structure describing it in the <code>pNext</code> chain of the <code>pBeginCodingInfo</code> parameter. When this information is not included, it is assumed that the currently expected rate control configuration is the default one, i.e. the implementation-specific rate control mode indicated by <code>VK_VIDEO_ENCODE_RATE_CONTROL_MODE_DEFAULT_KHR</code>.</p>
+</div>
+<div class="paragraph">
+<p>It is important to note that specifying the rate control configuration when calling <code>vkCmdBeginVideoCodingKHR</code> does not change the current rate control configuration. For that the <code>vkCmdControlVideoCodingKHR</code> command must be used with the <code>VK_VIDEO_CODING_CONTROL_ENCODE_RATE_CONTROL_BIT_KHR</code> flag, as discussed earlier. The rate control configuration specified to <code>vkCmdBeginVideoCodingKHR</code> serves only to make the information about the current rate control state available to implementations during command recording and is expected to always match the effective current rate control state at the time the command is executed on the device.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_usage_summary"><a class="anchor" href="#_usage_summary"></a>3.15. Usage Summary</h3>
+<div class="paragraph">
+<p>To summarize the usage of the video encoding features introduced by this extension, let us take a look at a typical usage scenario when using this extension to encode a video stream.</p>
+</div>
+<div class="paragraph">
+<p>Before the application can start recording command buffers with video encode operations, it has to do the following:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Ensure that the implementation can encode the video content by first querying the video codec operations supported by each queue family using the <code>vkGetPhysicalDeviceQueueFamilyProperties2</code> command and the <code>VkQueueFamilyVideoPropertiesKHR</code> output structure.</p>
+</li>
+<li>
+<p>If needed, the application has to also retrieve the <code>VkQueueFamilyQueryResultStatusPropertiesKHR</code> output structure for the queue family to check support for <code>VK_QUERY_TYPE_RESULT_STATUS_ONLY_KHR</code> queries.</p>
+</li>
+<li>
+<p>Construct the <code>VkVideoProfileInfoKHR</code> structure describing the entire video profile, including the video codec operation, chroma subsampling, bit depths, and any other usage or codec-specific parameters.</p>
+</li>
+<li>
+<p>Ensure that the specific video profile is supported by the implementation using the <code>vkGetPhysicalDeviceVideoCapabilitiesKHR</code> command and retrieve the general, encode-specific, and codec-specific capabilities at the same time.</p>
+</li>
+<li>
+<p>Query the list of supported image/picture format properties supported for the video profile using the <code>vkGetPhysicalDeviceVideoFormatPropertiesKHR</code> structure, and select a suitable format for the DPB and encode input pictures.</p>
+</li>
+<li>
+<p>Create an image corresponding to the encode input picture with the appropriate usage flags and video profile list, as described earlier, and bind suitable device memory to the image. Also create an image view with the appropriate usage flags to use in the video encode operations.</p>
+</li>
+<li>
+<p>If needed, create one or more images corresponding to the DPB pictures with the appropriate usage flags and video profile list, as described earlier, and bind suitable device memory to them. Also create any image views with the appropriate usage flags to use in the video encode operations.</p>
+</li>
+<li>
+<p>Create a buffer with the <code>VK_BUFFER_USAGE_VIDEO_ENCODE_DST_BIT_KHR</code> usage flag and the video profile list, to use as the destination video bitstream buffer. If the buffer is expected to be consumed using the CPU, consider binding compatible host-visible device memory to the buffer.</p>
+</li>
+<li>
+<p>If result status or video encode feedback queries are needed and supported (as determined earlier), create a query pool with the corresponding query type and the used video encode profile.</p>
+</li>
+<li>
+<p>Create the video session using the video encode profile and appropriate parameters within the capabilities supported by the profile, as determined earlier. Bind suitable device memory to each memory binding index of the video session.</p>
+</li>
+<li>
+<p>If needed, create a video session parameters object for the video session.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Recording video encode operations into command buffers typically consists of the following sequence:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Start a video coding scope with the created video session (and parameters) object using the <code>vkCmdBeginVideoCodingKHR</code> command. Make sure to include all video picture resources in <code>VkVideoBeginCodingInfoKHR::pReferenceSlots</code> that may be used as reconstructed or reference pictures within the video coding scope, and ensure that the DPB slots specified for each reflect the current DPB slot association for the resource.</p>
+</li>
+<li>
+<p>If this is the first video coding scope the video session is used in, reset the video session to the initial state by recording a <code>vkCmdControlVideoCodingKHR</code> command with the <code>VK_VIDEO_CODING_CONTROL_RESET_BIT_KHR</code> flag.</p>
+</li>
+<li>
+<p>If needed, also update the rate control state or the used video encode quality level for the video session by recording a
+<code>vkCmdControlVideoCodingKHR</code> command with the <code>VK_VIDEO_CODING_CONTROL_ENCODE_RATE_CONTROL_BIT_KHR</code> and/or <code>VK_VIDEO_CODING_CONTROL_ENCODE_QUALITY_LEVEL_BIT_KHR</code> flags (can be done in the same command that resets the video session, if needed).</p>
+</li>
+<li>
+<p>If needed, start a result status or video coding feedback query using <code>vkCmdBeginQuery</code>. Reset the query using <code>vkCmdResetQueryPool</code>, beforehand, as needed.</p>
+</li>
+<li>
+<p>Issue a video encode operation using the <code>vkCmdEncodeVideoKHR</code> command with appropriate parameters, as discussed earlier.</p>
+</li>
+<li>
+<p>If needed, end the started query using <code>vkCmdEndQuery</code>.</p>
+</li>
+<li>
+<p>Record any further control or encode operations into the video coding scope, as needed.</p>
+</li>
+<li>
+<p>End the video coding scope using the <code>vkCmdEndVideoCodingKHR</code> command.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Video profiles that require the use of video session parameters objects may also require the application to encode the stored codec-specific parameters separately into the final bitstream. Applications are expected to encode these parameters according to the following steps:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>If the application wants to encode such parameters on its own, when possible, it should first call the <code>vkGetEncodedVideoSessionParametersKHR</code> command with a non-NULL <code>pFeedbackInfo</code> parameter to retrieve information about whether the implementation applied any overrides to the codec-specific parameters in question.</p>
+</li>
+<li>
+<p>If the results of the previous step indicate that no implementation overrides were applied, then the application can choose to encode the codec-specific parameters in question on its own and ignore the rest of the steps listed here</p>
+</li>
+<li>
+<p>Otherwise, the application has to retrieve the encoded codec-specific parameters by calling the <code>vkGetEncodedVideoSessionParametersKHR</code> command twice: first, to retrieve the size, second to retrieve the data of the encoded codec-specific parameters in question, as discussed earlier.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_examples"><a class="anchor" href="#_examples"></a>4. Examples</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_select_queue_family_with_video_encode_support_for_a_given_video_codec_operation"><a class="anchor" href="#_select_queue_family_with_video_encode_support_for_a_given_video_codec_operation"></a>4.1. Select queue family with video encode support for a given video codec operation</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkVideoCodecOperationFlagBitsKHR neededVideoEncodeOp = ...
+uint32_t queueFamilyIndex;
+uint32_t queueFamilyCount;
+
+vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &amp;queueFamilyCount, NULL);
+
+VkQueueFamilyProperties2* props = calloc(queueFamilyCount,
+    sizeof(VkQueueFamilyProperties2));
+VkQueueFamilyVideoPropertiesKHR* videoProps = calloc(queueFamilyCount,
+    sizeof(VkQueueFamilyVideoPropertiesKHR));
+
+for (queueFamilyIndex = 0; queueFamilyIndex &lt; queueFamilyCount; ++queueFamilyIndex) {
+    props[queueFamilyIndex].sType = VK_STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2;
+    props[queueFamilyIndex].pNext = &amp;videoProps[queueFamilyIndex];
+
+    videoProps[queueFamilyIndex].sType = VK_STRUCTURE_TYPE_QUEUE_FAMILY_VIDEO_PROPERTIES_KHR;
+}
+
+vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &amp;queueFamilyCount, props);
+
+for (queueFamilyIndex = 0; queueFamilyIndex &lt; queueFamilyCount; ++queueFamilyIndex) {
+    if ((props[queueFamilyIndex].queueFamilyProperties.queueFlags &amp; VK_QUEUE_VIDEO_ENCODE_BIT_KHR) != 0 &amp;&amp;
+        (videoProps[queueFamilyIndex].videoCodecOperations &amp; neededVideoEncodeOp) != 0) {
+        break;
+    }
+}
+
+if (queueFamilyIndex &lt; queueFamilyCount) {
+    // Found appropriate queue family
+    ...
+} else {
+    // Did not find a queue family with the needed capabilities
+    ...
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_check_support_and_query_the_capabilities_for_a_video_encode_profile"><a class="anchor" href="#_check_support_and_query_the_capabilities_for_a_video_encode_profile"></a>4.2. Check support and query the capabilities for a video encode profile</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkResult result;
+
+// We also include the optional encode usage information here
+VkVideoEncodeUsageInfoKHR profileUsageInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_USAGE_INFO_KHR,
+    .pNext = ... // pointer to codec-specific profile structure
+    .videoUsageHints = VK_VIDEO_ENCODE_USAGE_DEFAULT_KHR,
+    .videoContentHints = VK_VIDEO_ENCODE_CONTENT_DEFAULT_KHR,
+    .tuningMode = VK_VIDEO_ENCODE_TUNING_MODE_DEFAULT_KHR
+};
+
+VkVideoProfileInfoKHR profileInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR,
+    .pNext = &amp;profileUsageInfo,
+    .videoCodecOperation = ... // used video encode operation
+    .chromaSubsampling = VK_VIDEO_CHROMA_SUBSAMPLING_420_BIT_KHR,
+    .lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR,
+    .chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR
+};
+
+VkVideoEncodeCapabilitiesKHR encodeCapabilities = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_CAPABILITIES_KHR,
+    .pNext = ... // pointer to codec-specific capability structure
+}
+
+VkVideoCapabilitiesKHR capabilities = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR,
+    .pNext = &amp;encodeCapabilities
+};
+
+result = vkGetPhysicalDeviceVideoCapabilitiesKHR(physicalDevice, &amp;profileInfo, &amp;capabilities);
+
+if (result == VK_SUCCESS) {
+    // Profile is supported, check additional capabilities
+    ...
+} else {
+    // Profile is not supported, result provides additional information about why
+    ...
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_select_encode_input_and_dpb_formats_supported_by_the_video_encode_profile"><a class="anchor" href="#_select_encode_input_and_dpb_formats_supported_by_the_video_encode_profile"></a>4.3. Select encode input and DPB formats supported by the video encode profile</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkVideoProfileInfoKHR profileInfo = {
+    ...
+};
+
+VkVideoProfileListInfoKHR profileListInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR,
+    .pNext = NULL,
+    .profileCount = 1,
+    .pProfiles = &amp;profileInfo
+};
+
+VkPhysicalDeviceVideoFormatInfoKHR formatInfo = {
+    .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_FORMAT_INFO_KHR,
+    .pNext = &amp;profileListInfo
+};
+
+VkVideoFormatPropertiesKHR* formatProps = NULL;
+
+// First query encode input formats
+formatInfo.imageUsage = VK_IMAGE_USAGE_VIDEO_ENCODE_SRC_BIT_KHR;
+
+vkGetPhysicalDeviceVideoFormatPropertiesKHR(physicalDevice, &amp;formatInfo, &amp;formatCount, NULL);
+formatProps = calloc(formatCount, sizeof(VkVideoFormatPropertiesKHR));
+for (uint32_t i = 0; i &lt; formatCount; ++i) {
+    formatProps[i].sType = VK_STRUCTURE_TYPE_VIDEO_FORMAT_PROPERTIES_KHR;
+}
+vkGetPhysicalDeviceVideoFormatPropertiesKHR(physicalDevice, &amp;formatInfo, &amp;formatCount, formatProps);
+
+for (uint32_t i = 0; i &lt; formatCount; ++i) {
+    // Select encode input format and image creation capabilities best suited for the use case
+    ...
+}
+free(formatProps);
+
+// Then query DPB formats
+formatInfo.imageUsage = VK_IMAGE_USAGE_VIDEO_ENCODE_DPB_BIT_KHR;
+
+vkGetPhysicalDeviceVideoFormatPropertiesKHR(physicalDevice, &amp;formatInfo, &amp;formatCount, NULL);
+formatProps = calloc(formatCount, sizeof(VkVideoFormatPropertiesKHR));
+for (uint32_t i = 0; i &lt; formatCount; ++i) {
+    formatProps[i].sType = VK_STRUCTURE_TYPE_VIDEO_FORMAT_PROPERTIES_KHR;
+}
+vkGetPhysicalDeviceVideoFormatPropertiesKHR(physicalDevice, &amp;formatInfo, &amp;formatCount, formatProps);
+
+for (uint32_t i = 0; i &lt; formatCount; ++i) {
+    // Select DPB format and image creation capabilities best suited for the use case
+    ...
+}
+free(formatProps);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_create_bitstream_buffer"><a class="anchor" href="#_create_bitstream_buffer"></a>4.4. Create bitstream buffer</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkBuffer bitstreamBuffer = VK_NULL_HANDLE;
+
+VkVideoProfileListInfoKHR profileListInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR,
+    .pNext = NULL,
+    .profileCount = ... // number of video profiles to use the bitstream buffer with
+    .pProfiles = ... // pointer to an array of video profile information structure chains
+};
+
+VkBufferCreateInfo createInfo = {
+    .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+    .pNext = &amp;profileListInfo,
+    ...
+    .usage = VK_BUFFER_USAGE_VIDEO_ENCODE_DST_BIT_KHR | ... // any other usages that may be needed
+    ...
+};
+
+vkCreateBuffer(device, &amp;createInfo, NULL, &amp;bitstreamBuffer);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_create_encode_input_image_and_image_view"><a class="anchor" href="#_create_encode_input_image_and_image_view"></a>4.5. Create encode input image and image view</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkImage inputImage = VK_NULL_HANDLE;
+VkImageView inputImageView = VK_NULL_HANDLE;
+
+VkVideoProfileListInfoKHR profileListInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR,
+    .pNext = NULL,
+    .profileCount = ... // number of video profiles to use the encode input image with
+    .pProfiles = ... // pointer to an array of video profile information structure chains
+};
+
+VkImageCreateInfo imageCreateInfo = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+    .pNext = &amp;profileListInfo,
+    ...
+    .usage = VK_IMAGE_USAGE_VIDEO_ENCODE_SRC_BIT_KHR | ... // any other usages that may be needed
+    ...
+};
+
+vkCreateImage(device, &amp;imageCreateInfo, NULL, &amp;inputImage);
+
+VkImageViewUsageCreateInfo imageViewUsageInfo = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO,
+    .pNext = NULL,
+    .usage = VK_IMAGE_USAGE_VIDEO_ENCODE_SRC_BIT_KHR
+};
+
+VkImageViewCreateInfo imageViewCreateInfo = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+    .pNext = &amp;imageViewUsageInfo,
+    .flags = 0,
+    .image = inputImage,
+    .viewType = ... // image view type (only 2D or 2D_ARRAY is supported)
+    ... // other image view creation parameters
+};
+
+vkCreateImageView(device, &amp;imageViewCreateInfo, NULL, &amp;inputImageView);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_create_dpb_image_and_image_view"><a class="anchor" href="#_create_dpb_image_and_image_view"></a>4.6. Create DPB image and image view</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// NOTE: This example creates a single image and image view that is used to back all DPB pictures
+// but, depending on the support of the VK_VIDEO_CAPABILITY_SEPARATE_REFERENCE_IMAGES_BIT_KHR
+// capability flag, the application can choose to create separate images for each DPB slot or
+// picture
+
+VkImage dpbImage = VK_NULL_HANDLE;
+VkImageView dpbImageView = VK_NULL_HANDLE;
+
+VkVideoProfileListInfoKHR profileListInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR,
+    .pNext = NULL,
+    .profileCount = ... // number of video profiles to use the encode DPB image with
+    .pProfiles = ... // pointer to an array of video profile information structure chains
+};
+
+VkImageCreateInfo imageCreateInfo = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+    .pNext = &amp;profileListInfo,
+    ...
+    .usage = VK_IMAGE_USAGE_VIDEO_ENCODE_DPB_BIT_KHR | ... // any other usages that may be needed
+    ...
+    .arrayLayers = // typically equal to the DPB slot count
+};
+
+vkCreateImage(device, &amp;imageCreateInfo, NULL, &amp;dpbImage);
+
+VkImageViewUsageCreateInfo imageViewUsageInfo = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO,
+    .pNext = NULL,
+    .usage = VK_IMAGE_USAGE_VIDEO_ENCODE_DPB_BIT_KHR
+};
+
+VkImageViewCreateInfo imageViewCreateInfo = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+    .pNext = &amp;imageViewUsageInfo,
+    .flags = 0,
+    .image = dpbImage,
+    .viewType = ... // image view type (only 2D or 2D_ARRAY is supported)
+    ... // other image view creation parameters
+};
+
+vkCreateImageView(device, &amp;imageViewCreateInfo, NULL, &amp;dpbImageView);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_create_and_use_video_encode_feedback_query_pool_with_a_video_session"><a class="anchor" href="#_create_and_use_video_encode_feedback_query_pool_with_a_video_session"></a>4.7. Create and use video encode feedback query pool with a video session</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkQueryPool queryPool = VK_NULL_HANDLE;
+
+VkVideoProfileInfoKHR profileInfo = {
+    ...
+};
+
+// We will capture both bitstream offset and bitstream bytes written in the feedback
+VkVideoEncodeFeedbackFlags capturedEncodeFeedbackValues =
+    VK_VIDEO_ENCODE_FEEDBACK_BITSTREAM_BUFFER_OFFSET_BIT_KHR |
+    VK_VIDEO_ENCODE_FEEDBACK_BITSTREAM_BYTES_WRITTEN_BIT_KHR;
+
+// NOTE: Only the encode feedback values listed above are required to be supported by all
+// video encode implementations. So if the application intends to use other encode
+// feedback values like VK_VIDEO_ENCODE_FEEDBACK_BITSTREAM_HAS_OVERRIDES_BIT_KHR, then
+// it must first check support for it as indicated by the supportedEncodeFeedbackFlags
+// capability for the video encode profile in question.
+
+VkQueryPoolVideoEncodeFeedbackCreateInfoKHR feedbackInfo = {
+    .sType = VK_STRUCTURE_TYPE_QUERY_POOL_VIDEO_ENCODE_FEEDBACK_CREATE_INFO_KHR,
+    .pNext = &amp;profileInfo,
+    .encodeFeedbackFlags = capturedEncodeFeedbackValues
+};
+
+VkQueryPoolCreateInfo createInfo = {
+    .sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO,
+    .pNext = &amp;feedbackInfo,
+    .flags = 0,
+    .queryType = VK_QUERY_TYPE_VIDEO_ENCODE_FEEDBACK_KHR,
+    ...
+};
+
+vkCreateQueryPool(device, &amp;createInfo, NULL, &amp;queryPool);
+
+...
+vkBeginCommandBuffer(commandBuffer, ...);
+...
+vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+...
+vkCmdBeginQuery(commandBuffer, queryPool, 0, 0);
+// Issue video encode operation
+...
+vkCmdEndQuery(commandBuffer, queryPool, 0);
+...
+vkCmdEndVideoCodingKHR(commandBuffer, ...);
+...
+vkEndCommandBuffer(commandBuffer);
+...
+
+// We retrieve the captured feedback values as well as the status
+struct {
+    uint32_t                bitstreamBufferOffset;
+    uint32_t                bitstreamBytesWritten;
+    VkQueryResultStatusKHR  status;
+} results;
+vkGetQueryPoolResults(device, queryPool, 0, 1,
+                      sizeof(results), &amp;results, sizeof(results),
+                      VK_QUERY_RESULT_WITH_STATUS_BIT_KHR);
+
+if (results.status == VK_QUERY_RESULT_STATUS_NOT_READY_KHR /* 0 */) {
+    // Query result not ready yet
+    ...
+} else if (results.status &gt; 0) {
+    // Video encode operation was successful, we can use bitstream feedback data
+    ...
+} else if (results.status &lt; 0) {
+    // Video encode operation was unsuccessful, feedback data is undefined
+    ...
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_record_encode_operation_video_session_without_dpb_slots"><a class="anchor" href="#_record_encode_operation_video_session_without_dpb_slots"></a>4.8. Record encode operation (video session without DPB slots)</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+
+VkVideoPictureResourceInfoKHR encodeInputPictureResource = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR,
+    .pNext = NULL,
+    .codedOffset = ... // offset within the image subresource (typically { 0, 0 })
+    .codedExtent = ... // extent of encoded picture (typically the video frame size)
+    .baseArrayLayer = 0,
+    .imageViewBinding = inputImageView
+};
+
+VkVideoEncodeInfoKHR encodeInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_INFO_KHR,
+    .pNext = ... // pointer to codec-specific picture information structure
+    .flags = 0,
+    .dstBuffer = bitstreamBuffer,
+    .dstBufferOffset = ... // offset where the encoded bitstream is written
+    .dstBufferRange = ... // maximum size in bytes of the written bitstream data
+    .srcPictureResource = encodeInputPictureResource,
+    .pSetupReferenceSlot = NULL,
+    .referenceSlotCount = 0,
+    .pReferenceSlots = NULL,
+    .precedingExternallyEncodedBytes = ...
+};
+
+vkCmdEncodeVideoKHR(commandBuffer, &amp;encodeInfo);
+
+vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_record_encode_operation_with_reconstructed_picture_information"><a class="anchor" href="#_record_encode_operation_with_reconstructed_picture_information"></a>4.9. Record encode operation with reconstructed picture information</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Bound reference resource list provided has to include reconstructed picture resource
+vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+
+VkVideoPictureResourceInfoKHR encodeInputPictureResource = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR,
+    .pNext = NULL,
+    .codedOffset = ... // offset within the image subresource (typically { 0, 0 })
+    .codedExtent = ... // extent of encoded picture (typically the video frame size)
+    .baseArrayLayer = 0,
+    .imageViewBinding = inputImageView
+};
+
+VkVideoPictureResourceInfoKHR reconstructedPictureResource = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR,
+    .pNext = NULL,
+    .codedOffset = ... // offset within the image subresource (typically { 0, 0 })
+    .codedExtent = ... // extent of reconstructed picture (typically the video frame size)
+    .baseArrayLayer = ... // layer to use for setup picture in DPB
+    .imageViewBinding = dpbImageView
+};
+
+VkVideoReferenceSlotInfoKHR setupSlotInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR,
+    .pNext = ... // pointer to codec-specific reconstructed picture information structure
+    .slotIndex = ... // DPB slot index to use with the reconstructed picture
+                     // (optionally activated per the codec-specific semantics)
+    .pPictureResource = &amp;reconstructedPictureResource
+};
+
+VkVideoEncodeInfoKHR encodeInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_INFO_KHR,
+    .pNext = ... // pointer to codec-specific picture information structure
+    ...
+    .srcPictureResource = encodeInputPictureResource,
+    .pSetupReferenceSlot = &amp;setupSlotInfo,
+    ...
+};
+
+vkCmdEncodeVideoKHR(commandBuffer, &amp;encodeInfo);
+
+vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_record_encode_operation_with_reference_picture_list"><a class="anchor" href="#_record_encode_operation_with_reference_picture_list"></a>4.10. Record encode operation with reference picture list</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Bound reference resource list provided has to include all used reference picture resources
+vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+
+VkVideoPictureResourceInfoKHR referencePictureResources[] = {
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR,
+        .pNext = NULL,
+        .codedOffset = ... // offset within the image subresource (typically { 0, 0 })
+        .codedExtent = ... // extent of reference picture (typically the video frame size)
+        .baseArrayLayer = ... // layer of first reference picture resource
+        .imageViewBinding = dpbImageView
+    },
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR,
+        .pNext = NULL,
+        .codedOffset = ... // offset within the image subresource (typically { 0, 0 })
+        .codedExtent = ... // extent of reference picture (typically the video frame size)
+        .baseArrayLayer = ... // layer of second reference picture resource
+        .imageViewBinding = dpbImageView
+    },
+    ...
+};
+// NOTE: Individual resources do not have to refer to the same image view, e.g. if different
+// image views are created for each picture resource, or if the
+// VK_VIDEO_CAPABILITY_SEPARATE_REFERENCE_IMAGES_BIT_KHR capability is supported and the
+// application created separate images for the reference pictures.
+
+VkVideoReferenceSlotInfoKHR referenceSlotInfo[] = {
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR,
+        .pNext = ... // pointer to codec-specific reference picture information structure
+        .slotIndex = ... // DPB slot index of the first reference picture
+        .pPictureResource = &amp;referencePictureResource[0]
+    },
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR,
+        .pNext = ... // pointer to codec-specific reference picture information structure
+        .slotIndex = ... // DPB slot index of the second reference picture
+        .pPictureResource = &amp;referencePictureResource[1]
+    },
+    ...
+};
+
+VkVideoEncodeInfoKHR encodeInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_INFO_KHR,
+    .pNext = ... // pointer to codec-specific picture information structure
+    ...
+    .referenceSlotCount = sizeof(referenceSlotInfo) / sizeof(referenceSlotInfo[0]),
+    .pReferenceSlots = &amp;referenceSlotInfo[0]
+};
+
+vkCmdEncodeVideoKHR(commandBuffer, &amp;encodeInfo);
+
+vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_encode_codec_specific_parameters_stored_in_video_session_parameters_objects"><a class="anchor" href="#_encode_codec_specific_parameters_stored_in_video_session_parameters_objects"></a>4.11. Encode codec-specific parameters stored in video session parameters objects</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkVideoEncodeSessionParametersGetInfoKHR getInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_SESSION_PARAMETERS_GET_INFO_KHR,
+    .pNext = ... // pointer to any codec-specific parameters, if needed
+    .videoSessionParameters = // video session parameters object to query
+};
+
+// VK_TRUE, if application prefers to encode the stored codec-specific parameters
+// itself, if possible, VK_FALSE otherwise
+VkBool32 preferApplicationParameterEncode = ...;
+
+VkBool32 parametersContainOverrides = VK_FALSE;
+
+if (preferApplicationParameterEncode) {
+    VkVideoEncodeSessionParametersFeedbackInfoKHR feedbackInfo = {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_SESSION_PARAMETERS_FEEDBACK_INFO_KHR,
+        .pNext = ... // pointer to any codec-specific feedback info, if needed
+        .hasOverrides = VK_FALSE;
+    };
+
+    vkGetEncodedVideoSessionParametersKHR(device, &amp;getInfo, &amp;feedbackInfo, NULL, NULL);
+
+    parametersContainOverrides = feedbackInfo.hasOverrides;
+}
+
+if (preferApplicationParameterEncode &amp;&amp; !parametersContainOverrides) {
+    // Encode codec-specific parameters manually
+    ...
+} else {
+    // Retrieve encoded codec-specific parameters from implementation
+    size_t dataSize = 0;
+    vkGetEncodedVideoSessionParametersKHR(device, &amp;getInfo, NULL, &amp;dataSize, NULL);
+
+    // Pointer to CPU buffer with at least dataSize number of bytes of storage
+    // (allocate it on demand or use an existing pool used for bitstream storage)
+    void* data = ...;
+    vkGetEncodedVideoSessionParametersKHR(device, &amp;getInfo, NULL, &amp;dataSize, data);
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_change_the_rate_control_configuration_of_a_video_encode_session"><a class="anchor" href="#_change_the_rate_control_configuration_of_a_video_encode_session"></a>4.12. Change the rate control configuration of a video encode session</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+
+VkVideoEncodeRateControlLayerInfoKHR rateControlLayers[] = {
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_RATE_CONTROL_LAYER_INFO_KHR,
+        .pNext = ... // pointer to optional codec-specific rate control layer configuration
+        .averageBitrate = 2000000, // 2 Mbps target bitrate
+        .maxBitrate = 5000000, // 5 Mbps peak bitrate
+        .frameRateNumerator = 30000, // 29.97 fps numerator
+        .frameRateDenominator = 1001 // 29.97 fps denominator
+    },
+    ...
+};
+
+VkVideoEncodeRateControlInfoKHR rateControlInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_RATE_CONTROL_INFO_KHR,
+    .pNext = ... // pointer to optional codec-specific rate control configuration
+    .flags = 0,
+    .rateControlMode = VK_VIDEO_ENCODE_RATE_CONTROL_MODE_VBR_BIT_KHR, // variable bitrate mode
+    .layerCount = sizeof(rateControlLayers) / sizeof(rateControlLayers[0]),
+    .pLayers = rateControlLayers,
+    .virtualBufferSizeInMs = 2000, // virtual buffer size is 2 seconds
+    .initialVirtualBufferSizeInMs = 0
+};
+
+// Change the rate control configuration for the video session
+VkVideoCodingControlInfoKHR controlInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_CODING_CONTROL_INFO_KHR,
+    .pNext = &amp;rateControlInfo,
+    .flags = VK_VIDEO_CODING_CONTROL_ENCODE_RATE_CONTROL_BIT_KHR
+};
+
+vkCmdControlVideoCodingKHR(commandBuffer, &amp;controlInfo);
+
+...
+
+vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_change_the_video_encode_quality_level_used_by_a_video_encode_session"><a class="anchor" href="#_change_the_video_encode_quality_level_used_by_a_video_encode_session"></a>4.13. Change the video encode quality level used by a video encode session</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+
+VkVideoEncodeQualityLevelInfoKHR qualityLevelInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUALITY_LEVEL_INFO_KHR,
+    .pNext = NULL,
+    .qualityLevel = ... // the new quality level to set
+};
+
+VkVideoCodingControlInfoKHR controlInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_CODING_CONTROL_INFO_KHR,
+    .pNext = &amp;qualityLevelInfo,
+    .flags = VK_VIDEO_CODING_CONTROL_ENCODE_QUALITY_LEVEL_BIT_KHR
+};
+
+vkCmdControlVideoCodingKHR(commandBuffer, &amp;controlInfo);
+
+...
+
+vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_initialize_a_video_encode_session_with_a_specific_quality_level_and_corresponding_recommended_rate_control_settings"><a class="anchor" href="#_initialize_a_video_encode_session_with_a_specific_quality_level_and_corresponding_recommended_rate_control_settings"></a>4.14. Initialize a video encode session with a specific quality level and corresponding recommended rate control settings</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Construct the video encode profile with appropriate usage scenario information
+// We also include the optional encode usage information here
+VkVideoEncodeUsageInfoKHR profileUsageInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_USAGE_INFO_KHR,
+    .pNext = ... // pointer to codec-specific profile structure
+    .videoUsageHints = ... // usage hints
+    .videoContentHints = ... // content hints
+    .tuningMode = ... // tuning mode
+};
+
+VkVideoProfileInfoKHR profileInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR,
+    .pNext = &amp;profileUsageInfo,
+    ...
+};
+
+// Query the video encode profile capabilities to determine maxQualityLevels
+VkVideoEncodeCapabilitiesKHR encodeCapabilities = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_CAPABILITIES_KHR,
+    .pNext = ... // pointer to codec-specific capability structure
+}
+
+VkVideoCapabilitiesKHR capabilities = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR,
+    .pNext = &amp;encodeCapabilities
+};
+
+result = vkGetPhysicalDeviceVideoCapabilitiesKHR(physicalDevice, &amp;profileInfo, &amp;capabilities);
+
+// Select a quality level to use between 0 and maxQualityLevels-1
+uint32_t selectedQualityLevel = selectQualityLevelFrom(0, encodeCapabilities.maxQualityLevels - 1);
+
+// Query recommended settings for the selected video encode quality level
+VkPhysicalDeviceVideoEncodeQualityLevelInfoKHR qualityLevelInfo = {
+    .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_QUALITY_LEVEL_INFO_KHR,
+    .pNext = NULL,
+    .pVideoProfile = &amp;profileInfo,
+    .qualityLevel = selectedQualityLevel
+};
+
+VkVideoEncodeQualityLevelPropertiesKHR qualityLevelProps = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUALITY_LEVEL_PROPERTIES_KHR,
+    .pNext = ... // pointer to any codec-specific parameters, if needed
+};
+
+result = vkGetPhysicalDeviceVideoEncodeQualityLevelPropertiesKHR(physicalDevice, &amp;qualityLevelInfo, &amp;qualityLevelProps);
+
+...
+
+// Video session parameters are always created with respect to the used
+// video encode quality level, so create one accordingly
+VkVideoEncodeQualityLevelInfoKHR paramsQualityLevelInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUALITY_LEVEL_INFO_KHR,
+    .pNext = ... // pointer to codec-specific parameters creation information
+    .qualityLevel = selectedQualityLevel
+};
+
+VkVideoSessionParametersCreateInfoKHR paramsCreateInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_PARAMETERS_CREATE_INFO_KHR,
+    .pNext = &amp;paramsQualityLevelInfo,
+    ...
+};
+
+VkVideoSessionParametersKHR params = VK_NULL_HANDLE;
+result = vkCreateVideoSessionParametersKHR(device, &amp;paramsCreateInfo, NULL, &amp;params);
+
+...
+
+vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+
+// Initialize the video session, set the quality level, and the
+// recommended rate control configuration
+// NOTE: The application can choose other rate control settings as the
+// quality level properties only indicate preference, not a requirement
+
+// Include rate control information
+VkVideoEncodeRateControlInfoKHR rateControlInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_RATE_CONTROL_INFO_KHR,
+    .pNext = ... // pointer to optional codec-specific rate control configuration
+    .flags = 0,
+    .rateControlMode = qualityLevelProps.preferredRateControlMode,
+    .layerCount = qualityLevelProps.preferredRateControlLayerCount,
+    ...
+};
+
+// Include quality level information
+VkVideoEncodeQualityLevelInfoKHR qualityLevelInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUALITY_LEVEL_INFO_KHR,
+    .pNext = &amp;rateControlInfo,
+    .qualityLevel = selectedQualityLevel
+};
+
+// Include all of the RESET, ENCODE_QUALITY_LEVEL, and RATE_CONTROL bits
+// because in this example we do an initialization followed by an immediate
+// update to the quality level and rate control states
+VkVideoCodingControlInfoKHR controlInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_CODING_CONTROL_INFO_KHR,
+    .pNext = &amp;qualityLevelInfo,
+    .flags = VK_VIDEO_CODING_CONTROL_RESET_BIT_KHR
+           | VK_VIDEO_CODING_CONTROL_ENCODE_QUALITY_LEVEL_BIT_KHR
+           | VK_VIDEO_CODING_CONTROL_ENCODE_RATE_CONTROL_BIT_KHR
+};
+
+vkCmdControlVideoCodingKHR(commandBuffer, &amp;controlInfo);
+
+...
+
+vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_issues"><a class="anchor" href="#_issues"></a>5. Issues</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_resolved_why_is_there_no_vk_pipeline_stage_video_encode_bit_khr"><a class="anchor" href="#_resolved_why_is_there_no_vk_pipeline_stage_video_encode_bit_khr"></a>5.1. RESOLVED: Why is there no <code>VK_PIPELINE_STAGE_VIDEO_ENCODE_BIT_KHR</code>?</h3>
+<div class="paragraph">
+<p>This extension requires the <code>VK_KHR_synchronization2</code> extension because the new access flags introduced did not fit in the 32-bit enum <code>VkAccessFlagBits</code>. Accordingly, all new pipeline stage and access flags have been added to the corresponding 64-bit enums and no new flags have been added to the legacy 32-bit enums. While the new pipeline stage flag introduced uses bit #27 which would also fit in the legacy <code>VkPipelineStageFlagBits</code> enum, there is no real benefit to include it. Instead the bit is marked reserved.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_how_can_layered_codec_specific_encode_extensions_enable_applications_to_provide_the_necessary_codec_specific_picture_information_parameter_sets_etc_that_may_be_needed_to_perform_the_video_coding_operations"><a class="anchor" href="#_resolved_how_can_layered_codec_specific_encode_extensions_enable_applications_to_provide_the_necessary_codec_specific_picture_information_parameter_sets_etc_that_may_be_needed_to_perform_the_video_coding_operations"></a>5.2. RESOLVED: How can layered codec-specific encode extensions enable applications to provide the necessary codec-specific picture information, parameter sets, etc. that may be needed to perform the video coding operations?</h3>
+<div class="paragraph">
+<p>There are multiple points where codec-specific picture information can be provided to a video encode operation. This extension suggests the following convention:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Codec-specific encode parameters are expected to be provided in the <code>pNext</code> chain of <code>VkVideoEncodeInfoKHR</code>.</p>
+</li>
+<li>
+<p>Codec-specific reconstructed picture information is expected to be provided in the <code>pNext</code> chain of <code>VkVideoEncodeInfoKHR::pSetupReferenceSlot</code>.</p>
+</li>
+<li>
+<p>Codec-specific reference picture information is expected to be provided in the <code>pNext</code> chain of the elements of the <code>VkVideoEncodeInfoKHR::pReferenceSlots</code> array.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_can_vkcmdvideoencodekhr_only_encode_frames_what_about_field_encoding_slice_encoding_etc"><a class="anchor" href="#_resolved_can_vkcmdvideoencodekhr_only_encode_frames_what_about_field_encoding_slice_encoding_etc"></a>5.3. RESOLVED: Can <code>vkCmdVideoEncodeKHR</code> only encode frames? What about field encoding, slice encoding, etc.?</h3>
+<div class="paragraph">
+<p>This extension does not define the types of pictures or sub-picture content that can be encoded by a <code>vkCmdVideoEncodeKHR</code> command. It is expected that the codec-specific encode extensions built upon this extension define the types of pictures that can be encoded. Furthermore, both codec-specific and codec-independent extensions can expand the set of capabilities introduced here to enable more advanced use cases, as needed.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_what_is_the_effect_of_the_flags_provided_in_vkvideoencodeusageinfokhrvideousagehints_and_vkvideoencodeusageinfokhrvideocontenthints"><a class="anchor" href="#_resolved_what_is_the_effect_of_the_flags_provided_in_vkvideoencodeusageinfokhrvideousagehints_and_vkvideoencodeusageinfokhrvideocontenthints"></a>5.4. RESOLVED: What is the effect of the flags provided in <code>VkVideoEncodeUsageInfoKHR::videoUsageHints</code> and <code>VkVideoEncodeUsageInfoKHR::videoContentHints</code>?</h3>
+<div class="paragraph">
+<p>There are no specific behavioral effects associated with any of the video encode usage and content hints, so the application can specify any combination of these flags. They are included to enable the application to better communicate the intended use case scenario to the implementation.</p>
+</div>
+<div class="paragraph">
+<p>However, just like any other additional video profile information included in the <code>pNext</code> chain of <code>VkVideoProfileInfoKHR</code> structures, they are part of the video profile definition, hence whenever matching video profiles have to be provided to an API call, be that queries or resource creation structures, the application must provide identical video encode usage and content hint values. This also applies if the application does not include the <code>VkVideoEncodeUsageInfoKHR</code> structure, which is treated equivalently to specifying the structure with <code>videoUsageHints</code>, <code>videoContentHints</code>, and <code>tuningMode</code> equal to <code>VK_VIDEO_ENCODE_USAGE_DEFAULT_KHR</code>, <code>VK_VIDEO_ENCODE_CONTENT_DEFAULT_KHR</code>, and <code>VK_VIDEO_ENCODE_TUNING_MODE_DEFAULT_KHR</code> (or zero), respectively, per the usual conventions of Vulkan.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_what_is_the_effect_of_the_tuning_mode_provided_in_vkvideoencodeusageinfokhrtuningmode"><a class="anchor" href="#_resolved_what_is_the_effect_of_the_tuning_mode_provided_in_vkvideoencodeusageinfokhrtuningmode"></a>5.5. RESOLVED: What is the effect of the tuning mode provided in <code>VkVideoEncodeUsageInfoKHR::tuningMode</code>?</h3>
+<div class="paragraph">
+<p>Unlike the other fields in <code>VkVideoEncodeUsageInfoKHR</code>, the tuning mode affects the behavior of video session objects created using them. Different tuning modes may put the hardware in a different mode of operation tuned for the particular use case with significantly different capabilities, as well as quality and performance characteristics.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_how_should_we_expose_video_encoding_feedback_values_e_g_encoded_bitstream_size"><a class="anchor" href="#_resolved_how_should_we_expose_video_encoding_feedback_values_e_g_encoded_bitstream_size"></a>5.6. RESOLVED: How should we expose video encoding feedback values (e.g. encoded bitstream size)?</h3>
+<div class="paragraph">
+<p>Through a new query type. We follow the model of pipeline statistics queries to enable adding additional feedback values to the query thus this extension introduces a new <code>VK_QUERY_TYPE_VIDEO_ENCODE_FEEDBACK_KHR</code> query type with the ability to get feedback about the offset and size of the bitstream data produced by video encode operations (amongst other feedback values). We expect that in the future video decode operations will need to support similar feedback values thus a similar query type for video decode operations can be introduced by another extension.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_do_result_status_queries_need_to_be_used_in_conjunction_with_video_encode_feedback_queries"><a class="anchor" href="#_resolved_do_result_status_queries_need_to_be_used_in_conjunction_with_video_encode_feedback_queries"></a>5.7. RESOLVED: Do result status queries need to be used in conjunction with video encode feedback queries?</h3>
+<div class="paragraph">
+<p>No, in fact only a single query can ever be active within a video coding scope, hence executing a result status query as well as a video encode feedback query for the same video encode operation is not possible. Though it is also not needed, as all query types allow returning a result status, just like availability status. Thus, in practice, result status queries are only needed to be used when no other query type is supported in the particular context, and in case of video encoding applications are expected to only use video encode feedback queries within a video coding scope.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_why_is_there_a_need_to_allow_implementations_to_override_codec_specific_parameters"><a class="anchor" href="#_resolved_why_is_there_a_need_to_allow_implementations_to_override_codec_specific_parameters"></a>5.8. RESOLVED: Why is there a need to allow implementations to override codec-specific parameters?</h3>
+<div class="paragraph">
+<p>As described in the corresponding section earlier, encoder implementations usually only support a subset of the available encoding tools defined by the corresponding video compression standards and enumerating exhaustively all of these constraints would be impractical and could result in a combinatorial explosion of codec-specific capabilities. Instead, this proposal allows implementations to override any codec-specific parameter values or combinations thereof, so that the resulting parameters comply to the constraints of the target implementation.</p>
+</div>
+<div class="paragraph">
+<p>Some other video encode APIs do not support implementation overrides, but the drawback of that choice is that implementations may not be able to expose a potentially large set of their encoding tools just because they do not comply to the exact wording of the capabilities defined by these APIs, so this proposal chose to maximize the exposed capabilities instead.</p>
+</div>
+<div class="paragraph">
+<p>Such minimal and necessary implementation overrides are expected to be applied only when they are absolutely paramount for the correct functioning of the underlying encoder hardware. Additional, optimizing overrides can be, however, explicitly enabled by the application using the <code>VK_VIDEO_SESSION_CREATE_ALLOW_ENCODE_PARAMETER_OPTIMIZATIONS_BIT_KHR</code> video session creation flag.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_can_the_application_disable_all_implementation_overrides"><a class="anchor" href="#_resolved_can_the_application_disable_all_implementation_overrides"></a>5.9. RESOLVED: Can the application disable all implementation overrides?</h3>
+<div class="paragraph">
+<p>No. Without the ability to override codec-specific parameters, as necessitated by the constraints of the target implementation, the implementation may not be able to guarantee that the generated bitstreams will be compliant with the video compression standard in question.</p>
+</div>
+<div class="paragraph">
+<p>Accordingly, if the API would allow the application to disable all implementation overrides, that would, for all practical purposes, be equivalent to a flag enabling undefined behavior from the perspective of video compression standard compliance.</p>
+</div>
+<div class="paragraph">
+<p>For the same reason, if the application chooses to encode codec-specific parameters stored in video session parameters object on its own, indifferent of whether the implementation had to apply overrides to those, as reported by <code>vkGetEncodedVideoSessionParametersKHR</code>, it risks the final bitstream to be non-compliant.</p>
+</div>
+<div class="paragraph">
+<p>Applications seeking to only accept bitstreams produced exactly according to the codec-specific parameters they requested can choose to treat the presence of any overrides as an encoding error.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_can_implementations_override_any_codec_specific_parameter"><a class="anchor" href="#_resolved_can_implementations_override_any_codec_specific_parameter"></a>5.10. RESOLVED: Can implementations override any codec-specific parameter?</h3>
+<div class="paragraph">
+<p>No. First, there are a set of rules that implementations have to comply to when applying any parameter overrides, as defined in detail in the specification. In addition, codec-specific extensions layered on top of this proposal can define their own restrictions about what parameters can implementations override. In practice, it is expected that certain codec-specific parameters that affect the overall behavior of the encoder and that could have an impact on any additional bitstream elements that need to be encoded by the application will never be overridden by the implementation, and thus will be excluded from the set of overridable parameters in the corresponding codec-specific extension.</p>
+</div>
+<div class="paragraph">
+<p>Over time, it is expected that the set of these guarantees will grow (e.g. by exposing additional capabilities) according to the needs of encoder applications.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_do_all_implementations_have_to_implement_the_same_rate_control_algorithms_corresponding_to_the_rate_control_modes_defined_by_this_proposal"><a class="anchor" href="#_resolved_do_all_implementations_have_to_implement_the_same_rate_control_algorithms_corresponding_to_the_rate_control_modes_defined_by_this_proposal"></a>5.11. RESOLVED: Do all implementations have to implement the same rate control algorithms corresponding to the rate control modes defined by this proposal?</h3>
+<div class="paragraph">
+<p>No. While the high-level rate control modes (CBR and VBR) defined by this proposal are fairly universal, each rate control mode can be implemented in many different ways while still complying to the fundamental model of the mode itself. In practice, the rate control algorithms employed by implementations significantly differ.</p>
+</div>
+<div class="paragraph">
+<p>Accordingly, this proposal does not try to describe any specific rate control algorithm for any of the rate control modes introduced, rather it provides a high-level description of the modes and the underlying leaky bucket model used by them.</p>
+</div>
+<div class="paragraph">
+<p>The only case where the effects of rate control are defined exactly is when rate control is disabled (using <code>VK_VIDEO_ENCODE_RATE_CONTROL_MODE_DISABLED_BIT_KHR</code>), where implementations must encode the pictures exactly per the application-specified codec-specific quantization parameters.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_do_rate_control_implementations_guarantee_to_respect_the_averagemax_bitrates_or_frame_sizes_configured_for_the_video_session"><a class="anchor" href="#_resolved_do_rate_control_implementations_guarantee_to_respect_the_averagemax_bitrates_or_frame_sizes_configured_for_the_video_session"></a>5.12. RESOLVED: Do rate control implementations guarantee to respect the average/max bitrates, or frame sizes configured for the video session?</h3>
+<div class="paragraph">
+<p>Unfortunately, implementations cannot provide hard guarantees about always respecting these rate control parameters, as the ability to conform to these is affected by the input content, the encoder tools of the video compression standard or the implementation, including the contents of future pictures, which implementations cannot make predictions about.</p>
+</div>
+<div class="paragraph">
+<p>However, for all practical purposes, these rate control parameters are expected to be respected when the application chooses them in a way that is in line with the encoded content and the characteristics of the used video compression standard.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_are_video_session_parameters_objects_dependent_on_the_used_video_encode_quality_level"><a class="anchor" href="#_resolved_are_video_session_parameters_objects_dependent_on_the_used_video_encode_quality_level"></a>5.13. RESOLVED: Are video session parameters objects dependent on the used video encode quality level?</h3>
+<div class="paragraph">
+<p>Some implementations may support different hardware modes that are enabled in response to the used video encode quality level. This may also have an effect on the constraints related to the available encoding tools and as such may also affect the necessary codec-specific parameter overrides the implementation has to apply. As video session parameters objects are expected to store the already overridden codec-specific parameters typically in an encoded or otherwise optimized format, using a video session parameters object with any video encode quality level would require implementations to also store the original parameters in order to be able to re-encode them according to the needs of the target video encode quality level, which would partially defeat the purpose of video session parameters object.</p>
+</div>
+<div class="paragraph">
+<p>Instead, this proposal defines video session parameters objects to be created with respect to a specific video encode quality level (when using a video encode profile) and applications have to make sure that they use a compatible video session parameters object in their encode commands according to the current quality level state of the video session.</p>
+</div>
+<div class="paragraph">
+<p>In practice, this should not have any effect on most encoder applications, as usually they use a single video encode quality level throughout the lifetime of the video session, so the additional complexity resulting from this specialization will only affect advanced applications that may need to operate using different video encode quality levels within a single video stream.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_are_video_encode_quality_levels_and_rate_control_mutually_exclusive"><a class="anchor" href="#_resolved_are_video_encode_quality_levels_and_rate_control_mutually_exclusive"></a>5.14. RESOLVED: Are video encode quality levels and rate control mutually exclusive?</h3>
+<div class="paragraph">
+<p>No, they are completely orthogonal, as they control different aspects of the encoder, and they are both always in effect all the time. There is always a currently active video encode quality level and rate control state, which default to quality level zero and implementation-specific rate control state, respectively, when the video encode session is initialized. The used video encode quality level and the rate control settings can be updated subsequently, potentially independently, or together with initialization per the application&#8217;s needs. The only relation between video encode quality levels and rate control is that the application can query for each video encode profile and video encode quality level the implementation recommended settings (using <code>vkGetPhysicalDeviceVideoEncodeQualityLevelPropertiesKHR</code>) that are best suited for the selected quality level and the usage scenario information included in the video encode profile. These include recommendations on the rate control mode to use amongst other codec-independent and codec-specific suggestions. Nonetheless, these are only recommendations and the application can diverge from these if deemed necessary.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_does_specifying_vkvideoencoderatecontrolinfokhr_in_the_pnext_chain_of_the_pbegincodinginfo_parameter_of_vkcmdbeginvideocodingkhr_change_the_current_rate_control_configuration"><a class="anchor" href="#_resolved_does_specifying_vkvideoencoderatecontrolinfokhr_in_the_pnext_chain_of_the_pbegincodinginfo_parameter_of_vkcmdbeginvideocodingkhr_change_the_current_rate_control_configuration"></a>5.15. RESOLVED: Does specifying <code>VkVideoEncodeRateControlInfoKHR</code> in the <code>pNext</code> chain of the <code>pBeginCodingInfo</code> parameter of <code>vkCmdBeginVideoCodingKHR</code> change the current rate control configuration?</h3>
+<div class="paragraph">
+<p>No. The rate control information specified to <code>vkCmdBeginVideoCodingKHR</code> does not change the state of the video session, it is only expected to specify the current rate control configuration (previously already set through the execution of an appropriate <code>vkCmdControlVideoCodingKHR</code> command). This information is needed by some implementations in order to be aware of the current rate control configuration of the video session while recording commands, as some of the rate control state may affect the recorded device commands. When this information is not specified, the implementation will assume that the current rate control mode is set to <code>VK_VIDEO_ENCODE_RATE_CONTROL_MODE_DEFAULT_KHR</code>.</p>
+</div>
+<div class="paragraph">
+<p>The validation layers are expected to detect at command buffer submission time if there is any mismatch between the expected rate control configuration specified to the <code>vkCmdBeginVideoCodingKHR</code> command and the actual rate control configuration of the video session at the time the video coding scope is started on the device timeline. If these two sets of state do not match, then the behavior of the implementations is undefined and may result in any sort of misbehavior permitted by the Vulkan specification when valid usage conditions are not met. Accordingly, applications have to make sure to track and specify the expected rate control configuration at the beginning of every video coding scope performing video encode operations in order to attain correct encoder behavior.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_when_is_it_mandatory_to_specify_reconstructed_picture_information_in_vkvideoencodeinfokhrpsetupreferenceslot"><a class="anchor" href="#_resolved_when_is_it_mandatory_to_specify_reconstructed_picture_information_in_vkvideoencodeinfokhrpsetupreferenceslot"></a>5.16. RESOLVED: When is it mandatory to specify reconstructed picture information in <code>VkVideoEncodeInfoKHR::pSetupReferenceSlot</code>?</h3>
+<div class="paragraph">
+<p>In line with the <code>VK_KHR_video_decode_queue</code> extension, due to foreseeable implementation limitations that may require the presence of a reconstructed picture resource and/or DPB slot for encoding, revision 12 of this extension changed the requirements on reconstructed picture information as follows:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Specifying reconstructed picture information (i.e. a non-<code>NULL</code> <code>pSetupReferenceSlot</code>) is made mandatory for all cases except when the video session was created with no DPB slots</p>
+</li>
+<li>
+<p>Reference picture setup (and, inherently, DPB slot activation) was changed to be subject to codec-specific behavior, meaning that specifying a non-<code>NULL</code> <code>pSetupReferenceSlot</code> will only trigger reference picture setup if the appropriate codec-specific parameters or semantics indicate so (typically in the form of marking the encoded picture as reference)</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>As some implementations may use the reconstructed picture resource and/or DPB slot as transient storage during the decoding process, if a non-<code>NULL</code> <code>pSetupReferenceSlot</code> is specified but no reference picture setup is requested, then the contents of the reconstructed picture resource become undefined and some of the picture references associated with the reconstructed picture&#8217;s DPB slot may get invalidated.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_further_functionality"><a class="anchor" href="#_further_functionality"></a>6. Further Functionality</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This extension is meant to provide only common video encode functionality, thus support for individual video encode profiles using specific video compression standards is left for extensions layered on top of the infrastructure provided here.</p>
+</div>
+<div class="paragraph">
+<p>Currently the following layered extensions are available:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_KHR_video_encode_h264</code> - adds support for encoding H.264/AVC video sequences</p>
+</li>
+<li>
+<p><code>VK_KHR_video_encode_h265</code> - adds support for encoding H.265/HEVC video sequences</p>
+</li>
+<li>
+<p><code>VK_KHR_video_encode_av1</code> - adds support for encoding AV1 video sequences</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

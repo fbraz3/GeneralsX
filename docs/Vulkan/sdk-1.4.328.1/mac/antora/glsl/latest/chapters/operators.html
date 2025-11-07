@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Operators and Expressions :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:glsl" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="glsl" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">OpenGL Shading Language Specification</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="preamble.html">Preamble</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="overview.html">Overview of Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="basics.html">Basics</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="variables.html">Variables and Types</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="operators.html">Operators and Expressions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="statements.html">Statements and Structure</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="builtins.html">Built-In Variables</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="builtinfunctions.html">Built-In Functions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="grammar.html">Shading Language Grammar</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="acknowledgements.html">Acknowledgments</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="references.html">Normative References</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="spirvmappings.html">Non-Normative SPIR-V Mappings</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">OpenGL Shading Language Specification</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">OpenGL Shading Language Specification</a></li>
+    <li><a href="operators.html">Operators and Expressions</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/GLSL/antora/modules/ROOT/pages/chapters/operators.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Operators and Expressions</h1>
+<div class="sect1">
+<h2 id="operators"><a class="anchor" href="#operators"></a>Operators</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The OpenGL Shading Language has the following operators.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Precedence</th>
+<th class="tableblock halign-left valign-top">Operator Class</th>
+<th class="tableblock halign-left valign-top">Operators</th>
+<th class="tableblock halign-left valign-top">Associativity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1 (highest)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">parenthetical grouping</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">( )</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NA</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">array subscript<br>
+                 function call and constructor structure<br>
+                 field or method selector, swizzle<br>
+                 post fix increment and decrement</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">[ ]<br>
+                                                  ( )<br>
+                                                  .<br>
+                                                  ++ --</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">prefix increment and decrement<br>
+                 unary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">++ --<br>
+                                                  + - ~ !</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Right to Left</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">multiplicative</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">* / %</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">additive</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">+ -</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bit-wise shift</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">xref: []</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">7</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">relational</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt; &gt; &lt;= &gt;=</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">8</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">equality</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">== !=</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">9</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bit-wise and</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&amp;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bit-wise exclusive or</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">^</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">11</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bit-wise inclusive or</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">|</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">12</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logical and</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&amp;&amp;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">13</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logical exclusive or</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">^^</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">14</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">logical inclusive or</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">||</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">15</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">selection</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">? :</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Right to Left</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">16</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Assignment<br>
+                 arithmetic assignments</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">=<br>
+                                                  += -=<br>
+                                                  *= /=<br>
+                                                  %= &lt;&lt;= &gt;&gt;=<br>
+                                                  &amp;= ^= |=</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Right to Left</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">17 (lowest)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sequence</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">,</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Left to Right</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>There is no address-of operator nor a dereference operator.
+There is no typecast operator; constructors are used instead.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="array-operations"><a class="anchor" href="#array-operations"></a>Array Operations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>These are now described in &#8220;<a href="#structure-and-array-operations">Structure and Array Operations</a>&#8221;.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="function-calls"><a class="anchor" href="#function-calls"></a>Function Calls</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If a function returns a value, then a call to that function may be used as
+an expression, whose type will be the type that was used to declare or
+define the function.</p>
+</div>
+<div class="paragraph">
+<p>Function definitions and calling conventions are discussed in
+&#8220;<a href="statements.html#function-definitions" class="xref page">Function Definitions</a>&#8221;.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="constructors"><a class="anchor" href="#constructors"></a>Constructors</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Constructors use the function call syntax, where the function name is a
+type, and the call makes an object of that type.
+Constructors are used the same way in both initializers and expressions.
+(See &#8220;<a href="grammar.html#shading-language-grammar" class="xref page">Shading Language Grammar</a>&#8221; for details.)
+The parameters are used to initialize the constructed value.
+Constructors can be used to request a data type conversion to change from
+one scalar type to another scalar type, or to build larger types out of
+smaller types, or to reduce a larger type to a smaller type.</p>
+</div>
+<div class="paragraph">
+<p>In general, constructors are not built-in functions with predetermined
+prototypes.
+For arrays and structures, there must be exactly one argument in the
+constructor for each element or member.
+For the other types, the arguments must provide a sufficient number of
+components to perform the initialization, and it is a compile-time error to
+include so many arguments that they cannot all be used.
+Detailed rules follow.
+The prototypes actually listed below are merely a subset of examples.</p>
+</div>
+<div class="sect2">
+<h3 id="conversion-and-scalar-constructors"><a class="anchor" href="#conversion-and-scalar-constructors"></a>Conversion and Scalar Constructors</h3>
+<div class="paragraph">
+<p>Converting between scalar types is done as the following prototypes
+indicate:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">int(uint)     // converts an unsigned integer to a signed integer
+int(bool)     // converts a Boolean value to an int
+int(float)    // converts a float value to an int
+int(double)   // converts a double value to a signed integer
+uint(int)     // converts a signed integer value to an unsigned integer
+uint(bool)    // converts a Boolean value to an unsigned integer
+uint(float)   // converts a float value to an unsigned integer
+uint(double)  // converts a double value to an unsigned integer
+bool(int)     // converts a signed integer value to a Boolean
+bool(uint)    // converts an unsigned integer value to a Boolean value
+bool(float)   // converts a float value to a Boolean
+bool(double)  // converts a double value to a Boolean
+float(int)    // converts a signed integer value to a float
+float(uint)   // converts an unsigned integer value to a float value
+float(bool)   // converts a Boolean value to a float
+float(double) // converts a double value to a float
+double(int)   // converts a signed integer value to a double
+double(uint)  // converts an unsigned integer value to a double
+double(bool)  // converts a Boolean value to a double
+double(float) // converts a float value to a double</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When constructors are used to convert a floating-point type to an integer
+type, the fractional part of the floating-point value is dropped.
+It is undefined to convert a negative floating-point value to an <strong>uint</strong>.</p>
+</div>
+<div class="paragraph">
+<p>Integer values having more bits of precision than a single-precision
+floating-point mantissa will lose precision when converted to <strong>float</strong>.</p>
+</div>
+<div class="paragraph">
+<p>When a constructor is used to convert any integer or floating-point type to
+a <strong>bool</strong>, 0 and 0.0 are converted to <strong>false</strong>, and non-zero values are
+converted to <strong>true</strong>.
+When a constructor is used to convert a <strong>bool</strong> to any integer or
+floating-point type, <strong>false</strong> is converted to 0 or 0.0, and <strong>true</strong> is
+converted to 1 or 1.0.</p>
+</div>
+<div class="paragraph">
+<p>The constructor <strong>int</strong>(<strong>uint</strong>) preserves the bit pattern in the argument,
+which will change the argument&#8217;s value if its sign bit is set.
+The constructor <strong>uint</strong>(<strong>int</strong>) preserves the bit pattern in the argument,
+which will change its value if it is negative.</p>
+</div>
+<div class="paragraph">
+<p>Identity constructors, like <strong>float</strong>(<strong>float</strong>) are also legal, but of little
+use.</p>
+</div>
+<div class="paragraph">
+<p>Scalar constructors with non-scalar parameters can be used to take the first
+element from a non-scalar.
+For example, the constructor <strong>float</strong>(<strong>vec3</strong>) will select the first component
+of the <strong>vec3</strong> parameter.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="vector-and-matrix-constructors"><a class="anchor" href="#vector-and-matrix-constructors"></a>Vector and Matrix Constructors</h3>
+<div class="paragraph">
+<p>Constructors can be used to create vectors or matrices from a set of
+scalars, vectors, or matrices.
+This includes the ability to shorten vectors.</p>
+</div>
+<div class="paragraph">
+<p>If there is a single scalar parameter to a vector constructor, it is used to
+initialize all components of the constructed vector to that scalar&#8217;s value.
+If there is a single scalar parameter to a matrix constructor, it is used to
+initialize all the components on the matrix&#8217;s diagonal, with the remaining
+components initialized to 0.0.</p>
+</div>
+<div class="paragraph">
+<p>If a vector is constructed from multiple scalars, one or more vectors, or
+one or more matrices, or a mixture of these, the vector&#8217;s components will be
+constructed in order from the components of the arguments.
+The arguments will be consumed left to right, and each argument will have
+all its components consumed, in order, before any components from the next
+argument are consumed.
+Similarly for constructing a matrix from multiple scalars or vectors, or a
+mixture of these.
+Matrix components will be constructed and consumed in column major order.
+In these cases, there must be enough components provided in the arguments to
+provide an initializer for every component in the constructed value.
+It is a compile-time error to provide extra arguments beyond this last used
+argument.</p>
+</div>
+<div class="paragraph">
+<p>If a matrix is constructed from a matrix, then each component (column <em>i</em>,
+row <em>j</em>) in the result that has a corresponding component (column <em>i</em>, row
+<em>j</em>) in the argument will be initialized from there.
+All other components will be initialized to the identity matrix.
+If a matrix argument is given to a matrix constructor, it is
+a compile-time error to have any other arguments.</p>
+</div>
+<div class="paragraph">
+<p>If the basic type (<strong>bool</strong>, <strong>int</strong>,
+<strong>float</strong>, or <strong>double</strong>)
+of a parameter to a
+constructor does not match the basic type of the object being constructed,
+the scalar construction rules (above) are used to convert the parameters.</p>
+</div>
+<div class="paragraph">
+<p>Some useful vector constructors are as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">vec3(float)          // initializes each component of the vec3 with the float
+vec4(ivec4)          // makes a vec4 with component-wise conversion
+vec4(mat2)           // the vec4 is column 0 followed by column 1
+vec2(float, float)   // initializes a vec2 with 2 floats
+ivec3(int, int, int) // initializes an ivec3 with 3 ints
+bvec4(int, int, float, float) // uses 4 Boolean conversions
+vec2(vec3)           // drops the third component of a vec3
+vec3(vec4)           // drops the fourth component of a vec4
+vec3(vec2, float)    // vec3.x = vec2.x, vec3.y = vec2.y, vec3.z = float
+vec3(float, vec2)    // vec3.x = float, vec3.y = vec2.x, vec3.z = vec2.y
+vec4(vec3, float)
+vec4(float, vec3)
+vec4(vec2, vec2)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Some examples of these are:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">vec4 color = vec4(0.0, 1.0, 0.0, 1.0);
+vec4 rgba = vec4(1.0);      // sets each component to 1.0
+vec3 rgb = vec3(color);     // drop the 4th component</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To initialize the diagonal of a matrix with all other elements set to zero:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">mat2(float)
+mat3(float)
+mat4(float)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>That is, <em>result[i][j]</em> is set to the <em>float</em> argument for all \(i
+= j\) and set to 0 for all <span class="steminline"> <svg style="vertical-align: -0.486ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="4.73ex" height="2.106ex" role="img" focusable="false" viewBox="0 -716 2090.6 931"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="1D456" d="M184 600Q184 624 203 642T247 661Q265 661 277 649T290 619Q290 596 270 577T226 557Q211 557 198 567T184 600ZM21 287Q21 295 30 318T54 369T98 420T158 442Q197 442 223 419T250 357Q250 340 236 301T196 196T154 83Q149 61 149 51Q149 26 166 26Q175 26 185 29T208 43T235 78T260 137Q263 149 265 151T282 153Q302 153 302 143Q302 135 293 112T268 61T223 11T161 -11Q129 -11 102 10T74 74Q74 91 79 106T122 220Q160 321 166 341T173 380Q173 404 156 404H154Q124 404 99 371T61 287Q60 286 59 284T58 281T56 279T53 278T49 278T41 278H27Q21 284 21 287Z"></path></g><g data-mml-node="mo" transform="translate(622.8,0)"><path data-c="2260" d="M166 -215T159 -215T147 -212T141 -204T139 -197Q139 -190 144 -183L306 133H70Q56 140 56 153Q56 168 72 173H327L406 327H72Q56 332 56 347Q56 360 70 367H426Q597 702 602 707Q605 716 618 716Q625 716 630 712T636 703T638 696Q638 692 471 367H707Q722 359 722 347Q722 336 708 328L451 327L371 173H708Q722 163 722 153Q722 140 707 133H351Q175 -210 170 -212Q166 -215 159 -215Z"></path></g><g data-mml-node="mi" transform="translate(1678.6,0)"><path data-c="1D457" d="M297 596Q297 627 318 644T361 661Q378 661 389 651T403 623Q403 595 384 576T340 557Q322 557 310 567T297 596ZM288 376Q288 405 262 405Q240 405 220 393T185 362T161 325T144 293L137 279Q135 278 121 278H107Q101 284 101 286T105 299Q126 348 164 391T252 441Q253 441 260 441T272 442Q296 441 316 432Q341 418 354 401T367 348V332L318 133Q267 -67 264 -75Q246 -125 194 -164T75 -204Q25 -204 7 -183T-12 -137Q-12 -110 7 -91T53 -71Q70 -71 82 -81T95 -112Q95 -148 63 -167Q69 -168 77 -168Q111 -168 139 -140T182 -74L193 -32Q204 11 219 72T251 197T278 308T289 365Q289 372 288 376Z"></path></g></g></g></svg> </span>.</p>
+</div>
+<div class="paragraph">
+<p>To initialize a matrix by specifying vectors or scalars, the components are
+assigned to the matrix elements in column-major order.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">mat2(vec2, vec2);                 // one column per argument
+mat3(vec3, vec3, vec3);           // one column per argument
+mat4(vec4, vec4, vec4, vec4);     // one column per argument
+mat3x2(vec2, vec2, vec2);         // one column per argument
+dmat2(dvec2, dvec2);
+dmat3(dvec3, dvec3, dvec3);
+dmat4(dvec4, dvec4, dvec4, dvec4);
+mat2(float, float,                // first column
+     float, float);               // second column
+mat3(float, float, float,         // first column
+     float, float, float,         // second column
+     float, float, float);        // third column
+mat4(float, float, float, float,  // first column
+     float, float, float, float,  // second column
+     float, float, float, float,  // third column
+     float, float, float, float); // fourth column
+mat2x3(vec2, float,               // first column
+       vec2, float);              // second column
+dmat2x4(dvec3, double,            // first column
+        double, dvec3);           // second column</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A wide range of other possibilities exist, to construct a matrix from
+vectors and scalars, as long as enough components are present to initialize
+the matrix.
+To construct a matrix from a matrix:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">mat3x3(mat4x4); // takes the upper-left 3x3 of the mat4x4
+mat2x3(mat4x2); // takes the upper-left 2x2 of the mat4x4, last row is 0,0
+mat4x4(mat3x3); // puts the mat3x3 in the upper-left, sets the lower right
+                // component to 1, and the rest to 0</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="structure-constructors"><a class="anchor" href="#structure-constructors"></a>Structure Constructors</h3>
+<div class="paragraph">
+<p>Once a structure is defined, and its type is given a name, a constructor is
+available with the same name to construct instances of that structure.
+For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">struct light {
+    float intensity;
+    vec3 position;
+};
+
+light lightVar = light(3.0, vec3(1.0, 2.0, 3.0));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The arguments to the constructor will be used to set the structure&#8217;s
+members, in order, using one argument per member.
+Each argument must be the same type as the member it
+sets, or be a type that can be converted to the member&#8217;s type according to
+section &#8220;<a href="variables.html#implicit-conversions" class="xref page">Implicit Conversions</a>&#8221;.</p>
+</div>
+<div class="paragraph">
+<p>Structure constructors can be used as initializers or in expressions.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="array-constructors"><a class="anchor" href="#array-constructors"></a>Array Constructors</h3>
+<div class="paragraph">
+<p>Array types can also be used as constructor names, which can then be used in
+expressions or initializers.
+For example,</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">const float c[3] = float[3](5.0, 7.2, 1.1);
+const float d[3] = float[](5.0, 7.2, 1.1);
+
+float g;
+...
+float a[5] = float[5](g, 1, g, 2.3, g);
+float b[3];
+
+b = float[3](g, g + 1.0, g + 2.0);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>There must be exactly the same number of arguments as the size of the array
+being constructed.
+If no size is present in the constructor, then the array is explicitly sized
+to the number of arguments provided.
+The arguments are assigned in order, starting at element 0, to the elements
+of the constructed array.
+Each argument must be the same type as the element type of the
+array, or be
+a type that can be converted to the element type of the array according to
+&#8220;<a href="variables.html#implicit-conversions" class="xref page">Implicit Conversions</a>&#8221;.</p>
+</div>
+<div class="paragraph">
+<p>Arrays of arrays are similarly constructed, and the size for any dimension
+is <strong>optional</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">vec4 b[2] = ...;
+vec4[3][2](b, b, b);    // constructor
+vec4[][2](b, b, b);     // constructor, valid, size deduced
+vec4[3][](b, b, b);     // constructor, valid, size deduced
+vec4[][](b, b, b);      // constructor, valid, both sizes deduced</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_texture_combined_sampler_constructors"><a class="anchor" href="#_texture_combined_sampler_constructors"></a>Texture-Combined Sampler Constructors</h3>
+<div class="paragraph">
+<p>Texture-combined sampler constructors are only available when targeting Vulkan.</p>
+</div>
+<div class="paragraph">
+<p>Texture-combined sampler types, like <strong>sampler2D</strong>, can be declared with an
+initializer
+that is a constructor of the same type, and consuming a texture and a
+<strong>sampler</strong> or <strong>samplerShadow</strong>.
+For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">    layout(...) uniform sampler s;   // handle to filtering information
+    layout(...) uniform texture2D t; // handle to a texture
+    layout(...) in vec2 tCoord;
+    ...
+    texture(sampler2D(t, s), tCoord);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The result of a texture-combined sampler constructor cannot be assigned to a
+variable:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">    ... sampler2D sConstruct = sampler2D(t, s);  // ERROR</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Texture-combined sampler constructors can only be consumed by a function parameter.</p>
+</div>
+<div class="paragraph">
+<p>Texture-combined sampler constructors of arrays are illegal:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">    layout(...) uniform texture2D tArray[6];
+    ...
+    ... sampler2D[](tArray, s) ...  // ERROR</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Formally:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>every texture-combined sampler type can be used as a constructor</p>
+</li>
+<li>
+<p>the type of the constructor must match the type of the variable being declared</p>
+</li>
+<li>
+<p>the constructor&#8217;s first argument must be a texture type</p>
+</li>
+<li>
+<p>the constructor&#8217;s second argument must be a scalar of type <strong>sampler</strong>
+or <strong>samplerShadow</strong></p>
+</li>
+<li>
+<p>the dimensionality (1D, 2D, 3D, Cube, Rect, Buffer, MS, and Array)
+of the texture type must match that of the constructed type
+(that is, the suffixes of the type of the first argument and the
+type of the constructor will be spelled the same way)</p>
+</li>
+<li>
+<p>there is no control flow construct (e.g., <code>?:</code>) that consumes any sampler type</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Note: Shadow mismatches are allowed between constructors and the second argument.
+Texture-combined non-shadow samplers can be constructed from <strong>samplerShadow</strong> and
+texture-combined shadow samplers can be constructed from <strong>sampler</strong>.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="vector-components"><a class="anchor" href="#vector-components"></a>Vector and Scalar Components and Length</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The names of the components of a vector
+or scalar
+are denoted by a single letter.
+As a notational convenience, several letters are associated with each
+component based on common usage of position, color or texture coordinate
+vectors.
+The individual components can be selected by following the variable name
+with period (<strong>.</strong>) and then the component name.</p>
+</div>
+<div class="paragraph">
+<p>The component names supported are:</p>
+</div>
+<table class="tableblock frame-all grid-all fit-content">
+<colgroup>
+<col>
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>{ x, y, z, w }</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Useful when accessing vectors that represent points or normals</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>{ r, g, b, a }</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Useful when accessing vectors that represent colors</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>{ s, t, p, q }</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Useful when accessing vectors that represent texture coordinates</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>The component names <em>x</em>, <em>r</em>, and <em>s</em> are, for example, synonyms for the
+same (first) component in a vector.
+They are also the names of the only component in a scalar.</p>
+</div>
+<div class="paragraph">
+<p>Note that the third component of the texture coordinate set
+has been renamed <em>p</em> so as to avoid the confusion with <em>r</em> (for
+red) in a color.</p>
+</div>
+<div class="paragraph">
+<p>Accessing components beyond those declared for the type is
+a compile-time error so, for example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">vec2 pos;
+float height;
+pos.x       // is legal
+pos.z       // is illegal
+height.x    // is legal
+height.y    // is illegal</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The component selection syntax allows multiple components to be selected by
+appending their names (from the same name set) after the period (<strong>.</strong>).</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">vec4 v4;
+v4.rgba;    // is a vec4 and the same as just using v4,
+v4.rgb;     // is a vec3,
+v4.b;       // is a float,
+v4.xy;      // is a vec2,
+v4.xgba;    // is illegal - the component names do not come from the same set</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>No more than 4 components can be selected.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">vec4 v4;
+v4.xyzwxy;      // is illegal since it has 6 components
+(v4.xyzwxy).xy; // is illegal since the intermediate value has 6
+components</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The order of the components can be different to swizzle them, or replicated:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">vec4 pos = vec4(1.0, 2.0, 3.0, 4.0);
+vec4 swiz = pos.wzyx;   // swiz = (4.0, 3.0, 2.0, 1.0)
+vec4 dup = pos.xxyy;    // dup = (1.0, 1.0, 2.0, 2.0)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This notation is more concise than the constructor syntax.
+To form an r-value, it can be applied to any expression that results in a
+vector or scalar r-value.</p>
+</div>
+<div class="paragraph">
+<p>The component group notation can occur on the left hand side of an
+expression.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">vec4 pos = vec4(1.0, 2.0, 3.0, 4.0);
+pos.xw = vec2(5.0, 6.0);        // pos = (5.0, 2.0, 3.0, 6.0)
+pos.wx = vec2(7.0, 8.0);        // pos = (8.0, 2.0, 3.0, 7.0)
+pos.xx = vec2(3.0, 4.0);        // illegal - 'x' used twice
+pos.xy = vec3(1.0, 2.0, 3.0);   // illegal - mismatch between vec2 and vec3</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To form an l-value, swizzling must further be applied to an l-value and
+contain no duplicate components. It results in an l-value of scalar or
+vector type, depending on number of components specified.</p>
+</div>
+<div class="paragraph">
+<p>Array subscripting syntax can also be applied to vectors (but not to
+scalars) to provide numeric indexing.
+So in</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">vec4 pos;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><em>pos[2]</em> refers to the third element of <em>pos</em> and is equivalent to <em>pos.z</em>.
+This allows variable indexing into a vector, as well as a generic way of
+accessing components.
+Any integer expression can be used as the subscript.
+The first component is at index zero.
+Reading from or writing to a vector using a constant integral expression
+with a value that is negative or greater than or equal to the size of the
+vector results in a compile-time error.
+When indexing with non-constant expressions, behavior is undefined if the
+index is negative, or greater than or equal to the size of the vector.</p>
+</div>
+<div class="paragraph">
+<p>The <strong>length</strong>() method may be applied to vectors (but not scalars).
+The result is the number of components in the vector.
+For example,</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">vec3 v;
+const int L = v.length();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>sets the constant <em>L</em> to 3.
+The type returned by <strong>.length</strong>() on a vector is <strong>int</strong>, and the value
+returned is a constant expression.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="matrix-components"><a class="anchor" href="#matrix-components"></a>Matrix Components</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The components of a matrix can be accessed using array subscripting syntax.
+Applying a single subscript to a matrix treats the matrix as an array of
+column vectors, and selects a single column, whose type is a vector of the
+same size as the (column size of the) matrix.
+The leftmost column is column 0.
+A second subscript would then operate on the resulting vector, as defined
+earlier for vectors.
+Hence, two subscripts select a column and then a row.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">mat4 m;
+m[1] = vec4(2.0);   // sets the second column to all 2.0
+m[0][0] = 1.0;      // sets the upper left element to 1.0
+m[2][3] = 2.0;      // sets the 4th element of the third column to 2.0</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Behavior is undefined when accessing a component outside the bounds of a
+matrix with a non-constant expression.
+It is a compile-time error to access a matrix with a constant expression
+that is outside the bounds of the matrix.</p>
+</div>
+<div class="paragraph">
+<p>The <strong>length</strong>() method may be applied to matrices.
+The result is the number of columns of the matrix.
+For example,</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">mat3x4 v;
+const int L = v.length();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>sets the constant <em>L</em> to 3.
+The type returned by <strong>.length</strong>() on a matrix is <strong>int</strong>, and the value
+returned is a constant expression.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="structure-and-array-operations"><a class="anchor" href="#structure-and-array-operations"></a>Structure and Array Operations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The members of a structure and the <strong>length</strong>() method of an array are
+selected using the period (<strong>.</strong>).</p>
+</div>
+<div class="paragraph">
+<p>In total, only the following operators are allowed to operate on arrays and
+structures as whole entities:</p>
+</div>
+<table class="tableblock frame-all grid-all fit-content">
+<colgroup>
+<col>
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">field selector</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>.</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">equality</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>==</strong> <strong>!=</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">assignment</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>=</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Ternary operator</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>?:</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Sequence operator</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>,</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">indexing (arrays only)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>[</strong> <strong>]</strong></p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>The equality operators and assignment operator are only allowed if the two
+operands are same size and type.
+The operands cannot contain any opaque types.
+Structure types must be of the same declared structure.
+Both array operands must be
+explicitly
+sized.
+When using the equality operators, two structures are equal if and only if
+all the members are component-wise equal, and two arrays are equal if and
+only if all the elements are element-wise equal.</p>
+</div>
+<div class="paragraph">
+<p>Array elements are accessed using the array subscript operator (<strong>[ ]</strong>).
+An example of accessing an array element is</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">diffuseColor += lightIntensity[3] * NdotL;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Array indices start at zero.
+Array elements are accessed using an expression whose type is <strong>int</strong> or
+<strong>uint</strong>.</p>
+</div>
+<div class="paragraph">
+<p>Behavior is undefined if a shader subscripts an array with an index less
+than 0 or greater than or equal to the size the array was declared with.</p>
+</div>
+<div class="paragraph">
+<p>Arrays can also be accessed with the method operator (<strong>.</strong>) and the <strong>length</strong>
+method to query the size of the array:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">lightIntensity.length() // return the size of the array</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="assignments"><a class="anchor" href="#assignments"></a>Assignments</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Assignments of values to variable names are done with the assignment
+operator (<strong>=</strong>):</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p><em>lvalue-expression</em> = <em>rvalue-expression</em></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>The <em>lvalue-expression</em> evaluates to an l-value.
+The assignment operator stores the value of <em>rvalue-expression</em> into the
+l-value and returns an r-value with the type and precision of
+<em>lvalue-expression</em>.
+The <em>lvalue-expression</em> and <em>rvalue-expression</em> must have the same
+type, or the expression must have a type in the table in section
+&#8220;<a href="variables.html#implicit-conversions" class="xref page">Implicit Conversions</a>&#8221; that converts to the type
+of <em>lvalue-expression</em>, in which case an implicit conversion will be done on
+the <em>rvalue-expression</em> before the assignment is done.
+Any other desired type-conversions must be specified explicitly via a
+constructor.
+It is a compile-time error if the l-value is not writable.
+Variables that are built-in types, entire structures or arrays, structure
+members, l-values with the field selector (<strong>.</strong>) applied to select components
+or swizzles without repeated fields, l-values within parentheses, and
+l-values dereferenced with the array subscript operator (<strong>[ ]</strong>) are all
+l-values.
+Other binary or unary expressions, function names, swizzles with repeated
+fields, and constants cannot be l-values.
+The ternary operator (<strong>?:</strong>) is also not allowed as an l-value.
+Using an incorrect expression as an l-value results in a compile-time error.</p>
+</div>
+<div class="paragraph">
+<p>Expressions on the left of an assignment are evaluated before expressions on
+the right of the assignment.</p>
+</div>
+<div class="paragraph">
+<p>The other assignment operators are</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>add into (<strong>+=</strong>)</p>
+</li>
+<li>
+<p>subtract from (<strong>-=</strong>)</p>
+</li>
+<li>
+<p>multiply into (<strong>*=</strong>)</p>
+</li>
+<li>
+<p>divide into (<strong>/=</strong>)</p>
+</li>
+<li>
+<p>modulus into (<strong>%=</strong>)</p>
+</li>
+<li>
+<p>left shift by (<strong>&lt;&lt;=</strong>)</p>
+</li>
+<li>
+<p>right shift by (<strong>&gt;&gt;=</strong>)</p>
+</li>
+<li>
+<p>and into (<strong>&amp;=</strong>)</p>
+</li>
+<li>
+<p>inclusive-or into (<strong>|=</strong>)</p>
+</li>
+<li>
+<p>exclusive-or into (<strong>^=</strong>)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>where the general expression</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p><em>lvalue</em> <em>op</em>= <em>expression</em></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>is equivalent to</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p><em>lvalue</em> = <em>lvalue</em> <em>op</em> <em>expression</em></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>where <em>lvalue</em> is the value returned by <em>lvalue-expression</em>, <em>op</em> is as
+described below, and the <em>lvalue-expression</em> and <em>expression</em> must satisfy
+the semantic requirements of both <em>op</em> and equals (<strong>=</strong>).</p>
+</div>
+<div class="paragraph">
+<p>Reading a variable before writing (or initializing) it is legal, however the
+value is undefined.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="expressions"><a class="anchor" href="#expressions"></a>Expressions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Expressions in the shading language are built from the following:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Constants of type <strong>bool</strong>, all integral types, all floating-point types,
+all vector types, and all matrix types.</p>
+</li>
+<li>
+<p>Constructors of all types.</p>
+</li>
+<li>
+<p>Variable names of all types.</p>
+</li>
+<li>
+<p>An array, vector, or matrix expression with the <strong>length</strong>() method
+applied.</p>
+</li>
+<li>
+<p>Subscripted arrays.</p>
+</li>
+<li>
+<p>Function calls that return values.
+In some cases, function calls returning <strong>void</strong> are also allowed in
+expressions as specified below.</p>
+</li>
+<li>
+<p>Component field selectors and array subscript results.</p>
+</li>
+<li>
+<p>Parenthesized expressions.
+Any expression, including expressions with void type can be
+parenthesized.
+Parentheses can be used to group operations.
+Operations within parentheses are done before operations across
+parentheses.</p>
+</li>
+<li>
+<p>The arithmetic binary operators add (<strong>+</strong>), subtract (<strong>-</strong>), multiply
+(<strong>*</strong>), and divide (<strong>/</strong>) operate on integer and floating-point scalars,
+vectors, and matrices.
+If the fundamental types in the operands do not match, then the
+conversions from &#8220;<a href="variables.html#implicit-conversions" class="xref page">Implicit Conversions</a>&#8221; are
+applied to create matching types.
+All arithmetic binary operators result in the same fundamental type
+(signed integer, unsigned integer, single-precision floating-point, or
+double-precision floating-point) as the operands they operate on, after
+operand type conversion.
+After conversion, the following cases are valid</p>
+<div class="ulist">
+<ul>
+<li>
+<p>The two operands are scalars.
+In this case the operation is applied, resulting in a scalar.</p>
+</li>
+<li>
+<p>One operand is a scalar, and the other is a vector or matrix.
+In this case, the scalar operation is applied independently to each
+component of the vector or matrix, resulting in the same size vector or
+matrix.</p>
+</li>
+<li>
+<p>The two operands are vectors of the same size.
+In this case, the operation is done component-wise resulting in the
+same size vector.</p>
+</li>
+<li>
+<p>The operator is add (<strong>+</strong>), subtract (<strong>-</strong>), or divide (<strong>/</strong>), and the
+operands are matrices with the same number of rows and the same number
+of columns.
+In this case, the operation is done component-wise resulting in the
+same size matrix.</p>
+</li>
+<li>
+<p>The operator is multiply (<strong>*</strong>), where both operands are matrices or one
+operand is a vector and the other a matrix.
+A right vector operand is treated as a column vector and a left vector
+operand as a row vector.
+In all these cases, it is required that the number of columns of the
+left operand is equal to the number of rows of the right operand.
+Then, the multiply (<strong>*</strong>) operation does a linear algebraic multiply,
+yielding an object that has the same number of rows as the left operand
+and the same number of columns as the right operand.
+&#8220;<a href="#vector-and-matrix-operations">Vector and Matrix Operations</a>&#8221;
+explains in more detail how vectors and matrices are operated on.</p>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>All other cases result in a compile-time error.</p>
+</div>
+<div class="paragraph">
+<p>Use the built-in functions <strong>dot</strong>, <strong>cross</strong>, <strong>matrixCompMult</strong>, and
+<strong>outerProduct</strong>, to get, respectively, vector dot product, vector cross
+product, matrix component-wise multiplication, and the matrix product of a
+column vector times a row vector.</p>
+</div>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>The operator modulus (<strong>%</strong>) operates on signed or unsigned integers or
+integer vectors.
+If the fundamental types in the operands do not match, then the
+conversions from &#8220;<a href="variables.html#implicit-conversions" class="xref page">Implicit Conversions</a>&#8221; are
+applied to create matching types.
+The operands cannot be vectors of differing size; this is
+a compile-time error.
+If one operand is a scalar and the other vector, then the scalar is
+applied component-wise to the vector, resulting in the same type as the
+vector.
+If both are vectors of the same size, the result is computed
+component-wise.
+The resulting value is undefined for any component computed with a
+second operand that is zero, while results for other components with
+non-zero second operands remain defined.
+If both operands are non-negative, then the remainder is non-negative.
+Results are undefined if one or both operands are negative.
+The operator modulus (<strong>%</strong>) is not defined for any other data types
+(non-integer types).</p>
+</li>
+<li>
+<p>The arithmetic unary operators plus (<strong>+</strong>), negate (<strong>-</strong>), post-
+and pre-increment and decrement (<strong>--</strong> and <strong>++</strong>) operate on
+integer or floating-point values (including vectors and matrices).
+All unary operators work component-wise on their operands.
+These result with the same type they operated on.
+For post- and pre-increment and decrement, the expression must be a writable
+l-value.
+Pre-increment and pre-decrement add or subtract 1 or 1.0 to the contents
+of the expression they operate on, and the value of the pre-increment or
+pre-decrement expression is the resulting value of that modification.
+Post-increment and post-decrement expressions add or subtract 1 or 1.0
+to the contents of the expression they operate on, but the resulting
+expression has the expression&#8217;s value before the post-increment or
+post-decrement was executed.</p>
+</li>
+<li>
+<p>The relational operators greater than (<strong>&gt;</strong>), less than (<strong>&lt;</strong>), greater
+than or equal (<strong>&gt;=</strong>), and less than or equal (<strong>&lt;=</strong>) operate only on
+scalar integer and scalar floating-point expressions.
+The result is scalar Boolean.
+Either the operands' types must match, or the conversions from section
+&#8220;<a href="variables.html#implicit-conversions" class="xref page">Implicit Conversions</a>&#8221; will be applied to
+obtain matching types.
+To do component-wise relational comparisons on vectors, use the built-in
+functions <strong>lessThan</strong>, <strong>lessThanEqual</strong>, <strong>greaterThan</strong>, and
+<strong>greaterThanEqual.</strong></p>
+</li>
+<li>
+<p>The equality operators equal (<strong>==</strong>), and not equal (<strong>!=</strong>) operate on
+all types except opaque types, aggregates that contain opaque types,
+subroutine uniforms, and aggregates that contain subroutine uniforms.
+They result in a scalar Boolean.
+If the operand types do not match, then there must be a conversion from
+&#8220;<a href="variables.html#implicit-conversions" class="xref page">Implicit Conversions</a>&#8221; applied to one operand
+that can make them match, in which case this conversion is done.
+For vectors, matrices, structures, and arrays, all components, members,
+or elements of one operand must equal the corresponding components,
+members, or elements in the other operand for the operands to be
+considered equal.
+To get a vector of component-wise equality results for vectors, use the
+built-in functions <strong>equal</strong> and <strong>notEqual</strong>.</p>
+</li>
+<li>
+<p>The logical binary operators and (<strong>&amp;&amp;</strong>), or (<strong>||</strong>), and exclusive or
+(<strong>^^</strong>) operate only on two scalar Boolean expressions. The result is a
+scalar Boolean.
+And (<strong>&amp;&amp;</strong>) will only evaluate the right hand operand if the left hand
+operand evaluated to <strong>true</strong>.
+Or (<strong>||</strong>) will only evaluate the right hand operand if the left hand
+operand evaluated to <strong>false</strong>.
+Exclusive or (<strong>^^</strong>) will always evaluate both operands.</p>
+</li>
+<li>
+<p>The logical unary operator not (<strong>!</strong>).
+It operates only on a scalar Boolean expression. The result is a scalar
+Boolean.
+To operate on a vector, use the built-in function <strong>not</strong>.</p>
+</li>
+<li>
+<p>The sequence (<strong>,</strong>) operator that operates on expressions by returning
+the type and value of the right-most expression in a comma separated
+list of expressions.
+All expressions are evaluated, in order, from left to right.
+The operands to the sequence operator may have <strong>void</strong> type.
+Opaque types cannot be used with the sequence (,) operator.</p>
+</li>
+<li>
+<p>The ternary selection operator (<strong>?:</strong>).
+It operates on three expressions (<em>exp1</em> <strong>?</strong> <em>exp2</em> <strong>:</strong> <em>exp3</em>).
+This operator evaluates the first expression, which must result in a
+scalar Boolean.
+If the result is true, it selects to evaluate the second expression,
+otherwise it selects to evaluate the third expression.
+Only one of the second and third expressions is evaluated.
+The second and third expressions cannot be opaque types,
+or there will be a compile-time error.
+Otherwise,
+the second and third expressions can be any type, including <strong>void</strong>, as
+long their types match, or there is a conversion in section
+&#8220;<a href="variables.html#implicit-conversions" class="xref page">Implicit Conversions</a>&#8221; that can be applied to
+one of the expressions to make their types match.
+This resulting matching type is the type of the entire expression.</p>
+</li>
+<li>
+<p>The one&#8217;s complement operator (<strong>~</strong>).
+The operand must be of type signed or unsigned integer or integer
+vector, and the result is the one&#8217;s complement of its operand; each bit
+of each component is complemented, including any sign bits.</p>
+</li>
+<li>
+<p>The shift operators (<strong>xref:</strong>) and (<strong>[]</strong>).
+For both operators, the operands must be signed or unsigned integers or
+integer vectors.
+One operand can be signed while the other is unsigned.
+In all cases, the resulting type will be the same type as the left
+operand.
+If the first operand is a scalar, the second operand has to be a scalar
+as well.
+If the first operand is a vector, the second operand must be a scalar or
+a vector with the same size as the first operand, and the result is
+computed component-wise.
+The result is undefined if the right operand is negative, or greater
+than or equal to the number of bits in the left expression&#8217;s base type.
+The value of E1 &lt;&lt; E2 is E1 (interpreted as a bit pattern) left-shifted
+by E2 bits.
+The value of E1 &gt;&gt; E2 is E1 right-shifted by E2 bit positions.
+If E1 is a signed integer, the right-shift will extend the sign bit.
+If E1 is an unsigned integer, the right-shift will zero-extend.</p>
+</li>
+<li>
+<p>The bitwise operators and (<strong>&amp;</strong>), exclusive-or (<strong>^</strong>), and inclusive-or
+(<strong>|</strong>).
+The operands must be of type signed or unsigned integers or integer
+vectors.
+The operands cannot be vectors of differing size; this is a compile-time error.
+If one operand is a scalar and the other a vector, the scalar is applied
+component-wise to the vector, resulting in the same type as the vector.
+If the fundamental types in the operands do not match, then the
+conversions from &#8220;<a href="variables.html#implicit-conversions" class="xref page">Implicit Conversions</a>&#8221; are
+applied to create matching types, and this will be the resulting
+fundamental type.
+For and (<strong>&amp;</strong>), the result is the bitwise-and function of the operands.
+For exclusive-or (<strong>^</strong>), the result is the bitwise exclusive-or function
+of the operands.
+For inclusive-or (<strong>|</strong>), the result is the bitwise inclusive-or function
+of the operands.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For a complete specification of the syntax of expressions, see
+&#8220;<a href="grammar.html#shading-language-grammar" class="xref page">Shading Language Grammar</a>&#8221;.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="vector-and-matrix-operations"><a class="anchor" href="#vector-and-matrix-operations"></a>Vector and Matrix Operations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>With a few exceptions, operations are component-wise.
+Usually, when an operator operates on a vector or matrix, it is operating
+independently on each component of the vector or matrix, in a component-wise
+fashion.
+For example,</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">vec3 v, u;
+float f;
+v = u + f;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>will be equivalent to</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">v.x = u.x + f;
+v.y = u.y + f;
+v.z = u.z + f;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">vec3 v, u, w;
+w = v + u;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>will be equivalent to</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">w.x = v.x + u.x;
+w.y = v.y + u.y;
+w.z = v.z + u.z;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>and likewise for most operators and all integer and floating-point vector
+and matrix types.
+The exceptions are matrix multiplied by vector, vector multiplied by matrix,
+and matrix multiplied by matrix.
+These do not operate component-wise, but rather perform the correct linear
+algebraic multiply.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">vec3 v, u;
+mat3 m;
+u = v * m;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>is equivalent to</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">u.x = dot(v, m[0]); // m[0] is the left column of m
+u.y = dot(v, m[1]); // dot(a,b) is the inner (dot) product of a and b
+u.z = dot(v, m[2]);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">u = m * v;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>is equivalent to</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">u.x = m[0].x * v.x + m[1].x * v.y + m[2].x * v.z;
+u.y = m[0].y * v.x + m[1].y * v.y + m[2].y * v.z;
+u.z = m[0].z * v.x + m[1].z * v.y + m[2].z * v.z;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">mat3 m, n, r;
+r = m * n;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>is equivalent to</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">r[0].x = m[0].x * n[0].x + m[1].x * n[0].y + m[2].x * n[0].z;
+r[1].x = m[0].x * n[1].x + m[1].x * n[1].y + m[2].x * n[1].z;
+r[2].x = m[0].x * n[2].x + m[1].x * n[2].y + m[2].x * n[2].z;
+r[0].y = m[0].y * n[0].x + m[1].y * n[0].y + m[2].y * n[0].z;
+r[1].y = m[0].y * n[1].x + m[1].y * n[1].y + m[2].y * n[1].z;
+r[2].y = m[0].y * n[2].x + m[1].y * n[2].y + m[2].y * n[2].z;
+r[0].z = m[0].z * n[0].x + m[1].z * n[0].y + m[2].z * n[0].z;
+r[1].z = m[0].z * n[1].x + m[1].z * n[1].y + m[2].z * n[1].z;
+r[2].z = m[0].z * n[2].x + m[1].z * n[2].y + m[2].z * n[2].z;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>and similarly for other sizes of vectors and matrices.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="out-of-bounds-accesses"><a class="anchor" href="#out-of-bounds-accesses"></a>Out-of-Bounds Accesses</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In the subsections described above for array, vector, matrix and structure
+accesses, any out-of-bounds access produced undefined behavior.
+However, if robust buffer access is enabled via the API, such
+accesses will be bound within the memory extent of the active program.
+It will not be possible to access memory from other programs, and accesses
+will not result in abnormal program termination.
+Out-of-bounds reads return undefined values, which include values from other
+variables of the active program or zero.
+Out-of-bounds writes may be discarded or overwrite other variables of the
+active program, depending on the value of the computed index and how this
+relates to the extent of the active program&#8217;s memory.
+Applications that require defined behavior for out-of-bounds accesses should
+range check all computed indices before dereferencing an array.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="specialization-constant-operations"><a class="anchor" href="#specialization-constant-operations"></a>Specialization-Constant Operations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Specialization-constant operations are only available when targeting SPIR-V.</p>
+</div>
+<div class="paragraph">
+<p>Only some operations discussed in this section may be applied to a
+specialization constant and still yield a result that is a specialization
+constant.
+The operations that do so are listed below.
+When a specialization constant is operated on with one of these operators
+and with another constant or specialization constant, the result is
+implicitly a specialization constant.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>int</strong>(), <strong>uint</strong>(), and <strong>bool</strong>() constructors for type conversions from
+any of the following types to any of the following types:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>int</strong></p>
+</li>
+<li>
+<p><strong>uint</strong></p>
+</li>
+<li>
+<p><strong>bool</strong></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>vector versions of the above conversion constructors</p>
+</li>
+<li>
+<p>allowed implicit conversions of the above</p>
+</li>
+<li>
+<p>swizzles (e.g. <code>foo.yx</code>)</p>
+</li>
+<li>
+<p>the following when applied to integer or unsigned integer types:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>unary negative (<strong>-</strong>)</p>
+</li>
+<li>
+<p>binary operations (<strong>+</strong>, <strong>-</strong>, <strong>*</strong>, <strong>/</strong>, <strong>%</strong>)</p>
+</li>
+<li>
+<p>shift (<strong>xref:</strong>[<strong>]</strong>)</p>
+</li>
+<li>
+<p>bitwise operations (<strong>&amp;</strong>, <strong>|</strong>, <strong>^</strong>)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>the following when applied to integer or unsigned integer scalar types:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>comparison (<strong>==</strong>, <strong>!=</strong>, <strong>&gt;</strong>, <strong>&gt;=</strong>, <strong>&lt;</strong>, <strong>&#8656;</strong>)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>The following when applied to the Boolean scalar type:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>not (<strong>!</strong>)</p>
+</li>
+<li>
+<p>logical operations (<strong>&amp;&amp;</strong>, <strong>||</strong>, <strong>^^</strong>)</p>
+</li>
+<li>
+<p>comparison (<strong>==</strong>, <strong>!=</strong>)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>the ternary operator (<strong>?:</strong>)</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

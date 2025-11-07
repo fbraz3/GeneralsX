@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Multisampling :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../_/css/site.css">
+    <link rel="stylesheet" href="../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../.."><img class="navbar-item" alt="Vulkan White Label" src="../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="90_FAQ.html">FAQ</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li><a href="10_Multisampling.html">Multisampling</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Tutorial/antora/modules/ROOT/pages/10_Multisampling.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Multisampling</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Our program can now load multiple levels of detail for textures which fix artifacts when rendering objects far away from the viewer.
+The image is now a lot smoother, however; on closer inspection, you will notice jagged saw-like patterns along the edges of drawn geometric shapes.
+This is especially visible in one of our early programs when we rendered a quad:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/texcoord_visualization.png" alt="texcoord visualization">
+</div>
+</div>
+<div class="paragraph">
+<p>This undesired effect is called "aliasing," and it&#8217;s a result of a limited number of pixels that are available for rendering.
+Since there are no displays out there with unlimited resolution, it will always be visible to some extent.
+There are a number of ways to fix this, and in this chapter we&#8217;ll focus on one of the more popular ones: <a href="https://en.wikipedia.org/wiki/Multisample_anti-aliasing">Multisample antialiasing</a> (MSAA).</p>
+</div>
+<div class="paragraph">
+<p>In ordinary rendering, the pixel color is determined based on a single sample point which in most cases is the center of the target pixel on screen.
+If part of the drawn line passes through a certain pixel but doesn&#8217;t cover the sample point, that pixel will be left blank, leading to the jagged "staircase" effect.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/aliasing.png" alt="aliasing">
+</div>
+</div>
+<div class="paragraph">
+<p>What MSAA does is it uses multiple sample points per pixel (hence the name) to determine its final color.
+As one might expect, more samples lead to better results, however, it is also more computationally expensive.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/antialiasing.png" alt="antialiasing">
+</div>
+</div>
+<div class="paragraph">
+<p>In our implementation, we will focus on using the maximum available sample count.
+Depending on your application, this may not always be the best approach, and it might be better to use fewer samples for the sake of higher performance if the final result meets your quality demands.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_getting_available_sample_count"><a class="anchor" href="#_getting_available_sample_count"></a>Getting available sample count</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s start off by determining how many samples our hardware can use.
+Most modern GPUs support at least eight samples, but this number is not guaranteed to be the same everywhere.
+We&#8217;ll keep track of it by adding a new class member:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">...
+vk::SampleCountFlagBits msaaSamples = vk::SampleCountFlagBits::e1;
+...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>By default, we&#8217;ll be using only one sample per pixel which is equivalent to no multisampling, in which case the final image will remain unchanged.
+The exact maximum number of samples can be extracted from <code>VkPhysicalDeviceProperties</code> associated with our selected physical device.
+We&#8217;re using a depth buffer, so we have to take into account the sample count for both color and depth.
+The highest sample count that both support (and) will be the maximum we can support.
+Add a function that will fetch this information for us:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::SampleCountFlagBits getMaxUsableSampleCount() {
+    vk::PhysicalDeviceProperties physicalDeviceProperties = physicalDevice-&gt;getProperties();
+
+    vk::SampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts &amp; physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+    if (counts &amp; vk::SampleCountFlagBits::e64) { return vk::SampleCountFlagBits::e64; }
+    if (counts &amp; vk::SampleCountFlagBits::e32) { return vk::SampleCountFlagBits::e32; }
+    if (counts &amp; vk::SampleCountFlagBits::e16) { return vk::SampleCountFlagBits::e16; }
+    if (counts &amp; vk::SampleCountFlagBits::e8) { return vk::SampleCountFlagBits::e8; }
+    if (counts &amp; vk::SampleCountFlagBits::e4) { return vk::SampleCountFlagBits::e4; }
+    if (counts &amp; vk::SampleCountFlagBits::e2) { return vk::SampleCountFlagBits::e2; }
+
+    return vk::SampleCountFlagBits::e1;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We will now use this function to set the <code>msaaSamples</code> variable during the physical device selection process.
+For this, we have to slightly modify the <code>pickPhysicalDevice</code> function:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void pickPhysicalDevice() {
+    ...
+    for (const auto&amp; device : devices) {
+        if (isDeviceSuitable(device)) {
+            physicalDevice = device;
+            msaaSamples = getMaxUsableSampleCount();
+            break;
+        }
+    }
+    ...
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_setting_up_a_render_target"><a class="anchor" href="#_setting_up_a_render_target"></a>Setting up a render target</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In MSAA, each pixel is sampled in an offscreen buffer which is then rendered to the screen.
+This new buffer is slightly different from regular images we&#8217;ve been rendering to - they have to be able to store more than one sample per pixel.
+Once a multi-sampled buffer is created, it has to be resolved to the default framebuffer (which stores only a single sample per pixel).
+This is why we have to create an additional render target and modify our current drawing process.
+We only need one render target since only one drawing operation is active at a time, just like with the depth buffer.
+Add the following class members:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">...
+vk::raii::Image colorImage = nullptr;
+vk::raii::DeviceMemory colorImageMemory = nullptr;
+vk::raii::ImageView colorImageView = nullptr;
+...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This new image will have to store the desired number of samples per pixel, so we need to pass this number to <code>VkImageCreateInfo</code> during the image creation process.
+Modify the <code>createImage</code> function by adding a <code>numSamples</code> parameter:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, vk::SampleCountFlagBits numSamples, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image&amp; image, vk::raii::DeviceMemory&amp; imageMemory) const {
+    ...
+    imageInfo.samples = numSamples;
+    ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For now, update all calls to this function using <code>VK_SAMPLE_COUNT_1_BIT</code> - we will be replacing this with proper values as we progress with implementation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">createImage(swapChainExtent.width, swapChainExtent.height, 1, vk::SampleCountFlagBits::e1, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, depthImage, depthImageMemory);
+...
+createImage(texWidth, texHeight, mipLevels, vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal, textureImage, textureImageMemory);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We will now create a multi-sampled color buffer.
+Add a <code>createColorResources</code> function and note that we&#8217;re using <code>msaaSamples</code> here as a function parameter to <code>createImage</code>.
+We&#8217;re also using only one mip level, since this is enforced by the Vulkan specification in case of images with more than one sample per pixel.
+Also, this color buffer doesn&#8217;t need mipmaps since it&#8217;s not going to be used as a texture:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createColorResources() {
+    vk::Format colorFormat = swapChainImageFormat;
+
+    createImage(swapChainExtent.width, swapChainExtent.height, 1, msaaSamples, colorFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment,  vk::MemoryPropertyFlagBits::eDeviceLocal, colorImage, colorImageMemory);
+    colorImageView = createImageView(colorImage, colorFormat, vk::ImageAspectFlagBits::eColor, 1);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For consistency, call the function right before <code>createDepthResources</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void initVulkan() {
+    ...
+    createColorResources();
+    createDepthResources();
+    ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now that we have a multi-sampled color buffer in place, it&#8217;s time to take care of depth.
+Modify <code>createDepthResources</code> and update the number of samples used by the depth buffer:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createDepthResources() {
+    ...
+    createImage(swapChainExtent.width, swapChainExtent.height, 1, msaaSamples, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, depthImage_, depthImageMemory_);
+    ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And update the <code>recreateSwapChain</code> so that the new color image can be recreated in the correct resolution when the window is resized:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void recreateSwapChain() {
+    ...
+    createImageViews();
+    createColorResources();
+    createDepthResources();
+    ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We made it past the initial MSAA setup, now we need to start using this new resource in our graphics pipeline, framebuffer, render pass and see the results!</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_adding_new_attachments"><a class="anchor" href="#_adding_new_attachments"></a>Adding new attachments</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s take care of the render pass first.
+Modify <code>createRenderPass</code> and update color and depth attachment creation info structs:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createRenderPass() {
+    ...
+    colorAttachment.samples = msaaSamples;
+    colorAttachment.finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
+    ...
+    depthAttachment.samples = msaaSamples;
+    ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You&#8217;ll notice that we have changed the finalLayout from <code>VK_IMAGE_LAYOUT_PRESENT_SRC_KHR</code> to <code>VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL</code>.
+That&#8217;s because multi-sampled images cannot be presented directly.
+We first need to resolve them to a regular image.
+This requirement does not apply to the depth buffer, since it won&#8217;t be presented at any point.
+Therefore, we will have to add only one new attachment for color, which is a so-called resolve attachment:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">    ...
+    vk::AttachmentDescription colorAttachmentResolve({}, swapChainImageFormat, vk::SampleCountFlagBits::e1, vk::AttachmentLoadOp::eDontCare,
+        vk::AttachmentStoreOp::eStore, vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare, vk::ImageLayout::eUndefined,
+        vk::ImageLayout::ePresentSrcKHR);
+    ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The render pass now has to be instructed to resolve multi-sampled color image into regular attachment.
+Create a new attachment reference that will point to the color buffer which will serve as the resolve target:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">    ...
+    vk::AttachmentReference colorAttachmentResolveRef(2, vk::ImageLayout::eColorAttachmentOptimal);
+    ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Set the <code>pResolveAttachments</code> subpass struct member to point to the newly created attachment reference.
+This is enough to let the render pass define a multisample resolve operation which will let us render the image to screen:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>    ...
+    subpass.pResolveAttachments = &amp;colorAttachmentResolveRef;
+    ...</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Since we&#8217;re reusing the multi-sampled color image, it&#8217;s necessary to update
+the <code>srcAccessMask</code> of the <code>VkSubpassDependency</code>.
+This update ensures that any write operations to the color attachment are completed before later ones begin, thus preventing write-after-write hazards that can lead to unstable rendering results:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">    ...
+    dependency.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+    ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now update render pass info struct with the new color attachment:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">    ...
+    std::array attachments = {colorAttachment, depthAttachment, colorAttachmentResolve};
+    ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>With the render pass in place, modify <code>createFramebuffers</code> and add the new image view to the list:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createFramebuffers() {
+        ...
+        vk::ImageView attachments[] = { *colorImageView,  *depthImageView, view };
+        ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Finally, tell the newly created pipeline to use more than one sample by modifying <code>createGraphicsPipeline</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createGraphicsPipeline() {
+    ...
+    multisampling.rasterizationSamples = msaaSamples;
+    ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now run your program, and you should see the following:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/multisampling.png" alt="multisampling">
+</div>
+</div>
+<div class="paragraph">
+<p>Just like with mipmapping, the difference may not be apparent straight away.
+On a closer look, you&#8217;ll notice that the edges are not as jagged anymore and the whole image seems a bit smoother compared to the original.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/multisampling_comparison.png" alt="multisampling comparison">
+</div>
+</div>
+<div class="paragraph">
+<p>The difference is more noticeable when looking up close at one of the edges:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/multisampling_comparison2.png" alt="multisampling comparison2">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_quality_improvements"><a class="anchor" href="#_quality_improvements"></a>Quality improvements</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>There are certain limitations of our current MSAA implementation that may impact the quality of the output image in more detailed scenes.
+For example, we&#8217;re currently not solving potential problems caused by shader aliasing, i.e.
+MSAA only smoothens out the edges of geometry but not the interior filling.
+This may lead to a situation when you get a smooth polygon rendered on screen, but the applied texture will still look aliased if it contains high contrasting colors.
+One way to approach this problem is to enable <a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/html/chap27.html#primsrast-sampleshading">Sample Shading</a> which will improve the image quality even further, though at an additional performance cost:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createLogicalDevice() {
+    ...
+    deviceFeatures.sampleRateShading = vk::True; // enable sample shading
+    feature for the device
+    ...
+}
+
+void createGraphicsPipeline() {
+    ...
+    multisampling.sampleShadingEnable = vk::True; // enable sample shading in the pipeline
+    multisampling.minSampleShading = .2f; // min fraction for sample shading; closer to one is smoother
+    ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In this example, we&#8217;ll leave sample shading disabled, but in certain scenarios the quality improvement may be noticeable:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/sample_shading.png" alt="sample shading">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_conclusion"><a class="anchor" href="#_conclusion"></a>Conclusion</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>It has taken a lot of work to get to this point, but now you finally have a good base for a Vulkan program.
+The knowledge of the basic principles of Vulkan that you now possess should be sufficient to start exploring more of the features, like:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Push constants</p>
+</li>
+<li>
+<p>Instanced rendering</p>
+</li>
+<li>
+<p>Dynamic uniforms</p>
+</li>
+<li>
+<p>Separate images and sampler descriptors</p>
+</li>
+<li>
+<p>Pipeline cache</p>
+</li>
+<li>
+<p>Multithreaded command buffer generation</p>
+</li>
+<li>
+<p>Multiple subpasses</p>
+</li>
+<li>
+<p><a href="11_Compute_Shader.html" class="xref page">Compute shaders</a></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The current program can be extended in many ways, like adding Blinn-Phong lighting, post-processing effects, and shadow mapping.
+You should be able to learn how these effects work from tutorials for other APIs, because despite Vulkan&#8217;s explicitness, many concepts still work the same.</p>
+</div>
+<div class="paragraph">
+<p><a href="_attachments/30_multisampling.cpp">C&#43;&#43; code</a> /
+<a href="_attachments/27_shader_depth.slang">slang shader</a> /
+<a href="_attachments/27_shader_depth.vert">GLSL Vertex shader</a> /
+<a href="_attachments/27_shader_depth.frag">GLSL Fragment shader</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+<script src="../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../.." data-snippet-length="100" data-stylesheet="../../_/css/search.css"></script>
+<script async src="../../search-index.js"></script>
+<script async src="../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

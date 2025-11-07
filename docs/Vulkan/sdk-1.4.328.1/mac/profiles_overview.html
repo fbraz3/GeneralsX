@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="icon" href="images/Vulkan_LogoBug_48px_Nov17.png">
+<link rel="stylesheet" href="github-markdown.css">
+</head>
+<body>
+<article class="markdown-body">
+<!-- markdownlint-disable MD041 -->
+
+<p align="left"><img src="https://vulkan.lunarg.com/img/NewLunarGLogoBlack.png" alt="LunarG" width=263 height=113 /></p>
+<p align="left">Copyright (c) 2021-2025 LunarG, Inc.</p>
+
+<p><a href="https://creativecommons.org/licenses/by-nd/4.0/" TARGET="_blank"><img src="https://i.creativecommons.org/l/by-nd/4.0/88x31.png" title="Creative Commons License" alt="Creative Commons" /></a></p>
+<p align="center"><img src="./images/logo.png" width=400 /></p>
+
+<h1 id="vulkan-profiles-toolset-overview">Vulkan Profiles Toolset Overview</h1>
+<p>The <em>Vulkan Profiles Toolset</em> is a collection of components for Vulkan application developers to build <strong>portable</strong> Vulkan applications using <em>Vulkan Profiles</em>.</p>
+<p><em>Vulkan Profiles</em> have multiple use cases, including:</p>
+<ul>
+<li><em>Roadmap profiles</em>: To express guidance on the future direction of Vulkan devices.</li>
+<li><em>Platform profiles</em>: To express the Vulkan support available on different platforms.</li>
+<li><em>Device profiles</em>: To express the Vulkan support of a single Vulkan driver for a Vulkan device.</li>
+<li><em>Engine profiles</em>: To express some rendering code paths requirements of an engine.</li>
+<li>Etc.</li>
+</ul>
+<p>Conceptually, <em>Vulkan Profiles</em> can be understood as the explicit expression and formalization of Vulkan requirements and provides clear communication of these requirements within the <em>Vulkan Community</em>.</p>
+<p><em>The Vulkan Profiles Toolset</em> delivered in the <a href="https://www.lunarg.com/vulkan-sdk/" TARGET="_blank"><em><strong>Vulkan SDK</strong></em></a>.</p>
+<h2 id="vulkan-profiles-toolset-components">Vulkan Profiles Toolset Components</h2>
+<p>The <em>Vulkan Profiles Toolset</em> includes the following components:</p>
+<ul>
+<li><a href="https://github.com/KhronosGroup/Khronos-Schemas/tree/main/vulkan" TARGET="_blank"><em><strong>The Vulkan Profiles JSON Schema</strong></em></a>
+<ul>
+<li>A data format to exchange Vulkan capabilities: extensions, features, properties, formats and queue properties.</li>
+<li>Each revision of Vulkan API is represented by a schema that supersedes older versions of Vulkan API.</li>
+<li>The schema covers Vulkan 1.3 and all extensions.</li>
+</ul></li>
+<li><a href="#vulkan-profiles-json-file-generation"><em><strong>The Vulkan Profiles JSON file generation</strong></em></a>
+<ul>
+<li>A <code>Python</code> script to generate profiles file by combining multiple exist profiles files.</li>
+<li>It supports both <code>union</code> and <code>intersection</code> of Vulkan capabilities.</li>
+</ul></li>
+<li><a href="./profiles_api_library.html"><em><strong>The Vulkan Profiles API library</strong></em></a>
+<ul>
+<li>A header-only C++ library to use <em>Vulkan Profiles</em> in Vulkan applications.</li>
+<li>The library allows checking Profiles support on a device and creating a <code>VkDevice</code> instance with the profile features and extensions enabled.</li>
+<li>The library requires a Vulkan 1.0 driver that supports <code>VK_KHR_get_physical_device_properties2</code> extension.</li>
+</ul></li>
+<li><a href="./profiles_layer.html"><em><strong>The Vulkan Profiles Layer</strong></em></a>
+<ul>
+<li>A layer used during application development to ensure adherence to the requirements of a chosen <em>Vulkan Profile</em>.</li>
+<li><a href="./profiles_layer.html#technical-details">It simulates but doesn't emulate</a> Vulkan capabilities. Hence, it is used with the <a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers" TARGET="_blank">Validation layer</a> to clamp available capabilities on the Vulkan developer system.</li>
+<li>The layer requires a Vulkan 1.1 driver.</li>
+</ul></li>
+<li><a href="./profiles_definitions.html"><em><strong>The Vulkan Profiles Comparison Table</strong></em></a>
+<ul>
+<li>Human-readable format of <em>Vulkan Profiles</em> in a table to enable comparison.</li>
+</ul></li>
+</ul>
+<p>Furthermore, the <em>Vulkan SDK</em> includes implementations of some <em>Vulkan Profiles</em> using the <em>Vulkan Profiles JSON Schema</em>:</p>
+<ul>
+<li><a href="https://github.com/KhronosGroup/Vulkan-Headers/blob/main/registry/profiles/VP_KHR_roadmap.json" TARGET="_blank">VP_KHR_roadmap_2024</a> (Vulkan 1.3)</li>
+<li><a href="https://github.com/KhronosGroup/Vulkan-Headers/blob/main/registry/profiles/VP_KHR_roadmap.json" TARGET="_blank">VP_KHR_roadmap_2022</a> (Vulkan 1.3)</li>
+<li><a href="https://github.com/KhronosGroup/Vulkan-Profiles/blob/main/profiles/VP_ANDROID_baseline_2022.json" TARGET="_blank">VP_ANDROID_baseline_2022</a> (Vulkan 1.1)</li>
+<li><a href="https://github.com/KhronosGroup/Vulkan-Profiles/blob/main/profiles/VP_ANDROID_baseline_2021.json" TARGET="_blank">VP_ANDROID_baseline_2021</a> (Vulkan 1.0)</li>
+<li>VP_LUNARG_desktop_baseline_2024 (Vulkan 1.2)</li>
+<li>VP_LUNARG_desktop_baseline_2023 (Vulkan 1.2)</li>
+<li>VP_LUNARG_desktop_baseline_2022 (Vulkan 1.1)</li>
+</ul>
+<p>The <code>VP_LUNARG_desktop_baseline</code> profiles are created as examples of <em>Platform</em> profiles. Vulkan application developers should create <em>Platform</em> profiles dedicated to their Vulkan applications that match the ecosystem of devices they want the Vulkan applications to run on.</p>
+<p>Within the <em>Vulkan SDK</em>, the Vulkan Profiles files are located at <code>$(VULKAN_SDK)/Config/VK_LAYER_KHRONOS_profiles</code>.</p>
+<h2 id="vulkan-profiles-tools-code-generation">Vulkan Profiles Tools Code Generation</h2>
+<p>Considering the complexity of the Vulkan ecosystem, there isn't a single <em>Vulkan Profile</em> that can fit all needs. As a result, on top of the predefined <em>Vulkan Profiles</em>, the <em>Vulkan Profiles Toolset</em> solution is designed around the idea of code generation.</p>
+<p>The <em>Vulkan Profiles Toolset</em> is generated against <a href="https://github.com/KhronosGroup/Vulkan-Headers/blob/main/registry/vk.xml" TARGET="_blank"><code>vk.xml</code></a>(the canonical representation of the Vulkan specification) and <a href="https://github.com/KhronosGroup/Vulkan-Profiles/tree/main/profiles" TARGET="_blank"><em>Vulkan Profiles</em></a>. This design guarantees that any Vulkan developer can regenerate the entire <em>Vulkan Profiles Toolset</em> solution with any new <a href="https://github.com/KhronosGroup/Vulkan-Headers" TARGET="_blank">Vulkan Header</a> update or any set of <em>Vulkan Profiles</em>.</p>
+<p>The following diagram shows the Vulkan Profiles Toolset generation pipeline with every produced components: <img src="https://github.com/KhronosGroup/Vulkan-Profiles/raw/main/images/overview.png" alt="Vulkan Profiles" /></p>
+<p>Note: The <em>Profiles layer</em> is not yet code-generated but it will be in the future.</p>
+<h2 id="the-vulkan-profiles-json-schema">The Vulkan Profiles JSON Schema</h2>
+<p>The Profiles layer builds its internal data tables by querying the capabilities of the underlying actual device, then applying the selected Vulkan Profile "on top of" of those tables. Therefore we only need to specify the features we wish to modify from the actual device; tweaking a single feature is easy. Here's an example of a valid <em>Vulkan Profiles</em> file for changing only the maximum permitted viewport size:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode json"><code class="sourceCode json"><a class="sourceLine" id="cb1-1" title="1"><span class="fu">{</span></a>
+<a class="sourceLine" id="cb1-2" title="2">    <span class="dt">&quot;$schema&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.khronos.org/vulkan/profiles-0.8.2-280.json#&quot;</span><span class="fu">,</span></a>
+<a class="sourceLine" id="cb1-3" title="3">    <span class="dt">&quot;capabilities&quot;</span><span class="fu">:</span> <span class="fu">{</span></a>
+<a class="sourceLine" id="cb1-4" title="4">        <span class="dt">&quot;baseline&quot;</span><span class="fu">:</span> <span class="fu">{</span></a>
+<a class="sourceLine" id="cb1-5" title="5">            <span class="dt">&quot;extensions&quot;</span><span class="fu">:</span> <span class="fu">{},</span></a>
+<a class="sourceLine" id="cb1-6" title="6">            <span class="dt">&quot;features&quot;</span><span class="fu">:</span> <span class="fu">{},</span></a>
+<a class="sourceLine" id="cb1-7" title="7">            <span class="dt">&quot;properties&quot;</span><span class="fu">:</span> <span class="fu">{</span></a>
+<a class="sourceLine" id="cb1-8" title="8">                <span class="dt">&quot;VkPhysicalDeviceProperties&quot;</span><span class="fu">:</span> <span class="fu">{</span></a>
+<a class="sourceLine" id="cb1-9" title="9">                    <span class="dt">&quot;limits&quot;</span><span class="fu">:</span> <span class="fu">{</span></a>
+<a class="sourceLine" id="cb1-10" title="10">                        <span class="dt">&quot;maxViewportDimensions&quot;</span><span class="fu">:</span> <span class="ot">[</span> <span class="dv">4096</span><span class="ot">,</span> <span class="dv">2048</span> <span class="ot">]</span><span class="fu">,</span></a>
+<a class="sourceLine" id="cb1-11" title="11">                    <span class="fu">}</span></a>
+<a class="sourceLine" id="cb1-12" title="12">                <span class="fu">}</span></a>
+<a class="sourceLine" id="cb1-13" title="13">             <span class="fu">},</span></a>
+<a class="sourceLine" id="cb1-14" title="14">            <span class="dt">&quot;formats&quot;</span><span class="fu">:</span> <span class="fu">{},</span></a>
+<a class="sourceLine" id="cb1-15" title="15">            <span class="dt">&quot;queueFamiliesProperties&quot;</span><span class="fu">:</span> <span class="ot">[]</span></a>
+<a class="sourceLine" id="cb1-16" title="16">        <span class="fu">}</span></a>
+<a class="sourceLine" id="cb1-17" title="17">    <span class="fu">},</span></a>
+<a class="sourceLine" id="cb1-18" title="18">    <span class="dt">&quot;profiles&quot;</span><span class="fu">:</span> <span class="fu">{</span></a>
+<a class="sourceLine" id="cb1-19" title="19">        <span class="dt">&quot;VP_LUNARG_example&quot;</span><span class="fu">:</span> <span class="fu">{</span></a>
+<a class="sourceLine" id="cb1-20" title="20">            <span class="dt">&quot;version&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span></a>
+<a class="sourceLine" id="cb1-21" title="21">            <span class="dt">&quot;api-version&quot;</span><span class="fu">:</span> <span class="st">&quot;1.2.198&quot;</span><span class="fu">,</span></a>
+<a class="sourceLine" id="cb1-22" title="22">            <span class="dt">&quot;status&quot;</span><span class="fu">:</span> <span class="st">&quot;STABLE&quot;</span><span class="fu">,</span></a>
+<a class="sourceLine" id="cb1-23" title="23">            <span class="dt">&quot;label&quot;</span><span class="fu">:</span> <span class="st">&quot;LunarG Example Profile&quot;</span><span class="fu">,</span></a>
+<a class="sourceLine" id="cb1-24" title="24">            <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;An example profile used for the overview documentation&quot;</span><span class="fu">,</span></a>
+<a class="sourceLine" id="cb1-25" title="25">            <span class="dt">&quot;capabilities&quot;</span><span class="fu">:</span> <span class="ot">[</span></a>
+<a class="sourceLine" id="cb1-26" title="26">                <span class="st">&quot;baseline&quot;</span></a>
+<a class="sourceLine" id="cb1-27" title="27">            <span class="ot">]</span></a>
+<a class="sourceLine" id="cb1-28" title="28">        <span class="fu">}</span></a>
+<a class="sourceLine" id="cb1-29" title="29">    <span class="fu">},</span></a>
+<a class="sourceLine" id="cb1-30" title="30">    <span class="dt">&quot;contributors&quot;</span><span class="fu">:</span> <span class="fu">{</span></a>
+<a class="sourceLine" id="cb1-31" title="31">        <span class="dt">&quot;A Person&quot;</span><span class="fu">:</span> <span class="fu">{</span></a>
+<a class="sourceLine" id="cb1-32" title="32">            <span class="dt">&quot;company&quot;</span><span class="fu">:</span> <span class="st">&quot;LunarG&quot;</span><span class="fu">,</span></a>
+<a class="sourceLine" id="cb1-33" title="33">            <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;a.person@lunarg.com&quot;</span><span class="fu">,</span></a>
+<a class="sourceLine" id="cb1-34" title="34">            <span class="dt">&quot;github&quot;</span><span class="fu">:</span> <span class="st">&quot;lunarg&quot;</span><span class="fu">,</span></a>
+<a class="sourceLine" id="cb1-35" title="35">            <span class="dt">&quot;contact&quot;</span><span class="fu">:</span> <span class="kw">true</span></a>
+<a class="sourceLine" id="cb1-36" title="36">        <span class="fu">}</span></a>
+<a class="sourceLine" id="cb1-37" title="37">    <span class="fu">},</span></a>
+<a class="sourceLine" id="cb1-38" title="38">    <span class="dt">&quot;history&quot;</span><span class="fu">:</span> <span class="ot">[</span></a>
+<a class="sourceLine" id="cb1-39" title="39">        <span class="fu">{</span></a>
+<a class="sourceLine" id="cb1-40" title="40">            <span class="dt">&quot;revision&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span></a>
+<a class="sourceLine" id="cb1-41" title="41">            <span class="dt">&quot;date&quot;</span><span class="fu">:</span> <span class="st">&quot;2021-12-08&quot;</span><span class="fu">,</span></a>
+<a class="sourceLine" id="cb1-42" title="42">            <span class="dt">&quot;author&quot;</span><span class="fu">:</span> <span class="st">&quot;A Person&quot;</span><span class="fu">,</span></a>
+<a class="sourceLine" id="cb1-43" title="43">            <span class="dt">&quot;comment&quot;</span><span class="fu">:</span> <span class="st">&quot;Initial revision&quot;</span></a>
+<a class="sourceLine" id="cb1-44" title="44">        <span class="fu">}</span></a>
+<a class="sourceLine" id="cb1-45" title="45">    <span class="ot">]</span></a>
+<a class="sourceLine" id="cb1-46" title="46"><span class="fu">}</span></a></code></pre></div>
+<p>The top-level sections of such profiles files are processed as follows:</p>
+<ul>
+<li><code>$schema</code> - Required. Must be the <code>URI</code> string referencing the JSON schema.</li>
+<li><code>capabilities</code> - Required. Specifies the list of capabilities sets.</li>
+<li><code>profiles</code> - Required. Specifies the list of profile definitions.</li>
+<li><code>contributors</code> - Optional. The list of contributors of the profile file.</li>
+<li><code>history</code> - Optional. The version history of the profile file.</li>
+</ul>
+<p>Each entry in <code>capabilities</code> includes a reference name and a dictionary containing the following sections:</p>
+<ul>
+<li><code>extensions</code> - Optional. List of all required extensions.</li>
+<li><code>features</code> - Optional. List of all required features.</li>
+<li><code>properties</code> - Optional. List of all required properties.</li>
+<li><code>formats</code> - Optional. List of all required formats.</li>
+<li><code>queueFamiliesProperties</code> - Optional. List of all queue families properties.</li>
+<li><code>videoProfiles</code> - Optional. List of all required video profilies.</li>
+</ul>
+<p>Each entry in <code>profiles</code> includes a reference name and a dictionary containing the following sections:</p>
+<ul>
+<li><code>version</code> - Required. The revision of the profile.</li>
+<li><code>api-version</code> - Required. The Vulkan API version against which the profile is written.</li>
+<li><code>status</code> - Optional. The development stage of the profile. It can be either <code>ALPHA</code>, <code>BETA</code>, <code>STABLE</code> or <code>DEPRECATED</code>.</li>
+<li><code>label</code> - Required. The label used to present the profile to the Vulkan developer.</li>
+<li><code>description</code> - Required. The description of the profile.</li>
+<li><code>contributors</code> - Optional. The list of contributors of the profile.</li>
+<li><code>history</code> - Optional. The version history of the profile.</li>
+<li><code>profiles</code> - Optional. The list of profiles required by the profile.</li>
+<li><code>capabilities</code> - Required. The list of capability sets that can be referenced by a profile.</li>
+<li><code>fallback</code> - Optional. The list of profiles recommended if the checked profile is not supported by the platform.</li>
+</ul>
+<p><code>profiles</code> may reference multiple <code>capabilities</code> which may define the same capability differently. In this case, the rule is that the last reference of that capability overrides any previously set values.</p>
+<h2 id="vulkan-profiles-json-file-generation">Vulkan Profiles JSON file generation</h2>
+<p>The <em>Vulkan Profiles Toolset</em> includes a <code>Python</code> script to generate a profiles file by combining multiple profiles files using two modes :</p>
+<ul>
+<li>Intersection of Vulkan Capabilities</li>
+<li>Union of Vulkan Capabilities</li>
+</ul>
+<p><a href="https://vulkan.gpuinfo.org/" TARGET="_blank">GPUInfo.org</a> allows us downloading <code>device</code> profiles in the form of JSON files. We can use these files to create <em>platform</em> profiles.</p>
+<p>This is the approach used to create the <code>VP_LUNARG_desktop_baseline_2024</code> profiles part of this repository.</p>
+<p>Example:</p>
+<pre><code>python gen_profiles_file.py --registry vk.xml --input ./VP_LUNARG_desktop_baseline_2024
+</code></pre>
+<p>For more information about the command line arguments, please use the <code>--help</code> argument :</p>
+<pre><code>python ./script/gen_profiles_file.py --help
+</code></pre>
+<h2 id="vulkan-profiles-json-validation">Vulkan Profiles JSON validation</h2>
+<p>The JSON schema allows validating that the profiles JSON file is correctly defined. This can be done by many tools including the following web-based validators:</p>
+<ul>
+<li><a href="http://www.jsonschemavalidator.net/" TARGET="_blank">http://www.jsonschemavalidator.net/</a></li>
+<li><a href="https://json-schema-validator.herokuapp.com/" TARGET="_blank">https://json-schema-validator.herokuapp.com/</a></li>
+<li><a href="https://jsonschemalint.com/#/version/draft-04/markup/json/" TARGET="_blank">https://jsonschemalint.com/#/version/draft-04/markup/json/</a></li>
+</ul>
+</article>
+</body>
+</html>

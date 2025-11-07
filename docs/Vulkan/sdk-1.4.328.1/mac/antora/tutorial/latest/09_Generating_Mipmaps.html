@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Generating Mipmaps :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../_/css/site.css">
+    <link rel="stylesheet" href="../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../.."><img class="navbar-item" alt="Vulkan White Label" src="../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="90_FAQ.html">FAQ</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li><a href="09_Generating_Mipmaps.html">Generating Mipmaps</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Tutorial/antora/modules/ROOT/pages/09_Generating_Mipmaps.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Generating Mipmaps</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Our program can now load and render 3D models.
+In this chapter, we will add one more feature, mipmap generation.
+Mipmaps are widely used in games and rendering software, and Vulkan gives us complete control over how they are created.</p>
+</div>
+<div class="paragraph">
+<p>Mipmaps are precalculated, downscaled versions of an image.
+Each new image is half the width and height of the previous one.
+Mipmaps are used as a form of <em>Level of Detail</em> or <em>LOD.</em> Objects that are far away from the camera will sample their textures from the smaller mip images.
+Using smaller images increases the rendering speed and avoids artifacts such as <a href="https://en.wikipedia.org/wiki/Moir%C3%A9_pattern">Moiré patterns</a>.
+An example of what mipmaps look like:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/mipmaps_example.jpg" alt="mipmaps example">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_image_creation"><a class="anchor" href="#_image_creation"></a>Image creation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In Vulkan, each of the mip images is stored in different <em>mip levels</em> of a <code>VkImage</code>.
+Mip level 0 is the original image, and the mip levels after level 0 are commonly referred to as the <em>mip chain.</em></p>
+</div>
+<div class="paragraph">
+<p>The number of mip levels is specified when the <code>VkImage</code> is created.
+Up until now, we have always set this value to one.
+We need to calculate the number of mip levels from the dimensions of the image.
+First, add a class member to store this number:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">...
+uint32_t mipLevels;
+std::unique_ptr&lt;vk::raii::Image&gt; textureImage;
+...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The value for <code>mipLevels</code> can be found once we&#8217;ve loaded the texture in <code>createTextureImage</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">int texWidth, texHeight, texChannels;
+stbi_uc* pixels = stbi_load(TEXTURE_PATH.c_str(), &amp;texWidth, &amp;texHeight, &amp;texChannels, STBI_rgb_alpha);
+...
+mipLevels = static_cast&lt;uint32_t&gt;(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This calculates the number of levels in the mip chain.
+The <code>max</code> function selects the largest dimension.
+The <code>log2</code> function calculates how many times that dimension can be divided by 2.
+The <code>floor</code> function handles cases where the largest dimension is not a power of 2.
+<code>1</code> is added so that the original image has a mip level.</p>
+</div>
+<div class="paragraph">
+<p>To use this value, we need to change the <code>createImage</code>, <code>createImageView</code>, and <code>transitionImageLayout</code> functions to allow us to specify the number of mip levels.
+Add a <code>mipLevels</code> parameter to the functions:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Image&amp; image, vk::raii::DeviceMemory&amp; imageMemory) const {
+    ...
+    imageInfo.mipLevels = mipLevels;
+    ...
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">[[nodiscard]] std::unique_ptr&lt;vk::raii::ImageView&gt; createImageView(const vk::raii::Image&amp; image, vk::Format format, vk::ImageAspectFlags aspectFlags, uint32_t mipLevels) const {
+    ...
+    viewInfo.subresourceRange.levelCount = mipLevels;
+    ...</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void transitionImageLayout(const vk::raii::Image&amp; image, const vk::ImageLayout oldLayout, const vk::ImageLayout newLayout, uint32_t mipLevels) const {
+    ...
+    barrier.subresourceRange.levelCount = mipLevels;
+    ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Update all calls to these functions to use the right values:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">createImage(swapChainExtent.width, swapChainExtent.height, 1, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, depthImage, depthImageMemory);
+...
+createImage(texWidth, texHeight, mipLevels, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal, textureImage, textureImageMemory);</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">swapChainImageViews[i] = createImageView(swapChainImages[i], swapChainImageFormat, vk::ImageAspectFlagBits::eColor, 1);
+...
+depthImageView = createImageView(depthImage, depthFormat,vk::ImageAspectFlagBits::eDepth, 1);
+...
+textureImageView = createImageView(textureImage, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor, mipLevels);</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">transitionImageLayout(depthImage, depthFormat, vk::ImageLayout::eUndefined,vk::ImageLayout::eDepthStencilAttachmentOptimal, 1);
+...
+transitionImageLayout(textureImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, mipLevels);</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_generating_mipmaps"><a class="anchor" href="#_generating_mipmaps"></a>Generating Mipmaps</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Our texture image now has multiple mip levels, but the staging buffer can only be used to fill mip level 0.
+The other levels are still undefined.
+To fill these levels, we need to generate the data from the single level that we have.
+We will use the <code>vkCmdBlitImage</code> command.
+This command performs copying, scaling, and filtering operations.
+We will call this multiple times to <em>blit</em> data to each level of our texture image.</p>
+</div>
+<div class="paragraph">
+<p><code>vkCmdBlitImage</code> is considered a transfer operation, so we must inform Vulkan that we intend to use the texture image as both the source and destination of a transfer.
+Add <code>VK_IMAGE_USAGE_TRANSFER_SRC_BIT</code> to the texture image&#8217;s usage flags in <code>createTextureImage</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">...
+createImage(texWidth, texHeight, mipLevels, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::MemoryPropertyFlagBits::eDeviceLocal, textureImage, textureImageMemory);
+...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Like other image operations, <code>vkCmdBlitImage</code> depends on the layout of the image it operates on.
+We could transition the entire image to <code>VK_IMAGE_LAYOUT_GENERAL</code>, but this will most likely be slow.
+For optimal performance, the source image should be in <code>VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL</code> and the destination image should be in <code>VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL</code>.
+Vulkan allows us to transition each mip level of an image independently.
+Each blit will only deal with two mip levels at a time, so we can transition each level into the optimal layout between blits commands.</p>
+</div>
+<div class="paragraph">
+<p><code>transitionImageLayout</code> only performs layout transitions on the entire image, so we&#8217;ll need to write a few more pipeline barrier commands.
+Remove the existing transition to <code>VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL</code> in <code>createTextureImage</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">...
+transitionImageLayout(textureImage,  vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, mipLevels);
+    copyBufferToImage(stagingBuffer, textureImage, static_cast&lt;uint32_t&gt;(texWidth), static_cast&lt;uint32_t&gt;(texHeight));
+//transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmaps
+...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This will leave each level of the texture image in <code>VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL</code>.
+Each level will be transitioned to <code>VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL</code> after the blit command reading from it is finished.</p>
+</div>
+<div class="paragraph">
+<p>We&#8217;re now going to write the function that generates the mipmaps:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void generateMipmaps(vk::raii::Image&amp; image, vk::Format imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels) {
+    std::unique_ptr&lt;vk::raii::CommandBuffer&gt; commandBuffer = beginSingleTimeCommands();
+
+    vk::ImageMemoryBarrier barrier (vk::AccessFlagBits::eTransferWrite, vk::AccessFlagBits::eTransferRead
+                               , vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eTransferSrcOptimal
+                               , vk::QueueFamilyIgnored, vk::QueueFamilyIgnored, image);
+    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = 1;
+    barrier.subresourceRange.levelCount = 1;
+    endSingleTimeCommands(commandBuffer);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We&#8217;re going to make several transitions, so we&#8217;ll reuse this <code>VkImageMemoryBarrier</code>.
+The fields set above will remain the same for all barriers.
+<code>subresourceRange.miplevel</code>, <code>oldLayout</code>, <code>newLayout</code>, <code>srcAccessMask</code>, and <code>dstAccessMask</code> will be changed for each transition.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">int32_t mipWidth = texWidth;
+int32_t mipHeight = texHeight;
+
+for (uint32_t i = 1; i &lt; mipLevels; i++) {
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This loop will record each of the <code>VkCmdBlitImage</code> commands.
+Note that the loop variable starts at 1, not 0.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">barrier.subresourceRange.baseMipLevel = i - 1;
+barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
+barrier.newLayout = vk::ImageLayout::eTransferSrcOptimal;
+barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+barrier.dstAccessMask = vk::AccessFlagBits::eTransferRead;
+
+commandBuffer-&gt;pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, {}, {}, {}, barrier);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>First, we transition level <code>i - 1</code> to <code>VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL</code>.
+This transition will wait for level <code>i - 1</code> to be filled, either from the previous blit command, or from <code>vkCmdCopyBufferToImage</code>.
+The current blit command will wait on this transition.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::ArrayWrapper1D&lt;vk::Offset3D, 2&gt; offsets, dstOffsets;
+offsets[0] = vk::Offset3D(0, 0, 0);
+offsets[1] = vk::Offset3D(mipWidth, mipHeight, 1);
+dstOffsets[0] = vk::Offset3D(0, 0, 0);
+dstOffsets[1] = vk::Offset3D(mipWidth &gt; 1 ? mipWidth / 2 : 1, mipHeight &gt; 1 ? mipHeight / 2 : 1, 1);
+vk::ImageBlit blit = { .srcSubresource = {}, .srcOffsets = offsets,
+                    .dstSubresource =  {}, .dstOffsets = dstOffsets };
+blit.srcSubresource = vk::ImageSubresourceLayers( vk::ImageAspectFlagBits::eColor, i - 1, 0, 1);
+blit.dstSubresource = vk::ImageSubresourceLayers( vk::ImageAspectFlagBits::eColor, i, 0, 1);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Next, we specify the regions that will be used in the blit operation.
+The source mip level is <code>i - 1</code> and the destination mip level is <code>i</code>.
+The two elements of the <code>srcOffsets</code> array determine the 3D region that data will be blitted from.
+<code>dstOffsets</code> determines the region that data will be blitted to.
+The X and Y dimensions of the <code>dstOffsets[1]</code> are divided by two since each mip level is half the size of the previous level.
+The Z dimension of <code>srcOffsets[1]</code> and <code>dstOffsets[1]</code> must be 1, since a 2D image has a depth of 1.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">commandBuffer-&gt;blitImage(image, vk::ImageLayout::eTransferSrcOptimal, image, vk::ImageLayout::eTransferDstOptimal, { blit }, vk::Filter::eLinear);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now, we record the blit command.
+Note that <code>textureImage</code> is used for both the <code>srcImage</code> and <code>dstImage</code> parameter.
+This is because we&#8217;re blitting between different levels of the same image.
+The source mip level was just transitioned to <code>VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL</code> and the destination level is still in <code>VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL</code> from <code>createTextureImage</code>.</p>
+</div>
+<div class="paragraph">
+<p>Beware if you are using a dedicated transfer queue (as suggested in <a href="04_Vertex_buffers/02_Staging_buffer.html" class="xref page">Vertex buffers</a>): <code>vkCmdBlitImage</code> must be submitted to a queue with graphics capability.</p>
+</div>
+<div class="paragraph">
+<p>The last parameter allows us to specify a <code>VkFilter</code> to use in the blit.
+We have the same filtering options here that we had when making the <code>VkSampler</code>.
+We use the <code>VK_FILTER_LINEAR</code> to enable interpolation.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">barrier.oldLayout = vk::ImageLayout::eTransferSrcOptimal;
+barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+barrier.srcAccessMask = vk::AccessFlagBits::eTransferRead;
+barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+commandBuffer-&gt;pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, {}, {}, {}, barrier);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This barrier transitions mip level <code>i - 1</code> to <code>VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL</code>.
+This transition waits on the current blit command to finish.
+All sampling operations will wait on this transition to finish.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">    ...
+    if (mipWidth &gt; 1) mipWidth /= 2;
+    if (mipHeight &gt; 1) mipHeight /= 2;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>At the end of the loop, we divide the current mip dimensions by two.
+We check each dimension before the division to ensure that dimension never becomes 0.
+This handles cases where the image is not square, since one of the mip dimensions would reach 1 before the other dimension.
+When this happens, that dimension should remain 1 for all remaining levels.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">    barrier.subresourceRange.baseMipLevel = mipLevels - 1;
+    barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
+    barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+    barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+    barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+    commandBuffer-&gt;pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, {}, {}, {}, barrier);
+
+    endSingleTimeCommands(*commandBuffer);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Before we end the command buffer, we insert one more pipeline barrier.
+This barrier transitions the last mip level from <code>VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL</code> to <code>VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL</code>.
+The loop didn&#8217;t handle this, since the last mip level is never blitted from.</p>
+</div>
+<div class="paragraph">
+<p>Finally, add the call to <code>generateMipmaps</code> in <code>createTextureImage</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">transitionImageLayout(*textureImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, mipLevels);
+copyBufferToImage(stagingBuffer, *textureImage, static_cast&lt;uint32_t&gt;(texWidth), static_cast&lt;uint32_t&gt;(texHeight));
+//transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmaps
+...
+generateMipmaps(textureImage, texWidth, texHeight, mipLevels);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Our texture image&#8217;s mipmaps are now filled.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_linear_filtering_support"><a class="anchor" href="#_linear_filtering_support"></a>Linear filtering support</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>It is very convenient to use a built-in function like <code>vkCmdBlitImage</code> to generate all the mip levels, but unfortunately it is not guaranteed to be supported on all platforms.
+It requires the texture image format we use to support linear filtering, which can be checked with the <code>vkGetPhysicalDeviceFormatProperties</code> function.
+We will add a check to the <code>generateMipmaps</code> function for this.</p>
+</div>
+<div class="paragraph">
+<p>First, add a parameter that specifies the image format:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createTextureImage() {
+    ...
+
+    generateMipmaps(*textureImage, vk::Format::eR8G8B8A8Srgb, texWidth, texHeight, mipLevels);
+}
+
+void generateMipmaps(vk::raii::Image&amp; image, vk::Format imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels) {
+
+    ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the <code>generateMipmaps</code> function, use <code>vkGetPhysicalDeviceFormatProperties</code> to request the properties of the texture image format:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void generateMipmaps(vk::raii::Image&amp; image, vk::Format imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels) {
+
+    // Check if image format supports linear blit-ing
+    vk::FormatProperties formatProperties = physicalDevice-&gt;getFormatProperties(imageFormat);
+
+    ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>VkFormatProperties</code> struct has three fields named <code>linearTilingFeatures</code>, <code>optimalTilingFeatures</code> and <code>bufferFeatures</code> that each describe how the format can be used depending on the way it is used.
+We create a texture image with the optimal tiling format, so we need to check <code>optimalTilingFeatures</code>.
+Support for the linear filtering feature can be checked with the <code>VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">if (!(formatProperties.optimalTilingFeatures &amp; vk::FormatFeatureFlagBits::eSampledImageFilterLinear)) {
+    throw std::runtime_error("texture image format does not support linear blitting!");
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>There are two alternatives in this case.
+You could implement a function that searches common texture image formats for one that <em>does</em> support linear blitting, or you could implement the mipmap generation in software with a library like <a href="https://github.com/nothings/stb/blob/master/stb_image_resize.h">stb_image_resize</a>.
+Each mip level can then be loaded into the image in the same way that you loaded the original image.</p>
+</div>
+<div class="paragraph">
+<p>It should be noted that it is uncommon in practice to generate the mipmap levels at runtime anyway.
+Usually they are pre-generated and stored in the texture file alongside the
+base level to improve loading speed.
+Implementing resizing in software and loading multiple levels from a file is left as an exercise to the reader.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_sampler"><a class="anchor" href="#_sampler"></a>Sampler</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>While the <code>VkImage</code> holds the mipmap data, <code>VkSampler</code> controls how that data is read while rendering.
+Vulkan allows us to specify <code>minLod</code>, <code>maxLod</code>, <code>mipLodBias</code>, and <code>mipmapMode</code> ("Lod" means "Level of Detail").
+When a texture is sampled, the sampler selects a mip level according to the following pseudocode:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">lod = getLodLevelFromScreenSize(); //smaller when the object is close, may be negative
+lod = clamp(lod + mipLodBias, minLod, maxLod);
+
+level = clamp(floor(lod), 0, texture.mipLevels - 1);  //clamped to the number of mip levels in the texture
+
+if (mipmapMode == vk::SamplerMipmapMode::eNearest) {
+    color = sample(level);
+} else {
+    color = blend(sample(level), sample(level + 1));
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If <code>samplerInfo.mipmapMode</code> is <code>VK_SAMPLER_MIPMAP_MODE_NEAREST</code>, <code>lod</code> selects the mip level to sample from.
+If the mipmap mode is <code>VK_SAMPLER_MIPMAP_MODE_LINEAR</code>, <code>lod</code> is used to select two mip levels to be sampled.
+Those levels are sampled and the results are linearly blended.</p>
+</div>
+<div class="paragraph">
+<p>The sample operation is also affected by <code>lod</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">if (lod &lt;= 0) {
+    color = readTexture(uv, magFilter);
+} else {
+    color = readTexture(uv, minFilter);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If the object is close to the camera, <code>magFilter</code> is used as the filter.
+If the object is further from the camera, <code>minFilter</code> is used.
+Normally, <code>lod</code> is non-negative, and is only 0 when close the camera.
+<code>mipLodBias</code> lets us force Vulkan to use lower <code>lod</code> and <code>level</code> than it would normally use.</p>
+</div>
+<div class="paragraph">
+<p>To see the results of this chapter, we need to choose values for our <code>textureSampler</code>.
+We&#8217;ve already set the <code>minFilter</code> and <code>magFilter</code> to use <code>VK_FILTER_LINEAR</code>.
+We just need to choose values for <code>minLod</code>, <code>maxLod</code>, <code>mipLodBias</code>, and <code>mipmapMode</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createTextureSampler() {
+    vk::PhysicalDeviceProperties properties = physicalDevice.getProperties();
+    vk::SamplerCreateInfo samplerInfo {
+        .magFilter = vk::Filter::eLinear,
+        .minFilter = vk::Filter::eLinear,
+        .mipmapMode = vk::SamplerMipmapMode::eLinear,
+        .addressModeU = vk::SamplerAddressMode::eRepeat,
+        .addressModeV = vk::SamplerAddressMode::eRepeat,
+        .addressModeW = vk::SamplerAddressMode::eRepeat,
+        .mipLodBias = 0.0f,
+        .anisotropyEnable = vk::True,
+        .maxAnisotropy = properties.limits.maxSamplerAnisotropy,
+        .compareEnable = vk::False,
+        .compareOp = vk::CompareOp::eAlways
+    };
+    ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the code above, we&#8217;ve set up the sampler with linear filtering for both minification and magnification, and linear interpolation between mip levels. We&#8217;ve also set the mip level bias to 0.0f.</p>
+</div>
+<div class="paragraph">
+<p>By default, the full range of mip levels will be used. The default <code>minLod</code> is 0.0f, and the default <code>maxLod</code> is <code>VK_LOD_CLAMP_NONE</code> (which equals 1000.0f), meaning all available mipmap levels in the texture will be sampled.</p>
+</div>
+<div class="paragraph">
+<p>Now run your program, and you should see the following:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/mipmaps.png" alt="mipmaps">
+</div>
+</div>
+<div class="paragraph">
+<p>It&#8217;s not a dramatic difference, since our scene is so simple.
+There are subtle differences if you look close.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/mipmaps_comparison.png" alt="mipmaps comparison">
+</div>
+</div>
+<div class="paragraph">
+<p>The most noticeable difference is the writing in the papers.
+With mipmaps, the writing has been smoothed.
+Without mipmaps, the writing has harsh edges and gaps from Moiré artifacts.</p>
+</div>
+<div class="paragraph">
+<p>You can play around with the sampler settings to see how they affect mipmapping.
+For example, by changing <code>minLod</code>, you can force the sampler to not use the lowest mip levels:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">samplerInfo.minLod = static_cast&lt;float&gt;(mipLevels / 2);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>These settings will produce this image:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/highmipmaps.png" alt="highmipmaps">
+</div>
+</div>
+<div class="paragraph">
+<p>This is how higher mip levels will be used when objects are further away from the camera.</p>
+</div>
+<div class="paragraph">
+<p>The <a href="10_Multisampling.html" class="xref page">next chapter</a> will walk us through multisampling to produce a smoother image.</p>
+</div>
+<div class="paragraph">
+<p><a href="_attachments/29_mipmapping.cpp">C&#43;&#43; code</a> /
+<a href="_attachments/27_shader_depth.slang">slang shader</a> /
+<a href="_attachments/27_shader_depth.vert">GLSL Vertex shader</a> /
+<a href="_attachments/27_shader_depth.frag">GLSL Fragment shader</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+<script src="../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../.." data-snippet-length="100" data-stylesheet="../../_/css/search.css"></script>
+<script async src="../../search-index.js"></script>
+<script async src="../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

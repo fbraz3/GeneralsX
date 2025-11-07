@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Descriptor layout and buffer :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../90_FAQ.html">FAQ</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li><a href="00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Tutorial/antora/modules/ROOT/pages/05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Descriptor layout and buffer</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>We&#8217;re now able to pass arbitrary attributes to the vertex shader for each vertex, but what about global variables?
+We&#8217;re going to move on to 3D graphics from this chapter on, and that requires a model-view-projection matrix.
+We could include it as vertex data, but that&#8217;s a waste of memory, and it would require us to update the vertex buffer whenever the transformation changes.
+The transformation could easily change every single frame.</p>
+</div>
+<div class="paragraph">
+<p>The right way to tackle this in Vulkan is to use <em>resource descriptors</em>.
+A descriptor is a way for shaders to freely access resources like buffers and images.
+We&#8217;re going to set up a buffer that contains the transformation matrices and have the vertex shader access them through a descriptor.
+Usage of descriptors consists of three parts:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Specify a descriptor set layout during pipeline creation</p>
+</li>
+<li>
+<p>Allocate a descriptor set from a descriptor pool</p>
+</li>
+<li>
+<p>Bind the descriptor set during rendering</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The <em>descriptor set layout</em> specifies the types of resources that are going to be accessed by the pipeline, just like a render pass specifies the types of attachments that will be accessed.
+A <em>descriptor set</em> specifies the actual buffer or image resources that will be bound to the descriptors, just like a framebuffer specifies the actual image views to bind to render pass attachments.
+The descriptor set is then bound for the drawing commands just like the vertex buffers and framebuffer.</p>
+</div>
+<div class="paragraph">
+<p>There are many types of descriptors, but in this chapter we&#8217;ll work with uniform buffer objects (UBO).
+We&#8217;ll look at other types of descriptors in future chapters, but the basic process is the same.
+Let&#8217;s say we have the data we want the vertex shader to have in a C struct like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">struct UniformBufferObject {
+    glm::mat4 model;
+    glm::mat4 view;
+    glm::mat4 proj;
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then we can copy the data to a <code>VkBuffer</code> and access it through a uniform buffer object descriptor from the vertex shader like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">struct VSInput {
+    float2 inPosition;
+    float3 inColor;
+};
+
+struct UniformBuffer {
+    float4x4 model;
+    float4x4 view;
+    float4x4 proj;
+};
+ConstantBuffer&lt;UniformBuffer&gt; ubo;
+
+struct VSOutput
+{
+    float4 pos : SV_Position;
+    float3 color;
+};
+
+[shader("vertex")]
+VSOutput vertMain(VSInput input) {
+    VSOutput output;
+    output.pos = mul(ubo.proj, mul(ubo.view, mul(ubo.model, float4(input.inPosition, 0.0, 1.0))));
+    output.color = input.inColor;
+    return output;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We&#8217;re going to update the model, view and projection matrices every frame to make the rectangle from the previous chapter spin around in 3D.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_vertex_shader"><a class="anchor" href="#_vertex_shader"></a>Vertex shader</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Modify the vertex shader to include the uniform buffer object like it was specified above.
+I will assume that you are familiar with MVP transformations.
+If you&#8217;re not, see <a href="https://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/">the resource</a> mentioned in the first chapter.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">struct VSInput {
+    float2 inPosition;
+    float3 inColor;
+};
+
+struct UniformBuffer {
+    float4x4 model;
+    float4x4 view;
+    float4x4 proj;
+};
+ConstantBuffer&lt;UniformBuffer&gt; ubo;
+
+struct VSOutput
+{
+    float4 pos : SV_Position;
+    float3 color;
+};
+
+[shader("vertex")]
+VSOutput vertMain(VSInput input) {
+    VSOutput output;
+    output.pos = mul(ubo.proj, mul(ubo.view, mul(ubo.model, float4(input.inPosition, 0.0, 1.0))));
+    output.color = input.inColor;
+    return output;
+}
+
+[shader("fragment")]
+float4 fragMain(VSOutput vertIn) : SV_TARGET {
+    return float4(vertIn.color, 1.0);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The line with <code>SV_Position</code> is changed to use the transformations to compute
+the final position in clip coordinates.
+Unlike the 2D triangles, the last component of the clip coordinates may not be <code>1</code>, which will result in a division when converted to the final normalized device coordinates on the screen.
+This is used in perspective projection as the <em>perspective division</em> and is essential for making closer objects look larger than objects that are further away.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_descriptor_set_layout"><a class="anchor" href="#_descriptor_set_layout"></a>Descriptor set layout</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The next step is to define the UBO on the C&#43;&#43; side and to tell Vulkan about this descriptor in the vertex shader.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">struct UniformBufferObject {
+    glm::mat4 model;
+    glm::mat4 view;
+    glm::mat4 proj;
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We can exactly match the definition in the shader using data types in GLM.
+The data in the matrices is binary compatible with the way the shader expects it, so we can later just <code>memcpy</code> a <code>UniformBufferObject</code> to a <code>VkBuffer</code>.</p>
+</div>
+<div class="paragraph">
+<p>We need to provide details about every descriptor binding used in the shaders for pipeline creation, just like we had to do for every vertex attribute and its <code>location</code> index.
+We&#8217;ll set up a new function to define all of this information called <code>createDescriptorSetLayout</code>.
+It should be called right before pipeline creation, because we&#8217;re going to need it there.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void initVulkan() {
+    ...
+    createDescriptorSetLayout();
+    createGraphicsPipeline();
+    ...
+}
+
+...
+
+void createDescriptorSetLayout() {
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Every binding needs to be described through a <code>VkDescriptorSetLayoutBinding</code> struct.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createDescriptorSetLayout() {
+    vk::DescriptorSetLayoutBinding uboLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex, nullptr);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The first two fields specify the <code>binding</code> used in the shader and the type of descriptor, which is a uniform buffer object.
+It is possible for the shader variable to represent an array of uniform buffer objects, and <code>descriptorCount</code> specifies the number of values in the array.
+This could be used to specify a transformation for each of the bones in a skeleton for skeletal animation, for example.
+Our MVP transformation is in a single uniform buffer object, so we&#8217;re using a <code>descriptorCount</code> of <code>1</code>.</p>
+</div>
+<div class="paragraph">
+<p>We also need to specify in which shader stages the descriptor is going to be referenced.
+The <code>stageFlags</code> field can be a combination of <code>VkShaderStageFlagBits</code> values or the value <code>VK_SHADER_STAGE_ALL_GRAPHICS</code>.
+In our case, we&#8217;re only referencing the descriptor from the vertex shader.</p>
+</div>
+<div class="paragraph">
+<p>The <code>pImmutableSamplers</code> field is only relevant for image sampling related descriptors, which we&#8217;ll look at later.
+You can leave this to its default value.</p>
+</div>
+<div class="paragraph">
+<p>All the descriptor bindings are combined into a single <code>VkDescriptorSetLayout</code> object.
+Define a new class member above <code>pipelineLayout</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::raii::DescriptorSetLayout descriptorSetLayout = nullptr;
+vk::raii::PipelineLayout pipelineLayout = nullptr;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We can then create it using <code>vkCreateDescriptorSetLayout</code>.
+This function accepts a simple <code>VkDescriptorSetLayoutCreateInfo</code> with the array of bindings:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::DescriptorSetLayoutBinding uboLayoutBinding(0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex, nullptr);
+vk::DescriptorSetLayoutCreateInfo layoutInfo({}, 1, &amp;uboLayoutBinding);
+descriptorSetLayout = vk::raii::DescriptorSetLayout( device, layoutInfo );</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We need to specify the descriptor set layout during pipeline creation to tell Vulkan which descriptors the shaders will be using.
+Descriptor set layouts are specified in the pipeline layout object.
+Modify the <code>VkPipelineLayoutCreateInfo</code> to reference the layout object:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PipelineLayoutCreateInfo pipelineLayoutInfo{ .setLayoutCount = 1, .pSetLayouts = &amp;*descriptorSetLayout, .pushConstantRangeCount = 0 };</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You may be wondering why it&#8217;s possible to specify multiple descriptor set layouts here, because a single one already includes all of the bindings.
+We&#8217;ll get back to that in the next chapter, where we&#8217;ll look into descriptor pools and descriptor sets.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_uniform_buffer"><a class="anchor" href="#_uniform_buffer"></a>Uniform buffer</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In the next chapter we&#8217;ll specify the buffer that contains the UBO data for the shader, but we need to create this buffer first.
+We&#8217;re going to copy new data to the uniform buffer every frame, so it doesn&#8217;t really make any sense to have a staging buffer.
+It would just add extra overhead in this case and likely degrade performance instead of improving it.</p>
+</div>
+<div class="paragraph">
+<p>We should have multiple buffers, because multiple frames may be in flight at the same time and we don&#8217;t want to update the buffer in preparation of the next frame while a previous one is still reading from it!
+Thus, we need to have as many uniform buffers as we have frames in flight, and write to a uniform buffer that is not currently being read by the GPU.</p>
+</div>
+<div class="paragraph">
+<p>To that end, add new class members for <code>uniformBuffers</code>, and <code>uniformBuffersMemory</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::raii::Buffer indexBuffer = nullptr;
+vk::raii::DeviceMemory indexBufferMemory = nullptr;
+
+std::vector&lt;vk::raii::Buffer&gt; uniformBuffers;
+std::vector&lt;vk::raii::DeviceMemory&gt; uniformBuffersMemory;
+std::vector&lt;void*&gt; uniformBuffersMapped;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Similarly, create a new function <code>createUniformBuffers</code> that is called after <code>createIndexBuffer</code> and allocates the buffers:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void initVulkan() {
+    ...
+    createVertexBuffer();
+    createIndexBuffer();
+    createUniformBuffers();
+    ...
+}
+
+...
+
+void createUniformBuffers() {
+    uniformBuffers.clear();
+    uniformBuffersMemory.clear();
+    uniformBuffersMapped.clear();
+
+    for (size_t i = 0; i &lt; MAX_FRAMES_IN_FLIGHT; i++) {
+        vk::DeviceSize bufferSize = sizeof(UniformBufferObject);
+        vk::raii::Buffer buffer({});
+        vk::raii::DeviceMemory bufferMem({});
+        createBuffer(bufferSize, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, buffer, bufferMem);
+        uniformBuffers.emplace_back(std::move(buffer));
+        uniformBuffersMemory.emplace_back(std::move(bufferMem));
+        uniformBuffersMapped.emplace_back( uniformBuffersMemory[i].mapMemory(0, bufferSize));
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We map the buffer right after creation using <code>vkMapMemory</code> to get a pointer to which we can write the data later on.
+The buffer stays mapped to this pointer for the application&#8217;s whole lifetime.
+This technique is called <strong>"persistent mapping"</strong> and works on all Vulkan implementations.
+Not having to map the buffer every time we need to update it increases performances, as mapping is not free.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_updating_uniform_data"><a class="anchor" href="#_updating_uniform_data"></a>Updating uniform data</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Create a new function <code>updateUniformBuffer</code> and add a call to it from the <code>drawFrame</code> function before submitting the next frame:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void drawFrame() {
+    ...
+
+    updateUniformBuffer(currentFrame);
+
+    ...
+
+    const vk::SubmitInfo submitInfo{ .waitSemaphoreCount = 1, .pWaitSemaphores = &amp;*presentCompleteSemaphore[currentFrame],
+                            .pWaitDstStageMask = &amp;waitDestinationStageMask, .commandBufferCount = 1, .pCommandBuffers = &amp;*commandBuffers[currentFrame],
+                            .signalSemaphoreCount = 1, .pSignalSemaphores = &amp;*renderFinishedSemaphore[currentFrame] };
+
+    ...
+}
+
+...
+
+void updateUniformBuffer(uint32_t currentImage) {
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This function will generate a new transformation every frame to make the geometry spin around.
+We need to include two new headers to implement this functionality:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">#include &lt;glm/glm.hpp&gt;
+#include &lt;glm/gtc/matrix_transform.hpp&gt;
+
+#include &lt;chrono&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>glm/gtc/matrix_transform.hpp</code> header exposes functions that can be used to generate model transformations like <code>glm::rotate</code>, view transformations like <code>glm::lookAt</code> and projection transformations like <code>glm::perspective</code>.</p>
+</div>
+<div class="paragraph">
+<p>The <code>chrono</code> standard library header exposes functions to do precise timekeeping.
+We&#8217;ll use this to make sure that the geometry rotates 90 degrees per second regardless of frame rate.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void updateUniformBuffer(uint32_t currentImage) {
+    static auto startTime = std::chrono::high_resolution_clock::now();
+
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float time = std::chrono::duration&lt;float, std::chrono::seconds::period&gt;(currentTime - startTime).count();
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>updateUniformBuffer</code> function will start out with some logic to calculate the time in seconds since rendering has started with floating point accuracy.</p>
+</div>
+<div class="paragraph">
+<p>We will now define the model, view and projection transformations in the uniform buffer object.
+The model rotation will be a simple rotation around the Z-axis using the <code>time</code> variable:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">UniformBufferObject ubo{};
+ubo.model = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>glm::rotate</code> function takes an existing transformation, rotation angle and rotation axis as parameters.
+The <code>glm::mat4(1.0f)</code> constructor returns an identity matrix.
+Using a rotation angle of <code>time * glm::radians(90.0f)</code> accomplishes the purpose of rotation 90 degrees per second.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">ubo.view = lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For the view transformation I&#8217;ve decided to look at the geometry from above at a 45 degree angle.
+The <code>glm::lookAt</code> function takes the eye position, center position and up axis as parameters.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">ubo.proj = glm::perspective(glm::radians(45.0f), static_cast&lt;float&gt;(swapChainExtent.width) / static_cast&lt;float&gt;(swapChainExtent.height), 0.1f, 10.0f);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>I&#8217;ve chosen to use a perspective projection with a 45 degree vertical field-of-view.
+The other parameters are the aspect ratio, near and far view planes.
+It is important to use the current swap chain extent to calculate the aspect ratio to take into account the new width and height of the window after a resize.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">ubo.proj[1][1] *= -1;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>GLM was originally designed for OpenGL, where the Y coordinate of the clip coordinates is inverted.
+The easiest way to compensate for that is to flip the sign on the scaling factor of the Y axis in the projection matrix.
+If you don&#8217;t do this, then the image will be rendered upside down.</p>
+</div>
+<div class="paragraph">
+<p>All of the transformations are defined now, so we can copy the data in the uniform buffer object to the current uniform buffer.
+This happens in exactly the same way as we did for vertex buffers, except without a staging buffer.
+As noted earlier, we only map the uniform buffer once, so we can directly write to it without having to map again:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">memcpy(uniformBuffersMapped[currentImage], &amp;ubo, sizeof(ubo));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Using a UBO this way is not the most efficient way to pass frequently changing values to the shader.
+A more efficient way to pass a small buffer of data to shaders is <em>push constants</em>.
+We may look at these in a future chapter.</p>
+</div>
+<div class="paragraph">
+<p>In the <a href="01_Descriptor_pool_and_sets.html" class="xref page">next chapter</a> we&#8217;ll look at descriptor sets, which will actually bind the <code>VkBuffer</code>s to the uniform buffer descriptors so that the shader can access this transformation data.</p>
+</div>
+<div class="paragraph">
+<p><a href="../_attachments/22_descriptor_set_layout.cpp">C&#43;&#43; code</a> /
+<a href="../_attachments/22_shader_ubo.slang">slang shader</a> /
+<a href="../_attachments/22_shader_ubo.vert">GLSL Vertex shader</a> /
+<a href="../_attachments/22_shader_ubo.frag">GLSL Fragment shader</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

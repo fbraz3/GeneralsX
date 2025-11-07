@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Shader modules :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../90_FAQ.html">FAQ</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li><a href="../00_Setup/00_Base_code.html">Drawing a triangle</a></li>
+    <li><a href="00_Introduction.html">Graphics pipeline basics</a></li>
+    <li><a href="01_Shader_modules.html">Shader modules</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Tutorial/antora/modules/ROOT/pages/03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Shader modules</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Unlike earlier APIs, shader code in Vulkan has to be specified in a bytecode
+format as opposed to human-readable syntax like
+<a href="https://en.wikipedia.org/wiki/OpenGL_Shading_Language">GLSL</a>
+<a href="https://shader-slang.org/slang/user-guide/">SLANG</a>, and
+<a href="https://en.wikipedia.org/wiki/High-Level_Shading_Language">HLSL</a>.
+This bytecode format is called <a href="https://www.khronos.org/spir">SPIR-V</a> and is designed
+to be used with Vulkan (a Khronos API). It is a format that
+can be used to write graphics and compute shaders, but we will focus on shaders
+used in Vulkan&#8217;s graphics pipelines in this tutorial.</p>
+</div>
+<div class="paragraph">
+<p>The advantage of using a bytecode format is that the compilers written by GPU
+vendors to turn shader code into native code are significantly less complex. The
+past has shown that with human-readable syntax like GLSL, some GPU vendors were
+rather flexible with their interpretation of the standard. If you happen to
+write non-trivial shaders with a GPU from one of these vendors, then you&#8217;d risk
+another vendor&#8217;s drivers rejecting your code due to syntax errors, or worse, your
+shader running differently because of compiler bugs. With a straightforward
+bytecode format like SPIR-V that will hopefully be avoided.</p>
+</div>
+<div class="paragraph">
+<p>However, that does not mean that we need to write this bytecode by hand. Khronos
+has released their own vendor-independent compiler that compiles Slang to
+SPIR-V. This compiler is designed to verify that your shader code is fully
+standards compliant and produces one SPIR-V binary that you can ship with your program.
+You can also include this compiler as a library to produce SPIR-V at runtime,
+but we won&#8217;t be doing that in this tutorial, until we get into reflection
+sometime in a future chapter. Although we can use this
+compiler directly via <code>slangc</code>, we will be using <code>slangc</code> in our cmake build
+process instead.</p>
+</div>
+<div class="paragraph">
+<p>Slang is a shading language with a C-style syntax. Programs written in it have a
+main entry point which is invoked for every object. Like HLSL, Slang uses
+parameters and return values for input and output with annotations to help
+describe what those variables relate to. The language includes many features
+to aid in graphics programming,  like built-in vector and matrix primitives.
+Functions for operations like cross-products, matrix-vector products, auto
+differentiation for AI, and reflections around a vector are included.
+The vector type is called <code>float</code> with a number indicating the number of elements.
+For example, a 3D position would be stored in a <code>float3</code>.</p>
+</div>
+<div class="paragraph">
+<p>It is possible to access single components through members like <code>.x</code> called
+the swizzle operator, but it&#8217;s also possible to create a new vector from
+multiple components at the same time. For example, the expression
+<code>float3(1.0,2.0, 3.0).xy</code> would result in <code>float2</code>. The
+constructors of vectors can also take combinations of vector objects and scalar
+values. For example, a <code>float3</code> can be constructed with
+<code>float3(float2(1.0, 2.0), 3.0)</code>.</p>
+</div>
+<div class="paragraph">
+<p>As the previous chapter mentioned, we need to write a vertex shader and a
+fragment shader to get a triangle on the screen. The next two sections will
+cover the Slang code those, and after that I&#8217;ll show you how to
+produce one SPIR-V binaries and load it into the program.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_vertex_shader"><a class="anchor" href="#_vertex_shader"></a>Vertex shader</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The vertex shader processes each incoming vertex. It takes its attributes, like
+world position, color, normal and texture coordinates as input. The output is
+the final position in clip coordinates and the attributes that need to be passed
+on to the fragment shader, like color and texture coordinates. These values will
+then be interpolated over the fragments by the rasterizer to produce a smooth
+gradient.</p>
+</div>
+<div class="paragraph">
+<p>A <strong>clip coordinate</strong> is a four-dimensional vector from the vertex shader that is
+subsequently turned into a <strong>normalized device coordinate</strong> by dividing the whole
+vector by its last component. These normalized device coordinates are
+<a href="https://en.wikipedia.org/wiki/Homogeneous_coordinates">homogeneous coordinates</a>
+that map the framebuffer to a [-1, 1] by [-1, 1] coordinate system that looks
+like the following:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../_images/images/normalized_device_coordinates.svg" alt="normalized device coordinates">
+</div>
+</div>
+<div class="paragraph">
+<p>You should already be familiar with these if you have dabbled in computer
+graphics before. If you have used OpenGL before, then you&#8217;ll notice that the
+sign of the Y coordinates is now flipped. The Z coordinate now uses the same
+range as it does in Direct3D, from 0 to 1.</p>
+</div>
+<div class="paragraph">
+<p>For our first triangle we won&#8217;t be applying any transformations, we&#8217;ll just
+specify the positions of the three vertices directly as normalized device
+coordinates to create the following shape:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../_images/images/triangle_coordinates.svg" alt="triangle coordinates">
+</div>
+</div>
+<div class="paragraph">
+<p>We can directly output normalized device coordinates by outputting them as clip
+coordinates from the vertex shader with the last component set to <code>1</code>. That way,
+the division to transform clip coordinates to normalized device coordinates will
+not change anything.</p>
+</div>
+<div class="paragraph">
+<p>Normally these coordinates would be stored in a vertex buffer, but creating a
+vertex buffer in Vulkan and filling it with data is not trivial. Therefore, I&#8217;ve
+decided to postpone that until after we&#8217;ve had the satisfaction of seeing a
+triangle pop up on the screen. We&#8217;re going to do something a little unorthodox
+in the meanwhile: include the coordinates directly inside the vertex shader. The
+code looks like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">static float2 positions[3] = float2[](
+    float2(0.0, -0.5),
+    float2(0.5, 0.5),
+    float2(-0.5, 0.5)
+);
+
+struct VertexOutput {
+    float4 sv_position : SV_Position;
+};
+
+[shader("vertex")]
+VertexOutput vertMain(uint vid : SV_VertexID) {
+    VertexOutput output;
+    output.sv_position = float4(positions[vid], 0.0, 1.0);
+    return output;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>vertMain</code> function is invoked for every vertex. The built-in
+<code>SV_VertexID</code>
+annotated variable in the parameters contains the index of the current vertex.
+This is usually an index into the vertex buffer, but in our case, it will be
+an index into a hardcoded array of vertex data. The position of each vertex
+is accessed from the constant array in the shader and combined with dummy
+<code>z</code> and <code>w</code> components to produce a position in clip coordinates. The
+built-in annotation <code>SV_Position</code> functions as
+the output. Within the VertexOutput struct.
+Something worth mentioning if you&#8217;re familiar with other shading languages
+like GLSL or HLSL, there are no instructions for bindings.  This is a feature
+ of Slang.  Slang is designed to automatically infer the bindings by the
+ order of declaration.  The struct for positions is a static to inform the
+ compiler that we don&#8217;t need any bindings in our shader.
+Studious observers will notice that we&#8217;re calling our main function
+vertMain instead of main, this is because Slang and SPIR-V both support
+having multiple entry points in one file.  This is important when you&#8217;re
+dealing with pipelines which have more than just a single vert/frag shader
+combo.  Ray-tracing for instance, for even simple demos would have four or
+more shaders all small yet needing their own file which can become cumbersome.
+Another major feature of Slang is the ability to create shader libraries
+or modules; an exercise left to the reader is to explore more about this
+feature rich shading language.</p>
+</div>
+<div class="paragraph">
+<p>In this tutorial, we&#8217;re going to demonstrate best practices by keeping the
+shaders to a single file.  If you know GLSL, there&#8217;s GLSL versions of the
+shaders in the attachments folder which are direct translations.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_fragment_shader"><a class="anchor" href="#_fragment_shader"></a>Fragment shader</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The triangle formed by the positions from the vertex shader fills an
+area on the screen with fragments. The fragment shader is invoked on these
+fragments to produce a color and depth for the framebuffer (or framebuffers). A
+simple fragment shader that outputs the color red for the entire triangle looks
+like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">[shader("fragment")]
+float4 fragMain() : SV_Target
+{
+    return float4(1.0, 0.0, 0.0, 1.0);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>fragMain</code> entry point function is called for every fragment just like the
+vertex shader <code>vertMain</code> function is called for every vertex. Colors in Slang
+are 4-component vectors with the R, G, B and alpha channels within the [0, 1] ranges. Unlike
+<code>SV_Position</code> in the vertex shader, there is no built-in variable to output a
+color for the current fragment. You have to specify your own output variable for
+each framebuffer where the <code>SV_TARGET</code> annotation specifies the index
+of the framebuffer. The color red is written to this <code>outColor</code> variable that is
+linked to the first (and only) framebuffer at index <code>0</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_per_vertex_colors"><a class="anchor" href="#_per_vertex_colors"></a>Per-vertex colors</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Making the entire triangle red is not very interesting, wouldn&#8217;t something like
+the following look a lot nicer?</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../_images/images/triangle_coordinates_colors.png" alt="triangle coordinates colors">
+</div>
+</div>
+<div class="paragraph">
+<p>We have to make a couple of changes to both shaders to achieve this. First
+off, we need to specify a distinct color for each of the three vertices. The
+vertex shader should now include an array with colors just like it does for
+positions:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">static float3 colors[3] = float3[](
+    float3(1.0, 0.0, 0.0),
+    float3(0.0, 1.0, 0.0),
+    float3(0.0, 0.0, 1.0)
+);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now we just need to pass these per-vertex colors to the fragment shader so it
+can output their interpolated values to the framebuffer. Add an output for color
+to the vertex shader and write to it in the <code>vertMain</code> function:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">struct VertexOutput {
+    float3 color;
+    float4 sv_position : SV_Position;
+};
+
+[shader("vertex")]
+VertexOutput vertMain(uint vid : SV_VertexID) {
+    VertexOutput output;
+    output.sv_position = float4(positions[vid], 0.0, 1.0);
+    output.color = colors[vid];
+    return output;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Next, we need to add a matching parameter in the fragment shader:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">[shader("fragment")]
+float4 fragMain(VertexOutput inVert) : SV_Target
+{
+    float3 color = inVert.color;
+    return float4(color, 1.0);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The input variable does not necessarily have to use the same name, however,
+if they are in the same file, it really is convenient to not repeat ourselves.
+But either way, they will be linked together using the indexes specified by
+the <code>location</code> directives. The <code>fragMain</code> function has been modified to output
+the color along with an alpha value. As shown in the image above, the values
+for <code>fragColor</code> will be automatically  interpolated for the fragments between
+ the three vertices, resulting in a smooth gradient.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_compiling_the_shaders"><a class="anchor" href="#_compiling_the_shaders"></a>Compiling the shaders</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Create a directory called <code>shaders</code> in the root directory of your project and
+store the shaders in a file called <code>shader.slang</code></p>
+</div>
+<div class="paragraph">
+<p>The contents of <code>shader.slang</code> should be:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">static float2 positions[3] = float2[](
+    float2(0.0, -0.5),
+    float2(0.5, 0.5),
+    float2(-0.5, 0.5)
+);
+
+static float3 colors[3] = float3[](
+    float3(1.0, 0.0, 0.0),
+    float3(0.0, 1.0, 0.0),
+    float3(0.0, 0.0, 1.0)
+);
+
+struct VertexOutput {
+    float3 color;
+    float4 sv_position : SV_Position;
+};
+
+[shader("vertex")]
+VertexOutput vertMain(uint vid : SV_VertexID) {
+    VertexOutput output;
+    output.sv_position = float4(positions[vid], 0.0, 1.0);
+    output.color = colors[vid];
+    return output;
+}
+
+[shader("fragment")]
+float4 fragMain(VertexOutput inVert) : SV_Target
+{
+    float3 color = inVert.color;
+    return float4(color, 1.0);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We&#8217;re now going to compile these into SPIR-V bytecode using the
+<code>slangc</code> program.</p>
+</div>
+<div class="paragraph">
+<p><strong>Windows</strong></p>
+</div>
+<div class="paragraph">
+<p>Create a <code>compile.bat</code> file with the following contents:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">C:/VulkanSDK/x.x.x.x/bin/slangc.exe shader.slang -target spirv -profile spirv_1_4 -emit-spirv-directly -fvk-use-entrypoint-name -entry vertMain -entry fragMain -o slang.spv</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Replace the path to <code>slangc.exe</code> with the path to where you installed
+the Vulkan SDK. Double-click the file to run it.</p>
+</div>
+<div class="paragraph">
+<p><strong>Linux</strong></p>
+</div>
+<div class="paragraph">
+<p>Create a <code>compile.sh</code> file with the following contents:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">/home/user/VulkanSDK/x.x.x.x/x86_64/bin/slangc shader.slang -target spirv -profile spirv_1_4 -emit-spirv-directly -fvk-use-entrypoint-name -entry vertMain -entry fragMain -o slang.spv</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Replace the path to <code>slangc</code> with the path to where you installed the
+Vulkan SDK. Make the script executable with <code>chmod +x compile.sh</code> and run it.</p>
+</div>
+<div class="paragraph">
+<p><strong>End of platform-specific instructions</strong></p>
+</div>
+<div class="paragraph">
+<p>These two commands tell the compiler to read the Slang source file and output a
+SPIR-V 1.4 bytecode file directly using the <code>-o</code> (output) flag.</p>
+</div>
+<div class="paragraph">
+<p>Note: At the time of writing SlangC will natively support SPIR-V 1.3 and above
+without needing to go through emitting GLSL to get to SPIR-V.  While
+everything in this tutorial could work in SPIR-V 1.0, it would require us to
+break the Slang shaders up into multiple files which begs the question,
+what&#8217;s the point? Plus, SPIR-V 1.4 starting from 1.4 means you&#8217;ll be
+familiar with the latest the standard has to offer rather than starting from
+ an older version.</p>
+</div>
+<div class="paragraph">
+<p>If your shader contains a syntax error, then the compiler will tell you the line
+number and problem, as you would expect. Try leaving out a semicolon, for example,
+and run the compiler script again. Also try running the compiler without any
+arguments to see what kinds of flags it supports. It can, for example, also
+output the bytecode into a human-readable format, so you can see exactly what
+your shader is doing and any optimizations that have been applied at this stage.</p>
+</div>
+<div class="paragraph">
+<p>Compiling shaders on the commandline is one of the most straightforward
+options, yet the best path and one we use in this tutorial is to create a
+CMake function:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cmake hljs" data-lang="cmake">function (add_slang_shader_target TARGET)
+  cmake_parse_arguments ("SHADER" "" "SOURCES" ${ARGN})
+  set (SHADERS_DIR ${CMAKE_CURRENT_LIST_DIR}/shaders)
+  set (ENTRY_POINTS -entry vertMain -entry fragMain)
+  add_custom_command (
+          OUTPUT ${SHADERS_DIR}
+          COMMAND ${CMAKE_COMMAND} -E make_directory ${SHADERS_DIR}
+  )
+  add_custom_command (
+          OUTPUT  ${SHADERS_DIR}/slang.spv
+          COMMAND ${SLANGC_EXECUTABLE} ${SHADER_SOURCES} -target spirv -profile spirv_1_4 -emit-spirv-directly -fvk-use-entrypoint-name ${ENTRY_POINTS} -o slang.spv
+          WORKING_DIRECTORY ${SHADERS_DIR}
+          DEPENDS ${SHADERS_DIR} ${SHADER_SOURCES}
+          COMMENT "Compiling Slang Shaders"
+          VERBATIM
+  )
+  add_custom_target (${TARGET} DEPENDS ${SHADERS_DIR}/slang.spv)
+endfunction()</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then you can add the Slang build step to your target like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cmake hljs" data-lang="cmake">add_slang_shader_target( foo SOURCES ${SHADER_SLANG_SOURCES})
+target_add_dependencies(bar PUBLIC foo)</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_loading_a_shader"><a class="anchor" href="#_loading_a_shader"></a>Loading a shader</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Now that we have a way of producing SPIR-V shaders, it&#8217;s time to load them into
+our program to plug them into the graphics pipeline at some point. We&#8217;ll first
+write a simple helper function to load the binary data from the files.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">#include &lt;fstream&gt;
+
+...
+
+static std::vector&lt;char&gt; readFile(const std::string&amp; filename) {
+    std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+    if (!file.is_open()) {
+        throw std::runtime_error("failed to open file!");
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>readFile</code> function will read all the bytes from the specified file and
+return them in a byte array managed by <code>std::vector</code>. We start by opening the
+file with two flags:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>ate</code>: Start reading at the end of the file</p>
+</li>
+<li>
+<p><code>binary</code>: Read the file as a binary file (avoid text transformations)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The advantage of starting to read at the end of the file is that we can use the
+read position to determine the size of the file and allocate a buffer:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">std::vector&lt;char&gt; buffer(file.tellg());</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After that, we can seek back to the beginning of the file and read all the
+bytes at once:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">file.seekg(0, std::ios::beg);
+file.read(buffer.data(), static_cast&lt;std::streamsize&gt;(buffer.size()));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And finally, close the file and return the bytes:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">file.close();
+
+return buffer;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We&#8217;ll now call this function from <code>createGraphicsPipeline</code> to load the bytecode
+of the two shaders:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createGraphicsPipeline() {
+    auto shaderCode = readFile("shaders/slang.spv");
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Make sure that the shaders are loaded correctly by printing the size of the
+buffers and checking if they match the actual file size in bytes. Note that
+the code doesn&#8217;t need to be null terminated since it&#8217;s binary code, and we
+will later be explicit about its size.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_creating_shader_modules"><a class="anchor" href="#_creating_shader_modules"></a>Creating shader modules</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before we can pass the code to the pipeline, we have to wrap it in a
+<code>VkShaderModule</code> object. Let&#8217;s create a helper function <code>createShaderModule</code> to
+do that.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">[[nodiscard]] vk::raii::ShaderModule createShaderModule(const std::vector&lt;char&gt;&amp; code) const {
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The function will take a buffer with the bytecode as parameter and create a
+<code>VkShaderModule</code> from it.</p>
+</div>
+<div class="paragraph">
+<p>Creating a shader module is straightforward, we only need to specify a pointer to the
+buffer with the bytecode and the length of it. This information is specified in
+a <code>VkShaderModuleCreateInfo</code> structure. The one catch is that the size of the
+bytecode is specified in bytes, but the bytecode pointer is a <code>uint32_t</code> pointer
+rather than a <code>char</code> pointer. Therefore, we will need to cast the pointer with
+<code>reinterpret_cast</code> as shown below. When you perform a cast like this, you also
+need to ensure that the data satisfies the alignment requirements of <code>uint32_t</code>.
+Lucky for us, the data is stored in an <code>std::vector</code> where the default allocator
+already ensures that the data satisfies the worst case alignment requirements.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::ShaderModuleCreateInfo createInfo{ .codeSize = code.size() * sizeof(char), .pCode = reinterpret_cast&lt;const uint32_t*&gt;(code.data()) };</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>VkShaderModule</code> can then be created with a call to <code>vkCreateShaderModule</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::raii::ShaderModule shaderModule{ device, createInfo };</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The parameters are the same as those in previous object creation functions: the
+logical device, pointer to create info structure, optional pointer to custom
+allocators and handle output variable. The buffer with the code can be freed
+immediately after creating the shader module. Remember to return the created
+shader module:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">return shaderModule;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Shader modules are just a thin wrapper around the shader bytecode that we&#8217;ve previously loaded from a file and the functions defined in it.
+The compilation and linking of the SPIR-V bytecode to machine code for execution by the GPU doesn&#8217;t happen until the graphics pipeline is created.
+That means that we&#8217;re allowed to destroy the shader modules again as soon as pipeline creation is finished, which is why we&#8217;ll make them local variables in the <code>createGraphicsPipeline</code> function instead of class members:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createGraphicsPipeline() {
+    vk::raii::ShaderModule shaderModule = createShaderModule(readFile("shaders/slang.spv"));</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_shader_stage_creation"><a class="anchor" href="#_shader_stage_creation"></a>Shader stage creation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To actually use the shaders, we&#8217;ll need to assign them to a specific
+pipeline stage through <code>VkPipelineShaderStageCreateInfo</code> structures as part
+of the actual pipeline creation process.</p>
+</div>
+<div class="paragraph">
+<p>We&#8217;ll start by filling in the structure for the vertex shader, again in the
+<code>createGraphicsPipeline</code> function.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PipelineShaderStageCreateInfo vertShaderStageInfo{ .stage = vk::ShaderStageFlagBits::eVertex, .module = shaderModule,  .pName = "vertMain" };</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The first two parameters are the flags and the stage that we&#8217;re operating
+in. The next two parameters specify the shader module containing the code, and
+the function to invoke, known as the <em>entrypoint</em>.
+That means that it&#8217;s possible to combine multiple fragment shaders into a
+single shader module and use different entry points to differentiate between
+ their behaviors.</p>
+</div>
+<div class="paragraph">
+<p>There is one more (optional) member, <code>pSpecializationInfo</code>, which we won&#8217;t
+ be using here, but is worth discussing. It allows you to specify values for
+ shader constants. You can use a single shader module where its behavior can
+ be configured in pipeline creation by specifying different values for the
+ constants used in it.
+This is more efficient than configuring the shader using variables at render
+ time, because the compiler can do optimizations like eliminating <code>if</code>
+ statements that depend on these values.
+If you don&#8217;t have any constants like that, then you can set the member to
+<code>nullptr</code>, which our struct initialization does automatically.</p>
+</div>
+<div class="paragraph">
+<p>Modifying the structure to suit the fragment shader is easy:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PipelineShaderStageCreateInfo fragShaderStageInfo{ .stage = vk::ShaderStageFlagBits::eFragment, .module = shaderModule, .pName = "fragMain" };</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Finish by defining an array that contains these two structs, which we&#8217;ll later use to reference them in the actual pipeline creation step.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>That&#8217;s all there is describing the programmable stages of the pipeline.
+In the <a href="02_Fixed_functions.html" class="xref page">next chapter,</a> we&#8217;ll look at the fixed-function stages.</p>
+</div>
+<div class="paragraph">
+<p><a href="../../_attachments/09_shader_modules.cpp">C&#43;&#43; code</a> /
+<a href="../../_attachments/09_shader_base.slang">Slang shader</a> /
+<a href="../../_attachments/09_shader_base.vert">GLSL Vertex shader</a> /
+<a href="../../_attachments/09_shader_base.frag">GLSL Fragment shader</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Deferred Host Operations :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:spec" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="spec" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../index.html">Vulkan Specification</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../fundamentals.html">Fundamentals</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../initialization.html">Initialization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../devsandqueues.html">Devices and Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../cmdbuffers.html">Command Buffers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../synchronization.html">Synchronization and Cache Control</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../renderpass.html">Render Pass</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../shaders.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../pipelines.html">Pipelines</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../memory.html">Memory Allocation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../resources.html">Resource Creation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../samplers.html">Samplers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../descriptorsets.html">Resource Descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../interfaces.html">Shader Interfaces</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../textures.html">Image Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../fragmentdensitymapops.html">Fragment Density Map Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_ARM_tensors/tensorops.html">Tensor Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../queries.html">Queries</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../clears.html">Clear Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../copies.html">Copy Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../drawing.html">Drawing Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../fxvertex.html">Fixed-Function Vertex Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../tessellation.html">Tessellation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../geometry.html">Geometry Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_NV_mesh_shader/mesh.html">Mesh Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_HUAWEI_cluster_culling_shader/clusterculling.html">Cluster Culling Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../vertexpostproc.html">Fixed-Function Vertex Post-Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../primsrast.html">Rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../fragops.html">Fragment Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../framebuffer.html">The Framebuffer</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../dispatch.html">Dispatching Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../device_generated_commands/generatedcommands.html">Device-Generated Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../sparsemem.html">Sparse Resources</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_KHR_surface/wsi.html">Window System Integration (WSI)</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="deferred_host_operations.html">Deferred Host Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_EXT_private_data.html">Private Data</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../accelstructures.html">Acceleration Structures</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_EXT_opacity_micromap/micromaps.html">Micromap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../raytraversal.html">Ray Traversal</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../raytracing.html">Ray Tracing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_NV_memory_decompression.html">Memory Decompression</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../videocoding.html">Video Coding</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_NV_optical_flow/optical_flow.html">Optical Flow</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../executiongraphs.html">Execution Graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_NV_external_compute_queue/VK_NV_external_compute_queue.html">External Compute Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../VK_ARM_data_graph/graphs.html">Data graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../extensions.html">Extending Vulkan</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../features.html">Features</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../limits.html">Limits</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../formats.html">Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../capabilities.html">Additional Capabilities</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../debugging.html">Debugging</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/spirvenv.html">Vulkan Environment for SPIR-V</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/memorymodel.html">Memory Model</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/compressedtex.html">Compressed Image Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/versions.html">Core Revisions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/extensions.html">Layers &amp; Extensions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/roadmap.html">Vulkan Roadmap Milestones</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/deprecation.html">Deprecation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/boilerplate.html">API Boilerplate</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/invariance.html">Invariance</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/glossary.html">Lexicon</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../appendices/credits.html">Credits (Informative)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Specification</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../../index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../index.html">Vulkan Specification</a></li>
+    <li><a href="deferred_host_operations.html">Deferred Host Operations</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/spec/modules/ROOT/pages/chapters/VK_KHR_deferred_host_operations/deferred_host_operations.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Deferred Host Operations</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Certain Vulkan commands are inherently expensive for the host CPU to
+execute.
+It is often desirable to offload such work onto background threads, and to
+parallelize the work across multiple CPUs.
+The concept of <em>deferred operations</em> allows applications and drivers to
+coordinate the execution of expensive host commands using an
+application-managed thread pool.</p>
+</div>
+<div class="paragraph">
+<p>The <code><a href="../../appendices/extensions.html#VK_KHR_deferred_host_operations" class="xref page">VK_KHR_deferred_host_operations</a></code> extension defines the
+infrastructure and usage patterns for <em>deferrable commands</em>, but does not
+specify any commands as deferrable.
+This is left to additional dependent extensions.
+Commands <strong>must</strong> not be deferred unless the deferral is specifically allowed
+by another extension which depends on
+<code><a href="../../appendices/extensions.html#VK_KHR_deferred_host_operations" class="xref page">VK_KHR_deferred_host_operations</a></code>.
+This specification will refer to such extensions as <em>deferral extensions</em>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="deferred-host-operations-requesting"><a class="anchor" href="#deferred-host-operations-requesting"></a>Requesting Deferral</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When an application requests an operation deferral, the implementation <strong>may</strong>
+defer the operation.
+When deferral is requested and the implementation defers any operation, the
+implementation <strong>must</strong> return <code>VK_OPERATION_DEFERRED_KHR</code> as the success
+code if no errors occurred.
+When deferral is requested, the implementation <strong>should</strong> defer the operation
+when the workload is significant, however if the implementation chooses not
+to defer any of the requested operations and instead executes all of them
+immediately, the implementation <strong>must</strong> return
+<code>VK_OPERATION_NOT_DEFERRED_KHR</code> as the success code if no errors
+occurred.</p>
+</div>
+<div class="paragraph">
+<p>A deferred operation is created <em>complete</em> with an initial result value of
+<code>VK_SUCCESS</code>.
+The deferred operation becomes <em>pending</em> when an operation has been
+successfully deferred with that deferred operation object.</p>
+</div>
+<div class="paragraph">
+<p>A deferred operation is considered pending until the deferred operation
+completes.
+A pending deferred operation becomes <em>complete</em> when it has been fully
+executed by one or more threads.
+Pending deferred operations will never complete until they are <em>joined</em> by
+an application thread, using <a href="#vkDeferredOperationJoinKHR">vkDeferredOperationJoinKHR</a>.
+Applications <strong>can</strong> join multiple threads to the same deferred operation,
+enabling concurrent execution of subtasks within that operation.</p>
+</div>
+<div class="paragraph">
+<p>The application <strong>can</strong> query the status of a <a href="#VkDeferredOperationKHR">VkDeferredOperationKHR</a>
+using the <a href="#vkGetDeferredOperationMaxConcurrencyKHR">vkGetDeferredOperationMaxConcurrencyKHR</a> or
+<a href="#vkGetDeferredOperationResultKHR">vkGetDeferredOperationResultKHR</a> commands.</p>
+</div>
+<div class="paragraph">
+<p>Parameters to the command requesting a deferred operation <strong>may</strong> be accessed
+by the implementation at any time until the deferred operation enters the
+complete state.
+The application <strong>must</strong> obey the following rules while a deferred operation is
+pending:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Externally synchronized parameters <strong>must</strong> not be accessed.</p>
+</li>
+<li>
+<p>Pointer parameters <strong>must</strong> not be modified (e.g. reallocated/freed).</p>
+</li>
+<li>
+<p>The contents of pointer parameters which <strong>may</strong> be read by the command
+<strong>must</strong> not be modified.</p>
+</li>
+<li>
+<p>The contents of pointer parameters which <strong>may</strong> be written by the command
+<strong>must</strong> not be read.</p>
+</li>
+<li>
+<p>Vulkan object parameters <strong>must</strong> not be passed as externally synchronized
+parameters to any other command.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>When the deferred operation is complete, the application <strong>should</strong> call
+<a href="#vkGetDeferredOperationResultKHR">vkGetDeferredOperationResultKHR</a> to obtain the <a href="../fundamentals.html#VkResult" class="xref page">VkResult</a>
+indicating success or failure of the operation.
+The <a href="../fundamentals.html#VkResult" class="xref page">VkResult</a> value returned will be one of the values that the command
+requesting the deferred operation is able to return.
+Writes to output parameters of the requesting command will happen-before the
+deferred operation is complete.</p>
+</div>
+<div class="paragraph">
+<p>When a deferral is requested for a command, the implementation <strong>may</strong> perform
+memory management operations on the allocator supplied to
+<a href="#vkCreateDeferredOperationKHR">vkCreateDeferredOperationKHR</a> for the deferred operation object, as
+described in the <a href="../memory.html#memory-allocation" class="xref page">Memory Allocation</a> chapter.
+Such allocations <strong>must</strong> occur on the thread which requests deferral.</p>
+</div>
+<div class="paragraph">
+<p>If an allocator was supplied for the deferred command at the time of the
+deferral request, then the implementation <strong>may</strong> perform memory management
+operations on this allocator during the execution of
+<a href="#vkDeferredOperationJoinKHR">vkDeferredOperationJoinKHR</a>.
+These operations <strong>may</strong> occur concurrently and <strong>may</strong> be performed by any joined
+thread.
+The application <strong>must</strong> ensure that the supplied allocator is able to operate
+correctly under these conditions.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_deferred_host_operations_api"><a class="anchor" href="#_deferred_host_operations_api"></a>Deferred Host Operations API</h2>
+<div class="sectionbody">
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkDeferredOperationKHR</code> handle is defined as:</p>
+</div>
+<div id="VkDeferredOperationKHR" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_deferred_host_operations
+VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkDeferredOperationKHR)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This handle refers to a tracking structure which manages the execution state
+for a deferred command.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To construct the tracking object for a deferred command, call:</p>
+</div>
+<div id="vkCreateDeferredOperationKHR" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_deferred_host_operations
+VkResult vkCreateDeferredOperationKHR(
+    VkDevice                                    device,
+    const VkAllocationCallbacks*                pAllocator,
+    VkDeferredOperationKHR*                     pDeferredOperation);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the device which owns <code>operation</code>.</p>
+</li>
+<li>
+<p><code>pAllocator</code> controls host memory allocation as described in the
+<a href="../memory.html#memory-allocation" class="xref page">Memory Allocation</a> chapter.</p>
+</li>
+<li>
+<p><code>pDeferredOperation</code> is a pointer to a handle in which the created
+<a href="#VkDeferredOperationKHR">VkDeferredOperationKHR</a> is returned.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCreateDeferredOperationKHR-device-parameter" href="#VUID-vkCreateDeferredOperationKHR-device-parameter"></a> <span class="vuid">VUID-vkCreateDeferredOperationKHR-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateDeferredOperationKHR-pAllocator-parameter" href="#VUID-vkCreateDeferredOperationKHR-pAllocator-parameter"></a> <span class="vuid">VUID-vkCreateDeferredOperationKHR-pAllocator-parameter</span><br>
+ If <code>pAllocator</code> is not <code>NULL</code>, <code>pAllocator</code> <strong>must</strong> be a valid pointer to a valid <a href="../memory.html#VkAllocationCallbacks" class="xref page">VkAllocationCallbacks</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateDeferredOperationKHR-pDeferredOperation-parameter" href="#VUID-vkCreateDeferredOperationKHR-pDeferredOperation-parameter"></a> <span class="vuid">VUID-vkCreateDeferredOperationKHR-pDeferredOperation-parameter</span><br>
+ <code>pDeferredOperation</code> <strong>must</strong> be a valid pointer to a <a href="#VkDeferredOperationKHR">VkDeferredOperationKHR</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateDeferredOperationKHR-device-queuecount" href="#VUID-vkCreateDeferredOperationKHR-device-queuecount"></a> <span class="vuid">VUID-vkCreateDeferredOperationKHR-device-queuecount</span><br>
+ The device <strong>must</strong> have been created with at least <code>1</code> queue</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To assign a thread to a deferred operation, call:</p>
+</div>
+<div id="vkDeferredOperationJoinKHR" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_deferred_host_operations
+VkResult vkDeferredOperationJoinKHR(
+    VkDevice                                    device,
+    VkDeferredOperationKHR                      operation);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the device which owns <code>operation</code>.</p>
+</li>
+<li>
+<p><code>operation</code> is the deferred operation that the calling thread should
+work on.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The <code>vkDeferredOperationJoinKHR</code> command will execute a portion of the
+deferred operation on the calling thread.</p>
+</div>
+<div class="paragraph">
+<p>The return value will be one of the following:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A return value of <code>VK_SUCCESS</code> indicates that <code>operation</code> is
+complete.
+The application <strong>should</strong> use <a href="#vkGetDeferredOperationResultKHR">vkGetDeferredOperationResultKHR</a> to
+retrieve the result of <code>operation</code>.</p>
+</li>
+<li>
+<p>A return value of <code>VK_THREAD_DONE_KHR</code> indicates that the deferred
+operation is not complete, but there is no work remaining to assign to
+threads.
+Future calls to <a href="#vkDeferredOperationJoinKHR">vkDeferredOperationJoinKHR</a> are not necessary and
+will simply harm performance.
+This situation <strong>may</strong> occur when other threads executing
+<a href="#vkDeferredOperationJoinKHR">vkDeferredOperationJoinKHR</a> are about to complete <code>operation</code>,
+and the implementation is unable to partition the workload any further.</p>
+</li>
+<li>
+<p>A return value of <code>VK_THREAD_IDLE_KHR</code> indicates that the deferred
+operation is not complete, and there is no work for the thread to do at
+the time of the call.
+This situation <strong>may</strong> occur if the operation encounters a temporary
+reduction in parallelism.
+By returning <code>VK_THREAD_IDLE_KHR</code>, the implementation is signaling
+that it expects that more opportunities for parallelism will emerge as
+execution progresses, and that future calls to
+<a href="#vkDeferredOperationJoinKHR">vkDeferredOperationJoinKHR</a> <strong>can</strong> be beneficial.
+In the meantime, the application <strong>can</strong> perform other work on the calling
+thread.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Implementations <strong>must</strong> guarantee forward progress by enforcing the following
+invariants:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>If only one thread has invoked <a href="#vkDeferredOperationJoinKHR">vkDeferredOperationJoinKHR</a> on a
+given operation, that thread <strong>must</strong> execute the operation to completion
+and return <code>VK_SUCCESS</code>.</p>
+</li>
+<li>
+<p>If multiple threads have concurrently invoked
+<a href="#vkDeferredOperationJoinKHR">vkDeferredOperationJoinKHR</a> on the same operation, then at least
+one of them <strong>must</strong> complete the operation and return <code>VK_SUCCESS</code>.</p>
+</li>
+</ol>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkDeferredOperationJoinKHR-device-parameter" href="#VUID-vkDeferredOperationJoinKHR-device-parameter"></a> <span class="vuid">VUID-vkDeferredOperationJoinKHR-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkDeferredOperationJoinKHR-operation-parameter" href="#VUID-vkDeferredOperationJoinKHR-operation-parameter"></a> <span class="vuid">VUID-vkDeferredOperationJoinKHR-operation-parameter</span><br>
+ <code>operation</code> <strong>must</strong> be a valid <a href="#VkDeferredOperationKHR">VkDeferredOperationKHR</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkDeferredOperationJoinKHR-operation-parent" href="#VUID-vkDeferredOperationJoinKHR-operation-parent"></a> <span class="vuid">VUID-vkDeferredOperationJoinKHR-operation-parent</span><br>
+ <code>operation</code> <strong>must</strong> have been created, allocated, or retrieved from <code>device</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+<li>
+<p><code>VK_THREAD_DONE_KHR</code></p>
+</li>
+<li>
+<p><code>VK_THREAD_IDLE_KHR</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_OUT_OF_DEVICE_MEMORY</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>When a deferred operation is completed, the application <strong>can</strong> destroy the
+tracking object by calling:</p>
+</div>
+<div id="vkDestroyDeferredOperationKHR" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_deferred_host_operations
+void vkDestroyDeferredOperationKHR(
+    VkDevice                                    device,
+    VkDeferredOperationKHR                      operation,
+    const VkAllocationCallbacks*                pAllocator);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the device which owns <code>operation</code>.</p>
+</li>
+<li>
+<p><code>operation</code> is the completed operation to be destroyed.</p>
+</li>
+<li>
+<p><code>pAllocator</code> controls host memory allocation as described in the
+<a href="../memory.html#memory-allocation" class="xref page">Memory Allocation</a> chapter.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkDestroyDeferredOperationKHR-operation-03434" href="#VUID-vkDestroyDeferredOperationKHR-operation-03434"></a> <span class="vuid">VUID-vkDestroyDeferredOperationKHR-operation-03434</span><br>
+
+If <code>VkAllocationCallbacks</code> were provided when <code>operation</code> was
+created, a compatible set of callbacks <strong>must</strong> be provided here</p>
+</li>
+<li>
+<p><a id="VUID-vkDestroyDeferredOperationKHR-operation-03435" href="#VUID-vkDestroyDeferredOperationKHR-operation-03435"></a> <span class="vuid">VUID-vkDestroyDeferredOperationKHR-operation-03435</span><br>
+
+If no <code>VkAllocationCallbacks</code> were provided when <code>operation</code> was
+created, <code>pAllocator</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-vkDestroyDeferredOperationKHR-operation-03436" href="#VUID-vkDestroyDeferredOperationKHR-operation-03436"></a> <span class="vuid">VUID-vkDestroyDeferredOperationKHR-operation-03436</span><br>
+
+<code>operation</code> <strong>must</strong> be completed</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkDestroyDeferredOperationKHR-device-parameter" href="#VUID-vkDestroyDeferredOperationKHR-device-parameter"></a> <span class="vuid">VUID-vkDestroyDeferredOperationKHR-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkDestroyDeferredOperationKHR-operation-parameter" href="#VUID-vkDestroyDeferredOperationKHR-operation-parameter"></a> <span class="vuid">VUID-vkDestroyDeferredOperationKHR-operation-parameter</span><br>
+ If <code>operation</code> is not <a href="../../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, <code>operation</code> <strong>must</strong> be a valid <a href="#VkDeferredOperationKHR">VkDeferredOperationKHR</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkDestroyDeferredOperationKHR-pAllocator-parameter" href="#VUID-vkDestroyDeferredOperationKHR-pAllocator-parameter"></a> <span class="vuid">VUID-vkDestroyDeferredOperationKHR-pAllocator-parameter</span><br>
+ If <code>pAllocator</code> is not <code>NULL</code>, <code>pAllocator</code> <strong>must</strong> be a valid pointer to a valid <a href="../memory.html#VkAllocationCallbacks" class="xref page">VkAllocationCallbacks</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkDestroyDeferredOperationKHR-operation-parent" href="#VUID-vkDestroyDeferredOperationKHR-operation-parent"></a> <span class="vuid">VUID-vkDestroyDeferredOperationKHR-operation-parent</span><br>
+ If <code>operation</code> is a valid handle, it <strong>must</strong> have been created, allocated, or retrieved from <code>device</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>operation</code> <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To query the number of additional threads that can usefully be joined to a
+deferred operation, call:</p>
+</div>
+<div id="vkGetDeferredOperationMaxConcurrencyKHR" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_deferred_host_operations
+uint32_t vkGetDeferredOperationMaxConcurrencyKHR(
+    VkDevice                                    device,
+    VkDeferredOperationKHR                      operation);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the device which owns <code>operation</code>.</p>
+</li>
+<li>
+<p><code>operation</code> is the deferred operation to be queried.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The returned value is the maximum number of threads that can usefully
+execute a deferred operation concurrently, reported for the state of the
+deferred operation at the point this command is called.
+This value is intended to be used to better schedule work onto available
+threads.
+Applications <strong>can</strong> join any number of threads to the deferred operation and
+expect it to eventually complete, though excessive joins <strong>may</strong> return
+<code>VK_THREAD_DONE_KHR</code> immediately, performing no useful work.</p>
+</div>
+<div class="paragraph">
+<p>If <code>operation</code> is complete,
+<code>vkGetDeferredOperationMaxConcurrencyKHR</code> returns zero.</p>
+</div>
+<div class="paragraph">
+<p>If <code>operation</code> is currently joined to any threads, the value returned by
+this command <strong>may</strong> immediately be out of date.</p>
+</div>
+<div class="paragraph">
+<p>If <code>operation</code> is pending, implementations <strong>must</strong> not return zero unless
+at least one thread is currently executing <a href="#vkDeferredOperationJoinKHR">vkDeferredOperationJoinKHR</a>
+on <code>operation</code>.
+If there are such threads, the implementation <strong>should</strong> return an estimate of
+the number of additional threads which it could profitably use.</p>
+</div>
+<div class="paragraph">
+<p>Implementations <strong>may</strong> return <span class="eq">2<sup>32</sup>-1</span> to indicate that the maximum
+concurrency is unknown and cannot be easily derived.
+Implementations <strong>may</strong> return values larger than the maximum concurrency
+available on the host CPU.
+In these situations, an application <strong>should</strong> clamp the return value rather
+than oversubscribing the machine.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The recommended usage pattern for applications is to query this value once,
+after deferral, and schedule no more than the specified number of threads to
+join the operation.
+Each time a joined thread receives <code>VK_THREAD_IDLE_KHR</code>, the application
+should schedule an additional join at some point in the future, but is not
+required to do so.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkGetDeferredOperationMaxConcurrencyKHR-device-parameter" href="#VUID-vkGetDeferredOperationMaxConcurrencyKHR-device-parameter"></a> <span class="vuid">VUID-vkGetDeferredOperationMaxConcurrencyKHR-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkGetDeferredOperationMaxConcurrencyKHR-operation-parameter" href="#VUID-vkGetDeferredOperationMaxConcurrencyKHR-operation-parameter"></a> <span class="vuid">VUID-vkGetDeferredOperationMaxConcurrencyKHR-operation-parameter</span><br>
+ <code>operation</code> <strong>must</strong> be a valid <a href="#VkDeferredOperationKHR">VkDeferredOperationKHR</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkGetDeferredOperationMaxConcurrencyKHR-operation-parent" href="#VUID-vkGetDeferredOperationMaxConcurrencyKHR-operation-parent"></a> <span class="vuid">VUID-vkGetDeferredOperationMaxConcurrencyKHR-operation-parent</span><br>
+ <code>operation</code> <strong>must</strong> have been created, allocated, or retrieved from <code>device</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>vkGetDeferredOperationResultKHR</code> function is defined as:</p>
+</div>
+<div id="vkGetDeferredOperationResultKHR" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_deferred_host_operations
+VkResult vkGetDeferredOperationResultKHR(
+    VkDevice                                    device,
+    VkDeferredOperationKHR                      operation);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the device which owns <code>operation</code>.</p>
+</li>
+<li>
+<p><code>operation</code> is the operation whose deferred result is being queried.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If no command has been deferred on <code>operation</code>,
+<code>vkGetDeferredOperationResultKHR</code> returns <code>VK_SUCCESS</code>.</p>
+</div>
+<div class="paragraph">
+<p>If the deferred operation is pending, <code>vkGetDeferredOperationResultKHR</code>
+returns <code>VK_NOT_READY</code>.</p>
+</div>
+<div class="paragraph">
+<p>If the deferred operation is complete, it returns the appropriate return
+value from the original command.
+This value <strong>must</strong> be one of the <a href="../fundamentals.html#VkResult" class="xref page">VkResult</a> values which could have been
+returned by the original command if the operation had not been deferred.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkGetDeferredOperationResultKHR-device-parameter" href="#VUID-vkGetDeferredOperationResultKHR-device-parameter"></a> <span class="vuid">VUID-vkGetDeferredOperationResultKHR-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="../devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkGetDeferredOperationResultKHR-operation-parameter" href="#VUID-vkGetDeferredOperationResultKHR-operation-parameter"></a> <span class="vuid">VUID-vkGetDeferredOperationResultKHR-operation-parameter</span><br>
+ <code>operation</code> <strong>must</strong> be a valid <a href="#VkDeferredOperationKHR">VkDeferredOperationKHR</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkGetDeferredOperationResultKHR-operation-parent" href="#VUID-vkGetDeferredOperationResultKHR-operation-parent"></a> <span class="vuid">VUID-vkGetDeferredOperationResultKHR-operation-parent</span><br>
+ <code>operation</code> <strong>must</strong> have been created, allocated, or retrieved from <code>device</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+<li>
+<p><code>VK_NOT_READY</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="../fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<p>None</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

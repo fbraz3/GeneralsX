@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Shader Features :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:guide" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="guide" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Guide</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Vulkan Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Logistics Overview</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../what_is_vulkan.html">What is Vulkan?</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../what_vulkan_can_do.html">What Vulkan Can Do</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../vulkan_spec.html">Vulkan Specification</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../platforms.html">Platforms</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../checking_for_support.html">Checking For Vulkan Support</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../versions.html">Versions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../vulkan_release_summary.html">Vulkan Release Summary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../what_is_spirv.html">What is SPIR-V</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../portability_initiative.html">Portability Initiative</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../vulkan_cts.html">Vulkan CTS</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../development_tools.html">Development Tools</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../validation_overview.html">Vulkan Validation Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../decoder_ring.html">Vulkan Decoder Ring</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Using Vulkan</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../loader.html">Loader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../layers.html">Layers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../querying_extensions_features.html">Querying Properties, Extensions, Features, Limits, and Formats</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../enabling_extensions.html">Enabling Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../enabling_features.html">Enabling Features</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../spirv_extensions.html">Using SPIR-V Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../formats.html">Formats</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../queues.html">Queues</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../wsi.html">Window System Integration (WSI)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../pnext_and_stype.html">pNext and sType</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../synchronization.html">Synchronization</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="VK_KHR_synchronization2.html">VK_KHR_synchronization2</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../swapchain_semaphore_reuse.html">Swapchain Semaphore Reuse</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../synchronization_examples.html">Synchronization Examples</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../memory_allocation.html">Memory Allocation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../sparse_resources.html">Sparse Resources</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../protected.html">Protected Memory</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../buffer_device_address.html">Buffer Device Address</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../pipeline_cache.html">Pipeline Cache</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../threading.html">Threading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../depth.html">Depth</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../primitive_topology.html">Primitive Topology</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../mapping_data_to_shaders.html">Mapping Data to Shaders</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../storage_image_and_texel_buffers.html">Storage Image and Texel Buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../vertex_input_data_processing.html">Vertex Input Data Processing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../descriptor_arrays.html">Descriptor Arrays</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../descriptor_dynamic_offset.html">Descriptor Dynamic Offset</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../location_component_interface.html">Location and Component Interface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../push_constants.html">Push Constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../ways_to_provide_spirv.html">Ways to Provide SPIR-V</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../robustness.html">Robustness</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../dynamic_state.html">Pipeline Dynamic State</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../dynamic_state_map.html">Dynamic State Map</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../subgroups.html">Subgroups</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../shader_memory_layout.html">Shader Memory Layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../atomics.html">Atomics</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../image_copies.html">Image Copies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../common_pitfalls.html">Common Pitfalls for New Vulkan Developers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../hlsl.html">HLSL in Vulkan</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../high_level_shader_language_comparison.html">Vulkan High Level Shader Language Comparison</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">When and Why to use Extensions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="cleanup.html">Cleanup Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="device_groups.html">Device Groups</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="external.html">External Memory and Synchronization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="ray_tracing.html">Ray Tracing</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="shader_features.html">Shader Features</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="translation_layer_extensions.html">Translation Layer Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_descriptor_indexing.html">VK_EXT_descriptor_indexing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_inline_uniform_block.html">VK_EXT_inline_uniform_block</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_memory_priority.html">VK_EXT_memory_priority</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_descriptor_update_template.html">VK_KHR_descriptor_update_template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_draw_indirect_count.html">VK_KHR_draw_indirect_count</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_image_format_list.html">VK_KHR_image_format_list</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_imageless_framebuffer.html">VK_KHR_imageless_framebuffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_sampler_ycbcr_conversion.html">VK_KHR_sampler_ycbcr_conversion</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_subgroup_uniform_control_flow.html">VK_KHR_shader_subgroup_uniform_control_flow</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_debug_utils.html">VK_KHR_debug_utils</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Guide</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Guide</a></li>
+    <li>When and Why to use Extensions</li>
+    <li><a href="shader_features.html">Shader Features</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Guide/antora/modules/ROOT/pages/extensions/shader_features.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Shader Features</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>There are various reasons why every part of SPIR-V was not exposed to Vulkan 1.0. Over time the Vulkan Working Group has identified use cases where it makes sense to expose a new SPIR-V feature.</p>
+</div>
+<div class="paragraph">
+<p>Some of the following extensions were added alongside a SPIR-V extension. For example, the <code>VK_KHR_8bit_storage</code> extension was created in parallel with <code>SPV_KHR_8bit_storage</code>. The Vulkan extension only purpose is to allow an application to query for SPIR-V support in the implementation. The SPIR-V extension is there to define the changes made to the SPIR-V intermediate representation.</p>
+</div>
+<div class="paragraph">
+<p>For details how to use SPIR-V extension please read the <a href="../spirv_extensions.html" class="xref page">dedicated Vulkan Guide chapter</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="VK_KHR_spirv_1_4"><a class="anchor" href="#VK_KHR_spirv_1_4"></a>VK_KHR_spirv_1_4</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Promoted to core in Vulkan 1.2</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>This extension is designed for a Vulkan 1.1 implementations to expose the SPIR-V 1.4 feature set. Vulkan 1.1 only requires SPIR-V 1.3 and some use cases were found where an implementation might not upgrade to Vulkan 1.2, but still want to offer SPIR-V 1.4 features.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="VK_KHR_16bit_storage"><a class="anchor" href="#VK_KHR_16bit_storage"></a>VK_KHR_8bit_storage and VK_KHR_16bit_storage</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p><a href="http://htmlpreview.github.io/?https://github.com/KhronosGroup/SPIRV-Registry/blob/main/extensions/KHR/SPV_KHR_8bit_storage.html">SPV_KHR_8bit_storage</a></p>
+</div>
+<div class="paragraph">
+<p><a href="http://htmlpreview.github.io/?https://github.com/KhronosGroup/SPIRV-Registry/blob/main/extensions/KHR/SPV_KHR_16bit_storage.html">SPV_KHR_16bit_storage</a></p>
+</div>
+<div class="paragraph">
+<p><a href="https://github.com/KhronosGroup/GLSL/blob/master/extensions/ext/GL_EXT_shader_16bit_storage.txt">GLSL - GL_EXT_shader_16bit_storage</a> defines both</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Both <code>VK_KHR_8bit_storage</code> (promoted in Vulkan 1.2) and <code>VK_KHR_16bit_storage</code> (promoted in Vulkan 1.1) were added to allow the ability to use small values as input or output to a SPIR-V storage object. Prior to these extensions, all UBO, SSBO, and push constants needed to consume at least 4 bytes. With this, an application can now use 8-bit or 16-bit values directly from a buffer. It is also commonly paired with the use of <code>VK_KHR_shader_float16_int8</code> as this extension only deals with the storage interfaces.</p>
+</div>
+<div class="paragraph">
+<p>The following is an example of using <code>SPV_KHR_8bit_storage</code> with the GLSL extension:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">#version 450
+
+// Without 8-bit storage each block variable has to be 32-bit wide
+layout (set = 0, binding = 0) readonly buffer StorageBuffer {
+    uint data; // 0x0000AABB
+} ssbo;
+
+void main() {
+    uint a = ssbo.data &amp; 0x0000FF00;
+    uint b = ssbo.data &amp; 0x000000FF;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>With the extension</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">#version 450
+#extension GL_EXT_shader_8bit_storage : enable
+
+layout (set = 0, binding = 0) readonly buffer StorageBuffer {
+    uint8_t dataA; // 0xAA
+    uint8_t dataB; // 0xBB
+} ssbo;
+
+void main() {
+    uint a = uint(ssbo.dataA);
+    uint b = uint(ssbo.dataB);
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="VK_KHR_shader_float16_int8"><a class="anchor" href="#VK_KHR_shader_float16_int8"></a>VK_KHR_shader_float16_int8</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Promoted to core in Vulkan 1.2</p>
+</div>
+<div class="paragraph">
+<p><a href="https://github.com/KhronosGroup/GLSL/blob/master/extensions/ext/GL_EXT_shader_explicit_arithmetic_types.txt">GLSL - GL_EXT_shader_explicit_arithmetic_types</a></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>This extension allows the use of 8-bit integer types or 16-bit floating-point types for arithmetic operations. This does not allow for 8-bit integer types or 16-bit floating-point types in any shader input and output interfaces and therefore is commonly paired with the use of <code>VK_KHR_8bit_storage</code> and <code>VK_KHR_16bit_storage</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="VK_KHR_shader_float_controls"><a class="anchor" href="#VK_KHR_shader_float_controls"></a>VK_KHR_shader_float_controls</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Promoted to core in Vulkan 1.2</p>
+</div>
+<div class="paragraph">
+<p><a href="http://htmlpreview.github.io/?https://github.com/KhronosGroup/SPIRV-Registry/blob/main/extensions/KHR/SPV_KHR_float_controls.html">SPV_KHR_float_controls</a></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>This extension allows the ability to set how rounding of floats are handled. The <code>VkPhysicalDeviceFloatControlsProperties</code> shows the full list of features that can be queried. This is useful when converting OpenCL kernels to Vulkan.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="VK_KHR_storage_buffer_storage_class"><a class="anchor" href="#VK_KHR_storage_buffer_storage_class"></a>VK_KHR_storage_buffer_storage_class</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Promoted to core in Vulkan 1.1</p>
+</div>
+<div class="paragraph">
+<p><a href="https://htmlpreview.github.io/?https://github.com/KhronosGroup/SPIRV-Registry/blob/main/extensions/KHR/SPV_KHR_storage_buffer_storage_class.html">SPV_KHR_storage_buffer_storage_class</a></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Originally SPIR-V combined both UBO and SSBO into the 'Uniform' storage classes and differentiated them only through extra decorations. Because some hardware treats UBO and SSBO as two different storage objects, the SPIR-V wanted to reflect that. This extension serves the purpose of extending SPIR-V to have a new <code>StorageBuffer</code> class.</p>
+</div>
+<div class="paragraph">
+<p>An example of this can be seen if you take the following GLSL shader snippet:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">layout(set = 0, binding = 0) buffer ssbo {
+    int x;
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you target Vulkan 1.0 (which requires SPIR-V 1.0), using glslang <code>--target-env vulkan1.0</code>, you will get something like:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-swift hljs" data-lang="swift">       OpDecorate %ssbo BufferBlock
+%ptr = OpTypePointer Uniform %ssbo
+%var = OpVariable %ptr Uniform</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Since <code>SPV_KHR_storage_buffer_storage_class</code> was added to SPIR-V 1.3, if you target Vulkan 1.1 (which requires SPIR-V 1.3) ,using glslang <code>--target-env vulkan1.1</code>, it will make use of the new <code>StorageBuffer</code> class.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-swift hljs" data-lang="swift">       OpDecorate %ssbo Block
+%ptr = OpTypePointer StorageBuffer %ssbo
+%var = OpVariable %ptr StorageBuffer</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p><a href="https://godbolt.org/z/a8WMEeejs">Try Online</a></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="VK_KHR_variable_pointers"><a class="anchor" href="#VK_KHR_variable_pointers"></a>VK_KHR_variable_pointers</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Promoted to core in Vulkan 1.1</p>
+</div>
+<div class="paragraph">
+<p><a href="https://htmlpreview.github.io/?https://github.com/KhronosGroup/SPIRV-Registry/blob/main/extensions/KHR/SPV_KHR_variable_pointers.html">SPV_KHR_variable_pointers</a></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>A <code>Variable pointer</code> is defined in SPIR-V as</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>A pointer of logical pointer type that results from one of the following instructions: <code>OpSelect</code>, <code>OpPhi</code>, <code>OpFunctionCall</code>, <code>OpPtrAccessChain</code>, <code>OpLoad</code>, or <code>OpConstantNull</code></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>When this extension is enabled, invocation-private pointers can be dynamic and non-uniform. Without this extension a variable pointer must be selected from pointers pointing into the same structure or be <code>OpConstantNull</code>.</p>
+</div>
+<div class="paragraph">
+<p>This extension has two levels to it. The first is the <code>variablePointersStorageBuffer</code> feature bit which allows implementations to support the use of variable pointers into a SSBO only. The <code>variablePointers</code> feature bit allows the use of variable pointers outside the SSBO as well.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="VK_KHR_vulkan_memory_model"><a class="anchor" href="#VK_KHR_vulkan_memory_model"></a>VK_KHR_vulkan_memory_model</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Promoted to core in Vulkan 1.2</p>
+</div>
+<div class="paragraph">
+<p><a href="https://www.khronos.org/blog/comparing-the-vulkan-spir-v-memory-model-to-cs/">Comparing the Vulkan SPIR-V memory model to C&#8217;s</a></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The <a href="https://docs.vulkan.org/spec/latest/appendices/memorymodel.html">Vulkan Memory Model</a> formally defines how to synchronize memory accesses to the same memory locations performed by multiple shader invocations and this extension exposes a boolean to let implementations to indicate support for it. This is important because with many things targeting Vulkan/SPIR-V it is important that any memory transfer operations an application might attempt to optimize doesn&#8217;t break across implementations.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="VK_EXT_shader_viewport_index_layer"><a class="anchor" href="#VK_EXT_shader_viewport_index_layer"></a>VK_EXT_shader_viewport_index_layer</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Promoted to core in Vulkan 1.2</p>
+</div>
+<div class="paragraph">
+<p><a href="https://htmlpreview.github.io/?https://github.com/KhronosGroup/SPIRV-Registry/blob/main/extensions/EXT/SPV_EXT_shader_viewport_index_layer.html">SPV_EXT_shader_viewport_index_layer</a></p>
+</div>
+<div class="paragraph">
+<p><a href="https://registry.khronos.org/OpenGL/extensions/ARB/ARB_shader_viewport_layer_array.txt">GLSL - GL_ARB_shader_viewport_layer_array</a></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>This extension adds the <code>ViewportIndex</code>, <code>Layer</code> built-in for exporting from vertex or tessellation shaders.</p>
+</div>
+<div class="paragraph">
+<p>In GLSL these are represented by <code>gl_ViewportIndex</code> and <code>gl_Layer</code> built-ins.</p>
+</div>
+<div class="paragraph">
+<p>When using Vulkan 1.0 or 1.1 the <code>ShaderViewportIndexLayerEXT</code> SPIR-V capability is used. Starting in Vulkan 1.2 the <code>ShaderViewportIndexLayerEXT</code> capability is split into the new <code>ShaderViewportIndex</code> and <code>ShaderLayer</code> capability.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="VK_KHR_shader_draw_parameters"><a class="anchor" href="#VK_KHR_shader_draw_parameters"></a>VK_KHR_shader_draw_parameters</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Promoted to core in Vulkan 1.1</p>
+</div>
+<div class="paragraph">
+<p><a href="https://htmlpreview.github.io/?https://github.com/KhronosGroup/SPIRV-Registry/blob/main/extensions/KHR/SPV_KHR_shader_draw_parameters.html">SPV_KHR_shader_draw_parameters</a></p>
+</div>
+<div class="paragraph">
+<p><a href="https://registry.khronos.org/OpenGL/extensions/ARB/ARB_shader_draw_parameters.txt">GLSL - GL_ARB_shader_draw_parameters</a></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>This extension adds the <code>BaseInstance</code>, <code>BaseVertex</code>, and <code>DrawIndex</code> built-in for vertex shaders. This was added as there are legitimate use cases for both inclusion and exclusion of the <code>BaseVertex</code> or <code>BaseInstance</code> parameters in <code>VertexId</code> and <code>InstanceId</code>, respectively.</p>
+</div>
+<div class="paragraph">
+<p>In GLSL these are represented by <code>gl_BaseInstanceARB</code>, <code>gl_BaseVertexARB</code> and <code>gl_BaseInstanceARB</code> built-ins.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="VK_EXT_shader_stencil_export"><a class="anchor" href="#VK_EXT_shader_stencil_export"></a>VK_EXT_shader_stencil_export</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p><a href="https://htmlpreview.github.io/?https://github.com/KhronosGroup/SPIRV-Registry/blob/main/extensions/EXT/SPV_EXT_shader_stencil_export.html">SPV_EXT_shader_stencil_export</a></p>
+</div>
+<div class="paragraph">
+<p><a href="https://registry.khronos.org/OpenGL/extensions/ARB/ARB_shader_stencil_export.txt">GLSL - GL_ARB_shader_stencil_export</a></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>This extension allows a shader to generate the stencil reference value per invocation. When stencil testing is enabled, this allows the test to be performed against the value generated in the shader.</p>
+</div>
+<div class="paragraph">
+<p>In GLSL this is represented by a <code>out int gl_FragStencilRefARB</code> built-in.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="VK_EXT_shader_demote_to_helper_invocation"><a class="anchor" href="#VK_EXT_shader_demote_to_helper_invocation"></a>VK_EXT_shader_demote_to_helper_invocation</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Promoted to core in Vulkan 1.3</p>
+</div>
+<div class="paragraph">
+<p><a href="https://htmlpreview.github.io/?https://github.com/KhronosGroup/SPIRV-Registry/blob/main/extensions/EXT/SPV_EXT_demote_to_helper_invocation.html">SPV_EXT_demote_to_helper_invocation</a></p>
+</div>
+<div class="paragraph">
+<p><a href="https://github.com/KhronosGroup/GLSL/blob/master/extensions/ext/GLSL_EXT_demote_to_helper_invocation.txt">GLSL - GL_EXT_demote_to_helper_invocation</a></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>This extension was created to help with matching the HLSL <code>discard</code> instruction in SPIR-V by adding a <code>demote</code> keyword. When using <code>demote</code> in a fragment shader invocation it becomes a helper invocation. Any stores to memory after this instruction are suppressed and the fragment does not write outputs to the framebuffer.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="VK_KHR_shader_clock"><a class="anchor" href="#VK_KHR_shader_clock"></a>VK_KHR_shader_clock</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p><a href="http://htmlpreview.github.io/?https://github.com/KhronosGroup/SPIRV-Registry/blob/main/extensions/KHR/SPV_KHR_shader_clock.html">SPV_KHR_shader_clock</a></p>
+</div>
+<div class="paragraph">
+<p><a href="https://github.com/KhronosGroup/GLSL/blob/master/extensions/ext/GL_EXT_shader_realtime_clock.txt">GLSL - GL_EXT_shader_realtime_clock</a></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>This extension allows the shader to read the value of a monotonically incrementing counter provided by the implementation. This can be used as one possible method for debugging by tracking the order of when an invocation executes the instruction. It is worth noting that the addition of the <code>OpReadClockKHR</code> alters the shader one might want to debug. This means there is a certain level of accuracy representing the order as if the instructions did not exists.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="VK_KHR_shader_non_semantic_info"><a class="anchor" href="#VK_KHR_shader_non_semantic_info"></a>VK_KHR_shader_non_semantic_info</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Promoted to core in Vulkan 1.3</p>
+</div>
+<div class="paragraph">
+<p><a href="http://htmlpreview.github.io/?https://github.com/KhronosGroup/SPIRV-Registry/blob/main/extensions/KHR/SPV_KHR_shader_clock.html">SPV_KHR_non_semantic_info</a></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>This extension exposes <a href="https://htmlpreview.github.io/?https://github.com/KhronosGroup/SPIRV-Registry/blob/main/extensions/KHR/SPV_KHR_non_semantic_info.html">SPV_KHR_non_semantic_info</a> which <a href="https://github.com/KhronosGroup/SPIRV-Guide/blob/master/chapters/nonsemantic.md">adds the ability</a> to declare extended instruction sets that have no semantic impact and can be safely removed from a module.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="VK_KHR_shader_terminate_invocation"><a class="anchor" href="#VK_KHR_shader_terminate_invocation"></a>VK_KHR_shader_terminate_invocation</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Promoted to core in Vulkan 1.3</p>
+</div>
+<div class="paragraph">
+<p><a href="https://htmlpreview.github.io/?https://github.com/KhronosGroup/SPIRV-Registry/blob/main/extensions/KHR/SPV_KHR_terminate_invocation.html">SPV_KHR_terminate_invocation</a></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>This extension adds the new instruction <code>OpTerminateInvocation</code> to provide a disambiguated functionality compared to the <code>OpKill</code> instruction.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="VK_KHR_workgroup_memory_explicit_layout"><a class="anchor" href="#VK_KHR_workgroup_memory_explicit_layout"></a>VK_KHR_workgroup_memory_explicit_layout</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p><a href="https://htmlpreview.github.io/?https://github.com/KhronosGroup/SPIRV-Registry/blob/main/extensions/KHR/SPV_KHR_workgroup_memory_explicit_layout.html">SPV_KHR_workgroup_memory_explicit_layout</a></p>
+</div>
+<div class="paragraph">
+<p><a href="https://github.com/KhronosGroup/GLSL/blob/master/extensions/ext/GL_EXT_shared_memory_block.txt">GLSL - GL_EXT_shared_memory_block</a></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>This extension provides a way for the shader to define the layout of <code>Workgroup</code> <code>Storage Class</code> memory. <code>Workgroup</code> variables can be declared in blocks, and then use the same explicit layout decorations (e.g. <code>Offset</code>, <code>ArrayStride</code>) as other storage classes.</p>
+</div>
+<div class="paragraph">
+<p>One use case is to do large vector copies (e.g. <code>uvec4</code> at at a time) from buffer memory into shared memory, even if the shared memory is really a different type (e.g. <code>scalar fp16</code>).</p>
+</div>
+<div class="paragraph">
+<p>Another use case is a developers could potentially use this to reuse shared memory and reduce the total shared memory consumption using something such as the following:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">pass1 - write shmem using type A
+barrier()
+pass2 - read shmem using type A
+barrier()
+pass3 - write shmem using type B
+barrier()
+pass4 - read shmem using type B</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The explicit layout support and some form of aliasing is also required for layering OpenCL on top of Vulkan.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="VK_KHR_zero_initialize_workgroup_memory"><a class="anchor" href="#VK_KHR_zero_initialize_workgroup_memory"></a>VK_KHR_zero_initialize_workgroup_memory</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Promoted to core in Vulkan 1.3</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>This extension allows <code>OpVariable</code> with a <code>Workgroup</code> <code>Storage Class</code> to use the <code>Initializer</code> operand.</p>
+</div>
+<div class="paragraph">
+<p>For security reasons, applications running untrusted content (e.g. web browsers) need to be able to zero-initialize workgroup memory at the start of workgroup execution. Adding instructions to set all workgroup variables to zero would be less efficient than what some hardware is capable of, due to poor access patterns.</p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

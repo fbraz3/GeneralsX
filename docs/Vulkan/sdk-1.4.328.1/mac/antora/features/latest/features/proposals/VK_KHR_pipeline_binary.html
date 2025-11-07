@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>VK_KHR_pipeline_binary :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:features" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="features" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Feature Descriptions</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Vulkan Roadmap and Feature Descriptions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Roadmap.html">Vulkan Roadmap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Feature Descriptions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMDX_shader_enqueue.html">VK_AMDX_shader_enqueue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_anti_lag.html">VK_AMD_anti_lag</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_shader_early_and_late_fragment_tests.html">VK_AMD_shader_early_and_late_fragment_tests</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ANDROID_external_format_resolve.html">VK_ANDROID_external_format_resolve</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_pipeline_opacity_micromap.html">VK_ARM_pipeline_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_render_pass_striped.html">VK_ARM_render_pass_striped</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_tensors.html">VK_ARM_tensors</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_dynamic_state.html">VK_EXT_attachment_feedback_loop_dynamic_state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_layout.html">VK_EXT_attachment_feedback_loop_layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_calibrated_timestamps.html">VK_EXT_calibrated_timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_bias_control.html">VK_EXT_depth_bias_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_clamp_control.html">VK_EXT_depth_clamp_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_descriptor_buffer.html">VK_EXT_descriptor_buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_fault.html">VK_EXT_device_fault</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_generated_commands.html">VK_EXT_device_generated_commands</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_dynamic_rendering_unused_attachments.html">VK_EXT_dynamic_rendering_unused_attachments</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_extended_dynamic_state3.html">VK_EXT_extended_dynamic_state3</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_acquire_unmodified.html">VK_EXT_external_memory_acquire_unmodified</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_metal.html">VK_EXT_external_memory_metal</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_fragment_density_map_offset.html">VK_EXT_fragment_density_map_offset</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_frame_boundary.html">Proposal: <code>VK_EXT_frame_boundary</code></a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_graphics_pipeline_library.html">VK_EXT_graphics_pipeline_library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_host_image_copy.html">VK_EXT_host_image_copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_2d_array_of_3d.html">VK_EXT_image_2d_array_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_compression_control.html">VK_EXT_image_compression_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_sliced_view_of_3d.html">VK_EXT_image_sliced_view_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_layer_settings.html">VK_EXT_layer_settings</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_dithering.html">VK_EXT_legacy_dithering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_vertex_attributes.html">VK_EXT_legacy_vertex_attributes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_map_memory_placed.html">VK_EXT_map_memory_placed</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mesh_shader.html">VK_EXT_mesh_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_metal_objects.html">VK_EXT_metal_objects</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_multisampled_render_to_single_sampled.html">VK_EXT_multisampled_render_to_single_sampled</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mutable_descriptor_type.html">VK_EXT_mutable_descriptor_type</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_non_seamless_cube_map.html">VK_EXT_non_seamless_cube_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_opacity_micromap.html">VK_EXT_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_library_group_handles.html">VK_EXT_pipeline_library_group_handles</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_protected_access.html">VK_EXT_pipeline_protected_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_present_mode_fifo_latest_ready.html">VK_EXT_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_primitives_generated_query.html">VK_EXT_primitives_generated_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_rasterization_order_attachment_access.html">VK_EXT_rasterization_order_attachment_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_float8.html">VK_EXT_shader_float8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_module_identifier.html">VK_EXT_shader_module_identifier</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_object.html">VK_EXT_shader_object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_replicated_composites.html">VK_EXT_shader_replicated_composites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_tile_image.html">VK_EXT_shader_tile_image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_subpass_merge_feedback.html">VK_EXT_subpass_merge_feedback</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_surface_maintenance1.html">VK_EXT_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_swapchain_maintenance1.html">VK_EXT_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_zero_initialize_device_memory.html">VK_EXT_zero_initialize_device_memory</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_GOOGLE_surfaceless_query.html">VK_GOOGLE_surfaceless_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_cluster_culling_shader.html">VK_HUAWEI_cluster_culling_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_invocation_mask.html">VK_HUAWEI_invocation_mask</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_compute_shader_derivatives.html">VK_KHR_compute_shader_derivatives</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_cooperative_matrix.html">VK_KHR_cooperative_matrix</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering.html">VK_KHR_dynamic_rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering_local_read.html">VK_KHR_dynamic_rendering_local_read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shader_barycentric.html">VK_KHR_fragment_shader_barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shading_rate.html">VK_KHR_fragment_shading_rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_load_store_op_none.html">VK_KHR_load_store_op_none</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance5.html">VK_KHR_maintenance5</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance6.html">VK_KHR_maintenance6</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance7.html">VK_KHR_maintenance7</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance8.html">VK_KHR_maintenance8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance9.html">Proposal Template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_map_memory2.html">VK_KHR_map_memory2</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="VK_KHR_pipeline_binary.html">VK_KHR_pipeline_binary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_id2.html">VK_KHR_present_id2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_mode_fifo_latest_ready.html">VK_KHR_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_wait2.html">VK_KHR_present_wait2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_ray_tracing_position_fetch.html">VK_KHR_ray_tracing_position_fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_bfloat16.html">VK_KHR_shader_bfloat16</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_expect_assume.html">VK_KHR_shader_expect_assume</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_float_controls2.html">VK_KHR_shader_float_controls2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_integer_dot_product.html">VK_KHR_shader_integer_dot_product</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_maximal_reconvergence.html">VK_KHR_shader_maximal_reconvergence</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_quad_control.html">VK_KHR_shader_quad_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_relaxed_extended_instruction.html">VK_KHR_shader_relaxed_extended_instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_subgroup_rotate.html">Subgroup rotation instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_surface_maintenance1.html">VK_KHR_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_swapchain_maintenance1.html">VK_KHR_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_unified_image_layouts.html">VK_KHR_unified_image_layouts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_vertex_attribute_divisor.html">VK_KHR_vertex_attribute_divisor</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_av1.html">VK_KHR_video_decode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h264.html">VK_KHR_video_decode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h265.html">VK_KHR_video_decode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_queue.html">VK_KHR_video_decode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_vp9.html">VK_KHR_video_decode_vp9</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_av1.html">VK_KHR_video_encode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h264.html">VK_KHR_video_encode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h265.html">VK_KHR_video_encode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_intra_refresh.html">VK_KHR_video_encode_intra_refresh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_quantization_map.html">VK_KHR_video_encode_quantization_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_queue.html">VK_KHR_video_encode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance1.html">VK_KHR_video_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance2.html">VK_KHR_video_maintenance2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_queue.html">VK_KHR_video_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_LUNARG_direct_driver_loading.html">VK_LUNARG_direct_driver_loading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_MSFT_layered_driver.html">VK_MSFT_layered_driver</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cluster_acceleration_structure.html">VK_NV_cluster_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_matrix2.html">VK_NV_cooperative_matrix2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_vector.html">VK_NV_cooperative_vector</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_display_stereo.html">VK_NV_display_stereo</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_external_compute_queue.html">VK_NV_external_compute_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_partitioned_acceleration_structure.html">VK_NV_partitioned_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_linear_swept_spheres.html">VK_NV_ray_tracing_linear_swept_spheres</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_validation.html">VK_NV_ray_tracing_validation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_image_processing.html">VK_QCOM_image_processing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_memory_heap.html">VK_QCOM_tile_memory_heap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_properties.html">VK_QCOM_tile_properties</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_shading.html">VK_QCOM_tile_shading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_VERSION_1_4.html">Vulkan 1.4</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Feature Descriptions</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Feature Descriptions</a></li>
+    <li>Feature Descriptions</li>
+    <li><a href="VK_KHR_pipeline_binary.html">VK_KHR_pipeline_binary</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/features/modules/features/pages/proposals/VK_KHR_pipeline_binary.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">VK_KHR_pipeline_binary</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_problem_statement">1. Problem Statement</a></li>
+<li><a href="#_solution_space">2. Solution Space</a></li>
+<li><a href="#_proposal">3. Proposal</a>
+<ul class="sectlevel2">
+<li><a href="#_api_changes">3.1. API Changes</a></li>
+</ul>
+</li>
+<li><a href="#_examples">4. Examples</a>
+<ul class="sectlevel2">
+<li><a href="#_retrieving_the_global_key">4.1. Retrieving the global key</a></li>
+<li><a href="#_retrieving_the_key_for_a_pipelinecreateinfo">4.2. Retrieving the key for a PipelineCreateInfo</a></li>
+<li><a href="#_create_pipeline_allowing_for_future_binary_creation">4.3. Create pipeline allowing for future binary creation</a></li>
+<li><a href="#_get_new_binaries_and_store_to_application_cache">4.4. Get new binaries and store to application cache</a></li>
+<li><a href="#_get_binaries_from_application_cache">4.5. Get binaries from application cache</a></li>
+<li><a href="#_create_binaries_from_application_cache_for_a_pipeline_create_info">4.6. Create binaries from application cache for a pipeline create info</a></li>
+<li><a href="#_create_pipeline_from_binaries">4.7. Create pipeline from binaries</a></li>
+<li><a href="#_read_internal_cache_for_the_pipeline_binaries">4.8. Read internal cache for the pipeline binaries</a></li>
+</ul>
+</li>
+<li><a href="#_interactions_with_other_extensions">5. Interactions with other extensions</a></li>
+<li><a href="#_issues">6. Issues</a>
+<ul class="sectlevel2">
+<li><a href="#_resolved_fixed_size_keys">6.1. RESOLVED: Fixed size keys</a></li>
+<li><a href="#_resolved_should_implementations_be_able_to_advertise_in_some_way_what_a_keydata_pair_are_associated_with">6.2. RESOLVED: Should implementations be able to advertise in some way <em>what</em> a key/data pair are associated with?</a></li>
+<li><a href="#_resolved_can_we_avoid_copies_everywhere">6.3. RESOLVED: Can we avoid copies everywhere?</a></li>
+<li><a href="#_resolved_can_we_avoid_recomputing_keys_on_each_run">6.4. RESOLVED: Can we avoid recomputing keys on each run?</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This extension proposes a method to directly retrieve binary data associated with individual pipelines, bypassing the pipeline caching mechanism, and enabling applications to manage caching themselves.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>1. Problem Statement</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Vulkan 1.0 introduced the concept of pipeline caches, which were designed to allow drivers to reuse blobs of state or shader code between different pipelines more explicitly.
+The original idea was that the driver would know best which parts of state could be reused, and applications only needed to manage storage and threading, making the interface fairly straightforward.
+Since then, developers and platforms have found use cases or corner cases which have shown deficiencies in the API, and in many cases have designed their own caching system on top of Vulkan.</p>
+</div>
+<div class="paragraph">
+<p>To address these deficiencies, the Vulkan WG has released a number of extensions to change the behavior of caches, fixing issues as they come up.
+This has meant pipeline caches have become a very complex piece of software, and tweaking them is actually getting more difficult as time goes on.
+In many cases, we are seeing applications using their own caching mechanisms in ways that require them to actively "fight" Vulkan&#8217;s caching mechanism to try to get it to do what they want.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution Space</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>There are a two key possibilities for solving these issues:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Continue providing additional functionality</p>
+</li>
+<li>
+<p>Enable applications to have more control over caching</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>The former approach will continue to show improvements in the ecosystem as new extensions show up in the wild, but it relies on drivers being continually updated for applications to take advantage of new features.
+It also means that pipeline caches continue to grow in complexity, exacerbating the problem as much as solving it.</p>
+</div>
+<div class="paragraph">
+<p>Enabling applications to get more involved with caching could both allow applications to do the caching they want, while also reducing complexity if done carefully.
+Within this solution space, there are two main possibilities:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Add partial access to the existing caching infrastructure</p>
+</li>
+<li>
+<p>e.g. via callbacks</p>
+</li>
+<li>
+<p>Provide direct access to pipeline binaries, bypassing the caching infrastructure</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Either approach could work, but the concern with integrating into the existing caching infrastructure is that the infrastructure remains - there is no guarantee that we will not need to add more features in future to solve new problems.
+With the direct access approach it is slightly harder to express a multi-level caching strategy, but should still be doable.</p>
+</div>
+<div class="paragraph">
+<p>The solution should allow an application to:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Control memory usage such that e.g. an LRU pipeline cache with certain on-disk/memory bounds could be created.</p>
+</li>
+<li>
+<p>Interact with an internal driver cache directly in such a way as to be able to avoid potential micro-stutters due to disk I/O
+by doing driver cache look-ups ahead of time, rather than at CreatePipeline time.</p>
+</li>
+<li>
+<p>Control whether an internal driver cache exists, including on specialized platforms such as Steam that prepropulate driver caches.</p>
+</li>
+<li>
+<p>Deduplicate binaries when they are used in multiple pipelines.</p>
+</li>
+<li>
+<p>Create pipelines from binaries without the need to provide SPIR-V.</p>
+</li>
+<li>
+<p>Create a caching scheme that is no less efficient than the implementation of the Vulkan pipeline cache.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>3. Proposal</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This proposal allows applications to completely bypass pipeline caching, by obtaining key/data pairs for a pipeline, and allowing applications to manage these in their own caching infrastructure.</p>
+</div>
+<div class="paragraph">
+<p>Pipeline binary objects encapsulate data from compiled pipelines, allowing the data to be stored by the application and used to recreate pipelines in the future, without the need for compilation.</p>
+</div>
+<div class="paragraph">
+<p>A <em>pipeline key</em> can be queried using a <code>Vk*PipelineCreateInfo</code> structure, which can then be used by the application to look up the required binary/binaries in its cache.</p>
+</div>
+<div class="paragraph">
+<p>Pipeline binary objects can be created in three different ways:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>From <code>VkPipeline</code> objects that were created with the <code>VK_PIPELINE_CREATE_2_CAPTURE_DATA_BIT_KHR</code> flag set.</p>
+</li>
+<li>
+<p>From data blobs serialized from previous pipeline binary objects.</p>
+</li>
+<li>
+<p>By querying an implementation&#8217;s internal driver cache, using a <code>Vk*PipelineCreateInfo</code> structure.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>A <em>binary key</em> and data blob can be queried for each binary object, allowing deduplication of binaries with identical keys and storing of the data in the application&#8217;s cache.</p>
+</div>
+<div class="sect2">
+<h3 id="_api_changes"><a class="anchor" href="#_api_changes"></a>3.1. API Changes</h3>
+<div class="sect3">
+<h4 id="_obtaining_and_using_keydata_pairs"><a class="anchor" href="#_obtaining_and_using_keydata_pairs"></a>3.1.1. Obtaining and Using Key/Data Pairs</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VK_DEFINE_HANDLE(VkPipelineBinaryKHR)
+const uint32_t VK_MAX_PIPELINE_BINARY_KEY_SIZE_KHR = 32;
+
+typedef struct VkPipelineBinaryKeyKHR {
+    VkStructureType sType;
+    void*           pNext;
+    uint32_t        keySize;
+    uint8_t         key[VK_MAX_PIPELINE_BINARY_KEY_SIZE_KHR];
+} VkPipelineBinaryKeyKHR;
+
+typedef struct VkPipelineBinaryDataKHR {
+    size_t                          dataSize;
+    void*                           pData;
+} VkPipelineBinaryDataKHR;
+
+typedef struct VkPipelineBinaryKeysAndDataKHR {
+    uint32_t                          binaryCount;
+    const VkPipelineBinaryKeyKHR*     pPipelineBinaryKeys;
+    const VkPipelineBinaryDataKHR*    pPipelineBinaryData;
+} VkPipelineBinaryKeysAndDataKHR;
+
+typedef struct VkPipelineCreateInfoKHR {
+    VkStructureType                 sType;
+    const void*                     pNext;
+} VkPipelineCreateInfoKHR;
+
+typedef struct VkPipelineBinaryCreateInfoKHR {
+    VkStructureType                       sType;
+    const void*                           pNext;
+    const VkPipelineBinaryKeysAndDataKHR* pKeysAndDataInfo;
+    VkPipeline                            pipeline;
+    const VkPipelineCreateInfoKHR*        pPipelineCreateInfo;
+} VkPipelineBinaryCreateInfoKHR;
+
+typedef struct VkPipelineBinaryHandlesInfoKHR {
+    VkStructureType                       sType;
+    const void*                           pNext;
+    uint32_t                              pipelineBinaryCount;
+    VkPipelineBinaryKHR*                  pPipelineBinaries;
+} VkPipelineBinaryHandlesInfoKHR;
+
+VkResult vkCreatePipelineBinariesKHR(
+    VkDevice                             device,
+    const VkPipelineBinaryCreateInfoKHR* pCreateInfo,
+    const VkAllocationCallbacks*         pAllocator,
+    VkPipelineBinaryHandlesInfoKHR*      pBinaries);
+
+void vkDestroyPipelineBinaryKHR(
+    VkDevice                        device,
+    VkPipelineBinaryKHR             pipelineBinary,
+    const VkAllocationCallbacks*    pAllocator);
+
+VkResult vkGetPipelineKeyKHR(
+    VkDevice                                    device,
+    const VkPipelineCreateInfoKHR*              pPipelineCreateInfo,
+    VkPipelineBinaryKeyKHR*                     pPipelineKey);
+
+typedef struct VkPipelineBinaryDataInfoKHR {
+    VkStructureType                 sType;
+    const void*                     pNext;
+    VkPipelineBinaryKHR             pipelineBinary;
+} VkPipelineBinaryDataInfoKHR;
+
+VkResult vkGetPipelineBinaryDataKHR(
+    VkDevice                            device,
+    const VkPipelineBinaryDataInfoKHR*  pInfo,
+    VkPipelineBinaryKeyKHR*             pPipelineBinaryKey,
+    size_t*                             pPipelineBinaryDataSize,
+    void*                               pPipelineBinaryData);
+
+typedef struct VkReleaseCapturedPipelineDataInfoKHR {
+    VkStructureType                 sType;
+    const void*                     pNext;
+    VkPipeline                      pipeline;
+} VkReleaseCapturedPipelineDataInfoKHR;
+
+VkResult vkReleaseCapturedPipelineDataKHR(
+    VkDevice                                    device,
+    const VkReleaseCapturedPipelineDataInfoKHR* pInfo,
+    const VkAllocationCallbacks*                pAllocator);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>vkGetPipelineKeyKHR</code> works on any existing pipeline creation info structure (via <code>pNext</code> in <code>VkPipelineCreateInfoKHR</code>), allowing an application to obtain a pipeline key <em>before</em> creating a pipeline.
+This allows the application to use that key to internally lookup the pipeline binary keys and data previously obtained via <code>vkGetPipelineBinaryDataKHR</code>, before creating the pipeline.
+An implementation may return identical pipeline keys for different pipelines if the parts of the <code>VkPipelineCreateInfoKHR</code> needed by the implementation to create binaries is identical.</p>
+</div>
+<div class="paragraph">
+<p>Pipeline <em>binary</em> keys identify the contents of the pipeline binary object. Multiple pipelines may use the same binary, e.g. an implementation may generate identical binaries for two pipelines that have the same vertex shader, so the pipeline binary key can be used by the application as a unique identifier and to deduplicate binaries.</p>
+</div>
+<div class="paragraph">
+<p>Setting <code>pPipelineCreateInfo</code> to <code>NULL</code> when calling <code>vkGetPipelineKeyKHR</code> allows an application to query the implementation&#8217;s global key.  This global
+key can be compared on a subsequent run to determine if saved keys and binary data for pipelines remain valid.
+Unlike most global keys in the API, which are exposed as various <code>*UUID</code> physical-device queries,
+the global pipeline key may depend on state which is only known at device creation time,
+such as extensions and features being enabled, or even enabled layers in some cases.</p>
+</div>
+<div class="paragraph">
+<p><code>vkCreatePipelineBinariesKHR</code> can be used in 3 different ways to create <code>VkPipelineBinaryKHR</code> objects:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Setting <code>VkPipelineBinaryCreateInfoKHR.pipeline</code> allows an application to query the number of binaries for a pipeline and then create that number of binary objects from that pipeline.</p>
+</li>
+<li>
+<p><code>VkPipelineBinaryCreateInfoKHR.pKeysAndDataInfo</code> can be used to create binary objects from data previously retrieved using <code>vkGetPipelineBinaryDataKHR</code>.</p>
+</li>
+<li>
+<p>The <a href="#pipelineBinaryInternalCache"><code>pipelineBinaryInternalCache</code></a> property indicates that an application can use <code>VkPipelineBinaryCreateInfoKHR.pPipelineCreateInfo</code> to see if the implementation has the pipeline binary stored in its internal cache.  An application can query the number of binaries and then create that number of binary objects in a similar way to creating binaries from a pipeline object.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Only one of <code>pipeline</code>, <code>pKeysAndDataInfo</code>, and <code>pPipelineCreateInfo</code> can be used at once.</p>
+</div>
+<div class="paragraph">
+<p>A new <a href="https://docs.vulkan.org/spec/latest/chapters/fundamentals.html#VkResult">VkResult</a> value is added so that <code>vkCreatePipelineBinariesKHR</code> can indicate that an implementation supporting <code>pipelineBinaryInternalCache</code> <a href="#properties">Properties</a> does not have a binary in its internal cache:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VK_PIPELINE_BINARY_MISSING_KHR = 1000483000</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A new <a href="https://docs.vulkan.org/spec/latest/chapters/fundamentals.html#VkResult">VkResult</a> value is added so that <code>vkGetPipelineBinaryDataKHR</code> can indicate that the application has not provided enough storage to write pipeline binary data into:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VK_ERROR_NOT_ENOUGH_SPACE_KHR = -1000483000</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A new <a href="https://docs.vulkan.org/spec/latest/chapters/pipelines.html#VkPipelineCreateFlagBits2KHR">VkPipelineCreateFlagBits2KHR</a> value is required to be able to obtain binary data from a pipeline object via this extension after creation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VK_PIPELINE_CREATE_2_CAPTURE_DATA_BIT_KHR = 0x80000000</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Calling <code>vkReleaseCapturedPipelineDataKHR</code> allows the implementation to free any resources captured as a result of creating the pipeline with <code>VK_PIPELINE_CREATE_2_CAPTURE_DATA_BIT_KHR</code> and put the pipeline into a state as if <code>VK_PIPELINE_CREATE_2_CAPTURE_DATA_BIT_KHR</code> had not been provided at pipeline creation time.</p>
+</div>
+<div class="paragraph">
+<p>A new creation structure is also provided to pass in any key/data pairs the application has available:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPipelineBinaryInfoKHR {
+    VkStructureType                 sType;
+    const void*                     pNext;
+    uint32_t                        binaryCount;
+    const VkPipelineBinaryKHR*      pPipelineBinaries;
+} VkPipelineBinaryInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>It is the application&#8217;s responsibility to ensure the pipeline create info in this call exactly matches the pipeline create info of the pipeline used to create the key/binary pairs, other than the inclusion of this structure and any shader modules that were declared in <code>VkPipelineShaderStageCreateInfo</code> instances at key generation time as they will be ignored by the implementation when creating a pipeline from binaries.</p>
+</div>
+<div class="paragraph">
+<p>Note that when creating a pipeline from binaries <code>binaryCount</code> in <code>VkPipelineBinaryInfoKHR</code> and the value in <code>pipelineBinaryCount</code> returned by <code>vkCreatePipelineBinariesKHR</code> must be matching for a given pipeline/create info, and the order of the binaries in <code>pPipelineBinaries</code> must match those returned by <code>vkCreatePipelineBinariesKHR</code>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_features"><a class="anchor" href="#_features"></a>3.1.2. Features</h4>
+<div class="paragraph">
+<p>The following new features are exposed by the extension:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDevicePipelineBinaryFeaturesKHR {
+    VkStructureType                     sType;
+    void*                               pNext;
+    VkBool32                            pipelineBinaries;
+} VkPhysicalDevicePipelineBinaryFeaturesKHR;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>pipelineBinaries</code> is the main feature enabling this extension’s functionality and
+must be supported if this extension is supported.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="properties"><a class="anchor" href="#properties"></a>3.1.3. Properties</h4>
+<div class="paragraph">
+<p>On some platforms, the internal pipeline cache is still very important and may be maintained outside the scope of the application.
+To avoid a situation where the application and implementation maintain duplicated entries of their pipeline caches, or worse,
+ignore all the work done to prepare the internal cache, there are properties which aim to expose this cache behavior to the application
+so that it can make an informed decision.</p>
+</div>
+<div class="paragraph">
+<p>All these properties are mostly useful as hints to an application that may want to take advantage of them.
+It is valid for an application to ignore them.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">typedef struct VkPhysicalDevicePipelineBinaryPropertiesKHR {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           pipelineBinaryInternalCache;
+    VkBool32           pipelineBinaryInternalCacheControl;
+    VkBool32           pipelineBinaryPrefersInternalCache;
+    VkBool32           pipelineBinaryPrecompiledInternalCache;
+    VkBool32           pipelineBinaryCompressedData;
+} VkPhysicalDevicePipelineBinaryPropertiesKHR;</code></pre>
+</div>
+</div>
+<div class="sect4">
+<h5 id="pipelineBinaryInternalCache"><a class="anchor" href="#pipelineBinaryInternalCache"></a><code>pipelineBinaryInternalCache</code></h5>
+<div class="paragraph">
+<p>When <code>pipelineBinaryInternalCache</code> is supported it is possible to create pipeline binaries using just the pipeline create info, without providing either SPIR-V or binary data, by
+checking if the implementation has the pipeline binary stored in its internal cache.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">VkGraphicsPipelineCreateInfo graphicsCreateInfo;
+
+VkPipelineCreateInfoKHR pipelineCreateInfo;
+pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CREATE_INFO_KHR;
+pipelineCreateInfo.pNext = &amp;graphicsCreateInfo;
+
+VkPipelineBinaryCreateInfoKHR createInfo;
+createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_BINARY_CREATE_INFO_KHR;
+createInfo.pNext = NULL;
+createInfo.pKeysAndDataInfo = NULL;
+createInfo.pipeline = VK_NULL_HANDLE;
+createInfo.pPipelineCreateInfo = &amp;pipelineCreateInfo;
+
+VkPipelineBinaryHandlesInfoKHR handlesInfo;
+handlesInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_BINARY_HANDLES_INFO_KHR;
+handlesInfo.pNext = NULL;
+handlesInfo.pipelineBinaryCount = 0;
+handlesInfo.pPipelineBinaries = NULL;
+
+VkResult res = vkCreatePipelineBinariesKHR(device, &amp;createInfo, NULL, &amp;handlesInfo);
+
+if (res == VK_PIPELINE_BINARY_MISSING_KHR) {
+   // Attempted to create a pipeline binary, but implementation does not have it in cache.
+   // Similar to VK_PIPELINE_COMPILE_REQUIRED, this is a positive return value.
+   return;
+}
+
+std::vector&lt;VkPipelineBinaryKHR&gt; pipelineBinaries;
+pipelineBinaries.resize(handlesInfo.pipelineBinaryCount);
+
+handlesInfo.pPipelineBinaries = pipelineBinaries.data();
+
+vkCreatePipelineBinariesKHR(device, &amp;createInfo, NULL, &amp;handlesInfo);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>While this mechanism looks very similar to <code>VK_EXT_shader_module_identifier</code> shader creation,
+the main rationale for doing it like this,
+rather than supporting passing in <code>VK_NULL_HANDLE</code> pipeline binary to pipeline creation is:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Can query early if pipeline creation will succeed.
+Rather than having to accept arbitrary failure when compiling with identifiers only,
+this allows an application to pull in pipeline data for all known keys up early,
+and can then later decide to kick off compilation work as needed.</p>
+</li>
+<li>
+<p>Avoids potential disk I/O microstutter when creating a pipeline.
+In the case of no handles being passed to pipeline creation, the implementation would have to do a last minute query into its
+internal cache which would likely involve either locks and/or disk I/O,
+neither which are desirable when doing last minute pipeline creation with for example <code>VK_EXT_graphics_pipeline_library</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Just as with any internal cache, there are no guarantees that <code>VK_PIPELINE_BINARY_MISSING_KHR</code> will not be returned.
+It is considered a best-effort system.</p>
+</div>
+<div class="paragraph">
+<p>When this property is not set, applications should assume that the implementation does not provide any on-disk caching on its own.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_pipelinebinaryinternalcachecontrol"><a class="anchor" href="#_pipelinebinaryinternalcachecontrol"></a><code>pipelineBinaryInternalCacheControl</code></h5>
+<div class="paragraph">
+<p>When <code>pipelineBinaryInternalCacheControl</code> is supported it is possible to disable the implementation&#8217;s
+internal pipeline cache by adding the following structure to the <code>pNext</code> chain of <code>VkDeviceCreateInfo</code> when creating a device:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkDevicePipelineBinaryInternalCacheControlKHR {
+    VkStructureType                     sType;
+    const void*                         pNext;
+    VkBool32                            disableInternalCache;
+} VkDevicePipelineBinaryInternalCacheControlKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If the <code>disableInternalCache</code> is <code>VK_TRUE</code> then the implementation&#8217;s internal cache is disabled,
+allowing an application to take full control of both memory and disk usage.
+When <code>disableInternalCache</code> is <code>VK_TRUE</code>, it is not allowed to attempt creating a <code>VkPipelineBinaryKHR</code> without providing either SPIR-V or binary data.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_pipelinebinaryprefersinternalcache"><a class="anchor" href="#_pipelinebinaryprefersinternalcache"></a><code>pipelineBinaryPrefersInternalCache</code></h5>
+<div class="paragraph">
+<p>If this is set, the implementations prefers that applications do not capture pipeline binaries themselves with <code>VK_PIPELINE_CREATE_2_CAPTURE_DATA_BIT_KHR</code> and let the implementation manage the cache internally.
+Rather, they can store pipeline keys or shader module identifiers instead, and aim to pull in binaries using the mechanism mentioned above.</p>
+</div>
+<div class="paragraph">
+<p>An IHV implementation should not set this to <code>VK_TRUE</code> in isolation.
+The intention here is that a layer may decide to set this property to <code>VK_TRUE</code> if the layer has knowledge that
+the internal cache already exists on-disk, and is considered more important than the application&#8217;s cache.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_pipelinebinaryprecompiledinternalcache"><a class="anchor" href="#_pipelinebinaryprecompiledinternalcache"></a><code>pipelineBinaryPrecompiledInternalCache</code></h5>
+<div class="paragraph">
+<p>If this is set, this is a hint to applications that pipelines may exist in the internal cache,
+despite the application never having observed a particular global pipeline key before.
+Creating pipeline binaries with the mechanism mentioned above may work,
+and applications are encouraged to try creating binaries from just pipeline creation infos.</p>
+</div>
+<div class="paragraph">
+<p>This property is very similar to <code>pipelineBinaryPrefersInternalCache</code>, in that IHV implementations are not expected to set this to <code>VK_TRUE</code>,
+unless they can prove there exists a precompiled cache somewhere. IHV implementations are not expected or supposed to provide this on their own,
+but a specialized platform (e.g. a game console or embedded device) may decide to provide that.
+The intention of this property is that a layer may have knowledge about such precompiled caches existing, and may override this value to <code>VK_TRUE</code>.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_pipelinebinarycompresseddata"><a class="anchor" href="#_pipelinebinarycompresseddata"></a><code>pipelineBinaryCompressedData</code></h5>
+<div class="paragraph">
+<p>If this is set, this is a hint to the application that the binary data is already compressed and
+the application should not perform any compression on it.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_examples"><a class="anchor" href="#_examples"></a>4. Examples</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The following examples illustrate using an application defined cache to lookup binaries; any constraints or features of that caching system can be expressed within the application cache itself.</p>
+</div>
+<div class="sect2">
+<h3 id="_retrieving_the_global_key"><a class="anchor" href="#_retrieving_the_global_key"></a>4.1. Retrieving the global key</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Get the global key
+VkPipelineBinaryKeyKHR globalKey;
+globalKey.sType = VK_STRUCTURE_TYPE_PIPELINE_BINARY_KEY_KHR;
+vkGetPipelineKeyKHR(device, NULL, &amp;globalKey);
+
+// This can be used to ensure the app's cache is valid.</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_retrieving_the_key_for_a_pipelinecreateinfo"><a class="anchor" href="#_retrieving_the_key_for_a_pipelinecreateinfo"></a>4.2. Retrieving the key for a PipelineCreateInfo</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">VkGraphicsPipelineCreateInfo graphicsCreateInfo;
+
+// Get the pipeline key
+VkPipelineCreateInfoKHR pipelineCreateInfo;
+pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CREATE_INFO_KHR;
+pipelineCreateInfo.pNext = &amp;graphicsCreateInfo;
+VkPipelineBinaryKeyKHR pipelineKey;
+vkGetPipelineKeyKHR(device, &amp;pipelineCreateInfo, &amp;pipelineKey);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_create_pipeline_allowing_for_future_binary_creation"><a class="anchor" href="#_create_pipeline_allowing_for_future_binary_creation"></a>4.3. Create pipeline allowing for future binary creation</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">VkPipelineCreateFlags2CreateInfoKHR createFlags = {
+    VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO_KHR
+};
+
+createFlags.flags = VK_PIPELINE_CREATE_2_CAPTURE_DATA_BIT_KHR;
+
+graphicsCreateInfo.pNext = &amp;createFlags;
+
+// Create the pipeline
+VkPipeline graphicsPipeline;
+vkCreateGraphicsPipelines(device, NULL, 1, &amp;graphicsCreateInfo, NULL, &amp;graphicsPipeline);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_get_new_binaries_and_store_to_application_cache"><a class="anchor" href="#_get_new_binaries_and_store_to_application_cache"></a>4.4. Get new binaries and store to application cache</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">VkPipelineBinaryCreateInfoKHR createInfo;
+createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_BINARY_CREATE_INFO_KHR;
+createInfo.pNext = NULL;
+createInfo.pKeysAndDataInfo = NULL;
+createInfo.pipeline = graphicsPipeline;
+createInfo.pPipelineCreateInfo = NULL;
+
+VkPipelineBinaryHandlesInfoKHR handlesInfo;
+handlesInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_BINARY_HANDLES_INFO_KHR;
+handlesInfo.pNext = NULL;
+handlesInfo.pipelineBinaryCount = 0;
+handlesInfo.pPipelineBinaries = NULL;
+
+vkCreatePipelineBinariesKHR(device, &amp;createInfo, NULL, &amp;handlesInfo);
+
+std::vector&lt;VkPipelineBinaryKHR&gt; pipelineBinaries;
+pipelineBinaries.resize(handlesInfo.pipelineBinaryCount);
+
+handlesInfo.pPipelineBinaries = pipelineBinaries.data();
+
+vkCreatePipelineBinariesKHR(device, &amp;createInfo, NULL, &amp;handlesInfo);
+
+vector&lt;VkPipelineBinaryKeyKHR&gt; binaryKeys;
+binaryKeys.resize(handlesInfo.pipelineBinaryCount);
+
+// Store to application cache
+for (int i = 0; i &lt; handlesInfo.pipelineBinaryCount; ++i) {
+    VkPipelineBinaryDataInfoKHR binaryInfo;
+    binaryInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_BINARY_DATA_INFO_KHR;
+    binaryInfo.pNext = NULL;
+    binaryInfo.pipelineBinary = pipelineBinaries[i];
+
+    size_t binaryDataSize = 0;
+    vkGetPipelineBinaryDataKHR(device, &amp;binaryInfo, &amp;binaryKeys[i], &amp;binaryDataSize, NULL);
+    vector&lt;uint_8&gt; data;
+    binaryData.resize(binaryDataSize);
+    vkGetPipelineBinaryDataKHR(device, &amp;binaryInfo, &amp;binaryKeys[i], &amp;binaryDataSize, binaryData.data());
+
+    ApplicationBinaryCache.insert(binaryKeys[i], binaryData);
+}
+
+// Store pipeline key -&gt; binary keys mapping
+ApplicationCache.insert(pipelineKey, binaryKeys);
+
+// Free any possible resources associated with binary creation for the pipeline
+vkReleaseCapturedPipelineDataKHR(device, graphicsPipeline, NULL);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_get_binaries_from_application_cache"><a class="anchor" href="#_get_binaries_from_application_cache"></a>4.5. Get binaries from application cache</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Get the pipeline key
+VkPipelineCreateInfoKHR pipelineCreateInfo;
+pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CREATE_INFO_KHR;
+pipelineCreateInfo.pNext = &amp;graphicsCreateInfo;
+VkPipelineBinaryKeyKHR pipelineKey;
+vkGetPipelineKeyKHR(device, &amp;pipelineCreateInfo, &amp;pipelineKey);
+
+// Get the binary keys
+vector&lt;VkPipelineBinaryKeyKHR&gt; binaryKeys;
+ApplicationCache.get(pipelineKey, binaryKeys);
+
+// Get the binary data
+std::vector&lt;VkPipelineBinaryDataKHR&gt; pipelineDatas;
+pipelineDatas.resize(binaryKeys.size());
+
+for (int i = 0; i &lt; binaryKeys.size(); ++i) {
+    // Retrieve VkPipelineBinaryKHR handle from cache
+    ApplicationBinaryCache.get(binaryKeys[i], &amp;pipelineDatas[i]);
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_create_binaries_from_application_cache_for_a_pipeline_create_info"><a class="anchor" href="#_create_binaries_from_application_cache_for_a_pipeline_create_info"></a>4.6. Create binaries from application cache for a pipeline create info</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">VkPipelineBinaryKeysAndDataKHR binaryKeysAndData;
+binaryKeysAndData.binaryCount = binaryKeys.size();
+binaryKeysAndData.pPipelineBinaryKeys = binaryKeys.data();
+binaryKeysAndData.pPipelineBinaryData = pipelineDatas.data();
+
+VkPipelineBinaryCreateInfoKHR createInfo;
+createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_BINARY_CREATE_INFO_KHR;
+createInfo.pNext = NULL;
+createInfo.pKeysAndDataInfo = &amp;binaryKeysAndData;
+createInfo.pipeline = VK_NULL_HANDLE;
+createInfo.pPipelineCreateInfo = NULL;
+
+std::vector&lt;VkPipelineBinaryKHR&gt; pipelineBinaries;
+pipelineBinaries.resize(binaryKeysAndData.binaryCount);
+
+VkPipelineBinaryHandlesInfoKHR handlesInfo;
+handlesInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_BINARY_HANDLES_INFO_KHR;
+handlesInfo.pNext = NULL;
+handlesInfo.pipelineBinaryCount = binaryKeysAndData.binaryCount;
+handlesInfo.pPipelineBinaries = pipelineBinaries.data();
+
+vkCreatePipelineBinariesKHR(device, createInfo, NULL, &amp;handlesInfo);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_create_pipeline_from_binaries"><a class="anchor" href="#_create_pipeline_from_binaries"></a>4.7. Create pipeline from binaries</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">VkPipelineBinaryInfoKHR binaryInfo = {
+    VK_STRUCTURE_TYPE_PIPELINE_BINARY_INFO_KHR,
+    NULL,
+    binaryCount,
+    pipelineBinaries.data()
+};
+
+createInfo.pNext = &amp;binaryInfo;
+
+// Create the pipeline
+VkPipeline graphicsPipeline;
+vkCreateGraphicsPipelines(device, NULL, 1, &amp;createInfo, NULL, &amp;graphicsPipeline);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_read_internal_cache_for_the_pipeline_binaries"><a class="anchor" href="#_read_internal_cache_for_the_pipeline_binaries"></a>4.8. Read internal cache for the pipeline binaries</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">VkGraphicsPipelineCreateInfo graphicsCreateInfo;
+
+VkPipelineCreateInfoKHR pipelineCreateInfo;
+pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CREATE_INFO_KHR;
+pipelineCreateInfo.pNext = &amp;graphicsCreateInfo;
+
+VkPipelineBinaryCreateInfoKHR createInfo;
+createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_BINARY_CREATE_INFO_KHR;
+createInfo.pNext = NULL;
+createInfo.pKeysAndDataInfo = NULL;
+createInfo.pipeline = VK_NULL_HANDLE;
+createInfo.pPipelineCreateInfo = &amp;pipelineCreateInfo;
+
+VkPipelineBinaryHandlesInfoKHR handlesInfo;
+handlesInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_BINARY_HANDLES_INFO_KHR;
+handlesInfo.pNext = NULL;
+handlesInfo.pipelineBinaryCount = 0;
+handlesInfo.pPipelineBinaries = NULL;
+
+vkCreatePipelineBinariesKHR(device, &amp;createInfo, NULL, &amp;handlesInfo);
+
+if (res == VK_PIPELINE_BINARY_MISSING_KHR) {
+   // Attempted to create a pipeline binary, but implementation does not have it in cache.
+   // Similar to VK_PIPELINE_COMPILE_REQUIRED, this is a positive return value.
+   return;
+}
+
+std::vector&lt;VkPipelineBinaryKHR&gt; pipelineBinaries;
+pipelineBinaries.resize(handlesInfo.pipelineBinaryCount);
+
+handlesInfo.pPipelineBinaries = pipelineBinaries.data();
+
+vkCreatePipelineBinariesKHR(device, &amp;createInfo, NULL, &amp;handlesInfo);</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_interactions_with_other_extensions"><a class="anchor" href="#_interactions_with_other_extensions"></a>5. Interactions with other extensions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><code>VK_EXT_shader_module_identifier</code> already exposes some functionality of this extension,
+the ability to omit SPIR-V during pipeline compilation.
+This extension and module identifiers are intended to solve two different
+use cases however.
+Module identifiers have fuzzy guarantees and are intended for
+implicit pipeline caching, i.e. caching that lives outside the knowledge of applications
+in the context of translation layers and similar.</p>
+</div>
+<div class="paragraph">
+<p>Pipeline binaries focus on enabling explicit caching mechanisms which applications
+have full control over.
+The pipeline binaries are directly exposed, so strong guarantees can be provided
+to applications on the success of compiling those pipelines.
+On platforms without implicit pipeline caching, pipeline binaries can serve as a stronger
+caching mechanism.</p>
+</div>
+<div class="paragraph">
+<p>Another useful interaction is that <code>vkGetPipelineKeyKHR</code>
+can generate a key for pipeline stages
+which just take a <code>VkPipelineShaderStageModuleIdentifierCreateInfoEXT</code>.</p>
+</div>
+<div class="paragraph">
+<p>When using <code>VK_EXT_graphics_pipeline_library</code>, keys can be generated, and binaries created, for individual pipeline libraries.  These binaries can be used
+in subsequent runs to recreate the pipeline libraries for linking into complete graphics pipelines.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_issues"><a class="anchor" href="#_issues"></a>6. Issues</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_resolved_fixed_size_keys"><a class="anchor" href="#_resolved_fixed_size_keys"></a>6.1. RESOLVED: Fixed size keys</h3>
+<div class="paragraph">
+<p>The original design had fixed size keys. We have decided that variable length keys with a limit will provide better flexibility without compromising the API usage too much.
+It also matches the design outlined in <code>VK_EXT_shader_module_identifier</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_should_implementations_be_able_to_advertise_in_some_way_what_a_keydata_pair_are_associated_with"><a class="anchor" href="#_resolved_should_implementations_be_able_to_advertise_in_some_way_what_a_keydata_pair_are_associated_with"></a>6.2. RESOLVED: Should implementations be able to advertise in some way <em>what</em> a key/data pair are associated with?</h3>
+<div class="paragraph">
+<p>This could allow applications to make more informed decisions about how to store key/data pairs - e.g. by grouping key/data pairs in separate maps depending on what they are.</p>
+</div>
+<div class="paragraph">
+<p>This could take a number of forms - it might be as simple as an ID indicating like key/data pairs, or as complex as identifying particular parts of a pipeline and a cache level.</p>
+</div>
+<div class="paragraph">
+<p>For applications wanting to precompile all possible pipelines, this would allow them to discard anything that is not a final binary, reducing the storage requirements.</p>
+</div>
+<div class="paragraph">
+<p>Marking as resolved as it was decided that implementations would not generate non-final binaries.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_can_we_avoid_copies_everywhere"><a class="anchor" href="#_resolved_can_we_avoid_copies_everywhere"></a>6.3. RESOLVED: Can we avoid copies everywhere?</h3>
+<div class="paragraph">
+<p>The current design necessitates copying binaries into the driver using vkCreatePipelineBinariesKHR. Could this be avoided by making the application allocate special memory up front and writing into it? Does that even save anything? Presumably CPU drivers will want to CPU inspect the binary anyway.</p>
+</div>
+<div class="paragraph">
+<p>We also need to copy data out of the driver, and one copy is probably unavoidable because applications will need a CPU copy to write out to disk.</p>
+</div>
+<div class="paragraph">
+<p>After much discussion, it was decided that there is not a great way to do this in a cross platform way that would be worth the marginal benefit.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_can_we_avoid_recomputing_keys_on_each_run"><a class="anchor" href="#_resolved_can_we_avoid_recomputing_keys_on_each_run"></a>6.4. RESOLVED: Can we avoid recomputing keys on each run?</h3>
+<div class="paragraph">
+<p>The only key that needs to be recomputed between runs is the global key. Applications can assume that
+as long as the global key has not changed, they can reuse their previously computed keys.</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

@@ -1,0 +1,1796 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Credits (Informative) :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:spec" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="spec" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Specification</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/fundamentals.html">Fundamentals</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/initialization.html">Initialization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/devsandqueues.html">Devices and Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/cmdbuffers.html">Command Buffers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/synchronization.html">Synchronization and Cache Control</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/renderpass.html">Render Pass</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/shaders.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/pipelines.html">Pipelines</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/memory.html">Memory Allocation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/resources.html">Resource Creation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/samplers.html">Samplers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/descriptorsets.html">Resource Descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/interfaces.html">Shader Interfaces</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/textures.html">Image Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/fragmentdensitymapops.html">Fragment Density Map Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_ARM_tensors/tensorops.html">Tensor Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/queries.html">Queries</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/clears.html">Clear Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/copies.html">Copy Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/drawing.html">Drawing Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/fxvertex.html">Fixed-Function Vertex Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/tessellation.html">Tessellation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/geometry.html">Geometry Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_NV_mesh_shader/mesh.html">Mesh Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_HUAWEI_cluster_culling_shader/clusterculling.html">Cluster Culling Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/vertexpostproc.html">Fixed-Function Vertex Post-Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/primsrast.html">Rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/fragops.html">Fragment Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/framebuffer.html">The Framebuffer</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/dispatch.html">Dispatching Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/device_generated_commands/generatedcommands.html">Device-Generated Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/sparsemem.html">Sparse Resources</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_KHR_surface/wsi.html">Window System Integration (WSI)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_KHR_deferred_host_operations/deferred_host_operations.html">Deferred Host Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_EXT_private_data.html">Private Data</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/accelstructures.html">Acceleration Structures</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_EXT_opacity_micromap/micromaps.html">Micromap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/raytraversal.html">Ray Traversal</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/raytracing.html">Ray Tracing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_NV_memory_decompression.html">Memory Decompression</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/videocoding.html">Video Coding</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_NV_optical_flow/optical_flow.html">Optical Flow</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/executiongraphs.html">Execution Graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_NV_external_compute_queue/VK_NV_external_compute_queue.html">External Compute Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/VK_ARM_data_graph/graphs.html">Data graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/extensions.html">Extending Vulkan</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/features.html">Features</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/limits.html">Limits</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/formats.html">Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/capabilities.html">Additional Capabilities</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../chapters/debugging.html">Debugging</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="spirvenv.html">Vulkan Environment for SPIR-V</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="memorymodel.html">Memory Model</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="compressedtex.html">Compressed Image Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="versions.html">Core Revisions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="extensions.html">Layers &amp; Extensions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="roadmap.html">Vulkan Roadmap Milestones</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="deprecation.html">Deprecation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="boilerplate.html">API Boilerplate</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="invariance.html">Invariance</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="glossary.html">Lexicon</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="credits.html">Credits (Informative)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Specification</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Specification</a></li>
+    <li><a href="credits.html">Credits (Informative)</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/spec/modules/ROOT/pages/appendices/credits.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Credits (Informative)</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Vulkan 1.4 is the result of contributions from many people and companies
+participating in the Khronos Vulkan Working Group, as well as input from the
+Vulkan Advisory Panel.</p>
+</div>
+<div class="paragraph">
+<p>Members of the Working Group, including the company that they represented at
+the time of their most recent contribution, are listed in the following
+section.
+Some specific contributions made by individuals are listed together with
+their name.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_working_group_contributors_to_vulkan"><a class="anchor" href="#_working_group_contributors_to_vulkan"></a>Working Group Contributors to Vulkan</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>Aaron Greig, Codeplay Software Ltd.
+(versions 1.1, 1.4)</p>
+</li>
+<li>
+<p>Aaron Hagan, AMD (versions 1.1)</p>
+</li>
+<li>
+<p>Abhishek Sashi Nair, Huawei Technologies Co., Ltd.
+(version 1.4)</p>
+</li>
+<li>
+<p>Adam Jackson, Red Hat (versions 1.0, 1.1)</p>
+</li>
+<li>
+<p>Adam Śmigielski, Mobica (version 1.0)</p>
+</li>
+<li>
+<p>Aditi Verma, Qualcomm Technologies, Inc.
+(version 1.3)</p>
+</li>
+<li>
+<p>Ahmed Abdelkhalek, AMD (versions 1.3, 1.4) (video subgroup chair)</p>
+</li>
+<li>
+<p>Aidan Fabius, Core Avionics &amp; Industrial Inc.
+(version 1.2)</p>
+</li>
+<li>
+<p>Aitor Camacho, LunarG (version 1.4)</p>
+</li>
+<li>
+<p>Alan Baker, Google (versions 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Alan Vines, Imagination Technologies (version 1.4)</p>
+</li>
+<li>
+<p>Alan Ward, Google (versions 1.1, 1.2)</p>
+</li>
+<li>
+<p>Alastair Murray, Codeplay (version 1.4)</p>
+</li>
+<li>
+<p>Alejandro Piñeiro, Igalia (version 1.1)</p>
+</li>
+<li>
+<p>Aleks Todorov, Google (version 1.4)</p>
+</li>
+<li>
+<p>Aleksander Netzel, Epic Games (version 1.4)</p>
+</li>
+<li>
+<p>Alex Bourd, Qualcomm Technologies, Inc.
+(versions 1.0, 1.1, 1.4)</p>
+</li>
+<li>
+<p>Alex Crabb, Caster Communications (versions 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Alex Dai, Oppo (version 1.4)</p>
+</li>
+<li>
+<p>Alex Krstic, Qualcomm Technologies, Inc.
+(version 1.4)</p>
+</li>
+<li>
+<p>Alex Todorov, Google (version 1.4)</p>
+</li>
+<li>
+<p>Alex Walters, Imagination Technologies (versions 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Alexander Galazin, Imagination Technologies (versions 1.0, 1.1, 1.2,
+1.3, 1.4) (conformance test subgroup chair)</p>
+</li>
+<li>
+<p>Alexey Knyazev, Independent, Khronos (version 1.4)</p>
+</li>
+<li>
+<p>Alexey Sachkov, Intel (version 1.3)</p>
+</li>
+<li>
+<p>Ali Asif, Huawei Technologies Co., Ltd.
+(version 1.4)</p>
+</li>
+<li>
+<p>Allan MacKinnon, Google (version 1.3)</p>
+</li>
+<li>
+<p>Allen Hux, Intel (version 1.0)</p>
+</li>
+<li>
+<p>Alon Or-bach, Arm (versions 1.0, 1.1, 1.2, 1.3, 1.4) (system integration
+subgroup chair)</p>
+</li>
+<li>
+<p>Alyssa Rosenzweig, Valve Software (version 1.4)</p>
+</li>
+<li>
+<p>Anastasia Stulova, Arm (versions 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Andreas Vasilakis, Think Silicon (version 1.2)</p>
+</li>
+<li>
+<p>Andres Gomez, Igalia (version 1.1)</p>
+</li>
+<li>
+<p>Andrew Cox, Samsung Electronics (version 1.0)</p>
+</li>
+<li>
+<p>Andrew Ellem, Google (version 1.3)</p>
+</li>
+<li>
+<p>Andrew Garrard, Imagination Technologies (versions 1.0, 1.1, 1.2, 1.3,
+1.4) (format wrangler)</p>
+</li>
+<li>
+<p>Andrew Poole, Samsung Electronics (version 1.0)</p>
+</li>
+<li>
+<p>Andrew Rafter, Samsung Electronics (version 1.0)</p>
+</li>
+<li>
+<p>Andrew Richards, Codeplay Software Ltd.
+(version 1.0)</p>
+</li>
+<li>
+<p>Andrew Woloszyn, Google (versions 1.0, 1.1)</p>
+</li>
+<li>
+<p>Andrew Zhi, AMD (version 1.4)</p>
+</li>
+<li>
+<p>Ann Thorsnes, Khronos (versions 1.2, 1.3)</p>
+</li>
+<li>
+<p>Anthony Salvi, Adobe (version 1.4)</p>
+</li>
+<li>
+<p>Antoine Labour, Google (versions 1.0, 1.1)</p>
+</li>
+<li>
+<p>Anton Berko, Mediatek (version 1.4)</p>
+</li>
+<li>
+<p>Anuj Phogat, Netflix (version 1.4)</p>
+</li>
+<li>
+<p>Aras Pranckevičius, Unity Technologies (version 1.0)</p>
+</li>
+<li>
+<p>Arpit Agarwal, Qualcomm Technologies, Inc.
+(version 1.4)</p>
+</li>
+<li>
+<p>Arseny Kapoulkine, Roblox (version 1.3)</p>
+</li>
+<li>
+<p>Ashley Smith, AMD (version 1.4)</p>
+</li>
+<li>
+<p>Ashwin Kolhe, NVIDIA (version 1.0)</p>
+</li>
+<li>
+<p>Aurelio Reis, NVIDIA (version 1.4)</p>
+</li>
+<li>
+<p>Avinash Baliga, NVIDIA (version 1.4)</p>
+</li>
+<li>
+<p>Balaji Calidas, Qualcomm Technologies, Inc.
+(version 1.4)</p>
+</li>
+<li>
+<p>Baldur Karlsson, Valve Software (versions 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Barthold Lichtenbelt, NVIDIA (version 1.1)</p>
+</li>
+<li>
+<p>Bas Nieuwenhuizen, Google (versions 1.1, 1.2, 1.4)</p>
+</li>
+<li>
+<p>Ben Ashbaugh, Intel (version 1.4)</p>
+</li>
+<li>
+<p>Ben Bowman, Imagination Technologies (version 1.0)</p>
+</li>
+<li>
+<p>Benj Lipchak, Unknown (version 1.0)</p>
+</li>
+<li>
+<p>Bill Hollings, Brenwill (versions 1.0, 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Bill Licea-Kane, Qualcomm Technologies, Inc.
+(versions 1.0, 1.1)</p>
+</li>
+<li>
+<p>Blaine Kohl, Khronos (versions 1.2, 1.3)</p>
+</li>
+<li>
+<p>Bob Fraser, Google (version 1.3)</p>
+</li>
+<li>
+<p>Boris Zanin, Mobica (versions 1.2, 1.3)</p>
+</li>
+<li>
+<p>Brad Grantham, LunarG (version 1.4)</p>
+</li>
+<li>
+<p>Brent E. Insko, Intel (version 1.0)</p>
+</li>
+<li>
+<p>Brian Ellis, Qualcomm Technologies, Inc.
+(version 1.0)</p>
+</li>
+<li>
+<p>Brian Paul, VMware (versions 1.2, 1.3)</p>
+</li>
+<li>
+<p>CAI Kangying, Huawei Technologies Co., Ltd.
+(version 1.4)</p>
+</li>
+<li>
+<p>Caio Marcelo de Oliveira Filho, Intel (versions 1.2, 1.3)</p>
+</li>
+<li>
+<p>Calle Ledjefors, Tencent (version 1.4)</p>
+</li>
+<li>
+<p>Cass Everitt, Oculus VR (versions 1.0, 1.1)</p>
+</li>
+<li>
+<p>Cemil Azizoglu, Canonical (version 1.0)</p>
+</li>
+<li>
+<p>Chang-Hyo Yu, Samsung Electronics (version 1.0)</p>
+</li>
+<li>
+<p>Charles Giessen, LunarG (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Charlie Lao, Google (version 1.4)</p>
+</li>
+<li>
+<p>Charlie Turner, Igalia (version 1.4)</p>
+</li>
+<li>
+<p>Cheng Ge, Tencent (version 1.4)</p>
+</li>
+<li>
+<p>Chengping Luo, Mediatek (version 1.4)</p>
+</li>
+<li>
+<p>Chia-I Wu, LunarG (version 1.0)</p>
+</li>
+<li>
+<p>Chris Bieneman, Microsoft (version 1.4)</p>
+</li>
+<li>
+<p>Chris Frascati, Qualcomm Technologies, Inc.
+(version 1.0)</p>
+</li>
+<li>
+<p>Chris Glover, Google (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Christian Forfang, Arm (version 1.3)</p>
+</li>
+<li>
+<p>Christoph Kubisch, NVIDIA (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Christophe Riccio, LunarG (versions 1.0, 1.1, 1.4)</p>
+</li>
+<li>
+<p>Cody Northrop, LunarG (version 1.0)</p>
+</li>
+<li>
+<p>Colin Riley, AMD (version 1.1)</p>
+</li>
+<li>
+<p>Connor Abbott, Valve Software (version 1.4)</p>
+</li>
+<li>
+<p>Caterina Shablia, Collabora (version 1.4)</p>
+</li>
+<li>
+<p>Cort Stratton, Google (versions 1.1, 1.2)</p>
+</li>
+<li>
+<p>Courtney Goeltzenleuchter, Google (versions 1.0, 1.1, 1.3)</p>
+</li>
+<li>
+<p>Craig Davies, Huawei Technologies Co., Ltd.
+(version 1.2)</p>
+</li>
+<li>
+<p>Craig Graham, Samsung Electronics (version 1.4)</p>
+</li>
+<li>
+<p>Dae Kim, Imagination Technologies (versions 1.1, 1.4)</p>
+</li>
+<li>
+<p>Damien Leone, NVIDIA (version 1.0)</p>
+</li>
+<li>
+<p>Dan Baker, Oxide Games (versions 1.0, 1.1)</p>
+</li>
+<li>
+<p>Dan Ginsburg, Valve Software (versions 1.0, 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Dan Sinclair, Google (version 1.4)</p>
+</li>
+<li>
+<p>Daniel Johnston, Intel (versions 1.0, 1.1)</p>
+</li>
+<li>
+<p>Daniel Koch, NVIDIA (versions 1.0, 1.1, 1.2, 1.3, 1.4) (ray tracing
+subgroup chair)</p>
+</li>
+<li>
+<p>Daniel Rakos, RasterGrid (versions 1.0, 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Daniel Schürmann, Valve Software (version 1.4)</p>
+</li>
+<li>
+<p>Daniel Stone, Collabora (versions 1.1, 1.2, 1.4)</p>
+</li>
+<li>
+<p>Daniel Story, Nintendo (version 1.4)</p>
+</li>
+<li>
+<p>Daniel Vetter, Intel (version 1.2)</p>
+</li>
+<li>
+<p>Daniele Vettorel, Google (version 1.4)</p>
+</li>
+<li>
+<p>Danny Huynh, Samsung Electronics (version 1.4)</p>
+</li>
+<li>
+<p>Dave Aronson, Adobe (version 1.4)</p>
+</li>
+<li>
+<p>Dave Desormeaux, LunarG (version 1.4)</p>
+</li>
+<li>
+<p>Dave Evans, Samsung Electronics (version 1.4)</p>
+</li>
+<li>
+<p>David Airlie, Red Hat (versions 1.0, 1.1, 1.2, 1.3)</p>
+</li>
+<li>
+<p>David Mao, AMD (versions 1.0, 1.2)</p>
+</li>
+<li>
+<p>David McCloskey, Juice Labs (version 1.4)</p>
+</li>
+<li>
+<p>David Miller, Miller &amp; Mattson (versions 1.0, 1.1) (Vulkan reference
+card)</p>
+</li>
+<li>
+<p>David Neto, Google (versions 1.0, 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>David Pankratz, Huawei Technologies Co., Ltd.
+(version 1.3)</p>
+</li>
+<li>
+<p>David Wilkinson, AMD (version 1.2)</p>
+</li>
+<li>
+<p>David Yu, Pixar (version 1.0)</p>
+</li>
+<li>
+<p>Dean Sekulic, Croteam (version 1.4)</p>
+</li>
+<li>
+<p>Dejan Mircevski, Google (version 1.1)</p>
+</li>
+<li>
+<p>Dennis Adams, Sony (version 1.4)</p>
+</li>
+<li>
+<p>Derek Lamberti, Arm (version 1.4)</p>
+</li>
+<li>
+<p>Diego Novillo, Google (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Dimitris Georgakakis, Think Silicon (version 1.3)</p>
+</li>
+<li>
+<p>Dominik Witczak, AMD (versions 1.0, 1.1, 1.3)</p>
+</li>
+<li>
+<p>Donald Scorgie, Imagination Technologies (version 1.2)</p>
+</li>
+<li>
+<p>Dzmitry Malyshau, Mozilla (versions 1.1, 1.2, 1.3)</p>
+</li>
+<li>
+<p>Ed Hutchins, Oculus (version 1.2)</p>
+</li>
+<li>
+<p>Eddie Hatfield, Google (version 1.4)</p>
+</li>
+<li>
+<p>Eduardo Lima, Igalia (version 1.4)</p>
+</li>
+<li>
+<p>Emily Stearns, Khronos (versions 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Enrique de Lucas, Imagination Technologies (version 1.4)</p>
+</li>
+<li>
+<p>Eric Sullivan, NVIDIA (version 1.4)</p>
+</li>
+<li>
+<p>Faith Ekstrand, Collabora (versions 1.0, 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Florian Penzkofer, Epic (version 1.4)</p>
+</li>
+<li>
+<p>Frank (LingJun) Chen, Qualcomm Technologies, Inc.
+(version 1.0)</p>
+</li>
+<li>
+<p>Frank Yang, Google (version 1.4)</p>
+</li>
+<li>
+<p>François Duranleau, Gameloft (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Fred Liao, Mediatek (version 1.0)</p>
+</li>
+<li>
+<p>Gabe Dagani, Samsung Electronics (versions 1.0, 1.4)</p>
+</li>
+<li>
+<p>Gabor Sines, AMD (version 1.2)</p>
+</li>
+<li>
+<p>Gang Chen, Intel (version 1.4)</p>
+</li>
+<li>
+<p>George Erfesoglou, OVR Tech (version 1.4)</p>
+</li>
+<li>
+<p>Graeme Leese, Broadcom (versions 1.0, 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Graham Connor, Imagination Technologies (version 1.0)</p>
+</li>
+<li>
+<p>Graham Sellers, Electronic Arts (versions 1.0, 1.1, 1.4)</p>
+</li>
+<li>
+<p>Graham Wihlidal, Electronic Arts (version 1.3)</p>
+</li>
+<li>
+<p>Greg Fischer, LunarG (versions 1.1, 1.4)</p>
+</li>
+<li>
+<p>Greg Roth, Microsoft (version 1.4)</p>
+</li>
+<li>
+<p>Gregory Grebe, AMD (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Hai Nguyen, NVIDIA (versions 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Hamish Todd, Imagination Technologies (version 1.4)</p>
+</li>
+<li>
+<p>Hans-Kristian Arntzen, Valve Software (versions 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Heman Gala, MAGIX (version 1.4)</p>
+</li>
+<li>
+<p>Henri Verbeet, Codeweavers (version 1.2)</p>
+</li>
+<li>
+<p>Hugo Devillers, Saarland University (version 1.4)</p>
+</li>
+<li>
+<p>Hwanyong Lee, Kyungpook National University (version 1.0)</p>
+</li>
+<li>
+<p>Iago Toral, Igalia (versions 1.1, 1.2)</p>
+</li>
+<li>
+<p>Ian Ameline, Huawei Technologies Co., Ltd.
+(version 1.4)</p>
+</li>
+<li>
+<p>Ian Elliott, Google (versions 1.0, 1.1, 1.2, 1.4)</p>
+</li>
+<li>
+<p>Ian Richardson, Intel (version 1.4)</p>
+</li>
+<li>
+<p>Ian Romanick, Intel (versions 1.0, 1.1, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Ingrid Kelly, NVIDIA (version 1.4)</p>
+</li>
+<li>
+<p>J. D. Rouan, Google (version 1.4)</p>
+</li>
+<li>
+<p>Jaebaek Seo, Google (version 1.4)</p>
+</li>
+<li>
+<p>Jake Turner, Valve Software (version 1.4)</p>
+</li>
+<li>
+<p>Jakob Bornecrantz, Collabora (version 1.4)</p>
+</li>
+<li>
+<p>James Fitzpatrick, Imagination Technologies (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>James Hughes, Oculus VR (version 1.0)</p>
+</li>
+<li>
+<p>James Jones, NVIDIA (versions 1.0, 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>James Riordon, Khronos (versions 1.2, 1.3)</p>
+</li>
+<li>
+<p>Jamie Madill, Google (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Jan Hermes, Continental Corporation (versions 1.0, 1.1, 1.4)</p>
+</li>
+<li>
+<p>Jan-Harald Fredriksen, Arm (versions 1.0, 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Jarred Davies, Imagination Technologies (version 1.4)</p>
+</li>
+<li>
+<p>Jean Geffroy, id Software (version 1.4)</p>
+</li>
+<li>
+<p>Jean-François Roy, Google (versions 1.1, 1.2, 1.3)</p>
+</li>
+<li>
+<p>Jean-Noé Morrisette, Epic Games (version 1.4)</p>
+</li>
+<li>
+<p>Jeff Bolz, NVIDIA (versions 1.0, 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Jeff Juliano, NVIDIA (versions 1.0, 1.1, 1.2, 1.4)</p>
+</li>
+<li>
+<p>Jeff Kiel, NVIDIA (version 1.4)</p>
+</li>
+<li>
+<p>Jeff Leger, Qualcomm Technologies, Inc.
+(versions 1.1, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Jeff Phillips, Khronos (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Jeff Vigil, Samsung Electronics (versions 1.0, 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Jens Owen, Google (versions 1.0, 1.1)</p>
+</li>
+<li>
+<p>Jeremy Gebben, LunarG (version 1.4)</p>
+</li>
+<li>
+<p>Jeremy Hayes, LunarG (versions 1.0, 1.4)</p>
+</li>
+<li>
+<p>Jesse Barker, Unity Technologies (versions 1.0, 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Jesse Hall, Google (versions 1.0, 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Jessica Heerboth, NVIDIA (version 1.4)</p>
+</li>
+<li>
+<p>Jingye Wang, Huawei Technologies Co., Ltd.
+(version 1.4)</p>
+</li>
+<li>
+<p>Joe Davis, Samsung Electronics (version 1.1)</p>
+</li>
+<li>
+<p>Johannes van Waveren, Oculus VR (versions 1.0, 1.1)</p>
+</li>
+<li>
+<p>John Anthony, Arm (versions 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>John Kessenich, Google (versions 1.0, 1.1, 1.2, 1.3) (SPIR-V and GLSL
+for Vulkan spec author)</p>
+</li>
+<li>
+<p>John McDonald, Valve Software (versions 1.0, 1.1, 1.2, 1.3)</p>
+</li>
+<li>
+<p>John Stone, University of Illinois (version 1.4)</p>
+</li>
+<li>
+<p>John Zulauf, LunarG (versions 1.1, 1.2, 1.3)</p>
+</li>
+<li>
+<p>Jon Ashburn, LunarG (version 1.0)</p>
+</li>
+<li>
+<p>Jon Leech, Independent (versions 1.0, 1.1, 1.2, 1.3, 1.4) (XML
+toolchain, normative language, release wrangler)</p>
+</li>
+<li>
+<p>Jonas Gustavsson, Samsung Electronics (versions 1.0, 1.1)</p>
+</li>
+<li>
+<p>Jonas Meyer, Epic Games (versions 1.2, 1.3)</p>
+</li>
+<li>
+<p>Jonathan Hamilton, Imagination Technologies (version 1.0)</p>
+</li>
+<li>
+<p>Jordan Justen, Intel (version 1.1)</p>
+</li>
+<li>
+<p>Jordan Robinson, Samsung Electronics (version 1.4)</p>
+</li>
+<li>
+<p>Joshua Ashton, Valve Software (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Jules Blok, Independent (version 1.4)</p>
+</li>
+<li>
+<p>Jungwoo Kim, Samsung Electronics (versions 1.0, 1.1)</p>
+</li>
+<li>
+<p>Jörg Wagner, Arm (version 1.1)</p>
+</li>
+<li>
+<p>Kalle Raita, Google (version 1.1)</p>
+</li>
+<li>
+<p>Karen Ghavam, LunarG (versions 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Karl Schultz, LunarG (versions 1.1, 1.2)</p>
+</li>
+<li>
+<p>Kathleen Mattson, Khronos (versions 1.0, 1.1, 1.2)</p>
+</li>
+<li>
+<p>Kaye Mason, Google (version 1.2)</p>
+</li>
+<li>
+<p>Keith Packard, Valve Software (version 1.2)</p>
+</li>
+<li>
+<p>Kenneth Benzie, Codeplay Software Ltd.
+(versions 1.0, 1.1)</p>
+</li>
+<li>
+<p>Kenneth Russell, Google (version 1.1)</p>
+</li>
+<li>
+<p>Kerch Holt, NVIDIA (versions 1.0, 1.1)</p>
+</li>
+<li>
+<p>Kevin O&#8217;Neil, AMD (version 1.1)</p>
+</li>
+<li>
+<p>Kevin Petit, Arm (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Kris Rose, Khronos (versions 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Kristian Kristensen, Intel (versions 1.0, 1.1)</p>
+</li>
+<li>
+<p>Krzysztof Iwanicki, Samsung Electronics (version 1.0)</p>
+</li>
+<li>
+<p>Larry Seiler, Intel (version 1.0)</p>
+</li>
+<li>
+<p>Laura Hermanns, Epic Games (version 1.4)</p>
+</li>
+<li>
+<p>Laura Shubel, Caster Communications (version 1.3)</p>
+</li>
+<li>
+<p>Lauri Ilola, Nokia (version 1.1)</p>
+</li>
+<li>
+<p>Lei Zhang, Google (version 1.2)</p>
+</li>
+<li>
+<p>Lenny Komow, LunarG (versions 1.1, 1.2)</p>
+</li>
+<li>
+<p>Leonid Fedorov, Huawei Technologies Co., Ltd.
+(version 1.4)</p>
+</li>
+<li>
+<p>Liam Middlebrook, NVIDIA (version 1.3)</p>
+</li>
+<li>
+<p>Lina Versace, Google (versions 1.0, 1.1, 1.2, 1.4) (system integration
+subgroup chair)</p>
+</li>
+<li>
+<p>Lionel Duc, NVIDIA (version 1.4)</p>
+</li>
+<li>
+<p>Lionel Landwerlin, Intel (versions 1.1, 1.2, 1.4)</p>
+</li>
+<li>
+<p>Lisie Aartsen, Khronos (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Liz Maitral, Khronos (version 1.2)</p>
+</li>
+<li>
+<p>Lorenzo Dal Col, Khronos (version 1.4) (conformance test subgroup chair)</p>
+</li>
+<li>
+<p>Lou Kramer, AMD (version 1.3)</p>
+</li>
+<li>
+<p>Lutz Latta, Lucasfilm (version 1.0)</p>
+</li>
+<li>
+<p>Lynne Iribarren, Independent (version 1.4)</p>
+</li>
+<li>
+<p>Maciej Jesionowski, AMD (version 1.1)</p>
+</li>
+<li>
+<p>Mahmoud Kharsa, Samsung Electronics (version 1.4)</p>
+</li>
+<li>
+<p>Mais Alnasser, AMD (versions 1.1, 1.4)</p>
+</li>
+<li>
+<p>Marcin Kantoch, AMD (version 1.3)</p>
+</li>
+<li>
+<p>Marcin Rogucki, Mobica (version 1.1)</p>
+</li>
+<li>
+<p>Maria Rovatsou, Codeplay Software Ltd.
+(version 1.0)</p>
+</li>
+<li>
+<p>Mariusz Merecki, Intel (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Marijn Suijten, Traverse Research (version 1.4)</p>
+</li>
+<li>
+<p>Mark Bellamy, Arm (versions 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Mark Callow, Independent (versions 1.0, 1.1, 1.2, 1.3)</p>
+</li>
+<li>
+<p>Dhruv Mark Collins, Igalia (version 1.4)</p>
+</li>
+<li>
+<p>Mark Kilgard, NVIDIA (versions 1.1, 1.2)</p>
+</li>
+<li>
+<p>Mark Lobodzinski, LunarG (versions 1.0, 1.1, 1.2)</p>
+</li>
+<li>
+<p>Mark Young, LunarG (versions 1.1, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Markus Tavenrath, NVIDIA (version 1.1)</p>
+</li>
+<li>
+<p>Marty Johnson, Khronos (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Mateusz Przybylski, Intel (version 1.0)</p>
+</li>
+<li>
+<p>Mathias Heyer, NVIDIA (versions 1.0, 1.1)</p>
+</li>
+<li>
+<p>Mathias Schott, NVIDIA (versions 1.0, 1.1)</p>
+</li>
+<li>
+<p>Mathieu Robart, Arm (version 1.2)</p>
+</li>
+<li>
+<p>Matt Netsch, Qualcomm Technologies, Inc.
+(versions 1.1, 1.3, 1.4) (conformance test subgroup chair)</p>
+</li>
+<li>
+<p>Matthew Rusch, NVIDIA (version 1.3)</p>
+</li>
+<li>
+<p>Matthäus Chajdas, Intel (versions 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Maurice Ribble, Qualcomm Technologies, Inc.
+(versions 1.0, 1.1)</p>
+</li>
+<li>
+<p>Maxim Lukyanov, Samsung Electronics (version 1.0)</p>
+</li>
+<li>
+<p>Maximilien Dagois, Google (version 1.4)</p>
+</li>
+<li>
+<p>Michael Antilla, Google (version 1.4)</p>
+</li>
+<li>
+<p>Michael Blumenkrantz, Valve Software (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Michael Lentine, Google (version 1.0)</p>
+</li>
+<li>
+<p>Michael O&#8217;Hara, AMD (version 1.1)</p>
+</li>
+<li>
+<p>Michael Phillip, Samsung Electronics (version 1.2)</p>
+</li>
+<li>
+<p>Michael Wong, Codeplay Software Ltd.
+(version 1.1)</p>
+</li>
+<li>
+<p>Michael Worcester, Imagination Technologies (versions 1.0, 1.1)</p>
+</li>
+<li>
+<p>Michal Pietrasiuk, Intel (versions 1.0, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Mick Beaver, Electronic Arts (version 1.4)</p>
+</li>
+<li>
+<p>Mika Isojarvi, Google (versions 1.0, 1.1)</p>
+</li>
+<li>
+<p>Mike Schuchardt, LunarG (versions 1.1, 1.2, 1.4)</p>
+</li>
+<li>
+<p>Mike Stroyan, LunarG (version 1.0)</p>
+</li>
+<li>
+<p>Mike Weiblen, LunarG (versions 1.1, 1.2, 1.3)</p>
+</li>
+<li>
+<p>Minyoung Son, Samsung Electronics (version 1.0)</p>
+</li>
+<li>
+<p>Mitch Singer, AMD (versions 1.0, 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Mythri Venugopal, Samsung Electronics (version 1.0)</p>
+</li>
+<li>
+<p>Máté Ferenc Nagy-Egri, RasterGrid (version 1.4)</p>
+</li>
+<li>
+<p>Natalie Chouinard, Google (version 1.4)</p>
+</li>
+<li>
+<p>Nathan Gauër, Google (version 1.4)</p>
+</li>
+<li>
+<p>Nathaniel Cesario, LunarG (version 1.4)</p>
+</li>
+<li>
+<p>Naveen Leekha, Google (version 1.0)</p>
+</li>
+<li>
+<p>Neil Henning, AMD (versions 1.0, 1.1, 1.2, 1.3)</p>
+</li>
+<li>
+<p>Neil Hickey, Arm (version 1.2)</p>
+</li>
+<li>
+<p>Neil Trevett, NVIDIA (versions 1.0, 1.1, 1.2, 1.3, 1.4) (portability
+subgroup chair)</p>
+</li>
+<li>
+<p>Nick Penwarden, Epic Games (version 1.0)</p>
+</li>
+<li>
+<p>Nicola Zaghen, Innosilicon (version 1.4)</p>
+</li>
+<li>
+<p>Nicolai Hähnle, AMD (version 1.1)</p>
+</li>
+<li>
+<p>Nikhil Joshi, NVIDIA (version 1.4)</p>
+</li>
+<li>
+<p>Niklas Smedberg, Unity Technologies (version 1.0)</p>
+</li>
+<li>
+<p>Norbert Nopper, Independent (versions 1.0, 1.1)</p>
+</li>
+<li>
+<p>Nuno Subtil, NVIDIA (versions 1.1, 1.2, 1.3)</p>
+</li>
+<li>
+<p>Pan Gao, Huawei Technologies Co., Ltd.
+(version 1.4)</p>
+</li>
+<li>
+<p>Pat Brown, NVIDIA (version 1.0)</p>
+</li>
+<li>
+<p>Patrick Boyle, Qualcomm Technologies, Inc.
+(version 1.4)</p>
+</li>
+<li>
+<p>Patrick Cozzi, Independent (version 1.1)</p>
+</li>
+<li>
+<p>Patrick Doane, Activision (versions 1.0, 1.4)</p>
+</li>
+<li>
+<p>Patrick Han, Samsung Electronics (version 1.4)</p>
+</li>
+<li>
+<p>Patrick Mours, NVIDIA (version 1.4)</p>
+</li>
+<li>
+<p>Pau Baiget, Google (version 1.4)</p>
+</li>
+<li>
+<p>Peter Kutz, Adobe (version 1.4)</p>
+</li>
+<li>
+<p>Peter Lohrmann, AMD (versions 1.0, 1.2)</p>
+</li>
+<li>
+<p>Peter Quayle, Imagination Technologies (version 1.4)</p>
+</li>
+<li>
+<p>Petros Bantolas, Imagination Technologies (version 1.1)</p>
+</li>
+<li>
+<p>Philip Rebohle, Valve Software (version 1.3)</p>
+</li>
+<li>
+<p>Pierre Boudier, NVIDIA (versions 1.0, 1.1, 1.2, 1.3)</p>
+</li>
+<li>
+<p>Pierre-Loup Griffais, Valve Software (versions 1.0, 1.1, 1.2, 1.3)</p>
+</li>
+<li>
+<p>Piers Daniell, NVIDIA (versions 1.0, 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Ping Liu, Intel (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Piotr Bialecki, Intel (version 1.0)</p>
+</li>
+<li>
+<p>Piotr Byszewski, Mobica (version 1.3)</p>
+</li>
+<li>
+<p>Prabindh Sundareson, Samsung Electronics (version 1.0)</p>
+</li>
+<li>
+<p>Pradyuman Singh, NVIDIA (version 1.4)</p>
+</li>
+<li>
+<p>Pyry Haulos, Google (versions 1.0, 1.1) (conformance test subgroup
+chair)</p>
+</li>
+<li>
+<p>Rachel Bradshaw, Caster Communications (version 1.3)</p>
+</li>
+<li>
+<p>Rajeev Rao, Qualcomm Technologies, Inc.
+(version 1.2)</p>
+</li>
+<li>
+<p>Ralph Potter, Samsung Electronics (versions 1.1, 1.2, 1.3, 1.4) (working
+group chair)</p>
+</li>
+<li>
+<p>Ran Wang, Google (version 1.4)</p>
+</li>
+<li>
+<p>Raun Krisch, Samsung Electronics (version 1.3)</p>
+</li>
+<li>
+<p>Ravi Patlegar, AMD (version 1.4)</p>
+</li>
+<li>
+<p>Ravikiran Pallapatula, Huawei Technologies Co., Ltd.
+(version 1.4)</p>
+</li>
+<li>
+<p>Ray Smith, Arm (versions 1.0, 1.1, 1.2)</p>
+</li>
+<li>
+<p>Ricardo Garcia, Igalia (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Richard Huddy, Samsung Electronics (versions 1.2, 1.3)</p>
+</li>
+<li>
+<p>Richard Van Natta, Firaxis (version 1.4)</p>
+</li>
+<li>
+<p>Richard Wang, Huawei Technologies Co., Ltd.
+(version 1.4)</p>
+</li>
+<li>
+<p>Rick Hammerstone, Qualcomm Technologies, Inc.
+(version 1.4)</p>
+</li>
+<li>
+<p>Rob Barris, NVIDIA (version 1.1)</p>
+</li>
+<li>
+<p>Rob Stepinski, Transgaming (version 1.0)</p>
+</li>
+<li>
+<p>Robert Simpson, Qualcomm Technologies, Inc.
+(versions 1.0, 1.1, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Rohan Garg, Intel (version 1.4)</p>
+</li>
+<li>
+<p>Rolando Caloca Olivares, Epic Games (versions 1.0, 1.1, 1.2, 1.3)</p>
+</li>
+<li>
+<p>Ronan Keryell, Xilinx (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Roy Ju, Mediatek (version 1.0)</p>
+</li>
+<li>
+<p>Rufus Hamade, Imagination Technologies (version 1.0)</p>
+</li>
+<li>
+<p>Ruihao Zhang, Qualcomm Technologies, Inc.
+(versions 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>SU Fujia, Huawei Technologies Co., Ltd.
+(version 1.4)</p>
+</li>
+<li>
+<p>Sam Martin, Arm (version 1.4)</p>
+</li>
+<li>
+<p>Samuel (Sheng-Wen) Huang, Mediatek (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Samuel Iglesias Gonsalvez, Igalia (version 1.3)</p>
+</li>
+<li>
+<p>Samuel Pitoiset, Valve Software (version 1.4)</p>
+</li>
+<li>
+<p>Sandeep Kakarlapudi, Arm (version 1.4)</p>
+</li>
+<li>
+<p>Sascha Willems, Self (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Sean Ellis, Arm (version 1.0)</p>
+</li>
+<li>
+<p>Sean Harmer, KDAB Group (versions 1.0, 1.1)</p>
+</li>
+<li>
+<p>Serdar Kocdemir, Google (version 1.4)</p>
+</li>
+<li>
+<p>Sergey Solovyev, Tencent (version 1.4)</p>
+</li>
+<li>
+<p>Seth Williams, NVIDIA (version 1.4)</p>
+</li>
+<li>
+<p>Shahbaz Youssefi, Google (version 1.4)</p>
+</li>
+<li>
+<p>Shannon Woods, NVIDIA (versions 1.0, 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Shaun Heald, Innosilicon (version 1.4)</p>
+</li>
+<li>
+<p>Sinuhe Hardegree, Samsung Electronics (version 1.4)</p>
+</li>
+<li>
+<p>Slawomir Cygan, Intel (versions 1.0, 1.1, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Slawomir Grajewski, Intel (versions 1.0, 1.1, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Sorel Bosan, AMD (version 1.1)</p>
+</li>
+<li>
+<p>Soroush Kashani, Imagination Technologies (version 1.4)</p>
+</li>
+<li>
+<p>Spencer Fricke, LunarG (versions 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Stefanus Du Toit, Google (version 1.0)</p>
+</li>
+<li>
+<p>Stephane Cerveau, Igalia (version 1.4)</p>
+</li>
+<li>
+<p>Stephen Huang, Mediatek (version 1.1)</p>
+</li>
+<li>
+<p>Steve Hill, Broadcom (versions 1.0, 1.2)</p>
+</li>
+<li>
+<p>Steve Viggers, Core Avionics &amp; Industrial Inc.
+(versions 1.0, 1.2)</p>
+</li>
+<li>
+<p>Steve Winston, Holochip (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Steven Gu, Huawei Technologies Co., Ltd.
+(version 1.4)</p>
+</li>
+<li>
+<p>Steven Perron, Google (version 1.4)</p>
+</li>
+<li>
+<p>Stuart Smith, AMD (versions 1.0, 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Sujeevan Rajayogam, Google (version 1.3)</p>
+</li>
+<li>
+<p>Theresa Foley, Intel (version 1.0)</p>
+</li>
+<li>
+<p>Thomas Caissard, Adobe (version 1.4)</p>
+</li>
+<li>
+<p>Tiago Costa, Epic Games (version 1.4)</p>
+</li>
+<li>
+<p>Tilmann Scheller, Samsung Electronics (version 1.1)</p>
+</li>
+<li>
+<p>Tim Lewis, Khronos (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Timo Suoranta, AMD (version 1.0)</p>
+</li>
+<li>
+<p>Timothy Lottes, AMD (versions 1.0, 1.1)</p>
+</li>
+<li>
+<p>Timur Kristof, Valve Software (version 1.4)</p>
+</li>
+<li>
+<p>Ting Wei, Arm (version 1.4)</p>
+</li>
+<li>
+<p>Tobias Hector, AMD (versions 1.0, 1.1, 1.2, 1.3, 1.4) (validity language
+and toolchain)</p>
+</li>
+<li>
+<p>Tobin Ehlis, LunarG (version 1.0)</p>
+</li>
+<li>
+<p>Tom Olson, Arm (versions 1.0, 1.1, 1.2, 1.3, 1.4) (working group chair)</p>
+</li>
+<li>
+<p>Tomasz Bednarz, Independent (version 1.1)</p>
+</li>
+<li>
+<p>Tomasz Kubale, Intel (version 1.0)</p>
+</li>
+<li>
+<p>Tony Barbour, LunarG (versions 1.0, 1.1, 1.2)</p>
+</li>
+<li>
+<p>Tony Zlatinski, NVIDIA (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Trevor Black, Google (version 1.4)</p>
+</li>
+<li>
+<p>Tyler Nowicki, AMD (version 1.4)</p>
+</li>
+<li>
+<p>Vassili Nikolaev, NVIDIA (version 1.4)</p>
+</li>
+<li>
+<p>Vatsalya Prasad, Huawei Technologies Co., Ltd.
+(version 1.4)</p>
+</li>
+<li>
+<p>Victor Eruhimov, Unknown (version 1.1)</p>
+</li>
+<li>
+<p>Vikram Kushwaha, NVIDIA (versions 1.3, 1.4)</p>
+</li>
+<li>
+<p>Vikram Tarikere, Imagination Technologies (version 1.4)</p>
+</li>
+<li>
+<p>Vincent Hindriksen, Stream HPC (versions 1.2, 1.3)</p>
+</li>
+<li>
+<p>Víctor Jáquez, Igalia (version 1.4)</p>
+</li>
+<li>
+<p>Wang Jingye, Huawei Technologies Co., Ltd.
+(version 1.4)</p>
+</li>
+<li>
+<p>Wasim Abbas, Arm (version 1.3)</p>
+</li>
+<li>
+<p>Wayne Lister, Imagination Technologies (version 1.0)</p>
+</li>
+<li>
+<p>William Wheeler, Imagination Technologies (version 1.4)</p>
+</li>
+<li>
+<p>Wolfgang Engel, Unknown (version 1.1)</p>
+</li>
+<li>
+<p>Wooyoung Kim, Qualcomm Technologies, Inc.
+(version 1.4)</p>
+</li>
+<li>
+<p>Wyvern Wang, Huawei Technologies Co., Ltd.
+(version 1.3)</p>
+</li>
+<li>
+<p>Yajun Zhang, Tencent (version 1.4)</p>
+</li>
+<li>
+<p>Yanjun Zhang, VeriSilicon (versions 1.0, 1.1, 1.2, 1.3, 1.4)</p>
+</li>
+<li>
+<p>Youngwang Kim, Arm (version 1.4)</p>
+</li>
+<li>
+<p>Yu Chang Wang, Huawei Technologies Co., Ltd.
+(version 1.4)</p>
+</li>
+<li>
+<p>Yuehai Du, Qualcomm Technologies, Inc.
+(version 1.4)</p>
+</li>
+<li>
+<p>Yunxing Zhu, Huawei Technologies Co., Ltd.
+(version 1.3)</p>
+</li>
+<li>
+<p>Yury Uralsky, NVIDIA (version 1.4)</p>
+</li>
+<li>
+<p>Zehui Lin, Huawei Technologies Co., Ltd.
+(version 1.4)</p>
+</li>
+<li>
+<p>Žiga Markuš, LunarG (version 1.4)</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_other_credits"><a class="anchor" href="#_other_credits"></a>Other Credits</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The Vulkan Advisory Panel members provided important real-world usage
+information and advice that helped guide design decisions.</p>
+</div>
+<div class="paragraph">
+<p>The wider Vulkan community have provided useful feedback, questions and
+specification changes that have helped improve the quality of the
+Specification via
+<a href="https://github.com/KhronosGroup/Vulkan-Docs/graphs/contributors">GitHub</a>.</p>
+</div>
+<div class="paragraph">
+<p>Administrative support to the Working Group for Vulkan 1.1 and beyond was
+provided by Khronos staff including Ann Thorsnes, Blaine Kohl, Dennis Fu,
+Dominic Agoro-Ombaka, Emily Stearns, Jeff Phillips, Kendra Casper, Lisie
+Aartsen, Liz Maitral, Marty Johnson, Tim Lewis, and Xiao-Yu CHENG; and by
+Alex Crabb, Laura Shubel, and Rachel Bradshaw of Caster Communications.</p>
+</div>
+<div class="paragraph">
+<p>Administrative support for Vulkan 1.0 was provided by Andrew Riegel,
+Elizabeth Riegel, Glenn Fredericks, Kathleen Mattson and Michelle Clark of
+Gold Standard Group.</p>
+</div>
+<div class="paragraph">
+<p>Technical support was provided by James Riordon, site administration of
+Khronos.org and OpenGL.org.</p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

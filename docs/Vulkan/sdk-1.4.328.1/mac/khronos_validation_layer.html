@@ -1,0 +1,2405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="icon" href="images/Vulkan_LogoBug_48px_Nov17.png">
+<link rel="stylesheet" href="github-markdown.css">
+</head>
+<body>
+<article class="markdown-body">
+<!-- markdownlint-disable MD041 -->
+
+<!-- Copyright 2015-2025 LunarG, Inc. -->
+
+<p><a href="https://www.khronos.org/vulkan/" TARGET="_blank"><img src="https://vulkan.lunarg.com/img/Vulkan_100px_Dec16.png" title="https://www.khronos.org/vulkan/" alt="Khronos Vulkan" /></a></p>
+<h1 id="vk_layer_khronos_validation">VK_LAYER_KHRONOS_validation</h1>
+<p>Vulkan is an Explicit API, enabling direct control over how GPUs actually work. By design, minimal error checking is done inside a Vulkan driver - applications have full control and responsibility for correct operation. Any errors in Vulkan usage can result in unexpected behavior or even a crash. The <code>VK_LAYER_KHRONOS_validation</code> layer can be used to to assist developers in isolating incorrect usage, and in verifying that applications correctly use the API.</p>
+<p>It is important to acknowledge there are a few <a href="./limitations.html">limitations</a> for what the Validation Layers can do.</p>
+<h2 id="configuring-the-validation-layer">Configuring the Validation Layer</h2>
+<p>There are 4 ways to configure the settings: <em>Vulkan Configurator</em>, <code>application defined</code>, <code>vk_layer_settings.txt</code>, <code>environment variables</code> as described in the <a href="./layer_configuration.html">layers configuration</a> documentation and described in the <a href="https://www.lunarg.com/wp-content/uploads/2024/04/Configuring-Vulkan-Layers-LunarG-Christophe-Riccio-04-11-2024.pdf" TARGET="_blank">Configuring Vulkan Layers</a> whitepaper.</p>
+<h2 id="vulkan-configurator"><em>Vulkan Configurator</em></h2>
+<p>We suggest people to use <a href="https://www.lunarg.com/introducing-the-new-vulkan-configurator-vkconfig/" TARGET="_blank"><em>Vulkan Configurator</em></a>.</p>
+<p>The GUI comes with the SDK, and takes the <code>VkLayer_khronos_validation.json</code> file and does <strong>everything</strong> for you!</p>
+<h2 id="application-defined">Application Defined</h2>
+<p>The application can now use the <code>VK_EXT_layer_settings</code> extension to do everything at <code>vkCreateInstance</code> time. (Don't worry, we implement the extension, so it will be supported 100% of the time!).</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1"><span class="co">// Example how to turn on verbose mode for DebugPrintf</span></a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="at">const</span> VkBool32 verbose_value = <span class="kw">true</span>;</a>
+<a class="sourceLine" id="cb1-3" title="3"><span class="at">const</span> VkLayerSettingEXT layer_setting = {<span class="st">&quot;VK_LAYER_KHRONOS_validation&quot;</span>, <span class="st">&quot;printf_verbose&quot;</span>, VK_LAYER_SETTING_TYPE_BOOL32_EXT, <span class="dv">1</span>, &amp;verbose_value};</a>
+<a class="sourceLine" id="cb1-4" title="4">VkLayerSettingsCreateInfoEXT layer_settings_create_info = {VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT, <span class="kw">nullptr</span>, <span class="dv">1</span>, &amp;layer_setting};</a>
+<a class="sourceLine" id="cb1-5" title="5"></a>
+<a class="sourceLine" id="cb1-6" title="6">VkInstanceCreateInfo instance_ci = GetYourCreateInfo();</a>
+<a class="sourceLine" id="cb1-7" title="7">instance_ci.pNext = &amp;layer_settings_create_info;</a></code></pre></div>
+<h2 id="vk_layer_settingstxt">vk_layer_settings.txt</h2>
+<p>There is info <a href="./layer_configuration.html">elsewhere</a> to describe this file, but the short answer is to set the <code>VK_LAYER_SETTINGS_PATH</code> like the following:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb2-1" title="1"><span class="co"># windows</span></a>
+<a class="sourceLine" id="cb2-2" title="2"><span class="kw">set</span> <span class="va">VK_LAYER_SETTINGS_PATH=</span>C:\<span class="ex">path</span>\to\vk_layer_settings.txt</a>
+<a class="sourceLine" id="cb2-3" title="3"></a>
+<a class="sourceLine" id="cb2-4" title="4"><span class="co"># linux</span></a>
+<a class="sourceLine" id="cb2-5" title="5"><span class="bu">export</span> <span class="va">VK_LAYER_SETTINGS_PATH=</span>/path/to/vk_layer_settings.txt</a></code></pre></div>
+<p>and it will set things for you in that file. We have a <a href="../layers/vk_layer_settings.txt">default example</a> file you can start with.</p>
+<h2 id="environment-variables">Environment Variables</h2>
+<p>This is done for us via the <code>vkuCreateLayerSettingSet</code> call in the <a href="https://github.com/KhronosGroup/Vulkan-Utility-Libraries/" TARGET="_blank">Vulkan-Utility-Libraries</a>.</p>
+<p>As an example, in our <code>VkLayer_khronos_validation.json</code> file you will find something like <code>"key": "message_id_filter",</code>.</p>
+<p>From here you just need to adjust it the naming and prefix depending on your platform:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb3-1" title="1"><span class="co"># Windows</span></a>
+<a class="sourceLine" id="cb3-2" title="2"><span class="kw">set</span> <span class="va">VK_LAYER_MESSAGE_ID_FILTER=</span>VUID-VkInstanceCreateInfo-pNext-pNext</a>
+<a class="sourceLine" id="cb3-3" title="3"></a>
+<a class="sourceLine" id="cb3-4" title="4"><span class="co"># Linux</span></a>
+<a class="sourceLine" id="cb3-5" title="5"><span class="bu">export</span> <span class="va">VK_LAYER_MESSAGE_ID_FILTER=</span>VUID-VkInstanceCreateInfo-pNext-pNext</a>
+<a class="sourceLine" id="cb3-6" title="6"></a>
+<a class="sourceLine" id="cb3-7" title="7"><span class="co"># Android</span></a>
+<a class="sourceLine" id="cb3-8" title="8"><span class="ex">adb</span> setprop debug.vulkan.khronos_validation.message_id_filter=VUID-VkInstanceCreateInfo-pNext-pNext</a></code></pre></div>
+<h2 id="layer-settings">Layer Settings</h2>
+<blockquote>
+<p>We suggest using <em>Vulkan Configurator</em> to discover the layer settings, but the following is generated per SDK version</p>
+</blockquote>
+<p>The settings for this layer are specified in <code>VkLayer_khronos_validation.json</code>. The settings details are in <a href="./khronos_validation_layer.html">khronos_validation_layer.html</a>.</p>
+<h2 id="layer-properties">Layer Properties</h2>
+<ul>
+<li>API Version: 1.4.328</li>
+<li>Implementation Version: 1</li>
+<li>Layer Manifest: <code>VkLayer_khronos_validation.json</code>
+<ul>
+<li>File Format: 1.2.0</li>
+<li>Layer Binary: <code>libVkLayer_khronos_validation.so</code></li>
+</ul></li>
+<li>Variables:
+<ul>
+<li><code>vk_layer_settings.txt</code> namespace: <code>khronos_validation</code></li>
+<li>Environment Variable prefix: <code>VK_KHRONOS_VALIDATION_</code></li>
+<li>Android system property prefix: <code>adb setprop debug.vulkan.khronos_validation.</code></li>
+</ul></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+<li>Number of Layer Settings: 61</li>
+<li>Number of Layer Presets: 7</li>
+</ul>
+<h2 id="layer-settings-overview">Layer Settings Overview</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Label</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Default Value</th>
+<th>Platforms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#validation-areas">Validation Areas</a></td>
+<td><code>validation_control</code></td>
+<td><code>GROUP</code></td>
+<td>``</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#fine-grained-locking">Fine Grained Locking</a></td>
+<td><code>fine_grained_locking</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#core">Core</a></td>
+<td><code>validate_core</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td>        <a href="#image-layout">Image Layout</a></td>
+<td><code>check_image_layout</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td>        <a href="#command-buffer-state">Command Buffer State</a></td>
+<td><code>check_command_buffer</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td>        <a href="#object-in-use">Object in Use</a></td>
+<td><code>check_object_in_use</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td>        <a href="#query">Query</a></td>
+<td><code>check_query</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td>        <a href="#shader">Shader</a></td>
+<td><code>check_shaders</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td>            <a href="#caching">Caching</a></td>
+<td><code>check_shaders_caching</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#handle-wrapping">Handle Wrapping</a></td>
+<td><code>unique_handles</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#object-lifetime">Object Lifetime</a></td>
+<td><code>object_lifetime</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#stateless-parameter">Stateless Parameter</a></td>
+<td><code>stateless_param</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#thread-safety">Thread Safety</a></td>
+<td><code>thread_safety</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#synchronization">Synchronization</a></td>
+<td><code>validate_sync</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td>        <a href="#submit-time-validation">Submit time validation</a></td>
+<td><code>syncval_submit_time_validation</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td>        <a href="#shader-accesses-heuristic">Shader accesses heuristic</a></td>
+<td><code>syncval_shader_accesses_heuristic</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td>        <a href="#error-messages">Error messages</a></td>
+<td><code>syncval_reporting</code></td>
+<td><code>GROUP</code></td>
+<td>``</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td>            <a href="#extra-properties">Extra properties</a></td>
+<td><code>syncval_message_extra_properties</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#debug-printf">Debug Printf</a></td>
+<td><code>printf_enable</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="even">
+<td>        <a href="#redirect-printf-messages-to-stdout">Redirect Printf messages to stdout</a></td>
+<td><code>printf_to_stdout</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="odd">
+<td>        <a href="#printf-verbose">Printf verbose</a></td>
+<td><code>printf_verbose</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="even">
+<td>        <a href="#printf-buffer-size">Printf buffer size</a></td>
+<td><code>printf_buffer_size</code></td>
+<td><code>INT</code></td>
+<td><code>1024</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#gpu-assisted-validation">GPU Assisted Validation</a></td>
+<td><code>gpuav_enable</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="even">
+<td>        <a href="#safe-mode">Safe Mode</a></td>
+<td><code>gpuav_safe_mode</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="odd">
+<td>        <a href="#force-on-robustness-features">Force on robustness features</a></td>
+<td><code>gpuav_force_on_robustness</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="even">
+<td>        <a href="#shader-instrumentation">Shader instrumentation</a></td>
+<td><code>gpuav_shader_instrumentation</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="odd">
+<td>            <a href="#enable-instrumenting-shaders-selectively">Enable instrumenting shaders selectively</a></td>
+<td><code>gpuav_select_instrumented_shaders</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="even">
+<td>                <a href="#shader/pipeline-name-regexes">Shader/pipeline name regexes</a></td>
+<td><code>gpuav_shaders_to_instrument</code></td>
+<td><code>LIST</code></td>
+<td>``</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#best-practices">Best Practices</a></td>
+<td><code>validate_best_practices</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td>        <a href="#arm-specific-best-practices">ARM-specific best practices</a></td>
+<td><code>validate_best_practices_arm</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td>        <a href="#amd-specific-best-practices">AMD-specific best practices</a></td>
+<td><code>validate_best_practices_amd</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="even">
+<td>        <a href="#img-specific-best-practices">IMG-specific best practices</a></td>
+<td><code>validate_best_practices_img</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="odd">
+<td>        <a href="#nvidia-specific-best-practices">NVIDIA-specific best practices</a></td>
+<td><code>validate_best_practices_nvidia</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><a href="#debug-action">Debug Action</a></td>
+<td><code>debug_action</code></td>
+<td><code>FLAGS</code></td>
+<td><code>VK_DBG_LAYER_ACTION_LOG_MSG</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#log-filename">Log Filename</a></td>
+<td><code>log_filename</code></td>
+<td><code>SAVE_FILE</code></td>
+<td><code>stdout</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><a href="#message-severity">Message Severity</a></td>
+<td><code>report_flags</code></td>
+<td><code>FLAGS</code></td>
+<td><code>error</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td><a href="#limit-duplicated-messages">Limit Duplicated Messages</a></td>
+<td><code>enable_message_limit</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#max-duplicated-messages">Max Duplicated Messages</a></td>
+<td><code>duplicate_message_limit</code></td>
+<td><code>INT</code></td>
+<td><code>10</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td><a href="#mute-message-vuids">Mute Message VUIDs</a></td>
+<td><code>message_id_filter</code></td>
+<td><code>LIST</code></td>
+<td>``</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><a href="#message-format">Message Format</a></td>
+<td><code>message_format</code></td>
+<td><code>GROUP</code></td>
+<td>``</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#json">JSON</a></td>
+<td><code>message_format_json</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#display-application-name">Display Application Name</a></td>
+<td><code>message_format_display_application_name</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="layer-settings-details">Layer Settings Details</h2>
+<h3 id="validation-areas">Validation Areas</h3>
+<p>Control of the Validation layer validation.</p>
+<p>Sub-settings: <em><a href="#fine-grained-locking">Fine Grained Locking</a></em>, <em><a href="#core">Core</a></em>, <em><a href="#handle-wrapping">Handle Wrapping</a></em>, <em><a href="#object-lifetime">Object Lifetime</a></em>, <em><a href="#stateless-parameter">Stateless Parameter</a></em>, <em><a href="#thread-safety">Thread Safety</a></em>, <em><a href="#synchronization">Synchronization</a></em>, <em><a href="#debug-printf-only-preset">Debug Printf only preset</a></em>, <em><a href="#debug-printf">Debug Printf</a></em>, <em><a href="#gpu-assisted-validation">GPU Assisted Validation</a></em>, and <em><a href="#best-practices">Best Practices</a></em>.</p>
+<ul>
+<li>Key: <code>validation_control</code></li>
+<li>Type: <code>GROUP</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<h3 id="fine-grained-locking">Fine Grained Locking</h3>
+<p>Enable fine grained locking for Core Validation, which should improve performance in multithreaded applications. This setting allows the optimization to be disabled for debugging.</p>
+<p>Learn more about the <em><a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/main/docs/fine_grained_locking_usage.md" TARGET="_blank">Fine Grained Locking</a></em> setting.</p>
+<ul>
+<li>Key: <code>fine_grained_locking</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "fine_grained_locking", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.fine_grained_locking = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_FINE_GRAINED_LOCKING=true<br>export VK_VALIDATION_FINE_GRAINED_LOCKING=true<br>export VK_FINE_GRAINED_LOCKING=true<br>export VK_LAYER_FINE_GRAINED_LOCKING=true</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.fine_grained_locking true<br>adb setprop debug.vulkan.validation.fine_grained_locking true<br>adb setprop debug.vulkan.fine_grained_locking true<br>adb setprop debug.vvl.fine_grained_locking true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="core">Core</h3>
+<p>The main, heavy-duty validation checks. This may be valuable early in the development cycle to reduce validation output while correcting parameter/object usage errors.</p>
+<p>Learn more about the <em><a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/main/docs/core_checks.md" TARGET="_blank">Core</a></em> setting.</p>
+<p>Sub-settings: <em><a href="#image-layout">Image Layout</a></em>, <em><a href="#command-buffer-state">Command Buffer State</a></em>, <em><a href="#object-in-use">Object in Use</a></em>, <em><a href="#query">Query</a></em>, and <em><a href="#shader">Shader</a></em>.</p>
+<ul>
+<li>Key: <code>validate_core</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "validate_core", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.validate_core = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_VALIDATE_CORE=true<br>export VK_VALIDATION_VALIDATE_CORE=true<br>export VK_VALIDATE_CORE=true</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.validate_core true<br>adb setprop debug.vulkan.validation.validate_core true<br>adb setprop debug.vulkan.validate_core true<br>adb setprop debug.vvl.validate_core true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="image-layout">Image Layout</h3>
+<p>Check that the layout of each image subresource is correct whenever it is used by a command buffer. These checks are very CPU intensive for some applications.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#core">Core</a></td>
+<td><code>validate_core</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>check_image_layout</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "check_image_layout", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.check_image_layout = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_CHECK_IMAGE_LAYOUT=true<br>export VK_VALIDATION_CHECK_IMAGE_LAYOUT=true<br>export VK_CHECK_IMAGE_LAYOUT=true</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.check_image_layout true<br>adb setprop debug.vulkan.validation.check_image_layout true<br>adb setprop debug.vulkan.check_image_layout true<br>adb setprop debug.vvl.check_image_layout true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="command-buffer-state">Command Buffer State</h3>
+<p>Check that all Vulkan objects used by a command buffer have not been destroyed. These checks can be CPU intensive for some applications.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#core">Core</a></td>
+<td><code>validate_core</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>check_command_buffer</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "check_command_buffer", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.check_command_buffer = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_CHECK_COMMAND_BUFFER=true<br>export VK_VALIDATION_CHECK_COMMAND_BUFFER=true<br>export VK_CHECK_COMMAND_BUFFER=true</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.check_command_buffer true<br>adb setprop debug.vulkan.validation.check_command_buffer true<br>adb setprop debug.vulkan.check_command_buffer true<br>adb setprop debug.vvl.check_command_buffer true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="object-in-use">Object in Use</h3>
+<p>Check that Vulkan objects are not in use by a command buffer when they are destroyed.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#core">Core</a></td>
+<td><code>validate_core</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>check_object_in_use</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "check_object_in_use", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.check_object_in_use = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_CHECK_OBJECT_IN_USE=true<br>export VK_VALIDATION_CHECK_OBJECT_IN_USE=true<br>export VK_CHECK_OBJECT_IN_USE=true</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.check_object_in_use true<br>adb setprop debug.vulkan.validation.check_object_in_use true<br>adb setprop debug.vulkan.check_object_in_use true<br>adb setprop debug.vvl.check_object_in_use true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="query">Query</h3>
+<p>Checks for commands that use VkQueryPool objects.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#core">Core</a></td>
+<td><code>validate_core</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>check_query</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "check_query", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.check_query = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_CHECK_QUERY=true<br>export VK_VALIDATION_CHECK_QUERY=true<br>export VK_CHECK_QUERY=true</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.check_query true<br>adb setprop debug.vulkan.validation.check_query true<br>adb setprop debug.vulkan.check_query true<br>adb setprop debug.vvl.check_query true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="shader">Shader</h3>
+<p>This will validate the contents of the SPIR-V which can be CPU intensive during application start up. This does internal checks as well as calling spirv-val. (Same effect using VK_VALIDATION_FEATURE_DISABLE_SHADERS_EXT).</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#core">Core</a></td>
+<td><code>validate_core</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<p>Sub-settings: <em><a href="#caching">Caching</a></em>, and <em><a href="#disable-spirv-val">Disable spirv-val</a></em>.</p>
+<ul>
+<li>Key: <code>check_shaders</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "check_shaders", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.check_shaders = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_CHECK_SHADERS=true<br>export VK_VALIDATION_CHECK_SHADERS=true<br>export VK_CHECK_SHADERS=true</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.check_shaders true<br>adb setprop debug.vulkan.validation.check_shaders true<br>adb setprop debug.vulkan.check_shaders true<br>adb setprop debug.vvl.check_shaders true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="caching">Caching</h3>
+<p>Creates an internal instance of VK_EXT_validation_cache and upon vkDestroyInstance, will cache the shader validation so sequential usage of the validation layers will be skipped.</p>
+<p>All the following condition must be fulfilled for the setting to be applied.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#core">Core</a></td>
+<td><code>validate_core</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+<tr class="even">
+<td><a href="#shader">Shader</a></td>
+<td><code>check_shaders</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>check_shaders_caching</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "check_shaders_caching", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.check_shaders_caching = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_CHECK_SHADERS_CACHING=true<br>export VK_VALIDATION_CHECK_SHADERS_CACHING=true<br>export VK_CHECK_SHADERS_CACHING=true</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.check_shaders_caching true<br>adb setprop debug.vulkan.validation.check_shaders_caching true<br>adb setprop debug.vulkan.check_shaders_caching true<br>adb setprop debug.vvl.check_shaders_caching true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="handle-wrapping">Handle Wrapping</h3>
+<p>Handle wrapping checks. Disable this feature if you are experiencing crashes when creating new extensions or developing new Vulkan objects/structures.</p>
+<p>Learn more about the <em><a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/main/docs/handle_wrapping.md" TARGET="_blank">Handle Wrapping</a></em> setting.</p>
+<ul>
+<li>Key: <code>unique_handles</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "unique_handles", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.unique_handles = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_UNIQUE_HANDLES=true<br>export VK_VALIDATION_UNIQUE_HANDLES=true<br>export VK_UNIQUE_HANDLES=true</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.unique_handles true<br>adb setprop debug.vulkan.validation.unique_handles true<br>adb setprop debug.vulkan.unique_handles true<br>adb setprop debug.vvl.unique_handles true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="object-lifetime">Object Lifetime</h3>
+<p>Object tracking checks. This may not always be necessary late in a development cycle.</p>
+<p>Learn more about the <em><a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/main/docs/object_lifetimes.md" TARGET="_blank">Object Lifetime</a></em> setting.</p>
+<ul>
+<li>Key: <code>object_lifetime</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "object_lifetime", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.object_lifetime = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_OBJECT_LIFETIME=true<br>export VK_VALIDATION_OBJECT_LIFETIME=true<br>export VK_OBJECT_LIFETIME=true</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.object_lifetime true<br>adb setprop debug.vulkan.validation.object_lifetime true<br>adb setprop debug.vulkan.object_lifetime true<br>adb setprop debug.vvl.object_lifetime true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="stateless-parameter">Stateless Parameter</h3>
+<p>Stateless parameter checks. This may not always be necessary late in a development cycle.</p>
+<p>Learn more about the <em><a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/main/docs/stateless_validation.md" TARGET="_blank">Stateless Parameter</a></em> setting.</p>
+<ul>
+<li>Key: <code>stateless_param</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "stateless_param", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.stateless_param = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_STATELESS_PARAM=true<br>export VK_VALIDATION_STATELESS_PARAM=true<br>export VK_STATELESS_PARAM=true</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.stateless_param true<br>adb setprop debug.vulkan.validation.stateless_param true<br>adb setprop debug.vulkan.stateless_param true<br>adb setprop debug.vvl.stateless_param true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="thread-safety">Thread Safety</h3>
+<p>Thread checks. In order to not degrade performance, it might be best to run your program with thread-checking disabled most of the time, enabling it occasionally for a quick sanity check or when debugging difficult application behaviors.</p>
+<p>Learn more about the <em><a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/main/docs/thread_safety.md" TARGET="_blank">Thread Safety</a></em> setting.</p>
+<ul>
+<li>Key: <code>thread_safety</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "thread_safety", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.thread_safety = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_THREAD_SAFETY=true<br>export VK_VALIDATION_THREAD_SAFETY=true<br>export VK_THREAD_SAFETY=true</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.thread_safety true<br>adb setprop debug.vulkan.validation.thread_safety true<br>adb setprop debug.vulkan.thread_safety true<br>adb setprop debug.vvl.thread_safety true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="synchronization">Synchronization</h3>
+<p>Check for resource access conflicts caused by missing or incorrectly used synchronization operations.</p>
+<p>Learn more about the <em><a href="synchronization_usage.html">Synchronization</a></em> setting.</p>
+<p>Sub-settings: <em><a href="#submit-time-validation">Submit time validation</a></em>, <em><a href="#shader-accesses-heuristic">Shader accesses heuristic</a></em>, and <em><a href="#error-messages">Error messages</a></em>.</p>
+<ul>
+<li>Key: <code>validate_sync</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "validate_sync", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.validate_sync = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_VALIDATE_SYNC=false<br>export VK_VALIDATION_VALIDATE_SYNC=false<br>export VK_VALIDATE_SYNC=false</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.validate_sync false<br>adb setprop debug.vulkan.validation.validate_sync false<br>adb setprop debug.vulkan.validate_sync false<br>adb setprop debug.vvl.validate_sync false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="submit-time-validation">Submit time validation</h3>
+<p>Enable synchronization validation on the boundary between submitted command buffers. This also validates accesses from presentation operations. This option can incur a significant performance cost.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#synchronization">Synchronization</a></td>
+<td><code>validate_sync</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>syncval_submit_time_validation</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "syncval_submit_time_validation", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.syncval_submit_time_validation = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_SYNCVAL_SUBMIT_TIME_VALIDATION=true<br>export VK_VALIDATION_SYNCVAL_SUBMIT_TIME_VALIDATION=true<br>export VK_SYNCVAL_SUBMIT_TIME_VALIDATION=true</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.syncval_submit_time_validation true<br>adb setprop debug.vulkan.validation.syncval_submit_time_validation true<br>adb setprop debug.vulkan.syncval_submit_time_validation true<br>adb setprop debug.vvl.syncval_submit_time_validation true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="shader-accesses-heuristic">Shader accesses heuristic</h3>
+<p>Take into account memory accesses performed by the shader based on SPIR-V static analysis. Warning: can produce false-positives, can ignore certain types of accesses.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#synchronization">Synchronization</a></td>
+<td><code>validate_sync</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>syncval_shader_accesses_heuristic</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "syncval_shader_accesses_heuristic", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.syncval_shader_accesses_heuristic = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_SYNCVAL_SHADER_ACCESSES_HEURISTIC=false<br>export VK_VALIDATION_SYNCVAL_SHADER_ACCESSES_HEURISTIC=false<br>export VK_SYNCVAL_SHADER_ACCESSES_HEURISTIC=false</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.syncval_shader_accesses_heuristic false<br>adb setprop debug.vulkan.validation.syncval_shader_accesses_heuristic false<br>adb setprop debug.vulkan.syncval_shader_accesses_heuristic false<br>adb setprop debug.vvl.syncval_shader_accesses_heuristic false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="error-messages">Error messages</h3>
+<p>Options to configure synchronization validation error reporting.</p>
+<p>Sub-setting: <em><a href="#extra-properties">Extra properties</a></em>,</p>
+<ul>
+<li>Key: <code>syncval_reporting</code></li>
+<li>Type: <code>GROUP</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<h3 id="extra-properties">Extra properties</h3>
+<p>Append a section of key-value properties to the error message. Useful for filtering errors.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#synchronization">Synchronization</a></td>
+<td><code>validate_sync</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>syncval_message_extra_properties</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "syncval_message_extra_properties", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.syncval_message_extra_properties = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_SYNCVAL_MESSAGE_EXTRA_PROPERTIES=false<br>export VK_VALIDATION_SYNCVAL_MESSAGE_EXTRA_PROPERTIES=false<br>export VK_SYNCVAL_MESSAGE_EXTRA_PROPERTIES=false</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.syncval_message_extra_properties false<br>adb setprop debug.vulkan.validation.syncval_message_extra_properties false<br>adb setprop debug.vulkan.syncval_message_extra_properties false<br>adb setprop debug.vvl.syncval_message_extra_properties false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="debug-printf">Debug Printf</h3>
+<p>Enable DebugPrintf and will print anything use NonSemantic.DebugPrintf in their SPIR-V.</p>
+<p>Learn more about the <em><a href="debug_printf.html">Debug Printf</a></em> setting.</p>
+<p>Sub-settings: <em><a href="#redirect-printf-messages-to-stdout">Redirect Printf messages to stdout</a></em>, <em><a href="#printf-verbose">Printf verbose</a></em>, and <em><a href="#printf-buffer-size">Printf buffer size</a></em>.</p>
+<ul>
+<li>Key: <code>printf_enable</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "printf_enable", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.printf_enable = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_PRINTF_ENABLE=false<br>export VK_VALIDATION_PRINTF_ENABLE=false<br>export VK_PRINTF_ENABLE=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="redirect-printf-messages-to-stdout">Redirect Printf messages to stdout</h3>
+<p>Enable redirection of Debug Printf messages from the debug callback to stdout.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#debug-printf">Debug Printf</a></td>
+<td><code>printf_enable</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>printf_to_stdout</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "printf_to_stdout", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.printf_to_stdout = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_PRINTF_TO_STDOUT=true<br>export VK_VALIDATION_PRINTF_TO_STDOUT=true<br>export VK_PRINTF_TO_STDOUT=true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="printf-verbose">Printf verbose</h3>
+<p>Will print out handles, instruction location, position in command buffer, and more.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#debug-printf">Debug Printf</a></td>
+<td><code>printf_enable</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>printf_verbose</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "printf_verbose", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.printf_verbose = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_PRINTF_VERBOSE=false<br>export VK_VALIDATION_PRINTF_VERBOSE=false<br>export VK_PRINTF_VERBOSE=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="printf-buffer-size">Printf buffer size</h3>
+<p>Set the size in bytes of the buffer per draw/dispatch/traceRays to hold the messages.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#debug-printf">Debug Printf</a></td>
+<td><code>printf_enable</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>printf_buffer_size</code></li>
+<li>Type: <code>INT</code></li>
+<li>Default Value: <code>1024</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>int32_t data[] = { 1024 };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "printf_buffer_size", VK_LAYER_SETTING_TYPE_INT32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.printf_buffer_size = 1024</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_PRINTF_BUFFER_SIZE=1024<br>export VK_VALIDATION_PRINTF_BUFFER_SIZE=1024<br>export VK_PRINTF_BUFFER_SIZE=1024</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="gpu-assisted-validation">GPU Assisted Validation</h3>
+<p>Enable validation that cannot be done the CPU and needs hooks into the GPU execution.</p>
+<p>Learn more about the <em><a href="gpu_validation.html">GPU Assisted Validation</a></em> setting.</p>
+<p>Sub-settings: <em><a href="#safe-mode">Safe Mode</a></em>, <em><a href="#force-on-robustness-features">Force on robustness features</a></em>, <em><a href="#shader-instrumentation">Shader instrumentation</a></em>, <em><a href="#buffer-content-validation">Buffer content validation</a></em>, and <em><a href="#developer-debug-settings">Developer Debug Settings</a></em>.</p>
+<ul>
+<li>Key: <code>gpuav_enable</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "gpuav_enable", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.gpuav_enable = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_GPUAV_ENABLE=false<br>export VK_VALIDATION_GPUAV_ENABLE=false<br>export VK_GPUAV_ENABLE=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="safe-mode">Safe Mode</h3>
+<p>Will have GPU-AV try and prevent crashes, but will be much slower to validate. If using Safe Mode, consider using selective shader instrumentation, to only instrument the shaders/pipelines causing issues.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#gpu-assisted-validation">GPU Assisted Validation</a></td>
+<td><code>gpuav_enable</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>gpuav_safe_mode</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "gpuav_safe_mode", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.gpuav_safe_mode = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_GPUAV_SAFE_MODE=false<br>export VK_VALIDATION_GPUAV_SAFE_MODE=false<br>export VK_GPUAV_SAFE_MODE=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="force-on-robustness-features">Force on robustness features</h3>
+<p>This will enable all possible robustness features for the app at device creation time. This can be used to quickly detect if with robustness, your issue disappears. GPU-AV will also skip validating things already covered by robustness, so turning on should reduce GPU-AV performance overhead.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#gpu-assisted-validation">GPU Assisted Validation</a></td>
+<td><code>gpuav_enable</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>gpuav_force_on_robustness</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "gpuav_force_on_robustness", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.gpuav_force_on_robustness = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_GPUAV_FORCE_ON_ROBUSTNESS=false<br>export VK_VALIDATION_GPUAV_FORCE_ON_ROBUSTNESS=false<br>export VK_GPUAV_FORCE_ON_ROBUSTNESS=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="shader-instrumentation">Shader instrumentation</h3>
+<p>Instrument shaders to validate descriptors, descriptor indexing, buffer device addresses and ray queries. Warning: will considerably slow down shader executions.</p>
+<p>Learn more about the <em><a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/main/docs/gpu_av_shader_instrumentation.md" TARGET="_blank">Shader instrumentation</a></em> setting.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#gpu-assisted-validation">GPU Assisted Validation</a></td>
+<td><code>gpuav_enable</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<p>Sub-settings: <em><a href="#enable-instrumenting-shaders-selectively">Enable instrumenting shaders selectively</a></em>, <em><a href="#descriptors-indexing">Descriptors indexing</a></em>, <em><a href="#post-process-descriptor-indexing">Post process descriptor indexing</a></em>, <em><a href="#out-of-bounds-buffer-device-addresses">Out of bounds buffer device addresses</a></em>, <em><a href="#rayquery-spir-v-instructions">RayQuery SPIR-V instructions</a></em>, and <em><a href="#out-of-bounds-vertex-attribute-fetching">Out of bounds vertex attribute fetching</a></em>.</p>
+<ul>
+<li>Key: <code>gpuav_shader_instrumentation</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "gpuav_shader_instrumentation", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.gpuav_shader_instrumentation = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_GPUAV_SHADER_INSTRUMENTATION=true<br>export VK_VALIDATION_GPUAV_SHADER_INSTRUMENTATION=true<br>export VK_GPUAV_SHADER_INSTRUMENTATION=true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="enable-instrumenting-shaders-selectively">Enable instrumenting shaders selectively</h3>
+<p>Select which shaders to instrument by passing a VkValidationFeaturesEXT struct with GPU-AV enabled in the VkShaderModuleCreateInfo pNext or using a regex matching a shader/pipeline debug name. Because this only validates the selected shaders, it will allow GPU-AV to run much faster.</p>
+<p>Learn more about the <em><a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/main/docs/gpu_av_selective_shader.md" TARGET="_blank">Enable instrumenting shaders selectively</a></em> setting.</p>
+<p>All the following condition must be fulfilled for the setting to be applied.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#gpu-assisted-validation">GPU Assisted Validation</a></td>
+<td><code>gpuav_enable</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+<tr class="even">
+<td><a href="#shader-instrumentation">Shader instrumentation</a></td>
+<td><code>gpuav_shader_instrumentation</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<p>Sub-setting: <em><a href="#shader/pipeline-name-regexes">Shader/pipeline name regexes</a></em>,</p>
+<ul>
+<li>Key: <code>gpuav_select_instrumented_shaders</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "gpuav_select_instrumented_shaders", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.gpuav_select_instrumented_shaders = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_GPUAV_SELECT_INSTRUMENTED_SHADERS=false<br>export VK_VALIDATION_GPUAV_SELECT_INSTRUMENTED_SHADERS=false<br>export VK_GPUAV_SELECT_INSTRUMENTED_SHADERS=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="shaderpipeline-name-regexes">Shader/pipeline name regexes</h3>
+<p>Any shader or pipeline library debug name (set with vkSetDebugUtilsObjectNameEXT) fully matching any listed regular expression will be instrumented when creating pipelines with those shaders or libraries. Regex grammar: Modified ECMAScript. No support for shader objects yet. Warning: instrumentation being performed at final pipeline creation time, if shaders modules have already been destroyed at this step (possible when using pipeline libraries), they won't be found by this regex selection system. In this case, consider naming pipeline libraries instead.</p>
+<p>All the following condition must be fulfilled for the setting to be applied.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#gpu-assisted-validation">GPU Assisted Validation</a></td>
+<td><code>gpuav_enable</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+<tr class="even">
+<td><a href="#shader-instrumentation">Shader instrumentation</a></td>
+<td><code>gpuav_shader_instrumentation</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+<tr class="odd">
+<td><a href="#enable-instrumenting-shaders-selectively">Enable instrumenting shaders selectively</a></td>
+<td><code>gpuav_select_instrumented_shaders</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>gpuav_shaders_to_instrument</code></li>
+<li>Type: <code>LIST</code></li>
+<li>Default Value:</li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "gpuav_shaders_to_instrument", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.gpuav_shaders_to_instrument = </pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_GPUAV_SHADERS_TO_INSTRUMENT=<br>export VK_VALIDATION_GPUAV_SHADERS_TO_INSTRUMENT=<br>export VK_GPUAV_SHADERS_TO_INSTRUMENT=</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="best-practices">Best Practices</h3>
+<p>Outputs warnings related to common misuse of the API, but which are not explicitly prohibited by the specification.</p>
+<p>Learn more about the <em><a href="best_practices.html">Best Practices</a></em> setting.</p>
+<p>Sub-settings: <em><a href="#arm-specific-best-practices">ARM-specific best practices</a></em>, <em><a href="#amd-specific-best-practices">AMD-specific best practices</a></em>, <em><a href="#img-specific-best-practices">IMG-specific best practices</a></em>, and <em><a href="#nvidia-specific-best-practices">NVIDIA-specific best practices</a></em>.</p>
+<ul>
+<li>Key: <code>validate_best_practices</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "validate_best_practices", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.validate_best_practices = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_VALIDATE_BEST_PRACTICES=false<br>export VK_VALIDATION_VALIDATE_BEST_PRACTICES=false<br>export VK_VALIDATE_BEST_PRACTICES=false</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.validate_best_practices false<br>adb setprop debug.vulkan.validation.validate_best_practices false<br>adb setprop debug.vulkan.validate_best_practices false<br>adb setprop debug.vvl.validate_best_practices false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="arm-specific-best-practices">ARM-specific best practices</h3>
+<p>Outputs warnings for spec-conforming but non-ideal code on ARM GPUs.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#best-practices">Best Practices</a></td>
+<td><code>validate_best_practices</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>validate_best_practices_arm</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "validate_best_practices_arm", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.validate_best_practices_arm = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_VALIDATE_BEST_PRACTICES_ARM=false<br>export VK_VALIDATION_VALIDATE_BEST_PRACTICES_ARM=false<br>export VK_VALIDATE_BEST_PRACTICES_ARM=false</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.validate_best_practices_arm false<br>adb setprop debug.vulkan.validation.validate_best_practices_arm false<br>adb setprop debug.vulkan.validate_best_practices_arm false<br>adb setprop debug.vvl.validate_best_practices_arm false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="amd-specific-best-practices">AMD-specific best practices</h3>
+<p>Outputs warnings for spec-conforming but non-ideal code on AMD GPUs.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#best-practices">Best Practices</a></td>
+<td><code>validate_best_practices</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>validate_best_practices_amd</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "validate_best_practices_amd", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.validate_best_practices_amd = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_VALIDATE_BEST_PRACTICES_AMD=false<br>export VK_VALIDATION_VALIDATE_BEST_PRACTICES_AMD=false<br>export VK_VALIDATE_BEST_PRACTICES_AMD=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="img-specific-best-practices">IMG-specific best practices</h3>
+<p>Outputs warnings for spec-conforming but non-ideal code on Imagination GPUs.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#best-practices">Best Practices</a></td>
+<td><code>validate_best_practices</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>validate_best_practices_img</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "validate_best_practices_img", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.validate_best_practices_img = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_VALIDATE_BEST_PRACTICES_IMG=false<br>export VK_VALIDATION_VALIDATE_BEST_PRACTICES_IMG=false<br>export VK_VALIDATE_BEST_PRACTICES_IMG=false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="nvidia-specific-best-practices">NVIDIA-specific best practices</h3>
+<p>Outputs warnings for spec-conforming but non-ideal code on NVIDIA GPUs.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#best-practices">Best Practices</a></td>
+<td><code>validate_best_practices</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>validate_best_practices_nvidia</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "validate_best_practices_nvidia", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.validate_best_practices_nvidia = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_VALIDATE_BEST_PRACTICES_NVIDIA=false<br>export VK_VALIDATION_VALIDATE_BEST_PRACTICES_NVIDIA=false<br>export VK_VALIDATE_BEST_PRACTICES_NVIDIA=false</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.validate_best_practices_nvidia false<br>adb setprop debug.vulkan.validation.validate_best_practices_nvidia false<br>adb setprop debug.vulkan.validate_best_practices_nvidia false<br>adb setprop debug.vvl.validate_best_practices_nvidia false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="debug-action">Debug Action</h3>
+<p>Specifies what action is to be taken when a layer reports information.</p>
+<ul>
+<li>Key: <code>debug_action</code></li>
+<li>Type: <code>FLAGS</code></li>
+<li>Default Value: <code>VK_DBG_LAYER_ACTION_LOG_MSG</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Flags</th>
+<th>Label</th>
+<th>Description</th>
+<th>Platforms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_DBG_LAYER_ACTION_LOG_MSG</code></td>
+<td>Log Message</td>
+<td>Log a txt message to stdout or to a log filename.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><code>VK_DBG_LAYER_ACTION_DEBUG_OUTPUT</code></td>
+<td>Debug Output</td>
+<td>Log a txt message using the Windows OutputDebugString function.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code></td>
+</tr>
+<tr class="odd">
+<td><code>VK_DBG_LAYER_ACTION_BREAK</code></td>
+<td>Break</td>
+<td>Trigger a breakpoint if a debugger is in use.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "VK_DBG_LAYER_ACTION_LOG_MSG" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "debug_action", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.debug_action = VK_DBG_LAYER_ACTION_LOG_MSG</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_DEBUG_ACTION=VK_DBG_LAYER_ACTION_LOG_MSG<br>export VK_VALIDATION_DEBUG_ACTION=VK_DBG_LAYER_ACTION_LOG_MSG<br>export VK_DEBUG_ACTION=VK_DBG_LAYER_ACTION_LOG_MSG</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.debug_action VK_DBG_LAYER_ACTION_LOG_MSG<br>adb setprop debug.vulkan.validation.debug_action VK_DBG_LAYER_ACTION_LOG_MSG<br>adb setprop debug.vulkan.debug_action VK_DBG_LAYER_ACTION_LOG_MSG<br>adb setprop debug.vvl.debug_action VK_DBG_LAYER_ACTION_LOG_MSG</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="log-filename">Log Filename</h3>
+<p>Specifies the output filename.</p>
+<ul>
+<li>Key: <code>log_filename</code></li>
+<li>Type: <code>SAVE_FILE</code></li>
+<li>Default Value: <code>stdout</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "stdout" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "log_filename", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.log_filename = stdout</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_LOG_FILENAME=stdout<br>export VK_VALIDATION_LOG_FILENAME=stdout<br>export VK_LOG_FILENAME=stdout</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.log_filename stdout<br>adb setprop debug.vulkan.validation.log_filename stdout<br>adb setprop debug.vulkan.log_filename stdout<br>adb setprop debug.vvl.log_filename stdout</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="message-severity">Message Severity</h3>
+<p>Comma-delineated list of options specifying the types of messages to be reported.</p>
+<ul>
+<li>Key: <code>report_flags</code></li>
+<li>Type: <code>FLAGS</code></li>
+<li>Default Value: <code>error</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Flags</th>
+<th>Label</th>
+<th>Description</th>
+<th>Platforms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>info</code></td>
+<td>Info</td>
+<td>Report informational messages.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><code>warn</code></td>
+<td>Warning</td>
+<td>Report warnings from using the API in a manner which may lead to undefined behavior or to warn the user of common trouble spots. A warning does NOT necessarily signify illegal application behavior.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td><code>perf</code></td>
+<td>Performance</td>
+<td>Report usage of the API that may cause suboptimal performance.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><code>error</code></td>
+<td>Error</td>
+<td>Report errors in API usage.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "error" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "report_flags", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.report_flags = error</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_REPORT_FLAGS=error<br>export VK_VALIDATION_REPORT_FLAGS=error<br>export VK_REPORT_FLAGS=error</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.report_flags error<br>adb setprop debug.vulkan.validation.report_flags error<br>adb setprop debug.vulkan.report_flags error<br>adb setprop debug.vvl.report_flags error</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="limit-duplicated-messages">Limit Duplicated Messages</h3>
+<p>Enable limiting of duplicate messages.</p>
+<p>Sub-setting: <em><a href="#max-duplicated-messages">Max Duplicated Messages</a></em>,</p>
+<ul>
+<li>Key: <code>enable_message_limit</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "enable_message_limit", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.enable_message_limit = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_ENABLE_MESSAGE_LIMIT=true<br>export VK_VALIDATION_ENABLE_MESSAGE_LIMIT=true<br>export VK_ENABLE_MESSAGE_LIMIT=true</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.enable_message_limit true<br>adb setprop debug.vulkan.validation.enable_message_limit true<br>adb setprop debug.vulkan.enable_message_limit true<br>adb setprop debug.vvl.enable_message_limit true</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="max-duplicated-messages">Max Duplicated Messages</h3>
+<p>Maximum number of times any single validation message should be reported.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Dependences</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#limit-duplicated-messages">Limit Duplicated Messages</a></td>
+<td><code>enable_message_limit</code></td>
+<td>BOOL</td>
+<td>true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Key: <code>duplicate_message_limit</code></li>
+<li>Type: <code>INT</code></li>
+<li>Default Value: <code>10</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>int32_t data[] = { 10 };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "duplicate_message_limit", VK_LAYER_SETTING_TYPE_INT32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.duplicate_message_limit = 10</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_DUPLICATE_MESSAGE_LIMIT=10<br>export VK_VALIDATION_DUPLICATE_MESSAGE_LIMIT=10<br>export VK_DUPLICATE_MESSAGE_LIMIT=10<br>export VK_LAYER_DUPLICATE_MESSAGE_LIMIT=10</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.duplicate_message_limit 10<br>adb setprop debug.vulkan.validation.duplicate_message_limit 10<br>adb setprop debug.vulkan.duplicate_message_limit 10<br>adb setprop debug.vvl.duplicate_message_limit 10</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="mute-message-vuids">Mute Message VUIDs</h3>
+<p>List of VUIDs and VUID identifiers which are to be IGNORED by the validation layer.</p>
+<ul>
+<li>Key: <code>message_id_filter</code></li>
+<li>Type: <code>LIST</code></li>
+<li>Default Value:</li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "message_id_filter", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.message_id_filter = </pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_MESSAGE_ID_FILTER=<br>export VK_VALIDATION_MESSAGE_ID_FILTER=<br>export VK_MESSAGE_ID_FILTER=<br>export VK_LAYER_MESSAGE_ID_FILTER=</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.message_id_filter <br>adb setprop debug.vulkan.validation.message_id_filter <br>adb setprop debug.vulkan.message_id_filter <br>adb setprop debug.vvl.message_id_filter </pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="message-format">Message Format</h3>
+<p>Specifies how error messages are reported.</p>
+<p>Sub-settings: <em><a href="#json">JSON</a></em>, and <em><a href="#display-application-name">Display Application Name</a></em>.</p>
+<ul>
+<li>Key: <code>message_format</code></li>
+<li>Type: <code>GROUP</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<h3 id="json">JSON</h3>
+<p>Display Validation as JSON (VkDebugUtilsMessengerCallbackDataEXT::pMessage will contain JSON).</p>
+<ul>
+<li>Key: <code>message_format_json</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "message_format_json", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.message_format_json = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_MESSAGE_FORMAT_JSON=false<br>export VK_VALIDATION_MESSAGE_FORMAT_JSON=false<br>export VK_MESSAGE_FORMAT_JSON=false</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.message_format_json false<br>adb setprop debug.vulkan.validation.message_format_json false<br>adb setprop debug.vulkan.message_format_json false<br>adb setprop debug.vvl.message_format_json false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="display-application-name">Display Application Name</h3>
+<p>Useful when running multiple instances to know which instance the message is from.</p>
+<ul>
+<li>Key: <code>message_format_display_application_name</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_KHRONOS_validation", "message_format_display_application_name", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>khronos_validation.message_format_display_application_name = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_KHRONOS_VALIDATION_MESSAGE_FORMAT_DISPLAY_APPLICATION_NAME=false<br>export VK_VALIDATION_MESSAGE_FORMAT_DISPLAY_APPLICATION_NAME=false<br>export VK_MESSAGE_FORMAT_DISPLAY_APPLICATION_NAME=false</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.khronos_validation.message_format_display_application_name false<br>adb setprop debug.vulkan.validation.message_format_display_application_name false<br>adb setprop debug.vulkan.message_format_display_application_name false<br>adb setprop debug.vvl.message_format_display_application_name false</pre></td>
+</tr>
+</tbody>
+</table>
+<h2 id="layer-presets">Layer Presets</h2>
+<h3 id="default">Default</h3>
+<h4 id="preset-setting-values">Preset Setting Values:</h4>
+<ul>
+<li>Validation Areas:</li>
+<li>Fine Grained Locking: true</li>
+<li>Core: true</li>
+<li>Image Layout: true</li>
+<li>Command Buffer State: true</li>
+<li>Object in Use: true</li>
+<li>Query: true</li>
+<li>Shader: true</li>
+<li>Caching: true</li>
+<li>Disable spirv-val: false</li>
+<li>Handle Wrapping: true</li>
+<li>Object Lifetime: true</li>
+<li>Stateless Parameter: true</li>
+<li>Thread Safety: true</li>
+<li>Synchronization: false</li>
+<li>Submit time validation: true</li>
+<li>Shader accesses heuristic: false</li>
+<li>Error messages:</li>
+<li>Extra properties: false</li>
+<li>Debug Printf only preset: false</li>
+<li>Debug Printf: false</li>
+<li>Redirect Printf messages to stdout: true</li>
+<li>Printf verbose: false</li>
+<li>Printf buffer size: 1024</li>
+<li>GPU Assisted Validation: false</li>
+<li>Safe Mode: false</li>
+<li>Force on robustness features: false</li>
+<li>Shader instrumentation: true</li>
+<li>Enable instrumenting shaders selectively: false</li>
+<li>Shader/pipeline name regexes:</li>
+<li>Descriptors indexing: true</li>
+<li>Post process descriptor indexing: true</li>
+<li>Out of bounds buffer device addresses: true</li>
+<li>RayQuery SPIR-V instructions: true</li>
+<li>Out of bounds vertex attribute fetching: true</li>
+<li>Buffer content validation: true</li>
+<li>Indirect draws parameters: true</li>
+<li>Indirect dispatches parameters: true</li>
+<li>Indirect trace rays parameters: true</li>
+<li>Buffer copies: true</li>
+<li>Index buffers: true</li>
+<li>Developer Debug Settings:</li>
+<li>Disable all of GPU-AV: false</li>
+<li>Validate instrumented shaders: false</li>
+<li>Dump instrumented shaders: false</li>
+<li>Limit how many time a pass can instrument the SPIR-V: 0</li>
+<li>Print SPIR-V instrumentation info: false</li>
+<li>Best Practices: false</li>
+<li>ARM-specific best practices: false</li>
+<li>AMD-specific best practices: false</li>
+<li>IMG-specific best practices: false</li>
+<li>NVIDIA-specific best practices: false</li>
+<li>Debug Action: VK_DBG_LAYER_ACTION_LOG_MSG</li>
+<li>Message Severity: error</li>
+<li>Limit Duplicated Messages: true</li>
+<li>Max Duplicated Messages: 10</li>
+<li>Mute Message VUIDs:</li>
+<li>Message Format:</li>
+<li>JSON: false</li>
+<li>Display Application Name: false</li>
+</ul>
+<h3 id="standard">Standard</h3>
+<p>Good default validation setup that balance validation coverage and performance.</p>
+<h4 id="preset-setting-values-1">Preset Setting Values:</h4>
+<ul>
+<li>Core: true</li>
+<li>Image Layout: true</li>
+<li>Command Buffer State: true</li>
+<li>Object in Use: true</li>
+<li>Query: true</li>
+<li>Shader: true</li>
+<li>Caching: true</li>
+<li>Handle Wrapping: true</li>
+<li>Object Lifetime: true</li>
+<li>Stateless Parameter: true</li>
+<li>Thread Safety: false</li>
+<li>Synchronization: false</li>
+<li>Debug Printf: false</li>
+<li>GPU Assisted Validation: false</li>
+<li>Best Practices: false</li>
+<li>Message Severity: error, warn</li>
+<li>Debug Action: VK_DBG_LAYER_ACTION_LOG_MSG</li>
+<li>Limit Duplicated Messages: true</li>
+</ul>
+<h3 id="reduced-overhead">Reduced-Overhead</h3>
+<p>Disables some checks in the interest of better performance.</p>
+<h4 id="preset-setting-values-2">Preset Setting Values:</h4>
+<ul>
+<li>Core: true</li>
+<li>Image Layout: false</li>
+<li>Command Buffer State: false</li>
+<li>Object in Use: false</li>
+<li>Query: false</li>
+<li>Shader: true</li>
+<li>Caching: true</li>
+<li>Handle Wrapping: false</li>
+<li>Object Lifetime: true</li>
+<li>Stateless Parameter: true</li>
+<li>Thread Safety: false</li>
+<li>Synchronization: false</li>
+<li>Debug Printf: false</li>
+<li>GPU Assisted Validation: false</li>
+<li>Best Practices: false</li>
+<li>Message Severity: error</li>
+<li>Debug Action: VK_DBG_LAYER_ACTION_LOG_MSG</li>
+<li>Limit Duplicated Messages: true</li>
+</ul>
+<h3 id="best-practices-1">Best Practices</h3>
+<p>Provides warnings on valid API usage that is potential API misuse.</p>
+<h4 id="preset-setting-values-3">Preset Setting Values:</h4>
+<ul>
+<li>Core: false</li>
+<li>Image Layout: false</li>
+<li>Command Buffer State: false</li>
+<li>Object in Use: false</li>
+<li>Query: false</li>
+<li>Shader: false</li>
+<li>Caching: false</li>
+<li>Handle Wrapping: false</li>
+<li>Object Lifetime: false</li>
+<li>Stateless Parameter: false</li>
+<li>Thread Safety: false</li>
+<li>Synchronization: false</li>
+<li>Debug Printf: false</li>
+<li>GPU Assisted Validation: false</li>
+<li>Best Practices: true</li>
+<li>Message Severity: error, warn, perf</li>
+<li>Debug Action: VK_DBG_LAYER_ACTION_LOG_MSG</li>
+<li>Limit Duplicated Messages: true</li>
+</ul>
+<h3 id="synchronization-1">Synchronization</h3>
+<p>Identify resource access conflicts due to missing or incorrect synchronization operations between actions reading or writing the same regions of memory.</p>
+<h4 id="preset-setting-values-4">Preset Setting Values:</h4>
+<ul>
+<li>Core: false</li>
+<li>Image Layout: false</li>
+<li>Command Buffer State: false</li>
+<li>Object in Use: false</li>
+<li>Query: false</li>
+<li>Shader: false</li>
+<li>Caching: false</li>
+<li>Handle Wrapping: true</li>
+<li>Object Lifetime: false</li>
+<li>Stateless Parameter: false</li>
+<li>Thread Safety: true</li>
+<li>Synchronization: true</li>
+<li>Debug Printf: false</li>
+<li>GPU Assisted Validation: false</li>
+<li>Best Practices: false</li>
+<li>Message Severity: error</li>
+<li>Debug Action: VK_DBG_LAYER_ACTION_LOG_MSG</li>
+<li>Limit Duplicated Messages: true</li>
+</ul>
+<h3 id="gpu-assisted">GPU-Assisted</h3>
+<p>Check for API usage errors at shader execution time.</p>
+<h4 id="preset-setting-values-5">Preset Setting Values:</h4>
+<ul>
+<li>Core: false</li>
+<li>Image Layout: false</li>
+<li>Command Buffer State: false</li>
+<li>Object in Use: false</li>
+<li>Query: false</li>
+<li>Shader: false</li>
+<li>Caching: false</li>
+<li>Handle Wrapping: false</li>
+<li>Object Lifetime: false</li>
+<li>Stateless Parameter: false</li>
+<li>Thread Safety: false</li>
+<li>Synchronization: false</li>
+<li>Debug Printf: false</li>
+<li>GPU Assisted Validation: true</li>
+<li>Shader instrumentation: true</li>
+<li>Enable instrumenting shaders selectively: false</li>
+<li>Buffer content validation: true</li>
+<li>Best Practices: false</li>
+<li>Message Severity: error</li>
+<li>Debug Action: VK_DBG_LAYER_ACTION_LOG_MSG</li>
+<li>Limit Duplicated Messages: true</li>
+</ul>
+<h3 id="debug-printf-1">Debug Printf</h3>
+<p>Debug shader code by "printing" any values of interest to the debug callback or stdout.</p>
+<h4 id="preset-setting-values-6">Preset Setting Values:</h4>
+<ul>
+<li>Core: false</li>
+<li>Image Layout: false</li>
+<li>Command Buffer State: false</li>
+<li>Object in Use: false</li>
+<li>Query: false</li>
+<li>Shader: false</li>
+<li>Caching: false</li>
+<li>Handle Wrapping: false</li>
+<li>Object Lifetime: false</li>
+<li>Stateless Parameter: false</li>
+<li>Thread Safety: false</li>
+<li>Synchronization: false</li>
+<li>GPU Assisted Validation: false</li>
+<li>Debug Printf: true</li>
+<li>Best Practices: false</li>
+<li>Message Severity: error, info</li>
+<li>Debug Action:</li>
+<li>Limit Duplicated Messages: false</li>
+</ul>
+</article>
+</body>
+</html>

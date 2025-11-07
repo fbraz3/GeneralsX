@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Storage Image and Texel Buffers :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../_/css/site.css">
+    <link rel="stylesheet" href="../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../.."><img class="navbar-item" alt="Vulkan White Label" src="../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:guide" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="guide" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="index.html">Vulkan Guide</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="index.html">Vulkan Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Logistics Overview</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="what_is_vulkan.html">What is Vulkan?</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="what_vulkan_can_do.html">What Vulkan Can Do</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="vulkan_spec.html">Vulkan Specification</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="platforms.html">Platforms</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="checking_for_support.html">Checking For Vulkan Support</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="versions.html">Versions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="vulkan_release_summary.html">Vulkan Release Summary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="what_is_spirv.html">What is SPIR-V</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="portability_initiative.html">Portability Initiative</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="vulkan_cts.html">Vulkan CTS</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="development_tools.html">Development Tools</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="validation_overview.html">Vulkan Validation Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="decoder_ring.html">Vulkan Decoder Ring</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Using Vulkan</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="loader.html">Loader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="layers.html">Layers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="querying_extensions_features.html">Querying Properties, Extensions, Features, Limits, and Formats</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="enabling_extensions.html">Enabling Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="enabling_features.html">Enabling Features</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="spirv_extensions.html">Using SPIR-V Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="formats.html">Formats</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="queues.html">Queues</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="wsi.html">Window System Integration (WSI)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="pnext_and_stype.html">pNext and sType</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="synchronization.html">Synchronization</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="extensions/VK_KHR_synchronization2.html">VK_KHR_synchronization2</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="swapchain_semaphore_reuse.html">Swapchain Semaphore Reuse</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="synchronization_examples.html">Synchronization Examples</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="memory_allocation.html">Memory Allocation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="sparse_resources.html">Sparse Resources</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="protected.html">Protected Memory</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="buffer_device_address.html">Buffer Device Address</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="pipeline_cache.html">Pipeline Cache</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="threading.html">Threading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="depth.html">Depth</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="primitive_topology.html">Primitive Topology</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="mapping_data_to_shaders.html">Mapping Data to Shaders</a>
+<ul class="nav-list">
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="storage_image_and_texel_buffers.html">Storage Image and Texel Buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="vertex_input_data_processing.html">Vertex Input Data Processing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="descriptor_arrays.html">Descriptor Arrays</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="descriptor_dynamic_offset.html">Descriptor Dynamic Offset</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="location_component_interface.html">Location and Component Interface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="push_constants.html">Push Constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="ways_to_provide_spirv.html">Ways to Provide SPIR-V</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="robustness.html">Robustness</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="dynamic_state.html">Pipeline Dynamic State</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="dynamic_state_map.html">Dynamic State Map</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="subgroups.html">Subgroups</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="shader_memory_layout.html">Shader Memory Layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="atomics.html">Atomics</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="image_copies.html">Image Copies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="common_pitfalls.html">Common Pitfalls for New Vulkan Developers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="hlsl.html">HLSL in Vulkan</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="high_level_shader_language_comparison.html">Vulkan High Level Shader Language Comparison</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">When and Why to use Extensions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/cleanup.html">Cleanup Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/device_groups.html">Device Groups</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/external.html">External Memory and Synchronization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/ray_tracing.html">Ray Tracing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/shader_features.html">Shader Features</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/translation_layer_extensions.html">Translation Layer Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_EXT_descriptor_indexing.html">VK_EXT_descriptor_indexing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_EXT_inline_uniform_block.html">VK_EXT_inline_uniform_block</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_EXT_memory_priority.html">VK_EXT_memory_priority</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_descriptor_update_template.html">VK_KHR_descriptor_update_template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_draw_indirect_count.html">VK_KHR_draw_indirect_count</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_image_format_list.html">VK_KHR_image_format_list</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_imageless_framebuffer.html">VK_KHR_imageless_framebuffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_sampler_ycbcr_conversion.html">VK_KHR_sampler_ycbcr_conversion</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_shader_subgroup_uniform_control_flow.html">VK_KHR_shader_subgroup_uniform_control_flow</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_debug_utils.html">VK_KHR_debug_utils</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Guide</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Vulkan Guide</a></li>
+    <li>Using Vulkan</li>
+    <li><a href="mapping_data_to_shaders.html">Mapping Data to Shaders</a></li>
+    <li><a href="storage_image_and_texel_buffers.html">Storage Image and Texel Buffers</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Guide/antora/modules/ROOT/pages/storage_image_and_texel_buffers.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Storage Image and Texel Buffers</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This chapter covers storage images and texel buffers in Vulkan, explaining their purpose, how to use them, and best practices.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_storage_images"><a class="anchor" href="#_storage_images"></a>Storage Images</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A storage image is a descriptor type (<code>VK_DESCRIPTOR_TYPE_STORAGE_IMAGE</code>) that allows shaders to read from and write to an image without using a fixed-function graphics pipeline. This is particularly useful for compute shaders and advanced rendering techniques.</p>
+</div>
+<div class="sect2">
+<h3 id="_creating_a_storage_image"><a class="anchor" href="#_creating_a_storage_image"></a>Creating a Storage Image</h3>
+<div class="paragraph">
+<p>To create a storage image, you need to:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Create a <code>VkImage</code> with the <code>VK_IMAGE_USAGE_STORAGE_BIT</code> flag</p>
+</li>
+<li>
+<p>Create a <code>VkImageView</code> for the image</p>
+</li>
+<li>
+<p>Create a descriptor set layout with a binding of type <code>VK_DESCRIPTOR_TYPE_STORAGE_IMAGE</code></p>
+</li>
+<li>
+<p>Update the descriptor set with the image view</p>
+</li>
+</ol>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Create the image with storage usage flag
+VkImageCreateInfo imageInfo = {};
+imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+imageInfo.imageType = VK_IMAGE_TYPE_2D;
+imageInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT; // Choose a format that supports storage operations
+imageInfo.extent = {width, height, 1};
+imageInfo.mipLevels = 1;
+imageInfo.arrayLayers = 1;
+imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+imageInfo.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+// Create image view
+VkImageViewCreateInfo viewInfo = {};
+viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+viewInfo.image = storageImage;
+viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+viewInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+viewInfo.subresourceRange.baseMipLevel = 0;
+viewInfo.subresourceRange.levelCount = 1;
+viewInfo.subresourceRange.baseArrayLayer = 0;
+viewInfo.subresourceRange.layerCount = 1;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_using_storage_images_in_shaders"><a class="anchor" href="#_using_storage_images_in_shaders"></a>Using Storage Images in Shaders</h3>
+<div class="paragraph">
+<p>In GLSL, storage images are declared using the <code>image</code> type with a format qualifier. The <code>imageLoad</code> and <code>imageStore</code> functions are used to read from and write to the image.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// VK_FORMAT_R32G32B32A32_SFLOAT
+layout(set = 0, binding = 0, rgba32f) uniform image2D storageImage;
+
+void main() {
+    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+
+    // Read from the image
+    vec4 value = imageLoad(storageImage, texelCoord);
+
+    // Modify the value
+    value = value * 2.0;
+
+    // Write back to the image
+    imageStore(storageImage, texelCoord, value);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In Slang, storage images are declared similarly to HLSL, using the <code>RWTexture2D</code> type. The <code>Load</code> and <code>Store</code> methods are used to read from and write to the image.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">// VK_FORMAT_R32G32B32A32_SFLOAT
+[[vk::binding(0, 0)]]
+[[vk::image_format("rgba32f")]]
+RWTexture2D&lt;float4&gt; storageImage;
+
+[numthreads(8, 8, 1)]
+void main(uint3 dispatchThreadID : SV_DispatchThreadID)
+{
+    int2 texelCoord = int2(dispatchThreadID.xy);
+
+    // Read from the image
+    float4 value = storageImage.Load(texelCoord);
+
+    // Modify the value
+    value = value * 2.0;
+
+    // Write back to the image
+    storageImage[texelCoord] = value;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The corresponding SPIR-V assembly:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-swift hljs" data-lang="swift">OpDecorate %storageImage DescriptorSet 0
+OpDecorate %storageImage Binding 0
+
+%rgba32f      = OpTypeImage %float 2D 0 0 0 2 Rgba32f
+%ptr          = OpTypePointer UniformConstant %rgba32f
+%storageImage = OpVariable %ptr UniformConstant</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_image_formats_for_storage_images"><a class="anchor" href="#_image_formats_for_storage_images"></a>Image Formats for Storage Images</h3>
+<div class="paragraph">
+<p>Not all image formats support storage operations. The <code>VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT</code> flag in <code>VkFormatProperties</code> indicates whether a format can be used for storage images.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkFormatProperties formatProperties;
+vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &amp;formatProperties);
+if (!(formatProperties.optimalTilingFeatures &amp; VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT)) {
+    // Format does not support storage image operations
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Common formats that typically support storage operations include:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_FORMAT_R32G32B32A32_SFLOAT</code></p>
+</li>
+<li>
+<p><code>VK_FORMAT_R32G32B32A32_UINT</code></p>
+</li>
+<li>
+<p><code>VK_FORMAT_R32G32B32A32_SINT</code></p>
+</li>
+<li>
+<p><code>VK_FORMAT_R8G8B8A8_UNORM</code></p>
+</li>
+<li>
+<p><code>VK_FORMAT_R8G8B8A8_UINT</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_synchronization_with_storage_images"><a class="anchor" href="#_synchronization_with_storage_images"></a>Synchronization with Storage Images</h3>
+<div class="paragraph">
+<p>When using storage images, proper synchronization is crucial to avoid race conditions. Storage images typically use the <code>VK_IMAGE_LAYOUT_GENERAL</code> layout for both reading and writing.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkImageMemoryBarrier barrier = {};
+barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+barrier.image = storageImage;
+barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+barrier.subresourceRange.baseMipLevel = 0;
+barrier.subresourceRange.levelCount = 1;
+barrier.subresourceRange.baseArrayLayer = 0;
+barrier.subresourceRange.layerCount = 1;
+barrier.srcAccessMask = 0;
+barrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+
+vkCmdPipelineBarrier(
+    commandBuffer,
+    VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+    0,
+    0, nullptr,
+    0, nullptr,
+    1, &amp;barrier
+);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When transitioning between compute shader writes and reads:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+vkCmdPipelineBarrier(
+    commandBuffer,
+    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+    0,
+    0, nullptr,
+    0, nullptr,
+    1, &amp;barrier
+);</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_texel_buffers"><a class="anchor" href="#_texel_buffers"></a>Texel Buffers</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Texel buffers are a way to access buffer data with texture-like operations in shaders. There are two types of texel buffers:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Uniform Texel Buffers</strong> (<code>VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER</code>): Read-only access</p>
+</li>
+<li>
+<p><strong>Storage Texel Buffers</strong> (<code>VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER</code>): Read-write access</p>
+</li>
+</ol>
+</div>
+<div class="sect2">
+<h3 id="_creating_a_texel_buffer"><a class="anchor" href="#_creating_a_texel_buffer"></a>Creating a Texel Buffer</h3>
+<div class="paragraph">
+<p>To create a texel buffer, you need to:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Create a <code>VkBuffer</code> with appropriate usage flags</p>
+</li>
+<li>
+<p>Create a <code>VkBufferView</code> for the buffer</p>
+</li>
+<li>
+<p>Create a descriptor set layout with a binding of the appropriate texel buffer type</p>
+</li>
+<li>
+<p>Update the descriptor set with the buffer view</p>
+</li>
+</ol>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Create buffer
+VkBufferCreateInfo bufferInfo = {};
+bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+bufferInfo.size = size;
+bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT; // or VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT
+bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+// Create buffer view
+VkBufferViewCreateInfo viewInfo = {};
+viewInfo.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
+viewInfo.buffer = buffer;
+viewInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT; // Choose a format that supports texel buffer operations
+viewInfo.offset = 0;
+viewInfo.range = size;
+
+VkBufferView bufferView;
+vkCreateBufferView(device, &amp;viewInfo, nullptr, &amp;bufferView);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_using_uniform_texel_buffers_in_shaders"><a class="anchor" href="#_using_uniform_texel_buffers_in_shaders"></a>Using Uniform Texel Buffers in Shaders</h3>
+<div class="paragraph">
+<p>In GLSL, uniform texel buffers are declared using the <code>textureBuffer</code> type. The <code>texelFetch</code> function is used to read from the buffer.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">layout(set = 0, binding = 0) uniform textureBuffer uniformTexelBuffer;
+
+void main() {
+    // Read from the texel buffer
+    vec4 value = texelFetch(uniformTexelBuffer, int(gl_GlobalInvocationID.x));
+
+    // Use the value
+    // ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In Slang, uniform texel buffers are declared using the <code>Buffer</code> type. The <code>Load</code> method is used to read from the buffer.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">[[vk::binding(0, 0)]]
+Buffer&lt;float4&gt; uniformTexelBuffer;
+
+[numthreads(64, 1, 1)]
+void main(uint3 dispatchThreadID : SV_DispatchThreadID)
+{
+    // Read from the texel buffer
+    float4 value = uniformTexelBuffer.Load(dispatchThreadID.x);
+
+    // Use the value
+    // ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The corresponding SPIR-V assembly:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-swift hljs" data-lang="swift">OpDecorate %uniformTexelBuffer DescriptorSet 0
+OpDecorate %uniformTexelBuffer Binding 0
+
+%texelBuffer        = OpTypeImage %float Buffer 0 0 0 1 Unknown
+%ptr                = OpTypePointer UniformConstant %texelBuffer
+%uniformTexelBuffer = OpVariable %ptr UniformConstant</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_using_storage_texel_buffers_in_shaders"><a class="anchor" href="#_using_storage_texel_buffers_in_shaders"></a>Using Storage Texel Buffers in Shaders</h3>
+<div class="paragraph">
+<p>In GLSL, storage texel buffers are declared using the <code>imageBuffer</code> type with a format qualifier. The <code>imageLoad</code> and <code>imageStore</code> functions are used to read from and write to the buffer.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// VK_FORMAT_R32G32B32A32_SFLOAT
+layout(set = 0, binding = 0, rgba32f) uniform imageBuffer storageTexelBuffer;
+
+void main() {
+    int index = int(gl_GlobalInvocationID.x);
+
+    // Read from the texel buffer
+    vec4 value = imageLoad(storageTexelBuffer, index);
+
+    // Modify the value
+    value = value * 2.0;
+
+    // Write back to the texel buffer
+    imageStore(storageTexelBuffer, index, value);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In Slang, storage texel buffers are declared using the <code>RWBuffer</code> type. The <code>Load</code> method and array indexing are used to read from and write to the buffer.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">// VK_FORMAT_R32G32B32A32_SFLOAT
+[[vk::binding(0, 0)]]
+[[vk::image_format("rgba32f")]]
+RWBuffer&lt;float4&gt; storageTexelBuffer;
+
+[numthreads(64, 1, 1)]
+void main(uint3 dispatchThreadID : SV_DispatchThreadID)
+{
+    int index = int(dispatchThreadID.x);
+
+    // Read from the texel buffer
+    float4 value = storageTexelBuffer.Load(index);
+
+    // Modify the value
+    value = value * 2.0;
+
+    // Write back to the texel buffer
+    storageTexelBuffer[index] = value;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The corresponding SPIR-V assembly:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-swift hljs" data-lang="swift">OpDecorate %storageTexelBuffer DescriptorSet 0
+OpDecorate %storageTexelBuffer Binding 0
+
+%rgba32f           = OpTypeImage %float Buffer 0 0 0 2 Rgba32f
+%ptr               = OpTypePointer UniformConstant %rgba32f
+%storageTexelBuffer = OpVariable %ptr UniformConstant</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_formats_for_texel_buffers"><a class="anchor" href="#_formats_for_texel_buffers"></a>Formats for Texel Buffers</h3>
+<div class="paragraph">
+<p>Not all formats support texel buffer operations. The <code>VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT</code> and <code>VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT</code> flags in <code>VkFormatProperties</code> indicate whether a format can be used for uniform and storage texel buffers, respectively.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkFormatProperties formatProperties;
+vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &amp;formatProperties);
+if (!(formatProperties.bufferFeatures &amp; VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT)) {
+    // Format does not support uniform texel buffer operations
+}
+if (!(formatProperties.bufferFeatures &amp; VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT)) {
+    // Format does not support storage texel buffer operations
+}</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The code above is using the <code>bufferFeatures</code> member of <code>VkFormatProperties</code> to check for texel buffer support, as opposed to <code>optimalTilingFeatures</code> or <code>linearTilingFeatures</code> which are used for images.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_synchronization_with_texel_buffers"><a class="anchor" href="#_synchronization_with_texel_buffers"></a>Synchronization with Texel Buffers</h3>
+<div class="paragraph">
+<p>When using storage texel buffers, proper synchronization is crucial to avoid race conditions.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkBufferMemoryBarrier barrier = {};
+barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+barrier.buffer = buffer;
+barrier.offset = 0;
+barrier.size = VK_WHOLE_SIZE;
+
+vkCmdPipelineBarrier(
+    commandBuffer,
+    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+    0,
+    0, nullptr,
+    1, &amp;barrier,
+    0, nullptr
+);</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_comparison_with_other_buffer_types"><a class="anchor" href="#_comparison_with_other_buffer_types"></a>Comparison with Other Buffer Types</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_storage_image_vs_storage_buffer"><a class="anchor" href="#_storage_image_vs_storage_buffer"></a>Storage Image vs. Storage Buffer</h3>
+<div class="paragraph">
+<p>While both storage images and storage buffers allow for read-write access in shaders, they have different use cases:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Storage Images</strong>: Ideal for 2D or 3D data that benefits from texture operations like filtering or addressing modes.</p>
+</li>
+<li>
+<p><strong>Storage Buffers</strong>: Better for arbitrary structured data or when you need to access data in a non-uniform pattern.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_texel_buffer_vs_storage_buffer"><a class="anchor" href="#_texel_buffer_vs_storage_buffer"></a>Texel Buffer vs. Storage Buffer</h3>
+<div class="paragraph">
+<p>Texel buffers and storage buffers also have different strengths:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Texel Buffers</strong>: Provide texture-like access to buffer data, allowing for operations like filtering.</p>
+</li>
+<li>
+<p><strong>Storage Buffers</strong>: More flexible for general-purpose data storage and manipulation.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_considerations_for_tile_based_renderers"><a class="anchor" href="#_considerations_for_tile_based_renderers"></a>Considerations for Tile-Based Renderers</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Many mobile GPUs and some desktop GPUs use a tile-based rendering architecture, which has important implications for how storage images and texel buffers should be used.</p>
+</div>
+<div class="sect2">
+<h3 id="_what_is_tile_based_rendering"><a class="anchor" href="#_what_is_tile_based_rendering"></a>What is Tile-Based Rendering?</h3>
+<div class="paragraph">
+<p>In tile-based rendering (TBR) or tile-based deferred rendering (TBDR), the GPU divides the framebuffer into small rectangular regions called tiles. Each tile is processed completely (all draw calls affecting that tile) before moving to the next tile. This approach:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Reduces memory bandwidth by keeping tile data in fast on-chip memory</p>
+</li>
+<li>
+<p>Improves power efficiency, which is particularly important for mobile devices</p>
+</li>
+<li>
+<p>Allows for efficient implementation of certain rendering techniques</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_storage_images_in_tile_based_renderers"><a class="anchor" href="#_storage_images_in_tile_based_renderers"></a>Storage Images in Tile-Based Renderers</h3>
+<div class="paragraph">
+<p>When using storage images with tile-based renderers, consider the following:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Tile Memory Flushing</strong>: Writing to storage images may cause the GPU to flush tile memory to main memory, reducing the benefits of tile-based rendering.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>This can significantly impact performance, especially if done frequently</p>
+</li>
+<li>
+<p>Try to batch storage image operations to minimize tile memory flushes</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Transient Attachments</strong>: Some tile-based renderers support special "transient" attachments that exist only in tile memory.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>These cannot be used as storage images since they don&#8217;t have backing memory</p>
+</li>
+<li>
+<p>If you need to process render results, consider using input attachments instead where possible</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Pixel Local Storage Extensions</strong>: Some tile-based GPUs offer extensions like <code>VK_EXT_shader_pixel_local_storage</code> that provide more efficient alternatives to storage images for certain use cases.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>These extensions allow shaders to access per-pixel data that stays in tile memory</p>
+</li>
+<li>
+<p>Check for and use these extensions when available on tile-based hardware</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Render Pass Coherency</strong>: In tile-based renderers, data written to storage images during a render pass may not be visible to subsequent draw calls in the same render pass.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Use appropriate memory barriers or split your work into multiple render passes</p>
+</li>
+<li>
+<p>Be aware that these barriers may be more expensive on tile-based renderers</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_texel_buffers_in_tile_based_renderers"><a class="anchor" href="#_texel_buffers_in_tile_based_renderers"></a>Texel Buffers in Tile-Based Renderers</h3>
+<div class="paragraph">
+<p>Texel buffers generally work similarly on tile-based and immediate mode renderers, but there are still some considerations:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Cache Coherency</strong>: Tile-based renderers may have different caching behaviors for texel buffer access.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Ensure proper synchronization when writing to and reading from texel buffers</p>
+</li>
+<li>
+<p>Be aware that cache flushes may be more expensive on tile-based architectures</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Memory Access Patterns</strong>: Tile-based renderers may be more sensitive to non-coherent memory access patterns.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Organize your data to maximize locality for the tile being processed</p>
+</li>
+<li>
+<p>Consider the tile size when designing your algorithms</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_performance_optimization_for_tile_based_renderers"><a class="anchor" href="#_performance_optimization_for_tile_based_renderers"></a>Performance Optimization for Tile-Based Renderers</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Minimize Framebuffer Resolves</strong>: Each time you need to access framebuffer contents as a storage image, the tile-based renderer must "resolve" (write) the tile memory to main memory.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Try to complete all operations that modify a particular image before reading from it</p>
+</li>
+<li>
+<p>Consider using subpasses and input attachments instead of storage images for operations within a render pass</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Prefer Render Passes Over Compute for Image Processing</strong>: On tile-based renderers, operations within a render pass can often be more efficient than compute shaders using storage images.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Consider implementing image processing as fragment shaders in a render pass</p>
+</li>
+<li>
+<p>Use multiple subpasses to keep intermediate results in tile memory</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Be Careful with Mixed Access Patterns</strong>: Mixing reads and writes to the same storage image can be particularly expensive on tile-based renderers.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Try to separate read and write phases</p>
+</li>
+<li>
+<p>Consider double-buffering techniques to avoid read-after-write hazards</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_format_compatibility_requirements"><a class="anchor" href="#_format_compatibility_requirements"></a>Format Compatibility Requirements</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When using storage images and texel buffers, it&#8217;s crucial to understand the format compatibility rules, which differ slightly between these resource types. Mismatches between shader formats and resource formats can lead to undefined behavior and potential validation warnings.</p>
+</div>
+<div class="sect2">
+<h3 id="_differences_in_format_compatibility_rules"><a class="anchor" href="#_differences_in_format_compatibility_rules"></a>Differences in Format Compatibility Rules</h3>
+<div class="paragraph">
+<p>The format compatibility rules differ between storage images and texel buffers in subtle but important ways:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Storage Images</strong>: The format specified in the shader (SPIR-V Image Format) must <strong>exactly match</strong> the format used when creating the VkImageView (Vulkan Format).</p>
+</li>
+<li>
+<p><strong>Texel Buffers</strong>: The format compatibility is more relaxed. The shader can access the data as long as the format is compatible with the buffer view format according to the format compatibility classes.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This difference means that storage images have stricter format requirements than texel buffers, which can lead to confusion when working with both resource types.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_spir_v_image_format_and_vulkan_format_compatibility"><a class="anchor" href="#_spir_v_image_format_and_vulkan_format_compatibility"></a>SPIR-V Image Format and Vulkan Format Compatibility</h3>
+<div class="paragraph">
+<p>The Vulkan Specification defines a table of <a href="https://docs.vulkan.org/spec/latest/chapters/textures.html#formats-compatibility-classes">Compatibility Between SPIR-V Image Formats and Vulkan Formats</a> that shows the exact mapping between SPIR-V Image Formats and Vulkan Formats.</p>
+</div>
+<div class="sect3">
+<h4 id="_storage_images_format_requirements"><a class="anchor" href="#_storage_images_format_requirements"></a>Storage Images Format Requirements</h4>
+<div class="paragraph">
+<p>For storage images, the format specified in the shader must exactly match the format of the image view according to this table. There is no automatic format conversion or component swizzling.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// SPIR-V format Rgba8 (maps to VK_FORMAT_R8G8B8A8_UNORM)
+layout(set = 0, binding = 0, rgba8) uniform image2D storageImage;
+
+// The VkImageView must be created with VK_FORMAT_R8G8B8A8_UNORM
+// Using VK_FORMAT_B8G8R8A8_UNORM would result in undefined behavior</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_texel_buffers_format_requirements"><a class="anchor" href="#_texel_buffers_format_requirements"></a>Texel Buffers Format Requirements</h4>
+<div class="paragraph">
+<p>For texel buffers, the format compatibility is determined by the format compatibility classes. Formats within the same compatibility class can be used interchangeably, with the shader performing the necessary conversions.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// For uniform texel buffers, the format is not specified in the shader
+layout(set = 0, binding = 0) uniform textureBuffer uniformTexelBuffer;
+
+// The VkBufferView can be created with any compatible format
+// For example, both VK_FORMAT_R8G8B8A8_UNORM and VK_FORMAT_B8G8R8A8_UNORM would work</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For storage texel buffers, a format is specified in the shader, but the compatibility rules are still more relaxed than for storage images:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// SPIR-V format Rgba8 (maps to VK_FORMAT_R8G8B8A8_UNORM)
+layout(set = 0, binding = 0, rgba8) uniform imageBuffer storageTexelBuffer;
+
+// The VkBufferView should ideally be created with VK_FORMAT_R8G8B8A8_UNORM
+// But formats in the same compatibility class may work on some implementations</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_component_swizzling"><a class="anchor" href="#_component_swizzling"></a>Component Swizzling</h3>
+<div class="paragraph">
+<p>Component swizzling is another area where storage images and texel buffers differ:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Storage Images</strong>: No automatic component swizzling occurs. The components are accessed exactly as they are stored in memory. If you need to swizzle components, (e.g., convert between RGBA and BGRA), you must do it manually in your shader code.</p>
+</li>
+<li>
+<p><strong>Texel Buffers</strong>: Some implementations may perform automatic component swizzling based on the format compatibility class. However, this behavior is not guaranteed across all implementations, so it&#8217;s best practice to match formats exactly when possible.</p>
+</li>
+<li>
+<p><strong>Image Views</strong>: For sampled images (not storage images), you can use the <code>VkComponentMapping</code> structure in <code>VkImageViewCreateInfo</code> to specify component swizzling. This is not applicable to storage images or texel buffers.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_common_format_mismatch_cases"><a class="anchor" href="#_common_format_mismatch_cases"></a>Common Format Mismatch Cases</h3>
+<div class="paragraph">
+<p>Several types of format mismatches can occur, all of which result in undefined behavior:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Component Size Mismatch</strong>: When the component size in the SPIR-V format differs from the Vulkan format.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Example: SPIR-V format <code>Rgba32f</code> (32-bit float components) with <code>VK_FORMAT_R8G8B8A8_UNORM</code> (8-bit components)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Component Count Mismatch</strong>: When the number of components in the SPIR-V format differs from the Vulkan format.</p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>More Components Written</strong>: SPIR-V format <code>Rgba8</code> (4 components) with <code>VK_FORMAT_R8_UNORM</code> (1 component)</p>
+</li>
+<li>
+<p><strong>Less Components Written</strong>: SPIR-V format <code>R8</code> (1 component) with <code>VK_FORMAT_R8G8B8A8_UNORM</code> (4 components)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Numeric Format Mismatch</strong>: When the numeric format (normalized, float, int) in the SPIR-V format differs from the Vulkan format.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Example: SPIR-V format <code>Rgba8</code> (UNORM) with <code>VK_FORMAT_R8G8B8A8_SNORM</code> (SNORM)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Numeric Type Mismatch</strong>: When the numeric type (float, int, uint) in the SPIR-V format differs from the Vulkan format.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Example: SPIR-V format <code>R8</code> (float) with <code>VK_FORMAT_R8_SINT</code> (signed int)</p>
+</li>
+<li>
+<p>Example: SPIR-V format <code>R8ui</code> (unsigned int) with <code>VK_FORMAT_R8_SINT</code> (signed int)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Channel Order Mismatch</strong>: When the channel order in the SPIR-V format differs from the Vulkan format.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Example: SPIR-V format <code>Rgba8</code> (RGBA order) with <code>VK_FORMAT_B8G8R8A8_UNORM</code> (BGRA order)</p>
+</li>
+<li>
+<p>This is particularly problematic for storage images, where no automatic swizzling occurs</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_how_to_fix_format_mismatches"><a class="anchor" href="#_how_to_fix_format_mismatches"></a>How to Fix Format Mismatches</h3>
+<div class="paragraph">
+<p>There are different approaches to fix format mismatches depending on the resource type:</p>
+</div>
+<div class="sect3">
+<h4 id="_for_storage_images"><a class="anchor" href="#_for_storage_images"></a>For Storage Images</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Match the Formats Exactly</strong>: Ensure that the VkImageView format exactly
+matches the SPIR-V Image Format as defined in the compatibility table.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>For example, if your shader uses <code>rgba8</code> (SPIR-V format <code>Rgba8</code>),
+create your VkImageView with <code>VK_FORMAT_R8G8B8A8_UNORM</code>.</p>
+</li>
+<li>
+<p>If you need to work with a different format (e.g.,
+<code>VK_FORMAT_B8G8R8A8_UNORM</code>), you&#8217;ll need to manually swizzle the components in your shader code:</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// Manual swizzling for BGRA to RGBA conversion
+vec4 value = imageLoad(storageImage, texelCoord);
+vec4 swizzled = value.bgra; // Manually swizzle components
+// Use swizzled value</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Use the Unknown Format in SPIR-V</strong>: If you need flexibility in the
+formats you use, you can use the <code>Unknown</code> format in SPIR-V, which is compatible with any Vulkan format.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>This requires enabling the <code>shaderStorageImageWriteWithoutFormat</code> feature.</p>
+</li>
+<li>
+<p>In GLSL, this means omitting the format qualifier:</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// No format specified, uses Unknown in SPIR-V
+layout(set = 0, binding = 0) uniform image2D storageImage;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Note that when using the Unknown format, you&#8217;re responsible for ensuring that the data you read from or write to the image is compatible with the actual format of the image.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_for_texel_buffers"><a class="anchor" href="#_for_texel_buffers"></a>For Texel Buffers</h4>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Match the Formats When Possible</strong>: While texel buffers have more relaxed format compatibility rules, it&#8217;s still best practice to match formats exactly when possible.</p>
+</li>
+<li>
+<p><strong>Use Format Compatibility Classes</strong>: If you need to work with different formats, ensure they are in the same format compatibility class.</p>
+</li>
+<li>
+<p><strong>Handle Component Swizzling in Shader</strong>: If you&#8217;re working with formats that have different component orders (e.g., RGBA vs. BGRA), handle the swizzling explicitly in your shader code to ensure consistent behavior across all implementations.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_important_considerations"><a class="anchor" href="#_important_considerations"></a>Important Considerations</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>When a format mismatch occurs with storage images, the entire image memory becomes undefined, not just the texels being written.</p>
+</li>
+<li>
+<p>Even formats that are in the same compatibility class (e.g., <code>VK_FORMAT_R8G8B8A8_UNORM</code> and <code>VK_FORMAT_B8G8R8A8_UNORM</code>) must match exactly for storage images.</p>
+</li>
+<li>
+<p>Texel buffers have more relaxed format compatibility rules, but it&#8217;s still best practice to match formats exactly when possible.</p>
+</li>
+<li>
+<p>The validation warnings for format mismatches are intended to help developers identify potential issues, as these mismatches can lead to subtle bugs that might not be immediately clear.</p>
+</li>
+<li>
+<p>Component swizzling must be handled manually for storage images, while some automatic swizzling may occur for texel buffers on some implementations.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_best_practices"><a class="anchor" href="#_best_practices"></a>Best Practices</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_performance_considerations"><a class="anchor" href="#_performance_considerations"></a>Performance Considerations</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Format Selection</strong>: Choose formats that are natively supported by the hardware for better performance.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Prefer formats with native hardware support (check <code>VkFormatProperties</code>)</p>
+</li>
+<li>
+<p>For storage images, 32-bit formats (<code>R32_*</code>) often have better performance than packed formats</p>
+</li>
+<li>
+<p>Consider using single-channel formats when only one channel is needed to reduce memory bandwidth</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Memory Access Patterns</strong>: Try to ensure coalesced memory access patterns when reading from or writing to storage images and texel buffers.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Group memory accesses to adjacent locations to maximize cache efficiency</p>
+</li>
+<li>
+<p>In compute shaders, align work group sizes with hardware warp/wavefront sizes</p>
+</li>
+<li>
+<p>Consider the memory layout when accessing 2D images (row-major vs. column-major access)</p>
+</li>
+<li>
+<p>For texel buffers, sequential access is generally faster than random access</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Synchronization</strong>: Use the minimal necessary synchronization to avoid performance penalties.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Use the most specific access flags and pipeline stages possible</p>
+</li>
+<li>
+<p>Batch operations to reduce the number of barriers needed</p>
+</li>
+<li>
+<p>Consider using <code>VK_PIPELINE_STAGE_ALL_COMMANDS_BIT</code> only when absolutely necessary</p>
+</li>
+<li>
+<p>For compute workloads, try to design algorithms that minimize synchronization points</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Resource Reuse</strong>: Reuse storage images and texel buffers when possible to reduce memory allocation overhead.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Consider implementing a resource pool for frequently created/destroyed resources</p>
+</li>
+<li>
+<p>Use double or triple buffering techniques for resources that are updated every frame</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Workload Balancing</strong>: Distribute work evenly across compute shader invocations.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Choose appropriate workgroup sizes based on your hardware (typically multiples of 32 or 64)</p>
+</li>
+<li>
+<p>Avoid divergent execution paths within a workgroup</p>
+</li>
+<li>
+<p>Consider tiled processing for large images to improve cache locality</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_common_pitfalls"><a class="anchor" href="#_common_pitfalls"></a>Common Pitfalls</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Format Support</strong>: Not all formats support storage operations. Always check format features.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Use <code>vkGetPhysicalDeviceFormatProperties</code> to verify format support before creating resources</p>
+</li>
+<li>
+<p>Some formats may support storage operations but with reduced performance</p>
+</li>
+<li>
+<p>Be aware that format support can vary between different hardware vendors</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Memory Barriers</strong>: Missing or incorrect memory barriers can lead to race conditions and undefined behavior.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Always use appropriate memory barriers between writes and subsequent reads</p>
+</li>
+<li>
+<p>Remember that barriers are needed even when operations are in the same shader</p>
+</li>
+<li>
+<p>For compute shaders, use <code>memoryBarrierImage()</code> or <code>memoryBarrierBuffer()</code> in GLSL when appropriate</p>
+</li>
+<li>
+<p>Be careful with multiple queue submissions that access the same resources</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Layout Transitions</strong>: Storage images typically use <code>VK_IMAGE_LAYOUT_GENERAL</code>, but transitioning to this layout is still required.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Always transition images to the correct layout before use</p>
+</li>
+<li>
+<p>Be aware that <code>VK_IMAGE_LAYOUT_GENERAL</code> may be less efficient than specialized layouts</p>
+</li>
+<li>
+<p>Consider using <code>VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL</code> if you only need read access</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Atomic Operations</strong>: Atomic operations on storage images and buffers can be expensive.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Minimize the use of atomic operations when possible</p>
+</li>
+<li>
+<p>Consider alternative algorithms that don&#8217;t require atomics</p>
+</li>
+<li>
+<p>Be aware that atomic performance varies significantly between hardware vendors</p>
+</li>
+<li>
+<p>Group atomic operations to minimize memory contention</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Resource Limits</strong>: Be aware of device limits for storage images and texel buffers.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Check <code>maxPerStageDescriptorStorageImages</code> and related limits</p>
+</li>
+<li>
+<p>Some devices may have restrictions on the number of storage resources that can be written to</p>
+</li>
+<li>
+<p>Consider the impact on descriptor set layout when using many storage resources</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Validation Layers</strong>: Use validation layers during development to catch common errors.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Enable synchronization validation to detect barrier issues</p>
+</li>
+<li>
+<p>Pay attention to warnings about format support and usage flags</p>
+</li>
+<li>
+<p>Test on multiple hardware vendors if possible to catch implementation-specific issues</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Shader Compilation</strong>: Be aware of shader compilation implications.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Complex storage image and texel buffer operations may increase register pressure</p>
+</li>
+<li>
+<p>Consider splitting complex shaders into multiple passes</p>
+</li>
+<li>
+<p>Profile shader performance to identify bottlenecks</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_example_use_cases"><a class="anchor" href="#_example_use_cases"></a>Example Use Cases</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_image_processing_with_storage_images"><a class="anchor" href="#_image_processing_with_storage_images"></a>Image Processing with Storage Images</h3>
+<div class="paragraph">
+<p>Storage images are ideal for image processing tasks like filters, blurs, and other post-processing effects.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_particle_systems_with_storage_texel_buffers"><a class="anchor" href="#_particle_systems_with_storage_texel_buffers"></a>Particle Systems with Storage Texel Buffers</h3>
+<div class="paragraph">
+<p>Storage texel buffers can be used to store and update particle data in a compute shader, which can then be read by a vertex shader for rendering.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_lookup_tables_with_uniform_texel_buffers"><a class="anchor" href="#_lookup_tables_with_uniform_texel_buffers"></a>Lookup Tables with Uniform Texel Buffers</h3>
+<div class="paragraph">
+<p>Uniform texel buffers are useful for implementing lookup tables that need to be accessed with texture-like operations.</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+<script src="../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../.." data-snippet-length="100" data-stylesheet="../../_/css/search.css"></script>
+<script async src="../../search-index.js"></script>
+<script async src="../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

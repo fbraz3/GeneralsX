@@ -1,0 +1,1081 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.23">
+<meta name="author" content="The Khronos® Vulkan  Working Group">
+<title>Vulkan® 1.4.328 - A Specification (with all registered extensions)</title>
+<link rel="stylesheet" href="style0.css" type="text/css">
+<link rel="stylesheet" href="style1.css" type="text/css">
+<link rel="stylesheet" href="style2.css" type="text/css">
+
+<!-- dragged in by font-awesome css included by asciidoctor, but preloaded in this extension for convenience -->
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.woff2?v=4.7.0" as="font" type="font/woff2" crossorigin="">
+
+<!-- Note: Chrome needs crossorigin="" even for same-origin fonts -->
+<link rel="preload" href="../katex/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Main-Italic.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Typewriter-Regular.woff2" as="font" type="font/woff2" crossorigin=""><link rel="stylesheet" href="../katex/katex.min.css">
+<!--ChunkedSearchJSMarker-->
+<link href="chunked.css?4" rel="stylesheet">
+<script>var searchindexurl = 'search.index.js?4' + (document.title.replace(/[^0-9.]/g, ''));</script>
+<script src="chunked.js?4"></script>
+<link rel="stylesheet" href="style3.css" type="text/css">
+<script>
+    function hideElement(e){
+        e.setAttribute("hidden", "");
+        e.classList.add("hidden");
+    }
+
+    function unhideElement(e){
+        e.classList.remove("hidden");
+        e.removeAttribute("hidden");
+    }
+
+    function hideLoadableContent(){
+        unhideElement( document.getElementById("loading_msg") );
+        for( var loadable of document.getElementsByClassName("loadable") ) hideElement(loadable);
+    }
+
+    function unhideLoadableContent(){
+        hideElement( document.getElementById("loading_msg") );
+        for( var loadable of document.getElementsByClassName("loadable") ) unhideElement(loadable);
+    }
+
+    window.addEventListener("load", unhideLoadableContent);
+</script>
+<link rel="stylesheet" href="asciidoctor-chunker.css" type="text/css"></head>
+<body class="book toc2 toc-left">
+<div style="text-align: center;">
+    <span class="image"><img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+Cjxzdmcgdmlld0JveD0iMCAwIDExNTAgMzI2IiB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHhtbDpzcGFjZT0icHJlc2VydmUiIHN0eWxlPSJmaWxsLXJ1bGU6ZXZlbm9kZDtjbGlwLXJ1bGU6ZXZlbm9kZDtzdHJva2UtbGluZWpvaW46cm91bmQ7c3Ryb2tlLW1pdGVybGltaXQ6MS40MTQyMTsiPgogICAgPGcgaWQ9IkFydGJvYXJkMSIgdHJhbnNmb3JtPSJtYXRyaXgoMC45NTUxNSwwLDAsMC44ODgyODMsLTQwLjExNjMsLTMwLjIwMTYpIj4KICAgICAgICA8cmVjdCB4PSI0MiIgeT0iMzQiIHdpZHRoPSIxMjA0IiBoZWlnaHQ9IjM2NyIgc3R5bGU9ImZpbGw6bm9uZTsiLz4KICAgICAgICA8ZyB0cmFuc2Zvcm09Im1hdHJpeCgxLjA0Njk2LDAsMCwxLjEyNTc3LC00Ni45OTEzLC01MC40MzI1KSI+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik03MjQuMSwzODUuMDZMNjgzLjUzLDM4NS4wNkM2ODMuNTMsMzg1LjA2IDY4My41MywyODYuMDkgNjgzLjUzLDI1NS40QzY5Ni40OSwyNjIuNjIgNzEzLjYyLDI3NS45NCA3MjQuMSwyODguNzJMNzI0LjEsMzg1LjA2WiIgc3R5bGU9ImZpbGw6cmdiKDE3MiwyMiw0NCk7ZmlsbC1ydWxlOm5vbnplcm87Ii8+CiAgICAgICAgICAgIDxnPgogICAgICAgICAgICAgICAgPHBhdGggZD0iTTM4MS43NSwzODUuMDZMMzMxLjE3LDM4NS4wNkwyNjUuMTYsMTgxLjAzTDMxMS4xNywxODEuMDNMMzU2LjYxLDMyNC40OEwzNTcuMTgsMzI0LjQ4TDQwMy4xOCwxODEuMDNMNDQ5LjQ3LDE4MS4wM0wzODEuNzUsMzg1LjA2WiIgc3R5bGU9ImZpbGw6cmdiKDE3MiwyMiw0NCk7ZmlsbC1ydWxlOm5vbnplcm87Ii8+CiAgICAgICAgICAgICAgICA8cGF0aCBkPSJNNTg1LjUxLDM4NS4wNkw1NDYuOTMsMzg1LjA2TDU0Ni45MywzNjQuNDlMNTQ2LjA4LDM2NC40OUM1NDAuOTMsMzczLjA3IDUzNC4yNywzNzkuMjYgNTI2LjA3LDM4My4wN0M1MTcuODgsMzg2Ljg4IDUwOS41LDM4OC43OCA1MDAuOTIsMzg4Ljc4QzQ5MC4wNiwzODguNzggNDgxLjE2LDM4Ny4zNSA0NzQuMiwzODQuNUM0NjcuMjUsMzgxLjY1IDQ2MS43NywzNzcuNTkgNDU3Ljc3LDM3Mi4zNkM0NTMuNzYsMzY3LjEyIDQ1MC45NSwzNjAuNzQgNDQ5LjMzLDM1My4yMUM0NDcuNzIsMzQ1LjY5IDQ0Ni45MSwzMzcuMzUgNDQ2LjkxLDMyOC4yMUw0NDYuOTEsMjM3LjMzTDQ4Ny40OSwyMzcuMzNMNDg3LjQ5LDMyMC43N0M0ODcuNDksMzMyLjk2IDQ4OS40LDM0Mi4wNiA0OTMuMjEsMzQ4LjA2QzQ5Ny4wMiwzNTQuMDcgNTAzLjc4LDM1Ny4wNiA1MTMuNSwzNTcuMDZDNTI0LjU1LDM1Ny4wNiA1MzIuNTUsMzUzLjc4IDUzNy41LDM0Ny4yQzU0Mi40NiwzNDAuNjIgNTQ0LjkzLDMyOS44MSA1NDQuOTMsMzE0Ljc2TDU0NC45MywyMzcuMzJMNTg1LjUyLDIzNy4zMkw1ODUuNTIsMzg1LjA2TDU4NS41MSwzODUuMDZaIiBzdHlsZT0iZmlsbDpyZ2IoMTcyLDIyLDQ0KTtmaWxsLXJ1bGU6bm9uemVybzsiLz4KICAgICAgICAgICAgPC9nPgogICAgICAgICAgICA8cGF0aCBkPSJNNzMwLjg0LDI5Ni4xOUw3MzAuNzQsMjkwLjQ3TDc4MS44OSwyMzcuMzNMODI5LjkxLDIzNy4zM0w3NzQuMTgsMjkxLjYyTDgzNi4xOSwzODUuMDZMNzg3LjA0LDM4NS4wNkw3MzAuODQsMjk2LjE5WiIgc3R5bGU9ImZpbGw6cmdiKDE3MiwyMiw0NCk7ZmlsbC1ydWxlOm5vbnplcm87Ii8+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik04NDMuNjIsMjgyLjc2Qzg0NC4xOSwyNzMuMjQgODQ2LjU4LDI2NS4zMyA4NTAuNzcsMjU5LjA0Qzg1NC45NiwyNTIuNzUgODYwLjI5LDI0Ny43MSA4NjYuNzcsMjQzLjlDODczLjI1LDI0MC4wOSA4ODAuNTQsMjM3LjM3IDg4OC42NCwyMzUuNzZDODk2LjczLDIzNC4xNCA5MDQuODgsMjMzLjMzIDkxMy4wNywyMzMuMzNDOTIwLjUsMjMzLjMzIDkyOC4wMiwyMzMuODUgOTM1LjY0LDIzNC45Qzk0My4yNywyMzUuOTUgOTUwLjIxLDIzOCA5NTYuNSwyNDEuMDVDOTYyLjc4LDI0NC4xIDk2Ny45MywyNDguMzQgOTcxLjk0LDI1My43NkM5NzUuOTQsMjU5LjE5IDk3Ny45NCwyNjYuMzggOTc3Ljk0LDI3NS4zNEw5NzcuOTQsMzUyLjIxQzk3Ny45NCwzNTguODggOTc4LjMyLDM2NS4yNyA5NzkuMDgsMzcxLjM2Qzk3OS44NCwzNzcuNDYgOTgxLjE4LDM4Mi4wMyA5ODMuMDksMzg1LjA4TDk0MS45NCwzODUuMDhDOTQxLjE4LDM4Mi44IDk0MC41NiwzODAuNDYgOTQwLjA4LDM3OC4wOEM5MzkuNjEsMzc1LjcgOTM5LjI3LDM3My4yOCA5MzkuMDgsMzcwLjc5QzkzMi42LDM3Ny40NyA5MjQuOTcsMzgyLjEzIDkxNi4yMSwzODQuOEM5MDcuNDUsMzg3LjQ2IDg5OC40OSwzODguOCA4ODkuMzUsMzg4LjhDODgyLjMsMzg4LjggODc1LjcyLDM4Ny45NCA4NjkuNjQsMzg2LjIzQzg2My41NCwzODQuNTIgODU4LjIsMzgxLjg1IDg1My42NCwzNzguMjNDODQ5LjA2LDM3NC42MSA4NDUuNDgsMzcwLjA0IDg0Mi45MiwzNjQuNTFDODQwLjM1LDM1OC45OSA4MzkuMDYsMzUyLjQyIDgzOS4wNiwzNDQuOEM4MzkuMDYsMzM2LjQyIDg0MC41NCwzMjkuNTEgODQzLjQ5LDMyNC4wOEM4NDYuNDUsMzE4LjY1IDg1MC4yNSwzMTQuMzIgODU0LjkzLDMxMS4wOEM4NTkuNiwzMDcuODQgODY0LjkzLDMwNS40MSA4NzAuOTMsMzAzLjc5Qzg3Ni45MywzMDIuMTcgODgyLjk4LDMwMC44OCA4ODkuMDcsMjk5LjkzQzg5NS4xNywyOTguOTkgOTAxLjE3LDI5OC4yMiA5MDcuMDgsMjk3LjY1QzkxMi45OSwyOTcuMDggOTE4LjIyLDI5Ni4yMiA5MjIuNzksMjk1LjA4QzkyNy4zNywyOTMuOTMgOTMwLjk4LDI5Mi4yNyA5MzMuNjUsMjkwLjA3QzkzNi4zMiwyODcuODggOTM3LjU2LDI4NC42OSA5MzcuMzcsMjgwLjVDOTM3LjM3LDI3Ni4xMiA5MzYuNjUsMjcyLjY0IDkzNS4yMiwyNzAuMDdDOTMzLjc5LDI2Ny41IDkzMS44OSwyNjUuNSA5MjkuNTEsMjY0LjA3QzkyNy4xMywyNjIuNjQgOTI0LjM3LDI2MS42OSA5MjEuMjIsMjYxLjIxQzkxOC4wNywyNjAuNzMgOTE0LjcsMjYwLjQ5IDkxMS4wOCwyNjAuNDlDOTAzLjA4LDI2MC40OSA4OTYuNzksMjYyLjIgODkyLjIyLDI2NS42NEM4ODcuNjUsMjY5LjA3IDg4NC45OCwyNzQuNzggODg0LjIyLDI4Mi43OUw4NDMuNjIsMjgyLjc5TDg0My42MiwyODIuNzZaTTkzNy4zNSwzMTIuNzdDOTM1LjYzLDMxNC4zIDkzMy40OSwzMTUuNDggOTMwLjkyLDMxNi4zNEM5MjguMzUsMzE3LjIxIDkyNS41OSwzMTcuOTIgOTIyLjYzLDMxOC40OUM5MTkuNjgsMzE5LjA2IDkxNi41OCwzMTkuNTQgOTEzLjM1LDMxOS45MkM5MTAuMTEsMzIwLjMgOTA2Ljg3LDMyMC43NyA5MDMuNjMsMzIxLjM1QzkwMC41OCwzMjEuOTIgODk3LjU4LDMyMi42OSA4OTQuNjMsMzIzLjYzQzg5MS42OCwzMjQuNTkgODg5LjEsMzI1Ljg3IDg4Ni45MSwzMjcuNDlDODg0LjcyLDMyOS4xMSA4ODIuOTYsMzMxLjE2IDg4MS42MiwzMzMuNjNDODgwLjI5LDMzNi4xMSA4NzkuNjIsMzM5LjI1IDg3OS42MiwzNDMuMDZDODc5LjYyLDM0Ni42OCA4ODAuMjksMzQ5LjczIDg4MS42MiwzNTIuMkM4ODIuOTYsMzU0LjY4IDg4NC43NywzNTYuNjMgODg3LjA1LDM1OC4wNkM4ODkuMzQsMzU5LjQ5IDg5MiwzNjAuNDkgODk1LjA1LDM2MS4wNkM4OTguMSwzNjEuNjMgOTAxLjI0LDM2MS45MSA5MDQuNDgsMzYxLjkxQzkxMi40OCwzNjEuOTEgOTE4LjY4LDM2MC41OCA5MjMuMDYsMzU3LjkyQzkyNy40NCwzNTUuMjUgOTMwLjY5LDM1Mi4wNiA5MzIuNzcsMzQ4LjM0QzkzNC44NiwzNDQuNjMgOTM2LjE2LDM0MC44NyA5MzYuNjIsMzM3LjA2QzkzNy4xLDMzMy4yNSA5MzcuMzMsMzMwLjIgOTM3LjM0LDMyNy45Mkw5MzcuMzQsMzEyLjc3TDkzNy4zNSwzMTIuNzdaIiBzdHlsZT0iZmlsbDpyZ2IoMTcyLDIyLDQ0KTtmaWxsLXJ1bGU6bm9uemVybzsiLz4KICAgICAgICAgICAgPHBhdGggZD0iTTEwMDQuMjEsMjM3LjMzTDEwNDIuOCwyMzcuMzNMMTA0Mi44LDI1Ny45TDEwNDMuNjUsMjU3LjlDMTA0OC43OSwyNDkuMzMgMTA1NS40NiwyNDMuMDkgMTA2My42NSwyMzkuMTlDMTA3MS44NCwyMzUuMjggMTA4MC4yMywyMzMuMzMgMTA4OC43OSwyMzMuMzNDMTA5OS42NiwyMzMuMzMgMTEwOC41NiwyMzQuODEgMTExNS41MiwyMzcuNzZDMTEyMi40NywyNDAuNzIgMTEyNy45NCwyNDQuODEgMTEzMS45NSwyNTAuMDVDMTEzNS45NSwyNTUuMjkgMTEzOC43NiwyNjEuNjcgMTE0MC4zOCwyNjkuMTlDMTE0MiwyNzYuNzIgMTE0Mi44MSwyODUuMDUgMTE0Mi44MSwyOTQuMkwxMTQyLjgxLDM4NS4wN0wxMTAyLjI0LDM4NS4wN0wxMTAyLjI0LDMwMS42M0MxMTAyLjI0LDI4OS40MyAxMTAwLjMzLDI4MC4zNCAxMDk2LjUzLDI3NC4zNEMxMDkyLjcxLDI2OC4zNCAxMDg1Ljk1LDI2NS4zNCAxMDc2LjIzLDI2NS4zNEMxMDY1LjE4LDI2NS4zNCAxMDU3LjE5LDI2OC42MyAxMDUyLjIzLDI3NS4yQzEwNDcuMjcsMjgxLjc2IDEwNDQuOCwyOTIuNTggMTA0NC44LDMwNy42M0wxMDQ0LjgsMzg1LjA3TDEwMDQuMjIsMzg1LjA3TDEwMDQuMjIsMjM3LjMzTDEwMDQuMjEsMjM3LjMzWiIgc3R5bGU9ImZpbGw6cmdiKDE3MiwyMiw0NCk7ZmlsbC1ydWxlOm5vbnplcm87Ii8+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik02MTIuMzcsMjExLjg0TDYxMi4zNywzODUuMDdMNjUyLjk1LDM4NS4wN0w2NTIuOTUsMjM0LjIxQzYzOS45MywyMjYuMjMgNjI2LjM2LDIxOC43NCA2MTIuMzcsMjExLjg0WiIgc3R5bGU9ImZpbGw6cmdiKDE3MiwyMiw0NCk7ZmlsbC1ydWxlOm5vbnplcm87Ii8+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik0xOTguNDMsMjE5LjIxQzIyMS45NSwxNTAuMzIgMzYyLjU4LDEyNS4wNSA1MTIuNTgsMTYyLjc4QzYwMi41NSwxODUuNCA2NzYuMDcsMjI5LjI4IDcyNC4wOSwyNzIuNjdDNzAyLjMsMjE1LjEyIDU5Ni42NSwxMzMuMDggNDUxLjE4LDEwNC45NkMyODYuNyw3My4xNiAxMjQuNDcsMTAxLjExIDEwNC4zOSwxNzQuMUM4OS44OSwyMjYuODMgMTUzLjU3LDI4OC42IDI1Mi4wNSwzMzAuODRDMjA3LjgxLDI5NS4wMiAxODYuMjksMjU0Ljc4IDE5OC40MywyMTkuMjFaIiBzdHlsZT0iZmlsbDpyZ2IoMTcyLDIyLDQ0KTtmaWxsLXJ1bGU6bm9uemVybzsiLz4KICAgICAgICAgICAgPHBhdGggZD0iTTcyNC4xNiwyNDcuNjJMNzI0LjE2LDE4MS4wM0w2ODMuNTcsMTgxLjAzTDY4My41NywyMDEuMjVDNzAwLjg4LDIxNi43MSA3MTQuNjEsMjMyLjQ1IDcyNC4xNiwyNDcuNjJaIiBzdHlsZT0iZmlsbDpyZ2IoMTcyLDIyLDQ0KTtmaWxsLXJ1bGU6bm9uemVybzsiLz4KICAgICAgICA8L2c+CiAgICAgICAgPGcgdHJhbnNmb3JtPSJtYXRyaXgoMS4wNDY5NiwwLDAsMS4xMjU3NywtNDYuOTkxMywtNTAuNDMyNSkiPgogICAgICAgICAgICA8cGF0aCBkPSJNMTIxNC45OCwzNjMuNDNDMTIxNC45OCwzNzUuNjkgMTIwNS4zNSwzODUuMzIgMTE5Mi44MywzODUuMzJDMTE4MC40MywzODUuMzIgMTE3MC41NCwzNzUuNjkgMTE3MC41NCwzNjMuNDNDMTE3MC41NCwzNTEuNDMgMTE4MC40MywzNDEuOCAxMTkyLjgzLDM0MS44QzEyMDUuMzUsMzQxLjggMTIxNC45OCwzNTEuNDMgMTIxNC45OCwzNjMuNDNaTTExNzYuMDgsMzYzLjQzQzExNzYuMDgsMzczLjA2IDExODMuMiwzODAuNyAxMTkyLjk2LDM4MC43QzEyMDIuNDUsMzgwLjcgMTIwOS40NCwzNzMuMDUgMTIwOS40NCwzNjMuNTZDMTIwOS40NCwzNTMuOTMgMTIwMi40NSwzNDYuMTUgMTE5Mi44MiwzNDYuMTVDMTE4My4yLDM0Ni4xNiAxMTc2LjA4LDM1My45NCAxMTc2LjA4LDM2My40M1pNMTE4OS4zOSwzNzQuNzdMMTE4NC4zOCwzNzQuNzdMMTE4NC4zOCwzNTMuMTRDMTE4Ni4zNiwzNTIuNzQgMTE4OS4xMywzNTIuNDggMTE5Mi42OSwzNTIuNDhDMTE5Ni43OCwzNTIuNDggMTE5OC42MiwzNTMuMTQgMTIwMC4yMSwzNTQuMDZDMTIwMS40LDM1NC45OCAxMjAyLjMyLDM1Ni43IDEyMDIuMzIsMzU4LjgxQzEyMDIuMzIsMzYxLjE4IDEyMDAuNDcsMzYzLjAzIDExOTcuODQsMzYzLjgyTDExOTcuODQsMzY0LjA4QzExOTkuOTUsMzY0Ljg3IDEyMDEuMTQsMzY2LjQ1IDEyMDEuOCwzNjkuMzVDMTIwMi40NiwzNzIuNjUgMTIwMi44NSwzNzMuOTcgMTIwMy4zOCwzNzQuNzZMMTE5Ny45NywzNzQuNzZDMTE5Ny4zMSwzNzMuOTcgMTE5Ni45MiwzNzEuOTkgMTE5Ni4yNiwzNjkuNDlDMTE5NS44NiwzNjcuMTIgMTE5NC41NSwzNjYuMDYgMTE5MS43OCwzNjYuMDZMMTE4OS40MSwzNjYuMDZMMTE4OS40MSwzNzQuNzdMMTE4OS4zOSwzNzQuNzdaTTExODkuNTMsMzYyLjUxTDExOTEuOSwzNjIuNTFDMTE5NC42NywzNjIuNTEgMTE5Ni45MSwzNjEuNTkgMTE5Ni45MSwzNTkuMzRDMTE5Ni45MSwzNTcuMzYgMTE5NS40NiwzNTYuMDQgMTE5Mi4yOSwzNTYuMDRDMTE5MC45NywzNTYuMDQgMTE5MC4wNSwzNTYuMTcgMTE4OS41MiwzNTYuM0wxMTg5LjUyLDM2Mi41MUwxMTg5LjUzLDM2Mi41MVoiIHN0eWxlPSJmaWxsOnJnYigxNzIsMjIsNDQpO2ZpbGwtcnVsZTpub256ZXJvOyIvPgogICAgICAgIDwvZz4KICAgIDwvZz4KPC9zdmc+Cg==" alt="Vulkan Logo" width="50%">
+    </span>
+</div>
+<div id="header">
+<h1>Vulkan<sup>®</sup> 1.4.328 - A Specification (with all registered extensions)</h1>
+<div class="details">
+<span id="author" class="author">The Khronos<sup>®</sup> Vulkan  Working Group</span><br>
+<span id="revnumber">version 1.4.328,</span>
+<span id="revdate">2025-10-08 21:55:58Z</span>
+<br><span id="revremark">from git branch: Git branch not available commit: Git commit not available</span>
+</div>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="index.html">Titlepage</a></li><li><a href="chap1.html">1. Preamble</a></li>
+<li><a href="chap2.html">2. Introduction</a>
+<ul class="sectlevel2">
+<li><a href="chap2.html#introduction-conventions">2.1. Document Conventions</a></li>
+</ul>
+</li>
+<li><a href="chap3.html">3. Fundamentals</a>
+<ul class="sectlevel2">
+<li><a href="chap3.html#fundamentals-host-environment">3.1. Host and Device Environment</a></li>
+<li><a href="chap3.html#fundamentals-execmodel">3.2. Execution Model</a></li>
+<li><a href="chap3.html#fundamentals-objectmodel-overview">3.3. Object Model</a></li>
+<li><a href="chap3.html#fundamentals-abi">3.4. Application Binary Interface</a></li>
+<li><a href="chap3.html#fundamentals-commandsyntax">3.5. Command Syntax and Duration</a></li>
+<li><a href="chap3.html#fundamentals-threadingbehavior">3.6. Threading Behavior</a></li>
+<li><a href="chap3.html#fundamentals-validusage">3.7. Valid Usage</a></li>
+<li><a href="chap3.html#fundamentals-returncodes">3.8. <code>VkResult</code> Return Codes</a></li>
+<li><a href="chap3.html#fundamentals-numerics">3.9. Numeric Representation and Computation</a></li>
+<li><a href="chap3.html#fundamentals-fixedconv">3.10. Fixed-Point Data Conversions</a></li>
+<li><a href="chap3.html#fundamentals-strings">3.11. String Representation</a></li>
+<li><a href="chap3.html#fundamentals-common-objects">3.12. Common Object Types</a></li>
+<li><a href="chap3.html#fundamentals-api-name-aliases">3.13. API Name Aliases</a></li>
+</ul>
+</li>
+<li><a href="chap4.html">4. Initialization</a>
+<ul class="sectlevel2">
+<li><a href="chap4.html#initialization-functionpointers">4.1. Command Function Pointers</a></li>
+<li><a href="chap4.html#initialization-instances">4.2. Instances</a></li>
+</ul>
+</li>
+<li><a href="chap5.html">5. Devices and Queues</a>
+<ul class="sectlevel2">
+<li><a href="chap5.html#devsandqueues-physical-device-enumeration">5.1. Physical Devices</a></li>
+<li><a href="chap5.html#devsandqueues-devices">5.2. Devices</a></li>
+<li><a href="chap5.html#devsandqueues-queues">5.3. Queues</a></li>
+</ul>
+</li>
+<li><a href="chap6.html">6. Command Buffers</a>
+<ul class="sectlevel2">
+<li><a href="chap6.html#commandbuffers-lifecycle">6.1. Command Buffer Lifecycle</a></li>
+<li><a href="chap6.html#commandbuffers-pools">6.2. Command Pools</a></li>
+<li><a href="chap6.html#commandbuffer-allocation">6.3. Command Buffer Allocation and Management</a></li>
+<li><a href="chap6.html#commandbuffers-recording">6.4. Command Buffer Recording</a></li>
+<li><a href="chap6.html#commandbuffers-submission">6.5. Command Buffer Submission</a></li>
+<li><a href="chap6.html#commandbuffers-submission-progress">6.6. Queue Forward Progress</a></li>
+<li><a href="chap6.html#commandbuffers-secondary">6.7. Secondary Command Buffer Execution</a></li>
+<li><a href="chap6.html#commandbuffers-nested">6.8. Nested Command Buffers</a></li>
+<li><a href="chap6.html#commandbuffers-devicemask">6.9. Command Buffer Device Mask</a></li>
+</ul>
+</li>
+<li><a href="chap7.html">7. Synchronization and Cache Control</a>
+<ul class="sectlevel2">
+<li><a href="chap7.html#synchronization-dependencies">7.1. Execution and Memory Dependencies</a></li>
+<li><a href="chap7.html#synchronization-implicit">7.2. Implicit Synchronization Guarantees</a></li>
+<li><a href="chap7.html#synchronization-fences">7.3. Fences</a></li>
+<li><a href="chap7.html#synchronization-semaphores">7.4. Semaphores</a></li>
+<li><a href="chap7.html#synchronization-events">7.5. Events</a></li>
+<li><a href="chap7.html#synchronization-pipeline-barriers">7.6. Pipeline Barriers</a></li>
+<li><a href="chap7.html#synchronization-memory-barriers">7.7. Memory Barriers</a></li>
+<li><a href="chap7.html#synchronization-wait-idle">7.8. Wait Idle Operations</a></li>
+<li><a href="chap7.html#synchronization-submission-host-writes">7.9. Host Write Ordering Guarantees</a></li>
+<li><a href="chap7.html#synchronization-device-group">7.10. Synchronization and Multiple Physical Devices</a></li>
+<li><a href="chap7.html#calibrated-timestamps">7.11. Calibrated Timestamps</a></li>
+</ul>
+</li>
+<li><a href="chap8.html">8. Render Pass</a>
+<ul class="sectlevel2">
+<li><a href="chap8.html#renderpass-objects">8.1. Render Pass Objects</a></li>
+<li><a href="chap8.html#renderpass-creation">8.2. Render Pass Creation</a></li>
+<li><a href="chap8.html#renderpass-compatibility">8.3. Render Pass Compatibility</a></li>
+<li><a href="chap8.html#_framebuffers">8.4. Framebuffers</a></li>
+<li><a href="chap8.html#renderpass-load-operations">8.5. Render Pass Load Operations</a></li>
+<li><a href="chap8.html#renderpass-store-operations">8.6. Render Pass Store Operations</a></li>
+<li><a href="chap8.html#renderpass-resolve-operations">8.7. Render Pass Multisample Resolve Operations</a></li>
+<li><a href="chap8.html#renderpass-commands">8.8. Render Pass Commands</a></li>
+<li><a href="chap8.html#renderpass-creation-feedback">8.9. Render Pass Creation Feedback</a></li>
+<li><a href="chap8.html#common-render-pass-data-races">8.10. Common Render Pass Data Races (Informative)</a></li>
+<li><a href="chap8.html#renderpass-tile-shading">8.11. Tile Shading Render Pass</a></li>
+</ul>
+</li>
+<li><a href="chap9.html">9. Shaders</a>
+<ul class="sectlevel2">
+<li><a href="chap9.html#shaders-objects">9.1. Shader Objects</a></li>
+<li><a href="chap9.html#shader-modules">9.2. Shader Modules</a></li>
+<li><a href="chap9.html#shaders-identifiers">9.3. Shader Module Identifiers</a></li>
+<li><a href="chap9.html#shaders-binding">9.4. Binding Shaders</a></li>
+<li><a href="chap9.html#shaders-execution">9.5. Shader Execution</a></li>
+<li><a href="chap9.html#shaders-execution-memory-access-bounds">9.6. Shader Out-of-Bounds Memory Access</a></li>
+<li><a href="chap9.html#shaders-execution-memory-ordering">9.7. Shader Memory Access Ordering</a></li>
+<li><a href="chap9.html#shaders-inputs">9.8. Shader Inputs and Outputs</a></li>
+<li><a href="chap9.html#shaders-task">9.9. Task Shaders</a></li>
+<li><a href="chap9.html#shaders-mesh">9.10. Mesh Shaders</a></li>
+<li><a href="chap9.html#shaders-cluster-culling">9.11. Cluster Culling Shaders</a></li>
+<li><a href="chap9.html#shaders-vertex">9.12. Vertex Shaders</a></li>
+<li><a href="chap9.html#shaders-tessellation-control">9.13. Tessellation Control Shaders</a></li>
+<li><a href="chap9.html#shaders-tessellation-evaluation">9.14. Tessellation Evaluation Shaders</a></li>
+<li><a href="chap9.html#shaders-geometry">9.15. Geometry Shaders</a></li>
+<li><a href="chap9.html#shaders-fragment">9.16. Fragment Shaders</a></li>
+<li><a href="chap9.html#shaders-compute">9.17. Compute Shaders</a></li>
+<li><a href="chap9.html#shaders-ray-generation">9.18. Ray Generation Shaders</a></li>
+<li><a href="chap9.html#shaders-intersection">9.19. Intersection Shaders</a></li>
+<li><a href="chap9.html#shaders-any-hit">9.20. Any-Hit Shaders</a></li>
+<li><a href="chap9.html#shaders-closest-hit">9.21. Closest Hit Shaders</a></li>
+<li><a href="chap9.html#shaders-miss">9.22. Miss Shaders</a></li>
+<li><a href="chap9.html#shaders-callable">9.23. Callable Shaders</a></li>
+<li><a href="chap9.html#shaders-interpolation-decorations">9.24. Interpolation Decorations</a></li>
+<li><a href="chap9.html#shaders-staticuse">9.25. Static Use</a></li>
+<li><a href="chap9.html#shaders-scope">9.26. Scope</a></li>
+<li><a href="chap9.html#shaders-group-operations">9.27. Group Operations</a></li>
+<li><a href="chap9.html#shaders-quad-operations">9.28. Quad Group Operations</a></li>
+<li><a href="chap9.html#shaders-derivative-operations">9.29. Derivative Operations</a></li>
+<li><a href="chap9.html#shaders-helper-invocations">9.30. Helper Invocations</a></li>
+<li><a href="chap9.html#cooperative-matrices">9.31. Cooperative Matrices</a></li>
+<li><a href="chap9.html#_cooperative_vectors">9.32. Cooperative Vectors</a></li>
+<li><a href="chap9.html#shaders-validation-cache">9.33. Validation Cache</a></li>
+<li><a href="chap9.html#cuda-modules">9.34. CUDA Modules</a></li>
+</ul>
+</li>
+<li><a href="chap10.html">10. Pipelines</a>
+<ul class="sectlevel2">
+<li><a href="chap10.html#pipelines-multiple">10.1. Multiple Pipeline Creation</a></li>
+<li><a href="chap10.html#pipelines-creation-flags">10.2. Pipeline Creation Flags</a></li>
+<li><a href="chap10.html#pipelines-compute">10.3. Compute Pipelines</a></li>
+<li><a href="chap10.html#pipelines-graphics">10.4. Graphics Pipelines</a></li>
+<li><a href="chap10.html#pipelines-ray-tracing">10.5. Ray Tracing Pipelines</a></li>
+<li><a href="chap10.html#pipelines-destruction">10.6. Pipeline Destruction</a></li>
+<li><a href="chap10.html#pipelines-pipeline-derivatives">10.7. Pipeline Derivatives</a></li>
+<li><a href="chap10.html#pipelines-cache">10.8. Pipeline Cache</a></li>
+<li><a href="chap10.html#pipelines-binaries">10.9. Pipeline Binaries</a></li>
+<li><a href="chap10.html#pipelines-specialization-constants">10.10. Specialization Constants</a></li>
+<li><a href="chap10.html#pipelines-library">10.11. Pipeline Libraries</a></li>
+<li><a href="chap10.html#pipelines-binding">10.12. Pipeline Binding</a></li>
+<li><a href="chap10.html#pipelines-dynamic-state">10.13. Dynamic State</a></li>
+<li><a href="chap10.html#pipelines-shader-information">10.14. Pipeline Properties and Shader Information</a></li>
+<li><a href="chap10.html#pipelines-compiler-control">10.15. Pipeline Compiler Control</a></li>
+<li><a href="chap10.html#pipelines-creation-feedback">10.16. Pipeline Creation Feedback</a></li>
+</ul>
+</li>
+<li><a href="chap11.html">11. Memory Allocation</a>
+<ul class="sectlevel2">
+<li><a href="chap11.html#memory-host">11.1. Host Memory</a></li>
+<li><a href="chap11.html#memory-device">11.2. Device Memory</a></li>
+</ul>
+</li>
+<li><a href="chap12.html">12. Resource Creation</a>
+<ul class="sectlevel2">
+<li><a href="chap12.html#resources-buffers">12.1. Buffers</a></li>
+<li><a href="chap12.html#resources-buffer-views">12.2. Buffer Views</a></li>
+<li><a href="chap12.html#resources-buffer-device-addresses">12.3. Buffer Device Addresses</a></li>
+<li><a href="chap12.html#resources-images">12.4. Images</a></li>
+<li><a href="chap12.html#resources-image-layouts">12.5. Image Layouts</a></li>
+<li><a href="chap12.html#resources-image-views">12.6. Image Views</a></li>
+<li><a href="chap12.html#resources-acceleration-structures">12.7. Acceleration Structures</a></li>
+<li><a href="chap12.html#resources-micromaps">12.8. Micromaps</a></li>
+<li><a href="chap12.html#resources-association">12.9. Resource Memory Association</a></li>
+<li><a href="chap12.html#resources-sharing">12.10. Resource Sharing Mode</a></li>
+<li><a href="chap12.html#resources-memory-aliasing">12.11. Memory Aliasing</a></li>
+<li><a href="chap12.html#resources-buffer-collection-fuchsia">12.12. Buffer Collections</a></li>
+<li><a href="chap12.html#resources-tensors">12.13. Tensors</a></li>
+<li><a href="chap12.html#resources-tensor-views">12.14. Tensor Views</a></li>
+</ul>
+</li>
+<li><a href="chap13.html">13. Images</a>
+<ul class="sectlevel2">
+<li><a href="chap13.html#images-coordinate-validation">13.1. Image Coordinate Validation</a></li>
+<li><a href="chap13.html#images-reads">13.2. Image Reads</a></li>
+<li><a href="chap13.html#images-writes">13.3. Image Writes</a></li>
+</ul>
+</li>
+<li><a href="chap14.html">14. Samplers</a>
+<ul class="sectlevel2">
+<li><a href="chap14.html#samplers-YCbCr-conversion">14.1. Sampler Y′C<sub>B</sub>C<sub>R</sub> Conversion</a></li>
+</ul>
+</li>
+<li><a href="chap15.html">15. Resource Descriptors</a>
+<ul class="sectlevel2">
+<li><a href="chap15.html#descriptorsets-types">15.1. Descriptor Types</a></li>
+<li><a href="chap15.html#descriptorsets-sets">15.2. Descriptor Sets</a></li>
+<li><a href="chap15.html#descriptorsets-physical-storage-buffer">15.3. Physical Storage Buffer Access</a></li>
+<li><a href="chap15.html#descriptorbuffers">15.4. Descriptor Buffers</a></li>
+</ul>
+</li>
+<li><a href="chap16.html">16. Shader Interfaces</a>
+<ul class="sectlevel2">
+<li><a href="chap16.html#interfaces-iointerfaces">16.1. Shader Input and Output Interfaces</a></li>
+<li><a href="chap16.html#interfaces-vertexinput">16.2. Vertex Input Interface</a></li>
+<li><a href="chap16.html#interfaces-fragmentoutput">16.3. Fragment Output Interface</a></li>
+<li><a href="chap16.html#interfaces-legacy-dithering">16.4. Legacy Dithering</a></li>
+<li><a href="chap16.html#interfaces-fragmenttileimage">16.5. Fragment Tile Image Interface</a></li>
+<li><a href="chap16.html#interfaces-tile-attachment">16.6. Tile Attachment Interface</a></li>
+<li><a href="chap16.html#interfaces-inputattachment">16.7. Fragment Input Attachment Interface</a></li>
+<li><a href="chap16.html#interfaces-raypipeline">16.8. Ray Tracing Pipeline Interface</a></li>
+<li><a href="chap16.html#interfaces-resources">16.9. Shader Resource Interface</a></li>
+<li><a href="chap16.html#interfaces-builtin-variables">16.10. Built-In Variables</a></li>
+</ul>
+</li>
+<li><a href="chap17.html">17. Image Operations</a>
+<ul class="sectlevel2">
+<li><a href="chap17.html#_image_operations_overview">17.1. Image Operations Overview</a></li>
+<li><a href="chap17.html#textures-input">17.2. Sampling Operations</a></li>
+<li><a href="chap17.html#textures-normalized-operations">17.3. Normalized Texel Coordinate Operations</a></li>
+<li><a href="chap17.html#textures-unnormalized-operations">17.4. Unnormalized Texel Coordinate Operations</a></li>
+<li><a href="chap17.html#textures-integer-coordinate-operations">17.5. Integer Texel Coordinate Operations</a></li>
+<li><a href="chap17.html#textures-sample-operations">17.6. Image Sample Operations</a></li>
+<li><a href="chap17.html#textures-footprint">17.7. Texel Footprint Evaluation</a></li>
+<li><a href="chap17.html#textures-weightimage">17.8. Weight Image Sampling</a></li>
+<li><a href="chap17.html#textures-blockmatch">17.9. Block Matching</a></li>
+<li><a href="chap17.html#textures-boxfilter">17.10. Box Filter Sampling</a></li>
+<li><a href="chap17.html#textures-instructions">17.11. Image Operation Steps</a></li>
+<li><a href="chap17.html#textures-queries">17.12. Image Query Instructions</a></li>
+</ul>
+</li>
+<li class="current"><a href="chap18.html">18. Fragment Density Map Operations</a>
+<ul class="sectlevel2">
+<li class="current"><a href="chap18.html#_fragment_density_map_operations_overview">18.1. Fragment Density Map Operations Overview</a></li>
+<li class="current"><a href="chap18.html#fragmentdensitymap-fetch-density-value">18.2. Fetch Density Value</a></li>
+<li class="current"><a href="chap18.html#fragmentdensitymap-conversion-to-fragment-area">18.3. Fragment Area Conversion</a></li>
+</ul>
+</li>
+<li><a href="chap19.html">19. Tensor Operations</a>
+<ul class="sectlevel2">
+<li><a href="chap19.html#_tensor_operations_overview">19.1. Tensor Operations Overview</a></li>
+<li><a href="chap19.html#_tensor_element_input_operations">19.2. Tensor Element Input Operations</a></li>
+<li><a href="chap19.html#_tensor_element_output_operations">19.3. Tensor Element Output Operations</a></li>
+<li><a href="chap19.html#tensors-queries">19.4. Tensor Query Instructions</a></li>
+</ul>
+</li>
+<li><a href="chap20.html">20. Queries</a>
+<ul class="sectlevel2">
+<li><a href="chap20.html#queries-pools">20.1. Query Pools</a></li>
+<li><a href="chap20.html#queries-operation">20.2. Query Operation</a></li>
+<li><a href="chap20.html#queries-occlusion">20.3. Occlusion Queries</a></li>
+<li><a href="chap20.html#queries-pipestats">20.4. Pipeline Statistics Queries</a></li>
+<li><a href="chap20.html#queries-timestamps">20.5. Timestamp Queries</a></li>
+<li><a href="chap20.html#queries-performance">20.6. Performance Queries</a></li>
+<li><a href="chap20.html#queries-transform-feedback">20.7. Transform Feedback Queries</a></li>
+<li><a href="chap20.html#queries-primitives-generated">20.8. Primitives Generated Queries</a></li>
+<li><a href="chap20.html#queries-mesh-shader">20.9. Mesh Shader Queries</a></li>
+<li><a href="chap20.html#queries-performance-intel">20.10. Intel Performance Queries</a></li>
+<li><a href="chap20.html#queries-result-status-only">20.11. Result Status Queries</a></li>
+<li><a href="chap20.html#queries-video-encode-feedback">20.12. Video Encode Feedback Queries</a></li>
+</ul>
+</li>
+<li><a href="chap21.html">21. Clear Commands</a>
+<ul class="sectlevel2">
+<li><a href="chap21.html#clears-outside">21.1. Clearing Images Outside a Render Pass Instance</a></li>
+<li><a href="chap21.html#clears-inside">21.2. Clearing Images Inside a Render Pass Instance</a></li>
+<li><a href="chap21.html#clears-values">21.3. Clear Values</a></li>
+<li><a href="chap21.html#clears-filling-buffers">21.4. Filling Buffers</a></li>
+<li><a href="chap21.html#clears-updating-buffers">21.5. Updating Buffers</a></li>
+</ul>
+</li>
+<li><a href="chap22.html">22. Copy Commands</a>
+<ul class="sectlevel2">
+<li><a href="chap22.html#copies-buffers">22.1. Copying Data Between Buffers</a></li>
+<li><a href="chap22.html#copies-images">22.2. Copying Data Between Images</a></li>
+<li><a href="chap22.html#copies-buffers-images">22.3. Copying Data Between Buffers and Images</a></li>
+<li><a href="chap22.html#indirect-copies">22.4. Indirect Copies</a></li>
+<li><a href="chap22.html#copies-imagescaling">22.5. Image Copies With Scaling</a></li>
+<li><a href="chap22.html#copies-resolve">22.6. Resolving Multisample Images</a></li>
+<li><a href="chap22.html#copies-buffer-markers">22.7. Buffer Markers</a></li>
+<li><a href="chap22.html#copies-tensors">22.8. Copying Data Between Tensors</a></li>
+</ul>
+</li>
+<li><a href="chap23.html">23. Drawing Commands</a>
+<ul class="sectlevel2">
+<li><a href="chap23.html#drawing-primitive-topologies">23.1. Primitive Topologies</a></li>
+<li><a href="chap23.html#drawing-effective-primitive-topology">23.2. Effective Primitive Topology</a></li>
+<li><a href="chap23.html#drawing-primitive-order">23.3. Primitive Order</a></li>
+<li><a href="chap23.html#drawing-primitive-shading">23.4. Programmable Primitive Shading</a></li>
+<li><a href="chap23.html#drawing-conditional-rendering">23.5. Conditional Rendering</a></li>
+<li><a href="chap23.html#drawing-mesh-shading">23.6. Programmable Mesh Shading</a></li>
+<li><a href="chap23.html#drawing-cluster-culling-shading">23.7. Programmable Cluster Culling Shading</a></li>
+</ul>
+</li>
+<li><a href="chap24.html">24. Fixed-Function Vertex Processing</a>
+<ul class="sectlevel2">
+<li><a href="chap24.html#fxvertex-attrib">24.1. Vertex Attributes</a></li>
+<li><a href="chap24.html#fxvertex-input">24.2. Vertex Input Description</a></li>
+<li><a href="chap24.html#fxvertex-attribute_divisor">24.3. Vertex Attribute Divisor in Instanced Rendering</a></li>
+<li><a href="chap24.html#fxvertex-input-address-calculation">24.4. Vertex Input Address Calculation</a></li>
+</ul>
+</li>
+<li><a href="chap25.html">25. Tessellation</a>
+<ul class="sectlevel2">
+<li><a href="chap25.html#_tessellator">25.1. Tessellator</a></li>
+<li><a href="chap25.html#_tessellator_patch_discard">25.2. Tessellator Patch Discard</a></li>
+<li><a href="chap25.html#tessellation-tessellator-spacing">25.3. Tessellator Spacing</a></li>
+<li><a href="chap25.html#tessellation-primitive-order">25.4. Tessellation Primitive Ordering</a></li>
+<li><a href="chap25.html#tessellation-vertex-winding-order">25.5. Tessellator Vertex Winding Order</a></li>
+<li><a href="chap25.html#tessellation-triangle-tessellation">25.6. Triangle Tessellation</a></li>
+<li><a href="chap25.html#tessellation-quad-tessellation">25.7. Quad Tessellation</a></li>
+<li><a href="chap25.html#tessellation-isoline-tessellation">25.8. Isoline Tessellation</a></li>
+<li><a href="chap25.html#tessellation-point-mode">25.9. Tessellation Point Mode</a></li>
+<li><a href="chap25.html#_tessellation_pipeline_state">25.10. Tessellation Pipeline State</a></li>
+</ul>
+</li>
+<li><a href="chap26.html">26. Geometry Shading</a>
+<ul class="sectlevel2">
+<li><a href="chap26.html#geometry-input">26.1. Geometry Shader Input Primitives</a></li>
+<li><a href="chap26.html#geometry-output">26.2. Geometry Shader Output Primitives</a></li>
+<li><a href="chap26.html#geometry-invocations">26.3. Multiple Invocations of Geometry Shaders</a></li>
+<li><a href="chap26.html#geometry-ordering">26.4. Geometry Shader Primitive Ordering</a></li>
+<li><a href="chap26.html#geometry-passthrough">26.5. Geometry Shader Passthrough</a></li>
+</ul>
+</li>
+<li><a href="chap27.html">27. Mesh Shading</a>
+<ul class="sectlevel2">
+<li><a href="chap27.html#mesh-task-input">27.1. Task Shader Input</a></li>
+<li><a href="chap27.html#mesh-task-output">27.2. Task Shader Output</a></li>
+<li><a href="chap27.html#mesh-generation">27.3. Mesh Generation</a></li>
+<li><a href="chap27.html#mesh-input">27.4. Mesh Shader Input</a></li>
+<li><a href="chap27.html#mesh-output">27.5. Mesh Shader Output</a></li>
+<li><a href="chap27.html#mesh-output-perview">27.6. Mesh Shader Per-View Outputs</a></li>
+<li><a href="chap27.html#mesh-ordering">27.7. Mesh Shader Primitive Ordering</a></li>
+</ul>
+</li>
+<li><a href="chap28.html">28. Cluster Culling Shading</a>
+<ul class="sectlevel2">
+<li><a href="chap28.html#cluster-culling-input">28.1. Cluster Culling Shader Input</a></li>
+<li><a href="chap28.html#cluster-culling-output">28.2. Cluster Culling Shader Output</a></li>
+<li><a href="chap28.html#cluster-culling-cluster-ordering">28.3. Cluster Culling Shader Cluster Ordering</a></li>
+<li><a href="chap28.html#cluster-culling-primitive-ordering">28.4. Cluster Culling Shader Primitive Ordering</a></li>
+</ul>
+</li>
+<li><a href="chap29.html">29. Fixed-Function Vertex Post-Processing</a>
+<ul class="sectlevel2">
+<li><a href="chap29.html#vertexpostproc-transform-feedback">29.1. Transform Feedback</a></li>
+<li><a href="chap29.html#vertexpostproc-viewport-swizzle">29.2. Viewport Swizzle</a></li>
+<li><a href="chap29.html#vertexpostproc-flatshading">29.3. Flat Shading</a></li>
+<li><a href="chap29.html#vertexpostproc-clipping">29.4. Primitive Clipping</a></li>
+<li><a href="chap29.html#vertexpostproc-clipping-shader-outputs">29.5. Clipping Shader Outputs</a></li>
+<li><a href="chap29.html#vertexpostproc-viewportwscaling">29.6. Controlling Viewport W Scaling</a></li>
+<li><a href="chap29.html#vertexpostproc-coord-transform">29.7. Coordinate Transformations</a></li>
+<li><a href="chap29.html#vertexpostproc-renderpass-transform">29.8. Render Pass Transform</a></li>
+<li><a href="chap29.html#vertexpostproc-viewport">29.9. Controlling the Viewport</a></li>
+</ul>
+</li>
+<li><a href="chap30.html">30. Rasterization</a>
+<ul class="sectlevel2">
+<li><a href="chap30.html#primsrast-discard">30.1. Discarding Primitives Before Rasterization</a></li>
+<li><a href="chap30.html#primsrast-stream">30.2. Controlling the Vertex Stream Used for Rasterization</a></li>
+<li><a href="chap30.html#primsrast-order">30.3. Rasterization Order</a></li>
+<li><a href="chap30.html#primsrast-multisampling">30.4. Multisampling</a></li>
+<li><a href="chap30.html#primsrast-samplelocations">30.5. Custom Sample Locations</a></li>
+<li><a href="chap30.html#primsrast-fragment-shading-rate">30.6. Fragment Shading Rates</a></li>
+<li><a href="chap30.html#primsrast-shading-rate-image">30.7. Shading Rate Image</a></li>
+<li><a href="chap30.html#primsrast-sampleshading">30.8. Sample Shading</a></li>
+<li><a href="chap30.html#primsrast-barycentric">30.9. Barycentric Interpolation</a></li>
+<li><a href="chap30.html#primsrast-points">30.10. Points</a></li>
+<li><a href="chap30.html#primsrast-lines">30.11. Line Segments</a></li>
+<li><a href="chap30.html#primsrast-polygons">30.12. Polygons</a></li>
+</ul>
+</li>
+<li><a href="chap31.html">31. Fragment Operations</a>
+<ul class="sectlevel2">
+<li><a href="chap31.html#fragops-discard-rectangles">31.1. Discard Rectangles Test</a></li>
+<li><a href="chap31.html#fragops-scissor">31.2. Scissor Test</a></li>
+<li><a href="chap31.html#fragops-exclusive-scissor">31.3. Exclusive Scissor Test</a></li>
+<li><a href="chap31.html#fragops-samplemask">31.4. Sample Mask Test</a></li>
+<li><a href="chap31.html#fragops-shader">31.5. Fragment Shading</a></li>
+<li><a href="chap31.html#fragops-covg">31.6. Multisample Coverage</a></li>
+<li><a href="chap31.html#fragops-ds-state">31.7. Depth and Stencil Operations</a></li>
+<li><a href="chap31.html#fragops-dbt">31.8. Depth Bounds Test</a></li>
+<li><a href="chap31.html#fragops-stencil">31.9. Stencil Test</a></li>
+<li><a href="chap31.html#fragops-depth">31.10. Depth Test</a></li>
+<li><a href="chap31.html#fragops-rep-frag-test">31.11. Representative Fragment Test</a></li>
+<li><a href="chap31.html#fragops-samplecount">31.12. Sample Counting</a></li>
+<li><a href="chap31.html#fragops-coverage-to-color">31.13. Fragment Coverage to Color</a></li>
+<li><a href="chap31.html#fragops-coverage-reduction">31.14. Coverage Reduction</a></li>
+</ul>
+</li>
+<li><a href="chap32.html">32. The Framebuffer</a>
+<ul class="sectlevel2">
+<li><a href="chap32.html#framebuffer-blending">32.1. Blending</a></li>
+<li><a href="chap32.html#framebuffer-logicop">32.2. Logical Operations</a></li>
+<li><a href="chap32.html#framebuffer-color-write-mask">32.3. Color Write Mask</a></li>
+<li><a href="chap32.html#framebuffer-color-write-enable">32.4. Color Write Enable</a></li>
+<li><a href="chap32.html#framebuffer-queries">32.5. Framebuffer Query Instructions</a></li>
+</ul>
+</li>
+<li><a href="chap33.html">33. Dispatching Commands</a>
+<ul class="sectlevel2">
+<li><a href="chap33.html#cudadispatch">33.1. Dispatch Command for CUDA PTX Kernels</a></li>
+</ul>
+</li>
+<li><a href="chap34.html">34. Device-Generated Commands</a>
+<ul class="sectlevel2">
+<li><a href="chap34.html#indirectmdslayout">34.1. Indirect Commands Layout</a></li>
+<li><a href="chap34.html#_indirect_commands_generation_and_execution">34.2. Indirect Commands Generation and Execution</a></li>
+</ul>
+</li>
+<li><a href="chap35.html">35. Sparse Resources</a>
+<ul class="sectlevel2">
+<li><a href="chap35.html#sparsememory-sparseresourcefeatures">35.1. Sparse Resource Features</a></li>
+<li><a href="chap35.html#sparsememory-fully-resident">35.2. Sparse Buffers and Fully-Resident Images</a></li>
+<li><a href="chap35.html#sparsememory-partially-resident-buffers">35.3. Sparse Partially-Resident Buffers</a></li>
+<li><a href="chap35.html#sparsememory-partially-resident-images">35.4. Sparse Partially-Resident Images</a></li>
+<li><a href="chap35.html#sparsememory-sparse-memory-aliasing">35.5. Sparse Memory Aliasing</a></li>
+<li><a href="chap35.html#_sparse_resource_implementation_guidelines_informative">35.6. Sparse Resource Implementation Guidelines (Informative)</a></li>
+<li><a href="chap35.html#sparsememory-resourceapi">35.7. Sparse Resource API</a></li>
+</ul>
+</li>
+<li><a href="chap36.html">36. Window System Integration (WSI)</a>
+<ul class="sectlevel2">
+<li><a href="chap36.html#_wsi_platform">36.1. WSI Platform</a></li>
+<li><a href="chap36.html#_wsi_surface">36.2. WSI Surface</a></li>
+<li><a href="chap36.html#display">36.3. Presenting Directly to Display Devices</a></li>
+<li><a href="chap36.html#_querying_for_wsi_support">36.4. Querying for WSI Support</a></li>
+<li><a href="chap36.html#_surface_queries">36.5. Surface Queries</a></li>
+<li><a href="chap36.html#_full_screen_exclusive_control">36.6. Full Screen Exclusive Control</a></li>
+<li><a href="chap36.html#_device_group_queries">36.7. Device Group Queries</a></li>
+<li><a href="chap36.html#_display_timing_queries">36.8. Display Timing Queries</a></li>
+<li><a href="chap36.html#present-wait2">36.9. Present Wait</a></li>
+<li><a href="chap36.html#wsi-swapchain">36.10. WSI Swapchain</a></li>
+<li><a href="chap36.html#_hdr_metadata">36.11. HDR Metadata</a></li>
+<li><a href="chap36.html#lag-control">36.12. Lag Control</a></li>
+<li><a href="chap36.html#present-barrier">36.13. Present Barrier</a></li>
+</ul>
+</li>
+<li><a href="chap37.html">37. Deferred Host Operations</a>
+<ul class="sectlevel2">
+<li><a href="chap37.html#deferred-host-operations-requesting">37.1. Requesting Deferral</a></li>
+<li><a href="chap37.html#_deferred_host_operations_api">37.2. Deferred Host Operations API</a></li>
+</ul>
+</li>
+<li><a href="chap38.html">38. Private Data</a></li>
+<li><a href="chap39.html">39. Acceleration Structures</a>
+<ul class="sectlevel2">
+<li><a href="chap39.html#acceleration-structure-def">39.1. Acceleration Structures</a></li>
+<li><a href="chap39.html#cluster-geometry">39.2. Cluster Level Acceleration Structures</a></li>
+<li><a href="chap39.html#partitioned-tlas">39.3. Partitioned Top Level Acceleration Structures</a></li>
+<li><a href="chap39.html#host-acceleration-structure">39.4. Host Acceleration Structure Operations</a></li>
+</ul>
+</li>
+<li><a href="chap40.html">40. Compressed triangle data</a>
+<ul class="sectlevel2">
+<li><a href="chap40.html#dense-geometry-format">40.1. Dense Geometry Format Version 1 (DGF1)</a></li>
+</ul>
+</li>
+<li><a href="chap41.html">41. Micromap</a>
+<ul class="sectlevel2">
+<li><a href="chap41.html#micromap-def">41.1. Micromaps</a></li>
+<li><a href="chap41.html#host-micromap">41.2. Host Micromap Operations</a></li>
+</ul>
+</li>
+<li><a href="chap42.html">42. Ray Traversal</a>
+<ul class="sectlevel2">
+<li><a href="chap42.html#ray-intersection-candidate-determination">42.1. Ray Intersection Candidate Determination</a></li>
+<li><a href="chap42.html#ray-intersection-culling">42.2. Ray Intersection Culling</a></li>
+<li><a href="chap42.html#ray-intersection-confirmation">42.3. Ray Intersection Confirmation</a></li>
+<li><a href="chap42.html#ray-closest-hit-determination">42.4. Ray Closest Hit Determination</a></li>
+<li><a href="chap42.html#ray-result-determination">42.5. Ray Result Determination</a></li>
+</ul>
+</li>
+<li><a href="chap43.html">43. Ray Tracing</a>
+<ul class="sectlevel2">
+<li><a href="chap43.html#ray-tracing-shader-call">43.1. Shader Call Instructions</a></li>
+<li><a href="chap43.html#ray-tracing-commands">43.2. Ray Tracing Commands</a></li>
+<li><a href="chap43.html#shader-binding-table">43.3. Shader Binding Table</a></li>
+<li><a href="chap43.html#ray-tracing-pipeline-stack">43.4. Ray Tracing Pipeline Stack</a></li>
+<li><a href="chap43.html#ray-tracing-capture-replay">43.5. Ray Tracing Capture Replay</a></li>
+<li><a href="chap43.html#ray-tracing-validation">43.6. Ray Tracing Validation</a></li>
+</ul>
+</li>
+<li><a href="chap44.html">44. Memory Decompression</a></li>
+<li><a href="chap45.html">45. Video Coding</a>
+<ul class="sectlevel2">
+<li><a href="chap45.html#video-picture-resources">45.1. Video Picture Resources</a></li>
+<li><a href="chap45.html#dpb">45.2. Decoded Picture Buffer</a></li>
+<li><a href="chap45.html#video-profiles">45.3. Video Profiles</a></li>
+<li><a href="chap45.html#video-capabilities">45.4. Video Capabilities</a></li>
+<li><a href="chap45.html#video-session">45.5. Video Sessions</a></li>
+<li><a href="chap45.html#video-profile-compatibility">45.6. Video Profile Compatibility</a></li>
+<li><a href="chap45.html#video-session-parameters">45.7. Video Session Parameters</a></li>
+<li><a href="chap45.html#video-coding-scope">45.8. Video Coding Scope</a></li>
+<li><a href="chap45.html#video-coding-control">45.9. Video Coding Control</a></li>
+<li><a href="chap45.html#video-inline-queries">45.10. Inline Queries</a></li>
+<li><a href="chap45.html#video-decode-operations">45.11. Video Decode Operations</a></li>
+<li><a href="chap45.html#decode-h264">45.12. H.264 Decode Operations</a></li>
+<li><a href="chap45.html#decode-h265">45.13. H.265 Decode Operations</a></li>
+<li><a href="chap45.html#decode-vp9">45.14. VP9 Decode Operations</a></li>
+<li><a href="chap45.html#decode-av1">45.15. AV1 Decode Operations</a></li>
+<li><a href="chap45.html#video-encode-operations">45.16. Video Encode Operations</a></li>
+<li><a href="chap45.html#encode-intra-refresh">45.17. Video Encode Intra Refresh</a></li>
+<li><a href="chap45.html#encode-rate-control">45.18. Video Encode Rate Control</a></li>
+<li><a href="chap45.html#encode-quantization-map">45.19. Video Encode Quantization Maps</a></li>
+<li><a href="chap45.html#encode-rgb-conversion">45.20. Video Encode R′G′B′ Conversion</a></li>
+<li><a href="chap45.html#encode-h264">45.21. H.264 Encode Operations</a></li>
+<li><a href="chap45.html#encode-h265">45.22. H.265 Encode Operations</a></li>
+<li><a href="chap45.html#encode-av1">45.23. AV1 Encode Operations</a></li>
+</ul>
+</li>
+<li><a href="chap46.html">46. Optical Flow</a>
+<ul class="sectlevel2">
+<li><a href="chap46.html#_optical_flow_queues">46.1. Optical Flow Queues</a></li>
+<li><a href="chap46.html#opticalflow-formats">46.2. Optical Flow Image Formats</a></li>
+<li><a href="chap46.html#opticalflow-session">46.3. Optical Flow Session</a></li>
+</ul>
+</li>
+<li><a href="chap47.html">47. Execution Graphs</a>
+<ul class="sectlevel2">
+<li><a href="chap47.html#_pipeline_creation">47.1. Pipeline Creation</a></li>
+<li><a href="chap47.html#_initializing_scratch_memory">47.2. Initializing Scratch Memory</a></li>
+<li><a href="chap47.html#_dispatching_a_graph">47.3. Dispatching a Graph</a></li>
+<li><a href="chap47.html#_shader_enqueue">47.4. Shader Enqueue</a></li>
+</ul>
+</li>
+<li><a href="chap48.html">48. External Compute Queues</a></li>
+<li><a href="chap49.html">49. Data graphs</a>
+<ul class="sectlevel2">
+<li><a href="chap49.html#graphs-pipelines">49.1. Pipeline Creation</a></li>
+<li><a href="chap49.html#_sessions">49.2. Sessions</a></li>
+<li><a href="chap49.html#_dispatch">49.3. Dispatch</a></li>
+<li><a href="chap49.html#graphs-properties">49.4. Properties</a></li>
+<li><a href="chap49.html#graphs-processing-engines">49.5. Processing Engines</a></li>
+<li><a href="chap49.html#graphs-operations">49.6. Operations</a></li>
+</ul>
+</li>
+<li><a href="chap50.html">50. Extending Vulkan</a>
+<ul class="sectlevel2">
+<li><a href="chap50.html#extendingvulkan-functionalitylevels">50.1. Functionality Levels</a></li>
+<li><a href="chap50.html#extendingvulkan-instanceanddeviceversions">50.2. Instance and Device Versions</a></li>
+<li><a href="chap50.html#extendingvulkan-coreversions">50.3. Core Versions</a></li>
+<li><a href="chap50.html#extendingvulkan-layers">50.4. Layers</a></li>
+<li><a href="chap50.html#extendingvulkan-extensions">50.5. Extensions</a></li>
+<li><a href="chap50.html#extendingvulkan-extensions-extensiondependencies">50.6. Extension Dependencies</a></li>
+<li><a href="chap50.html#_compatibility_guarantees_informative">50.7. Compatibility Guarantees (Informative)</a></li>
+</ul>
+</li>
+<li><a href="chap51.html">51. Features</a>
+<ul class="sectlevel2">
+<li><a href="chap51.html#features-requirements">51.1. Feature Requirements</a></li>
+<li><a href="chap51.html#profile-features">51.2. Profile Features</a></li>
+</ul>
+</li>
+<li><a href="chap52.html">52. Limits</a>
+<ul class="sectlevel2">
+<li><a href="chap52.html#limits-minmax">52.1. Limit Requirements</a></li>
+<li><a href="chap52.html#limits-multisample">52.2. Additional Multisampling Capabilities</a></li>
+<li><a href="chap52.html#profile-limits">52.3. Profile Limits</a></li>
+</ul>
+</li>
+<li><a href="chap53.html">53. Formats</a>
+<ul class="sectlevel2">
+<li><a href="chap53.html#formats-definition">53.1. Format Definition</a></li>
+<li><a href="chap53.html#formats-properties">53.2. Format Properties</a></li>
+<li><a href="chap53.html#features-required-format-support">53.3. Required Format Support</a></li>
+</ul>
+</li>
+<li><a href="chap54.html">54. Additional Capabilities</a>
+<ul class="sectlevel2">
+<li><a href="chap54.html#capabilities-image">54.1. Additional Image Capabilities</a></li>
+<li><a href="chap54.html#capabilities-buffer">54.2. Additional Buffer Capabilities</a></li>
+<li><a href="chap54.html#capabilities-tensor">54.3. Additional Tensor Capabilities</a></li>
+<li><a href="chap54.html#capabilities-semaphore">54.4. Optional Semaphore Capabilities</a></li>
+<li><a href="chap54.html#capabilities-fence">54.5. Optional Fence Capabilities</a></li>
+<li><a href="chap54.html#features-timestamp-calibration">54.6. Timestamp Calibration Capabilities</a></li>
+</ul>
+</li>
+<li><a href="chap55.html">55. Debugging</a>
+<ul class="sectlevel2">
+<li><a href="chap55.html#debugging-debug-utils">55.1. Debug Utilities</a></li>
+<li><a href="chap55.html#debugging-debug-markers">55.2. Debug Markers</a></li>
+<li><a href="chap55.html#debugging-debug-report-callbacks">55.3. Debug Report Callbacks</a></li>
+<li><a href="chap55.html#_device_loss_debugging">55.4. Device Loss Debugging</a></li>
+<li><a href="chap55.html#debugging-tooling-info">55.5. Active Tooling Information</a></li>
+<li><a href="chap55.html#_frame_boundary">55.6. Frame Boundary</a></li>
+</ul>
+</li>
+<li><a href="chap56.html">Appendix A: Vulkan Environment for SPIR-V</a>
+<ul class="sectlevel2">
+<li><a href="chap56.html#_versions_and_formats">Versions and Formats</a></li>
+<li><a href="chap56.html#spirvenv-capabilities">Capabilities</a></li>
+<li><a href="chap56.html#spirvenv-module-validation">Validation Rules Within a Module</a></li>
+<li><a href="chap56.html#spirvenv-precision-operation">Precision and Operation of SPIR-V Instructions</a></li>
+<li><a href="chap56.html#spirvenv-buffer-indexing">Buffer Indexing Calculations</a></li>
+<li><a href="chap56.html#spirvenv-image-signedness">Signedness of SPIR-V Image Accesses</a></li>
+<li><a href="chap56.html#spirvenv-format-type-matching">Image Format and Type Matching</a></li>
+<li><a href="chap56.html#spirvenv-image-dimensions">Compatibility Between SPIR-V Image Dimensions and Vulkan ImageView Types</a></li>
+<li><a href="chap56.html#spirvenv-image-formats">Compatibility Between SPIR-V Image Formats and Vulkan Formats</a></li>
+<li><a href="chap56.html#spirenv-ray-query-precision-operation">Ray Query Precision and Operation</a></li>
+<li><a href="chap56.html#spirvenv-tensor-formats">Compatibility Between SPIR-V Tensor Element Types And Vulkan Formats</a></li>
+</ul>
+</li>
+<li><a href="chap57.html">Appendix B: Memory Model</a>
+<ul class="sectlevel2">
+<li><a href="chap57.html#memory-model-agent">Agent</a></li>
+<li><a href="chap57.html#memory-model-memory-location">Memory Location</a></li>
+<li><a href="chap57.html#memory-model-allocation">Allocation</a></li>
+<li><a href="chap57.html#memory-model-memory-operation">Memory Operation</a></li>
+<li><a href="chap57.html#memory-model-references">Reference</a></li>
+<li><a href="chap57.html#memory-model-program-order">Program-Order</a></li>
+<li><a href="chap57.html#shader-call-related">Shader Call Related</a></li>
+<li><a href="chap57.html#shader-call-order">Shader Call Order</a></li>
+<li><a href="chap57.html#memory-model-scope">Scope</a></li>
+<li><a href="chap57.html#memory-model-atomic-operation">Atomic Operation</a></li>
+<li><a href="chap57.html#memory-model-scoped-modification-order">Scoped Modification Order</a></li>
+<li><a href="chap57.html#memory-model-memory-semantics">Memory Semantics</a></li>
+<li><a href="chap57.html#memory-model-release-sequence">Release Sequence</a></li>
+<li><a href="chap57.html#memory-model-synchronizes-with">Synchronizes-With</a></li>
+<li><a href="chap57.html#memory-model-system-synchronizes-with">System-Synchronizes-With</a></li>
+<li><a href="chap57.html#memory-model-non-private">Private vs. Non-Private</a></li>
+<li><a href="chap57.html#memory-model-inter-thread-happens-before">Inter-Thread-Happens-Before</a></li>
+<li><a href="chap57.html#memory-model-happens-before">Happens-Before</a></li>
+<li><a href="chap57.html#memory-model-availability-visibility">Availability and Visibility</a></li>
+<li><a href="chap57.html#memory-model-vulkan-availability-visibility">Availability, Visibility, and Domain Operations</a></li>
+<li><a href="chap57.html#memory-model-availability-visibility-semantics">Availability and Visibility Semantics</a></li>
+<li><a href="chap57.html#memory-model-instruction-av-vis">Per-Instruction Availability and Visibility Semantics</a></li>
+<li><a href="chap57.html#memory-model-location-ordered">Location-Ordered</a></li>
+<li><a href="chap57.html#memory-model-access-data-race">Data Race</a></li>
+<li><a href="chap57.html#memory-model-visible-to">Visible-To</a></li>
+<li><a href="chap57.html#memory-model-acyclicity">Acyclicity</a></li>
+<li><a href="chap57.html#memory-model-shader-io">Shader I/O</a></li>
+<li><a href="chap57.html#memory-model-deallocation">Deallocation</a></li>
+<li><a href="chap57.html#memory-model-informative-descriptions">Descriptions (Informative)</a></li>
+<li><a href="chap57.html#memory-model-tessellation-output-ordering">Tessellation Output Ordering</a></li>
+<li><a href="chap57.html#memory-model-cooperative-matrix">Cooperative Matrix Memory Access</a></li>
+</ul>
+</li>
+<li><a href="chap58.html">Appendix C: Compressed Image Formats</a>
+<ul class="sectlevel2">
+<li><a href="chap58.html#appendix-compressedtex-bc">Block-Compressed Image Formats</a></li>
+<li><a href="chap58.html#appendix-compressedtex-etc2">ETC Compressed Image Formats</a></li>
+<li><a href="chap58.html#appendix-compressedtex-astc">ASTC Compressed Image Formats</a></li>
+<li><a href="chap58.html#appendix-compressedtex-pvrtc">PVRTC Compressed Image Formats</a></li>
+</ul>
+</li>
+<li><a href="chap59.html">Appendix D: Core Revisions (Informative)</a>
+<ul class="sectlevel2">
+<li><a href="chap59.html#versions-1.4">Vulkan Version 1.4</a></li>
+<li><a href="chap59.html#versions-1.3">Vulkan Version 1.3</a></li>
+<li><a href="chap59.html#versions-1.2">Vulkan Version 1.2</a></li>
+<li><a href="chap59.html#versions-1.1">Vulkan Version 1.1</a></li>
+<li><a href="chap59.html#versions-1.0">Vulkan Version 1.0</a></li>
+</ul>
+</li>
+<li><a href="chap60.html">Appendix E: Layers &amp; Extensions (Informative)</a>
+<ul class="sectlevel2">
+<li><a href="chap60.html#_extension_dependencies">Extension Dependencies</a></li>
+<li><a href="chap60.html#_extension_interactions">Extension Interactions</a></li>
+<li><a href="chap60.html#current-extension-appendices-list">List of Current Extensions</a></li>
+<li><a href="chap60.html#provisional-extension-appendices-list">List of Provisional Extensions</a></li>
+<li><a href="chap60.html#deprecated-extension-appendices-list">List of Deprecated Extensions</a></li>
+</ul>
+</li>
+<li><a href="chap61.html">Appendix F: Vulkan Roadmap Milestones</a>
+<ul class="sectlevel2">
+<li><a href="chap61.html#roadmap-2022">Roadmap 2022</a></li>
+<li><a href="chap61.html#roadmap-2024">Roadmap 2024</a></li>
+</ul>
+</li>
+<li><a href="chap62.html">Appendix G: Deprecation</a>
+<ul class="sectlevel2">
+<li><a href="chap62.html#_deprecated_functionality">Deprecated Functionality</a></li>
+</ul>
+</li>
+<li><a href="chap63.html">Appendix H: API Boilerplate</a>
+<ul class="sectlevel2">
+<li><a href="chap63.html#boilerplate-headers">Vulkan Header Files</a></li>
+<li><a href="chap63.html#boilerplate-wsi-header">Window System-Specific Header Control (Informative)</a></li>
+<li><a href="chap63.html#boilerplate-provisional-header">Provisional Extension Header Control (Informative)</a></li>
+<li><a href="chap63.html#boilerplate-video-std-headers">Video Std Headers</a></li>
+</ul>
+</li>
+<li><a href="chap64.html">Appendix I: Invariance</a>
+<ul class="sectlevel2">
+<li><a href="chap64.html#_repeatability">Repeatability</a></li>
+<li><a href="chap64.html#_multi_pass_algorithms">Multi-Pass Algorithms</a></li>
+<li><a href="chap64.html#_invariance_rules">Invariance Rules</a></li>
+<li><a href="chap64.html#_tessellation_invariance">Tessellation Invariance</a></li>
+</ul>
+</li>
+<li><a href="chap65.html">Appendix J: Lexicon</a>
+<ul class="sectlevel2">
+<li><a href="chap65.html#glossary">Glossary</a></li>
+<li><a href="chap65.html#lexicon-common-abbreviations">Common Abbreviations</a></li>
+<li><a href="chap65.html#lexicon-video-abbreviations">Video-Specific Abbreviations</a></li>
+<li><a href="chap65.html#lexicon-prefixes">Prefixes</a></li>
+</ul>
+</li>
+<li><a href="chap66.html">Appendix K: Credits (Informative)</a>
+<ul class="sectlevel2">
+<li><a href="chap66.html#_working_group_contributors_to_vulkan">Working Group Contributors to Vulkan</a></li>
+<li><a href="chap66.html#_other_credits">Other Credits</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="loading_msg" class="hidden" hidden=""><p>Loading… please wait.</p></div>
+<!--ChunkedSearchboxMarker-->
+<div class="searchbox"><label for="searchbox">Search: </label><input id="searchbox" type="text" disabled="disabled" value="Loading Search Data"><div id="resultsdiv"><ol id="results"></ol></div></div>
+<div id="content" class="loadable"><div class="sect1">
+<h2 id="fragmentdensitymapops"><a class="anchor" href="chap18.html"></a>18. Fragment Density Map Operations</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_fragment_density_map_operations_overview"><a class="anchor" href="chap18.html#_fragment_density_map_operations_overview"></a>18.1. Fragment Density Map Operations Overview</h3>
+<div class="paragraph">
+<p>When a fragment is generated in a render pass that has a fragment density
+map attachment, its area is determined by the properties of the local
+framebuffer region that the fragment occupies.
+The framebuffer is divided into a uniform grid of these local regions, and
+their fragment area property is derived from the density map with the
+following operations:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="chap18.html#fragmentdensitymap-fetch-density-value">Fetch density value</a></p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="chap18.html#fragmentdensitymap-component-swizzle">Component swizzle</a></p>
+</li>
+<li>
+<p><a href="chap18.html#fragmentdensitymap-component-mapping">Component mapping</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><a href="chap18.html#fragmentdensitymap-conversion-to-fragment-area">Fragment area
+conversion</a></p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="chap18.html#fragmentdensitymap-fragment-area-filter">Fragment area filter</a></p>
+</li>
+<li>
+<p><a href="chap18.html#fragmentdensitymap-fragment-area-clamp">Fragment area clamp</a></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="fragmentdensitymap-fetch-density-value"><a class="anchor" href="chap18.html#fragmentdensitymap-fetch-density-value"></a>18.2. Fetch Density Value</h3>
+<div class="paragraph">
+<p>Each local framebuffer region at center coordinate <span class="eq">(x,y)</span> reads a texel
+from the fragment density map.</p>
+</div>
+<div class="paragraph">
+<p>First, the local framebuffer region center coordinate <span class="eq">(x,y)</span> is offset
+by the value specified in
+<a href="chap8.html#VkRenderPassFragmentDensityMapOffsetEndInfoEXT">VkRenderPassFragmentDensityMapOffsetEndInfoEXT</a>.
+If no offset is specified, then the default offset <span class="eq">(0,0)</span> is used.
+The offset coordinate <span class="eq">(x',y')</span> is computed as follows:</p>
+</div>
+<div class="stemblock">
+<div class="content">
+<span class="katex-display"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:3em;vertical-align:-1.25em;"></span><span class="mord"><span class="mtable"><span class="col-align-r"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.75em;"><span style="top:-3.91em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8019em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span></span></span><span style="top:-2.41em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8019em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.25em;"><span></span></span></span></span></span><span class="col-align-l"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.75em;"><span style="top:-3.91em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">pF</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal">m</span><span class="mord mathnormal">e</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord mathnormal">De</span><span class="mord mathnormal">n</span><span class="mord mathnormal">s</span><span class="mord mathnormal">i</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mord mathnormal" style="margin-right:0.10764em;">ff</span><span class="mord mathnormal">se</span><span class="mord mathnormal">t</span><span class="mord mathnormal">s</span><span class="mopen">[</span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.02778em;">yer</span><span class="mclose"><span class="mclose">]</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">x</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-2.41em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">pF</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal">m</span><span class="mord mathnormal">e</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord mathnormal">De</span><span class="mord mathnormal">n</span><span class="mord mathnormal">s</span><span class="mord mathnormal">i</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mord mathnormal" style="margin-right:0.10764em;">ff</span><span class="mord mathnormal">se</span><span class="mord mathnormal">t</span><span class="mord mathnormal">s</span><span class="mopen">[</span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.02778em;">yer</span><span class="mclose"><span class="mclose">]</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">y</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.25em;"><span></span></span></span></span></span></span></span></span></span></span></span>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tbody><tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The offset is relative to the fragment density map, so it is subtracted from
+the framebuffer coordinates to make the adjustment relative to the
+framebuffer.</p>
+</div>
+<div class="paragraph">
+<p>In other words, applying a positive offset in the x component will shift the
+fragment density map to the right relative to the framebuffer.
+This means the framebuffer coordinates need to undergo a shift to the left.</p>
+</div>
+</td>
+</tr>
+</tbody></table>
+</div>
+<div class="paragraph">
+<p>The offset fragment coordinate <span class="eq">(x',y')</span> <a href="chap13.html#images-reads">reads a texel
+from the fragment density map</a> at image coordinates <span class="eq">(x,y,0,layer,0,0),
+where [eq]</span>(x,y)# are calculated as:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.8em;vertical-align:-0.65em;"></span><span class="mord"><span class="mord mathnormal">c</span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">am</span><span class="mord mathnormal">p</span></span><span class="mopen">(</span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size2">⌊</span></span><span class="mord"><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9735em;"><span style="top:-2.655em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.10764em;">f</span><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span><span class="mord mathnormal mtight">a</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">g</span><span class="mord mathnormal mtight">m</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight">n</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight">De</span><span class="mord mathnormal mtight">n</span><span class="mord mathnormal mtight">s</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">y</span><span class="mord mathnormal mtight" style="margin-right:0.13889em;">T</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight">x</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight" style="margin-right:0.05764em;">lS</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight" style="margin-right:0.04398em;">z</span><span class="mord mtight"><span class="mord mathnormal mtight">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3448em;"><span style="top:-2.3488em;margin-left:0em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02691em;">w</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight">d</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight">h</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.1512em;"><span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathnormal mtight">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8278em;"><span style="top:-2.931em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.4811em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size2">⌋</span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal">m</span><span class="mord mathnormal">e</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord mathnormal">De</span><span class="mord mathnormal">n</span><span class="mord mathnormal">s</span><span class="mord mathnormal">i</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="mord mathnormal">a</span><span class="mord"><span class="mord mathnormal">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02691em;">w</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight">d</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight">h</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">1</span><span class="mclose">)</span></span></span></span></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.8em;vertical-align:-0.65em;"></span><span class="mord"><span class="mord mathnormal">c</span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">am</span><span class="mord mathnormal">p</span></span><span class="mopen">(</span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size2">⌊</span></span><span class="mord"><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.0256em;"><span style="top:-2.655em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.10764em;">f</span><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span><span class="mord mathnormal mtight">a</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">g</span><span class="mord mathnormal mtight">m</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight">n</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight">De</span><span class="mord mathnormal mtight">n</span><span class="mord mathnormal mtight">s</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">y</span><span class="mord mathnormal mtight" style="margin-right:0.13889em;">T</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight">x</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight" style="margin-right:0.05764em;">lS</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight" style="margin-right:0.04398em;">z</span><span class="mord mtight"><span class="mord mathnormal mtight">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3448em;"><span style="top:-2.3488em;margin-left:0em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">h</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">g</span><span class="mord mathnormal mtight">h</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2901em;"><span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.4461em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">y</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8278em;"><span style="top:-2.931em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.5481em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size2">⌋</span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal">m</span><span class="mord mathnormal">e</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord mathnormal">De</span><span class="mord mathnormal">n</span><span class="mord mathnormal">s</span><span class="mord mathnormal">i</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="mord mathnormal">a</span><span class="mord"><span class="mord mathnormal">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">h</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">g</span><span class="mord mathnormal mtight">h</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">1</span><span class="mclose">)</span></span></span></span></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>Where the size of each region in the framebuffer is:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.035em;vertical-align:-0.2831em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal">m</span><span class="mord mathnormal">e</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord mathnormal">De</span><span class="mord mathnormal">n</span><span class="mord mathnormal">s</span><span class="mord mathnormal">i</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal">e</span><span class="mord mathnormal">x</span><span class="mord mathnormal">e</span><span class="mord mathnormal" style="margin-right:0.05764em;">lS</span><span class="mord mathnormal">i</span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.7519em;"><span style="top:-2.4169em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02691em;">w</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight">d</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight">h</span></span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2831em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.2719em;"></span><span class="mord"><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:1.2719em;"><span style="top:-3.5234em;margin-right:0.05em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mopen mtight">⌈</span><span class="mord mtight"><span class="mop mtight"><span class="mop mtight"><span class="mtight">l</span><span class="mtight">o</span><span class="mtight" style="margin-right:0.01389em;">g</span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1944em;"><span style="top:-2.2341em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2659em;"><span></span></span></span></span></span></span><span class="mopen mtight">(</span><span class="mord mtight"><span class="mopen nulldelimiter sizing reset-size3 size6"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.0693em;"><span style="top:-2.656em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.10764em;">f</span><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span><span class="mord mathnormal mtight">a</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">g</span><span class="mord mathnormal mtight">m</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight">n</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight">De</span><span class="mord mathnormal mtight">n</span><span class="mord mathnormal mtight">s</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">y</span><span class="mord mathnormal mtight" style="margin-right:0.10903em;">M</span><span class="mord mathnormal mtight">a</span><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3448em;"><span style="top:-2.3448em;margin-left:0em;margin-right:0.1em;"><span class="pstrut" style="height:2.6944em;"></span><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02691em;">w</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight">d</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight">h</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.3496em;"><span></span></span></span></span></span></span></span></span></span><span style="top:-3.2255em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line mtight" style="border-bottom-width:0.049em;"></span></span><span style="top:-3.5732em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.10764em;">f</span><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span><span class="mord mathnormal mtight">am</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight">b</span><span class="mord mathnormal mtight">u</span><span class="mord mathnormal mtight" style="margin-right:0.10764em;">ff</span><span class="mord mathnormal mtight">e</span><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3448em;"><span style="top:-2.3448em;margin-left:-0.0278em;margin-right:0.1em;"><span class="pstrut" style="height:2.6944em;"></span><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02691em;">w</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight">d</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight">h</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.3496em;"><span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.5937em;"><span></span></span></span></span></span><span class="mclose nulldelimiter sizing reset-size3 size6"></span></span><span class="mclose mtight">)</span></span><span class="mclose mtight">⌉</span></span></span></span></span></span></span></span></span></span></span></span></span></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.1711em;vertical-align:-0.4192em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal">m</span><span class="mord mathnormal">e</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord mathnormal">De</span><span class="mord mathnormal">n</span><span class="mord mathnormal">s</span><span class="mord mathnormal">i</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal">e</span><span class="mord mathnormal">x</span><span class="mord mathnormal">e</span><span class="mord mathnormal" style="margin-right:0.05764em;">lS</span><span class="mord mathnormal">i</span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.7519em;"><span style="top:-2.4169em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">h</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">g</span><span class="mord mathnormal mtight">h</span><span class="mord mathnormal mtight">t</span></span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.4192em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.4663em;"></span><span class="mord"><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:1.4663em;"><span style="top:-3.6206em;margin-right:0.05em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mopen mtight">⌈</span><span class="mord mtight"><span class="mop mtight"><span class="mop mtight"><span class="mtight">l</span><span class="mtight">o</span><span class="mtight" style="margin-right:0.01389em;">g</span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1944em;"><span style="top:-2.2341em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2659em;"><span></span></span></span></span></span></span><span class="mopen mtight">(</span><span class="mord mtight"><span class="mopen nulldelimiter sizing reset-size3 size6"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.2082em;"><span style="top:-2.656em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.10764em;">f</span><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span><span class="mord mathnormal mtight">a</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">g</span><span class="mord mathnormal mtight">m</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight">n</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight">De</span><span class="mord mathnormal mtight">n</span><span class="mord mathnormal mtight">s</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">y</span><span class="mord mathnormal mtight" style="margin-right:0.10903em;">M</span><span class="mord mathnormal mtight">a</span><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3448em;"><span style="top:-2.3448em;margin-left:0em;margin-right:0.1em;"><span class="pstrut" style="height:2.6944em;"></span><span class="mord mtight"><span class="mord mathnormal mtight">h</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">g</span><span class="mord mathnormal mtight">h</span><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.5441em;"><span></span></span></span></span></span></span></span></span></span><span style="top:-3.2255em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line mtight" style="border-bottom-width:0.049em;"></span></span><span style="top:-3.7121em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.10764em;">f</span><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span><span class="mord mathnormal mtight">am</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight">b</span><span class="mord mathnormal mtight">u</span><span class="mord mathnormal mtight" style="margin-right:0.10764em;">ff</span><span class="mord mathnormal mtight">e</span><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3448em;"><span style="top:-2.3448em;margin-left:-0.0278em;margin-right:0.1em;"><span class="pstrut" style="height:2.6944em;"></span><span class="mord mtight"><span class="mord mathnormal mtight">h</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">g</span><span class="mord mathnormal mtight">h</span><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.5441em;"><span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.7326em;"><span></span></span></span></span></span><span class="mclose nulldelimiter sizing reset-size3 size6"></span></span><span class="mclose mtight">)</span></span><span class="mclose mtight">⌉</span></span></span></span></span></span></span></span></span></span></span></span></span></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>This region is subject to the limits in
+<code>VkPhysicalDeviceFragmentDensityMapPropertiesEXT</code> and therefore the
+final region size is clamped:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal">m</span><span class="mord mathnormal">e</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord mathnormal">De</span><span class="mord mathnormal">n</span><span class="mord mathnormal">s</span><span class="mord mathnormal">i</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal">e</span><span class="mord mathnormal">x</span><span class="mord mathnormal">e</span><span class="mord mathnormal" style="margin-right:0.05764em;">lS</span><span class="mord mathnormal">i</span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02691em;">w</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight">d</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight">h</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.035em;vertical-align:-0.2831em;"></span><span class="mord"><span class="mord mathnormal">c</span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">am</span><span class="mord mathnormal">p</span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal">m</span><span class="mord mathnormal">e</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord mathnormal">De</span><span class="mord mathnormal">n</span><span class="mord mathnormal">s</span><span class="mord mathnormal">i</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal">e</span><span class="mord mathnormal">x</span><span class="mord mathnormal">e</span><span class="mord mathnormal" style="margin-right:0.05764em;">lS</span><span class="mord mathnormal">i</span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.7519em;"><span style="top:-2.4169em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02691em;">w</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight">d</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight">h</span></span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2831em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">min</span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal">m</span><span class="mord mathnormal">e</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord mathnormal">De</span><span class="mord mathnormal">n</span><span class="mord mathnormal">s</span><span class="mord mathnormal">i</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal">e</span><span class="mord mathnormal">x</span><span class="mord mathnormal">e</span><span class="mord mathnormal" style="margin-right:0.05764em;">lS</span><span class="mord mathnormal">i</span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02691em;">w</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight">d</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight">h</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">ma</span><span class="mord mathnormal">x</span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal">m</span><span class="mord mathnormal">e</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord mathnormal">De</span><span class="mord mathnormal">n</span><span class="mord mathnormal">s</span><span class="mord mathnormal">i</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal">e</span><span class="mord mathnormal">x</span><span class="mord mathnormal">e</span><span class="mord mathnormal" style="margin-right:0.05764em;">lS</span><span class="mord mathnormal">i</span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02691em;">w</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight">d</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight">h</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span></p>
+</dd>
+<dt class="hdlist1"></dt>
+<dd>
+<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9805em;vertical-align:-0.2861em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal">m</span><span class="mord mathnormal">e</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord mathnormal">De</span><span class="mord mathnormal">n</span><span class="mord mathnormal">s</span><span class="mord mathnormal">i</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal">e</span><span class="mord mathnormal">x</span><span class="mord mathnormal">e</span><span class="mord mathnormal" style="margin-right:0.05764em;">lS</span><span class="mord mathnormal">i</span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">h</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">g</span><span class="mord mathnormal mtight">h</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.1711em;vertical-align:-0.4192em;"></span><span class="mord"><span class="mord mathnormal">c</span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">am</span><span class="mord mathnormal">p</span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal">m</span><span class="mord mathnormal">e</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord mathnormal">De</span><span class="mord mathnormal">n</span><span class="mord mathnormal">s</span><span class="mord mathnormal">i</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal">e</span><span class="mord mathnormal">x</span><span class="mord mathnormal">e</span><span class="mord mathnormal" style="margin-right:0.05764em;">lS</span><span class="mord mathnormal">i</span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.7519em;"><span style="top:-2.4169em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">h</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">g</span><span class="mord mathnormal mtight">h</span><span class="mord mathnormal mtight">t</span></span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.4192em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">min</span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal">m</span><span class="mord mathnormal">e</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord mathnormal">De</span><span class="mord mathnormal">n</span><span class="mord mathnormal">s</span><span class="mord mathnormal">i</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal">e</span><span class="mord mathnormal">x</span><span class="mord mathnormal">e</span><span class="mord mathnormal" style="margin-right:0.05764em;">lS</span><span class="mord mathnormal">i</span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">h</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">g</span><span class="mord mathnormal mtight">h</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">ma</span><span class="mord mathnormal">x</span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal">m</span><span class="mord mathnormal">e</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord mathnormal">De</span><span class="mord mathnormal">n</span><span class="mord mathnormal">s</span><span class="mord mathnormal">i</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal">e</span><span class="mord mathnormal">x</span><span class="mord mathnormal">e</span><span class="mord mathnormal" style="margin-right:0.05764em;">lS</span><span class="mord mathnormal">i</span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">h</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">g</span><span class="mord mathnormal mtight">h</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>When multiview is enabled for the render pass and the fragment density map
+attachment view was created with <code>layerCount</code> greater than <code>1</code>, the
+layer used for offsets and for fetching from the fragment density map is:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.02778em;">yer</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">ba</span><span class="mord mathnormal">se</span><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.02778em;">rr</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mord mathnormal">L</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.02778em;">yer</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">Vi</span><span class="mord mathnormal">e</span><span class="mord mathnormal" style="margin-right:0.02691em;">w</span><span class="mord mathnormal" style="margin-right:0.07847em;">I</span><span class="mord mathnormal">n</span><span class="mord mathnormal">d</span><span class="mord mathnormal">e</span><span class="mord mathnormal">x</span></span></span></span></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>Otherwise, if the render pass was created with
+<code>VK_RENDER_PASS_CREATE_PER_LAYER_FRAGMENT_DENSITY_BIT_VALVE</code> specified,
+or the dynamic render pass was begun with
+<code>VK_RENDERING_PER_LAYER_FRAGMENT_DENSITY_BIT_VALVE</code> specified,
+then the layer used is:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.02778em;">yer</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">ba</span><span class="mord mathnormal">se</span><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.02778em;">rr</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mord mathnormal">L</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.02778em;">yer</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">L</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.02778em;">yer</span></span></span></span></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>Otherwise:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.02778em;">yer</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">ba</span><span class="mord mathnormal">se</span><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.02778em;">rr</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mord mathnormal">L</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.02778em;">yer</span></span></span></span></p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>The texel fetched from the density map at <span class="eq">(x,y,0,layer,0,0)</span> is next
+converted to density with the following operations.</p>
+</div>
+<div class="sect3">
+<h4 id="fragmentdensitymap-component-swizzle"><a class="anchor" href="chap18.html#fragmentdensitymap-component-swizzle"></a>18.2.1. Component Swizzle</h4>
+<div class="paragraph">
+<p>The <code>components</code> member of <a href="chap12.html#VkImageViewCreateInfo">VkImageViewCreateInfo</a> is applied to the
+fetched texel as defined in <a href="chap17.html#textures-component-swizzle">Image component
+swizzle</a>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="fragmentdensitymap-component-mapping"><a class="anchor" href="chap18.html#fragmentdensitymap-component-mapping"></a>18.2.2. Component Mapping</h4>
+<div class="paragraph">
+<p>The swizzled texel’s components are mapped to a density value:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9805em;vertical-align:-0.2861em;"></span><span class="mord mathnormal">d</span><span class="mord mathnormal">e</span><span class="mord mathnormal">n</span><span class="mord mathnormal">s</span><span class="mord mathnormal">i</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mord mathnormal">Va</span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">u</span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">x</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">y</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.135em;vertical-align:-0.3831em;"></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.7519em;"><span style="top:-2.453em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span></span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.247em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.7519em;"><span style="top:-2.453em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">g</span></span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.3831em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span></p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="fragmentdensitymap-conversion-to-fragment-area"><a class="anchor" href="chap18.html#fragmentdensitymap-conversion-to-fragment-area"></a>18.3. Fragment Area Conversion</h3>
+<div class="paragraph">
+<p>Fragment area for the framebuffer region is undefined if the density
+fetched is not a normalized floating-point value greater than <code>0.0</code>.
+Otherwise, the fetched fragment area for that region is derived as:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal">m</span><span class="mord mathnormal">e</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord mathnormal">A</span><span class="mord mathnormal">re</span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02691em;">w</span><span class="mord mathnormal mtight">h</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.3874em;vertical-align:-0.5423em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8451em;"><span style="top:-2.655em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">d</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight">n</span><span class="mord mathnormal mtight">s</span><span class="mord mathnormal mtight">i</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">y</span><span class="mord mathnormal mtight">Va</span><span class="mord mathnormal mtight" style="margin-right:0.01968em;">l</span><span class="mord mathnormal mtight">u</span><span class="mord mtight"><span class="mord mathnormal mtight">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1645em;"><span style="top:-2.357em;margin-left:0em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">x</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">y</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2819em;"><span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1.0</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.5423em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></p>
+</dd>
+</dl>
+</div>
+<div class="sect3">
+<h4 id="fragmentdensitymap-fragment-area-filter"><a class="anchor" href="chap18.html#fragmentdensitymap-fragment-area-filter"></a>18.3.1. Fragment Area Filter</h4>
+<div class="paragraph">
+<p>Optionally, the implementation <strong class="purple">may</strong> fetch additional density map texels in
+an implementation defined window around <span class="eq">(i,j)</span>.
+The texels follow the standard conversion steps up to and including
+<a href="chap18.html#fragmentdensitymap-conversion-to-fragment-area">fragment area conversion</a>.</p>
+</div>
+<div class="paragraph">
+<p>A single fetched fragment area for the framebuffer region is chosen by the
+implementation and <strong class="purple">must</strong> have an area between the <em>min</em> and <em>max</em> areas of
+the fetched set.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="fragmentdensitymap-fragment-area-clamp"><a class="anchor" href="chap18.html#fragmentdensitymap-fragment-area-clamp"></a>18.3.2. Fragment Area Clamp</h4>
+<div class="paragraph">
+<p>The implementation <strong class="purple">may</strong> clamp the fetched fragment area to one that it
+supports.
+The clamped fragment area <strong class="purple">must</strong> have a size less than or equal to the
+original fetched value.
+Implementations <strong class="purple">may</strong> vary the supported set of fragment areas per
+framebuffer region.
+Fragment area <span class="eq">(1,1)</span> <strong class="purple">must</strong> always be in the supported set.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tbody><tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>For example, if the fetched fragment area is <span class="eq">(1,4)</span> but the
+implementation only supports areas of <span class="eq">{(1,1),(2,2)}</span>, it could choose
+to clamp the area to <span class="eq">(2,2)</span> since it has the same size as <span class="eq">(1,4)</span>.
+While this would produce fragments that have lower quality strictly in the
+x-axis, the overall density is maintained.</p>
+</div>
+</td>
+</tr>
+</tbody></table>
+</div>
+<div class="paragraph">
+<p>The clamped fragment area is assigned to the corresponding framebuffer
+region.</p>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+<nav>
+  <a rel="prev" href="chap17.html" class="nav nav-prev" title="Previous page" aria-label="Previous page" aria-keyshortcuts="Left">
+        <i class="fa fa-angle-left"></i>
+     </a>
+  <a rel="next" href="chap19.html" class="nav nav-next" title="Next page" aria-label="Next page" aria-keyshortcuts="Right">
+        <i class="fa fa-angle-right"></i>
+     </a>
+  <div style="clear: both"></div>
+</nav>
+
+
+
+
+</body>
+  <script>
+  function isInViewport(ele) {
+    const rect = ele.getBoundingClientRect();
+    return (
+        rect.top >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
+    );
+  }
+  function yPosition (ele) {
+    const rect = ele.getBoundingClientRect();
+    return (rect.top - 20); // 20px above
+  }
+  let curr = document.getElementsByClassName('current');
+  if (!isInViewport(curr[curr.length - 1])) {
+    document.getElementById('toc').scrollTo({
+      top: yPosition(curr[0]),
+      left: 0,
+      behavior: 'smooth'
+    });
+  }
+
+  /* For page navigation */
+  function gotoPage(selector) {
+    const button = document.querySelector(selector);
+    if (button)
+      window.location.href = button.href;
+  }
+  document.addEventListener('keydown', e => {
+    switch (e.key) {
+      case 'ArrowRight':
+        e.preventDefault();
+        gotoPage('.nav-next');
+        break;
+      case 'ArrowLeft':
+        e.preventDefault();
+        gotoPage('.nav-prev');
+        break;
+    }
+  });
+  </script>
+  </html>

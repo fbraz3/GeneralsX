@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="icon" href="images/Vulkan_LogoBug_48px_Nov17.png">
+<link rel="stylesheet" href="github-markdown.css">
+</head>
+<body>
+<article class="markdown-body">
+<!-- markdownlint-disable MD041 -->
+
+<!-- Copyright 2015-2024 LunarG, Inc. -->
+
+<p><a href="https://www.khronos.org/vulkan/" TARGET="_blank"><img src="https://vulkan.lunarg.com/img/Vulkan_100px_Dec16.png" title="https://www.khronos.org/vulkan/" alt="Khronos Vulkan" /></a></p>
+<h1 id="getting-started-with-the-macos-vulkan-sdk">Getting Started with the <em>macOS</em> Vulkan SDK</h1>
+<p><a href="https://creativecommons.org/licenses/by-nd/4.0/" TARGET="_blank"><img src="https://i.creativecommons.org/l/by-nd/4.0/88x31.png" title="Creative Commons License" alt="Creative Commons" /></a></p>
+<h2 id="vulkan-sdk-introduction">Vulkan SDK Introduction</h2>
+<p>This guide describes the content, the requirements and procedure for getting started with the <em>Vulkan SDK</em>.</p>
+<p>The <em><a href="https://khronos.org/registry/vulkan" TARGET="_blank" title="Khronos Vulkan website">Khronos Vulkan API</a></em> is an explicit, low-overhead, cross-platform graphics and compute API. <em>Vulkan</em> provides applications with control over the system execution and the system memory to maximize application efficiency on a wide variety of devices from PCs and consoles to mobile phones and embedded platforms.</p>
+<p>The <em>Vulkan SDK</em> enables <em>Vulkan</em> developers to develop <em>Vulkan</em> applications. The <em>Vulkan SDK</em> includes:</p>
+<ul>
+<li><em>Vulkan</em> API usage validation thanks to the <em><a href="#vulkan-api-validation-with-khronos-validation-layer">Khronos Validation layer</a></em>.</li>
+<li><em>Vulkan Layers</em> configuration thanks to <em><a href="#vulkan-configurator">Vulkan Configurator</a></em>.</li>
+<li><em>SPIR-V</em> Shader compilation, optimization and validation tools such as slang, DXC, SPIRV Reflect, and SPIRV-cross. See the <a href="https://vulkan.lunarg.com/doc/sdk/latest/mac/spirv_toolchain.html" TARGET="_blank">SPIR-V Toolchain document</a> for a complete list of the tools included. Also see the <a href="https://github.com/KhronosGroup/MoltenVK/blob/main/Docs/MoltenVK_Runtime_UserGuide.md#shaders" TARGET="_blank">MoltenVKShaderConverter documentation</a>.</li>
+<li><a href="https://www.saschawillems.de/creations/vulkan-hardware-capability-viewer/" TARGET="_blank"><em>Vulkan Capabilities Viewer</em></a>. The new and preferred way to identify your devices capabilities, and contribute to an open-source database of GPU capabilities.</li>
+<li><a href="#verify-the-sdk-installation"><em>Vulkan</em> system report</a> with <em>Vulkan Info</em>.</li>
+</ul>
+<p><strong>All</strong> documentation for the SDK can be found and downloaded online at <a href="https://vulkan.lunarg.com/doc/sdk/latest/mac/getting_started.html" TARGET="_blank">vulkan.lunarg.com</a>. For a broader overview see the LunarG white paper <a href="https://www.lunarg.com/news-insights/white-papers/updated-white-paper-the-state-of-vulkan-on-apple-devices/" TARGET="_blank">The State of Vulkan on Apple Devices</a>.</p>
+<p><strong>Looking for Validation Layer Binaries for <em>Android</em>?</strong></p>
+<p>With each SDK release, a release of the <em>Khronos Validation Layer</em> binaries for <em>Android</em> are released on the <a href="https://github.com/KhronosGroup/Vulkan-ValidationLayers/releases" TARGET="_blank">Validation layer Repository</a>. The <em>Android</em> binaries are not included in this SDK.</p>
+<h3 id="terminology">Terminology</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Term</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><em>DXC</em></td>
+<td><em>Microsoft's Open Source DirectX Shader Compiler</em></td>
+</tr>
+<tr class="even">
+<td><em>ICD</em></td>
+<td><em>Installable Client Driver</em>: A <em>Vulkan</em>-compatible display driver</td>
+</tr>
+<tr class="odd">
+<td><em>GLSL</em></td>
+<td><em>OpenGL Shading Language</em></td>
+</tr>
+<tr class="even">
+<td><em>HLSL</em></td>
+<td><em>DirectX High-Level Shading Language</em></td>
+</tr>
+<tr class="odd">
+<td><em>SPIR-V</em></td>
+<td><em>Standard Portable Intermediate Representation</em> is a cross-API intermediate language (IL) that natively represents parallel compute and graphics programs</td>
+</tr>
+<tr class="even">
+<td><em>VMA</em></td>
+<td>The <em>Vulkan</em> Memory Allocator library provided by AMD</td>
+</tr>
+<tr class="odd">
+<td><em>Vulkan Instance</em></td>
+<td>The <em>Vulkan</em> API object that stores all per-application states</td>
+</tr>
+<tr class="even">
+<td><em><a href="#vulkan-sdk-layers">Vulkan Layer</a></em></td>
+<td>A library designed to work as a plug-in for the loader. It usually serves to provide validation and debugging functionality to applications</td>
+</tr>
+<tr class="odd">
+<td><em>Vulkan Loader</em></td>
+<td>A library which implements the <em>Vulkan</em> API entry points and manages layers, extensions, and drivers, shipped as part of <em>MoltenVK</em> and often shipped inside the application bundle of a <em>Vulkan</em>-based application (see below)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="moltenvk">MoltenVK</h3>
+<p>This SDK provides partial <em>Vulkan</em> support through the use of the <em>MoltenVK</em> library which is a "translation" or "porting" library that maps most of the <em>Vulkan</em> functionality to the underlying graphics support (via <em>Metal</em>) on <em>macOS</em>, <em>iOS</em>, <em>iPadOS</em>, and <em>tvOS</em> platforms. It is NOT a fully-conforming <em>Vulkan</em> driver for <em>macOS</em>, <em>iOS</em>, <em>iPadOS</em>, or <em>tvOS</em> devices.</p>
+<p>There are two ways to make use of <em>MoltenVK</em> in your shipping <em>Vulkan</em>-based applications. One is to link directly to the <em>MoltenVK</em> static or dynamic library, which will give you direct access to the <em>Vulkan</em> API, and allows for some mixed use with <em>Vulkan</em> and low-level <em>Metal</em> capabilities. This option is not practical if you wish to maintain portability of your <em>Vulkan</em> rendering code across platforms. Mixing of Vulkan and Metal capabilities can be done using the <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_EXT_metal_objects.html" TARGET="_blank">VK_EXT_metal_objects extension</a>. Moreover, you will also sacrifice the ability to use the <em>Vulkan Validation</em> layers. An <em>XCFramework</em> is provided as a static library that can be linked directly to your application if you wish to go this route. Please see the <a href="https://github.com/KhronosGroup/MoltenVK/blob/master/Docs" TARGET="_blank"><em>MoltenVK</em> Runtime User Guide</a> on the <em>MoltenVK</em> GitHub for more information about MoltenVK specifics.</p>
+<p>For desktop, <em>iOS</em>, and <em>iPadOS</em> applications, the recommended usage model is to use the <em>MoltenVK</em> dynamic library in conjunction with the <em>Vulkan Loader</em>. In this scenario the <em>MoltenVK</em> library takes on the role of the <em>ICD</em> from the point of view of the application and the <em>Vulkan Loader</em>. In this mode, you link only to the <em>Vulkan Loader</em>, and not the <em>MoltenVK</em> library directly. You will include the <em>MoltenVK</em> and the <em>Vulkan Loader</em> dynamic libraries in your application's bundle when distributing your software. When the <em>Vulkan SDK</em> is installed on <em>macOS</em>, these runtime components are placed in system directories and can be easily used during development without embedding them in the app bundle. Even if you decide to ship your application linked to the static <em>MoltenVK</em> library, during development we recommend you make use of the <em>Vulkan Loader</em> and <em>Vulkan Validation Layers</em> as they are a tremendous boon for debugging your <em>Vulkan</em>-based rendering code. NOTE that for Apple's App Store distribution you must use the provided Framework versions of the <em>Vulkan Loader</em>, <em>MoltenVK</em>, and any layers you may wish to distribute with your application as naked .dylib's are not allowed in app store bundles.</p>
+<p>Regardless of the method used, your applications are distributed with everything they need to use <em>Vulkan</em> over <em>Metal</em> all included in your application's bundle. No additional system files or runtime components are needed by the end users of your applications on any Apple platform.</p>
+<h2 id="system-requirements">System Requirements</h2>
+<ul>
+<li>The latest major version of <em>macOS</em>: Used to build all components in the SDK.</li>
+<li>Optionally, the last major version of <em>macOS</em> is by policy also supported. Current these are <em>macOS</em> versions 14 (Sonoma) and 15 (Sequoia).</li>
+<li>The latest version of <em>Xcode</em> (currently 26.X): Required for building apps using this SDK.</li>
+<li>For <em>MoltenVK</em> requirements see the <a href="https://github.com/KhronosGroup/MoltenVK#building-moltenvk" TARGET="_blank">repository</a>.</li>
+<li>The <em>Vulkan SDK</em> loader, validation layers, and other libraries are packaged as Universal Libraries with support for both Intel and Apple Silicon architectures for <em>macOS</em>, and ARM64 and ARM64e for <em>iOS</em> and <em>iPadOS</em>.</li>
+</ul>
+<h2 id="use-of-the-vulkan-sdk">Use of the Vulkan SDK</h2>
+<h3 id="sdk-versioning">SDK Versioning</h3>
+<p>The components in this SDK are built with a specific version of <em>Khronos Vulkan API</em> header, whose version is reflected in the SDK's version number. For example, SDK version v.w.xx.0 indicates the SDK uses the <em>Vulkan</em> header revision where:</p>
+<ul>
+<li>"v" is the <em>Vulkan</em> major version</li>
+<li>"w" is the <em>Vulkan</em> minor version</li>
+<li>"xx" is the <em>Vulkan</em> patch version</li>
+</ul>
+<p>The last number in the SDK version indicates the revision of an SDK for the given <em>Vulkan</em> header revision. It is used in case it is necessary to release multiple SDKs for the same version of <em>Vulkan</em>.</p>
+<p>For example, SDK version 1.1.70.0 indicates the SDK uses <em>Vulkan</em> header revision 1.1.70.</p>
+<p><strong>Note</strong>: A more recent SDK version number does not indicate an application cannot be developed for earlier <em>Vulkan</em> versions. As well, an older SDK version can not be used to develop applications for a newer version of <em>Vulkan</em>. For example, the 1.1.130.0 SDK can be used to develop <em>Vulkan</em> 1.0 applications but cannot be used to develop applications for <em>Vulkan</em> 1.2. Furthermore, the presence of a 1.2.xx SDK does not necessarily indicate a system can actually run <em>Vulkan</em> 1.2. A <em>Vulkan</em> 1.2 driver is required for applications to use most <em>Vulkan</em> 1.2 functionality.</p>
+<p><strong>Note</strong>: On <em>macOS</em>, <em>iOS</em>, <em>iPadOS</em>, and <em>tvOS</em>, the <em>Vulkan</em> header number is not a true reflection of the underlying support from MoltenVK (which is currently at Vulkan version 1.3).</p>
+<p>Note that there is a version for your <em>Vulkan Loader</em>, and a separate supported version for each physical device on your system.</p>
+<ol>
+<li><em>Vulkan Instance</em> Version. This is the version of your <em>Vulkan Loader</em>. If you run <code>vulkaninfo</code>, the <em>Vulkan Instance</em> version is the first item reported. The <em>Vulkan Loader</em> is delivered with your driver update package on most operating systems, but on <em>macOS</em> the loader is shipped as part of the SDK, or is included directly in the MoltenVK library. Most developers will include these files in their <em>macOS</em> application bundles.</li>
+<li>For each physical device, there is an <code>apiVersion</code>. The <code>apiVersion</code> is the version of <em>Vulkan</em> supported by that device. You can find the <code>apiVersion</code> for each physical device from your <code>vulkaninfo</code> output under the section labeled "Device Properties and Extensions".</li>
+</ol>
+<h3 id="download-the-sdk">Download the SDK</h3>
+<p>Download the <em>Vulkan SDK</em> from the <a href="https://vulkan.lunarg.com/sdk/home" TARGET="_top" title="Vulkan SDK Download Site">Download Site</a>. The SDK download file is named with the pattern:</p>
+<pre><code>vulkansdk-macos-x.x.x.x.zip
+</code></pre>
+<h3 id="install-the-sdk">Install the SDK</h3>
+<p>NOTE: Installing the SDK updates the <em>Vulkan Loader</em> and <em>MoltenVK</em> libraries in <code>/usr/local</code>, if the installer option [X] <strong>System Global Installation</strong> is selected.</p>
+<p>Double-click the <code>.zip</code> file and run the <em>vulkansdk-macOS-1.v.w.xx.app</em> application. The <em>Vulkan</em> installer program will ask you for the destination folder to install the <em>Vulkan SDK</em>. It will prompt you for your user password as well as it needs administrative access in order to copy the <em>Vulkan Loader</em> and SDK tools to system folders where your terminal path can locate them. The <em>macOS</em> SDK is intended to be installed anywhere the user can place files such as the user's <code>$HOME</code> directory. An uninstaller is also created and placed in the SDK installation folder.</p>
+<h4 id="installing-optional-components">Installing Optional Components</h4>
+<p>The VulkanSDK installer can automatically download optional components from the cloud and install them as part of the SDK installation (an Internet connection is required for this).</p>
+<table>
+<thead>
+<tr class="header">
+<th>Optional Component Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>com.lunarg.vulkan.usr</td>
+<td>Copy loader, ICD, and tools into system wide <code>/usr</code> locations</td>
+</tr>
+<tr class="even">
+<td>com.lunarg.vulkan.sdl2</td>
+<td>SDL2 library</td>
+</tr>
+<tr class="odd">
+<td>com.lunarg.vulkan.glm</td>
+<td>GLM (3D Math Library) headers</td>
+</tr>
+<tr class="even">
+<td>com.lunarg.vulkan.volk</td>
+<td>Volk (Vulkan Meta Loader) library</td>
+</tr>
+<tr class="odd">
+<td>com.lunarg.vulkan.vma</td>
+<td>Vulkan Memory Allocator library</td>
+</tr>
+<tr class="even">
+<td>com.lunarg.vulkan.ios</td>
+<td>iOS support libraries</td>
+</tr>
+</tbody>
+</table>
+<h4 id="install-and-uninstall-from-terminal">Install and Uninstall from Terminal</h4>
+<p>The new <em>macOS</em> installer application can also be run from the command line allowing for unattended/scripted installation and uninstallation. Navigate to the folder containing the <code>vulkansdk-macOS-x.x.x.x.app</code> bundle, and execute the embedded application directly. You will need to use <code>sudo</code> to give the installer permission to access the system folders, and you must also provide the destination path for the SDK installation files. Note, none of the optional components are installed by default (this includes the system wide '/usr' folder).</p>
+<pre><code>sudo ./vulkansdk-macOS-x.x.x.x.app/Contents/MacOS/vulkansdk-macOS-x.x.x.x --root &quot;installation path&quot; --accept-licenses --default-answer --confirm-command install
+</code></pre>
+<p>Optinal components can also be listed on the command line, as well as the installation folder. For example, to install into your home folder using a root of "VulkanSDK", and an SDK version of 1.3.275.0, including all optional packages, you would use this command:</p>
+<pre><code>sudo ./vulkansdk-macOS-1.3.275.0.app/Contents/MacOS/vulkansdk-macOS-1.3.275.0 --root ~/VulkanSDK/1.3.275.0 --accept-licenses --default-answer --confirm-command install com.lunarg.vulkan.core com.lunarg.vulkan.usr com.lunarg.vulkan.sdl2 com.lunarg.vulkan.glm com.lunarg.vulkan.volk com.lunarg.vulkan.vma com.lunarg.vulkan.ios
+</code></pre>
+<p>Likewise the maintenance tool can also be used to uninstall an SDK:</p>
+<pre><code>sudo ./MaintenanceTool.app/Contents/MacOS/MaintenanceTool --confirm-command purge
+</code></pre>
+<p>The new installer is based on the open-source Qt Installer Framework, and more complete details on all command line options can be found <a href="https://doc-snapshots.qt.io/qtifw-master/ifw-use-cases-cli.html" TARGET="_blank">here</a>.</p>
+<p>The <em>macOS</em> installer has a command line option to skip the installation of system files, thus negating the need to run with <code>sudo</code>. If you use this option, SDK tools, the loader, and the MoltenVK ICD are not copied to the system folders (<code>/usr/local/lib</code>), and the SDK files are only copied to the specified installation folder. If installed in this manner, the MaintenanceTool program can also be run without administrative privileges. To skip the installation of system files simply add <code>copy_only=1</code> to the list of command-line parameters for the installer.</p>
+<h3 id="sdk-system-paths">SDK System Paths</h3>
+<p><em>macOS</em> allows the installation of files to <code>/usr/local</code> which are then in the standard system paths and the loader's search paths for ICDs, if the [X] <strong>System Global Files</strong> option is selected during installation. The <em>Vulkan</em> installer program will copy the loader, command line tools, and the <em>MoltenVK ICD</em> to these folders. This eliminates the need to set <code>PATH</code>, <code>DYLD_LIBRARY_PATH</code>, <code>VK_LAYER_PATH</code>, and <code>VK_ICD_FILENAMES</code> environment variables in order to use SDK components during development. You should note that <em>macOS</em> does not easily provide support for allowing environment variables to affect the behavior of GUI applications. For developers who rely on the command line for much of their work, these environment variables behave as expected and can be used to override the default behavior.</p>
+<p>It is important to note that recent versions of <em>macOS</em> and <em>Xcode</em> have removed <code>/usr/local/lib</code> from the default list of locations to search for dynamic libraries (while it is still for now the recommended place to put non-system global development libraries and tools). The Volk Meta Loader has been updated already to take this into account, and is available as a (recommended) optional SDK component. If you do not include the Vulkan loader in your application bundle, you may need to modify <code>@rpath</code> appropriately to search in <code>/usr/local/lib</code>, or use the <code>DYLD_LIBRARY_PATH</code> environment variable for command line driven applications.</p>
+<p>You can manually uninstall and re-install these system files by using the same install scripts that the installer and uninstaller uses and that are provided with the SDK. These are named <code>install_vulkan.py</code> and <code>uninstall.sh</code> To run these scripts, in your terminal navigate to the directory you installed the SDK files into and run:</p>
+<pre><code>sudo ./install_vulkan.py
+</code></pre>
+<p>This will copy the SDK files to the appropriate system directories and generate a log file named <code>VULKAN_INSTALL.log</code> in <code>/tmp</code>. This script does require Python 3 (version 3.8 or later recommended) to be installed. If you are using <em>Xcode</em> for development, this will include a sufficiently recent version of Python for you. If not, we recommend using <a href="https://brew.sh/#install" TARGET="_blank">homebrew</a> to get and install Python 3.</p>
+<p>To run the uninstall script, navigate to the root directory of the SDK in your terminal and run:</p>
+<pre><code>sudo ./uninstall.sh
+</code></pre>
+<p><strong>Note</strong>: Since SDK components are copied directly to the <code>/usr/local</code> tree, only a single version of the <em>Vulkan SDK</em> can be active at a time. Using this method, it is possible to switch manually back and forth between SDK versions without having to re-run the installer. You should be aware that if System Integrity Protection is enabled (it normally is), you may need to reboot before the kernel will recognize the new code signatures from these updated files. A work around for rebooting in this scenario is to be sure and remove these files first with <code>./uninstall.sh</code> and do not just run <code>./install_vulkan.py</code> repeatedly copying the files over the previous versions.</p>
+<h3 id="vulkan-sdk-contents">Vulkan SDK contents</h3>
+<p>This section describes how the SDK contents are organized.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Directory</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Applications</code></td>
+<td>Standalone <em>Vulkan</em> demos and tools</td>
+</tr>
+<tr class="even">
+<td><code>macOS</code></td>
+<td><code>VULKAN_SDK</code> tree; "System tree" with traditional <code>bin</code>, <code>include</code>, <code>lib</code> structure</td>
+</tr>
+<tr class="odd">
+<td><code>macOS/bin</code></td>
+<td><em>Vulkan</em> and shader tool executables</td>
+</tr>
+<tr class="even">
+<td><code>macOS/share/vulkan/explicit_layer.d</code></td>
+<td>Explicit layers that can be referenced with the <code>VULKAN_LAYER_PATH</code> environment variable</td>
+</tr>
+<tr class="odd">
+<td><code>macOS/share/vulkan/icd.d</code></td>
+<td><em>MoltenVK</em> ICD manifest JSON file for macOS</td>
+</tr>
+<tr class="even">
+<td><code>macOS/share/vulkan/registry</code></td>
+<td>Home of the <code>vk.xml</code> <code>validusage.json</code> and files</td>
+</tr>
+<tr class="odd">
+<td><code>macOS/share/vulkan/config</code></td>
+<td>Home of the <em>Vulkan Profiles</em> <code>.json</code> files</td>
+</tr>
+<tr class="even">
+<td><code>macOS/Frameworks</code></td>
+<td><em>Vulkan</em> loader framework for <em>Xcode</em></td>
+</tr>
+<tr class="odd">
+<td><code>macOS/include</code></td>
+<td><em>Vulkan</em> and shader tool header files</td>
+</tr>
+<tr class="even">
+<td><code>macOS/lib</code></td>
+<td><em>Vulkan</em> and shader tool libraries</td>
+</tr>
+<tr class="odd">
+<td><code>iOS/share/vulkan/explicit_layer.d</code></td>
+<td>Explicit layers that can be included in iOS application bundles</td>
+</tr>
+<tr class="even">
+<td><code>iOS/share/vulkan/icd.d</code></td>
+<td><em>MoltenVK</em> ICD manifest JSON file for <em>iOS</em> and <em>iPadOS</em></td>
+</tr>
+<tr class="odd">
+<td><code>iOS/lib</code></td>
+<td><em>Vulkan</em> and shader tool libraries for <em>iOS</em> and <em>iPadOS</em></td>
+</tr>
+<tr class="even">
+<td><code>Helpers</code></td>
+<td>Helper programs used by the installer</td>
+</tr>
+<tr class="odd">
+<td><code>installerResources</code></td>
+<td>Internal data files used by the installer and MaintenanceTool</td>
+</tr>
+</tbody>
+</table>
+<h3 id="vulkan_sdk-tree">VULKAN_SDK Tree</h3>
+<p>The <code>macOS</code> directory is the root of a "system tree" containing <em>Vulkan</em> executables, include files, and libraries in the traditional <code>bin</code>, <code>include</code>, <code>lib</code> structure. This tree contains the <em>Vulkan</em> components such as the loader library and layer libraries. The corresponding <code>iOS</code> directory parallels this, but for <em>iOS</em> hardware development only.</p>
+<p>These trees also contains executables, include files, and libraries for various Vulkan-related tools such as <em>glslang</em>, <em>SPIRV-Tools</em>, and others.</p>
+<p>It is often useful to point system environment variables (e.g., <code>PATH</code>, <code>DYLD_LIBRARY_PATH</code>) and Vulkan-related environment variables (e.g., <code>VK_LAYER_PATH</code>) to directories in this directory to locate the components found in this tree. In addition <code>VK_ICD_FILENAMES</code> can point to the latest MoltenVK ICD included in the SDK instead of using the system paths.</p>
+<p>This can be done with the <code>setup-env.sh</code> script. Remember, these environment variables are not seen by GUI applications launched from Finder or the graphical shell in <em>macOS</em>, even if you put them in the system startup script.</p>
+<h2 id="options-for-using-vulkan-support-components">Options for Using Vulkan Support Components</h2>
+<p>The <em>Vulkan SDK</em> is flexible in the sense that it can support various workflows. Some of these workflows are summarized here.</p>
+<h3 id="create-a-bundled-application">Create a Bundled Application</h3>
+<p>Your <em>Xcode</em> project copies all required components from the SDK and places them in the application bundle. This results in a standalone application that can be copied or published anywhere and does not require the user to have an SDK installed.</p>
+<p>Using <em>Xcode</em>, add the various components from the SDK to your <em>Xcode</em> project. Configure your project so all required components are in your bundle.</p>
+<h3 id="xcode-with-sdk-side-install"><em>Xcode</em> with SDK Side-Install</h3>
+<p>Your <em>Xcode</em> project has references to the SDK and requires an SDK be installed on your system. This workflow might be used in a development phase that eventually leads to the bundled application workflow. The SDK installer will copy the appropriate files to your <code>/usr/bin</code> paths so that the <em>Vulkan Loader</em> and <em>MoltenVK ICD</em> are available when you run your project from <em>Xcode</em>.</p>
+<h3 id="set-up-the-runtime-environment">Set up the runtime environment</h3>
+<p>If the SDK is not installed to system directories you may need to set environment variables inside the <em>Xcode</em> interface when working with <em>Xcode</em> projects that use SDK components. You may also need to set environment variables in your command shell when running some non-bundled <em>Vulkan</em> applications or other SDK tools from the command line.</p>
+<p>A setup script is provided in the top-level directory of your SDK installation to help you easily set the environment variables. Use the <code>source</code> command to load that script into your current shell:</p>
+<p><code>source setup-env.sh</code></p>
+<p>See the note below about environment variables and GUI applications.</p>
+<h3 id="set-up-the-runtime-environment-manually">Set up the runtime environment manually</h3>
+<p>Note that on <em>macOS</em>, shell environment variables are not seen by GUI applications launched from the Apple launch services (such as double-clicking an apps icon). In addition, the <code>DYLD_LIBRARY_PATH</code> is considered a security violation and will not function unless SIP (System Integrity Protection) is <a href="https://developer.apple.com/documentation/security/disabling_and_enabling_system_integrity_protection" TARGET="_blank">disabled</a>. This is not recommended, but can be useful during development (but not for a shipping application). Best practice on <em>macOS</em> is to include the <em>Vulkan</em> Loader and/or MoltenVK directly in the application's <code>.app</code> bundle and not disable SIP.</p>
+<p>If you are developing on the command line and wish to launch applications primarily from the command line, you can set up the environment using the <code>Terminal</code> application:</p>
+<p>Set a convenience variable to point to the SDK:</p>
+<pre><code>export VULKAN_SDK=$vulkansdk/macOS
+</code></pre>
+<p>Replace the <code>$vulkansdk</code> above with the actual path to your SDK but include the <code>/macOS</code> part.</p>
+<p>Add the <code>bin</code> directory to your <code>PATH</code> to make it easy to run <em>Vulkan Info</em> and the various <em>glslang</em> and <em>SPIRV-Tools</em> installed there:</p>
+<pre><code>export PATH=$VULKAN_SDK/bin:$PATH
+</code></pre>
+<p>Add the <code>lib</code> directory to your <code>DYLD_LIBRARY_PATH</code> so that programs find the <em>Vulkan Loader</em> library:</p>
+<pre><code>export DYLD_LIBRARY_PATH=$VULKAN_SDK/lib:$DYLD_LIBRARY_PATH
+</code></pre>
+<p>Tell the <em>Vulkan Loader</em> where to find a <em>Vulkan</em> driver:</p>
+<pre><code>export VK_ICD_FILENAMES=$VULKAN_SDK/share/vulkan/icd.d/MoltenVK_icd.json
+</code></pre>
+<p>Tell the <em>Vulkan Loader</em> where to find the <em>Vulkan SDK Layers</em>:</p>
+<pre><code>export VK_LAYER_PATH=$VULKAN_SDK/share/vulkan/explicit_layer.d
+</code></pre>
+<h3 id="verify-the-sdk-installation">Verify the SDK Installation</h3>
+<p>Verify the installation of the <em>Vulkan SDK</em> by running:</p>
+<ul>
+<li><em><a href="./vulkaninfo.html">Vulkan Info</a></em> with the command:</li>
+</ul>
+<pre class="shell"><code>$ vulkaninfo
+</code></pre>
+<h2 id="working-with-xcode">Working with <em>Xcode</em></h2>
+<p>Using the loader gives your application run-time access to the <em>MoltenVK</em> ICD (or potentially load other <em>Vulkan</em> implementations dynamically) and the <em>Vulkan Khronos Validation</em> layer as well as other helper or emulation layers. You may even want to ship your application with layers embedded in your application bundle.</p>
+<h3 id="configuring-xcode-with-environment-variables">Configuring <em>Xcode</em> with Environment Variables</h3>
+<p>If you want your <em>Xcode</em> project to refer to components residing in an SDK instead of bundling these components, you can set environment variables in your <em>Xcode</em> project to point to these components instead of bundling them.</p>
+<p>This may be a technique suitable for developers whose workflows are compatible with "pointing" to a specific SDK during their work. It is unlikely that anyone would want to deploy an application that requires an SDK to be present.</p>
+<p>Here are some approaches for setting these variables:</p>
+<h4 id="set-variables-in-xcode">Set Variables in <em>Xcode</em></h4>
+<p><em>Xcode</em> has an interface for setting environment variables in the "Scheme" panel. This is a fairly common and straightforward approach.</p>
+<h4 id="inherit-variables-from-environment">Inherit Variables From Environment</h4>
+<p>If you are new to <em>macOS</em> development, it may surprise you that environment variables set in your shell will not be seen by <em>Xcode</em> if <em>Xcode</em> is launched from Launchpad or other desktop GUI. You may be able to pass shell environment settings into <em>Xcode</em> by starting <em>Xcode</em> with <code>open</code> from a bash shell command line where the environment variables are set.</p>
+<p>With <em>Xcode</em> versions 7 and later, you may need to enable this behavior:</p>
+<pre><code>defaults write com.apple.dt.Xcode UseSanitizedBuildSystemEnvironment -bool NO
+</code></pre>
+<h4 id="system-wide-preferences">System-wide Preferences</h4>
+<p>Configure the system-wide Preferences for <em>Xcode</em> by adding Custom Paths in the Preference's Locations tab.</p>
+<h3 id="using-the-vulkan-loader">Using the Vulkan Loader</h3>
+<p>As an alternative to using the framework, you can add <em>Vulkan Loader</em> support to your application by adding the <em>Vulkan</em> header files and <em>Vulkan Loader</em> library file individually to your project:</p>
+<p>Add the SDK's <code>macOS/include</code> directory to the project's Header Search Paths. Add both the <code>libvulkan.1.dylib</code> and the <code>libvulkan.1.x.yyy.dylib</code> to your application's folder in the Project Navigator. You may have to add a Copy Files step to copy these two files into the compiled project.</p>
+<p><code>libvulkan.1.dylib</code> and <code>libvulkan.dylib</code> are both symbolic links to <code>libvulkan.1.x.yyy.dylib</code>. You may prefer to link only to <code>libvulkan.1.x.yyy.dylib</code> or rename <code>libvulkan.1.x.yyy.dylib</code> to <code>libvulkan.1.dylib</code> or <code>libvulkan.dylib</code> in your project.</p>
+<h2 id="mobile-device-development">Mobile Device Development</h2>
+<p>As of January 2024, <em>Vulkan Loader</em> support is now available for <em>iOS</em> and <em>iPadOS</em> devices. Layers, however, must be bundled with your application framework, and must be enabled programmatically at instance creation time. More details about this can be found here: <a href="https://www.lunarg.com/news-insights/white-papers/updated-white-paper-the-state-of-vulkan-on-apple-devices/" TARGET="_blank">The State of Vulkan on Apple Devices</a>.</p>
+<h2 id="vulkan-sdk-layers">Vulkan SDK Layers</h2>
+<p><em>Vulkan Layers</em> aim at helping <em>Vulkan</em> developers building <em>Vulkan</em> applications by providing <strong>Vulkan API usage validation</strong> and <strong>Vulkan debugging tools</strong>.</p>
+<p>A <em>Vulkan Layer</em> can intercept all or any subset of <em>Vulkan</em> API entry points. Multiple layers can be chained together to cascade their functionality in the appearance of a single, larger layer.</p>
+<h3 id="vulkan-sdk-layers-list">Vulkan SDK Layers list</h3>
+<p>The <em>Vulkan SDK</em> for <em>macOS</em> includes the following layers:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Layer Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="./khronos_validation_layer.html"><code>VK_LAYER_KHRONOS_validation</code></a></td>
+<td><em>Vulkan</em> API validation and error checking.</td>
+</tr>
+<tr class="even">
+<td><a href="./api_dump_layer.html"><code>VK_LAYER_LUNARG_api_dump</code></a></td>
+<td>Print API calls and their parameters and values.</td>
+</tr>
+<tr class="odd">
+<td><a href="./capture_tools.html"><code>VK_LAYER_LUNARG_gfxreconstruct</code></a></td>
+<td>Capturing application Vulkan commands for [GFXReconstruct] (#vulkan-api-capture-and-replay-with-gfxreconstruct).</td>
+</tr>
+<tr class="even">
+<td><a href="./profiles_layer.html"><code>VK_LAYER_KHRONOS_profiles</code></a></td>
+<td>Helps test across a wide range of hardware capabilities without physical access to every device.</td>
+</tr>
+<tr class="odd">
+<td><a href="./synchronization2_layer.html"><code>VK_LAYER_KHRONOS_synchronization2</code></a></td>
+<td>Implements the <code>VK_KHR_synchronization2</code>VK_KHR_synchronization2 extension, for use on systems without a driver that implements it.</td>
+</tr>
+<tr class="even">
+<td><a href="./shader_object_layer.html"><code>VK_LAYER_KHRONOS_shader_object</code></a></td>
+<td>Implements the <code>VK_EXT_shader_object</code>VK_EXT_shader_object extension, for use on systems without a driver that implements it.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="use-vulkan-layers">Use Vulkan Layers</h3>
+<h4 id="vulkan-configurator"><a href="./vkconfig.html">Vulkan Configurator</a></h4>
+<p><em>Vulkan Configurator</em> is a GUI application designed to make <em>Vulkan Layers</em> features and settings more accessible and intuitive to use, and to improve development iteration time.</p>
+<p>A <em>Vulkan</em> application may configure layers when creating a <em>Vulkan Instance</em>. This layers configuration may be overridden using <em>Vulkan Configurator</em> globally or for a selected list of <em>Vulkan</em> applications.</p>
+<p>Finally <em>Vulkan Configurator</em> allows using <em>Vulkan Layers</em> from user-defined directories.</p>
+<table>
+<thead>
+<tr class="header">
+<th><a href="./images/vkconfig-main-mac.png"> <img src="./images/vkconfig-main-icon-mac.png" alt="Main window" /> </a></th>
+<th><a href="./images/vkconfig-layers-mac.png"> <img src="./images/vkconfig-layers-icon-mac.png" alt="Layers window" /> </a></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Main window</td>
+<td>Layers window</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note:</strong> This is the recommended approach to use or override <em>Vulkan Layers</em>.</p>
+<h4 id="vk_instance_layers-environment-variable"><a href="./layer_configuration.html">VK_INSTANCE_LAYERS environment variable</a></h4>
+<p>Remember that on <em>macOS</em>, environment variables are not seen by GUI applications. However, if working from the command line the <em>Vulkan Layers</em> can be enabled by setting the <a href="./layer_configuration.html#activating-layers-on-linux-and-macos"><code>VK_INSTANCE_LAYERS</code></a> environment variable to a colon-separated list of layer or extension names, as found in the <a href="#vulkan-sdk-layers-list"><em>Vulkan SDK Layers</em> list</a> or within the <a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/master/loader/LoaderAndLayerInterface.md#layer-manifest-file-format" TARGET="_blank">manifest files</a>.</p>
+<pre class="shell"><code>$ export VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation:VK_LAYER_LUNARG_api_dump
+</code></pre>
+<h2 id="debugging-vulkan-applications">Debugging Vulkan applications</h2>
+<h3 id="vulkan-api-validation-with-khronos-validation-layer">Vulkan API Validation with <a href="./khronos_validation_layer.html">Khronos Validation layer</a></h3>
+<p>By design, minimal error checking is done inside a <em>Vulkan</em> driver to avoid API overhead. Applications have full control and responsibility for correct operation. Any errors in how <em>Vulkan</em> is used can result in a crash. The <em>Khronos Validation layer</em> <a href="./khronos_validation_layer.html"><code>VK_LAYER_KHRONOS_validation</code></a> can be enabled to assist development by enabling developers to verify their application's correct use of the <em>Vulkan</em> API.</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="loader-messages">Loader Messages</h3>
+<p>To get debug messages from the loader, export <code>VK_LOADER_DEBUG=all</code> and run your app or <code>vulkaninfo</code>. You will get debugging messages from the loader on <code>stdout</code> when this is set. This is even easier when using <em>Vulkan Configurator</em> to run your apps with validation layers.</p>
+<h3 id="common-problems">Common Problems</h3>
+<h4 id="encountered-vk_error_initialization_failed">Encountered <code>VK_ERROR_INITIALIZATION_FAILED</code>:</h4>
+<p>This problem can occur when the loader is unable to find an ICD to use. There are a few ways to fix this:</p>
+<ul>
+<li>You can export the <code>VK_ICD_FILENAMES</code> environment variable.</li>
+<li>You can install the ICD in a system directory.
+<ul>
+<li>Run <code>sudo ./install_vulkan.py</code> from the <em>Vulkan SDK</em> folder if your installation has been compromised.</li>
+</ul></li>
+<li>If your application is contained in a bundle, you can relink the app to place the driver in the bundle.</li>
+</ul>
+<h4 id="encountered-could-not-start-vulkan-info-message-in-vulkan-info-tab-of-vkconfigapp">Encountered "Could not start Vulkan Info" message in "Vulkan Info" tab of <code>vkconfig.app</code>:</h4>
+<p>To use the "Vulkan Info" tab in <code>vkconfig.app</code> the SDK files must be copied to your system folders. If your installation has become corrupted ,you can run <code>sudo ./install_vulkan.py</code> from the SDK folder or re-run the SDK installation program.</p>
+<h4 id="encountered-vk_error_incompatible_driver">Encountered <code>VK_ERROR_INCOMPATIBLE_DRIVER</code>:</h4>
+<p>Beginning with the 1.3.216 Vulkan SDK, the Vulkan Loader is strictly enforcing the new <code>VK_KHR_PORTABILITY_subset</code> extension. The most likely cause of this error message on instance creation is failure to adhere to this extension, which prevents applications on all platforms from selecting by default a non-conformant Vulkan implementation without opting in. MoltenVK is currently not fully conformant, and thus supporting this extension is necessary for building robust and portable <em>Vulkan</em>-based applications that are good citizens in the Vulkan ecosystem.</p>
+<p>Opting in is simple. First add the <code>VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR</code> bit to your <code>VkInstanceCreateInfo</code> structure's <code>.flags</code> member, then add two instance extensions to your instance extensions list: <code>VK_KHR_portability_enumeration</code>, and <code>VK_KHR_get_physical_device_properties2</code>.</p>
+<p>Typically the code to add support for instance extensions looks something like this:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode c++"><code class="sourceCode cpp"><a class="sourceLine" id="cb15-1" title="1"><span class="bu">std::</span>vector&lt;<span class="at">const</span> <span class="dt">char</span>*&gt;</a>
+<a class="sourceLine" id="cb15-2" title="2">extNames.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);</a>
+<a class="sourceLine" id="cb15-3" title="3">extNames.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);</a>
+<a class="sourceLine" id="cb15-4" title="4"></a>
+<a class="sourceLine" id="cb15-5" title="5">VkInstanceCreateInfo inst_info = {};</a>
+<a class="sourceLine" id="cb15-6" title="6">ins_info.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;</a>
+<a class="sourceLine" id="cb15-7" title="7">inst_info.enabledExtensionCount = <span class="kw">static_cast</span>&lt;<span class="dt">uint32_t</span>&gt;(extNames.size());</a>
+<a class="sourceLine" id="cb15-8" title="8">inst_info.ppEnabledExtensionNames = extNames.data();</a></code></pre></div>
+<p>Note that support for the <code>VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME</code> is only required for Vulkan version 1.0.</p>
+<h3 id="loader-search-paths-for-icd-and-layers">Loader Search Paths for ICD and Layers</h3>
+<p>The <em>Vulkan Loader</em> for <em>macOS</em> searches the same paths for ICDs and Layers as the <em>Vulkan Loader</em> for <em>Linux</em>. These paths are described in <a href="./loader_and_layer_interface.html">The Loader And Layer Interface document</a>.</p>
+<p>The <em>macOS</em> and <em>iOS</em> loader also looks in the application's bundle for ICD and layer <code>JSON</code> files. It looks in the bundle's <code>Resources/vulkan/icd.d</code> directory for ICD <code>JSON</code> files and in the bundle's <code>Resources/vulkan/explicit_layer.d</code> directory for layer <code>JSON</code> files. The ICD <code>JSON</code> file (<code>MoltenVK_icd.json</code>) can be seen in the bundle shown above.</p>
+<p>If the executable is in a bundle, the loader searches the bundle first before searching the system directories.</p>
+<p>If you wish to bundle the <em>MoltenVK</em> ICD into your application, you need to put a modified version of the <code>MoltenVK_icd.json</code> file in your bundle's <code>Resources/vulkan/icd.d</code> folder to allow the loader to find the <em>MoltenVK</em> library in your bundle. Assuming that you intend to ship the <em>MoltenVK</em> library in the <code>Frameworks</code> directory, you would make a copy of the file <code>/macOS/share/vulkan/icd.d/MoltenVK_icd.json</code> from the SDK.</p>
+<p>Edit this copy to modify the <code>library_path</code>:</p>
+<p>Original:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode json"><code class="sourceCode json"><a class="sourceLine" id="cb16-1" title="1"><span class="fu">{</span></a>
+<a class="sourceLine" id="cb16-2" title="2">    <span class="dt">&quot;file_format_version&quot;</span> <span class="fu">:</span> <span class="st">&quot;1.0.0&quot;</span><span class="fu">,</span></a>
+<a class="sourceLine" id="cb16-3" title="3">    <span class="dt">&quot;ICD&quot;</span><span class="fu">:</span> <span class="fu">{</span></a>
+<a class="sourceLine" id="cb16-4" title="4">        <span class="dt">&quot;library_path&quot;</span><span class="fu">:</span> <span class="st">&quot;./libMoltenVK.dylib&quot;</span><span class="fu">,</span></a>
+<a class="sourceLine" id="cb16-5" title="5">        <span class="dt">&quot;api_version&quot;</span> <span class="fu">:</span> <span class="st">&quot;1.2.0&quot;</span><span class="fu">,</span></a>
+<a class="sourceLine" id="cb16-6" title="6">        <span class="dt">&quot;is_portability_driver&quot;</span><span class="fu">:</span> <span class="kw">true</span></a>
+<a class="sourceLine" id="cb16-7" title="7">    <span class="fu">}</span></a>
+<a class="sourceLine" id="cb16-8" title="8"><span class="fu">}</span></a></code></pre></div>
+<p>Modified:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode json"><code class="sourceCode json"><a class="sourceLine" id="cb17-1" title="1"><span class="fu">{</span></a>
+<a class="sourceLine" id="cb17-2" title="2">    <span class="dt">&quot;file_format_version&quot;</span> <span class="fu">:</span> <span class="st">&quot;1.0.0&quot;</span><span class="fu">,</span></a>
+<a class="sourceLine" id="cb17-3" title="3">    <span class="dt">&quot;ICD&quot;</span><span class="fu">:</span> <span class="fu">{</span></a>
+<a class="sourceLine" id="cb17-4" title="4">        <span class="dt">&quot;library_path&quot;</span><span class="fu">:</span> <span class="st">&quot;../../../Frameworks/libMoltenVK.dylib&quot;</span><span class="fu">,</span></a>
+<a class="sourceLine" id="cb17-5" title="5">        <span class="dt">&quot;api_version&quot;</span> <span class="fu">:</span> <span class="st">&quot;1.2.0&quot;</span><span class="fu">,</span></a>
+<a class="sourceLine" id="cb17-6" title="6">        <span class="dt">&quot;is_portability_driver&quot;</span><span class="fu">:</span> <span class="kw">true</span></a>
+<a class="sourceLine" id="cb17-7" title="7">    <span class="fu">}</span></a>
+<a class="sourceLine" id="cb17-8" title="8"><span class="fu">}</span></a></code></pre></div>
+<p>Then use this modified file when creating your application bundle.</p>
+<p>The layout on <em>iOS</em> and <em>iPadOS</em> is only slightly different:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode json"><code class="sourceCode json"><a class="sourceLine" id="cb18-1" title="1"><span class="fu">{</span></a>
+<a class="sourceLine" id="cb18-2" title="2">    <span class="dt">&quot;file_format_version&quot;</span> <span class="fu">:</span> <span class="st">&quot;1.0.0&quot;</span><span class="fu">,</span></a>
+<a class="sourceLine" id="cb18-3" title="3">    <span class="dt">&quot;ICD&quot;</span><span class="fu">:</span> <span class="fu">{</span></a>
+<a class="sourceLine" id="cb18-4" title="4">        <span class="dt">&quot;library_path&quot;</span><span class="fu">:</span> <span class="st">&quot;../../Frameworks/libMoltenVK.dylib&quot;</span><span class="fu">,</span></a>
+<a class="sourceLine" id="cb18-5" title="5">        <span class="dt">&quot;api_version&quot;</span> <span class="fu">:</span> <span class="st">&quot;1.2.0&quot;</span><span class="fu">,</span></a>
+<a class="sourceLine" id="cb18-6" title="6">        <span class="dt">&quot;is_portability_driver&quot;</span><span class="fu">:</span> <span class="kw">true</span></a>
+<a class="sourceLine" id="cb18-7" title="7">    <span class="fu">}</span></a>
+<a class="sourceLine" id="cb18-8" title="8"><span class="fu">}</span></a></code></pre></div>
+<h3 id="application-bundle-structure-on-macos">Application Bundle Structure on <em>macOS</em></h3>
+<p>For example, the application bundle for <em>Vulkan Cube</em> (<code>vkcube.app</code>) is laid out as follows:</p>
+<pre><code>vkcube.app
+    Contents
+        Frameworks
+            libMoltenVK.dylib
+            libvulkan.1.[version number].dylib
+            libvulkan.1.dylib -&gt; libvulkan.1.[version number].dylib
+        Info.plist
+        MacOS
+            vkcube
+        Resources
+            VulkanIcon.icns
+            Main.storyboardc
+            vulkan
+                icd.d
+                    MoltenVK_icd.json
+                explicit_layer
+                    VkLayer_khronos_validation.json
+</code></pre>
+<p><strong>Note</strong>: All required components are in the bundle. Signed apps will also have the <code>_CodeSignature</code> and <code>CodeResources</code> assets.</p>
+<h3 id="application-bundle-structure-on-ios-and-ipados">Application Bundle Structure on <em>iOS</em> and <em>iPadOS</em></h3>
+<p>The application bundle on <em>iOS</em> or <em>iPadOS</em> is only slightly different:</p>
+<pre><code>vkcube.app
+    Frameworks
+        libMoltenVK.dylib
+        libvulkan.1.[version number].dylib
+        libvulkan.1.dylib -&gt; libvulkan.1.[version number].dylib
+    Info.plist
+    vkcube
+    vulkan
+        icd.d
+            MoltenVK_icd.json
+        explicit_layer.d
+            VkLayer_khronos_validation.json
+</code></pre>
+<h2 id="next-steps">Next Steps</h2>
+<p>This guide provided an introduction to the main components and tools in the <em>Vulkan SDK</em>. Refer to the <a href="https://vulkan.lunarg.com/sdk/home" TARGET="_top" title="Vulkan SDK Download Site"><em>Vulkan SDK</em> Download Site</a> for the most up-to-date SDK information, including the complete set of SDK documentation.</p>
+</article>
+</body>
+</html>

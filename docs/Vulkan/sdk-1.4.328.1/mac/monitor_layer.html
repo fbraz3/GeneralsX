@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="icon" href="images/Vulkan_LogoBug_48px_Nov17.png">
+<link rel="stylesheet" href="github-markdown.css">
+</head>
+<body>
+<article class="markdown-body">
+<!-- markdownlint-disable MD041 -->
+
+<p align="left"><img src="https://vulkan.lunarg.com/img/NewLunarGLogoBlack.png" alt="LunarG" width=263 height=113 /></p>
+<p align="left">Copyright &copy; 2015-2022 LunarG, Inc.</p>
+
+<p><a href="https://creativecommons.org/licenses/by-nd/4.0/" TARGET="_blank"><img src="https://i.creativecommons.org/l/by-nd/4.0/88x31.png" title="Creative Commons License" alt="Creative Commons" /></a></p>
+<h1 id="vk_layer_lunarg_monitor">VK_LAYER_LUNARG_monitor</h1>
+<p>The <code>VK_LAYER_LUNARG_monitor</code> utility layer displays the real-time frame rate in frames-per-second in the application's title bar. It is only compatible with the Win32 and XCB windowing systems and will not display the frame rate on other platforms.</p>
+<p>For an overview of how to configure layers, refer to the <a href="./layer_configuration.html">Layers Overview and Configuration</a> document.</p>
+<p>The Monitor Layer can be enabled using the <a href="./vkconfig.html">Vulkan Configurator</a> included with the Vulkan SDK.</p>
+<h2 id="layer-properties">Layer Properties</h2>
+<ul>
+<li>API Version: 1.4.328</li>
+<li>Implementation Version: 1</li>
+<li>Layer Manifest: <code>VkLayer_monitor.json</code>
+<ul>
+<li>File Format: 1.0.0</li>
+<li>Layer Binary: <code>libVkLayer_monitor.so</code></li>
+</ul></li>
+<li>Variables:
+<ul>
+<li><code>vk_layer_settings.txt</code> namespace: <code>lunarg_monitor</code></li>
+<li>Environment Variable prefix: <code>VK_LUNARG_MONITOR_</code></li>
+<li>Android system property prefix: <code>adb setprop debug.vulkan.lunarg_monitor.</code></li>
+</ul></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code></li>
+</ul>
+</article>
+</body>
+</html>

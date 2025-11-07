@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Constant data in Vulkan :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:samples" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="samples" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../../README.html">Vulkan Samples</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../README.html">Samples overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../vulkan_basics.html">Vulkan basics</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../../shaders/README.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../framework/README.html">Sample framework</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../components/README.html">Framework components</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/README.html">Api usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/compute_nbody/README.html">Compute N-body</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_compute_nbody/README.html">Compute N-body (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/dynamic_uniform_buffers/README.html">Dynamic uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_dynamic_uniform_buffers/README.html">Dynamic Uniform Buffers (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/hdr/README.html">HDR</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_hdr/README.html">HDR (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/hello_triangle/README.html">Hello Triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_hello_triangle/README.html">Hello Triangle (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/hello_triangle_1_3/README.html">Hello Triangle 1.3</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_hello_triangle_1_3/README.html">Hello Triangle 1.3(Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/instancing/README.html">Instancing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_instancing/README.html">Instancing (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/separate_image_sampler/README.html">Separate image sampler</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_separate_image_sampler/README.html">Separate image sampler (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/terrain_tessellation/README.html">Terrain tessellation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_terrain_tessellation/README.html">Terrain tessellation (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/texture_loading/README.html">Texture loading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_texture_loading/README.html">Texture loading (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/texture_mipmap_generation/README.html">Texture mipmap generation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_texture_mipmap_generation/README.html">Texture mipmap generation (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/timestamp_queries/README.html">Timestamp queries</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_timestamp_queries/README.html">Timestamp queries (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/oit_linked_lists/README.html">OIT linked lists</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_oit_linked_lists/README.html">OIT linked lists (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/oit_depth_peeling/README.html">OIT depth peeling</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_oit_depth_peeling/README.html">OIT depth peeling (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../extensions/README.html">Extension usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/buffer_device_address/README.html">Buffer device address</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/calibrated_timestamps/README.html">Calibrated timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/conditional_rendering/README.html">Conditional rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/conservative_rasterization/README.html">Conservative rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/debug_utils/README.html">Debug utils</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/descriptor_buffer_basic/README.html">Descriptor buffer basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/descriptor_indexing/README.html">Descriptor indexing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/dynamic_line_rasterization/README.html">Dynamic line rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/dynamic_primitive_clipping/README.html">Dynamic primitive clipping</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/dynamic_rendering/README.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/dynamic_rendering_local_read/README.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/extended_dynamic_state2/README.html">Extended dynamic state2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/fragment_shader_barycentric/README.html">Fragment shader barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/fragment_shading_rate/README.html">Fragment shading rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/fragment_shading_rate_dynamic/README.html">Fragment shading rate dynamic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/full_screen_exclusive/README.html">Full screen exclusive</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/graphics_pipeline_library/README.html">Graphics pipeline library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/gshader_to_mshader/README.html">Geometry shader to mesh shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/host_image_copy/README.html">Host image copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/logic_op_dynamic_state/README.html">Logic op dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/memory_budget/README.html">Memory budget</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/mesh_shader_culling/README.html">Mesh shader culling</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../extensions/mesh_shading/README.html">Mesh shading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../extensions/hpp_mesh_shading/README.html">Mesh shading (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/open_cl_interop/README.html">OpenCL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/open_cl_interop_arm/README.html">OpenCL interop (Arm)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/open_gl_interop/README.html">OpenGL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/portability/README.html">Portability</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../extensions/push_descriptors/README.html">Push descriptors</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../extensions/hpp_push_descriptors/README.html">Push descriptors (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/ray_tracing_basic/README.html">Raytracing basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/ray_tracing_extended/README.html">Raytracing extended</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/ray_queries/README.html">Ray queries</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/ray_tracing_reflection/README.html">Ray tracing reflection</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/ray_tracing_position_fetch/README.html">Ray tracing position fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/shader_object/README.html">Shader Object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/shader_debugprintf/README.html">Shader Debug Printf</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/sparse_image/README.html">Sparse Image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/synchronization_2/README.html">Synchronization 2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/timeline_semaphore/README.html">Timeline semaphore</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/vertex_dynamic_state/README.html">Vertex dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/dynamic_multisample_rasterization/README.html">Dynamic multisample rasterization</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../README.html">Performance samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../16bit_arithmetic/README.html">16bit arithmetic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../16bit_storage_input_output/README.html">16bit storage input output</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../afbc/README.html">AFBC</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../async_compute/README.html">Async compute</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../command_buffer_usage/README.html">Command buffer usage</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="README.html">Constant data</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../descriptor_management/README.html">Descriptor management</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../image_compression_control/README.html">Image compression control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../layout_transitions/README.html">Layout transitions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../msaa/README.html">MSAA</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../multithreading_render_passes/README.html">Multithreading render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../multi_draw_indirect/README.html">Multi draw indirect</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../pipeline_barriers/README.html">Pipeline barriers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../pipeline_cache/README.html">Pipeline cache</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../hpp_pipeline_cache/README.html">Pipeline cache (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../render_passes/README.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../specialization_constants/README.html">Specialization constants</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../subpasses/README.html">Subpasses</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../surface_rotation/README.html">Surface rotation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../swapchain_images/README.html">Swapchain images</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../hpp_swapchain_images/README.html">Swapchain images (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../texture_compression_basisu/README.html">Texture compression basisu</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../texture_compression_comparison/README.html">Texture compression comparison</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../hpp_texture_compression_comparison/README.html">Texture compression comparison (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../wait_idle/README.html">Wait idle</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../tooling/README.html">Tooling samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../tooling/profiles/README.html">Profiles</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../general/README.html">General samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../general/mobile_nerf/README.html">Mobile NeRF</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../general/mobile_nerf_rayquery/README.html">Mobile NeRF Ray Query</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../docs/README.html">General documentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../docs/build.html">Build guide</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../docs/memory_limits.html">Memory limits</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../docs/misc.html">Miscellaneous</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Samples</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../../../README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../../README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../../README.html">Vulkan Samples</a></li>
+    <li><a href="../README.html">Performance samples</a></li>
+    <li><a href="README.html">Constant data</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Samples/antora/modules/ROOT/pages/samples/performance/constant_data/README.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Constant data in Vulkan</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+The source for this sample can be found in the <a href="https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/performance/constant_data">Khronos Vulkan samples github repository</a>.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The Vulkan API exposes a few different ways in which we can send uniform data into our shaders.
+There are enough methods that it raises the question "Which one is fastest?", and more often than not the answer is "It depends".</p>
+</div>
+<div class="paragraph">
+<p>The main issue for developers is that the fastest methods may differ between the various vendors, so often there is no "one size fits all" solution.</p>
+</div>
+<div class="paragraph">
+<p>This sample aims to highlight this issue, and help move the Vulkan ecosystem to a point where we are better equipped to solve this for developers.
+This is done by having an interactive way to toggle different constant data methods that the Vulkan API expose to us.
+This can then be run on a platform of the developers choice to see the performance implications that each of them bring.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_what_is_constant_data"><a class="anchor" href="#_what_is_constant_data"></a>What is constant data?</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h3>
+<div class="paragraph">
+<p>Constant data is a form of information that is supplied to the pipeline to help with shader computations.</p>
+</div>
+<div class="paragraph">
+<p>In theory, this data can be anything we want it to be, for instance it can be used for things such as calculating where an object should be placed inside our world, or computing the overall brightness of an object based on the lights in the scene.</p>
+</div>
+<div class="paragraph">
+<p>It differs from other data (e.g.
+input vertex data) in the sense that it remains <em>constant</em> across every shader invocation of a draw call.</p>
+</div>
+<div class="paragraph">
+<p>This is important as because of this assumption, the data can be <strong>shared</strong> between shader stages, as we know it isn&#8217;t going to be changed throughout the runtime of a single draw call in a render pipeline.</p>
+</div>
+<div class="paragraph">
+<p>The next section aims to cover the constant data theory, starting at the shader level before moving to the basics of how to plug in your data using Vulkan.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_constant_data_in_vulkan_shaders"><a class="anchor" href="#_constant_data_in_vulkan_shaders"></a>Constant data in Vulkan shaders</h3>
+<div class="paragraph">
+<p>Constant data is implemented in shader code by using global variables.</p>
+</div>
+<div class="paragraph">
+<p><strong>Global variables</strong> have the following format: <code>&lt;layout&gt; &lt;storage&gt; &lt;type&gt; &lt;variable_name&gt;</code>.</p>
+</div>
+<div class="paragraph">
+<p>Take this vertex shader for example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">layout(location = 0) in vec4 position;
+
+layout(set = 0, binding = 0) uniform ConstantData
+{
+    mat4 model;
+} constant_data;
+
+layout(location = 0) out vec4 o_pos;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We can see three global variables, each with a different <strong>storage type</strong>:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Inputs (<code>in</code>)</p>
+</li>
+<li>
+<p>Uniforms (<code>uniform</code>)</p>
+</li>
+<li>
+<p>Outputs (<code>out</code>)</p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_varying_types"><a class="anchor" href="#_varying_types"></a>Varying Types</h4>
+<div class="paragraph">
+<p>The global variables that use inputs (<code>in</code>) and outputs (<code>out</code>) are values that <em>may vary</em> from one shader invocation to the next, therefore they <strong>shouldn&#8217;t</strong> be used for constant data.
+They require a <code>layout location</code> which is used to identify a particular input/output.</p>
+</div>
+<div class="paragraph">
+<p>They have slightly different rules for what they do depending on the shader stage, and have slightly different restrictions on the types of data it can represent.
+However, generally their use is to feed values from one stage to the next (e.g.
+from vertex shader to fragment shader).</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+You can read more about shader stage inputs and outputs <a href="https://www.khronos.org/opengl/wiki/Type_Qualifier_(GLSL)#Shader_stage_inputs_and_outputs">here</a>.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_uniform_types"><a class="anchor" href="#_uniform_types"></a>Uniform Types</h4>
+<div class="paragraph">
+<p>Uniform types are global variables that have either the <code>uniform</code> or <code>buffer</code> storage type, these are <em>uniform buffer objects</em> and <em>shader storage buffer objects</em> respectively.
+They describe data which remains constant across an entire draw call, meaning that the values stay the same across the different shader stages and shader invocations.</p>
+</div>
+<div class="paragraph">
+<p>These values use a <code>layout binding</code> and, when working with multiple <code>VkDescriptorSet</code>s, we will also give it a <code>layout set</code>.</p>
+</div>
+<div class="paragraph">
+<p><strong>Uniform buffer objects (UBOs)</strong> are the more commonly used of the two.
+They are <em>read-only</em> buffers, so trying to edit them in shader code will result in a compile-time error.</p>
+</div>
+<div class="paragraph">
+<p><strong>Shader storage buffer objects (SSBOs)</strong> are like special types of uniform buffer objects, denoted by the storage type <code>buffer</code>.
+Unlike UBOs they can be written to, meaning the values <em>can</em> be changed in the shaders so therefore they don&#8217;t always represent data that is constant.
+Having said this, depending on the implementation, they generally can hold a lot more data as opposed to UBOs.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+To check how much data we can store in uniform buffers and storage buffers, you can query the physical device for its <code>VkPhysicalDeviceLimits</code> and check the values <code>maxUniformBufferRange</code> and <code>maxStorageBufferRange</code> respectively._
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_interface_blocks"><a class="anchor" href="#_interface_blocks"></a>Interface Blocks</h4>
+<div class="paragraph">
+<p>To implement our constant data we have to use an interface block.
+Interface blocks in shader code are used to group multiple global variables of the same <code>&lt;storage&gt;</code> type, so in theory they aren&#8217;t necessarily solely for constant data.</p>
+</div>
+<div class="paragraph">
+<p>For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">layout(set = 0, binding = 0) uniform PerMeshData
+{
+    vec4 camera_position;
+    mat4 model_matrix;
+    vec3 mesh_color;
+}
+per_mesh_data;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Interface blocks are still global variables, and technically still follow the global variable format that was mentioned at the start of this chapter.
+However, the difference is that they have to be given a user-defined type.
+They work exactly the same way as a <code>struct</code> in GLSL/C&#43;&#43;.
+For example, to access the model matrix in this interface block, you&#8217;d use <code>per_mesh_data.model_matrix</code>.</p>
+</div>
+<div class="paragraph">
+<p>You can read more about interface blocks <a href="https://www.khronos.org/opengl/wiki/Type_Qualifier_(GLSL)#Shader_stage_inputs_and_outputs">here</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vulkan_api"><a class="anchor" href="#_vulkan_api"></a>Vulkan API</h3>
+<div class="paragraph">
+<p>We&#8217;ve covered how constant data is implemented in the shader, however to push the data from the application to the shader we need to use Vulkan.</p>
+</div>
+<div class="paragraph">
+<p>We do this mainly with the use of <code>VkBuffer</code>s, which is Vulkan&#8217;s implementation of buffer memory.</p>
+</div>
+<div class="paragraph">
+<p>Buffers in Vulkan are just chunks of memory used for storing data, which can be read by the GPU.</p>
+</div>
+<div class="paragraph">
+<p>They need to be created and have their memory <em>manually</em> allocated, and then we can copy our constant data into the allocated memory.
+This data can then be plugged into the draw calls, so that it can finally be used in our shader computations.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The library <a href="https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator">Vulkan Memory Allocator (VMA)</a> is extremely good for handling a lot of the common pitfalls that come with managing your Vulkan memory, without removing the control that you would otherwise have with native Vulkan.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The following links are useful for learning how to create a Vulkan buffer in your application:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://docs.vulkan.org/tutorial/latest/04_Vertex_buffers/01_Vertex_buffer_creation.html">Vulkan Tutorial vertex buffer creation</a></p>
+</li>
+<li>
+<p><a href="https://docs.vulkan.org/tutorial/latest/04_Vertex_buffers/02_Staging_buffer.html#_abstracting_buffer_creation">Vulkan tutorial abstracting buffer creation</a></p>
+</li>
+<li>
+<p><a href="https://docs.vulkan.org/tutorial/latest/05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html#_uniform_buffer">Vulkan tutorial uniform buffer</a></p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_the_methods"><a class="anchor" href="#_the_methods"></a>The Methods</h4>
+<div class="paragraph">
+<p>There are various ways to push your constant data, where this tutorial will cover a subset of these methods.</p>
+</div>
+<div class="paragraph">
+<p>However the Vulkan API gives a lot of flexibility about how to handle <strong>descriptor sets</strong>, offering many different types and different ways to bind and use them (especially when we factor in extensions).
+This can puzzle developers about which is best, and for which scenarios.
+This tutorial aims to ease some of the confusion and uncertainty around this subject.</p>
+</div>
+<div class="paragraph">
+<p>When we break this down, we have the following methods:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Push Constants</p>
+</li>
+<li>
+<p>Descriptor Sets</p>
+</li>
+<li>
+<p>Dynamic Descriptor Sets</p>
+</li>
+<li>
+<p>Update-after-bind Descriptor Sets</p>
+</li>
+<li>
+<p>Buffer array with dynamic indexing</p>
+</li>
+<li>
+<p><a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VK_EXT_inline_uniform_block.html">Inline uniform buffer objects</a> (click to read more)</p>
+</li>
+<li>
+<p><a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VK_KHR_push_descriptor.html">Push descriptors</a> (click to read more)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Inline uniform buffer objects</strong> and <strong>push descriptors</strong> are not covered by this tutorial, please use the links above to learn more about them.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_sample_overview"><a class="anchor" href="#_sample_overview"></a>Sample Overview</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_introduction_2"><a class="anchor" href="#_introduction_2"></a>Introduction</h3>
+<div class="paragraph">
+<p>The sample uses a mesh heavy scene which has 1856 meshes (475 KB of mesh data).
+This is to demonstrate a use case where many different calls to pushing constant data will occur during a single frame.
+This is to artificially exaggerate the performance delta.</p>
+</div>
+<div class="paragraph">
+<p>The constant data that is being sent is the per-mesh model matrix, the camera view projection matrix, a scale matrix and some extra padding.
+If the GPU doesn&#8217;t support at least 256 bytes of push constants, it will instead push 128 bytes (it won&#8217;t include the scale matrix and the extra padding).</p>
+</div>
+<div class="paragraph">
+<p>A performance graph is displayed at the top with two charts, one showing frame time, and one showing the load/store cycles.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../../_images/samples/performance/constant_data/images/graph_data.jpg" alt="graph">
+</div>
+</div>
+<div class="paragraph">
+<p>These two counters will show the CPU and GPU cost respectively, so when you go to toggle the different method you can see how it changes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_controls"><a class="anchor" href="#_controls"></a>Controls</h3>
+<div class="paragraph">
+<p>The options presented to the user lets them change the method by which we push the MVP data.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../../_images/samples/performance/constant_data/images/controls.png" alt="sample">
+</div>
+</div>
+<div class="paragraph">
+<p>It is important to note that the configuration adapts to the device and GPU.
+This is so if an extension isn&#8217;t supported, the related option will no longer show.
+You can check the console log to see a warning message detailing what features were disabled and why.</p>
+</div>
+<div class="paragraph">
+<p>When an option is changed, the descriptor sets are flushed and recreated with their new setup, and the respective render pipeline/subpass.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_push_constants"><a class="anchor" href="#_push_constants"></a>Push Constants</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_introduction_3"><a class="anchor" href="#_introduction_3"></a>Introduction</h3>
+<div class="paragraph">
+<p>Push constants are usually the first method newer Vulkan programmers will stumble upon when beginning to work with constant data.
+They are straightforward to use and integrate nicely into any codebase, making them a great option to send simple data to your shaders.</p>
+</div>
+<div class="paragraph">
+<p>A downside to push constants is that on some platforms they have strict limitations on how much data can be sent.
+The Vulkan spec guarantees that drivers will support at least 128 bytes of push constants.
+Many modern implementations of Vulkan will commonly support 256 bytes and sometimes much more.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+To determine how many bytes your system supports, you can query the physical device for its <code>VkPhysicalDeviceLimits</code> and check the value <code>maxPushConstantsSize</code>.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Having said this, 128/256 bytes is still a useful amount of data, even if it isn&#8217;t exactly scalable to a full game scenario.
+In the case of 128 bytes, we can at least send two float 4x4 matrices (2 * 4 * 16 = 128).
+This, for example, can hold our world matrix and our view-projection matrix.</p>
+</div>
+<div class="paragraph">
+<p>So that the shader can understand where this data will be sent, we specify a special push constants <code>&lt;layout&gt;</code> in our shader code.</p>
+</div>
+<div class="paragraph">
+<p>For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">layout(push_constant) uniform MeshData
+{
+	mat4 model;
+} mesh_data;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To then send the push constant data to the shader we use the <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#vkCmdPushConstants"><code>vkCmdPushConstants</code></a> function:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">void vkCmdPushConstants(
+    VkCommandBuffer                             commandBuffer,
+    VkPipelineLayout                            layout,
+    VkShaderStageFlags                          stageFlags,
+    uint32_t                                    offset,
+    uint32_t                                    size,
+    const void*                                 pValues);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_performance"><a class="anchor" href="#_performance"></a>Performance</h3>
+<div class="imageblock">
+<div class="content">
+<img src="../../../_images/samples/performance/constant_data/images/push_constants_performance.jpg" alt="push constants">
+</div>
+</div>
+<div class="paragraph">
+<p>In early implementations of Vulkan on Arm Mali, this was usually the fastest way of pushing data to your shaders.
+In more recent times, we have observed on Mali devices that <em>overall</em> they can be slower.
+If performance is something you are trying to maximise on Mali devices, descriptor sets may be the way to go.
+However, other devices may still favour push constants.</p>
+</div>
+<div class="paragraph">
+<p>Having said this, descriptor sets are one of the more complex features of Vulkan, making the convenience of push constants still worth considering as a go-to method, especially if working with trivial data.</p>
+</div>
+<div class="paragraph">
+<p>Scroll down for a comparison with static descriptor sets.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_descriptor_sets"><a class="anchor" href="#_descriptor_sets"></a>Descriptor Sets</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_introduction_4"><a class="anchor" href="#_introduction_4"></a>Introduction</h3>
+<div class="paragraph">
+<p>In Vulkan, resources are exposed to shaders by the use of <strong>resource descriptors</strong>.</p>
+</div>
+<div class="paragraph">
+<p>A <strong>resource descriptor</strong> (or <strong>descriptor</strong> for short) is a way for a shader to access a resource such as a buffer or an image.
+These <strong>descriptors</strong> are simple structures holding a pointer to the resource it is "describing", along with an associated <em>resource binding</em> so that when we execute a draw call the shader knows where to look for the resource.</p>
+</div>
+<div class="paragraph">
+<p>A collection of <strong>descriptor</strong>s are called a <strong>descriptor set</strong>, which itself will have an associated <em>set binding</em>.</p>
+</div>
+<div class="paragraph">
+<p>For example, if we take this line of shader code:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">layout(set = 0, binding = 0) uniform ConstantData
+{
+    mat4 model;
+} constant_data;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>set</code> value maps to the <em>set binding</em>, and the <code>binding</code> value maps to the <em>resource binding</em>.
+So therefore we can deduce that for this shader we&#8217;d need a pipeline that has one descriptor set with one binding (0 and 0 respectively).</p>
+</div>
+<div class="paragraph">
+<p>To create a <strong>descriptor set</strong>, we need to allocate it from a <strong>descriptor set pool</strong> and give it a specific <strong>descriptor set layout</strong>.</p>
+</div>
+<div class="paragraph">
+<p>After a <strong>descriptor set</strong> is allocated, it needs to be updated with the <strong>descriptors</strong>.
+The update process requires us to specify a list of <strong>write operations</strong>, where a write operation is a <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkWriteDescriptorSet.html"><code>VkWriteDescriptorSet</code></a> struct.</p>
+</div>
+<div class="paragraph">
+<p>Then the valid <strong>descriptor set</strong> is bound to a command buffer so that when <code>vkCmdDraw*()</code> commands are run, the right resources are made available in the GPU.</p>
+</div>
+<div class="sect3">
+<h4 id="_buffer_object"><a class="anchor" href="#_buffer_object"></a>Buffer Object</h4>
+<div class="paragraph">
+<p>For all the descriptor set sections below, we will use one such resource known as a <strong>buffer object</strong>, as this will be what we use to store our MVP data.</p>
+</div>
+<div class="paragraph">
+<p>A <strong>buffer object</strong> in Vulkan is a type of <code>VkBuffer</code>, created with the respective buffer usage flag.
+For uniform buffer objects we use the <code>VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT</code> flag, and for shader storage buffer objects we use the <code>VK_BUFFER_USAGE_STORAGE_BUFFER_BIT</code> flag.
+These map to the shader <code>&lt;storage&gt;</code> type <code>uniform</code>s and <code>buffer</code>s respectively.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_performance_2"><a class="anchor" href="#_performance_2"></a>Performance</h3>
+<div class="imageblock">
+<div class="content">
+<img src="../../../_images/samples/performance/constant_data/images/descriptor_set_performance.jpg" alt="single ubo">
+</div>
+</div>
+<div class="paragraph">
+<p>While it is not straightforward to perform a 1:1 comparison between push constants and descriptor sets, the sample does show static descriptor sets outperforming push constants.</p>
+</div>
+<div class="paragraph">
+<p>When comparing with <a href="#push-constants">push constants</a> on an Arm Mali GPU, we can see the frametime remains the same (16.7ms), however it is the load/store cycles we want to look at.
+They drop from 266 k/s to 123 k/s, showing that the GPU is worked more in the case of push constants to achieve the same visual results.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_dynamic_descriptor_sets"><a class="anchor" href="#_dynamic_descriptor_sets"></a>Dynamic Descriptor Sets</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_introduction_5"><a class="anchor" href="#_introduction_5"></a>Introduction</h3>
+<div class="paragraph">
+<p>Dynamic descriptor sets differ to the regular descriptor sets because they allow an offset to be specified when we are <em>binding</em> (<code>vkCmdBindDescriptorSets</code>) the descriptor set.
+This dynamic offset can be used in addition to the base offset used at the time of updating the descriptor set.</p>
+</div>
+<div class="paragraph">
+<p>One case in which this can be useful is:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Allocating one giant <strong>uniform buffer object</strong> containing all the world matrices of the meshes in your scene.</p>
+</li>
+<li>
+<p>Allocating a <strong>descriptor set</strong> with a binding containing the <code>VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC</code> flag that then points to the <strong>UBO</strong> you just created.</p>
+</li>
+<li>
+<p>In our draw call, for each mesh, <em>dynamically</em> offset into the giant <strong>uniform buffer object</strong>.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_performance_3"><a class="anchor" href="#_performance_3"></a>Performance</h3>
+<div class="imageblock">
+<div class="content">
+<img src="../../../_images/samples/performance/constant_data/images/dynamic_descriptor_set_performance.jpg" alt="dynamic ubo">
+</div>
+</div>
+<div class="paragraph">
+<p>In the screenshot above (taken on an S10 with a Mali G76 GPU) we can see the load/store cycles stay roughly the same compared to <a href="#uniform-buffer-objects">static uniform buffer objects</a>.
+However, the frame time goes up from 16.7 ms to 20.9 ms.
+This is due to the extra time you need to spend every frame determining the dynamic offsets, that you need to send in the bind call (<code>vkCmdBindDescriptorSets</code>).</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_update_after_bind_descriptor_sets"><a class="anchor" href="#_update_after_bind_descriptor_sets"></a>Update-after-bind Descriptor Sets</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_introduction_6"><a class="anchor" href="#_introduction_6"></a>Introduction</h3>
+<div class="paragraph">
+<p>Traditionally, <strong>descriptor sets</strong> require updating before they are bound to a command buffer - any further updates after it is bound will invalidate the command buffer it is bound to.
+However, this can be considered an "overly cautious" restriction when we realise that the command buffer isn&#8217;t actually executed until it&#8217;s submitted on a queue.
+This is where newer versions of Vulkan have introduced the concept of "update after bind".</p>
+</div>
+<div class="paragraph">
+<p>Essentially it adds in a binding flag to descriptor set layouts which allows the contents of the <strong>descriptor set</strong> to be updated up until the command buffer <em>is submitted to the queue</em>, rather than when the descriptor set is <em>bound to the command buffer</em>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Update-after-bind bindings cannot be used with dynamic descriptor sets.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_performance_4"><a class="anchor" href="#_performance_4"></a>Performance</h3>
+<div class="paragraph">
+<p>This should come with zero performance costs, and as a result this method is designed purely for offering flexibility to your codebase.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_buffer_object_arrays"><a class="anchor" href="#_buffer_object_arrays"></a>Buffer Object Arrays</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_introduction_7"><a class="anchor" href="#_introduction_7"></a>Introduction</h3>
+<div class="paragraph">
+<p>Another approach, which can be likened to a dynamic descriptor set, is a buffer object array.
+This is the concept of allocating all of your constant data <em>upfront</em> in a large buffer, and writing the entire buffer to a descriptor set.
+This means in any one shader invocation we have access to all of the model data for the entire scene, at the benefit of only needing to bind one descriptor set per entire draw call.</p>
+</div>
+<div class="paragraph">
+<p>You can use either a <code>uniform</code> or a <code>buffer</code> storage type in your shader code to achieve this.
+However, since <code>buffer</code>s can generally hold bigger amounts of data, this tutorial will use them.</p>
+</div>
+<div class="paragraph">
+<p><em>*Note:* If deciding to use a <code>uniform</code>, then the size of the array needs to be defined at compile time.
+This can be achieved with a shader variant definition.</em></p>
+</div>
+<div class="paragraph">
+<p>Here is an example of using a <code>buffer</code> in shader code:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">layout(set = 0, binding = 1) buffer MeshArray
+{
+	mat4 model_matrices[];
+} mesh_array;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Before you draw the scene, you create a <code>VkBuffer</code> with the  <code>VK_BUFFER_USAGE_STORAGE_BUFFER_BIT</code> usage flag, and fill it with all the model matrices of each mesh in the scene.</p>
+</div>
+<div class="paragraph">
+<p>Then to get the correct matrix inside our shader, we can pass a <strong>dynamic index</strong> to our draw call.
+We do this by using the <code>gl_InstanceIndex</code> value.</p>
+</div>
+<div class="paragraph">
+<p>For example, your shader code will look something like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">mat4 model_matrix = mesh_array.model_matrices[gl_InstanceIndex];
+
+out_pos = model_matrix * vec4(in_pos, 1.0);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To control the value of <code>gl_InstanceIndex</code> we use the <code>uint32_t firstInstance</code> parameter of the <code>vkCmdDraw*()</code> commands.</p>
+</div>
+<div class="paragraph">
+<p>It&#8217;s important to note that we can use other mechanisms to push this index to the shader, such as push constants.</p>
+</div>
+<div class="paragraph">
+<p>For example, this <code>vkCmdDrawIndexed</code> is taken from the <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/vkCmdDrawIndexed.html">Vulkan spec</a>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">void vkCmdDrawIndexed(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    indexCount,
+    uint32_t                                    instanceCount,
+    uint32_t                                    firstIndex,
+    int32_t                                     vertexOffset,
+    uint32_t                                    firstInstance);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Here is some pseudo-code to show how the <code>vkCmdDrawIndexed</code> function is used, and also to describe how a generic scene render function will look:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">uint32_t instance_index = 0;
+
+vkCmdBindDescriptorSet(command_buffer, buffer_array_descriptor_set);
+
+for(auto &amp;mesh : meshes)
+{
+    vkCmdBindVertexBuffer(command_buffer, mesh.vertex_buffer);
+    vkCmdBindIndexBuffer(command_buffer, mesh.index_buffer);
+
+    // This line does our drawing
+    vkCmdDrawIndexed(command_buffer, mesh.index_buffer.size(), 1, 0, 0, instance_index++);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the code snippet above we can see that we bind our descriptor set once, and for each mesh bind its vertex and index buffers and then execute a draw call with an incrementing value for <code>uint32_t firstInstance</code>.
+This <code>uint32_t</code> will be substituted in wherever <code>gl_InstanceIndex</code> exists in the shader code, which will pull out the required model matrix to position the mesh inside our world.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_performance_5"><a class="anchor" href="#_performance_5"></a>Performance</h3>
+<div class="paragraph">
+<p>While this could be a fast method for some devices, on Mali it is not a recommend practice as it disables a compiler optimisation technique known as <strong>pilot shaders</strong>.</p>
+</div>
+<div class="paragraph">
+<p>Pilot shaders are a technique that allows us to determine what calculations can be "piloted" into your GPU&#8217;s register so that when the data needs to be read it doesn&#8217;t take a full read cycle from the GPU RAM.</p>
+</div>
+<div class="paragraph">
+<p>To show this here is a Streamline capture of a Mali G76, showing the read cycles for using a single descriptor set per mesh against the pre allocated buffer array:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../../_images/samples/performance/constant_data/images/loadcycles.png" alt="loadcycles">
+</div>
+</div>
+<div class="paragraph">
+<p>A few different stats are affected in the Mali GPU by using this, but the main thing is the <strong>full read</strong> in the <strong>Mali Core Load/Store Cycles</strong>.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_further_reading"><a class="anchor" href="#_further_reading"></a>Further reading</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>The <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html">Vulkan 1.2 spec</a></p>
+</li>
+<li>
+<p>"Writing an efficient Vulkan renderer" by Arseny Kapoulkine <a href="https://zeux.io/2020/02/27/writing-an-efficient-vulkan-renderer/" class="bare">https://zeux.io/2020/02/27/writing-an-efficient-vulkan-renderer/</a></p>
+</li>
+<li>
+<p>Alexander Overvoorde&#8217;s <a href="https://vulkan-tutorial.com/Uniform_buffers/Descriptor_layout_and_buffer">Vulkan Tutorial on Descriptors</a> guide</p>
+</li>
+<li>
+<p>Vulkan Fast Paths <a href="https://gpuopen.com/wp-content/uploads/2016/03/VulkanFastPaths.pdf" class="bare">https://gpuopen.com/wp-content/uploads/2016/03/VulkanFastPaths.pdf</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_best_practice_summary"><a class="anchor" href="#_best_practice_summary"></a>Best practice summary</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><strong>Do</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Do keep constant data small, where 128 bytes is a good rule of thumb.</p>
+</li>
+<li>
+<p>Do use push constants if you do not want to set up a descriptor set/UBO system.</p>
+</li>
+<li>
+<p>Do make constant data directly available in the shader if it is pre-determinable, such as with the use of specialization constants.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Avoid</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Avoid indexing in the shader if possible, such as dynamically indexing into <code>buffer</code> or <code>uniform</code> arrays, as this can disable shader optimisations in some platforms.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Impact</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Failing to use the correct method of constant data will negatively impact performance, causing either reduced FPS and/or increased BW and load/store activity.</p>
+</li>
+<li>
+<p>On Mali, register mapped uniforms are effectively free.
+Any spilling to buffers in memory will increase load/store cache accesses to the per thread uniform fetches.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../../_/js/site.js" data-ui-root-path="../../../../../_"></script>
+<script async src="../../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../../.." data-snippet-length="100" data-stylesheet="../../../../../_/css/search.css"></script>
+<script async src="../../../../../search-index.js"></script>
+<script async src="../../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

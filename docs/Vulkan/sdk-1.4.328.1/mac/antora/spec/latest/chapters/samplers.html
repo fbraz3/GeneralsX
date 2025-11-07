@@ -1,0 +1,3106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Samplers :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:spec" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="spec" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Specification</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="fundamentals.html">Fundamentals</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="initialization.html">Initialization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="devsandqueues.html">Devices and Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="cmdbuffers.html">Command Buffers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="synchronization.html">Synchronization and Cache Control</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="renderpass.html">Render Pass</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="shaders.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="pipelines.html">Pipelines</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="memory.html">Memory Allocation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="resources.html">Resource Creation</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="samplers.html">Samplers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="descriptorsets.html">Resource Descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="interfaces.html">Shader Interfaces</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="textures.html">Image Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="fragmentdensitymapops.html">Fragment Density Map Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_ARM_tensors/tensorops.html">Tensor Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="queries.html">Queries</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="clears.html">Clear Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="copies.html">Copy Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="drawing.html">Drawing Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="fxvertex.html">Fixed-Function Vertex Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="tessellation.html">Tessellation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="geometry.html">Geometry Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_NV_mesh_shader/mesh.html">Mesh Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_HUAWEI_cluster_culling_shader/clusterculling.html">Cluster Culling Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="vertexpostproc.html">Fixed-Function Vertex Post-Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="primsrast.html">Rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="fragops.html">Fragment Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="framebuffer.html">The Framebuffer</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="dispatch.html">Dispatching Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="device_generated_commands/generatedcommands.html">Device-Generated Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="sparsemem.html">Sparse Resources</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_KHR_surface/wsi.html">Window System Integration (WSI)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_KHR_deferred_host_operations/deferred_host_operations.html">Deferred Host Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_EXT_private_data.html">Private Data</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="accelstructures.html">Acceleration Structures</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_EXT_opacity_micromap/micromaps.html">Micromap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="raytraversal.html">Ray Traversal</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="raytracing.html">Ray Tracing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_NV_memory_decompression.html">Memory Decompression</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="videocoding.html">Video Coding</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_NV_optical_flow/optical_flow.html">Optical Flow</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="executiongraphs.html">Execution Graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_NV_external_compute_queue/VK_NV_external_compute_queue.html">External Compute Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_ARM_data_graph/graphs.html">Data graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="extensions.html">Extending Vulkan</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="features.html">Features</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="limits.html">Limits</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="formats.html">Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="capabilities.html">Additional Capabilities</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="debugging.html">Debugging</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/spirvenv.html">Vulkan Environment for SPIR-V</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/memorymodel.html">Memory Model</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/compressedtex.html">Compressed Image Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/versions.html">Core Revisions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/extensions.html">Layers &amp; Extensions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/roadmap.html">Vulkan Roadmap Milestones</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/deprecation.html">Deprecation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/boilerplate.html">API Boilerplate</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/invariance.html">Invariance</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/glossary.html">Lexicon</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/credits.html">Credits (Informative)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Specification</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Specification</a></li>
+    <li><a href="samplers.html">Samplers</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/spec/modules/ROOT/pages/chapters/samplers.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Samplers</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p><code>VkSampler</code> objects represent the state of an image sampler which is
+used by the implementation to read image data and apply filtering and other
+transformations for the shader.</p>
+</div>
+<div class="paragraph">
+<p>Samplers are represented by <code>VkSampler</code> handles:</p>
+</div>
+<div id="VkSampler" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkSampler)</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To create a sampler object, call:</p>
+</div>
+<div id="vkCreateSampler" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+VkResult vkCreateSampler(
+    VkDevice                                    device,
+    const VkSamplerCreateInfo*                  pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkSampler*                                  pSampler);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the logical device that creates the sampler.</p>
+</li>
+<li>
+<p><code>pCreateInfo</code> is a pointer to a <a href="#VkSamplerCreateInfo">VkSamplerCreateInfo</a> structure
+specifying the state of the sampler object.</p>
+</li>
+<li>
+<p><code>pAllocator</code> controls host memory allocation as described in the
+<a href="memory.html#memory-allocation" class="xref page">Memory Allocation</a> chapter.</p>
+</li>
+<li>
+<p><code>pSampler</code> is a pointer to a <a href="#VkSampler">VkSampler</a> handle in which the
+resulting sampler object is returned.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCreateSampler-device-09668" href="#VUID-vkCreateSampler-device-09668"></a> <span class="vuid">VUID-vkCreateSampler-device-09668</span><br>
+
+<code>device</code> <strong>must</strong> support at least one queue family with one of the
+<code>VK_QUEUE_COMPUTE_BIT</code> or <code>VK_QUEUE_GRAPHICS_BIT</code> capabilities</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateSampler-maxSamplerAllocationCount-04110" href="#VUID-vkCreateSampler-maxSamplerAllocationCount-04110"></a> <span class="vuid">VUID-vkCreateSampler-maxSamplerAllocationCount-04110</span><br>
+
+There <strong>must</strong> be less than
+<a href="limits.html#VkPhysicalDeviceLimits" class="xref page">VkPhysicalDeviceLimits</a>::<code>maxSamplerAllocationCount</code>
+<a href="#VkSampler">VkSampler</a> objects currently created on the device</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCreateSampler-device-parameter" href="#VUID-vkCreateSampler-device-parameter"></a> <span class="vuid">VUID-vkCreateSampler-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateSampler-pCreateInfo-parameter" href="#VUID-vkCreateSampler-pCreateInfo-parameter"></a> <span class="vuid">VUID-vkCreateSampler-pCreateInfo-parameter</span><br>
+ <code>pCreateInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkSamplerCreateInfo">VkSamplerCreateInfo</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateSampler-pAllocator-parameter" href="#VUID-vkCreateSampler-pAllocator-parameter"></a> <span class="vuid">VUID-vkCreateSampler-pAllocator-parameter</span><br>
+ If <code>pAllocator</code> is not <code>NULL</code>, <code>pAllocator</code> <strong>must</strong> be a valid pointer to a valid <a href="memory.html#VkAllocationCallbacks" class="xref page">VkAllocationCallbacks</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateSampler-pSampler-parameter" href="#VUID-vkCreateSampler-pSampler-parameter"></a> <span class="vuid">VUID-vkCreateSampler-pSampler-parameter</span><br>
+ <code>pSampler</code> <strong>must</strong> be a valid pointer to a <a href="#VkSampler">VkSampler</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateSampler-device-queuecount" href="#VUID-vkCreateSampler-device-queuecount"></a> <span class="vuid">VUID-vkCreateSampler-device-queuecount</span><br>
+ The device <strong>must</strong> have been created with at least <code>1</code> queue</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_OUT_OF_DEVICE_MEMORY</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS_KHR</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkSamplerCreateInfo</code> structure is defined as:</p>
+</div>
+<div id="VkSamplerCreateInfo" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+typedef struct VkSamplerCreateInfo {
+    VkStructureType         sType;
+    const void*             pNext;
+    VkSamplerCreateFlags    flags;
+    VkFilter                magFilter;
+    VkFilter                minFilter;
+    VkSamplerMipmapMode     mipmapMode;
+    VkSamplerAddressMode    addressModeU;
+    VkSamplerAddressMode    addressModeV;
+    VkSamplerAddressMode    addressModeW;
+    float                   mipLodBias;
+    VkBool32                anisotropyEnable;
+    float                   maxAnisotropy;
+    VkBool32                compareEnable;
+    VkCompareOp             compareOp;
+    float                   minLod;
+    float                   maxLod;
+    VkBorderColor           borderColor;
+    VkBool32                unnormalizedCoordinates;
+} VkSamplerCreateInfo;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>flags</code> is a bitmask of <a href="#VkSamplerCreateFlagBits">VkSamplerCreateFlagBits</a> describing
+additional parameters of the sampler.</p>
+</li>
+<li>
+<p><code>magFilter</code> is a <a href="#VkFilter">VkFilter</a> value specifying the magnification
+filter to apply to lookups.</p>
+</li>
+<li>
+<p><code>minFilter</code> is a <a href="#VkFilter">VkFilter</a> value specifying the minification
+filter to apply to lookups.</p>
+</li>
+<li>
+<p><code>mipmapMode</code> is a <a href="#VkSamplerMipmapMode">VkSamplerMipmapMode</a> value specifying the
+mipmap filter to apply to lookups.</p>
+</li>
+<li>
+<p><code>addressModeU</code> is a <a href="#VkSamplerAddressMode">VkSamplerAddressMode</a> value specifying the
+addressing mode for U coordinates outside <span class="eq">[0,1)</span>.</p>
+</li>
+<li>
+<p><code>addressModeV</code> is a <a href="#VkSamplerAddressMode">VkSamplerAddressMode</a> value specifying the
+addressing mode for V coordinates outside <span class="eq">[0,1)</span>.</p>
+</li>
+<li>
+<p><code>addressModeW</code> is a <a href="#VkSamplerAddressMode">VkSamplerAddressMode</a> value specifying the
+addressing mode for W coordinates outside <span class="eq">[0,1)</span>.</p>
+</li>
+<li>
+<p><a id="samplers-mipLodBias"></a> <code>mipLodBias</code> is the bias to be added to
+mipmap LOD calculation and bias provided by image sampling functions in
+SPIR-V, as described in the <a href="textures.html#textures-level-of-detail-operation" class="xref page">LOD    Operation</a> section.</p>
+</li>
+<li>
+<p><a id="samplers-maxAnisotropy"></a> <code>anisotropyEnable</code> is <code>VK_TRUE</code> to
+enable anisotropic filtering, as described in the
+<a href="textures.html#textures-texel-anisotropic-filtering" class="xref page">Texel Anisotropic Filtering</a>
+section, or <code>VK_FALSE</code> otherwise.</p>
+</li>
+<li>
+<p><code>maxAnisotropy</code> is the anisotropy value clamp used by the sampler
+when <code>anisotropyEnable</code> is <code>VK_TRUE</code>.
+If <code>anisotropyEnable</code> is <code>VK_FALSE</code>, <code>maxAnisotropy</code> is
+ignored.</p>
+</li>
+<li>
+<p><code>compareEnable</code> is <code>VK_TRUE</code> to enable comparison against a
+reference value during lookups, or <code>VK_FALSE</code> otherwise.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Note: Some implementations will default to shader state if this member
+does not match.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>compareOp</code> is a <a href="#VkCompareOp">VkCompareOp</a> value specifying the comparison
+operator to apply to fetched data before filtering as described in the
+<a href="textures.html#textures-depth-compare-operation" class="xref page">Depth Compare Operation</a> section.</p>
+</li>
+<li>
+<p><code>minLod</code> is used to clamp the <a href="textures.html#textures-level-of-detail-operation" class="xref page">    minimum of the computed LOD value</a>.</p>
+</li>
+<li>
+<p><code>maxLod</code> is used to clamp the <a href="textures.html#textures-level-of-detail-operation" class="xref page">    maximum of the computed LOD value</a>.
+To avoid clamping the maximum value, set <code>maxLod</code> to the constant
+<code>VK_LOD_CLAMP_NONE</code>.</p>
+</li>
+<li>
+<p><code>borderColor</code> is a <a href="#VkBorderColor">VkBorderColor</a> value specifying the
+predefined border color to use.</p>
+</li>
+<li>
+<p><a id="samplers-unnormalizedCoordinates"></a> <code>unnormalizedCoordinates</code>
+controls whether to use unnormalized or normalized texel coordinates to
+address texels of the image.
+When <code>unnormalizedCoordinates</code> is <code>VK_TRUE</code>, the range of the
+image coordinates used to lookup the texel is in the range of zero to
+the image size in each dimension.
+When <code>unnormalizedCoordinates</code> is <code>VK_FALSE</code>, the range of image
+coordinates is zero to one.</p>
+<div class="paragraph">
+<p>When <code>unnormalizedCoordinates</code> is <code>VK_TRUE</code>, images the sampler is
+used with in the shader have the following requirements:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The <code>viewType</code> <strong>must</strong> be either <code>VK_IMAGE_VIEW_TYPE_1D</code> or
+<code>VK_IMAGE_VIEW_TYPE_2D</code>.</p>
+</li>
+<li>
+<p>The image view <strong>must</strong> have a single layer and a single mip level.</p>
+<div class="paragraph">
+<p>When <code>unnormalizedCoordinates</code> is <code>VK_TRUE</code>, image built-in
+functions in the shader that use the sampler have the following
+requirements:</p>
+</div>
+</li>
+<li>
+<p>The functions <strong>must</strong> not use projection.</p>
+</li>
+<li>
+<p>The functions <strong>must</strong> not use offsets.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Mapping of OpenGL to Vulkan Filter Modes</div>
+<div class="paragraph">
+<p><code>magFilter</code> values of <code>VK_FILTER_NEAREST</code> and <code>VK_FILTER_LINEAR</code>
+directly correspond to <code>GL_NEAREST</code> and <code>GL_LINEAR</code> magnification
+filters.
+<code>minFilter</code> and <code>mipmapMode</code> combine to correspond to the similarly
+named OpenGL minification filter of <code>GL_minFilter_MIPMAP_mipmapMode</code>
+(e.g. <code>minFilter</code> of <code>VK_FILTER_LINEAR</code> and <code>mipmapMode</code> of
+<code>VK_SAMPLER_MIPMAP_MODE_NEAREST</code> correspond to
+<code>GL_LINEAR_MIPMAP_NEAREST</code>).</p>
+</div>
+<div class="paragraph">
+<p>There are no Vulkan filter modes that directly correspond to OpenGL
+minification filters of <code>GL_LINEAR</code> or <code>GL_NEAREST</code>, but they <strong>can</strong> be
+emulated using <code>VK_SAMPLER_MIPMAP_MODE_NEAREST</code>, <code>minLod</code> = 0, and
+<code>maxLod</code> = 0.25, and using <code>minFilter</code> = <code>VK_FILTER_LINEAR</code> or
+<code>minFilter</code> = <code>VK_FILTER_NEAREST</code>, respectively.</p>
+</div>
+<div class="paragraph">
+<p>Note that using a <code>maxLod</code> of zero would cause
+<a href="textures.html#textures-texel-filtering" class="xref page">magnification</a> to always be performed, and the
+<code>magFilter</code> to always be used.
+This is valid, just not an exact match for OpenGL behavior.
+Clamping the maximum LOD to 0.25 allows the <span class="eq">λ</span> value to be
+non-zero and minification to be performed, while still always rounding down
+to the base level.
+If the <code>minFilter</code> and <code>magFilter</code> are equal, then using a
+<code>maxLod</code> of zero also works.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The maximum number of sampler objects which <strong>can</strong> be simultaneously created
+on a device is implementation-dependent and specified by the
+<a href="limits.html#limits-maxSamplerAllocationCount" class="xref page"><code>maxSamplerAllocationCount</code></a> member
+of the <a href="limits.html#VkPhysicalDeviceLimits" class="xref page">VkPhysicalDeviceLimits</a> structure.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>For historical reasons, if <code>maxSamplerAllocationCount</code> is exceeded, some
+implementations may return <code>VK_ERROR_TOO_MANY_OBJECTS</code>.
+Exceeding this limit will result in <strong>undefined</strong> behavior, and an application
+should not rely on the use of the returned error code in order to identify
+when the limit is reached.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Since <a href="#VkSampler">VkSampler</a> is a non-dispatchable handle type, implementations
+<strong>may</strong> return the same handle for sampler state vectors that are identical.
+In such cases, all such objects would only count once against the
+<code>maxSamplerAllocationCount</code> limit.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-mipLodBias-01069" href="#VUID-VkSamplerCreateInfo-mipLodBias-01069"></a> <span class="vuid">VUID-VkSamplerCreateInfo-mipLodBias-01069</span><br>
+
+The absolute value of <code>mipLodBias</code> <strong>must</strong> be less than or equal to
+<code>VkPhysicalDeviceLimits</code>::<code>maxSamplerLodBias</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-samplerMipLodBias-04467" href="#VUID-VkSamplerCreateInfo-samplerMipLodBias-04467"></a> <span class="vuid">VUID-VkSamplerCreateInfo-samplerMipLodBias-04467</span><br>
+
+If the <code><a href="../appendices/extensions.html#VK_KHR_portability_subset" class="xref page">VK_KHR_portability_subset</a></code> extension is enabled, and
+<a href="features.html#VkPhysicalDevicePortabilitySubsetFeaturesKHR" class="xref page">VkPhysicalDevicePortabilitySubsetFeaturesKHR</a>::<code>samplerMipLodBias</code>
+is <code>VK_FALSE</code>, <code>mipLodBias</code> <strong>must</strong> be zero</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-maxLod-01973" href="#VUID-VkSamplerCreateInfo-maxLod-01973"></a> <span class="vuid">VUID-VkSamplerCreateInfo-maxLod-01973</span><br>
+
+<code>maxLod</code> <strong>must</strong> be greater than or equal to <code>minLod</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-anisotropyEnable-01070" href="#VUID-VkSamplerCreateInfo-anisotropyEnable-01070"></a> <span class="vuid">VUID-VkSamplerCreateInfo-anisotropyEnable-01070</span><br>
+
+If the <a href="features.html#features-samplerAnisotropy" class="xref page"><code>samplerAnisotropy</code></a> feature
+is not enabled, <code>anisotropyEnable</code> <strong>must</strong> be <code>VK_FALSE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-anisotropyEnable-01071" href="#VUID-VkSamplerCreateInfo-anisotropyEnable-01071"></a> <span class="vuid">VUID-VkSamplerCreateInfo-anisotropyEnable-01071</span><br>
+
+If <code>anisotropyEnable</code> is <code>VK_TRUE</code>, <code>maxAnisotropy</code> <strong>must</strong> be
+between <code>1.0</code> and
+<code>VkPhysicalDeviceLimits</code>::<code>maxSamplerAnisotropy</code>, inclusive</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-minFilter-01645" href="#VUID-VkSamplerCreateInfo-minFilter-01645"></a> <span class="vuid">VUID-VkSamplerCreateInfo-minFilter-01645</span><br>
+
+If <a href="#samplers-YCbCr-conversion">sampler Y′C<sub>B</sub>C<sub>R</sub> conversion</a> is enabled
+and the <a href="formats.html#potential-format-features" class="xref page">potential format features</a> of the
+sampler Y′C<sub>B</sub>C<sub>R</sub> conversion do not support
+<code>VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT</code>,
+<code>minFilter</code> and <code>magFilter</code> <strong>must</strong> be equal to the sampler
+Y′C<sub>B</sub>C<sub>R</sub> conversion&#8217;s <code>chromaFilter</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-unnormalizedCoordinates-01072" href="#VUID-VkSamplerCreateInfo-unnormalizedCoordinates-01072"></a> <span class="vuid">VUID-VkSamplerCreateInfo-unnormalizedCoordinates-01072</span><br>
+
+If <code>unnormalizedCoordinates</code> is <code>VK_TRUE</code>, <code>minFilter</code> and
+<code>magFilter</code> <strong>must</strong> be equal</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-unnormalizedCoordinates-01073" href="#VUID-VkSamplerCreateInfo-unnormalizedCoordinates-01073"></a> <span class="vuid">VUID-VkSamplerCreateInfo-unnormalizedCoordinates-01073</span><br>
+
+If <code>unnormalizedCoordinates</code> is <code>VK_TRUE</code>, <code>mipmapMode</code>
+<strong>must</strong> be <code>VK_SAMPLER_MIPMAP_MODE_NEAREST</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-unnormalizedCoordinates-01074" href="#VUID-VkSamplerCreateInfo-unnormalizedCoordinates-01074"></a> <span class="vuid">VUID-VkSamplerCreateInfo-unnormalizedCoordinates-01074</span><br>
+
+If <code>unnormalizedCoordinates</code> is <code>VK_TRUE</code>, <code>minLod</code> and
+<code>maxLod</code> <strong>must</strong> be zero</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-unnormalizedCoordinates-01075" href="#VUID-VkSamplerCreateInfo-unnormalizedCoordinates-01075"></a> <span class="vuid">VUID-VkSamplerCreateInfo-unnormalizedCoordinates-01075</span><br>
+
+If <code>unnormalizedCoordinates</code> is <code>VK_TRUE</code>, <code>addressModeU</code>
+and <code>addressModeV</code> <strong>must</strong> each be either
+<code>VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE</code> or
+<code>VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-unnormalizedCoordinates-01076" href="#VUID-VkSamplerCreateInfo-unnormalizedCoordinates-01076"></a> <span class="vuid">VUID-VkSamplerCreateInfo-unnormalizedCoordinates-01076</span><br>
+
+If <code>unnormalizedCoordinates</code> is <code>VK_TRUE</code>,
+<code>anisotropyEnable</code> <strong>must</strong> be <code>VK_FALSE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-unnormalizedCoordinates-01077" href="#VUID-VkSamplerCreateInfo-unnormalizedCoordinates-01077"></a> <span class="vuid">VUID-VkSamplerCreateInfo-unnormalizedCoordinates-01077</span><br>
+
+If <code>unnormalizedCoordinates</code> is <code>VK_TRUE</code>, <code>compareEnable</code>
+<strong>must</strong> be <code>VK_FALSE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-addressModeU-01078" href="#VUID-VkSamplerCreateInfo-addressModeU-01078"></a> <span class="vuid">VUID-VkSamplerCreateInfo-addressModeU-01078</span><br>
+
+If any of <code>addressModeU</code>, <code>addressModeV</code> or <code>addressModeW</code>
+are <code>VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER</code>, <code>borderColor</code>
+<strong>must</strong> be a valid <a href="#VkBorderColor">VkBorderColor</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-addressModeU-01646" href="#VUID-VkSamplerCreateInfo-addressModeU-01646"></a> <span class="vuid">VUID-VkSamplerCreateInfo-addressModeU-01646</span><br>
+
+If <a href="#samplers-YCbCr-conversion">sampler Y′C<sub>B</sub>C<sub>R</sub> conversion</a> is enabled,
+<code>addressModeU</code>, <code>addressModeV</code>, and <code>addressModeW</code> <strong>must</strong> be
+<code>VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE</code>, <code>anisotropyEnable</code>
+<strong>must</strong> be <code>VK_FALSE</code>, and <code>unnormalizedCoordinates</code> <strong>must</strong> be
+<code>VK_FALSE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-None-01647" href="#VUID-VkSamplerCreateInfo-None-01647"></a> <span class="vuid">VUID-VkSamplerCreateInfo-None-01647</span><br>
+
+If <a href="#samplers-YCbCr-conversion">sampler Y′C<sub>B</sub>C<sub>R</sub> conversion</a> is enabled
+and the <code>pNext</code> chain includes a
+<a href="#VkSamplerReductionModeCreateInfo">VkSamplerReductionModeCreateInfo</a> structure, then the sampler
+reduction mode <strong>must</strong> be <code>VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-pNext-06726" href="#VUID-VkSamplerCreateInfo-pNext-06726"></a> <span class="vuid">VUID-VkSamplerCreateInfo-pNext-06726</span><br>
+
+If the <a href="features.html#features-samplerFilterMinmax" class="xref page"><code>samplerFilterMinmax</code></a>
+feature is not enabled and the <code>pNext</code> chain includes a
+<a href="#VkSamplerReductionModeCreateInfo">VkSamplerReductionModeCreateInfo</a> structure, then the sampler
+reduction mode <strong>must</strong> be <code>VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-addressModeU-01079" href="#VUID-VkSamplerCreateInfo-addressModeU-01079"></a> <span class="vuid">VUID-VkSamplerCreateInfo-addressModeU-01079</span><br>
+
+If the <a href="features.html#features-samplerMirrorClampToEdge" class="xref page">    <code>samplerMirrorClampToEdge</code></a> feature is not enabled, and if the
+<code><a href="../appendices/extensions.html#VK_KHR_sampler_mirror_clamp_to_edge" class="xref page">VK_KHR_sampler_mirror_clamp_to_edge</a></code> extension is not enabled,
+<code>addressModeU</code>, <code>addressModeV</code> and <code>addressModeW</code> <strong>must</strong> not
+be <code>VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-compareEnable-01080" href="#VUID-VkSamplerCreateInfo-compareEnable-01080"></a> <span class="vuid">VUID-VkSamplerCreateInfo-compareEnable-01080</span><br>
+
+If <code>compareEnable</code> is <code>VK_TRUE</code>, <code>compareOp</code> <strong>must</strong> be a
+valid <a href="#VkCompareOp">VkCompareOp</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-magFilter-01081" href="#VUID-VkSamplerCreateInfo-magFilter-01081"></a> <span class="vuid">VUID-VkSamplerCreateInfo-magFilter-01081</span><br>
+
+If either <code>magFilter</code> or <code>minFilter</code> is
+<code>VK_FILTER_CUBIC_EXT</code>, <code>anisotropyEnable</code> <strong>must</strong> be
+<code>VK_FALSE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-magFilter-07911" href="#VUID-VkSamplerCreateInfo-magFilter-07911"></a> <span class="vuid">VUID-VkSamplerCreateInfo-magFilter-07911</span><br>
+
+If
+the <a href="../appendices/extensions.html#VK_EXT_filter_cubic" class="xref page">VK_EXT_filter_cubic</a> extension is not enabled and
+either <code>magFilter</code> or <code>minFilter</code> is <code>VK_FILTER_CUBIC_IMG</code>,
+the <code>reductionMode</code> member of <a href="#VkSamplerReductionModeCreateInfo">VkSamplerReductionModeCreateInfo</a>
+<strong>must</strong> be <code>VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-compareEnable-01423" href="#VUID-VkSamplerCreateInfo-compareEnable-01423"></a> <span class="vuid">VUID-VkSamplerCreateInfo-compareEnable-01423</span><br>
+
+If <code>compareEnable</code> is <code>VK_TRUE</code>, the <code>reductionMode</code> member
+of <a href="#VkSamplerReductionModeCreateInfo">VkSamplerReductionModeCreateInfo</a> <strong>must</strong> be
+<code>VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-flags-02574" href="#VUID-VkSamplerCreateInfo-flags-02574"></a> <span class="vuid">VUID-VkSamplerCreateInfo-flags-02574</span><br>
+
+If <code>flags</code> includes <code>VK_SAMPLER_CREATE_SUBSAMPLED_BIT_EXT</code>, then
+<code>minFilter</code> and <code>magFilter</code> <strong>must</strong> be equal</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-flags-02575" href="#VUID-VkSamplerCreateInfo-flags-02575"></a> <span class="vuid">VUID-VkSamplerCreateInfo-flags-02575</span><br>
+
+If <code>flags</code> includes <code>VK_SAMPLER_CREATE_SUBSAMPLED_BIT_EXT</code>, then
+<code>mipmapMode</code> <strong>must</strong> be <code>VK_SAMPLER_MIPMAP_MODE_NEAREST</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-flags-02576" href="#VUID-VkSamplerCreateInfo-flags-02576"></a> <span class="vuid">VUID-VkSamplerCreateInfo-flags-02576</span><br>
+
+If <code>flags</code> includes <code>VK_SAMPLER_CREATE_SUBSAMPLED_BIT_EXT</code>, then
+<code>minLod</code> and <code>maxLod</code> <strong>must</strong> be zero</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-flags-02577" href="#VUID-VkSamplerCreateInfo-flags-02577"></a> <span class="vuid">VUID-VkSamplerCreateInfo-flags-02577</span><br>
+
+If <code>flags</code> includes <code>VK_SAMPLER_CREATE_SUBSAMPLED_BIT_EXT</code>, then
+<code>addressModeU</code> and <code>addressModeV</code> <strong>must</strong> each be either
+<code>VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE</code> or
+<code>VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-flags-02578" href="#VUID-VkSamplerCreateInfo-flags-02578"></a> <span class="vuid">VUID-VkSamplerCreateInfo-flags-02578</span><br>
+
+If <code>flags</code> includes <code>VK_SAMPLER_CREATE_SUBSAMPLED_BIT_EXT</code>, then
+<code>anisotropyEnable</code> <strong>must</strong> be <code>VK_FALSE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-flags-02579" href="#VUID-VkSamplerCreateInfo-flags-02579"></a> <span class="vuid">VUID-VkSamplerCreateInfo-flags-02579</span><br>
+
+If <code>flags</code> includes <code>VK_SAMPLER_CREATE_SUBSAMPLED_BIT_EXT</code>, then
+<code>compareEnable</code> <strong>must</strong> be <code>VK_FALSE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-flags-02580" href="#VUID-VkSamplerCreateInfo-flags-02580"></a> <span class="vuid">VUID-VkSamplerCreateInfo-flags-02580</span><br>
+
+If <code>flags</code> includes <code>VK_SAMPLER_CREATE_SUBSAMPLED_BIT_EXT</code>, then
+<code>unnormalizedCoordinates</code> <strong>must</strong> be <code>VK_FALSE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-nonSeamlessCubeMap-06788" href="#VUID-VkSamplerCreateInfo-nonSeamlessCubeMap-06788"></a> <span class="vuid">VUID-VkSamplerCreateInfo-nonSeamlessCubeMap-06788</span><br>
+
+If the <a href="features.html#features-nonSeamlessCubeMap" class="xref page"><code>nonSeamlessCubeMap</code></a> feature
+is not enabled, <code>flags</code> <strong>must</strong> not include
+<code>VK_SAMPLER_CREATE_NON_SEAMLESS_CUBE_MAP_BIT_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-borderColor-04011" href="#VUID-VkSamplerCreateInfo-borderColor-04011"></a> <span class="vuid">VUID-VkSamplerCreateInfo-borderColor-04011</span><br>
+
+If <code>borderColor</code> is one of <code>VK_BORDER_COLOR_FLOAT_CUSTOM_EXT</code> or
+<code>VK_BORDER_COLOR_INT_CUSTOM_EXT</code>, then a
+<a href="#VkSamplerCustomBorderColorCreateInfoEXT">VkSamplerCustomBorderColorCreateInfoEXT</a> <strong>must</strong> be included in the
+<code>pNext</code> chain</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-customBorderColors-04085" href="#VUID-VkSamplerCreateInfo-customBorderColors-04085"></a> <span class="vuid">VUID-VkSamplerCreateInfo-customBorderColors-04085</span><br>
+
+If the <a href="features.html#features-customBorderColors" class="xref page"><code>customBorderColors</code></a> feature
+is not enabled, <code>borderColor</code> <strong>must</strong> not be
+<code>VK_BORDER_COLOR_FLOAT_CUSTOM_EXT</code> or
+<code>VK_BORDER_COLOR_INT_CUSTOM_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-borderColor-04442" href="#VUID-VkSamplerCreateInfo-borderColor-04442"></a> <span class="vuid">VUID-VkSamplerCreateInfo-borderColor-04442</span><br>
+
+If <code>borderColor</code> is one of <code>VK_BORDER_COLOR_FLOAT_CUSTOM_EXT</code> or
+<code>VK_BORDER_COLOR_INT_CUSTOM_EXT</code>, and
+<a href="#VkSamplerCustomBorderColorCreateInfoEXT">VkSamplerCustomBorderColorCreateInfoEXT</a>::<code>format</code> is not
+<code>VK_FORMAT_UNDEFINED</code>,
+<a href="#VkSamplerCustomBorderColorCreateInfoEXT">VkSamplerCustomBorderColorCreateInfoEXT</a>::<code>customBorderColor</code>
+<strong>must</strong> be within the range of values representable in <code>format</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-None-04012" href="#VUID-VkSamplerCreateInfo-None-04012"></a> <span class="vuid">VUID-VkSamplerCreateInfo-None-04012</span><br>
+
+The maximum number of samplers with custom border colors which <strong>can</strong> be
+simultaneously created on a device is implementation-dependent and
+specified by the <a href="limits.html#limits-maxCustomBorderColorSamplers" class="xref page">    <code>maxCustomBorderColorSamplers</code></a> member of the
+<a href="limits.html#VkPhysicalDeviceCustomBorderColorPropertiesEXT" class="xref page">VkPhysicalDeviceCustomBorderColorPropertiesEXT</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-flags-08110" href="#VUID-VkSamplerCreateInfo-flags-08110"></a> <span class="vuid">VUID-VkSamplerCreateInfo-flags-08110</span><br>
+
+If <code>flags</code> includes
+<code>VK_SAMPLER_CREATE_DESCRIPTOR_BUFFER_CAPTURE_REPLAY_BIT_EXT</code>, the
+<a href="features.html#features-descriptorBufferCaptureReplay" class="xref page">    <code>descriptorBufferCaptureReplay</code></a> feature <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-pNext-08111" href="#VUID-VkSamplerCreateInfo-pNext-08111"></a> <span class="vuid">VUID-VkSamplerCreateInfo-pNext-08111</span><br>
+
+If the <code>pNext</code> chain includes a
+<a href="descriptorsets.html#VkOpaqueCaptureDescriptorDataCreateInfoEXT" class="xref page">VkOpaqueCaptureDescriptorDataCreateInfoEXT</a> structure, <code>flags</code>
+<strong>must</strong> contain
+<code>VK_SAMPLER_CREATE_DESCRIPTOR_BUFFER_CAPTURE_REPLAY_BIT_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-flags-06964" href="#VUID-VkSamplerCreateInfo-flags-06964"></a> <span class="vuid">VUID-VkSamplerCreateInfo-flags-06964</span><br>
+
+If <code>flags</code> includes
+<code>VK_SAMPLER_CREATE_IMAGE_PROCESSING_BIT_QCOM</code>, then <code>minFilter</code>
+and <code>magFilter</code> <strong>must</strong> be <code>VK_FILTER_NEAREST</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-flags-06965" href="#VUID-VkSamplerCreateInfo-flags-06965"></a> <span class="vuid">VUID-VkSamplerCreateInfo-flags-06965</span><br>
+
+If <code>flags</code> includes
+<code>VK_SAMPLER_CREATE_IMAGE_PROCESSING_BIT_QCOM</code>, then <code>mipmapMode</code>
+<strong>must</strong> be <code>VK_SAMPLER_MIPMAP_MODE_NEAREST</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-flags-06966" href="#VUID-VkSamplerCreateInfo-flags-06966"></a> <span class="vuid">VUID-VkSamplerCreateInfo-flags-06966</span><br>
+
+[If <code>flags</code> includes
+<code>VK_SAMPLER_CREATE_IMAGE_PROCESSING_BIT_QCOM</code>, then <code>minLod</code> and
+<code>maxLod</code> <strong>must</strong> be zero</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-flags-06967" href="#VUID-VkSamplerCreateInfo-flags-06967"></a> <span class="vuid">VUID-VkSamplerCreateInfo-flags-06967</span><br>
+
+If <code>flags</code> includes
+<code>VK_SAMPLER_CREATE_IMAGE_PROCESSING_BIT_QCOM</code>, then
+<code>addressModeU</code> and <code>addressModeV</code> <strong>must</strong> each be either
+<code>VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE</code> or
+<code>VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-flags-06968" href="#VUID-VkSamplerCreateInfo-flags-06968"></a> <span class="vuid">VUID-VkSamplerCreateInfo-flags-06968</span><br>
+
+If <code>flags</code> includes
+<code>VK_SAMPLER_CREATE_IMAGE_PROCESSING_BIT_QCOM</code>, and if
+<code>addressModeU</code> or <code>addressModeV</code> is
+<code>VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER</code>, then <code>borderColor</code>
+<strong>must</strong> be <code>VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-flags-06969" href="#VUID-VkSamplerCreateInfo-flags-06969"></a> <span class="vuid">VUID-VkSamplerCreateInfo-flags-06969</span><br>
+
+If <code>flags</code> includes
+<code>VK_SAMPLER_CREATE_IMAGE_PROCESSING_BIT_QCOM</code>, then
+<code>anisotropyEnable</code> <strong>must</strong> be <code>VK_FALSE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-flags-06970" href="#VUID-VkSamplerCreateInfo-flags-06970"></a> <span class="vuid">VUID-VkSamplerCreateInfo-flags-06970</span><br>
+
+If <code>flags</code> includes
+<code>VK_SAMPLER_CREATE_IMAGE_PROCESSING_BIT_QCOM</code>, then
+<code>compareEnable</code> <strong>must</strong> be <code>VK_FALSE</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-sType-sType" href="#VUID-VkSamplerCreateInfo-sType-sType"></a> <span class="vuid">VUID-VkSamplerCreateInfo-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-pNext-pNext" href="#VUID-VkSamplerCreateInfo-pNext-pNext"></a> <span class="vuid">VUID-VkSamplerCreateInfo-pNext-pNext</span><br>
+ Each <code>pNext</code> member of any structure (including this one) in the <code>pNext</code> chain <strong>must</strong> be either <code>NULL</code> or a pointer to a valid instance of <a href="descriptorsets.html#VkOpaqueCaptureDescriptorDataCreateInfoEXT" class="xref page">VkOpaqueCaptureDescriptorDataCreateInfoEXT</a>, <a href="#VkSamplerBlockMatchWindowCreateInfoQCOM">VkSamplerBlockMatchWindowCreateInfoQCOM</a>, <a href="#VkSamplerBorderColorComponentMappingCreateInfoEXT">VkSamplerBorderColorComponentMappingCreateInfoEXT</a>, <a href="#VkSamplerCubicWeightsCreateInfoQCOM">VkSamplerCubicWeightsCreateInfoQCOM</a>, <a href="#VkSamplerCustomBorderColorCreateInfoEXT">VkSamplerCustomBorderColorCreateInfoEXT</a>, <a href="#VkSamplerReductionModeCreateInfo">VkSamplerReductionModeCreateInfo</a>, or <a href="#VkSamplerYcbcrConversionInfo">VkSamplerYcbcrConversionInfo</a></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-sType-unique" href="#VUID-VkSamplerCreateInfo-sType-unique"></a> <span class="vuid">VUID-VkSamplerCreateInfo-sType-unique</span><br>
+ The <code>sType</code> value of each structure in the <code>pNext</code> chain <strong>must</strong> be unique</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-flags-parameter" href="#VUID-VkSamplerCreateInfo-flags-parameter"></a> <span class="vuid">VUID-VkSamplerCreateInfo-flags-parameter</span><br>
+ <code>flags</code> <strong>must</strong> be a valid combination of <a href="#VkSamplerCreateFlagBits">VkSamplerCreateFlagBits</a> values</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-magFilter-parameter" href="#VUID-VkSamplerCreateInfo-magFilter-parameter"></a> <span class="vuid">VUID-VkSamplerCreateInfo-magFilter-parameter</span><br>
+ <code>magFilter</code> <strong>must</strong> be a valid <a href="#VkFilter">VkFilter</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-minFilter-parameter" href="#VUID-VkSamplerCreateInfo-minFilter-parameter"></a> <span class="vuid">VUID-VkSamplerCreateInfo-minFilter-parameter</span><br>
+ <code>minFilter</code> <strong>must</strong> be a valid <a href="#VkFilter">VkFilter</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-mipmapMode-parameter" href="#VUID-VkSamplerCreateInfo-mipmapMode-parameter"></a> <span class="vuid">VUID-VkSamplerCreateInfo-mipmapMode-parameter</span><br>
+ <code>mipmapMode</code> <strong>must</strong> be a valid <a href="#VkSamplerMipmapMode">VkSamplerMipmapMode</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-addressModeU-parameter" href="#VUID-VkSamplerCreateInfo-addressModeU-parameter"></a> <span class="vuid">VUID-VkSamplerCreateInfo-addressModeU-parameter</span><br>
+ <code>addressModeU</code> <strong>must</strong> be a valid <a href="#VkSamplerAddressMode">VkSamplerAddressMode</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-addressModeV-parameter" href="#VUID-VkSamplerCreateInfo-addressModeV-parameter"></a> <span class="vuid">VUID-VkSamplerCreateInfo-addressModeV-parameter</span><br>
+ <code>addressModeV</code> <strong>must</strong> be a valid <a href="#VkSamplerAddressMode">VkSamplerAddressMode</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCreateInfo-addressModeW-parameter" href="#VUID-VkSamplerCreateInfo-addressModeW-parameter"></a> <span class="vuid">VUID-VkSamplerCreateInfo-addressModeW-parameter</span><br>
+ <code>addressModeW</code> <strong>must</strong> be a valid <a href="#VkSamplerAddressMode">VkSamplerAddressMode</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p><code>VK_LOD_CLAMP_NONE</code> is a special constant value used for
+<a href="#VkSamplerCreateInfo">VkSamplerCreateInfo</a>::<code>maxLod</code> to indicate that maximum LOD
+clamping should not be performed.</p>
+</div>
+<div id="VK_LOD_CLAMP_NONE" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">#define VK_LOD_CLAMP_NONE                 1000.0F</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Bits which <strong>can</strong> be set in <a href="#VkSamplerCreateInfo">VkSamplerCreateInfo</a>::<code>flags</code>, specifying
+additional parameters of a sampler, are:</p>
+</div>
+<div id="VkSamplerCreateFlagBits" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+typedef enum VkSamplerCreateFlagBits {
+  // Provided by VK_EXT_fragment_density_map
+    VK_SAMPLER_CREATE_SUBSAMPLED_BIT_EXT = 0x00000001,
+  // Provided by VK_EXT_fragment_density_map
+    VK_SAMPLER_CREATE_SUBSAMPLED_COARSE_RECONSTRUCTION_BIT_EXT = 0x00000002,
+  // Provided by VK_EXT_descriptor_buffer
+    VK_SAMPLER_CREATE_DESCRIPTOR_BUFFER_CAPTURE_REPLAY_BIT_EXT = 0x00000008,
+  // Provided by VK_EXT_non_seamless_cube_map
+    VK_SAMPLER_CREATE_NON_SEAMLESS_CUBE_MAP_BIT_EXT = 0x00000004,
+  // Provided by VK_QCOM_image_processing
+    VK_SAMPLER_CREATE_IMAGE_PROCESSING_BIT_QCOM = 0x00000010,
+} VkSamplerCreateFlagBits;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="samplers-subsamplesampler"></a> <code>VK_SAMPLER_CREATE_SUBSAMPLED_BIT_EXT</code>
+specifies that the sampler will read from an image created with
+<code>flags</code> containing <code>VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT</code>.</p>
+</li>
+<li>
+<p><code>VK_SAMPLER_CREATE_SUBSAMPLED_COARSE_RECONSTRUCTION_BIT_EXT</code>
+specifies that the implementation <strong>may</strong> use approximations when
+reconstructing a full color value for texture access from a subsampled
+image.</p>
+</li>
+<li>
+<p><code>VK_SAMPLER_CREATE_NON_SEAMLESS_CUBE_MAP_BIT_EXT</code> specifies that
+<a href="textures.html#textures-cubemapedge" class="xref page">cube map edge handling</a> is not performed.</p>
+</li>
+<li>
+<p><a id="samplers-imageprocessingsampler"></a>
+<code>VK_SAMPLER_CREATE_IMAGE_PROCESSING_BIT_QCOM</code> specifies that the
+sampler will read from images using only <code>OpImageWeightedSampleQCOM</code>,
+<code>OpImageBoxFilterQCOM</code>,
+<code>OpImageBlockMatchGatherSSDQCOM</code>,
+<code>OpImageBlockMatchGatherSADQCOM</code>,
+<code>OpImageBlockMatchWindowSSDQCOM</code>,
+<code>OpImageBlockMatchWindowSADQCOM</code>,
+<code>OpImageBlockMatchSSDQCOM</code>, or <code>OpImageBlockMatchSADQCOM</code>.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The approximations used when
+<code>VK_SAMPLER_CREATE_SUBSAMPLED_COARSE_RECONSTRUCTION_BIT_EXT</code> is
+specified are implementation defined.
+Some implementations <strong>may</strong> interpolate between fragment density levels in a
+subsampled image.
+In that case, this bit <strong>may</strong> be used to decide whether the interpolation
+factors are calculated per fragment or at a coarser granularity.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SAMPLER_CREATE_DESCRIPTOR_BUFFER_CAPTURE_REPLAY_BIT_EXT</code>
+specifies that the sampler <strong>can</strong> be used with descriptor buffers when
+capturing and replaying (e.g. for trace capture and replay), see
+<a href="descriptorsets.html#VkOpaqueCaptureDescriptorDataCreateInfoEXT" class="xref page">VkOpaqueCaptureDescriptorDataCreateInfoEXT</a> for more detail.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div id="VkSamplerCreateFlags" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+typedef VkFlags VkSamplerCreateFlags;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>VkSamplerCreateFlags</code> is a bitmask type for setting a mask of zero or
+more <a href="#VkSamplerCreateFlagBits">VkSamplerCreateFlagBits</a>.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkSamplerReductionModeCreateInfo</code> structure is defined as:</p>
+</div>
+<div id="VkSamplerReductionModeCreateInfo" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_2
+typedef struct VkSamplerReductionModeCreateInfo {
+    VkStructureType           sType;
+    const void*               pNext;
+    VkSamplerReductionMode    reductionMode;
+} VkSamplerReductionModeCreateInfo;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent</p>
+</div>
+<div id="VkSamplerReductionModeCreateInfoEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_sampler_filter_minmax
+typedef VkSamplerReductionModeCreateInfo VkSamplerReductionModeCreateInfoEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>reductionMode</code> is a <a href="#VkSamplerReductionMode">VkSamplerReductionMode</a> value controlling
+how texture filtering combines texel values.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If the <code>pNext</code> chain of <a href="#VkSamplerCreateInfo">VkSamplerCreateInfo</a> includes a
+<code>VkSamplerReductionModeCreateInfo</code> structure, then that structure
+includes a mode controlling how texture filtering combines texel values.</p>
+</div>
+<div class="paragraph">
+<p>If this structure is not present, <code>reductionMode</code> is considered to be
+<code>VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE</code>.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkSamplerReductionModeCreateInfo-sType-sType" href="#VUID-VkSamplerReductionModeCreateInfo-sType-sType"></a> <span class="vuid">VUID-VkSamplerReductionModeCreateInfo-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerReductionModeCreateInfo-reductionMode-parameter" href="#VUID-VkSamplerReductionModeCreateInfo-reductionMode-parameter"></a> <span class="vuid">VUID-VkSamplerReductionModeCreateInfo-reductionMode-parameter</span><br>
+ <code>reductionMode</code> <strong>must</strong> be a valid <a href="#VkSamplerReductionMode">VkSamplerReductionMode</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Reduction modes are specified by <a href="#VkSamplerReductionMode">VkSamplerReductionMode</a>, which takes
+values:</p>
+</div>
+<div id="VkSamplerReductionMode" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_2
+typedef enum VkSamplerReductionMode {
+    VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE = 0,
+    VK_SAMPLER_REDUCTION_MODE_MIN = 1,
+    VK_SAMPLER_REDUCTION_MODE_MAX = 2,
+  // Provided by VK_QCOM_filter_cubic_clamp
+    VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE_RANGECLAMP_QCOM = 1000521000,
+  // Provided by VK_EXT_sampler_filter_minmax
+    VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE_EXT = VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE,
+  // Provided by VK_EXT_sampler_filter_minmax
+    VK_SAMPLER_REDUCTION_MODE_MIN_EXT = VK_SAMPLER_REDUCTION_MODE_MIN,
+  // Provided by VK_EXT_sampler_filter_minmax
+    VK_SAMPLER_REDUCTION_MODE_MAX_EXT = VK_SAMPLER_REDUCTION_MODE_MAX,
+} VkSamplerReductionMode;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent</p>
+</div>
+<div id="VkSamplerReductionModeEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_sampler_filter_minmax
+typedef VkSamplerReductionMode VkSamplerReductionModeEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE</code> specifies that texel
+values are combined by computing a weighted average of values in the
+footprint, using weights as specified in
+<a href="textures.html#textures-unnormalized-to-integer" class="xref page">the image operations chapter</a>.</p>
+</li>
+<li>
+<p><code>VK_SAMPLER_REDUCTION_MODE_MIN</code> specifies that texel values are
+combined by taking the component-wise minimum of values in the footprint
+with non-zero weights.</p>
+</li>
+<li>
+<p><code>VK_SAMPLER_REDUCTION_MODE_MAX</code> specifies that texel values are
+combined by taking the component-wise maximum of values in the footprint
+with non-zero weights.</p>
+</li>
+<li>
+<p><code>VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE_RANGECLAMP_QCOM</code>
+specifies values are combined as described by
+<code>VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE</code>, followed by a
+<a href="textures.html#textures-texel-range-clamp" class="xref page">texel range clamp</a>.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkSamplerCubicWeightsCreateInfoQCOM</code> structure is defined as:</p>
+</div>
+<div id="VkSamplerCubicWeightsCreateInfoQCOM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_QCOM_filter_cubic_weights
+typedef struct VkSamplerCubicWeightsCreateInfoQCOM {
+    VkStructureType             sType;
+    const void*                 pNext;
+    VkCubicFilterWeightsQCOM    cubicWeights;
+} VkSamplerCubicWeightsCreateInfoQCOM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>cubicWeights</code> is a <a href="#VkCubicFilterWeightsQCOM">VkCubicFilterWeightsQCOM</a> value controlling
+which cubic weights are used.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If the <code>pNext</code> chain of <a href="#VkSamplerCreateInfo">VkSamplerCreateInfo</a> includes a
+<code>VkSamplerCubicWeightsCreateInfoQCOM</code> structure, then that structure
+specifies which cubic weights are used.</p>
+</div>
+<div class="paragraph">
+<p>If that structure is not present, <code>cubicWeights</code> is considered to be
+<code>VK_CUBIC_FILTER_WEIGHTS_CATMULL_ROM_QCOM</code>.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkSamplerCubicWeightsCreateInfoQCOM-sType-sType" href="#VUID-VkSamplerCubicWeightsCreateInfoQCOM-sType-sType"></a> <span class="vuid">VUID-VkSamplerCubicWeightsCreateInfoQCOM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_SAMPLER_CUBIC_WEIGHTS_CREATE_INFO_QCOM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCubicWeightsCreateInfoQCOM-cubicWeights-parameter" href="#VUID-VkSamplerCubicWeightsCreateInfoQCOM-cubicWeights-parameter"></a> <span class="vuid">VUID-VkSamplerCubicWeightsCreateInfoQCOM-cubicWeights-parameter</span><br>
+ <code>cubicWeights</code> <strong>must</strong> be a valid <a href="#VkCubicFilterWeightsQCOM">VkCubicFilterWeightsQCOM</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Possible values of the
+<a href="#VkSamplerCubicWeightsCreateInfoQCOM">VkSamplerCubicWeightsCreateInfoQCOM</a>::<code>cubicWeights</code>, specifying
+cubic weights used in <a href="textures.html#textures-texel-cubic-filtering" class="xref page">Texel Cubic Filtering</a> are:</p>
+</div>
+<div id="VkCubicFilterWeightsQCOM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_QCOM_filter_cubic_weights
+typedef enum VkCubicFilterWeightsQCOM {
+    VK_CUBIC_FILTER_WEIGHTS_CATMULL_ROM_QCOM = 0,
+    VK_CUBIC_FILTER_WEIGHTS_ZERO_TANGENT_CARDINAL_QCOM = 1,
+    VK_CUBIC_FILTER_WEIGHTS_B_SPLINE_QCOM = 2,
+    VK_CUBIC_FILTER_WEIGHTS_MITCHELL_NETRAVALI_QCOM = 3,
+} VkCubicFilterWeightsQCOM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_CUBIC_FILTER_WEIGHTS_CATMULL_ROM_QCOM</code> specifies Catmull-Rom
+weights.</p>
+</li>
+<li>
+<p><code>VK_CUBIC_FILTER_WEIGHTS_ZERO_TANGENT_CARDINAL_QCOM</code> specifies Zero
+Tangent Cardinal weights.</p>
+</li>
+<li>
+<p><code>VK_CUBIC_FILTER_WEIGHTS_B_SPLINE_QCOM</code> specifies B-Spline weights.</p>
+</li>
+<li>
+<p><code>VK_CUBIC_FILTER_WEIGHTS_MITCHELL_NETRAVALI_QCOM</code> specifies
+Mitchell-Netravali weights.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Possible values of the <a href="#VkSamplerCreateInfo">VkSamplerCreateInfo</a>::<code>magFilter</code> and
+<code>minFilter</code> parameters, specifying filters used for texture lookups,
+are:</p>
+</div>
+<div id="VkFilter" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+typedef enum VkFilter {
+    VK_FILTER_NEAREST = 0,
+    VK_FILTER_LINEAR = 1,
+  // Provided by VK_EXT_filter_cubic
+    VK_FILTER_CUBIC_EXT = 1000015000,
+  // Provided by VK_IMG_filter_cubic
+    VK_FILTER_CUBIC_IMG = VK_FILTER_CUBIC_EXT,
+} VkFilter;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_FILTER_NEAREST</code> specifies nearest filtering.</p>
+</li>
+<li>
+<p><code>VK_FILTER_LINEAR</code> specifies linear filtering.</p>
+</li>
+<li>
+<p><code>VK_FILTER_CUBIC_EXT</code> specifies cubic filtering.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These filters are described in detail in <a href="textures.html#textures-texel-filtering" class="xref page">Texel Filtering</a>.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Possible values of the <a href="#VkSamplerCreateInfo">VkSamplerCreateInfo</a>::<code>mipmapMode</code>,
+specifying the mipmap mode used for texture lookups, are:</p>
+</div>
+<div id="VkSamplerMipmapMode" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+typedef enum VkSamplerMipmapMode {
+    VK_SAMPLER_MIPMAP_MODE_NEAREST = 0,
+    VK_SAMPLER_MIPMAP_MODE_LINEAR = 1,
+} VkSamplerMipmapMode;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SAMPLER_MIPMAP_MODE_NEAREST</code> specifies nearest filtering.</p>
+</li>
+<li>
+<p><code>VK_SAMPLER_MIPMAP_MODE_LINEAR</code> specifies linear filtering.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These modes are described in detail in <a href="textures.html#textures-texel-filtering" class="xref page">Texel Filtering</a>.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Possible values of the <a href="#VkSamplerCreateInfo">VkSamplerCreateInfo</a>::<code>addressMode*</code>
+parameters, specifying the behavior of sampling with coordinates outside the
+range <span class="eq">[0,1]</span> for the respective <span class="eq">u</span>, <span class="eq">v</span>, or <span class="eq">w</span> coordinate
+as defined in the <a href="textures.html#textures-wrapping-operation" class="xref page">Wrapping Operation</a>
+section, are:</p>
+</div>
+<div id="VkSamplerAddressMode" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+typedef enum VkSamplerAddressMode {
+    VK_SAMPLER_ADDRESS_MODE_REPEAT = 0,
+    VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT = 1,
+    VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE = 2,
+    VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER = 3,
+  // Provided by VK_VERSION_1_2, VK_KHR_sampler_mirror_clamp_to_edge
+    VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE = 4,
+  // Provided by VK_KHR_sampler_mirror_clamp_to_edge
+  // VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE_KHR is a deprecated alias
+    VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE_KHR = VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE,
+} VkSamplerAddressMode;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SAMPLER_ADDRESS_MODE_REPEAT</code> specifies that the repeat wrap mode
+will be used.</p>
+</li>
+<li>
+<p><code>VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT</code> specifies that the
+mirrored repeat wrap mode will be used.</p>
+</li>
+<li>
+<p><code>VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE</code> specifies that the clamp to
+edge wrap mode will be used.</p>
+</li>
+<li>
+<p><code>VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER</code> specifies that the clamp
+to border wrap mode will be used.</p>
+</li>
+<li>
+<p><code>VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE</code> specifies that the
+    mirror clamp to edge wrap mode will be used.
+    This is only valid if
+the <a href="features.html#features-samplerMirrorClampToEdge" class="xref page"><code>samplerMirrorClampToEdge</code></a> feature is enabled, or if
+    the <code><a href="../appendices/extensions.html#VK_KHR_sampler_mirror_clamp_to_edge" class="xref page">VK_KHR_sampler_mirror_clamp_to_edge</a></code> extension is enabled.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p><em>Comparison operators</em> compare a <em>reference</em> and a <em>test</em> value, and return
+a true (&#8220;passed&#8221;) or false (&#8220;failed&#8221;) value depending on the comparison
+operator chosen.
+The supported operators are:</p>
+</div>
+<div id="VkCompareOp" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+typedef enum VkCompareOp {
+    VK_COMPARE_OP_NEVER = 0,
+    VK_COMPARE_OP_LESS = 1,
+    VK_COMPARE_OP_EQUAL = 2,
+    VK_COMPARE_OP_LESS_OR_EQUAL = 3,
+    VK_COMPARE_OP_GREATER = 4,
+    VK_COMPARE_OP_NOT_EQUAL = 5,
+    VK_COMPARE_OP_GREATER_OR_EQUAL = 6,
+    VK_COMPARE_OP_ALWAYS = 7,
+} VkCompareOp;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_COMPARE_OP_NEVER</code> specifies that the comparison always evaluates
+false.</p>
+</li>
+<li>
+<p><code>VK_COMPARE_OP_LESS</code> specifies that the comparison evaluates
+<span class="eq"><em>reference</em> &lt; <em>test</em></span>.</p>
+</li>
+<li>
+<p><code>VK_COMPARE_OP_EQUAL</code> specifies that the comparison evaluates
+<span class="eq"><em>reference</em> = <em>test</em></span>.</p>
+</li>
+<li>
+<p><code>VK_COMPARE_OP_LESS_OR_EQUAL</code> specifies that the comparison
+evaluates <span class="eq"><em>reference</em> ≤ <em>test</em></span>.</p>
+</li>
+<li>
+<p><code>VK_COMPARE_OP_GREATER</code> specifies that the comparison evaluates
+<span class="eq"><em>reference</em> &gt; <em>test</em></span>.</p>
+</li>
+<li>
+<p><code>VK_COMPARE_OP_NOT_EQUAL</code> specifies that the comparison evaluates
+<span class="eq"><em>reference</em> ≠ <em>test</em></span>.</p>
+</li>
+<li>
+<p><code>VK_COMPARE_OP_GREATER_OR_EQUAL</code> specifies that the comparison
+evaluates <span class="eq"><em>reference</em> ≥ <em>test</em></span>.</p>
+</li>
+<li>
+<p><code>VK_COMPARE_OP_ALWAYS</code> specifies that the comparison always
+evaluates true.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Comparison operators are used for:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The <a href="textures.html#textures-depth-compare-operation" class="xref page">Depth Compare Operation</a>
+operator for a sampler, specified by
+<a href="#VkSamplerCreateInfo">VkSamplerCreateInfo</a>::<code>compareOp</code>.</p>
+</li>
+<li>
+<p>The stencil comparison operator for the <a href="fragops.html#fragops-stencil" class="xref page">stencil    test</a>, specified by
+<a href="fragops.html#vkCmdSetStencilOp" class="xref page">vkCmdSetStencilOp</a>::<code>compareOp</code> or
+    <a href="fragops.html#VkStencilOpState" class="xref page">VkStencilOpState</a>::<code>compareOp</code>.</p>
+</li>
+<li>
+<p>The <a href="fragops.html#fragops-depth-comparison" class="xref page">Depth Comparison</a> operator for the
+    <a href="fragops.html#fragops-depth" class="xref page">depth test</a>, specified by
+<a href="fragops.html#vkCmdSetDepthCompareOp" class="xref page">vkCmdSetDepthCompareOp</a>::<code>depthCompareOp</code> or
+    <a href="fragops.html#VkPipelineDepthStencilStateCreateInfo" class="xref page">VkPipelineDepthStencilStateCreateInfo</a>::<code>depthCompareOp</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Each such use describes how the <em>reference</em> and <em>test</em> values for that
+comparison are determined.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Possible values of <a href="#VkSamplerCreateInfo">VkSamplerCreateInfo</a>::<code>borderColor</code>, specifying
+the border color used for texture lookups, are:</p>
+</div>
+<div id="VkBorderColor" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+typedef enum VkBorderColor {
+    VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK = 0,
+    VK_BORDER_COLOR_INT_TRANSPARENT_BLACK = 1,
+    VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK = 2,
+    VK_BORDER_COLOR_INT_OPAQUE_BLACK = 3,
+    VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE = 4,
+    VK_BORDER_COLOR_INT_OPAQUE_WHITE = 5,
+  // Provided by VK_EXT_custom_border_color
+    VK_BORDER_COLOR_FLOAT_CUSTOM_EXT = 1000287003,
+  // Provided by VK_EXT_custom_border_color
+    VK_BORDER_COLOR_INT_CUSTOM_EXT = 1000287004,
+} VkBorderColor;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK</code> specifies a transparent,
+floating-point format, black color.</p>
+</li>
+<li>
+<p><code>VK_BORDER_COLOR_INT_TRANSPARENT_BLACK</code> specifies a transparent,
+integer format, black color.</p>
+</li>
+<li>
+<p><code>VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK</code> specifies an opaque,
+floating-point format, black color.</p>
+</li>
+<li>
+<p><code>VK_BORDER_COLOR_INT_OPAQUE_BLACK</code> specifies an opaque, integer
+format, black color.</p>
+</li>
+<li>
+<p><code>VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE</code> specifies an opaque,
+floating-point format, white color.</p>
+</li>
+<li>
+<p><code>VK_BORDER_COLOR_INT_OPAQUE_WHITE</code> specifies an opaque, integer
+format, white color.</p>
+</li>
+<li>
+<p><code>VK_BORDER_COLOR_FLOAT_CUSTOM_EXT</code> specifies that a
+<a href="#VkSamplerCustomBorderColorCreateInfoEXT">VkSamplerCustomBorderColorCreateInfoEXT</a> structure is included in
+the <a href="#VkSamplerCreateInfo">VkSamplerCreateInfo</a>::<code>pNext</code> chain containing the color
+data in floating-point format.</p>
+</li>
+<li>
+<p><code>VK_BORDER_COLOR_INT_CUSTOM_EXT</code> specifies that a
+<a href="#VkSamplerCustomBorderColorCreateInfoEXT">VkSamplerCustomBorderColorCreateInfoEXT</a> structure is included in
+the <a href="#VkSamplerCreateInfo">VkSamplerCreateInfo</a>::<code>pNext</code> chain containing the color
+data in integer format.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These colors are described in detail in <a href="textures.html#textures-texel-replacement" class="xref page">Texel Replacement</a>.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To destroy a sampler, call:</p>
+</div>
+<div id="vkDestroySampler" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+void vkDestroySampler(
+    VkDevice                                    device,
+    VkSampler                                   sampler,
+    const VkAllocationCallbacks*                pAllocator);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the logical device that destroys the sampler.</p>
+</li>
+<li>
+<p><code>sampler</code> is the sampler to destroy.</p>
+</li>
+<li>
+<p><code>pAllocator</code> controls host memory allocation as described in the
+<a href="memory.html#memory-allocation" class="xref page">Memory Allocation</a> chapter.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkDestroySampler-sampler-01082" href="#VUID-vkDestroySampler-sampler-01082"></a> <span class="vuid">VUID-vkDestroySampler-sampler-01082</span><br>
+
+All submitted commands that refer to <code>sampler</code> <strong>must</strong> have completed
+execution</p>
+</li>
+<li>
+<p><a id="VUID-vkDestroySampler-sampler-01083" href="#VUID-vkDestroySampler-sampler-01083"></a> <span class="vuid">VUID-vkDestroySampler-sampler-01083</span><br>
+
+If <code>VkAllocationCallbacks</code> were provided when <code>sampler</code> was
+created, a compatible set of callbacks <strong>must</strong> be provided here</p>
+</li>
+<li>
+<p><a id="VUID-vkDestroySampler-sampler-01084" href="#VUID-vkDestroySampler-sampler-01084"></a> <span class="vuid">VUID-vkDestroySampler-sampler-01084</span><br>
+
+If no <code>VkAllocationCallbacks</code> were provided when <code>sampler</code> was
+created, <code>pAllocator</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkDestroySampler-device-parameter" href="#VUID-vkDestroySampler-device-parameter"></a> <span class="vuid">VUID-vkDestroySampler-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkDestroySampler-sampler-parameter" href="#VUID-vkDestroySampler-sampler-parameter"></a> <span class="vuid">VUID-vkDestroySampler-sampler-parameter</span><br>
+ If <code>sampler</code> is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, <code>sampler</code> <strong>must</strong> be a valid <a href="#VkSampler">VkSampler</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkDestroySampler-pAllocator-parameter" href="#VUID-vkDestroySampler-pAllocator-parameter"></a> <span class="vuid">VUID-vkDestroySampler-pAllocator-parameter</span><br>
+ If <code>pAllocator</code> is not <code>NULL</code>, <code>pAllocator</code> <strong>must</strong> be a valid pointer to a valid <a href="memory.html#VkAllocationCallbacks" class="xref page">VkAllocationCallbacks</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkDestroySampler-sampler-parent" href="#VUID-vkDestroySampler-sampler-parent"></a> <span class="vuid">VUID-vkDestroySampler-sampler-parent</span><br>
+ If <code>sampler</code> is a valid handle, it <strong>must</strong> have been created, allocated, or retrieved from <code>device</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>sampler</code> <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="samplers-YCbCr-conversion"><a class="anchor" href="#samplers-YCbCr-conversion"></a>Sampler Y′C<sub>B</sub>C<sub>R</sub> Conversion</h2>
+<div class="sectionbody">
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To create a sampler with Y′C<sub>B</sub>C<sub>R</sub> conversion enabled, add a
+<a href="#VkSamplerYcbcrConversionInfo">VkSamplerYcbcrConversionInfo</a> structure to the <code>pNext</code> chain of the
+<a href="#VkSamplerCreateInfo">VkSamplerCreateInfo</a> structure.
+To create a sampler Y′C<sub>B</sub>C<sub>R</sub> conversion, the
+<a href="features.html#features-samplerYcbcrConversion" class="xref page"><code>samplerYcbcrConversion</code></a> feature
+<strong>must</strong> be enabled.
+Conversion <strong>must</strong> be fixed at pipeline creation time, through use of a
+combined image sampler with an immutable sampler in
+<code>VkDescriptorSetLayoutBinding</code>.</p>
+</div>
+<div class="paragraph">
+<p>A <a href="#VkSamplerYcbcrConversionInfo">VkSamplerYcbcrConversionInfo</a> <strong>must</strong> be provided for samplers to be
+used with image views that access <code>VK_IMAGE_ASPECT_COLOR_BIT</code> if the
+format is one of the <a href="formats.html#formats-requiring-sampler-ycbcr-conversion" class="xref page">formats that require a sampler Y′C<sub>B</sub>C<sub>R</sub> conversion</a>
+, or if the image view has an
+<a href="memory.html#memory-external-android-hardware-buffer-external-formats" class="xref page">external format</a>
+.</p>
+</div>
+<div class="paragraph">
+<p>The <code>VkSamplerYcbcrConversionInfo</code> structure is defined as:</p>
+</div>
+<div id="VkSamplerYcbcrConversionInfo" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_1
+typedef struct VkSamplerYcbcrConversionInfo {
+    VkStructureType             sType;
+    const void*                 pNext;
+    VkSamplerYcbcrConversion    conversion;
+} VkSamplerYcbcrConversionInfo;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent</p>
+</div>
+<div id="VkSamplerYcbcrConversionInfoKHR" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_sampler_ycbcr_conversion
+typedef VkSamplerYcbcrConversionInfo VkSamplerYcbcrConversionInfoKHR;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>conversion</code> is a <a href="#VkSamplerYcbcrConversion">VkSamplerYcbcrConversion</a> handle created with
+<a href="#vkCreateSamplerYcbcrConversion">vkCreateSamplerYcbcrConversion</a>.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionInfo-sType-sType" href="#VUID-VkSamplerYcbcrConversionInfo-sType-sType"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionInfo-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionInfo-conversion-parameter" href="#VUID-VkSamplerYcbcrConversionInfo-conversion-parameter"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionInfo-conversion-parameter</span><br>
+ <code>conversion</code> <strong>must</strong> be a valid <a href="#VkSamplerYcbcrConversion">VkSamplerYcbcrConversion</a> handle</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>A sampler Y′C<sub>B</sub>C<sub>R</sub> conversion is an opaque representation of a
+device-specific sampler Y′C<sub>B</sub>C<sub>R</sub> conversion description, represented as a
+<code>VkSamplerYcbcrConversion</code> handle:</p>
+</div>
+<div id="VkSamplerYcbcrConversion" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_1
+VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkSamplerYcbcrConversion)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent</p>
+</div>
+<div id="VkSamplerYcbcrConversionKHR" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_sampler_ycbcr_conversion
+typedef VkSamplerYcbcrConversion VkSamplerYcbcrConversionKHR;</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To create a <a href="#VkSamplerYcbcrConversion">VkSamplerYcbcrConversion</a>, call:</p>
+</div>
+<div id="vkCreateSamplerYcbcrConversion" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_1
+VkResult vkCreateSamplerYcbcrConversion(
+    VkDevice                                    device,
+    const VkSamplerYcbcrConversionCreateInfo*   pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkSamplerYcbcrConversion*                   pYcbcrConversion);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent command</p>
+</div>
+<div id="vkCreateSamplerYcbcrConversionKHR" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_sampler_ycbcr_conversion
+VkResult vkCreateSamplerYcbcrConversionKHR(
+    VkDevice                                    device,
+    const VkSamplerYcbcrConversionCreateInfo*   pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkSamplerYcbcrConversion*                   pYcbcrConversion);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the logical device that creates the sampler Y′C<sub>B</sub>C<sub>R</sub>
+conversion.</p>
+</li>
+<li>
+<p><code>pCreateInfo</code> is a pointer to a
+<a href="#VkSamplerYcbcrConversionCreateInfo">VkSamplerYcbcrConversionCreateInfo</a> structure specifying the
+requested sampler Y′C<sub>B</sub>C<sub>R</sub> conversion.</p>
+</li>
+<li>
+<p><code>pAllocator</code> controls host memory allocation as described in the
+<a href="memory.html#memory-allocation" class="xref page">Memory Allocation</a> chapter.</p>
+</li>
+<li>
+<p><code>pYcbcrConversion</code> is a pointer to a <a href="#VkSamplerYcbcrConversion">VkSamplerYcbcrConversion</a>
+handle in which the resulting sampler Y′C<sub>B</sub>C<sub>R</sub> conversion is returned.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The interpretation of the configured sampler Y′C<sub>B</sub>C<sub>R</sub> conversion is described
+in more detail in <a href="textures.html#textures-sampler-YCbCr-conversion" class="xref page">the description of sampler Y′C<sub>B</sub>C<sub>R</sub> conversion</a> in the <a href="textures.html#textures" class="xref page">Image Operations</a> chapter.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCreateSamplerYcbcrConversion-None-01648" href="#VUID-vkCreateSamplerYcbcrConversion-None-01648"></a> <span class="vuid">VUID-vkCreateSamplerYcbcrConversion-None-01648</span><br>
+
+The <a href="features.html#features-samplerYcbcrConversion" class="xref page"><code>samplerYcbcrConversion</code></a>
+feature <strong>must</strong> be enabled</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCreateSamplerYcbcrConversion-device-parameter" href="#VUID-vkCreateSamplerYcbcrConversion-device-parameter"></a> <span class="vuid">VUID-vkCreateSamplerYcbcrConversion-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateSamplerYcbcrConversion-pCreateInfo-parameter" href="#VUID-vkCreateSamplerYcbcrConversion-pCreateInfo-parameter"></a> <span class="vuid">VUID-vkCreateSamplerYcbcrConversion-pCreateInfo-parameter</span><br>
+ <code>pCreateInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkSamplerYcbcrConversionCreateInfo">VkSamplerYcbcrConversionCreateInfo</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateSamplerYcbcrConversion-pAllocator-parameter" href="#VUID-vkCreateSamplerYcbcrConversion-pAllocator-parameter"></a> <span class="vuid">VUID-vkCreateSamplerYcbcrConversion-pAllocator-parameter</span><br>
+ If <code>pAllocator</code> is not <code>NULL</code>, <code>pAllocator</code> <strong>must</strong> be a valid pointer to a valid <a href="memory.html#VkAllocationCallbacks" class="xref page">VkAllocationCallbacks</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateSamplerYcbcrConversion-pYcbcrConversion-parameter" href="#VUID-vkCreateSamplerYcbcrConversion-pYcbcrConversion-parameter"></a> <span class="vuid">VUID-vkCreateSamplerYcbcrConversion-pYcbcrConversion-parameter</span><br>
+ <code>pYcbcrConversion</code> <strong>must</strong> be a valid pointer to a <a href="#VkSamplerYcbcrConversion">VkSamplerYcbcrConversion</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateSamplerYcbcrConversion-device-queuecount" href="#VUID-vkCreateSamplerYcbcrConversion-device-queuecount"></a> <span class="vuid">VUID-vkCreateSamplerYcbcrConversion-device-queuecount</span><br>
+ The device <strong>must</strong> have been created with at least <code>1</code> queue</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_OUT_OF_DEVICE_MEMORY</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkSamplerYcbcrConversionCreateInfo</code> structure is defined as:</p>
+</div>
+<div id="VkSamplerYcbcrConversionCreateInfo" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_1
+typedef struct VkSamplerYcbcrConversionCreateInfo {
+    VkStructureType                  sType;
+    const void*                      pNext;
+    VkFormat                         format;
+    VkSamplerYcbcrModelConversion    ycbcrModel;
+    VkSamplerYcbcrRange              ycbcrRange;
+    VkComponentMapping               components;
+    VkChromaLocation                 xChromaOffset;
+    VkChromaLocation                 yChromaOffset;
+    VkFilter                         chromaFilter;
+    VkBool32                         forceExplicitReconstruction;
+} VkSamplerYcbcrConversionCreateInfo;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent</p>
+</div>
+<div id="VkSamplerYcbcrConversionCreateInfoKHR" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_sampler_ycbcr_conversion
+typedef VkSamplerYcbcrConversionCreateInfo VkSamplerYcbcrConversionCreateInfoKHR;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>format</code> is the format of the image from which color information
+will be retrieved.</p>
+</li>
+<li>
+<p><code>ycbcrModel</code> describes the color matrix for conversion between color
+models.</p>
+</li>
+<li>
+<p><code>ycbcrRange</code> describes whether the encoded values have headroom and
+foot room, or whether the encoding uses the full numerical range.</p>
+</li>
+<li>
+<p><code>components</code> applies a <em>swizzle</em> based on <a href="resources.html#VkComponentSwizzle" class="xref page">VkComponentSwizzle</a>
+enums prior to range expansion and color model conversion.</p>
+</li>
+<li>
+<p><code>xChromaOffset</code> describes the
+<a href="textures.html#textures-chroma-reconstruction" class="xref page">sample location</a> associated with
+downsampled chroma components in the x dimension.
+<code>xChromaOffset</code> has no effect for formats in which chroma components
+are not downsampled horizontally.</p>
+</li>
+<li>
+<p><code>yChromaOffset</code> describes the
+<a href="textures.html#textures-chroma-reconstruction" class="xref page">sample location</a> associated with
+downsampled chroma components in the y dimension.
+<code>yChromaOffset</code> has no effect for formats in which the chroma
+components are not downsampled vertically.</p>
+</li>
+<li>
+<p><code>chromaFilter</code> is the filter for chroma reconstruction.</p>
+</li>
+<li>
+<p><code>forceExplicitReconstruction</code> <strong>can</strong> be used to ensure that
+reconstruction is done explicitly, if supported.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Setting <code>forceExplicitReconstruction</code> to <code>VK_TRUE</code> <strong>may</strong> have a
+performance penalty on implementations where explicit reconstruction is not
+the default mode of operation.</p>
+</div>
+<div class="paragraph">
+<p>If <code>format</code> supports
+<code>VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT</code>
+the <code>forceExplicitReconstruction</code> value behaves as if it were
+<code>VK_TRUE</code>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>If the <code>pNext</code> chain includes a <a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a> structure
+with non-zero <code>externalFormat</code> member, the sampler Y′C<sub>B</sub>C<sub>R</sub> conversion
+object represents an <em>external format conversion</em>, and <code>format</code> <strong>must</strong> be
+<code>VK_FORMAT_UNDEFINED</code>.
+Such conversions <strong>must</strong> only be used to sample image views with a matching
+<a href="memory.html#memory-external-android-hardware-buffer-external-formats" class="xref page">external format</a>.
+When creating an external format conversion, the value of <code>components</code>
+is ignored.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-format-01904" href="#VUID-VkSamplerYcbcrConversionCreateInfo-format-01904"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-format-01904</span><br>
+
+If an external format conversion is being created, <code>format</code> <strong>must</strong> be
+<code>VK_FORMAT_UNDEFINED</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-format-04061" href="#VUID-VkSamplerYcbcrConversionCreateInfo-format-04061"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-format-04061</span><br>
+
+If an external format conversion is not being created,
+<code>format</code> <strong>must</strong> represent unsigned normalized values (i.e. the format
+<strong>must</strong> be a <code>UNORM</code> format)</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-format-01650" href="#VUID-VkSamplerYcbcrConversionCreateInfo-format-01650"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-format-01650</span><br>
+
+The <a href="formats.html#potential-format-features" class="xref page">potential format features</a> of the
+sampler Y′C<sub>B</sub>C<sub>R</sub> conversion <strong>must</strong> support
+<code>VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT</code> or
+<code>VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-xChromaOffset-01651" href="#VUID-VkSamplerYcbcrConversionCreateInfo-xChromaOffset-01651"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-xChromaOffset-01651</span><br>
+
+If the <a href="formats.html#potential-format-features" class="xref page">potential format features</a> of the
+sampler Y′C<sub>B</sub>C<sub>R</sub> conversion do not support
+<code>VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT</code>, <code>xChromaOffset</code>
+and <code>yChromaOffset</code> <strong>must</strong> not be
+<code>VK_CHROMA_LOCATION_COSITED_EVEN</code> if the corresponding components
+are <a href="textures.html#textures-chroma-reconstruction" class="xref page">downsampled</a></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-xChromaOffset-01652" href="#VUID-VkSamplerYcbcrConversionCreateInfo-xChromaOffset-01652"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-xChromaOffset-01652</span><br>
+
+If the <a href="formats.html#potential-format-features" class="xref page">potential format features</a> of the
+sampler Y′C<sub>B</sub>C<sub>R</sub> conversion do not support
+<code>VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT</code>, <code>xChromaOffset</code>
+and <code>yChromaOffset</code> <strong>must</strong> not be <code>VK_CHROMA_LOCATION_MIDPOINT</code>
+if the corresponding components are <a href="textures.html#textures-chroma-reconstruction" class="xref page">    downsampled</a></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-components-02581" href="#VUID-VkSamplerYcbcrConversionCreateInfo-components-02581"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-components-02581</span><br>
+
+If the format has a <code>_422</code> or <code>_420</code> suffix, then
+<code>components.g</code> <strong>must</strong> be the
+<a href="resources.html#resources-image-views-identity-mappings" class="xref page">identity swizzle</a></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-components-02582" href="#VUID-VkSamplerYcbcrConversionCreateInfo-components-02582"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-components-02582</span><br>
+
+If the format has a <code>_422</code> or <code>_420</code> suffix, then
+<code>components.a</code> <strong>must</strong> be the
+<a href="resources.html#resources-image-views-identity-mappings" class="xref page">identity swizzle</a>,
+<code>VK_COMPONENT_SWIZZLE_ONE</code>, or <code>VK_COMPONENT_SWIZZLE_ZERO</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-components-02583" href="#VUID-VkSamplerYcbcrConversionCreateInfo-components-02583"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-components-02583</span><br>
+
+If the format has a <code>_422</code> or <code>_420</code> suffix, then
+<code>components.r</code> <strong>must</strong> be the
+<a href="resources.html#resources-image-views-identity-mappings" class="xref page">identity swizzle</a> or
+<code>VK_COMPONENT_SWIZZLE_B</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-components-02584" href="#VUID-VkSamplerYcbcrConversionCreateInfo-components-02584"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-components-02584</span><br>
+
+If the format has a <code>_422</code> or <code>_420</code> suffix, then
+<code>components.b</code> <strong>must</strong> be the
+<a href="resources.html#resources-image-views-identity-mappings" class="xref page">identity swizzle</a> or
+<code>VK_COMPONENT_SWIZZLE_R</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-components-02585" href="#VUID-VkSamplerYcbcrConversionCreateInfo-components-02585"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-components-02585</span><br>
+
+If the format has a <code>_422</code> or <code>_420</code> suffix, and if either
+<code>components.r</code> or <code>components.b</code> is the
+<a href="resources.html#resources-image-views-identity-mappings" class="xref page">identity swizzle</a>, both
+values <strong>must</strong> be the identity swizzle</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-ycbcrModel-01655" href="#VUID-VkSamplerYcbcrConversionCreateInfo-ycbcrModel-01655"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-ycbcrModel-01655</span><br>
+
+If <code>ycbcrModel</code> is not
+<code>VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY</code>, then
+<code>components.r</code>, <code>components.g</code>, and <code>components.b</code> <strong>must</strong>
+correspond to components of the <code>format</code>; that is,
+<code>components.r</code>, <code>components.g</code>, and <code>components.b</code> <strong>must</strong> not
+be <code>VK_COMPONENT_SWIZZLE_ZERO</code> or <code>VK_COMPONENT_SWIZZLE_ONE</code>,
+and <strong>must</strong> not correspond to a component containing zero or one as a
+consequence of <a href="textures.html#textures-conversion-to-rgba" class="xref page">conversion to RGBA</a></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-ycbcrRange-02748" href="#VUID-VkSamplerYcbcrConversionCreateInfo-ycbcrRange-02748"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-ycbcrRange-02748</span><br>
+
+If <code>ycbcrRange</code> is <code>VK_SAMPLER_YCBCR_RANGE_ITU_NARROW</code> then the
+R, G and B components obtained by applying the <code>component</code> swizzle
+to <code>format</code> <strong>must</strong> each have a bit-depth greater than or equal to 8</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-forceExplicitReconstruction-01656" href="#VUID-VkSamplerYcbcrConversionCreateInfo-forceExplicitReconstruction-01656"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-forceExplicitReconstruction-01656</span><br>
+
+If the <a href="formats.html#potential-format-features" class="xref page">potential format features</a> of the
+sampler Y′C<sub>B</sub>C<sub>R</sub> conversion do not support
+<code>VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT</code>
+<code>forceExplicitReconstruction</code> <strong>must</strong> be <code>VK_FALSE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-chromaFilter-01657" href="#VUID-VkSamplerYcbcrConversionCreateInfo-chromaFilter-01657"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-chromaFilter-01657</span><br>
+
+If the <a href="formats.html#potential-format-features" class="xref page">potential format features</a> of the
+sampler Y′C<sub>B</sub>C<sub>R</sub> conversion do not support
+<code>VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT</code>,
+<code>chromaFilter</code> <strong>must</strong> not be <code>VK_FILTER_LINEAR</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-pNext-09207" href="#VUID-VkSamplerYcbcrConversionCreateInfo-pNext-09207"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-pNext-09207</span><br>
+
+If the <code>pNext</code> chain includes a
+<a href="#VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM">VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM</a> structure, and
+if the <a href="features.html#features-ycbcrDegamma" class="xref page"><code>ycbcrDegamma</code></a> feature is not
+enabled, then
+<a href="#VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM">VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM</a>::<code>enableYDegamma</code>
+<strong>must</strong> be <code>VK_FALSE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-pNext-09208" href="#VUID-VkSamplerYcbcrConversionCreateInfo-pNext-09208"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-pNext-09208</span><br>
+
+If the <code>pNext</code> chain includes a
+<a href="#VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM">VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM</a> structure, and
+if the <a href="features.html#features-ycbcrDegamma" class="xref page"><code>ycbcrDegamma</code></a> feature is not
+enabled, then
+<a href="#VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM">VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM</a>::<code>enableCbCrDegamma</code>
+<strong>must</strong> be <code>VK_FALSE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-pNext-09209" href="#VUID-VkSamplerYcbcrConversionCreateInfo-pNext-09209"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-pNext-09209</span><br>
+
+If the <code>pNext</code> chain includes a
+<a href="#VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM">VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM</a> structure,
+<code>format</code> <strong>must</strong> be a format with 8-bit R, G, and B components</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-sType-sType" href="#VUID-VkSamplerYcbcrConversionCreateInfo-sType-sType"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-pNext-pNext" href="#VUID-VkSamplerYcbcrConversionCreateInfo-pNext-pNext"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-pNext-pNext</span><br>
+ Each <code>pNext</code> member of any structure (including this one) in the <code>pNext</code> chain <strong>must</strong> be either <code>NULL</code> or a pointer to a valid instance of <a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a>, <a href="resources.html#VkExternalFormatQNX" class="xref page">VkExternalFormatQNX</a>, or <a href="#VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM">VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM</a></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-sType-unique" href="#VUID-VkSamplerYcbcrConversionCreateInfo-sType-unique"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-sType-unique</span><br>
+ The <code>sType</code> value of each structure in the <code>pNext</code> chain <strong>must</strong> be unique</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-format-parameter" href="#VUID-VkSamplerYcbcrConversionCreateInfo-format-parameter"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-format-parameter</span><br>
+ <code>format</code> <strong>must</strong> be a valid <a href="formats.html#VkFormat" class="xref page">VkFormat</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-ycbcrModel-parameter" href="#VUID-VkSamplerYcbcrConversionCreateInfo-ycbcrModel-parameter"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-ycbcrModel-parameter</span><br>
+ <code>ycbcrModel</code> <strong>must</strong> be a valid <a href="#VkSamplerYcbcrModelConversion">VkSamplerYcbcrModelConversion</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-ycbcrRange-parameter" href="#VUID-VkSamplerYcbcrConversionCreateInfo-ycbcrRange-parameter"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-ycbcrRange-parameter</span><br>
+ <code>ycbcrRange</code> <strong>must</strong> be a valid <a href="#VkSamplerYcbcrRange">VkSamplerYcbcrRange</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-components-parameter" href="#VUID-VkSamplerYcbcrConversionCreateInfo-components-parameter"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-components-parameter</span><br>
+ <code>components</code> <strong>must</strong> be a valid <a href="resources.html#VkComponentMapping" class="xref page">VkComponentMapping</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-xChromaOffset-parameter" href="#VUID-VkSamplerYcbcrConversionCreateInfo-xChromaOffset-parameter"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-xChromaOffset-parameter</span><br>
+ <code>xChromaOffset</code> <strong>must</strong> be a valid <a href="#VkChromaLocation">VkChromaLocation</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-yChromaOffset-parameter" href="#VUID-VkSamplerYcbcrConversionCreateInfo-yChromaOffset-parameter"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-yChromaOffset-parameter</span><br>
+ <code>yChromaOffset</code> <strong>must</strong> be a valid <a href="#VkChromaLocation">VkChromaLocation</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionCreateInfo-chromaFilter-parameter" href="#VUID-VkSamplerYcbcrConversionCreateInfo-chromaFilter-parameter"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionCreateInfo-chromaFilter-parameter</span><br>
+ <code>chromaFilter</code> <strong>must</strong> be a valid <a href="#VkFilter">VkFilter</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>If <code>chromaFilter</code> is <code>VK_FILTER_NEAREST</code>, chroma samples are
+reconstructed to luma component resolution using nearest-neighbour sampling.
+Otherwise, chroma samples are reconstructed using interpolation.
+More details can be found in <a href="textures.html#textures-sampler-YCbCr-conversion" class="xref page">the description of sampler Y′C<sub>B</sub>C<sub>R</sub> conversion</a> in the <a href="textures.html#textures" class="xref page">Image Operations</a> chapter.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p><a href="#VkSamplerYcbcrModelConversion">VkSamplerYcbcrModelConversion</a> defines the conversion from the source
+color model to the shader color model.
+Possible values are:</p>
+</div>
+<div id="VkSamplerYcbcrModelConversion" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_1
+typedef enum VkSamplerYcbcrModelConversion {
+    VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY = 0,
+    VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_IDENTITY = 1,
+    VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709 = 2,
+    VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601 = 3,
+    VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020 = 4,
+  // Provided by VK_KHR_sampler_ycbcr_conversion
+    VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY_KHR = VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY,
+  // Provided by VK_KHR_sampler_ycbcr_conversion
+    VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_IDENTITY_KHR = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_IDENTITY,
+  // Provided by VK_KHR_sampler_ycbcr_conversion
+    VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709_KHR = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709,
+  // Provided by VK_KHR_sampler_ycbcr_conversion
+    VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601_KHR = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601,
+  // Provided by VK_KHR_sampler_ycbcr_conversion
+    VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020_KHR = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020,
+} VkSamplerYcbcrModelConversion;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent</p>
+</div>
+<div id="VkSamplerYcbcrModelConversionKHR" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_sampler_ycbcr_conversion
+typedef VkSamplerYcbcrModelConversion VkSamplerYcbcrModelConversionKHR;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY</code> specifies that the
+input values to the conversion are unmodified.</p>
+</li>
+<li>
+<p><code>VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_IDENTITY</code> specifies no
+model conversion but the inputs are range expanded as for Y′C<sub>B</sub>C<sub>R</sub>.</p>
+</li>
+<li>
+<p><code>VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709</code> specifies the color
+model conversion from Y′C<sub>B</sub>C<sub>R</sub> to R′G′B′ defined in BT.709 and
+described in the &#8220;BT.709 Y′C<sub>B</sub>C<sub>R</sub> conversion&#8221; section of the
+<a href="introduction.html#data-format" class="xref page">Khronos Data Format Specification</a>.</p>
+</li>
+<li>
+<p><code>VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601</code> specifies the color
+model conversion from Y′C<sub>B</sub>C<sub>R</sub> to R′G′B′ defined in BT.601 and
+described in the &#8220;BT.601 Y′C<sub>B</sub>C<sub>R</sub> conversion&#8221; section of the
+<a href="introduction.html#data-format" class="xref page">Khronos Data Format Specification</a>.</p>
+</li>
+<li>
+<p><code>VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020</code> specifies the color
+model conversion from Y′C<sub>B</sub>C<sub>R</sub> to R′G′B′ defined in BT.2020 and
+described in the &#8220;BT.2020 Y′C<sub>B</sub>C<sub>R</sub> conversion&#8221; section of the
+<a href="introduction.html#data-format" class="xref page">Khronos Data Format Specification</a>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In the <code>VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_*</code> color models, for the
+input to the sampler Y′C<sub>B</sub>C<sub>R</sub> range expansion and model conversion:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>the Y (Y′ luma) component corresponds to the G component of an RGB
+image.</p>
+</li>
+<li>
+<p>the CB (C<sub>B</sub> or &#8220;U&#8221; blue color difference) component corresponds to
+the B component of an RGB image.</p>
+</li>
+<li>
+<p>the CR (C<sub>R</sub> or &#8220;V&#8221; red color difference) component corresponds to the
+R component of an RGB image.</p>
+</li>
+<li>
+<p>the alpha component, if present, is not modified by color model
+conversion.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These rules reflect the mapping of components after the component swizzle
+operation (controlled by
+<a href="#VkSamplerYcbcrConversionCreateInfo">VkSamplerYcbcrConversionCreateInfo</a>::<code>components</code>).</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>For example, an &#8220;YUVA&#8221; 32-bit format comprising four 8-bit components can
+be implemented as <code>VK_FORMAT_R8G8B8A8_UNORM</code> with a component mapping:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>components.a</code> = <code>VK_COMPONENT_SWIZZLE_IDENTITY</code></p>
+</li>
+<li>
+<p><code>components.r</code> = <code>VK_COMPONENT_SWIZZLE_B</code></p>
+</li>
+<li>
+<p><code>components.g</code> = <code>VK_COMPONENT_SWIZZLE_R</code></p>
+</li>
+<li>
+<p><code>components.b</code> = <code>VK_COMPONENT_SWIZZLE_G</code></p>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#VkSamplerYcbcrRange">VkSamplerYcbcrRange</a> enum describes whether color components are
+encoded using the full range of numerical values or whether values are
+reserved for headroom and foot room.
+<a href="#VkSamplerYcbcrRange">VkSamplerYcbcrRange</a> is defined as:</p>
+</div>
+<div id="VkSamplerYcbcrRange" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_1
+typedef enum VkSamplerYcbcrRange {
+    VK_SAMPLER_YCBCR_RANGE_ITU_FULL = 0,
+    VK_SAMPLER_YCBCR_RANGE_ITU_NARROW = 1,
+  // Provided by VK_KHR_sampler_ycbcr_conversion
+    VK_SAMPLER_YCBCR_RANGE_ITU_FULL_KHR = VK_SAMPLER_YCBCR_RANGE_ITU_FULL,
+  // Provided by VK_KHR_sampler_ycbcr_conversion
+    VK_SAMPLER_YCBCR_RANGE_ITU_NARROW_KHR = VK_SAMPLER_YCBCR_RANGE_ITU_NARROW,
+} VkSamplerYcbcrRange;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent</p>
+</div>
+<div id="VkSamplerYcbcrRangeKHR" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_sampler_ycbcr_conversion
+typedef VkSamplerYcbcrRange VkSamplerYcbcrRangeKHR;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SAMPLER_YCBCR_RANGE_ITU_FULL</code> specifies that the full range of
+the encoded values are valid and interpreted according to the ITU &#8220;full
+range&#8221; quantization rules.</p>
+</li>
+<li>
+<p><code>VK_SAMPLER_YCBCR_RANGE_ITU_NARROW</code> specifies that headroom and foot
+room are reserved in the numerical range of encoded values, and the
+remaining values are expanded according to the ITU &#8220;narrow range&#8221;
+quantization rules.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The formulae for these conversions is described in the
+<a href="textures.html#textures-sampler-YCbCr-conversion-rangeexpand" class="xref page">Sampler Y′C<sub>B</sub>C<sub>R</sub> Range Expansion</a> section of the <a href="textures.html#textures" class="xref page">Image Operations</a> chapter.</p>
+</div>
+<div class="paragraph">
+<p>No range modification takes place if <code>ycbcrModel</code> is
+<code>VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY</code>; the <code>ycbcrRange</code>
+field of <a href="#VkSamplerYcbcrConversionCreateInfo">VkSamplerYcbcrConversionCreateInfo</a> is ignored in this case.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#VkChromaLocation">VkChromaLocation</a> enum defines the location of downsampled chroma
+component samples relative to the luma samples, and is defined as:</p>
+</div>
+<div id="VkChromaLocation" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_1
+typedef enum VkChromaLocation {
+    VK_CHROMA_LOCATION_COSITED_EVEN = 0,
+    VK_CHROMA_LOCATION_MIDPOINT = 1,
+  // Provided by VK_KHR_sampler_ycbcr_conversion
+    VK_CHROMA_LOCATION_COSITED_EVEN_KHR = VK_CHROMA_LOCATION_COSITED_EVEN,
+  // Provided by VK_KHR_sampler_ycbcr_conversion
+    VK_CHROMA_LOCATION_MIDPOINT_KHR = VK_CHROMA_LOCATION_MIDPOINT,
+} VkChromaLocation;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent</p>
+</div>
+<div id="VkChromaLocationKHR" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_sampler_ycbcr_conversion
+typedef VkChromaLocation VkChromaLocationKHR;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_CHROMA_LOCATION_COSITED_EVEN</code> specifies that downsampled chroma
+samples are aligned with luma samples with even coordinates.</p>
+</li>
+<li>
+<p><code>VK_CHROMA_LOCATION_MIDPOINT</code> specifies that downsampled chroma
+samples are located half way between each even luma sample and the
+nearest higher odd luma sample.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Applications <strong>can</strong> enable sRGB to linear conversion for the R, G, and B
+components of a Y′C<sub>B</sub>C<sub>R</sub> image during <a href="textures.html#textures-ycbcr-degamma" class="xref page">format conversion</a> by including
+<code>VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM</code> structure in the
+<code>pNext</code> chain of <a href="#VkSamplerYcbcrConversionCreateInfo">VkSamplerYcbcrConversionCreateInfo</a>.</p>
+</div>
+<div class="paragraph">
+<p>The <code>VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM</code> structure is
+defined as:</p>
+</div>
+<div id="VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_QCOM_ycbcr_degamma
+typedef struct VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           enableYDegamma;
+    VkBool32           enableCbCrDegamma;
+} VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>enableYDegamma</code> indicates <a href="textures.html#textures-ycbcr-degamma" class="xref page">sRGB to linear</a>
+conversion is enabled for the G component.</p>
+</li>
+<li>
+<p><code>enableCbCrDegamma</code> indicates <a href="textures.html#textures-ycbcr-degamma" class="xref page">sRGB to    linear</a> conversion is enabled for the R and B components.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM-sType-sType" href="#VUID-VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM-sType-sType"></a> <span class="vuid">VUID-VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_YCBCR_DEGAMMA_CREATE_INFO_QCOM</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To destroy a sampler Y′C<sub>B</sub>C<sub>R</sub> conversion, call:</p>
+</div>
+<div id="vkDestroySamplerYcbcrConversion" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_1
+void vkDestroySamplerYcbcrConversion(
+    VkDevice                                    device,
+    VkSamplerYcbcrConversion                    ycbcrConversion,
+    const VkAllocationCallbacks*                pAllocator);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent command</p>
+</div>
+<div id="vkDestroySamplerYcbcrConversionKHR" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_sampler_ycbcr_conversion
+void vkDestroySamplerYcbcrConversionKHR(
+    VkDevice                                    device,
+    VkSamplerYcbcrConversion                    ycbcrConversion,
+    const VkAllocationCallbacks*                pAllocator);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the logical device that destroys the Y′C<sub>B</sub>C<sub>R</sub> conversion.</p>
+</li>
+<li>
+<p><code>ycbcrConversion</code> is the conversion to destroy.</p>
+</li>
+<li>
+<p><code>pAllocator</code> controls host memory allocation as described in the
+<a href="memory.html#memory-allocation" class="xref page">Memory Allocation</a> chapter.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkDestroySamplerYcbcrConversion-device-parameter" href="#VUID-vkDestroySamplerYcbcrConversion-device-parameter"></a> <span class="vuid">VUID-vkDestroySamplerYcbcrConversion-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkDestroySamplerYcbcrConversion-ycbcrConversion-parameter" href="#VUID-vkDestroySamplerYcbcrConversion-ycbcrConversion-parameter"></a> <span class="vuid">VUID-vkDestroySamplerYcbcrConversion-ycbcrConversion-parameter</span><br>
+ If <code>ycbcrConversion</code> is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, <code>ycbcrConversion</code> <strong>must</strong> be a valid <a href="#VkSamplerYcbcrConversion">VkSamplerYcbcrConversion</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkDestroySamplerYcbcrConversion-pAllocator-parameter" href="#VUID-vkDestroySamplerYcbcrConversion-pAllocator-parameter"></a> <span class="vuid">VUID-vkDestroySamplerYcbcrConversion-pAllocator-parameter</span><br>
+ If <code>pAllocator</code> is not <code>NULL</code>, <code>pAllocator</code> <strong>must</strong> be a valid pointer to a valid <a href="memory.html#VkAllocationCallbacks" class="xref page">VkAllocationCallbacks</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkDestroySamplerYcbcrConversion-ycbcrConversion-parent" href="#VUID-vkDestroySamplerYcbcrConversion-ycbcrConversion-parent"></a> <span class="vuid">VUID-vkDestroySamplerYcbcrConversion-ycbcrConversion-parent</span><br>
+ If <code>ycbcrConversion</code> is a valid handle, it <strong>must</strong> have been created, allocated, or retrieved from <code>device</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>ycbcrConversion</code> <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>In addition to the predefined border color values, applications <strong>can</strong> provide
+a custom border color value by including the
+<code>VkSamplerCustomBorderColorCreateInfoEXT</code> structure in the
+<a href="#VkSamplerCreateInfo">VkSamplerCreateInfo</a>::<code>pNext</code> chain.</p>
+</div>
+<div class="paragraph">
+<p>The <code>VkSamplerCustomBorderColorCreateInfoEXT</code> structure is defined as:</p>
+</div>
+<div id="VkSamplerCustomBorderColorCreateInfoEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_custom_border_color
+typedef struct VkSamplerCustomBorderColorCreateInfoEXT {
+    VkStructureType      sType;
+    const void*          pNext;
+    VkClearColorValue    customBorderColor;
+    VkFormat             format;
+} VkSamplerCustomBorderColorCreateInfoEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>customBorderColor</code> is a <a href="clears.html#VkClearColorValue" class="xref page">VkClearColorValue</a> representing the
+desired custom sampler border color.</p>
+</li>
+<li>
+<p><code>format</code> is a <a href="formats.html#VkFormat" class="xref page">VkFormat</a> representing the format of the sampled
+image view(s).
+This field may be <code>VK_FORMAT_UNDEFINED</code> if the
+<a href="features.html#features-customBorderColorWithoutFormat" class="xref page">    <code>customBorderColorWithoutFormat</code></a> feature is enabled.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>If <code>format</code> is a depth/stencil format, the aspect is determined by the
+value of <a href="#VkSamplerCreateInfo">VkSamplerCreateInfo</a>::<code>borderColor</code>.
+If <a href="#VkSamplerCreateInfo">VkSamplerCreateInfo</a>::<code>borderColor</code> is
+<code>VK_BORDER_COLOR_FLOAT_CUSTOM_EXT</code>, the depth aspect is considered.
+If <a href="#VkSamplerCreateInfo">VkSamplerCreateInfo</a>::<code>borderColor</code> is
+<code>VK_BORDER_COLOR_INT_CUSTOM_EXT</code>, the stencil aspect is considered.</p>
+</div>
+<div class="paragraph">
+<p>If <code>format</code> is <code>VK_FORMAT_UNDEFINED</code>, the
+<a href="#VkSamplerCreateInfo">VkSamplerCreateInfo</a>::<code>borderColor</code> is
+<code>VK_BORDER_COLOR_INT_CUSTOM_EXT</code>, and the sampler is used with an image
+with a stencil format, then the implementation <strong>must</strong> source the custom
+border color from either the first or second components of
+<a href="#VkSamplerCreateInfo">VkSamplerCreateInfo</a>::<code>borderColor</code> and <strong>should</strong> source it from the
+first component.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkSamplerCustomBorderColorCreateInfoEXT-format-07605" href="#VUID-VkSamplerCustomBorderColorCreateInfoEXT-format-07605"></a> <span class="vuid">VUID-VkSamplerCustomBorderColorCreateInfoEXT-format-07605</span><br>
+
+If <code>format</code> is not <code>VK_FORMAT_UNDEFINED</code> and <code>format</code> is not
+a depth/stencil format then the
+<a href="#VkSamplerCreateInfo">VkSamplerCreateInfo</a>::<code>borderColor</code> type <strong>must</strong> match the
+sampled type of the provided <code>format</code>, as shown in the <em>SPIR-V Type</em>
+column of the <a href="formats.html#formats-numericformat" class="xref page">Interpretation of Numeric Format</a> table</p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCustomBorderColorCreateInfoEXT-format-04014" href="#VUID-VkSamplerCustomBorderColorCreateInfoEXT-format-04014"></a> <span class="vuid">VUID-VkSamplerCustomBorderColorCreateInfoEXT-format-04014</span><br>
+
+If the <a href="features.html#features-customBorderColorWithoutFormat" class="xref page">    <code>customBorderColorWithoutFormat</code></a> feature is not enabled then
+<code>format</code> <strong>must</strong> not be <code>VK_FORMAT_UNDEFINED</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCustomBorderColorCreateInfoEXT-format-04015" href="#VUID-VkSamplerCustomBorderColorCreateInfoEXT-format-04015"></a> <span class="vuid">VUID-VkSamplerCustomBorderColorCreateInfoEXT-format-04015</span><br>
+
+If the sampler is used to sample an image view of
+<code>VK_FORMAT_B4G4R4A4_UNORM_PACK16</code>,
+<code>VK_FORMAT_B5G6R5_UNORM_PACK16</code>,
+<code>VK_FORMAT_A1B5G5R5_UNORM_PACK16</code>,
+or <code>VK_FORMAT_B5G5R5A1_UNORM_PACK16</code> format then <code>format</code> <strong>must</strong>
+not be <code>VK_FORMAT_UNDEFINED</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkSamplerCustomBorderColorCreateInfoEXT-sType-sType" href="#VUID-VkSamplerCustomBorderColorCreateInfoEXT-sType-sType"></a> <span class="vuid">VUID-VkSamplerCustomBorderColorCreateInfoEXT-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_SAMPLER_CUSTOM_BORDER_COLOR_CREATE_INFO_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerCustomBorderColorCreateInfoEXT-format-parameter" href="#VUID-VkSamplerCustomBorderColorCreateInfoEXT-format-parameter"></a> <span class="vuid">VUID-VkSamplerCustomBorderColorCreateInfoEXT-format-parameter</span><br>
+ <code>format</code> <strong>must</strong> be a valid <a href="formats.html#VkFormat" class="xref page">VkFormat</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>If the sampler is created with <code>VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK</code>,
+<code>VK_BORDER_COLOR_INT_OPAQUE_BLACK</code>,
+<code>VK_BORDER_COLOR_FLOAT_CUSTOM_EXT</code>, or
+<code>VK_BORDER_COLOR_INT_CUSTOM_EXT</code> <code>borderColor</code>, and that sampler
+will be combined with an image view that does not have an
+<a href="resources.html#resources-image-views-identity-mappings" class="xref page">identity swizzle</a>, and
+<a href="features.html#VkPhysicalDeviceBorderColorSwizzleFeaturesEXT" class="xref page">VkPhysicalDeviceBorderColorSwizzleFeaturesEXT</a>::<code>borderColorSwizzleFromImage</code>
+is not enabled, then it is necessary to specify the component mapping of the
+border color, by including the
+<code>VkSamplerBorderColorComponentMappingCreateInfoEXT</code> structure in the
+<a href="#VkSamplerCreateInfo">VkSamplerCreateInfo</a>::<code>pNext</code> chain, to get defined results.</p>
+</div>
+<div class="paragraph">
+<p>The <code>VkSamplerBorderColorComponentMappingCreateInfoEXT</code> structure is
+defined as:</p>
+</div>
+<div id="VkSamplerBorderColorComponentMappingCreateInfoEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_border_color_swizzle
+typedef struct VkSamplerBorderColorComponentMappingCreateInfoEXT {
+    VkStructureType       sType;
+    const void*           pNext;
+    VkComponentMapping    components;
+    VkBool32              srgb;
+} VkSamplerBorderColorComponentMappingCreateInfoEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>components</code> is a <a href="resources.html#VkComponentMapping" class="xref page">VkComponentMapping</a> structure specifying a
+remapping of the border color components.</p>
+</li>
+<li>
+<p><code>srgb</code> indicates that the sampler will be combined with an image
+view that has an image format which is sRGB encoded.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The <a href="resources.html#VkComponentMapping" class="xref page">VkComponentMapping</a> <code>components</code> member describes a remapping
+from components of the border color to components of the vector returned by
+shader image instructions when the border color is used.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkSamplerBorderColorComponentMappingCreateInfoEXT-borderColorSwizzle-06437" href="#VUID-VkSamplerBorderColorComponentMappingCreateInfoEXT-borderColorSwizzle-06437"></a> <span class="vuid">VUID-VkSamplerBorderColorComponentMappingCreateInfoEXT-borderColorSwizzle-06437</span><br>
+
+The <a href="features.html#features-borderColorSwizzle" class="xref page"><code>borderColorSwizzle</code></a> feature
+<strong>must</strong> be enabled</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkSamplerBorderColorComponentMappingCreateInfoEXT-sType-sType" href="#VUID-VkSamplerBorderColorComponentMappingCreateInfoEXT-sType-sType"></a> <span class="vuid">VUID-VkSamplerBorderColorComponentMappingCreateInfoEXT-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_SAMPLER_BORDER_COLOR_COMPONENT_MAPPING_CREATE_INFO_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerBorderColorComponentMappingCreateInfoEXT-components-parameter" href="#VUID-VkSamplerBorderColorComponentMappingCreateInfoEXT-components-parameter"></a> <span class="vuid">VUID-VkSamplerBorderColorComponentMappingCreateInfoEXT-components-parameter</span><br>
+ <code>components</code> <strong>must</strong> be a valid <a href="resources.html#VkComponentMapping" class="xref page">VkComponentMapping</a> structure</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkSamplerBlockMatchWindowCreateInfoQCOM</code> structure is defined as:</p>
+</div>
+<div id="VkSamplerBlockMatchWindowCreateInfoQCOM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_QCOM_image_processing2
+typedef struct VkSamplerBlockMatchWindowCreateInfoQCOM {
+    VkStructureType                      sType;
+    const void*                          pNext;
+    VkExtent2D                           windowExtent;
+    VkBlockMatchWindowCompareModeQCOM    windowCompareMode;
+} VkSamplerBlockMatchWindowCreateInfoQCOM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>windowExtent</code> is a <a href="fundamentals.html#VkExtent2D" class="xref page">VkExtent2D</a> specifying a the width and
+height of the block match window.</p>
+</li>
+<li>
+<p><code>windowCompareMode</code> is a <a href="#VkBlockMatchWindowCompareModeQCOM">VkBlockMatchWindowCompareModeQCOM</a>
+specifying the compare mode.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkSamplerBlockMatchWindowCreateInfoQCOM-WindowExtent-09210" href="#VUID-VkSamplerBlockMatchWindowCreateInfoQCOM-WindowExtent-09210"></a> <span class="vuid">VUID-VkSamplerBlockMatchWindowCreateInfoQCOM-WindowExtent-09210</span><br>
+
+<code>WindowExtent</code> <strong>must</strong> not be larger than
+<a href="devsandqueues.html#VkPhysicalDeviceImageProcessing2PropertiesQCOM" class="xref page">VkPhysicalDeviceImageProcessing2PropertiesQCOM</a>::<code>maxBlockMatchWindow</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkSamplerBlockMatchWindowCreateInfoQCOM-sType-sType" href="#VUID-VkSamplerBlockMatchWindowCreateInfoQCOM-sType-sType"></a> <span class="vuid">VUID-VkSamplerBlockMatchWindowCreateInfoQCOM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_SAMPLER_BLOCK_MATCH_WINDOW_CREATE_INFO_QCOM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSamplerBlockMatchWindowCreateInfoQCOM-windowCompareMode-parameter" href="#VUID-VkSamplerBlockMatchWindowCreateInfoQCOM-windowCompareMode-parameter"></a> <span class="vuid">VUID-VkSamplerBlockMatchWindowCreateInfoQCOM-windowCompareMode-parameter</span><br>
+ <code>windowCompareMode</code> <strong>must</strong> be a valid <a href="#VkBlockMatchWindowCompareModeQCOM">VkBlockMatchWindowCompareModeQCOM</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#VkBlockMatchWindowCompareModeQCOM">VkBlockMatchWindowCompareModeQCOM</a> enum describes how block match
+values within the window are compared.
+<a href="#VkBlockMatchWindowCompareModeQCOM">VkBlockMatchWindowCompareModeQCOM</a> is defined as:</p>
+</div>
+<div id="VkBlockMatchWindowCompareModeQCOM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_QCOM_image_processing2
+typedef enum VkBlockMatchWindowCompareModeQCOM {
+    VK_BLOCK_MATCH_WINDOW_COMPARE_MODE_MIN_QCOM = 0,
+    VK_BLOCK_MATCH_WINDOW_COMPARE_MODE_MAX_QCOM = 1,
+} VkBlockMatchWindowCompareModeQCOM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_BLOCK_MATCH_WINDOW_COMPARE_MODE_MIN_QCOM</code> specifies that
+windowed block match operations return the minimum error within the
+window.</p>
+</li>
+<li>
+<p><code>VK_BLOCK_MATCH_WINDOW_COMPARE_MODE_MAX_QCOM</code> specifies that
+windowed block match operations return the maximum error within the
+window.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

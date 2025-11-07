@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="icon" href="images/Vulkan_LogoBug_48px_Nov17.png">
+<link rel="stylesheet" href="github-markdown.css">
+</head>
+<body>
+<article class="markdown-body">
+<h1 id="crash-diagnostic-layer">Crash Diagnostic Layer</h1>
+<p>The Crash Diagnostic Layer (CDL) is a Vulkan layer to help track down and identify the cause of GPU hangs and crashes. It works by instrumenting command buffers with completion checkpoints. When an error is detected a dump file containing incomplete command buffers is written. Often the last complete or incomplete commands are responsible for the crash. The name of the layer is <code>VK_LAYER_LUNARG_crash_diagnostic</code>.</p>
+<h2 id="building">Building</h2>
+<p>See the associated <a href="https://github.com/LunarG/CrashDiagnosticLayer/blob/main/BUILD.md" TARGET="_blank">BUILD.md</a> file for details on how to build the Crash Diagnostic Layer for various platforms.</p>
+<h2 id="runtime-requirements">Runtime requirements</h2>
+<p>CDL uses the following extensions. If an extension is not present, some functionality might be disabled.</p>
+<ul>
+<li><code>VK_KHR_timeline_semaphore</code> (or Vulkan 1.2) - used to track forward progress of queue submissions</li>
+<li><code>VK_NV_device_diagnostic_commands</code> - used to track forward progress within command buffers</li>
+<li><code>VK_AMD_buffer_marker</code> - used to track forward progress within command buffers (if the NV extension is not present) and the state of binary semaphores.</li>
+<li><code>VK_AMD_device_coherent_memory</code> - improves the accuracy of VK_AMD_buffer_marker tracking</li>
+<li><code>VK_EXT_device_fault</code> - allows drivers to report data related to a <code>VK_ERROR_DEVICE_LOST</code>, such as invalid device addresses.</li>
+<li><code>VK_EXT_device_address_binding_report</code> - allows drivers to report lifecycle information about device address assignments, which can help identify the source of device faults.</li>
+</ul>
+<h2 id="running">Running</h2>
+<p>CDL can be used as an explicit or implicit layer. The loader's documentation describes <a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/main/docs/LoaderApplicationInterface.md#implicit-vs-explicit-layers" TARGET="_blank">the difference between implicit and explicit layers</a>, but the relevant bit here is that implicit layers are meant to be available to all applications on the system, even if the application doesn't explicitly enable the layer. On the other hand, explicit layers are easier to use when doing application development.</p>
+<h3 id="explicit-layer">Explicit Layer</h3>
+<p>To use CDL as an explicit layer, enable it with <code>vkconfig</code> or do the following:</p>
+<ol>
+<li>The directory containing the file <code>VkLayer_crash_diagnostic.json</code> is included in the layer search path, by including it in either the <code>VK_LAYER_PATH</code> or <code>VK_ADD_LAYER_PATH</code> environment variable or by using <code>vkconfig</code>.</li>
+<li>Include the layer name in the VK_INSTANCE_LAYERS environment variable or the ppEnabledLayerNames field of <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkInstanceCreateInfo.html" TARGET="_blank">VkInstanceCreateInfo</a>.</li>
+</ol>
+<h3 id="implicit-layer">Implicit Layer</h3>
+<p>When using CDL as an implicit layer, it is disabled by default. To enable the layer's functionality, set the <code>CDL_ENABLE</code> environment variable to 1.</p>
+<h4 id="registering-the-layer">Registering the Layer</h4>
+<p>In order to be discovered by the Vulkan loader at runtime, implicit layers must be registered. The registration process is platform-specific and is discussed in detail in the <a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/main/docs/LoaderLayerInterface.md#layer-discovery" TARGET="_blank">Vulkan-Loader documentation</a>. In all cases, it is the layer manifest (the .json file) that is registered; the manifest contains a relative path to the layer library, which can be in a separate directory.</p>
+<h2 id="basic-usage">Basic Usage</h2>
+<p>Once the layer is enabled, if <code>vkQueueSubmit()</code> or other Vulkan functions returns a fatal error code (usually <code>VK_ERROR_DEVICE_LOST</code>), a dump file of the command buffers (and other state) that failed to execute are written to disk.</p>
+<h3 id="logging">Logging</h3>
+<p>CDL outputs messages at runtime to indicate it is enabled, to trace certain commands, and to report when a gpu crash has occurred. The <code>message_severity</code>, <code>log_file</code>, <code>trace_on</code> and <code>trace_all_semaphores</code> configuration settings control which messages are output and where they are sent.</p>
+<p><code>VK_EXT_debug_utils</code> and <code>VK_EXT_debug_report</code> extensions can also be used to receive log messages directly in the application.</p>
+<h3 id="dump-files">Dump files</h3>
+<p>A unique log file directory is created every time an application is run with CDL enabled. The log file directories are named with the timestamp of the format YYYY-MM-DD-HHMMSS. This prevents subsequent runs from overwriting old data, in case the application is non-deterministic and producing different crashes on each run. The location of these files is platform-specific:</p>
+<ul>
+<li>Linux: <code>${HOME}/cdl/</code></li>
+<li>Windows: <code>%USERPROFILE%\cdl\</code></li>
+<li>Android: '/sdcard/data/Android/<application name>/cdl'</li>
+</ul>
+<p>The output directory for dump files can be changed using the <code>output_path</code> configuration setting, described below.</p>
+<p>The name of the dump file is <code>cdl_dump.yaml</code>, since the file is in the <a href="https://yaml.org/" TARGET="_blank">YAML format</a>. Other files, such as dumped shaders, may be present in the dump directory.</p>
+<h2 id="configuration">Configuration</h2>
+<p>This layer implements the <code>VK_EXT_layer_settings</code> extension, so it can be configured with <code>vkconfig</code>, programmatically, or with environment variables. See the <a href="https://github.com/LunarG/CrashDiagnosticLayer/blob/main/src/crash_diagnostic_layer.json.in" TARGET="_blank">manifest for this layer</a> and the <a href="https://github.com/LunarG/VulkanTools/blob/main/vkconfig_core/layers/layers_schema.json" TARGET="_blank">layer manifest schema</a> for full details. The discussion below uses the <code>key</code> field to identify each setting, the <code>env</code> field defines the corresponding environment variable, and the <code>label</code> field defines the text you will see when using <code>vkconfig</code>.</p>
+<ul>
+<li><code>watchdog_timeout_ms</code>can be set to enable a watchdog thread that monitors the time between queue submissions. If this timeout value (specified in milliseconds) is hit without a queue submission, the gpu is assumed to be crashed and a dump file is created.</li>
+<li>Dump files
+<ul>
+<li><code>output_path</code> can be set to override the directory where log files and shader binaries are written. This can be a full path (starting with <code>/</code> or a drive letter) or a path relative to the application current working directory.</li>
+<li><code>dump_queue_submissions</code> controls which queue submissions are dumped. <code>running</code> causes only the submission currently executing to be dumped. <code>pending</code> will also dump any submissions that have not started execution.</li>
+<li><code>dump_command_buffers</code> controls which command buffers are dumped. <code>running</code> causes only the command buffer currently executing to be dumped. <code>pending</code> will also dump any command buffers that have not started execution. <code>all</code> will dump all known command buffers.</li>
+<li><code>dump_commands</code> controls which commands are dumped. <code>running</code> causes only the commands currently executing to be dumped. <code>pending</code> will also dump any commands that have not started execution. <code>all</code> will dump all commands in the command buffer.</li>
+<li><code>dump_shaders</code> controls if shaders are included in the dump directory. Possible values for this setting are: <code>off</code> - no output, <code>on_crash</code> - only dump the shaders that are bound at the time of a gpu crash, <code>on_bind</code> - dump shaders only when they are bound, and <code>all</code> - dump all shaders as soon as they are created.</li>
+</ul></li>
+<li>Logging
+<ul>
+<li><code>message_severity</code> can be set to a comma-separated list of the types of messages CDL should output to the default logger. Application defined loggers should control which messages they want to recieve with the options available in the <code>VK_EXT_debug_utils</code> or <code>VK_EXT_debug_report</code> extensions.</li>
+<li><code>log_file</code> can be set to control where log messages are sent by the default logger. There are several special values. <code>stderr</code> and <code>stdout</code> send messages to the application console. <code>none</code> disables the default logger. Any other value is assumed to be an absolute or relative path to the log file.</li>
+<li><code>trace_on</code> can be enabled to cause important commands, such as <code>vkQueueSubmit</code> to be logged as they occur.</li>
+<li><code>trace_all_semaphores</code> enables logging messages about every vulkan command that uses semaphores.</li>
+</ul></li>
+<li>State tracking
+<ul>
+<li><code>sync_after_commands</code> adds a pipeline barrier after every instrumented vulkan command. This will reduce performance and may cause some hangs to go away. This option currently only works when using <code>VK_KHR_dynamic_rendering</code></li>
+<li><code>instrument_all_commands</code> can be enabled to include completion markers around every vulkan command. This may allow more accuratute fault locations at the expense of larger command buffers and reduced performance.</li>
+<li><code>track_semaphores</code> enables detailed semaphore state reporting in runtime logging and dump files. <code>VK_AMD_buffer_marker</code> is required for this feature.</li>
+</ul></li>
+</ul>
+<h2 id="layer-properties">Layer Properties</h2>
+<ul>
+<li>API Version: 1.4.328</li>
+<li>Implementation Version: 1</li>
+<li>Layer Manifest: <code>VkLayer_crash_diagnostic.json</code>
+<ul>
+<li>File Format: 1.2.0</li>
+<li>Layer Binary: <code>libVkLayer_crash_diagnostic.so</code></li>
+</ul></li>
+<li>Variables:
+<ul>
+<li><code>vk_layer_settings.txt</code> namespace: <code>lunarg_crash_diagnostic</code></li>
+<li>Environment Variable prefix: <code>VK_LUNARG_CRASH_DIAGNOSTIC_</code></li>
+<li>Android system property prefix: <code>adb setprop debug.vulkan.lunarg_crash_diagnostic.</code></li>
+</ul></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></li>
+<li>Status: BETA</li>
+<li>Number of Layer Settings: 16</li>
+<li>Number of Layer Presets: 1</li>
+</ul>
+<h2 id="layer-settings-overview">Layer Settings Overview</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Label</th>
+<th>Variables Key</th>
+<th>Type</th>
+<th>Default Value</th>
+<th>Platforms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#watchdog-timeout-(ms)">Watchdog timeout (ms)</a></td>
+<td><code>watchdog_timeout_ms</code></td>
+<td><code>INT</code></td>
+<td><code>30000</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><a href="#dump-files">Dump files</a></td>
+<td><code>dump</code></td>
+<td><code>GROUP</code></td>
+<td>``</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#output-path">Output Path</a></td>
+<td><code>output_path</code></td>
+<td><code>STRING</code></td>
+<td>``</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#dump-queue-submissions">Dump queue submissions</a></td>
+<td><code>dump_queue_submits</code></td>
+<td><code>ENUM</code></td>
+<td><code>running</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#dump-command-buffers">Dump command buffers</a></td>
+<td><code>dump_command_buffers</code></td>
+<td><code>ENUM</code></td>
+<td><code>running</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#dump-commands">Dump commands</a></td>
+<td><code>dump_commands</code></td>
+<td><code>ENUM</code></td>
+<td><code>running</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#dump-shaders">Dump shaders</a></td>
+<td><code>dump_shaders</code></td>
+<td><code>ENUM</code></td>
+<td><code>off</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><a href="#logging">Logging</a></td>
+<td><code>logging</code></td>
+<td><code>GROUP</code></td>
+<td>``</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#message-severity">Message Severity</a></td>
+<td><code>message_severity</code></td>
+<td><code>FLAGS</code></td>
+<td><code>error</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#log-file-name">Log file name</a></td>
+<td><code>log_file</code></td>
+<td><code>STRING</code></td>
+<td><code>stderr</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#enable-tracing">Enable Tracing</a></td>
+<td><code>trace_on</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#enable-semaphore-log-tracing.">Enable semaphore log tracing.</a></td>
+<td><code>trace_all_semaphores</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td><a href="#state-tracking">State Tracking</a></td>
+<td><code>state</code></td>
+<td><code>GROUP</code></td>
+<td>``</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#synchronize-commands">Synchronize commands</a></td>
+<td><code>sync_after_commands</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td>    <a href="#instrument-all-commands">Instrument all commands</a></td>
+<td><code>instrument_all_commands</code></td>
+<td><code>BOOL</code></td>
+<td><code>false</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td>    <a href="#track-semaphores">Track semaphores</a></td>
+<td><code>track_semaphores</code></td>
+<td><code>BOOL</code></td>
+<td><code>true</code></td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="layer-settings-details">Layer Settings Details</h2>
+<h3 id="watchdog-timeout-ms">Watchdog timeout (ms)</h3>
+<p>If set to a non-zero number, a watchdog thread will be created. This will trigger if the application fails to submit new commands within a set time (in milliseconds) and a log will be created as if the a lost device error was encountered.</p>
+<ul>
+<li>Key: <code>watchdog_timeout_ms</code></li>
+<li>Type: <code>INT</code></li>
+<li>Default Value: <code>30000</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>int32_t data[] = { 30000 };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_crash_diagnostic", "watchdog_timeout_ms", VK_LAYER_SETTING_TYPE_INT32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_crash_diagnostic.watchdog_timeout_ms = 30000</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_CRASH_DIAGNOSTIC_WATCHDOG_TIMEOUT_MS=30000<br>export VK_CRASH_DIAGNOSTIC_WATCHDOG_TIMEOUT_MS=30000<br>export VK_WATCHDOG_TIMEOUT_MS=30000<br>export CDL_WATCHDOG_TIMEOUT_MS=30000</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_crash_diagnostic.watchdog_timeout_ms 30000<br>adb setprop debug.vulkan.crash_diagnostic.watchdog_timeout_ms 30000<br>adb setprop debug.vulkan.watchdog_timeout_ms 30000</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="dump-files-1">Dump files</h3>
+<p>Control of dump files.</p>
+<p>Sub-settings: <em><a href="#output-path">Output Path</a></em>, <em><a href="#dump-queue-submissions">Dump queue submissions</a></em>, <em><a href="#dump-command-buffers">Dump command buffers</a></em>, <em><a href="#dump-commands">Dump commands</a></em>, and <em><a href="#dump-shaders">Dump shaders</a></em>.</p>
+<ul>
+<li>Key: <code>dump</code></li>
+<li>Type: <code>GROUP</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></li>
+</ul>
+<h3 id="output-path">Output Path</h3>
+<p>The directory where dump files and shader binaries are written.</p>
+<ul>
+<li>Key: <code>output_path</code></li>
+<li>Type: <code>STRING</code></li>
+<li>Default Value:</li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_crash_diagnostic", "output_path", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_crash_diagnostic.output_path = </pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_CRASH_DIAGNOSTIC_OUTPUT_PATH=<br>export VK_CRASH_DIAGNOSTIC_OUTPUT_PATH=<br>export VK_OUTPUT_PATH=<br>export CDL_OUTPUT_PATH=</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_crash_diagnostic.output_path <br>adb setprop debug.vulkan.crash_diagnostic.output_path <br>adb setprop debug.vulkan.output_path </pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="dump-queue-submissions">Dump queue submissions</h3>
+<p>Control which queue submissions are included in the dump.</p>
+<ul>
+<li>Key: <code>dump_queue_submits</code></li>
+<li>Type: <code>ENUM</code></li>
+<li>Default Value: <code>running</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Enum Value</th>
+<th>Label</th>
+<th>Description</th>
+<th>Platforms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>running</code></td>
+<td>Running</td>
+<td>Submissions that were executing at the time of the dump.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><code>pending</code></td>
+<td>Pending</td>
+<td>Submissions executing or pending at the time of the dump.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "running" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_crash_diagnostic", "dump_queue_submits", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_crash_diagnostic.dump_queue_submits = running</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_CRASH_DIAGNOSTIC_DUMP_QUEUE_SUBMITS=running<br>export VK_CRASH_DIAGNOSTIC_DUMP_QUEUE_SUBMITS=running<br>export VK_DUMP_QUEUE_SUBMITS=running<br>export CDL_DUMP_QUEUE_SUBMITS=running</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_crash_diagnostic.dump_queue_submits running<br>adb setprop debug.vulkan.crash_diagnostic.dump_queue_submits running<br>adb setprop debug.vulkan.dump_queue_submits running</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="dump-command-buffers">Dump command buffers</h3>
+<p>Control which command buffers are included in the dump.</p>
+<ul>
+<li>Key: <code>dump_command_buffers</code></li>
+<li>Type: <code>ENUM</code></li>
+<li>Default Value: <code>running</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Enum Value</th>
+<th>Label</th>
+<th>Description</th>
+<th>Platforms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>running</code></td>
+<td>Running</td>
+<td>Command Buffers that were executing at the time of the dump.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><code>pending</code></td>
+<td>Pending</td>
+<td>Command Buffers executing or pending at the time of the dump.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td><code>all</code></td>
+<td>All</td>
+<td>All known Command Buffers.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "running" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_crash_diagnostic", "dump_command_buffers", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_crash_diagnostic.dump_command_buffers = running</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_CRASH_DIAGNOSTIC_DUMP_COMMAND_BUFFERS=running<br>export VK_CRASH_DIAGNOSTIC_DUMP_COMMAND_BUFFERS=running<br>export VK_DUMP_COMMAND_BUFFERS=running<br>export CDL_DUMP_COMMAND_BUFFERS=running</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_crash_diagnostic.dump_command_buffers running<br>adb setprop debug.vulkan.crash_diagnostic.dump_command_buffers running<br>adb setprop debug.vulkan.dump_command_buffers running</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="dump-commands">Dump commands</h3>
+<p>Control which commands are included in the dump.</p>
+<ul>
+<li>Key: <code>dump_commands</code></li>
+<li>Type: <code>ENUM</code></li>
+<li>Default Value: <code>running</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Enum Value</th>
+<th>Label</th>
+<th>Description</th>
+<th>Platforms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>running</code></td>
+<td>Running</td>
+<td>Command Buffers that were executing at the time of the dump.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><code>pending</code></td>
+<td>Pending</td>
+<td>Commands executing or pending at the time of the dump.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td><code>all</code></td>
+<td>All</td>
+<td>All known Commands.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "running" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_crash_diagnostic", "dump_commands", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_crash_diagnostic.dump_commands = running</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_CRASH_DIAGNOSTIC_DUMP_COMMANDS=running<br>export VK_CRASH_DIAGNOSTIC_DUMP_COMMANDS=running<br>export VK_DUMP_COMMANDS=running<br>export CDL_DUMP_COMMANDS=running</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_crash_diagnostic.dump_commands running<br>adb setprop debug.vulkan.crash_diagnostic.dump_commands running<br>adb setprop debug.vulkan.dump_commands running</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="dump-shaders">Dump shaders</h3>
+<p>Control of shader dumping.</p>
+<ul>
+<li>Key: <code>dump_shaders</code></li>
+<li>Type: <code>ENUM</code></li>
+<li>Default Value: <code>off</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Enum Value</th>
+<th>Label</th>
+<th>Description</th>
+<th>Platforms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>off</code></td>
+<td>Off</td>
+<td>Never dump shaders.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><code>on_crash</code></td>
+<td>On Crash</td>
+<td>Dump currently bound shaders after a crash is detected.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td><code>on_bind</code></td>
+<td>On Bind</td>
+<td>Dump only bound shaders.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><code>all</code></td>
+<td>All</td>
+<td>Dump all shaders.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "off" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_crash_diagnostic", "dump_shaders", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_crash_diagnostic.dump_shaders = off</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_CRASH_DIAGNOSTIC_DUMP_SHADERS=off<br>export VK_CRASH_DIAGNOSTIC_DUMP_SHADERS=off<br>export VK_DUMP_SHADERS=off<br>export CDL_DUMP_SHADERS=off</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_crash_diagnostic.dump_shaders off<br>adb setprop debug.vulkan.crash_diagnostic.dump_shaders off<br>adb setprop debug.vulkan.dump_shaders off</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="logging-1">Logging</h3>
+<p>Control of logging.</p>
+<p>Sub-settings: <em><a href="#message-severity">Message Severity</a></em>, <em><a href="#log-file-name">Log file name</a></em>, <em><a href="#enable-tracing">Enable Tracing</a></em>, and <em><a href="#enable-semaphore-log-tracing.">Enable semaphore log tracing.</a></em>.</p>
+<ul>
+<li>Key: <code>logging</code></li>
+<li>Type: <code>GROUP</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></li>
+</ul>
+<h3 id="message-severity">Message Severity</h3>
+<p>Comma-delineated list of options specifying the types of log messages to be reported.</p>
+<ul>
+<li>Key: <code>message_severity</code></li>
+<li>Type: <code>FLAGS</code></li>
+<li>Default Value: <code>error</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Flags</th>
+<th>Label</th>
+<th>Description</th>
+<th>Platforms</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>error</code></td>
+<td>Error</td>
+<td>Report errors such as device lost or setup problems in the layer.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><code>warn</code></td>
+<td>Warning</td>
+<td>Report non-fatal problems that may interfere with operation of the layer</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="odd">
+<td><code>info</code></td>
+<td>Info</td>
+<td>Report informational messages.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+<tr class="even">
+<td><code>verbose</code></td>
+<td>Verbose</td>
+<td>For layer development. Report messages for debugging layer behavior.</td>
+<td><code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "error" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_crash_diagnostic", "message_severity", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_crash_diagnostic.message_severity = error</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_CRASH_DIAGNOSTIC_MESSAGE_SEVERITY=error<br>export VK_CRASH_DIAGNOSTIC_MESSAGE_SEVERITY=error<br>export VK_MESSAGE_SEVERITY=error</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_crash_diagnostic.message_severity error<br>adb setprop debug.vulkan.crash_diagnostic.message_severity error<br>adb setprop debug.vulkan.message_severity error</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="log-file-name">Log file name</h3>
+<p>none = no logging, stderr or stdout = to the console, otherwise an absolute or relative path.</p>
+<ul>
+<li>Key: <code>log_file</code></li>
+<li>Type: <code>STRING</code></li>
+<li>Default Value: <code>stderr</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>const char* data[] = { "stderr" };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_crash_diagnostic", "log_file", VK_LAYER_SETTING_TYPE_STRING_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_crash_diagnostic.log_file = stderr</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_CRASH_DIAGNOSTIC_LOG_FILE=stderr<br>export VK_CRASH_DIAGNOSTIC_LOG_FILE=stderr<br>export VK_LOG_FILE=stderr<br>export CDL_LOG_FILE=stderr</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="enable-tracing">Enable Tracing</h3>
+<p>All Vulkan API calls intercepted by the layer will be logged to the console.</p>
+<ul>
+<li>Key: <code>trace_on</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_crash_diagnostic", "trace_on", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_crash_diagnostic.trace_on = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_CRASH_DIAGNOSTIC_TRACE_ON=false<br>export VK_CRASH_DIAGNOSTIC_TRACE_ON=false<br>export VK_TRACE_ON=false<br>export CDL_TRACE_ON=false</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_crash_diagnostic.trace_on false<br>adb setprop debug.vulkan.crash_diagnostic.trace_on false<br>adb setprop debug.vulkan.trace_on false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="enable-semaphore-log-tracing">Enable semaphore log tracing.</h3>
+<p>Semaphore events will be logged to console.</p>
+<ul>
+<li>Key: <code>trace_all_semaphores</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_crash_diagnostic", "trace_all_semaphores", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_crash_diagnostic.trace_all_semaphores = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_CRASH_DIAGNOSTIC_TRACE_ALL_SEMAPHORES=false<br>export VK_CRASH_DIAGNOSTIC_TRACE_ALL_SEMAPHORES=false<br>export VK_TRACE_ALL_SEMAPHORES=false<br>export CDL_TRACE_ALL_SEMAPHORES=false</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_crash_diagnostic.trace_all_semaphores false<br>adb setprop debug.vulkan.crash_diagnostic.trace_all_semaphores false<br>adb setprop debug.vulkan.trace_all_semaphores false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="state-tracking">State Tracking</h3>
+<p>Control of state tracking.</p>
+<p>Sub-settings: <em><a href="#synchronize-commands">Synchronize commands</a></em>, <em><a href="#instrument-all-commands">Instrument all commands</a></em>, and <em><a href="#track-semaphores">Track semaphores</a></em>.</p>
+<ul>
+<li>Key: <code>state</code></li>
+<li>Type: <code>GROUP</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<h3 id="synchronize-commands">Synchronize commands</h3>
+<p>Add pipeline barriers after instrumented commands to help identify whether a Vulkan crash is due to a synchronization issue. This feature doesn't support Vulkan application using Vulkan RenderPass and shall remain disabled in this scenario.'.</p>
+<ul>
+<li>Key: <code>sync_after_commands</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_crash_diagnostic", "sync_after_commands", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_crash_diagnostic.sync_after_commands = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_CRASH_DIAGNOSTIC_SYNC_AFTER_COMMANDS=false<br>export VK_CRASH_DIAGNOSTIC_SYNC_AFTER_COMMANDS=false<br>export VK_SYNC_AFTER_COMMANDS=false<br>export CDL_SYNC_AFTER_COMMANDS=false</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_crash_diagnostic.sync_after_commands false<br>adb setprop debug.vulkan.crash_diagnostic.sync_after_commands false<br>adb setprop debug.vulkan.sync_after_commands false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="instrument-all-commands">Instrument all commands</h3>
+<p>All commands will be instrumented.</p>
+<ul>
+<li>Key: <code>instrument_all_commands</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>false</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_FALSE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_crash_diagnostic", "instrument_all_commands", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_crash_diagnostic.instrument_all_commands = false</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_CRASH_DIAGNOSTIC_INSTRUMENT_ALL_COMMANDS=false<br>export VK_CRASH_DIAGNOSTIC_INSTRUMENT_ALL_COMMANDS=false<br>export VK_INSTRUMENT_ALL_COMMANDS=false<br>export CDL_INSTRUMENT_ALL_COMMANDS=false</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_crash_diagnostic.instrument_all_commands false<br>adb setprop debug.vulkan.crash_diagnostic.instrument_all_commands false<br>adb setprop debug.vulkan.instrument_all_commands false</pre></td>
+</tr>
+</tbody>
+</table>
+<h3 id="track-semaphores">Track semaphores</h3>
+<p>Enable semaphore tracking.</p>
+<ul>
+<li>Key: <code>track_semaphores</code></li>
+<li>Type: <code>BOOL</code></li>
+<li>Default Value: <code>true</code></li>
+<li>Platforms: <code>WINDOWS_X86</code>, <code>WINDOWS_ARM</code>, <code>LINUX</code>, <code>MACOS</code>, <code>ANDROID</code></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Methods:</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>VK_EXT_layer_settings</code>:</td>
+<td><pre>VkBool32 data[] = { VK_TRUE };<br>VkLayerSettingEXT setting {<br> "VK_LAYER_LUNARG_crash_diagnostic", "track_semaphores", VK_LAYER_SETTING_TYPE_BOOL32_EXT,<br> static_cast&lt;uint32_t&gt;(std::size(data)), data };</pre></td>
+</tr>
+<tr class="even">
+<td><code>vk_layer_settings.txt</code>:</td>
+<td><pre>lunarg_crash_diagnostic.track_semaphores = true</pre></td>
+</tr>
+<tr class="odd">
+<td>Environment variables:</td>
+<td><pre>export VK_LUNARG_CRASH_DIAGNOSTIC_TRACK_SEMAPHORES=true<br>export VK_CRASH_DIAGNOSTIC_TRACK_SEMAPHORES=true<br>export VK_TRACK_SEMAPHORES=true<br>export CDL_TRACK_SEMAPHORES=true</pre></td>
+</tr>
+<tr class="even">
+<td>Android system properties:</td>
+<td><pre>adb setprop debug.vulkan.lunarg_crash_diagnostic.track_semaphores true<br>adb setprop debug.vulkan.crash_diagnostic.track_semaphores true<br>adb setprop debug.vulkan.track_semaphores true</pre></td>
+</tr>
+</tbody>
+</table>
+<h2 id="layer-presets">Layer Presets</h2>
+<h3 id="default">Default</h3>
+<h4 id="preset-setting-values">Preset Setting Values:</h4>
+<ul>
+<li>Watchdog timeout (ms): 30000</li>
+<li>Dump files:</li>
+<li>Output Path:</li>
+<li>Dump queue submissions: running</li>
+<li>Dump command buffers: running</li>
+<li>Dump commands: running</li>
+<li>Dump shaders: off</li>
+<li>Logging:</li>
+<li>Message Severity: error</li>
+<li>Log file name: stderr</li>
+<li>Enable Tracing: false</li>
+<li>Enable semaphore log tracing.: false</li>
+<li>State Tracking:</li>
+<li>Synchronize commands: false</li>
+<li>Instrument all commands: false</li>
+<li>Track semaphores: true</li>
+</ul>
+</article>
+</body>
+</html>

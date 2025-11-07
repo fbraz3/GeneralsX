@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Image Copies :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../_/css/site.css">
+    <link rel="stylesheet" href="../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../.."><img class="navbar-item" alt="Vulkan White Label" src="../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:guide" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="guide" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="index.html">Vulkan Guide</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="index.html">Vulkan Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Logistics Overview</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="what_is_vulkan.html">What is Vulkan?</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="what_vulkan_can_do.html">What Vulkan Can Do</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="vulkan_spec.html">Vulkan Specification</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="platforms.html">Platforms</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="checking_for_support.html">Checking For Vulkan Support</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="versions.html">Versions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="vulkan_release_summary.html">Vulkan Release Summary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="what_is_spirv.html">What is SPIR-V</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="portability_initiative.html">Portability Initiative</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="vulkan_cts.html">Vulkan CTS</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="development_tools.html">Development Tools</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="validation_overview.html">Vulkan Validation Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="decoder_ring.html">Vulkan Decoder Ring</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Using Vulkan</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="loader.html">Loader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="layers.html">Layers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="querying_extensions_features.html">Querying Properties, Extensions, Features, Limits, and Formats</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="enabling_extensions.html">Enabling Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="enabling_features.html">Enabling Features</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="spirv_extensions.html">Using SPIR-V Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="formats.html">Formats</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="queues.html">Queues</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="wsi.html">Window System Integration (WSI)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="pnext_and_stype.html">pNext and sType</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="synchronization.html">Synchronization</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="extensions/VK_KHR_synchronization2.html">VK_KHR_synchronization2</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="swapchain_semaphore_reuse.html">Swapchain Semaphore Reuse</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="synchronization_examples.html">Synchronization Examples</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="memory_allocation.html">Memory Allocation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="sparse_resources.html">Sparse Resources</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="protected.html">Protected Memory</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="buffer_device_address.html">Buffer Device Address</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="pipeline_cache.html">Pipeline Cache</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="threading.html">Threading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="depth.html">Depth</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="primitive_topology.html">Primitive Topology</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="mapping_data_to_shaders.html">Mapping Data to Shaders</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="storage_image_and_texel_buffers.html">Storage Image and Texel Buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="vertex_input_data_processing.html">Vertex Input Data Processing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="descriptor_arrays.html">Descriptor Arrays</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="descriptor_dynamic_offset.html">Descriptor Dynamic Offset</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="location_component_interface.html">Location and Component Interface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="push_constants.html">Push Constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="ways_to_provide_spirv.html">Ways to Provide SPIR-V</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="robustness.html">Robustness</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="dynamic_state.html">Pipeline Dynamic State</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="dynamic_state_map.html">Dynamic State Map</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="subgroups.html">Subgroups</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="shader_memory_layout.html">Shader Memory Layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="atomics.html">Atomics</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="image_copies.html">Image Copies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="common_pitfalls.html">Common Pitfalls for New Vulkan Developers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="hlsl.html">HLSL in Vulkan</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="high_level_shader_language_comparison.html">Vulkan High Level Shader Language Comparison</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">When and Why to use Extensions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/cleanup.html">Cleanup Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/device_groups.html">Device Groups</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/external.html">External Memory and Synchronization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/ray_tracing.html">Ray Tracing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/shader_features.html">Shader Features</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/translation_layer_extensions.html">Translation Layer Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_EXT_descriptor_indexing.html">VK_EXT_descriptor_indexing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_EXT_inline_uniform_block.html">VK_EXT_inline_uniform_block</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_EXT_memory_priority.html">VK_EXT_memory_priority</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_descriptor_update_template.html">VK_KHR_descriptor_update_template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_draw_indirect_count.html">VK_KHR_draw_indirect_count</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_image_format_list.html">VK_KHR_image_format_list</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_imageless_framebuffer.html">VK_KHR_imageless_framebuffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_sampler_ycbcr_conversion.html">VK_KHR_sampler_ycbcr_conversion</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_shader_subgroup_uniform_control_flow.html">VK_KHR_shader_subgroup_uniform_control_flow</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_debug_utils.html">VK_KHR_debug_utils</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Guide</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Vulkan Guide</a></li>
+    <li>Using Vulkan</li>
+    <li><a href="image_copies.html">Image Copies</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Guide/antora/modules/ROOT/pages/image_copies.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Image Copies</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This is an overview of copying to and from a <code>VkImage</code> of various formats.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_image_copy_permutations"><a class="anchor" href="#_image_copy_permutations"></a>Image Copy Permutations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>There are 3 main ways to copy to/from a <code>VkImage</code></p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Copy Type</th>
+<th class="tableblock halign-left valign-top">Original (Vulkan 1.0)</th>
+<th class="tableblock halign-left valign-top"><code>VK_KHR_copy_commands2</code> (Vulkan 1.3) - Added a missing <code>pNext</code> in the structs</th>
+<th class="tableblock halign-left valign-top"><code>VK_EXT_host_image_copy</code> (Vulkan 1.4) - allows copies on host without a <code>VkBuffer</code> or <code>VkCommandBuffer</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Buffer to Image</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vkCmdCopyBufferToImage</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vkCmdCopyBufferToImage2</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vkCopyMemoryToImage</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Image to Buffer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vkCmdCopyImageToBuffer</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vkCmdCopyImageToBuffer2</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vkCopyImageToMemory</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Image to Image</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vkCmdCopyImage</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vkCmdCopyImage2</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>vkCopyImageToImage</code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_image_subresource"><a class="anchor" href="#_image_subresource"></a>Image Subresource</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When you copy an image, you will need to specify an <code>image subresource</code> which is used to describe the part of the image being copied.</p>
+</div>
+<div class="paragraph">
+<p>There are 3 structs used to describe the image subresource</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VkImageSubresource</code> - single array layer, singe mip level</p>
+</li>
+<li>
+<p><code>VkImageSubresourceLayers</code> - multiple array layers, singe mip level</p>
+</li>
+<li>
+<p><code>VkImageSubresourceRange</code> - multiple array layers, multiple mip levels</p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_image_layout_is_opaque"><a class="anchor" href="#_image_layout_is_opaque"></a>Image Layout is Opaque</h3>
+<div class="paragraph">
+<p>The reason you need a subresource of the image is because the image is an opaque object.
+When creating an image, the memory is not always going to be tightly packed together.
+When dealing with a CPU, you can normally assume a 2D or 3D image is just laid out in as large 1D buffer.
+GPU hardware has various memory alignment requirements, and will adjust the memory as required.</p>
+</div>
+<div class="paragraph">
+<p>While buffers and CPU memory are addressed with a single linear offset, images are addressed in multiple dimensions (ex. 2D image needs an <code>x</code> and <code>y</code> offset). When copying data in or out of images, each of these dimensions must be specified to describe the data being copied.</p>
+</div>
+<div class="paragraph">
+<p>The following is a small example to show how two GPU can represent a <code>VkImage</code> layout differently.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/image_copies_buffer_vs_image.svg" alt="image_copies_buffer_vs_image.svg">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mip_levels"><a class="anchor" href="#_mip_levels"></a>Mip Levels</h3>
+<div class="paragraph">
+<p>When you set <code>VkImageCreateInfo::mipLevels</code> you create a mipmap chain.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/image_copies_miplevels.svg" alt="image_copies_miplevels.svg">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_array_layers"><a class="anchor" href="#_array_layers"></a>Array Layers</h3>
+<div class="paragraph">
+<p>Imagine you wanted 4 <code>VkImage</code> that were the exact same layout, you would probably represent it like <code>VkImage my_images[4]</code>.
+Array layers are a way to have this just be represented in a single <code>VkImage</code>.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/image_copies_array_layers.svg" alt="image_copies_array_layers.svg">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_aspect_mask"><a class="anchor" href="#_aspect_mask"></a>Aspect Mask</h3>
+<div class="paragraph">
+<p>When dealing with something like a depth-stencil format the GPU might need to keep the depth and stencil aspect in different layout. Using the <code>VkImageAspectFlags</code> allows you to specify which part to copy.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/image_copies_depth_stencil.svg" alt="image_copies_depth_stencil.svg">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_addressing_calculation"><a class="anchor" href="#_addressing_calculation"></a>Addressing Calculation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When copying between a <code>VkBuffer</code>/<code>VkDeviceMemory</code> and <code>VkImage</code> the data in the non-image might not be tightly packed.</p>
+</div>
+<div class="paragraph">
+<p>The <code>VkBufferImageCopy</code> (or <code>VkMemoryToImageCopy</code>) struct provides 3 fields to set where in the buffer to read/write the memory</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>bufferOffset</code> (where to start)</p>
+</li>
+<li>
+<p><code>bufferRowLength</code> (where the extent.y starts)</p>
+</li>
+<li>
+<p><code>bufferImageHeight</code> (where the extent.z starts)</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Setting all of these to zero means everything is tightly packed in the <code>VkBuffer</code>/<code>VkDeviceMemory</code></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The <a href="https://docs.vulkan.org/spec/latest/chapters/copies.html#copies-buffers-images">spec addressing formula</a> is pretty standard, the one thing that can trip you up is that there is no overlapping memory between rows.
+In the following example, if you have a <code>{4,4,1}</code> image, the <code>rowExtent</code> is the <code>max(bufferRowLength, imageExtent.width)</code>.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/image_copies_buffer_row_length.svg" alt="image_copies_buffer_row_length.svg">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_2d_array_and_3d"><a class="anchor" href="#_2d_array_and_3d"></a>2D Array and 3D</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You are actually able to copy between an array of 2D images and a single 3D image.</p>
+</div>
+<div class="paragraph">
+<p>Using the following two example <code>VkImage</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// VkImage "A"
+VkImageCreateInfo::imageType = VK_IMAGE_TYPE_2D;
+VkImageCreateInfo::extent = {8, 8, 1};
+VkImageCreateInfo::arrayLayers = 8;
+
+// VkImage "B"
+VkImageCreateInfo::imageType = VK_IMAGE_TYPE_3D;
+VkImageCreateInfo::extent = {8, 8, 8};
+VkImageCreateInfo::arrayLayers = 1;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can have a copy such as</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Copying image A to B
+VkImageCopy copy;
+copy.extent = {8, 8, 8};
+
+// 3D
+copy.srcSubresource.baseArrayLayer = 0;
+copy.srcSubresource.layerCount = 1;
+
+// 2D array
+copy.dstSubresource.baseArrayLayer = 0;
+copy.dstSubresource.layerCount = 8;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>where the <code>extent.depth</code> is <code>8</code>, which is allowed for a 2D image because it has a <code>layerCount</code> of <code>8</code> to correspond to it.</p>
+</div>
+<div class="sect2">
+<h3 id="_miplevel_difference"><a class="anchor" href="#_miplevel_difference"></a>MipLevel difference</h3>
+<div class="paragraph">
+<p>You might be thinking what the difference is between a 3D image and 2D image with layers. One main difference is the mipchains they generate.</p>
+</div>
+<div class="paragraph">
+<p>Each miplevel the <code>x</code>,<code>y</code>, and <code>z</code> are are halved at each mip level, while the layer count is not.</p>
+</div>
+<div class="paragraph">
+<p>As an example, let&#8217;s try to copy <code>miplevel 1</code>:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The 3D extent would be <code>{4, 4, 4}</code></p>
+</li>
+<li>
+<p>The 2D extent would be <code>{4, 4}</code>, but it still has all 8 layer counts</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This means you have to be careful when copying between the two</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Copying image A to B miplevel 1
+VkImageCopy copy;
+copy.extent = {8, 8, 8};
+
+// 3D
+copy.srcSubresource.baseArrayLayer = 0;
+copy.srcSubresource.layerCount = 1;
+copy.srcSubresource.mipLevel = 1;
+
+// 2D array
+copy.dstSubresource.baseArrayLayer = 0;
+copy.dstSubresource.layerCount = 4; // matches the miplevel
+copy.srcSubresource.mipLevel = 1;</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_compressed_image_copies"><a class="anchor" href="#_compressed_image_copies"></a>Compressed Image Copies</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Dealing with compressed images can be a bit tricky, the main thing is to first grasp the terminology of <code>texel</code> vs <code>texel block</code></p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/image_copies_compressed_terminology.svg" alt="image_copies_compressed_terminology.svg">
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Uncompressed formats (ex. <code>VK_FORMAT_R8G8B8A8_UNORM</code>), the <code>texel block</code> is <code>{1, 1, 1}</code> so it is the same a <code>texel</code> when using it.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The block size, block extent, and other info can be found either in the spec, <code>vk.xml</code>, or even <a href="https://github.com/KhronosGroup/Vulkan-Utility-Libraries/blob/main/include/vulkan/utility/vk_format_utils.h">vk_format_utils.h in Vulkan-Utility-Libraries</a>.</p>
+</div>
+<div class="sect2">
+<h3 id="_copying_between_compressed_and_uncompressed"><a class="anchor" href="#_copying_between_compressed_and_uncompressed"></a>Copying Between Compressed and Uncompressed</h3>
+<div class="paragraph">
+<p>Copying to and from a <code>VkBuffer</code>/<code>VkDeviceMemory</code> is straight forward, the <code>extent</code> is just the amount of <code>texels</code>, so it is the same when you created the image.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/image_copies_compressed_buffer.svg" alt="image_copies_compressed_buffer.svg">
+</div>
+</div>
+<div class="paragraph">
+<p>The tricky part is when you deal with a uncompressed image that has a block extent of <code>{1, 1, 1}</code>. You will set the <code>VkImageCopy::extent</code> to match the <code>texels</code> in the <code>srcImage</code>, and the <code>dstImage</code> is scaled <a href="https://docs.vulkan.org/spec/latest/chapters/formats.html#formats-size-compatibility">as described in the spec</a>.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/image_copies_uncompress_to_compress.svg" alt="image_copies_uncompress_to_compress.svg">
+</div>
+</div>
+<div class="paragraph">
+<p>Some initial reactions might be "how are you copying 8 texels into 2?!"</p>
+</div>
+<div class="paragraph">
+<p>The main things to realize is the "size" of each texel block in the above diagrams are 64-bits. If you try to copy different size blocks, you will get a validation error message.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/image_copies_mismatch_block_size.svg" alt="image_copies_mismatch_block_size.svg">
+</div>
+</div>
+<div class="sect3">
+<h4 id="_offsetting_into_compressed"><a class="anchor" href="#_offsetting_into_compressed"></a>Offsetting Into Compressed</h4>
+<div class="paragraph">
+<p>The <code>extent</code>, <code>srcOffset</code>, and <code>dstOffset</code> are all defined in terms of <code>texels</code>. The following shows how to copy a single texel into each of the 3 texel blocks via a different offset.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/image_copies_dst_offset.svg" alt="image_copies_dst_offset.svg">
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_partial_texel_block"><a class="anchor" href="#_partial_texel_block"></a>Partial Texel Block</h3>
+<div class="paragraph">
+<p>When using a compressed image, it is possible you might end up with a partially full texel block.</p>
+</div>
+<div class="paragraph">
+<p>This can be from just setting the original extent that is not a multiple of the texel block extent.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/image_copies_non_power_of_two.svg" alt="image_copies_non_power_of_two.svg">
+</div>
+</div>
+<div class="paragraph">
+<p>This can also occur when you create miplevels.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/image_copies_block_format_mip.svg" alt="image_copies_block_format_mip.svg">
+</div>
+</div>
+<div class="paragraph">
+<p>This can also occur if creating a 1D compressed texture.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/image_copies_1d_compress.svg" alt="image_copies_1d_compress.svg">
+</div>
+</div>
+<div class="paragraph">
+<p>In all these examples, it is important to realize that you copy in terms of <code>texels</code> and not <code>texel blocks</code></p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/image_copy_partial_texel_block.svg" alt="image_copy_partial_texel_block.svg">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_multi_planar"><a class="anchor" href="#_multi_planar"></a>Multi-Planar</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Multi-planar formats are those with <code>_2PLANE</code> or <code>_3PLANE</code> suffix (<a href="extensions/VK_KHR_sampler_ycbcr_conversion.html" class="xref page">more about VK_KHR_sampler_ycbcr_conversion</a>).</p>
+</div>
+<div class="paragraph">
+<p>When copying to and from these images, you do not operate on all format components in the image, but instead, you independently operate only on the format planes explicitly chosen.</p>
+</div>
+<div class="paragraph">
+<p>Using <code>VK_FORMAT_G8_B8R8_2PLANE_420_UNORM</code> as an example, this contains two planes. From the <a href="https://docs.vulkan.org/spec/latest/chapters/formats.html#formats-compatible-planes">Plane Format Compatibility Table</a> in the spec (generated from the <code>vk.xml</code>) we can see that</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>plane 0</p>
+<div class="ulist">
+<ul>
+<li>
+<p>compatible format <code>VK_FORMAT_R8_UNORM`</code></p>
+</li>
+<li>
+<p>width divisor of <code>1</code></p>
+</li>
+<li>
+<p>height divisor of <code>1</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>plane 1</p>
+<div class="ulist">
+<ul>
+<li>
+<p>compatible format <code>VK_FORMAT_R8G8_UNORM`</code></p>
+</li>
+<li>
+<p>width divisor of <code>2</code></p>
+</li>
+<li>
+<p>height divisor of <code>2</code></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>What this looks like in code is the following</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">VkBufferImageCopy region[2];
+region[0].imageSubresource.aspectMask = VK_IMAGE_ASPECT_PLANE_0_BIT;
+region[0].imageExtent = {width, height, 1};
+
+region[0].imageSubresource.aspectMask = VK_IMAGE_ASPECT_PLANE_1_BIT;
+region[0].imageExtent = {width / 2, height / 2, 1};</code></pre>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/image_copies_multi_planar.svg" alt="image_copies_multi_planar.svg">
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+<script src="../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../.." data-snippet-length="100" data-stylesheet="../../_/css/search.css"></script>
+<script async src="../../search-index.js"></script>
+<script async src="../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

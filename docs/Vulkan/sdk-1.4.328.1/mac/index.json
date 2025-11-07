@@ -1,0 +1,204 @@
+{
+    "index": [
+    {
+        "type": "DOC",
+        "title": "Getting Started",
+        "path": "getting_started.html"
+    },
+    {
+        "type": "DOC",
+        "title": "Release Notes",
+        "path": "release_notes.html"
+    },
+     {
+        "type": "SECTION",
+        "title": "Vulkan Framework"
+    },
+    {
+        "type": "External",
+        "title": "Vulkan Guide",
+        "path_template": "https://vulkan.lunarg.com/doc/view/VERSION/mac/antora/guide/latest/index.html"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "Configuring Layers",
+        "path": "layer_configuration.html"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "Vulkan Configurator",
+        "path": "vkconfig.html"
+    },
+    {
+        "type": "SECTION",
+        "title": "Vulkan Profiles"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "Overview",
+        "path": "profiles_overview.html"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "Profiles API Library",
+        "path": "profiles_api_library.html"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "Profiles Layer",
+        "path": "profiles_layer.html"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "SDK Profiles",
+        "path": "profiles_definitions.html"
+    },
+    {
+        "type": "SECTION",
+        "title": "Validation Layer"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "Khronos Validation",
+        "path": "khronos_validation_layer.html"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "Error Message Format",
+        "path": "error_messages.html"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "Best Practices",
+        "path": "best_practices.html"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "Synchronization",
+        "path": "synchronization_usage.html"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "Coverage - CSV",
+        "path": "validation_error_database.csv"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "Coverage - html",
+        "path": "validation_error_database.html"
+    },
+    {
+        "type": "SECTION",
+        "title": "Capture & Replay"
+    },
+   {
+        "type": "SUBDOC",
+        "title": "GFXReconstruct",
+        "path": "capture_tools.html"
+    },
+    {
+        "type": "SECTION",
+        "title": "Tools"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "volk",
+        "path": "volk.html"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "AMD Memory Allocator",
+        "path": "readme_vma.html"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "vulkaninfo",
+        "path": "vulkaninfo.html"
+    },
+    {
+        "type": "SECTION",
+        "title": "Shader Tool Chain",
+        "path": "spirv_toolchain.html"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "Shader Tool Chain",
+        "path": "spirv_toolchain.html"
+    },
+    {
+        "type": "External",
+        "title": "SPIR-V Visualizer",
+        "path": "https://www.khronos.org/spir/visualizer/"
+    },
+    {
+        "type": "SECTION",
+        "title": "Extension Layers",
+        "path": "extension_layers.html"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "Synchronization2",
+        "path": "synchronization2_layer.html"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "Shader Object",
+        "path": "shader_object_layer.html"
+    },
+    {
+        "type": "SECTION",
+        "title": "Utility Layers",
+        "path": "utility_layers.html"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "API Dump",
+        "path": "api_dump_layer.html"
+    },
+    {
+        "type": "SECTION",
+        "title": "Vulkan Spec"
+    },
+    {
+        "type": "External",
+        "title": "Vulkan Specification",
+        "path_template": "https://vulkan.lunarg.com/doc/view/VERSION/mac/antora/spec/latest/chapters/introduction.html"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "Chunked Spec w/ EXT",
+        "path": "./chunked_spec/index.html"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "PDF w/ EXT",
+        "path": "./1.4-extensions/vkspec.pdf"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "PDF w/o EXT",
+        "path": "./1.4/vkspec.pdf"
+    },
+    {
+        "type": "SECTION",
+        "title": "Loader"
+    },
+    {
+        "type": "SUBDOC",
+        "title": "Loader Interface Architecture",
+        "path": "LoaderInterfaceArchitecture.html"
+    },
+    {
+        "type": "SECTION",
+        "title": "LunarG White Papers"
+    },
+    {
+        "type": "External",
+        "title": "All LunarG Whitepapers",
+        "path": "https://www.lunarg.com/vulkan-white-papers/"
+    },
+    {
+        "type": "SECTION",
+        "title": "Vulkan Drivers"
+    }]
+}

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="icon" href="images/Vulkan_LogoBug_48px_Nov17.png">
+<link rel="stylesheet" href="github-markdown.css">
+</head>
+<body>
+<article class="markdown-body">
+<!-- markdownlint-disable MD041 -->
+
+<p><a href="https://www.khronos.org/vulkan/" TARGET="_blank"><img src="https://vulkan.lunarg.com/img/Vulkan_100px_Dec16.png" title="https://www.khronos.org/vulkan/" alt="Khronos Vulkan" /></a></p>
+<h1 id="application-interface-to-loader-">Application Interface to Loader <!-- omit from toc --></h1>
+<p><a href="https://creativecommons.org/licenses/by-nd/4.0/" TARGET="_blank"><img src="https://i.creativecommons.org/l/by-nd/4.0/88x31.png" title="Creative Commons License" alt="Creative Commons" /></a></p>
+<!-- Copyright &copy; 2015-2023 LunarG, Inc. -->
+
+<h2 id="table-of-contents-">Table of Contents <!-- omit from toc --></h2>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#interfacing-with-vulkan-functions">Interfacing with Vulkan Functions</a>
+<ul>
+<li><a href="#vulkan-direct-exports">Vulkan Direct Exports</a></li>
+<li><a href="#directly-linking-to-the-loader">Directly Linking to the Loader</a>
+<ul>
+<li><a href="#dynamic-linking">Dynamic Linking</a></li>
+<li><a href="#static-linking">Static Linking</a></li>
+</ul></li>
+<li><a href="#indirectly-linking-to-the-loader">Indirectly Linking to the Loader</a></li>
+<li><a href="#best-application-performance-setup">Best Application Performance Setup</a></li>
+<li><a href="#abi-versioning">ABI Versioning</a>
+<ul>
+<li><a href="#windows-dynamic-library-usage">Windows Dynamic Library Usage</a></li>
+<li><a href="#linux-dynamic-library-usage">Linux Dynamic Library Usage</a></li>
+<li><a href="#macos-dynamic-library-usage">MacOs Dynamic Library Usage</a></li>
+</ul></li>
+<li><a href="#bundling-the-loader-with-an-application">Bundling the Loader With An Application</a></li>
+</ul></li>
+<li><a href="#application-layer-usage">Application Layer Usage</a>
+<ul>
+<li><a href="#meta-layers">Meta-Layers</a></li>
+<li><a href="#implicit-vs-explicit-layers">Implicit vs Explicit Layers</a>
+<ul>
+<li><a href="#override-layer">Override Layer</a></li>
+</ul></li>
+<li><a href="#forcing-layer-source-folders">Forcing Layer Source Folders</a>
+<ul>
+<li><a href="#exception-for-elevated-privileges">Exception for Elevated Privileges</a></li>
+</ul></li>
+<li><a href="#forcing-layers-to-be-enabled-on-windows-linux-and-macos">Forcing Layers to be Enabled on Windows, Linux and macOS</a></li>
+<li><a href="#overall-layer-ordering">Overall Layer Ordering</a></li>
+<li><a href="#debugging-possible-layer-issues">Debugging Possible Layer Issues</a></li>
+</ul></li>
+<li><a href="#application-usage-of-extensions">Application Usage of Extensions</a>
+<ul>
+<li><a href="#instance-and-device-extensions">Instance and Device Extensions</a></li>
+<li><a href="#wsi-extensions">WSI Extensions</a></li>
+<li><a href="#unknown-extensions">Unknown Extensions</a></li>
+<li><a href="#filtering-out-unknown-instance-extension-names">Filtering Out Unknown Instance Extension Names</a></li>
+</ul></li>
+<li><a href="#physical-device-ordering">Physical Device Ordering</a></li>
+</ul>
+<h2 id="overview">Overview</h2>
+<p>This is the Application-centric view of working with the Vulkan loader. For the complete overview of all sections of the loader, please refer to the <a href="LoaderInterfaceArchitecture.html">LoaderInterfaceArchitecture.html</a> file.</p>
+<h2 id="interfacing-with-vulkan-functions">Interfacing with Vulkan Functions</h2>
+<p>There are several ways Vulkan functions may be interfaced through the loader:</p>
+<h3 id="vulkan-direct-exports">Vulkan Direct Exports</h3>
+<p>The loader library on Windows, Linux, Android, and macOS will export all core Vulkan entry-points and all appropriate Window System Interface (WSI) entry-points. This is done to make it simpler to get started with Vulkan development. When an application links directly to the loader library in this way, the Vulkan calls are simple <em>trampoline</em> functions that jump to the appropriate dispatch table entry for the object they are given.</p>
+<h3 id="directly-linking-to-the-loader">Directly Linking to the Loader</h3>
+<h4 id="dynamic-linking">Dynamic Linking</h4>
+<p>The loader is distributed as a dynamic library (.dll on Windows or .so on Linux or .dylib on macOS) which gets installed to the system path for dynamic libraries. Furthermore, the dynamic library is generally installed to Windows systems as part of driver installation and is generally provided on Linux through the system package manager. This means that applications can usually expect a copy of the loader to be present on a system. If applications want to be completely sure that a loader is present, they can include a loader or runtime installer with their application.</p>
+<h4 id="static-linking">Static Linking</h4>
+<p>In previous versions of the loader, it was possible to statically link the loader. <strong>This was removed and is no longer possible.</strong> The decision to remove static linking was because of changes to the driver which made older applications that statically linked unable to find newer drivers.</p>
+<p>Additionally, static linking posed several problems:</p>
+<ul>
+<li>The loader can never be updated without re-linking the application</li>
+<li>The possibility that two included libraries could contain different versions of the loader
+<ul>
+<li>Could cause conflicts between the different loader versions</li>
+</ul></li>
+</ul>
+<p>The only exception to this is for macOS, but is not supported or tested.</p>
+<h3 id="indirectly-linking-to-the-loader">Indirectly Linking to the Loader</h3>
+<p>Applications are not required to link directly to the loader library, instead they can use the appropriate platform-specific dynamic symbol lookup on the loader library to initialize the application's own dispatch table. This allows an application to fail gracefully if the loader cannot be found. It also provides the fastest mechanism for the application to call Vulkan functions. An application only needs to query (via system calls such as <code>dlsym</code>) the address of <code>vkGetInstanceProcAddr</code> from the loader library. The application then uses <code>vkGetInstanceProcAddr</code> to load all functions available, such as <code>vkCreateInstance</code>, <code>vkEnumerateInstanceExtensionProperties</code> and <code>vkEnumerateInstanceLayerProperties</code> in a platform-independent way.</p>
+<h3 id="best-application-performance-setup">Best Application Performance Setup</h3>
+<p>To get the best possible performance in a Vulkan application, the application should set up its own dispatch table for every Vulkan API entry-point. For every instance-level Vulkan command in the dispatch table, the function pointer should be queried and filled in by using the results of <code>vkGetInstanceProcAddr</code>. Additionally, for every device-level Vulkan command, the function pointer should be queried and filled in using the results of <code>vkGetDeviceProcAddr</code>.</p>
+<p><em>Why do this?</em></p>
+<p>The answer comes in how the call chain of instance functions are implemented versus the call chain of a device functions. Remember, a <a href="LoaderInterfaceArchitecture.html#instance-specific">Vulkan instance is a high-level construct used to provide Vulkan system-level information</a>. Because of this, instance functions need to be broadcast to every available driver on the system. The following diagram shows an approximate view of an instance call chain with three enabled layers:</p>
+<p><img src="./images/loader_instance_chain.png" alt="Instance Call Chain" /></p>
+<p>This is also how a Vulkan device function call chain looks if queried using <code>vkGetInstanceProcAddr</code>. On the other hand, a device function doesn't need to worry about the broadcast because it knows specifically which associated driver and which associated physical device the call should terminate at. Because of this, the loader doesn't need to get involved between any enabled layers and the driver. Thus, using a loader-exported Vulkan device function, the call chain in the same scenario as above would look like:</p>
+<p><img src="./images/loader_device_chain_loader.png" alt="Loader Device Call Chain" /></p>
+<p>An even better solution would be for an application to perform a <code>vkGetDeviceProcAddr</code> call on all device functions. This further optimizes the call chain by removing the loader all-together under most scenarios:</p>
+<p><img src="./images/loader_device_chain_app.png" alt="Application Device Call Chain" /></p>
+<p>Also, notice if no layers are enabled, the application function pointers point <strong>directly to the driver</strong>. With many function calls, the lack of indirection in each adds up to non-trivial performance savings.</p>
+<p><strong>NOTE:</strong> There are some device functions which still require the loader to intercept them with a <em>trampoline</em> and <em>terminator</em>. There are very few of these, but they are typically functions which the loader wraps with its own data. In those cases, even the device call chain will continue to look like the instance call chain. One example of a device function requiring a <em>terminator</em> is <code>vkCreateSwapchainKHR</code>. For that function, the loader needs to potentially convert the KHR_surface object into an driver-specific KHR_surface object prior to passing down the rest of the function's information to the driver.</p>
+<p>Remember:</p>
+<ul>
+<li><code>vkGetInstanceProcAddr</code> is used to query instance and physical device functions, but can query all functions.</li>
+<li><code>vkGetDeviceProcAddr</code> is only used to query device functions.</li>
+</ul>
+<h3 id="abi-versioning">ABI Versioning</h3>
+<p>The Vulkan loader library will be distributed in various ways including Vulkan SDKs, OS package distributions and Independent Hardware Vendor (IHV) driver packages. These details are beyond the scope of this document. However, the name and versioning of the Vulkan loader library is specified so an app can link to the correct Vulkan ABI library version. ABI backwards compatibility is guaranteed for all versions with the same major number (e.g. 1.0 and 1.1).</p>
+<h4 id="windows-dynamic-library-usage">Windows Dynamic Library Usage</h4>
+<p>On Windows, the loader library encodes the ABI version in its name such that multiple ABI incompatible versions of the loader can peacefully coexist on a given system. The Vulkan loader library file name is <code>vulkan-&lt;ABI version&gt;.dll</code>. For example, for Vulkan version 1.X on Windows the library filename is <code>vulkan-1.dll</code>. This library file can typically be found in the <code>windows\system32</code> directory (on 64-bit Windows installs, the 32-bit version of the loader with the same name can be found in the <code>windows\sysWOW64</code> directory).</p>
+<h4 id="linux-dynamic-library-usage">Linux Dynamic Library Usage</h4>
+<p>For Linux, shared libraries are versioned based on a suffix. Thus, the ABI number is not encoded in the base of the library filename as on Windows.</p>
+<p>On Linux, applications that have a hard dependency on Vulkan should request linking to the unversioned name <code>libvulkan.so</code> in their build system. For example by importing the CMake target <code>Vulkan::Vulkan</code> or by using the output of <code>pkg-config --cflags --libs vulkan</code> as compiler flags. As usual for Linux libraries, the compiler and linker will resolve this to a dependency on the correct versioned SONAME, currently <code>libvulkan.so.1</code>. Linux applications that load Vulkan-Loader dynamically at runtime do not benefit from this mechanism, and should instead make sure to pass the versioned name such as <code>libvulkan.so.1</code> to <code>dlopen()</code>, to ensure that they load a compatible version.</p>
+<h4 id="macos-dynamic-library-usage">MacOs Dynamic Library Usage</h4>
+<p>MacOs linking is similar to Linux, with the exception being that the standard dynamic library is named <code>libvulkan.dylib</code> and the ABI versioned library is currently named <code>libvulkan.1.dylib</code>.</p>
+<h3 id="bundling-the-loader-with-an-application">Bundling the Loader With An Application</h3>
+<p>The Khronos loader is typically installed on platforms either in a platform-specific way (i.e. packages on Linux) or as part of a driver install (i.e. using the Vulkan Runtime installer on Windows). Applications or engines may desire to install the Vulkan loader locally to their execution tree as part of their own installation process. This may be because providing the specific loader:</p>
+<ol>
+<li>Guarantees certain Vulkan API exports are available in the loader</li>
+<li>Ensures certain loader behavior is well-known</li>
+<li>Provides consistency across user installation</li>
+</ol>
+<p>However, this is <strong>strongly discouraged</strong> because:</p>
+<ol>
+<li>The packaged loader may not be compatible with future driver revisions (this can be especially true on Windows where driver install locations can change during updates to the OS)</li>
+<li>It can prevent the application/engine from taking advantage of new Vulkan API version/extension exports</li>
+<li>The application/engine will miss out on important loader bug-fixes</li>
+<li>The packaged loader will not contain useful feature updates (like improved loader debugability)</li>
+</ol>
+<p>Of course, even if an application/engine does initially release with a specific version of the Khronos loader, it may chose to update or remove that loader at some point in the future. This could be due to the exposure of needed functionality in the loader as time progresses. But, that relies upon end-users correctly performing whatever update process is necessary at that future time which may result in different behavior across different user's systems.</p>
+<p>One better alternative, at least on Windows, is to package the Vulkan Runtime installer for the desired version of the Vulkan loader with your product. Then, the installation process can use that to ensure the end-user's system is up to date. The Runtime installer will detect the version already installed and will only install a newer runtime if necessary.</p>
+<p>Another alternative is to write the application so it can fallback to earlier versions of Vulkan yet display a warning indicating functionality is disabled until the user updates their system to a specific runtime/driver.</p>
+<h2 id="application-layer-usage">Application Layer Usage</h2>
+<p>Applications desiring Vulkan functionality beyond what Vulkan drivers on their system already expose, may use various layers to augment the API. A layer cannot add new Vulkan core API entry-points that are not exposed in Vulkan.h. However, layers may offer implementations of extensions that introduce additional entry-points beyond what is available without those layers. These additional extension entry-points can be queried through the Vulkan extension interface.</p>
+<p>A common use of layers is for API validation which can be enabled during application development and left out when releasing the application. This allows easy control of the overhead resulting from enabling validation of the application's usage of the API, which wasn't always possible in previous graphics APIs.</p>
+<p>To find out what layers are available to an application, use <code>vkEnumerateInstanceLayerProperties</code>. This will report all layers that have been discovered by the loader. The loader looks in various locations to find layers on the system. For more information see the <a href="LoaderLayerInterface.html#layer-discovery">Layer discovery</a> section in the <a href="LoaderLayerInterface.html">LoaderLayerInterface.html document</a> document.</p>
+<p>To enable specific layers, simply pass the names of the layers to enable in the <code>ppEnabledLayerNames</code> field of the <code>VkInstanceCreateInfo</code> during a call to <code>vkCreateInstance</code>. Once done, the layers that have been enabled will be active for all Vulkan functions using the created <code>VkInstance</code>, and any of its child objects.</p>
+<p><strong>NOTE:</strong> Layer ordering is important in several cases since some layers interact with each other. Be careful when enabling layers as this may be the case. See the <a href="#overall-layer-ordering">Overall Layer Ordering</a> section for more information.</p>
+<p>The following code section shows how to go about enabling the <code>VK_LAYER_KHRONOS_validation</code> layer.</p>
+<pre><code>char *instance_layers[] = {
+    &quot;VK_LAYER_KHRONOS_validation&quot;
+};
+const VkApplicationInfo app = {
+    .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+    .pNext = NULL,
+    .pApplicationName = &quot;TEST_APP&quot;,
+    .applicationVersion = 0,
+    .pEngineName = &quot;TEST_ENGINE&quot;,
+    .engineVersion = 0,
+    .apiVersion = VK_API_VERSION_1_0,
+};
+VkInstanceCreateInfo inst_info = {
+    .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+    .pNext = NULL,
+    .pApplicationInfo = &amp;app,
+    .enabledLayerCount = 1,
+    .ppEnabledLayerNames = (const char *const *)instance_layers,
+    .enabledExtensionCount = 0,
+    .ppEnabledExtensionNames = NULL,
+};
+err = vkCreateInstance(&amp;inst_info, NULL, &amp;demo-&gt;inst);
+if (VK_ERROR_LAYER_NOT_PRESENT == err) {
+  // Couldn&#39;t find the validation layer
+}
+</code></pre>
+<p>At <code>vkCreateInstance</code> and <code>vkCreateDevice</code>, the loader constructs call chains that include the application specified (enabled) layers. Order is important in the <code>ppEnabledLayerNames</code> array; array element 0 is the topmost (closest to the application) layer inserted in the chain and the last array element is closest to the driver. See the <a href="#overall-layer-ordering">Overall Layer Ordering</a> section for more information on layer ordering.</p>
+<p><strong>NOTE:</strong> <em>Device Layers Are Now Deprecated</em></p>
+<blockquote>
+<p><code>vkCreateDevice</code> originally was able to select layers in a similar manner to <code>vkCreateInstance</code>. This led to the concept of "instance layers" and "device layers". It was decided by Khronos to deprecate the "device layer" functionality and only consider "instance layers". Therefore, <code>vkCreateDevice</code> will use the layers specified at <code>vkCreateInstance</code>. Because of this, the following items have been deprecated:</p>
+<ul>
+<li><code>VkDeviceCreateInfo</code> fields:
+<ul>
+<li><code>ppEnabledLayerNames</code></li>
+<li><code>enabledLayerCount</code></li>
+</ul></li>
+<li>The <code>vkEnumerateDeviceLayerProperties</code> function</li>
+</ul>
+</blockquote>
+<h3 id="meta-layers">Meta-Layers</h3>
+<p>Meta-layers are layers which contain an ordered list of other layers to enable. This is to allow grouping layers together in a specified order so that they can interact properly. Originally, this was used to group together the individual Vulkan Validation layers in the proper order to avoid conflicts. It was necessary because instead of a single Validation layer, validation was split into multiple component layers. The new <code>VK_LAYER_KHRONOS_validation</code> layer pulled everything into a single layer, dropping the need for meta layers. While not necessary for validation anymore, VkConfig does use meta layers to group layers together based on user's preferences. More can be found out about this functionality through both the <a href="https://github.com/LunarG/VulkanTools/blob/main/vkconfig/README.md" TARGET="_blank">VkConfig documentation</a> and the section later on the <a href="#override-layer">Override Layer</a>.</p>
+<p>Meta-layers are detailed more in the <a href="LoaderLayerInterface.html#meta-layers">Meta-Layers</a> section of the <a href="LoaderLayerInterface.html">LoaderLayerInterface.html</a> file in this folder.</p>
+<h3 id="implicit-vs-explicit-layers">Implicit vs Explicit Layers</h3>
+<p><img src="./images/loader_layer_order.png" alt="Different Types of Layers" /></p>
+<p>Explicit layers are layers which are enabled by an application (e.g. with the vkCreateInstance function as mentioned previously).</p>
+<p>Implicit layers are enabled automatically by their very existence, unless requiring an additional manual enable step, unlike explicit layers that must be enabled explicitly. For example, certain application environments (e.g. Steam or an automotive infotainment system) may have layers which they always want enabled for all applications that they start. Other implicit layers may be for all applications started on a given system (e.g. layers that overlay frames-per-second).</p>
+<p>Implicit layers have an additional requirement over explicit layers in that they require being able to be disabled by an environmental variable. This is due to the fact that they are not visible to the application and could cause issues. A good principle to keep in mind would be to define both an enable and disable environment variable so the users can deterministically enable the functionality. On Desktop platforms (Windows, Linux, and macOS), these enable/disable settings are defined in the layer's JSON file.</p>
+<p>Discovery of system-installed implicit and explicit layers is described later in the <a href="LoaderLayerInterface.html#layer-discovery">Layer discovery</a> section in the <a href="LoaderLayerInterface.html">LoaderLayerInterface.html</a> document.</p>
+<p>Implicit and explicit layers may be found in different locations based on the underlying operating system. The table below details more information:</p>
+<table style="width:100%">
+  <tr>
+    <th>Operating System</th>
+    <th>Implicit Layer Identification</th>
+  </tr>
+  <tr>
+    <td>Windows</td>
+    <td>Implicit layers are located in a different Windows registry location
+        than explicit layers.</td>
+  </tr>
+  <tr>
+    <td>Linux</td>
+    <td>Implicit layers are located in a different directory location than
+        explicit layers.</td>
+  </tr>
+  <tr>
+    <td>Android</td>
+    <td>There is **No Support For Implicit Layers** on Android.</td>
+  </tr>
+  <tr>
+    <td>macOS</td>
+    <td>Implicit layers are located in a different directory location than
+        explicit layers.</td>
+  </tr>
+</table>
+
+<h4 id="override-layer">Override Layer</h4>
+<p>The "Override Layer" is a special implicit meta-layer created by the <a href="https://github.com/LunarG/VulkanTools/blob/main/vkconfig/README.md" TARGET="_blank">VkConfig</a> tool and available by default when the tool is running. Once VkConfig exits, the override layer is removed, and the system should return to standard Vulkan behavior. Whenever the override layer is present in the layer search path, the loader will pull it into the layer call stack with the standard implicit layers along with all layers contained in the list of layers to load. This allows an end-user or developer to easily force on any number of layers and settings via VkConfig.</p>
+<p>The override layer is discussed more in the <a href="LoaderLayerInterface.html#override-meta-layer">Override Meta-Layer</a> section of the <a href="LoaderLayerInterface.html">LoaderLayerInterface.html</a> file in this folder.</p>
+<h3 id="forcing-layer-source-folders">Forcing Layer Source Folders</h3>
+<p>Developers may need to use special, pre-production layers, without modifying the system-installed layers.</p>
+<p>This can be accomplished in one of two ways:</p>
+<ol>
+<li>Selecting specific layer paths using the <a href="https://github.com/LunarG/VulkanTools/blob/main/vkconfig/README.md" TARGET="_blank">VkConfig</a> tool shipped with the Vulkan SDK.</li>
+<li>Directing the loader to look for layers in specific files and/or folders by using the <code>VK_LAYER_PATH</code> and/or <code>VK_IMPLICIT_LAYER_PATH</code> environment variables.</li>
+</ol>
+<p>The <code>VK_LAYER_PATH</code> and <code>VK_IMPLICIT_LAYER_PATH</code> environment variables can contain multiple paths separated by the operating-system specific path separator. On Windows, this is a semicolon (<code>;</code>), while on Linux and macOS it is a colon (<code>:</code>).</p>
+<p>If <code>VK_LAYER_PATH</code> exists, the files and/or folders listed will be scanned for explicit layer manifest files. Implicit layer discovery is unaffected by this environment variable.</p>
+<p>If <code>VK_IMPLICIT_LAYER_PATH</code> exists, the files and/or folders listed will be scanned for implicit layer manifest files. Explicit layer discovery is unaffected by this environment variable.</p>
+<p>Each directory listed in <code>VK_LAYER_PATH</code> and <code>VK_IMPLICIT_LAYER_PATH</code> should be the full pathname of a folder containing layer manifest files.</p>
+<p>See the <a href="LoaderInterfaceArchitecture.html#table-of-debug-environment-variables">Table of Debug Environment Variables</a> in the <a href="LoaderInterfaceArchitecture.html">LoaderInterfaceArchitecture.html document</a> for more details.</p>
+<h4 id="exception-for-elevated-privileges">Exception for Elevated Privileges</h4>
+<p>For security reasons, <code>VK_LAYER_PATH</code> and <code>VK_IMPLICIT_LAYER_PATH</code> are ignored if running with elevated privileges. Because of this, the environment variables can only be used for applications that do not use elevated privileges.</p>
+<p>For more information see <a href="LoaderInterfaceArchitecture.html#elevated-privilege-caveats">Elevated Privilege Caveats</a> in the top-level [LoaderInterfaceArchitecture.html][LoaderInterfaceArchitecture.html] document.</p>
+<h3 id="forcing-layers-to-be-enabled-on-windows-linux-and-macos">Forcing Layers to be Enabled on Windows, Linux and macOS</h3>
+<p>Developers may want to enable layers that are not enabled by the given application they are using.</p>
+<p>This can be also be accomplished in one of two ways:</p>
+<ol>
+<li>Selecting specific layers using the <a href="https://github.com/LunarG/VulkanTools/blob/main/vkconfig/README.md" TARGET="_blank">VkConfig</a> tool shipped with the Vulkan SDK.</li>
+<li>Directing the loader to look for additional layers by name using the <code>VK_INSTANCE_LAYERS</code> environment variable.</li>
+</ol>
+<p>Both can be used to enable additional layers which are not specified (enabled) by the application at <code>vkCreateInstance</code>.</p>
+<p>The <code>VK_INSTANCE_LAYERS</code> environment variable is a list of layer names to enable separated by the operating-system specific path separator. On Windows, this is a semicolon (<code>;</code>), while on Linux and macOS it is a colon (<code>:</code>). The order of the names is relevant with the first layer name in the list being the top-most layer (closest to the application) and the last layer name in the list being the bottom-most layer (closest to the driver). See the <a href="#overall-layer-ordering">Overall Layer Ordering</a> section for more information.</p>
+<p>Application specified layers and user specified layers (via environment variables) are aggregated and duplicates removed by the loader when enabling layers. Layers specified via environment variable are top-most (closest to the application) while layers specified by the application are bottom-most.</p>
+<p>An example of using these environment variables to activate the validation layer <code>VK_LAYER_KHRONOS_validation</code> on Linux or macOS is as follows:</p>
+<pre><code>&gt; $ export VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation
+</code></pre>
+<p>See the <a href="LoaderInterfaceArchitecture.html#table-of-debug-environment-variables">Table of Debug Environment Variables</a> in the <a href="LoaderInterfaceArchitecture.html">LoaderInterfaceArchitecture.html document</a> for more details.</p>
+<h3 id="overall-layer-ordering">Overall Layer Ordering</h3>
+<p>The overall ordering of all layers by the loader based on the above looks as follows:</p>
+<p><img src="./images/loader_layer_order_calls.png" alt="Loader Layer Ordering" /></p>
+<p>Ordering may also be important internally to the list of explicit layers. Some layers may be dependent on other behavior being implemented before or after the loader calls it. For example: An overlay layer may want to use <code>VK_LAYER_KHRONOS_validation</code> to verify that the overlay layer is behaving appropriately. This requires putting the overlay layer closer to the application so that the validation layer can intercept any Vulkan API calls the overlay layer needs to make to function.</p>
+<h3 id="debugging-possible-layer-issues">Debugging Possible Layer Issues</h3>
+<p>If it is possible that a layer is causing issues, there are several things that can be tried which are documented in the <a href="LoaderDebugging.html#debugging-possible-layer-issues">Debugging Possible Layer Issues</a> section of the <a href="LoaderDebugging.html">LoaderDebugging.mg</a> document in the docs folder.</p>
+<h2 id="application-usage-of-extensions">Application Usage of Extensions</h2>
+<p>Extensions are optional functionality provided by a layer, the loader, or a driver. Extensions can modify the behavior of the Vulkan API and need to be specified and registered with Khronos. These extensions can be implemented by a Vulkan driver, the loader, or a layer to expose functionality not available in the core API. Information about various extensions can be found in the Vulkan Spec, and vulkan.h header file.</p>
+<h3 id="instance-and-device-extensions">Instance and Device Extensions</h3>
+<p>As hinted at in the <a href="LoaderInterfaceArchitecture.html#instance-versus-device">Instance Versus Device</a> section of the main <a href="LoaderInterfaceArchitecture.html">LoaderInterfaceArchitecture.html</a> document, there are two types of extensions:</p>
+<ul>
+<li>Instance Extensions</li>
+<li>Device Extensions</li>
+</ul>
+<p>An instance extension modifies existing behavior or implements new behavior on instance-level objects, such as <code>VkInstance</code> and <code>VkPhysicalDevice</code>. A device extension does the same for device-level objects, such as <code>VkDevice</code>, <code>VkQueue</code>, and <code>VkCommandBuffer</code> as well as any children of those objects.</p>
+<p>It is <strong>very</strong> important to know what the type of an extension is because instance extensions must be enabled with <code>vkCreateInstance</code> while device extensions are enabled with <code>vkCreateDevice</code>.</p>
+<p>When calling <code>vkEnumerateInstanceExtensionProperties</code> and <code>vkEnumerateDeviceExtensionProperties</code>, the loader discovers and aggregates all extensions of their respective type from layers (both explicit and implicit), drivers, and the loader before reporting them to the application.</p>
+<p>Looking at <code>vulkan.h</code>, both functions are very similar, for example, the <code>vkEnumerateInstanceExtensionProperties</code> prototype looks as follows:</p>
+<pre><code>VkResult
+   vkEnumerateInstanceExtensionProperties(
+      const char *pLayerName,
+      uint32_t *pPropertyCount,
+      VkExtensionProperties *pProperties);
+</code></pre>
+<p>While the <code>vkEnumerateDeviceExtensionProperties</code> prototype looks like:</p>
+<pre><code>VkResult
+   vkEnumerateDeviceExtensionProperties(
+      VkPhysicalDevice physicalDevice,
+      const char *pLayerName,
+      uint32_t *pPropertyCount,
+      VkExtensionProperties *pProperties);
+</code></pre>
+<p>The "pLayerName" parameter in these functions is used to select either a single layer or the Vulkan platform implementation. If "pLayerName" is NULL, extensions from Vulkan implementation components (including loader, implicit layers, and drivers) are enumerated. If "pLayerName" is equal to a discovered layer module name then only extensions from that layer (which may be implicit or explicit) are enumerated.</p>
+<p><strong>Note:</strong> While device layers are deprecated, the instance enabled layers are still present in the device call-chain.</p>
+<p>Duplicate extensions (e.g. an implicit layer and driver might report support for the same extension) are eliminated by the loader. For duplicates, the driver version is reported and the layer version is culled.</p>
+<p>Also, extensions <strong>must be enabled</strong> (in <code>vkCreateInstance</code> or <code>vkCreateDevice</code>) before the functions associated with the extensions can be used. If an extension function is queried using either <code>vkGetInstanceProcAddr</code> or <code>vkGetDeviceProcAddr</code>, but the extension has not been enabled, undefined behavior could result. The Validation layers will catch this invalid API usage.</p>
+<h3 id="wsi-extensions">WSI Extensions</h3>
+<p>Khronos-approved WSI extensions are available and provide Windows System Integration support for various execution environments. It is important to understand that some WSI extensions are valid for all targets, but others are particular to a given execution environment (and loader). This Khronos loader (currently targeting Windows, Linux, macOS, Stadia, and Fuchsia) only enables and directly exports those WSI extensions that are appropriate to the current environment. For the most part, the selection is done in the loader using compile-time preprocessor flags. All versions of the Khronos loader currently expose at least the following WSI extension support:</p>
+<ul>
+<li>VK_KHR_surface</li>
+<li>VK_KHR_swapchain</li>
+<li>VK_KHR_display</li>
+</ul>
+<p>In addition, each of the following OS targets for the loader support target- specific extensions:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Windowing System</th>
+<th>Extensions available</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Windows</td>
+<td>VK_KHR_win32_surface</td>
+</tr>
+<tr class="even">
+<td>Linux (Wayland)</td>
+<td>VK_KHR_wayland_surface</td>
+</tr>
+<tr class="odd">
+<td>Linux (X11)</td>
+<td>VK_KHR_xcb_surface and VK_KHR_xlib_surface</td>
+</tr>
+<tr class="even">
+<td>macOS (MoltenVK)</td>
+<td>VK_MVK_macos_surface</td>
+</tr>
+<tr class="odd">
+<td>QNX (Screen)</td>
+<td>VK_QNX_screen_surface</td>
+</tr>
+</tbody>
+</table>
+<p>It is important to understand that while the loader may support the various entry-points for these extensions, there is a handshake required to actually use them:</p>
+<ul>
+<li>At least one physical device must support the extension(s)</li>
+<li>The application must use such a physical device when creating a logical device</li>
+<li>The application must request the extension(s) be enabled while creating the instance or logical device (this depends on whether or not the given extension works with an instance or a device)</li>
+</ul>
+<p>Only then can the WSI extension be properly used in a Vulkan program.</p>
+<h3 id="unknown-extensions">Unknown Extensions</h3>
+<p>With the ability to expand Vulkan so easily, extensions will be created that the loader knows nothing about. If the extension is a device extension, the loader will pass the unknown entry-point down the device call chain ending with the appropriate driver entry-points. The same thing will happen if the extension is an instance extension which takes a physical device parameter as its first component. However, for all other instance extensions the loader will fail to load it.</p>
+<p><em>But why doesn't the loader support unknown instance extensions?</em> <br/> Let's look again at the instance call chain:</p>
+<p><img src="./images/loader_instance_chain.png" alt="Instance call chain" /></p>
+<p>Notice that for a normal instance function call, the loader has to handle passing along the function call to the available drivers. If the loader has no idea of the parameters or return value of the instance call, it can't properly pass information along to the drivers. There may be ways to do this, which will be explored in the future. However, for now, the loader does not support instance extensions which don't expose entry points that take a physical device as their first parameter.</p>
+<p>Because the device call-chain does not normally pass through the loader <em>terminator</em>, this is not a problem for device extensions. Additionally, since a physical device is associated with one driver, the loader can use a generic <em>terminator</em> pointing to one driver. This is because both of these extensions terminate directly in the driver they are associated with.</p>
+<p><em>Is this a big problem?</em> <br/> No! Most extension functionality only affects either a physical or logical device and not an instance. Thus, the overwhelming majority of extensions should be supported with direct loader support.</p>
+<h3 id="filtering-out-unknown-instance-extension-names">Filtering Out Unknown Instance Extension Names</h3>
+<p>In some cases, a driver may support instance extensions that are not supported by the loader. For the above reasons, the loader will filter out the names of these unknown instance extensions when an application calls <code>vkEnumerateInstanceExtensionProperties</code>. Additionally, this behavior will cause the loader to emit an error during <code>vkCreateInstance</code> if the application still attempts to use one of these extensions. The intent is to protect applications so that they don't inadvertently use functionality which could lead to a crash.</p>
+<p>On the other hand, if the extension must be forced on, the filtering may be disabled by defining the <code>VK_LOADER_DISABLE_INST_EXT_FILTER</code> environment variable to a non-zero number. This will effectively disable the loader's filtering of instance extension names.</p>
+<h2 id="physical-device-ordering">Physical Device Ordering</h2>
+<p>Prior to the 1.3.204 loader, physical devices on Linux could be returned in an inconsistent order. To remedy this, the Vulkan loader will now sort devices once they have been received from the drivers (before returning the information to any enabled layers) in the following fashion:</p>
+<ul>
+<li>Sort based on device type (Discrete, Integrated, Virtual, all others)</li>
+<li>Sort internal to the types based on PCI information (Domain, Bus, Device, and Function).</li>
+</ul>
+<p>This allows for a consistent physical device order from run to run on the same system, unless the actual underlying hardware changes.</p>
+<p>A new environment variable is defined to give users the ability to force a specific device, <code>VK_LOADER_DEVICE_SELECT</code>. This environment variable should be set to the desired devices hex value for Vendor Id and Device Id (as returned from <code>vkGetPhysicalDeviceProperties</code> in the <code>VkPhysicalDeviceProperties</code> structure). It should look like the following:</p>
+<pre><code>set VK_LOADER_DEVICE_SELECT=0x10de:0x1f91
+</code></pre>
+<p>This will force on the device with a vendor ID of "0x10de" and a device ID of "0x1f91". If that device is not found, this is simply ignored.</p>
+<p>All device selection work done in the loader can be disabled by setting the environment variable <code>VK_LOADER_DISABLE_SELECT</code> to a non-zero value. This is intended for debug purposes to narrow down any issues with the loader device selection mechanism, but can be used by others.</p>
+<p><a href="LoaderInterfaceArchitecture.html">Return to the top-level LoaderInterfaceArchitecture.html file.</a></p>
+</article>
+</body>
+</html>

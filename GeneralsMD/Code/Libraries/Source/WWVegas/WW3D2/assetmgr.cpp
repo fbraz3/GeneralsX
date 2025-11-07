@@ -108,7 +108,6 @@
 #include "dazzle.h"
 #include "dx8wrapper.h"
 #include "dx8renderer.h"
-#include "metalmap.h"
 #include "w3dexclusionlist.h"
 #include <INI.h>
 #include <windows.h>

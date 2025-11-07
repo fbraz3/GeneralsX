@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Geometry Shading :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:spec" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="spec" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Specification</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="fundamentals.html">Fundamentals</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="initialization.html">Initialization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="devsandqueues.html">Devices and Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="cmdbuffers.html">Command Buffers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="synchronization.html">Synchronization and Cache Control</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="renderpass.html">Render Pass</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="shaders.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="pipelines.html">Pipelines</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="memory.html">Memory Allocation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="resources.html">Resource Creation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="samplers.html">Samplers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="descriptorsets.html">Resource Descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="interfaces.html">Shader Interfaces</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="textures.html">Image Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="fragmentdensitymapops.html">Fragment Density Map Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_ARM_tensors/tensorops.html">Tensor Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="queries.html">Queries</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="clears.html">Clear Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="copies.html">Copy Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="drawing.html">Drawing Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="fxvertex.html">Fixed-Function Vertex Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="tessellation.html">Tessellation</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="geometry.html">Geometry Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_NV_mesh_shader/mesh.html">Mesh Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_HUAWEI_cluster_culling_shader/clusterculling.html">Cluster Culling Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="vertexpostproc.html">Fixed-Function Vertex Post-Processing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="primsrast.html">Rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="fragops.html">Fragment Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="framebuffer.html">The Framebuffer</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="dispatch.html">Dispatching Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="device_generated_commands/generatedcommands.html">Device-Generated Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="sparsemem.html">Sparse Resources</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_KHR_surface/wsi.html">Window System Integration (WSI)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_KHR_deferred_host_operations/deferred_host_operations.html">Deferred Host Operations</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_EXT_private_data.html">Private Data</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="accelstructures.html">Acceleration Structures</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_EXT_opacity_micromap/micromaps.html">Micromap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="raytraversal.html">Ray Traversal</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="raytracing.html">Ray Tracing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_NV_memory_decompression.html">Memory Decompression</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="videocoding.html">Video Coding</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_NV_optical_flow/optical_flow.html">Optical Flow</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="executiongraphs.html">Execution Graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_NV_external_compute_queue/VK_NV_external_compute_queue.html">External Compute Queues</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="VK_ARM_data_graph/graphs.html">Data graphs</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="extensions.html">Extending Vulkan</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="features.html">Features</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="limits.html">Limits</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="formats.html">Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="capabilities.html">Additional Capabilities</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="debugging.html">Debugging</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/spirvenv.html">Vulkan Environment for SPIR-V</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/memorymodel.html">Memory Model</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/compressedtex.html">Compressed Image Formats</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/versions.html">Core Revisions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/extensions.html">Layers &amp; Extensions (Informative)</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/roadmap.html">Vulkan Roadmap Milestones</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/deprecation.html">Deprecation</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/boilerplate.html">API Boilerplate</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/invariance.html">Invariance</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/glossary.html">Lexicon</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../appendices/credits.html">Credits (Informative)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Specification</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Specification</a></li>
+    <li><a href="geometry.html">Geometry Shading</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/spec/modules/ROOT/pages/chapters/geometry.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Geometry Shading</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>The geometry shader operates on a group of vertices and their associated
+data assembled from a single input primitive, and emits zero or more output
+primitives and the group of vertices and their associated data required for
+each output primitive.
+Geometry shading is enabled when a geometry shader is included in the
+pipeline.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="geometry-input"><a class="anchor" href="#geometry-input"></a>Geometry Shader Input Primitives</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Each geometry shader invocation has access to all vertices in the primitive
+(and their associated data), which are presented to the shader as an array
+of inputs.</p>
+</div>
+<div class="paragraph">
+<p>The input primitive type expected by the geometry shader is specified with
+an <code>OpExecutionMode</code> instruction in the geometry shader, and <strong>must</strong> match
+the incoming primitive type specified by either the pipeline&#8217;s
+<a href="drawing.html#drawing-primitive-topologies" class="xref page">primitive topology</a> if tessellation is
+inactive, or the <a href="tessellation.html#tessellation" class="xref page">tessellation mode</a> if tessellation is
+active, as follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>An input primitive type of <code>InputPoints</code> <strong>must</strong> only be used with a
+pipeline topology of <code>VK_PRIMITIVE_TOPOLOGY_POINT_LIST</code>, or with a
+tessellation shader specifying <code>PointMode</code>.
+The input arrays always contain one element, as described by the
+<a href="drawing.html#drawing-point-lists" class="xref page">point list topology</a> or
+<a href="tessellation.html#tessellation-point-mode" class="xref page">tessellation in point mode</a>.</p>
+</li>
+<li>
+<p>An input primitive type of <code>InputLines</code> <strong>must</strong> only be used with a
+pipeline topology of <code>VK_PRIMITIVE_TOPOLOGY_LINE_LIST</code> or
+<code>VK_PRIMITIVE_TOPOLOGY_LINE_STRIP</code>, or with a tessellation shader
+specifying <code>IsoLines</code> that does not specify <code>PointMode</code>.
+The input arrays always contain two elements, as described by the
+<a href="drawing.html#drawing-line-lists" class="xref page">line list topology</a> or <a href="drawing.html#drawing-line-strips" class="xref page">    line strip topology</a>, or by <a href="tessellation.html#tessellation-isoline-tessellation" class="xref page">    isoline tessellation</a>.</p>
+</li>
+<li>
+<p>An input primitive type of <code>InputLinesAdjacency</code> <strong>must</strong> only be used
+when tessellation is inactive, with a pipeline topology of
+<code>VK_PRIMITIVE_TOPOLOGY_LINE_LIST_WITH_ADJACENCY</code> or
+<code>VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY</code>.
+The input arrays always contain four elements, as described by the
+<a href="drawing.html#drawing-line-lists-with-adjacency" class="xref page">line list with adjacency topology</a>
+or <a href="drawing.html#drawing-line-strips-with-adjacency" class="xref page">line strip with adjacency    topology</a>.</p>
+</li>
+<li>
+<p>An input primitive type of <code>Triangles</code> <strong>must</strong> only be used with a
+pipeline topology of <code>VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST</code>,
+<code>VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP</code>, or
+<code>VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN</code>; or with a tessellation shader
+specifying <code>Quads</code> or <code>Triangles</code> that does not specify
+<code>PointMode</code>.
+The input arrays always contain three elements, as described by the
+<a href="drawing.html#drawing-triangle-lists" class="xref page">triangle list topology</a>,
+<a href="drawing.html#drawing-triangle-strips" class="xref page">triangle strip topology</a>, or
+<a href="drawing.html#drawing-triangle-fans" class="xref page">triangle fan topology</a>, or by
+<a href="tessellation.html#tessellation-triangle-tessellation" class="xref page">triangle</a> or
+<a href="tessellation.html#tessellation-quad-tessellation" class="xref page">quad tessellation</a>.
+Vertices <strong>may</strong> be in a different absolute order than specified by the
+topology, but <strong>must</strong> adhere to the specified winding order.</p>
+</li>
+<li>
+<p>An input primitive type of <code>InputTrianglesAdjacency</code> <strong>must</strong> only be
+used when tessellation is inactive, with a pipeline topology of
+<code>VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY</code> or
+<code>VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY</code>.
+The input arrays always contain six elements, as described by the
+<a href="drawing.html#drawing-triangle-lists-with-adjacency" class="xref page">triangle list with adjacency    topology</a> or <a href="drawing.html#drawing-triangle-strips-with-adjacency" class="xref page">triangle strip    with adjacency topology</a>.
+Vertices <strong>may</strong> be in a different absolute order than specified by the
+topology, but <strong>must</strong> adhere to the specified winding order, and the
+vertices making up the main primitive <strong>must</strong> still occur at the first,
+third, and fifth index.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="geometry-output"><a class="anchor" href="#geometry-output"></a>Geometry Shader Output Primitives</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A geometry shader generates primitives in one of three output modes: points,
+line strips, or triangle strips.
+The primitive mode is specified in the shader using an <code>OpExecutionMode</code>
+instruction with the <code>OutputPoints</code>, <code>OutputLineStrip</code> or
+<code>OutputTriangleStrip</code> modes, respectively.
+Each geometry shader <strong>must</strong> include exactly one output primitive mode.</p>
+</div>
+<div class="paragraph">
+<p>The vertices output by the geometry shader are assembled into points, lines,
+or triangles based on the output primitive type and the resulting primitives
+are then further processed as described in <a href="primsrast.html#primsrast" class="xref page">Rasterization</a>.
+If the number of vertices emitted by the geometry shader is not sufficient
+to produce a single primitive, vertices corresponding to incomplete
+primitives are not processed by subsequent pipeline stages.
+The number of vertices output by the geometry shader is limited to a maximum
+count specified in the shader.</p>
+</div>
+<div class="paragraph">
+<p>The maximum output vertex count is specified in the shader using an
+<code>OpExecutionMode</code> instruction with the mode set to <code>OutputVertices</code>
+and the maximum number of vertices that will be produced by the geometry
+shader specified as a literal.
+Each geometry shader <strong>must</strong> specify a maximum output vertex count.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="geometry-invocations"><a class="anchor" href="#geometry-invocations"></a>Multiple Invocations of Geometry Shaders</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Geometry shaders <strong>can</strong> be invoked more than one time for each input
+primitive.
+This is known as <em>geometry shader instancing</em> and is requested by including
+an <code>OpExecutionMode</code> instruction with <code>mode</code> specified as
+<code>Invocations</code> and the number of invocations specified as an integer
+literal.</p>
+</div>
+<div class="paragraph">
+<p>In this mode, the geometry shader will execute at least <span class="eq">n</span> times for
+each input primitive, where <span class="eq">n</span> is the number of invocations specified
+in the <code>OpExecutionMode</code> instruction.
+The instance number is available to each invocation as a built-in input
+using <code>InvocationId</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="geometry-ordering"><a class="anchor" href="#geometry-ordering"></a>Geometry Shader Primitive Ordering</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Limited guarantees are provided for the relative ordering of primitives
+produced by a geometry shader, as they pertain to <a href="drawing.html#drawing-primitive-order" class="xref page">primitive order</a>.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>For instanced geometry shaders, the output primitives generated from
+each input primitive are passed to subsequent pipeline stages using the
+invocation number to order the primitives, from least to greatest.</p>
+</li>
+<li>
+<p>All output primitives generated from a given input primitive are passed
+to subsequent pipeline stages before any output primitives generated
+from subsequent input primitives.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="geometry-passthrough"><a class="anchor" href="#geometry-passthrough"></a>Geometry Shader Passthrough</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A geometry shader that uses the <code>PassthroughNV</code> decoration on a variable
+in its input interface is considered a <em>passthrough geometry shader</em>.
+Output primitives in a passthrough geometry shader <strong>must</strong> have the same
+topology as the input primitive and are not produced by emitting vertices.
+The vertices of the output primitive have two different types of attributes,
+per-vertex and per-primitive.
+Geometry shader input variables with <code>PassthroughNV</code> decoration are
+considered to produce per-vertex outputs, where values for each output
+vertex are copied from the corresponding input vertex.
+Any built-in or user-defined geometry shader outputs are considered
+per-primitive in a passthrough geometry shader, where a single output value
+is copied to all output vertices.</p>
+</div>
+<div class="paragraph">
+<p>The remainder of this section details the usage of the <code>PassthroughNV</code>
+decoration and modifications to the interface matching rules when using
+passthrough geometry shaders.</p>
+</div>
+<div class="sect2">
+<h3 id="geometry-passthrough-passthrough"><a class="anchor" href="#geometry-passthrough-passthrough"></a><code>PassthroughNV</code> Decoration</h3>
+<div class="paragraph">
+<p>Decorating a geometry shader input variable with the <code>PassthroughNV</code>
+decoration indicates that values of this input are copied through to the
+corresponding vertex of the output primitive.
+Input variables and block members which do not have the <code>PassthroughNV</code>
+decoration are consumed by the geometry shader without being passed through
+to subsequent stages.</p>
+</div>
+<div class="paragraph">
+<p>The <code>PassthroughNV</code> decoration <strong>must</strong> only be used within a geometry
+shader.</p>
+</div>
+<div class="paragraph">
+<p>Any variable decorated with <code>PassthroughNV</code> <strong>must</strong> be declared using the
+<code>Input</code> storage class.</p>
+</div>
+<div class="paragraph">
+<p>The <code>PassthroughNV</code> decoration <strong>must</strong> not be used with any of:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>an input primitive type other than <code>InputPoints</code>, <code>InputLines</code>, or
+<code>Triangles</code>, as specified by the mode for <code>OpExecutionMode</code>.</p>
+</li>
+<li>
+<p>an invocation count other than one, as specified by the <code>Invocations</code>
+mode for <code>OpExecutionMode</code>.</p>
+</li>
+<li>
+<p>an <code>OpEntryPoint</code> which statically uses the <code>OpEmitVertex</code> or
+<code>OpEndPrimitive</code> instructions.</p>
+</li>
+<li>
+<p>a variable decorated with the <code>InvocationId</code> built-in decoration.</p>
+</li>
+<li>
+<p>a variable decorated with the <code>PrimitiveId</code> built-in decoration that
+is declared using the <code>Input</code> storage class.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="geometry-passthrough-interface"><a class="anchor" href="#geometry-passthrough-interface"></a>Passthrough Interface Matching</h3>
+<div class="paragraph">
+<p>When a passthrough geometry shader is in use, the
+<a href="interfaces.html#interfaces-iointerfaces-matching" class="xref page">Interface Matching</a> rules involving the
+geometry shader input and output interfaces operate as described in this
+section.</p>
+</div>
+<div class="paragraph">
+<p>For the purposes of matching passthrough geometry shader inputs with outputs
+of the previous pipeline stages, the <code>PassthroughNV</code> decoration is
+ignored.</p>
+</div>
+<div class="paragraph">
+<p>For the purposes of matching the outputs of the geometry shader with
+subsequent pipeline stages, each input variable with the <code>PassthroughNV</code>
+decoration is considered to add an equivalent output variable with the same
+type, decoration (other than <code>PassthroughNV</code>), number, and declaration
+order on the output interface.
+The output variable declaration corresponding to an input variable decorated
+with <code>PassthroughNV</code> will be identical to the input declaration, except
+that the outermost array dimension of such variables is removed.
+The output block declaration corresponding to an input block decorated with
+<code>PassthroughNV</code> or having members decorated with <code>PassthroughNV</code> will
+be identical to the input declaration, except that the outermost array
+dimension of such declaration is removed.</p>
+</div>
+<div class="paragraph">
+<p>If an input block is decorated with <code>PassthroughNV</code>, the equivalent
+output block contains all the members of the input block.
+Otherwise, the equivalent output block contains only those input block
+members decorated with <code>PassthroughNV</code>.
+All members of the corresponding output block are assigned <code>Location</code> and
+<code>Component</code> decorations identical to those assigned to the corresponding
+input block members.</p>
+</div>
+<div class="paragraph">
+<p>Output variables and blocks generated from inputs decorated with
+<code>PassthroughNV</code> will only exist for the purposes of interface matching;
+these declarations are not available to geometry shader code or listed in
+the module interface.</p>
+</div>
+<div class="paragraph">
+<p>For the purposes of component counting, passthrough geometry shaders count
+all statically used input variable components declared with the
+<code>PassthroughNV</code> decoration as output components as well, since their
+values will be copied to the output primitive produced by the geometry
+shader.</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

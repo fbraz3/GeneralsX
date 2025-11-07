@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>VK_KHR_video_decode_queue :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:features" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="features" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Vulkan Feature Descriptions</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Vulkan Roadmap and Feature Descriptions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Roadmap.html">Vulkan Roadmap</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Feature Descriptions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMDX_shader_enqueue.html">VK_AMDX_shader_enqueue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_anti_lag.html">VK_AMD_anti_lag</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_AMD_shader_early_and_late_fragment_tests.html">VK_AMD_shader_early_and_late_fragment_tests</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ANDROID_external_format_resolve.html">VK_ANDROID_external_format_resolve</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_pipeline_opacity_micromap.html">VK_ARM_pipeline_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_render_pass_striped.html">VK_ARM_render_pass_striped</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_ARM_tensors.html">VK_ARM_tensors</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_dynamic_state.html">VK_EXT_attachment_feedback_loop_dynamic_state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_attachment_feedback_loop_layout.html">VK_EXT_attachment_feedback_loop_layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_calibrated_timestamps.html">VK_EXT_calibrated_timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_bias_control.html">VK_EXT_depth_bias_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_depth_clamp_control.html">VK_EXT_depth_clamp_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_descriptor_buffer.html">VK_EXT_descriptor_buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_fault.html">VK_EXT_device_fault</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_device_generated_commands.html">VK_EXT_device_generated_commands</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_dynamic_rendering_unused_attachments.html">VK_EXT_dynamic_rendering_unused_attachments</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_extended_dynamic_state3.html">VK_EXT_extended_dynamic_state3</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_acquire_unmodified.html">VK_EXT_external_memory_acquire_unmodified</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_external_memory_metal.html">VK_EXT_external_memory_metal</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_fragment_density_map_offset.html">VK_EXT_fragment_density_map_offset</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_frame_boundary.html">Proposal: <code>VK_EXT_frame_boundary</code></a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_graphics_pipeline_library.html">VK_EXT_graphics_pipeline_library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_host_image_copy.html">VK_EXT_host_image_copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_2d_array_of_3d.html">VK_EXT_image_2d_array_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_compression_control.html">VK_EXT_image_compression_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_image_sliced_view_of_3d.html">VK_EXT_image_sliced_view_of_3d</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_layer_settings.html">VK_EXT_layer_settings</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_dithering.html">VK_EXT_legacy_dithering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_legacy_vertex_attributes.html">VK_EXT_legacy_vertex_attributes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_map_memory_placed.html">VK_EXT_map_memory_placed</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mesh_shader.html">VK_EXT_mesh_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_metal_objects.html">VK_EXT_metal_objects</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_multisampled_render_to_single_sampled.html">VK_EXT_multisampled_render_to_single_sampled</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_mutable_descriptor_type.html">VK_EXT_mutable_descriptor_type</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_non_seamless_cube_map.html">VK_EXT_non_seamless_cube_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_opacity_micromap.html">VK_EXT_opacity_micromap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_library_group_handles.html">VK_EXT_pipeline_library_group_handles</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_pipeline_protected_access.html">VK_EXT_pipeline_protected_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_present_mode_fifo_latest_ready.html">VK_EXT_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_primitives_generated_query.html">VK_EXT_primitives_generated_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_rasterization_order_attachment_access.html">VK_EXT_rasterization_order_attachment_access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_float8.html">VK_EXT_shader_float8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_module_identifier.html">VK_EXT_shader_module_identifier</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_object.html">VK_EXT_shader_object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_replicated_composites.html">VK_EXT_shader_replicated_composites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_tile_image.html">VK_EXT_shader_tile_image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_subpass_merge_feedback.html">VK_EXT_subpass_merge_feedback</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_surface_maintenance1.html">VK_EXT_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_swapchain_maintenance1.html">VK_EXT_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_zero_initialize_device_memory.html">VK_EXT_zero_initialize_device_memory</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_GOOGLE_surfaceless_query.html">VK_GOOGLE_surfaceless_query</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_cluster_culling_shader.html">VK_HUAWEI_cluster_culling_shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_HUAWEI_invocation_mask.html">VK_HUAWEI_invocation_mask</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_compute_shader_derivatives.html">VK_KHR_compute_shader_derivatives</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_cooperative_matrix.html">VK_KHR_cooperative_matrix</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering.html">VK_KHR_dynamic_rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_dynamic_rendering_local_read.html">VK_KHR_dynamic_rendering_local_read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shader_barycentric.html">VK_KHR_fragment_shader_barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_fragment_shading_rate.html">VK_KHR_fragment_shading_rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_load_store_op_none.html">VK_KHR_load_store_op_none</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance5.html">VK_KHR_maintenance5</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance6.html">VK_KHR_maintenance6</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance7.html">VK_KHR_maintenance7</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance8.html">VK_KHR_maintenance8</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_maintenance9.html">Proposal Template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_map_memory2.html">VK_KHR_map_memory2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_pipeline_binary.html">VK_KHR_pipeline_binary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_id2.html">VK_KHR_present_id2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_mode_fifo_latest_ready.html">VK_KHR_present_mode_fifo_latest_ready</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_present_wait2.html">VK_KHR_present_wait2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_ray_tracing_position_fetch.html">VK_KHR_ray_tracing_position_fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_bfloat16.html">VK_KHR_shader_bfloat16</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_expect_assume.html">VK_KHR_shader_expect_assume</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_float_controls2.html">VK_KHR_shader_float_controls2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_integer_dot_product.html">VK_KHR_shader_integer_dot_product</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_maximal_reconvergence.html">VK_KHR_shader_maximal_reconvergence</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_quad_control.html">VK_KHR_shader_quad_control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_relaxed_extended_instruction.html">VK_KHR_shader_relaxed_extended_instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_shader_subgroup_rotate.html">Subgroup rotation instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_surface_maintenance1.html">VK_KHR_surface_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_swapchain_maintenance1.html">VK_KHR_swapchain_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_unified_image_layouts.html">VK_KHR_unified_image_layouts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_vertex_attribute_divisor.html">VK_KHR_vertex_attribute_divisor</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_av1.html">VK_KHR_video_decode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h264.html">VK_KHR_video_decode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_h265.html">VK_KHR_video_decode_h265</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_queue.html">VK_KHR_video_decode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_decode_vp9.html">VK_KHR_video_decode_vp9</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_av1.html">VK_KHR_video_encode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h264.html">VK_KHR_video_encode_h264</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_h265.html">VK_KHR_video_encode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_intra_refresh.html">VK_KHR_video_encode_intra_refresh</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_quantization_map.html">VK_KHR_video_encode_quantization_map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_queue.html">VK_KHR_video_encode_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance1.html">VK_KHR_video_maintenance1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_maintenance2.html">VK_KHR_video_maintenance2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_queue.html">VK_KHR_video_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_LUNARG_direct_driver_loading.html">VK_LUNARG_direct_driver_loading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_MSFT_layered_driver.html">VK_MSFT_layered_driver</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cluster_acceleration_structure.html">VK_NV_cluster_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_matrix2.html">VK_NV_cooperative_matrix2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_cooperative_vector.html">VK_NV_cooperative_vector</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_display_stereo.html">VK_NV_display_stereo</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_external_compute_queue.html">VK_NV_external_compute_queue</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_partitioned_acceleration_structure.html">VK_NV_partitioned_acceleration_structure</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_linear_swept_spheres.html">VK_NV_ray_tracing_linear_swept_spheres</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_validation.html">VK_NV_ray_tracing_validation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_image_processing.html">VK_QCOM_image_processing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_memory_heap.html">VK_QCOM_tile_memory_heap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_properties.html">VK_QCOM_tile_properties</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_QCOM_tile_shading.html">VK_QCOM_tile_shading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_VERSION_1_4.html">Vulkan 1.4</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Feature Descriptions</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan Feature Descriptions</a></li>
+    <li>Feature Descriptions</li>
+    <li><a href="VK_KHR_video_decode_queue.html">VK_KHR_video_decode_queue</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Docs/antora/features/modules/features/pages/proposals/VK_KHR_video_decode_queue.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">VK_KHR_video_decode_queue</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_problem_statement">1. Problem Statement</a></li>
+<li><a href="#_solution_space">2. Solution Space</a></li>
+<li><a href="#_proposal">3. Proposal</a>
+<ul class="sectlevel2">
+<li><a href="#_video_decode_queues">3.1. Video Decode Queues</a></li>
+<li><a href="#_video_decode_profiles">3.2. Video Decode Profiles</a></li>
+<li><a href="#_new_pipeline_stage_and_access_flags">3.3. New Pipeline Stage and Access Flags</a></li>
+<li><a href="#_new_buffer_and_image_usage_flags">3.4. New Buffer and Image Usage Flags</a></li>
+<li><a href="#_new_format_feature_flags">3.5. New Format Feature Flags</a></li>
+<li><a href="#_basic_operation">3.6. Basic Operation</a></li>
+<li><a href="#_decode_output_picture">3.7. Decode Output Picture</a></li>
+<li><a href="#_reconstructed_picture">3.8. Reconstructed Picture</a></li>
+<li><a href="#_reference_pictures">3.9. Reference Pictures</a></li>
+<li><a href="#_capabilities">3.10. Capabilities</a></li>
+<li><a href="#_usage_summary">3.11. Usage Summary</a></li>
+</ul>
+</li>
+<li><a href="#_examples">4. Examples</a>
+<ul class="sectlevel2">
+<li><a href="#_select_queue_family_with_video_decode_support_for_a_given_video_codec_operation">4.1. Select queue family with video decode support for a given video codec operation</a></li>
+<li><a href="#_check_support_and_query_the_capabilities_for_a_video_decode_profile">4.2. Check support and query the capabilities for a video decode profile</a></li>
+<li><a href="#_select_decode_output_and_dpb_formats_supported_by_the_video_decode_profile">4.3. Select decode output and DPB formats supported by the video decode profile</a></li>
+<li><a href="#_create_bitstream_buffer">4.4. Create bitstream buffer</a></li>
+<li><a href="#_create_decode_output_image_and_image_view">4.5. Create decode output image and image view</a></li>
+<li><a href="#_create_dpb_image_and_image_view">4.6. Create DPB image and image view</a></li>
+<li><a href="#_record_decode_operation_video_session_without_dpb_slots">4.7. Record decode operation (video session without DPB slots)</a></li>
+<li><a href="#_record_decode_operation_with_reconstructed_picture_information_distinct_mode">4.8. Record decode operation with reconstructed picture information (DISTINCT mode)</a></li>
+<li><a href="#_record_decode_operation_with_reconstructed_picture_information_coincide_mode">4.9. Record decode operation with reconstructed picture information (COINCIDE mode)</a></li>
+<li><a href="#_record_decode_operation_with_reference_picture_list">4.10. Record decode operation with reference picture list</a></li>
+</ul>
+</li>
+<li><a href="#_issues">5. Issues</a>
+<ul class="sectlevel2">
+<li><a href="#_resolved_why_is_there_no_vk_pipeline_stage_video_decode_bit_khr">5.1. RESOLVED: Why is there no <code>VK_PIPELINE_STAGE_VIDEO_DECODE_BIT_KHR</code>?</a></li>
+<li><a href="#_resolved_are_the_decode_output_picture_data_and_reconstructed_picture_data_used_to_activate_a_dpb_slot_written_to_the_same_resource">5.2. RESOLVED: Are the decode output picture data and reconstructed picture data used to activate a DPB slot written to the same resource?</a></li>
+<li><a href="#_resolved_how_can_layered_codec_specific_decode_extensions_enable_applications_to_provide_the_necessary_codec_specific_picture_information_parameter_sets_etc_that_may_be_needed_to_perform_the_video_coding_operations">5.3. RESOLVED: How can layered codec-specific decode extensions enable applications to provide the necessary codec-specific picture information, parameter sets, etc. that may be needed to perform the video coding operations?</a></li>
+<li><a href="#_resolved_can_vkcmdvideodecodekhr_only_decode_frames_what_about_field_decoding_slice_decoding_etc">5.4. RESOLVED: Can <code>vkCmdVideoDecodeKHR</code> only decode frames? What about field decoding, slice decoding, etc.?</a></li>
+<li><a href="#_resolved_what_is_the_effect_of_the_flags_provided_in_vkvideodecodeusageinfokhrvideousagehints">5.5. RESOLVED: What is the effect of the flags provided in <code>VkVideoDecodeUsageInfoKHR::videoUsageHints</code>?</a></li>
+<li><a href="#_resolved_when_is_it_mandatory_to_specify_reconstructed_picture_information_in_vkvideodecodeinfokhrpsetupreferenceslot">5.6. RESOLVED: When is it mandatory to specify reconstructed picture information in <code>VkVideoDecodeInfoKHR::pSetupReferenceSlot</code>?</a></li>
+<li><a href="#_resolved_does_always_requiring_the_specification_of_reconstructed_picture_information_in_vkvideodecodeinfokhrpsetupreferenceslot_have_any_undesired_performance_consequences">5.7. RESOLVED: Does always requiring the specification of reconstructed picture information in <code>VkVideoDecodeInfoKHR::pSetupReferenceSlot</code> have any undesired performance consequences?</a></li>
+</ul>
+</li>
+<li><a href="#_further_functionality">6. Further Functionality</a></li>
+</ul>
+</div>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This document outlines a proposal to enable performing video decode operations in Vulkan.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>1. Problem Statement</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Integrating video decode operations into Vulkan applications enable a wide set of new usage scenarios including, but not limited to, the following examples:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Applying post-processing on top of video frames decoded from a compressed video stream</p>
+</li>
+<li>
+<p>Sourcing dynamic texture data from compressed video streams</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>It is also not uncommon for Vulkan capable devices to feature dedicated hardware acceleration for video decompression.</p>
+</div>
+<div class="paragraph">
+<p>The goal of this proposal is to enable these use cases, expose the underlying hardware capabilities, and provide tight integration with other functionalities of the Vulkan API.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution Space</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The following options have been considered:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Rely on external sharing capabilities to interact with existing video decode APIs</p>
+</li>
+<li>
+<p>Add new dedicated APIs to Vulkan specific to video decoding</p>
+</li>
+<li>
+<p>Build upon a common set of APIs that enable video coding operations in general</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>As discussed in the proposal for the <code>VK_KHR_video_queue</code> extension, reusing a common, shared infrastructure across all video coding functionalities that leverage existing Vulkan capabilities was preferred, hence this extension follows option 3.</p>
+</div>
+<div class="paragraph">
+<p>Further sub-options were considered whether a common set of APIs could be used to enable video decoding in general, upon which codec-specific extensions can be built. As the possibility of API reuse is similarly possible within the domain of video decoding as it is for video coding in general, this proposal follows the same principle to extend <code>VK_KHR_video_queue</code> with codec-independent video decoding capabilities.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>3. Proposal</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_video_decode_queues"><a class="anchor" href="#_video_decode_queues"></a>3.1. Video Decode Queues</h3>
+<div class="paragraph">
+<p>While <code>VK_KHR_video_queue</code> already includes support for a more fine grained query to determine the set of supported video codec operations for a given queue family, this extension introduces an explicit queue flag called <code>VK_QUEUE_VIDEO_DECODE_BIT_KHR</code> to indicate support for video decoding.</p>
+</div>
+<div class="paragraph">
+<p>Applications can use this flag bit to identify video decode capable queue families in general, if needed, before querying more details about the individual video codec operations supported through the use of the <code>VkQueueFamilyVideoPropertiesKHR</code> structure. It also indicates support for the set of command buffer commands available on video decode queues, which include the following:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Pipeline barrier and event handling commands used for synchronization</p>
+</li>
+<li>
+<p>Basic query commands to begin, end, and reset queries</p>
+</li>
+<li>
+<p>Timestamp write commands</p>
+</li>
+<li>
+<p>Generic video coding commands</p>
+</li>
+<li>
+<p>The new video decode command introduced by this extension</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For the full list of individual commands supported by video decode queues, and whether any command is supported inside/outside of video coding scopes, refer to the manual page of the corresponding command.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_video_decode_profiles"><a class="anchor" href="#_video_decode_profiles"></a>3.2. Video Decode Profiles</h3>
+<div class="paragraph">
+<p>Video decode profiles are defined using a <code>VkVideoProfileInfoKHR</code> structure that specifies a <code>videoCodecOperation</code> value identifying a video decode operation. This extension does not introduce any video decode operation flags, as that is left to the codec-specific decode extensions.</p>
+</div>
+<div class="paragraph">
+<p>On the other hand, this extension allows the application to specify usage hints specific to video decoding by chaining the following new structure to <code>VkVideoProfileInfoKHR</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoDecodeUsageInfoKHR {
+    VkStructureType               sType;
+    const void*                   pNext;
+    VkVideoDecodeUsageFlagsKHR    videoUsageHints;
+} VkVideoDecodeUsageInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The hint flags introduced by this extension are as follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_VIDEO_DECODE_USAGE_TRANSCODING_BIT_KHR</code> should be used in video transcoding use cases</p>
+</li>
+<li>
+<p><code>VK_VIDEO_DECODE_USAGE_OFFLINE_BIT_KHR</code> should be used when decoding local video content</p>
+</li>
+<li>
+<p><code>VK_VIDEO_DECODE_USAGE_STREAMING_BIT_KHR</code> should be used when decoding video content streamed over network</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These usage hints do not provide any restrictions or guarantees, so any combination of flags can be used, but they allow the application to better communicate the intended use case scenario so that implementations can make appropriate choices based on it.</p>
+</div>
+<div class="paragraph">
+<p>Logically, however, it is part of the video profile definition, so capabilities may vary across video decode profiles that only differ in terms of video decode usage hints, and it also affects video profile compatibility between resources and video sessions, so the same <code>VkVideoDecodeUsageInfoKHR</code> structure has to be included everywhere where the specific video decode profile is used.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_new_pipeline_stage_and_access_flags"><a class="anchor" href="#_new_pipeline_stage_and_access_flags"></a>3.3. New Pipeline Stage and Access Flags</h3>
+<div class="paragraph">
+<p>This extension also introduces a new pipeline stage identified by the <code>VK_PIPELINE_STAGE_2_VIDEO_DECODE_BIT_KHR</code> flag to enable synchronizing video decode operations with respect to other Vulkan operations.</p>
+</div>
+<div class="paragraph">
+<p>In addition, two new access flags are introduced to indicate reads and writes, respectively, performed by the video decode pipeline stage:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ACCESS_2_VIDEO_DECODE_READ_BIT_KHR</code></p>
+</li>
+<li>
+<p><code>VK_ACCESS_2_VIDEO_DECODE_WRITE_BIT_KHR</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>As these flags did no longer fit into the legacy 32-bit enums, this extension requires the <code>VK_KHR_synchronization2</code> extension and relies on the 64-bit versions of the pipeline stage and access mask flags to handle synchronization specific to video decode operations.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_new_buffer_and_image_usage_flags"><a class="anchor" href="#_new_buffer_and_image_usage_flags"></a>3.4. New Buffer and Image Usage Flags</h3>
+<div class="paragraph">
+<p>This extension introduces the following new buffer usage flags:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_BUFFER_USAGE_VIDEO_DECODE_SRC_BIT_KHR</code> allows using the buffer as a video bitstream buffer in video decode operations</p>
+</li>
+<li>
+<p><code>VK_BUFFER_USAGE_VIDEO_DECODE_DST_BIT_KHR</code> is reserved for future use</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This extension also introduces the following new image usage flags:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_IMAGE_USAGE_VIDEO_DECODE_SRC_BIT_KHR</code> is reserved for future use</p>
+</li>
+<li>
+<p><code>VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR</code> allows using the image as a decode output picture</p>
+</li>
+<li>
+<p><code>VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR</code> allows using the image as a decode DPB picture (reconstructed/reference picture)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Specifying these usage flags alone is not sufficient to create a buffer or image that is compatible with a video session created against any particular video profile. In fact, when specifying any of these usage flags at resource creation time, the application has to include a <code>VkVideoProfileListInfoKHR</code> structure in the <code>pNext</code> chain of the corresponding create info structure with <code>VkVideoProfileListInfoKHR::pProfiles</code> including a video decode profile. The created resources will be compatible only with that single video decode profile (and any additional video encode profiles that may have been specified in the list).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_new_format_feature_flags"><a class="anchor" href="#_new_format_feature_flags"></a>3.5. New Format Feature Flags</h3>
+<div class="paragraph">
+<p>To indicate which formats are compatible with video decode usage, the following new format feature flags are introduced:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_FORMAT_FEATURE_VIDEO_DECODE_OUTPUT_BIT_KHR</code> indicates support for decode output picture usage</p>
+</li>
+<li>
+<p><code>VK_FORMAT_FEATURE_VIDEO_DECODE_DPB_BIT_KHR</code> indicates support for decode DPB picture usage</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The presence of the format flags alone, as returned by the various format queries, is not sufficient to indicate that an image with that format is usable with video decoding using any particular video decode profile. Actual compatibility with a specific video decode profile has to be verified using the <code>vkGetPhysicalDeviceVideoFormatPropertiesKHR</code> command.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_basic_operation"><a class="anchor" href="#_basic_operation"></a>3.6. Basic Operation</h3>
+<div class="paragraph">
+<p>Video decode operations can be recorded into command buffers allocated from command pools created against queue families that support the <code>VK_QUEUE_VIDEO_DECODE_BIT_KHR</code> flag.</p>
+</div>
+<div class="paragraph">
+<p>Recording video decode operations happens through the use of the following new command:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VKAPI_ATTR void VKAPI_CALL vkCmdDecodeVideoKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkVideoDecodeInfoKHR*                 pDecodeInfo);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The common, codec-independent parameters of the video decode operation are provided using the following new structure:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoDecodeInfoKHR {
+    VkStructureType                       sType;
+    const void*                           pNext;
+    VkVideoDecodeFlagsKHR                 flags;
+    VkBuffer                              srcBuffer;
+    VkDeviceSize                          srcBufferOffset;
+    VkDeviceSize                          srcBufferRange;
+    VkVideoPictureResourceInfoKHR         dstPictureResource;
+    const VkVideoReferenceSlotInfoKHR*    pSetupReferenceSlot;
+    uint32_t                              referenceSlotCount;
+    const VkVideoReferenceSlotInfoKHR*    pReferenceSlots;
+} VkVideoDecodeInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Executing such a video decode operation results in the decompression of a single picture (unless otherwise defined by layered extensions), and, if there is an active <code>VK_QUERY_TYPE_RESULT_STATUS_ONLY_KHR</code> query, the status of the video decode operation is recorded into the active query slot.</p>
+</div>
+<div class="paragraph">
+<p>If the decode operation requires additional codec-specific parameters, then such parameters are provided in the <code>pNext</code> chain of the structure above. Whether such codec-specific information is necessary, and what it may contain is up to the codec-specific extensions.</p>
+</div>
+<div class="paragraph">
+<p><code>srcBuffer</code>, <code>srcBufferOffset</code>, and <code>srcBufferRange</code> provide information about the used video bitstream buffer range. The video decode operation reads the compressed picture data from this buffer range.</p>
+</div>
+<div class="paragraph">
+<p>The application has to create the video bitstream buffer with the new <code>VK_BUFFER_USAGE_VIDEO_DECODE_SRC_BIT_KHR</code> usage flag, and must also include the used video session&#8217;s video profile in the <code>VkVideoProfileListInfoKHR</code> structure specified at buffer creation time.</p>
+</div>
+<div class="paragraph">
+<p>The expected contents of the video bitstream buffer range depends on the specific video codec used, as defined by corresponding codec-specific extensions built upon this proposal.</p>
+</div>
+<div class="paragraph">
+<p>The <code>dstPictureResource</code>, <code>pSetupReferenceSlot</code>, and <code>pReferenceSlots</code> members specify the decode output picture, reconstructed picture, and reference pictures, respectively, used by the video decode operation, as discussed in later sections of this proposal.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_decode_output_picture"><a class="anchor" href="#_decode_output_picture"></a>3.7. Decode Output Picture</h3>
+<div class="paragraph">
+<p><code>dstPictureResource</code> defines the parameters of the video picture resource to use as the decode output picture. The video decode operation writes the picture data resulting from the decompression of the bitstream data to this video picture resource. As such it is a mandatory parameter of the operation.</p>
+</div>
+<div class="paragraph">
+<p>The application has to create the image view specified in <code>dstPictureResource.imageViewBinding</code> with the new <code>VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR</code> usage flag, and must also include the used video session&#8217;s video profile in the <code>VkVideoProfileListInfoKHR</code> structure specified at image creation time.</p>
+</div>
+<div class="paragraph">
+<p>The image subresource backing the decode output picture has to be in the new <code>VK_IMAGE_LAYOUT_VIDEO_DECODE_DST_KHR</code> layout at the time the video decode operation is executed, except if it matches the reconstructed picture, as discussed later, in which case the image subresource has to be in the new <code>VK_IMAGE_LAYOUT_VIDEO_DECODE_DPB_KHR</code> layout.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_reconstructed_picture"><a class="anchor" href="#_reconstructed_picture"></a>3.8. Reconstructed Picture</h3>
+<div class="paragraph">
+<p><code>pSetupReferenceSlot</code> is an optional parameter specifying the video picture resource and DPB slot index to use for the reconstructed picture. Implementations use the reconstructed picture for one of the following purposes:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>When the decoded picture is requested to be set up as a reference, according to the codec-specific semantics, the video decode operation will output the raw decoding results to this picture and activate the reconstructed picture&#8217;s DPB slot with it in order to enable using the picture as a reference picture in future video decode operations. Content-wise, this picture is generally identical to the decode output picture unless the decode output picture contains any sort of post-processing (e.g. film grain).</p>
+</li>
+<li>
+<p>When the decoded picture is not requested to be set up as a reference, implementations may use the reconstructed picture&#8217;s resource and/or DPB slot for intermediate data required by the decoding process.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Accordingly, <code>pSetupReferenceSlot</code> must never be <code>NULL</code>, except when the video session was created without any DPB slots.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The original version of this extension only required the specification of the reconstructed picture information (i.e. a non-<code>NULL</code> <code>pSetupReferenceSlot</code>) when the application intended to set up a reference picture by activating a DPB slot. Consequently, the presence of reconstructed picture information always implied DPB slot activation. This was changed in revision 8 of the extension, and whether DPB slot activation happens is now subject to codec-specific semantics. More details on this change are discussed in the corresponding issue in this proposal document.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>In summary, for decoded pictures requested to be set up as a reference, this parameter can be used to add new reference pictures to the DPB, and change the association between DPB slot indices and video picture resources. That also implies that the application has to specify a video picture resource in <code>pSetupReferenceSlot&#8594;pPictureResource</code> that was included in the set of bound reference picture resources specified when the video coding scope was started (in one of the elements of <code>VkVideoBeginCodingInfoKHR::pReferenceSlots</code>). No similar requirement exists for the decode output picture specified by <code>dstPictureResource</code> which can refer to any video picture resource.</p>
+</div>
+<div class="paragraph">
+<p>The application has to create the image view specified in <code>pSetupReferenceSlot&#8594;pPictureResource&#8594;imageViewBinding</code> with the new <code>VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR</code> usage flag, and must also include the used video session&#8217;s video profile in the <code>VkVideoProfileListInfoKHR</code> structure specified at image creation time.</p>
+</div>
+<div class="paragraph">
+<p>The image subresource backing the reconstructed picture has to be in the new <code>VK_IMAGE_LAYOUT_VIDEO_DECODE_DPB_KHR</code> layout at the time the video decode operation is executed.</p>
+</div>
+<div class="paragraph">
+<p>Implementations diverge in the way they handle reconstructed pictures:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>On some implementations the decode output picture and reconstructed picture have to be <em>distinct</em> video picture resources, even if the picture data written by the video decode operation to the two resources is identical.</p>
+</li>
+<li>
+<p>On other implementations the decode output picture and reconstructed picture have to <em>coincide</em>, i.e. both have to refer to the same video picture resource.</p>
+</li>
+<li>
+<p>Some other implementations may actually support both modes.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Support for the individual modes is indicated by the <code>VK_VIDEO_DECODE_CAPABILITY_DPB_AND_OUTPUT_COINCIDE_BIT_KHR</code> and <code>VK_VIDEO_DECODE_CAPABILITY_DPB_AND_OUTPUT_DISTINCT_BIT_KHR</code> capability flags. Implementations are only required to support one of the two modes, hence portable applications have to make sure that they support both options. Dealing with this implementation divergence, however, is fairly simple.</p>
+</div>
+<div class="paragraph">
+<p>Generally speaking, the application has to create the following images in order to decode a video stream:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>One or more images usable as reconstructed pictures, some of which will contain the reference pictures associated with the DPB.</p>
+</li>
+<li>
+<p>Optionally, an additional image usable as the decode output picture when the reconstructed picture has to be <em>distinct</em> or when using video sessions without any DPB slots.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>In practice, applications will typically allocate more than one decode output pictures for buffering purposes and/or to minimize synchronization overhead resulting from having to prevent write-after-write hazards across subsequent video decode operations targeting the same decode output picture resource. Some applications may also allocate more resources for reference pictures than the number of DPB slots for similar reasons.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The application should always create the image(s) backing the DPB with the <code>VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR</code> usage flag. If only the <em>coincide</em> mode is supported for reconstructed pictures, then the DPB image(s) that may be used as a reconstructed picture in a video decode operation have to also include the <code>VK_IMAGE_USAGE_VIDEO_DECODE_DST_KHR</code> usage flag to allow them to be used as coinciding decode output and reconstructed pictures.</p>
+</div>
+<div class="paragraph">
+<p>The image backing the decode output picture should always be created with the <code>VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR</code> usage flag.</p>
+</div>
+<div class="paragraph">
+<p>The DPB image(s) are expected to be in the <code>VK_IMAGE_LAYOUT_VIDEO_DECODE_DPB_KHR</code> layout while in use by video decode operations, while the decode output image is expected to be in the <code>VK_IMAGE_LAYOUT_VIDEO_DECODE_DST_KHR</code> layout.</p>
+</div>
+<div class="paragraph">
+<p>Here we have two cases to consider:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>When a reconstructed picture is specified; and</p>
+</li>
+<li>
+<p>When one is not needed (as the video session was created without any DPB slots)</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>In case of (2), the application can use the image created for the decode output picture in <code>dstPictureResource</code>, indifferent of whether the <em>distinct</em> or <em>coincide</em> mode is used.</p>
+</div>
+<div class="paragraph">
+<p>In case of (1), the behavior is as follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>In <em>distinct</em> mode the decode output picture&#8217;s image should be used in <code>dstPictureResource</code>, and (one of) the DPB image(s) should be referred to in <code>pSetupReferenceSlot</code>, as it would naturally follow.</p>
+</li>
+<li>
+<p>In <em>coincide</em> mode both <code>dstPictureResource</code> and <code>pSetupReferenceSlot</code> should refer to a video picture resource in (one of) the DPB image(s).</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In the latter situation the decoded picture will be written only to the DPB image, and the image created for decode-output-only use remains unused. If the application wants to concurrently use the decoded picture while also performing video decode operations using the same picture as reference, it can manually copy the decoded picture stored in the DPB image to the otherwise unused decode output image, if needed. This way it practically mimics the behavior of an implementation supporting the <em>distinct</em> mode. However, in most use cases that is not necessary, hence on implementations supporting the <em>coincide</em> mode the application can avoid having two copies of the decoded pictures, even if they are used as reference pictures later on.</p>
+</div>
+<div class="paragraph">
+<p>If the video profile in use requires additional codec-specific parameters for the reconstructed picture, then such parameters are provided in the <code>pNext</code> chain of <code>pSetupReferenceSlot</code>. Whether such codec-specific reconstructed picture information is necessary, and what it may contain is up to the codec-specific extensions.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_reference_pictures"><a class="anchor" href="#_reference_pictures"></a>3.9. Reference Pictures</h3>
+<div class="paragraph">
+<p>If the video session allows, reference pictures can be specified in the <code>pReferenceSlots</code> array to provide predictions of the values of samples of the decoded picture.</p>
+</div>
+<div class="paragraph">
+<p>Each entry in the <code>pReferenceSlots</code> array adds one or more pictures, currently associated with the DPB slot specified in the element&#8217;s <code>slotIndex</code> member and stored in the video picture resource specified in the element&#8217;s <code>pPictureResource</code> member, to the list of active reference pictures to use in the video decode operation.</p>
+</div>
+<div class="paragraph">
+<p>The application has to make sure to specify each video picture resource used as a reference picture in a video decode operation, beforehand, in the set of bound reference picture resources specified when the video coding scope was started (in one of the elements of <code>VkVideoBeginCodingInfoKHR::pReferenceSlots</code>).</p>
+</div>
+<div class="paragraph">
+<p>The application has to create the image view specified in <code>pPictureResource&#8594;imageViewBinding</code> of the elements of <code>pReferenceSlots</code> with the new <code>VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR</code> usage flag, and must also include the used video session’s video profile in the <code>VkVideoProfileListInfoKHR</code> structure specified at image creation time.</p>
+</div>
+<div class="paragraph">
+<p>The image subresources backing the reference pictures have to be in the new <code>VK_IMAGE_LAYOUT_VIDEO_DECODE_DPB_KHR</code> layout at the time the video decode operation is executed.</p>
+</div>
+<div class="paragraph">
+<p>Typically the number of elements in <code>pReferenceSlots</code> equals the number of reference pictures added, but in certain cases (depending on the used video codec and video profile) there may be multiple pictures in the same DPB slot resource.</p>
+</div>
+<div class="paragraph">
+<p>If the video profile in use requires additional codec-specific parameters for the reference pictures, then such parameters are provided in the <code>pNext</code> chain of the elements of <code>pReferenceSlots</code>. Whether such codec-specific reference picture information is necessary, and what it may contain is up to the codec-specific extensions.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_capabilities"><a class="anchor" href="#_capabilities"></a>3.10. Capabilities</h3>
+<div class="paragraph">
+<p>Querying capabilities specific to video decoding happens through the query mechanisms introduced by the <code>VK_KHR_video_queue</code> extension.</p>
+</div>
+<div class="paragraph">
+<p>Support for individual video decode operations can be retrieved for each queue family using the <code>VkQueueFamilyVideoPropertiesKHR</code> structure, as discussed earlier.</p>
+</div>
+<div class="paragraph">
+<p>The application can also use the <code>vkGetPhysicalDeviceVideoCapabilitiesKHR</code> command to query the capabilities of a specific video decode profile. In case of video decode profiles, the following new structure has to be included in the <code>pNext</code> chain of the <code>VkVideoCapabilitiesKHR</code> structure used to retrieve the general video decode capabilities:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoDecodeCapabilitiesKHR {
+    VkStructureType                    sType;
+    void*                              pNext;
+    VkVideoDecodeCapabilityFlagsKHR    flags;
+} VkVideoDecodeCapabilitiesKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This structure only contains a new decode-specific <code>flags</code> member that indicates support for various video decode capabilities, like the support for the <em>distinct</em> and <em>coincide</em> modes for reconstructed pictures, as discussed earlier.</p>
+</div>
+<div class="paragraph">
+<p>The <code>vkGetPhysicalDeviceVideoFormatPropertiesKHR</code> command can be used to query the supported image/picture formats for a given set of video profiles, as described in the <code>VK_KHR_video_queue</code> extension.</p>
+</div>
+<div class="paragraph">
+<p>In particular, if the application would like to query the list of format properties supported for decode output pictures, then it should include the new <code>VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR</code> usage flag in <code>VkPhysicalDeviceVideoFormatInfoKHR::imageUsage</code>.</p>
+</div>
+<div class="paragraph">
+<p>Similarly, to query the list of format properties supported for decode DPB pictures (reconstructed/reference pictures), then it should include the new <code>VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR</code> usage flag in <code>VkPhysicalDeviceVideoFormatInfoKHR::imageUsage</code>.</p>
+</div>
+<div class="paragraph">
+<p>When using the <em>coincide</em> mode, the application will need DPB pictures that support both decode output and DPB usage, hence it should call <code>vkGetPhysicalDeviceVideoFormatPropertiesKHR</code> with <code>VkPhysicalDeviceVideoFormatInfoKHR::imageUsage</code> including both <code>VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR</code> and <code>VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_usage_summary"><a class="anchor" href="#_usage_summary"></a>3.11. Usage Summary</h3>
+<div class="paragraph">
+<p>To summarize the usage of the video decoding features introduced by this extension, let us take a look at a typical usage scenario when using this extension to decode a video stream.</p>
+</div>
+<div class="paragraph">
+<p>Before the application can start recording command buffers with video decode operations, it has to do the following:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Ensure that the implementation can decode the video content at hand by first querying the video codec operations supported by each queue family using the <code>vkGetPhysicalDeviceQueueFamilyProperties2</code> command and the <code>VkQueueFamilyVideoPropertiesKHR</code> output structure.</p>
+</li>
+<li>
+<p>If needed, the application has to also retrieve the <code>VkQueueFamilyQueryResultStatusPropertiesKHR</code> output structure for the queue family to check support for <code>VK_QUERY_TYPE_RESULT_STATUS_ONLY_KHR</code> queries.</p>
+</li>
+<li>
+<p>Construct the <code>VkVideoProfileInfoKHR</code> structure describing the entire video profile, including the video codec operation, chroma subsampling, bit depths, and any other usage or codec-specific parameters.</p>
+</li>
+<li>
+<p>Ensure that the specific video profile is supported by the implementation using the <code>vkGetPhysicalDeviceVideoCapabilitiesKHR</code> command and retrieve the general, decode-specific, and codec-specific capabilities at the same time.</p>
+</li>
+<li>
+<p>Query the list of supported image/picture format properties supported for the video profile using the <code>vkGetPhysicalDeviceVideoFormatPropertiesKHR</code> structure, and select a suitable format for the DPB and decode output pictures.</p>
+</li>
+<li>
+<p>If needed, create one or more images corresponding to the decode output picture(s) and/or DPB picture(s) with the appropriate usage flags and video profile list, as described earlier, and bind suitable device memory to them. Also create any image views with the appropriate usage flags to use in the video decode operations.</p>
+</li>
+<li>
+<p>Create a buffer with the <code>VK_BUFFER_USAGE_VIDEO_DECODE_SRC_BIT_KHR</code> usage flag and the video profile list, to use as the source video bitstream buffer. If the buffer is expected to be populated using the CPU, consider binding compatible host-visible device memory to the buffer.</p>
+</li>
+<li>
+<p>If result status queries are needed and supported (as determined earlier), create a query pool with the <code>VK_QUERY_TYPE_RESULT_STATUS_ONLY_KHR</code> query type and the used video decode profile.</p>
+</li>
+<li>
+<p>Create the video session using the video decode profile and appropriate parameters within the capabilities supported by the profile, as determined earlier. Bind suitable device memory to each memory binding index of the video session.</p>
+</li>
+<li>
+<p>If needed, create a video session parameters object for the video session.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Recording video decode operations into command buffers typically consists of the following sequence:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Start a video coding scope with the created video session (and parameters) object using the <code>vkCmdBeginVideoCodingKHR</code> command. Make sure to include all video picture resources in <code>VkVideoBeginCodingInfoKHR::pReferenceSlots</code> that may be used as reconstructed or reference pictures within the video coding scope, and ensure that the DPB slots specified for each reflect the current DPB slot association for the resource.</p>
+</li>
+<li>
+<p>If this is the first video coding scope the video session is used in, reset the video session to the initial state by recording a <code>vkCmdControlVideoCodingKHR</code> command with the <code>VK_VIDEO_CODING_CONTROL_RESET_BIT_KHR</code> flag.</p>
+</li>
+<li>
+<p>If needed, start a <code>VK_QUERY_TYPE_RESULT_STATUS_ONLY_KHR</code> query using <code>vkCmdBeginQuery</code>. Reset the query using <code>vkCmdResetQueryPool</code>, beforehand, as needed.</p>
+</li>
+<li>
+<p>Issue a video decode operation using the <code>vkCmdDecodeVideoKHR</code> command with appropriate parameters, as discussed earlier.</p>
+</li>
+<li>
+<p>If needed, end the started query using <code>vkCmdEndQuery</code>.</p>
+</li>
+<li>
+<p>Record any further control or decode operations into the video coding scope, as needed.</p>
+</li>
+<li>
+<p>End the video coding scope using the <code>vkCmdEndVideoCodingKHR</code> command.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_examples"><a class="anchor" href="#_examples"></a>4. Examples</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_select_queue_family_with_video_decode_support_for_a_given_video_codec_operation"><a class="anchor" href="#_select_queue_family_with_video_decode_support_for_a_given_video_codec_operation"></a>4.1. Select queue family with video decode support for a given video codec operation</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkVideoCodecOperationFlagBitsKHR neededVideoDecodeOp = ...
+uint32_t queueFamilyIndex;
+uint32_t queueFamilyCount;
+
+vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &amp;queueFamilyCount, NULL);
+
+VkQueueFamilyProperties2* props = calloc(queueFamilyCount,
+    sizeof(VkQueueFamilyProperties2));
+VkQueueFamilyVideoPropertiesKHR* videoProps = calloc(queueFamilyCount,
+    sizeof(VkQueueFamilyVideoPropertiesKHR));
+
+for (queueFamilyIndex = 0; queueFamilyIndex &lt; queueFamilyCount; ++queueFamilyIndex) {
+    props[queueFamilyIndex].sType = VK_STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2;
+    props[queueFamilyIndex].pNext = &amp;videoProps[queueFamilyIndex];
+
+    videoProps[queueFamilyIndex].sType = VK_STRUCTURE_TYPE_QUEUE_FAMILY_VIDEO_PROPERTIES_KHR;
+}
+
+vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &amp;queueFamilyCount, props);
+
+for (queueFamilyIndex = 0; queueFamilyIndex &lt; queueFamilyCount; ++queueFamilyIndex) {
+    if ((props[queueFamilyIndex].queueFamilyProperties.queueFlags &amp; VK_QUEUE_VIDEO_DECODE_BIT_KHR) != 0 &amp;&amp;
+        (videoProps[queueFamilyIndex].videoCodecOperations &amp; neededVideoDecodeOp) != 0) {
+        break;
+    }
+}
+
+if (queueFamilyIndex &lt; queueFamilyCount) {
+    // Found appropriate queue family
+    ...
+} else {
+    // Did not find a queue family with the needed capabilities
+    ...
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_check_support_and_query_the_capabilities_for_a_video_decode_profile"><a class="anchor" href="#_check_support_and_query_the_capabilities_for_a_video_decode_profile"></a>4.2. Check support and query the capabilities for a video decode profile</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkResult result;
+
+// We also include the optional decode usage hints here
+VkVideoDecodeUsageInfoKHR profileUsageInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_USAGE_INFO_KHR,
+    .pNext = ... // pointer to codec-specific profile structure
+    .videoUsageHints = VK_VIDEO_DECODE_USAGE_DEFAULT_KHR,
+};
+
+VkVideoProfileInfoKHR profileInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR,
+    .pNext = &amp;profileUsageInfo
+    .videoCodecOperation = ... // used video decode operation
+    .chromaSubsampling = VK_VIDEO_CHROMA_SUBSAMPLING_420_BIT_KHR,
+    .lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR,
+    .chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR
+};
+
+VkVideoDecodeCapabilitiesKHR decodeCapabilities = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR,
+    .pNext = ... // pointer to codec-specific capability structure
+}
+
+VkVideoCapabilitiesKHR capabilities = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR,
+    .pNext = &amp;decodeCapabilities
+};
+
+result = vkGetPhysicalDeviceVideoCapabilitiesKHR(physicalDevice, &amp;profileInfo, &amp;capabilities);
+
+if (result == VK_SUCCESS) {
+    // Profile is supported, check additional capabilities
+    ...
+} else {
+    // Profile is not supported, result provides additional information about why
+    ...
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_select_decode_output_and_dpb_formats_supported_by_the_video_decode_profile"><a class="anchor" href="#_select_decode_output_and_dpb_formats_supported_by_the_video_decode_profile"></a>4.3. Select decode output and DPB formats supported by the video decode profile</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkVideoProfileInfoKHR profileInfo = {
+    ...
+};
+
+VkVideoProfileListInfoKHR profileListInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR,
+    .pNext = NULL,
+    .profileCount = 1,
+    .pProfiles = &amp;profileInfo
+};
+
+VkPhysicalDeviceVideoFormatInfoKHR formatInfo = {
+    .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_FORMAT_INFO_KHR,
+    .pNext = &amp;profileListInfo
+};
+
+VkVideoFormatPropertiesKHR* formatProps = NULL;
+
+// First query decode output formats
+formatInfo.imageUsage = VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR;
+
+vkGetPhysicalDeviceVideoFormatPropertiesKHR(physicalDevice, &amp;formatInfo, &amp;formatCount, NULL);
+formatProps = calloc(formatCount, sizeof(VkVideoFormatPropertiesKHR));
+for (uint32_t i = 0; i &lt; formatCount; ++i) {
+    formatProps[i].sType = VK_STRUCTURE_TYPE_VIDEO_FORMAT_PROPERTIES_KHR;
+}
+vkGetPhysicalDeviceVideoFormatPropertiesKHR(physicalDevice, &amp;formatInfo, &amp;formatCount, formatProps);
+
+for (uint32_t i = 0; i &lt; formatCount; ++i) {
+    // Select decode output format and image creation capabilities best suited for the use case
+    ...
+}
+free(formatProps);
+
+// Then query DPB formats
+formatInfo.imageUsage = VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR;
+
+// If DISTINCT mode is not supported or if COINCIDE mode is supported and preferred, then the DPB
+// images generally have to be created to be usable both as decode output and DPB pictures
+if ((decodeCapabilities.flags &amp; VK_VIDEO_DECODE_CAPABILITY_DPB_AND_OUTPUT_DISTINCT_BIT_KHR) == 0 || preferCoincideMode) {
+    formatInfo.imageUsage |= VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR;
+}
+
+vkGetPhysicalDeviceVideoFormatPropertiesKHR(physicalDevice, &amp;formatInfo, &amp;formatCount, NULL);
+formatProps = calloc(formatCount, sizeof(VkVideoFormatPropertiesKHR));
+for (uint32_t i = 0; i &lt; formatCount; ++i) {
+    formatProps[i].sType = VK_STRUCTURE_TYPE_VIDEO_FORMAT_PROPERTIES_KHR;
+}
+vkGetPhysicalDeviceVideoFormatPropertiesKHR(physicalDevice, &amp;formatInfo, &amp;formatCount, formatProps);
+
+for (uint32_t i = 0; i &lt; formatCount; ++i) {
+    // Select DPB format and image creation capabilities best suited for the use case
+    ...
+}
+free(formatProps);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_create_bitstream_buffer"><a class="anchor" href="#_create_bitstream_buffer"></a>4.4. Create bitstream buffer</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkBuffer bitstreamBuffer = VK_NULL_HANDLE;
+
+VkVideoProfileListInfoKHR profileListInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR,
+    .pNext = NULL,
+    .profileCount = ... // number of video profiles to use the bitstream buffer with
+    .pProfiles = ... // pointer to an array of video profile information structure chains
+};
+
+VkBufferCreateInfo createInfo = {
+    .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+    .pNext = &amp;profileListInfo,
+    ...
+    .usage = VK_BUFFER_USAGE_VIDEO_DECODE_SRC_BIT_KHR | ... // any other usages that may be needed
+    ...
+};
+
+vkCreateBuffer(device, &amp;createInfo, NULL, &amp;bitstreamBuffer);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_create_decode_output_image_and_image_view"><a class="anchor" href="#_create_decode_output_image_and_image_view"></a>4.5. Create decode output image and image view</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkImage outputImage = VK_NULL_HANDLE;
+VkImageView outputImageView = VK_NULL_HANDLE;
+
+VkVideoProfileListInfoKHR profileListInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR,
+    .pNext = NULL,
+    .profileCount = ... // number of video profiles to use the decode output image with
+    .pProfiles = ... // pointer to an array of video profile information structure chains
+};
+
+VkImageCreateInfo imageCreateInfo = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+    .pNext = &amp;profileListInfo,
+    ...
+    .usage = VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR | ... // any other usages that may be needed
+    ...
+};
+
+vkCreateImage(device, &amp;imageCreateInfo, NULL, &amp;outputImage);
+
+VkImageViewUsageCreateInfo imageViewUsageInfo = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO,
+    .pNext = NULL,
+    .usage = VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR
+};
+
+VkImageViewCreateInfo imageViewCreateInfo = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+    .pNext = &amp;imageViewUsageInfo,
+    .flags = 0,
+    .image = outputImage,
+    .viewType = ... // image view type (only 2D or 2D_ARRAY is supported)
+    ... // other image view creation parameters
+};
+
+vkCreateImageView(device, &amp;imageViewCreateInfo, NULL, &amp;outputImageView);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_create_dpb_image_and_image_view"><a class="anchor" href="#_create_dpb_image_and_image_view"></a>4.6. Create DPB image and image view</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// NOTE: This example creates a single image and image view that is used to back all DPB pictures
+// but, depending on the support of the VK_VIDEO_CAPABILITY_SEPARATE_REFERENCE_IMAGES_BIT_KHR
+// capability flag, the application can choose to create separate images for each DPB slot or
+// picture
+
+VkImage dpbImage = VK_NULL_HANDLE;
+VkImageView dpbImageView = VK_NULL_HANDLE;
+
+VkImageUsage dpbImageUsage = VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR;
+
+// If DISTINCT mode is not supported or if COINCIDE mode is supported and preferred, then the DPB
+// images generally have to be created to be usable both as decode output and DPB pictures
+if ((decodeCapabilities.flags &amp; VK_VIDEO_DECODE_CAPABILITY_DPB_AND_OUTPUT_DISTINCT_BIT_KHR) == 0 || preferCoincideMode) {
+    dpbImageUsage |= VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR;
+}
+
+
+VkVideoProfileListInfoKHR profileListInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR,
+    .pNext = NULL,
+    .profileCount = ... // number of video profiles to use the decode DPB image with
+    .pProfiles = ... // pointer to an array of video profile information structure chains
+};
+
+VkImageCreateInfo imageCreateInfo = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+    .pNext = &amp;profileListInfo,
+    ...
+    .usage = dpbImageUsage | ... // any other usages that may be needed
+    ...
+    .arrayLayers = // typically equal to the DPB slot count
+};
+
+vkCreateImage(device, &amp;imageCreateInfo, NULL, &amp;dpbImage);
+
+VkImageViewUsageCreateInfo imageViewUsageInfo = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO,
+    .pNext = NULL,
+    .usage = dpbImageUsage
+};
+
+VkImageViewCreateInfo imageViewCreateInfo = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+    .pNext = &amp;imageViewUsageInfo,
+    .flags = 0,
+    .image = dpbImage,
+    .viewType = ... // image view type (only 2D or 2D_ARRAY is supported)
+    ... // other image view creation parameters
+};
+
+vkCreateImageView(device, &amp;imageViewCreateInfo, NULL, &amp;dpbImageView);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_record_decode_operation_video_session_without_dpb_slots"><a class="anchor" href="#_record_decode_operation_video_session_without_dpb_slots"></a>4.7. Record decode operation (video session without DPB slots)</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+
+VkVideoPictureResourceInfoKHR decodeOutputPictureResource = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR,
+    .pNext = NULL,
+    .codedOffset = ... // offset within the image subresource (typically { 0, 0 })
+    .codedExtent = ... // extent of decoded picture (typically the video frame size)
+    .baseArrayLayer = 0,
+    .imageViewBinding = outputImageView
+};
+
+VkVideoDecodeInfoKHR decodeInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR,
+    .pNext = ... // pointer to codec-specific picture information structure
+    .flags = 0,
+    .srcBuffer = bitstreamBuffer,
+    .srcBufferOffset = ... // offset of picture data in the video bitstream buffer
+    .srcBufferRange = ... // size of picture data in the video bitstream buffer
+    .dstPictureResource = decodeOutputPictureResource,
+    .pSetupReferenceSlot = NULL,
+    .referenceSlotCount = 0,
+    .pReferenceSlots = NULL
+};
+
+vkCmdDecodeVideoKHR(commandBuffer, &amp;decodeInfo);
+
+vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_record_decode_operation_with_reconstructed_picture_information_distinct_mode"><a class="anchor" href="#_record_decode_operation_with_reconstructed_picture_information_distinct_mode"></a>4.8. Record decode operation with reconstructed picture information (DISTINCT mode)</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Bound reference resource list provided has to include reconstructed picture resource
+vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+
+VkVideoPictureResourceInfoKHR decodeOutputPictureResource = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR,
+    .pNext = NULL,
+    .codedOffset = ... // offset within the image subresource (typically { 0, 0 })
+    .codedExtent = ... // extent of decoded picture (typically the video frame size)
+    .baseArrayLayer = 0,
+    .imageViewBinding = outputImageView
+};
+
+VkVideoPictureResourceInfoKHR reconstructedPictureResource = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR,
+    .pNext = NULL,
+    .codedOffset = ... // offset within the image subresource (typically { 0, 0 })
+    .codedExtent = ... // extent of reconstructed picture (typically the video frame size)
+    .baseArrayLayer = ... // layer to use for setup picture in DPB
+    .imageViewBinding = dpbImageView
+};
+
+VkVideoReferenceSlotInfoKHR setupSlotInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR,
+    .pNext = ... // pointer to codec-specific reconstructed picture information structure
+    .slotIndex = ... // DPB slot index to use with the reconstructed picture
+                     // (optionally activated per the codec-specific semantics)
+    .pPictureResource = &amp;reconstructedPictureResource
+};
+
+VkVideoDecodeInfoKHR decodeInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR,
+    .pNext = ... // pointer to codec-specific picture information structure
+    ...
+    .dstPictureResource = decodeOutputPictureResource,
+    .pSetupReferenceSlot = &amp;setupSlotInfo,
+    ...
+};
+
+vkCmdDecodeVideoKHR(commandBuffer, &amp;decodeInfo);
+
+vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_record_decode_operation_with_reconstructed_picture_information_coincide_mode"><a class="anchor" href="#_record_decode_operation_with_reconstructed_picture_information_coincide_mode"></a>4.9. Record decode operation with reconstructed picture information (COINCIDE mode)</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Bound reference resource list provided has to include reconstructed picture resource
+vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+
+VkVideoPictureResourceInfoKHR reconstructedPictureResource = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR,
+    .pNext = NULL,
+    .codedOffset = ... // offset within the image subresource (typically { 0, 0 })
+    .codedExtent = ... // extent of decoded picture (typically the video frame size)
+    .baseArrayLayer = ... // layer to use for setup picture in DPB
+    .imageViewBinding = dpbImageView
+};
+
+VkVideoReferenceSlotInfoKHR setupSlotInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR,
+    .pNext = ... // pointer to codec-specific reconstructed picture information structure
+    .slotIndex = ... // DPB slot index to use with the reconstructed picture
+                     // (optionally activated per the codec-specific semantics)
+    .pPictureResource = &amp;reconstructedPictureResource
+};
+
+VkVideoDecodeInfoKHR decodeInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR,
+    .pNext = ... // pointer to codec-specific picture information structure
+    ...
+    .dstPictureResource = reconstructedPictureResource,
+    .pSetupReferenceSlot = &amp;setupSlotInfo,
+    ...
+};
+
+vkCmdDecodeVideoKHR(commandBuffer, &amp;decodeInfo);
+
+vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_record_decode_operation_with_reference_picture_list"><a class="anchor" href="#_record_decode_operation_with_reference_picture_list"></a>4.10. Record decode operation with reference picture list</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Bound reference resource list provided has to include all used reference picture resources
+vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+
+VkVideoPictureResourceInfoKHR referencePictureResources[] = {
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR,
+        .pNext = NULL,
+        .codedOffset = ... // offset within the image subresource (typically { 0, 0 })
+        .codedExtent = ... // extent of reference picture (typically the video frame size)
+        .baseArrayLayer = ... // layer of first reference picture resource
+        .imageViewBinding = dpbImageView
+    },
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR,
+        .pNext = NULL,
+        .codedOffset = ... // offset within the image subresource (typically { 0, 0 })
+        .codedExtent = ... // extent of reference picture (typically the video frame size)
+        .baseArrayLayer = ... // layer of second reference picture resource
+        .imageViewBinding = dpbImageView
+    },
+    ...
+};
+// NOTE: Individual resources do not have to refer to the same image view, e.g. if different
+// image views are created for each picture resource, or if the
+// VK_VIDEO_CAPABILITY_SEPARATE_REFERENCE_IMAGES_BIT_KHR capability is supported and the
+// application created separate images for the reference pictures.
+
+VkVideoReferenceSlotInfoKHR referenceSlotInfo[] = {
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR,
+        .pNext = ... // pointer to codec-specific reference picture information structure
+        .slotIndex = ... // DPB slot index of the first reference picture
+        .pPictureResource = &amp;referencePictureResource[0]
+    },
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR,
+        .pNext = ... // pointer to codec-specific reference picture information structure
+        .slotIndex = ... // DPB slot index of the second reference picture
+        .pPictureResource = &amp;referencePictureResource[1]
+    },
+    ...
+};
+
+VkVideoDecodeInfoKHR decodeInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR,
+    .pNext = ... // pointer to codec-specific picture information structure
+    ...
+    .referenceSlotCount = sizeof(referenceSlotInfo) / sizeof(referenceSlotInfo[0]),
+    .pReferenceSlots = &amp;referenceSlotInfo[0]
+};
+
+vkCmdDecodeVideoKHR(commandBuffer, &amp;decodeInfo);
+
+vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_issues"><a class="anchor" href="#_issues"></a>5. Issues</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_resolved_why_is_there_no_vk_pipeline_stage_video_decode_bit_khr"><a class="anchor" href="#_resolved_why_is_there_no_vk_pipeline_stage_video_decode_bit_khr"></a>5.1. RESOLVED: Why is there no <code>VK_PIPELINE_STAGE_VIDEO_DECODE_BIT_KHR</code>?</h3>
+<div class="paragraph">
+<p>This extension requires the <code>VK_KHR_synchronization2</code> extension because the new access flags introduced did not fit in the 32-bit enum <code>VkAccessFlagBits</code>. Accordingly, all new pipeline stage and access flags have been added to the corresponding 64-bit enums and no new flags have been added to the legacy 32-bit enums. While the new pipeline stage flag introduced uses bit #26 which would also fit in the legacy <code>VkPipelineStageFlagBits</code> enum, there is no real benefit to include it. Instead the bit is marked reserved.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_are_the_decode_output_picture_data_and_reconstructed_picture_data_used_to_activate_a_dpb_slot_written_to_the_same_resource"><a class="anchor" href="#_resolved_are_the_decode_output_picture_data_and_reconstructed_picture_data_used_to_activate_a_dpb_slot_written_to_the_same_resource"></a>5.2. RESOLVED: Are the decode output picture data and reconstructed picture data used to activate a DPB slot written to the same resource?</h3>
+<div class="paragraph">
+<p>When activating DPB slots with reconstructed pictures (reference picture setup), decode operations have to write the decompressed picture data to a DPB-capable video picture resource.</p>
+</div>
+<div class="paragraph">
+<p>Behavior varies across implementations in this case:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Some implementations write the outputs of the picture decompression to two separate resources: the decoded output picture and the reconstructed picture</p>
+</li>
+<li>
+<p>Some other implementations only write picture decompression results to one place, which in this case has to be a DPB picture (as it must be usable as a reference picture later on)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>A separate output could be useful if e.g. the application intends to use the decode output picture for other purposes (e.g. for window-system presentation or for texture sampling), while using the reconstructed picture in parallel to continue decoding. However, such concurrent use of the outputs is not always necessary.</p>
+</div>
+<div class="paragraph">
+<p>Trying to mandate a uniform behavior across such implementations could have negative performance implications:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If separate outputs would be required, then implementations using a single output would have to perform additional copies even though the application use cases might not need to have one.</p>
+</li>
+<li>
+<p>If a single output would be required, then applications would have to do copies if they wanted to do such concurrent processing and would not be able to take advantage of implementations that already can write separate outputs in an optimized fashion.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Instead, this extension allows implementations to support either of these modes of operations (separate or single output), as indicated by the <code>VK_VIDEO_DECODE_CAPABILITY_DPB_AND_OUTPUT_DISTINCT_BIT_KHR</code> and <code>VK_VIDEO_DECODE_CAPABILITY_DPB_AND_OUTPUT_COINCIDE_BIT_KHR</code> capability flags, respectively. Implementations are required to support only one of these two modes, and the extension even allows for implementations that may support both modes of operation.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_how_can_layered_codec_specific_decode_extensions_enable_applications_to_provide_the_necessary_codec_specific_picture_information_parameter_sets_etc_that_may_be_needed_to_perform_the_video_coding_operations"><a class="anchor" href="#_resolved_how_can_layered_codec_specific_decode_extensions_enable_applications_to_provide_the_necessary_codec_specific_picture_information_parameter_sets_etc_that_may_be_needed_to_perform_the_video_coding_operations"></a>5.3. RESOLVED: How can layered codec-specific decode extensions enable applications to provide the necessary codec-specific picture information, parameter sets, etc. that may be needed to perform the video coding operations?</h3>
+<div class="paragraph">
+<p>There are multiple points where codec-specific picture information can be provided to a video decode operation. This extension suggests the following convention:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Codec-specific decode parameters are expected to be provided in the <code>pNext</code> chain of <code>VkVideoDecodeInfoKHR</code>.</p>
+</li>
+<li>
+<p>Codec-specific reconstructed picture information is expected to be provided in the <code>pNext</code> chain of <code>VkVideoDecodeInfoKHR::pSetupReferenceSlot</code>.</p>
+</li>
+<li>
+<p>Codec-specific reference picture information is expected to be provided in the <code>pNext</code> chain of the elements of the <code>VkVideoDecodeInfoKHR::pReferenceSlots</code> array.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_can_vkcmdvideodecodekhr_only_decode_frames_what_about_field_decoding_slice_decoding_etc"><a class="anchor" href="#_resolved_can_vkcmdvideodecodekhr_only_decode_frames_what_about_field_decoding_slice_decoding_etc"></a>5.4. RESOLVED: Can <code>vkCmdVideoDecodeKHR</code> only decode frames? What about field decoding, slice decoding, etc.?</h3>
+<div class="paragraph">
+<p>This extension does not define the types of pictures or sub-picture content that can be decoded by a <code>vkCmdVideoDecodeKHR</code> command. It is expected that the codec-specific decode extensions built upon this extension define the types of pictures that can be decoded. Furthermore, both codec-specific and codec-independent extensions can expand the set of capabilities introduced here to enable more advanced use cases, as needed.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_what_is_the_effect_of_the_flags_provided_in_vkvideodecodeusageinfokhrvideousagehints"><a class="anchor" href="#_resolved_what_is_the_effect_of_the_flags_provided_in_vkvideodecodeusageinfokhrvideousagehints"></a>5.5. RESOLVED: What is the effect of the flags provided in <code>VkVideoDecodeUsageInfoKHR::videoUsageHints</code>?</h3>
+<div class="paragraph">
+<p>There are no specific behavioral effects associated with any of the video decode usage hints, so the application can specify any combination of these flags. They are included to enable the application to better communicate the intended use case scenario to the implementation.</p>
+</div>
+<div class="paragraph">
+<p>However, just like any other additional video profile information included in the <code>pNext</code> chain of <code>VkVideoProfileInfoKHR</code> structures, they are part of the video profile definition, hence whenever matching video profiles have to be provided to an API call, let that be queries or resource creation structures, the application must provide identical video decode usage hint values. This also applies if the application does not include the <code>VkVideoDecodeUsageInfoKHR</code> structure, which is treated equivalently to specifying the structure with <code>videoUsageHints</code> equal to <code>VK_VIDEO_DECODE_USAGE_DEFAULT_KHR</code> (or zero), per the usual conventions of Vulkan.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_when_is_it_mandatory_to_specify_reconstructed_picture_information_in_vkvideodecodeinfokhrpsetupreferenceslot"><a class="anchor" href="#_resolved_when_is_it_mandatory_to_specify_reconstructed_picture_information_in_vkvideodecodeinfokhrpsetupreferenceslot"></a>5.6. RESOLVED: When is it mandatory to specify reconstructed picture information in <code>VkVideoDecodeInfoKHR::pSetupReferenceSlot</code>?</h3>
+<div class="paragraph">
+<p>In the original version of this extension, specifying a non-<code>NULL</code> <code>pSetupReferenceSlot</code> parameter was only required for activating DPB slots with reference pictures, but no shipping implementation actually supported specifying <code>NULL</code> for <code>pSetupReferenceSlot</code>. In the end, some implementations turned out to require a reconstructed picture resource and/or DPB slot, even when the decoded picture is not expected to be used as a reference picture by future video decode operations, so this extension has been changed with revision 8 as follows:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Specifying reconstructed picture information (i.e. a non-<code>NULL</code> <code>pSetupReferenceSlot</code>) is made mandatory for all cases except when the video session was created with no DPB slots</p>
+</li>
+<li>
+<p>Reference picture setup (and, inherently, DPB slot activation) was changed to be subject to codec-specific behavior, meaning that specifying a non-<code>NULL</code> <code>pSetupReferenceSlot</code> will only trigger reference picture setup if the appropriate codec-specific parameters or semantics indicate so (typically in the form of marking the decoded picture as reference)</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>(2) was necessary in order to avoid unnecessary DPB slot activation and the cost of populating the reconstructed picture resource when it is distinct from the decode output and the reconstructed picture is not intended to be used as a reference picture by future video decode operations. However, as some implementations may use the reconstructed picture resource and/or DPB slot as transient storage during the decoding process, if a non-<code>NULL</code> <code>pSetupReferenceSlot</code> is specified but no reference picture setup is requested, then the contents of the reconstructed picture resource become undefined and some of the picture references associated with the reconstructed picture&#8217;s DPB slot may get invalidated.</p>
+</div>
+<div class="paragraph">
+<p>While this change breaks backward-compatibility, no implementation actually supported the removed behavior, thus it should not have any effect on shipping applications.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_does_always_requiring_the_specification_of_reconstructed_picture_information_in_vkvideodecodeinfokhrpsetupreferenceslot_have_any_undesired_performance_consequences"><a class="anchor" href="#_resolved_does_always_requiring_the_specification_of_reconstructed_picture_information_in_vkvideodecodeinfokhrpsetupreferenceslot_have_any_undesired_performance_consequences"></a>5.7. RESOLVED: Does always requiring the specification of reconstructed picture information in <code>VkVideoDecodeInfoKHR::pSetupReferenceSlot</code> have any undesired performance consequences?</h3>
+<div class="paragraph">
+<p>There may be performance implications when using <em>distinct</em> mode, i.e. using a reconstructed picture resource that is distinct from the decode output picture. As discussed in the previous issue, the explicit codec-specific opt-in for reference picture setup allows implementations to avoid consuming twice as much memory bandwidth to also write out the reconstructed picture when it is otherwise not needed. However, as it is implementation-specific whether the reconstructed picture is written to, even when no reference picture setup takes place, the reconstructed picture becomes a shared resource that the application has to synchronize in order to avoid write-after-write hazards. Accordingly, depending on the implementation, there may be some performance implications to always requiring the specification of reconstructed picture information.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_further_functionality"><a class="anchor" href="#_further_functionality"></a>6. Further Functionality</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This extension is meant to provide only common video decode functionality, thus support for individual video decode profiles using specific video compression standards is left for extensions layered on top of the infrastructure provided here.</p>
+</div>
+<div class="paragraph">
+<p>Currently the following layered extensions are available:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_KHR_video_decode_h264</code> - adds support for decoding H.264/AVC video sequences</p>
+</li>
+<li>
+<p><code>VK_KHR_video_decode_h265</code> - adds support for decoding H.265/HEVC video sequences</p>
+</li>
+<li>
+<p><code>VK_KHR_video_decode_vp9</code> - adds support for decoding VP9 video sequences</p>
+</li>
+<li>
+<p><code>VK_KHR_video_decode_av1</code> - adds support for decoding AV1 video sequences</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

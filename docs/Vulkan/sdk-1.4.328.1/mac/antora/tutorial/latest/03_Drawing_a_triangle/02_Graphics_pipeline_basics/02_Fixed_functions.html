@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Fixed functions :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../90_FAQ.html">FAQ</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li><a href="../00_Setup/00_Base_code.html">Drawing a triangle</a></li>
+    <li><a href="00_Introduction.html">Graphics pipeline basics</a></li>
+    <li><a href="02_Fixed_functions.html">Fixed functions</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/Vulkan-Tutorial/antora/modules/ROOT/pages/03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Fixed functions</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>The older graphics APIs provided the default state for most of the stages of the
+graphics pipeline. In Vulkan, you have to be explicit about most pipeline states as
+it&#8217;ll be baked into an immutable pipeline state object. In this chapter, we&#8217;ll fill
+in all the structures to configure these fixed-function operations.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_dynamic_state"><a class="anchor" href="#_dynamic_state"></a>Dynamic state</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>While <strong>most</strong> of the pipeline state needs to be baked into the pipeline state,
+a limited amount of the state <strong>can</strong> actually be changed without recreating the
+pipeline at draw time. Examples are the size of the viewport, line width
+and blend constants. If you want to use dynamic state and keep these properties out,
+then you&#8217;ll have to fill in a <code>VkPipelineDynamicStateCreateInfo</code> structure like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">std::vector dynamicStates = {
+    vk::DynamicState::eViewport,
+    vk::DynamicState::eScissor
+};
+
+vk::PipelineDynamicStateCreateInfo dynamicState{ .dynamicStateCount = static_cast&lt;uint32_t&gt;(dynamicStates.size()), .pDynamicStates = dynamicStates.data() };</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This will cause the configuration of these values to be ignored, and you will be able (and required) to specify the data at drawing time.
+This results in a more flexible setup and is widespread for things like viewport and scissor state, which would result in a more complex setup when being baked into the pipeline state.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_vertex_input"><a class="anchor" href="#_vertex_input"></a>Vertex input</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>VkPipelineVertexInputStateCreateInfo</code> structure describes the format of the vertex data that will be passed to the vertex shader.
+It describes this in roughly two ways:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Bindings: spacing between data and whether the data is per-vertex or per-instance (see <a href="https://en.wikipedia.org/wiki/Geometry_instancing">instancing</a>)</p>
+</li>
+<li>
+<p>Attribute descriptions: type of the attributes passed to the vertex shader, which binding to load them from and at which offset</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Because we&#8217;re hard coding the vertex data directly in the vertex shader, we&#8217;ll fill in this structure to specify that there is no vertex data to load for now.
+We&#8217;ll get back to it in the vertex buffer chapter.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PipelineVertexInputStateCreateInfo vertexInputInfo;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>pVertexBindingDescriptions</code> and <code>pVertexAttributeDescriptions</code> members point to an array of structs that describe the aforementioned details for loading vertex data.
+Add this structure to the <code>createGraphicsPipeline</code> function right after the <code>shaderStages</code> array.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_input_assembly"><a class="anchor" href="#_input_assembly"></a>Input assembly</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>VkPipelineInputAssemblyStateCreateInfo</code> struct describes two things: what kind of geometry will be drawn from the vertices and if primitive restart should be enabled.
+The former is specified in the <code>topology</code> member and can have values like:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_PRIMITIVE_TOPOLOGY_POINT_LIST</code>: points from vertices</p>
+</li>
+<li>
+<p><code>VK_PRIMITIVE_TOPOLOGY_LINE_LIST</code>: line from every two vertices without reuse</p>
+</li>
+<li>
+<p><code>VK_PRIMITIVE_TOPOLOGY_LINE_STRIP</code>: the end vertex of every line is used as start vertex for the next line</p>
+</li>
+<li>
+<p><code>VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST</code>: triangle from every three vertices without reuse</p>
+</li>
+<li>
+<p><code>VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP</code>: the second and third vertex of every triangle is used as first two vertices of the next triangle</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Normally, the vertices are loaded from the vertex buffer by index in sequential order, but with an <em>element buffer</em> you can specify the indices to use yourself.
+This allows you to perform optimizations like reusing vertices.
+If you set the <code>primitiveRestartEnable</code>  member to <code>VK_TRUE</code>, then it&#8217;s possible to break up lines and triangles in the <code>_STRIP</code> topology modes by using a special index of <code>0xFFFF</code> or <code>0xFFFFFFFF</code>.</p>
+</div>
+<div class="paragraph">
+<p>We intend to draw triangles throughout this tutorial, so we&#8217;ll stick to the following data for the structure:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PipelineInputAssemblyStateCreateInfo inputAssembly{  .topology = vk::PrimitiveTopology::eTriangleList };</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_viewports_and_scissors"><a class="anchor" href="#_viewports_and_scissors"></a>Viewports and scissors</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A viewport basically describes the region of the framebuffer that the output will be rendered to.
+This will almost always be <code>(0, 0)</code> to <code>(width, height)</code> and in this tutorial that will also be the case.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::Viewport{ 0.0f, 0.0f, static_cast&lt;float&gt;(swapChainExtent.width), static_cast&lt;float&gt;(swapChainExtent.height), 0.0f, 1.0f };</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Remember that the size of the swap chain and its images may differ from the <code>WIDTH</code> and <code>HEIGHT</code> of the window.
+The swap chain images will be used as framebuffers later on, so we should stick to their size.</p>
+</div>
+<div class="paragraph">
+<p>The <code>minDepth</code> and <code>maxDepth</code> values specify the range of depth values to use for the framebuffer.
+These values must be within the <code>[0.0f, 1.0f]</code> range, but <code>minDepth</code> may be higher than <code>maxDepth</code>.
+If you aren&#8217;t doing anything special, then you should stick to the standard values of <code>0.0f</code> and <code>1.0f</code>.</p>
+</div>
+<div class="paragraph">
+<p>While viewports define the transformation from the image to the framebuffer, scissor rectangles define in which region pixels will actually be stored.
+The rasterizer will discard any pixels outside the scissored rectangles.
+They function like a filter rather than a transformation.
+The difference is illustrated below.
+Note that the left scissored rectangle is just one of the many possibilities that would result in that image, as long as it&#8217;s larger than the viewport.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../_images/images/viewports_scissors.png" alt="viewports scissors">
+</div>
+</div>
+<div class="paragraph">
+<p>So if we wanted to draw to the entire framebuffer, we would specify a scissor rectangle that covers it entirely:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::Rect2D{ vk::Offset2D{ 0, 0 }, swapChainExtent }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Viewport(s) and scissor rectangle(s) can either be specified as a static part of the pipeline or as a dynamic state set in the command buffer.
+While the former is more in line with the other states, it&#8217;s often convenient to make viewport and scissor state dynamic as it gives you a lot more flexibility.
+This is widespread and all implementations can handle this dynamic state without a performance penalty.</p>
+</div>
+<div class="paragraph">
+<p>When opting for dynamic viewport(s) and scissor rectangle(s), you need to
+enable the respective dynamic states for the pipeline:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">std::vector dynamicStates = {
+    vk::DynamicState::eViewport,
+    vk::DynamicState::eScissor
+};
+vk::PipelineDynamicStateCreateInfo dynamicState({}, dynamicStates.size(), dynamicStates.data());</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And then you only need to specify their count at pipeline creation time:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PipelineViewportStateCreateInfo viewportState({}, 1, {}, 1);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The actual viewport(s) and scissor rectangle(s) will then later be set up at drawing time.</p>
+</div>
+<div class="paragraph">
+<p>With dynamic state, it&#8217;s even possible to specify different viewports and or scissor rectangles within a single command buffer.</p>
+</div>
+<div class="paragraph">
+<p>Without dynamic state, the viewport and scissor rectangle need to be set in the pipeline using the <code>VkPipelineViewportStateCreateInfo</code> struct.
+This makes the viewport and scissor rectangle for this pipeline immutable.
+Any changes required to these values would require a new pipeline to be created with the new values.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PipelineViewportStateCreateInfo viewportState{ .viewportCount = 1, .scissorCount = 1 };</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Independent of how you set them, it&#8217;s possible to use multiple viewports and scissor rectangles on some graphics cards, so the structure members reference an array of them.
+Using multiple requires enabling a GPU feature (see logical device creation).</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_rasterizer"><a class="anchor" href="#_rasterizer"></a>Rasterizer</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The rasterizer takes the geometry shaped by the vertices from the vertex shader and turns it into fragments to be colored by the fragment shader.
+It also performs <a href="https://en.wikipedia.org/wiki/Z-buffering">depth testing</a>, <a href="https://en.wikipedia.org/wiki/Back-face_culling">face culling</a> and the scissor test, and it can be configured to output fragments that fill entire polygons or just the edges (wireframe rendering).
+All this is configured using the <code>VkPipelineRasterizationStateCreateInfo</code> structure.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PipelineRasterizationStateCreateInfo rasterizer({}, vk::False);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If <code>depthClampEnable</code> is set to <code>VK_TRUE</code>, then fragments that are beyond
+the near and far planes are clamped to them as opposed to discarding them.
+This is useful in some special cases like shadow maps.
+Using this requires enabling a GPU feature.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PipelineRasterizationStateCreateInfo rasterizer({}, vk::False, vk::False);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If <code>rasterizerDiscardEnable</code> is set to <code>VK_TRUE</code>, then geometry never passes through the rasterizer stage.
+This basically disables any output to the framebuffer.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PipelineRasterizationStateCreateInfo rasterizer{  .depthClampEnable = vk::False, .rasterizerDiscardEnable = vk::False,
+ .polygonMode = vk::PolygonMode::eFill, .cullMode = vk::CullModeFlagBits::eBack,
+ .frontFace = vk::FrontFace::eClockwise, .depthBiasEnable = vk::False,
+ .depthBiasSlopeFactor = 1.0f, .lineWidth = 1.0f };</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>polygonMode</code> determines how fragments are generated for geometry.
+The following modes are available:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_POLYGON_MODE_FILL</code>: fill the area of the polygon with fragments</p>
+</li>
+<li>
+<p><code>VK_POLYGON_MODE_LINE</code>: polygon edges are drawn as lines</p>
+</li>
+<li>
+<p><code>VK_POLYGON_MODE_POINT</code>: polygon vertices are drawn as points</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Using any mode other than fill requires enabling a GPU feature.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">rasterizer.lineWidth = 1.0f;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>lineWidth</code> member is straightforward, it describes the thickness of lines in terms of number of fragments.
+The maximum line width that is supported depends on the hardware and any line thicker than <code>1.0f</code> requires you to enable the <code>wideLines</code> GPU feature.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PipelineRasterizationStateCreateInfo rasterizer({}, vk::False, vk::False, vk::PolygonMode::eFill,
+        vk::CullModeFlagBits::eBack, vk::FrontFace::eClockwise);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>cullMode</code> variable determines the type of face culling to use.
+You can disable culling, cull the front faces, cull the back faces or both.
+The <code>frontFace</code> variable specifies the vertex order for the faces to be considered front-facing and can be clockwise or counterclockwise.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PipelineRasterizationStateCreateInfo rasterizer({}, vk::False, vk::False, vk::PolygonMode::eFill,
+        vk::CullModeFlagBits::eBack, vk::FrontFace::eClockwise, vk::False);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The rasterizer can alter the depth values by adding a constant value or biasing them based on a fragment&#8217;s slope.
+This is sometimes used for shadow mapping, but we won&#8217;t be using it.
+Just set <code>depthBiasEnable</code> to <code>VK_FALSE</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_multisampling"><a class="anchor" href="#_multisampling"></a>Multisampling</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>VkPipelineMultisampleStateCreateInfo</code> struct configures multisampling, which is one of the ways to perform <a href="https://en.wikipedia.org/wiki/Multisample_anti-aliasing">antialiasing</a>.
+It works by combining the fragment shader results of multiple polygons that rasterize to the same pixel.
+This mainly occurs along edges, which is also where the most noticeable aliasing artifacts occur.
+Because it doesn&#8217;t need to run the fragment shader multiple times if only one polygon maps to a pixel, it is significantly less expensive than simply rendering to a higher resolution and then downscaling.
+Enabling it requires enabling a GPU feature.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PipelineMultisampleStateCreateInfo multisampling{.rasterizationSamples = vk::SampleCountFlagBits::e1, .sampleShadingEnable = vk::False};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We&#8217;ll revisit multisampling in later chapter, for now let&#8217;s keep it disabled.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_depth_and_stencil_testing"><a class="anchor" href="#_depth_and_stencil_testing"></a>Depth and stencil testing</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If you are using a depth and/or stencil buffer, then you also need to configure the depth and stencil tests using <code>VkPipelineDepthStencilStateCreateInfo</code>.
+We don&#8217;t have one right now, so we can simply pass a <code>nullptr</code> instead of a pointer to such a struct.
+We&#8217;ll get back to it in the depth buffering chapter.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_color_blending"><a class="anchor" href="#_color_blending"></a>Color blending</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>After a fragment shader has returned a color, it needs to be combined with the color that is already in the framebuffer.
+This transformation is known as color blending, and there are two ways to do it:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Mix the old and new value to produce a final color</p>
+</li>
+<li>
+<p>Combine the old and new value using a bitwise operation</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>There are two types of structs to configure color blending.
+The first struct, <code>VkPipelineColorBlendAttachmentState</code> contains the configuration per attached framebuffer and the second struct, <code>VkPipelineColorBlendStateCreateInfo</code> contains the <em>global</em> color blending settings.
+In our case, we only have one framebuffer:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PipelineColorBlendAttachmentState colorBlendAttachment;
+colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
+colorBlendAttachment.blendEnable = vk::False;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This per-framebuffer struct allows you to configure the first way of color blending.
+The operations that will be performed are best demonstrated using the following pseudocode:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">if (blendEnable) {
+    finalColor.rgb = (srcColorBlendFactor * newColor.rgb) &lt;colorBlendOp&gt; (dstColorBlendFactor * oldColor.rgb);
+    finalColor.a = (srcAlphaBlendFactor * newColor.a) &lt;alphaBlendOp&gt; (dstAlphaBlendFactor * oldColor.a);
+} else {
+    finalColor = newColor;
+}
+
+finalColor = finalColor &amp; colorWriteMask;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If <code>blendEnable</code> is set to <code>VK_FALSE</code>, then the new color from the fragment shader is passed through unmodified.
+Otherwise, the two mixing operations are performed to compute a new color.
+The resulting color is AND&#8217;d with the <code>colorWriteMask</code> to determine which channels are actually passed through.</p>
+</div>
+<div class="paragraph">
+<p>The most common way to use color blending is to implement alpha blending, where we want the new color to be blended with the old color based on its opacity.
+The <code>finalColor</code> should then be computed as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">finalColor.rgb = newAlpha * newColor + (1 - newAlpha) * oldColor;
+finalColor.a = newAlpha.a;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This can be achieved with the following parameters:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">colorBlendAttachment.blendEnable = vk::True;
+colorBlendAttachment.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha;
+colorBlendAttachment.dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
+colorBlendAttachment.colorBlendOp = vk::BlendOp::eAdd;
+colorBlendAttachment.srcAlphaBlendFactor = vk::BlendFactor::eOne;
+colorBlendAttachment.dstAlphaBlendFactor = vk::BlendFactor::eZero;
+colorBlendAttachment.alphaBlendOp = vk::BlendOp::eAdd;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can find all the possible operations in the <code>VkBlendFactor</code> and <code>VkBlendOp</code> enumerations in the specification.</p>
+</div>
+<div class="paragraph">
+<p>The second structure references the array of structures for all the
+framebuffers and allows you to set blend constants that you can use as blend
+ factors in the aforementioned calculations.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PipelineColorBlendStateCreateInfo colorBlending{.logicOpEnable = vk::False, .logicOp =  vk::LogicOp::eCopy, .attachmentCount = 1, .pAttachments =  &amp;colorBlendAttachment };</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you want to use the second method of blending (a bitwise combination), then you should set <code>logicOpEnable</code> to <code>VK_TRUE</code>.
+The bitwise operation can then be specified in the <code>logicOp</code> field.
+Note that this will automatically disable the first method, as if you had set <code>blendEnable</code> to <code>VK_FALSE</code> for every attached framebuffer!
+The <code>colorWriteMask</code> will also be used in this mode to determine which channels in the framebuffer will actually be affected.
+It is also possible to disable both modes, as we&#8217;ve done here, in which case the fragment colors will be written to the framebuffer unmodified.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_pipeline_layout"><a class="anchor" href="#_pipeline_layout"></a>Pipeline layout</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You can use <code>uniform</code> values in shaders, which are globals similar to dynamic state variables that can be changed at drawing time to alter the behavior of your shaders without having to recreate them.
+They are commonly used to pass the transformation matrix to the vertex shader, or to create texture samplers in the fragment shader.</p>
+</div>
+<div class="paragraph">
+<p>These uniform values need to be specified during pipeline creation by creating a <code>VkPipelineLayout</code> object.
+Even though we won&#8217;t be using them until a future chapter, we are still required to create an empty pipeline layout.</p>
+</div>
+<div class="paragraph">
+<p>Create a class member to hold this object because we&#8217;ll refer to it from other functions at a later point in time:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::raii::PipelineLayout pipelineLayout = nullptr;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And then create the object in the <code>createGraphicsPipeline</code> function:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PipelineLayoutCreateInfo pipelineLayoutInfo{  .setLayoutCount = 0, .pushConstantRangeCount = 0 };
+
+pipelineLayout = vk::raii::PipelineLayout( device, pipelineLayoutInfo );</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The structure also specifies <em>push constants</em>, which are another way of passing dynamic values to shaders that we may get into in a future chapter.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_conclusion"><a class="anchor" href="#_conclusion"></a>Conclusion</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>That&#8217;s it for all the fixed-function state!
+It&#8217;s a lot of work to set all of this up from scratch, but the advantage is that we&#8217;re now nearly fully aware of everything that is going on in the graphics pipeline!
+This reduces the chance of running into unexpected behavior because the default state of certain components is not what you expect.</p>
+</div>
+<div class="paragraph">
+<p>There is, however, one more object to create before we can finally create the graphics pipeline, and that is a <a href="03_Render_passes.html" class="xref page">render pass</a>.</p>
+</div>
+<div class="paragraph">
+<p><a href="../../_attachments/10_fixed_functions.cpp">C&#43;&#43; code</a> /
+<a href="../../_attachments/09_shader_base.slang">Slang shader</a> /
+<a href="../../_attachments/09_shader_base.vert">GLSL Vertex shader</a> /
+<a href="../../_attachments/09_shader_base.frag">GLSL Fragment shader</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css"></script>
+<script async src="../../../../search-index.js"></script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

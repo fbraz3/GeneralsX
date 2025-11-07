@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Introduction :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:glsl" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="glsl" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">OpenGL Shading Language Specification</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="preamble.html">Preamble</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="overview.html">Overview of Shading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="basics.html">Basics</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="variables.html">Variables and Types</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="operators.html">Operators and Expressions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="statements.html">Statements and Structure</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="builtins.html">Built-In Variables</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="builtinfunctions.html">Built-In Functions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="grammar.html">Shading Language Grammar</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="acknowledgements.html">Acknowledgments</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="references.html">Normative References</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="spirvmappings.html">Non-Normative SPIR-V Mappings</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">OpenGL Shading Language Specification</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">OpenGL Shading Language Specification</a></li>
+    <li><a href="introduction.html">Introduction</a></li>
+  </ul>
+</nav>
+<div class="edit-this-page"><a href="file:///home/john/work/repos/Vulkan-Site/GLSL/antora/modules/ROOT/pages/chapters/introduction.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Introduction</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This document specifies only version 4.60 of the OpenGL Shading Language (GLSL).
+It requires __VERSION__ to substitute 460, and requires
+<strong>#version</strong> to accept only
+<code>460</code>.
+If <strong>#version</strong> is declared with a smaller number, the language accepted is a
+previous version of the shading language, which will be supported depending
+on the version and type of context in the API.
+See the <a href="references.html#references" class="xref page">normative references</a> for details on what language
+versions are supported.</p>
+</div>
+<div class="paragraph">
+<p>Previous versions of the OpenGL Shading Language, as well as the OpenGL ES Shading Language,
+are not strict subsets of the version specified here, particularly with
+respect to precision, name-hiding rules, and treatment of interface
+variables.
+See the specification corresponding to a particular language version for
+details specific to that version of the language.</p>
+</div>
+<div class="paragraph">
+<p>Throughout, when generating SPIR-V for consumption by the Vulkan API
+(see <a href="references.html#references" class="xref page">normative references</a>), this will be said to be
+<em>targeting Vulkan</em>.</p>
+</div>
+<div class="paragraph">
+<p>While this specification and the OpenGL Specification are normative for OpenGL Shading Language, for
+SPIR-V generation it is still the SPIR-V specification and the SPIR-V client
+API specification that are normative for the generated SPIR-V.
+See the <a href="references.html#references" class="xref page">normative references</a> for further detail.</p>
+</div>
+<div class="paragraph">
+<p>For SPIR-V generation, the SPIR-V client API specifies the commands used to
+manipulate SPIR-V shaders.</p>
+</div>
+<div class="paragraph">
+<p>Independent offline tool chains will compile GLSL down to the SPIR-V
+intermediate language.
+SPIR-V generation is not enabled with a <strong>#extension</strong>, <strong>#version</strong>, or a
+profile.
+Instead, use of GLSL for SPIR-V is determined by offline tool-chain use.
+See the documentation of such tools to see how to request generation of
+SPIR-V for its client API.</p>
+</div>
+<div class="paragraph">
+<p>GLSL &#8594; SPIR-V compilers must be directed as to what SPIR-V <strong>Capabilities</strong>
+are legal at run-time and give errors for GLSL feature use outside those
+capabilities.
+This is also true for implementation-dependent limits that can be error
+checked by the front-end against built-in constants present in the GLSL
+source: the front-end can be informed of such limits, and report errors when
+they are exceeded.</p>
+</div>
+<div class="paragraph">
+<p>SPIR-V features that are not controlled by a SPIR-V capability, but do have an
+equivalent GLSL counterpart (stages, built-in functions, types, limits, etc.)
+are only expected to work on OpenGL drivers that support the GLSL counterpart.</p>
+</div>
+<div class="paragraph">
+<p>All references in this specification to the <a href="references.html#references" class="xref page">OpenGL Specification</a> are to
+the Core profile of version 4.6, unless a different profile is
+specified.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="changes"><a class="anchor" href="#changes"></a>Changes</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_changes_from_glsl_4_6_revision_8"><a class="anchor" href="#_changes_from_glsl_4_6_revision_8"></a>Changes from GLSL 4.6 revision 8</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Public GLSL issue #198: Clarify that logical operators operate only on scalars.</p>
+</li>
+<li>
+<p>Private GLSL issue #59: Fix incorrect domain of <strong>atanh</strong> function.</p>
+</li>
+<li>
+<p>Private GLSL issue #66: Add a note clarifying that uninitialized <strong>out</strong> parameters
+will be copied, causing function arguments to become undefined.</p>
+</li>
+<li>
+<p>Private GLSL issue #68: Clarifying changes to the &#8220;<a href="variables.html#arrays" class="xref page">Arrays</a>&#8221; section.
+The section is reorganised for ease of editing and certain rules are clarified.
+The rules for unsized arrays are included for ES even though they cannot be
+declared because they apply to certain pre-declared uses.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_changes_from_glsl_4_6_revision_7"><a class="anchor" href="#_changes_from_glsl_4_6_revision_7"></a>Changes from GLSL 4.6 revision 7</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Private GLSL issue #57: Clarify that <strong>imageLoad</strong> precision is determined (where
+applicable) only by the precision of the image argument.</p>
+</li>
+<li>
+<p>Public GLSL issue #164: Clarify the precision expected from <strong>mod</strong>.</p>
+</li>
+<li>
+<p>Public GLSL issue #8: Clarify when compute-shader variables may be accessed.</p>
+</li>
+<li>
+<p>Public GLSL issue #13: Clarify bit-width requirements for location aliasing.</p>
+</li>
+<li>
+<p>Public GLSL issue #161: Fix incorrect layout qualifier example.</p>
+</li>
+<li>
+<p>Private GLSL issue #30: Clarify that struct members' precision is always fixed
+as part of the struct type declaration.</p>
+</li>
+<li>
+<p>Private GLSL issue #49: Clarify support for unary <strong>+</strong>.</p>
+</li>
+<li>
+<p>Private GLSL issue #43: Clarify precisions of constructors.</p>
+</li>
+<li>
+<p>Private GLSL issue #53: Clarify which qualifiers are allowed on
+<a href="variables.html#interface-blocks" class="xref page">Interface Blocks</a>.</p>
+</li>
+<li>
+<p>Private GLSL issue #31: Removed incorrect example of 'invariant' applied to
+'in' variable.</p>
+</li>
+<li>
+<p>Fix public GLSL issue #83: It is only opaque-type variables that are
+required to keep their memory qualifiers (e.g., <strong>readonly</strong>) when
+passed to a user-defined function.</p>
+</li>
+<li>
+<p>Clarify error conditions when declaring atomic counters.</p>
+</li>
+<li>
+<p>Subnormal values might be flushed to 0.0 by <strong>intBitsToFloat</strong>().</p>
+</li>
+<li>
+<p>Clarified that 'precise' cannot qualify structure definitions.</p>
+</li>
+<li>
+<p>Private Bugzilla #15755: Clarify storage size of precision qualified
+<a href="variables.html#interface-blocks" class="xref page">interface block</a> members in application visible memory.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_changes_from_glsl_4_6_revision_6"><a class="anchor" href="#_changes_from_glsl_4_6_revision_6"></a>Changes from GLSL 4.6 revision 6</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Incorporated the GL_KHR_vulkan_glsl specification.</p>
+</li>
+<li>
+<p>Add note in the introduction about presence in drivers of SPIR-V features,
+as they relate to GLSL features.</p>
+</li>
+<li>
+<p>Clarify it is same location that triggers default-uniform block matching
+rules.
+See <a href="variables.html#uniform-variable-layout-qualifiers" class="xref page">Uniform Variable Layout Qualifiers</a>.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_changes_from_glsl_4_6_revision_5"><a class="anchor" href="#_changes_from_glsl_4_6_revision_5"></a>Changes from GLSL 4.6 revision 5</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Private GLSL issue #34: Clarify/consolidate implicit conversion rules from int &#8594; uint
+to be the same as explicit construction.</p>
+</li>
+<li>
+<p>Private GLSL issue #24: Clarify that <strong>barrier</strong>() by itself is enough to synchronize
+both control flow and memory accesses to <strong>shared</strong> variables and tessellation
+control output variables. For other memory accesses an additional memory
+barrier is still required.</p>
+</li>
+<li>
+<p>Normatively reference IEEE-754 for definitions of floating-point formats.</p>
+</li>
+<li>
+<p>Private GLSL issue 36: <strong>refract</strong> function on <strong>double</strong> types requires eta
+argument to have type <strong>double</strong>.</p>
+</li>
+<li>
+<p>Clarify restrictions on input variables in tessellation and geometry stages.</p>
+</li>
+<li>
+<p>Private GLSL issue 15: Clarify the ordering of bindings for arrays of arrays.</p>
+</li>
+<li>
+<p>Private GLSL issue 14: Uniform variables need only match at link time if they
+are statically used.</p>
+</li>
+<li>
+<p>For <strong>precise</strong> computations, the controlling expressions for
+control flow and ternary operators (<strong>?:</strong>) are not included.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_changes_from_glsl_4_6_revision_4"><a class="anchor" href="#_changes_from_glsl_4_6_revision_4"></a>Changes from GLSL 4.6 revision 4</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Private bug 13012: Clarified that builtin uniform variables might only
+be available in the fragment stage.</p>
+</li>
+<li>
+<p>Private bug 13837: Ternary and sequence operators may operate on <strong>void</strong> types.</p>
+</li>
+<li>
+<p>Clarified that errors arising from preprocessing must be returned at compile time.</p>
+</li>
+<li>
+<p>Clarified that access to any part of a variable constitutes a static use.</p>
+</li>
+<li>
+<p>Private GLSL issue 19: A statement is required following any label at the end of a <strong>switch</strong>.</p>
+</li>
+<li>
+<p>Private GLSL issue 26: <strong>noise</strong> is not valid when compiling for SPIR-V.</p>
+</li>
+<li>
+<p>Private GLSL issue 20: <strong>length</strong>() expressions returning a constant value may not
+contain side effects.</p>
+</li>
+<li>
+<p>Public OpenGL-API issue 7: Variables can be declared as both <strong>readonly</strong>
+and <strong>writeonly</strong>.</p>
+</li>
+<li>
+<p>Private GLSL issue 16: Use of constant expressions within <strong>#line</strong> directives is undefined.</p>
+</li>
+<li>
+<p>Corrected return type of <strong>imageAtomicExchange</strong> on <strong>float</strong> images.</p>
+</li>
+<li>
+<p>Private GLSL issue 32: Remove <strong>length</strong>() method contradiction:
+Non runtime-sized arrays only support <strong>length</strong>() on explicitly
+sized arrays.</p>
+</li>
+<li>
+<p>Private GLSL issue 21: Clarified the l-value restriction on <strong>interpolateAt</strong>.</p>
+</li>
+<li>
+<p>Private OpenGL-API issue 53: Clarified bit-width requirements for location aliasing.</p>
+</li>
+<li>
+<p>Public GLSL issue 15: <strong>gl_in</strong> can be redeclared using unsized-array syntax.</p>
+</li>
+<li>
+<p>Clarification of the formats needed for DEPTH_COMPONENT and
+STENCIL_COMPONENT for depth/stencil textures.</p>
+</li>
+<li>
+<p>Added image formats to the layout-qualifier table in the
+<a href="variables.html#layout-qualifiers" class="xref page">Layout Qualifiers</a> section.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_changes_from_glsl_4_6_revision_3"><a class="anchor" href="#_changes_from_glsl_4_6_revision_3"></a>Changes from GLSL 4.6 revision 3</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Private GLSL issue 13: Fix misspelling of <strong>allInvocationsEqual</strong>().
+(The one in the table was incorrectly listed as <strong>anyInvocationsEqual</strong>(),
+other spellings were correct.)</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_summary_of_changes_from_revision_7_of_glsl_version_4_50"><a class="anchor" href="#_summary_of_changes_from_revision_7_of_glsl_version_4_50"></a>Summary of Changes from Revision 7 of GLSL Version 4.50</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Incorporated the GL_ARB_shader_atomic_counter_ops extension.</p>
+</li>
+<li>
+<p>Incorporated the GL_ARB_shader_draw_parameters extension.</p>
+</li>
+<li>
+<p>Incorporated the GL_ARB_shader_group_vote extension.</p>
+</li>
+<li>
+<p>Incorporated the GL_ARB_gl_spirv extension.</p>
+</li>
+<li>
+<p>Private Bug 16070: Allow extra semi-colons at global scope.</p>
+</li>
+<li>
+<p>Private GLSL Issue 5: Be explicit that &#8220;fail to link&#8221; is really
+&#8220;compile-time or link-time error&#8221;, for some forms of error.</p>
+</li>
+<li>
+<p>Private GLSL Issue 7: Change <em>gl_MaxComputeUniformComponents</em> to 1024.</p>
+</li>
+<li>
+<p>Private OpenGL API Issue 35: Require location on transparent individual
+uniform variables for SPIR-V.</p>
+</li>
+<li>
+<p>Private GLSL Issue 8: Be more clear an <strong>interpolateAt</strong>() interpolant can
+be a structure member.</p>
+</li>
+<li>
+<p>Private GLSL Issue 9: Specify how <strong>xfb_buffer</strong> interacts with a block
+array: the capturing buffer increments for each block array element.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="overview"><a class="anchor" href="#overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This document describes <em>The OpenGL Shading Language, version 4.60</em>.</p>
+</div>
+<div class="paragraph">
+<p>Independent compilation units written in this language are called <em>shaders</em>.
+A <em>program</em> is a set of shaders that are compiled and linked
+together,
+completely creating one or more of the programmable stages of the
+API pipeline.
+All the shaders for a single programmable stage must be within the same
+program.
+A complete set of programmable stages can be put into a single program or
+the stages can be partitioned across multiple programs.
+The aim of this document is to thoroughly specify the programming language.
+The <a href="references.html#references" class="xref page">normative references</a> will specify the API entry points
+used to manipulate and communicate with programs and shaders.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="error-handling"><a class="anchor" href="#error-handling"></a>Error Handling</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Compilers, in general, accept programs that are ill-formed, due to the
+impossibility of detecting all ill-formed programs.
+Portability is only ensured for well-formed programs, which this
+specification describes.
+Compilers are encouraged to detect ill-formed programs and issue diagnostic
+messages, but are not required to do so for all cases.
+Compile-time errors must be returned for lexically or grammatically
+incorrect shaders.
+Other errors are reported at compile time or link time as indicated.
+Code that is &#8220;dead&#8221; must still be error checked.
+For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">if (false)     // changing false to true cannot uncover additional errors
+    statement; // statement must be error checked regardless</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="typographical-conventions"><a class="anchor" href="#typographical-conventions"></a>Typographical Conventions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Italic, bold, and font choices have been used in this specification
+primarily to improve readability.
+Code fragments use a fixed width font.
+Identifiers embedded in text are italicized.
+Keywords embedded in text are bold.
+Operators are called by their name, followed by their symbol in bold in
+parentheses.
+The clarifying grammar fragments in the text use bold for literals and
+italics for non-terminals.
+The official grammar in &#8220;<a href="grammar.html#shading-language-grammar" class="xref page">Shading Language Grammar</a>&#8221; uses all capitals for terminals and lower case for
+non-terminals.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="deprecation"><a class="anchor" href="#deprecation"></a>Deprecation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The OpenGL Shading Language has deprecated some features.
+These are clearly called out in this specification as &#8220;deprecated&#8221;.
+They are still present in this version of the language, but are targeted for
+potential removal in a future version of the shading language.
+The OpenGL API has a forward compatibility mode that will disallow use of
+deprecated features.
+If compiling in a mode where use of deprecated features is disallowed, their
+use causes compile-time or link-time errors.
+See the <a href="references.html#references" class="xref page">OpenGL Specification</a> for details on what causes deprecated
+language features to be accepted or to return an error.</p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

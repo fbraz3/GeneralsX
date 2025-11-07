@@ -1,0 +1,2914 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.23">
+<meta name="author" content="The Khronos® Vulkan  Working Group">
+<title>Vulkan® 1.4.328 - A Specification (with all registered extensions)</title>
+<link rel="stylesheet" href="style0.css" type="text/css">
+<link rel="stylesheet" href="style1.css" type="text/css">
+<link rel="stylesheet" href="style2.css" type="text/css">
+
+<!-- dragged in by font-awesome css included by asciidoctor, but preloaded in this extension for convenience -->
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.woff2?v=4.7.0" as="font" type="font/woff2" crossorigin="">
+
+<!-- Note: Chrome needs crossorigin="" even for same-origin fonts -->
+<link rel="preload" href="../katex/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Main-Italic.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="../katex/fonts/KaTeX_Typewriter-Regular.woff2" as="font" type="font/woff2" crossorigin=""><link rel="stylesheet" href="../katex/katex.min.css">
+<!--ChunkedSearchJSMarker-->
+<link href="chunked.css?4" rel="stylesheet">
+<script>var searchindexurl = 'search.index.js?4' + (document.title.replace(/[^0-9.]/g, ''));</script>
+<script src="chunked.js?4"></script>
+<link rel="stylesheet" href="style3.css" type="text/css">
+<script>
+    function hideElement(e){
+        e.setAttribute("hidden", "");
+        e.classList.add("hidden");
+    }
+
+    function unhideElement(e){
+        e.classList.remove("hidden");
+        e.removeAttribute("hidden");
+    }
+
+    function hideLoadableContent(){
+        unhideElement( document.getElementById("loading_msg") );
+        for( var loadable of document.getElementsByClassName("loadable") ) hideElement(loadable);
+    }
+
+    function unhideLoadableContent(){
+        hideElement( document.getElementById("loading_msg") );
+        for( var loadable of document.getElementsByClassName("loadable") ) unhideElement(loadable);
+    }
+
+    window.addEventListener("load", unhideLoadableContent);
+</script>
+<link rel="stylesheet" href="asciidoctor-chunker.css" type="text/css"></head>
+<body class="book toc2 toc-left">
+<div style="text-align: center;">
+    <span class="image"><img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+Cjxzdmcgdmlld0JveD0iMCAwIDExNTAgMzI2IiB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHhtbDpzcGFjZT0icHJlc2VydmUiIHN0eWxlPSJmaWxsLXJ1bGU6ZXZlbm9kZDtjbGlwLXJ1bGU6ZXZlbm9kZDtzdHJva2UtbGluZWpvaW46cm91bmQ7c3Ryb2tlLW1pdGVybGltaXQ6MS40MTQyMTsiPgogICAgPGcgaWQ9IkFydGJvYXJkMSIgdHJhbnNmb3JtPSJtYXRyaXgoMC45NTUxNSwwLDAsMC44ODgyODMsLTQwLjExNjMsLTMwLjIwMTYpIj4KICAgICAgICA8cmVjdCB4PSI0MiIgeT0iMzQiIHdpZHRoPSIxMjA0IiBoZWlnaHQ9IjM2NyIgc3R5bGU9ImZpbGw6bm9uZTsiLz4KICAgICAgICA8ZyB0cmFuc2Zvcm09Im1hdHJpeCgxLjA0Njk2LDAsMCwxLjEyNTc3LC00Ni45OTEzLC01MC40MzI1KSI+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik03MjQuMSwzODUuMDZMNjgzLjUzLDM4NS4wNkM2ODMuNTMsMzg1LjA2IDY4My41MywyODYuMDkgNjgzLjUzLDI1NS40QzY5Ni40OSwyNjIuNjIgNzEzLjYyLDI3NS45NCA3MjQuMSwyODguNzJMNzI0LjEsMzg1LjA2WiIgc3R5bGU9ImZpbGw6cmdiKDE3MiwyMiw0NCk7ZmlsbC1ydWxlOm5vbnplcm87Ii8+CiAgICAgICAgICAgIDxnPgogICAgICAgICAgICAgICAgPHBhdGggZD0iTTM4MS43NSwzODUuMDZMMzMxLjE3LDM4NS4wNkwyNjUuMTYsMTgxLjAzTDMxMS4xNywxODEuMDNMMzU2LjYxLDMyNC40OEwzNTcuMTgsMzI0LjQ4TDQwMy4xOCwxODEuMDNMNDQ5LjQ3LDE4MS4wM0wzODEuNzUsMzg1LjA2WiIgc3R5bGU9ImZpbGw6cmdiKDE3MiwyMiw0NCk7ZmlsbC1ydWxlOm5vbnplcm87Ii8+CiAgICAgICAgICAgICAgICA8cGF0aCBkPSJNNTg1LjUxLDM4NS4wNkw1NDYuOTMsMzg1LjA2TDU0Ni45MywzNjQuNDlMNTQ2LjA4LDM2NC40OUM1NDAuOTMsMzczLjA3IDUzNC4yNywzNzkuMjYgNTI2LjA3LDM4My4wN0M1MTcuODgsMzg2Ljg4IDUwOS41LDM4OC43OCA1MDAuOTIsMzg4Ljc4QzQ5MC4wNiwzODguNzggNDgxLjE2LDM4Ny4zNSA0NzQuMiwzODQuNUM0NjcuMjUsMzgxLjY1IDQ2MS43NywzNzcuNTkgNDU3Ljc3LDM3Mi4zNkM0NTMuNzYsMzY3LjEyIDQ1MC45NSwzNjAuNzQgNDQ5LjMzLDM1My4yMUM0NDcuNzIsMzQ1LjY5IDQ0Ni45MSwzMzcuMzUgNDQ2LjkxLDMyOC4yMUw0NDYuOTEsMjM3LjMzTDQ4Ny40OSwyMzcuMzNMNDg3LjQ5LDMyMC43N0M0ODcuNDksMzMyLjk2IDQ4OS40LDM0Mi4wNiA0OTMuMjEsMzQ4LjA2QzQ5Ny4wMiwzNTQuMDcgNTAzLjc4LDM1Ny4wNiA1MTMuNSwzNTcuMDZDNTI0LjU1LDM1Ny4wNiA1MzIuNTUsMzUzLjc4IDUzNy41LDM0Ny4yQzU0Mi40NiwzNDAuNjIgNTQ0LjkzLDMyOS44MSA1NDQuOTMsMzE0Ljc2TDU0NC45MywyMzcuMzJMNTg1LjUyLDIzNy4zMkw1ODUuNTIsMzg1LjA2TDU4NS41MSwzODUuMDZaIiBzdHlsZT0iZmlsbDpyZ2IoMTcyLDIyLDQ0KTtmaWxsLXJ1bGU6bm9uemVybzsiLz4KICAgICAgICAgICAgPC9nPgogICAgICAgICAgICA8cGF0aCBkPSJNNzMwLjg0LDI5Ni4xOUw3MzAuNzQsMjkwLjQ3TDc4MS44OSwyMzcuMzNMODI5LjkxLDIzNy4zM0w3NzQuMTgsMjkxLjYyTDgzNi4xOSwzODUuMDZMNzg3LjA0LDM4NS4wNkw3MzAuODQsMjk2LjE5WiIgc3R5bGU9ImZpbGw6cmdiKDE3MiwyMiw0NCk7ZmlsbC1ydWxlOm5vbnplcm87Ii8+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik04NDMuNjIsMjgyLjc2Qzg0NC4xOSwyNzMuMjQgODQ2LjU4LDI2NS4zMyA4NTAuNzcsMjU5LjA0Qzg1NC45NiwyNTIuNzUgODYwLjI5LDI0Ny43MSA4NjYuNzcsMjQzLjlDODczLjI1LDI0MC4wOSA4ODAuNTQsMjM3LjM3IDg4OC42NCwyMzUuNzZDODk2LjczLDIzNC4xNCA5MDQuODgsMjMzLjMzIDkxMy4wNywyMzMuMzNDOTIwLjUsMjMzLjMzIDkyOC4wMiwyMzMuODUgOTM1LjY0LDIzNC45Qzk0My4yNywyMzUuOTUgOTUwLjIxLDIzOCA5NTYuNSwyNDEuMDVDOTYyLjc4LDI0NC4xIDk2Ny45MywyNDguMzQgOTcxLjk0LDI1My43NkM5NzUuOTQsMjU5LjE5IDk3Ny45NCwyNjYuMzggOTc3Ljk0LDI3NS4zNEw5NzcuOTQsMzUyLjIxQzk3Ny45NCwzNTguODggOTc4LjMyLDM2NS4yNyA5NzkuMDgsMzcxLjM2Qzk3OS44NCwzNzcuNDYgOTgxLjE4LDM4Mi4wMyA5ODMuMDksMzg1LjA4TDk0MS45NCwzODUuMDhDOTQxLjE4LDM4Mi44IDk0MC41NiwzODAuNDYgOTQwLjA4LDM3OC4wOEM5MzkuNjEsMzc1LjcgOTM5LjI3LDM3My4yOCA5MzkuMDgsMzcwLjc5QzkzMi42LDM3Ny40NyA5MjQuOTcsMzgyLjEzIDkxNi4yMSwzODQuOEM5MDcuNDUsMzg3LjQ2IDg5OC40OSwzODguOCA4ODkuMzUsMzg4LjhDODgyLjMsMzg4LjggODc1LjcyLDM4Ny45NCA4NjkuNjQsMzg2LjIzQzg2My41NCwzODQuNTIgODU4LjIsMzgxLjg1IDg1My42NCwzNzguMjNDODQ5LjA2LDM3NC42MSA4NDUuNDgsMzcwLjA0IDg0Mi45MiwzNjQuNTFDODQwLjM1LDM1OC45OSA4MzkuMDYsMzUyLjQyIDgzOS4wNiwzNDQuOEM4MzkuMDYsMzM2LjQyIDg0MC41NCwzMjkuNTEgODQzLjQ5LDMyNC4wOEM4NDYuNDUsMzE4LjY1IDg1MC4yNSwzMTQuMzIgODU0LjkzLDMxMS4wOEM4NTkuNiwzMDcuODQgODY0LjkzLDMwNS40MSA4NzAuOTMsMzAzLjc5Qzg3Ni45MywzMDIuMTcgODgyLjk4LDMwMC44OCA4ODkuMDcsMjk5LjkzQzg5NS4xNywyOTguOTkgOTAxLjE3LDI5OC4yMiA5MDcuMDgsMjk3LjY1QzkxMi45OSwyOTcuMDggOTE4LjIyLDI5Ni4yMiA5MjIuNzksMjk1LjA4QzkyNy4zNywyOTMuOTMgOTMwLjk4LDI5Mi4yNyA5MzMuNjUsMjkwLjA3QzkzNi4zMiwyODcuODggOTM3LjU2LDI4NC42OSA5MzcuMzcsMjgwLjVDOTM3LjM3LDI3Ni4xMiA5MzYuNjUsMjcyLjY0IDkzNS4yMiwyNzAuMDdDOTMzLjc5LDI2Ny41IDkzMS44OSwyNjUuNSA5MjkuNTEsMjY0LjA3QzkyNy4xMywyNjIuNjQgOTI0LjM3LDI2MS42OSA5MjEuMjIsMjYxLjIxQzkxOC4wNywyNjAuNzMgOTE0LjcsMjYwLjQ5IDkxMS4wOCwyNjAuNDlDOTAzLjA4LDI2MC40OSA4OTYuNzksMjYyLjIgODkyLjIyLDI2NS42NEM4ODcuNjUsMjY5LjA3IDg4NC45OCwyNzQuNzggODg0LjIyLDI4Mi43OUw4NDMuNjIsMjgyLjc5TDg0My42MiwyODIuNzZaTTkzNy4zNSwzMTIuNzdDOTM1LjYzLDMxNC4zIDkzMy40OSwzMTUuNDggOTMwLjkyLDMxNi4zNEM5MjguMzUsMzE3LjIxIDkyNS41OSwzMTcuOTIgOTIyLjYzLDMxOC40OUM5MTkuNjgsMzE5LjA2IDkxNi41OCwzMTkuNTQgOTEzLjM1LDMxOS45MkM5MTAuMTEsMzIwLjMgOTA2Ljg3LDMyMC43NyA5MDMuNjMsMzIxLjM1QzkwMC41OCwzMjEuOTIgODk3LjU4LDMyMi42OSA4OTQuNjMsMzIzLjYzQzg5MS42OCwzMjQuNTkgODg5LjEsMzI1Ljg3IDg4Ni45MSwzMjcuNDlDODg0LjcyLDMyOS4xMSA4ODIuOTYsMzMxLjE2IDg4MS42MiwzMzMuNjNDODgwLjI5LDMzNi4xMSA4NzkuNjIsMzM5LjI1IDg3OS42MiwzNDMuMDZDODc5LjYyLDM0Ni42OCA4ODAuMjksMzQ5LjczIDg4MS42MiwzNTIuMkM4ODIuOTYsMzU0LjY4IDg4NC43NywzNTYuNjMgODg3LjA1LDM1OC4wNkM4ODkuMzQsMzU5LjQ5IDg5MiwzNjAuNDkgODk1LjA1LDM2MS4wNkM4OTguMSwzNjEuNjMgOTAxLjI0LDM2MS45MSA5MDQuNDgsMzYxLjkxQzkxMi40OCwzNjEuOTEgOTE4LjY4LDM2MC41OCA5MjMuMDYsMzU3LjkyQzkyNy40NCwzNTUuMjUgOTMwLjY5LDM1Mi4wNiA5MzIuNzcsMzQ4LjM0QzkzNC44NiwzNDQuNjMgOTM2LjE2LDM0MC44NyA5MzYuNjIsMzM3LjA2QzkzNy4xLDMzMy4yNSA5MzcuMzMsMzMwLjIgOTM3LjM0LDMyNy45Mkw5MzcuMzQsMzEyLjc3TDkzNy4zNSwzMTIuNzdaIiBzdHlsZT0iZmlsbDpyZ2IoMTcyLDIyLDQ0KTtmaWxsLXJ1bGU6bm9uemVybzsiLz4KICAgICAgICAgICAgPHBhdGggZD0iTTEwMDQuMjEsMjM3LjMzTDEwNDIuOCwyMzcuMzNMMTA0Mi44LDI1Ny45TDEwNDMuNjUsMjU3LjlDMTA0OC43OSwyNDkuMzMgMTA1NS40NiwyNDMuMDkgMTA2My42NSwyMzkuMTlDMTA3MS44NCwyMzUuMjggMTA4MC4yMywyMzMuMzMgMTA4OC43OSwyMzMuMzNDMTA5OS42NiwyMzMuMzMgMTEwOC41NiwyMzQuODEgMTExNS41MiwyMzcuNzZDMTEyMi40NywyNDAuNzIgMTEyNy45NCwyNDQuODEgMTEzMS45NSwyNTAuMDVDMTEzNS45NSwyNTUuMjkgMTEzOC43NiwyNjEuNjcgMTE0MC4zOCwyNjkuMTlDMTE0MiwyNzYuNzIgMTE0Mi44MSwyODUuMDUgMTE0Mi44MSwyOTQuMkwxMTQyLjgxLDM4NS4wN0wxMTAyLjI0LDM4NS4wN0wxMTAyLjI0LDMwMS42M0MxMTAyLjI0LDI4OS40MyAxMTAwLjMzLDI4MC4zNCAxMDk2LjUzLDI3NC4zNEMxMDkyLjcxLDI2OC4zNCAxMDg1Ljk1LDI2NS4zNCAxMDc2LjIzLDI2NS4zNEMxMDY1LjE4LDI2NS4zNCAxMDU3LjE5LDI2OC42MyAxMDUyLjIzLDI3NS4yQzEwNDcuMjcsMjgxLjc2IDEwNDQuOCwyOTIuNTggMTA0NC44LDMwNy42M0wxMDQ0LjgsMzg1LjA3TDEwMDQuMjIsMzg1LjA3TDEwMDQuMjIsMjM3LjMzTDEwMDQuMjEsMjM3LjMzWiIgc3R5bGU9ImZpbGw6cmdiKDE3MiwyMiw0NCk7ZmlsbC1ydWxlOm5vbnplcm87Ii8+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik02MTIuMzcsMjExLjg0TDYxMi4zNywzODUuMDdMNjUyLjk1LDM4NS4wN0w2NTIuOTUsMjM0LjIxQzYzOS45MywyMjYuMjMgNjI2LjM2LDIxOC43NCA2MTIuMzcsMjExLjg0WiIgc3R5bGU9ImZpbGw6cmdiKDE3MiwyMiw0NCk7ZmlsbC1ydWxlOm5vbnplcm87Ii8+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik0xOTguNDMsMjE5LjIxQzIyMS45NSwxNTAuMzIgMzYyLjU4LDEyNS4wNSA1MTIuNTgsMTYyLjc4QzYwMi41NSwxODUuNCA2NzYuMDcsMjI5LjI4IDcyNC4wOSwyNzIuNjdDNzAyLjMsMjE1LjEyIDU5Ni42NSwxMzMuMDggNDUxLjE4LDEwNC45NkMyODYuNyw3My4xNiAxMjQuNDcsMTAxLjExIDEwNC4zOSwxNzQuMUM4OS44OSwyMjYuODMgMTUzLjU3LDI4OC42IDI1Mi4wNSwzMzAuODRDMjA3LjgxLDI5NS4wMiAxODYuMjksMjU0Ljc4IDE5OC40MywyMTkuMjFaIiBzdHlsZT0iZmlsbDpyZ2IoMTcyLDIyLDQ0KTtmaWxsLXJ1bGU6bm9uemVybzsiLz4KICAgICAgICAgICAgPHBhdGggZD0iTTcyNC4xNiwyNDcuNjJMNzI0LjE2LDE4MS4wM0w2ODMuNTcsMTgxLjAzTDY4My41NywyMDEuMjVDNzAwLjg4LDIxNi43MSA3MTQuNjEsMjMyLjQ1IDcyNC4xNiwyNDcuNjJaIiBzdHlsZT0iZmlsbDpyZ2IoMTcyLDIyLDQ0KTtmaWxsLXJ1bGU6bm9uemVybzsiLz4KICAgICAgICA8L2c+CiAgICAgICAgPGcgdHJhbnNmb3JtPSJtYXRyaXgoMS4wNDY5NiwwLDAsMS4xMjU3NywtNDYuOTkxMywtNTAuNDMyNSkiPgogICAgICAgICAgICA8cGF0aCBkPSJNMTIxNC45OCwzNjMuNDNDMTIxNC45OCwzNzUuNjkgMTIwNS4zNSwzODUuMzIgMTE5Mi44MywzODUuMzJDMTE4MC40MywzODUuMzIgMTE3MC41NCwzNzUuNjkgMTE3MC41NCwzNjMuNDNDMTE3MC41NCwzNTEuNDMgMTE4MC40MywzNDEuOCAxMTkyLjgzLDM0MS44QzEyMDUuMzUsMzQxLjggMTIxNC45OCwzNTEuNDMgMTIxNC45OCwzNjMuNDNaTTExNzYuMDgsMzYzLjQzQzExNzYuMDgsMzczLjA2IDExODMuMiwzODAuNyAxMTkyLjk2LDM4MC43QzEyMDIuNDUsMzgwLjcgMTIwOS40NCwzNzMuMDUgMTIwOS40NCwzNjMuNTZDMTIwOS40NCwzNTMuOTMgMTIwMi40NSwzNDYuMTUgMTE5Mi44MiwzNDYuMTVDMTE4My4yLDM0Ni4xNiAxMTc2LjA4LDM1My45NCAxMTc2LjA4LDM2My40M1pNMTE4OS4zOSwzNzQuNzdMMTE4NC4zOCwzNzQuNzdMMTE4NC4zOCwzNTMuMTRDMTE4Ni4zNiwzNTIuNzQgMTE4OS4xMywzNTIuNDggMTE5Mi42OSwzNTIuNDhDMTE5Ni43OCwzNTIuNDggMTE5OC42MiwzNTMuMTQgMTIwMC4yMSwzNTQuMDZDMTIwMS40LDM1NC45OCAxMjAyLjMyLDM1Ni43IDEyMDIuMzIsMzU4LjgxQzEyMDIuMzIsMzYxLjE4IDEyMDAuNDcsMzYzLjAzIDExOTcuODQsMzYzLjgyTDExOTcuODQsMzY0LjA4QzExOTkuOTUsMzY0Ljg3IDEyMDEuMTQsMzY2LjQ1IDEyMDEuOCwzNjkuMzVDMTIwMi40NiwzNzIuNjUgMTIwMi44NSwzNzMuOTcgMTIwMy4zOCwzNzQuNzZMMTE5Ny45NywzNzQuNzZDMTE5Ny4zMSwzNzMuOTcgMTE5Ni45MiwzNzEuOTkgMTE5Ni4yNiwzNjkuNDlDMTE5NS44NiwzNjcuMTIgMTE5NC41NSwzNjYuMDYgMTE5MS43OCwzNjYuMDZMMTE4OS40MSwzNjYuMDZMMTE4OS40MSwzNzQuNzdMMTE4OS4zOSwzNzQuNzdaTTExODkuNTMsMzYyLjUxTDExOTEuOSwzNjIuNTFDMTE5NC42NywzNjIuNTEgMTE5Ni45MSwzNjEuNTkgMTE5Ni45MSwzNTkuMzRDMTE5Ni45MSwzNTcuMzYgMTE5NS40NiwzNTYuMDQgMTE5Mi4yOSwzNTYuMDRDMTE5MC45NywzNTYuMDQgMTE5MC4wNSwzNTYuMTcgMTE4OS41MiwzNTYuM0wxMTg5LjUyLDM2Mi41MUwxMTg5LjUzLDM2Mi41MVoiIHN0eWxlPSJmaWxsOnJnYigxNzIsMjIsNDQpO2ZpbGwtcnVsZTpub256ZXJvOyIvPgogICAgICAgIDwvZz4KICAgIDwvZz4KPC9zdmc+Cg==" alt="Vulkan Logo" width="50%">
+    </span>
+</div>
+<div id="header">
+<h1>Vulkan<sup>®</sup> 1.4.328 - A Specification (with all registered extensions)</h1>
+<div class="details">
+<span id="author" class="author">The Khronos<sup>®</sup> Vulkan  Working Group</span><br>
+<span id="revnumber">version 1.4.328,</span>
+<span id="revdate">2025-10-08 21:55:58Z</span>
+<br><span id="revremark">from git branch: Git branch not available commit: Git commit not available</span>
+</div>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="index.html">Titlepage</a></li><li><a href="chap1.html">1. Preamble</a></li>
+<li><a href="chap2.html">2. Introduction</a>
+<ul class="sectlevel2">
+<li><a href="chap2.html#introduction-conventions">2.1. Document Conventions</a></li>
+</ul>
+</li>
+<li><a href="chap3.html">3. Fundamentals</a>
+<ul class="sectlevel2">
+<li><a href="chap3.html#fundamentals-host-environment">3.1. Host and Device Environment</a></li>
+<li><a href="chap3.html#fundamentals-execmodel">3.2. Execution Model</a></li>
+<li><a href="chap3.html#fundamentals-objectmodel-overview">3.3. Object Model</a></li>
+<li><a href="chap3.html#fundamentals-abi">3.4. Application Binary Interface</a></li>
+<li><a href="chap3.html#fundamentals-commandsyntax">3.5. Command Syntax and Duration</a></li>
+<li><a href="chap3.html#fundamentals-threadingbehavior">3.6. Threading Behavior</a></li>
+<li><a href="chap3.html#fundamentals-validusage">3.7. Valid Usage</a></li>
+<li><a href="chap3.html#fundamentals-returncodes">3.8. <code>VkResult</code> Return Codes</a></li>
+<li><a href="chap3.html#fundamentals-numerics">3.9. Numeric Representation and Computation</a></li>
+<li><a href="chap3.html#fundamentals-fixedconv">3.10. Fixed-Point Data Conversions</a></li>
+<li><a href="chap3.html#fundamentals-strings">3.11. String Representation</a></li>
+<li><a href="chap3.html#fundamentals-common-objects">3.12. Common Object Types</a></li>
+<li><a href="chap3.html#fundamentals-api-name-aliases">3.13. API Name Aliases</a></li>
+</ul>
+</li>
+<li><a href="chap4.html">4. Initialization</a>
+<ul class="sectlevel2">
+<li><a href="chap4.html#initialization-functionpointers">4.1. Command Function Pointers</a></li>
+<li><a href="chap4.html#initialization-instances">4.2. Instances</a></li>
+</ul>
+</li>
+<li><a href="chap5.html">5. Devices and Queues</a>
+<ul class="sectlevel2">
+<li><a href="chap5.html#devsandqueues-physical-device-enumeration">5.1. Physical Devices</a></li>
+<li><a href="chap5.html#devsandqueues-devices">5.2. Devices</a></li>
+<li><a href="chap5.html#devsandqueues-queues">5.3. Queues</a></li>
+</ul>
+</li>
+<li><a href="chap6.html">6. Command Buffers</a>
+<ul class="sectlevel2">
+<li><a href="chap6.html#commandbuffers-lifecycle">6.1. Command Buffer Lifecycle</a></li>
+<li><a href="chap6.html#commandbuffers-pools">6.2. Command Pools</a></li>
+<li><a href="chap6.html#commandbuffer-allocation">6.3. Command Buffer Allocation and Management</a></li>
+<li><a href="chap6.html#commandbuffers-recording">6.4. Command Buffer Recording</a></li>
+<li><a href="chap6.html#commandbuffers-submission">6.5. Command Buffer Submission</a></li>
+<li><a href="chap6.html#commandbuffers-submission-progress">6.6. Queue Forward Progress</a></li>
+<li><a href="chap6.html#commandbuffers-secondary">6.7. Secondary Command Buffer Execution</a></li>
+<li><a href="chap6.html#commandbuffers-nested">6.8. Nested Command Buffers</a></li>
+<li><a href="chap6.html#commandbuffers-devicemask">6.9. Command Buffer Device Mask</a></li>
+</ul>
+</li>
+<li><a href="chap7.html">7. Synchronization and Cache Control</a>
+<ul class="sectlevel2">
+<li><a href="chap7.html#synchronization-dependencies">7.1. Execution and Memory Dependencies</a></li>
+<li><a href="chap7.html#synchronization-implicit">7.2. Implicit Synchronization Guarantees</a></li>
+<li><a href="chap7.html#synchronization-fences">7.3. Fences</a></li>
+<li><a href="chap7.html#synchronization-semaphores">7.4. Semaphores</a></li>
+<li><a href="chap7.html#synchronization-events">7.5. Events</a></li>
+<li><a href="chap7.html#synchronization-pipeline-barriers">7.6. Pipeline Barriers</a></li>
+<li><a href="chap7.html#synchronization-memory-barriers">7.7. Memory Barriers</a></li>
+<li><a href="chap7.html#synchronization-wait-idle">7.8. Wait Idle Operations</a></li>
+<li><a href="chap7.html#synchronization-submission-host-writes">7.9. Host Write Ordering Guarantees</a></li>
+<li><a href="chap7.html#synchronization-device-group">7.10. Synchronization and Multiple Physical Devices</a></li>
+<li><a href="chap7.html#calibrated-timestamps">7.11. Calibrated Timestamps</a></li>
+</ul>
+</li>
+<li><a href="chap8.html">8. Render Pass</a>
+<ul class="sectlevel2">
+<li><a href="chap8.html#renderpass-objects">8.1. Render Pass Objects</a></li>
+<li><a href="chap8.html#renderpass-creation">8.2. Render Pass Creation</a></li>
+<li><a href="chap8.html#renderpass-compatibility">8.3. Render Pass Compatibility</a></li>
+<li><a href="chap8.html#_framebuffers">8.4. Framebuffers</a></li>
+<li><a href="chap8.html#renderpass-load-operations">8.5. Render Pass Load Operations</a></li>
+<li><a href="chap8.html#renderpass-store-operations">8.6. Render Pass Store Operations</a></li>
+<li><a href="chap8.html#renderpass-resolve-operations">8.7. Render Pass Multisample Resolve Operations</a></li>
+<li><a href="chap8.html#renderpass-commands">8.8. Render Pass Commands</a></li>
+<li><a href="chap8.html#renderpass-creation-feedback">8.9. Render Pass Creation Feedback</a></li>
+<li><a href="chap8.html#common-render-pass-data-races">8.10. Common Render Pass Data Races (Informative)</a></li>
+<li><a href="chap8.html#renderpass-tile-shading">8.11. Tile Shading Render Pass</a></li>
+</ul>
+</li>
+<li><a href="chap9.html">9. Shaders</a>
+<ul class="sectlevel2">
+<li><a href="chap9.html#shaders-objects">9.1. Shader Objects</a></li>
+<li><a href="chap9.html#shader-modules">9.2. Shader Modules</a></li>
+<li><a href="chap9.html#shaders-identifiers">9.3. Shader Module Identifiers</a></li>
+<li><a href="chap9.html#shaders-binding">9.4. Binding Shaders</a></li>
+<li><a href="chap9.html#shaders-execution">9.5. Shader Execution</a></li>
+<li><a href="chap9.html#shaders-execution-memory-access-bounds">9.6. Shader Out-of-Bounds Memory Access</a></li>
+<li><a href="chap9.html#shaders-execution-memory-ordering">9.7. Shader Memory Access Ordering</a></li>
+<li><a href="chap9.html#shaders-inputs">9.8. Shader Inputs and Outputs</a></li>
+<li><a href="chap9.html#shaders-task">9.9. Task Shaders</a></li>
+<li><a href="chap9.html#shaders-mesh">9.10. Mesh Shaders</a></li>
+<li><a href="chap9.html#shaders-cluster-culling">9.11. Cluster Culling Shaders</a></li>
+<li><a href="chap9.html#shaders-vertex">9.12. Vertex Shaders</a></li>
+<li><a href="chap9.html#shaders-tessellation-control">9.13. Tessellation Control Shaders</a></li>
+<li><a href="chap9.html#shaders-tessellation-evaluation">9.14. Tessellation Evaluation Shaders</a></li>
+<li><a href="chap9.html#shaders-geometry">9.15. Geometry Shaders</a></li>
+<li><a href="chap9.html#shaders-fragment">9.16. Fragment Shaders</a></li>
+<li><a href="chap9.html#shaders-compute">9.17. Compute Shaders</a></li>
+<li><a href="chap9.html#shaders-ray-generation">9.18. Ray Generation Shaders</a></li>
+<li><a href="chap9.html#shaders-intersection">9.19. Intersection Shaders</a></li>
+<li><a href="chap9.html#shaders-any-hit">9.20. Any-Hit Shaders</a></li>
+<li><a href="chap9.html#shaders-closest-hit">9.21. Closest Hit Shaders</a></li>
+<li><a href="chap9.html#shaders-miss">9.22. Miss Shaders</a></li>
+<li><a href="chap9.html#shaders-callable">9.23. Callable Shaders</a></li>
+<li><a href="chap9.html#shaders-interpolation-decorations">9.24. Interpolation Decorations</a></li>
+<li><a href="chap9.html#shaders-staticuse">9.25. Static Use</a></li>
+<li><a href="chap9.html#shaders-scope">9.26. Scope</a></li>
+<li><a href="chap9.html#shaders-group-operations">9.27. Group Operations</a></li>
+<li><a href="chap9.html#shaders-quad-operations">9.28. Quad Group Operations</a></li>
+<li><a href="chap9.html#shaders-derivative-operations">9.29. Derivative Operations</a></li>
+<li><a href="chap9.html#shaders-helper-invocations">9.30. Helper Invocations</a></li>
+<li><a href="chap9.html#cooperative-matrices">9.31. Cooperative Matrices</a></li>
+<li><a href="chap9.html#_cooperative_vectors">9.32. Cooperative Vectors</a></li>
+<li><a href="chap9.html#shaders-validation-cache">9.33. Validation Cache</a></li>
+<li><a href="chap9.html#cuda-modules">9.34. CUDA Modules</a></li>
+</ul>
+</li>
+<li><a href="chap10.html">10. Pipelines</a>
+<ul class="sectlevel2">
+<li><a href="chap10.html#pipelines-multiple">10.1. Multiple Pipeline Creation</a></li>
+<li><a href="chap10.html#pipelines-creation-flags">10.2. Pipeline Creation Flags</a></li>
+<li><a href="chap10.html#pipelines-compute">10.3. Compute Pipelines</a></li>
+<li><a href="chap10.html#pipelines-graphics">10.4. Graphics Pipelines</a></li>
+<li><a href="chap10.html#pipelines-ray-tracing">10.5. Ray Tracing Pipelines</a></li>
+<li><a href="chap10.html#pipelines-destruction">10.6. Pipeline Destruction</a></li>
+<li><a href="chap10.html#pipelines-pipeline-derivatives">10.7. Pipeline Derivatives</a></li>
+<li><a href="chap10.html#pipelines-cache">10.8. Pipeline Cache</a></li>
+<li><a href="chap10.html#pipelines-binaries">10.9. Pipeline Binaries</a></li>
+<li><a href="chap10.html#pipelines-specialization-constants">10.10. Specialization Constants</a></li>
+<li><a href="chap10.html#pipelines-library">10.11. Pipeline Libraries</a></li>
+<li><a href="chap10.html#pipelines-binding">10.12. Pipeline Binding</a></li>
+<li><a href="chap10.html#pipelines-dynamic-state">10.13. Dynamic State</a></li>
+<li><a href="chap10.html#pipelines-shader-information">10.14. Pipeline Properties and Shader Information</a></li>
+<li><a href="chap10.html#pipelines-compiler-control">10.15. Pipeline Compiler Control</a></li>
+<li><a href="chap10.html#pipelines-creation-feedback">10.16. Pipeline Creation Feedback</a></li>
+</ul>
+</li>
+<li><a href="chap11.html">11. Memory Allocation</a>
+<ul class="sectlevel2">
+<li><a href="chap11.html#memory-host">11.1. Host Memory</a></li>
+<li><a href="chap11.html#memory-device">11.2. Device Memory</a></li>
+</ul>
+</li>
+<li><a href="chap12.html">12. Resource Creation</a>
+<ul class="sectlevel2">
+<li><a href="chap12.html#resources-buffers">12.1. Buffers</a></li>
+<li><a href="chap12.html#resources-buffer-views">12.2. Buffer Views</a></li>
+<li><a href="chap12.html#resources-buffer-device-addresses">12.3. Buffer Device Addresses</a></li>
+<li><a href="chap12.html#resources-images">12.4. Images</a></li>
+<li><a href="chap12.html#resources-image-layouts">12.5. Image Layouts</a></li>
+<li><a href="chap12.html#resources-image-views">12.6. Image Views</a></li>
+<li><a href="chap12.html#resources-acceleration-structures">12.7. Acceleration Structures</a></li>
+<li><a href="chap12.html#resources-micromaps">12.8. Micromaps</a></li>
+<li><a href="chap12.html#resources-association">12.9. Resource Memory Association</a></li>
+<li><a href="chap12.html#resources-sharing">12.10. Resource Sharing Mode</a></li>
+<li><a href="chap12.html#resources-memory-aliasing">12.11. Memory Aliasing</a></li>
+<li><a href="chap12.html#resources-buffer-collection-fuchsia">12.12. Buffer Collections</a></li>
+<li><a href="chap12.html#resources-tensors">12.13. Tensors</a></li>
+<li><a href="chap12.html#resources-tensor-views">12.14. Tensor Views</a></li>
+</ul>
+</li>
+<li><a href="chap13.html">13. Images</a>
+<ul class="sectlevel2">
+<li><a href="chap13.html#images-coordinate-validation">13.1. Image Coordinate Validation</a></li>
+<li><a href="chap13.html#images-reads">13.2. Image Reads</a></li>
+<li><a href="chap13.html#images-writes">13.3. Image Writes</a></li>
+</ul>
+</li>
+<li><a href="chap14.html">14. Samplers</a>
+<ul class="sectlevel2">
+<li><a href="chap14.html#samplers-YCbCr-conversion">14.1. Sampler Y′C<sub>B</sub>C<sub>R</sub> Conversion</a></li>
+</ul>
+</li>
+<li><a href="chap15.html">15. Resource Descriptors</a>
+<ul class="sectlevel2">
+<li><a href="chap15.html#descriptorsets-types">15.1. Descriptor Types</a></li>
+<li><a href="chap15.html#descriptorsets-sets">15.2. Descriptor Sets</a></li>
+<li><a href="chap15.html#descriptorsets-physical-storage-buffer">15.3. Physical Storage Buffer Access</a></li>
+<li><a href="chap15.html#descriptorbuffers">15.4. Descriptor Buffers</a></li>
+</ul>
+</li>
+<li><a href="chap16.html">16. Shader Interfaces</a>
+<ul class="sectlevel2">
+<li><a href="chap16.html#interfaces-iointerfaces">16.1. Shader Input and Output Interfaces</a></li>
+<li><a href="chap16.html#interfaces-vertexinput">16.2. Vertex Input Interface</a></li>
+<li><a href="chap16.html#interfaces-fragmentoutput">16.3. Fragment Output Interface</a></li>
+<li><a href="chap16.html#interfaces-legacy-dithering">16.4. Legacy Dithering</a></li>
+<li><a href="chap16.html#interfaces-fragmenttileimage">16.5. Fragment Tile Image Interface</a></li>
+<li><a href="chap16.html#interfaces-tile-attachment">16.6. Tile Attachment Interface</a></li>
+<li><a href="chap16.html#interfaces-inputattachment">16.7. Fragment Input Attachment Interface</a></li>
+<li><a href="chap16.html#interfaces-raypipeline">16.8. Ray Tracing Pipeline Interface</a></li>
+<li><a href="chap16.html#interfaces-resources">16.9. Shader Resource Interface</a></li>
+<li><a href="chap16.html#interfaces-builtin-variables">16.10. Built-In Variables</a></li>
+</ul>
+</li>
+<li><a href="chap17.html">17. Image Operations</a>
+<ul class="sectlevel2">
+<li><a href="chap17.html#_image_operations_overview">17.1. Image Operations Overview</a></li>
+<li><a href="chap17.html#textures-input">17.2. Sampling Operations</a></li>
+<li><a href="chap17.html#textures-normalized-operations">17.3. Normalized Texel Coordinate Operations</a></li>
+<li><a href="chap17.html#textures-unnormalized-operations">17.4. Unnormalized Texel Coordinate Operations</a></li>
+<li><a href="chap17.html#textures-integer-coordinate-operations">17.5. Integer Texel Coordinate Operations</a></li>
+<li><a href="chap17.html#textures-sample-operations">17.6. Image Sample Operations</a></li>
+<li><a href="chap17.html#textures-footprint">17.7. Texel Footprint Evaluation</a></li>
+<li><a href="chap17.html#textures-weightimage">17.8. Weight Image Sampling</a></li>
+<li><a href="chap17.html#textures-blockmatch">17.9. Block Matching</a></li>
+<li><a href="chap17.html#textures-boxfilter">17.10. Box Filter Sampling</a></li>
+<li><a href="chap17.html#textures-instructions">17.11. Image Operation Steps</a></li>
+<li><a href="chap17.html#textures-queries">17.12. Image Query Instructions</a></li>
+</ul>
+</li>
+<li><a href="chap18.html">18. Fragment Density Map Operations</a>
+<ul class="sectlevel2">
+<li><a href="chap18.html#_fragment_density_map_operations_overview">18.1. Fragment Density Map Operations Overview</a></li>
+<li><a href="chap18.html#fragmentdensitymap-fetch-density-value">18.2. Fetch Density Value</a></li>
+<li><a href="chap18.html#fragmentdensitymap-conversion-to-fragment-area">18.3. Fragment Area Conversion</a></li>
+</ul>
+</li>
+<li><a href="chap19.html">19. Tensor Operations</a>
+<ul class="sectlevel2">
+<li><a href="chap19.html#_tensor_operations_overview">19.1. Tensor Operations Overview</a></li>
+<li><a href="chap19.html#_tensor_element_input_operations">19.2. Tensor Element Input Operations</a></li>
+<li><a href="chap19.html#_tensor_element_output_operations">19.3. Tensor Element Output Operations</a></li>
+<li><a href="chap19.html#tensors-queries">19.4. Tensor Query Instructions</a></li>
+</ul>
+</li>
+<li><a href="chap20.html">20. Queries</a>
+<ul class="sectlevel2">
+<li><a href="chap20.html#queries-pools">20.1. Query Pools</a></li>
+<li><a href="chap20.html#queries-operation">20.2. Query Operation</a></li>
+<li><a href="chap20.html#queries-occlusion">20.3. Occlusion Queries</a></li>
+<li><a href="chap20.html#queries-pipestats">20.4. Pipeline Statistics Queries</a></li>
+<li><a href="chap20.html#queries-timestamps">20.5. Timestamp Queries</a></li>
+<li><a href="chap20.html#queries-performance">20.6. Performance Queries</a></li>
+<li><a href="chap20.html#queries-transform-feedback">20.7. Transform Feedback Queries</a></li>
+<li><a href="chap20.html#queries-primitives-generated">20.8. Primitives Generated Queries</a></li>
+<li><a href="chap20.html#queries-mesh-shader">20.9. Mesh Shader Queries</a></li>
+<li><a href="chap20.html#queries-performance-intel">20.10. Intel Performance Queries</a></li>
+<li><a href="chap20.html#queries-result-status-only">20.11. Result Status Queries</a></li>
+<li><a href="chap20.html#queries-video-encode-feedback">20.12. Video Encode Feedback Queries</a></li>
+</ul>
+</li>
+<li><a href="chap21.html">21. Clear Commands</a>
+<ul class="sectlevel2">
+<li><a href="chap21.html#clears-outside">21.1. Clearing Images Outside a Render Pass Instance</a></li>
+<li><a href="chap21.html#clears-inside">21.2. Clearing Images Inside a Render Pass Instance</a></li>
+<li><a href="chap21.html#clears-values">21.3. Clear Values</a></li>
+<li><a href="chap21.html#clears-filling-buffers">21.4. Filling Buffers</a></li>
+<li><a href="chap21.html#clears-updating-buffers">21.5. Updating Buffers</a></li>
+</ul>
+</li>
+<li><a href="chap22.html">22. Copy Commands</a>
+<ul class="sectlevel2">
+<li><a href="chap22.html#copies-buffers">22.1. Copying Data Between Buffers</a></li>
+<li><a href="chap22.html#copies-images">22.2. Copying Data Between Images</a></li>
+<li><a href="chap22.html#copies-buffers-images">22.3. Copying Data Between Buffers and Images</a></li>
+<li><a href="chap22.html#indirect-copies">22.4. Indirect Copies</a></li>
+<li><a href="chap22.html#copies-imagescaling">22.5. Image Copies With Scaling</a></li>
+<li><a href="chap22.html#copies-resolve">22.6. Resolving Multisample Images</a></li>
+<li><a href="chap22.html#copies-buffer-markers">22.7. Buffer Markers</a></li>
+<li><a href="chap22.html#copies-tensors">22.8. Copying Data Between Tensors</a></li>
+</ul>
+</li>
+<li><a href="chap23.html">23. Drawing Commands</a>
+<ul class="sectlevel2">
+<li><a href="chap23.html#drawing-primitive-topologies">23.1. Primitive Topologies</a></li>
+<li><a href="chap23.html#drawing-effective-primitive-topology">23.2. Effective Primitive Topology</a></li>
+<li><a href="chap23.html#drawing-primitive-order">23.3. Primitive Order</a></li>
+<li><a href="chap23.html#drawing-primitive-shading">23.4. Programmable Primitive Shading</a></li>
+<li><a href="chap23.html#drawing-conditional-rendering">23.5. Conditional Rendering</a></li>
+<li><a href="chap23.html#drawing-mesh-shading">23.6. Programmable Mesh Shading</a></li>
+<li><a href="chap23.html#drawing-cluster-culling-shading">23.7. Programmable Cluster Culling Shading</a></li>
+</ul>
+</li>
+<li class="current"><a href="chap24.html">24. Fixed-Function Vertex Processing</a>
+<ul class="sectlevel2">
+<li class="current"><a href="chap24.html#fxvertex-attrib">24.1. Vertex Attributes</a></li>
+<li class="current"><a href="chap24.html#fxvertex-input">24.2. Vertex Input Description</a></li>
+<li class="current"><a href="chap24.html#fxvertex-attribute_divisor">24.3. Vertex Attribute Divisor in Instanced Rendering</a></li>
+<li class="current"><a href="chap24.html#fxvertex-input-address-calculation">24.4. Vertex Input Address Calculation</a></li>
+</ul>
+</li>
+<li><a href="chap25.html">25. Tessellation</a>
+<ul class="sectlevel2">
+<li><a href="chap25.html#_tessellator">25.1. Tessellator</a></li>
+<li><a href="chap25.html#_tessellator_patch_discard">25.2. Tessellator Patch Discard</a></li>
+<li><a href="chap25.html#tessellation-tessellator-spacing">25.3. Tessellator Spacing</a></li>
+<li><a href="chap25.html#tessellation-primitive-order">25.4. Tessellation Primitive Ordering</a></li>
+<li><a href="chap25.html#tessellation-vertex-winding-order">25.5. Tessellator Vertex Winding Order</a></li>
+<li><a href="chap25.html#tessellation-triangle-tessellation">25.6. Triangle Tessellation</a></li>
+<li><a href="chap25.html#tessellation-quad-tessellation">25.7. Quad Tessellation</a></li>
+<li><a href="chap25.html#tessellation-isoline-tessellation">25.8. Isoline Tessellation</a></li>
+<li><a href="chap25.html#tessellation-point-mode">25.9. Tessellation Point Mode</a></li>
+<li><a href="chap25.html#_tessellation_pipeline_state">25.10. Tessellation Pipeline State</a></li>
+</ul>
+</li>
+<li><a href="chap26.html">26. Geometry Shading</a>
+<ul class="sectlevel2">
+<li><a href="chap26.html#geometry-input">26.1. Geometry Shader Input Primitives</a></li>
+<li><a href="chap26.html#geometry-output">26.2. Geometry Shader Output Primitives</a></li>
+<li><a href="chap26.html#geometry-invocations">26.3. Multiple Invocations of Geometry Shaders</a></li>
+<li><a href="chap26.html#geometry-ordering">26.4. Geometry Shader Primitive Ordering</a></li>
+<li><a href="chap26.html#geometry-passthrough">26.5. Geometry Shader Passthrough</a></li>
+</ul>
+</li>
+<li><a href="chap27.html">27. Mesh Shading</a>
+<ul class="sectlevel2">
+<li><a href="chap27.html#mesh-task-input">27.1. Task Shader Input</a></li>
+<li><a href="chap27.html#mesh-task-output">27.2. Task Shader Output</a></li>
+<li><a href="chap27.html#mesh-generation">27.3. Mesh Generation</a></li>
+<li><a href="chap27.html#mesh-input">27.4. Mesh Shader Input</a></li>
+<li><a href="chap27.html#mesh-output">27.5. Mesh Shader Output</a></li>
+<li><a href="chap27.html#mesh-output-perview">27.6. Mesh Shader Per-View Outputs</a></li>
+<li><a href="chap27.html#mesh-ordering">27.7. Mesh Shader Primitive Ordering</a></li>
+</ul>
+</li>
+<li><a href="chap28.html">28. Cluster Culling Shading</a>
+<ul class="sectlevel2">
+<li><a href="chap28.html#cluster-culling-input">28.1. Cluster Culling Shader Input</a></li>
+<li><a href="chap28.html#cluster-culling-output">28.2. Cluster Culling Shader Output</a></li>
+<li><a href="chap28.html#cluster-culling-cluster-ordering">28.3. Cluster Culling Shader Cluster Ordering</a></li>
+<li><a href="chap28.html#cluster-culling-primitive-ordering">28.4. Cluster Culling Shader Primitive Ordering</a></li>
+</ul>
+</li>
+<li><a href="chap29.html">29. Fixed-Function Vertex Post-Processing</a>
+<ul class="sectlevel2">
+<li><a href="chap29.html#vertexpostproc-transform-feedback">29.1. Transform Feedback</a></li>
+<li><a href="chap29.html#vertexpostproc-viewport-swizzle">29.2. Viewport Swizzle</a></li>
+<li><a href="chap29.html#vertexpostproc-flatshading">29.3. Flat Shading</a></li>
+<li><a href="chap29.html#vertexpostproc-clipping">29.4. Primitive Clipping</a></li>
+<li><a href="chap29.html#vertexpostproc-clipping-shader-outputs">29.5. Clipping Shader Outputs</a></li>
+<li><a href="chap29.html#vertexpostproc-viewportwscaling">29.6. Controlling Viewport W Scaling</a></li>
+<li><a href="chap29.html#vertexpostproc-coord-transform">29.7. Coordinate Transformations</a></li>
+<li><a href="chap29.html#vertexpostproc-renderpass-transform">29.8. Render Pass Transform</a></li>
+<li><a href="chap29.html#vertexpostproc-viewport">29.9. Controlling the Viewport</a></li>
+</ul>
+</li>
+<li><a href="chap30.html">30. Rasterization</a>
+<ul class="sectlevel2">
+<li><a href="chap30.html#primsrast-discard">30.1. Discarding Primitives Before Rasterization</a></li>
+<li><a href="chap30.html#primsrast-stream">30.2. Controlling the Vertex Stream Used for Rasterization</a></li>
+<li><a href="chap30.html#primsrast-order">30.3. Rasterization Order</a></li>
+<li><a href="chap30.html#primsrast-multisampling">30.4. Multisampling</a></li>
+<li><a href="chap30.html#primsrast-samplelocations">30.5. Custom Sample Locations</a></li>
+<li><a href="chap30.html#primsrast-fragment-shading-rate">30.6. Fragment Shading Rates</a></li>
+<li><a href="chap30.html#primsrast-shading-rate-image">30.7. Shading Rate Image</a></li>
+<li><a href="chap30.html#primsrast-sampleshading">30.8. Sample Shading</a></li>
+<li><a href="chap30.html#primsrast-barycentric">30.9. Barycentric Interpolation</a></li>
+<li><a href="chap30.html#primsrast-points">30.10. Points</a></li>
+<li><a href="chap30.html#primsrast-lines">30.11. Line Segments</a></li>
+<li><a href="chap30.html#primsrast-polygons">30.12. Polygons</a></li>
+</ul>
+</li>
+<li><a href="chap31.html">31. Fragment Operations</a>
+<ul class="sectlevel2">
+<li><a href="chap31.html#fragops-discard-rectangles">31.1. Discard Rectangles Test</a></li>
+<li><a href="chap31.html#fragops-scissor">31.2. Scissor Test</a></li>
+<li><a href="chap31.html#fragops-exclusive-scissor">31.3. Exclusive Scissor Test</a></li>
+<li><a href="chap31.html#fragops-samplemask">31.4. Sample Mask Test</a></li>
+<li><a href="chap31.html#fragops-shader">31.5. Fragment Shading</a></li>
+<li><a href="chap31.html#fragops-covg">31.6. Multisample Coverage</a></li>
+<li><a href="chap31.html#fragops-ds-state">31.7. Depth and Stencil Operations</a></li>
+<li><a href="chap31.html#fragops-dbt">31.8. Depth Bounds Test</a></li>
+<li><a href="chap31.html#fragops-stencil">31.9. Stencil Test</a></li>
+<li><a href="chap31.html#fragops-depth">31.10. Depth Test</a></li>
+<li><a href="chap31.html#fragops-rep-frag-test">31.11. Representative Fragment Test</a></li>
+<li><a href="chap31.html#fragops-samplecount">31.12. Sample Counting</a></li>
+<li><a href="chap31.html#fragops-coverage-to-color">31.13. Fragment Coverage to Color</a></li>
+<li><a href="chap31.html#fragops-coverage-reduction">31.14. Coverage Reduction</a></li>
+</ul>
+</li>
+<li><a href="chap32.html">32. The Framebuffer</a>
+<ul class="sectlevel2">
+<li><a href="chap32.html#framebuffer-blending">32.1. Blending</a></li>
+<li><a href="chap32.html#framebuffer-logicop">32.2. Logical Operations</a></li>
+<li><a href="chap32.html#framebuffer-color-write-mask">32.3. Color Write Mask</a></li>
+<li><a href="chap32.html#framebuffer-color-write-enable">32.4. Color Write Enable</a></li>
+<li><a href="chap32.html#framebuffer-queries">32.5. Framebuffer Query Instructions</a></li>
+</ul>
+</li>
+<li><a href="chap33.html">33. Dispatching Commands</a>
+<ul class="sectlevel2">
+<li><a href="chap33.html#cudadispatch">33.1. Dispatch Command for CUDA PTX Kernels</a></li>
+</ul>
+</li>
+<li><a href="chap34.html">34. Device-Generated Commands</a>
+<ul class="sectlevel2">
+<li><a href="chap34.html#indirectmdslayout">34.1. Indirect Commands Layout</a></li>
+<li><a href="chap34.html#_indirect_commands_generation_and_execution">34.2. Indirect Commands Generation and Execution</a></li>
+</ul>
+</li>
+<li><a href="chap35.html">35. Sparse Resources</a>
+<ul class="sectlevel2">
+<li><a href="chap35.html#sparsememory-sparseresourcefeatures">35.1. Sparse Resource Features</a></li>
+<li><a href="chap35.html#sparsememory-fully-resident">35.2. Sparse Buffers and Fully-Resident Images</a></li>
+<li><a href="chap35.html#sparsememory-partially-resident-buffers">35.3. Sparse Partially-Resident Buffers</a></li>
+<li><a href="chap35.html#sparsememory-partially-resident-images">35.4. Sparse Partially-Resident Images</a></li>
+<li><a href="chap35.html#sparsememory-sparse-memory-aliasing">35.5. Sparse Memory Aliasing</a></li>
+<li><a href="chap35.html#_sparse_resource_implementation_guidelines_informative">35.6. Sparse Resource Implementation Guidelines (Informative)</a></li>
+<li><a href="chap35.html#sparsememory-resourceapi">35.7. Sparse Resource API</a></li>
+</ul>
+</li>
+<li><a href="chap36.html">36. Window System Integration (WSI)</a>
+<ul class="sectlevel2">
+<li><a href="chap36.html#_wsi_platform">36.1. WSI Platform</a></li>
+<li><a href="chap36.html#_wsi_surface">36.2. WSI Surface</a></li>
+<li><a href="chap36.html#display">36.3. Presenting Directly to Display Devices</a></li>
+<li><a href="chap36.html#_querying_for_wsi_support">36.4. Querying for WSI Support</a></li>
+<li><a href="chap36.html#_surface_queries">36.5. Surface Queries</a></li>
+<li><a href="chap36.html#_full_screen_exclusive_control">36.6. Full Screen Exclusive Control</a></li>
+<li><a href="chap36.html#_device_group_queries">36.7. Device Group Queries</a></li>
+<li><a href="chap36.html#_display_timing_queries">36.8. Display Timing Queries</a></li>
+<li><a href="chap36.html#present-wait2">36.9. Present Wait</a></li>
+<li><a href="chap36.html#wsi-swapchain">36.10. WSI Swapchain</a></li>
+<li><a href="chap36.html#_hdr_metadata">36.11. HDR Metadata</a></li>
+<li><a href="chap36.html#lag-control">36.12. Lag Control</a></li>
+<li><a href="chap36.html#present-barrier">36.13. Present Barrier</a></li>
+</ul>
+</li>
+<li><a href="chap37.html">37. Deferred Host Operations</a>
+<ul class="sectlevel2">
+<li><a href="chap37.html#deferred-host-operations-requesting">37.1. Requesting Deferral</a></li>
+<li><a href="chap37.html#_deferred_host_operations_api">37.2. Deferred Host Operations API</a></li>
+</ul>
+</li>
+<li><a href="chap38.html">38. Private Data</a></li>
+<li><a href="chap39.html">39. Acceleration Structures</a>
+<ul class="sectlevel2">
+<li><a href="chap39.html#acceleration-structure-def">39.1. Acceleration Structures</a></li>
+<li><a href="chap39.html#cluster-geometry">39.2. Cluster Level Acceleration Structures</a></li>
+<li><a href="chap39.html#partitioned-tlas">39.3. Partitioned Top Level Acceleration Structures</a></li>
+<li><a href="chap39.html#host-acceleration-structure">39.4. Host Acceleration Structure Operations</a></li>
+</ul>
+</li>
+<li><a href="chap40.html">40. Compressed triangle data</a>
+<ul class="sectlevel2">
+<li><a href="chap40.html#dense-geometry-format">40.1. Dense Geometry Format Version 1 (DGF1)</a></li>
+</ul>
+</li>
+<li><a href="chap41.html">41. Micromap</a>
+<ul class="sectlevel2">
+<li><a href="chap41.html#micromap-def">41.1. Micromaps</a></li>
+<li><a href="chap41.html#host-micromap">41.2. Host Micromap Operations</a></li>
+</ul>
+</li>
+<li><a href="chap42.html">42. Ray Traversal</a>
+<ul class="sectlevel2">
+<li><a href="chap42.html#ray-intersection-candidate-determination">42.1. Ray Intersection Candidate Determination</a></li>
+<li><a href="chap42.html#ray-intersection-culling">42.2. Ray Intersection Culling</a></li>
+<li><a href="chap42.html#ray-intersection-confirmation">42.3. Ray Intersection Confirmation</a></li>
+<li><a href="chap42.html#ray-closest-hit-determination">42.4. Ray Closest Hit Determination</a></li>
+<li><a href="chap42.html#ray-result-determination">42.5. Ray Result Determination</a></li>
+</ul>
+</li>
+<li><a href="chap43.html">43. Ray Tracing</a>
+<ul class="sectlevel2">
+<li><a href="chap43.html#ray-tracing-shader-call">43.1. Shader Call Instructions</a></li>
+<li><a href="chap43.html#ray-tracing-commands">43.2. Ray Tracing Commands</a></li>
+<li><a href="chap43.html#shader-binding-table">43.3. Shader Binding Table</a></li>
+<li><a href="chap43.html#ray-tracing-pipeline-stack">43.4. Ray Tracing Pipeline Stack</a></li>
+<li><a href="chap43.html#ray-tracing-capture-replay">43.5. Ray Tracing Capture Replay</a></li>
+<li><a href="chap43.html#ray-tracing-validation">43.6. Ray Tracing Validation</a></li>
+</ul>
+</li>
+<li><a href="chap44.html">44. Memory Decompression</a></li>
+<li><a href="chap45.html">45. Video Coding</a>
+<ul class="sectlevel2">
+<li><a href="chap45.html#video-picture-resources">45.1. Video Picture Resources</a></li>
+<li><a href="chap45.html#dpb">45.2. Decoded Picture Buffer</a></li>
+<li><a href="chap45.html#video-profiles">45.3. Video Profiles</a></li>
+<li><a href="chap45.html#video-capabilities">45.4. Video Capabilities</a></li>
+<li><a href="chap45.html#video-session">45.5. Video Sessions</a></li>
+<li><a href="chap45.html#video-profile-compatibility">45.6. Video Profile Compatibility</a></li>
+<li><a href="chap45.html#video-session-parameters">45.7. Video Session Parameters</a></li>
+<li><a href="chap45.html#video-coding-scope">45.8. Video Coding Scope</a></li>
+<li><a href="chap45.html#video-coding-control">45.9. Video Coding Control</a></li>
+<li><a href="chap45.html#video-inline-queries">45.10. Inline Queries</a></li>
+<li><a href="chap45.html#video-decode-operations">45.11. Video Decode Operations</a></li>
+<li><a href="chap45.html#decode-h264">45.12. H.264 Decode Operations</a></li>
+<li><a href="chap45.html#decode-h265">45.13. H.265 Decode Operations</a></li>
+<li><a href="chap45.html#decode-vp9">45.14. VP9 Decode Operations</a></li>
+<li><a href="chap45.html#decode-av1">45.15. AV1 Decode Operations</a></li>
+<li><a href="chap45.html#video-encode-operations">45.16. Video Encode Operations</a></li>
+<li><a href="chap45.html#encode-intra-refresh">45.17. Video Encode Intra Refresh</a></li>
+<li><a href="chap45.html#encode-rate-control">45.18. Video Encode Rate Control</a></li>
+<li><a href="chap45.html#encode-quantization-map">45.19. Video Encode Quantization Maps</a></li>
+<li><a href="chap45.html#encode-rgb-conversion">45.20. Video Encode R′G′B′ Conversion</a></li>
+<li><a href="chap45.html#encode-h264">45.21. H.264 Encode Operations</a></li>
+<li><a href="chap45.html#encode-h265">45.22. H.265 Encode Operations</a></li>
+<li><a href="chap45.html#encode-av1">45.23. AV1 Encode Operations</a></li>
+</ul>
+</li>
+<li><a href="chap46.html">46. Optical Flow</a>
+<ul class="sectlevel2">
+<li><a href="chap46.html#_optical_flow_queues">46.1. Optical Flow Queues</a></li>
+<li><a href="chap46.html#opticalflow-formats">46.2. Optical Flow Image Formats</a></li>
+<li><a href="chap46.html#opticalflow-session">46.3. Optical Flow Session</a></li>
+</ul>
+</li>
+<li><a href="chap47.html">47. Execution Graphs</a>
+<ul class="sectlevel2">
+<li><a href="chap47.html#_pipeline_creation">47.1. Pipeline Creation</a></li>
+<li><a href="chap47.html#_initializing_scratch_memory">47.2. Initializing Scratch Memory</a></li>
+<li><a href="chap47.html#_dispatching_a_graph">47.3. Dispatching a Graph</a></li>
+<li><a href="chap47.html#_shader_enqueue">47.4. Shader Enqueue</a></li>
+</ul>
+</li>
+<li><a href="chap48.html">48. External Compute Queues</a></li>
+<li><a href="chap49.html">49. Data graphs</a>
+<ul class="sectlevel2">
+<li><a href="chap49.html#graphs-pipelines">49.1. Pipeline Creation</a></li>
+<li><a href="chap49.html#_sessions">49.2. Sessions</a></li>
+<li><a href="chap49.html#_dispatch">49.3. Dispatch</a></li>
+<li><a href="chap49.html#graphs-properties">49.4. Properties</a></li>
+<li><a href="chap49.html#graphs-processing-engines">49.5. Processing Engines</a></li>
+<li><a href="chap49.html#graphs-operations">49.6. Operations</a></li>
+</ul>
+</li>
+<li><a href="chap50.html">50. Extending Vulkan</a>
+<ul class="sectlevel2">
+<li><a href="chap50.html#extendingvulkan-functionalitylevels">50.1. Functionality Levels</a></li>
+<li><a href="chap50.html#extendingvulkan-instanceanddeviceversions">50.2. Instance and Device Versions</a></li>
+<li><a href="chap50.html#extendingvulkan-coreversions">50.3. Core Versions</a></li>
+<li><a href="chap50.html#extendingvulkan-layers">50.4. Layers</a></li>
+<li><a href="chap50.html#extendingvulkan-extensions">50.5. Extensions</a></li>
+<li><a href="chap50.html#extendingvulkan-extensions-extensiondependencies">50.6. Extension Dependencies</a></li>
+<li><a href="chap50.html#_compatibility_guarantees_informative">50.7. Compatibility Guarantees (Informative)</a></li>
+</ul>
+</li>
+<li><a href="chap51.html">51. Features</a>
+<ul class="sectlevel2">
+<li><a href="chap51.html#features-requirements">51.1. Feature Requirements</a></li>
+<li><a href="chap51.html#profile-features">51.2. Profile Features</a></li>
+</ul>
+</li>
+<li><a href="chap52.html">52. Limits</a>
+<ul class="sectlevel2">
+<li><a href="chap52.html#limits-minmax">52.1. Limit Requirements</a></li>
+<li><a href="chap52.html#limits-multisample">52.2. Additional Multisampling Capabilities</a></li>
+<li><a href="chap52.html#profile-limits">52.3. Profile Limits</a></li>
+</ul>
+</li>
+<li><a href="chap53.html">53. Formats</a>
+<ul class="sectlevel2">
+<li><a href="chap53.html#formats-definition">53.1. Format Definition</a></li>
+<li><a href="chap53.html#formats-properties">53.2. Format Properties</a></li>
+<li><a href="chap53.html#features-required-format-support">53.3. Required Format Support</a></li>
+</ul>
+</li>
+<li><a href="chap54.html">54. Additional Capabilities</a>
+<ul class="sectlevel2">
+<li><a href="chap54.html#capabilities-image">54.1. Additional Image Capabilities</a></li>
+<li><a href="chap54.html#capabilities-buffer">54.2. Additional Buffer Capabilities</a></li>
+<li><a href="chap54.html#capabilities-tensor">54.3. Additional Tensor Capabilities</a></li>
+<li><a href="chap54.html#capabilities-semaphore">54.4. Optional Semaphore Capabilities</a></li>
+<li><a href="chap54.html#capabilities-fence">54.5. Optional Fence Capabilities</a></li>
+<li><a href="chap54.html#features-timestamp-calibration">54.6. Timestamp Calibration Capabilities</a></li>
+</ul>
+</li>
+<li><a href="chap55.html">55. Debugging</a>
+<ul class="sectlevel2">
+<li><a href="chap55.html#debugging-debug-utils">55.1. Debug Utilities</a></li>
+<li><a href="chap55.html#debugging-debug-markers">55.2. Debug Markers</a></li>
+<li><a href="chap55.html#debugging-debug-report-callbacks">55.3. Debug Report Callbacks</a></li>
+<li><a href="chap55.html#_device_loss_debugging">55.4. Device Loss Debugging</a></li>
+<li><a href="chap55.html#debugging-tooling-info">55.5. Active Tooling Information</a></li>
+<li><a href="chap55.html#_frame_boundary">55.6. Frame Boundary</a></li>
+</ul>
+</li>
+<li><a href="chap56.html">Appendix A: Vulkan Environment for SPIR-V</a>
+<ul class="sectlevel2">
+<li><a href="chap56.html#_versions_and_formats">Versions and Formats</a></li>
+<li><a href="chap56.html#spirvenv-capabilities">Capabilities</a></li>
+<li><a href="chap56.html#spirvenv-module-validation">Validation Rules Within a Module</a></li>
+<li><a href="chap56.html#spirvenv-precision-operation">Precision and Operation of SPIR-V Instructions</a></li>
+<li><a href="chap56.html#spirvenv-buffer-indexing">Buffer Indexing Calculations</a></li>
+<li><a href="chap56.html#spirvenv-image-signedness">Signedness of SPIR-V Image Accesses</a></li>
+<li><a href="chap56.html#spirvenv-format-type-matching">Image Format and Type Matching</a></li>
+<li><a href="chap56.html#spirvenv-image-dimensions">Compatibility Between SPIR-V Image Dimensions and Vulkan ImageView Types</a></li>
+<li><a href="chap56.html#spirvenv-image-formats">Compatibility Between SPIR-V Image Formats and Vulkan Formats</a></li>
+<li><a href="chap56.html#spirenv-ray-query-precision-operation">Ray Query Precision and Operation</a></li>
+<li><a href="chap56.html#spirvenv-tensor-formats">Compatibility Between SPIR-V Tensor Element Types And Vulkan Formats</a></li>
+</ul>
+</li>
+<li><a href="chap57.html">Appendix B: Memory Model</a>
+<ul class="sectlevel2">
+<li><a href="chap57.html#memory-model-agent">Agent</a></li>
+<li><a href="chap57.html#memory-model-memory-location">Memory Location</a></li>
+<li><a href="chap57.html#memory-model-allocation">Allocation</a></li>
+<li><a href="chap57.html#memory-model-memory-operation">Memory Operation</a></li>
+<li><a href="chap57.html#memory-model-references">Reference</a></li>
+<li><a href="chap57.html#memory-model-program-order">Program-Order</a></li>
+<li><a href="chap57.html#shader-call-related">Shader Call Related</a></li>
+<li><a href="chap57.html#shader-call-order">Shader Call Order</a></li>
+<li><a href="chap57.html#memory-model-scope">Scope</a></li>
+<li><a href="chap57.html#memory-model-atomic-operation">Atomic Operation</a></li>
+<li><a href="chap57.html#memory-model-scoped-modification-order">Scoped Modification Order</a></li>
+<li><a href="chap57.html#memory-model-memory-semantics">Memory Semantics</a></li>
+<li><a href="chap57.html#memory-model-release-sequence">Release Sequence</a></li>
+<li><a href="chap57.html#memory-model-synchronizes-with">Synchronizes-With</a></li>
+<li><a href="chap57.html#memory-model-system-synchronizes-with">System-Synchronizes-With</a></li>
+<li><a href="chap57.html#memory-model-non-private">Private vs. Non-Private</a></li>
+<li><a href="chap57.html#memory-model-inter-thread-happens-before">Inter-Thread-Happens-Before</a></li>
+<li><a href="chap57.html#memory-model-happens-before">Happens-Before</a></li>
+<li><a href="chap57.html#memory-model-availability-visibility">Availability and Visibility</a></li>
+<li><a href="chap57.html#memory-model-vulkan-availability-visibility">Availability, Visibility, and Domain Operations</a></li>
+<li><a href="chap57.html#memory-model-availability-visibility-semantics">Availability and Visibility Semantics</a></li>
+<li><a href="chap57.html#memory-model-instruction-av-vis">Per-Instruction Availability and Visibility Semantics</a></li>
+<li><a href="chap57.html#memory-model-location-ordered">Location-Ordered</a></li>
+<li><a href="chap57.html#memory-model-access-data-race">Data Race</a></li>
+<li><a href="chap57.html#memory-model-visible-to">Visible-To</a></li>
+<li><a href="chap57.html#memory-model-acyclicity">Acyclicity</a></li>
+<li><a href="chap57.html#memory-model-shader-io">Shader I/O</a></li>
+<li><a href="chap57.html#memory-model-deallocation">Deallocation</a></li>
+<li><a href="chap57.html#memory-model-informative-descriptions">Descriptions (Informative)</a></li>
+<li><a href="chap57.html#memory-model-tessellation-output-ordering">Tessellation Output Ordering</a></li>
+<li><a href="chap57.html#memory-model-cooperative-matrix">Cooperative Matrix Memory Access</a></li>
+</ul>
+</li>
+<li><a href="chap58.html">Appendix C: Compressed Image Formats</a>
+<ul class="sectlevel2">
+<li><a href="chap58.html#appendix-compressedtex-bc">Block-Compressed Image Formats</a></li>
+<li><a href="chap58.html#appendix-compressedtex-etc2">ETC Compressed Image Formats</a></li>
+<li><a href="chap58.html#appendix-compressedtex-astc">ASTC Compressed Image Formats</a></li>
+<li><a href="chap58.html#appendix-compressedtex-pvrtc">PVRTC Compressed Image Formats</a></li>
+</ul>
+</li>
+<li><a href="chap59.html">Appendix D: Core Revisions (Informative)</a>
+<ul class="sectlevel2">
+<li><a href="chap59.html#versions-1.4">Vulkan Version 1.4</a></li>
+<li><a href="chap59.html#versions-1.3">Vulkan Version 1.3</a></li>
+<li><a href="chap59.html#versions-1.2">Vulkan Version 1.2</a></li>
+<li><a href="chap59.html#versions-1.1">Vulkan Version 1.1</a></li>
+<li><a href="chap59.html#versions-1.0">Vulkan Version 1.0</a></li>
+</ul>
+</li>
+<li><a href="chap60.html">Appendix E: Layers &amp; Extensions (Informative)</a>
+<ul class="sectlevel2">
+<li><a href="chap60.html#_extension_dependencies">Extension Dependencies</a></li>
+<li><a href="chap60.html#_extension_interactions">Extension Interactions</a></li>
+<li><a href="chap60.html#current-extension-appendices-list">List of Current Extensions</a></li>
+<li><a href="chap60.html#provisional-extension-appendices-list">List of Provisional Extensions</a></li>
+<li><a href="chap60.html#deprecated-extension-appendices-list">List of Deprecated Extensions</a></li>
+</ul>
+</li>
+<li><a href="chap61.html">Appendix F: Vulkan Roadmap Milestones</a>
+<ul class="sectlevel2">
+<li><a href="chap61.html#roadmap-2022">Roadmap 2022</a></li>
+<li><a href="chap61.html#roadmap-2024">Roadmap 2024</a></li>
+</ul>
+</li>
+<li><a href="chap62.html">Appendix G: Deprecation</a>
+<ul class="sectlevel2">
+<li><a href="chap62.html#_deprecated_functionality">Deprecated Functionality</a></li>
+</ul>
+</li>
+<li><a href="chap63.html">Appendix H: API Boilerplate</a>
+<ul class="sectlevel2">
+<li><a href="chap63.html#boilerplate-headers">Vulkan Header Files</a></li>
+<li><a href="chap63.html#boilerplate-wsi-header">Window System-Specific Header Control (Informative)</a></li>
+<li><a href="chap63.html#boilerplate-provisional-header">Provisional Extension Header Control (Informative)</a></li>
+<li><a href="chap63.html#boilerplate-video-std-headers">Video Std Headers</a></li>
+</ul>
+</li>
+<li><a href="chap64.html">Appendix I: Invariance</a>
+<ul class="sectlevel2">
+<li><a href="chap64.html#_repeatability">Repeatability</a></li>
+<li><a href="chap64.html#_multi_pass_algorithms">Multi-Pass Algorithms</a></li>
+<li><a href="chap64.html#_invariance_rules">Invariance Rules</a></li>
+<li><a href="chap64.html#_tessellation_invariance">Tessellation Invariance</a></li>
+</ul>
+</li>
+<li><a href="chap65.html">Appendix J: Lexicon</a>
+<ul class="sectlevel2">
+<li><a href="chap65.html#glossary">Glossary</a></li>
+<li><a href="chap65.html#lexicon-common-abbreviations">Common Abbreviations</a></li>
+<li><a href="chap65.html#lexicon-video-abbreviations">Video-Specific Abbreviations</a></li>
+<li><a href="chap65.html#lexicon-prefixes">Prefixes</a></li>
+</ul>
+</li>
+<li><a href="chap66.html">Appendix K: Credits (Informative)</a>
+<ul class="sectlevel2">
+<li><a href="chap66.html#_working_group_contributors_to_vulkan">Working Group Contributors to Vulkan</a></li>
+<li><a href="chap66.html#_other_credits">Other Credits</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="loading_msg" class="hidden" hidden=""><p>Loading… please wait.</p></div>
+<!--ChunkedSearchboxMarker-->
+<div class="searchbox"><label for="searchbox">Search: </label><input id="searchbox" type="text" disabled="disabled" value="Loading Search Data"><div id="resultsdiv"><ol id="results"></ol></div></div>
+<div id="content" class="loadable"><div class="sect1">
+<h2 id="fxvertex"><a class="anchor" href="chap24.html"></a>24. Fixed-Function Vertex Processing</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Vertex fetching is controlled via configurable state, as a logically
+distinct graphics pipeline stage.</p>
+</div>
+<div class="sect2">
+<h3 id="fxvertex-attrib"><a class="anchor" href="chap24.html#fxvertex-attrib"></a>24.1. Vertex Attributes</h3>
+<div class="paragraph">
+<p>Vertex shaders <strong class="purple">can</strong> define input variables, which receive <em>vertex attribute</em>
+data transferred from one or more <code>VkBuffer</code>(s) by drawing commands.
+Vertex shader input variables are bound to buffers via an indirect binding
+where the vertex shader associates a <em>vertex input attribute</em> number with
+each variable, vertex input attributes are associated to <em>vertex input
+bindings</em> on a per-pipeline basis, and vertex input bindings are associated
+with specific buffers on a per-draw basis via the
+<code>vkCmdBindVertexBuffers</code> command.
+Vertex input attribute and vertex input binding descriptions also contain
+format information controlling how data is extracted from buffer memory and
+converted to the format expected by the vertex shader.</p>
+</div>
+<div class="paragraph">
+<p>There are <code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputAttributes</code>
+number of vertex input attributes and
+<code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputBindings</code> number of vertex
+input bindings (each referred to by zero-based indices), where there are at
+least as many vertex input attributes as there are vertex input bindings.
+Applications <strong class="purple">can</strong> store multiple vertex input attributes interleaved in a
+single buffer, and use a single vertex input binding to access those
+attributes.</p>
+</div>
+<div class="paragraph">
+<p>In GLSL, vertex shaders associate input variables with a vertex input
+attribute number using the <code>location</code> layout qualifier.
+The <code>Component</code> layout qualifier associates components of a vertex shader
+input variable with components of a vertex input attribute.</p>
+</div>
+<div class="listingblock">
+<div class="title">GLSL Example</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="glsl"><span class="c1">// Assign location M to variableName</span>
+<span class="k">layout</span> <span class="p">(</span><span class="n">location</span><span class="o">=</span><span class="n">M</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="k">in</span> <span class="kt">vec2</span> <span class="n">variableName</span><span class="p">;</span>
+
+<span class="c1">// Assign locations [N,N+L) to the array elements of variableNameArray</span>
+<span class="k">layout</span> <span class="p">(</span><span class="n">location</span><span class="o">=</span><span class="n">N</span><span class="p">)</span> <span class="k">in</span> <span class="kt">vec4</span> <span class="n">variableNameArray</span><span class="p">[</span><span class="n">L</span><span class="p">];</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In SPIR-V, vertex shaders associate input variables with a vertex input
+attribute number using the <code>Location</code> decoration.
+The <code>Component</code> decoration associates components of a vertex shader input
+variable with components of a vertex input attribute.
+The <code>Location</code> and <code>Component</code> decorations are specified via the
+<code>OpDecorate</code> instruction.</p>
+</div>
+<div class="listingblock">
+<div class="title">SPIR-V Example</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="spirv">               ...
+          %1 = OpExtInstImport "GLSL.std.450"
+               ...
+               OpName %9 "variableName"
+               OpName %15 "variableNameArray"
+               OpDecorate %18 BuiltIn VertexIndex
+               OpDecorate %19 BuiltIn InstanceIndex
+               OpDecorate %9 Location M
+               OpDecorate %9 Component 2
+               OpDecorate %15 Location N
+               ...
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeFloat 32
+          %7 = OpTypeVector %6 2
+          %8 = OpTypePointer Input %7
+          %9 = OpVariable %8 Input
+         %10 = OpTypeVector %6 4
+         %11 = OpTypeInt 32 0
+         %12 = OpConstant %11 L
+         %13 = OpTypeArray %10 %12
+         %14 = OpTypePointer Input %13
+         %15 = OpVariable %14 Input
+               ...</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="fxvertex-attrib-location"><a class="anchor" href="chap24.html#fxvertex-attrib-location"></a>24.1.1. Attribute Location and Component Assignment</h4>
+<div class="paragraph">
+<p>The <code>Location</code> decoration specifies which vertex input attribute is used
+to read and interpret the data that a variable will consume.</p>
+</div>
+<div class="paragraph">
+<p>When a vertex shader input variable declared using a 16- or 32-bit scalar or
+vector data type is assigned a <code>Location</code>, its value(s) are taken from
+the components of the input attribute specified with the corresponding
+<code>VkVertexInputAttributeDescription</code>::<code>location</code>.
+The components used depend on the type of variable and the <code>Component</code>
+decoration specified in the variable declaration, as identified in
+<a href="chap24.html#fxvertex-attrib-components">Input Attribute Components Accessed By 16-Bit and 32-Bit Input Variables</a>.
+Any 16-bit or 32-bit scalar or vector input will consume a single
+<code>Location</code>.
+For 16-bit and 32-bit data types, missing components are filled in with
+default values as described <a href="chap24.html#fxvertex-input-extraction">below</a>.</p>
+</div>
+<div class="paragraph">
+<p>If an implementation supports <a href="chap51.html#features-storageInputOutput16"><code>storageInputOutput16</code></a>, vertex shader input variables <strong class="purple">can</strong> have a
+width of 16 bits.</p>
+</div>
+<div class="paragraph">
+<p>In all the following component assignment specifications, if
+the <a href="chap51.html#features-vertexAttributeRobustness"><code>vertexAttributeRobustness</code></a>
+feature is enabled,
+or
+the <a href="chap51.html#features-maintenance9"><code>maintenance9</code></a> feature is enabled,
+and there is no <code>VkVertexInputAttributeDescription</code>::<code>location</code>
+specified for the shader vertex attribute <code>Location</code> being read, the
+value (0,0,0,0) or (0,0,0,1) is used for each of the equivalent (x,y,z,w)
+components consumed entries as specified below.</p>
+</div>
+<table id="fxvertex-attrib-components" class="tableblock frame-all grid-all" style="width: 65%;">
+<caption class="title">Table 31. Input Attribute Components Accessed By 16-Bit and 32-Bit Input Variables</caption>
+<colgroup>
+<col style="width: 45.4545%;">
+<col style="width: 27.2727%;">
+<col style="width: 27.2728%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">16-bit or 32-bit data type</th>
+<th class="tableblock halign-left valign-top"><code>Component</code> decoration</th>
+<th class="tableblock halign-left valign-top">Components consumed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">scalar</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0 or unspecified</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(x, o, o, o)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">scalar</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(o, y, o, o)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">scalar</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(o, o, z, o)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">scalar</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(o, o, o, w)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">two-component vector</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0 or unspecified</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(x, y, o, o)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">two-component vector</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(o, y, z, o)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">two-component vector</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(o, o, z, w)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">three-component vector</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0 or unspecified</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(x, y, z, o)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">three-component vector</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(o, y, z, w)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">four-component vector</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0 or unspecified</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(x, y, z, w)</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Components indicated by “o” are available for use by other input variables
+which are sourced from the same attribute, and if used, are either filled
+with the corresponding component from the input format (if present), or the
+default value.</p>
+</div>
+<div class="paragraph">
+<p>When a vertex shader input variable declared using a 32-bit floating-point
+matrix type is assigned a <code>Location</code> <em>i</em>, its values are taken from
+consecutive input attributes starting with the corresponding
+<code>VkVertexInputAttributeDescription</code>::<code>location</code>.
+Such matrices are treated as an array of column vectors with values taken
+from the input attributes identified in <a href="chap24.html#fxvertex-attrib-matrix">Input Attributes Accessed by 32-Bit Input Matrix Variables</a>.
+The <code>VkVertexInputAttributeDescription</code>::<code>format</code> <strong class="purple">must</strong> be specified
+with a <a href="chap53.html#VkFormat">VkFormat</a> that corresponds to the appropriate type of column
+vector.
+The <code>Component</code> decoration <strong class="purple">must</strong> not be used with matrix types.</p>
+</div>
+<table id="fxvertex-attrib-matrix" class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 32. Input Attributes Accessed by 32-Bit Input Matrix Variables</caption>
+<colgroup>
+<col style="width: 10%;">
+<col style="width: 24%;">
+<col style="width: 21%;">
+<col style="width: 45%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Data type</th>
+<th class="tableblock halign-left valign-top">Column vector type</th>
+<th class="tableblock halign-left valign-top">Locations consumed</th>
+<th class="tableblock halign-left valign-top">Components consumed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mat2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">two-component vector</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">i, i+1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(x, y, o, o), (x, y, o, o)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mat2x3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">three-component vector</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">i, i+1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(x, y, z, o), (x, y, z, o)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mat2x4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">four-component vector</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">i, i+1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(x, y, z, w), (x, y, z, w)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mat3x2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">two-component vector</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">i, i+1, i+2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(x, y, o, o), (x, y, o, o), (x, y, o, o)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mat3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">three-component vector</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">i, i+1, i+2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(x, y, z, o), (x, y, z, o), (x, y, z, o)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mat3x4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">four-component vector</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">i, i+1, i+2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(x, y, z, w), (x, y, z, w), (x, y, z, w)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mat4x2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">two-component vector</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">i, i+1, i+2, i+3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(x, y, o, o), (x, y, o, o), (x, y, o, o), (x, y, o, o)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mat4x3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">three-component vector</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">i, i+1, i+2, i+3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(x, y, z, o), (x, y, z, o), (x, y, z, o), (x, y, z, o)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mat4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">four-component vector</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">i, i+1, i+2, i+3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(x, y, z, w), (x, y, z, w), (x, y, z, w), (x, y, z, w)</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Components indicated by “o” are available for use by other input variables
+which are sourced from the same attribute, and if used, are either filled
+with the corresponding component from the input (if present), or the default
+value.</p>
+</div>
+<div class="paragraph">
+<p>When a vertex shader input variable declared using a scalar or vector 64-bit
+data type is assigned a <code>Location</code> <em>i</em>, its values are taken from
+consecutive input attributes starting with the corresponding
+<code>VkVertexInputAttributeDescription</code>::<code>location</code>.
+The <code>Location</code> slots and <code>Component</code> words used depend on the type of
+variable and the <code>Component</code> decoration specified in the variable
+declaration, as identified in <a href="chap24.html#fxvertex-attrib-double">Input Attribute Locations and Components Accessed by 64-Bit Input Variables</a>.
+For 64-bit data types, no default attribute values are provided.
+Input variables <strong class="purple">must</strong> not use more components than provided by the
+attribute.</p>
+</div>
+<table id="fxvertex-attrib-double" class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 33. Input Attribute Locations and Components Accessed by 64-Bit Input Variables</caption>
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 12%;">
+<col style="width: 25%;">
+<col style="width: 14%;">
+<col style="width: 18%;">
+<col style="width: 13%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-center valign-middle">Input format</th>
+<th class="tableblock halign-center valign-top">Locations consumed</th>
+<th class="tableblock halign-center valign-middle">64-bit data type</th>
+<th class="tableblock halign-center valign-top"><code>Location</code> decoration</th>
+<th class="tableblock halign-center valign-top"><code>Component</code> decoration</th>
+<th class="tableblock halign-center valign-top">32-bit components consumed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">R64</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">i</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">scalar</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">i</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">0 or unspecified</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(x, y, -, -)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle" rowspan="3"><p class="tableblock">R64G64</p></td>
+<td class="tableblock halign-center valign-middle" rowspan="3"><p class="tableblock">i</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">scalar</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">i</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">0 or unspecified</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(x, y, o, o)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">scalar</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">i</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">(o, o, z, w)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">two-component vector</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">i</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0 or unspecified</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">(x, y, z, w)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle" rowspan="5"><p class="tableblock">R64G64B64</p></td>
+<td class="tableblock halign-center valign-middle" rowspan="5"><p class="tableblock">i, i+1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">scalar</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">i</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">0 or unspecified</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(x, y, o, o), (o, o, -, -)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">scalar</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">i</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">(o, o, z, w), (o, o, -, -)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">scalar</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">i+1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0 or unspecified</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">(o, o, o, o), (x, y, -, -)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">two-component vector</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">i</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0 or unspecified</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">(x, y, z, w), (o, o, -, -)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">three-component vector</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">i</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">unspecified</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">(x, y, z, w), (x, y, -, -)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle" rowspan="8"><p class="tableblock">R64G64B64A64</p></td>
+<td class="tableblock halign-center valign-middle" rowspan="8"><p class="tableblock">i, i+1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">scalar</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">i</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">0 or unspecified</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(x, y, o, o), (o, o, o, o)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">scalar</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">i</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">(o, o, z, w), (o, o, o, o)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">scalar</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">i+1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0 or unspecified</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">(o, o, o, o), (x, y, o, o)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">scalar</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">i+1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">(o, o, o, o), (o, o, z, w)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">two-component vector</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">i</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0 or unspecified</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">(x, y, z, w), (o, o, o, o)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">two-component vector</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">i+1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0 or unspecified</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">(o, o, o, o), (x, y, z, w)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">three-component vector</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">i</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">unspecified</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">(x, y, z, w), (x, y, o, o)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">four-component vector</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">i</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">unspecified</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">(x, y, z, w), (x, y, z, w)</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Components indicated by “o” are available for use by other input variables
+which are sourced from the same attribute.
+Components indicated by “-” are not available for input variables as there
+are no default values provided for 64-bit data types, and there is no data
+provided by the input format.</p>
+</div>
+<div class="paragraph">
+<p>When a vertex shader input variable declared using a 64-bit floating-point
+matrix type is assigned a <code>Location</code> <em>i</em>, its values are taken from
+consecutive input attribute locations.
+Such matrices are treated as an array of column vectors with values taken
+from the input attributes as shown in <a href="chap24.html#fxvertex-attrib-double">Input Attribute Locations and Components Accessed by 64-Bit Input Variables</a>.
+Each column vector starts at the <code>Location</code> immediately following the
+last <code>Location</code> of the previous column vector.
+The number of attributes and components assigned to each matrix is
+determined by the matrix dimensions and ranges from two to eight locations.</p>
+</div>
+<div class="paragraph">
+<p>When a vertex shader input variable declared using an array type is assigned
+a location, its values are taken from consecutive input attributes starting
+with the corresponding
+<code>VkVertexInputAttributeDescription</code>::<code>location</code>.
+The number of attributes and components assigned to each element are
+determined according to the data type of the array elements and
+<code>Component</code> decoration (if any) specified in the declaration of the
+array, as described above.
+Each element of the array, in order, is assigned to consecutive locations,
+but all at the same specified component within each location.</p>
+</div>
+<div class="paragraph">
+<p>Only input variables declared with the data types and component decorations
+as specified above are supported.
+Two variables are allowed to share the same <code>Location</code> slot only if their
+<code>Component</code> words do not overlap.
+If multiple variables share the same <code>Location</code> slot, they <strong class="purple">must</strong> all have
+the same SPIR-V floating-point component type or all have the same width
+scalar type components.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="fxvertex-input"><a class="anchor" href="chap24.html#fxvertex-input"></a>24.2. Vertex Input Description</h3>
+<div class="paragraph">
+<p>Applications specify vertex input attribute and vertex input binding
+descriptions as part of graphics pipeline creation by setting the
+<a href="chap10.html#VkGraphicsPipelineCreateInfo">VkGraphicsPipelineCreateInfo</a>::<code>pVertexInputState</code> pointer to a
+<a href="chap24.html#VkPipelineVertexInputStateCreateInfo">VkPipelineVertexInputStateCreateInfo</a> structure.
+Alternatively, if the graphics pipeline is created with the
+<code>VK_DYNAMIC_STATE_VERTEX_INPUT_EXT</code> dynamic state enabled, then the
+vertex input attribute and vertex input binding descriptions are specified
+dynamically with <a href="chap24.html#vkCmdSetVertexInputEXT">vkCmdSetVertexInputEXT</a>, and the
+<a href="chap10.html#VkGraphicsPipelineCreateInfo">VkGraphicsPipelineCreateInfo</a>::<code>pVertexInputState</code> pointer is
+ignored.</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkPipelineVertexInputStateCreateInfo</code> structure is defined as:</p>
+</div>
+<div id="VkPipelineVertexInputStateCreateInfo" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_VERSION_1_0</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="nc">VkPipelineVertexInputStateCreateInfo</span> <span class="p">{</span>
+    <span class="n">VkStructureType</span>                             <span class="n">sType</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">void</span><span class="o">*</span>                                 <span class="n">pNext</span><span class="p">;</span>
+    <span class="n">VkPipelineVertexInputStateCreateFlags</span>       <span class="n">flags</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>                                    <span class="n">vertexBindingDescriptionCount</span><span class="p">;</span>
+    <span class="k">const</span> <span class="n">VkVertexInputBindingDescription</span><span class="o">*</span>      <span class="n">pVertexBindingDescriptions</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>                                    <span class="n">vertexAttributeDescriptionCount</span><span class="p">;</span>
+    <span class="k">const</span> <span class="n">VkVertexInputAttributeDescription</span><span class="o">*</span>    <span class="n">pVertexAttributeDescriptions</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">VkPipelineVertexInputStateCreateInfo</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="chap3.html#VkStructureType">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>flags</code> is reserved for future use.</p>
+</li>
+<li>
+<p><code>vertexBindingDescriptionCount</code> is the number of vertex binding
+descriptions provided in <code>pVertexBindingDescriptions</code>.</p>
+</li>
+<li>
+<p><code>pVertexBindingDescriptions</code> is a pointer to an array of
+<a href="chap24.html#VkVertexInputBindingDescription">VkVertexInputBindingDescription</a> structures.</p>
+</li>
+<li>
+<p><code>vertexAttributeDescriptionCount</code> is the number of vertex attribute
+descriptions provided in <code>pVertexAttributeDescriptions</code>.</p>
+</li>
+<li>
+<p><code>pVertexAttributeDescriptions</code> is a pointer to an array of
+<a href="chap24.html#VkVertexInputAttributeDescription">VkVertexInputAttributeDescription</a> structures.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkPipelineVertexInputStateCreateInfo-vertexBindingDescriptionCount-00613" href="chap24.html#VUID-VkPipelineVertexInputStateCreateInfo-vertexBindingDescriptionCount-00613"></a> <span class="vuid">VUID-VkPipelineVertexInputStateCreateInfo-vertexBindingDescriptionCount-00613</span><br>
+
+<code>vertexBindingDescriptionCount</code> <strong class="purple">must</strong> be less than or equal to
+<code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputBindings</code></p>
+</li>
+<li>
+<p><a id="VUID-VkPipelineVertexInputStateCreateInfo-vertexAttributeDescriptionCount-00614" href="chap24.html#VUID-VkPipelineVertexInputStateCreateInfo-vertexAttributeDescriptionCount-00614"></a> <span class="vuid">VUID-VkPipelineVertexInputStateCreateInfo-vertexAttributeDescriptionCount-00614</span><br>
+
+<code>vertexAttributeDescriptionCount</code> <strong class="purple">must</strong> be less than or equal to
+<code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputAttributes</code></p>
+</li>
+<li>
+<p><a id="VUID-VkPipelineVertexInputStateCreateInfo-binding-00615" href="chap24.html#VUID-VkPipelineVertexInputStateCreateInfo-binding-00615"></a> <span class="vuid">VUID-VkPipelineVertexInputStateCreateInfo-binding-00615</span><br>
+
+For every <code>binding</code> specified by each element of
+<code>pVertexAttributeDescriptions</code>, a
+<a href="chap24.html#VkVertexInputBindingDescription">VkVertexInputBindingDescription</a> <strong class="purple">must</strong> exist in
+<code>pVertexBindingDescriptions</code> with the same value of <code>binding</code></p>
+</li>
+<li>
+<p><a id="VUID-VkPipelineVertexInputStateCreateInfo-pVertexBindingDescriptions-00616" href="chap24.html#VUID-VkPipelineVertexInputStateCreateInfo-pVertexBindingDescriptions-00616"></a> <span class="vuid">VUID-VkPipelineVertexInputStateCreateInfo-pVertexBindingDescriptions-00616</span><br>
+
+All elements of <code>pVertexBindingDescriptions</code> <strong class="purple">must</strong> describe distinct
+binding numbers</p>
+</li>
+<li>
+<p><a id="VUID-VkPipelineVertexInputStateCreateInfo-pVertexAttributeDescriptions-00617" href="chap24.html#VUID-VkPipelineVertexInputStateCreateInfo-pVertexAttributeDescriptions-00617"></a> <span class="vuid">VUID-VkPipelineVertexInputStateCreateInfo-pVertexAttributeDescriptions-00617</span><br>
+
+All elements of <code>pVertexAttributeDescriptions</code> <strong class="purple">must</strong> describe
+distinct attribute locations</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkPipelineVertexInputStateCreateInfo-sType-sType" href="chap24.html#VUID-VkPipelineVertexInputStateCreateInfo-sType-sType"></a> <span class="vuid">VUID-VkPipelineVertexInputStateCreateInfo-sType-sType</span><br>
+ <code>sType</code> <strong class="purple">must</strong> be <code>VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO</code></p>
+</li>
+<li>
+<p><a id="VUID-VkPipelineVertexInputStateCreateInfo-pNext-pNext" href="chap24.html#VUID-VkPipelineVertexInputStateCreateInfo-pNext-pNext"></a> <span class="vuid">VUID-VkPipelineVertexInputStateCreateInfo-pNext-pNext</span><br>
+ <code>pNext</code> <strong class="purple">must</strong> be <code>NULL</code> or a pointer to a valid instance of <a href="chap24.html#VkPipelineVertexInputDivisorStateCreateInfo">VkPipelineVertexInputDivisorStateCreateInfo</a></p>
+</li>
+<li>
+<p><a id="VUID-VkPipelineVertexInputStateCreateInfo-sType-unique" href="chap24.html#VUID-VkPipelineVertexInputStateCreateInfo-sType-unique"></a> <span class="vuid">VUID-VkPipelineVertexInputStateCreateInfo-sType-unique</span><br>
+ The <code>sType</code> value of each structure in the <code>pNext</code> chain <strong class="purple">must</strong> be unique</p>
+</li>
+<li>
+<p><a id="VUID-VkPipelineVertexInputStateCreateInfo-flags-zerobitmask" href="chap24.html#VUID-VkPipelineVertexInputStateCreateInfo-flags-zerobitmask"></a> <span class="vuid">VUID-VkPipelineVertexInputStateCreateInfo-flags-zerobitmask</span><br>
+ <code>flags</code> <strong class="purple">must</strong> be <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-VkPipelineVertexInputStateCreateInfo-pVertexBindingDescriptions-parameter" href="chap24.html#VUID-VkPipelineVertexInputStateCreateInfo-pVertexBindingDescriptions-parameter"></a> <span class="vuid">VUID-VkPipelineVertexInputStateCreateInfo-pVertexBindingDescriptions-parameter</span><br>
+ If <code>vertexBindingDescriptionCount</code> is not <code>0</code>, <code>pVertexBindingDescriptions</code> <strong class="purple">must</strong> be a valid pointer to an array of <code>vertexBindingDescriptionCount</code> valid <a href="chap24.html#VkVertexInputBindingDescription">VkVertexInputBindingDescription</a> structures</p>
+</li>
+<li>
+<p><a id="VUID-VkPipelineVertexInputStateCreateInfo-pVertexAttributeDescriptions-parameter" href="chap24.html#VUID-VkPipelineVertexInputStateCreateInfo-pVertexAttributeDescriptions-parameter"></a> <span class="vuid">VUID-VkPipelineVertexInputStateCreateInfo-pVertexAttributeDescriptions-parameter</span><br>
+ If <code>vertexAttributeDescriptionCount</code> is not <code>0</code>, <code>pVertexAttributeDescriptions</code> <strong class="purple">must</strong> be a valid pointer to an array of <code>vertexAttributeDescriptionCount</code> valid <a href="chap24.html#VkVertexInputAttributeDescription">VkVertexInputAttributeDescription</a> structures</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div id="VkPipelineVertexInputStateCreateFlags" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_VERSION_1_0</span>
+<span class="k">typedef</span> <span class="n">VkFlags</span> <span class="n">VkPipelineVertexInputStateCreateFlags</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>VkPipelineVertexInputStateCreateFlags</code> is a bitmask type for setting a
+mask, but is currently reserved for future use.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Each vertex input binding is specified by the
+<code>VkVertexInputBindingDescription</code> structure, defined as:</p>
+</div>
+<div id="VkVertexInputBindingDescription" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_VERSION_1_0</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="nc">VkVertexInputBindingDescription</span> <span class="p">{</span>
+    <span class="kt">uint32_t</span>             <span class="n">binding</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>             <span class="n">stride</span><span class="p">;</span>
+    <span class="n">VkVertexInputRate</span>    <span class="n">inputRate</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">VkVertexInputBindingDescription</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>binding</code> is the binding number that this structure describes.</p>
+</li>
+<li>
+<p><code>stride</code> is the byte stride between consecutive elements within the
+buffer.</p>
+</li>
+<li>
+<p><code>inputRate</code> is a <a href="chap24.html#VkVertexInputRate">VkVertexInputRate</a> value specifying whether
+vertex attribute addressing is a function of the vertex index or of the
+instance index.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkVertexInputBindingDescription-binding-00618" href="chap24.html#VUID-VkVertexInputBindingDescription-binding-00618"></a> <span class="vuid">VUID-VkVertexInputBindingDescription-binding-00618</span><br>
+
+<code>binding</code> <strong class="purple">must</strong> be less than
+<code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputBindings</code></p>
+</li>
+<li>
+<p><a id="VUID-VkVertexInputBindingDescription-stride-00619" href="chap24.html#VUID-VkVertexInputBindingDescription-stride-00619"></a> <span class="vuid">VUID-VkVertexInputBindingDescription-stride-00619</span><br>
+
+<code>stride</code> <strong class="purple">must</strong> be less than or equal to
+<code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputBindingStride</code></p>
+</li>
+<li>
+<p><a id="VUID-VkVertexInputBindingDescription-stride-04456" href="chap24.html#VUID-VkVertexInputBindingDescription-stride-04456"></a> <span class="vuid">VUID-VkVertexInputBindingDescription-stride-04456</span><br>
+
+If the <code><a href="chap60.html#VK_KHR_portability_subset">VK_KHR_portability_subset</a></code> extension is enabled,
+<code>stride</code> <strong class="purple">must</strong> be a multiple of, and at least as large as,
+<a href="chap52.html#VkPhysicalDevicePortabilitySubsetPropertiesKHR">VkPhysicalDevicePortabilitySubsetPropertiesKHR</a>::<code>minVertexInputBindingStrideAlignment</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkVertexInputBindingDescription-inputRate-parameter" href="chap24.html#VUID-VkVertexInputBindingDescription-inputRate-parameter"></a> <span class="vuid">VUID-VkVertexInputBindingDescription-inputRate-parameter</span><br>
+ <code>inputRate</code> <strong class="purple">must</strong> be a valid <a href="chap24.html#VkVertexInputRate">VkVertexInputRate</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Possible values of <a href="chap24.html#VkVertexInputBindingDescription">VkVertexInputBindingDescription</a>::<code>inputRate</code>,
+specifying the rate at which vertex attributes are pulled from buffers, are:</p>
+</div>
+<div id="VkVertexInputRate" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_VERSION_1_0</span>
+<span class="k">typedef</span> <span class="k">enum</span> <span class="n">VkVertexInputRate</span> <span class="p">{</span>
+    <span class="n">VK_VERTEX_INPUT_RATE_VERTEX</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">VK_VERTEX_INPUT_RATE_INSTANCE</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+<span class="p">}</span> <span class="n">VkVertexInputRate</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_VERTEX_INPUT_RATE_VERTEX</code> specifies that vertex attribute
+addressing is a function of the vertex index.</p>
+</li>
+<li>
+<p><code>VK_VERTEX_INPUT_RATE_INSTANCE</code> specifies that vertex attribute
+addressing is a function of the instance index.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Each vertex input attribute is specified by the
+<code>VkVertexInputAttributeDescription</code> structure, defined as:</p>
+</div>
+<div id="VkVertexInputAttributeDescription" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_VERSION_1_0</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="nc">VkVertexInputAttributeDescription</span> <span class="p">{</span>
+    <span class="kt">uint32_t</span>    <span class="n">location</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>    <span class="n">binding</span><span class="p">;</span>
+    <span class="n">VkFormat</span>    <span class="n">format</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>    <span class="n">offset</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">VkVertexInputAttributeDescription</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>location</code> is the shader input location number for this attribute.</p>
+</li>
+<li>
+<p><code>binding</code> is the binding number which this attribute takes its data
+from.</p>
+</li>
+<li>
+<p><code>format</code> is the size and type of the vertex attribute data.</p>
+</li>
+<li>
+<p><code>offset</code> is a byte offset of this attribute relative to the start of
+an element in the vertex input binding.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkVertexInputAttributeDescription-location-00620" href="chap24.html#VUID-VkVertexInputAttributeDescription-location-00620"></a> <span class="vuid">VUID-VkVertexInputAttributeDescription-location-00620</span><br>
+
+<code>location</code> <strong class="purple">must</strong> be less than
+<code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputAttributes</code></p>
+</li>
+<li>
+<p><a id="VUID-VkVertexInputAttributeDescription-binding-00621" href="chap24.html#VUID-VkVertexInputAttributeDescription-binding-00621"></a> <span class="vuid">VUID-VkVertexInputAttributeDescription-binding-00621</span><br>
+
+<code>binding</code> <strong class="purple">must</strong> be less than
+<code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputBindings</code></p>
+</li>
+<li>
+<p><a id="VUID-VkVertexInputAttributeDescription-offset-00622" href="chap24.html#VUID-VkVertexInputAttributeDescription-offset-00622"></a> <span class="vuid">VUID-VkVertexInputAttributeDescription-offset-00622</span><br>
+
+<code>offset</code> <strong class="purple">must</strong> be less than or equal to
+<code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputAttributeOffset</code></p>
+</li>
+<li>
+<p><a id="VUID-VkVertexInputAttributeDescription-format-00623" href="chap24.html#VUID-VkVertexInputAttributeDescription-format-00623"></a> <span class="vuid">VUID-VkVertexInputAttributeDescription-format-00623</span><br>
+
+The <a href="chap12.html#resources-buffer-view-format-features">format features</a> of
+<code>format</code> <strong class="purple">must</strong> contain <code>VK_FORMAT_FEATURE_VERTEX_BUFFER_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkVertexInputAttributeDescription-vertexAttributeAccessBeyondStride-04457" href="chap24.html#VUID-VkVertexInputAttributeDescription-vertexAttributeAccessBeyondStride-04457"></a> <span class="vuid">VUID-VkVertexInputAttributeDescription-vertexAttributeAccessBeyondStride-04457</span><br>
+
+If the <code><a href="chap60.html#VK_KHR_portability_subset">VK_KHR_portability_subset</a></code> extension is enabled, and
+<a href="chap51.html#VkPhysicalDevicePortabilitySubsetFeaturesKHR">VkPhysicalDevicePortabilitySubsetFeaturesKHR</a>::<code>vertexAttributeAccessBeyondStride</code>
+is <code>VK_FALSE</code>, the sum of <code>offset</code> plus the size of the vertex
+attribute data described by <code>format</code> <strong class="purple">must</strong> not be greater than
+<code>stride</code> in the <a href="chap24.html#VkVertexInputBindingDescription">VkVertexInputBindingDescription</a> referenced in
+<code>binding</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkVertexInputAttributeDescription-format-parameter" href="chap24.html#VUID-VkVertexInputAttributeDescription-format-parameter"></a> <span class="vuid">VUID-VkVertexInputAttributeDescription-format-parameter</span><br>
+ <code>format</code> <strong class="purple">must</strong> be a valid <a href="chap53.html#VkFormat">VkFormat</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To <a href="chap10.html#pipelines-dynamic-state">dynamically set</a> the vertex input attribute
+and vertex input binding descriptions, call:</p>
+</div>
+<div id="vkCmdSetVertexInputEXT" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_EXT_shader_object, VK_EXT_vertex_input_dynamic_state</span>
+<span class="kt">void</span> <span class="nf">vkCmdSetVertexInputEXT</span><span class="p">(</span>
+    <span class="n">VkCommandBuffer</span>                             <span class="n">commandBuffer</span><span class="p">,</span>
+    <span class="kt">uint32_t</span>                                    <span class="n">vertexBindingDescriptionCount</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">VkVertexInputBindingDescription2EXT</span><span class="o">*</span>  <span class="n">pVertexBindingDescriptions</span><span class="p">,</span>
+    <span class="kt">uint32_t</span>                                    <span class="n">vertexAttributeDescriptionCount</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">VkVertexInputAttributeDescription2EXT</span><span class="o">*</span> <span class="n">pVertexAttributeDescriptions</span><span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer into which the command will be
+recorded.</p>
+</li>
+<li>
+<p><code>vertexBindingDescriptionCount</code> is the number of vertex binding
+descriptions provided in <code>pVertexBindingDescriptions</code>.</p>
+</li>
+<li>
+<p><code>pVertexBindingDescriptions</code> is a pointer to an array of
+<a href="chap24.html#VkVertexInputBindingDescription2EXT">VkVertexInputBindingDescription2EXT</a> structures.</p>
+</li>
+<li>
+<p><code>vertexAttributeDescriptionCount</code> is the number of vertex attribute
+descriptions provided in <code>pVertexAttributeDescriptions</code>.</p>
+</li>
+<li>
+<p><code>pVertexAttributeDescriptions</code> is a pointer to an array of
+<a href="chap24.html#VkVertexInputAttributeDescription2EXT">VkVertexInputAttributeDescription2EXT</a> structures.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This command sets the vertex input attribute and vertex input binding
+descriptions state for subsequent drawing commands
+when drawing using <a href="chap9.html#shaders-objects">shader objects</a>, or
+when the graphics pipeline is created with
+<code>VK_DYNAMIC_STATE_VERTEX_INPUT_EXT</code> set in
+<a href="chap10.html#VkPipelineDynamicStateCreateInfo">VkPipelineDynamicStateCreateInfo</a>::<code>pDynamicStates</code>.
+Otherwise, this state is specified by the
+<a href="chap10.html#VkGraphicsPipelineCreateInfo">VkGraphicsPipelineCreateInfo</a>::<code>pVertexInputState</code> values used to
+create the currently active pipeline.</p>
+</div>
+<div class="paragraph">
+<p>If
+drawing using <a href="chap9.html#shaders-objects">shader objects</a>,
+or if
+the bound pipeline state object was also created with the
+<code>VK_DYNAMIC_STATE_VERTEX_INPUT_BINDING_STRIDE</code> dynamic state enabled,
+then <a href="chap24.html#vkCmdBindVertexBuffers2">vkCmdBindVertexBuffers2</a> can be used instead of
+<code>vkCmdSetVertexInputEXT</code> to dynamically set the stride.</p>
+</div>
+<div class="paragraph">
+<p>The vertex attribute description for any location in the range
+<span class="eq">[0,<code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputAttributes</code>)</span> not
+specified in the <code>pVertexAttributeDescriptions</code> array becomes
+undefined.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdSetVertexInputEXT-None-08546" href="chap24.html#VUID-vkCmdSetVertexInputEXT-None-08546"></a> <span class="vuid">VUID-vkCmdSetVertexInputEXT-None-08546</span><br>
+
+Either the <a href="chap51.html#features-vertexInputDynamicState"><code>vertexInputDynamicState</code></a> feature or the <a href="chap51.html#features-shaderObject"><code>shaderObject</code></a> feature or both <strong class="purple">must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdSetVertexInputEXT-vertexBindingDescriptionCount-04791" href="chap24.html#VUID-vkCmdSetVertexInputEXT-vertexBindingDescriptionCount-04791"></a> <span class="vuid">VUID-vkCmdSetVertexInputEXT-vertexBindingDescriptionCount-04791</span><br>
+
+<code>vertexBindingDescriptionCount</code> <strong class="purple">must</strong> be less than or equal to
+<code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputBindings</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdSetVertexInputEXT-vertexAttributeDescriptionCount-04792" href="chap24.html#VUID-vkCmdSetVertexInputEXT-vertexAttributeDescriptionCount-04792"></a> <span class="vuid">VUID-vkCmdSetVertexInputEXT-vertexAttributeDescriptionCount-04792</span><br>
+
+<code>vertexAttributeDescriptionCount</code> <strong class="purple">must</strong> be less than or equal to
+<code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputAttributes</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdSetVertexInputEXT-binding-04793" href="chap24.html#VUID-vkCmdSetVertexInputEXT-binding-04793"></a> <span class="vuid">VUID-vkCmdSetVertexInputEXT-binding-04793</span><br>
+
+For every <code>binding</code> specified by each element of
+<code>pVertexAttributeDescriptions</code>, a
+<a href="chap24.html#VkVertexInputBindingDescription2EXT">VkVertexInputBindingDescription2EXT</a> <strong class="purple">must</strong> exist in
+<code>pVertexBindingDescriptions</code> with the same value of <code>binding</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdSetVertexInputEXT-pVertexBindingDescriptions-04794" href="chap24.html#VUID-vkCmdSetVertexInputEXT-pVertexBindingDescriptions-04794"></a> <span class="vuid">VUID-vkCmdSetVertexInputEXT-pVertexBindingDescriptions-04794</span><br>
+
+All elements of <code>pVertexBindingDescriptions</code> <strong class="purple">must</strong> describe distinct
+binding numbers</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdSetVertexInputEXT-pVertexAttributeDescriptions-04795" href="chap24.html#VUID-vkCmdSetVertexInputEXT-pVertexAttributeDescriptions-04795"></a> <span class="vuid">VUID-vkCmdSetVertexInputEXT-pVertexAttributeDescriptions-04795</span><br>
+
+All elements of <code>pVertexAttributeDescriptions</code> <strong class="purple">must</strong> describe
+distinct attribute locations</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdSetVertexInputEXT-commandBuffer-parameter" href="chap24.html#VUID-vkCmdSetVertexInputEXT-commandBuffer-parameter"></a> <span class="vuid">VUID-vkCmdSetVertexInputEXT-commandBuffer-parameter</span><br>
+ <code>commandBuffer</code> <strong class="purple">must</strong> be a valid <a href="chap6.html#VkCommandBuffer">VkCommandBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdSetVertexInputEXT-pVertexBindingDescriptions-parameter" href="chap24.html#VUID-vkCmdSetVertexInputEXT-pVertexBindingDescriptions-parameter"></a> <span class="vuid">VUID-vkCmdSetVertexInputEXT-pVertexBindingDescriptions-parameter</span><br>
+ If <code>vertexBindingDescriptionCount</code> is not <code>0</code>, <code>pVertexBindingDescriptions</code> <strong class="purple">must</strong> be a valid pointer to an array of <code>vertexBindingDescriptionCount</code> valid <a href="chap24.html#VkVertexInputBindingDescription2EXT">VkVertexInputBindingDescription2EXT</a> structures</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdSetVertexInputEXT-pVertexAttributeDescriptions-parameter" href="chap24.html#VUID-vkCmdSetVertexInputEXT-pVertexAttributeDescriptions-parameter"></a> <span class="vuid">VUID-vkCmdSetVertexInputEXT-pVertexAttributeDescriptions-parameter</span><br>
+ If <code>vertexAttributeDescriptionCount</code> is not <code>0</code>, <code>pVertexAttributeDescriptions</code> <strong class="purple">must</strong> be a valid pointer to an array of <code>vertexAttributeDescriptionCount</code> valid <a href="chap24.html#VkVertexInputAttributeDescription2EXT">VkVertexInputAttributeDescription2EXT</a> structures</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdSetVertexInputEXT-commandBuffer-recording" href="chap24.html#VUID-vkCmdSetVertexInputEXT-commandBuffer-recording"></a> <span class="vuid">VUID-vkCmdSetVertexInputEXT-commandBuffer-recording</span><br>
+ <code>commandBuffer</code> <strong class="purple">must</strong> be in the <a href="chap6.html#commandbuffers-lifecycle">recording state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdSetVertexInputEXT-commandBuffer-cmdpool" href="chap24.html#VUID-vkCmdSetVertexInputEXT-commandBuffer-cmdpool"></a> <span class="vuid">VUID-vkCmdSetVertexInputEXT-commandBuffer-cmdpool</span><br>
+ The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong class="purple">must</strong> support VK_QUEUE_GRAPHICS_BIT operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdSetVertexInputEXT-videocoding" href="chap24.html#VUID-vkCmdSetVertexInputEXT-videocoding"></a> <span class="vuid">VUID-vkCmdSetVertexInputEXT-videocoding</span><br>
+ This command <strong class="purple">must</strong> only be called outside of a video coding scope</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>commandBuffer</code> <strong class="purple">must</strong> be externally synchronized</p>
+</li>
+<li>
+<p>Host access to the <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong class="purple">must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Command Properties</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><a href="chap6.html#VkCommandBufferLevel">Command Buffer Levels</a></th>
+<th class="tableblock halign-left valign-top"><a href="chap8.html#vkCmdBeginRenderPass">Render Pass Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="chap45.html#vkCmdBeginVideoCodingKHR">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="chap5.html#VkQueueFlagBits">Supported Queue Types</a></th>
+<th class="tableblock halign-left valign-top"><a href="chap3.html#fundamentals-queueoperation-command-types">Command Type</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Both</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VK_QUEUE_GRAPHICS_BIT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">State</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Conditional Rendering</div>
+<div class="paragraph">
+<p>vkCmdSetVertexInputEXT is not affected by <a href="chap23.html#drawing-conditional-rendering">conditional rendering</a></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkVertexInputBindingDescription2EXT</code> structure is defined as:</p>
+</div>
+<div id="VkVertexInputBindingDescription2EXT" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_EXT_shader_object, VK_EXT_vertex_input_dynamic_state</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="nc">VkVertexInputBindingDescription2EXT</span> <span class="p">{</span>
+    <span class="n">VkStructureType</span>      <span class="n">sType</span><span class="p">;</span>
+    <span class="kt">void</span><span class="o">*</span>                <span class="n">pNext</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>             <span class="n">binding</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>             <span class="n">stride</span><span class="p">;</span>
+    <span class="n">VkVertexInputRate</span>    <span class="n">inputRate</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>             <span class="n">divisor</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">VkVertexInputBindingDescription2EXT</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="chap3.html#VkStructureType">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>binding</code> is the binding number that this structure describes.</p>
+</li>
+<li>
+<p><code>stride</code> is the byte stride between consecutive elements within the
+buffer.</p>
+</li>
+<li>
+<p><code>inputRate</code> is a <a href="chap24.html#VkVertexInputRate">VkVertexInputRate</a> value specifying whether
+vertex attribute addressing is a function of the vertex index or of the
+instance index.</p>
+</li>
+<li>
+<p><code>divisor</code> is the number of successive instances that will use the
+same value of the vertex attribute when instanced rendering is enabled.
+This member <strong class="purple">can</strong> be a value other than <code>1</code> if the
+<a href="chap51.html#features-vertexAttributeInstanceRateDivisor"><code>vertexAttributeInstanceRateDivisor</code></a> feature is enabled.
+For example, if the divisor is N, the same vertex attribute will be
+applied to N successive instances before moving on to the next vertex
+attribute.
+The maximum value of <code>divisor</code> is implementation-dependent and can
+be queried using
+<code>VkPhysicalDeviceVertexAttributeDivisorPropertiesEXT</code>::<code>maxVertexAttribDivisor</code>.
+A value of <code>0</code> <strong class="purple">can</strong> be used for the divisor if the
+<a href="chap51.html#features-vertexAttributeInstanceRateZeroDivisor"><code>vertexAttributeInstanceRateZeroDivisor</code></a> feature is enabled.
+In this case, the same vertex attribute will be applied to all
+instances.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkVertexInputBindingDescription2EXT-binding-04796" href="chap24.html#VUID-VkVertexInputBindingDescription2EXT-binding-04796"></a> <span class="vuid">VUID-VkVertexInputBindingDescription2EXT-binding-04796</span><br>
+
+<code>binding</code> <strong class="purple">must</strong> be less than
+<code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputBindings</code></p>
+</li>
+<li>
+<p><a id="VUID-VkVertexInputBindingDescription2EXT-stride-04797" href="chap24.html#VUID-VkVertexInputBindingDescription2EXT-stride-04797"></a> <span class="vuid">VUID-VkVertexInputBindingDescription2EXT-stride-04797</span><br>
+
+<code>stride</code> <strong class="purple">must</strong> be less than or equal to
+<code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputBindingStride</code></p>
+</li>
+<li>
+<p><a id="VUID-VkVertexInputBindingDescription2EXT-divisor-04798" href="chap24.html#VUID-VkVertexInputBindingDescription2EXT-divisor-04798"></a> <span class="vuid">VUID-VkVertexInputBindingDescription2EXT-divisor-04798</span><br>
+
+If the <a href="chap51.html#features-vertexAttributeInstanceRateZeroDivisor"><code>vertexAttributeInstanceRateZeroDivisor</code></a> feature is not enabled,
+<code>divisor</code> <strong class="purple">must</strong> not be <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-VkVertexInputBindingDescription2EXT-divisor-04799" href="chap24.html#VUID-VkVertexInputBindingDescription2EXT-divisor-04799"></a> <span class="vuid">VUID-VkVertexInputBindingDescription2EXT-divisor-04799</span><br>
+
+If the <a href="chap51.html#features-vertexAttributeInstanceRateDivisor"><code>vertexAttributeInstanceRateDivisor</code></a> feature is not enabled,
+<code>divisor</code> <strong class="purple">must</strong> be <code>1</code></p>
+</li>
+<li>
+<p><a id="VUID-VkVertexInputBindingDescription2EXT-divisor-06226" href="chap24.html#VUID-VkVertexInputBindingDescription2EXT-divisor-06226"></a> <span class="vuid">VUID-VkVertexInputBindingDescription2EXT-divisor-06226</span><br>
+
+<code>divisor</code> <strong class="purple">must</strong> be a value between <code>0</code> and
+<code>VkPhysicalDeviceVertexAttributeDivisorPropertiesEXT</code>::<code>maxVertexAttribDivisor</code>,
+inclusive</p>
+</li>
+<li>
+<p><a id="VUID-VkVertexInputBindingDescription2EXT-divisor-06227" href="chap24.html#VUID-VkVertexInputBindingDescription2EXT-divisor-06227"></a> <span class="vuid">VUID-VkVertexInputBindingDescription2EXT-divisor-06227</span><br>
+
+If <code>divisor</code> is not <code>1</code> then <code>inputRate</code> <strong class="purple">must</strong> be of type
+<code>VK_VERTEX_INPUT_RATE_INSTANCE</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkVertexInputBindingDescription2EXT-sType-sType" href="chap24.html#VUID-VkVertexInputBindingDescription2EXT-sType-sType"></a> <span class="vuid">VUID-VkVertexInputBindingDescription2EXT-sType-sType</span><br>
+ <code>sType</code> <strong class="purple">must</strong> be <code>VK_STRUCTURE_TYPE_VERTEX_INPUT_BINDING_DESCRIPTION_2_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkVertexInputBindingDescription2EXT-inputRate-parameter" href="chap24.html#VUID-VkVertexInputBindingDescription2EXT-inputRate-parameter"></a> <span class="vuid">VUID-VkVertexInputBindingDescription2EXT-inputRate-parameter</span><br>
+ <code>inputRate</code> <strong class="purple">must</strong> be a valid <a href="chap24.html#VkVertexInputRate">VkVertexInputRate</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkVertexInputAttributeDescription2EXT</code> structure is defined as:</p>
+</div>
+<div id="VkVertexInputAttributeDescription2EXT" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_EXT_shader_object, VK_EXT_vertex_input_dynamic_state</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="nc">VkVertexInputAttributeDescription2EXT</span> <span class="p">{</span>
+    <span class="n">VkStructureType</span>    <span class="n">sType</span><span class="p">;</span>
+    <span class="kt">void</span><span class="o">*</span>              <span class="n">pNext</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>           <span class="n">location</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>           <span class="n">binding</span><span class="p">;</span>
+    <span class="n">VkFormat</span>           <span class="n">format</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>           <span class="n">offset</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">VkVertexInputAttributeDescription2EXT</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="chap3.html#VkStructureType">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>location</code> is the shader input location number for this attribute.</p>
+</li>
+<li>
+<p><code>binding</code> is the binding number which this attribute takes its data
+from.</p>
+</li>
+<li>
+<p><code>format</code> is the size and type of the vertex attribute data.</p>
+</li>
+<li>
+<p><code>offset</code> is a byte offset of this attribute relative to the start of
+an element in the vertex input binding.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkVertexInputAttributeDescription2EXT-location-06228" href="chap24.html#VUID-VkVertexInputAttributeDescription2EXT-location-06228"></a> <span class="vuid">VUID-VkVertexInputAttributeDescription2EXT-location-06228</span><br>
+
+<code>location</code> <strong class="purple">must</strong> be less than
+<code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputAttributes</code></p>
+</li>
+<li>
+<p><a id="VUID-VkVertexInputAttributeDescription2EXT-binding-06229" href="chap24.html#VUID-VkVertexInputAttributeDescription2EXT-binding-06229"></a> <span class="vuid">VUID-VkVertexInputAttributeDescription2EXT-binding-06229</span><br>
+
+<code>binding</code> <strong class="purple">must</strong> be less than
+<code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputBindings</code></p>
+</li>
+<li>
+<p><a id="VUID-VkVertexInputAttributeDescription2EXT-offset-06230" href="chap24.html#VUID-VkVertexInputAttributeDescription2EXT-offset-06230"></a> <span class="vuid">VUID-VkVertexInputAttributeDescription2EXT-offset-06230</span><br>
+
+<code>offset</code> <strong class="purple">must</strong> be less than or equal to
+<code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputAttributeOffset</code></p>
+</li>
+<li>
+<p><a id="VUID-VkVertexInputAttributeDescription2EXT-format-04805" href="chap24.html#VUID-VkVertexInputAttributeDescription2EXT-format-04805"></a> <span class="vuid">VUID-VkVertexInputAttributeDescription2EXT-format-04805</span><br>
+
+The <a href="chap12.html#resources-buffer-view-format-features">format features</a> of
+<code>format</code> <strong class="purple">must</strong> contain <code>VK_FORMAT_FEATURE_VERTEX_BUFFER_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkVertexInputAttributeDescription2EXT-vertexAttributeAccessBeyondStride-04806" href="chap24.html#VUID-VkVertexInputAttributeDescription2EXT-vertexAttributeAccessBeyondStride-04806"></a> <span class="vuid">VUID-VkVertexInputAttributeDescription2EXT-vertexAttributeAccessBeyondStride-04806</span><br>
+
+If the <code><a href="chap60.html#VK_KHR_portability_subset">VK_KHR_portability_subset</a></code> extension is enabled, and
+<a href="chap51.html#VkPhysicalDevicePortabilitySubsetFeaturesKHR">VkPhysicalDevicePortabilitySubsetFeaturesKHR</a>::<code>vertexAttributeAccessBeyondStride</code>
+is <code>VK_FALSE</code>, the sum of <code>offset</code> plus the size of the vertex
+attribute data described by <code>format</code> <strong class="purple">must</strong> not be greater than
+<code>stride</code> in the <a href="chap24.html#VkVertexInputBindingDescription2EXT">VkVertexInputBindingDescription2EXT</a> referenced
+in <code>binding</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkVertexInputAttributeDescription2EXT-sType-sType" href="chap24.html#VUID-VkVertexInputAttributeDescription2EXT-sType-sType"></a> <span class="vuid">VUID-VkVertexInputAttributeDescription2EXT-sType-sType</span><br>
+ <code>sType</code> <strong class="purple">must</strong> be <code>VK_STRUCTURE_TYPE_VERTEX_INPUT_ATTRIBUTE_DESCRIPTION_2_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkVertexInputAttributeDescription2EXT-format-parameter" href="chap24.html#VUID-VkVertexInputAttributeDescription2EXT-format-parameter"></a> <span class="vuid">VUID-VkVertexInputAttributeDescription2EXT-format-parameter</span><br>
+ <code>format</code> <strong class="purple">must</strong> be a valid <a href="chap53.html#VkFormat">VkFormat</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To bind vertex buffers to a command buffer for use in subsequent drawing
+commands, call:</p>
+</div>
+<div id="vkCmdBindVertexBuffers" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_VERSION_1_0</span>
+<span class="kt">void</span> <span class="nf">vkCmdBindVertexBuffers</span><span class="p">(</span>
+    <span class="n">VkCommandBuffer</span>                             <span class="n">commandBuffer</span><span class="p">,</span>
+    <span class="kt">uint32_t</span>                                    <span class="n">firstBinding</span><span class="p">,</span>
+    <span class="kt">uint32_t</span>                                    <span class="n">bindingCount</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">VkBuffer</span><span class="o">*</span>                             <span class="n">pBuffers</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">VkDeviceSize</span><span class="o">*</span>                         <span class="n">pOffsets</span><span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer into which the command is
+recorded.</p>
+</li>
+<li>
+<p><code>firstBinding</code> is the index of the first vertex input binding whose
+state is updated by the command.</p>
+</li>
+<li>
+<p><code>bindingCount</code> is the number of vertex input bindings whose state is
+updated by the command.</p>
+</li>
+<li>
+<p><code>pBuffers</code> is a pointer to an array of buffer handles.</p>
+</li>
+<li>
+<p><code>pOffsets</code> is a pointer to an array of buffer offsets.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The values taken from elements <span class="eq">i</span> of <code>pBuffers</code> and <code>pOffsets</code>
+replace the current state for the vertex input binding
+<span class="eq"><code>firstBinding</code> +  i</span>, for <span class="eq">i</span> in <span class="eq">[0,
+<code>bindingCount</code>)</span>.
+The vertex input binding is updated to start at the offset indicated by
+<code>pOffsets</code>[i] from the start of the buffer <code>pBuffers</code>[i].
+All vertex input attributes that use each of these bindings will use these
+updated addresses in their address calculations for subsequent drawing
+commands.
+If the <a href="chap51.html#features-nullDescriptor"><code>nullDescriptor</code></a> feature is enabled,
+elements of <code>pBuffers</code> <strong class="purple">can</strong> be <a href="chap63.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a>, and <strong class="purple">can</strong> be used by
+the vertex shader.
+If a vertex input attribute is bound to a vertex input binding that is
+<a href="chap63.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a>, the values taken from memory are considered to be
+zero, and missing G, B, or A components are
+<a href="chap24.html#fxvertex-input-extraction">filled with <span class="eq">(0,0,1)</span></a>.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers-firstBinding-00624" href="chap24.html#VUID-vkCmdBindVertexBuffers-firstBinding-00624"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers-firstBinding-00624</span><br>
+
+<code>firstBinding</code> <strong class="purple">must</strong> be less than
+<code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputBindings</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers-firstBinding-00625" href="chap24.html#VUID-vkCmdBindVertexBuffers-firstBinding-00625"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers-firstBinding-00625</span><br>
+
+The sum of <code>firstBinding</code> and <code>bindingCount</code> <strong class="purple">must</strong> be less than
+or equal to <code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputBindings</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers-pOffsets-00626" href="chap24.html#VUID-vkCmdBindVertexBuffers-pOffsets-00626"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers-pOffsets-00626</span><br>
+
+All elements of <code>pOffsets</code> <strong class="purple">must</strong> be less than the size of the
+corresponding element in <code>pBuffers</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers-pBuffers-00627" href="chap24.html#VUID-vkCmdBindVertexBuffers-pBuffers-00627"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers-pBuffers-00627</span><br>
+
+All elements of <code>pBuffers</code> <strong class="purple">must</strong> have been created with the
+<code>VK_BUFFER_USAGE_VERTEX_BUFFER_BIT</code> flag</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers-pBuffers-00628" href="chap24.html#VUID-vkCmdBindVertexBuffers-pBuffers-00628"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers-pBuffers-00628</span><br>
+
+Each element of <code>pBuffers</code> that is non-sparse <strong class="purple">must</strong> be bound
+completely and contiguously to a single <code>VkDeviceMemory</code> object</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers-pBuffers-04001" href="chap24.html#VUID-vkCmdBindVertexBuffers-pBuffers-04001"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers-pBuffers-04001</span><br>
+
+If the <a href="chap51.html#features-nullDescriptor"><code>nullDescriptor</code></a> feature is not
+enabled, all elements of <code>pBuffers</code> <strong class="purple">must</strong> not be
+<a href="chap63.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers-pBuffers-04002" href="chap24.html#VUID-vkCmdBindVertexBuffers-pBuffers-04002"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers-pBuffers-04002</span><br>
+
+If an element of <code>pBuffers</code> is <a href="chap63.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a>, then the
+corresponding element of <code>pOffsets</code> <strong class="purple">must</strong> be zero</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers-commandBuffer-parameter" href="chap24.html#VUID-vkCmdBindVertexBuffers-commandBuffer-parameter"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers-commandBuffer-parameter</span><br>
+ <code>commandBuffer</code> <strong class="purple">must</strong> be a valid <a href="chap6.html#VkCommandBuffer">VkCommandBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers-pBuffers-parameter" href="chap24.html#VUID-vkCmdBindVertexBuffers-pBuffers-parameter"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers-pBuffers-parameter</span><br>
+ <code>pBuffers</code> <strong class="purple">must</strong> be a valid pointer to an array of <code>bindingCount</code> valid or <a href="chap63.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a> <a href="chap12.html#VkBuffer">VkBuffer</a> handles</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers-pOffsets-parameter" href="chap24.html#VUID-vkCmdBindVertexBuffers-pOffsets-parameter"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers-pOffsets-parameter</span><br>
+ <code>pOffsets</code> <strong class="purple">must</strong> be a valid pointer to an array of <code>bindingCount</code> <a href="chap3.html#VkDeviceSize">VkDeviceSize</a> values</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers-commandBuffer-recording" href="chap24.html#VUID-vkCmdBindVertexBuffers-commandBuffer-recording"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers-commandBuffer-recording</span><br>
+ <code>commandBuffer</code> <strong class="purple">must</strong> be in the <a href="chap6.html#commandbuffers-lifecycle">recording state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers-commandBuffer-cmdpool" href="chap24.html#VUID-vkCmdBindVertexBuffers-commandBuffer-cmdpool"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers-commandBuffer-cmdpool</span><br>
+ The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong class="purple">must</strong> support VK_QUEUE_GRAPHICS_BIT operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers-videocoding" href="chap24.html#VUID-vkCmdBindVertexBuffers-videocoding"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers-videocoding</span><br>
+ This command <strong class="purple">must</strong> only be called outside of a video coding scope</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers-bindingCount-arraylength" href="chap24.html#VUID-vkCmdBindVertexBuffers-bindingCount-arraylength"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers-bindingCount-arraylength</span><br>
+ <code>bindingCount</code> <strong class="purple">must</strong> be greater than <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers-commonparent" href="chap24.html#VUID-vkCmdBindVertexBuffers-commonparent"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers-commonparent</span><br>
+ Both of <code>commandBuffer</code>, and the elements of <code>pBuffers</code> that are valid handles of non-ignored parameters <strong class="purple">must</strong> have been created, allocated, or retrieved from the same <a href="chap5.html#VkDevice">VkDevice</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>commandBuffer</code> <strong class="purple">must</strong> be externally synchronized</p>
+</li>
+<li>
+<p>Host access to the <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong class="purple">must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Command Properties</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><a href="chap6.html#VkCommandBufferLevel">Command Buffer Levels</a></th>
+<th class="tableblock halign-left valign-top"><a href="chap8.html#vkCmdBeginRenderPass">Render Pass Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="chap45.html#vkCmdBeginVideoCodingKHR">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="chap5.html#VkQueueFlagBits">Supported Queue Types</a></th>
+<th class="tableblock halign-left valign-top"><a href="chap3.html#fundamentals-queueoperation-command-types">Command Type</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Both</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VK_QUEUE_GRAPHICS_BIT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">State</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Conditional Rendering</div>
+<div class="paragraph">
+<p>vkCmdBindVertexBuffers is not affected by <a href="chap23.html#drawing-conditional-rendering">conditional rendering</a></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Alternatively, to bind vertex buffers, along with their sizes and strides,
+to a command buffer for use in subsequent drawing commands, call:</p>
+</div>
+<div id="vkCmdBindVertexBuffers2" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_VERSION_1_3</span>
+<span class="kt">void</span> <span class="nf">vkCmdBindVertexBuffers2</span><span class="p">(</span>
+    <span class="n">VkCommandBuffer</span>                             <span class="n">commandBuffer</span><span class="p">,</span>
+    <span class="kt">uint32_t</span>                                    <span class="n">firstBinding</span><span class="p">,</span>
+    <span class="kt">uint32_t</span>                                    <span class="n">bindingCount</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">VkBuffer</span><span class="o">*</span>                             <span class="n">pBuffers</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">VkDeviceSize</span><span class="o">*</span>                         <span class="n">pOffsets</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">VkDeviceSize</span><span class="o">*</span>                         <span class="n">pSizes</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">VkDeviceSize</span><span class="o">*</span>                         <span class="n">pStrides</span><span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent command</p>
+</div>
+<div id="vkCmdBindVertexBuffers2EXT" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_EXT_extended_dynamic_state, VK_EXT_shader_object</span>
+<span class="kt">void</span> <span class="nf">vkCmdBindVertexBuffers2EXT</span><span class="p">(</span>
+    <span class="n">VkCommandBuffer</span>                             <span class="n">commandBuffer</span><span class="p">,</span>
+    <span class="kt">uint32_t</span>                                    <span class="n">firstBinding</span><span class="p">,</span>
+    <span class="kt">uint32_t</span>                                    <span class="n">bindingCount</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">VkBuffer</span><span class="o">*</span>                             <span class="n">pBuffers</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">VkDeviceSize</span><span class="o">*</span>                         <span class="n">pOffsets</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">VkDeviceSize</span><span class="o">*</span>                         <span class="n">pSizes</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">VkDeviceSize</span><span class="o">*</span>                         <span class="n">pStrides</span><span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer into which the command is
+recorded.</p>
+</li>
+<li>
+<p><code>firstBinding</code> is the index of the first vertex input binding whose
+state is updated by the command.</p>
+</li>
+<li>
+<p><code>bindingCount</code> is the number of vertex input bindings whose state is
+updated by the command.</p>
+</li>
+<li>
+<p><code>pBuffers</code> is a pointer to an array of buffer handles.</p>
+</li>
+<li>
+<p><code>pOffsets</code> is a pointer to an array of buffer offsets.</p>
+</li>
+<li>
+<p><code>pSizes</code> is <code>NULL</code> or a pointer to an array of the size in bytes of
+vertex data bound from <code>pBuffers</code>.</p>
+</li>
+<li>
+<p><code>pStrides</code> is <code>NULL</code> or a pointer to an array of buffer strides.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The values taken from elements <span class="eq">i</span> of <code>pBuffers</code> and <code>pOffsets</code>
+replace the current state for the vertex input binding
+<span class="eq"><code>firstBinding</code> +  i</span>, for <span class="eq">i</span> in <span class="eq">[0,
+<code>bindingCount</code>)</span>.
+The vertex input binding is updated to start at the offset indicated by
+<code>pOffsets</code>[i] from the start of the buffer <code>pBuffers</code>[i].
+If <code>pSizes</code> is not <code>NULL</code> then <code>pSizes</code>[i] specifies the bound size
+of the vertex buffer starting from the corresponding elements of
+<code>pBuffers</code>[i] plus <code>pOffsets</code>[i].
+If <code>pSizes</code>[i] is <code>VK_WHOLE_SIZE</code> then the bound size is from
+<code>pBuffers</code>[i] plus <code>pOffsets</code>[i] to the end of the buffer
+<code>pBuffers</code>[i].
+All vertex input attributes that use each of these bindings will use these
+updated addresses in their address calculations for subsequent drawing
+commands.
+If the <a href="chap51.html#features-nullDescriptor"><code>nullDescriptor</code></a> feature is enabled,
+elements of <code>pBuffers</code> <strong class="purple">can</strong> be <a href="chap63.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a>, and <strong class="purple">can</strong> be used by
+the vertex shader.
+If a vertex input attribute is bound to a vertex input binding that is
+<a href="chap63.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a>, the values taken from memory are considered to be
+zero, and missing G, B, or A components are
+<a href="chap24.html#fxvertex-input-extraction">filled with <span class="eq">(0,0,1)</span></a>.</p>
+</div>
+<div class="paragraph">
+<p>This command also <a href="chap10.html#pipelines-dynamic-state">dynamically sets</a> the byte
+strides between consecutive elements within buffer <code>pBuffers</code>[i] to the
+corresponding <code>pStrides</code>[i] value
+when drawing using <a href="chap9.html#shaders-objects">shader objects</a>, or
+when the graphics pipeline is created with
+<code>VK_DYNAMIC_STATE_VERTEX_INPUT_BINDING_STRIDE</code> set in
+<a href="chap10.html#VkPipelineDynamicStateCreateInfo">VkPipelineDynamicStateCreateInfo</a>::<code>pDynamicStates</code>.
+Otherwise, strides are specified by the
+<a href="chap24.html#VkVertexInputBindingDescription">VkVertexInputBindingDescription</a>::<code>stride</code> values used to create
+the currently active pipeline.</p>
+</div>
+<div class="paragraph">
+<p>If
+drawing using <a href="chap9.html#shaders-objects">shader objects</a>
+or if
+the bound pipeline state object was also created with the
+<code>VK_DYNAMIC_STATE_VERTEX_INPUT_EXT</code> dynamic state enabled
+then <a href="chap24.html#vkCmdSetVertexInputEXT">vkCmdSetVertexInputEXT</a> <strong class="purple">can</strong> be used instead of
+<code>vkCmdBindVertexBuffers2</code> to set the stride.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tbody><tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Unlike the static state to set the same, <code>pStrides</code> must be between 0
+and the maximum extent of the attributes in the binding.
+<a href="chap24.html#vkCmdSetVertexInputEXT">vkCmdSetVertexInputEXT</a> does not have this restriction so can be used
+if other stride values are desired.</p>
+</div>
+</td>
+</tr>
+</tbody></table>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers2-None-08971" href="chap24.html#VUID-vkCmdBindVertexBuffers2-None-08971"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers2-None-08971</span><br>
+
+At least one of the following <strong class="purple">must</strong> be true:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>the <a href="chap51.html#features-extendedDynamicState"><code>extendedDynamicState</code></a>
+feature is enabled</p>
+</li>
+<li>
+<p>the <a href="chap51.html#features-shaderObject"><code>shaderObject</code></a> feature is enabled</p>
+</li>
+<li>
+<p>the value of <a href="chap4.html#VkApplicationInfo">VkApplicationInfo</a>::<code>apiVersion</code> used to create
+the <a href="chap4.html#VkInstance">VkInstance</a> parent of <code>commandBuffer</code> is greater than or
+equal to Version 1.3</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers2-firstBinding-03355" href="chap24.html#VUID-vkCmdBindVertexBuffers2-firstBinding-03355"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers2-firstBinding-03355</span><br>
+
+<code>firstBinding</code> <strong class="purple">must</strong> be less than
+<code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputBindings</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers2-firstBinding-03356" href="chap24.html#VUID-vkCmdBindVertexBuffers2-firstBinding-03356"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers2-firstBinding-03356</span><br>
+
+The sum of <code>firstBinding</code> and <code>bindingCount</code> <strong class="purple">must</strong> be less than
+or equal to <code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputBindings</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers2-pOffsets-03357" href="chap24.html#VUID-vkCmdBindVertexBuffers2-pOffsets-03357"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers2-pOffsets-03357</span><br>
+
+If <code>pSizes</code> is not <code>NULL</code>, all elements of <code>pOffsets</code> <strong class="purple">must</strong> be
+less than the size of the corresponding element in <code>pBuffers</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers2-pSizes-03358" href="chap24.html#VUID-vkCmdBindVertexBuffers2-pSizes-03358"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers2-pSizes-03358</span><br>
+
+If <code>pSizes</code> is not <code>NULL</code>, all elements of <code>pOffsets</code> plus
+<code>pSizes</code>
+, where <code>pSizes</code> is not <code>VK_WHOLE_SIZE</code>,
+<strong class="purple">must</strong> be less than or equal to the size of the corresponding element in
+<code>pBuffers</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers2-pBuffers-03359" href="chap24.html#VUID-vkCmdBindVertexBuffers2-pBuffers-03359"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers2-pBuffers-03359</span><br>
+
+All elements of <code>pBuffers</code> <strong class="purple">must</strong> have been created with the
+<code>VK_BUFFER_USAGE_VERTEX_BUFFER_BIT</code> flag</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers2-pBuffers-03360" href="chap24.html#VUID-vkCmdBindVertexBuffers2-pBuffers-03360"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers2-pBuffers-03360</span><br>
+
+Each element of <code>pBuffers</code> that is non-sparse <strong class="purple">must</strong> be bound
+completely and contiguously to a single <code>VkDeviceMemory</code> object</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers2-pBuffers-04111" href="chap24.html#VUID-vkCmdBindVertexBuffers2-pBuffers-04111"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers2-pBuffers-04111</span><br>
+
+If the <a href="chap51.html#features-nullDescriptor"><code>nullDescriptor</code></a> feature is not
+enabled, all elements of <code>pBuffers</code> <strong class="purple">must</strong> not be
+<a href="chap63.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers2-pBuffers-04112" href="chap24.html#VUID-vkCmdBindVertexBuffers2-pBuffers-04112"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers2-pBuffers-04112</span><br>
+
+If an element of <code>pBuffers</code> is <a href="chap63.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a>, then the
+corresponding element of <code>pOffsets</code> <strong class="purple">must</strong> be zero</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers2-pStrides-03362" href="chap24.html#VUID-vkCmdBindVertexBuffers2-pStrides-03362"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers2-pStrides-03362</span><br>
+
+If <code>pStrides</code> is not <code>NULL</code> each element of <code>pStrides</code> <strong class="purple">must</strong> be
+less than or equal to
+<code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputBindingStride</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers2-pStrides-06209" href="chap24.html#VUID-vkCmdBindVertexBuffers2-pStrides-06209"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers2-pStrides-06209</span><br>
+
+If <code>pStrides</code> is not <code>NULL</code> each element of <code>pStrides</code> <strong class="purple">must</strong> be
+either 0 or greater than or equal to the maximum extent of all vertex
+input attributes fetched from the corresponding binding, where the
+extent is calculated as the
+<a href="chap24.html#VkVertexInputAttributeDescription">VkVertexInputAttributeDescription</a>::<code>offset</code> plus
+<a href="chap24.html#VkVertexInputAttributeDescription">VkVertexInputAttributeDescription</a>::<code>format</code> size</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers2-commandBuffer-parameter" href="chap24.html#VUID-vkCmdBindVertexBuffers2-commandBuffer-parameter"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers2-commandBuffer-parameter</span><br>
+ <code>commandBuffer</code> <strong class="purple">must</strong> be a valid <a href="chap6.html#VkCommandBuffer">VkCommandBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers2-pBuffers-parameter" href="chap24.html#VUID-vkCmdBindVertexBuffers2-pBuffers-parameter"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers2-pBuffers-parameter</span><br>
+ <code>pBuffers</code> <strong class="purple">must</strong> be a valid pointer to an array of <code>bindingCount</code> valid or <a href="chap63.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a> <a href="chap12.html#VkBuffer">VkBuffer</a> handles</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers2-pOffsets-parameter" href="chap24.html#VUID-vkCmdBindVertexBuffers2-pOffsets-parameter"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers2-pOffsets-parameter</span><br>
+ <code>pOffsets</code> <strong class="purple">must</strong> be a valid pointer to an array of <code>bindingCount</code> <a href="chap3.html#VkDeviceSize">VkDeviceSize</a> values</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers2-pSizes-parameter" href="chap24.html#VUID-vkCmdBindVertexBuffers2-pSizes-parameter"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers2-pSizes-parameter</span><br>
+ If <code>pSizes</code> is not <code>NULL</code>, <code>pSizes</code> <strong class="purple">must</strong> be a valid pointer to an array of <code>bindingCount</code> <a href="chap3.html#VkDeviceSize">VkDeviceSize</a> values</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers2-pStrides-parameter" href="chap24.html#VUID-vkCmdBindVertexBuffers2-pStrides-parameter"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers2-pStrides-parameter</span><br>
+ If <code>pStrides</code> is not <code>NULL</code>, <code>pStrides</code> <strong class="purple">must</strong> be a valid pointer to an array of <code>bindingCount</code> <a href="chap3.html#VkDeviceSize">VkDeviceSize</a> values</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers2-commandBuffer-recording" href="chap24.html#VUID-vkCmdBindVertexBuffers2-commandBuffer-recording"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers2-commandBuffer-recording</span><br>
+ <code>commandBuffer</code> <strong class="purple">must</strong> be in the <a href="chap6.html#commandbuffers-lifecycle">recording state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers2-commandBuffer-cmdpool" href="chap24.html#VUID-vkCmdBindVertexBuffers2-commandBuffer-cmdpool"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers2-commandBuffer-cmdpool</span><br>
+ The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong class="purple">must</strong> support VK_QUEUE_GRAPHICS_BIT operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers2-videocoding" href="chap24.html#VUID-vkCmdBindVertexBuffers2-videocoding"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers2-videocoding</span><br>
+ This command <strong class="purple">must</strong> only be called outside of a video coding scope</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers2-bindingCount-arraylength" href="chap24.html#VUID-vkCmdBindVertexBuffers2-bindingCount-arraylength"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers2-bindingCount-arraylength</span><br>
+ If any of <code>pSizes</code>, or <code>pStrides</code> are not <code>NULL</code>, <code>bindingCount</code> <strong class="purple">must</strong> be greater than <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindVertexBuffers2-commonparent" href="chap24.html#VUID-vkCmdBindVertexBuffers2-commonparent"></a> <span class="vuid">VUID-vkCmdBindVertexBuffers2-commonparent</span><br>
+ Both of <code>commandBuffer</code>, and the elements of <code>pBuffers</code> that are valid handles of non-ignored parameters <strong class="purple">must</strong> have been created, allocated, or retrieved from the same <a href="chap5.html#VkDevice">VkDevice</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>commandBuffer</code> <strong class="purple">must</strong> be externally synchronized</p>
+</li>
+<li>
+<p>Host access to the <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong class="purple">must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Command Properties</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><a href="chap6.html#VkCommandBufferLevel">Command Buffer Levels</a></th>
+<th class="tableblock halign-left valign-top"><a href="chap8.html#vkCmdBeginRenderPass">Render Pass Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="chap45.html#vkCmdBeginVideoCodingKHR">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="chap5.html#VkQueueFlagBits">Supported Queue Types</a></th>
+<th class="tableblock halign-left valign-top"><a href="chap3.html#fundamentals-queueoperation-command-types">Command Type</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Both</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VK_QUEUE_GRAPHICS_BIT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">State</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Conditional Rendering</div>
+<div class="paragraph">
+<p>vkCmdBindVertexBuffers2 is not affected by <a href="chap23.html#drawing-conditional-rendering">conditional rendering</a></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="fxvertex-attribute_divisor"><a class="anchor" href="chap24.html#fxvertex-attribute_divisor"></a>24.3. Vertex Attribute Divisor in Instanced Rendering</h3>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>If the <a href="chap51.html#features-vertexAttributeInstanceRateDivisor"><code>vertexAttributeInstanceRateDivisor</code></a> feature is enabled and the
+<code>pNext</code> chain of <a href="chap24.html#VkPipelineVertexInputStateCreateInfo">VkPipelineVertexInputStateCreateInfo</a> includes a
+<code>VkPipelineVertexInputDivisorStateCreateInfo</code> structure, then that
+structure controls how vertex attributes are assigned to an instance when
+instanced rendering is enabled.</p>
+</div>
+<div class="paragraph">
+<p>The <code>VkPipelineVertexInputDivisorStateCreateInfo</code> structure is defined
+as:</p>
+</div>
+<div id="VkPipelineVertexInputDivisorStateCreateInfo" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_VERSION_1_4</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="nc">VkPipelineVertexInputDivisorStateCreateInfo</span> <span class="p">{</span>
+    <span class="n">VkStructureType</span>                                  <span class="n">sType</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">void</span><span class="o">*</span>                                      <span class="n">pNext</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>                                         <span class="n">vertexBindingDivisorCount</span><span class="p">;</span>
+    <span class="k">const</span> <span class="n">VkVertexInputBindingDivisorDescription</span><span class="o">*</span>    <span class="n">pVertexBindingDivisors</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">VkPipelineVertexInputDivisorStateCreateInfo</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent</p>
+</div>
+<div id="VkPipelineVertexInputDivisorStateCreateInfoKHR" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_KHR_vertex_attribute_divisor</span>
+<span class="k">typedef</span> <span class="n">VkPipelineVertexInputDivisorStateCreateInfo</span> <span class="n">VkPipelineVertexInputDivisorStateCreateInfoKHR</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent</p>
+</div>
+<div id="VkPipelineVertexInputDivisorStateCreateInfoEXT" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_EXT_vertex_attribute_divisor</span>
+<span class="k">typedef</span> <span class="n">VkPipelineVertexInputDivisorStateCreateInfo</span> <span class="n">VkPipelineVertexInputDivisorStateCreateInfoEXT</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="chap3.html#VkStructureType">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>vertexBindingDivisorCount</code> is the number of elements in the
+<code>pVertexBindingDivisors</code> array.</p>
+</li>
+<li>
+<p><code>pVertexBindingDivisors</code> is a pointer to an array of
+<a href="chap24.html#VkVertexInputBindingDivisorDescription">VkVertexInputBindingDivisorDescription</a> structures specifying the
+divisor value for each binding.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkPipelineVertexInputDivisorStateCreateInfo-sType-sType" href="chap24.html#VUID-VkPipelineVertexInputDivisorStateCreateInfo-sType-sType"></a> <span class="vuid">VUID-VkPipelineVertexInputDivisorStateCreateInfo-sType-sType</span><br>
+ <code>sType</code> <strong class="purple">must</strong> be <code>VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO</code></p>
+</li>
+<li>
+<p><a id="VUID-VkPipelineVertexInputDivisorStateCreateInfo-pVertexBindingDivisors-parameter" href="chap24.html#VUID-VkPipelineVertexInputDivisorStateCreateInfo-pVertexBindingDivisors-parameter"></a> <span class="vuid">VUID-VkPipelineVertexInputDivisorStateCreateInfo-pVertexBindingDivisors-parameter</span><br>
+ <code>pVertexBindingDivisors</code> <strong class="purple">must</strong> be a valid pointer to an array of <code>vertexBindingDivisorCount</code> <a href="chap24.html#VkVertexInputBindingDivisorDescription">VkVertexInputBindingDivisorDescription</a> structures</p>
+</li>
+<li>
+<p><a id="VUID-VkPipelineVertexInputDivisorStateCreateInfo-vertexBindingDivisorCount-arraylength" href="chap24.html#VUID-VkPipelineVertexInputDivisorStateCreateInfo-vertexBindingDivisorCount-arraylength"></a> <span class="vuid">VUID-VkPipelineVertexInputDivisorStateCreateInfo-vertexBindingDivisorCount-arraylength</span><br>
+ <code>vertexBindingDivisorCount</code> <strong class="purple">must</strong> be greater than <code>0</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The individual divisor values per binding are specified using the
+<code>VkVertexInputBindingDivisorDescription</code> structure which is defined as:</p>
+</div>
+<div id="VkVertexInputBindingDivisorDescription" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_VERSION_1_4</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="nc">VkVertexInputBindingDivisorDescription</span> <span class="p">{</span>
+    <span class="kt">uint32_t</span>    <span class="n">binding</span><span class="p">;</span>
+    <span class="kt">uint32_t</span>    <span class="n">divisor</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">VkVertexInputBindingDivisorDescription</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent</p>
+</div>
+<div id="VkVertexInputBindingDivisorDescriptionKHR" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_KHR_vertex_attribute_divisor</span>
+<span class="k">typedef</span> <span class="n">VkVertexInputBindingDivisorDescription</span> <span class="n">VkVertexInputBindingDivisorDescriptionKHR</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent</p>
+</div>
+<div id="VkVertexInputBindingDivisorDescriptionEXT" class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="c1">// Provided by VK_EXT_vertex_attribute_divisor</span>
+<span class="k">typedef</span> <span class="n">VkVertexInputBindingDivisorDescription</span> <span class="n">VkVertexInputBindingDivisorDescriptionEXT</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>binding</code> is the binding number for which the divisor is specified.</p>
+</li>
+<li>
+<p><code>divisor</code> is the number of successive instances that will use the
+same value of the vertex attribute when instanced rendering is enabled.
+For example, if the divisor is N, the same vertex attribute will be
+applied to N successive instances before moving on to the next vertex
+attribute.
+The maximum value of <code>divisor</code> is implementation-dependent and can
+be queried using
+<a href="chap52.html#VkPhysicalDeviceVertexAttributeDivisorProperties">VkPhysicalDeviceVertexAttributeDivisorProperties</a>::<code>maxVertexAttribDivisor</code>.
+A value of <code>0</code> <strong class="purple">can</strong> be used for the divisor if the
+<a href="chap51.html#features-vertexAttributeInstanceRateZeroDivisor"><code>vertexAttributeInstanceRateZeroDivisor</code></a> feature is enabled.
+In this case, the same vertex attribute will be applied to all
+instances.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If this structure is not used to define a divisor value for an attribute,
+then the divisor has a logical default value of 1.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkVertexInputBindingDivisorDescription-binding-01869" href="chap24.html#VUID-VkVertexInputBindingDivisorDescription-binding-01869"></a> <span class="vuid">VUID-VkVertexInputBindingDivisorDescription-binding-01869</span><br>
+
+<code>binding</code> <strong class="purple">must</strong> be less than
+<a href="chap52.html#VkPhysicalDeviceLimits">VkPhysicalDeviceLimits</a>::<code>maxVertexInputBindings</code></p>
+</li>
+<li>
+<p><a id="VUID-VkVertexInputBindingDivisorDescription-vertexAttributeInstanceRateZeroDivisor-02228" href="chap24.html#VUID-VkVertexInputBindingDivisorDescription-vertexAttributeInstanceRateZeroDivisor-02228"></a> <span class="vuid">VUID-VkVertexInputBindingDivisorDescription-vertexAttributeInstanceRateZeroDivisor-02228</span><br>
+
+If the <a href="chap51.html#features-vertexAttributeInstanceRateZeroDivisor"><code>vertexAttributeInstanceRateZeroDivisor</code></a> feature is not enabled,
+<code>divisor</code> <strong class="purple">must</strong> not be <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-VkVertexInputBindingDivisorDescription-vertexAttributeInstanceRateDivisor-02229" href="chap24.html#VUID-VkVertexInputBindingDivisorDescription-vertexAttributeInstanceRateDivisor-02229"></a> <span class="vuid">VUID-VkVertexInputBindingDivisorDescription-vertexAttributeInstanceRateDivisor-02229</span><br>
+
+If the <a href="chap51.html#features-vertexAttributeInstanceRateDivisor"><code>vertexAttributeInstanceRateDivisor</code></a> feature is not enabled,
+<code>divisor</code> <strong class="purple">must</strong> be <code>1</code></p>
+</li>
+<li>
+<p><a id="VUID-VkVertexInputBindingDivisorDescription-divisor-01870" href="chap24.html#VUID-VkVertexInputBindingDivisorDescription-divisor-01870"></a> <span class="vuid">VUID-VkVertexInputBindingDivisorDescription-divisor-01870</span><br>
+
+<code>divisor</code> <strong class="purple">must</strong> be a value between <code>0</code> and
+<a href="chap52.html#VkPhysicalDeviceVertexAttributeDivisorProperties">VkPhysicalDeviceVertexAttributeDivisorProperties</a>::<code>maxVertexAttribDivisor</code>,
+inclusive</p>
+</li>
+<li>
+<p><a id="VUID-VkVertexInputBindingDivisorDescription-inputRate-01871" href="chap24.html#VUID-VkVertexInputBindingDivisorDescription-inputRate-01871"></a> <span class="vuid">VUID-VkVertexInputBindingDivisorDescription-inputRate-01871</span><br>
+
+<a href="chap24.html#VkVertexInputBindingDescription">VkVertexInputBindingDescription</a>::<code>inputRate</code> <strong class="purple">must</strong> be of type
+<code>VK_VERTEX_INPUT_RATE_INSTANCE</code> for this <code>binding</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="fxvertex-input-address-calculation"><a class="anchor" href="chap24.html#fxvertex-input-address-calculation"></a>24.4. Vertex Input Address Calculation</h3>
+<div class="paragraph">
+<p>The address of each attribute for each <code>vertexIndex</code> and
+<code>instanceIndex</code> is calculated as follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Let <code>attribDesc</code> be the member of
+<a href="chap24.html#VkPipelineVertexInputStateCreateInfo">VkPipelineVertexInputStateCreateInfo</a>::<code>pVertexAttributeDescriptions</code>
+with <a href="chap24.html#VkVertexInputAttributeDescription">VkVertexInputAttributeDescription</a>::<code>location</code> equal to
+the vertex input attribute number.</p>
+</li>
+<li>
+<p>Let <code>bindingDesc</code> be the member of
+<a href="chap24.html#VkPipelineVertexInputStateCreateInfo">VkPipelineVertexInputStateCreateInfo</a>::<code>pVertexBindingDescriptions</code>
+with <a href="chap24.html#VkVertexInputAttributeDescription">VkVertexInputAttributeDescription</a>::<code>binding</code> equal to
+<code>attribDesc.binding</code>.</p>
+</li>
+<li>
+<p>Let <code>vertexIndex</code> be the index of the vertex within the draw (a value
+between <code>firstVertex</code> and <code>firstVertex</code>+<code>vertexCount</code> for
+<code>vkCmdDraw</code>, or a value taken from the index buffer plus
+<code>vertexOffset</code> for <code>vkCmdDrawIndexed</code>), and let
+<code>instanceIndex</code> be the instance number of the draw (a value between
+<code>firstInstance</code> and <code>firstInstance</code>+<code>instanceCount</code>).</p>
+</li>
+<li>
+<p>Let <code>offset</code> be an array of offsets into the bound vertex buffers
+    specified during <code>vkCmdBindVertexBuffers</code>
+or <code>vkCmdBindVertexBuffers2</code>
+    with <code>pOffsets</code>.</p>
+</li>
+<li>
+<p>Let <code>divisor</code> be the member of
+<a href="chap24.html#VkPipelineVertexInputDivisorStateCreateInfo">VkPipelineVertexInputDivisorStateCreateInfo</a>::<code>pVertexBindingDivisors</code>
+with <a href="chap24.html#VkVertexInputBindingDivisorDescription">VkVertexInputBindingDivisorDescription</a>::<code>binding</code> equal
+to <code>attribDesc.binding</code>.
+If the vertex binding state is dynamically set, instead let <code>divisor</code>
+be the member of the <code>pVertexBindingDescriptions</code> parameter to the
+<a href="chap24.html#vkCmdSetVertexInputEXT">vkCmdSetVertexInputEXT</a> call with
+<a href="chap24.html#VkVertexInputBindingDescription2EXT">VkVertexInputBindingDescription2EXT</a>::<code>binding</code> equal to
+<code>attribDesc.binding</code>.</p>
+</li>
+<li>
+<p>Let <code>stride</code> be the member of
+<a href="chap24.html#VkPipelineVertexInputStateCreateInfo">VkPipelineVertexInputStateCreateInfo</a>::<code>pVertexBindingDescriptions-&gt;stride</code>
+unless there is dynamic state causing the value to be ignored.
+In this case the value is set from the last value from one of the
+following</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="chap24.html#vkCmdSetVertexInputEXT">vkCmdSetVertexInputEXT</a>::<code>pVertexBindingDescriptions-&gt;stride</code></p>
+</li>
+<li>
+<p><a href="chap24.html#vkCmdBindVertexBuffers2">vkCmdBindVertexBuffers2</a>::<code>pStrides</code>, if not <code>NULL</code></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c"><span class="n">bufferBindingAddress</span> <span class="o">=</span> <span class="n">buffer</span><span class="p">[</span><span class="n">binding</span><span class="p">].</span><span class="n">baseAddress</span> <span class="o">+</span> <span class="n">offset</span><span class="p">[</span><span class="n">binding</span><span class="p">];</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">bindingDesc</span><span class="p">.</span><span class="n">inputRate</span> <span class="o">==</span> <span class="n">VK_VERTEX_INPUT_RATE_VERTEX</span><span class="p">)</span>
+    <span class="n">effectiveVertexOffset</span> <span class="o">=</span> <span class="n">vertexIndex</span> <span class="o">*</span> <span class="n">stride</span><span class="p">;</span>
+<span class="k">else</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">divisor</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">effectiveVertexOffset</span> <span class="o">=</span> <span class="n">firstInstance</span> <span class="o">*</span> <span class="n">stride</span><span class="p">;</span>
+    <span class="k">else</span>
+        <span class="n">effectiveVertexOffset</span> <span class="o">=</span> <span class="p">(</span><span class="n">firstInstance</span> <span class="o">+</span> <span class="p">((</span><span class="n">instanceIndex</span> <span class="o">-</span> <span class="n">firstInstance</span><span class="p">)</span> <span class="o">/</span> <span class="n">divisor</span><span class="p">))</span> <span class="o">*</span> <span class="n">stride</span><span class="p">;</span>
+
+<span class="n">attribAddress</span> <span class="o">=</span> <span class="n">bufferBindingAddress</span> <span class="o">+</span> <span class="n">effectiveVertexOffset</span> <span class="o">+</span> <span class="n">attribDesc</span><span class="p">.</span><span class="n">offset</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="fxvertex-input-extraction"><a class="anchor" href="chap24.html#fxvertex-input-extraction"></a>24.4.1. Vertex Input Extraction</h4>
+<div class="paragraph">
+<p>For each attribute, raw data is extracted starting at <code>attribAddress</code> and is
+converted from the <a href="chap24.html#VkVertexInputAttributeDescription">VkVertexInputAttributeDescription</a>’s <code>format</code> in
+the same manner as described for <a href="chap13.html#images-reads">image reads</a> as if a texel
+were read from that address.
+The numeric type of the attribute’s <code>format</code> <strong class="purple">must</strong> match the numeric
+type of the input variable in the shader.
+The input variable in the shader <strong class="purple">must</strong> be declared as a 64-bit data type if
+and only if <code>format</code> is a 64-bit data type.
+If the sum of <code>attribAddress</code> and the data extracted is outside of the bound
+vertex buffer, behavior is as described by
+<a href="chap9.html#shaders-execution-memory-access-bounds">Shader Out-of-Bounds Memory Access</a>.</p>
+</div>
+<div class="paragraph">
+<p>If
+either <code>format</code> is a 64-bit format or the
+<a href="chap51.html#features-legacyVertexAttributes"><code>legacyVertexAttributes</code></a> feature is
+not enabled, and
+<code>format</code> is a packed format, <code>attribAddress</code> <strong class="purple">must</strong> be a multiple of the
+size in bytes of the size of the format as described in
+<a href="chap53.html#formats-packed">Packed Formats</a>.
+Otherwise,
+if either <code>format</code> is a 64-bit format or the
+<a href="chap51.html#features-legacyVertexAttributes"><code>legacyVertexAttributes</code></a> feature is
+not enabled,
+<code>attribAddress</code> <strong class="purple">must</strong> be a multiple of the size in bytes of the component
+type indicated by <code>format</code> (see <a href="chap53.html">Formats</a>).</p>
+</div>
+<div class="paragraph">
+<p>The number of components in the vertex shader input variable need not
+exactly match the number of components in the format.
+If the vertex shader has fewer components, the extra components are
+discarded.</p>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+<nav>
+  <a rel="prev" href="chap23.html" class="nav nav-prev" title="Previous page" aria-label="Previous page" aria-keyshortcuts="Left">
+        <i class="fa fa-angle-left"></i>
+     </a>
+  <a rel="next" href="chap25.html" class="nav nav-next" title="Next page" aria-label="Next page" aria-keyshortcuts="Right">
+        <i class="fa fa-angle-right"></i>
+     </a>
+  <div style="clear: both"></div>
+</nav>
+
+
+
+
+</body>
+  <script>
+  function isInViewport(ele) {
+    const rect = ele.getBoundingClientRect();
+    return (
+        rect.top >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
+    );
+  }
+  function yPosition (ele) {
+    const rect = ele.getBoundingClientRect();
+    return (rect.top - 20); // 20px above
+  }
+  let curr = document.getElementsByClassName('current');
+  if (!isInViewport(curr[curr.length - 1])) {
+    document.getElementById('toc').scrollTo({
+      top: yPosition(curr[0]),
+      left: 0,
+      behavior: 'smooth'
+    });
+  }
+
+  /* For page navigation */
+  function gotoPage(selector) {
+    const button = document.querySelector(selector);
+    if (button)
+      window.location.href = button.href;
+  }
+  document.addEventListener('keydown', e => {
+    switch (e.key) {
+      case 'ArrowRight':
+        e.preventDefault();
+        gotoPage('.nav-next');
+        break;
+      case 'ArrowLeft':
+        e.preventDefault();
+        gotoPage('.nav-prev');
+        break;
+    }
+  });
+  </script>
+  </html>
