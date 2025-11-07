@@ -12,7 +12,7 @@ This project is a fork of the Command & Conquer Generals source code and its exp
 # Compilation Parameters
 - `-DRTS_BUILD_ZEROHOUR='ON'` - compiles the Zero Hour expansion
 - `-DRTS_BUILD_GENERALS='ON'` - compiles the Generals base game
-- `-DENABLE_OPENGL='ON'` - enables OpenGL graphics support
+- `-DENABLE_VULKAN='ON'` - enables Vulkan graphics support (mandatory for all non-Windows platforms)
 - `-DCMAKE_OSX_ARCHITECTURES=arm64` - enables native ARM64 compilation on Apple Silicon (recommended for macOS)
 - `-DRTS_BUILD_CORE_TOOLS='ON'` - compiles the core tools
 - `-DRTS_BUILD_GENERALS_TOOLS='ON'` - compiles the Generals tools
@@ -55,14 +55,14 @@ cmake --build build/macos-arm64 --target GeneralsX -j 4 2>&1 | tee /tmp/generals
 - Command example:
 ```bash
 # Example for macOS ARM64 - GeneralsXZH
-cd $HOME/GeneralsX/GeneralsMD/ && USE_METAL=1 ./GeneralsXZH 2>&1 | tee /tmp/generalszh.log
+cd $HOME/GeneralsX/GeneralsMD/ && ./GeneralsXZH 2>&1 | tee /tmp/generalszh.log
 grep -i error /tmp/generalszh.log
 ```
-- use `lldb` for debugging metal backend related crashes.
+- use `lldb` for debugging Vulkan backend related crashes.
 - Command example:
 ```bash
-# Example for macOS ARM64 - GeneralsXZH
-cd $HOME/GeneralsX/GeneralsMD/ && USE_METAL=1 lldb -o run -o bt -o quit ./GeneralsXZH 2>&1 |tee /tmp/generalszh_lldb.log
+# Example for macOS ARM64 - GeneralsXZH (Vulkan via MoltenVK)
+cd $HOME/GeneralsX/GeneralsMD/ && lldb -o run -o bt -o quit ./GeneralsXZH 2>&1 | tee /tmp/generalszh_lldb.log
 ```
 
 ### Debugging Best Practices (Lessons Learned)
@@ -87,7 +87,7 @@ cd $HOME/GeneralsX/GeneralsMD/ && USE_METAL=1 lldb -o run -o bt -o quit ./Genera
 
 4. **Memory Protection Systems Work**
    - Phase 30.6 memory protections (`GameMemory.cpp::isValidMemoryPointer()`) successfully prevent driver bugs
-   - AGXMetal13_3 crash was resolved by validation checks, not workarounds
+   - Vulkan validation layers catch API misuse early
    - Trust protection layers but verify with extensive testing
 
 5. **Persistent Log Directory**
@@ -98,7 +98,7 @@ cd $HOME/GeneralsX/GeneralsMD/ && USE_METAL=1 lldb -o run -o bt -o quit ./Genera
 
 ## General Instructions
 
-1. The main goal is to port the game to run on Windows, Linux, and macOS systems, starting by updating the graphics library to OpenGL, the extras and tools will be implemented afterwards.
+1. The main goal is to port the game to run on Windows, Linux, and macOS systems using Vulkan graphics backend (via MoltenVK on macOS). The core graphics library has been refactored to use Vulkan exclusively (Phase 50). Tools and audio will be implemented afterwards.
 2. The name of this project is "GeneralsX", please use this name in commit messages and pull requests.
 3. All tests must be moved into a dedicated `tests/` directory to improve project organization and maintainability.
 4. **Documentation Organization**: All new markdown documentation files must be created in the `docs/` directory unless explicitly instructed otherwise. Only essential GitHub files (README.md, LICENSE.md, CONTRIBUTING.md, SECURITY.md) should remain in the repository root.
@@ -132,21 +132,21 @@ The project includes reference repositories as git submodules for comparative an
   - **Key success**: Provided the breakthrough End token parsing solution (Phase 22.7-22.8)
   - **Coverage**: Full Windows 64-bit port with modern toolchain compatibility
 
-- **`references/fighter19-dxvk-port/`** - Linux port with DXVK graphics integration
-  - **Primary use**: Graphics layer solutions (DirectX→Vulkan via DXVK), Linux compatibility
-  - **Focus areas**: OpenGL/Vulkan rendering, graphics pipeline modernization
-  - **Coverage**: Complete Linux port with advanced graphics compatibility
+- **`references/fighter19-dxvk-port/`** - Linux port with DXVK graphics integration (PRIMARY REFERENCE for Phase 50)
+  - **Primary use**: Vulkan platform-conditional compilation model, graphics layer architecture
+  - **Focus areas**: DXVK rendering pipeline, platform-specific Vulkan implementation patterns
+  - **Coverage**: Complete Linux port with Vulkan/DXVK backend (CRITICAL: Study how fighter19 eliminates backend-specific conditionals)
 
 - **`references/dsalzner-linux-attempt/`** - Linux port attempt with POSIX compatibility
   - **Primary use**: Win32→POSIX API translations, Linux-specific fixes
   - **Focus areas**: System calls, file handling, threading compatibility
   - **Coverage**: Partial Linux port focusing on core system compatibility
 
-- **`references/dxgldotorg-dxgl/`** - DirectDraw/Direct3D7 to OpenGL compatibility layer
-  - **Primary use**: DirectX→OpenGL wrapper techniques, mock interface patterns, graphics compatibility
-  - **Focus areas**: DirectX API stubbing, OpenGL rendering pipeline, device capability emulation
-  - **Coverage**: Complete DirectDraw/D3D7 wrapper with mature OpenGL backend
-  - **Note**: While focused on D3D7, provides excellent patterns for DirectX8 compatibility layer development
+- **`references/dxgldotorg-dxgl/`** - DirectDraw/Direct3D7 to OpenGL compatibility layer (REFERENCE ONLY)
+  - **Primary use**: DirectX state mapping patterns (historical reference, not used in Vulkan path)
+  - **Focus areas**: DirectX API stubbing techniques, device capability emulation
+  - **Coverage**: Complete DirectDraw/D3D7 wrapper (patterns applicable to DirectX 8 mock layer)
+  - **Note**: Phase 50 does NOT use OpenGL - this is archived for reference only
 
 ## Reference Analysis Workflow
 1. **Comparative debugging**: When encountering complex cross-platform issues, examine equivalent code in reference repositories

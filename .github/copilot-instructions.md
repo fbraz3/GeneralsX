@@ -1,9 +1,9 @@
 # GeneralsX - AI Agent Instructions
 
 ## Project Overview
-GeneralsX is a cross-platform port of Command & Conquer: Generals (2003) from Windows-only DirectX 8 to macOS/Linux/Windows using OpenGL and Metal backends. This is a **massive C++ game engine** (~500k+ LOC) being ported from Visual C++ 6 (C++98) to modern C++20 with platform abstraction layers.
+GeneralsX is a cross-platform port of Command & Conquer: Generals (2003) from Windows-only DirectX 8 to macOS/Linux/Windows using Vulkan (via MoltenVK on macOS). This is a **massive C++ game engine** (~500k+ LOC) being ported from Visual C++ 6 (C++98) to modern C++20 with platform abstraction layers.
 
-**Critical Context**: This is NOT a greenfield project. You're working with 20+ year old game code that assumes Windows everywhere. Respect the existing architecture while adding cross-platform support.
+**Critical Context**: This is NOT a greenfield project. You're working with 20+ year old game code that assumes Windows everywhere. Phase 50 is a clean Vulkan-only refactor using platform-conditional compilation (not graphics-backend-conditional), based on the fighter19-dxvk-port architecture pattern.
 
 ## Architecture: The Three-Layer Compatibility System
 
@@ -14,18 +14,18 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals (2003) from Wi
 - Example: `MessageBox()` → macOS alert, `GetModuleFileName()` → `_NSGetExecutablePath()`
 
 ### Layer 2: DirectX 8 Mock Layer (`Core/Libraries/Source/WWVegas/WW3D2/d3d8.h`)
-Fake DirectX 8 interfaces that redirect to OpenGL/Metal backends:
-- `IDirect3DDevice8` → `DX8Wrapper` (Phase 29.x - Metal/OpenGL dispatch)
-- `IDirect3DTexture8` → `MetalWrapper::CreateTextureFromMemory()` (Phase 28.4)
-- All `D3DRS_*` render states mapped to Metal/OpenGL equivalents (Phase 29.1-29.4)
+Fake DirectX 8 interfaces that redirect to Vulkan backend via MoltenVK:
+- `IDirect3DDevice8` → `DX8Wrapper` (Vulkan dispatch)
+- `IDirect3DTexture8` → `VulkanTextureManager::CreateTextureFromMemory()`
+- All `D3DRS_*` render states mapped to Vulkan pipeline equivalents
 
-**Pattern**: Original game calls `device->SetRenderState(D3DRS_LIGHTING, TRUE)` → mock intercepts → calls `MetalWrapper::SetLightingEnabled(true)` → Metal shader uniform update.
+**Pattern**: Original game calls `device->SetRenderState(D3DRS_LIGHTING, TRUE)` → mock intercepts → calls `VulkanGraphicsBackend::SetLightingEnabled(true)` → Vulkan shader uniform update via descriptor sets.
 
 ### Layer 3: Game-Specific Extensions (`GeneralsMD/Code/`)
 Zero Hour expansion code that extends base game with platform-specific fixes:
 - INI parser hardening (Phase 22.7: `End` token protection, Phase 23.x: MapCache guards)
 - Memory safety (Phase 30.6: `isValidMemoryPointer()` bounds checking)
-- Texture interception (`texture.cpp::Apply_New_Surface()` - Phase 28.4 breakthrough)
+- Texture interception: DirectX surfaces → Vulkan image uploads (Phase 50 architecture)
 
 ## Critical Build Workflow
 
@@ -71,7 +71,7 @@ cp build/macos-arm64/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/
 
 ```bash
 # ✅ CORRECT: Full log to file, grep afterwards
-cd $HOME/GeneralsX/GeneralsMD && USE_METAL=1 ./GeneralsXZH 2>&1 | tee logs/run_$(date +%Y%m%d_%H%M%S).log
+cd $HOME/GeneralsX/GeneralsMD && ./GeneralsXZH 2>&1 | tee logs/run_$(date +%Y%m%d_%H%M%S).log
 grep -A 5 -B 5 "error\|crash" logs/run_20251019_143022.log
 
 # ❌ WRONG: Grep during execution hides startup messages
@@ -87,10 +87,10 @@ cat "$HOME/Documents/Command and Conquer Generals Zero Hour Data/ReleaseCrashInf
 cat "$HOME/Documents/Command and Conquer Generals Data/ReleaseCrashInfo.txt"
 ```
 
-### LLDB for Metal Crashes
-Metal driver crashes show `AGXMetal13_3` in backtrace - use LLDB:
+### LLDB for Vulkan Crashes
+Vulkan driver crashes (MoltenVK) in backtrace - use LLDB:
 ```bash
-cd $HOME/GeneralsX/GeneralsMD && USE_METAL=1 lldb -o run -o bt -o quit ./GeneralsXZH 2>&1 | tee logs/lldb.log
+cd $HOME/GeneralsX/GeneralsMD && lldb -o run -o bt -o quit ./GeneralsXZH 2>&1 | tee logs/lldb.log
 ```
 
 ### Process State Verification
@@ -102,33 +102,28 @@ top -pid $(pgrep GeneralsXZH)  # CPU usage? High = loading, Low = stuck
 
 ## Project-Specific Patterns
 
-### Graphics Backend Selection (Runtime)
+### Graphics Backend (Vulkan/MoltenVK)
+Phase 50 uses **Vulkan exclusively** on all platforms (macOS via MoltenVK, Linux native Vulkan, Windows native Vulkan). No runtime backend selection - single unified Vulkan code path.
+
 ```bash
-USE_METAL=1 ./GeneralsXZH   # macOS default (Phase 29.4+)
-USE_OPENGL=1 ./GeneralsXZH  # Cross-platform fallback
+./GeneralsXZH  # Vulkan via MoltenVK on macOS
 ```
 
-Controlled by `g_useMetalBackend` flag in `WinMain.cpp`:
-```cpp
-#ifdef __APPLE__
-    const char* use_opengl = getenv("USE_OPENGL");
-    g_useMetalBackend = (use_opengl == nullptr);  // Metal default on macOS
-#endif
-```
+Controlled by CMake configuration (`-DENABLE_VULKAN=ON`). Platform-specific Vulkan implementations are selected at compile time, not runtime.
 
-### The .big File VFS Problem (Phase 28.4 Discovery)
-Original assumption: Load textures from disk files → **WRONG**. Textures are inside `Textures.big` archives.
+### The .big File VFS Problem (Phase 28 History)
+Historical lesson: Original assumption was Load textures from disk files → **WRONG**. Textures are inside `Textures.big` archives.
 
-**Solution**: Intercept AFTER DirectX loads from .big via VFS:
+**Current Solution (Phase 50)**: DirectX surfaces are intercepted after DirectX unpacks from .big via VFS, then uploaded to Vulkan images:
 ```cpp
 // texture.cpp::Apply_New_Surface() - runs AFTER DirectX unpacks from .big
 IDirect3DSurface8* d3d_surface = /* DirectX loaded this from .big */;
 D3DLOCKED_RECT lock;
 d3d_surface->LockRect(&lock, NULL, D3DLOCK_READONLY);  // Get pixel data
-TextureCache::Load_From_Memory(lock.pBits, width, height, format);  // Upload to Metal
+VulkanTextureManager::UploadToGPU(lock.pBits, width, height, format);  // Upload to Vulkan
 ```
 
-See `docs/PHASE28/CRITICAL_VFS_DISCOVERY.md` for why VFS integration failed.
+See `docs/Misc/LESSONS_LEARNED.md` for architectural insights.
 
 ### INI Parser Hardening Pattern (Phase 22-23)
 Game crashes on malformed INI files. Protection pattern:
@@ -146,7 +141,7 @@ if (strcmp(chunk->Get_Name(), "End") == 0) {
 Apply this to ALL INI parsing code: MapCache, MetaMap, CommandMap, LanguageFilter.
 
 ### Memory Protection Pattern (Phase 30.6)
-Metal driver crashes from bad pointers. Add bounds checking:
+Vulkan driver crashes from bad pointers. Add bounds checking:
 ```cpp
 // GameMemory.cpp::isValidMemoryPointer()
 bool isValidMemoryPointer(void* ptr, size_t minSize) {
@@ -162,22 +157,22 @@ bool isValidMemoryPointer(void* ptr, size_t minSize) {
 ## Documentation Organization
 
 ### Phase-Based Structure (`docs/PHASE##/`)
-- Phase 27: W3D Graphics Engine
-- Phase 28: Texture Loading (4 sub-phases - DDS/TGA loaders, DirectX interception)
-- Phase 29: Metal Render States (lighting, fog, stencil, point sprites)
-- Phase 30: Metal Backend Success
-- Phase 31: Texture System Integration
-- Phase 32: Audio Pipeline Investigation (COMPLETE - INI parsing, event system, lifecycle)
-- **Phase 33: OpenAL Audio Backend Implementation (Ready to start - October 2025)**
-- Phase 34: Game Logic & Gameplay Systems (Planned - depends on Phase 33 audio)
-- Phase 35: Multiplayer & Networking (Planned)
+- Phase 27-31: W3D Graphics Engine, Texture Loading, Metal Render States (archived - superseded)
+- Phase 32-49: Development history, lessons learned, architectural experiments
+- **Phase 50: Vulkan-Only Clean Refactor (CURRENT)**
+  - Removed Metal backend
+  - Vulkan exclusive implementation
+  - Platform-conditional compilation model (not graphics-backend-conditional)
+  - Based on fighter19-dxvk-port architecture
+- Phase 51: Audio Pipeline Implementation (Planned)
+- Phase 52+: Game Logic, Gameplay, Multiplayer (Planned)
 
 ### Critical Reference Files
 - `docs/MACOS_PORT_DIARY.md` - **UPDATE AFTER EVERY SESSION** - Technical development diary (project requirement)
 - `docs/Misc/BIG_FILES_REFERENCE.md` - Asset structure (INI.big, INIZH.big contents)
-- `docs/Misc/GRAPHICS_BACKENDS.md` - Metal vs OpenGL runtime selection
-- `docs/Misc/CRITICAL_FIXES.md` - Emergency fixes (fullscreen lock, NULL crashes)
-- `docs/Misc/AUDIO_BACKEND_STATUS.md` - Audio system status (OpenAL stub vs real implementation)
+- `docs/Misc/LESSONS_LEARNED.md` - Architectural insights and integration patterns
+- `docs/Misc/CRITICAL_FIXES.md` - Emergency fixes and validation patterns
+- `docs/Misc/AUDIO_BACKEND_STATUS.md` - Audio system status
 - `.github/instructions/project.instructions.md` - Compilation/debugging commands
 
 ## Reference Repositories (Git Submodules)
@@ -196,46 +191,46 @@ references/fighter19-dxvk-port/
 references/dxgldotorg-dxgl/
 ```
 
-**Pattern**: Stuck on DirectX render state mapping? Check `references/dxgldotorg-dxgl/` for proven D3D→OpenGL translations.
+**Pattern**: Stuck on DirectX render state mapping? Check `references/dxgldotorg-dxgl/` for proven D3D mapping patterns.
 
-**Audio Implementation**: For Phase 33 (OpenAL backend), refer to `references/jmarshall-win64-modern/Code/GameEngineDevice/Source/OpenALAudioDevice/` for complete working implementation.
+**Vulkan Architecture Template**: Use `references/fighter19-dxvk-port/` for platform-conditional compilation model - shows how to structure Vulkan-only code without fallbacks.
 
 ## Testing Strategy
 
 ### Unit Tests in `tests/` Directory
 ```bash
-# Metal initialization test
-tests/metal_init_test.cpp
+# Vulkan initialization test
+tests/vulkan_init_test.cpp
 
 # Texture format tests (BC3 compression, DDS/TGA loading)
 tests/test_bc3_*.cpp
 tests/test_dds_loader.cpp
 tests/test_tga_loader.cpp
 
-# Run all OpenGL tests
-tests/opengl/run_opengl_tests.sh
+# Vulkan-specific tests
+tests/vulkan/
 ```
 
 **Rule**: All new tests go in `tests/` - no test code in game directories.
 
 ### Integration Testing
 ```bash
-# Run game with specific subsystem logging
+# Run game with subsystem logging
 cd $HOME/GeneralsX/GeneralsMD
-USE_METAL=1 ./GeneralsXZH 2>&1 | tee logs/subsystem_test.log
+./GeneralsXZH 2>&1 | tee logs/subsystem_test.log
 
 # Check subsystem initialization status
 grep "initSubsystem" logs/subsystem_test.log
-grep "Subsystem.*operational" logs/subsystem_test.log
+grep "Vulkan.*initialized" logs/subsystem_test.log
 ```
 
 ## Common Pitfalls
 
 1. **Assuming Desktop Paths Work**: Game expects `Data\` directory with backslashes from Windows. Use `TheFileSystem` for cross-platform file access, NOT raw `fopen()`.
 
-2. **DirectX Enums Don't Map 1:1**: `D3DTEXTUREADDRESS_WRAP` (Windows) ≠ `GL_REPEAT` (OpenGL). Check `dx8wrapper.cpp` for proven mappings.
+2. **DirectX Enums Don't Map 1:1**: `D3DTEXTUREADDRESS_WRAP` (Windows) needs Vulkan equivalent. Check `dx8wrapper.cpp` for proven mappings.
 
-3. **Texture Formats Are Complex**: `D3DFMT_DXT1` = BC1 compression. Apple Silicon requires 256-byte aligned `bytesPerRow`. See `MetalWrapper::CreateTextureFromMemory()` for alignment logic.
+3. **Texture Formats Are Complex**: `D3DFMT_DXT1` = BC1 compression. Vulkan images require proper format specification and memory alignment. See `VulkanTextureManager` for implementation.
 
 4. **Build Errors After Git Pull**: Stale CMake cache. **Always reconfigure**:
    ```bash
@@ -249,13 +244,13 @@ grep "Subsystem.*operational" logs/subsystem_test.log
 
 Follow conventional commits (project requirement):
 ```
-feat(metal): implement texture upload pipeline for BC3 compressed formats
+feat(vulkan): implement texture upload pipeline for BC3 compressed formats
 
-- Add MetalWrapper::CreateTextureFromMemory() with format conversion
-- Handle bytesPerRow alignment (256 bytes for Apple Silicon)
+- Add VulkanTextureManager::UploadToGPU() with format conversion
+- Handle Vulkan image memory alignment requirements
 - Support RGBA8, RGB8, DXT1/3/5 (BC1/2/3) formats
 
-Refs: Phase 28.4 Post-DirectX Texture Interception
+Refs: Phase 50 Vulkan-Only Refactor
 ```
 
 **Rules**:
@@ -277,18 +272,18 @@ Refs: Phase 28.4 Post-DirectX Texture Interception
 
 ## AI Agent Quick Reference
 
-**I'm stuck on a crash** → Check `$HOME/Documents/.../ReleaseCrashInfo.txt` first, then LLDB if Metal-related
+**I'm stuck on a crash** → Check `$HOME/Documents/.../ReleaseCrashInfo.txt` first, then LLDB for backtrace
 
 **I need to understand .big file structure** → Read `docs/Misc/BIG_FILES_REFERENCE.md`
 
 **I need compilation commands** → Check `.github/instructions/project.instructions.md`
 
-**I need proven cross-platform solution** → Compare `references/*/` submodules
+**I need proven Vulkan architecture** → Compare with `references/fighter19-dxvk-port/` (Linux DXVK port)
 
-**I need graphics backend info** → Read `docs/Misc/GRAPHICS_BACKENDS.md`
+**I need architectural insights** → Read `docs/Misc/LESSONS_LEARNED.md` for common pitfalls and solutions
 
 **Build fails mysteriously** → Delete `build/` and reconfigure with preset
 
 **Game initialization seems stuck** → It's loading assets - wait 60 seconds, check CPU usage, grep logs AFTER completion
 
-**Integration not working as expected** → Read `docs/Misc/LESSONS_LEARNED.md` for common architectural mismatches (VFS, pipeline execution)
+**Vulkan initialization failing** → Check Vulkan SDK installation, MoltenVK on macOS, and validation layer output
