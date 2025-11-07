@@ -1,3 +1,7 @@
 [submodule "GeneralsReplays"]
 	path = GeneralsReplays
 	url = https://github.com/TheSuperHackers/GeneralsReplays
+[submodule "references/fbraz3-generalsX-main"]
+	path = references/fbraz3-generalsX-main
+	url = git@github.com:fbraz3/GeneralsX.git
+	branch = main

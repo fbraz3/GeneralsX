@@ -127,6 +127,13 @@ cd $HOME/GeneralsX/GeneralsMD/ && lldb -o run -o bt -o quit ./GeneralsXZH 2>&1 |
 The project includes reference repositories as git submodules for comparative analysis and solution discovery:
 
 ## Available Reference Repositories
+
+- **`references/fbraz3-generalsX-main/`** - Current fork development branch (fbraz3's main)
+  - **Primary use**: Comparative analysis between upstream and fork-specific enhancements
+  - **Focus areas**: Phase 49 infrastructure verification, Vulkan pipeline development, all experimental branches
+  - **Coverage**: Active development history with all phases documented and tested
+  - **Status**: Live reference showing continuous improvements ahead of upstream
+
 - **`references/jmarshall-win64-modern/`** - Windows 64-bit modernization with comprehensive fixes - Game base (Generals) Only
   - **Primary use**: Cross-platform compatibility solutions, INI parser fixes, memory management
   - **Key success**: Provided the breakthrough End token parsing solution (Phase 22.7-22.8)
