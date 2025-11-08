@@ -60,8 +60,8 @@ set(WW3D2_SRC
     #dx8texman.h
     #dx8vertexbuffer.cpp
     #dx8vertexbuffer.h
-    dx8webbrowser.cpp
-    dx8webbrowser.h
+    #dx8webbrowser.cpp (Windows-only: Windows.h dependency)
+    #dx8webbrowser.h
     #dx8wrapper.cpp
     #dx8wrapper.h
     dynamesh.cpp
@@ -70,8 +70,8 @@ set(WW3D2_SRC
     font3d.h
     formconv.cpp
     formconv.h
-    FramGrab.cpp
-    framgrab.h
+    #FramGrab.cpp (Windows-only: windows.h dependency)
+    #framgrab.h
     hanim.cpp
     hanim.h
     #hanimmgr.cpp
@@ -125,8 +125,8 @@ set(WW3D2_SRC
     #meshmdl.cpp
     #meshmdl.h
     #meshmdlio.cpp
-    missingtexture.cpp
-    missingtexture.h
+    #missingtexture.cpp (Windows-only: IDirect3DTexture8 dependency)
+    #missingtexture.h
     #motchan.cpp
     #motchan.h
     #nullrobj.cpp
@@ -139,8 +139,8 @@ set(WW3D2_SRC
     #part_ldr.h
     pivot.cpp
     pivot.h
-    pointgr.cpp
-    pointgr.h
+    #pointgr.cpp (Windows-only: D3DX functions)
+    #pointgr.h
     polyinfo.cpp
     polyinfo.h
     predlod.cpp
@@ -181,15 +181,15 @@ set(WW3D2_SRC
     snapPts.h
     #sortingrenderer.cpp
     #sortingrenderer.h
-    soundlibrarybridge.h
-    soundrobj.cpp
-    soundrobj.h
+    #soundlibrarybridge.h (Windows-only: audio system)
+    #soundrobj.cpp (Windows-only: audio system)
+    #soundrobj.h
     sphereobj.cpp
     sphereobj.h
     static_sort_list.cpp
     static_sort_list.h
-    statistics.cpp
-    statistics.h
+    #statistics.cpp (Windows-only: textureloader.h dependency)
+    #statistics.h
     streak.cpp
     streak.h
     streakRender.cpp
