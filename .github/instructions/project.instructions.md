@@ -21,11 +21,30 @@ This project is a fork of the Command & Conquer Generals source code and its exp
 - `-DRTS_BUILD_GENERALS_EXTRAS='ON'` - compiles the Generals extras
 - `-DRTS_BUILD_ZEROHOUR_EXTRAS='ON'` - compiles the Zero Hour extras
 
-# Build Presets (Platform-Specific)
-- `vc6` - Windows 32-bit (Visual C++ 6 compatibility)
-- `macos-arm64` - **macOS Apple Silicon (ARM64) - PRIMARY TARGET**
-- `macos-x64` - macOS Intel (x86_64)
-- `linux` - Linux 64-bit (x86_64)
+# Build Presets (Platform-Specific, with Backend Specification)
+
+## Phase 50 - Vulkan-Only Architecture
+The project now uses a platform/backend-specific preset naming convention to enable future backend flexibility:
+
+### Current Presets (Phase 50 - Vulkan Exclusive)
+- `vc6` - Windows 32-bit (Visual C++ 6, DirectX 8 - Legacy support only)
+- `macos-arm64-vulkan` - **macOS Apple Silicon (ARM64) - PRIMARY TARGET** - Vulkan via MoltenVK
+- `macos-arm64` - Alias for `macos-arm64-vulkan` (for backward compatibility)
+- `macos-x64-vulkan` - macOS Intel (x86_64) - Vulkan via MoltenVK
+- `macos-x64` - Alias for `macos-x64-vulkan` (for backward compatibility)
+- `linux-vulkan` - Linux 64-bit (x86_64) - Vulkan native
+- `linux` - Alias for `linux-vulkan` (for backward compatibility)
+
+### Future Presets (Planned for Phase 51+)
+- `windows-vulkan` - Windows 32-bit with native Vulkan backend (currently placeholder, hidden)
+
+### Preset Naming Convention
+Format: `<platform>[-<architecture>]-<backend>`
+- `<platform>`: `windows`, `macos`, `linux`
+- `<architecture>` (optional): `arm64`, `x64`
+- `<backend>`: `vulkan` (Phase 50+), future: `opengl`, `metal` (historical reference only)
+
+**Legacy presets** (`macos-arm64`, `macos-x64`, `linux`) are maintained as aliases for backward compatibility.
 
 # Build Targets
 - `GeneralsXZH` - Zero Hour expansion executable (PRIMARY TARGET - recommended)
@@ -33,6 +52,38 @@ This project is a fork of the Command & Conquer Generals source code and its exp
 - `ww3d2` - Core 3D graphics library
 - `wwlib` - Core Windows compatibility library
 - `wwmath` - Core mathematics library
+
+# Compatibility Layer Architecture (Three-Layer Design)
+
+## Layer 1: Core POSIX/Windows Compatibility
+**Header pattern**: `win32_<dest>_<type>_compat.h`
+- `win32_posix_api_compat.h` - Win32 API → POSIX system calls (Win32CreateFile → open, etc.)
+- `win32_posix_core_compat.h` - Core type definitions (HWND, HRESULT, etc.)
+- **Located**: `Core/Libraries/Source/WWVegas/WW3D2/`
+- **Purpose**: Platform-independent type definitions and system API translations
+
+## Layer 2: DirectX → Graphics Backend Translation
+**Header pattern**: `d3d8_<backend>_graphics_compat.h`
+- `d3d8_vulkan_graphics_compat.h` - DirectX 8 → Vulkan API (Phase 50 current)
+- `d3d8_opengl_graphics_compat.h` - DirectX 8 → OpenGL (Phase 51+ placeholder)
+- **Located**: `Core/Libraries/Source/WWVegas/WW3D2/`
+- **Purpose**: Vulkan stub interfaces for cross-platform graphics compilation
+
+## Layer 3: Audio Backend Translation
+**Header pattern**: `dsound_<backend>_audio_compat.h`
+- `dsound_vulkan_audio_compat.h` - DirectSound → Vulkan audio (Phase 51+ future)
+- `d3d8_vulkan_audio_compat.h` - D3D8 audio features → Vulkan
+- **Located**: `Core/Libraries/Source/WWVegas/WW3D2/`
+- **Purpose**: Audio system compatibility layer (not yet implemented)
+
+## Compatibility Layer Naming Convention
+Format: `<source_api>_<backend>_<subsystem>_compat.h`
+- `<source_api>`: Original API (win32, d3d8, dsound, d3d)
+- `<backend>`: Target implementation (vulkan, opengl, metal, posix, sdl, wasapi)
+- `<subsystem>`: Component type (api, graphics, audio, core, reference)
+- **Example**: `d3d8_vulkan_graphics_compat.h` = DirectX 8 → Vulkan graphics compatibility
+
+This naming convention enables multiple backend implementations in parallel without conflicts.
 
 # Project Specific Instructions
 

@@ -7,38 +7,74 @@ GeneralsX is a cross-platform port of Command & Conquer: Generals (2003) from Wi
 
 ## Architecture: The Three-Layer Compatibility System
 
-### Layer 1: Core Compatibility (`Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h`)
-**2,295 lines** of Windows→POSIX type definitions, DirectX mock structures, and system API translations.
-- Provides: `HWND`, `HRESULT`, `D3DFORMAT`, `BITMAPINFOHEADER`, registry stubs, file I/O wrappers
-- **Never directly modify game code to remove Windows types** - add compatibility shims here instead
+### Layer 1: Core POSIX/Windows Compatibility
+**Header pattern**: `win32_<dest>_<type>_compat.h`
+- `win32_posix_api_compat.h` - Win32 API → POSIX system calls (Win32CreateFile → open, etc.)
+- `win32_posix_core_compat.h` - Core type definitions (HWND, HRESULT, D3DFORMAT, BITMAPINFOHEADER, etc.)
+- **Located**: `Core/Libraries/Source/WWVegas/WW3D2/`
+- **Never directly modify game code** - add compatibility shims here instead
 - Example: `MessageBox()` → macOS alert, `GetModuleFileName()` → `_NSGetExecutablePath()`
 
-### Layer 2: DirectX 8 Mock Layer (`Core/Libraries/Source/WWVegas/WW3D2/d3d8.h`)
-Fake DirectX 8 interfaces that redirect to Vulkan backend via MoltenVK:
-- `IDirect3DDevice8` → `DX8Wrapper` (Vulkan dispatch)
-- `IDirect3DTexture8` → `VulkanTextureManager::CreateTextureFromMemory()`
-- All `D3DRS_*` render states mapped to Vulkan pipeline equivalents
+### Layer 2: DirectX → Graphics Backend Translation
+**Header pattern**: `d3d8_<backend>_graphics_compat.h`
+- `d3d8_vulkan_graphics_compat.h` - DirectX 8 → Vulkan (Phase 50 current) 
+  - Fake DirectX 8 interfaces that redirect to Vulkan backend via MoltenVK
+  - `IDirect3DDevice8` → `DX8Wrapper` (Vulkan dispatch)
+  - `IDirect3DTexture8` → `VulkanTextureManager::CreateTextureFromMemory()`
+  - All `D3DRS_*` render states mapped to Vulkan pipeline equivalents
+- `d3d8_opengl_graphics_compat.h` - DirectX 8 → OpenGL (Phase 51+ placeholder)
+- **Located**: `Core/Libraries/Source/WWVegas/WW3D2/`
 
 **Pattern**: Original game calls `device->SetRenderState(D3DRS_LIGHTING, TRUE)` → mock intercepts → calls `VulkanGraphicsBackend::SetLightingEnabled(true)` → Vulkan shader uniform update via descriptor sets.
 
-### Layer 3: Game-Specific Extensions (`GeneralsMD/Code/`)
-Zero Hour expansion code that extends base game with platform-specific fixes:
-- INI parser hardening (Phase 22.7: `End` token protection, Phase 23.x: MapCache guards)
-- Memory safety (Phase 30.6: `isValidMemoryPointer()` bounds checking)
-- Texture interception: DirectX surfaces → Vulkan image uploads (Phase 50 architecture)
+### Layer 3: Audio Backend Translation
+**Header pattern**: `dsound_<backend>_audio_compat.h`
+- `dsound_vulkan_audio_compat.h` - DirectSound → Vulkan audio (Phase 51+ future)
+- `d3d8_vulkan_audio_compat.h` - D3D8 audio features → Vulkan
+- **Located**: `Core/Libraries/Source/WWVegas/WW3D2/`
+- **Purpose**: Audio system compatibility layer (not yet implemented)
+
+### Compatibility Layer Naming Convention (source_dest_type)
+Format: `<source_api>_<backend>_<subsystem>_compat.h`
+- `<source_api>`: Original API (win32, d3d8, dsound, d3d)
+- `<backend>`: Target implementation (vulkan, opengl, metal, posix, sdl, wasapi)
+- `<subsystem>`: Component type (api, graphics, audio, core, reference)
+- **Example**: `d3d8_vulkan_graphics_compat.h` = DirectX 8 → Vulkan graphics compatibility
+
+**Advantage**: This naming enables multiple backend implementations in parallel without conflicts, allowing future backends (OpenGL, Metal) to coexist during development.
 
 ## Critical Build Workflow
 
+### Build Presets (Phase 50 - Vulkan-Only Architecture)
+
+**Current Presets** (Phase 50 - Vulkan Exclusive):
+- `macos-arm64-vulkan` - **PRIMARY TARGET** - macOS ARM64 (Vulkan via MoltenVK)
+- `macos-arm64` - Alias for `macos-arm64-vulkan` (backward compatibility)
+- `macos-x64-vulkan` - macOS Intel (Vulkan via MoltenVK)
+- `macos-x64` - Alias for `macos-x64-vulkan` (backward compatibility)
+- `linux-vulkan` - Linux 64-bit (native Vulkan)
+- `linux` - Alias for `linux-vulkan` (backward compatibility)
+- `vc6` - Windows 32-bit (Visual C++ 6, DirectX - legacy only)
+- `windows-vulkan` - Windows native Vulkan (FUTURE - Phase 51+, placeholder only)
+
+**Preset Naming Convention**:
+- Format: `<platform>[-<architecture>]-<backend>`
+- Examples: `macos-arm64-vulkan`, `linux-vulkan`, `windows-vulkan` (future)
+
 ### Presets Are Everything
 ```bash
-# Configure (creates build/macos-arm64/)
-cmake --preset macos-arm64
+# Configure with backend-specific preset
+cmake --preset macos-arm64-vulkan
 
 # Build PRIMARY TARGET (Zero Hour expansion - most stable)
-cmake --build build/macos-arm64 --target GeneralsXZH -j 4 | tee logs/build.log
+cmake --build build/macos-arm64-vulkan --target GeneralsXZH -j 4 | tee logs/build.log
 
 # Build SECONDARY TARGET (original game - less tested)
-cmake --build build/macos-arm64 --target GeneralsX -j 4 | tee logs/build.log
+cmake --build build/macos-arm64-vulkan --target GeneralsX -j 4 | tee logs/build.log
+
+# Or use legacy alias (backward compatible)
+cmake --preset macos-arm64
+cmake --build build/macos-arm64 --target GeneralsXZH -j 4 | tee logs/build.log
 ```
 
 **Why `-j 4` not `-j 8`?** This codebase has MASSIVE translation units (5MB+ object files). Half CPU cores prevents OOM kills. See `build_zh.sh` for production workflow.
@@ -48,7 +84,7 @@ First build: ~20-30 minutes. With ccache: ~30-60 seconds for incremental changes
 ```bash
 brew install ccache  # macOS
 ccache -M 10G        # Set 10GB cache
-cmake --preset macos-arm64 -DUSE_CCACHE=ON
+cmake --preset macos-arm64-vulkan -DUSE_CCACHE=ON
 ```
 
 ### The Asset Path Problem

@@ -62,6 +62,16 @@
             }
         },
         {
+            "name": "windows-vulkan",
+            "displayName": "Windows 32bit Release (Vulkan - FUTURE BACKEND)",
+            "hidden": true,
+            "description": "Placeholder for future Vulkan native backend on Windows (Phase 51+). Currently using DirectX on Windows.",
+            "inherits": "vc6",
+            "cacheVariables": {
+                "ENABLE_VULKAN": "ON"
+            }
+        },
+        {
             "name": "default",
             "displayName": "Default Config (don't use directly!)",
             "generator": "Ninja Multi-Config",
@@ -161,8 +171,8 @@
             "displayName": "Unix 32bit VCPKG Release"
         },
         {
-            "name": "macos-arm64",
-            "displayName": "macOS ARM64 Native Release",
+            "name": "macos-arm64-vulkan",
+            "displayName": "macOS ARM64 Native Release (Vulkan via MoltenVK)",
             "generator": "Ninja",
             "hidden": false,
             "binaryDir": "${sourceDir}/build/${presetName}",
@@ -177,12 +187,19 @@
                 "CMAKE_OSX_ARCHITECTURES": "arm64",
                 "RTS_FLAGS": "-Wall",
                 "RTS_BUILD_ZEROHOUR": "ON",
-                "RTS_BUILD_GENERALS": "OFF"
+                "RTS_BUILD_GENERALS": "OFF",
+                "ENABLE_VULKAN": "ON"
             }
         },
         {
-            "name": "macos-x64",
-            "displayName": "macOS Intel x64 Release",
+            "name": "macos-arm64",
+            "displayName": "macOS ARM64 Native Release (alias for macos-arm64-vulkan)",
+            "inherits": "macos-arm64-vulkan",
+            "hidden": false
+        },
+        {
+            "name": "macos-x64-vulkan",
+            "displayName": "macOS Intel x64 Release (Vulkan via MoltenVK)",
             "generator": "Ninja",
             "hidden": false,
             "binaryDir": "${sourceDir}/build/${presetName}",
@@ -197,12 +214,19 @@
                 "CMAKE_OSX_ARCHITECTURES": "x86_64",
                 "RTS_FLAGS": "-Wall",
                 "RTS_BUILD_ZEROHOUR": "ON",
-                "RTS_BUILD_GENERALS": "OFF"
+                "RTS_BUILD_GENERALS": "OFF",
+                "ENABLE_VULKAN": "ON"
             }
         },
         {
-            "name": "linux",
-            "displayName": "Linux 64-bit Release",
+            "name": "macos-x64",
+            "displayName": "macOS Intel x64 Release (alias for macos-x64-vulkan)",
+            "inherits": "macos-x64-vulkan",
+            "hidden": false
+        },
+        {
+            "name": "linux-vulkan",
+            "displayName": "Linux 64-bit Release (Vulkan)",
             "generator": "Ninja",
             "hidden": false,
             "binaryDir": "${sourceDir}/build/${presetName}",
@@ -216,8 +240,15 @@
                 "CMAKE_BUILD_TYPE": "Release",
                 "RTS_FLAGS": "-Wall",
                 "RTS_BUILD_ZEROHOUR": "ON",
-                "RTS_BUILD_GENERALS": "OFF"
+                "RTS_BUILD_GENERALS": "OFF",
+                "ENABLE_VULKAN": "ON"
             }
+        },
+        {
+            "name": "linux",
+            "displayName": "Linux 64-bit Release (alias for linux-vulkan)",
+            "inherits": "linux-vulkan",
+            "hidden": false
         }
     ],
     "buildPresets": [

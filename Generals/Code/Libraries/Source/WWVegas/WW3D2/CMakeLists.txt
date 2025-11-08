@@ -205,8 +205,8 @@ set(WW3D2_SRC
     #texturefilter.h
     #textureloader.cpp (Windows-only: Uses dx8wrapper.h)
     #textureloader.h
-    texturethumbnail.cpp
-    texturethumbnail.h
+    #texturethumbnail.cpp (Windows-only: Depends on textureloader.h)
+    #texturethumbnail.h
     #vertmaterial.cpp (Windows-only: Uses dx8wrapper.h)
     #vertmaterial.h
     #visrasterizer.cpp

@@ -5,8 +5,8 @@ set(WW3D2_SRC
     #aabtreebuilder.h
     agg_def.cpp
     agg_def.h
-    animatedsoundmgr.cpp
-    animatedsoundmgr.h
+    #animatedsoundmgr.cpp (Windows-only: Uses mss.h audio library)
+    #animatedsoundmgr.h
     #animobj.cpp
     #animobj.h
     #assetmgr.cpp
