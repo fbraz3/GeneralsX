@@ -42,7 +42,9 @@
 #include "texture.h"
 
 #include <d3d8.h>
+#ifdef _WIN32
 #include <d3dx8core.h>
+#endif
 #include "dx8wrapper.h"
 #include "TARGA.h"
 #include <nstrdup.h>

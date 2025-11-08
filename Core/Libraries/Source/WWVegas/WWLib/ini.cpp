@@ -94,7 +94,9 @@
 #include	"win.h"
 #include "XPIPE.h"
 #include "XSTRAW.h"
+#ifdef _WIN32
 #include <malloc.h>
+#endif
 #ifdef _UNIX
 #include <ctype.h>
 #endif

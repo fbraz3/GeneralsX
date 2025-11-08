@@ -43,7 +43,9 @@
 #include "dx8fvf.h"
 #include "dx8caps.h"
 #include "thread.h"
+#ifdef _WIN32
 #include <d3dx8core.h>
+#endif
 
 #define DEFAULT_VB_SIZE 5000
 

@@ -37,7 +37,7 @@
 #pragma once
 
 #ifdef _UNIX
-#include "osdep/osdep.h"
+#include "../WWMath/osdep.h"
 #endif
 
 #include "always.h"

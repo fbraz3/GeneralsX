@@ -71,7 +71,9 @@
 #include "textureloader.h"
 #include "missingtexture.h"
 #include "thread.h"
+#ifdef _WIN32
 #include <d3dx8core.h>
+#endif
 #include "pot.h"
 #include "wwprofile.h"
 #include "ffactory.h"

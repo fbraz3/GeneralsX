@@ -28,7 +28,11 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "debug.h"
 #include "debug_stack.h"
+#ifdef _WIN32
+#ifdef _WIN32
 #include <windows.h>
+#endif
+#endif
 #include "stringex.h"
 #include <imagehlp.h>
 

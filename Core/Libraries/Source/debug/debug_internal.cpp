@@ -27,7 +27,11 @@
 // Implementation of internal code
 //////////////////////////////////////////////////////////////////////////////
 #include "debug.h"
+#ifdef _WIN32
+#ifdef _WIN32
 #include <windows.h>
+#endif
+#endif
 
 void DebugInternalAssert(const char *file, int line, const char *expr)
 {

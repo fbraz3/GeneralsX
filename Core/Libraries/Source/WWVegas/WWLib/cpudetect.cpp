@@ -25,7 +25,11 @@
 #include <Utility/intrin_compat.h>
 
 #ifdef _WIN32
+#ifdef _WIN32
+#ifdef _WIN32
 #include <windows.h>
+#endif
+#endif
 #endif
 
 #ifdef _UNIX

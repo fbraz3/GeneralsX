@@ -28,7 +28,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <stdlib.h>
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
 #include "Common/GameState.h"
 #include "Common/GlobalData.h"

@@ -54,7 +54,9 @@
 #include "vector2i.h"
 #include "colorspace.h"
 #include "bound.h"
+#ifdef _WIN32
 #include <d3dx8.h>
+#endif
 
 /***********************************************************************************************
  * PixelSize -- Helper Function to find the size in bytes of a pixel                           *

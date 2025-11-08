@@ -191,9 +191,11 @@ public:
 	// Apply a Null texture's settings into D3D
 	static void Apply_Null(unsigned int stage);
 
+#ifdef _WIN32
 	virtual TextureClass* As_TextureClass() { return NULL; }
 	virtual CubeTextureClass* As_CubeTextureClass() { return NULL; }
 	virtual VolumeTextureClass* As_VolumeTextureClass() { return NULL; }
+#endif
 
 	IDirect3DTexture8* Peek_D3D_Texture() const { return (IDirect3DTexture8*)Peek_D3D_Base_Texture(); }
 	IDirect3DVolumeTexture8* Peek_D3D_VolumeTexture() const { return (IDirect3DVolumeTexture8*)Peek_D3D_Base_Texture(); }
@@ -334,7 +336,9 @@ public:
 
 	virtual unsigned Get_Texture_Memory_Usage() const;
 
+#ifdef _WIN32
 	virtual TextureClass* As_TextureClass() { return this; }
+#endif
 
 protected:
 

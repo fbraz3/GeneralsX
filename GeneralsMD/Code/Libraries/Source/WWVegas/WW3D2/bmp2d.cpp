@@ -43,8 +43,12 @@
 #include "texture.h"
 #include "surfaceclass.h"
 #include "assetmgr.h"
+#ifdef _WIN32
 #include "textureloader.h"
+#endif
 #include "ww3dformat.h"
+
+#ifdef _WIN32
 
 Bitmap2DObjClass::Bitmap2DObjClass
 (
@@ -297,3 +301,5 @@ RenderObjClass * Bitmap2DObjClass::Clone(void) const
 {
 	return NEW_REF( Bitmap2DObjClass, (*this));
 }
+
+#endif // _WIN32

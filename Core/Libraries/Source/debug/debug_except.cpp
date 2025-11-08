@@ -28,7 +28,11 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "debug.h"
 #include "internal_except.h"
+#ifdef _WIN32
+#ifdef _WIN32
 #include <windows.h>
+#endif
+#endif
 #include <commctrl.h>
 
 DebugExceptionhandler::DebugExceptionhandler(void)

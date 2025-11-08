@@ -43,7 +43,11 @@
 #include "texture.h"
 #include "wwstring.h"
 
+#ifdef _WIN32
+#ifdef _WIN32
 #include <windows.h>
+#endif
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////////

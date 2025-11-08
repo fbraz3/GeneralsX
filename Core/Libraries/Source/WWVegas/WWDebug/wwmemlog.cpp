@@ -70,7 +70,11 @@
 ** method to use.
 */
 #ifdef _WIN32
+#ifdef _WIN32
+#ifdef _WIN32
 #include <windows.h>
+#endif
+#endif
 #define MEMLOG_USE_MUTEX					0
 #define MEMLOG_USE_CRITICALSECTION		1
 #define MEMLOG_USE_FASTCRITICALSECTION	0

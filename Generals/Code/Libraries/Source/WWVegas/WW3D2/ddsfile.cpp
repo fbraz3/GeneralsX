@@ -17,6 +17,8 @@
 */
 
 // 08/06/02 KM Added cube map and volume texture support
+#ifdef _WIN32
+
 #include "ddsfile.h"
 #include "ffactory.h"
 #include "bufffile.h"
@@ -1277,3 +1279,5 @@ bool DDSFileClass::Get_4x4_Block(
 	return false;
 
 }
+
+#endif // _WIN32

@@ -18,6 +18,7 @@
 
 #include "DbgHelpLoader.h"
 
+#ifdef _WIN32
 
 DbgHelpLoader* DbgHelpLoader::Inst = NULL;
 
@@ -271,3 +272,5 @@ BOOL DbgHelpLoader::stackWalk(
 
 	return FALSE;
 }
+
+#endif // _WIN32

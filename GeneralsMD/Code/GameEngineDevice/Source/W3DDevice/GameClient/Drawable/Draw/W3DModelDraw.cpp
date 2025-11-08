@@ -34,7 +34,9 @@
 
 #define NO_DEBUG_CRC
 
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
 #include "Common/crc.h"
 #include "Common/CRCDebug.h"

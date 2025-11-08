@@ -20,10 +20,11 @@
 
 #include "always.h"
 
-#include <win.h>
-#include <imagehlp.h> // Must be included after Windows.h
-#include <set>
+#ifdef _WIN32
 
+#include <win.h>
+#include <imagehlp.h>
+#include <set>
 #include "SystemAllocator.h"
 
 // This static class can load and unload dbghelp.dll
@@ -33,19 +34,15 @@ class DbgHelpLoader
 {
 private:
 
-	static DbgHelpLoader* Inst; // Is singleton class
+	static DbgHelpLoader* Inst;
 
 	DbgHelpLoader();
 	~DbgHelpLoader();
 
 public:
 
-	// Returns whether dbghelp.dll is loaded
 	static bool isLoaded();
-
-	// Returns whether dbghelp.dll is loaded from the system directory
 	static bool isLoadedFromSystem();
-
 	static bool load();
 	static bool reload();
 	static void unload();
@@ -178,3 +175,20 @@ private:
 	bool m_failed;
 	bool m_loadedFromSystem;
 };
+
+#else // !_WIN32
+
+// Stub implementation for non-Windows platforms
+class DbgHelpLoader
+{
+public:
+	static bool isLoaded() { return false; }
+	static bool isLoadedFromSystem() { return false; }
+	static bool load() { return false; }
+	static bool reload() { return false; }
+	static void unload() {}
+};
+
+#endif // _WIN32
+
+#endif // __DBGHELPLOADER_H__

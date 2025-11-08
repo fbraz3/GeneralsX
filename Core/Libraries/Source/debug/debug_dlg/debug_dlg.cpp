@@ -28,7 +28,11 @@
 //////////////////////////////////////////////////////////////////////////////
 #define STRICT
 #define WIN32_LEAN_AND_MEAN
+#ifdef _WIN32
+#ifdef _WIN32
 #include <windows.h>
+#endif
+#endif
 #include <commctrl.h>
 #include <stdio.h>
 

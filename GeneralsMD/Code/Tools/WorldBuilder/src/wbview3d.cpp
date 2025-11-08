@@ -93,7 +93,9 @@
 #include "ImpassableOptions.h"
 
 
+#ifdef _WIN32
 #include <d3dx8.h>
+#endif
 
 
 // ----------------------------------------------------------------------------

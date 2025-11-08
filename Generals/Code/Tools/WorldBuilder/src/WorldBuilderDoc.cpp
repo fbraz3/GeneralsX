@@ -23,7 +23,9 @@
 #include "WorldBuilder.h"
 
 #include <direct.h>
+#ifdef _WIN32
 #include <windows.h>
+#endif
 #include <process.h>
 
 #include "Common/Debug.h"

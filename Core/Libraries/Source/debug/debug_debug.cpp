@@ -31,7 +31,11 @@
 #include "internal_except.h"
 #include "internal_io.h"
 #include <stdlib.h>
+#ifdef _WIN32
+#ifdef _WIN32
 #include <windows.h>
+#endif
+#endif
 #include <WWCommon.h>
 #include <new>      // needed for placement new prototype
 

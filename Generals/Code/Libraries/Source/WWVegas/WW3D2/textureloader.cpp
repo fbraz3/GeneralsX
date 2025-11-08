@@ -30,7 +30,9 @@
 #include "dx8caps.h"
 #include "missingtexture.h"
 #include "TARGA.h"
+#ifdef _WIN32
 #include <d3dx8tex.h>
+#endif
 #include "wwmemlog.h"
 #include "texture.h"
 #include "formconv.h"

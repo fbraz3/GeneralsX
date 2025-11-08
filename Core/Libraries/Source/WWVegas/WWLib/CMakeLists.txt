@@ -32,10 +32,6 @@ set(WWLIB_SRC
     #crcstraw.h
     cstraw.cpp
     cstraw.h
-    DbgHelpGuard.cpp
-    DbgHelpGuard.h
-    DbgHelpLoader.cpp
-    DbgHelpLoader.h
     Except.cpp
     Except.h
     FastAllocator.cpp
@@ -152,6 +148,10 @@ set(WWLIB_SRC
 
 if(WIN32)
     list(APPEND WWLIB_SRC
+        DbgHelpGuard.cpp
+        DbgHelpGuard.h
+        DbgHelpLoader.cpp
+        DbgHelpLoader.h
         mpu.cpp
         MPU.h
         rcfile.cpp
@@ -180,7 +180,6 @@ target_precompile_headers(core_wwlib PRIVATE
     win.h
     WWCommon.h
     wwstring.h
-    <windows.h>
 )
 
 target_link_libraries(core_wwlib PRIVATE

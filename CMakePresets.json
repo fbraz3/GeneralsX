@@ -159,6 +159,65 @@
             "inherits": "default-vcpkg",
             "hidden": false,
             "displayName": "Unix 32bit VCPKG Release"
+        },
+        {
+            "name": "macos-arm64",
+            "displayName": "macOS ARM64 Native Release",
+            "generator": "Ninja",
+            "hidden": false,
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            },
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_OSX_ARCHITECTURES": "arm64",
+                "RTS_FLAGS": "-Wall",
+                "RTS_BUILD_ZEROHOUR": "ON",
+                "RTS_BUILD_GENERALS": "OFF"
+            }
+        },
+        {
+            "name": "macos-x64",
+            "displayName": "macOS Intel x64 Release",
+            "generator": "Ninja",
+            "hidden": false,
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            },
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_OSX_ARCHITECTURES": "x86_64",
+                "RTS_FLAGS": "-Wall",
+                "RTS_BUILD_ZEROHOUR": "ON",
+                "RTS_BUILD_GENERALS": "OFF"
+            }
+        },
+        {
+            "name": "linux",
+            "displayName": "Linux 64-bit Release",
+            "generator": "Ninja",
+            "hidden": false,
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            },
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_BUILD_TYPE": "Release",
+                "RTS_FLAGS": "-Wall",
+                "RTS_BUILD_ZEROHOUR": "ON",
+                "RTS_BUILD_GENERALS": "OFF"
+            }
         }
     ],
     "buildPresets": [
@@ -240,6 +299,24 @@
             "displayName": "Build Unix 32bit VCPKG Release",
             "description": "Build Unix 32bit VCPKG Release",
             "configuration": "Release"
+        },
+        {
+            "name": "macos-arm64",
+            "configurePreset": "macos-arm64",
+            "displayName": "Build macOS ARM64 Native Release",
+            "description": "Build macOS ARM64 Native Release"
+        },
+        {
+            "name": "macos-x64",
+            "configurePreset": "macos-x64",
+            "displayName": "Build macOS Intel x64 Release",
+            "description": "Build macOS Intel x64 Release"
+        },
+        {
+            "name": "linux",
+            "configurePreset": "linux",
+            "displayName": "Build Linux 64-bit Release",
+            "description": "Build Linux 64-bit Release"
         }
     ],
     "workflowPresets": [
@@ -396,6 +473,45 @@
                 {
                     "type": "build",
                     "name": "unix"
+                }
+            ]
+        },
+        {
+            "name": "macos-arm64",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "macos-arm64"
+                },
+                {
+                    "type": "build",
+                    "name": "macos-arm64"
+                }
+            ]
+        },
+        {
+            "name": "macos-x64",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "macos-x64"
+                },
+                {
+                    "type": "build",
+                    "name": "macos-x64"
+                }
+            ]
+        },
+        {
+            "name": "linux",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "linux"
+                },
+                {
+                    "type": "build",
+                    "name": "linux"
                 }
             ]
         }

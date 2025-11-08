@@ -28,7 +28,13 @@ static inline MMRESULT timeEndPeriod(int) { return TIMERR_NOERROR; }
 inline unsigned int timeGetTime()
 {
   struct timespec ts;
+#ifdef __MACH__
+  // macOS: use CLOCK_MONOTONIC instead of CLOCK_BOOTTIME
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+#else
+  // Linux: use CLOCK_BOOTTIME for time since boot
   clock_gettime(CLOCK_BOOTTIME, &ts);
+#endif
   return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 }
 inline unsigned int GetTickCount()

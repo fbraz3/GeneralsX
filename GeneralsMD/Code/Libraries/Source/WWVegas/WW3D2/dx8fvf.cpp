@@ -41,7 +41,9 @@
 
 #include "dx8fvf.h"
 #include "wwstring.h"
+#ifdef _WIN32
 #include <d3dx8core.h>
+#endif
 
 static unsigned Get_FVF_Vertex_Size(unsigned FVF)
 {

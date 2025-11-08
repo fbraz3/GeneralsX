@@ -39,7 +39,11 @@
 #include "always.h"
 #include "wwdebug.h"
 #include "mutex.h"
+#ifdef __MACH__
+#include <stdlib.h>  // malloc functions on macOS
+#else
 #include <malloc.h>
+#endif
 #include <stddef.h> //size_t & ptrdiff_t definition
 
 ///////////////////////////////////////////////////////////////////////////////

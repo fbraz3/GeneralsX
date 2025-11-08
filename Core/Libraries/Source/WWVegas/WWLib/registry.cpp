@@ -38,7 +38,11 @@
 #include "INI.h"
 #include "inisup.h"
 #include <assert.h>
+#ifdef _WIN32
+#ifdef _WIN32
 #include <windows.h>
+#endif
+#endif
 
 //#include "wwdebug.h"
 

@@ -29,7 +29,11 @@
 #include "debug.h"
 #include "internal.h"
 #include "internal_io.h"
+#ifdef _WIN32
+#ifdef _WIN32
 #include <windows.h>
+#endif
+#endif
 #include <new>      // needed for placement new prototype
 
 DebugIONet::DebugIONet(void)

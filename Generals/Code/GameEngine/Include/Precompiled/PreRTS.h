@@ -30,6 +30,7 @@
 
 //-----------------------------------------------------------------------------
 // srj sez: this must come first, first, first.
+#ifdef _WIN32
 #define _STLP_USE_NEWALLOC					1
 //#define _STLP_USE_CUSTOM_NEWALLOC		STLSpecialAlloc
 class STLSpecialAlloc;
@@ -123,3 +124,8 @@ class STLSpecialAlloc;
 
 #include "Common/Thing.h"
 #include "Common/UnicodeString.h"
+
+#else // !_WIN32
+// Stub for non-Windows platforms
+#endif // _WIN32
+

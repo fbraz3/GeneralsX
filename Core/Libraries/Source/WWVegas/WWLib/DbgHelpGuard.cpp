@@ -18,6 +18,8 @@
 
 #include "DbgHelpGuard.h"
 
+#ifdef _WIN32
+
 #include "DbgHelpLoader.h"
 
 
@@ -57,3 +59,5 @@ void DbgHelpGuard::deactivate()
 		m_hasLoaded = false;
 	}
 }
+
+#endif // _WIN32

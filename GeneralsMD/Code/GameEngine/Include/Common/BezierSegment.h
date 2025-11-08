@@ -29,7 +29,9 @@
 
 #pragma once
 
+#ifdef _WIN32
 #include <d3dx8math.h>
+#endif
 #include "Common/STLTypedefs.h"
 
 #define USUAL_TOLERANCE 1.0f

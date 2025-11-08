@@ -20,10 +20,13 @@
 #pragma once
 #include <pthread.h>
 #include <unistd.h>
+#include <cstdint>
 
 inline int GetCurrentThreadId()
 {
-  return pthread_self();
+  // Note: pthread_t may be an integer or pointer type depending on platform
+  // We cast it to an integer for compatibility with Windows DWORD-based thread IDs
+  return (int)(uintptr_t)pthread_self();
 }
 
 inline void Sleep(int ms)
