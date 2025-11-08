@@ -282,6 +282,39 @@ typedef struct {
 #define NULL 0
 #endif
 
+// ============================================================================
+// D3DX Math Types (for Bezier and other math code)
+// ============================================================================
+
+#ifndef D3DXMATRIX_DEFINED
+#define D3DXMATRIX_DEFINED
+typedef struct {
+	union {
+		struct {
+			float _11, _12, _13, _14;
+			float _21, _22, _23, _24;
+			float _31, _32, _33, _34;
+			float _41, _42, _43, _44;
+		};
+		float m[4][4];
+	};
+} D3DXMATRIX;
+#endif
+
+#ifndef D3DXVECTOR4_DEFINED
+#define D3DXVECTOR4_DEFINED
+typedef struct {
+	float x, y, z, w;
+} D3DXVECTOR4;
+#endif
+
+#ifndef D3DXVECTOR3_DEFINED
+#define D3DXVECTOR3_DEFINED
+typedef struct {
+	float x, y, z;
+} D3DXVECTOR3;
+#endif
+
 #endif // !_WIN32
 
 #endif // WIN32_COMPAT_CORE_H_INCLUDED

@@ -81,18 +81,18 @@
 
 	#define _OPERATOR_NEW_DEFINED_
 
-	extern void * __cdecl operator new		(size_t size);
-	extern void __cdecl operator delete		(void *p);
+	extern void * operator new(size_t size);
+	extern void operator delete(void *p);
 
-	extern void * __cdecl operator new[]	(size_t size);
-	extern void __cdecl operator delete[]	(void *p);
+	extern void * operator new[](size_t size);
+	extern void operator delete[](void *p);
 
 	// additional overloads to account for VC/MFC funky versions
-	extern void* __cdecl operator new			(size_t nSize, const char *, int);
-	extern void __cdecl operator delete		(void *, const char *, int);
+	extern void* operator new(size_t nSize, const char *, int);
+	extern void operator delete(void *, const char *, int);
 
-	extern void* __cdecl operator new[]		(size_t nSize, const char *, int);
-	extern void __cdecl operator delete[]	(void *, const char *, int);
+	extern void* operator new[](size_t nSize, const char *, int);
+	extern void operator delete[](void *, const char *, int);
 
 #if defined(_MSC_VER) && _MSC_VER < 1300
 	// additional overloads for 'placement new'

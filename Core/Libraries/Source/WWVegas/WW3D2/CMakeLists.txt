@@ -196,8 +196,8 @@ set(WW3D2_SRC
     streakRender.h
     stripoptimizer.cpp
     stripoptimizer.h
-    surfaceclass.cpp
-    surfaceclass.h
+    #surfaceclass.cpp (Windows-only: IDirect3DSurface8 dependency)
+    #surfaceclass.h
     #texproject.cpp
     #texproject.h
     #textdraw.cpp # unused
