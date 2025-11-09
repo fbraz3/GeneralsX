@@ -29,6 +29,7 @@
 
 #pragma once
 
+#ifdef _WIN32
 #include <atlbase.h>
 extern CComModule _Module;
 #include <atlcom.h>
@@ -101,3 +102,13 @@ public:
 private:
 	ITypeInfo *m_ptinfo;
 };
+
+#else  // Non-Windows: stub for FEBDispatch
+template <class T, class C, const IID *I>
+class FEBDispatch
+{
+public:
+	// Stub implementation for non-Windows platforms
+};
+#endif // _WIN32
+

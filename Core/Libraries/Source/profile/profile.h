@@ -29,6 +29,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 // include all our public header files (use double quotes here)
 #include "profile_doc.h"
 #include "profile_highlevel.h"
@@ -116,7 +118,7 @@ public:
 
     \return number of CPU clock cycles per second
   */
-  static _int64 GetClockCyclesPerSecond(void);
+  static int64_t GetClockCyclesPerSecond(void);
 
   /**
     \brief Add the given result function interface.
@@ -201,5 +203,5 @@ private:
   static FrameName *m_frameNames;
 
   /// CPU clock cycles/second
-  static _int64 m_clockCycles;
+  static int64_t m_clockCycles;
 };

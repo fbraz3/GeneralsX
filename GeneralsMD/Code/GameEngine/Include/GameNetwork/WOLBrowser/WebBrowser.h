@@ -48,11 +48,15 @@
 #include <windows.h>
 #endif
 #include <Common/GameMemory.h>
+#ifdef _WIN32
 #include "EABrowserDispatch/BrowserDispatch.h"
 #include "FEBDispatch.h"
+#endif
 #include <Lib/BaseType.h>
 
 class GameWindow;
+
+#ifdef _WIN32  // Windows-only: WebBrowser COM functionality
 
 class WebBrowserURL : public MemoryPoolObject
 {
@@ -124,3 +128,32 @@ class WebBrowser :
 	};
 
 extern CComObject<WebBrowser> *TheWebBrowser;
+
+#else  // Non-Windows: stub for WebBrowser
+
+class WebBrowserURL
+{
+public:
+	const FieldParse *getFieldParse(void) const { return nullptr; }
+	AsciiString m_tag;
+	AsciiString m_url;
+	WebBrowserURL *m_next;
+	static const FieldParse m_URLFieldParseTable[];
+};
+
+class WebBrowser : public SubsystemInterface
+{
+public:
+	void init(void) {}
+	void reset(void) {}
+	void update(void) {}
+	virtual Bool createBrowserWindow(const char *tag, GameWindow *win) { return false; }
+	virtual void closeBrowserWindow(GameWindow *win) {}
+	WebBrowserURL *makeNewURL(AsciiString tag) { return nullptr; }
+	WebBrowserURL *findURL(AsciiString tag) { return nullptr; }
+};
+
+extern WebBrowser *TheWebBrowser;
+
+#endif  // _WIN32
+

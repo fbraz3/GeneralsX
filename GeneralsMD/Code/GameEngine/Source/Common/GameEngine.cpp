@@ -252,7 +252,10 @@ GameEngine::GameEngine( void )
 	m_quitting = FALSE;
 	m_isActive = FALSE;
 
+#ifdef _WIN32
 	_Module.Init(NULL, ApplicationHInstance, NULL);
+#endif
+
 }
 
 //-------------------------------------------------------------------------------------------------
