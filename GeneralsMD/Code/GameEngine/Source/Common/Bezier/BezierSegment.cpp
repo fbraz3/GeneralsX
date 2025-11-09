@@ -26,10 +26,7 @@
 #include "PreRTS.h"
 #include "Common/BezierSegment.h"
 #include "Common/BezFwdIterator.h"
-
-#ifdef _WIN32
-#include <d3dx8math.h>
-#endif
+#include "../../../Libraries/Source/WWVegas/WWMath/d3dx8math.h"
 
 //-------------------------------------------------------------------------------------------------
 BezierSegment::BezierSegment()

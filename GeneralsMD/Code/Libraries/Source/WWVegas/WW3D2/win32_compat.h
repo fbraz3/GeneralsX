@@ -36,8 +36,14 @@
 #include <time.h>
 #include <cstdlib>
 
+// Include time compatibility early for MMRESULT and timing functions
+#include <Utility/time_compat.h>
+
 // Step 1: Core Windows types
 #include "win32_compat_core.h"
+
+// Step 1c: DirectX 8 math library (required by BezierSegment and other game code)
+#include "../WWMath/d3dx8math.h"
 
 // Step 2: Compatibility types for non-Windows systems
 #include <unistd.h>
@@ -2356,10 +2362,11 @@ inline void StackDumpFromAddresses(void** addresses, unsigned int count, void (*
 
 // Registry language function stub - forward declaration
 // Implementation should be in GeneralsMD/Code/GameEngine/Source/Common/System/registry.cpp
-AsciiString GetRegistryLanguage(void);
+// DEFERRED: These functions require AsciiString type, deferred to Phase 51+
+// AsciiString GetRegistryLanguage(void);
 
 // Generals-specific registry function stub  
-bool GetStringFromGeneralsRegistry(AsciiString section, AsciiString key, AsciiString& value);
+// DEFERRED: bool GetStringFromGeneralsRegistry(AsciiString section, AsciiString key, AsciiString& value);
 
 #endif // !_WIN32
 

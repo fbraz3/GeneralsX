@@ -24,12 +24,15 @@ typedef const char* LPCSTR;
 typedef char* LPSTR;
 
 // String functions
+// Guard: only define if not already defined (win32_compat.h may define via macro)
+#if !defined(_strlwr)
 inline char *_strlwr(char *str) {
   for (int i = 0; str[i] != '\0'; i++) {
     str[i] = tolower(str[i]);
   }
   return str;
 }
+#endif
 
 #define strlwr _strlwr
 #define stricmp strcasecmp

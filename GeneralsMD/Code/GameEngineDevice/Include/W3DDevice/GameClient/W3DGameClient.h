@@ -113,8 +113,10 @@ protected:
 	virtual DisplayStringManager *createDisplayStringManager( void ) { return NEW W3DDisplayStringManager; }
 #ifdef RTS_HAS_FFMPEG
 	virtual VideoPlayerInterface *createVideoPlayer( void ) { return NEW FFmpegVideoPlayer; }
-#else
+#elif defined(_WIN32)
 	virtual VideoPlayerInterface *createVideoPlayer( void ) { return NEW BinkVideoPlayer; }
+#else
+	virtual VideoPlayerInterface *createVideoPlayer( void ) { return nullptr; }  // Phase 50: Video not implemented for non-Windows
 #endif
 	/// factory for creating the TerrainVisual
 	virtual TerrainVisual *createTerrainVisual( void ) { return NEW W3DTerrainVisual; }

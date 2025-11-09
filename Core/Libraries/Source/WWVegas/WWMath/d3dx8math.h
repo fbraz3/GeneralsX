@@ -3,10 +3,15 @@
 /*
  * DirectX 8 Math Compatibility Header for macOS/Unix
  * This file provides compatibility definitions for DirectX 8 math functions
+ * Available on all platforms (Windows, macOS, Linux)
  */
 
-#ifndef _WIN32
-
+#ifdef _WIN32
+  // On Windows, use system DirectX headers
+  #include <d3dx8.h>
+#else
+  // On macOS/Linux, provide our own implementation
+  
 // Include necessary forward declarations and math types
 #ifndef __VECTOR3_H__
 #include "vector3.h"
@@ -163,6 +168,7 @@ static inline D3DXMATRIX* D3DXMatrixInverse(D3DXMATRIX* pOut, float* pDeterminan
     
     return pOut;
 }
+
 
 #ifdef __cplusplus
 }

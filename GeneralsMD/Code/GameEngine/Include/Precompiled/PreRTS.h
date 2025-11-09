@@ -84,7 +84,9 @@ class STLSpecialAlloc;
 #	define DIRECTINPUT_VERSION	0x800
 #endif
 
+#ifdef _WIN32
 #include <dinput.h>
+#endif
 
 //------------------------------------------------------------------------------------ STL Includes
 // srj sez: no, include STLTypesdefs below, instead, thanks
@@ -127,6 +129,38 @@ class STLSpecialAlloc;
 #include "Common/UnicodeString.h"
 
 #else // !_WIN32
-// Stub for non-Windows platforms
+// Non-Windows platform includes
+#include <cassert>
+#include <cctype>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
+#include <cstddef>
+
+// Windows compatibility layer for non-Windows platforms
+// Include via core library path (set up by CMake include directories)
+#include <win32_compat.h>
+#include <dinput.h>
+
+#include "Lib/BaseType.h"
+#include "Common/STLTypedefs.h"
+#include "Common/Errors.h"
+#include "Common/Debug.h"
+#include "Common/AsciiString.h"
+#include "Common/SubsystemInterface.h"
+#include "Common/GameCommon.h"
+#include "Common/GameMemory.h"
+#include "Common/GameType.h"
+#include "Common/GlobalData.h"
+#include "Common/INI.h"
+#include "Common/KindOf.h"
+#include "Common/DisabledTypes.h"
+#include "Common/NameKeyGenerator.h"
+#include "GameClient/ClientRandomValue.h"
+#include "GameLogic/LogicRandomValue.h"
+#include "Common/ObjectStatusTypes.h"
+#include "Common/Thing.h"
+#include "Common/UnicodeString.h"
+
 #endif // _WIN32
 

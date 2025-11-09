@@ -36,6 +36,11 @@
 #include "../../GameEngine/Include/Common/MapObject.h"
 
 #include "Common/STLTypedefs.h"
+
+// Forward declarations for texture classes
+class TerrainTextureClass;
+class AlphaTerrainTextureClass;
+
 typedef std::vector<ICoord2D> VecICoord2D;
 
 

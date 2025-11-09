@@ -1131,7 +1131,6 @@ set(GAMEENGINE_SRC
     Source/GameNetwork/Transport.cpp
     Source/GameNetwork/udp.cpp
     Source/GameNetwork/User.cpp
-    Source/GameNetwork/WOLBrowser/WebBrowser.cpp
     Source/Precompiled/PreRTS.cpp
 )
 

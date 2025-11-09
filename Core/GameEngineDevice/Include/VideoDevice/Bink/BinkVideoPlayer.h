@@ -41,6 +41,10 @@
 
 #pragma once
 
+// Phase 50: Video codecs (Bink) not implemented for non-Windows platforms
+// Deferred to Phase 52+: Cross-platform video playback
+#ifdef _WIN32
+
 //----------------------------------------------------------------------------
 //           Includes
 //----------------------------------------------------------------------------
@@ -134,3 +138,6 @@ class BinkVideoPlayer : public VideoPlayer
 //----------------------------------------------------------------------------
 //           Inlining
 //----------------------------------------------------------------------------
+
+#endif // _WIN32
+

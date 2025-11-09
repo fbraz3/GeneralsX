@@ -24,6 +24,7 @@
 
 #include "PreRTS.h"
 #include "Common/BezFwdIterator.h"
+#include "../../../Libraries/Source/WWVegas/WWMath/d3dx8math.h"
 
 //-------------------------------------------------------------------------------------------------
 BezFwdIterator::BezFwdIterator(): mStep(0), mStepsDesired(0)

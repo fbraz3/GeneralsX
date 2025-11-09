@@ -288,7 +288,7 @@ typedef struct {
 
 #ifndef D3DXMATRIX_DEFINED
 #define D3DXMATRIX_DEFINED
-typedef struct {
+struct D3DXMATRIX {
 	union {
 		struct {
 			float _11, _12, _13, _14;
@@ -298,7 +298,17 @@ typedef struct {
 		};
 		float m[4][4];
 	};
-} D3DXMATRIX;
+	// Constructor for C++ initialization with 16 floats
+	D3DXMATRIX() {}
+	D3DXMATRIX(float m11, float m12, float m13, float m14,
+	           float m21, float m22, float m23, float m24,
+	           float m31, float m32, float m33, float m34,
+	           float m41, float m42, float m43, float m44) :
+		_11(m11), _12(m12), _13(m13), _14(m14),
+		_21(m21), _22(m22), _23(m23), _24(m24),
+		_31(m31), _32(m32), _33(m33), _34(m34),
+		_41(m41), _42(m42), _43(m43), _44(m44) {}
+};
 #endif
 
 #ifndef D3DXVECTOR4_DEFINED

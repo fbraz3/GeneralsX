@@ -36,8 +36,17 @@
 #include <time.h>
 #include <cstdlib>
 
+// Include time compatibility early for MMRESULT and timing functions
+#include <Utility/time_compat.h>
+
 // Step 1: Core Windows types
 #include "win32_compat_core.h"
+
+// Step 1b: DirectX 8 graphics compatibility layer (Phase 50)
+#include "d3d8.h"
+
+// Step 1c: DirectX 8 math library (required by BezierSegment and other game code)
+#include "../WWMath/d3dx8math.h"
 
 // Step 2: Compatibility types for non-Windows systems
 #include <unistd.h>
@@ -1505,7 +1514,8 @@ inline BOOL QueryPerformanceFrequency(LARGE_INTEGER* lpFrequency) {
 #include <mutex>
 
 // MMRESULT is already defined in Dependencies/Utility/time_compat.h as 'int'
-// We should not redefine it - use the existing definition
+// Include it to get MMRESULT definition
+#include <Utility/time_compat.h>
 
 typedef UINT MMIOID;
 
@@ -2354,9 +2364,13 @@ inline void StackDumpFromAddresses(void** addresses, unsigned int count, void (*
 // Global error dump variable (used in Debug.cpp)
 // extern char g_LastErrorDump[4096];  // Commented out to avoid type conflict with AsciiString version
 
+// Forward declaration for AsciiString type used in registry functions
+// DEFERRED: These functions require AsciiString type, deferred to Phase 51+
+// class AsciiString;
+
 // Registry language function stub - forward declaration
 // Implementation should be in GeneralsMD/Code/GameEngine/Source/Common/System/registry.cpp
-AsciiString GetRegistryLanguage(void);
+// DEFERRED: AsciiString GetRegistryLanguage(void);
 
 // Generals-specific registry function stub  
 bool GetStringFromGeneralsRegistry(AsciiString section, AsciiString key, AsciiString& value);

@@ -71,22 +71,45 @@ enum D3DFORMAT {
     D3DFMT_R8G8B8 = 20,
     D3DFMT_A8R8G8B8 = 21,
     D3DFMT_X8R8G8B8 = 22,
-    D3DFMT_A1R5G5B5 = 25,
-    D3DFMT_X1R5G5B5 = 26,
     D3DFMT_R5G6B5 = 23,
-    D3DFMT_DXT1 = 0x31545844,  // BC1 compression
-    D3DFMT_DXT3 = 0x33545844,  // BC2 compression
-    D3DFMT_DXT5 = 0x35545844,  // BC3 compression
-    D3DFMT_D32 = 80,
-    D3DFMT_D24S8 = 75,
-    D3DFMT_D24X8 = 77,
-    D3DFMT_D16 = 80,
+    D3DFMT_X1R5G5B5 = 26,
+    D3DFMT_A1R5G5B5 = 25,
+    D3DFMT_A4R4G4B4 = 24,       // Alpha 4:4:4:4
+    D3DFMT_R3G3B2 = 27,         // 8-bit RGB
+    D3DFMT_A8 = 28,             // Alpha only
+    D3DFMT_A8R3G3B2 = 29,       // Alpha + RGB
+    D3DFMT_X4R4G4B4 = 30,       // 16-bit RGB no alpha
+    D3DFMT_A8P8 = 40,           // 8-bit palette with alpha
+    D3DFMT_P8 = 41,             // 8-bit palette
+    D3DFMT_L8 = 50,             // Luminance 8-bit
+    D3DFMT_A8L8 = 51,           // Alpha-Luminance
+    D3DFMT_A4L4 = 52,           // Alpha-Luminance 4:4 bits
+    D3DFMT_V8U8 = 60,           // Bump map format
+    D3DFMT_L6V5U5 = 61,         // Luminance + bump map
+    D3DFMT_X8L8V8U8 = 62,       // Bump map format
+    D3DFMT_DXT1 = 0x31545844,   // BC1 compression
+    D3DFMT_DXT2 = 0x32545844,   // BC2 compression (alternative)
+    D3DFMT_DXT3 = 0x33545844,   // BC2 compression
+    D3DFMT_DXT4 = 0x34545844,   // BC3 compression (alternative)
+    D3DFMT_DXT5 = 0x35545844,   // BC3 compression
+    D3DFMT_D16_LOCKABLE = 70,   // 16-bit lockable z-buffer
+    D3DFMT_D32 = 71,            // 32-bit z-buffer
+    D3DFMT_D15S1 = 73,          // 15-bit z-buffer with 1-bit stencil
+    D3DFMT_D24S8 = 75,          // 24-bit z-buffer with 8-bit stencil
+    D3DFMT_D24X8 = 77,          // 24-bit z-buffer
+    D3DFMT_D16 = 80,            // 16-bit z-buffer
+    D3DFMT_D24X4S4 = 79,        // 24-bit z-buffer with 4-bit stencil
     D3DFMT_INDEX16 = 101,
     D3DFMT_INDEX32 = 102,
-    D3DFMT_L8 = 50,             // Luminance 8-bit
-    D3DFMT_L16 = 81,            // Luminance 16-bit
-    D3DFMT_A8L8 = 51,           // Alpha-Luminance
-    D3DFMT_A4L4 = 52            // Alpha-Luminance 4:4 bits
+    // Xbox specific formats (for compatibility)
+    D3DFMT_LIN_R8G8B8A8 = 0x100,
+    D3DFMT_LIN_D24S8 = 0x101,
+    D3DFMT_LIN_F24S8 = 0x102,
+    D3DFMT_LIN_D16 = 0x103,
+    D3DFMT_LIN_F16 = 0x104,
+    D3DFMT_Q8W8V8U8 = 0x107,    // Bump map format with signed components
+    D3DFMT_UYVY = 0x4F425559,   // UYVY format
+    D3DFMT_YUY2 = 0x32595559    // YUY2 format
 };
 typedef enum D3DFORMAT D3DFORMAT;
 #endif
@@ -167,7 +190,8 @@ enum D3DRENDERSTATETYPE {
     D3DRS_STENCILFUNC = 0x38,
     D3DRS_STENCILREF = 0x39,
     D3DRS_STENCILMASK = 0x3A,
-    D3DRS_STENCILWRITEMASK = 0x3B
+    D3DRS_STENCILWRITEMASK = 0x3B,
+    D3DRS_COLORWRITEENABLE = 0x57  // Enable color channel writes (Phase 50+)
 };
 typedef enum D3DRENDERSTATETYPE D3DRENDERSTATETYPE;
 #endif
@@ -544,6 +568,51 @@ enum D3DFILLMODE {
     D3DFILL_SOLID = 3
 };
 typedef enum D3DFILLMODE D3DFILLMODE;
+#endif
+
+// ============================================================================
+// DirectX 8 Interface Stubs (void* implementations for compatibility)
+// ============================================================================
+
+// Forward declare interface structs (opaque pointers)
+struct IDirect3D8;
+struct IDirect3DDevice8;
+struct IDirect3DTexture8;
+struct IDirect3DVertexBuffer8;
+struct IDirect3DIndexBuffer8;
+struct IDirect3DSwapChain8;
+struct IDirect3DSurface8;
+struct IDirect3DVolumeTexture8;
+struct IDirect3DCubeTexture8;
+struct IDirect3DVolume8;
+struct IDirect3DVertexShader8;
+struct IDirect3DPixelShader8;
+
+// Define pointer types
+typedef struct IDirect3D8 *LPDIRECT3D8, *PDIRECT3D8;
+typedef struct IDirect3DDevice8 *LPDIRECT3DDEVICE8, *PDIRECT3DDEVICE8;
+typedef struct IDirect3DTexture8 *LPDIRECT3DTEXTURE8, *PDIRECT3DTEXTURE8;
+typedef struct IDirect3DVertexBuffer8 *LPDIRECT3DVERTEXBUFFER8, *PDIRECT3DVERTEXBUFFER8;
+typedef struct IDirect3DIndexBuffer8 *LPDIRECT3DINDEXBUFFER8, *PDIRECT3DINDEXBUFFER8;
+typedef struct IDirect3DSwapChain8 *LPDIRECT3DSWAPCHAIN8, *PDIRECT3DSWAPCHAIN8;
+typedef struct IDirect3DSurface8 *LPDIRECT3DSURFACE8, *PDIRECT3DSURFACE8;
+typedef struct IDirect3DVolumeTexture8 *LPDIRECT3DVOLUMETEXTURE8, *PDIRECT3DVOLUMETEXTURE8;
+typedef struct IDirect3DCubeTexture8 *LPDIRECT3DCUBETEXTURE8, *PDIRECT3DCUBETEXTURE8;
+typedef struct IDirect3DVolume8 *LPDIRECT3DVOLUME8, *PDIRECT3DVOLUME8;
+typedef struct IDirect3DVertexShader8 *LPDIRECT3DVERTEXSHADER8, *PDIRECT3DVERTEXSHADER8;
+typedef struct IDirect3DPixelShader8 *LPDIRECT3DPIXELSHADER8, *PDIRECT3DPIXELSHADER8;
+
+// ============================================================================
+// DirectX Color Write Constants
+// ============================================================================
+
+#ifndef D3DCOLORWRITEENABLE_DEFINED
+#define D3DCOLORWRITEENABLE_DEFINED
+#define D3DCOLORWRITEENABLE_RED   0x00000001
+#define D3DCOLORWRITEENABLE_GREEN 0x00000002
+#define D3DCOLORWRITEENABLE_BLUE  0x00000004
+#define D3DCOLORWRITEENABLE_ALPHA 0x00000008
+#define D3DCOLORWRITEENABLE_ALL   (D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA)
 #endif
 
 #endif // !_WIN32

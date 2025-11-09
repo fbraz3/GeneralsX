@@ -34,12 +34,12 @@
 #define WIN32_LEAN_AND_MEAN  // only bare bones windows stuff wanted
 #ifdef _WIN32
 #include <windows.h>
-#endif
-#include <stdlib.h>
 #include <crtdbg.h>
 #include <eh.h>
 #include <ole2.h>
 #include <dbt.h>
+#endif
+#include <stdlib.h>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "WinMain.h"

@@ -92,7 +92,6 @@ set(GAMEENGINEDEVICE_SRC
     Include/Win32Device/GameClient/Win32Mouse.h
 #    Source/MilesAudioDevice/MilesAudioManager.cpp
 #    Source/VideoDevice/Bink/BinkVideoPlayer.cpp
-    Source/W3DDevice/Common/System/W3DFunctionLexicon.cpp
     Source/W3DDevice/Common/System/W3DRadar.cpp
     Source/W3DDevice/Common/Thing/W3DModuleFactory.cpp
     Source/W3DDevice/Common/Thing/W3DThingFactory.cpp
@@ -207,7 +206,6 @@ target_precompile_headers(z_gameenginedevice PRIVATE
     [["Common/SubsystemInterface.h"]]
     [["INI.h"]]
     [["WWCommon.h"]]
-    <windows.h>
 )
 
 target_link_libraries(z_gameenginedevice PRIVATE

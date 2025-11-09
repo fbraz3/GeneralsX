@@ -19,6 +19,9 @@
 // This file contains WCHAR and related macros for compatibility with non-windows platforms.
 #pragma once
 
+#include <wchar.h>
+#include <strings.h>
+
 // WCHAR
 typedef wchar_t WCHAR;
 typedef const WCHAR* LPCWSTR;
@@ -26,6 +29,7 @@ typedef WCHAR* LPWSTR;
 
 #define _wcsicmp wcscasecmp
 #define wcsicmp wcscasecmp
+#define _stricmp strcasecmp
 
 // MultiByteToWideChar
 #define CP_ACP 0
