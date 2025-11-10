@@ -144,6 +144,11 @@ class STLSpecialAlloc;
 // Include via core library path (set up by CMake include directories)
 #include <win32_compat.h>
 
+// Ensure D3D8 Vulkan compatibility definitions (device stubs, buffer interfaces,
+// and common D3D flags) are available in the precompiled header for Phase 50
+// (Vulkan-only) builds on non-Windows platforms.
+#include "WW3D2/d3d8_vulkan_graphics_compat.h"
+
 // Do not include platform-specific DirectInput headers on non-Windows builds.
 // They can pull in Windows typedefs (like LARGE_INTEGER) that conflict
 // with our canonical compatibility definitions. If DirectInput APIs are

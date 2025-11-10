@@ -25,6 +25,21 @@
 
 #include "Common/Debug.h"
 #include "W3DDevice/GameClient/W3DBufferManager.h"
+// Ensure D3D compatibility symbols are available for this TU.
+// Prefer TU-local includes to avoid triggering a full PCH rebuild.
+#include "WW3D2/d3d8.h"
+#include "WW3D2/d3d8_graphics_compat.h"
+
+// Provide a local fallback for __max on non-MSVC toolchains.
+#ifndef __max
+#include <algorithm>
+#define __max(a,b) ((a) > (b) ? (a) : (b))
+#endif
+
+// Some legacy TUs expect D3DFVF_XYZRHW to be defined; add a local fallback.
+#ifndef D3DFVF_XYZRHW
+#define D3DFVF_XYZRHW 0x004
+#endif
 
 W3DBufferManager *TheW3DBufferManager=NULL;	//singleton
 

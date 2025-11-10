@@ -32,6 +32,10 @@ struct IDirect3DDevice8 {
     virtual int SetTexture(unsigned long stage, struct IDirect3DBaseTexture8* texture) { return 0; }
     virtual int CopyRects(struct IDirect3DSurface8* src, const void* srcRects, unsigned long nRects, struct IDirect3DSurface8* dst, const void* dstPoints) { return 0; }
     virtual int Release() { return 0; }
+    // Minimal buffer/device methods expected by legacy game code
+    virtual int CreateVertexBuffer(unsigned long Length, unsigned long Usage, unsigned long FVF, D3DPOOL Pool, struct IDirect3DVertexBuffer8** ppVertexBuffer) { return D3DERR_NOTAVAILABLE; }
+    virtual int CreateIndexBuffer(unsigned long Length, unsigned long Usage, D3DFORMAT Format, D3DPOOL Pool, struct IDirect3DIndexBuffer8** ppIndexBuffer) { return D3DERR_NOTAVAILABLE; }
+    virtual int SetIndices(struct IDirect3DIndexBuffer8* pIndexData) { return 0; }
 };
 struct IDirect3DResource8;
 struct IDirect3DBaseTexture8 {
@@ -531,6 +535,20 @@ struct D3DMATERIAL8 {
 #define D3DFVF_TEXCOORDSIZE4(n) (2 << (n*2 + 16))
 #endif
 
+// Minimal D3D usage and lock flags used by game code
+#ifndef D3DUSAGE_DEFINED
+#define D3DUSAGE_DEFINED
+#define D3DUSAGE_WRITEONLY 0x00000008L
+#define D3DUSAGE_DYNAMIC 0x00000200L
+#endif
+
+#ifndef D3DLOCK_DEFINED
+#define D3DLOCK_DEFINED
+#define D3DLOCK_READONLY 0x00000001L
+#define D3DLOCK_NOOVERWRITE 0x00001000L
+#define D3DLOCK_DISCARD 0x00002000L
+#endif
+
 // ============================================================================
 // DirectX Locked Rectangle (for texture surface locking)
 // ============================================================================
@@ -601,6 +619,25 @@ typedef struct IDirect3DCubeTexture8 *LPDIRECT3DCUBETEXTURE8, *PDIRECT3DCUBETEXT
 typedef struct IDirect3DVolume8 *LPDIRECT3DVOLUME8, *PDIRECT3DVOLUME8;
 typedef struct IDirect3DVertexShader8 *LPDIRECT3DVERTEXSHADER8, *PDIRECT3DVERTEXSHADER8;
 typedef struct IDirect3DPixelShader8 *LPDIRECT3DPIXELSHADER8, *PDIRECT3DPIXELSHADER8;
+
+// Provide minimal vertex/index buffer interfaces with Lock/Unlock used by game code
+#ifndef D3DVERTEXBUFFER8_DEFINED
+#define D3DVERTEXBUFFER8_DEFINED
+struct IDirect3DVertexBuffer8 {
+    virtual int Lock(unsigned long OffsetToLock, unsigned long SizeToLock, void** ppbData, unsigned long Flags) { return D3DERR_NOTAVAILABLE; }
+    virtual int Unlock() { return D3DERR_NOTAVAILABLE; }
+    virtual unsigned long Release() { return 0; }
+};
+#endif
+
+#ifndef D3DINDEXBUFFER8_DEFINED
+#define D3DINDEXBUFFER8_DEFINED
+struct IDirect3DIndexBuffer8 {
+    virtual int Lock(unsigned long OffsetToLock, unsigned long SizeToLock, void** ppbData, unsigned long Flags) { return D3DERR_NOTAVAILABLE; }
+    virtual int Unlock() { return D3DERR_NOTAVAILABLE; }
+    virtual unsigned long Release() { return 0; }
+};
+#endif
 
 // ============================================================================
 // DirectX Color Write Constants

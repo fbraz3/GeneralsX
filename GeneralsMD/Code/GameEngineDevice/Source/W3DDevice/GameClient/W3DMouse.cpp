@@ -108,13 +108,15 @@ W3DMouse::W3DMouse( void )
 
 W3DMouse::~W3DMouse( void )
 {
+	#if defined(_WIN32) || defined(_WIN64)
 	LPDIRECT3DDEVICE8 m_pDev=DX8Wrapper::_Get_D3D_Device8();
 
 	if (m_pDev)
 	{
-		m_pDev->ShowCursor(FALSE);	//kill DX8 cursor
+		m_pDev->ShowCursor(FALSE);    //kill DX8 cursor
 		Win32Mouse::setCursor(ARROW); //enable default windows cursor
 	}
+	#endif
 
 	freeD3DAssets();
 	freeW3DAssets();
@@ -353,11 +355,17 @@ void W3DMouse::reset( void )
 
 	// extend
 	Win32Mouse::reset();
+		#if defined(_WIN32) || defined(_WIN64)
+		if (m_pDev)
+		{
+			m_pDev->ShowCursor(FALSE);    //kill DX8 cursor
+			Win32Mouse::setCursor(ARROW); //enable default windows cursor
+		}
+		#else
+		// Non-Windows: nothing to do here
+		#endif
 
-}
-
-//-------------------------------------------------------------------------------------------------
-/** Super basic simplistic cursor */
+	}
 //-------------------------------------------------------------------------------------------------
 void W3DMouse::setCursor( MouseCursor cursor )
 {
@@ -387,6 +395,7 @@ void W3DMouse::setCursor( MouseCursor cursor )
 	//make sure Windows didn't reset our cursor
 	if (m_currentRedrawMode == RM_DX8)
 	{
+		#if defined(_WIN32) || defined(_WIN64)
 		SetCursor(NULL);	//Kill Windows Cursor
 
 		LPDIRECT3DDEVICE8 m_pDev=DX8Wrapper::_Get_D3D_Device8();
@@ -394,10 +403,10 @@ void W3DMouse::setCursor( MouseCursor cursor )
 
 		if (m_pDev != NULL)
 		{
-			m_pDev->ShowCursor(FALSE);	//disable DX8 cursor
+			m_pDev->ShowCursor(FALSE); 	//disable DX8 cursor
 			if (cursor != m_currentD3DCursor)
-			{	if (!isThread)
-				{	releaseD3DCursorTextures(m_currentD3DCursor);
+			{   if (!isThread)
+				{   releaseD3DCursorTextures(m_currentD3DCursor);
 					//Since this type of cursor is updated from a non-D3D thread, we need
 					//to preallocate all surfaces in main thread.
 					loadD3DCursorTextures(cursor);
@@ -413,17 +422,23 @@ void W3DMouse::setCursor( MouseCursor cursor )
 			HRESULT res;
 			m_currentHotSpot = m_cursorInfo[cursor].hotSpotPosition;
 			m_currentFMS = m_cursorInfo[cursor].fps/1000.0f;
-			m_currentAnimFrame = 0;	//reset animation when cursor changes
+			m_currentAnimFrame = 0; 	//reset animation when cursor changes
 			res = m_pDev->SetCursorProperties(m_currentHotSpot.x,m_currentHotSpot.y,m_currentD3DSurface[(Int)(uintptr_t)m_currentAnimFrame]->Peek_D3D_Surface());
-			m_pDev->ShowCursor(TRUE);	//Enable DX8 cursor
+			m_pDev->ShowCursor(TRUE); 	//Enable DX8 cursor
 			m_currentD3DFrame=(Int)(uintptr_t)m_currentAnimFrame;
 			m_currentD3DCursor = cursor;
 			m_lastAnimTime=timeGetTime();
 		}
+		#else
+		// Non-Windows: no DX8 cursor support; noop
+		(void)cursor;
+		#endif
 	}
 	else if (m_currentRedrawMode == RM_POLYGON)
 	{
+		#if defined(_WIN32) || defined(_WIN64)
 		SetCursor(NULL);	//Kill Windows Cursor
+		#endif
 		m_currentD3DCursor=NONE;
 		m_currentW3DCursor=NONE;
 		m_currentPolygonCursor = cursor;
@@ -431,7 +446,9 @@ void W3DMouse::setCursor( MouseCursor cursor )
 	}
 	else if (m_currentRedrawMode == RM_W3D)
 	{
+		#if defined(_WIN32) || defined(_WIN64)
 		SetCursor(NULL);	//Kill Windows Cursor
+		#endif
 		m_currentD3DCursor=NONE;
 		m_currentPolygonCursor=NONE;
 		if (cursor != m_currentW3DCursor)
@@ -486,11 +503,12 @@ void W3DMouse::draw(void)
 		//called from upate thread or rendering loop.  Tells D3D where
 		//to draw the mouse cursor.
 		LPDIRECT3DDEVICE8 m_pDev=DX8Wrapper::_Get_D3D_Device8();
+		#if defined(_WIN32) || defined(_WIN64)
 		if (m_pDev)
-		{	m_pDev->ShowCursor(TRUE);	//Enable DX8 cursor
+		{ 	m_pDev->ShowCursor(TRUE); 	//Enable DX8 cursor
 
 			if (TheDisplay && !TheDisplay->getWindowed())
-			{	//if we're full-screen, need to manually move cursor image
+			{ 	//if we're full-screen, need to manually move cursor image
 				POINT ptCursor;
 
 				GetCursorPos( &ptCursor );
@@ -512,6 +530,10 @@ void W3DMouse::draw(void)
 				}
 			}
 		}
+		#else
+		// Non-Windows: no DX8 cursor support
+		(void)m_pDev;
+		#endif
 	}
 	else if (m_currentRedrawMode == RM_POLYGON)
 	{

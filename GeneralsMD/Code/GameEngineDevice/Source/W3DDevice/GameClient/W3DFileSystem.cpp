@@ -49,7 +49,14 @@
 #include "Common/Registry.h"
 #include "W3DDevice/GameClient/W3DFileSystem.h"
 
+#if defined(_WIN32) || defined(_WIN64)
 #include <io.h>
+#else
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#endif
 
 // DEFINES ////////////////////////////////////////////////////////////////////////////////////////
 

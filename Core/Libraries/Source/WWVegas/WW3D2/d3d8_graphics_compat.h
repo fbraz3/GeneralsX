@@ -3,6 +3,32 @@
 #ifndef D3D8_GRAPHICS_COMPAT_H_INCLUDED
 #define D3D8_GRAPHICS_COMPAT_H_INCLUDED
 
+// Ensure vertex-declaration (VSD) macros are available early so translation
+// units that reference them during static declaration compilation can
+// compile even when platform-specific headers are not present.
+#ifndef D3DVSD_STREAM
+#define D3DVSD_STREAM(_s)       (0x10000000u | (unsigned)(_s))
+#endif
+#ifndef D3DVSD_REG
+#define D3DVSD_REG(_r,_t)      (((unsigned)(_r) & 0xffu) | (((unsigned)(_t) & 0xffu) << 8))
+#endif
+#ifndef D3DVSDT_FLOAT3
+#define D3DVSDT_FLOAT3         3
+#endif
+#ifndef D3DVSDT_FLOAT2
+#define D3DVSDT_FLOAT2         2
+#endif
+#ifndef D3DVSDT_FLOAT4
+#define D3DVSDT_FLOAT4         4
+#endif
+#ifndef D3DVSDT_D3DCOLOR
+#define D3DVSDT_D3DCOLOR       5
+#endif
+#ifndef D3DVSD_END
+#define D3DVSD_END             0x00000000u
+#endif
+
+
 #ifndef _WIN32
 
 // Include core Windows types first
@@ -10,6 +36,7 @@
 
 // Forward declarations for D3D interfaces (defined by game code)
 struct IDirect3D8;
+
 struct IDirect3DDevice8 {
     // Stub interface for cross-platform compilation
     // Implementation will be provided by Vulkan backend in Phase 52+
@@ -17,6 +44,16 @@ struct IDirect3DDevice8 {
     virtual int SetPixelShader(unsigned long shader) { return 0; }
     virtual int SetVertexShaderConstant(int reg, const void* data, int count) { return 0; }
     virtual int SetPixelShaderConstant(int reg, const void* data, int count) { return 0; }
+#ifdef D3DXVECTOR4_DEFINED
+    // Convenience overloads accepting common D3DX types used by game code.
+    // These simply forward to the generic pointer-based virtuals so TU code
+    // that passes vectors by value/reference compiles without changes.
+    virtual int SetVertexShaderConstant(int reg, const D3DXVECTOR4& v, int count) { return SetVertexShaderConstant(reg, &v, count); }
+    virtual int SetPixelShaderConstant(int reg, const D3DXVECTOR4& v, int count) { return SetPixelShaderConstant(reg, &v, count); }
+#endif
+    // Some code calls DeletePixelShader() on the device object; provide a
+    // member stub so those calls compile on non-Windows builds.
+    virtual int DeletePixelShader(unsigned long shader) { (void)shader; return 0; }
     virtual int SetTransform(unsigned long state, const struct D3DMATRIX* matrix) { return 0; }
     virtual int GetTransform(unsigned long state, struct D3DMATRIX* matrix) { return 0; }
     virtual int SetMaterial(const struct D3DMATERIAL8* material) { return 0; }
@@ -231,6 +268,91 @@ enum D3DTEXTURESTAGESTATETYPE {
     D3DTSS_MIPFILTER = 24
 };
 typedef enum D3DTEXTURESTAGESTATETYPE D3DTEXTURESTAGESTATETYPE;
+#endif
+
+// ============================================================================
+// DirectX Texture Argument Constants (D3DTA_* )
+// Values chosen to match common DirectX headers so the DX8 wrapper
+// and game code using these tokens behaves consistently across platforms.
+// ============================================================================
+#ifndef D3DTA_DIFFUSE
+#define D3DTA_SELECTMASK        0x0000000f
+#define D3DTA_DIFFUSE           0x00000000
+#define D3DTA_CURRENT           0x00000001
+#define D3DTA_TEXTURE           0x00000002
+#define D3DTA_TFACTOR           0x00000003
+#define D3DTA_SPECULAR          0x00000004
+#define D3DTA_COMPLEMENT        0x00000010
+#define D3DTA_ALPHAREPLICATE    0x00000020
+#endif
+
+// ============================================================================
+// DirectX Texture Address Mode (D3DTADDRESS_*)
+// ============================================================================
+#ifndef D3DTADDRESS_WRAP
+#define D3DTADDRESS_WRAP    1
+#define D3DTADDRESS_MIRROR  2
+#define D3DTADDRESS_CLAMP   3
+#define D3DTADDRESS_BORDER  4
+#endif
+
+// ============================================================================
+// DirectX Texture Filter (D3DTEXF_*) - commonly used symbolic names
+// ============================================================================
+#ifndef D3DTEXF_POINT
+#define D3DTEXF_POINT   1
+#define D3DTEXF_LINEAR  2
+#define D3DTEXF_ANISOTROPIC 3
+#endif
+
+// ============================================================================
+// DirectX Texture Operation Enum (D3DTOP_*)
+// ============================================================================
+#ifndef D3DTEXTUREOP_DEFINED
+#define D3DTEXTUREOP_DEFINED
+typedef enum {
+    D3DTOP_DISABLE    = 1,
+    D3DTOP_SELECTARG1 = 2,
+    D3DTOP_SELECTARG2 = 3,
+
+    D3DTOP_MODULATE   = 4,
+    D3DTOP_MODULATE2X = 5,
+    D3DTOP_MODULATE4X = 6,
+
+    D3DTOP_ADD        = 7,
+    D3DTOP_ADDSIGNED  = 8,
+    D3DTOP_ADDSIGNED2X= 9,
+    D3DTOP_SUBTRACT   = 10,
+    D3DTOP_ADDSMOOTH  = 11,
+    D3DTOP_FORCE_DWORD = 0x7fffffff
+} D3DTEXTUREOP;
+#endif
+
+// ============================================================================
+// Texture stage transform / texcoord index flags (D3DTSS_TCI_*)
+// Values chosen to match reference headers used elsewhere in the repo.
+// ============================================================================
+#ifndef D3DTSS_TCI_CAMERASPACEPOSITION
+#define D3DTSS_TCI_PASSTHRU                             0x00000000
+#define D3DTSS_TCI_CAMERASPACENORMAL                    0x00010000
+#define D3DTSS_TCI_CAMERASPACEPOSITION                  0x00020000
+#define D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR          0x00030000
+#endif
+
+// ============================================================================
+// Texture transform flags (D3DTTFF_*) used with D3DTSS_TEXTURETRANSFORMFLAGS
+// ============================================================================
+#ifndef D3DTEXTURETRANSFORMFLAGS_DEFINED
+#define D3DTEXTURETRANSFORMFLAGS_DEFINED
+typedef enum _D3DTEXTURETRANSFORMFLAGS {
+    D3DTTFF_DISABLE         = 0,
+    D3DTTFF_COUNT1          = 1,
+    D3DTTFF_COUNT2          = 2,
+    D3DTTFF_COUNT3          = 3,
+    D3DTTFF_COUNT4          = 4,
+    D3DTTFF_PROJECTED       = 256,
+    D3DTTFF_FORCE_DWORD     = 0x7fffffff
+} D3DTEXTURETRANSFORMFLAGS;
 #endif
 
 // ============================================================================
@@ -632,5 +754,80 @@ typedef struct IDirect3DPixelShader8 *LPDIRECT3DPIXELSHADER8, *PDIRECT3DPIXELSHA
 #endif
 
 #endif // !_WIN32
+
+// ============================================================================
+// Vertex shader declaration (VSD) helper macros used by DirectX8 shader
+// declaration arrays. These macros are only required at compile-time so the
+// original arrays in the game code can be present on non-Windows builds.
+// Values are chosen as lightweight tokens and are not used at runtime by
+// the Vulkan backend; they simply allow the code to compile.
+// ============================================================================
+#ifndef D3DVSD_STREAM
+#define D3DVSD_STREAM(_s)       (0x10000000u | (unsigned)(_s))
+#endif
+#ifndef D3DVSD_REG
+#define D3DVSD_REG(_r,_t)      (((unsigned)(_r) & 0xffu) | (((unsigned)(_t) & 0xffu) << 8))
+#endif
+#ifndef D3DVSDT_FLOAT3
+#define D3DVSDT_FLOAT3         3
+#endif
+#ifndef D3DVSDT_FLOAT2
+#define D3DVSDT_FLOAT2         2
+#endif
+#ifndef D3DVSDT_FLOAT4
+#define D3DVSDT_FLOAT4         4
+#endif
+#ifndef D3DVSDT_D3DCOLOR
+#define D3DVSDT_D3DCOLOR       5
+#endif
+#ifndef D3DVSD_END
+#define D3DVSD_END             0x00000000u
+#endif
+
+// ============================================================================
+// Common D3DTOP extensions used by game shaders (compile-time tokens)
+// ============================================================================
+#ifndef D3DTOP_MULTIPLYADD
+#define D3DTOP_MULTIPLYADD     0x0000000C
+#endif
+#ifndef D3DTOP_DOTPRODUCT3
+#define D3DTOP_DOTPRODUCT3     0x0000000D
+#endif
+
+// ============================================================================
+// Minimal D3DX types used by shader constant setups in the game. These
+// lightweight POD types allow passing vectors/matrices to Set*Constant
+// wrapper overloads below so existing code compiles without invasive edits.
+// ============================================================================
+#ifndef D3DXVECTOR4_DEFINED
+#define D3DXVECTOR4_DEFINED
+struct D3DXVECTOR4 { float x, y, z, w; D3DXVECTOR4() = default; D3DXVECTOR4(float _x, float _y, float _z, float _w) : x(_x), y(_y), z(_z), w(_w) {} };
+#endif
+#ifndef D3DXVECTOR3_DEFINED
+#define D3DXVECTOR3_DEFINED
+struct D3DXVECTOR3 { float x, y, z; D3DXVECTOR3() = default; D3DXVECTOR3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {} };
+#endif
+
+// ============================================================================
+// Extend the IDirect3DDevice8 compatibility stub with small overloads used by
+// game code when setting shader constants. These overloads forward to the
+// generic void* variant so the stub remains simple while enabling type-safe
+// calls from existing code.
+// ============================================================================
+#ifndef _WIN32
+inline int IDirect3DDevice8_SetPixelShaderConstant_Fallback(IDirect3DDevice8* dev, int reg, const void* data, int count) { return dev->SetPixelShaderConstant(reg, data, count); }
+inline int IDirect3DDevice8_SetVertexShaderConstant_Fallback(IDirect3DDevice8* dev, int reg, const void* data, int count) { return dev->SetVertexShaderConstant(reg, data, count); }
+
+// Provide overload-style helpers (not virtual members) to be used by C++ code
+// that previously relied on DirectX helper overloads. These are simple free
+// functions to avoid modifying the minimal stub class layout above.
+static inline int SetPixelShaderConstant(IDirect3DDevice8* dev, int reg, const D3DXVECTOR4& v, int count = 1) { return IDirect3DDevice8_SetPixelShaderConstant_Fallback(dev, reg, &v, count); }
+static inline int SetVertexShaderConstant(IDirect3DDevice8* dev, int reg, const D3DXVECTOR4& v, int count = 1) { return IDirect3DDevice8_SetVertexShaderConstant_Fallback(dev, reg, &v, count); }
+
+// Add DeletePixelShader stub on the compatibility type via a free function
+// so code calling device->DeletePixelShader(...) still compiles when the
+// compatibility wrapper is used. Some code expects a device-level delete call.
+static inline int DeletePixelShader(IDirect3DDevice8* dev, unsigned long shader) { (void)shader; return 0; }
+#endif
 
 #endif // D3D8_GRAPHICS_COMPAT_H_INCLUDED

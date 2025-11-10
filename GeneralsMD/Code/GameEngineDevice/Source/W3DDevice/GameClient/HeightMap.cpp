@@ -90,6 +90,16 @@
 #include "WW3D2/dx8wrapper.h"
 #include "WW3D2/light.h"
 #include "WW3D2/scene.h"
+#include "WW3D2/d3d8.h"
+// Ensure the low-level D3D8 graphics compatibility definitions are visible
+#include "WW3D2/d3d8_graphics_compat.h"
+// Local fallback definitions in case the compatibility header was not picked up
+#ifndef D3DTA_TFACTOR
+#define D3DTA_TFACTOR 0x00000003
+#endif
+#ifndef D3DRS_TEXTUREFACTOR
+#define D3DRS_TEXTUREFACTOR ((D3DRENDERSTATETYPE)0x1C)
+#endif
 #include "W3DDevice/GameClient/W3DPoly.h"
 #include "W3DDevice/GameClient/W3DCustomScene.h"
 

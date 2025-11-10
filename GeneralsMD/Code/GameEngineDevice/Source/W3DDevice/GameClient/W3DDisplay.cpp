@@ -39,7 +39,13 @@ static void drawFramerateBar(void);
 #ifdef _WIN32
 #include <windows.h>
 #endif
+#ifdef _WIN32
 #include <io.h>
+#else
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#endif
 #include <time.h>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
@@ -2924,6 +2930,7 @@ void W3DDisplay::setShroudLevel( Int x, Int y, CellShroudStatus setting )
 
 //=============================================================================
 ///Utility function to dump data into a .BMP file
+#ifdef _WIN32
 static void CreateBMPFile(LPTSTR pszFile, char *image, Int width, Int height)
 {
 	HANDLE hf;                  // file handle
@@ -2998,8 +3005,16 @@ static void CreateBMPFile(LPTSTR pszFile, char *image, Int width, Int height)
 	// Free memory.
 	LocalFree( (HLOCAL) pbmi);
 }
+#else
+// On non-Windows platforms, provide a no-op stub to avoid pulling in Windows-only APIs.
+static void CreateBMPFile(void* /*pszFile*/, char * /*image*/, Int /*width*/, Int /*height*/)
+{
+	// Screenshot saving not implemented on this platform in this minimal stub.
+}
+#endif
 
 ///Save Screen Capture to a file
+#ifdef _WIN32
 void W3DDisplay::takeScreenShot(void)
 {
 	char leafname[256];
@@ -3136,6 +3151,13 @@ void W3DDisplay::takeScreenShot(void)
 	ufileName.translate(leafname);
 	TheInGameUI->message(TheGameText->fetch("GUI:ScreenCapture"), ufileName.str());
 }
+#else
+// Non-Windows stub: no screenshot support in this minimal compatibility shim.
+void W3DDisplay::takeScreenShot(void)
+{
+	// Optionally, we could implement POSIX-based file output here.
+}
+#endif
 
 /** Start/Stop capturing an AVI movie*/
 void W3DDisplay::toggleMovieCapture(void)

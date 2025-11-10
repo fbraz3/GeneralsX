@@ -44,6 +44,12 @@
 
 #if ENABLE_EMBEDDED_BROWSER
 
+// Provide a minimal LPDISPATCH typedef for non-Windows builds so the
+// CreateBrowser declaration can compile without full COM headers.
+#ifndef LPDISPATCH
+typedef void* LPDISPATCH;
+#endif
+
 // These options must match the browser option bits defined in the BrowserEngine code.
 // Look in febrowserengine.h
 #define BROWSEROPTION_SCROLLBARS		0x0001
