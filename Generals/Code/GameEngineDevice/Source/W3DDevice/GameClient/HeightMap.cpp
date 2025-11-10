@@ -293,7 +293,7 @@ void HeightMapRenderObjClass::doTheLight(VERTEX_FORMAT *vb, Vector3*light, Vecto
 	shadeR*=255.0f;
 	shadeG*=255.0f;
 	shadeB*=255.0f;
-	vb->diffuse = REAL_TO_INT(shadeB) | (REAL_TO_INT(shadeG) << 8) | (REAL_TO_INT(shadeR) << 16) | ((Int)alpha << 24);
+	vb->diffuse = REAL_TO_INT(shadeB) | (REAL_TO_INT(shadeG) << 8) | (REAL_TO_INT(shadeR) << 16) | ((Int)(uintptr_t)alpha << 24);
 #endif
 }
 

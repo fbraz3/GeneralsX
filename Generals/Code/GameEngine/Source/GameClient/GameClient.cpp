@@ -466,7 +466,7 @@ DrawableID GameClient::allocDrawableID( void )
 {
 	/// @todo Find unused value in current set
 	DrawableID ret = m_nextDrawableID;
-	m_nextDrawableID = (DrawableID)((UnsignedInt)m_nextDrawableID + 1);
+	m_nextDrawableID = (DrawableID)((UnsignedInt)(uintptr_t)m_nextDrawableID + 1);
 	return ret;
 }
 
@@ -1584,7 +1584,7 @@ void GameClient::loadPostProcess( void )
 	Drawable *draw;
 	for( draw = getDrawableList(); draw; draw = draw->getNextDrawable() )
 		if( draw->getID() >= m_nextDrawableID )
-			m_nextDrawableID = (DrawableID)((UnsignedInt)draw->getID() + 1);
+			m_nextDrawableID = (DrawableID)((UnsignedInt)(uintptr_t)draw->getID() + 1);
 
 }
 

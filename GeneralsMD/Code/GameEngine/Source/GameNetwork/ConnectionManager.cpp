@@ -206,12 +206,12 @@ void ConnectionManager::reset()
 	m_transport = NULL;
 
 	UnsignedInt i = 0;
-	for (; i < (UnsignedInt)NUM_CONNECTIONS; ++i) {
+	for (; i < (UnsignedInt)(uintptr_t)NUM_CONNECTIONS; ++i) {
 		deleteInstance(m_connections[i]);
 		m_connections[i] = NULL;
 	}
 
-	for (i=0; i<(UnsignedInt)MAX_SLOTS; ++i)
+	for (i=0; i<(UnsignedInt)(uintptr_t)MAX_SLOTS; ++i)
 	{
 		deleteInstance(m_frameData[i]);
 		m_frameData[i] = NULL;
@@ -248,7 +248,7 @@ void ConnectionManager::reset()
 		m_latencyAverages[i] = 0.0;
 	}
 
-	for (i = 0; i < (UnsignedInt)MAX_SLOTS; ++i) {
+	for (i = 0; i < (UnsignedInt)(uintptr_t)MAX_SLOTS; ++i) {
 		m_packetRouterFallback[i] = -1;
 	}
 

@@ -1102,7 +1102,7 @@ ParticleSystem::ParticleSystem( const ParticleSystemTemplate *sysTemplate,
 
 	m_isOneShot = sysTemplate->m_isOneShot;
 
-	m_delayLeft = (UnsignedInt)sysTemplate->m_initialDelay.getValue();
+	m_delayLeft = (UnsignedInt)(uintptr_t)sysTemplate->m_initialDelay.getValue();
 
 	m_startTimestamp = TheGameClient->getFrame();
 	m_systemLifetimeLeft = sysTemplate->m_systemLifetime;
@@ -1703,13 +1703,13 @@ Particle *ParticleSystem::createParticle( const ParticleInfo *info,
 				 TheGameLODManager->isParticleSkipped()) )
 			return NULL;
 
-		if ( getParticleCount() > 0 && priority == AREA_EFFECT && m_isGroundAligned && TheParticleSystemManager->getFieldParticleCount() > (UnsignedInt)TheGlobalData->m_maxFieldParticleCount )
+		if ( getParticleCount() > 0 && priority == AREA_EFFECT && m_isGroundAligned && TheParticleSystemManager->getFieldParticleCount() > (UnsignedInt)(uintptr_t)TheGlobalData->m_maxFieldParticleCount )
 			return NULL;
 
 		// ALWAYS_RENDER particles are exempt from all count limits, and are always created, regardless of LOD issues.
 		if (priority != ALWAYS_RENDER)
 		{
-			int numInExcess = TheParticleSystemManager->getParticleCount() - (UnsignedInt)TheGlobalData->m_maxParticleCount;
+			int numInExcess = TheParticleSystemManager->getParticleCount() - (UnsignedInt)(uintptr_t)TheGlobalData->m_maxParticleCount;
 			if ( numInExcess > 0)
 			{
 				if( TheParticleSystemManager->removeOldestParticles((UnsignedInt) numInExcess, priority) != numInExcess )
@@ -1798,7 +1798,7 @@ const ParticleInfo *ParticleSystem::generateParticleInfo( Int particleNum, Int p
 	info.m_angleZ = m_angleZ.getValue();
 	info.m_angularRateZ = m_angularRateZ.getValue();
 
-	info.m_lifetime = (UnsignedInt)m_lifetime.getValue();
+	info.m_lifetime = (UnsignedInt)(uintptr_t)m_lifetime.getValue();
 
 	info.m_size = m_startSize.getValue()*m_sizeCoeff*TheGlobalData->m_particleScale;
 	info.m_sizeRate = m_sizeRate.getValue()*m_sizeCoeff*TheGlobalData->m_particleScale;
@@ -2033,7 +2033,7 @@ Bool ParticleSystem::update( Int localPlayerIndex  )
 					}
 
 					// compute next burst delay
-					m_burstDelayLeft = (UnsignedInt)m_burstDelay.getValue();
+					m_burstDelayLeft = (UnsignedInt)(uintptr_t)m_burstDelay.getValue();
 					m_burstDelayLeft *= m_delayCoeff;
 				}
 				else
@@ -2964,7 +2964,7 @@ ParticleSystem *ParticleSystemManager::createParticleSystem( const ParticleSyste
 	if (sysTemplate == NULL)
 		return NULL;
 
-	m_uniqueSystemID = (ParticleSystemID)((UnsignedInt)m_uniqueSystemID + 1);
+	m_uniqueSystemID = (ParticleSystemID)((UnsignedInt)(uintptr_t)m_uniqueSystemID + 1);
 	ParticleSystem *sys = newInstance(ParticleSystem)( sysTemplate, m_uniqueSystemID, createSlaves );
 	return sys;
 }

@@ -129,7 +129,7 @@ void FrameMetrics::addCushion(Int cushion) {
 }
 
 Int FrameMetrics::getAverageFPS() {
-	return (Int)m_averageFps;
+	return (Int)(uintptr_t)m_averageFps;
 }
 
 Real FrameMetrics::getAverageLatency() {

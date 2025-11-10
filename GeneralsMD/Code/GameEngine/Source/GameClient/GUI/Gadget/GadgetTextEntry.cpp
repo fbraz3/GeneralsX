@@ -103,7 +103,7 @@ WindowMsgHandledType GadgetTextEntryInput( GameWindow *window, UnsignedInt msg,
 				// Done with this edit
 			 		TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 			 																				GEM_EDIT_DONE,
-			 																				(WindowMsgData)window,
+			 																				(WindowMsgData)(uintptr_t)window,
 			 																				0 );
 				return MSG_HANDLED;
 			};
@@ -136,7 +136,7 @@ WindowMsgHandledType GadgetTextEntryInput( GameWindow *window, UnsignedInt msg,
 						e->charPos++;
 						TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																						GEM_UPDATE_TEXT,
-																						(WindowMsgData)window,
+																						(WindowMsgData)(uintptr_t)window,
 																						0 );
 				}
 			}
@@ -162,7 +162,7 @@ WindowMsgHandledType GadgetTextEntryInput( GameWindow *window, UnsignedInt msg,
 						{
 							TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																									GEM_EDIT_DONE,
-																									(WindowMsgData)window,
+																									(WindowMsgData)(uintptr_t)window,
 																									0 );
 						}
 					}
@@ -245,7 +245,7 @@ WindowMsgHandledType GadgetTextEntryInput( GameWindow *window, UnsignedInt msg,
 								e->charPos--;
 								TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																								GEM_UPDATE_TEXT,
-																								(WindowMsgData)window,
+																								(WindowMsgData)(uintptr_t)window,
 																								0 );
 							}
 						}
@@ -271,7 +271,7 @@ WindowMsgHandledType GadgetTextEntryInput( GameWindow *window, UnsignedInt msg,
 				BitSet( instData->m_state, WIN_STATE_HILITED );
 				TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																						GBM_MOUSE_ENTERING,
-																						(WindowMsgData)window, 0 );
+																						(WindowMsgData)(uintptr_t)window, 0 );
 				//TheWindowManager->winSetFocus( window );
 			}
 
@@ -286,7 +286,7 @@ WindowMsgHandledType GadgetTextEntryInput( GameWindow *window, UnsignedInt msg,
 				BitClear( instData->m_state, WIN_STATE_HILITED );
 				TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																						GBM_MOUSE_LEAVING,
-																						(WindowMsgData)window, 0 );
+																						(WindowMsgData)(uintptr_t)window, 0 );
 			}
 			break;
 
@@ -296,7 +296,7 @@ WindowMsgHandledType GadgetTextEntryInput( GameWindow *window, UnsignedInt msg,
 			if( BitIsSet( instData->getStyle(), GWS_MOUSE_TRACK ) )
 				TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																						GGM_LEFT_DRAG,
-																						(WindowMsgData)window, 0 );
+																						(WindowMsgData)(uintptr_t)window, 0 );
 			break;
 
 		// ------------------------------------------------------------------------
@@ -520,7 +520,7 @@ void InformEntry( WideChar c )
 
 				UnicodeString tmp(text);
 				TheWindowManager->winSendSystemMsg( e->constructList, GLM_ADD_ENTRY,
-																						(WindowMsgData)&tmp, -1 );
+																						(WindowMsgData)(uintptr_t)&tmp, -1 );
 			}
 
 			e->constructList->winSetSize( maxWidth + sliderSize.y,
@@ -578,7 +578,7 @@ UnicodeString GadgetTextEntryGetText( GameWindow *textentry )
 		return UnicodeString::TheEmptyString;
 
 	UnicodeString result;
-	TheWindowManager->winSendSystemMsg( textentry, GEM_GET_TEXT, 0, (WindowMsgData)&result );
+	TheWindowManager->winSendSystemMsg( textentry, GEM_GET_TEXT, 0, (WindowMsgData)(uintptr_t)&result );
 	return result;
 
 }

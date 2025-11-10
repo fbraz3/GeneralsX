@@ -179,7 +179,7 @@ Bool ProcessAnimateWindowSlideFromRight::updateAnimateWindow( wnd::AnimateWindow
 	ICoord2D curPos = animWin->getCurPos();
 	ICoord2D endPos = animWin->getEndPos();
 	Coord2D vel = animWin->getVel();
-	curPos.x += (Int)vel.x;
+	curPos.x += (Int)(uintptr_t)vel.x;
 
 	if(curPos.x < endPos.x)
 	{
@@ -228,7 +228,7 @@ Bool ProcessAnimateWindowSlideFromRight::reverseAnimateWindow( wnd::AnimateWindo
 	ICoord2D curPos = animWin->getCurPos();
 	ICoord2D startPos = animWin->getStartPos();
 	Coord2D vel = animWin->getVel();
-	curPos.x += (Int)vel.x;
+	curPos.x += (Int)(uintptr_t)vel.x;
 
 	if(curPos.x > startPos.x)
 	{
@@ -357,7 +357,7 @@ Bool ProcessAnimateWindowSlideFromLeft::updateAnimateWindow( wnd::AnimateWindow 
 	ICoord2D curPos = animWin->getCurPos();
 	ICoord2D endPos = animWin->getEndPos();
 	Coord2D vel = animWin->getVel();
-	curPos.x += (Int)vel.x;
+	curPos.x += (Int)(uintptr_t)vel.x;
 
 	if(curPos.x > endPos.x)
 	{
@@ -406,7 +406,7 @@ Bool ProcessAnimateWindowSlideFromLeft::reverseAnimateWindow( wnd::AnimateWindow
 	ICoord2D curPos = animWin->getCurPos();
 	ICoord2D startPos = animWin->getStartPos();
 	Coord2D vel = animWin->getVel();
-	curPos.x += (Int)vel.x;
+	curPos.x += (Int)(uintptr_t)vel.x;
 
 	if(curPos.x < startPos.x)
 	{
@@ -535,7 +535,7 @@ Bool ProcessAnimateWindowSlideFromTop::updateAnimateWindow( wnd::AnimateWindow *
 	ICoord2D curPos = animWin->getCurPos();
 	ICoord2D endPos = animWin->getEndPos();
 	Coord2D vel = animWin->getVel();
-	curPos.y += (Int)vel.y;
+	curPos.y += (Int)(uintptr_t)vel.y;
 
 	if(curPos.y > endPos.y)
 	{
@@ -585,7 +585,7 @@ Bool ProcessAnimateWindowSlideFromTop::reverseAnimateWindow( wnd::AnimateWindow 
 	ICoord2D curPos = animWin->getCurPos();
 	ICoord2D startPos = animWin->getStartPos();
 	Coord2D vel = animWin->getVel();
-	curPos.y += (Int)vel.y;
+	curPos.y += (Int)(uintptr_t)vel.y;
 
 	if(curPos.y < startPos.y)
 	{
@@ -715,7 +715,7 @@ Bool ProcessAnimateWindowSlideFromBottom::updateAnimateWindow( wnd::AnimateWindo
 	ICoord2D curPos = animWin->getCurPos();
 	ICoord2D endPos = animWin->getEndPos();
 	Coord2D vel = animWin->getVel();
-	curPos.y += (Int)vel.y;
+	curPos.y += (Int)(uintptr_t)vel.y;
 
 	if(curPos.y < endPos.y)
 	{
@@ -765,7 +765,7 @@ Bool ProcessAnimateWindowSlideFromBottom::reverseAnimateWindow( wnd::AnimateWind
 	ICoord2D curPos = animWin->getCurPos();
 	ICoord2D startPos = animWin->getStartPos();
 	Coord2D vel = animWin->getVel();
-	curPos.y += (Int)vel.y;
+	curPos.y += (Int)(uintptr_t)vel.y;
 
 	if(curPos.y > startPos.y)
 	{
@@ -1231,7 +1231,7 @@ Bool ProcessAnimateWindowSlideFromTopFast::updateAnimateWindow( wnd::AnimateWind
 	ICoord2D curPos = animWin->getCurPos();
 	ICoord2D endPos = animWin->getEndPos();
 	Coord2D vel = animWin->getVel();
-	curPos.y += (Int)vel.y;
+	curPos.y += (Int)(uintptr_t)vel.y;
 
 	if(curPos.y > endPos.y)
 	{
@@ -1281,7 +1281,7 @@ Bool ProcessAnimateWindowSlideFromTopFast::reverseAnimateWindow( wnd::AnimateWin
 	ICoord2D curPos = animWin->getCurPos();
 	ICoord2D startPos = animWin->getStartPos();
 	Coord2D vel = animWin->getVel();
-	curPos.y += (Int)vel.y;
+	curPos.y += (Int)(uintptr_t)vel.y;
 
 	if(curPos.y < startPos.y)
 	{
@@ -1438,7 +1438,7 @@ Bool ProcessAnimateWindowSlideFromRightFast::updateAnimateWindow( wnd::AnimateWi
 	ICoord2D curPos = animWin->getCurPos();
 	ICoord2D endPos = animWin->getEndPos();
 	Coord2D vel = animWin->getVel();
-	curPos.x += (Int)vel.x;
+	curPos.x += (Int)(uintptr_t)vel.x;
 
 	if(curPos.x < endPos.x)
 	{
@@ -1487,7 +1487,7 @@ Bool ProcessAnimateWindowSlideFromRightFast::reverseAnimateWindow( wnd::AnimateW
 	ICoord2D curPos = animWin->getCurPos();
 	ICoord2D startPos = animWin->getStartPos();
 	Coord2D vel = animWin->getVel();
-	curPos.x += (Int)vel.x;
+	curPos.x += (Int)(uintptr_t)vel.x;
 
 	if(curPos.x > startPos.x)
 	{

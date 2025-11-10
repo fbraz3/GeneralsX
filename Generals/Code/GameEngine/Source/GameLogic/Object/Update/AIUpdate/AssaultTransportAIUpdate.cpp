@@ -513,7 +513,7 @@ void AssaultTransportAIUpdate::xfer( Xfer *xfer )
 	xfer->xferCoord3D( &m_attackMoveGoalPos );
 	xfer->xferObjectID( &m_designatedTarget );
 
-	Int state = (Int)m_state;
+	Int state = (Int)(uintptr_t)m_state;
 	xfer->xferInt( &state );
 	m_state = (AssaultStateTypes)state;
 

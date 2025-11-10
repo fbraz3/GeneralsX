@@ -102,7 +102,12 @@ typedef struct tConnInfoStruct {
  *=============================================================================================*/
 Bool GetLocalChatConnectionAddress(AsciiString serverName, UnsignedShort serverPort, UnsignedInt& localIP)
 {
-	//return false;
+	#ifndef _WIN32
+	// SNMP / MIB-II based local address discovery is Windows-specific.
+	// Provide a safe fallback on non-Windows platforms.
+	(void)serverName; (void)serverPort; (void)localIP;
+	return false;
+	#else
 	/*
 	** Local defines.
 	*/
@@ -433,6 +438,7 @@ Bool GetLocalChatConnectionAddress(AsciiString serverName, UnsignedShort serverP
 	FreeLibrary(snmpapi_dll);
 	FreeLibrary(mib_ii_dll);
 	return(found);
+	#endif
 }
 
 // GameSpyGameSlot ----------------------------------------

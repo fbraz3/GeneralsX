@@ -35,6 +35,24 @@ typedef unsigned short WORD;
 typedef unsigned char BYTE;
 #endif
 
+// SYSTEMTIME (Windows) - minimal definition for cross-platform builds
+#ifndef SYSTEMTIME
+typedef struct _SYSTEMTIME {
+	WORD wYear;
+	WORD wMonth;
+	WORD wDayOfWeek;
+	WORD wDay;
+	WORD wHour;
+	WORD wMinute;
+	WORD wSecond;
+	WORD wMilliseconds;
+} SYSTEMTIME;
+#endif
+// Mark that SYSTEMTIME is defined to help other headers avoid typedef collisions
+#ifndef SYSTEMTIME_DEFINED
+#define SYSTEMTIME_DEFINED
+#endif
+
 #ifndef UINT
 typedef unsigned int UINT;
 #endif
@@ -76,7 +94,7 @@ typedef long long __int64;
 #endif
 
 #ifndef SIZE_T
-typedef unsigned long SIZE_T;
+typedef size_t SIZE_T;
 #endif
 
 #ifndef LPVOID
@@ -176,9 +194,25 @@ typedef void (*FARPROC)();
 #endif
 
 #ifndef LARGE_INTEGER
-typedef struct {
-    long LowPart;
-    long HighPart;
+// Provide a single, guarded definition for 64-bit LONGLONG type
+#ifndef LONGLONG_TYPEDEF_DEFINED
+#define LONGLONG_TYPEDEF_DEFINED
+typedef long long LONGLONG;
+#endif
+
+// Define LARGE_INTEGER as a union so code can use .QuadPart or .LowPart/.HighPart
+typedef union {
+	struct {
+		unsigned long LowPart;
+		long HighPart;
+	} u;
+	LONGLONG QuadPart;
+	// For historical code that accesses LowPart/HighPart directly, provide aliases
+	// using anonymous struct (supported by clang/gcc).
+	struct {
+		unsigned long LowPart;
+		long HighPart;
+	};
 } LARGE_INTEGER;
 #endif
 
@@ -324,6 +358,8 @@ typedef struct {
 	float x, y, z;
 } D3DXVECTOR3;
 #endif
+
+
 
 #endif // !_WIN32
 

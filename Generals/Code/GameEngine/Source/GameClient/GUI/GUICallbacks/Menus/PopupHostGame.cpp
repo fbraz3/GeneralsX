@@ -379,7 +379,7 @@ WindowMsgHandledType PopupHostGameInput( GameWindow *window, UnsignedInt msg, Wi
 					if( BitIsSet( state, KEY_STATE_UP ) )
 					{
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																							(WindowMsgData)buttonCancel, buttonCancelID );
+																							(WindowMsgData)(uintptr_t)buttonCancel, buttonCancelID );
 
 					}
 
@@ -475,7 +475,7 @@ WindowMsgHandledType PopupHostGameSystem( GameWindow *window, UnsignedInt msg, W
 				{
 					if (pos >= 0)
 					{
-						Int ladderID = (Int)GadgetComboBoxGetItemData(control, pos);
+						Int ladderID = (Int)(uintptr_t)GadgetComboBoxGetItemData(control, pos);
 						if (ladderID < 0)
 						{
 							// "Choose a ladder" selected - open overlay
@@ -564,7 +564,7 @@ void createGame( void )
 	req.stagingRoomCreation.ladPort = 0;
 	if (ladderSelectPos >= 0)
 	{
-		ladderID = (Int)GadgetComboBoxGetItemData(comboBoxLadderName, ladderSelectPos);
+		ladderID = (Int)(uintptr_t)GadgetComboBoxGetItemData(comboBoxLadderName, ladderSelectPos);
 		if (ladderID != 0)
 		{
 			// actual ladder

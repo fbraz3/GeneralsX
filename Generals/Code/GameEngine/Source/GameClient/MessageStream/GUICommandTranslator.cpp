@@ -163,10 +163,10 @@ static CommandStatus doFireWeaponCommand( const CommandButton *command, const IC
 		PickType pickType = PICK_TYPE_SELECTABLE;
 
 		if( BitIsSet( command->getOptions(), ALLOW_SHRUBBERY_TARGET ) == TRUE )
-			pickType = (PickType)((Int)pickType | (Int)PICK_TYPE_SHRUBBERY);
+			pickType = (PickType)((Int)(uintptr_t)pickType | (Int)(uintptr_t)PICK_TYPE_SHRUBBERY);
 
 		if( BitIsSet( command->getOptions(), ALLOW_MINE_TARGET ) == TRUE )
-			pickType = (PickType)((Int)pickType | (Int)PICK_TYPE_MINES);
+			pickType = (PickType)((Int)(uintptr_t)pickType | (Int)(uintptr_t)PICK_TYPE_MINES);
 
 		// get the target object under the cursor
 		Object *target = validUnderCursor( mouse, command, pickType );

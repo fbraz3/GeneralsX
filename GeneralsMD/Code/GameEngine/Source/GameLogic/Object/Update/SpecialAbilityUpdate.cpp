@@ -1217,13 +1217,13 @@ Bool SpecialAbilityUpdate::continuePreparation()
 
         if (targetDraw) // skip fx if merely 'invulnerable'
         {
-          Bool lastPhase = ( ((Int)m_captureFlashPhase) & 1 );// were we in a flashy phase last frame?
+          Bool lastPhase = ( ((Int)(uintptr_t)m_captureFlashPhase) & 1 );// were we in a flashy phase last frame?
 
           Real denominator = MAX(1, data->m_preparationFrames);
           Real increment = 1.0f - ((Real)m_prepFrames / denominator );
           m_captureFlashPhase += increment / 3.0f;
 
-          Bool thisPhase = ( ((Int)m_captureFlashPhase) & 1 );// are we in a flashy phase this frame?
+          Bool thisPhase = ( ((Int)(uintptr_t)m_captureFlashPhase) & 1 );// are we in a flashy phase this frame?
 
           if ( lastPhase && ( ! thisPhase ) )
           {

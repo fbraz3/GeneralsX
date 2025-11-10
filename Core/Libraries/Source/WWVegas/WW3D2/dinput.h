@@ -173,6 +173,8 @@
     
     // Minimal DirectInput COM interface stubs (never instantiated on non-Windows)
     typedef void* LPDIRECTINPUT;
+    // DirectInput8 alias (some code references LPDIRECTINPUT8)
+    typedef void* LPDIRECTINPUT8;
     typedef void* LPDIRECTINPUTDEVICE;
     typedef void* LPDIRECTINPUTDEVICE8;
     

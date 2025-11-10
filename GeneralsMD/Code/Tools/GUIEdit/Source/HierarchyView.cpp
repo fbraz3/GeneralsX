@@ -362,7 +362,7 @@ LRESULT CALLBACK HierarchyView::dialogProc( HWND hWndDialog, UINT message,
 		// ------------------------------------------------------------------------
 		case WM_NOTIFY:
 		{
-			UnsignedInt controlID = (Int)wParam;
+			UnsignedInt controlID = (Int)(uintptr_t)wParam;
 			LPNMHDR notifyMessageHandler = (LPNMHDR)lParam;
 
 			// switch on control

@@ -1817,7 +1817,7 @@ void InGameUI::update( void )
 			m_militarySubtitle->incrementOnFrame--;
 		}
 		// if it's time to remove the subtitle, Then remove it
-		if((Int)m_militarySubtitle->lifetime < (Int)currLogicFrame)
+		if((Int)(uintptr_t)m_militarySubtitle->lifetime < (Int)(uintptr_t)currLogicFrame)
 		{
 			//steal colins fade from above :)
 			GameGetColorComponents( m_militarySubtitle->color, &r, &g, &b, &a );
@@ -6095,7 +6095,7 @@ void InGameUI::drawRenderFps(Int &x, Int &y)
 	UnsignedInt renderFpsLimit = 0u;
 	if (TheGlobalData->m_useFpsLimit)
 	{
-		renderFpsLimit = (UnsignedInt)TheFramePacer->getFramesPerSecondLimit();
+		renderFpsLimit = (UnsignedInt)(uintptr_t)TheFramePacer->getFramesPerSecondLimit();
 		if (renderFpsLimit == RenderFpsPreset::UncappedFpsValue)
 		{
 			renderFpsLimit = 0u;
@@ -6166,8 +6166,8 @@ void InGameUI::drawGameTime()
     m_gameTimeFrameString->setText(gameTimeFrameString);
 
 	// TheSuperHackers @info this implicitly offsets the game timer from the right instead of left of the screen
-	int horizontalTimerOffset = TheDisplay->getWidth() - (Int)m_gameTimePosition.x - m_gameTimeString->getWidth() - m_gameTimeFrameString->getWidth();
-	int horizontalFrameOffset = TheDisplay->getWidth() - (Int)m_gameTimePosition.x - m_gameTimeFrameString->getWidth();
+	int horizontalTimerOffset = TheDisplay->getWidth() - (Int)(uintptr_t)m_gameTimePosition.x - m_gameTimeString->getWidth() - m_gameTimeFrameString->getWidth();
+	int horizontalFrameOffset = TheDisplay->getWidth() - (Int)(uintptr_t)m_gameTimePosition.x - m_gameTimeFrameString->getWidth();
 
 	m_gameTimeString->draw(horizontalTimerOffset, m_gameTimePosition.y, m_gameTimeColor, m_gameTimeDropColor);
 	m_gameTimeFrameString->draw(horizontalFrameOffset, m_gameTimePosition.y, GameMakeColor(180,180,180,255), m_gameTimeDropColor);

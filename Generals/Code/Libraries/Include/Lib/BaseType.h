@@ -199,7 +199,7 @@ struct ICoord2D
 {
 	Int x, y;
 
-	Int length( void ) const { return (Int)sqrt( (double)(x*x + y*y) ); }
+	Int length( void ) const { return (Int)(uintptr_t)sqrt( (double)(x*x + y*y) ); }
 };
 
 struct Region2D
@@ -306,7 +306,7 @@ struct ICoord3D
 {
 	Int x, y, z;
 
-	Int length( void ) const { return (Int)sqrt( (double)(x*x + y*y + z*z) ); }
+	Int length( void ) const { return (Int)(uintptr_t)sqrt( (double)(x*x + y*y + z*z) ); }
 	void zero( void )
 	{
 

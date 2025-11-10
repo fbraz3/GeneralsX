@@ -1030,7 +1030,7 @@ void WbView3d::updateTrees(void)
 					Coord3D pos = *pMapObj->getLocation();
 					if (m_heightMapRenderObj) {
 						pos.z += m_heightMapRenderObj->getHeightMapHeight(pos.x, pos.y, NULL);
-						TheTerrainRenderObject->addTree((DrawableID)(Int)pMapObj, pos, scale, pMapObj->getAngle(),
+						TheTerrainRenderObject->addTree((DrawableID)(Int)(uintptr_t)pMapObj, pos, scale, pMapObj->getAngle(),
 							0.0f /*no random scaling*/, md);
 					}
 				}
@@ -1395,7 +1395,7 @@ void WbView3d::invalObjectInView(MapObject *pMapObjIn)
 
 		const ThingTemplate *tTemplate = pMapObj->getThingTemplate();
 		if (tTemplate && tTemplate->isKindOf(KINDOF_OPTIMIZED_TREE)) {
-			if (!m_heightMapRenderObj->updateTreePosition((DrawableID)(Int)pMapObj, loc, pMapObj->getAngle())) {
+			if (!m_heightMapRenderObj->updateTreePosition((DrawableID)(Int)(uintptr_t)pMapObj, loc, pMapObj->getAngle())) {
 				// Couldn't find it, so update them all. [5/27/2003]
 				updateAllTrees = true;
 			}

@@ -233,5 +233,13 @@ private:
 extern GameState *TheGameState;
 
 
+// SYSTEMTIME is provided by the canonical Win32 compatibility headers.
+// Some build units do not use the project's precompiled header. Ensure the
+// umbrella compat header is available as a fallback so this header remains
+// self-contained and does not require a TU-local typedef.
+#ifndef SYSTEMTIME_DEFINED
+#include "win32_compat.h"
+#endif
+
 UnicodeString getUnicodeTimeBuffer(SYSTEMTIME timeVal);
 UnicodeString getUnicodeDateBuffer(SYSTEMTIME timeVal);

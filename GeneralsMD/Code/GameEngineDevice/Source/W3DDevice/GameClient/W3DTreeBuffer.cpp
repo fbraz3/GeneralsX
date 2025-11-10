@@ -143,7 +143,7 @@ int W3DTreeBuffer::W3DTreeTextureClass::update(W3DTreeBuffer *buffer)
 //	Int numRows = surface_desc.Height/(tilePixelExtent+TILE_OFFSET);
 #ifdef RTS_DEBUG
 	//DASSERT_MSG(tilesPerRow*numRows >= htMap->m_numBitmapTiles,Debug::Format ("Too many tiles."));
-	//DEBUG_ASSERTCRASH((Int)surface_desc.Width >= tilePixelExtent*tilesPerRow, ("Bitmap too small."));
+	//DEBUG_ASSERTCRASH((Int)(uintptr_t)surface_desc.Width >= tilePixelExtent*tilesPerRow, ("Bitmap too small."));
 #endif
 	if (surface_desc.Format == D3DFMT_A8R8G8B8) {
 		Int tileNdx;
@@ -676,7 +676,7 @@ UnsignedInt W3DTreeBuffer::doLighting(const Vector3 *normal,
 	shadeG*=255.0f;
 	shadeB*=255.0f;
 	const Real alpha = 255.0;
-	return REAL_TO_UNSIGNEDINT(shadeB) | (REAL_TO_INT(shadeG) << 8) | (REAL_TO_INT(shadeR) << 16) | ((Int)alpha << 24);
+	return REAL_TO_UNSIGNEDINT(shadeB) | (REAL_TO_INT(shadeG) << 8) | (REAL_TO_INT(shadeR) << 16) | ((Int)(uintptr_t)alpha << 24);
 
 }
 
@@ -1997,7 +1997,7 @@ void W3DTreeBuffer::xfer( Xfer *xfer )
 
 		if (version <= 1)
 		{
-			UnsignedInt sinkFramesLeft = (UnsignedInt)tree.m_sinkFramesLeft;
+			UnsignedInt sinkFramesLeft = (UnsignedInt)(uintptr_t)tree.m_sinkFramesLeft;
 			xfer->xferUnsignedInt(&sinkFramesLeft);	///< Toppled trees sink into the terrain & disappear, how many frames left.
 			tree.m_sinkFramesLeft = (Real)sinkFramesLeft;
 		}

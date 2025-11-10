@@ -122,7 +122,7 @@ void ExperienceTracker::setVeterancyLevel( VeterancyLevel newLevel, Bool provide
 //-------------------------------------------------------------------------------------------------
 Bool ExperienceTracker::gainExpForLevel(Int levelsToGain, Bool canScaleForBonus)
 {
-	Int newLevel = (Int)m_currentLevel + levelsToGain;
+	Int newLevel = (Int)(uintptr_t)m_currentLevel + levelsToGain;
 	if (newLevel > LEVEL_LAST)
 		newLevel = LEVEL_LAST;
 	// gain what levels we can, even if we can't use 'em all
@@ -138,7 +138,7 @@ Bool ExperienceTracker::gainExpForLevel(Int levelsToGain, Bool canScaleForBonus)
 //-------------------------------------------------------------------------------------------------
 Bool ExperienceTracker::canGainExpForLevel(Int levelsToGain) const
 {
-	Int newLevel = (Int)m_currentLevel + levelsToGain;
+	Int newLevel = (Int)(uintptr_t)m_currentLevel + levelsToGain;
 	// return true if we can gain levels, even if we can't gain ALL the levels requested
 	if (newLevel > LEVEL_LAST)
 		newLevel = LEVEL_LAST;

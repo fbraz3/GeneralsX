@@ -392,7 +392,7 @@ m_ChooseVictimAlwaysUsesNormal(false)
 ScriptEngine::~ScriptEngine()
 {
 	if (st_DebugDLL) {
-		FARPROC proc = GetProcAddress(st_DebugDLL, "DestroyDebugDialog");
+		FARPROC proc = (FARPROC)GetProcAddress(st_DebugDLL, "DestroyDebugDialog");
 		if (proc) {
 			proc();
 		}
@@ -402,7 +402,7 @@ ScriptEngine::~ScriptEngine()
 	}
 
 	if (st_ParticleDLL) {
-		FARPROC proc = GetProcAddress(st_ParticleDLL, "DestroyParticleSystemDialog");
+		FARPROC proc = (FARPROC)GetProcAddress(st_ParticleDLL, "DestroyParticleSystemDialog");
 		if (proc) {
 			proc();
 		}
@@ -437,14 +437,14 @@ void ScriptEngine::init( void )
 		}
 
 		if (st_DebugDLL) {
-			FARPROC proc = GetProcAddress(st_DebugDLL, "CreateDebugDialog");
+			FARPROC proc = (FARPROC)GetProcAddress(st_DebugDLL, "CreateDebugDialog");
 			if (proc) {
 				proc();
 			}
 		}
 
 	if (st_ParticleDLL) {
-		FARPROC proc = GetProcAddress(st_ParticleDLL, "CreateParticleSystemDialog");
+		FARPROC proc = (FARPROC)GetProcAddress(st_ParticleDLL, "CreateParticleSystemDialog");
 		if (proc) {
 			proc();
 		}
@@ -7717,7 +7717,7 @@ Bool ScriptEngine::isTimeFrozenDebug(void)
 		if (st_LastCurrentFrame != st_CurrentFrame) {
 			st_LastCurrentFrame = st_CurrentFrame;
 
-			FARPROC proc = GetProcAddress(st_DebugDLL, "CanAppContinue");
+			FARPROC proc = (FARPROC)GetProcAddress(st_DebugDLL, "CanAppContinue");
 			if (proc) {
 				st_CanAppCont = ((funcptr)proc)();
 
@@ -7738,8 +7738,8 @@ Bool ScriptEngine::isTimeFast(void)
 	typedef Bool (*funcptr)(void);
 
 	if (st_DebugDLL) {
-		FARPROC proc = GetProcAddress(st_DebugDLL, "CanAppContinue");
- 		proc = GetProcAddress(st_DebugDLL, "RunAppFast");
+		FARPROC proc = (FARPROC)GetProcAddress(st_DebugDLL, "CanAppContinue");
+ 		proc = (FARPROC)GetProcAddress(st_DebugDLL, "RunAppFast");
 		if (proc && ((funcptr)proc)()) {
 			st_AppIsFast = true;
 		} else {
@@ -7764,7 +7764,7 @@ void ScriptEngine::forceUnfreezeTime(void)
 	typedef void (*funcptr)(void);
 
 	if (st_DebugDLL) {
-		FARPROC proc = GetProcAddress(st_DebugDLL, "ForceAppContinue");
+		FARPROC proc = (FARPROC)GetProcAddress(st_DebugDLL, "ForceAppContinue");
 		if (proc) {
 			((funcptr)proc)();
 		}
@@ -7783,9 +7783,9 @@ void ScriptEngine::AppendDebugMessage(const AsciiString& strToAdd, Bool forcePau
 
 	FARPROC proc;
 	if (forcePause) {
-		proc = GetProcAddress(st_DebugDLL, "AppendMessageAndPause");
+		proc = (FARPROC)GetProcAddress(st_DebugDLL, "AppendMessageAndPause");
 	} else {
-		proc = GetProcAddress(st_DebugDLL, "AppendMessage");
+		proc = (FARPROC)GetProcAddress(st_DebugDLL, "AppendMessage");
 	}
 
 	if (!proc) {
@@ -8658,9 +8658,9 @@ void _appendMessage(const AsciiString& str, Bool isTrueMessage, Bool shouldPause
 
 	FARPROC proc;
 	if (shouldPause) {
-		proc = GetProcAddress(st_DebugDLL, "AppendMessageAndPause");
+		proc = (FARPROC)GetProcAddress(st_DebugDLL, "AppendMessageAndPause");
 	} else {
-		proc = GetProcAddress(st_DebugDLL, "AppendMessage");
+		proc = (FARPROC)GetProcAddress(st_DebugDLL, "AppendMessage");
 	}
 	if (!proc) {
 		return;
@@ -8678,9 +8678,9 @@ void _adjustVariable(const AsciiString& str, Int value, Bool shouldPause)
 
 	FARPROC proc;
 	if (shouldPause) {
-		proc = GetProcAddress(st_DebugDLL, "AdjustVariableAndPause");
+		proc = (FARPROC)GetProcAddress(st_DebugDLL, "AdjustVariableAndPause");
 	} else {
-		proc = GetProcAddress(st_DebugDLL, "AdjustVariable");
+		proc = (FARPROC)GetProcAddress(st_DebugDLL, "AdjustVariable");
 	}
 
 	if (!proc) {
@@ -8702,7 +8702,7 @@ void _updateFrameNumber( void )
 	}
 
 	FARPROC proc;
-	proc = GetProcAddress(st_DebugDLL, "SetFrameNumber");
+	proc = (FARPROC)GetProcAddress(st_DebugDLL, "SetFrameNumber");
 	if (!proc) {
 		return;
 	}
@@ -8720,14 +8720,14 @@ void _appendAllParticleSystems( void )
 	}
 	FARPROC proc;
 
-	proc = GetProcAddress(st_ParticleDLL, "RemoveAllParticleSystems");
+	proc = (FARPROC)GetProcAddress(st_ParticleDLL, "RemoveAllParticleSystems");
 	if (proc) {
 		proc();
 	} else {
 		return;
 	}
 
-	proc = GetProcAddress(st_ParticleDLL, "AppendParticleSystem");
+	proc = (FARPROC)GetProcAddress(st_ParticleDLL, "AppendParticleSystem");
 	if (!proc) {
 		return;
 	}
@@ -8749,14 +8749,14 @@ void _appendAllThingTemplates( void )
 	}
 	FARPROC proc;
 
-	proc = GetProcAddress(st_ParticleDLL, "RemoveAllThingTemplates");
+	proc = (FARPROC)GetProcAddress(st_ParticleDLL, "RemoveAllThingTemplates");
 	if (proc) {
 		proc();
 	} else {
 		return;
 	}
 
-	proc = GetProcAddress(st_ParticleDLL, "AppendThingTemplate");
+	proc = (FARPROC)GetProcAddress(st_ParticleDLL, "AppendThingTemplate");
 	if (!proc) {
 		return;
 	}
@@ -8783,12 +8783,12 @@ void _addUpdatedParticleSystem( AsciiString particleSystemName )
 	}
 
 	FARPROC proc, proc2;
-	proc = GetProcAddress(st_ParticleDLL, "AppendParticleSystem");
+	proc = (FARPROC)GetProcAddress(st_ParticleDLL, "AppendParticleSystem");
 	if (!proc) {
 		return;
 	}
 
-	proc2 = GetProcAddress(st_ParticleDLL, "UpdateSystemUseParameters");
+	proc2 = (FARPROC)GetProcAddress(st_ParticleDLL, "UpdateSystemUseParameters");
 	if (!proc2) {
 		return;
 	}
@@ -8812,7 +8812,7 @@ AsciiString _getParticleSystemName( void )
 	}
 
 	FARPROC proc;
-	proc = GetProcAddress(st_ParticleDLL, "GetSelectedParticleSystemName");
+	proc = (FARPROC)GetProcAddress(st_ParticleDLL, "GetSelectedParticleSystemName");
 	if (!proc) {
 		return AsciiString::TheEmptyString;
 	}
@@ -8833,7 +8833,7 @@ void _updatePanelParameters( ParticleSystemTemplate *particleTemplate )
 	}
 
 	FARPROC proc;
-	proc = GetProcAddress(st_ParticleDLL, "UpdateCurrentParticleSystem");
+	proc = (FARPROC)GetProcAddress(st_ParticleDLL, "UpdateCurrentParticleSystem");
 	if (!proc) {
 		return;
 	}
@@ -8850,7 +8850,7 @@ void _updateAsciiStringParmsToSystem( ParticleSystemTemplate *particleTemplate )
 	}
 
 	FARPROC proc;
-	proc = GetProcAddress(st_ParticleDLL, "GetSelectedParticleAsciiStringParm");
+	proc = (FARPROC)GetProcAddress(st_ParticleDLL, "GetSelectedParticleAsciiStringParm");
 
 	if (!proc) {
 		return;
@@ -8885,7 +8885,7 @@ extern void _updateAsciiStringParmsFromSystem( ParticleSystemTemplate *particleT
 	}
 
 	FARPROC proc;
-	proc = GetProcAddress(st_ParticleDLL, "UpdateParticleAsciiStringParm");
+	proc = (FARPROC)GetProcAddress(st_ParticleDLL, "UpdateParticleAsciiStringParm");
 
 	if (!proc) {
 		return;
@@ -9384,7 +9384,7 @@ static int _getEditorBehavior( void )
 	}
 
 	FARPROC proc;
-	proc = GetProcAddress(st_ParticleDLL, "NextParticleEditorBehavior");
+	proc = (FARPROC)GetProcAddress(st_ParticleDLL, "NextParticleEditorBehavior");
 
 	if (!proc) {
 		return 0x00;
@@ -9532,7 +9532,7 @@ static int _getNewCurrentParticleCap( void )
 	}
 
 	FARPROC proc;
-	proc = GetProcAddress(st_ParticleDLL, "GetNewParticleCap");
+	proc = (FARPROC)GetProcAddress(st_ParticleDLL, "GetNewParticleCap");
 
 	if (!proc) {
 		return -1;
@@ -9550,7 +9550,7 @@ static void _updateCurrentParticleCap( void )
 	}
 
 	FARPROC proc;
-	proc = GetProcAddress(st_ParticleDLL, "UpdateCurrentParticleCap");
+	proc = (FARPROC)GetProcAddress(st_ParticleDLL, "UpdateCurrentParticleCap");
 
 	if (!proc) {
 		return;
@@ -9568,7 +9568,7 @@ static void _updateCurrentParticleCount( void )
 	}
 
 	FARPROC proc;
-	proc = GetProcAddress(st_ParticleDLL, "UpdateCurrentNumParticles");
+	proc = (FARPROC)GetProcAddress(st_ParticleDLL, "UpdateCurrentNumParticles");
 
 	if (!proc) {
 		return;

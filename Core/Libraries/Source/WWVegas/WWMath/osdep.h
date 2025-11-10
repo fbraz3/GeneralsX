@@ -18,6 +18,7 @@ typedef enum { false = 0, true = 1 } bool;
 #define __fastcall
 
 // Windows-specific types mapped to Unix equivalents
+#ifndef WIN32_COMPAT_CORE_H_INCLUDED
 #ifndef DWORD
 typedef unsigned long DWORD;
 #endif
@@ -33,6 +34,7 @@ typedef unsigned char BYTE;
 #ifndef BOOL
 typedef int BOOL;
 #endif
+#endif // WIN32_COMPAT_CORE_H_INCLUDED
 
 #ifndef TRUE
 #define TRUE 1

@@ -511,7 +511,7 @@ WindowMsgHandledType ChallengeMenuInput( GameWindow *window, UnsignedInt msg, Wi
 					if( BitIsSet( state, KEY_STATE_UP ) )
 					{
 
-						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED, (WindowMsgData)buttonBack, buttonBackID );
+						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED, (WindowMsgData)(uintptr_t)buttonBack, buttonBackID );
 
 					}
 

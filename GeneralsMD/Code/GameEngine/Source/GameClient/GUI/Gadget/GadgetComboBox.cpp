@@ -232,7 +232,7 @@ WindowMsgHandledType GadgetComboBoxInput( GameWindow *window, UnsignedInt msg,
 				BitSet( instData->m_state, WIN_STATE_HILITED );
 				TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																						GBM_MOUSE_ENTERING,
-																						(WindowMsgData)window,
+																						(WindowMsgData)(uintptr_t)window,
 																						0 );
 				TheWindowManager->winSetFocus( window );
 
@@ -252,7 +252,7 @@ WindowMsgHandledType GadgetComboBoxInput( GameWindow *window, UnsignedInt msg,
 				BitClear( instData->m_state, WIN_STATE_HILITED );
 				TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																						GBM_MOUSE_LEAVING,
-																						(WindowMsgData)window,
+																						(WindowMsgData)(uintptr_t)window,
 																						0 );
 			}
 
@@ -267,7 +267,7 @@ WindowMsgHandledType GadgetComboBoxInput( GameWindow *window, UnsignedInt msg,
 			if (BitIsSet( instData->getStyle(), GWS_MOUSE_TRACK ) )
 				TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																						GGM_LEFT_DRAG,
-																						(WindowMsgData)window,
+																						(WindowMsgData)(uintptr_t)window,
 																						0 );
 			break;
 
@@ -348,7 +348,7 @@ WindowMsgHandledType GadgetComboBoxSystem( GameWindow *window, UnsignedInt msg,
 		{
 			TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																	GCM_UPDATE_TEXT,
-																	(WindowMsgData)window,
+																	(WindowMsgData)(uintptr_t)window,
 																	0 );
 			if (comboData->listBox)
 			{
@@ -367,7 +367,7 @@ WindowMsgHandledType GadgetComboBoxSystem( GameWindow *window, UnsignedInt msg,
 				HideListBox(window);
 				TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																		GCM_SELECTED,
-																		(WindowMsgData)window,
+																		(WindowMsgData)(uintptr_t)window,
 																		0 );
 			}
 			break;
@@ -383,7 +383,7 @@ WindowMsgHandledType GadgetComboBoxSystem( GameWindow *window, UnsignedInt msg,
 				if( !listBox->winIsHidden() && mData2 == TRUE )
 					comboData->dontHide = TRUE;
 
-				GadgetListBoxSetSelected(listBox, (Int)mData1);
+				GadgetListBoxSetSelected(listBox, (Int)(uintptr_t)mData1);
 			}
 			break;
 		}
@@ -406,7 +406,7 @@ WindowMsgHandledType GadgetComboBoxSystem( GameWindow *window, UnsignedInt msg,
 		{
 			if(comboData->listBox)
 			{
-				GadgetListBoxSetItemData(comboData->listBox, (void *)mData2, (Int)mData1 );
+				GadgetListBoxSetItemData(comboData->listBox, (void *)mData2, (Int)(uintptr_t)mData1 );
 			}
 
 			break;
@@ -451,7 +451,7 @@ WindowMsgHandledType GadgetComboBoxSystem( GameWindow *window, UnsignedInt msg,
 
 					TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																		GCM_SELECTED,
-																		(WindowMsgData)window,
+																		(WindowMsgData)(uintptr_t)window,
 																		0 );
 				}
 			break;
@@ -560,8 +560,8 @@ WindowMsgHandledType GadgetComboBoxSystem( GameWindow *window, UnsignedInt msg,
 		// ------------------------------------------------------------------------
 		case GGM_RESIZED:
 		{
-			Int width = (Int)mData1;
-			Int height = (Int)mData2;
+			Int width = (Int)(uintptr_t)mData1;
+			Int height = (Int)(uintptr_t)mData2;
 			ICoord2D dropDownSize;
 
 			// get needed window sizes
@@ -623,7 +623,7 @@ WindowMsgHandledType GadgetComboBoxSystem( GameWindow *window, UnsignedInt msg,
 			Bool wantsFocus = FALSE;
 			GameWindow *editBox = GadgetComboBoxGetEditBox(window);
 			// we need to tell the text entry box to take the focus.
-			TheWindowManager->winSendSystemMsg( editBox, GWM_INPUT_FOCUS, mData1, (WindowMsgData)&wantsFocus );
+			TheWindowManager->winSendSystemMsg( editBox, GWM_INPUT_FOCUS, mData1, (WindowMsgData)(uintptr_t)&wantsFocus );
 
 			*(Bool*)mData2 = TRUE;
 			break;
@@ -925,7 +925,7 @@ Int GadgetComboBoxAddEntry( GameWindow *comboBox, UnicodeString text, Color colo
 	// sanity
 	if( comboBox == NULL )
 		return -1;
-	return (Int)TheWindowManager->winSendSystemMsg( comboBox, GCM_ADD_ENTRY, (WindowMsgData)&text, color );
+	return (Int)(uintptr_t)TheWindowManager->winSendSystemMsg( comboBox, GCM_ADD_ENTRY, (WindowMsgData)(uintptr_t)&text, color );
 }
 // GadgetComboBoxReset =======================================================
 /** Convenience wrapper function for resetting the Combo Box entries */
@@ -1053,7 +1053,7 @@ void GadgetComboBoxGetSelectedPos( GameWindow *comboBox, Int *selectedIndex )
 		return;
 
 	// get selected indeces via system message
-	TheWindowManager->winSendSystemMsg( comboBox, GCM_GET_SELECTION, 0, (WindowMsgData)selectedIndex );
+	TheWindowManager->winSendSystemMsg( comboBox, GCM_GET_SELECTION, 0, (WindowMsgData)(uintptr_t)selectedIndex );
 }
 
 // GadgetComboBoxSetSelectedPos ===============================================
@@ -1076,7 +1076,7 @@ void GadgetComboBoxSetSelectedPos( GameWindow *comboBox, Int selectedIndex, Bool
 void GadgetComboBoxSetItemData( GameWindow *comboBox, Int index, void *data )
 {
 	if (comboBox)
-		TheWindowManager->winSendSystemMsg( comboBox, GCM_SET_ITEM_DATA, index, (WindowMsgData)data);
+		TheWindowManager->winSendSystemMsg( comboBox, GCM_SET_ITEM_DATA, index, (WindowMsgData)(uintptr_t)data);
 }
 // GadgetComboBoxGetItemData ==================================================
 /** Convenience wrapper function for getting the Item data from the listbox under the combo Box */
@@ -1087,7 +1087,7 @@ void *GadgetComboBoxGetItemData( GameWindow *comboBox, Int index )
 
 	if (comboBox)
 	{
-		TheWindowManager->winSendSystemMsg( comboBox, GCM_GET_ITEM_DATA, index, (WindowMsgData)&data);
+		TheWindowManager->winSendSystemMsg( comboBox, GCM_GET_ITEM_DATA, index, (WindowMsgData)(uintptr_t)&data);
 	}
 	return (data);
 }

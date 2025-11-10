@@ -148,6 +148,7 @@ static Bool hasWriteAccess()
 
 	remove(filename);
 
+#ifdef _WIN32
 	int handle = _open( filename, _O_CREAT | _O_RDWR, _S_IREAD | _S_IWRITE);
 	if (handle == -1)
 	{
@@ -155,6 +156,9 @@ static Bool hasWriteAccess()
 	}
 
 	_close(handle);
+#else
+	(void)filename; // Suppress unused warning on non-Windows
+#endif
 	remove(filename);
 
 	unsigned int val;
@@ -307,9 +311,9 @@ static void queuePatch(Bool mandatory, AsciiString downloadURL)
 ///////////////////////////////////////////////////////////////////////////////////////
 
 static GHTTPBool motdCallback( GHTTPRequest request, GHTTPResult result,
-															char * buffer, GHTTPByteCount bufferLen, void * param )
+														char * buffer, GHTTPByteCount bufferLen, void * param )
 {
-	Int run = (Int)param;
+	Int run = (Int)(uintptr_t)param;
 	if (run != timeThroughOnline)
 	{
 		DEBUG_CRASH(("Old callback being called!"));
@@ -342,9 +346,9 @@ static GHTTPBool motdCallback( GHTTPRequest request, GHTTPResult result,
 ///////////////////////////////////////////////////////////////////////////////////////
 
 static GHTTPBool configCallback( GHTTPRequest request, GHTTPResult result,
-																char * buffer, GHTTPByteCount bufferLen, void * param )
+															char * buffer, GHTTPByteCount bufferLen, void * param )
 {
-	Int run = (Int)param;
+	Int run = (Int)(uintptr_t)param;
 	if (run != timeThroughOnline)
 	{
 		DEBUG_CRASH(("Old callback being called!"));
@@ -404,9 +408,9 @@ static GHTTPBool configCallback( GHTTPRequest request, GHTTPResult result,
 ///////////////////////////////////////////////////////////////////////////////////////
 
 static GHTTPBool configHeadCallback( GHTTPRequest request, GHTTPResult result,
-																		char * buffer, GHTTPByteCount bufferLen, void * param )
+															char * buffer, GHTTPByteCount bufferLen, void * param )
 {
-	Int run = (Int)param;
+	Int run = (Int)(uintptr_t)param;
 	if (run != timeThroughOnline)
 	{
 		DEBUG_CRASH(("Old callback being called!"));
@@ -490,7 +494,7 @@ static GHTTPBool configHeadCallback( GHTTPRequest request, GHTTPResult result,
 
 static GHTTPBool gamePatchCheckCallback( GHTTPRequest request, GHTTPResult result, char * buffer, GHTTPByteCount bufferLen, void * param )
 {
-	Int run = (Int)param;
+	Int run = (Int)(uintptr_t)param;
 	if (run != timeThroughOnline)
 	{
 		DEBUG_CRASH(("Old callback being called!"));
@@ -738,6 +742,7 @@ int asyncGethostbyname(char * szName)
 	if( stat == 0 )
 	{
 		/* Kick off gethostname thread */
+	#ifdef _WIN32
 		s_asyncDNSThreadDone = FALSE;
 		s_asyncDNSThreadHandle = CreateThread( NULL, 0, asyncGethostbynameThreadFunc, szName, 0, &threadid );
 
@@ -745,6 +750,11 @@ int asyncGethostbyname(char * szName)
 		{
 			return( LOOKUP_FAILED );
 		}
+	#else
+		/* Non-Windows: DNS helper thread not available in this build - return failure */
+		(void)szName; (void)threadid;
+		return( LOOKUP_FAILED );
+	#endif
 		stat = 1;
 	}
 	if( stat == 1 )

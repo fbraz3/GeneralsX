@@ -338,9 +338,9 @@ typedef unsigned long D3DCOLOR;
 
 #ifndef D3DMATRIX_DEFINED
 #define D3DMATRIX_DEFINED
-struct D3DMATRIX {
+typedef struct D3DMATRIX {
     float m[4][4];
-};
+} D3DMATRIX;
 #endif
 
 // ============================================================================

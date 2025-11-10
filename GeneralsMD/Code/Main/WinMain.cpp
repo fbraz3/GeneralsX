@@ -496,7 +496,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message,
 			//-------------------------------------------------------------------------
 			case WM_KEYDOWN:
 			{
-				Int key = (Int)wParam;
+				Int key = (Int)(uintptr_t)wParam;
 
 				switch( key )
 				{
@@ -561,8 +561,8 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message,
 			//-------------------------------------------------------------------------
 			case WM_MOUSEMOVE:
 			{
-				Int x = (Int)LOWORD( lParam );
-				Int y = (Int)HIWORD( lParam );
+				Int x = (Int)(uintptr_t)LOWORD( lParam );
+				Int y = (Int)(uintptr_t)HIWORD( lParam );
 				RECT rect;
 //				Int keys = wParam;
 

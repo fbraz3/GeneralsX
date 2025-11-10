@@ -1103,7 +1103,7 @@ void Mouse::unblockCapture(CursorCaptureBlockReason reason)
 	}
 
 	DEBUG_LOG(("Mouse::unblockCapture(%s): m_captureBlockReason=%u canCapture=%d",
-		CursorCaptureBlockReasonNames[reason], m_captureBlockReasonBits, (Int)canCapture()));
+		CursorCaptureBlockReasonNames[reason], m_captureBlockReasonBits, (Int)(uintptr_t)canCapture()));
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -1120,7 +1120,7 @@ void Mouse::blockCapture(CursorCaptureBlockReason reason)
 	}
 
 	DEBUG_LOG(("Mouse::blockCapture(%s): m_captureBlockReason=%u canCapture=%d",
-		CursorCaptureBlockReasonNames[reason], m_captureBlockReasonBits, (Int)canCapture()));
+		CursorCaptureBlockReasonNames[reason], m_captureBlockReasonBits, (Int)(uintptr_t)canCapture()));
 }
 
 // ------------------------------------------------------------------------------------------------

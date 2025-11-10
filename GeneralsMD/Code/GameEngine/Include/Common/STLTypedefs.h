@@ -152,7 +152,7 @@ namespace rts
 		size_t operator()(NameKeyType nkt) const
 		{
 			std::hash<UnsignedInt> tmp;
-			return tmp((UnsignedInt)nkt);
+			return tmp((UnsignedInt)(uintptr_t)nkt);
 		}
 	};
 
@@ -161,7 +161,7 @@ namespace rts
 		size_t operator()(DrawableID nkt) const
 		{
 			std::hash<UnsignedInt> tmp;
-			return tmp((UnsignedInt)nkt);
+			return tmp((UnsignedInt)(uintptr_t)nkt);
 		}
 	};
 
@@ -170,7 +170,7 @@ namespace rts
 		size_t operator()(ObjectID nkt) const
 		{
 			std::hash<UnsignedInt> tmp;
-			return tmp((UnsignedInt)nkt);
+			return tmp((UnsignedInt)(uintptr_t)nkt);
 		}
 	};
 

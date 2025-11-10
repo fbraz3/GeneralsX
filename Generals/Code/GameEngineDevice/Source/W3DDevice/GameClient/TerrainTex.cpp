@@ -106,7 +106,7 @@ int TerrainTextureClass::update(WorldHeightMap *htMap)
 //	Int numRows = surface_desc.Height/(tilePixelExtent+TILE_OFFSET);
 #ifdef RTS_DEBUG
 	//DEBUG_ASSERTCRASH(tilesPerRow*numRows >= htMap->m_numBitmapTiles, ("Too many tiles."));
-	DEBUG_ASSERTCRASH((Int)surface_desc.Width >= tilePixelExtent*tilesPerRow, ("Bitmap too small."));
+	DEBUG_ASSERTCRASH((Int)(uintptr_t)surface_desc.Width >= tilePixelExtent*tilesPerRow, ("Bitmap too small."));
 #endif
 	if (surface_desc.Format == D3DFMT_A1R5G5B5) {
 #if 0
@@ -226,7 +226,7 @@ int TerrainTextureClass::update(WorldHeightMap *htMap)
 	Int numRows = surface_desc.Height/(tilePixelExtent+TILE_OFFSET);
 #ifdef RTS_DEBUG
 	assert(tilesPerRow*numRows >= htMap->m_numBitmapTiles);
-	assert((Int)surface_desc.Width >= tilePixelExtent*tilesPerRow);
+	assert((Int)(uintptr_t)surface_desc.Width >= tilePixelExtent*tilesPerRow);
 #endif
 	if (surface_desc.Format == D3DFMT_A1R5G5B5) {
 		Int cellX, cellY;
@@ -379,7 +379,7 @@ int TerrainTextureClass::update256(WorldHeightMap *htMap)
 
 #ifdef RTS_DEBUG
 	assert(tilesPerRow*numRows >= htMap->m_numBitmapTiles);
-	assert((Int)surface_desc.Width >= tilePixelExtent*tilesPerRow);
+	assert((Int)(uintptr_t)surface_desc.Width >= tilePixelExtent*tilesPerRow);
 #endif
 	if (surface_desc.Format == D3DFMT_A1R5G5B5) {
 		Int cellX, cellY;
@@ -857,7 +857,7 @@ int AlphaEdgeTextureClass::update(WorldHeightMap *htMap)
 #if 1
 #if 1
 		Int cellX, cellY;
-		for (cellX = 0; (UnsignedInt)cellX < surface_desc.Width; cellX++) {
+		for (cellX = 0; (UnsignedInt)(uintptr_t)cellX < surface_desc.Width; cellX++) {
 			for (cellY = 0; cellY < surface_desc.Height; cellY++) {
 				UnsignedByte *pBGR = ((UnsignedByte *)locked_rect.pBits)+(cellY*surface_desc.Width+cellX)*4;
 				pBGR[2] = 255-cellY/2;

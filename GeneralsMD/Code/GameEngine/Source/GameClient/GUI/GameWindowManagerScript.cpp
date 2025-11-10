@@ -652,7 +652,7 @@ static Bool parseName( const char *token, WinInstanceData *instData,
 	// given the name assign a window ID from the
 	assert( TheNameKeyGenerator );
 	if( TheNameKeyGenerator )
-		instData->m_id = (Int)TheNameKeyGenerator->nameToKey( instData->m_decoratedNameString );
+		instData->m_id = (Int)(uintptr_t)TheNameKeyGenerator->nameToKey( instData->m_decoratedNameString );
 
 	return TRUE;
 

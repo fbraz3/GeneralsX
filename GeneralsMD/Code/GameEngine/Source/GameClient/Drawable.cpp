@@ -4393,7 +4393,7 @@ const AudioEventInfo * Drawable::getBaseSoundAmbientInfo() const
 void Drawable::mangleCustomAudioName( DynamicAudioEventInfo * audioToMangle ) const
 {
   AsciiString customizedName;
-  customizedName.format( " CUSTOM %d ", (Int)getID() ); // Note space at beginning prevents collision with any names from INI file
+  customizedName.format( " CUSTOM %d ", (Int)(uintptr_t)getID() ); // Note space at beginning prevents collision with any names from INI file
   customizedName.concat( audioToMangle->m_audioName );
   audioToMangle->overrideAudioName( customizedName );
 }
@@ -5652,7 +5652,7 @@ void TintEnvelope::xfer( Xfer *xfer )
 	// sustain counter
 	if (version <= 1)
 	{
-		UnsignedInt sustainCounter = (UnsignedInt)m_sustainCounter;
+		UnsignedInt sustainCounter = (UnsignedInt)(uintptr_t)m_sustainCounter;
 		xfer->xferUnsignedInt( &sustainCounter );
 		m_sustainCounter = (Real)sustainCounter;
 	}

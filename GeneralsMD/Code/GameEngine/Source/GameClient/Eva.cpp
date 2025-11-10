@@ -34,7 +34,7 @@
 
 
 //-------------------------------------------------------------------------------------------------
-static const char *const TheEvaMessageNames[] =
+const char *const TheEvaMessageNames[] =
 {
 	"LOWPOWER",
 	"INSUFFICIENTFUNDS",
@@ -293,7 +293,7 @@ void Eva::update()
 		return;
 	}
 
-	for (Int mesg = (Int)EVA_FIRST; mesg < (Int)EVA_COUNT; ++mesg) {
+	for (Int mesg = (Int)(uintptr_t)EVA_FIRST; mesg < (Int)(uintptr_t)EVA_COUNT; ++mesg) {
 		if (isTimeForCheck((EvaMessage)mesg, frame)) {
 			if (messageShouldPlay((EvaMessage)mesg, frame)) {
 				playMessage((EvaMessage)mesg, frame);

@@ -57,7 +57,7 @@ NetCommandRef * NetPacket::ConstructNetCommandMsgFromRawData(UnsignedByte *data,
 	NetCommandRef *ref = NULL;
 	NetCommandMsg *msg = NULL;
 
-	while (offset < (Int)dataLength) {
+	while (offset < (Int)(uintptr_t)dataLength) {
 
 		switch (data[offset]) {
 
@@ -5568,7 +5568,7 @@ NetCommandMsg * NetPacket::readRunAheadMetricsMessage(UnsignedByte *data, Int &i
 
 	memcpy(&averageFps, data + i, sizeof(UnsignedShort));
 	i += sizeof(UnsignedShort);
-	msg->setAverageFps((Int)averageFps);
+	msg->setAverageFps((Int)(uintptr_t)averageFps);
 	return msg;
 }
 

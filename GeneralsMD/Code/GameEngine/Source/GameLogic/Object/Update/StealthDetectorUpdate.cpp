@@ -319,8 +319,8 @@ UpdateSleepTime StealthDetectorUpdate::update( void )
 					{
 						Coord3D gridPosition = *them->getPosition();
 						gridPosition.z = self->getPosition()->z + 17;
-						gridPosition.x -= ((Int)gridPosition.x)%12;
-						gridPosition.y -= ((Int)gridPosition.y)%12;
+						gridPosition.x -= ((Int)(uintptr_t)gridPosition.x)%12;
+						gridPosition.y -= ((Int)(uintptr_t)gridPosition.y)%12;
 
 						sys->setPosition( &gridPosition );
 					}

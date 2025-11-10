@@ -215,9 +215,9 @@ void StatDumpClass::dumpStats( Bool brief, Bool flagSpikes )
 
 
 	//Rendering stats
-	fprintf( m_fp, "Draws: %d \nSkins: %d \nSortedPolys: %d \nSkinPolys: %d\n",(Int)Debug_Statistics::Get_Draw_Calls(),
-		(Int)Debug_Statistics::Get_DX8_Skin_Renders(),
-		(Int)Debug_Statistics::Get_Sorting_Polygons(), (Int)Debug_Statistics::Get_DX8_Skin_Polygons());
+	fprintf( m_fp, "Draws: %d \nSkins: %d \nSortedPolys: %d \nSkinPolys: %d\n",(Int)(uintptr_t)Debug_Statistics::Get_Draw_Calls(),
+		(Int)(uintptr_t)Debug_Statistics::Get_DX8_Skin_Renders(),
+		(Int)(uintptr_t)Debug_Statistics::Get_Sorting_Polygons(), (Int)(uintptr_t)Debug_Statistics::Get_DX8_Skin_Polygons());
 
 	Int onScreenParticleCount = TheParticleSystemManager->getOnScreenParticleCount();
 
@@ -1014,7 +1014,7 @@ void W3DDisplay::gatherDebugStats( void )
 #if defined(RTS_DEBUG)
 		double cumuTime = ((double)(time64 - m_timerAtCumuFPSStart) / (double)(freq64));
 		if (cumuTime < 0.0) cumuTime = 0.0;
-		Int numFrames = (Int)TheGameLogic->getFrame() - (Int)START_CUMU_FRAME;
+		Int numFrames = (Int)(uintptr_t)TheGameLogic->getFrame() - (Int)(uintptr_t)START_CUMU_FRAME;
 		double cumuFPS = (numFrames > 0 && cumuTime > 0.0) ? (numFrames / cumuTime) : 0.0;
 		double skinPolysPerFrame = Debug_Statistics::Get_DX8_Skin_Polygons();
 
@@ -1025,7 +1025,7 @@ void W3DDisplay::gatherDebugStats( void )
 		else
 				unibuffer.format( L"%.2f FPS, ", fps);
 
-		unibuffer2.format( L"%.2fms [cumuFPS=%.2f] draws: %d skins: %d sortP: %d skinP: %d LOD %d", ms, cumuFPS, (Int)drawsPerFrame,(Int)skinDrawsPerFrame,(Int)sortPolysPerFrame, (Int)skinPolysPerFrame, LOD);
+		unibuffer2.format( L"%.2fms [cumuFPS=%.2f] draws: %d skins: %d sortP: %d skinP: %d LOD %d", ms, cumuFPS, (Int)(uintptr_t)drawsPerFrame,(Int)(uintptr_t)skinDrawsPerFrame,(Int)(uintptr_t)sortPolysPerFrame, (Int)(uintptr_t)skinPolysPerFrame, LOD);
 		unibuffer.concat(unibuffer2);
 #else
 		//Int LOD = TheGlobalData->m_terrainLOD;

@@ -335,13 +335,15 @@ typedef unsigned long D3DCOLOR;
 
 // ============================================================================
 // DirectX Matrix Structure
+// Provide both a struct tag and a typedef so code can use either
+// `struct D3DMATRIX` or `D3DMATRIX` uniformly across the codebase.
 // ============================================================================
 
 #ifndef D3DMATRIX_DEFINED
 #define D3DMATRIX_DEFINED
-struct D3DMATRIX {
+typedef struct D3DMATRIX {
     float m[4][4];
-};
+} D3DMATRIX;
 #endif
 
 // ============================================================================

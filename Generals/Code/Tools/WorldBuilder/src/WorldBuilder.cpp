@@ -478,7 +478,7 @@ BOOL CWorldBuilderApp::OnCmdMsg(UINT nID, int nCode, void* pExtra,
 		for (Int i=0; i<NUM_VIEW_TOOLS; i++) {
 			Tool *pTool = m_tools[i];
 			if (pTool==NULL) continue;
-			if ((Int)nID == pTool->getToolID()) {
+			if ((Int)(uintptr_t)nID == pTool->getToolID()) {
 				if (nCode == CN_COMMAND)
 				{
 					// Handle WM_COMMAND message

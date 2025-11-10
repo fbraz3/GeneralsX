@@ -4895,7 +4895,7 @@ void TintEnvelope::xfer( Xfer *xfer )
 	// sustain counter
 	if (version <= 1)
 	{
-		UnsignedInt sustainCounter = (UnsignedInt)m_sustainCounter;
+		UnsignedInt sustainCounter = (UnsignedInt)(uintptr_t)m_sustainCounter;
 		xfer->xferUnsignedInt( &sustainCounter );
 		m_sustainCounter = (Real)sustainCounter;
 	}

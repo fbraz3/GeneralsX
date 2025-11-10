@@ -24,6 +24,7 @@
 
 #include <Utility/CppMacros.h>
 #include <Utility/stdint_adapter.h>
+#include <cstdint>
 
 
 #if defined(__linux__) || defined(__CYGWIN__)
@@ -123,9 +124,9 @@ typedef uint32_t SwapType32;
 typedef uint64_t SwapType64;
 
 #elif defined(__APPLE__)
-typedef UInt16 SwapType16;
-typedef UInt32 SwapType32;
-typedef UInt64 SwapType64;
+typedef uint16_t SwapType16;
+typedef uint32_t SwapType32;
+typedef uint64_t SwapType64;
 
 #elif defined(__OpenBSD__)
 typedef uint16_t SwapType16;

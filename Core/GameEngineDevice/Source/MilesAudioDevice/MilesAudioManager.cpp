@@ -179,9 +179,9 @@ void MilesAudioManager::audioDebugDisplay(DebugDisplayInterface *dd, void *, FIL
 		dd->printf("Current Speaker Type: %s\n", TheAudio->translateUnsignedIntToSpeakerType(TheAudio->getSpeakerType()).str());
 
 		dd->printf( "Looking at: (%d,%d,%d) -- Microphone at: (%d,%d,%d)\n",
-				(Int)lookPos.x, (Int)lookPos.y, (Int)lookPos.z, (Int)mikePos->x, (Int)mikePos->y, (Int)mikePos->z );
+				(Int)(uintptr_t)lookPos.x, (Int)(uintptr_t)lookPos.y, (Int)(uintptr_t)lookPos.z, (Int)(uintptr_t)mikePos->x, (Int)(uintptr_t)mikePos->y, (Int)(uintptr_t)mikePos->z );
 		dd->printf( "Camera distance from microphone: %d -- Zoom Volume: %d%%\n",
-				(Int)distanceVector.length(), (Int)(TheAudio->getZoomVolume()*100.0f) );
+				(Int)(uintptr_t)distanceVector.length(), (Int)(TheAudio->getZoomVolume()*100.0f) );
 		dd->printf( "Worst latency: %d -- Current latency: %d\n", worstLatency, latency );
 
 		dd->printf("-----------------------------------------------------------\n");
@@ -207,9 +207,9 @@ void MilesAudioManager::audioDebugDisplay(DebugDisplayInterface *dd, void *, FIL
 		fprintf( fp, "Current Speaker Type: %s\n", TheAudio->translateUnsignedIntToSpeakerType(TheAudio->getSpeakerType()).str());
 
 		fprintf( fp, "Looking at: (%d,%d,%d) -- Microphone at: (%d,%d,%d)\n",
-				(Int)lookPos.x, (Int)lookPos.y, (Int)lookPos.z, (Int)mikePos->x, (Int)mikePos->y, (Int)mikePos->z );
+				(Int)(uintptr_t)lookPos.x, (Int)(uintptr_t)lookPos.y, (Int)(uintptr_t)lookPos.z, (Int)(uintptr_t)mikePos->x, (Int)(uintptr_t)mikePos->y, (Int)(uintptr_t)mikePos->z );
 		fprintf( fp, "Camera distance from microphone: %d -- Zoom Volume: %d%%\n",
-				(Int)distanceVector.length(), (Int)(TheAudio->getZoomVolume()*100.0f) );
+				(Int)(uintptr_t)distanceVector.length(), (Int)(TheAudio->getZoomVolume()*100.0f) );
 
 		fprintf( fp, "-----------------------------------------------------------\n" );
 		fprintf( fp, "Playing Audio\n" );

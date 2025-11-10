@@ -221,7 +221,7 @@ void ScorchOptions::changeScorch(void)
 	getAllSelectedDicts();
 
 	Dict newDict;
-	newDict.setInt(TheKey_scorchType, (Int)m_scorchtype);
+	newDict.setInt(TheKey_scorchType, (Int)(uintptr_t)m_scorchtype);
 	DictItemUndoable *pUndo = new DictItemUndoable(getAllSelectedDictsData(), newDict, newDict.getNthKey(0), m_allSelectedDicts.size());
 	CWorldBuilderDoc* pDoc = CWorldBuilderDoc::GetActiveDoc();
 	pDoc->AddAndDoUndoable(pUndo);

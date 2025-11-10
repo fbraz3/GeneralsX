@@ -80,7 +80,7 @@ UpdateSleepTime UpdateModule::getWakeFrame() const
 void UpdateModule::setWakeFrame(Object* obj, UpdateSleepTime wakeDelay)
 {
 	UnsignedInt now = TheGameLogic->getFrame();
-	TheGameLogic->friend_awakenUpdateModule(obj, this, now + (UnsignedInt)wakeDelay);
+	TheGameLogic->friend_awakenUpdateModule(obj, this, now + (UnsignedInt)(uintptr_t)wakeDelay);
 }
 
 // ------------------------------------------------------------------------------------------------

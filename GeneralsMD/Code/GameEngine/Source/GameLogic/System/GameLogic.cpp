@@ -3914,7 +3914,7 @@ ObjectID GameLogic::allocateObjectID( void )
 {
 	/// @todo Find unused value in current object set
 	ObjectID ret = m_nextObjID;
-	m_nextObjID = (ObjectID)((UnsignedInt)m_nextObjID + 1);
+	m_nextObjID = (ObjectID)((UnsignedInt)(uintptr_t)m_nextObjID + 1);
 	return ret;
 }
 
@@ -5202,7 +5202,7 @@ void GameLogic::loadPostProcess( void )
 	Object *obj;
 	for( obj = getFirstObject(); obj; obj = obj->getNextObject() )
 		if( obj->getID() >= m_nextObjID )
-			m_nextObjID = (ObjectID)((UnsignedInt)obj->getID() + 1);
+			m_nextObjID = (ObjectID)((UnsignedInt)(uintptr_t)obj->getID() + 1);
 
 	// blow away the sleepy update and normal update module lists
 	for (std::vector<UpdateModulePtr>::iterator it = m_sleepyUpdates.begin(); it != m_sleepyUpdates.end(); ++it)

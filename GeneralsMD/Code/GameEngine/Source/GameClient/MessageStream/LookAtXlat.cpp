@@ -534,7 +534,7 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 				msg->appendRealArgument( currentView.m_angle );
 				msg->appendRealArgument( currentView.m_pitch );
 				msg->appendRealArgument( currentView.m_zoom );
-				msg->appendIntegerArgument( (Int)TheMouse->getMouseCursor() );
+				msg->appendIntegerArgument( (Int)(uintptr_t)TheMouse->getMouseCursor() );
 				msg->appendPixelArgument( m_currentPos );
 			}
 			break;

@@ -79,7 +79,7 @@ Bool W3DFontLibrary::loadFontData( GameFont *font )
 	if( font == NULL )
 		return FALSE;
 
-	if ((UnsignedInt)font->pointSize > 100)	//sanity check the size - anything over 100 is probably wrong. -MW
+	if ((UnsignedInt)(uintptr_t)font->pointSize > 100)	//sanity check the size - anything over 100 is probably wrong. -MW
 		fontChar = NULL;
 	else
 	{	// get the font data from the asset manager

@@ -701,7 +701,7 @@ void WorldHeightMapEdit::saveToFile(DataChunkOutput &chunkWriter)
 
 	/***************WORLD DATA ***************/
 	/* important, must write this chunk BEFORE the player-list chunk */
-	MapObject::getWorldDict()->setInt(TheKey_weather, (Int)TheGlobalData->m_weather);
+	MapObject::getWorldDict()->setInt(TheKey_weather, (Int)(uintptr_t)TheGlobalData->m_weather);
 	chunkWriter.openDataChunk("WorldInfo", K_WORLDDICT_VERSION_1);
 	chunkWriter.writeDict(*MapObject::getWorldDict());
 	chunkWriter.closeDataChunk();

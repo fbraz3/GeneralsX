@@ -19,51 +19,24 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "Common/WorkerProcess.h"
 
-// We need Job-related functions, but these aren't defined in the Windows-headers that VC6 uses.
-// So we define them here and load them dynamically.
-#if defined(_MSC_VER) && _MSC_VER < 1300
-struct JOBOBJECT_BASIC_LIMIT_INFORMATION2
-{
-	LARGE_INTEGER PerProcessUserTimeLimit;
-	LARGE_INTEGER PerJobUserTimeLimit;
-	DWORD LimitFlags;
-	SIZE_T MinimumWorkingSetSize;
-	SIZE_T MaximumWorkingSetSize;
-	DWORD ActiveProcessLimit;
-	ULONG_PTR Affinity;
-	DWORD PriorityClass;
-	DWORD SchedulingClass;
-};
-struct IO_COUNTERS
-{
-	ULONGLONG ReadOperationCount;
-	ULONGLONG WriteOperationCount;
-	ULONGLONG OtherOperationCount;
-	ULONGLONG ReadTransferCount;
-	ULONGLONG WriteTransferCount;
-	ULONGLONG OtherTransferCount;
-};
-struct JOBOBJECT_EXTENDED_LIMIT_INFORMATION
-{
-	JOBOBJECT_BASIC_LIMIT_INFORMATION2 BasicLimitInformation;
-	IO_COUNTERS IoInfo;
-	SIZE_T ProcessMemoryLimit;
-	SIZE_T JobMemoryLimit;
-	SIZE_T PeakProcessMemoryUsed;
-	SIZE_T PeakJobMemoryUsed;
-};
+// Provide a POSIX fallback implementation for non-Windows targets.
+// On Windows we keep the original behavior; on POSIX we implement
+// equivalent functionality using fork/pipe/exec and waitpid.
+#if !defined(_WIN32)
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <errno.h>
+#include <string.h>
 
+// Define minimal job object related constants so Windows-only code can compile.
+#ifndef JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
 #define JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE 0x00002000
-const int JobObjectExtendedLimitInformation = 9;
-
-typedef HANDLE (WINAPI *PFN_CreateJobObjectW)(LPSECURITY_ATTRIBUTES, LPCWSTR);
-typedef BOOL (WINAPI *PFN_SetInformationJobObject)(HANDLE, JOBOBJECTINFOCLASS, LPVOID, DWORD);
-typedef BOOL (WINAPI *PFN_AssignProcessToJobObject)(HANDLE, HANDLE);
-
-static PFN_CreateJobObjectW CreateJobObjectW = (PFN_CreateJobObjectW)GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "CreateJobObjectW");
-static PFN_SetInformationJobObject SetInformationJobObject = (PFN_SetInformationJobObject)GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "SetInformationJobObject");
-static PFN_AssignProcessToJobObject AssignProcessToJobObject = (PFN_AssignProcessToJobObject)GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "AssignProcessToJobObject");
 #endif
+
+#endif // !_WIN32
 
 WorkerProcess::WorkerProcess()
 {
@@ -79,6 +52,7 @@ bool WorkerProcess::startProcess(UnicodeString command)
 	m_stdOutput.clear();
 	m_isDone = false;
 
+#if defined(_WIN32)
 	// Create pipe for reading console output
 	SECURITY_ATTRIBUTES saAttr = { sizeof(SECURITY_ATTRIBUTES) };
 	saAttr.bInheritHandle = TRUE;
@@ -121,6 +95,43 @@ bool WorkerProcess::startProcess(UnicodeString command)
 	}
 
 	return true;
+#else
+	// POSIX implementation using fork/exec and pipes.
+	int pipefd[2];
+	if (pipe(pipefd) != 0)
+		return false;
+
+	// Make read end non-blocking to mirror PeekNamedPipe/ReadFile behavior
+	int flags = fcntl(pipefd[0], F_GETFL, 0);
+	fcntl(pipefd[0], F_SETFL, flags | O_NONBLOCK);
+
+	pid_t pid = fork();
+	if (pid < 0)
+	{
+		close(pipefd[0]);
+		close(pipefd[1]);
+		return false;
+	}
+	if (pid == 0)
+	{
+		// Child
+		dup2(pipefd[1], STDOUT_FILENO);
+		dup2(pipefd[1], STDERR_FILENO);
+		close(pipefd[0]);
+		close(pipefd[1]);
+		// Execute via shell so UnicodeString command works as a single string
+		execl("/bin/sh", "sh", "-c", (const char*)command.str(), (char*)NULL);
+		// If exec fails
+		_exit(127);
+	}
+
+	// Parent
+	close(pipefd[1]);
+	m_readHandle = (HANDLE)(intptr_t)pipefd[0];
+	m_processHandle = (HANDLE)(intptr_t)pid;
+	m_jobHandle = NULL; // not used on POSIX
+	return true;
+#endif
 }
 
 bool WorkerProcess::isRunning() const
@@ -145,6 +156,7 @@ AsciiString WorkerProcess::getStdOutput() const
 
 bool WorkerProcess::fetchStdOutput()
 {
+#if defined(_WIN32)
 	while (true)
 	{
 		// Call PeekNamedPipe to make sure ReadFile won't block
@@ -173,6 +185,31 @@ bool WorkerProcess::fetchStdOutput()
 		buffer[readBytes] = 0;
 		m_stdOutput.concat(buffer);
 	}
+#else
+	DEBUG_ASSERTCRASH(m_readHandle != NULL, ("Is not expected NULL"));
+	int fd = (int)(intptr_t)m_readHandle;
+	char buffer[1024];
+	ssize_t n = read(fd, buffer, sizeof(buffer)-1);
+	if (n > 0)
+	{
+		for (ssize_t i = 0; i < n; ++i)
+			if (buffer[i] == '\r') buffer[i] = ' ';
+		buffer[n] = 0;
+		m_stdOutput.concat(buffer);
+		// there may be more data; return false to indicate still running
+		return false;
+	}
+	if (n == 0)
+	{
+		// EOF: child closed pipe — indicate output fully read
+		return true;
+	}
+	// n < 0
+	if (errno == EAGAIN || errno == EWOULDBLOCK)
+		return false; // no data available now
+	// other error -> treat as finished
+	return true;
+#endif
 }
 
 void WorkerProcess::update()
@@ -186,6 +223,7 @@ void WorkerProcess::update()
 		return;
 	}
 
+#if defined(_WIN32)
 	// Pipe broke, that means the process already exited. But we call this just to make sure
 	WaitForSingleObject(m_processHandle, INFINITE);
 	GetExitCodeProcess(m_processHandle, &m_exitcode);
@@ -199,6 +237,33 @@ void WorkerProcess::update()
 	m_jobHandle = NULL;
 
 	m_isDone = true;
+#else
+	pid_t pid = (pid_t)(intptr_t)m_processHandle;
+	int status = 0;
+	pid_t r = waitpid(pid, &status, WNOHANG);
+	if (r == 0)
+	{
+		// still running
+		return;
+	}
+	if (r == pid)
+	{
+		if (WIFEXITED(status))
+			m_exitcode = (DWORD)WEXITSTATUS(status);
+		else
+			m_exitcode = (DWORD)1;
+	}
+
+	// cleanup
+	if (m_readHandle != NULL)
+	{
+		close((int)(intptr_t)m_readHandle);
+		m_readHandle = NULL;
+	}
+	m_processHandle = NULL;
+	m_jobHandle = NULL;
+	m_isDone = true;
+#endif
 }
 
 void WorkerProcess::kill()
@@ -208,21 +273,36 @@ void WorkerProcess::kill()
 
 	if (m_processHandle != NULL)
 	{
-		TerminateProcess(m_processHandle, 1);
-		CloseHandle(m_processHandle);
-		m_processHandle = NULL;
+#if defined(_WIN32)
+	TerminateProcess(m_processHandle, 1);
+	CloseHandle(m_processHandle);
+	m_processHandle = NULL;
+#else
+	pid_t pid = (pid_t)(intptr_t)m_processHandle;
+	::kill(pid, SIGKILL);
+	m_processHandle = NULL;
+#endif
 	}
 
 	if (m_readHandle != NULL)
 	{
-		CloseHandle(m_readHandle);
-		m_readHandle = NULL;
+#if defined(_WIN32)
+	CloseHandle(m_readHandle);
+	m_readHandle = NULL;
+#else
+	close((int)(intptr_t)m_readHandle);
+	m_readHandle = NULL;
+#endif
 	}
 
 	if (m_jobHandle != NULL)
 	{
-		CloseHandle(m_jobHandle);
-		m_jobHandle = NULL;
+#if defined(_WIN32)
+	CloseHandle(m_jobHandle);
+	m_jobHandle = NULL;
+#else
+	m_jobHandle = NULL;
+#endif
 	}
 
 	m_stdOutput.clear();

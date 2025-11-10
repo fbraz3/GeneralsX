@@ -22,7 +22,11 @@
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "PreRTS.h" 	// This must go first in EVERY cpp file in the GameEngine
+
+// Ensure lightweight Winsock/WSA compatibility declarations are visible
+// even if the precompiled header (PCH) is stale.
+#include "network.h"
 
 #include "GameNetwork/IPEnumeration.h"
 #include "GameNetwork/networkutil.h"

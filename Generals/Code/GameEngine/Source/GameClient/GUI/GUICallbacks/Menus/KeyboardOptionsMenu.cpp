@@ -504,7 +504,7 @@ WindowMsgHandledType KeyboardOptionsMenuInput( GameWindow *window, UnsignedInt m
 						GameWindow *button = TheWindowManager->winGetWindowFromId( window, buttonID );
 
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																								(WindowMsgData)button, buttonID );
+																								(WindowMsgData)(uintptr_t)button, buttonID );
 
 					}
 
@@ -728,7 +728,7 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 				// Done with this edit
 			 		TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 			 																				GEM_EDIT_DONE,
-			 																				(WindowMsgData)window,
+			 																				(WindowMsgData)(uintptr_t)window,
 			 																				0 );
 				return MSG_HANDLED;
 			};
@@ -761,7 +761,7 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 					e->charPos = e->text->getTextLength();
 					TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																					GEM_UPDATE_TEXT,
-																					(WindowMsgData)window,
+																					(WindowMsgData)(uintptr_t)window,
 																					0 );
 					return MSG_HANDLED;
 				}
@@ -775,7 +775,7 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 						e->charPos++;
 						TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																						GEM_UPDATE_TEXT,
-																						(WindowMsgData)window,
+																						(WindowMsgData)(uintptr_t)window,
 																						0 );
 						return MSG_HANDLED;
 					}
@@ -793,7 +793,7 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 								e->text->appendChar( ch );
 								TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																								GEM_UPDATE_TEXT,
-																								(WindowMsgData)window,
+																								(WindowMsgData)(uintptr_t)window,
 																								0 );
 							}
 						}
@@ -805,7 +805,7 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 							e->charPos = 1;
 							TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																							GEM_UPDATE_TEXT,
-																							(WindowMsgData)window,
+																							(WindowMsgData)(uintptr_t)window,
 																							0 );
 						}
 						return MSG_HANDLED;
@@ -832,7 +832,7 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 						{
 							TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																									GEM_EDIT_DONE,
-																									(WindowMsgData)window,
+																									(WindowMsgData)(uintptr_t)window,
 																									0 );
 						}
 					}
@@ -851,7 +851,7 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 						doKeyDown( e, mod );
 						TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																GEM_UPDATE_TEXT,
-																(WindowMsgData)window,
+																(WindowMsgData)(uintptr_t)window,
 																0 );
 
 						return MSG_HANDLED;
@@ -862,7 +862,7 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 							doKeyUp( e, mod );
 							TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																						GEM_UPDATE_TEXT,
-																						(WindowMsgData)window,
+																						(WindowMsgData)(uintptr_t)window,
 																						0 );
 
 							return MSG_HANDLED;
@@ -879,7 +879,7 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 						doKeyDown( e, mod );
 						TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																GEM_UPDATE_TEXT,
-																(WindowMsgData)window,
+																(WindowMsgData)(uintptr_t)window,
 																0 );
 
 						return MSG_HANDLED;
@@ -892,7 +892,7 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 
 						TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																						GEM_UPDATE_TEXT,
-																						(WindowMsgData)window,
+																						(WindowMsgData)(uintptr_t)window,
 																						0 );
 
 
@@ -910,7 +910,7 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 
 						TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																GEM_UPDATE_TEXT,
-																(WindowMsgData)window,
+																(WindowMsgData)(uintptr_t)window,
 																0 );
 
 						return MSG_HANDLED;
@@ -922,7 +922,7 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 						doKeyUp( e, mod );
 						TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																GEM_UPDATE_TEXT,
-																(WindowMsgData)window,
+																(WindowMsgData)(uintptr_t)window,
 																0 );
 
 						return MSG_HANDLED;
@@ -979,7 +979,7 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 					e->charPos = e->text->getTextLength();
 					TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																					GEM_UPDATE_TEXT,
-																					(WindowMsgData)window,
+																					(WindowMsgData)(uintptr_t)window,
 																					0 );
 					setKeyDown(shift, false );
 					setKeyDown(ctrl, false );
@@ -1005,7 +1005,7 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 								e->charPos--;
 								TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																								GEM_UPDATE_TEXT,
-																								(WindowMsgData)window,
+																								(WindowMsgData)(uintptr_t)window,
 																								0 );
 							}
 						}
@@ -1046,7 +1046,7 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 							e->charPos = e->text->getTextLength();
 							TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																							GEM_UPDATE_TEXT,
-																							(WindowMsgData)window,
+																							(WindowMsgData)(uintptr_t)window,
 																							0 );
 							return MSG_HANDLED;
 						}
@@ -1060,7 +1060,7 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 								e->charPos++;
 								TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																								GEM_UPDATE_TEXT,
-																								(WindowMsgData)window,
+																								(WindowMsgData)(uintptr_t)window,
 																								0 );
 								return MSG_HANDLED;
 							}
@@ -1078,7 +1078,7 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 										e->text->appendChar( ch );
 										TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																										GEM_UPDATE_TEXT,
-																										(WindowMsgData)window,
+																										(WindowMsgData)(uintptr_t)window,
 																										0 );
 									}
 								}
@@ -1090,7 +1090,7 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 									e->charPos = 1;
 									TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																									GEM_UPDATE_TEXT,
-																									(WindowMsgData)window,
+																									(WindowMsgData)(uintptr_t)window,
 																									0 );
 								}
 								return MSG_HANDLED;
@@ -1121,7 +1121,7 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 				BitSet( instData->m_state, WIN_STATE_HILITED );
 				TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																						GBM_MOUSE_ENTERING,
-																						(WindowMsgData)window, 0 );
+																						(WindowMsgData)(uintptr_t)window, 0 );
 				TheWindowManager->winSetFocus( window );
 			}
 
@@ -1136,7 +1136,7 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 				BitClear( instData->m_state, WIN_STATE_HILITED );
 				TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																						GBM_MOUSE_LEAVING,
-																						(WindowMsgData)window, 0 );
+																						(WindowMsgData)(uintptr_t)window, 0 );
 			}
 			break;
 
@@ -1146,7 +1146,7 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 			if( BitIsSet( instData->getStyle(), GWS_MOUSE_TRACK ) )
 				TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																						GGM_LEFT_DRAG,
-																						(WindowMsgData)window, 0 );
+																						(WindowMsgData)(uintptr_t)window, 0 );
 			break;
 
 		// ------------------------------------------------------------------------

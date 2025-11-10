@@ -502,7 +502,7 @@ void ShowControlBar( Bool immediate )
 
 	TheControlBar->showSpecialPowerShortcut();
 
-	Int id = (Int)TheNameKeyGenerator->nameToKey(AsciiString("ControlBar.wnd:ControlBarParent"));
+	Int id = (Int)(uintptr_t)TheNameKeyGenerator->nameToKey(AsciiString("ControlBar.wnd:ControlBarParent"));
 	GameWindow *window = TheWindowManager->winGetWindowFromId(NULL, id);
 
 	if (window)
@@ -537,7 +537,7 @@ void HideControlBar( Bool immediate )
 
 	TheControlBar->hideSpecialPowerShortcut();
 
-	Int id = (Int)TheNameKeyGenerator->nameToKey(AsciiString("ControlBar.wnd:ControlBarParent"));
+	Int id = (Int)(uintptr_t)TheNameKeyGenerator->nameToKey(AsciiString("ControlBar.wnd:ControlBarParent"));
 	GameWindow *window = TheWindowManager->winGetWindowFromId(NULL, id);
 
 	if (window)
@@ -573,7 +573,7 @@ void ToggleControlBar( Bool immediate )
 
 	toggleReplayControls();
 
-	Int id = (Int)TheNameKeyGenerator->nameToKey(AsciiString("ControlBar.wnd:ControlBarParent"));
+	Int id = (Int)(uintptr_t)TheNameKeyGenerator->nameToKey(AsciiString("ControlBar.wnd:ControlBarParent"));
 	GameWindow *window = TheWindowManager->winGetWindowFromId(NULL, id);
 
 	if (window)

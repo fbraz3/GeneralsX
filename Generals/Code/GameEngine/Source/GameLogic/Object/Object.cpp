@@ -3388,7 +3388,7 @@ void Object::crc( Xfer *xfer )
 #ifdef DEBUG_CRC
 	if (doLogging)
 	{
-		tmp.format("m_privateStatus: %X, ", (UnsignedInt)m_privateStatus);
+		tmp.format("m_privateStatus: %X, ", (UnsignedInt)(uintptr_t)m_privateStatus);
 		logString.concat(tmp);
 	}
 #endif // DEBUG_CRC

@@ -28,7 +28,22 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
-#include <winsock.h>	// This one has to be here. Prevents collisions with winsock2.h
+#ifdef _WIN32
+#include <winsock.h> 	// This one has to be here. Prevents collisions with winsock2.h
+#else
+// POSIX socket includes for non-Windows platforms (macOS/Linux).
+// Do NOT redefine Windows compatibility types/macros here — the project
+// provides those in `win32_compat.h` / network compatibility headers.
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+
+#endif
 
 #include "GameNetwork/GameSpy/GameResultsThread.h"
 #include "mutex.h"
@@ -271,6 +286,7 @@ void GameResultsThreadClass::Thread_Function()
 //-------------------------------------------------------------------------
 
 #ifdef DEBUG_LOGGING
+#ifdef _WIN32
 #define CASE(x) case (x): return #x;
 
 static const char *getWSAErrorString( Int error )
@@ -335,7 +351,12 @@ static const char *getWSAErrorString( Int error )
 }
 
 #undef CASE
-
+#else
+static const char *getWSAErrorString( Int error )
+{
+	return strerror(error);
+}
+#endif
 #endif
 //-------------------------------------------------------------------------
 

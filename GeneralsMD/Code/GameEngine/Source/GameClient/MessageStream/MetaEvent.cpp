@@ -397,10 +397,10 @@ MetaEventTranslator::~MetaEventTranslator()
 static const char * findGameMessageNameByType(GameMessage::Type type)
 {
 	for (const LookupListRec* metaNames = GameMessageMetaTypeNames; metaNames->name; metaNames++)
-		if (metaNames->value == (Int)type)
+		if (metaNames->value == (Int)(uintptr_t)type)
 			return metaNames->name;
 
-	DEBUG_CRASH(("MetaTypeName %d not found -- did you remember to add it to GameMessageMetaTypeNames[] ?", (Int)type));
+	DEBUG_CRASH(("MetaTypeName %d not found -- did you remember to add it to GameMessageMetaTypeNames[] ?", (Int)(uintptr_t)type));
 	return "???";
 }
 

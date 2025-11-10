@@ -1545,7 +1545,7 @@ void OpenContain::processDamageToContained(Real percentDamage)
 
 	// Swap the list back where it belongs.
 	m_containList.swap(list);
-	m_containListSize = (UnsignedInt)m_containList.size();
+	m_containListSize = (UnsignedInt)(uintptr_t)m_containList.size();
 
 #endif // RETAIL_COMPATIBLE_CRC
 }

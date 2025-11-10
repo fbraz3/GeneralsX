@@ -138,7 +138,7 @@ WindowMsgHandledType GadgetRadioButtonInput( GameWindow *window, UnsignedInt msg
 				BitSet( instData->m_state, WIN_STATE_HILITED );
 				TheWindowManager->winSendSystemMsg( instData->getOwner(),
 																						GBM_MOUSE_ENTERING,
-																						(WindowMsgData)window,
+																						(WindowMsgData)(uintptr_t)window,
 																						mData1 );
 				//TheWindowManager->winSetFocus( window );
 
@@ -158,7 +158,7 @@ WindowMsgHandledType GadgetRadioButtonInput( GameWindow *window, UnsignedInt msg
 				BitClear( instData->m_state, WIN_STATE_HILITED );
 				TheWindowManager->winSendSystemMsg( instData->getOwner(),
 																						GBM_MOUSE_LEAVING,
-																					  (WindowMsgData)window,
+																					  (WindowMsgData)(uintptr_t)window,
 																						mData1 );
 			}
 
@@ -171,7 +171,7 @@ WindowMsgHandledType GadgetRadioButtonInput( GameWindow *window, UnsignedInt msg
 		{
 
 			TheWindowManager->winSendSystemMsg( instData->getOwner(), GGM_LEFT_DRAG,
-																					(WindowMsgData)window, mData1 );
+																					(WindowMsgData)(uintptr_t)window, mData1 );
 			break;
 
 		}
@@ -194,7 +194,7 @@ WindowMsgHandledType GadgetRadioButtonInput( GameWindow *window, UnsignedInt msg
 
 				TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																						GBM_SELECTED,
-																						(WindowMsgData)window,
+																						(WindowMsgData)(uintptr_t)window,
 																						mData1 );
 
 				//
@@ -239,7 +239,7 @@ WindowMsgHandledType GadgetRadioButtonInput( GameWindow *window, UnsignedInt msg
 
 							TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																									GBM_SELECTED,
-																									(WindowMsgData)window,
+																									(WindowMsgData)(uintptr_t)window,
 																									mData1 );
 
 							//
@@ -333,7 +333,7 @@ WindowMsgHandledType GadgetRadioButtonSystem( GameWindow *window, UnsignedInt ms
 
 					TheWindowManager->winSendSystemMsg( window->winGetOwner(),
 																							GBM_SELECTED,
-																							(WindowMsgData)window,
+																							(WindowMsgData)(uintptr_t)window,
 																							0 );
 				}
 
@@ -414,7 +414,7 @@ void GadgetRadioSetText( GameWindow *g, UnicodeString text )
 	if( g == NULL )
 		return;
 
-	TheWindowManager->winSendSystemMsg( g, GGM_SET_LABEL, (WindowMsgData)&text, 0 );
+	TheWindowManager->winSendSystemMsg( g, GGM_SET_LABEL, (WindowMsgData)(uintptr_t)&text, 0 );
 
 }
 
@@ -442,7 +442,7 @@ void GadgetRadioSetSelection( GameWindow *g, Bool sendMsg )
 	if( g == NULL )
 		return;
 
-	TheWindowManager->winSendSystemMsg( g, GBM_SET_SELECTION, (WindowMsgData)&sendMsg, 0 );
+	TheWindowManager->winSendSystemMsg( g, GBM_SET_SELECTION, (WindowMsgData)(uintptr_t)&sendMsg, 0 );
 
 }
 

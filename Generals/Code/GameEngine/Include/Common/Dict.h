@@ -280,17 +280,17 @@ private:
 
 		inline static DictPairKeyType createKey(NameKeyType keyVal, DataType nt)
 		{
-			return (DictPairKeyType)((((UnsignedInt)(keyVal)) << 8) | ((UnsignedInt)nt));
+			return (DictPairKeyType)((((UnsignedInt)(keyVal)) << 8) | ((UnsignedInt)(uintptr_t)nt));
 		}
 
 		inline static DataType getTypeFromKey(DictPairKeyType nk)
 		{
-			return (DataType)(((UnsignedInt)nk) & 0xff);
+			return (DataType)(((UnsignedInt)(uintptr_t)nk) & 0xff);
 		}
 
 		inline static NameKeyType getNameFromKey(DictPairKeyType nk)
 		{
-			return (NameKeyType)(((UnsignedInt)nk) >> 8);
+			return (NameKeyType)(((UnsignedInt)(uintptr_t)nk) >> 8);
 		}
 
 

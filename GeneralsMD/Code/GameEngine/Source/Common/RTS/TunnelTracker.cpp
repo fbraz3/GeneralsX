@@ -113,7 +113,7 @@ Int TunnelTracker::getContainMax() const
 void TunnelTracker::swapContainedItemsList(ContainedItemsList& newList)
 {
 	m_containList.swap(newList);
-	m_containListSize = (Int)m_containList.size();
+	m_containListSize = (Int)(uintptr_t)m_containList.size();
 }
 
 // ------------------------------------------------------------------------

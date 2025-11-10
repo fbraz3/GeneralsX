@@ -344,7 +344,7 @@ static void playerTooltip(GameWindow *window,
 		return;
 	}
 
-	UnsignedInt playerIP = (UnsignedInt)GadgetListBoxGetItemData( window, row, col );
+	UnsignedInt playerIP = (UnsignedInt)(uintptr_t)GadgetListBoxGetItemData( window, row, col );
 	LANPlayer *player = TheLAN->LookupPlayer(playerIP);
 	if (!player)
 	{
@@ -620,7 +620,7 @@ void LanLobbyMenuUpdate( WindowLayout * layout, void *userData)
 
 		// we have a socket problem, back out to the main menu.
 		TheWindowManager->winSendSystemMsg(buttonBack->winGetParent(), GBM_SELECTED,
-																			 (WindowMsgData)buttonBack, buttonBackID);
+																			 (WindowMsgData)(uintptr_t)buttonBack, buttonBackID);
 	}
 
 
@@ -657,7 +657,7 @@ WindowMsgHandledType LanLobbyMenuInput( GameWindow *window, UnsignedInt msg,
 					if( BitIsSet( state, KEY_STATE_UP ) )
 					{
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																							(WindowMsgData)buttonBack, buttonBackID );
+																							(WindowMsgData)(uintptr_t)buttonBack, buttonBackID );
 
 					}
 
@@ -779,7 +779,7 @@ WindowMsgHandledType LanLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 					GadgetTextEntrySetText(textEntryPlayerName, UnicodeString::TheEmptyString);
 					TheWindowManager->winSendSystemMsg( window,
 																						GEM_UPDATE_TEXT,
-																						(WindowMsgData)textEntryPlayerName,
+																						(WindowMsgData)(uintptr_t)textEntryPlayerName,
 																						0 );
 
 				}

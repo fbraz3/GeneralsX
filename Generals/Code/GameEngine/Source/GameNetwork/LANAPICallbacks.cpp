@@ -441,7 +441,7 @@ void LANAPI::OnGameOptions( UnsignedInt playerIP, Int playerSlot, AsciiString op
 					}
 					else
 					{
-						DEBUG_LOG(("Rejecting invalid NAT behavior %d", (Int)val));
+						DEBUG_LOG(("Rejecting invalid NAT behavior %d", (Int)(uintptr_t)val));
 					}
 				}
 

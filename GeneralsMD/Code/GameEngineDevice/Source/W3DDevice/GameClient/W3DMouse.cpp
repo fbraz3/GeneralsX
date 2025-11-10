@@ -414,9 +414,9 @@ void W3DMouse::setCursor( MouseCursor cursor )
 			m_currentHotSpot = m_cursorInfo[cursor].hotSpotPosition;
 			m_currentFMS = m_cursorInfo[cursor].fps/1000.0f;
 			m_currentAnimFrame = 0;	//reset animation when cursor changes
-			res = m_pDev->SetCursorProperties(m_currentHotSpot.x,m_currentHotSpot.y,m_currentD3DSurface[(Int)m_currentAnimFrame]->Peek_D3D_Surface());
+			res = m_pDev->SetCursorProperties(m_currentHotSpot.x,m_currentHotSpot.y,m_currentD3DSurface[(Int)(uintptr_t)m_currentAnimFrame]->Peek_D3D_Surface());
 			m_pDev->ShowCursor(TRUE);	//Enable DX8 cursor
-			m_currentD3DFrame=(Int)m_currentAnimFrame;
+			m_currentD3DFrame=(Int)(uintptr_t)m_currentAnimFrame;
 			m_currentD3DCursor = cursor;
 			m_lastAnimTime=timeGetTime();
 		}
@@ -505,9 +505,9 @@ void W3DMouse::draw(void)
 				m_currentAnimFrame=fmod(m_currentAnimFrame,m_currentFrames);
 				m_lastAnimTime=msTime;
 
-				if ((Int)m_currentAnimFrame != m_currentD3DFrame)
+				if ((Int)(uintptr_t)m_currentAnimFrame != m_currentD3DFrame)
 				{
-					m_currentD3DFrame=(Int)m_currentAnimFrame;
+					m_currentD3DFrame=(Int)(uintptr_t)m_currentAnimFrame;
 					m_pDev->SetCursorProperties(m_currentHotSpot.x,m_currentHotSpot.y,m_currentD3DSurface[m_currentD3DFrame]->Peek_D3D_Surface());
 				}
 			}

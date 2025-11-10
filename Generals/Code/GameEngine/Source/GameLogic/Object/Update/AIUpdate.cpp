@@ -4329,7 +4329,7 @@ Object* AIUpdateInterface::getNextMoodTarget( Bool calledByAI, Bool calledDuring
 		if (m_randomlyOffsetMoodCheck)
 		{
 			Int halfRate = checkRate >> 1;
-			m_nextMoodCheckTime = (UnsignedInt)((Int)m_nextMoodCheckTime + GameLogicRandomValue(-halfRate, halfRate));
+			m_nextMoodCheckTime = (UnsignedInt)((Int)(uintptr_t)m_nextMoodCheckTime + GameLogicRandomValue(-halfRate, halfRate));
 			m_randomlyOffsetMoodCheck = FALSE;
 		}
 	}

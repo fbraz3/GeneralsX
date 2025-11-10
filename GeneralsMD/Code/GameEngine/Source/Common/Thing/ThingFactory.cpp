@@ -258,7 +258,7 @@ const ThingTemplate *ThingFactory::findByTemplateID( UnsignedShort id )
 		if (tmpl->getTemplateID() == id)
 			return tmpl;
 	}
-	DEBUG_CRASH(("template %d not found",(Int)id));
+	DEBUG_CRASH(("template %d not found",(Int)(uintptr_t)id));
 	return NULL;
 }
 

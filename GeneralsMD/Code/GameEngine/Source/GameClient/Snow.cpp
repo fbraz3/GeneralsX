@@ -55,7 +55,7 @@ void SnowManager::updateIniSettings(void)
 {
 	Real *dst=m_startingHeights;
 	//initialize a table of random starting positions for each particle.
-	Int boxDimensions = (Int)TheWeatherSetting->m_snowBoxDimensions;
+	Int boxDimensions = (Int)(uintptr_t)TheWeatherSetting->m_snowBoxDimensions;
 	for (Int y=0; y<SNOW_NOISE_Y; y++)
 	{
 		for (Int x=0; x<SNOW_NOISE_X; x++)

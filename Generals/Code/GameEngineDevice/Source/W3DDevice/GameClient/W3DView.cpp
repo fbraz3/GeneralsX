@@ -2078,7 +2078,7 @@ Drawable *W3DView::pickDrawable( const ICoord2D *screen, Bool forceAttack, PickT
 	//Don't check against translucent or hidden objects
 	RayCollisionTestClass raytest(lineseg,&result,COLL_TYPE_ALL,false,false);
 
-	if( W3DDisplay::m_3DScene->castRay( raytest, false, (Int)pickType ) )
+	if( W3DDisplay::m_3DScene->castRay( raytest, false, (Int)(uintptr_t)pickType ) )
 		renderObj = raytest.CollidedRenderObj;
 
 	// for right now there is no drawable data in a render object which is			 	// if we've found a render object, return our drawable associated with it,

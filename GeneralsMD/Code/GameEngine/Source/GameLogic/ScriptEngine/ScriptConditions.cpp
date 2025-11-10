@@ -172,7 +172,7 @@ Player *ScriptConditions::playerFromParam(Parameter *pSideParm)
 {
 	DEBUG_ASSERTCRASH(Parameter::SIDE == pSideParm->getParameterType(), ("Wrong parameter type."));
 	Player *pPlayer=NULL;
-	UnsignedInt mask = (UnsignedInt)pSideParm->getInt();
+	UnsignedInt mask = (UnsignedInt)(uintptr_t)pSideParm->getInt();
 	if (mask) {
 		pPlayer = ThePlayerList->getPlayerFromMask(mask);
 	} else {
@@ -185,7 +185,7 @@ Player *ScriptConditions::playerFromParam(Parameter *pSideParm)
 		} else {
 			mask = 0xFFFF0000;
 		}
-		pSideParm->friend_setInt((Int)mask);
+		pSideParm->friend_setInt((Int)(uintptr_t)mask);
 	}
 	DEBUG_ASSERTCRASH(pPlayer, ("Couldn't find player %s", pSideParm->getString().str()));
 	return pPlayer;
@@ -660,7 +660,7 @@ Bool ScriptConditions::evaluateTeamInsideAreaEntirely(Parameter *pTeamParm, Para
 		return false;
 
 	if (theTeam) {
-		return theTeam->allInside(pTrig, (UnsignedInt)pTypeParm->getInt());
+		return theTeam->allInside(pTrig, (UnsignedInt)(uintptr_t)pTypeParm->getInt());
 	}
 	return false; // Non existent team isn't in trigger area. :)
 }
@@ -1684,7 +1684,7 @@ Bool ScriptConditions::evaluateTeamEnteredAreaEntirely(Parameter *pTeamParm, Par
 	PolygonTrigger *pTrig = TheScriptEngine->getQualifiedTriggerAreaByName(pTriggerParm->getString());
 
 	if (pTrig) {
-		return pTeam->didAllEnter(pTrig, (UnsignedInt)pTypeParm->getInt());
+		return pTeam->didAllEnter(pTrig, (UnsignedInt)(uintptr_t)pTypeParm->getInt());
 	}
 
 	return false;
@@ -1703,7 +1703,7 @@ Bool ScriptConditions::evaluateTeamEnteredAreaPartially(Parameter *pTeamParm, Pa
 	PolygonTrigger *pTrig = TheScriptEngine->getQualifiedTriggerAreaByName(pTriggerParm->getString());
 
 	if (pTrig) {
-		return pTeam->didPartialEnter(pTrig, (UnsignedInt)pTypeParm->getInt());
+		return pTeam->didPartialEnter(pTrig, (UnsignedInt)(uintptr_t)pTypeParm->getInt());
 	}
 
 	return false;
@@ -1725,7 +1725,7 @@ Bool ScriptConditions::evaluateTeamExitedAreaEntirely(Parameter *pTeamParm, Para
 		return false;
 	}
 
-	return (pTeam->didAllExit(pTrig, (UnsignedInt)pTypeParm->getInt()));
+	return (pTeam->didAllExit(pTrig, (UnsignedInt)(uintptr_t)pTypeParm->getInt()));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1744,7 +1744,7 @@ Bool ScriptConditions::evaluateTeamExitedAreaPartially(Parameter *pTeamParm, Par
 		return false;
 	}
 
-	return (pTeam->didPartialExit(pTrig, (UnsignedInt)pTypeParm->getInt()));
+	return (pTeam->didPartialExit(pTrig, (UnsignedInt)(uintptr_t)pTypeParm->getInt()));
 }
 
 //-------------------------------------------------------------------------------------------------

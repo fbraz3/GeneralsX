@@ -47,6 +47,27 @@
 
 #include "Common/MiniLog.h"
 
+#ifdef _WIN32
+#include <winsock.h>
+#else
+// POSIX socket includes for non-Windows platforms
+// Avoid redefining Windows compatibility typedefs/macros here; the project
+// provides the appropriate compatibility layer elsewhere.
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+
+#endif
+
+#if !defined(_WIN32)
+#include "network.h"
+#endif
+
 
 // enable this for trying to track down why SBServers are losing their keyvals  -MDC 2/20/2003
 #undef SERVER_DEBUGGING
@@ -1133,7 +1154,7 @@ void checkQR2Queries( PEER peer, SOCKET sock )
 {
 	static char indata[INBUF_LEN];
 	struct sockaddr_in saddr;
-	int saddrlen = sizeof(struct sockaddr_in);
+	socklen_t saddrlen = sizeof(struct sockaddr_in);
 	fd_set set;
 	struct timeval timeout = {0,0};
 	int error;

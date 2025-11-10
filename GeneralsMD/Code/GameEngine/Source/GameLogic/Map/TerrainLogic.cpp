@@ -1376,10 +1376,10 @@ void TerrainLogic::addWaypointLink(Int id1, Int id2)
 	// Traverse all waypoints.
 	/// @todo ID's should be UnsignedInts (MSB)
 	for (pWay = getFirstWaypoint(); pWay; pWay = pWay->getNext()) {
-		if (pWay->getID() == (UnsignedInt)id1) {
+		if (pWay->getID() == (UnsignedInt)(uintptr_t)id1) {
 			pWay1 = pWay;
 		}
-		if (pWay->getID() == (UnsignedInt)id2) {
+		if (pWay->getID() == (UnsignedInt)(uintptr_t)id2) {
 			pWay2 = pWay;
 		}
 	}

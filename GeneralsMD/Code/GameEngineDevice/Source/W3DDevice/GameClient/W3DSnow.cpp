@@ -336,11 +336,11 @@ void W3DSnowManager::render(RenderInfoClass &rinfo)
 	Vector3 camPos(cPos.x,cPos.y,cPos.z);
 
 	//Number of emitters from cube center to edge of visible extent.
-	Int mumEmittersInHalf=(Int)floor(m_boxDimensions / m_emitterSpacing * 0.5f);
+	Int mumEmittersInHalf=(Int)(uintptr_t)floor(m_boxDimensions / m_emitterSpacing * 0.5f);
 
 	//Find origin of visible cube surrounding camera.
-	Int cubeCenterX=(Int)floor(camPos.X/m_emitterSpacing);
-	Int cubeCenterY=(Int)floor(camPos.Y/m_emitterSpacing);
+	Int cubeCenterX=(Int)(uintptr_t)floor(camPos.X/m_emitterSpacing);
+	Int cubeCenterY=(Int)(uintptr_t)floor(camPos.Y/m_emitterSpacing);
 
 	//Find extents of visible cube surrounding camera.
 	Int cubeOriginX=cubeCenterX - mumEmittersInHalf;	//top/left extents.
@@ -364,16 +364,16 @@ void W3DSnowManager::render(RenderInfoClass &rinfo)
 
 	//Clip our visible snow rendering box
 	if ((cubeOriginX * m_emitterSpacing ) < (bbox.Center.X - bbox.Extent.X))
-		cubeOriginX = (Int)floor ((bbox.Center.X - bbox.Extent.X)/m_emitterSpacing);
+		cubeOriginX = (Int)(uintptr_t)floor ((bbox.Center.X - bbox.Extent.X)/m_emitterSpacing);
 
 	if ((cubeOriginY * m_emitterSpacing ) < (bbox.Center.Y - bbox.Extent.Y))
-		cubeOriginY = (Int)floor ((bbox.Center.Y - bbox.Extent.Y)/m_emitterSpacing);
+		cubeOriginY = (Int)(uintptr_t)floor ((bbox.Center.Y - bbox.Extent.Y)/m_emitterSpacing);
 
 	if ((cubeDimX * m_emitterSpacing ) > (bbox.Center.X + bbox.Extent.X))
-		cubeDimX = (Int)floor ((bbox.Center.X + bbox.Extent.X)/m_emitterSpacing);
+		cubeDimX = (Int)(uintptr_t)floor ((bbox.Center.X + bbox.Extent.X)/m_emitterSpacing);
 
 	if ((cubeDimY * m_emitterSpacing ) > (bbox.Center.Y + bbox.Extent.Y))
-		cubeDimY = (Int)floor ((bbox.Center.Y + bbox.Extent.Y)/m_emitterSpacing);
+		cubeDimY = (Int)(uintptr_t)floor ((bbox.Center.Y + bbox.Extent.Y)/m_emitterSpacing);
 
 	if ((cubeDimY - cubeOriginY) < 0 || (cubeDimX-cubeOriginX) < 0)
 		return;	//entire snow box is culled by either x or y screen boundary.

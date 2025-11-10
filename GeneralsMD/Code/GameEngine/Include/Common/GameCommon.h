@@ -272,13 +272,13 @@ enum AbleToAttackType CPP_11(: Int)
 //-------------------------------------------------------------------------------------------------
 inline Bool isForcedAttack(AbleToAttackType t)
 {
-	return (((Int)t) & _ATTACK_FORCED) != 0;
+	return (((Int)(uintptr_t)t) & _ATTACK_FORCED) != 0;
 }
 
 //-------------------------------------------------------------------------------------------------
 inline Bool isContinuedAttack(AbleToAttackType t)
 {
-	return (((Int)t) & _ATTACK_CONTINUED) != 0;
+	return (((Int)(uintptr_t)t) & _ATTACK_CONTINUED) != 0;
 }
 
 //-------------------------------------------------------------------------------------------------

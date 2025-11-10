@@ -26,6 +26,8 @@
 
 #if defined(RTS_DEBUG) || defined(IG_DEBUG_STACKTRACE)
 
+#ifdef _WIN32  // Windows only - inline assembly and DbgHelpLoader
+
 #pragma pack(push, 8)
 
 #include "Common/StackDump.h"
@@ -606,6 +608,29 @@ void DumpExceptionInfo( unsigned int u, EXCEPTION_POINTERS* e_info )
 	DEBUG_LOG_RAW(("\n"));
 }
 
+#else  // Non-Windows platforms - Stub implementations
+
+void StackDumpDefaultHandler(const char*line)
+{
+	// Not implemented on non-Windows platforms
+}
+
+void StackDump(void (*callback)(const char*))
+{
+	// Stub - Stack dumping not supported on this platform
+}
+
+void StackDumpFromContext(DWORD eip,DWORD esp,DWORD ebp, void (*callback)(const char*))
+{
+	// Stub - Stack dumping not supported on this platform
+}
+
+void WriteDwordExceptionInfo(void *address, void (*callback)(const char*))
+{
+	// Stub - Exception info not supported on this platform
+}
+
+#endif  // _WIN32
 
 #pragma pack(pop)
 

@@ -85,7 +85,10 @@ class STLSpecialAlloc;
 #endif
 
 #ifdef _WIN32
-#include <dinput.h>
+#if defined(_WIN32)
+#if 0 // Don't include platform-specific DirectInput headers on non-Windows platforms
+#endif
+#endif
 #endif
 
 //------------------------------------------------------------------------------------ STL Includes
@@ -140,9 +143,57 @@ class STLSpecialAlloc;
 // Windows compatibility layer for non-Windows platforms
 // Include via core library path (set up by CMake include directories)
 #include <win32_compat.h>
-#include <dinput.h>
+
+// Do not include platform-specific DirectInput headers on non-Windows builds.
+// They can pull in Windows typedefs (like LARGE_INTEGER) that conflict
+// with our canonical compatibility definitions. If DirectInput APIs are
+// needed they should be wrapped in a Windows-only source file.
+// #include <dinput.h>
 
 #include "Lib/BaseType.h"
+
+// Ensure basic MessageBox macros and prototypes are available in the PCH
+// for non-Windows builds. These are minimal, reversible fallbacks that
+// avoid surprising undeclared identifier errors in many translation units.
+#ifndef MB_OK
+#define MB_OK            0x00000000L
+#endif
+#ifndef MB_ICONERROR
+#define MB_ICONERROR     0x00000010L
+#endif
+#ifndef MB_ICONINFORMATION
+#define MB_ICONINFORMATION 0x00000040L
+#endif
+#ifndef MB_SYSTEMMODAL
+#define MB_SYSTEMMODAL   0x00001000L
+#endif
+#ifndef MB_TASKMODAL
+#define MB_TASKMODAL     0x00002000L
+#endif
+#ifndef MB_APPLMODAL
+#define MB_APPLMODAL     MB_SYSTEMMODAL
+#endif
+#ifndef HWND_NOTOPMOST
+#define HWND_NOTOPMOST ((HWND)-2)
+#endif
+
+// Minimal MessageBox prototypes -- compatibility stubs are provided by
+// the umbrella compat header, but ensure declarations exist for all TUs.
+#ifndef MESSAGEBOX_PROTOTYPES_INCLUDED
+#define MESSAGEBOX_PROTOTYPES_INCLUDED
+extern int MessageBoxA(HWND hWnd, const char* lpText, const char* lpCaption, unsigned int uType);
+extern int MessageBoxW(HWND hWnd, const wchar_t* lpText, const wchar_t* lpCaption, unsigned int uType);
+#endif
+
+// Some legacy headers define `max`/`min` as macros which break uses of
+// `std::max`/`std::min` in portable code. Undefine them here after
+// including the project's base types so the standard functions work.
+#ifdef max
+#undef max
+#endif
+#ifdef min
+#undef min
+#endif
 #include "Common/STLTypedefs.h"
 #include "Common/Errors.h"
 #include "Common/Debug.h"

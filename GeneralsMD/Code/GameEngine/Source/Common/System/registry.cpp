@@ -30,6 +30,7 @@
 
 #include "Common/Registry.h"
 
+#ifdef _WIN32
 
 Bool  getStringFromRegistry(HKEY root, AsciiString path, AsciiString key, AsciiString& val)
 {
@@ -192,3 +193,62 @@ UnsignedInt GetRegistryMapPackVersion(void)
 	GetUnsignedIntFromRegistry("", "MapPackVersion", val);
 	return val;
 }
+
+#else  // Non-Windows platforms - Stub implementations
+
+Bool  getStringFromRegistry(HKEY root, AsciiString path, AsciiString key, AsciiString& val)
+{
+	return FALSE;
+}
+
+Bool getUnsignedIntFromRegistry(HKEY root, AsciiString path, AsciiString key, UnsignedInt& val)
+{
+	return FALSE;
+}
+
+Bool setStringInRegistry( HKEY root, AsciiString path, AsciiString key, AsciiString val)
+{
+	return FALSE;
+}
+
+Bool setUnsignedIntInRegistry( HKEY root, AsciiString path, AsciiString key, UnsignedInt val)
+{
+	return FALSE;
+}
+
+Bool GetStringFromGeneralsRegistry(AsciiString path, AsciiString key, AsciiString& val)
+{
+	return FALSE;
+}
+
+Bool GetStringFromRegistry(AsciiString path, AsciiString key, AsciiString& val)
+{
+	return FALSE;
+}
+
+Bool GetUnsignedIntFromRegistry(AsciiString path, AsciiString key, UnsignedInt& val)
+{
+	return FALSE;
+}
+
+AsciiString GetRegistryLanguage(void)
+{
+	return AsciiString("english");
+}
+
+AsciiString GetRegistryGameName(void)
+{
+	return AsciiString("GeneralsMPTest");
+}
+
+UnsignedInt GetRegistryVersion(void)
+{
+	return 65536;
+}
+
+UnsignedInt GetRegistryMapPackVersion(void)
+{
+	return 65536;
+}
+
+#endif  // _WIN32

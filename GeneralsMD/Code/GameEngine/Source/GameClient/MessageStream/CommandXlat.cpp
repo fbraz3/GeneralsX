@@ -205,7 +205,7 @@ bool changeMaxRenderFps(FpsValueChange change)
 	}
 	else
 	{
-		message = TheGameText->FETCH_OR_SUBSTITUTE_FORMAT("GUI:SetUncappedRenderFps", L"Max Render FPS is uncapped");
+		message = TheGameText->FETCH_OR_SUBSTITUTE("GUI:SetUncappedRenderFps", L"Max Render FPS is uncapped");
 	}
 
 	TheInGameUI->messageNoFormat(message);
@@ -3368,7 +3368,7 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 				Bool hide = false;
 				if (TheWindowManager)
 				{
-					Int id = (Int)TheNameKeyGenerator->nameToKey(AsciiString("ControlBar.wnd:ControlBarParent"));
+					Int id = (Int)(uintptr_t)TheNameKeyGenerator->nameToKey(AsciiString("ControlBar.wnd:ControlBarParent"));
 					GameWindow *window = TheWindowManager->winGetWindowFromId(NULL, id);
 
 					if (window)
@@ -4202,7 +4202,7 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 /*
 			if (TheWindowManager && TheNameKeyGenerator)
 			{
-				GameWindow *motd = TheWindowManager->winGetWindowFromId(NULL, (Int)TheNameKeyGenerator->nameToKey(AsciiString("MOTD.wnd:MOTD")));
+				GameWindow *motd = TheWindowManager->winGetWindowFromId(NULL, (Int)(uintptr_t)TheNameKeyGenerator->nameToKey(AsciiString("MOTD.wnd:MOTD")));
 				if (motd)
 					motd->winHide(!motd->winIsHidden());
 			}*/
@@ -4251,7 +4251,7 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 				Bool hide = false;
 				if (TheWindowManager)
 				{
-					Int id = (Int)TheNameKeyGenerator->nameToKey(AsciiString("ControlBar.wnd:ControlBarParent"));
+					Int id = (Int)(uintptr_t)TheNameKeyGenerator->nameToKey(AsciiString("ControlBar.wnd:ControlBarParent"));
 					GameWindow *window = TheWindowManager->winGetWindowFromId(NULL, id);
 
 					if (window)
@@ -4514,14 +4514,14 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 									{
 										if (oldVet < LEVEL_LAST)
 										{
-											newVet = (VeterancyLevel)((Int)oldVet + 1);
+											newVet = (VeterancyLevel)((Int)(uintptr_t)oldVet + 1);
 										}
 									}
 									else
 									{
 										if (oldVet > LEVEL_FIRST)
 										{
-											newVet = (VeterancyLevel)((Int)oldVet - 1);
+											newVet = (VeterancyLevel)((Int)(uintptr_t)oldVet - 1);
 										}
 									}
 									et->setVeterancyLevel(newVet);
@@ -4980,7 +4980,7 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 		//-----------------------------------------------------------------------------------------
 		case GameMessage::MSG_META_DEMO_TOGGLE_AI_DEBUG:
 		{
-			TheWritableGlobalData->m_debugAI = (AIDebugOptions)((Int)TheGlobalData->m_debugAI + 1);
+			TheWritableGlobalData->m_debugAI = (AIDebugOptions)((Int)(uintptr_t)TheGlobalData->m_debugAI + 1);
 			if (TheGlobalData->m_debugAI >= AI_DEBUG_END)
 				TheWritableGlobalData->m_debugAI=AI_DEBUG_NONE;
 
@@ -5437,7 +5437,7 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 			double timeToUpdate = ((double)(endTime64-startTime64) / (double)(freq64));
 
 			TheInGameUI->messageNoFormat( TheGameText->FETCH_OR_SUBSTITUTE_FORMAT("GUI:DebugObjectIdPerformance",
-				L"Time to run %d ObjectID lookups is %f. Next index is %d", numberLookups, timeToUpdate, (Int)TheGameLogic->getObjectIDCounter() ) );
+				L"Time to run %d ObjectID lookups is %f. Next index is %d", numberLookups, timeToUpdate, (Int)(uintptr_t)TheGameLogic->getObjectIDCounter() ) );
 
 
 			QueryPerformanceCounter((LARGE_INTEGER *)&startTime64);
@@ -5452,7 +5452,7 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 			timeToUpdate = ((double)(endTime64-startTime64) / (double)(freq64));
 
 			TheInGameUI->messageNoFormat( TheGameText->FETCH_OR_SUBSTITUTE_FORMAT("GUI:DebugObjectIdPerformance",
-				L"Time to run %d ObjectID lookups is %f. Next index is %d", numberLookups, timeToUpdate, (Int)TheGameLogic->getObjectIDCounter() ) );
+				L"Time to run %d ObjectID lookups is %f. Next index is %d", numberLookups, timeToUpdate, (Int)(uintptr_t)TheGameLogic->getObjectIDCounter() ) );
 
 
 			QueryPerformanceCounter((LARGE_INTEGER *)&startTime64);
@@ -5467,7 +5467,7 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 			timeToUpdate = ((double)(endTime64-startTime64) / (double)(freq64));
 
 			TheInGameUI->messageNoFormat( TheGameText->FETCH_OR_SUBSTITUTE_FORMAT("GUI:DebugObjectIdPerformance",
-				L"Time to run %d ObjectID lookups is %f. Next index is %d", numberLookups, timeToUpdate, (Int)TheGameLogic->getObjectIDCounter() ) );
+				L"Time to run %d ObjectID lookups is %f. Next index is %d", numberLookups, timeToUpdate, (Int)(uintptr_t)TheGameLogic->getObjectIDCounter() ) );
 
 			break;
 		}
@@ -5491,7 +5491,7 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 			double timeToUpdate = ((double)(endTime64-startTime64) / (double)(freq64));
 
 			TheInGameUI->messageNoFormat( TheGameText->FETCH_OR_SUBSTITUTE_FORMAT("GUI:DebugDrawableIdPerformance",
-				L"Time to run %d DrawableID lookups is %f. Next index is %d", numberLookups, timeToUpdate, (Int)TheGameClient->getDrawableIDCounter() ) );
+				L"Time to run %d DrawableID lookups is %f. Next index is %d", numberLookups, timeToUpdate, (Int)(uintptr_t)TheGameClient->getDrawableIDCounter() ) );
 
 
 			QueryPerformanceCounter((LARGE_INTEGER *)&startTime64);
@@ -5506,7 +5506,7 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 			timeToUpdate = ((double)(endTime64-startTime64) / (double)(freq64));
 
 			TheInGameUI->messageNoFormat( TheGameText->FETCH_OR_SUBSTITUTE_FORMAT("GUI:DebugDrawableIdPerformance",
-				L"Time to run %d DrawableID lookups is %f. Next index is %d", numberLookups, timeToUpdate, (Int)TheGameClient->getDrawableIDCounter() ) );
+				L"Time to run %d DrawableID lookups is %f. Next index is %d", numberLookups, timeToUpdate, (Int)(uintptr_t)TheGameClient->getDrawableIDCounter() ) );
 
 
 			QueryPerformanceCounter((LARGE_INTEGER *)&startTime64);
@@ -5521,7 +5521,7 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 			timeToUpdate = ((double)(endTime64-startTime64) / (double)(freq64));
 
 			TheInGameUI->messageNoFormat( TheGameText->FETCH_OR_SUBSTITUTE_FORMAT("GUI:DebugDrawableIdPerformance",
-				L"Time to run %d DrawableID lookups is %f. Next index is %d", numberLookups, timeToUpdate, (Int)TheGameClient->getDrawableIDCounter() ) );
+				L"Time to run %d DrawableID lookups is %f. Next index is %d", numberLookups, timeToUpdate, (Int)(uintptr_t)TheGameClient->getDrawableIDCounter() ) );
 
 			break;
 		}

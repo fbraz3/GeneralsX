@@ -124,7 +124,7 @@ void Dict::validate() const
 Dict::DictPair* Dict::findPairByKey(NameKeyType key) const
 {
 	DEBUG_ASSERTCRASH(key != NAMEKEY_INVALID, ("invalid namekey!"));
-	DEBUG_ASSERTCRASH((UnsignedInt)key < (1L<<23), ("namekey too large!"));
+	DEBUG_ASSERTCRASH((UnsignedInt)(uintptr_t)key < (1L<<23), ("namekey too large!"));
 	if (!m_data)
 		return NULL;
 	DictPair* base = m_data->peek();

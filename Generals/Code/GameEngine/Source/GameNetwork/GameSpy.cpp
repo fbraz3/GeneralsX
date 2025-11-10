@@ -891,7 +891,7 @@ void JoinRoomCallback(PEER peer, PEERBool success, PEERJoinResult result, RoomTy
 				if (success)
 				{
 					// update our internal group room ID
-					TheGameSpyChat->setCurrentGroupRoomID((Int)param);
+					TheGameSpyChat->setCurrentGroupRoomID((Int)(uintptr_t)param);
 
 					// see if we need to change screens
 					WindowLayout *layout = TheShell->top();
@@ -1015,7 +1015,7 @@ void createRoomCallback(PEER peer, PEERBool success, PEERJoinResult result, Room
 
 	((GameSpyChat *)TheGameSpyChat)->finishJoiningStagingRoom();
 
-	Int oldGroupID = (Int)param;
+	Int oldGroupID = (Int)(uintptr_t)param;
 
 	if (success)
 	{

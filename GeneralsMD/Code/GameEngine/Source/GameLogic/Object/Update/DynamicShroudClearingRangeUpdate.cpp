@@ -169,8 +169,8 @@ void DynamicShroudClearingRangeUpdate::animateGridDecals( void )
 		pos.x = ctr->x + (sinf(angle) * radius);
 		pos.y = ctr->y + (cosf(angle) * radius);
 
-		pos.x -= ((Int)pos.x)%23;
-		pos.y -= ((Int)pos.y)%23;
+		pos.x -= ((Int)(uintptr_t)pos.x)%23;
+		pos.y -= ((Int)(uintptr_t)pos.y)%23;
 
 		m_gridDecal[d].setPosition(pos);
 		m_gridDecal[d].setOpacity( opacity );

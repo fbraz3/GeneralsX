@@ -170,6 +170,7 @@ enum D3DRENDERSTATETYPE {
     D3DRS_ALPHATESTENABLE = 0x15,
     D3DRS_ALPHAREF = 0x18,
     D3DRS_ALPHAFUNC = 0x19,
+    D3DRS_TEXTUREFACTOR = 0x1C,
     D3DRS_DITHERENABLE = 0x04,
     D3DRS_SHADEMODE = 0x09,
     D3DRS_ALPHABLENDENABLE = 0x0D,
@@ -230,6 +231,18 @@ enum D3DTEXTURESTAGESTATETYPE {
     D3DTSS_MIPFILTER = 24
 };
 typedef enum D3DTEXTURESTAGESTATETYPE D3DTEXTURESTAGESTATETYPE;
+#endif
+
+// ============================================================================
+// DirectX Texture Argument Constants (D3DTA_* )
+// Provide D3DTA_TFACTOR which is used by some game code to select the
+// texture-factor argument in texture stage operations. Value chosen to
+// match a small integer used as an argument for platform compatibility.
+// This is a compile-time convenience; runtime correctness is handled by
+// the DX8 wrapper / Vulkan backend.
+// ============================================================================
+#ifndef D3DTA_TFACTOR
+#define D3DTA_TFACTOR 0x00000003
 #endif
 
 // ============================================================================
@@ -335,13 +348,15 @@ typedef unsigned long D3DCOLOR;
 
 // ============================================================================
 // DirectX Matrix Structure
+// Provide both a struct tag and a typedef so code can use either
+// `struct D3DMATRIX` or `D3DMATRIX` uniformly across the codebase.
 // ============================================================================
 
 #ifndef D3DMATRIX_DEFINED
 #define D3DMATRIX_DEFINED
-struct D3DMATRIX {
+typedef struct D3DMATRIX {
     float m[4][4];
-};
+} D3DMATRIX;
 #endif
 
 // ============================================================================

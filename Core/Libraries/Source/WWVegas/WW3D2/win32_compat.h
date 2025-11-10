@@ -55,6 +55,9 @@
 #include <netinet/in.h>
 #include <mach-o/dyld.h>  // For _NSGetExecutablePath on macOS
 
+// Network compatibility helpers (WSA stubs, SOCKET typedefs) for non-Windows
+#include "network.h"
+
 // Basic Windows types that might not be defined
 #ifndef LONG
 typedef long LONG;
@@ -208,7 +211,13 @@ typedef BYTE* LPBYTE;
 #include <cctype>  // for toupper
 #include <cwchar>  // for wchar_t
 
+// Ensure DWORD_PTR is defined (pointer-sized unsigned) for timers and macros
+#ifndef DWORD_PTR
+typedef uintptr_t DWORD_PTR;
+#endif
+
 // Basic Windows types
+#ifndef WIN32_COMPAT_CORE_H_INCLUDED
 typedef void* HDC;
 typedef void* HBITMAP;
 typedef void* HFONT;
@@ -226,6 +235,7 @@ typedef unsigned short WORD;
 typedef uintptr_t DWORD_PTR;
 typedef int BOOL;
 typedef long LONG;
+#endif
 
 // SAL annotations (placeholders for macOS)
 #ifndef IN
@@ -234,7 +244,9 @@ typedef long LONG;
 #ifndef OUT
 #define OUT
 #endif
+#ifndef WIN32_COMPAT_CORE_H_INCLUDED
 typedef unsigned long ULONG;  // Added ULONG type
+#endif
 typedef char CHAR;            // Added CHAR type
 typedef void* LPVOID;
 typedef float FLOAT;
@@ -525,6 +537,8 @@ inline size_t _mbsnccnt(const unsigned char* str, size_t count) {
     (void)str; (void)count;
     return count; // Simple fallback for cross-platform
 }
+// Guard SYSTEMTIME to avoid redefinition when core compat header already defines it
+#ifndef SYSTEMTIME_DEFINED
 typedef struct {
     WORD wYear;
     WORD wMonth;
@@ -535,6 +549,7 @@ typedef struct {
     WORD wSecond;
     WORD wMilliseconds;
 } SYSTEMTIME;
+#endif
 
 // File system structures
 typedef struct {
@@ -702,7 +717,7 @@ typedef struct {
 // Matrix type
 #ifndef D3DMATRIX_DEFINED
 #define D3DMATRIX_DEFINED
-typedef struct {
+typedef struct D3DMATRIX {
     union {
         struct {
             float _11, _12, _13, _14;
@@ -802,12 +817,7 @@ inline char* lstrcat(char* dest, const char* src) {
 #if !defined(_WIN32) && !defined(LARGE_INTEGER_DEFINED)
 #define LARGE_INTEGER_DEFINED
 
-// Define LONGLONG type
-typedef long long LONGLONG;
-
-// LARGE_INTEGER is defined in win32_compat_core.h
-
-// GUID is defined in win32_compat_core.h
+// LONGLONG, LARGE_INTEGER and GUID are defined in win32_compat_core.h
 
 class D3DVECTOR4 {
 public:
@@ -1789,6 +1799,60 @@ inline void GetLocalTime(SYSTEMTIME* lpSystemTime) {
     }
 }
 
+// MessageBox and dialog-related constants and stubs
+#ifndef MB_OK
+#define MB_OK            0x00000000L
+#endif
+#ifndef MB_ICONERROR
+#define MB_ICONERROR     0x00000010L
+#endif
+#ifndef MB_ICONINFORMATION
+#define MB_ICONINFORMATION 0x00000040L
+#endif
+#ifndef MB_SYSTEMMODAL
+#define MB_SYSTEMMODAL   0x00001000L
+#endif
+#ifndef MB_TASKMODAL
+#define MB_TASKMODAL     0x00002000L
+#endif
+#ifndef MB_APPLMODAL
+#define MB_APPLMODAL     MB_SYSTEMMODAL
+#endif
+
+#ifndef HWND_NOTOPMOST
+#define HWND_NOTOPMOST ((HWND)-2)
+#endif
+
+// Simple MessageBox stubs for non-Windows platforms — print to stderr and return MB_OK
+// Provide narrow and wide variants guarded to avoid duplicate definitions
+#ifndef MESSAGEBOX_DEFINED
+#define MESSAGEBOX_DEFINED
+inline int MessageBoxA(HWND hWnd, const char* lpText, const char* lpCaption, unsigned int uType) {
+    (void)hWnd; (void)uType;
+    if (lpCaption) fprintf(stderr, "%s: ", lpCaption);
+    if (lpText) fprintf(stderr, "%s\n", lpText);
+    return MB_OK;
+}
+
+inline int MessageBoxW(HWND hWnd, const wchar_t* lpText, const wchar_t* lpCaption, unsigned int uType) {
+    (void)hWnd; (void)uType;
+    if (lpCaption) {
+        // best-effort convert caption
+        size_t len = wcslen(lpCaption);
+        std::wstring ws(lpCaption, lpCaption + len);
+        std::string s(ws.begin(), ws.end());
+        fprintf(stderr, "%s: ", s.c_str());
+    }
+    if (lpText) {
+        size_t len = wcslen(lpText);
+        std::wstring ws(lpText, lpText + len);
+        std::string s(ws.begin(), ws.end());
+        fprintf(stderr, "%s\n", s.c_str());
+    }
+    return MB_OK;
+}
+#endif // MESSAGEBOX_DEFINED
+
 #endif // WINDOW_FUNCTIONS_DEFINED
 
 #endif // WIN32_STRING_FUNCTIONS_DEFINED
@@ -1799,6 +1863,14 @@ inline void GetLocalTime(SYSTEMTIME* lpSystemTime) {
 #endif
 #ifndef __min
 #define __min(a,b) (((a) < (b)) ? (a) : (b))
+#endif
+
+// Ensure 'max' and 'min' macros from other headers don't break std::max/std::min usage
+#ifdef max
+#undef max
+#endif
+#ifdef min
+#undef min
 #endif
 
 // String functions for compatibility

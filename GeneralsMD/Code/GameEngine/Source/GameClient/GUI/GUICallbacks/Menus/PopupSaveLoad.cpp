@@ -341,7 +341,7 @@ WindowMsgHandledType SaveLoadMenuInput( GameWindow *window, UnsignedInt msg, Win
 						buttonFrame->winEnable( TRUE );
 
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																								(WindowMsgData)button, buttonBackKey );
+																								(WindowMsgData)(uintptr_t)button, buttonBackKey );
 
 					}
 

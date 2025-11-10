@@ -61,7 +61,7 @@ Int VeterancyCrateCollide::getLevelsToGain() const
 		return 1;
 
 	// this requires that "regular" is 0, vet is 1, etc.
-	return (Int)getObject()->getVeterancyLevel();
+	return (Int)(uintptr_t)getObject()->getVeterancyLevel();
 }
 
 //-------------------------------------------------------------------------------------------------

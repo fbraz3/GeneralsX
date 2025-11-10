@@ -4223,10 +4223,10 @@ void GUIEdit::computeSafeLocation( GameWindow *window,
 
 	newRegion.hi.x = newRegion.lo.x + grabSize.x;
 	newRegion.hi.y = newRegion.lo.y + grabSize.y;
-	if( newRegion.hi.x > (Int)TheDisplay->getWidth() )
-		newRegion.hi.x = (Int)TheDisplay->getWidth();
-	if( newRegion.hi.y > (Int)TheDisplay->getHeight() )
-		newRegion.hi.y = (Int)TheDisplay->getHeight();
+	if( newRegion.hi.x > (Int)(uintptr_t)TheDisplay->getWidth() )
+		newRegion.hi.x = (Int)(uintptr_t)TheDisplay->getWidth();
+	if( newRegion.hi.y > (Int)(uintptr_t)TheDisplay->getHeight() )
+		newRegion.hi.y = (Int)(uintptr_t)TheDisplay->getHeight();
 
 	// compute new position
 	newRegion.lo.x = newRegion.hi.x - grabSize.x;

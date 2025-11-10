@@ -1240,7 +1240,7 @@ static void TestWaterUpdate(void)
 			{	//change current wave type
 				if (changeTypeReset)
 				{	changeTypeReset=0;
-					currentWaveType = (waveType)((Int)currentWaveType + 1);
+					currentWaveType = (waveType)((Int)(uintptr_t)currentWaveType + 1);
 					if (currentWaveType > WaveTypeLast)
 						currentWaveType = WaveTypeFirst;
 

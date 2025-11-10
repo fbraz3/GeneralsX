@@ -1196,8 +1196,8 @@ void WaterRenderObjClass::update( void )
 		m_riverYOffset += (Real)(2 * MagicOffset * timeScale);
 
 		// This moves offsets towards zero when smaller -1.0 or larger 1.0
-		m_riverXOffset -= (Int)m_riverXOffset;
-		m_riverYOffset -= (Int)m_riverYOffset;
+		m_riverXOffset -= (Int)(uintptr_t)m_riverXOffset;
+		m_riverYOffset -= (Int)(uintptr_t)m_riverYOffset;
 
 		m_fBumpFrame += timeScale;
 		if (m_fBumpFrame >= NUM_BUMP_FRAMES)
@@ -1815,7 +1815,7 @@ void WaterRenderObjClass::drawSea(RenderInfoClass & rinfo)
 	m_pDev->SetTextureStageState(1, D3DTSS_ADDRESSU, D3DTADDRESS_CLAMP);
 	m_pDev->SetTextureStageState(1, D3DTSS_ADDRESSV, D3DTADDRESS_CLAMP);
 
-	m_pDev->SetTexture( 0, m_pBumpTexture[(Int)m_fBumpFrame]);
+	m_pDev->SetTexture( 0, m_pBumpTexture[(Int)(uintptr_t)m_fBumpFrame]);
 #ifdef MIPMAP_BUMP_TEXTURE
 	m_pDev->SetTextureStageState( 0, D3DTSS_MIPFILTER, D3DTEXF_POINT );
 	m_pDev->SetTextureStageState( 0, D3DTSS_MINFILTER, D3DTEXF_LINEAR );

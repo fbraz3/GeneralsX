@@ -1337,8 +1337,8 @@ void TerrainShader2Stage::updateCloud()
 	m_yOffset += m_ySlidePerSecond * frame_time;
 
 	// This moves offsets towards zero when smaller -1.0 or larger 1.0
-	m_xOffset -= (Int)m_xOffset;
-	m_yOffset -= (Int)m_yOffset;
+	m_xOffset -= (Int)(uintptr_t)m_xOffset;
+	m_yOffset -= (Int)(uintptr_t)m_yOffset;
 }
 
 void TerrainShader2Stage::updateNoise1(D3DXMATRIX *destMatrix,D3DXMATRIX *curViewInverse, Bool doUpdate)

@@ -542,7 +542,7 @@ void GeometryInfo::tweakExtents(ExtentModType extentModType, Real extentModAmoun
 AsciiString GeometryInfo::getDescriptiveString() const
 {
 	AsciiString msg;
-	msg.format("%d/%d(%g %g %g)", (Int)m_type, (Int)m_isSmall, m_majorRadius, m_minorRadius, m_height);
+	msg.format("%d/%d(%g %g %g)", (Int)(uintptr_t)m_type, (Int)(uintptr_t)m_isSmall, m_majorRadius, m_minorRadius, m_height);
 	return msg;
 }
 #endif

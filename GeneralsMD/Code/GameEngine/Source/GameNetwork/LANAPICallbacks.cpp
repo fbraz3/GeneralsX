@@ -32,6 +32,8 @@
 #include "strtok_r.h"
 #include "Common/GameEngine.h"
 #include "Common/GlobalData.h"
+#include <cstdint>
+
 #include "Common/MessageStream.h"
 #include "Common/MultiplayerSettings.h"
 #include "Common/PlayerTemplate.h"
@@ -441,7 +443,7 @@ void LANAPI::OnGameOptions( UnsignedInt playerIP, Int playerSlot, AsciiString op
 					}
 					else
 					{
-						DEBUG_LOG(("Rejecting invalid NAT behavior %d", (Int)val));
+						DEBUG_LOG(("Rejecting invalid NAT behavior %d", (Int)(uintptr_t)val));
 					}
 				}
 
@@ -632,8 +634,8 @@ void LANAPI::OnPlayerList( LANPlayer *playerList )
 		Int indexToSelect = -1;
 		GadgetListBoxGetSelected(listboxPlayers, &selectedIndex);
 
-		if (selectedIndex != -1 )
-			selectedIP = (UnsignedInt) GadgetListBoxGetItemData(listboxPlayers, selectedIndex, 0);
+			if (selectedIndex != -1 )
+				selectedIP = (uintptr_t) GadgetListBoxGetItemData(listboxPlayers, selectedIndex, 0);
 
 		GadgetListBoxReset(listboxPlayers);
 
@@ -643,8 +645,8 @@ void LANAPI::OnPlayerList( LANPlayer *playerList )
 			Int addedIndex = GadgetListBoxAddEntryText(listboxPlayers, player->getName(), playerColor, -1, -1);
 			GadgetListBoxSetItemData(listboxPlayers, (void *)player->getIP(),addedIndex, 0 );
 
-			if (selectedIP == player->getIP())
-				indexToSelect = addedIndex;
+				if (selectedIP == (uintptr_t)player->getIP())
+					indexToSelect = addedIndex;
 
 			player = player->getNext();
 		}

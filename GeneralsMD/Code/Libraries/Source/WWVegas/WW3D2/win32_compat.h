@@ -699,7 +699,7 @@ typedef struct {
 // Matrix type
 #ifndef D3DMATRIX_DEFINED
 #define D3DMATRIX_DEFINED
-typedef struct {
+typedef struct D3DMATRIX {
     union {
         struct {
             float _11, _12, _13, _14;

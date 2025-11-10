@@ -358,7 +358,7 @@ Bool FirewallHelperClass::sendToManglerFromPort(UnsignedInt address, UnsignedSho
 
 	packet.length = sizeof(ManglerData);
 
-	DEBUG_LOG(("FirewallHelperClass::sendToManglerFromPort - Sending from port %d to %d.%d.%d.%d:%d", (UnsignedInt)port,
+	DEBUG_LOG(("FirewallHelperClass::sendToManglerFromPort - Sending from port %d to %d.%d.%d.%d:%d", (UnsignedInt)(uintptr_t)port,
 		PRINTF_IP_AS_4_INTS(address), MANGLER_PORT));
 /*
 	DEBUG_LOG_RAW(("Buffer = "));
@@ -487,7 +487,7 @@ UnsignedShort FirewallHelperClass::getManglerResponse(UnsignedShort packetID, In
 	}
 
 	UnsignedShort mangled_port = msg->data.MyMangledPortNumber;
-	DEBUG_LOG(("Mangler is seeing packets from port %d as coming from port %d", (UnsignedInt)msg->data.OriginalPortNumber, (UnsignedInt)mangled_port));
+	DEBUG_LOG(("Mangler is seeing packets from port %d as coming from port %d", (UnsignedInt)(uintptr_t)msg->data.OriginalPortNumber, (UnsignedInt)(uintptr_t)mangled_port));
 	return mangled_port;
 }
 
@@ -639,7 +639,7 @@ Bool FirewallHelperClass::detectionBeginUpdate() {
 
 		if (TheGlobalData->m_firewallSendDelay) {
 			UnsignedInt addbehavior = FIREWALL_TYPE_NETGEAR_BUG;
-			addbehavior |= (UnsignedInt)m_behavior;
+			addbehavior |= (UnsignedInt)(uintptr_t)m_behavior;
 			m_behavior = (FirewallBehaviorType) addbehavior;
 			DEBUG_LOG(("Netgear bug specified by command line or SendDelay flag"));
 		}
@@ -702,7 +702,7 @@ Bool FirewallHelperClass::detectionBeginUpdate() {
 		if (!found) {
 			Int m = m_numManglers++;
 			memcpy(&mangler_addresses[m][0], &host_info->h_addr_list[0][0], 4);
-			ntohl((UnsignedInt)mangler_addresses[m]);
+			ntohl((UnsignedInt)(uintptr_t)mangler_addresses[m]);
 			DEBUG_LOG(("Found mangler address at %d.%d.%d.%d", mangler_addresses[m][0], mangler_addresses[m][1], mangler_addresses[m][2], mangler_addresses[m][3]));
 		}
 
@@ -732,7 +732,7 @@ Bool FirewallHelperClass::detectionBeginUpdate() {
 	*/
 	if (TheGlobalData->m_firewallSendDelay) {
 		UnsignedInt addbehavior = FIREWALL_TYPE_NETGEAR_BUG;
-		addbehavior |= (UnsignedInt)m_behavior;
+		addbehavior |= (UnsignedInt)(uintptr_t)m_behavior;
 		m_behavior = (FirewallBehaviorType) addbehavior;
 		DEBUG_LOG(("FirewallHelperClass::detectionBeginUpdate - Netgear bug specified by command line or SendDelay flag"));
 	} else {
@@ -843,8 +843,8 @@ Bool FirewallHelperClass::detectionTest2Update() {
 	*/
 	if (m_mangledPorts[1] == 0 || m_mangledPorts[1] == m_sparePorts[0]) {
 		m_currentState = DETECTIONSTATE_DONE;
-		UnsignedInt addBehavior = (UnsignedInt)FIREWALL_TYPE_SIMPLE;
-		addBehavior |= (UnsignedInt)m_behavior;
+		UnsignedInt addBehavior = (UnsignedInt)(uintptr_t)FIREWALL_TYPE_SIMPLE;
+		addBehavior |= (UnsignedInt)(uintptr_t)m_behavior;
 		m_behavior = (FirewallBehaviorType)addBehavior;
 
 		if (m_mangledPorts[1] == 0) {
@@ -858,13 +858,13 @@ Bool FirewallHelperClass::detectionTest2Update() {
 
 	if (m_mangledPorts[0] == m_mangledPorts[1]) {
 		DEBUG_LOG(("FirewallHelperClass::detectionTest2Update - port mangling doesn't depend on destination IP, setting to DUMB_MANGLING"));
-		UnsignedInt addBehavior = (UnsignedInt)FIREWALL_TYPE_DUMB_MANGLING;
-		addBehavior |= (UnsignedInt)m_behavior;
+		UnsignedInt addBehavior = (UnsignedInt)(uintptr_t)FIREWALL_TYPE_DUMB_MANGLING;
+		addBehavior |= (UnsignedInt)(uintptr_t)m_behavior;
 		m_behavior = (FirewallBehaviorType)addBehavior;
 	} else {
 		DEBUG_LOG(("FirewallHelperClass::detectionTest2Update - port mangling depends on destination IP, setting to SMART_MANGLING"));
-		UnsignedInt addBehavior = (UnsignedInt)FIREWALL_TYPE_SMART_MANGLING;
-		addBehavior |= (UnsignedInt)m_behavior;
+		UnsignedInt addBehavior = (UnsignedInt)(uintptr_t)FIREWALL_TYPE_SMART_MANGLING;
+		addBehavior |= (UnsignedInt)(uintptr_t)m_behavior;
 		m_behavior = (FirewallBehaviorType)addBehavior;
 	}
 
@@ -1014,19 +1014,19 @@ Bool FirewallHelperClass::detectionTest3WaitForResponsesUpdate() {
 		UnsignedInt addbehavior = 0;
 		if (relative_delta) {
 			DEBUG_LOG(("FirewallHelperClass::detectionTest3WaitForResponsesUpdate - detected RELATIVE PORT ALLOCATION"));
-			addbehavior = (UnsignedInt)FIREWALL_TYPE_RELATIVE_PORT_ALLOCATION;
+			addbehavior = (UnsignedInt)(uintptr_t)FIREWALL_TYPE_RELATIVE_PORT_ALLOCATION;
 		} else {
 			DEBUG_LOG(("FirewallHelperClass::detectionTest3WaitForResponsesUpdate - detected SIMPLE PORT ALLOCATION"));
-			addbehavior = (UnsignedInt)FIREWALL_TYPE_SIMPLE_PORT_ALLOCATION;
+			addbehavior = (UnsignedInt)(uintptr_t)FIREWALL_TYPE_SIMPLE_PORT_ALLOCATION;
 		}
-		addbehavior |= (UnsignedInt)m_behavior;
+		addbehavior |= (UnsignedInt)(uintptr_t)m_behavior;
 		m_behavior = (FirewallBehaviorType) addbehavior;
 
 		m_sourcePortAllocationDelta = delta;
 		DEBUG_LOG(("FirewallHelperClass::detectionTest3WaitForResponsesUpdate - setting source port delta to %d", delta));
 	} else {
 		DEBUG_LOG(("FirewallHelperClass::detectionTest3WaitForResponsesUpdate - didn't get a delta value"));
-		if (m_lastSourcePortAllocationDelta != 0 && (Int)m_lastBehavior > (Int)FIREWALL_TYPE_SIMPLE) {
+		if (m_lastSourcePortAllocationDelta != 0 && (Int)(uintptr_t)m_lastBehavior > (Int)(uintptr_t)FIREWALL_TYPE_SIMPLE) {
 			/*
 			** If the delta we got last time we played looks good then use that.
 			*/
@@ -1089,9 +1089,9 @@ Bool FirewallHelperClass::detectionTest3WaitForResponsesUpdate() {
 			*/
 			DEBUG_LOG(("FirewallHelperClass::detectionTest3WaitForRepsonsesUpdate - relative port allocation, NAT32 right?"));
 			UnsignedInt addbehavior = 0;
-			addbehavior = (UnsignedInt)FIREWALL_TYPE_DESTINATION_PORT_DELTA;
+			addbehavior = (UnsignedInt)(uintptr_t)FIREWALL_TYPE_DESTINATION_PORT_DELTA;
 			DEBUG_LOG(("FirewallHelperClass::detectionTest3WaitForRepsonsesUpdate - adding DESTINATION PORT DELTA to behavior"));
-			addbehavior |= (UnsignedInt)m_behavior;
+			addbehavior |= (UnsignedInt)(uintptr_t)m_behavior;
 			m_behavior = (FirewallBehaviorType) addbehavior;
 		}
 	} else {
@@ -1163,8 +1163,8 @@ Bool FirewallHelperClass::detectionTest4Stage2Update() {
 		DEBUG_LOG(("FirewallHelperClass::detectionTest4Stage2Update - NAT uses different source ports for different destination ports"));
 
 		UnsignedInt addbehavior = 0;
-		addbehavior = (UnsignedInt)FIREWALL_TYPE_DESTINATION_PORT_DELTA;
-		addbehavior |= (UnsignedInt)m_behavior;
+		addbehavior = (UnsignedInt)(uintptr_t)FIREWALL_TYPE_DESTINATION_PORT_DELTA;
+		addbehavior |= (UnsignedInt)(uintptr_t)m_behavior;
 		m_behavior = (FirewallBehaviorType) addbehavior;
 	} else {
 		DEBUG_ASSERTCRASH(m_mangledPorts[1] == m_mangledPorts[0] + m_sourcePortAllocationDelta, ("Problem getting the source port deltas."));
@@ -1199,7 +1199,7 @@ Bool FirewallHelperClass::detectionTest5Update() {
 	*/
 	if (TheGlobalData->m_firewallSendDelay) {
 		UnsignedInt addbehavior = FIREWALL_TYPE_NETGEAR_BUG;
-		addbehavior |= (UnsignedInt)m_behavior;
+		addbehavior |= (UnsignedInt)(uintptr_t)m_behavior;
 		m_behavior = (FirewallBehaviorType) addbehavior;
 		DEBUG_LOG(("FirewallHelperClass::detectionTest5Update - Netgear bug specified by command line or SendDelay flag"));
 	} else {
@@ -1432,27 +1432,27 @@ Int FirewallHelperClass::getFirewallHardness(FirewallBehaviorType behavior)
 
 	UnsignedInt fw = (UnsignedInt) behavior;
 
-	if (((UnsignedInt)FIREWALL_TYPE_SIMPLE & fw) != 0) {
+	if (((UnsignedInt)(uintptr_t)FIREWALL_TYPE_SIMPLE & fw) != 0) {
 		hardness++;
 	}
 
-	if (((UnsignedInt)FIREWALL_TYPE_DUMB_MANGLING & fw) != 0) {
+	if (((UnsignedInt)(uintptr_t)FIREWALL_TYPE_DUMB_MANGLING & fw) != 0) {
 		hardness += 2;
 	}
 
-	if (((UnsignedInt)FIREWALL_TYPE_SMART_MANGLING & fw) != 0) {
+	if (((UnsignedInt)(uintptr_t)FIREWALL_TYPE_SMART_MANGLING & fw) != 0) {
 		hardness += 3;
 	}
 
-	if (((UnsignedInt)FIREWALL_TYPE_NETGEAR_BUG & fw) != 0) {
+	if (((UnsignedInt)(uintptr_t)FIREWALL_TYPE_NETGEAR_BUG & fw) != 0) {
 		hardness += 10;
 	}
 
-	if (((UnsignedInt)FIREWALL_TYPE_SIMPLE_PORT_ALLOCATION & fw) != 0) {
+	if (((UnsignedInt)(uintptr_t)FIREWALL_TYPE_SIMPLE_PORT_ALLOCATION & fw) != 0) {
 		hardness += 1;
 	}
 
-	if (((UnsignedInt)FIREWALL_TYPE_RELATIVE_PORT_ALLOCATION & fw) != 0) {
+	if (((UnsignedInt)(uintptr_t)FIREWALL_TYPE_RELATIVE_PORT_ALLOCATION & fw) != 0) {
 		hardness += 2;
 	}
 
@@ -1485,27 +1485,27 @@ Int FirewallHelperClass::getFirewallRetries(FirewallBehaviorType behavior)
 
 	UnsignedInt fw = (UnsignedInt) behavior;
 
-	if (((UnsignedInt)FIREWALL_TYPE_SIMPLE & fw) != 0) {
+	if (((UnsignedInt)(uintptr_t)FIREWALL_TYPE_SIMPLE & fw) != 0) {
 		retries++;
 	}
 
-	if (((UnsignedInt)FIREWALL_TYPE_DUMB_MANGLING & fw) != 0) {
+	if (((UnsignedInt)(uintptr_t)FIREWALL_TYPE_DUMB_MANGLING & fw) != 0) {
 		retries += 1;
 	}
 
-	if (((UnsignedInt)FIREWALL_TYPE_SMART_MANGLING & fw) != 0) {
+	if (((UnsignedInt)(uintptr_t)FIREWALL_TYPE_SMART_MANGLING & fw) != 0) {
 		retries += 1;
 	}
 
-	if (((UnsignedInt)FIREWALL_TYPE_NETGEAR_BUG & fw) != 0) {
+	if (((UnsignedInt)(uintptr_t)FIREWALL_TYPE_NETGEAR_BUG & fw) != 0) {
 		//retries += 10;
 	}
 
-	if (((UnsignedInt)FIREWALL_TYPE_SIMPLE_PORT_ALLOCATION & fw) != 0) {
+	if (((UnsignedInt)(uintptr_t)FIREWALL_TYPE_SIMPLE_PORT_ALLOCATION & fw) != 0) {
 		//retries += 1;
 	}
 
-	if (((UnsignedInt)FIREWALL_TYPE_RELATIVE_PORT_ALLOCATION & fw) != 0) {
+	if (((UnsignedInt)(uintptr_t)FIREWALL_TYPE_RELATIVE_PORT_ALLOCATION & fw) != 0) {
 		retries += 5;
 	}
 

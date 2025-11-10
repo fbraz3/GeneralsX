@@ -99,7 +99,7 @@ void W3DPropDraw::reactToTransformChange( const Matrix3D *oldMtx,
 		return;
 	}
 	Real scale = draw->getScale();
-	TheTerrainRenderObject->addProp((Int)draw->getID(), *draw->getPosition(),
+	TheTerrainRenderObject->addProp((Int)(uintptr_t)draw->getID(), *draw->getPosition(),
 		draw->getOrientation(), scale, moduleData->m_modelName);
 
 }

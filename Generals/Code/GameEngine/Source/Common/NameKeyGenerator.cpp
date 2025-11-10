@@ -37,7 +37,7 @@ NameKeyGenerator *TheNameKeyGenerator = NULL;  ///< name key gen. singleton
 NameKeyGenerator::NameKeyGenerator()
 {
 
-	m_nextID = (UnsignedInt)NAMEKEY_INVALID;  // uninitialized system
+	m_nextID = (UnsignedInt)(uintptr_t)NAMEKEY_INVALID;  // uninitialized system
 
 	for (Int i = 0; i < SOCKET_COUNT; ++i)
 		m_sockets[i] = NULL;
@@ -56,7 +56,7 @@ NameKeyGenerator::~NameKeyGenerator()
 //-------------------------------------------------------------------------------------------------
 void NameKeyGenerator::init()
 {
-	DEBUG_ASSERTCRASH(m_nextID == (UnsignedInt)NAMEKEY_INVALID, ("NameKeyGen already inited"));
+	DEBUG_ASSERTCRASH(m_nextID == (UnsignedInt)(uintptr_t)NAMEKEY_INVALID, ("NameKeyGen already inited"));
 
 	// start keys at the beginning again
 	freeSockets();

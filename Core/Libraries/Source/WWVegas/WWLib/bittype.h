@@ -36,7 +36,6 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #pragma once
-
 typedef unsigned char	uint8;
 typedef unsigned short	uint16;
 typedef unsigned long	uint32;
@@ -48,7 +47,7 @@ typedef signed long		sint32;
 typedef signed int      sint;
 
 typedef float				float32;
-typedef double				float64;
+typedef double			float64;
 
 typedef unsigned long   DWORD;
 typedef unsigned short	WORD;

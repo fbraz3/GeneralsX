@@ -499,7 +499,7 @@ WindowMsgHandledType ReplayMenuInput( GameWindow *window, UnsignedInt msg,
 					{
 
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																								(WindowMsgData)buttonBack, buttonBackID );
+																								(WindowMsgData)(uintptr_t)buttonBack, buttonBackID );
 
 					}
 
@@ -747,6 +747,7 @@ void deleteReplay( void )
 	filename = TheRecorder->getReplayDir();
 	translate.translate(GetReplayFilenameFromListbox(listboxReplayFiles, selected));
 	filename.concat(translate);
+#ifdef _WIN32
 	if(DeleteFile(filename.str()) == 0)
 	{
 		char buffer[1024];
@@ -756,6 +757,7 @@ void deleteReplay( void )
 		errorStr.translate(translate);
 		MessageBoxOk(TheGameText->fetch("GUI:Error"),errorStr, NULL);
 	}
+#endif
 	//Load the listbox shiznit
 	GadgetListBoxReset(listboxReplayFiles);
 	PopulateReplayFileListbox(listboxReplayFiles);
@@ -785,6 +787,7 @@ void copyReplay( void )
 	newFilename.set(path);
 	newFilename.concat("\\");
 	newFilename.concat(translate);
+#ifdef _WIN32
 	if(CopyFile(filename.str(),newFilename.str(), FALSE) == 0)
 	{
 		wchar_t buffer[1024];
@@ -794,6 +797,7 @@ void copyReplay( void )
 		errorStr.trim();
 		MessageBoxOk(TheGameText->fetch("GUI:Error"),errorStr, NULL);
 	}
+#endif
 
 }
 
