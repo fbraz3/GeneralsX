@@ -58,3 +58,16 @@ cmake-build-*/
 .ninja_deps
 .ninja_log
 build.ninja
+
+# Logs directory
+/logs/*.log
+/logs/*.txt
+/logs/*.diff
+/logs/*.patch
+/logs/**/*.diff
+/logs/**/*.patch
+
+# Documentation build output
+/docs/Vulkan/
+
+references/

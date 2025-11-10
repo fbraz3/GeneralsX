@@ -10,7 +10,7 @@ on:
       build_notes:
         description: 'Build notes (optional)'
         required: false
-        default: ''
+        default: 'Hope you enjoy this new build!'
         type: string
       known_issues:
         description: 'Known issues (optional)'
@@ -33,26 +33,24 @@ on:
         options:
           - 'false'
           - 'true'
+      build_user:
+        description: 'Override BUILDUSER (optional)'
+        required: false
+        type: string
+      build_loc:
+        description: 'override BUILDLOC (optional)'
+        required: false
+        type: string
 
-  schedule:
-    - cron: '0 9 * * 5'
+#  schedule:
+#    - cron: '0 9 * * 5'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  get-date:
-    runs-on: ubuntu-latest
-    outputs:
-      date: ${{ steps.date.outputs.date }}
-    steps:
-      - name: Get current date
-        id: date
-        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-
   detect-scm-changes:
-    needs: [get-date]
     runs-on: ubuntu-latest
     outputs:
       changed: ${{ steps.check.outputs.changed }}
@@ -76,24 +74,79 @@ jobs:
             echo "changed=true" >> $GITHUB_OUTPUT
             exit 0
           fi
-          CHANGED=$(git diff --name-only $LAST_TAG..HEAD | grep -v '.github/workflows/' | wc -l)
+          CHANGED=$(git diff --name-only $LAST_TAG..HEAD | grep -v '.github/workflows/' | grep -v "changes for fbraz3" | wc -l)
           if [ "$CHANGED" -eq "0" ]; then
             echo "changed=false" >> $GITHUB_OUTPUT
           else
             echo "changed=true" >> $GITHUB_OUTPUT
           fi
 
+  calculate-version:
+    name: Generate version files
+    runs-on: ubuntu-latest
+    outputs:
+      next_tag: ${{ steps.next_tag.outputs.next_tag }}
+      tag_count: ${{ steps.tag_count.outputs.tag_count }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Create Version Files
+        run: |
+          BASE_TAG=$(cat .github/workflows/base-version.txt)
+          IFS='.' read -r major minor patch <<<"$BASE_TAG"
+          CURRENT_TAG=$(git tag --list "$major.$minor*" --sort=-v:refname | head -n1)
+          CURRENT_COMMIT=$(git rev-parse HEAD)
+
+          if [ -z "$CURRENT_TAG" ]; then
+            CURRENT_TAG="$BASE_TAG"
+            NEXT_TAG="$BASE_TAG"
+          else
+            IFS='.' read -r major minor patch <<<"$CURRENT_TAG"
+            NEXT_TAG="$major.$minor.$((patch+1))"
+          fi
+
+          echo "CURRENT_TAG: $CURRENT_TAG"
+          echo "NEXT_TAG: $NEXT_TAG"
+
+          echo "$CURRENT_TAG" > current_tag.txt
+          echo "$NEXT_TAG" > next_tag.txt
+          echo "$CURRENT_COMMIT" > git_commit.txt
+
+      - name: Calculate next version
+        id: next_tag
+        run: echo "next_tag=$(cat next_tag.txt)" >> $GITHUB_OUTPUT
+
+      - name: Calculate tag count (build number)
+        id: tag_count
+        run: |
+          COUNT=$(git tag --list | wc -l | tr -d ' ')
+          echo "Total tags: $COUNT"
+          echo "tag_count=$COUNT" >> $GITHUB_OUTPUT
+
+      - name: Upload version files
+        uses: actions/upload-artifact@v4
+        with:
+          name: version_files
+          path: |
+            next_tag.txt
+            current_tag.txt
+            git_commit.txt
+
   build-generals:
-    needs: [detect-scm-changes, get-date]
+    needs: [detect-scm-changes, calculate-version]
     if: needs.detect-scm-changes.outputs.changed == 'true'
     name: Build Generals${{ matrix.preset && '' }}
     strategy:
       matrix:
         include:
-          - preset: "vc6-weekly"
+          - preset: "vc6"
             tools: true
-            extras: false
-            release: true
+            extras: true
+            release: ${{ needs.calculate-version.outputs.next_tag }}
       fail-fast: false
     uses: ./.github/workflows/build-toolchain.yml
     with:
@@ -101,19 +154,22 @@ jobs:
       preset: ${{ matrix.preset }}
       tools: ${{ matrix.tools }}
       extras: ${{ matrix.extras }}
-    secrets: inherit
+      release: ${{ matrix.release }}
+      build_user: ${{ github.event.inputs.build_user || 'fbraz3' }}
+      build_loc: ${{ github.event.inputs.build_loc || 'https://github.com/fbraz3/GeneralsGameCode/' }}
+      build_num: ${{ needs.calculate-version.outputs.tag_count }}
 
   build-generalsmd:
-    needs: [detect-scm-changes, get-date]
+    needs: [detect-scm-changes, calculate-version]
     if: needs.detect-scm-changes.outputs.changed == 'true'
     name: Build GeneralsMD${{ matrix.preset && '' }}
     strategy:
       matrix:
         include:
-          - preset: "vc6-weekly"
+          - preset: "vc6"
             tools: true
-            extras: false
-            release: true
+            extras: true
+            release: ${{ needs.calculate-version.outputs.next_tag }}
       fail-fast: false
     uses: ./.github/workflows/build-toolchain.yml
     with:
@@ -121,11 +177,14 @@ jobs:
       preset: ${{ matrix.preset }}
       tools: ${{ matrix.tools }}
       extras: ${{ matrix.extras }}
-    secrets: inherit
+      release: ${{ matrix.release }}
+      build_user: ${{ github.event.inputs.build_user || 'fbraz3' }}
+      build_loc: ${{ github.event.inputs.build_loc || 'https://github.com/fbraz3/GeneralsGameCode/' }}
+      build_num: ${{ needs.calculate-version.outputs.tag_count }}
 
   create-release:
     name: Create Release
-    needs: [build-generals, build-generalsmd, get-date]
+    needs: [ build-generals, build-generalsmd ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -134,18 +193,55 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Download version file
+        uses: actions/download-artifact@v4
+        with:
+          name: version_files
+
+      - name: Read base version
+        id: base_version
+        run: echo "base_version=$(cat .github/workflows/base-version.txt)" >> $GITHUB_OUTPUT
+
+      - name: Get latest semver tag
+        id: get_tag
+        run: echo "current_tag=$(cat current_tag.txt)" >> $GITHUB_OUTPUT
+
+      - name: Calculate next version
+        id: next_version
+        run: echo "next_tag=$(cat next_tag.txt)" >> $GITHUB_OUTPUT
+
       - name: Collect commits since last release
         id: changelog
         run: |
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          if [ -z "$LAST_TAG" ]; then
-            CHANGELOG_COMMITS=$(git log --pretty="format:- %s" --no-merges HEAD | head -n 10 || true)
+          TAG="${{ steps.get_tag.outputs.current_tag }}"
+          NEXT_TAG="${{ steps.next_version.outputs.next_tag }}"
+
+          echo "DEBUG: Current Tag (TAG) = $TAG"
+          echo "DEBUG: Next Tag (NEXT_TAG) = $NEXT_TAG"
+
+          CHANGELOG_COMMITS=""
+          if [ "$TAG" == "$NEXT_TAG" ]; then
+            echo "DEBUG: Condition TAG == NEXT_TAG. Generating changelog for initial release or no new tag."
+            CHANGELOG_COMMITS=$(git log --pretty="format:- %s" --no-merges HEAD | grep -v "changes for fbraz3" | head -n 10 || true)
+
+            if [ -z "$CHANGELOG_COMMITS" ]; then
+              echo "DEBUG: Filtered log for initial release was empty. Trying to get the last 5 commits directly."
+              CHANGELOG_COMMITS=$(git log --pretty="format:- %s" --no-merges HEAD -n 5 || true)
+            fi
           else
-            CHANGELOG_COMMITS=$(git log --pretty="format:- %s" --no-merges "$LAST_TAG"..HEAD || true)
+            echo "DEBUG: Condition TAG != NEXT_TAG. Generating changelog from $TAG to HEAD."
+            CHANGELOG_COMMITS=$(git log --pretty="format:- %s" --no-merges "$TAG"..HEAD | grep -v "changes for fbraz3" || true)
           fi
+
+          echo "--- DEBUG: Output of captured commits ---"
           if [ -z "$CHANGELOG_COMMITS" ]; then
+            echo "No commits found for the changelog."
             CHANGELOG_COMMITS="- No relevant changes detected since the last release."
+          else
+            echo "$CHANGELOG_COMMITS"
           fi
+          echo "--- END DEBUG ---"
+
           {
             echo 'commits<<CHANGELOG_EOF'
             echo "$CHANGELOG_COMMITS"
@@ -156,23 +252,31 @@ jobs:
       - name: Download Generals VC6 Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: Generals-vc6-weekly+t
+          name: Generals-vc6+t+e
           path: generals-vc6-artifacts
 
       - name: Prepare and Zip Generals VC6
         run: |
-          zip -jr generals-weekly-${{ needs.get-date.outputs.date }}.zip generals-vc6-artifacts/*
+          mkdir generals-vc6-release
+          cp generals-vc6-artifacts/generalsv.exe generals-vc6-release/GeneralsV.exe
+          cp generals-vc6-artifacts/W3DViewV.exe generals-vc6-release/W3DViewV.exe
+          cp generals-vc6-artifacts/WorldBuilderV.exe generals-vc6-release/WorldBuilderV.exe
+          zip -j generals-fbraz3-${{ steps.next_version.outputs.next_tag }}.zip generals-vc6-release/*
 
       # GeneralsMD vc6
       - name: Download GeneralsMD VC6 Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: GeneralsMD-vc6-weekly+t
+          name: GeneralsMD-vc6+t+e
           path: generalsmd-vc6-artifacts
 
       - name: Prepare and Zip GeneralsMD VC6
         run: |
-          zip -jr generalszh-weekly-${{ needs.get-date.outputs.date }}.zip generalsmd-vc6-artifacts/*
+          mkdir generalsmd-vc6-release
+          cp generalsmd-vc6-artifacts/generalszh.exe generalsmd-vc6-release/GeneralsZHv.exe
+          cp generalsmd-vc6-artifacts/W3DViewZH.exe generalsmd-vc6-release/W3DViewZHv.exe
+          cp generalsmd-vc6-artifacts/WorldBuilderZH.exe generalsmd-vc6-release/WorldBuilderZHv.exe
+          zip -j generalszh-fbraz3-${{ steps.next_version.outputs.next_tag }}.zip generalsmd-vc6-release/*
 
       - name: Generate release notes
         id: release_body
@@ -192,19 +296,20 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: weekly-${{ needs.get-date.outputs.date }}
-          name: weekly-${{ needs.get-date.outputs.date }}
+          tag_name: ${{ steps.next_version.outputs.next_tag }}
+          name: ${{ steps.next_version.outputs.next_tag }}
           prerelease: ${{ github.event.inputs.pre-release == 'true' }}
           body: ${{ steps.release_body.outputs.body }}
           files: |
-            generals-weekly-${{ needs.get-date.outputs.date }}.zip
-            generalszh-weekly-${{ needs.get-date.outputs.date }}.zip
+            generals-fbraz3-${{ steps.next_version.outputs.next_tag }}.zip
+            generalszh-fbraz3-${{ steps.next_version.outputs.next_tag }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Clean up release folders
         if: always()
         run: |
+          rm -rf generals-vc6-release generalsmd-vc6-release
           rm -rf generals-vc6-artifacts generalsmd-vc6-artifacts
-          rm -f generals-weekly-${{ needs.get-date.outputs.date }}.zip
-          rm -f generalszh-weekly-${{ needs.get-date.outputs.date }}.zip
+          rm -f generals-fbraz3-${{ steps.next_version.outputs.next_tag }}.zip
+          rm -f generalszh-fbraz3-${{ steps.next_version.outputs.next_tag }}.zip
