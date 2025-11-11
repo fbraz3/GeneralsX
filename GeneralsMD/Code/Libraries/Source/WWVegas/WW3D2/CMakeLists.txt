@@ -233,6 +233,23 @@ set(WW3D2_SRC
     #ww3dtrig.h
 )
 
+# When building with Vulkan backend, exclude Direct3D8-specific sources to avoid
+# requiring a full Direct3D compatibility shim on non-Windows platforms.
+if (USE_VULKAN)
+    list(REMOVE_ITEM WW3D2_SRC
+        dx8caps.cpp dx8caps.h
+        dx8fvf.cpp dx8fvf.h
+        dx8indexbuffer.cpp dx8indexbuffer.h
+        dx8renderer.cpp dx8renderer.h
+        dx8rendererdebugger.cpp dx8rendererdebugger.h
+        dx8texman.cpp dx8texman.h
+        dx8vertexbuffer.cpp dx8vertexbuffer.h
+        dx8wrapper.cpp dx8wrapper.h
+        dx8list.h dx8polygonrenderer.cpp dx8polygonrenderer.h
+        dx8webbrowser.cpp dx8webbrowser.h
+    )
+endif()
+
 add_library(z_ww3d2 STATIC)
 set_target_properties(z_ww3d2 PROPERTIES OUTPUT_NAME ww3d2)
 
@@ -242,15 +259,23 @@ target_compile_definitions(z_ww3d2 PRIVATE
     $<$<BOOL:${IS_VS6_BUILD}>:WINVER=0x0500>
 )
 
-target_precompile_headers(z_ww3d2 PRIVATE
+set(WW3D2_PCH
     dx8wrapper.h
     [["always.h"]]
     [["STLUtils.h"]]
     [["win.h"]]
     [["WWCommon.h"]]
     [["wwstring.h"]]
-    <windows.h>
 )
+
+if (NOT USE_VULKAN)
+    list(APPEND WW3D2_PCH <windows.h>)
+else()
+    # When building for Vulkan on non-Windows platforms, remove heavy DX8/windows dependencies
+    list(REMOVE_ITEM WW3D2_PCH dx8wrapper.h)
+endif()
+
+target_precompile_headers(z_ww3d2 PRIVATE ${WW3D2_PCH})
 
 target_link_libraries(z_ww3d2 PRIVATE
     corei_ww3d2

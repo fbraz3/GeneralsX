@@ -79,3 +79,11 @@ if(WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows")
         RTS.RC
     )
 endif()
+
+# Create a convenience copy with canonical name `GeneralsX` in the runtime output directory
+add_custom_command(TARGET g_generals POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E echo "Generating convenience executable name: GeneralsX"
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:g_generals> $<TARGET_FILE_DIR:g_generals>/GeneralsX
+    COMMAND ${CMAKE_COMMAND} -E chmod $<TARGET_FILE_DIR:g_generals>/GeneralsX 0755
+    COMMENT "Create GeneralsX alias for g_generals"
+)

@@ -18,16 +18,27 @@
 
 // This file contains thread related functions for compatibility with non-windows platforms.
 #pragma once
+
 #include <pthread.h>
 #include <unistd.h>
+#include <stdint.h>
 
+// Return a stable integer thread id. On macOS use pthread_threadid_np to
+// retrieve a uint64_t id. On other UNIX platforms fall back to casting
+// pthread_self() to uintptr_t and truncating to int (best-effort).
 inline int GetCurrentThreadId()
 {
-  return pthread_self();
+#if defined(__APPLE__)
+    uint64_t tid = 0;
+    pthread_threadid_np(NULL, &tid);
+    return (int)(tid & 0xFFFFFFFF);
+#else
+    return (int)(uintptr_t)pthread_self();
+#endif
 }
 
 inline void Sleep(int ms)
 {
-  usleep(ms * 1000);
+  usleep((useconds_t)ms * 1000);
 }
 

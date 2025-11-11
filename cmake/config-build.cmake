@@ -24,6 +24,12 @@ add_feature_info(AddressSanitizer RTS_BUILD_OPTION_ASAN "Building with address s
 add_feature_info(Vc6FullDebug RTS_BUILD_OPTION_VC6_FULL_DEBUG "Building VC6 with full debug info")
 add_feature_info(FFmpegSupport RTS_BUILD_OPTION_FFMPEG "Building with FFmpeg support")
 
+# New options that can be controlled via CMake presets
+option(USE_VULKAN "Enable Vulkan backend (when available)" OFF)
+option(USE_CCACHE "Enable use of ccache as compiler launcher" ON)
+add_feature_info(UsingVulkan USE_VULKAN "Using Vulkan backend for rendering")
+add_feature_info(UsingCcache USE_CCACHE "Using ccache for compiler launcher")
+
 if(RTS_BUILD_ZEROHOUR)
     option(RTS_BUILD_ZEROHOUR_TOOLS "Build tools for Zero Hour" ON)
     option(RTS_BUILD_ZEROHOUR_EXTRAS "Build extra tools/tests for Zero Hour" OFF)
@@ -49,6 +55,9 @@ if(NOT IS_VS6_BUILD)
     target_compile_features(core_config INTERFACE cxx_std_20)
 endif()
 
+# Provide a compatibility include directory with minimal headers for non-Windows platforms
+target_include_directories(core_config INTERFACE ${CMAKE_SOURCE_DIR}/Dependencies/Utility/Compat)
+
 if(IS_VS6_BUILD AND RTS_BUILD_OPTION_VC6_FULL_DEBUG)
     target_compile_options(core_config INTERFACE ${RTS_FLAGS} /Zi)
 else()
@@ -72,4 +81,24 @@ endif()
 
 if(RTS_BUILD_OPTION_PROFILE)
     target_compile_definitions(core_config INTERFACE RTS_PROFILE)
+endif()
+
+# Honor USE_CCACHE preset variable and configure compiler launchers when requested.
+if(USE_CCACHE)
+    if(NOT CMAKE_C_COMPILER_LAUNCHER)
+        set(CMAKE_C_COMPILER_LAUNCHER "ccache" CACHE STRING "C compiler launcher" FORCE)
+    endif()
+    if(NOT CMAKE_CXX_COMPILER_LAUNCHER)
+        set(CMAKE_CXX_COMPILER_LAUNCHER "ccache" CACHE STRING "C++ compiler launcher" FORCE)
+    endif()
+    message(STATUS "Using ccache as compiler launcher (USE_CCACHE=ON)")
+endif()
+
+# Honor USE_VULKAN preset variable so top-level CMake consumes it and exposes
+# a preprocessor definition to code that wants to conditionally compile Vulkan paths.
+if(USE_VULKAN)
+    target_compile_definitions(core_config INTERFACE USE_VULKAN=1)
+    message(STATUS "Vulkan backend enabled (USE_VULKAN=ON)")
+else()
+    target_compile_definitions(core_config INTERFACE USE_VULKAN=0)
 endif()
