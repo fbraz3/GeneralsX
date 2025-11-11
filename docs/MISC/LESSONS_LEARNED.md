@@ -85,7 +85,7 @@ METAL: BeginFrame() - Pipeline state set on encoder
 
 **Discovery Method**:
 
-User recognized pattern from previous `LESSONS_LEARNED.md` Phase 33.9 (exception swallowing). Asked: "Colocamos muitos try/catches como proteção, isso já nos travou no passado. Poderia estar acontecendo novamente?"
+User recognized pattern from previous `LESSONS_LEARNED.md` Phase 33.9 (exception swallowing). Asked: "We added lots of try/catches as protection, this has blocked us in the past. Could this be happening again?"
 
 This led to examining ALL "protective code" additions that store state globally. Found `s_passDesc` storing local ARC object.
 
