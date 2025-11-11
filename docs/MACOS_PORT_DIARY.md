@@ -67,12 +67,12 @@ PHASE01-40 (Implementation Phases) ✅
 
 **Integration Map**:
 
-| Document | Fases Linkadas | Tipo |
+| Document | Linked Phases | Type |
 |----------|---|---|
-| ASSET_SYSTEM.md | 6 fases | Padrões de assets |
-| CRITICAL_LESSONS.md | 10 fases | Anti-patterns evitados |
-| BUILD_TARGETS.md | 2 fases | Infraestrutura |
-| SETUP_ENVIRONMENT.md | 1 fase | Ambiente dev |
+| ASSET_SYSTEM.md | 6 phases | Asset patterns |
+| CRITICAL_LESSONS.md | 10 phases | Avoided anti-patterns |
+| BUILD_TARGETS.md | 2 phases | Infrastructure |
+| SETUP_ENVIRONMENT.md | 1 phase | Dev environment |
 
 **Key Achievements**:
 
