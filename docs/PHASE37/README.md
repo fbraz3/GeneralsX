@@ -1,27 +1,27 @@
-# Phase 05: Input System
+# Phase 37: Cross-Platform Validation
 
-**Phase**: 05  
-**Title**: Input System  
-**Area**: OS API Layer (win32_sdl_api_compat)  
-**Scope**: MEDIUM  
+**Phase**: 37  
+**Title**: Cross-Platform Validation  
+**Area**: Testing & Polish  
+**Scope**: LARGE  
 **Status**: not-started  
-**Dependencies**: Phase 01, Phase 03
+**Dependencies**: Phase 36
 
 ---
 
 ## Objective
 
-Implement SDL2-based cross-platform input handling with keyboard, mouse, and gamepad support.
+Multi-platform build and feature validation
 
 ---
 
 ## Key Deliverables
 
-- [ ] Keyboard input mapping (SDL2 → game constants)
-- [ ] Mouse input handling with relative/absolute modes
-- [ ] Gamepad/joystick detection and mapping
-- [ ] Input rebinding configuration
-- [ ] Multi-platform input verification
+- [ ] Build on Windows/macOS/Linux
+- [ ] Feature parity verification
+- [ ] Performance profiling
+- [ ] Driver compatibility
+- [ ] Platform-specific fixes
 
 ---
 
@@ -57,8 +57,8 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/Libraries/Source/WWVegas/WW3D2/win32_input_api_compat.h
-- GeneralsMD/Code/GameEngine/Source/Input/InputManager.cpp
+- CMakeLists.txt
+- CMakePresets.json
 
 ---
 

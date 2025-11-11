@@ -1,27 +1,27 @@
-# Phase 05: Input System
+# Phase 30: Camera System
 
-**Phase**: 05  
-**Title**: Input System  
-**Area**: OS API Layer (win32_sdl_api_compat)  
+**Phase**: 30  
+**Title**: Camera System  
+**Area**: Game Logic  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 01, Phase 03
+**Dependencies**: Phase 05, Phase 19, Phase 29
 
 ---
 
 ## Objective
 
-Implement SDL2-based cross-platform input handling with keyboard, mouse, and gamepad support.
+Multiple camera modes for gameplay
 
 ---
 
 ## Key Deliverables
 
-- [ ] Keyboard input mapping (SDL2 → game constants)
-- [ ] Mouse input handling with relative/absolute modes
-- [ ] Gamepad/joystick detection and mapping
-- [ ] Input rebinding configuration
-- [ ] Multi-platform input verification
+- [ ] Free camera (WASD + mouse look)
+- [ ] RTS camera (isometric, pan, zoom)
+- [ ] Chase camera (follow unit)
+- [ ] Orbit camera (rotate around point)
+- [ ] Smooth camera transitions
 
 ---
 
@@ -57,8 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/Libraries/Source/WWVegas/WW3D2/win32_input_api_compat.h
-- GeneralsMD/Code/GameEngine/Source/Input/InputManager.cpp
+- GeneralsMD/Code/GameEngine/Source/Input/CameraController.h
 
 ---
 

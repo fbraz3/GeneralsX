@@ -1,27 +1,27 @@
-# Phase 05: Input System
+# Phase 23: Menu Interaction
 
-**Phase**: 05  
-**Title**: Input System  
-**Area**: OS API Layer (win32_sdl_api_compat)  
-**Scope**: MEDIUM  
+**Phase**: 23  
+**Title**: Menu Interaction  
+**Area**: Menu System  
+**Scope**: SMALL  
 **Status**: not-started  
-**Dependencies**: Phase 01, Phase 03
+**Dependencies**: Phase 05, Phase 22
 
 ---
 
 ## Objective
 
-Implement SDL2-based cross-platform input handling with keyboard, mouse, and gamepad support.
+Menu button interaction and input handling
 
 ---
 
 ## Key Deliverables
 
-- [ ] Keyboard input mapping (SDL2 → game constants)
-- [ ] Mouse input handling with relative/absolute modes
-- [ ] Gamepad/joystick detection and mapping
-- [ ] Input rebinding configuration
-- [ ] Multi-platform input verification
+- [ ] Button click detection
+- [ ] Keyboard navigation
+- [ ] Selection highlight rendering
+- [ ] Save/load file dialogs
+- [ ] Settings menu updates
 
 ---
 
@@ -57,8 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/Libraries/Source/WWVegas/WW3D2/win32_input_api_compat.h
-- GeneralsMD/Code/GameEngine/Source/Input/InputManager.cpp
+- GeneralsMD/Code/GameEngine/Source/UI/MenuInteraction.h
 
 ---
 

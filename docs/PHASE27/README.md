@@ -1,27 +1,27 @@
-# Phase 05: Input System
+# Phase 27: World Management
 
-**Phase**: 05  
-**Title**: Input System  
-**Area**: OS API Layer (win32_sdl_api_compat)  
+**Phase**: 27  
+**Title**: World Management  
+**Area**: Game Logic  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 01, Phase 03
+**Dependencies**: Phase 26
 
 ---
 
 ## Objective
 
-Implement SDL2-based cross-platform input handling with keyboard, mouse, and gamepad support.
+Scene graph and spatial query system
 
 ---
 
 ## Key Deliverables
 
-- [ ] Keyboard input mapping (SDL2 → game constants)
-- [ ] Mouse input handling with relative/absolute modes
-- [ ] Gamepad/joystick detection and mapping
-- [ ] Input rebinding configuration
-- [ ] Multi-platform input verification
+- [ ] GameWorld manager
+- [ ] Spatial indexing (quadtree for 5K+ objects)
+- [ ] Radius queries
+- [ ] Frustum containment tests
+- [ ] Deferred deletion system
 
 ---
 
@@ -57,8 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/Libraries/Source/WWVegas/WW3D2/win32_input_api_compat.h
-- GeneralsMD/Code/GameEngine/Source/Input/InputManager.cpp
+- GeneralsMD/Code/GameEngine/Source/GameWorld/GameWorld.h
 
 ---
 

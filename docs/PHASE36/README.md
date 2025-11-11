@@ -1,27 +1,27 @@
-# Phase 05: Input System
+# Phase 36: Test Infrastructure
 
-**Phase**: 05  
-**Title**: Input System  
-**Area**: OS API Layer (win32_sdl_api_compat)  
-**Scope**: MEDIUM  
+**Phase**: 36  
+**Title**: Test Infrastructure  
+**Area**: Testing & Polish  
+**Scope**: LARGE  
 **Status**: not-started  
-**Dependencies**: Phase 01, Phase 03
+**Dependencies**: Phase 00.5
 
 ---
 
 ## Objective
 
-Implement SDL2-based cross-platform input handling with keyboard, mouse, and gamepad support.
+Unit test framework and test suite
 
 ---
 
 ## Key Deliverables
 
-- [ ] Keyboard input mapping (SDL2 → game constants)
-- [ ] Mouse input handling with relative/absolute modes
-- [ ] Gamepad/joystick detection and mapping
-- [ ] Input rebinding configuration
-- [ ] Multi-platform input verification
+- [ ] Test runner and assertion macros
+- [ ] Graphics rendering tests
+- [ ] Game logic unit tests
+- [ ] Performance benchmarks
+- [ ] Integration tests
 
 ---
 
@@ -57,8 +57,9 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/Libraries/Source/WWVegas/WW3D2/win32_input_api_compat.h
-- GeneralsMD/Code/GameEngine/Source/Input/InputManager.cpp
+- tests/core/test_runner.h
+- tests/test_graphics.cpp
+- tests/test_gamelogic.cpp
 
 ---
 

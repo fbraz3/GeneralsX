@@ -1,27 +1,27 @@
-# Phase 05: Input System
+# Phase 24: Main Menu State Machine
 
-**Phase**: 05  
-**Title**: Input System  
-**Area**: OS API Layer (win32_sdl_api_compat)  
+**Phase**: 24  
+**Title**: Main Menu State Machine  
+**Area**: Menu System  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 01, Phase 03
+**Dependencies**: Phase 21, Phase 23
 
 ---
 
 ## Objective
 
-Implement SDL2-based cross-platform input handling with keyboard, mouse, and gamepad support.
+Main menu state transitions and mode selection
 
 ---
 
 ## Key Deliverables
 
-- [ ] Keyboard input mapping (SDL2 → game constants)
-- [ ] Mouse input handling with relative/absolute modes
-- [ ] Gamepad/joystick detection and mapping
-- [ ] Input rebinding configuration
-- [ ] Multi-platform input verification
+- [ ] Main menu → Campaign/Skirmish/Multiplayer
+- [ ] Settings menu integration
+- [ ] Demo/intro video playback
+- [ ] Difficulty selection
+- [ ] Exit to desktop
 
 ---
 
@@ -57,8 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/Libraries/Source/WWVegas/WW3D2/win32_input_api_compat.h
-- GeneralsMD/Code/GameEngine/Source/Input/InputManager.cpp
+- GeneralsMD/Code/GameEngine/Source/UI/MainMenuStateMachine.h
 
 ---
 

@@ -1,78 +1,119 @@
-# PHASE 20: Menu Rendering Pipeline
+# Phase 20: Draw Command System
 
-**Date**: November 11, 2025  
-**Phase Number**: 20  
-**Objective**: Integrate all UI components and render complete menu  
-**Dependencies**: PHASE18-19  
-**Estimated Scope**: MEDIUM  
-**Status**: not-started  
+**Phase**: 20  
+**Title**: Draw Command System  
+**Area**: Graphics Layer (d3d8_vulkan_graphics_compat)  
+**Scope**: MEDIUM  
+**Status**: COMPLETE (Phase 41)  
+**Dependencies**: Phase 10, Phase 14, Phase 19
 
 ---
 
-## Overview
+## Objective
 
-This phase implements:
-- Final rendering
-- Integration with previous phases
-- Testing and validation
+Drawing primitives and command recording (ALREADY COMPLETE in Phase 41)
 
 ---
 
 ## Key Deliverables
 
-- ✅ Complete functional menu
-- ✅ All acceptance criteria met
-- ✅ Unit tests passing
-- ✅ No memory leaks
+- [ ] vkCmdDraw and vkCmdDrawIndexed commands
+- [ ] Instancing support
+- [ ] Multi-pass rendering
+- [ ] Draw call batching
+- [ ] State sorting optimization
 
 ---
 
-## Technical Approach
+## Acceptance Criteria
 
-### Core Implementation Pattern
+### Build & Compilation
+- [ ] Compiles without new errors
+- [ ] All platforms build successfully (macOS ARM64, x86_64, Linux, Windows)
+- [ ] No regression in existing functionality
 
-```cpp
-// Implementation structure
-// (Details to be filled during implementation)
-```
+### Runtime Behavior
+- [ ] All planned features functional
+- [ ] No crashes or undefined behavior
+- [ ] Performance meets targets
 
----
-
-## Acceptance Criteria (Checklist)
-
-- [ ] Feature fully implemented
-- [ ] All unit tests passing
-- [ ] No memory leaks
-- [ ] Performance acceptable
-- [ ] Code reviewed and documented
-- [ ] Integrated with previous phases
+### Testing
+- [ ] Unit tests pass (100% success rate)
+- [ ] Integration tests pass
+- [ ] Cross-platform validation complete
 
 ---
 
-## Implementation Files
+## Technical Details
 
-**Files to Create**:
-- (To be determined during phase)
+### Compatibility Layer: {compat_layer}
 
-**Files to Modify**:
-- (To be determined during phase)
+**Pattern**: `source_dest_type_compat`  
+**Purpose**: {title}
+
+Implementation details and code examples will be added as phase is developed.
+
+---
+
+## Key Files
+
+- Core/Libraries/Source/WWVegas/WW3D2/graphics_backend_dxvk_drawing.cpp
 
 ---
 
 ## Testing Strategy
 
-- Unit tests for each component
-- Integration testing with previous phases
-- Performance profiling
-- Memory leak detection
+### Unit Tests
+- [ ] Functionality tests
+- [ ] Edge case handling
+- [ ] Error cases
+
+### Integration Tests
+- [ ] Integration with dependent phases
+- [ ] Cross-platform validation
+- [ ] Performance benchmarks
 
 ---
 
-## Next Phase
+## Success Criteria
 
-PHASE21
+✅ **Complete when**:
+1. All deliverables implemented
+2. All acceptance criteria met
+3. All tests passing (100% success)
+4. Zero regressions introduced
+5. Code reviewed and approved
 
 ---
 
-**Last Updated**: November 11, 2025  
-**Status**: Ready for implementation
+## Reference Documentation
+
+- Comprehensive Vulkan Plan: `/docs/COMPREHENSIVE_VULKAN_PLAN.md`
+- Lessons Learned: `/docs/MISC/LESSONS_LEARNED.md`
+- Critical VFS Discovery: `/docs/MISC/CRITICAL_VFS_DISCOVERY.md`
+- Phase Index: `/docs/PHASE_INDEX.md`
+
+---
+
+## Estimated Timeline
+
+Estimated duration: (To be determined during implementation)
+
+---
+
+## Known Issues & Considerations
+
+(Will be updated as phase is developed)
+
+---
+
+## Next Phase Dependencies
+
+(Document which phases depend on this one)
+
+---
+
+## Notes
+
+(Development notes will be added here)
+

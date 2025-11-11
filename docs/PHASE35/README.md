@@ -1,27 +1,27 @@
-# Phase 05: Input System
+# Phase 35: Game State Management
 
-**Phase**: 05  
-**Title**: Input System  
-**Area**: OS API Layer (win32_sdl_api_compat)  
+**Phase**: 35  
+**Title**: Game State Management  
+**Area**: Gameplay Features  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 01, Phase 03
+**Dependencies**: Phase 04, Phase 26, Phase 28
 
 ---
 
 ## Objective
 
-Implement SDL2-based cross-platform input handling with keyboard, mouse, and gamepad support.
+Save/load and game state serialization
 
 ---
 
 ## Key Deliverables
 
-- [ ] Keyboard input mapping (SDL2 → game constants)
-- [ ] Mouse input handling with relative/absolute modes
-- [ ] Gamepad/joystick detection and mapping
-- [ ] Input rebinding configuration
-- [ ] Multi-platform input verification
+- [ ] Save game serialization
+- [ ] Load game deserialization
+- [ ] Game state versioning
+- [ ] Undo/redo system
+- [ ] Replay recording (optional Phase 39+)
 
 ---
 
@@ -57,8 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/Libraries/Source/WWVegas/WW3D2/win32_input_api_compat.h
-- GeneralsMD/Code/GameEngine/Source/Input/InputManager.cpp
+- GeneralsMD/Code/GameEngine/Source/Gameplay/GameStateManager.h
 
 ---
 

@@ -1,78 +1,119 @@
-# PHASE 16: INI Menu Definition Parsing
+# Phase 16: Render Loop Integration
 
-**Date**: November 11, 2025  
-**Phase Number**: 16  
-**Objective**: Parse menu.ini and menuXH.ini to build menu structure  
-**Dependencies**: PHASE15  
-**Estimated Scope**: MEDIUM  
+**Phase**: 16  
+**Title**: Render Loop Integration  
+**Area**: Graphics Layer (d3d8_vulkan_graphics_compat)  
+**Scope**: MEDIUM  
 **Status**: not-started  
+**Dependencies**: Phase 06, Phase 09, Phase 15
 
 ---
 
-## Overview
+## Objective
 
-This phase implements:
-- Menu parsing
-- Integration with previous phases
-- Testing and validation
+Game loop and render loop integration
 
 ---
 
 ## Key Deliverables
 
-- ✅ INI-defined menus
-- ✅ All acceptance criteria met
-- ✅ Unit tests passing
-- ✅ No memory leaks
+- [ ] Update/Render phase coordination
+- [ ] Frame pacing and FPS limiting
+- [ ] GPU/CPU synchronization points
+- [ ] Frame statistics collection
+- [ ] BeginFrame/EndFrame coordination
 
 ---
 
-## Technical Approach
+## Acceptance Criteria
 
-### Core Implementation Pattern
+### Build & Compilation
+- [ ] Compiles without new errors
+- [ ] All platforms build successfully (macOS ARM64, x86_64, Linux, Windows)
+- [ ] No regression in existing functionality
 
-```cpp
-// Implementation structure
-// (Details to be filled during implementation)
-```
+### Runtime Behavior
+- [ ] All planned features functional
+- [ ] No crashes or undefined behavior
+- [ ] Performance meets targets
 
----
-
-## Acceptance Criteria (Checklist)
-
-- [ ] Feature fully implemented
-- [ ] All unit tests passing
-- [ ] No memory leaks
-- [ ] Performance acceptable
-- [ ] Code reviewed and documented
-- [ ] Integrated with previous phases
+### Testing
+- [ ] Unit tests pass (100% success rate)
+- [ ] Integration tests pass
+- [ ] Cross-platform validation complete
 
 ---
 
-## Implementation Files
+## Technical Details
 
-**Files to Create**:
-- (To be determined during phase)
+### Compatibility Layer: {compat_layer}
 
-**Files to Modify**:
-- (To be determined during phase)
+**Pattern**: `source_dest_type_compat`  
+**Purpose**: {title}
+
+Implementation details and code examples will be added as phase is developed.
+
+---
+
+## Key Files
+
+- GeneralsMD/Code/GameEngine/Source/GameLoop/GameLoop.cpp
 
 ---
 
 ## Testing Strategy
 
-- Unit tests for each component
-- Integration testing with previous phases
-- Performance profiling
-- Memory leak detection
+### Unit Tests
+- [ ] Functionality tests
+- [ ] Edge case handling
+- [ ] Error cases
+
+### Integration Tests
+- [ ] Integration with dependent phases
+- [ ] Cross-platform validation
+- [ ] Performance benchmarks
 
 ---
 
-## Next Phase
+## Success Criteria
 
-PHASE17
+✅ **Complete when**:
+1. All deliverables implemented
+2. All acceptance criteria met
+3. All tests passing (100% success)
+4. Zero regressions introduced
+5. Code reviewed and approved
 
 ---
 
-**Last Updated**: November 11, 2025  
-**Status**: Ready for implementation
+## Reference Documentation
+
+- Comprehensive Vulkan Plan: `/docs/COMPREHENSIVE_VULKAN_PLAN.md`
+- Lessons Learned: `/docs/MISC/LESSONS_LEARNED.md`
+- Critical VFS Discovery: `/docs/MISC/CRITICAL_VFS_DISCOVERY.md`
+- Phase Index: `/docs/PHASE_INDEX.md`
+
+---
+
+## Estimated Timeline
+
+Estimated duration: (To be determined during implementation)
+
+---
+
+## Known Issues & Considerations
+
+(Will be updated as phase is developed)
+
+---
+
+## Next Phase Dependencies
+
+(Document which phases depend on this one)
+
+---
+
+## Notes
+
+(Development notes will be added here)
+

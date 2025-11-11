@@ -1,27 +1,27 @@
-# Phase 05: Input System
+# Phase 39: Documentation & Hardening
 
-**Phase**: 05  
-**Title**: Input System  
-**Area**: OS API Layer (win32_sdl_api_compat)  
+**Phase**: 39  
+**Title**: Documentation & Hardening  
+**Area**: Testing & Polish  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 01, Phase 03
+**Dependencies**: Phase 38
 
 ---
 
 ## Objective
 
-Implement SDL2-based cross-platform input handling with keyboard, mouse, and gamepad support.
+API documentation and error handling
 
 ---
 
 ## Key Deliverables
 
-- [ ] Keyboard input mapping (SDL2 → game constants)
-- [ ] Mouse input handling with relative/absolute modes
-- [ ] Gamepad/joystick detection and mapping
-- [ ] Input rebinding configuration
-- [ ] Multi-platform input verification
+- [ ] API reference documentation
+- [ ] Developer guides
+- [ ] Configuration documentation
+- [ ] Troubleshooting guides
+- [ ] Error messages and logging
 
 ---
 
@@ -57,8 +57,8 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/Libraries/Source/WWVegas/WW3D2/win32_input_api_compat.h
-- GeneralsMD/Code/GameEngine/Source/Input/InputManager.cpp
+- docs/API_REFERENCE.md
+- docs/DEVELOPER_GUIDE.md
 
 ---
 

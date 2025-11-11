@@ -1,27 +1,27 @@
-# Phase 05: Input System
+# Phase 28: Game Loop Integration
 
-**Phase**: 05  
-**Title**: Input System  
-**Area**: OS API Layer (win32_sdl_api_compat)  
-**Scope**: MEDIUM  
+**Phase**: 28  
+**Title**: Game Loop Integration  
+**Area**: Game Logic  
+**Scope**: SMALL  
 **Status**: not-started  
-**Dependencies**: Phase 01, Phase 03
+**Dependencies**: Phase 16, Phase 27
 
 ---
 
 ## Objective
 
-Implement SDL2-based cross-platform input handling with keyboard, mouse, and gamepad support.
+Main game loop with Update/Render/Present
 
 ---
 
 ## Key Deliverables
 
-- [ ] Keyboard input mapping (SDL2 → game constants)
-- [ ] Mouse input handling with relative/absolute modes
-- [ ] Gamepad/joystick detection and mapping
-- [ ] Input rebinding configuration
-- [ ] Multi-platform input verification
+- [ ] Frame timing and delta time
+- [ ] Update phase (game logic)
+- [ ] Render phase (graphics)
+- [ ] Frame rate limiting
+- [ ] Statistics tracking
 
 ---
 
@@ -57,8 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/Libraries/Source/WWVegas/WW3D2/win32_input_api_compat.h
-- GeneralsMD/Code/GameEngine/Source/Input/InputManager.cpp
+- GeneralsMD/Code/GameEngine/Source/GameLoop/GameLoop.cpp
 
 ---
 

@@ -1,217 +1,120 @@
-# PHASE 03: Shader Compilation System (GLSL → SPIR-V)
+# Phase 03: Memory & Threading
 
-**Date**: November 11, 2025  
-**Phase Number**: 03  
-**Objective**: Create shader compilation pipeline converting GLSL source to SPIR-V bytecode for Vulkan  
-**Dependencies**: PHASE01-02 (Vulkan device ready)  
-**Estimated Scope**: MEDIUM  
+**Phase**: 03  
+**Title**: Memory & Threading  
+**Area**: OS API Layer (win32_sdl_api_compat)  
+**Scope**: MEDIUM  
 **Status**: not-started  
+**Dependencies**: Phase 01, Phase 02
 
 ---
 
-## Overview
+## Objective
 
-This phase implements the complete shader compilation system:
-1. GLSL source code loading and parsing
-2. GLSL compilation to SPIR-V bytecode using glslang
-3. VkShaderModule creation from SPIR-V
-4. Shader caching for performance
-5. Error handling and debug output
+Implement cross-platform threading, synchronization primitives, and memory allocation hooks.
 
 ---
 
 ## Key Deliverables
 
-- ✅ GLSL → SPIR-V compilation working
-- ✅ VkShaderModule objects created successfully
-- ✅ Vertex and fragment shaders compiling
-- ✅ Shader caching implemented
-- ✅ Debug info available in error messages
-- ✅ Unit tests for shader compilation
+- [ ] Thread creation wrapper (std::thread / pthread)
+- [ ] Mutex and condition variable wrappers
+- [ ] Critical section equivalent
+- [ ] Memory allocation hooks with statistics
+- [ ] Performance counter abstraction
 
 ---
 
-## Technical Approach
+## Acceptance Criteria
 
-### Shader Compilation Pipeline
+### Build & Compilation
+- [ ] Compiles without new errors
+- [ ] All platforms build successfully (macOS ARM64, x86_64, Linux, Windows)
+- [ ] No regression in existing functionality
 
-```cpp
-// GLSL source → SPIR-V bytecode
-class ShaderCompiler {
-public:
-    bool CompileGLSLToSPIRV(
-        const std::string& source,
-        VkShaderStageFlagBits stage,
-        std::vector<uint32_t>& spirvBytecode
-    ) {
-        // Use glslang to compile GLSL → SPIR-V
-        glslang::TShader shader(stage);
-        shader.setStrings(&source.c_str(), 1);
-        
-        if (!shader.parse(...)) {
-            printf("VULKAN: Shader compilation failed\n");
-            return false;
-        }
-        
-        glslang::TProgram program;
-        program.addShader(&shader);
-        
-        if (!program.link(...)) {
-            printf("VULKAN: Program linking failed\n");
-            return false;
-        }
-        
-        glslang::GlslangToSpv(program.getIntermediate(stage), spirvBytecode);
-        return true;
-    }
-};
-```
+### Runtime Behavior
+- [ ] All planned features functional
+- [ ] No crashes or undefined behavior
+- [ ] Performance meets targets
 
-### VkShaderModule Creation
-
-```cpp
-VkShaderModuleCreateInfo createInfo = {
-    .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-    .codeSize = spirvBytecode.size() * sizeof(uint32_t),
-    .pCode = spirvBytecode.data()
-};
-
-VkShaderModule shaderModule;
-vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule);
-```
-
-### Shader Caching
-
-```cpp
-class ShaderCache {
-    std::unordered_map<std::string, VkShaderModule> cache;
-    
-    VkShaderModule GetOrCompile(const std::string& filename) {
-        auto it = cache.find(filename);
-        if (it != cache.end()) {
-            printf("VULKAN: Shader cached: %s\n", filename.c_str());
-            return it->second;
-        }
-        
-        std::string source = LoadFileAsString(filename);
-        std::vector<uint32_t> spirv;
-        compiler.CompileGLSLToSPIRV(source, VK_SHADER_STAGE_FRAGMENT_BIT, spirv);
-        
-        VkShaderModule module = CreateShaderModule(spirv);
-        cache[filename] = module;
-        return module;
-    }
-};
-```
+### Testing
+- [ ] Unit tests pass (100% success rate)
+- [ ] Integration tests pass
+- [ ] Cross-platform validation complete
 
 ---
 
-## Acceptance Criteria (Checklist)
+## Technical Details
 
-- [ ] glslang library linked and working
-- [ ] GLSL vertex shader compiles to SPIR-V
-- [ ] GLSL fragment shader compiles to SPIR-V
-- [ ] Geometry shaders compile (if used)
-- [ ] Compute shaders compile (if used)
-- [ ] VkShaderModule created from SPIR-V
-- [ ] Shader caching reduces recompilation
-- [ ] Error messages include line numbers and failure details
-- [ ] No SPIR-V validation errors
-- [ ] Can clean up with vkDestroyShaderModule
+### Compatibility Layer: {compat_layer}
+
+**Pattern**: `source_dest_type_compat`  
+**Purpose**: {title}
+
+Implementation details and code examples will be added as phase is developed.
 
 ---
 
-## Implementation Files
+## Key Files
 
-**Files to Create**:
-- `Core/Libraries/Source/WWVegas/WW3D2/vulkan_shader_compiler.h` - Shader compiler interface
-- `Core/Libraries/Source/WWVegas/WW3D2/vulkan_shader_compiler.cpp` - glslang integration
-- `Core/Libraries/Source/WWVegas/WW3D2/vulkan_shader_cache.h` - Caching system
-- `Core/Libraries/Source/WWVegas/WW3D2/shader_sources/` - Directory for .glsl files
-  - `shader_sources/basic.vert` - Basic vertex shader
-  - `shader_sources/basic.frag` - Basic fragment shader
-- `tests/vulkan_shader_test.cpp` - Unit tests
-
-**Files to Modify**:
-- `CMakeLists.txt` - Add glslang library linkage
-- `cmake/vulkan.cmake` - Add shader compilation support
+- Core/Libraries/Source/WWVegas/WW3D2/win32_thread_compat.h
+- Core/GameEngine/Source/Common/System/GameMemory.cpp
 
 ---
 
 ## Testing Strategy
 
-### Unit Test: GLSL → SPIR-V Compilation
+### Unit Tests
+- [ ] Functionality tests
+- [ ] Edge case handling
+- [ ] Error cases
 
-```cpp
-void test_shader_compilation() {
-    ShaderCompiler compiler;
-    std::vector<uint32_t> spirv;
-    
-    std::string glslSource = R"glsl(
-        #version 450
-        layout(location = 0) out vec4 outColor;
-        
-        void main() {
-            outColor = vec4(1.0, 0.0, 0.0, 1.0);
-        }
-    )glsl";
-    
-    ASSERT_TRUE(compiler.CompileGLSLToSPIRV(glslSource, VK_SHADER_STAGE_FRAGMENT_BIT, spirv));
-    ASSERT_GT(spirv.size(), 0);
-}
-
-void test_shader_module_creation() {
-    // Create VkShaderModule from compiled SPIR-V
-    VkShaderModule module = CreateShaderModuleFromSPIRV(device, spirvBytecode);
-    ASSERT_TRUE(module != VK_NULL_HANDLE);
-}
-
-void test_shader_caching() {
-    ShaderCache cache;
-    
-    VkShaderModule mod1 = cache.GetOrCompile("basic.frag");
-    VkShaderModule mod2 = cache.GetOrCompile("basic.frag"); // Should be cached
-    
-    ASSERT_EQ(mod1, mod2);
-}
-```
-
-### Debug Output Example
-
-```
-VULKAN: Shader Compiler initialized
-VULKAN: Compiling shader: basic.frag
-VULKAN: GLSL → SPIR-V compilation successful
-VULKAN: SPIR-V bytecode size: 2048 bytes
-VULKAN: VkShaderModule created: 0x1a2b3c4d
-VULKAN: Shader caching enabled
-VULKAN: Phase 03 COMPLETE
-```
+### Integration Tests
+- [ ] Integration with dependent phases
+- [ ] Cross-platform validation
+- [ ] Performance benchmarks
 
 ---
 
-## Critical Notes from Lessons Learned
+## Success Criteria
 
-- ✅ **Error messages**: Include source line numbers in compilation errors (helps debugging)
-- ✅ **SPIR-V validation**: Always validate SPIR-V output before creating modules
-- ✅ **Memory management**: SPIR-V vectors must persist until VkShaderModule created
-- ✅ **Cross-platform**: glslang compiles same GLSL on all platforms
+✅ **Complete when**:
+1. All deliverables implemented
+2. All acceptance criteria met
+3. All tests passing (100% success)
+4. Zero regressions introduced
+5. Code reviewed and approved
 
 ---
 
 ## Reference Documentation
 
-- **Vulkan Spec**: `docs/Vulkan/getting_started.html` (Shaders section)
-- **glslang**: https://github.com/KhronosGroup/glslang (reference compiler)
-- **SPIR-V**: Vulkan specification (SPIR-V bytecode format)
+- Comprehensive Vulkan Plan: `/docs/COMPREHENSIVE_VULKAN_PLAN.md`
+- Lessons Learned: `/docs/MISC/LESSONS_LEARNED.md`
+- Critical VFS Discovery: `/docs/MISC/CRITICAL_VFS_DISCOVERY.md`
+- Phase Index: `/docs/PHASE_INDEX.md`
 
 ---
 
-## Next Phase
+## Estimated Timeline
 
-PHASE04: Vertex & Index Buffers (use shaders for rendering)
+Estimated duration: (To be determined during implementation)
 
 ---
 
-**Last Updated**: November 11, 2025  
-**Status**: Ready for implementation
+## Known Issues & Considerations
+
+(Will be updated as phase is developed)
+
+---
+
+## Next Phase Dependencies
+
+(Document which phases depend on this one)
+
+---
+
+## Notes
+
+(Development notes will be added here)
+

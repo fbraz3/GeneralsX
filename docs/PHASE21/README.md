@@ -1,27 +1,27 @@
-# Phase 05: Input System
+# Phase 21: INI Parser Hardening
 
-**Phase**: 05  
-**Title**: Input System  
-**Area**: OS API Layer (win32_sdl_api_compat)  
+**Phase**: 21  
+**Title**: INI Parser Hardening  
+**Area**: Menu System  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 01, Phase 03
+**Dependencies**: Phase 02, Phase 04
 
 ---
 
 ## Objective
 
-Implement SDL2-based cross-platform input handling with keyboard, mouse, and gamepad support.
+Fix INI parser to correctly read all field types (Phase 33.9 regression)
 
 ---
 
 ## Key Deliverables
 
-- [ ] Keyboard input mapping (SDL2 → game constants)
-- [ ] Mouse input handling with relative/absolute modes
-- [ ] Gamepad/joystick detection and mapping
-- [ ] Input rebinding configuration
-- [ ] Multi-platform input verification
+- [ ] Fix exception handling (re-throw with context)
+- [ ] Parse all menu definitions
+- [ ] Support all data types (string, float, int, color)
+- [ ] VFS integration for .big file access
+- [ ] Comprehensive error reporting
 
 ---
 
@@ -57,8 +57,14 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/Libraries/Source/WWVegas/WW3D2/win32_input_api_compat.h
-- GeneralsMD/Code/GameEngine/Source/Input/InputManager.cpp
+- Core/Libraries/Source/WWVegas/WWLib/Source/Ini.cpp
+
+---
+
+## Critical Notes
+
+CRITICAL: Phase 33.9 shows exception swallowing prevents proper parsing. Must re-throw exceptions with context.
+
 
 ---
 
