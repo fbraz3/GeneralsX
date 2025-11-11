@@ -24,7 +24,7 @@
 #include "dx8wrapper.h"
 #include "bitmaphandler.h"
 #include "colorspace.h"
-#include <ddraw.h>
+// #include <ddraw.h>  // Not available on non-Windows platforms; DDS structures defined in d3d8.h
 
 // ----------------------------------------------------------------------------
 

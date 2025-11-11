@@ -38,6 +38,7 @@
 #include "w3derr.h"
 #include "chunkio.h"
 #include "win.h"		// for lstrcpy, can this be improved?
+#include "win32_types.h"  // For lstrcpy, _strdup, lstrcpyn, lstrlen macros
 #include "assetmgr.h"
 #include "texture.h"
 
@@ -277,7 +278,7 @@ void
 ParticleEmitterDefClass::Set_User_String (const char *pstring)
 {
 	SAFE_FREE (m_pUserString);
-	m_pUserString = ::_strdup (pstring);
+	m_pUserString = _strdup (pstring);
 	return ;
 }
 
@@ -290,7 +291,7 @@ void
 ParticleEmitterDefClass::Set_Name (const char *pname)
 {
 	SAFE_FREE (m_pName);
-	m_pName = ::_strdup (pname);
+	m_pName = _strdup (pname);
 	return ;
 }
 
@@ -302,7 +303,7 @@ ParticleEmitterDefClass::Set_Name (const char *pname)
 void
 ParticleEmitterDefClass::Set_Texture_Filename (const char *pname)
 {
-	::lstrcpy (m_Info.TextureFilename, pname);
+	lstrcpy (m_Info.TextureFilename, pname);
 	Normalize_Filename ();
 	return ;
 }
@@ -316,7 +317,7 @@ void
 ParticleEmitterDefClass::Normalize_Filename (void)
 {
 	TCHAR path[MAX_PATH];
-	::lstrcpy (path, m_Info.TextureFilename);
+	lstrcpy (path, m_Info.TextureFilename);
 
 	// Find the last occurance of the directory deliminator
 	LPCTSTR filename = ::strrchr (path, '\\');
@@ -1232,9 +1233,7 @@ ParticleEmitterDefClass::Save_User_Data (ChunkSaveClass &chunk_save)
 	// Begin a chunk that contains user information
 	if (chunk_save.Begin_Chunk (W3D_CHUNK_EMITTER_USER_DATA) == TRUE) {
 
-		DWORD string_len = m_pUserString ? (::lstrlen (m_pUserString) + 1) : 0;
-
-		// Fill the header structure
+			DWORD string_len = m_pUserString ? (lstrlen (m_pUserString) + 1) : 0;		// Fill the header structure
 		W3dEmitterUserInfoStruct user_info = { 0 };
 		user_info.Type = m_iUserType;
 		user_info.SizeofStringParam = string_len;

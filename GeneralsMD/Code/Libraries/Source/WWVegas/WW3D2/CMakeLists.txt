@@ -202,14 +202,9 @@ set(WW3D2_SRC
     #surfaceclass.h
     texproject.cpp
     texproject.h
-    #textdraw.cpp
-    #textdraw.h
     texture.cpp
-    texture.h
     texturefilter.cpp
     texturefilter.h
-    textureloader.cpp
-    textureloader.h
     texturethumbnail.cpp
     texturethumbnail.h
     vertmaterial.cpp
@@ -251,6 +246,10 @@ if (USE_VULKAN)
         dx8wrapper.cpp dx8wrapper.h
         dx8list.h dx8polygonrenderer.cpp dx8polygonrenderer.h
         dx8webbrowser.cpp dx8webbrowser.h
+        shader.cpp shader.h
+        texture.cpp
+        sortingrenderer.cpp sortingrenderer.h
+        scene.cpp scene.h
     )
 endif()
 

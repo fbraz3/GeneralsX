@@ -60,6 +60,11 @@ typedef long long __int64;
 typedef unsigned int UINT;
 #endif
 
+/** @brief Float type (32-bit) */
+#ifndef FLOAT
+typedef float FLOAT;
+#endif
+
 /** @brief Boolean type (32-bit DWORD) */
 #ifndef BOOL
 #ifdef __GNUC__
@@ -514,6 +519,55 @@ typedef BITMAPINFO* LPBITMAPINFO;
 
 /** @brief Compression type: bitfield compression */
 #define BI_BITFIELDS                  3
+
+// =====================================================================
+// Windows Path and String Limits
+// =====================================================================
+
+/** @brief Maximum path length for Windows paths */
+#ifndef MAX_PATH
+#define MAX_PATH 260
+#endif
+
+// =====================================================================
+// String functions (ANSI versions mapped to standard C functions)
+// =====================================================================
+
+#ifndef lstrcpyn
+#define lstrcpyn(dest, src, n) strncpy((dest), (src), (n))
+#endif
+
+#ifndef lstrcat
+#define lstrcat(dest, src) strcat((dest), (src))
+#endif
+
+#ifndef _strdup
+#define _strdup(s) strdup((s))
+#endif
+
+#ifndef lstrcpy
+#define lstrcpy(dest, src) strcpy((dest), (src))
+#endif
+
+#ifndef lstrlen
+#define lstrlen(s) strlen((s))
+#endif
+
+#ifndef _isnan
+#define _isnan(x) isnan((x))
+#endif
+
+// =====================================================================
+// DirectDraw Surface (DDS) Capability Flags
+// =====================================================================
+
+#ifndef DDSCAPS2_CUBEMAP
+#define DDSCAPS2_CUBEMAP           0x00000200  ///< Surface is a cube map
+#endif
+
+#ifndef DDSCAPS2_VOLUME
+#define DDSCAPS2_VOLUME            0x00200000  ///< Surface is a volume texture
+#endif
 
 #endif // !_WIN32
 

@@ -46,6 +46,7 @@
 #include "scene.h"
 #include "texture.h"
 #include "wwprofile.h"
+#include "win32_types.h"  // For _strdup macro
 #include <limits.h>
 #include <gcd_lcm.h>
 #include "texture.h"
@@ -100,7 +101,7 @@ ParticleEmitterClass::ParticleEmitterClass(float emit_rate, unsigned int burst_s
 	ParticlesLeft(max_particles),
 	MaxParticles(max_particles),
 	IsComplete(false),
-	NameString(::_strdup ("ParticleEmitter")),
+	NameString(_strdup ("ParticleEmitter")),
 	UserString(NULL),
 	RemoveOnComplete(DefaultRemoveOnComplete),
 	IsInScene(false),
@@ -146,8 +147,8 @@ ParticleEmitterClass::ParticleEmitterClass(const ParticleEmitterClass & src) :
 	ParticlesLeft(src.ParticlesLeft),
 	MaxParticles(src.MaxParticles),
 	IsComplete(false),
-	NameString(::_strdup (src.NameString)),
-	UserString(::_strdup (src.UserString)),
+	NameString(_strdup (src.NameString)),
+	UserString(_strdup (src.UserString)),
 	RemoveOnComplete(src.RemoveOnComplete),
 	IsInScene(false),
 	GroupID(0),
@@ -844,7 +845,7 @@ ParticleEmitterClass::Set_Name (const char *pname)
 	}
 
 	// Copy the provided name
-	NameString = ::_strdup (pname);
+	NameString = _strdup (pname);
 	return ;
 }
 

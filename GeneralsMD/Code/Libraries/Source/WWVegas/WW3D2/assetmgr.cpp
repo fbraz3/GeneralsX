@@ -112,7 +112,7 @@
 #include "w3dexclusionlist.h"
 #include <INI.h>
 #include <windows.h>
-#include <d3dx8core.h>
+// #include <d3dx8core.h>  // Not available on non-Windows platforms
 #include "texture.h"
 #include "wwprofile.h"
 #include "assetstatus.h"
@@ -797,16 +797,14 @@ RenderObjClass * WW3DAssetManager::Create_Render_Obj(const char * name)
 	if (WW3D_Load_On_Demand && proto == NULL) {	// If we didn't find one, try to load on demand
 		AssetStatusClass::Peek_Instance()->Report_Load_On_Demand_RObj(name);
 
-		char filename [MAX_PATH];
-		const char *mesh_name = ::strchr (name, '.');
-		if (mesh_name != NULL) {
-			::lstrcpyn (filename, name, ((int)mesh_name) - ((int)name) + 1);
-			::lstrcat (filename, ".w3d");
-		} else {
-			sprintf( filename, "%s.w3d", name);
-		}
-
-		// If we can't find it, try the parent directory
+	char filename [MAX_PATH];
+	const char *mesh_name = ::strchr (name, '.');
+	if (mesh_name != NULL) {
+		::lstrcpyn (filename, name, ((intptr_t)mesh_name) - ((intptr_t)name) + 1);
+		::lstrcat (filename, ".w3d");
+	} else {
+		sprintf( filename, "%s.w3d", name);
+	}		// If we can't find it, try the parent directory
 		if ( Load_3D_Assets( filename ) == false ) {
 			StringClass	new_filename(StringClass("..\\"),true);
 			new_filename+=filename;

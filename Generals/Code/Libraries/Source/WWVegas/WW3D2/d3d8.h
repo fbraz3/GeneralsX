@@ -478,6 +478,7 @@ typedef enum {
     D3DFMT_X8L8V8U8            = 62,
     D3DFMT_Q8W8V8U8            = 63,
     D3DFMT_V16U16              = 64,
+    D3DFMT_W11V11U10           = 65,  /**< 11-bit W, V, U components (bumpmapping) */
     D3DFMT_A2W10V10U10         = 67,
     D3DFMT_D16_LOCKABLE        = 70,
     D3DFMT_D32                 = 71,
