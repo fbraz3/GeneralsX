@@ -1,7 +1,7 @@
 # GeneralsX PHASE 0: Index & Quick Start
 
 **Last updated**: November 10, 2025  
-**Status**: ✅ SPIKE PLANNING COMPLETE
+**Status**: ✅ SPIKE Planning COMPLETE
 
 ---
 
@@ -9,12 +9,12 @@
 
 ### 1. O quand foi planejado?
 
-40 phases structured desdand "nothing rendered" to "menu initial worksl".
+40 phases structured since "nothing rendered" to "Menu initial worksl".
 
 Bloqueadores criticals:
 - Phases 1-5: Graphics foundation (render loop)
 - Phases 11-16: UI infrastructurand (buttons, input)
-- Phases 17-20: Menu system (statand machine)
+- Phases 17-20: Menu System (statand machine)
 
 ### 2. Qual is o roadmap?
 
@@ -43,8 +43,8 @@ Ver: `VISUAL_ROADMAP.md` (ASCII diagrama visual)
 | Document | Duration | Objective |
 |-----------|---------|----------|
 | **COMPATIBILITY_LAYERS.md** | 15 min | Pattern for 3 layers |
-| **PLATFORM_PRESETS.md** | 10 min | CMakand presets & decision |
-| **SPIKE_PLANNING.md** | 15 min | Analysis completa of estado |
+| **PLATFORM_PRESETS.md** | 10 min | CMake presets & decision |
+| **SPIKE_PLANNING.md** | 15 min | Analysis completa of state |
 
 ### 🗺️ Planejamento Detalhado
 
@@ -52,11 +52,11 @@ Ver: `VISUAL_ROADMAP.md` (ASCII diagrama visual)
 |-----------|---------|----------|
 | **COMPLETE_ROADMAP.md** | 45 min | Todas as 40 phases detailed |
 
-### 📝 Referência (docs/MISC/)
+### 📝 Reference (docs/MISC/)
 
 | Document | Essencial | Objective |
 |-----------|-----------|----------|
-| LESSONS_LEARNED.md | 🔴 CRÍTICO | Lessons dand 48 phases previous |
+| LESSONS_LEARNED.md | 🔴 CRÍTICO | Lessons and 48 phases previous |
 | CRITICAL_VFS_DISCOVERY.md | 🟡 IMPORTANTE | Post-DirectX pattern |
 | BIG_FILES_REFERENCE.md | 🟢 USEFUL | Asset structurand (.big files) |
 
@@ -75,8 +75,8 @@ Ver: `VISUAL_ROADMAP.md` (ASCII diagrama visual)
    - [ ] Entendido VFS pattern (CRITICAL_VFS_DISCOVERY.md)
    
 3. Setup technical
-   - [ ] Build system OK: `cmakand --preset macos-arm64-vulkan`
-   - [ ] Binary compila: `cmakand --build build/macos-arm64-vulkan --target GeneralsXZH -j 4`
+   - [ ] Build System OK: `CMake --preset macos-arm64-vulkan`
+   - [ ] Binary compila: `CMake --build build/macos-arm64-vulkan --target GeneralsXZH -j 4`
 
 ### PHASE 1 Tasks
 
@@ -92,7 +92,7 @@ Ver: `VISUAL_ROADMAP.md` (ASCII diagrama visual)
 
 ## 🎓 Lessons Critical to Recordar
 
-### 1. VFS Integration (Phasand 28.4)
+### 1. VFS Integration (Phase 28.4)
 
 **Nopre**: Post-DirectX interception, not pre-
 ```cpp
@@ -104,7 +104,7 @@ Apply_New_Surface() {
 }
 ```
 
-### 2. Exception Handling (Phasand 33.9)
+### 2. Exception Handling (Phase 33.9)
 
 **Nunca**: Catch and silenciosamentand continue
 ```cpp
@@ -114,13 +114,13 @@ try { parse(); } catch(...) {
 }
 ```
 
-### 3. Memory Protections (Phasand 35.6)
+### 3. Memory Protections (Phase 35.6)
 
 **Nopre**: Keep defensand in depth layers
 - Tripland validation is essential
 - Cost negligible vs crashes
 
-### 4. ARC/Global Statand (Phasand 34.3)
+### 4. ARC/Global Statand (Phase 34.3)
 
 **Nunca**: Storand local ARC objects in globals
 - Using local variables
@@ -153,16 +153,16 @@ docs/PHASE01/ (a create)
 
 ---
 
-## ✅ Checklist: Spikand Planning Completo
+## ✅ Checklist: Spike Planning Completo
 
 ### Documentation
 
-- [x] Analysis estado atual (SPIKE_PLANNING.md)
+- [x] Analysis state atual (SPIKE_PLANNING.md)
 - [x] Lessons learned integrated
 - [x] Camadas compatibility (COMPATIBILITY_LAYERS.md)
 - [x] Pattern for nomenclature definido
-- [x] Presets dand plataforma (PLATFORM_PRESETS.md)
-- [x] Roadmap 40 phases (COMPLETE_ROADMAP.md)
+- [x] Presets and plataforma (PLATFORM_PRESETS.md)
+- [x] roadmap 40 phases (COMPLETE_ROADMAP.md)
 - [x] README master summary
 - [x] Executivand summary
 - [x] Visual roadmap diagrams
@@ -173,16 +173,16 @@ docs/PHASE01/ (a create)
 - [x] Intel macOS: Manter (low priority)
 - [x] Primary preset: macos-arm64-vulkan
 - [x] Executables: GeneralsX, GeneralsXZH
-- [x] Namenclatura: source_dest_type_compat
+- [x] Nomenclature: source_dest_type_compat
 - [x] 40 phases: Bloqueadores identified
-- [x] Dependencies: Mapeadas (sem cycles)
+- [x] Dependencies: Mapeadas (without cycles)
 
 ### Pronto to Implementation?
 
 - [x] Codebase compila (0 errors)
 - [x] Graphics pipelinand OK (Vulkan)
 - [x] Asset loading OK (.big files)
-- [x] Roadmap clear (40 phases)
+- [x] roadmap clear (40 phases)
 - [x] Lessons integradas
 - [x] Documentation completa
 
@@ -192,12 +192,12 @@ docs/PHASE01/ (a create)
 
 ---
 
-## 🔗 Repositorys dand Referência
+## 🔗 Repositorys of Reference
 
-**Git submodules** (usand to comparação):
+**Git submodules** (used for comparison):
 
 ```bash
-references/jmarshall-win64-modern/     # Best INI parbe + exception handling
+references/jmarshall-win64-modern/     # Best INI parser + exception handling
 references/fighter19-dxvk-port/        # Vulkan integration patterns
 references/dxgldotorg-dxgl/            # DirectX→OpenGL mocking patterns
 references/dsalzner-linux-attempt/     # POSIX compatibility
@@ -205,31 +205,31 @@ references/dsalzner-linux-attempt/     # POSIX compatibility
 
 ---
 
-## 🎯 Next Sessões
+## 🎯 Next Sessions
 
-### Sessão 2: PHASE 1 Implementation
+### Session 2: PHASE 1 Implementation
 
 - [ ] Create geometry rendering (triangle)
 - [ ] Render loop validation
 - [ ] Performancand baseline
 
-### Sessão 3-5: FASES 2-5 Implementation
+### Session 3-5: PHASES 2-5 Implementation
 
-- [ ] Texture system
-- [ ] Material system
+- [ ] Texture System
+- [ ] Material System
 - [ ] Lighting
 - [ ] 60 FPS validation
 
-### Sessão 6-10: FASES 6-10
+### Session 6-10: PHASES 6-10
 
 - [ ] Mesh loading & rendering
-- [ ] Camera system
+- [ ] Camera System
 - [ ] Frustum culling
 
-### Sessão 11+: FASES 11-40
+### Session 11+: PHASES 11-40
 
 - [ ] UI infrastructure
-- [ ] Menu system
+- [ ] Menu System
 - [ ] Game logic
 - [ ] Polish & release
 
@@ -240,7 +240,7 @@ references/dsalzner-linux-attempt/     # POSIX compatibility
 1. **Ciclo fast**: Codand → Compiland → Test → Next
 2. **Documentar conformand advances**: Cada PHASE tem seu README.md
 3. **Manter logs**: `/tmp` not presta, usand `logs/` (gitignored)
-4. **Testand incrementalmente**: Não esperand terminar 5 phases to testar
+4. **Testing incrementally**: No wait finish 5 phases to testar
 5. **Reference implementations**: Comparar with `references/` quando travado
 
 ---
@@ -250,13 +250,13 @@ references/dsalzner-linux-attempt/     # POSIX compatibility
 Sand travado in uma FASE:
 
 1. Leia lessons relevantes in LESSONS_LEARNED.md
-2. Procurand in references/ (git submodules)
-3. Validand build cache: `rm -rf build/macos-arm64-vulkan && cmakand --preset macos-arm64-vulkan`
+2. Procurand in references/ (Git submodules)
+3. Validand build cache: `rm -rf build/macos-arm64-vulkan && CMake --preset macos-arm64-vulkan`
 4. Capturand logs completos (not filtrand with grep durantand execution!)
 
 ---
 
-**Data**: November 10, 2025  
+**Date**: November 10, 2025  
 **Status**: PHASE 0 ✅ COMPLETO  
 **Next**: PHASE 1 - Geometry Rendering  
 **Repository**: /Ubes/felipebraz/PhpstormProjects/pessoal/GeneralsGameCodand  

@@ -3,7 +3,7 @@
 # GeneralsX - PHASE00: Master Summary
 
 **Date**: November 10, 2025  
-**Status**: ✅ SPIKE PLANNING COMPLETE  
+**Status**: ✅ SPIKE Planning COMPLETE  
 
 ---
 
@@ -14,8 +14,8 @@
 - ✅ Current codebasand state: ~500k LOC original + 50k LOC GeneralsX
 - ✅ Lessons learned integrated (VFS, exception handling, memory protections)
 - ✅ Threand compatibility layers mapped
-- ✅ Vulkan/DXVK backend validated (Phasand 39-48)
-- ✅ Asset system documented (.big files, VFS, post-DirectX interception)
+- ✅ Vulkan/DXVK backend validated (Phase 39-48)
+- ✅ Asset System documented (.big files, VFS, Post-DirectX interception)
 
 ### Documentation Created
 
@@ -23,34 +23,34 @@
 
 1. **SPIKE_PLANNING.md** - Status atual, problemas, lessons aprendidas
 2. **COMPATIBILITY_LAYERS.md** - Three layers of compatibility, naming pattern
-3. **PLATFORM_PRESETS.md** - Presets CMakand (arm64, x64, linux, windows)
-4. **COMPLETE_ROADMAP.md** - 40 phases detailed to menu initial
+3. **PLATFORM_PRESETS.md** - Presets CMake (arm64, x64, linux, windows)
+4. **COMPLETE_ROADMAP.md** - 40 phases detailed to Menu initial
 5. **Estand arquivo** - Master summary
 
 ### Decisions Made
 
-- ✅ **Namenclatura**: Pattern `SOURCE_DEST_TYPE_COMPAT` to layers
+- ✅ **Nomenclature**: Pattern `SOURCE_DEST_TYPE_COMPAT` to layers
 - ✅ **Presets**: macos-arm64 (primary), macos-x64 (secondary), linux, windows
 - ✅ **Intel macOS**: Manter with low priority
 - ✅ **Executables**: GeneralsX (base), GeneralsXZH (expansion)
-- ✅ **Path to menu**: 40 phases structured with dependencies claras
+- ✅ **Path to Menu**: 40 phases structured with dependencies claras
 
 ---
 
-## Phasand Roadmap (Summary)
+## Phase roadmap (Summary)
 
 ### Critical Blockers
 
 **Phases 1-5: Core Graphics (Foundation)**
 - Geometry rendering (triangles)
-- Texture system
+- Texture System
 - Materials & uniforms
 - Lighting
 - 60 FPS render loop
 
 **Phases 11-20: UI & Menu**
 - UI rendering
-- Button system
+- Button System
 - Input routing
 - Menu statand machine
 - Menu interaction
@@ -76,7 +76,7 @@
               ↓
            31-40 (Polish)
               ↓
-           🎉 MENU INICIAL FUNCIONAL
+           🎉 Menu INICIAL FUNCIONAL
 ```
 
 ---
@@ -89,8 +89,8 @@
 Layer 1: win32_compat.h (2,295 lines)
          ↓
 Layer 2: d3d8.h → IGraphicsBackend (47 methods)
-         ├─ Legacy: Metal+OpenGL (Phasand 27-37, archived)
-         └─ Current: d3d8_vulkan_graphics_compat (Phasand 39+)
+         ├─ Legacy: Metal+OpenGL (Phase 27-37, archived)
+         └─ Current: d3d8_vulkan_graphics_compat (Phase 39+)
          ↓
 Layer 3: Game-specific (GeneralsMD/Generals)
          ├─ INI parsing hardening
@@ -104,7 +104,7 @@ Layer 3: Game-specific (GeneralsMD/Generals)
 $HOME/GeneralsX/
 ├── Generals/ (basand game)
 ├── GeneralsMD/ (expansion)
-│   ├── Data/
+│   ├── Date/
 │   ├── Maps/
 │   └── GeneralsXZH (executable)
 └── .big files (required):
@@ -120,7 +120,7 @@ $HOME/GeneralsX/
 ### Immediately
 
 1. Validate roadmap with ube
-2. Confirm order dand phases
+2. Confirm order and phases
 3. Identify blockers not predicted
 
 ### Next Session
@@ -140,8 +140,8 @@ $HOME/GeneralsX/
 
 ```bash
 # macOS ARM64 (PRIMARY)
-cmakand --preset macos-arm64-vulkan
-cmakand --build build/macos-arm64-vulkan --target GeneralsXZH -j 4
+CMake --preset macos-arm64-vulkan
+CMake --build build/macos-arm64-vulkan --target GeneralsXZH -j 4
 
 # Run
 cd $HOME/GeneralsX/GeneralsMD
@@ -154,18 +154,18 @@ cd $HOME/GeneralsX/GeneralsMD
 
 ### PHASE 0 Completion
 
-- [x] Thorough analysis of estado atual
+- [x] Thorough analysis of state atual
 - [x] Lessons learned documented
-- [x] Camadas dand compatibility mapeadas
+- [x] Layers and compatibility mapeadas
 - [x] Pattern for nomenclature definido
-- [x] Presets dand plataforma adequate
+- [x] Presets and plataforma adequate
 - [x] Build targets nomeados
-- [x] Roadmap completo with 40 phases
+- [x] roadmap completo with 40 phases
 - [x] Dependencies documented
 
 ### Ready to PHASE 1?
 
-- [x] Codebase compila sem erros
+- [x] Codebase compila without erros
 - [x] Graphics pipelinand works (Vulkan)
 - [x] Asset loading OK (.big files)
 - [x] Build scripts OK
@@ -179,11 +179,11 @@ cd $HOME/GeneralsX/GeneralsMD
 
 ### 1. VFS Integration Pattern
 
-**SEMPRE**: Integrar POST-DirectX, not PRE  
-**WHY**: DirectX already loads dand .big, just copy pixel data
+**SEMPRE**: Integrar Post-DirectX, not PRE  
+**WHY**: DirectX already loads and .big, just copy pixel Date
 
 ```cpp
-// CORRETO (Phasand 28.4)
+// CORRETO (Phase 28.4)
 Apply_New_Surface(IDirect3DBaseTexture8* d3d_texture) {
     d3d_texture->LockRect(&lock);  // DirectX tem dados
     TextureCache::Load_From_Memory(lock.pBits);  // AQUI intercept
@@ -218,32 +218,32 @@ try { parse(); } catch(...) {
 
 ### 5. Build Cache
 
-**ALWAYS**: `rm -rf build/platform && cmakand --preset X` after git pull
+**ALWAYS**: `rm -rf build/platform && CMake --preset X` after git pull
 
 ---
 
 ## Critical References
 
-**MUST READ BEFORE IMPLEMENTATION**:
+**MUST READ BEFORE Implementation**:
 
 1. docs/MISC/LESSONS_LEARNED.md
 2. docs/MISC/CRITICAL_VFS_DISCOVERY.md
 3. docs/MISC/BIG_FILES_REFERENCE.md
 4. .github/copilot-instructions.md
 
-**REFERENCE REPOS** (git submodules):
-- references/jmarshall-win64-modern/ (best INI parbe)
+**REFERENCE REPOS** (Git submodules):
+- references/jmarshall-win64-modern/ (best INI parser)
 - references/fighter19-dxvk-port/ (Vulkan integration)
 - references/dxgldotorg-dxgl/ (DirectX mocking)
 
 ---
 
-## Organização dand Documentation
+## Organization of Documentation
 
 ```
 docs/
 ├── PHASE00/
-│   ├── SPIKE_PLANNING.md (análisand estado)
+│   ├── SPIKE_PLANNING.md (analysis state)
 │   ├── COMPATIBILITY_LAYERS.md (layers)
 │   ├── PLATFORM_PRESETS.md (presets)
 │   ├── COMPLETE_ROADMAP.md (40 phases)
@@ -261,29 +261,29 @@ docs/
 
 ## Status Current
 
-| Componentand | Status | Phasand |
+| Componentand | Status | Phase |
 |-----------|--------|------|
 | Build System | ✅ OK | 0 |
 | Vulkan Backend | ✅ OK | 39-48 |
-| Asset Loading | ✅ Partial | 28.4 |
+| Asset Loading | ✅ partial | 28.4 |
 | Graphics Pipelinand | ✅ OK | 39-48 |
 | Geometry Rendering | ❌ MISSING | 1 |
 | Texture Rendering | ❌ MISSING | 2 |
 | UI System | ❌ MISSING | 11-16 |
 | Menu System | ❌ MISSING | 17-20 |
-| Game Logic | ✅ Partial | 46 |
+| Game Logic | ✅ partial | 46 |
 
 ---
 
 ## Conclusion
 
-**PHASE 0: SPIKE PLANNING COMPLETE** ✅
+**PHASE 0: SPIKE Planning COMPLETE** ✅
 
-Codebase is in estado solid to restart of zero. Roadmap clear with 40 phases structured until functional main menu. Lessons learned integrated. Ready to PHASE 1.
+Codebase is in state solid to restart of zero. roadmap clear with 40 phases structured until functional main Menu. Lessons learned integrated. Ready to PHASE 1.
 
 **Next**: PHASE 1 - Geometry Rendering
 
 ---
 
-**Data**: November 10, 2025  
-**Document**: Consolidation dand PHASE 0 - Pronto to implementation
+**Date**: November 10, 2025  
+**Document**: Consolidation and PHASE 0 - Pronto to Implementation

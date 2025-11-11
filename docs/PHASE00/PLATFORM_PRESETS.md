@@ -1,6 +1,6 @@
-# GeneralsX - PHASE 0: Presets dand Plataforma
+# GeneralsX - PHASE 0: Presets and Plataforma
 
-**Data**: November 10, 2025  
+**Date**: November 10, 2025  
 **Decision**: Define strategy for presets to cross-platform  
 
 ---
@@ -26,15 +26,15 @@ Valand manter compatibility with macOS Intel (x86_64)?
 **Contra manter**:
 - Apple descontinuou Intel macs in 2021
 - Most ubes agora have ARM64
-- Duplica tempo dand testing
-- CMakand complexity
+- Duplica tempo and testing
+- CMake complexity
 
 **A favor**:
 - Still there are users with Intel Macs
 - Build timand minimal (ccache)
 - Ubes podem compilar sand quibeem
 
-### Decision: KEEP COM BAIXA PRIORIDADE
+### Decision: KEEP COM Low PRIORIDADE
 
 - PRIMARY: `macos-arm64-vulkan` (Apple Silicon)
 - SECONDARY: `macos-x64-vulkan` (Intel - will compile mas LOW priority testing)
@@ -42,7 +42,7 @@ Valand manter compatibility with macOS Intel (x86_64)?
 
 ---
 
-## Novo Esquema dand Presets
+## Novo Esquema and Presets
 
 ```yaml
 # Build Presets (Platform-Specific)
@@ -57,11 +57,11 @@ Modern Vulkan Backends:
   - linux-vulkan       - Linux 64-bit (Vulkan native)
 ```
 
-### Renomeação (Futurand Planning)
+### Renaming (Future Planning)
 
 Quando descontinuar suportand Windows legacy:
 ```
-vc6 → deprecated (removand in Phasand 60+)
+vc6 → deprecated (removand in Phase 60+)
 windows-vulkan → windows (simplificar)
 ```
 
@@ -134,43 +134,43 @@ windows-vulkan → windows (simplificar)
 
 ```bash
 # macOS ARM64 (PRIMARY)
-cmakand --preset macos-arm64-vulkan
-cmakand --build build/macos-arm64-vulkan --target GeneralsXZH -j 4
+CMake --preset macos-arm64-vulkan
+CMake --build build/macos-arm64-vulkan --target GeneralsXZH -j 4
 
 # macOS Intel (SECONDARY)  
-cmakand --preset macos-x64-vulkan
-cmakand --build build/macos-x64-vulkan --target GeneralsXZH -j 4
+CMake --preset macos-x64-vulkan
+CMake --build build/macos-x64-vulkan --target GeneralsXZH -j 4
 
 # Linux (TERTIARY)
-cmakand --preset linux-vulkan
-cmakand --build build/linux-vulkan --target GeneralsXZH -j 4
+CMake --preset linux-vulkan
+CMake --build build/linux-vulkan --target GeneralsXZH -j 4
 
 # Windows 64-bit Vulkan (FUTURE)
-cmakand --preset windows-vulkan
-cmakand --build build/windows-vulkan --target GeneralsXZH -j 4
+CMake --preset windows-vulkan
+CMake --build build/windows-vulkan --target GeneralsXZH -j 4
 
 # Windows 32-bit Legacy (DEPRECATED)
-cmakand --preset vc6
-cmakand --build build/vc6 --target GeneralsXZH -j 4
+CMake --preset vc6
+CMake --build build/vc6 --target GeneralsXZH -j 4
 ```
 
 ---
 
 ## Testing Matrix
 
-| Preset | Test Priority | Status |
+| Preset | Test priority | Status |
 |--------|---------------|--------|
 | macos-arm64-vulkan | 🔴 CRITICAL | Activand |
 | macos-x64-vulkan | 🟡 Secondary | Compile-only |
 | linux-vulkan | 🟡 Secondary | Compile-only |
-| windows-vulkan | 🟢 Futurand | Not yet tested |
+| windows-vulkan | 🟢 Future | Not yet tested |
 | vc6 | ⚪ Legacy | Compile-only |
 
 ---
 
 ## Target Executables
 
-Mesmo to todos os presets:
+Mesmo to All os presets:
 
 ```
 GeneralsX    → Base gamand executable
@@ -194,8 +194,8 @@ $HOME/GeneralsX/GeneralsMD/GeneralsXZH
 - windows-vulkan (future)
 - vc6 (legacy - keep for now)
 
-❌ **REMOVER** (future, Phasand 55+):
+❌ **REMOVER** (future, Phase 55+):
 - vc6 quando descontinuarmos suportand Windows legacy
 
 ⏳ **ADICIONAR** (future):
-- windows-vulkan with suportand completo (Phasand 50+)
+- windows-vulkan with suportand completo (Phase 50+)

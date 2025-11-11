@@ -1,55 +1,55 @@
-# GeneralsX - Roadmap Completo: PHASE 0 to Menu Inicial
+# GeneralsX - Complete Roadmap: PHASE 0 until Main Menu
 
-**Data**: November 10, 2025  
-**Objective**: Estruturar TODAS as necessary phases to tela initial worksl  
+**Date**: November 10, 2025  
+**Objective**: Structure ALL necessary phases until initial screen working  
 **Requirement**: No time estimates, only sequence and dependencies  
 
 ---
 
-## Roadmap Executivo
+## Executive Roadmap
 
 ```
-PHASE 0: Spikand Planning ✅ (ATUAL)
+PHASE 0: Spike Planning ✅ (CURRENT)
   ↓
-PHASE 1-10: Core Graphics Infrastructurand (Foundation)
-  ├─ 1: Geometry Rendering (triangles coloreds)
-  ├─ 2: Texture System (carregar texturas)
-  ├─ 3: Material System (shaders, texturas)
+PHASE 1-10: Core Graphics Infrastructure (Foundation)
+  ├─ 1: Geometry Rendering (colored triangles)
+  ├─ 2: Texture System (load textures)
+  ├─ 3: Material System (shaders, textures)
   ├─ 4: Lighting System (DirectX lights → Vulkan)
   ├─ 5: Render Loop (stable 60 FPS)
   ├─ 6: Mesh Loading (3D models)
-  ├─ 7: Mesh Rendering (renderizar models)
-  ├─ 8: Camera System (viewpoint controle)
+  ├─ 7: Mesh Rendering (render models)
+  ├─ 8: Camera System (viewpoint control)
   ├─ 9: Frustum Culling (optimization)
-  └─ 10: Post-Processing (efeitos)
+  └─ 10: Post-Processing (effects)
   ↓
 PHASE 11-20: UI & Asset Loading
-  ├─ 11: UI Mesh Format (parsand UI models)
+  ├─ 11: UI Mesh Format (parse UI models)
   ├─ 12: UI Texture Loading (load UI textures from .big)
-  ├─ 13: UI Rendering (renderizar UI with Vulkan)
+  ├─ 13: UI Rendering (render UI with Vulkan)
   ├─ 14: UI Layout (positioning widgets)
-  ├─ 15: Button System (clickabland areas)
+  ├─ 15: Button System (clickable areas)
   ├─ 16: Input Routing (SDL2 → UI callbacks)
-  ├─ 17: Menu Definitions (parsand menu INI)
-  ├─ 18: Menu Statand Machinand (menu transitions)
-  ├─ 19: Menu Rendering (renderizar menu frame)
-  └─ 20: Menu Interaction (clicks trabalhando)
+  ├─ 17: Menu Definitions (parse menu INI)
+  ├─ 18: Menu State Machine (menu transitions)
+  ├─ 19: Menu Rendering (render menu frame)
+  └─ 20: Menu Interaction (clicks working)
   ↓
 PHASE 21-30: Game Logic Integration
   ├─ 21: Game Object System (GameObject class)
   ├─ 22: World Management (GameWorld container)
-  ├─ 23: Game Loop (main gamand tick)
+  ├─ 23: Game Loop (main game tick)
   ├─ 24: Input Handling (gameplay input)
   ├─ 25: Selection System (unit selection)
   ├─ 26: Command System (move, attack, etc)
   ├─ 27: Pathfinding Stub (placeholder)
   ├─ 28: Physics Stub (placeholder)
-  ├─ 29: Gameplay Rendering (renderizar gamand objects)
-  └─ 30: Statand Transitions (menu → game)
+  ├─ 29: Gameplay Rendering (render game objects)
+  └─ 30: State Transitions (menu → game)
   ↓
 PHASE 31-40: Polish & Stabilization
-  ├─ 31: Audio System (OpenAL backend - Phasand 33)
-  ├─ 32: Performancand Profiling
+  ├─ 31: Audio System (OpenAL backend - Phase 33)
+  ├─ 32: Performance Profiling
   ├─ 33: Memory Optimization
   ├─ 34: Crash Handling (better error messages)
   ├─ 35: Platform-Specific Fixes
@@ -57,69 +57,69 @@ PHASE 31-40: Polish & Stabilization
   ├─ 37: Documentation
   ├─ 38: Build System Optimization
   ├─ 39: Cross-Platform Testing
-  └─ 40: Minimal Playabland Release
+  └─ 40: Minimal Playable Release
   ↓
-MENU INICIAL FUNCIONAL ✅
+INITIAL MENU WORKING ✅
 ```
 
 ---
 
-## Phases Detalhadas: PHASE 0-10 (Foundation)
+## Detailed Phases: PHASE 0-10 (Foundation)
 
-### PHASE 0: Spikand Planning (ATUAL)
+### PHASE 0: Spike Planning (CURRENT)
 
-**Status**: Em progresso  
-**Dependencies**: Nenhuma  
-**Bloqueadores**: Nenhum  
+**Status**: In progress  
+**Dependencies**: None  
+**Blockers**: None  
 
 **Deliverables**:
-- Analysis completa of estado atual
-- Mapeamento dand lessons aprendidas
-- Documentation dand layers dand compatibility
-- Presets dand plataforma definidos
-- Roadmap completo dand phases
-- Nameação dand executáveis confirmed
+- Complete analysis of current state
+- Mapping of lessons learned
+- Documentation of compatibility layers
+- Platform presets defined
+- Complete roadmap of phases
+- Executable naming confirmed
 
 **Next**: PHASE 1
 
 ---
 
-### PHASE 1: Geometry Rendering - Triangles Coloridos
+### PHASE 1: Geometry Rendering - Colored Triangles
 
-**Dependencies**: Graphics pipelinand (Phasand 39-48 OK)  
-**Objective**: Renderizar 1+ triangle colored na tela  
+**Dependencies**: Graphics pipeline (Phase 39-48 OK)  
+**Objective**: Render 1+ colored triangle on screen  
 
-**Tarefas**:
-1. Criar vertex buffer simples with 3 vertices (PosColor)
-2. Criar index buffer with 3 indices
-3. Implementar vertex shader (PosColor → color output)
-4. Implementar fragment shader (passthrough color)
-5. Criar graphics pipelinand with vertex/fragment shaders
-6. Render colored triangland in cada frame
-7. Validate triangland in viewport
+**Tasks**:
+1. Create simple vertex buffer with 3 vertices (PosColor)
+2. Create index buffer with 3 indices
+3. Implement vertex shader (PosColor → color output)
+4. Implement fragment shader (passthrough color)
+5. Create graphics pipeline with vertex/fragment shaders
+6. Render colored triangle in each frame
+7. Validate triangle in viewport
 
 **Acceptance**:
 - [x] Triangle rendered
 - [x] Cores corretas (RGB)
 - [x] No z-fighting artifacts
-- [x] 60 FPS stável
+- [x] 60 FPS stable
 
 **Next**: PHASE 2
 
 ---
 
-### PHASE 2: Texture System - Carregar Texturas
+### PHASE 2: Texture System - Load Textures
 
 **Dependencies**: PHASE 1 (geometry OK)  
-**Objective**: Carregar 1+ textura from .big, aplicar in triangle  
+**Objective**: Load 1+ texture from .big, apply to triangle  
 
-**Tarefas**:
-1. Fix texturand loading pipelinand (Phasand 28.4 worked, validate)
-2. Add texturand coordinates (UV) ao vertex buffer
-3. Criar texturand sampler
-4. Updatand fragment shader to usar sampler
-5. Load 1 textura from .big (INICIALIZAR antes dand render)
-6. Bind texturand in command buffer
+**Tasks**:
+1. Fix texture loading pipeline (Phase 28.4 worked, validate)
+2. Add texture coordinates (UV) to vertex buffer
+3. Create texture sampler
+4. Update fragment shader to use sampler
+5. Load 1 texture from .big (INITIALIZE before render)
+6. Bind texture in command buffer
 7. Render textured triangle
 
 **Acceptance**:
@@ -135,19 +135,19 @@ MENU INICIAL FUNCIONAL ✅
 ### PHASE 3: Material System - Shaders & Uniforms
 
 **Dependencies**: PHASE 2 (textures OK)  
-**Objective**: Implementar material properties (diffuse, specular, etc)  
+**Objective**: Implement material properties (diffuse, specular, etc)  
 
-**Tarefas**:
-1. Create uniform buffer to material properties
-2. Implement standard lit shader (diffusand + specular)
+**Tasks**:
+1. Create uniform buffer for material properties
+2. Implement standard lit shader (diffuse + specular)
 3. Create material descriptor sets
-4. Bind material uniforms in cada draw call
-5. Updatand fragment shader to usar material properties
-6. Test with diferentes material parameters
+4. Bind material uniforms in each draw call
+5. Update fragment shader to use material properties
+6. Test with different material parameters
 
 **Acceptance**:
 - [x] Material uniforms aplicando corretamente
-- [x] Diffusand & specular colors visíveis
+- [x] - [x] Diffuse & specular colors visible
 - [x] Multipland materials in um frame
 - [x] No performancand degradation
 
@@ -158,13 +158,13 @@ MENU INICIAL FUNCIONAL ✅
 ### PHASE 4: Lighting System - DirectX Lights → Vulkan
 
 **Dependencies**: PHASE 3 (materials OK)  
-**Objective**: Converter D3DLIGHT8 structs to Vulkan uniform buffers  
+**Objective**: Convert D3DLIGHT8 structs to Vulkan uniform buffers  
 
-**Tarefas**:
-1. Parsand D3DLIGHT8 structures (directional, point, spot)
-2. Create Vulkan uniform buffer layout to lights
+**Tasks**:
+1. Parse D3DLIGHT8 structures (directional, point, spot)
+2. Create Vulkan uniform buffer layout for lights
 3. Implement light validation & clamping
-4. Updatand shader to suportar múltiplas lights (up to 8)
+4. Update shader to support multiple lights (up to 8)
 5. Implement light enable/disable
 6. Test with various light configurations
 
@@ -179,19 +179,19 @@ MENU INICIAL FUNCIONAL ✅
 
 ---
 
-### PHASE 5: Render Loop - 60 FPS Estável
+### PHASE 5: Render Loop - Stable 60 FPS
 
 **Dependencies**: PHASE 4 (lights OK)  
-**Objective**: Framand timing correto, swapchain presentation  
+**Objective**: Correct frame timing, swapchain presentation  
 
-**Tarefas**:
-1. Implement framand timing (delta timand calculation)
-2. Implement swapchain imagand acquisition
+**Tasks**:
+1. Implement frame timing (delta time calculation)
+2. Implement swapchain image acquisition
 3. Implement command buffer submission
-4. Implement framand synchronization (semaphores/fences)
-5. Handland swapchain recreation
-6. Framand ratand limiting (vsync/target FPS)
-7. Performancand monitoring
+4. Implement frame synchronization (semaphores/fences)
+5. Handle swapchain recreation
+6. Frame rate limiting (vsync/target FPS)
+7. Performance monitoring
 
 **Acceptance**:
 - [x] Consistently 60 FPS (no stuttering)
@@ -203,14 +203,14 @@ MENU INICIAL FUNCIONAL ✅
 
 ---
 
-### PHASE 6: Mesh Loading - Parsand 3D Models
+### PHASE 6: Mesh Loading - Parse 3D Models
 
 **Dependencies**: PHASE 5 (render loop OK)  
 **Objective**: Load 3D mesh files (W3D, ASE, etc)  
 
-**Tarefas**:
-1. Analyzand existing mesh format (W3D in .big)
-2. Parsand mesh filand structure
+**Tasks**:
+1. Analyze existing mesh format (W3D in .big)
+2. Parse mesh file structure
 3. Extract vertex/index buffers
 4. Extract material assignments
 5. Create mesh data structures
@@ -226,17 +226,17 @@ MENU INICIAL FUNCIONAL ✅
 
 ---
 
-### PHASE 7: Mesh Rendering - Renderizar 3D Models
+### PHASE 7: Mesh Rendering - Render 3D Models
 
 **Dependencies**: PHASE 6 (meshes load OK)  
-**Objective**: Renderizar meshes with textures and materials  
+**Objective**: Render meshes with textures and materials  
 
-**Tarefas**:
+**Tasks**:
 1. Create mesh GPU buffers (vertex + index)
 2. Implement draw call generation
 3. Bind mesh textures & materials
 4. Submit draw commands
-5. Test with multipland meshes
+5. Test with multiple meshes
 
 **Acceptance**:
 - [x] Meshes rendereds corretamente
@@ -250,15 +250,15 @@ MENU INICIAL FUNCIONAL ✅
 
 ### PHASE 8: Camera System - Viewpoint Control
 
-**Dependencies**: PHASE 7 (meshes OK) - Phasand 45 exists  
-**Objective**: Implementar camera modes (free, RTS, chase, orbit)  
+**Dependencies**: PHASE 7 (meshes OK) - Phase 45 exists  
+**Objective**: Implement camera modes (free, RTS, chase, orbit)  
 
-**Tarefas**:
-1. Reusand Phasand 45 camera implementation
+**Tasks**:
+1. Reuse Phase 45 camera implementation
 2. Implement camera input controller
 3. Setup view matrix uniforms
 4. Implement projection matrix
-5. Implement camera modes (RTS modand to menu)
+5. Implement camera modes (RTS mode for menu)
 
 **Acceptance**:
 - [x] Camera moves with input
@@ -270,16 +270,16 @@ MENU INICIAL FUNCIONAL ✅
 
 ---
 
-### PHASE 9: Frustum Culling - Otimização
+### PHASE 9: Frustum Culling - Optimization
 
 **Dependencies**: PHASE 8 (camera OK)  
-**Objective**: Renderizar apenas objetos visíveis  
+**Objective**: Render only visible objects  
 
-**Tarefas**:
-1. Implement frustum planand calculation
+**Tasks**:
+1. Implement frustum plane calculation
 2. Implement frustum-AABB intersection test
-3. Cull meshes beforand draw call
-4. Measurand performancand improvement
+3. Cull meshes before draw call
+4. Measure performance improvement
 
 **Acceptance**:
 - [x] Culling logic correct
@@ -291,16 +291,16 @@ MENU INICIAL FUNCIONAL ✅
 
 ---
 
-### PHASE 10: Post-Processing - Efeitos (OPCIONAL)
+### PHASE 10: Post-Processing - Effects (OPTIONAL)
 
 **Dependencies**: PHASE 9 (culling OK)  
-**Status**: Opcional to menu initial  
+**Status**: Optional until initial menu  
 
-**Tarefas**:
+**Tasks**:
 1. Implement render target for post-processing
-2. Implement tonand mapping
-3. Implement bloom (opcional)
-4. Implement color grading (opcional)
+2. Implement tone mapping
+3. Implement bloom (optional)
+4. Implement color grading (optional)
 
 **Acceptance**:
 - [x] Post-processing aplicando
@@ -313,14 +313,14 @@ MENU INICIAL FUNCIONAL ✅
 
 ## Phases Detalhadas: PHASE 11-20 (UI & Assets)
 
-### PHASE 11: UI Mesh Format - Parsand UI Models
+### PHASE 11: UI Mesh Format - Parse UI Models
 
 **Dependencies**: PHASE 7 (mesh rendering OK)  
 **Objective**: Load UI meshes from .big files  
 
-**Tarefas**:
+**Tasks**:
 1. Identify UI mesh format in .big
-2. Parsand UI mesh files
+2. Parse UI mesh files
 3. Extract UI component data
 4. Create UI mesh structures
 
@@ -336,13 +336,13 @@ MENU INICIAL FUNCIONAL ✅
 ### PHASE 12: UI Texture Loading - Load UI Textures
 
 **Dependencies**: PHASE 11 (UI meshes OK)  
-**Objective**: Load texturas to UI components  
+**Objective**: Load textures to UI components  
 
-**Tarefas**:
-1. Identify UI texturand location in .big
-2. Load UI textures using Phasand 28.4 pattern
-3. Create texturand binding to UI materials
-4. Cachand UI textures
+**Tasks**:
+1. Identify UI texture location in .big
+2. Load UI textures using Phase 28.4 pattern
+3. Create texture binding to UI materials
+4. Cache UI textures
 
 **Acceptance**:
 - [x] UI textures load
@@ -353,12 +353,12 @@ MENU INICIAL FUNCIONAL ✅
 
 ---
 
-### PHASE 13: UI Rendering - Renderizar UI with Vulkan
+### PHASE 13: UI Rendering - Render UI with Vulkan
 
 **Dependencies**: PHASE 12 (UI textures OK)  
-**Objective**: Renderizar UI meshes with ortho camera  
+**Objective**: Render UI meshes with ortho camera  
 
-**Tarefas**:
+**Tasks**:
 1. Create ortho projection matrix
 2. Setup UI rendering pass
 3. Render UI meshes on top of background
@@ -520,16 +520,16 @@ MENU INICIAL FUNCIONAL ✅
 
 ---
 
-## Phases Detalhadas: PHASE 21-30 (Game Logic)
+## Detailed Phases: PHASE 21-30 (Game Logic)
 
 ### PHASE 21-30: Game Logic Integration
 
-**Status**: Phasand 46 parcialmentand implementado (reusand ondand possível)
+**Status**: Phase 46 partially implemented (reuse where possible)
 
 **Sequence**:
-- PHASE 21: GameObject System (reusand Phasand 46)
-- PHASE 22: World Management (reusand Phasand 46)
-- PHASE 23: Game Loop (reusand Phasand 46)
+- PHASE 21: GameObject System (reuse Phase 46)
+- PHASE 22: World Management (reuse Phase 46)
+- PHASE 23: Game Loop (reuse Phase 46)
 - PHASE 24-26: Input & Commands (validate/extend)
 - PHASE 27-28: Physics/Pathfinding (stubs OK for MVP)
 - PHASE 29-30: Rendering & Transitions
@@ -545,35 +545,35 @@ MENU INICIAL FUNCIONAL ✅
 
 ---
 
-## Phases Detalhadas: PHASE 31-40 (Polish)
+## Detailed Phases: PHASE 31-40 (Polish)
 
 ### PHASE 31-40: Polish & Stabilization
 
 **Status**: Refinement phases
 
 **Tasks**:
-- PHASE 31: Audio system (Phasand 33 OpenAL)
-- PHASE 32-33: Performancand optimization
+- PHASE 31: Audio system (Phase 33 OpenAL)
+- PHASE 32-33: Performance optimization
 - PHASE 34-35: Crash handling & fixes
 - PHASE 36-37: Testing & documentation
 - PHASE 38-39: Build system & cross-platform
-- PHASE 40: Releasand validation
+- PHASE 40: Release validation
 
-**Acceptance Final**:
-- [x] Stabland on all platforms
+**Final Acceptance**:
+- [x] Stable on all platforms
 - [x] No crashes in normal gameplay
-- [x] Performancand acceptable
+- [x] Performance acceptable
 - [x] Documentation complete
-- [x] Ready for minimal playabland release
+- [x] Ready for minimal playable release
 
-**Final Milestone**: ✅ **MENU INICIAL FUNCIONAL**
+**Final Milestone**: ✅ **INITIAL MENU WORKING**
 
 ---
 
-## Dependência Graph (ASCII)
+## Dependency Graph (ASCII)
 
 ```
-PHASE 0: Spikand Planning
+PHASE 0: Spike Planning
   ↓
 PHASE 1: Geometry Rendering (triangle)
   ↓
@@ -619,28 +619,28 @@ PHASE 21-30: Game Logic Integration (parallel with 20)
   ↓
 PHASE 31-40: Polish & Stabilization
   ↓
-🎉 MENU INICIAL FUNCIONAL
+🎉 INITIAL MENU WORKING
 ```
 
 ---
 
 ## Summary of Phases
 
-| Phasand | Namand | Dependencies | Bloqueador |
+| Phase | Name | Dependencies | Blocker |
 |------|------|--------------|-----------|
-| 0 | Spikand Planning | Nonand | No |
+| 0 | Spike Planning | None | No |
 | 1-5 | Core Graphics (Foundation) | Previous | Yes |
 | 6-10 | Advanced Graphics | 1-5 | No (10 opt) |
-| 11-16 | UI Infrastructurand | 6-10 | Yes |
+| 11-16 | UI Infrastructure | 6-10 | Yes |
 | 17-20 | Menu System | 11-16 | Yes |
 | 21-30 | Game Logic | 1-7, 20 | Parallel |
-| 31-40 | Polish & Releasand | 20-30 | Final |
+| 31-40 | Polish & Release | 20-30 | Final |
 
 ---
 
 ## Next Steps
 
-1. ✅ PHASE 0 planejamento completo
-2. ⏳ Validate roadmap with ube
-3. ⏳ Iniciar PHASE 1: Geometry Rendering
-4. ⏳ Ciclo dand phases: codand → test → document → next
+1. ✅ PHASE 0 planning complete
+2. ⏳ Validate roadmap with user
+3. ⏳ Start PHASE 1: Geometry Rendering
+4. ⏳ Cycle of phases: code → test → document → next

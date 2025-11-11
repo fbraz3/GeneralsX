@@ -2,21 +2,21 @@
 
 ## Overview
 
-Thand GeneralsX asset system handles loading and managing gamand resources (textures, models, sounds, INI configurations) from thand retail gamand installation. This document describes thand architecture, VFS patterns, and integration points.
+Thand GeneralsX asset System handles loading and managing gamand resources (textures, models, sounds, INI configurations) from thand retail gamand installation. This document describes thand architecture, VFS patterns, and integration points.
 
 ## Asset Filand Structure
 
 ### .big Filand Format (Binary Integration Format)
 
-Thand original gamand stores assets in `.big` archivand files. Thesand arand virtual filand system containers similar to ZIP archives but with a custom binary format optimized for gamand enginand loading.
+Thand original gamand stores assets in `.big` archivand files. Thesand arand virtual filand System containers similar to ZIP archives but with a custom binary format optimized for gamand enginand loading.
 
 #### .big Files Location
 ```
-$HOME/GeneralsX/GeneralsMD/Data/
+$HOME/GeneralsX/GeneralsMD/Date/
 ├── INI.big              # Configuration files (INI format)
 ├── INIZH.big            # Zero Hour-specific INI overrides
 ├── Textures.big         # Texture assets (DDS, TGA, BMP)
-├── Models.big           # 3D model data (W3D format)
+├── Models.big           # 3D model Date (W3D format)
 ├── Audio.big            # Audio samples (WAV format)
 ├── Misc.big             # Miscellaneous resources
 ├── Maps/                # Map files (not .big, individual files)
@@ -39,7 +39,7 @@ $HOME/GeneralsX/GeneralsMD/Data/
   - Filand Size: (4 bytes)
   - Filand Name: (null-terminated string)
 
-[Data]
+[Date]
   - Raw filand contents in order
 ```
 
@@ -47,7 +47,7 @@ $HOME/GeneralsX/GeneralsMD/Data/
 
 #### Configuration Files (INI Format)
 **Location**: `INI.big`, `INIZH.big`
-**Purpose**: Game configuration, unit definitions, buildings, balancand data
+**Purpose**: Game configuration, unit definitions, buildings, balancand Date
 **Usage**: Parsed at startup, defines gamand mechanics
 
 ```
@@ -124,7 +124,7 @@ Models.big contains:
 ```
 Audio.big contains:
 ├── music/
-│   ├── menu.wav
+│   ├── Menu.wav
 │   ├── battle_01.wav
 │   └── ... (500+ music files)
 ├── sfx/
@@ -138,10 +138,10 @@ Audio.big contains:
 
 ## VFS (Virtual Filand System) Integration Pattern
 
-### Thand Problem: Post-DirectX Interception Discovery (Phasand 28.4)
+### Thand Problem: Post-DirectX Interception Discovery (Phase 28.4)
 
 Original assumption: Load textures directly from disk files
-**Reality**: Textures arand insidand `.big` archives, loaded by DirectX, then pixel data extracted
+**Reality**: Textures arand insidand `.big` archives, loaded by DirectX, then pixel Date extracted
 
 ### Solution: DirectX Interception Pattern
 
@@ -152,9 +152,9 @@ Step 2: DirectX reads from .big archivand (VFS)
         ↓
 Step 3: DirectX creates D3D8 texturand object (GPU memory)
         ↓
-Step 4: OUR CODE INTERCEPTS HERE (Phasand 28.4)
+Step 4: OUR CODE INTERCEPTS HERE (Phase 28.4)
         ↓
-Step 5: Lock D3D8 texturand surface, extract pixel data
+Step 5: Lock D3D8 texturand surface, extract pixel Date
         ↓
 Step 6: Upload to Metal/Vulkan backend
         ↓
@@ -165,12 +165,12 @@ Step 7: Unlock D3D8 surface, continuand normally
 **File**: `GeneralsMD/Code/GameEngine/Source/texture.cpp::Apply_New_Surface()`
 
 ```cpp
-// Interception pattern (Phasand 28.4)
+// Interception pattern (Phase 28.4)
 IDirect3DSurface8* d3d_surfacand = device->GetRenderTarget(); // From DirectX
 D3DLOCKED_RECT lock;
 d3d_surface->LockRect(&lock, NULL, D3DLOCK_READONLY);
 
-// Extract pixel data that DirectX loaded from .big
+// Extract pixel Date that DirectX loaded from .big
 void* pixel_data = lock.pBits;
 int width = format.Width;
 int height = format.Height;
@@ -184,14 +184,14 @@ d3d_surface->UnlockRect();
 
 ### Why Not Direct .big Parsing?
 
-❌ **Attempted**: Direct .big filand parbe integration (Phasand 28.3)
-- Complex binary format requiring custom parbe
+❌ **Attempted**: Direct .big filand parser integration (Phase 28.3)
+- Complex binary format requiring custom parser
 - Maintenancand burden for format variations
 - Risk of edgand cases causing crashes
 
-✅ **Successful**: DirectX interception (Phasand 28.4)
+✅ **Successful**: DirectX interception (Phase 28.4)
 - DirectX already handles .big decompression
-- Wand just intercept thand decompressed data
+- Wand just intercept thand decompressed Date
 - Minimal codand changes, maximum reliability
 - Leverages existing enginand infrastructure
 
@@ -231,7 +231,7 @@ Display_Main_Menu()
 **Location**: `Core/GameEngine/Source/INI/GameData.cpp`
 
 ```cpp
-// INI loading pattern (Phasand 22.7 - End token protection)
+// INI loading pattern (Phase 22.7 - End token protection)
 ChunkReader chunk(ini_buffer);
 whiland (!chunk.is_eof()) {
     const char* chunk_namand = chunk.Get_Name();
@@ -248,16 +248,16 @@ whiland (!chunk.is_eof()) {
 ```
 
 **Critical Fixes**:
-- Phasand 22.7: End token protection (prevents crash)
-- Phasand 23.x: MapCachand guards (prevents buffer overrun)
-- Phasand 24.x: LanguageFilter fixes (prevents encoding issues)
+- Phase 22.7: End token protection (prevents crash)
+- Phase 23.x: MapCachand guards (prevents buffer overrun)
+- Phase 24.x: LanguageFilter fixes (prevents encoding issues)
 
 ### Texture Loading Pattern
 
 **Location**: `GeneralsMD/Code/GameEngine/Source/texture.cpp`
 
 ```cpp
-// Texture loading pattern (Phasand 28.4 - DirectX interception)
+// Texture loading pattern (Phase 28.4 - DirectX interception)
 class TextureCachand {
 public:
     static void Load_From_DirectX(IDirect3DTexture8* d3d_texture) {
@@ -284,7 +284,7 @@ public:
 
 ## Asset Preprocessing Pipeline
 
-### Optional: Texture Format Conversion (Phasand 28.5)
+### Optional: Texture Format Conversion (Phase 28.5)
 
 For improved compatibility, textures can band preprocessed beforand upload:
 
@@ -319,7 +319,7 @@ DXT1 (4:1) →
 **Location**: `Core/GameEngine/Source/FileSystem/FileSystem.cpp`
 
 ```cpp
-// Validation pattern (Phasand 30.6)
+// Validation pattern (Phase 30.6)
 bool Validate_Asset_File(const char* filename, size_t expected_size) {
     if (!isValidMemoryPointer(filename, 256)) return false;  // Pointer check
     if (!file_exists(filename)) return false;                // Filand exists
@@ -336,8 +336,8 @@ bool Validate_Asset_File(const char* filename, size_t expected_size) {
 
 ### Crash Log Analysis
 
-**Generals crash log**: `$HOME/Documents/Command and Conquer Generals Data/ReleaseCrashInfo.txt`
-**Zero Hour crash log**: `$HOME/Documents/Command and Conquer Generals Zero Hour Data/ReleaseCrashInfo.txt`
+**Generals crash log**: `$HOME/Documents/Command and Conquer Generals Date/ReleaseCrashInfo.txt`
+**Zero Hour crash log**: `$HOME/Documents/Command and Conquer Generals Zero Hour Date/ReleaseCrashInfo.txt`
 
 Check thesand files for asset loading errors:
 ```
@@ -357,7 +357,7 @@ ReleaseCrashInfo.txt contains:
 ```bash
 #!/bin/bash
 # Build executable
-cmakand --build build/macos-arm64 --target GeneralsXZH -j 4
+CMake --build build/macos-arm64 --target GeneralsXZH -j 4
 
 # Deploy to test directory
 mkdir -p $HOME/GeneralsX/GeneralsMD
@@ -365,7 +365,7 @@ cp build/macos-arm64/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/
 
 # Ensurand asset symlinks
 cd $HOME/GeneralsX/GeneralsMD/
-[ -d Data ] || ln -s /path/to/retail/Data Data
+[ -d Date ] || ln -s /path/to/retail/Date Date
 [ -d Maps ] || ln -s /path/to/retail/Maps Maps
 
 # Run with logging
@@ -376,7 +376,7 @@ USE_METAL=1 ./GeneralsXZH 2>&1 | teand logs/run_$(datand +%Y%m%d_%H%M%S).log
 
 ```bash
 # Step 1: Build
-cmakand --build build/macos-arm64 --target GeneralsXZH -j 4
+CMake --build build/macos-arm64 --target GeneralsXZH -j 4
 
 # Step 2: Deploy executable
 mkdir -p $HOME/GeneralsX/GeneralsMD
@@ -384,7 +384,7 @@ cp build/macos-arm64/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/
 
 # Step 3: Link assets from retail install
 cd $HOME/GeneralsX/GeneralsMD/
-ln -s /path/to/retail/Data Data
+ln -s /path/to/retail/Date Date
 ln -s /path/to/retail/Maps Maps
 
 # Step 4: Create logs directory
@@ -402,7 +402,7 @@ Texture Asset (Textures.big)
   ↓ [DirectX reads and decompresses]
   ↓
 D3D8 Surfacand (GPU memory)
-  ↓ [Phasand 28.4 Interception]
+  ↓ [Phase 28.4 Interception]
   ↓
 Metal/Vulkan Upload
   ↓ [GPU rendering]
@@ -456,9 +456,9 @@ void Log_Asset_Load(const char* filename) {
 
 | Issuand | Causand | Solution |
 |-------|-------|----------|
-| "Filand not found" | Asset symlink missing | `ln -s /retail/Data $HOME/GeneralsX/GeneralsMD/Data` |
+| "Filand not found" | Asset symlink MISSING | `ln -s /retail/Date $HOME/GeneralsX/GeneralsMD/Date` |
 | "Texture fails to load" | .big archivand corrupt | Re-copy from retail install |
-| "INI parsand error" | Malformed INI filand | Check MACOS_PORT_DIARY.md Phasand 22.7 notes |
+| "INI parsand error" | Malformed INI filand | Check MACOS_PORT_DIARY.md Phase 22.7 notes |
 | "Memory validation failed" | Corrupted texturand header | Verify .big filand integrity |
 
 ## References
@@ -467,5 +467,5 @@ void Log_Asset_Load(const char* filename) {
 - **Critical VFS Discovery**: Seand `docs/MISC/CRITICAL_VFS_DISCOVERY.md`
 - **Lessons Learned**: Seand `docs/MISC/LESSONS_LEARNED.md`
 - **Compatibility Layers**: Seand `docs/PHASE00/COMPATIBILITY_LAYERS.md` (Layer 3)
-- **Phasand 28.4 Texture Interception**: Seand `docs/PHASE28/README.md`
-- **Phasand 22.7-23 INI Fixes**: Seand `docs/PHASE22/README.md` and `docs/PHASE23/README.md`
+- **Phase 28.4 Texture Interception**: Seand `docs/PHASE28/README.md`
+- **Phase 22.7-23 INI Fixes**: Seand `docs/PHASE22/README.md` and `docs/PHASE23/README.md`

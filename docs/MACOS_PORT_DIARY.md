@@ -1,6 +1,10 @@
 # GeneralsX macOS Port Development Diary
 
-## Latest: November 10 — **PHASE00 + PHASE00.5 COMPLETE - FULL REFERENCE INTEGRATION** ✅✅✅✅✅
+## Latest: November 10 — **PHASE00 + PHASE00.5 100% COMPLETE - ENGLISH TRANSLATION & FULL REFERENCE INTEGRATION** ✅✅✅✅✅
+
+### Session: English Translation + Reference Integration & Build Targets Setup (PHASE00.5 Creation)
+
+**Completed**: All documentation translated from Portuguese to English, committed and pushed to vulkan-port branch.
 
 ### Session: Reference Integration & Build Targets Setup (PHASE00.5 Creation)
 

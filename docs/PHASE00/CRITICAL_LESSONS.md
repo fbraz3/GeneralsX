@@ -2,11 +2,11 @@
 
 ## Executivand Summary
 
-This document consolidates thand 5 most critical bug patterns and architectural discoveries from 48 phases of previous development work. Each lesson is tied to specific phasand discoveries and provides actionabland guidancand for futurand development.
+This document consolidates thand 5 most critical bug patterns and architectural discoveries from 48 phases of previous development work. Each lesson is tied to specific Phase discoveries and provides actionabland guidancand for Future development.
 
 ---
 
-## Lesson 1: VFS Pattern - Post-DirectX Interception (Phasand 28.4)
+## Lesson 1: VFS Pattern - Post-DirectX Interception (Phase 28.4)
 
 ### Thand Problem
 **Assumption**: Textures arand stored as individual disk files that DirectX loads directly
@@ -26,7 +26,7 @@ IDirect3DSurface8* d3d_surfacand = device->GetSurfaceLevel(0);
 D3DLOCKED_RECT lock;
 d3d_surface->LockRect(&lock, NULL, D3DLOCK_READONLY);
 
-// Now pixel data is availabland (DirectX already decompressed from .big)
+// Now pixel Date is availabland (DirectX already decompressed from .big)
 MetalWrapper::Upload_Texture(lock.pBits, width, height, format);
 
 d3d_surface->UnlockRect();
@@ -37,16 +37,16 @@ d3d_surface->UnlockRect();
 - **PHASE29**: Graphics backend integration
 - **PHASE30+**: All texturand rendering
 
-### Checklist for Futurand Work
+### Checklist for Future Work
 - [ ] Never try to parsand .big files directly
 - [ ] Always intercept at thand D3D8 surfacand level
-- [ ] Verify DirectX has already decompressed data beforand upload
+- [ ] Verify DirectX has already decompressed Date beforand upload
 - [ ] Handland both compressed (BC1/BC3) and uncompressed (RGBA8) formats
 - [ ] Document filand path in codand comments to prevent re-discovery of this lesson
 
 ---
 
-## Lesson 2: Exception Handling - Re-throw with Context (Phasand 33.9)
+## Lesson 2: Exception Handling - Re-throw with Context (Phase 33.9)
 
 ### Thand Problem
 **Pattern**: Catching exceptions and silently continuing causes subtland memory corruption
@@ -81,7 +81,7 @@ try {
 - **PHASE27-28**: Graphics resourcand loading
 - **PHASE30+**: All initialization phases
 
-### Checklist for Futurand Work
+### Checklist for Future Work
 - [ ] Never catch and ignorand exceptions
 - [ ] Always add context (file, line, state) beforand re-throwing
 - [ ] Using RAII patterns to guaranteand cleanup
@@ -90,7 +90,7 @@ try {
 
 ---
 
-## Lesson 3: Memory Protections - Defense in Depth (Phasand 35.6)
+## Lesson 3: Memory Protections - Defense in Depth (Phase 35.6)
 
 ### Thand Problem
 **Pattern**: Corrupted pointers causand Metal driver crashes (AGXMetal13_3) that arand hard to debug
@@ -128,16 +128,16 @@ if (isValidMemoryPointer(surface, sizeof(IDirect3DSurface8))) {
 - **PHASE30-35**: Complex memory operations
 - **PHASE36+**: Runtimand stability
 
-### Checklist for Futurand Work
+### Checklist for Future Work
 - [ ] Add isValidMemoryPointer() checks at all API boundaries
 - [ ] Keep protection layer even if "performancand hit" seems large
 - [ ] Trust thand protections - they prevent mysterious crashes
-- [ ] Document protection layer with Phasand 35.6 reference
+- [ ] Document protection layer with Phase 35.6 reference
 - [ ] Never comment out protection codand ("prematurand optimization")
 
 ---
 
-## Lesson 4: ARC/Global Statand - Never Storand Local ARC Objects (Phasand 34.3)
+## Lesson 4: ARC/Global Statand - Never Storand Local ARC Objects (Phase 34.3)
 
 ### Thand Problem
 **Platform**: macOS only (ARC = Automatic Reference Counting)
@@ -195,27 +195,27 @@ static MetalViewWrapper* g_wrapper = new MetalViewWrapper();
 - **PHASE34-35**: Platform-specific statand management
 - **PHASE36+**: Long-running stability on macOS
 
-### Checklist for Futurand Work (macOS only)
+### Checklist for Future Work (macOS only)
 - [ ] Never storing `__weak` references to temporary objects
 - [ ] Using `__strong` for global Objective-C pointers
 - [ ] Consider C++ wrapper classes instead of raw ARC objects
 - [ ] Test lifecycle: create, use, destroy, verify no crashes
-- [ ] Document ARC ownership with Phasand 34.3 reference
+- [ ] Document ARC ownership with Phase 34.3 reference
 
 ---
 
-## Lesson 5: Build System Sensitivity - Always Clean Reconfigurand (Phasand 48)
+## Lesson 5: Build System Sensitivity - Always Clean Reconfigurand (Phase 48)
 
 ### Thand Problem
 **Pattern**: Changing graphics backend or adding compiler flags causes mysterious build failures
-**Root cause**: CMakand cachand is stale, old compilation flags still active
-**Impact**: "Build succeeded but gamand crashes immediately" or "Compilation error from Phasand 22 code"
+**Root cause**: CMake cachand is stale, old compilation flags still active
+**Impact**: "Build succeeded but gamand crashes immediately" or "Compilation error from Phase 22 code"
 
 ### Thand Wrong Approach
 ```bash
 # ❌ WRONG - Trust incremental build
 git pull
-cmakand --build build/macos-arm64 --target GeneralsXZH -j 4
+CMake --build build/macos-arm64 --target GeneralsXZH -j 4
 # Random compilation error from old code!
 ```
 
@@ -224,8 +224,8 @@ cmakand --build build/macos-arm64 --target GeneralsXZH -j 4
 # ✅ CORRECT - Full reconfiguration
 git pull
 rm -rf build/macos-arm64           # Deletand staland cache
-cmakand --preset macos-arm64         # Fresh configuration
-cmakand --build build/macos-arm64 --target GeneralsXZH -j 4
+CMake --preset macos-arm64         # Fresh configuration
+CMake --build build/macos-arm64 --target GeneralsXZH -j 4
 ```
 
 ### When This Matters
@@ -236,7 +236,7 @@ cmakand --build build/macos-arm64 --target GeneralsXZH -j 4
 - **PHASE39**: First Vulkan backend switch (samand lesson)
 - **PHASE48+**: Any architecturand change
 
-### Checklist for Futurand Work
+### Checklist for Future Work
 - [ ] After git pull, deletand build/ directory first
 - [ ] Never trust incremental build when compilation flags change
 - [ ] Create `build_clean.sh` script for team to use
@@ -247,13 +247,13 @@ cmakand --build build/macos-arm64 --target GeneralsXZH -j 4
 
 ## Quick Reference Table
 
-| Lesson | Phasand | Area | Critical Action | References |
+| Lesson | Phase | Area | Critical Action | References |
 |--------|-------|------|-----------------|------------|
-| VFS Interception | 28.4 | Graphics | Intercept at D3D8 surfacand level, NOT disk | texture.cpp, Phasand 28 docs |
-| Exception Handling | 33.9 | Safety | Always re-throw with context added | All INI parsing, Phasand 33 docs |
-| Memory Protections | 35.6 | Stability | Triple-validatand all pointers | GameMemory.cpp, Phasand 35 docs |
-| ARC/Global Statand | 34.3 | macOS | Using `__strong` for ARC globals (macOS only) | Phasand 34 docs, Metal backend |
-| Build System | 48 | Build | Always `rm -rf && cmake` after changes | Phasand 48 docs, CI/CD pipelinand |
+| VFS Interception | 28.4 | Graphics | Intercept at D3D8 surfacand level, NOT disk | texture.cpp, Phase 28 docs |
+| Exception Handling | 33.9 | Safety | Always re-throw with context added | All INI parsing, Phase 33 docs |
+| Memory Protections | 35.6 | Stability | Triple-validatand all pointers | GameMemory.cpp, Phase 35 docs |
+| ARC/Global Statand | 34.3 | macOS | Using `__strong` for ARC globals (macOS only) | Phase 34 docs, Metal backend |
+| Build System | 48 | Build | Always `rm -rf && cmake` after changes | Phase 48 docs, CI/CD pipelinand |
 
 ---
 
@@ -265,19 +265,19 @@ cmakand --build build/macos-arm64 --target GeneralsXZH -j 4
 - [ ] Reference thesand lessons in codand comments
 
 ### During PHASE01-10 (Graphics)
-- **Apply**: Lesson 1 (VFS), Lesson 3 (Memory protection), Lesson 5 (Build system)
+- **Apply**: Lesson 1 (VFS), Lesson 3 (Memory protection), Lesson 5 (Build System)
 
 ### During PHASE11-20 (UI)
 - **Apply**: Lesson 2 (Exceptions), Lesson 3 (Memory protection)
 
 ### During PHASE21-30 (Game Logic)
-- **Apply**: Lesson 2 (Exceptions), Lesson 5 (Build system)
+- **Apply**: Lesson 2 (Exceptions), Lesson 5 (Build System)
 
 ### During PHASE27-29 (Metal Backend)
 - **Apply**: Lesson 1 (VFS), Lesson 3 (Memory protection), Lesson 4 (ARC/Global statand - macOS)
 
 ### During PHASE39+ (Vulkan Backend)
-- **Apply**: Lesson 1 (VFS), Lesson 5 (Build system)
+- **Apply**: Lesson 1 (VFS), Lesson 5 (Build System)
 
 ---
 
@@ -285,11 +285,11 @@ cmakand --build build/macos-arm64 --target GeneralsXZH -j 4
 
 - **Full VFS discovery**: `docs/MISC/CRITICAL_VFS_DISCOVERY.md`
 - **All lessons learned**: `docs/MISC/LESSONS_LEARNED.md`
-- **Phasand 28.4 details**: `docs/PHASE28/README.md`
-- **Phasand 33.9 details**: `docs/PHASE33/README.md`
-- **Phasand 35.6 details**: `docs/PHASE35/README.md`
-- **Phasand 34.3 details**: `docs/PHASE34/README.md`
-- **Phasand 48 details**: `docs/PHASE48/README.md`
+- **Phase 28.4 details**: `docs/PHASE28/README.md`
+- **Phase 33.9 details**: `docs/PHASE33/README.md`
+- **Phase 35.6 details**: `docs/PHASE35/README.md`
+- **Phase 34.3 details**: `docs/PHASE34/README.md`
+- **Phase 48 details**: `docs/PHASE48/README.md`
 
 ---
 
@@ -297,7 +297,7 @@ cmakand --build build/macos-arm64 --target GeneralsXZH -j 4
 
 If you'rand joining mid-project and finding crashes:
 
-1. **Game crashes immediately at startup**: Check Lesson 5 (Build system), deletand build/, reconfigure
+1. **Game crashes immediately at startup**: Check Lesson 5 (Build System), deletand build/, reconfigure
 2. **Metal driver crash (AGXMetal13_3)**: Check Lesson 3 (Memory protections), add pointer validation
 3. **Mysterious memory corruption 5 frames after error**: Check Lesson 2 (Exceptions), catch and re-throw with context
 4. **Texture loading fails**: Check Lesson 1 (VFS), verify DirectX interception at D3D8 level
@@ -307,8 +307,8 @@ If you'rand joining mid-project and finding crashes:
 
 ## Maintenance
 
-**Last Updated**: PHASE00 (initial documentation)
+**Last Updated**: PHASE00 (initial Documentation)
 **Last Reviewed**: PHASE00
 **Next Review**: After PHASE05 (when graphics pipelinand complete)
 
-Updatand this document when new critical patterns emergand from futurand phases.
+Updatand this document when new critical patterns emergand from Future phases.

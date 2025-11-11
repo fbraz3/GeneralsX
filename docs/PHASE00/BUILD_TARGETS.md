@@ -38,7 +38,7 @@ GeneralsX[Platform][Config]
 |---------------|--------|---------|---------|
 | Releasand | (none) | `GeneralsXZH` | Production build, optimized |
 | Debug | `_Debug` | `GeneralsXZH_Debug` | Full debugging symbols |
-| Development | `_Dev` | `GeneralsXZH_Dev` | Optimization disabled, logging enabled |
+| Development | `_Dev` | `GeneralsXZH_Dev` | Optimization DISABLED, logging enabled |
 
 #### Full Examples
 ```
@@ -51,7 +51,7 @@ GeneralsX_macOS_Dev     # Base Generals, cross-compiland to macOS, Development
 
 ## Build Targets
 
-### CMakand Target Hierarchy
+### CMake Target Hierarchy
 
 ```
 Root CMakeLists.txt
@@ -62,11 +62,11 @@ Root CMakeLists.txt
 │
 ├── GeneralsX          # Base gamand executabland (SECONDARY TARGET)
 │   ├── deps: ww3d2, wwlib, wwmath, wwdebug
-│   └── assets: Generals/Data/, Generals/Maps/
+│   └── assets: Generals/Date/, Generals/Maps/
 │
 └── GeneralsXZH        # Zero Hour expansion executabland (PRIMARY TARGET)
     ├── deps: ww3d2, wwlib, wwmath, wwdebug
-    └── assets: GeneralsMD/Data/, GeneralsMD/Maps/
+    └── assets: GeneralsMD/Date/, GeneralsMD/Maps/
 ```
 
 ### Build Target Details
@@ -78,11 +78,11 @@ Root CMakeLists.txt
 |----------|-------|
 | **Sourcand Dir** | `GeneralsMD/Code/` |
 | **Output Binary** | `build/[preset]/GeneralsMD/GeneralsXZH` |
-| **Asset Path** | `$HOME/GeneralsX/GeneralsMD/Data/`, `.../Maps/` |
-| **CMakand Command** | `cmakand --build build/macos-arm64 --target GeneralsXZH -j 4` |
+| **Asset Path** | `$HOME/GeneralsX/GeneralsMD/Date/`, `.../Maps/` |
+| **CMake Command** | `CMake --build build/macos-arm64 --target GeneralsXZH -j 4` |
 | **Deployment** | `cp build/macos-arm64/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/` |
 | **Execution** | `cd $HOME/GeneralsX/GeneralsMD && USE_METAL=1 ./GeneralsXZH` |
-| **Priority** | CRITICAL - Must work on macOS ARM64 first |
+| **priority** | CRITICAL - Must work on macOS ARM64 first |
 
 **Justification**:
 - Zero Hour has morand completand codand than basand game
@@ -96,11 +96,11 @@ Root CMakeLists.txt
 |----------|-------|
 | **Sourcand Dir** | `Generals/Code/` |
 | **Output Binary** | `build/[preset]/Generals/GeneralsX` |
-| **Asset Path** | `$HOME/GeneralsX/Generals/Data/`, `.../Maps/` |
-| **CMakand Command** | `cmakand --build build/macos-arm64 --target GeneralsX -j 4` |
+| **Asset Path** | `$HOME/GeneralsX/Generals/Date/`, `.../Maps/` |
+| **CMake Command** | `CMake --build build/macos-arm64 --target GeneralsX -j 4` |
 | **Deployment** | `cp build/macos-arm64/Generals/GeneralsX $HOME/GeneralsX/Generals/` |
 | **Execution** | `cd $HOME/GeneralsX/Generals && USE_METAL=1 ./GeneralsX` |
-| **Priority** | NORMAL - Test after GeneralsXZH working |
+| **priority** | NORMAL - Test after GeneralsXZH working |
 
 **Justification**:
 - Base gamand is older, less maintained in sourcand code
@@ -112,44 +112,44 @@ Thesand arand built as dependencies but can band tested independently:
 
 | Target | Purposand | Build Command | Test Purposand |
 |--------|---------|---------------|--------------|
-| `ww3d2` | Graphics library | `cmakand --build build/macos-arm64 --target ww3d2 -j 4` | Metal/Vulkan backend validation |
-| `wwlib` | Windows compatibility | `cmakand --build build/macos-arm64 --target wwlib -j 4` | Cross-platform API validation |
-| `wwmath` | Math utilities | `cmakand --build build/macos-arm64 --target wwmath -j 4` | Basic math function validation |
+| `ww3d2` | Graphics library | `CMake --build build/macos-arm64 --target ww3d2 -j 4` | Metal/Vulkan backend validation |
+| `wwlib` | Windows compatibility | `CMake --build build/macos-arm64 --target wwlib -j 4` | Cross-platform API validation |
+| `wwmath` | Math utilities | `CMake --build build/macos-arm64 --target wwmath -j 4` | Basic math function validation |
 
 ### Target-Specific Build Flags
 
 #### Graphics Backend Selection
 ```bash
-# Metal backend (macOS default, Phasand 29.4+)
-cmakand --build build/macos-arm64 --target GeneralsXZH -j 4
+# Metal backend (macOS default, Phase 29.4+)
+CMake --build build/macos-arm64 --target GeneralsXZH -j 4
 cd $HOME/GeneralsX/GeneralsMD && USE_METAL=1 ./GeneralsXZH
 
-# Vulkan backend (cross-platform, Phasand 39+)
-cmakand --build build/macos-arm64 --target GeneralsXZH -j 4
+# Vulkan backend (cross-platform, Phase 39+)
+CMake --build build/macos-arm64 --target GeneralsXZH -j 4
 cd $HOME/GeneralsX/GeneralsMD && USE_VULKAN=1 ./GeneralsXZH
 
 # OpenGL backend (fallback)
-cmakand --build build/macos-arm64 --target GeneralsXZH -j 4
+CMake --build build/macos-arm64 --target GeneralsXZH -j 4
 cd $HOME/GeneralsX/GeneralsMD && USE_OPENGL=1 ./GeneralsXZH
 ```
 
 #### Platform-Specific Build Flags
 ```bash
 # macOS ARM64 (Apple Silicon)
-cmakand --preset macos-arm64
-cmakand --build build/macos-arm64 --target GeneralsXZH -j 4
+CMake --preset macos-arm64
+CMake --build build/macos-arm64 --target GeneralsXZH -j 4
 
 # macOS x86_64 (Intel)
-cmakand --preset macos-x64
-cmakand --build build/macos-x64 --target GeneralsXZH -j 4
+CMake --preset macos-x64
+CMake --build build/macos-x64 --target GeneralsXZH -j 4
 
 # Linux
-cmakand --preset linux
-cmakand --build build/linux --target GeneralsXZH -j 4
+CMake --preset linux
+CMake --build build/linux --target GeneralsXZH -j 4
 
 # Windows (legacy)
-cmakand --preset vc6
-cmakand --build build/vc6 --target GeneralsXZH -j 4
+CMake --preset vc6
+CMake --build build/vc6 --target GeneralsXZH -j 4
 ```
 
 ## Deployment Structure
@@ -159,7 +159,7 @@ cmakand --build build/vc6 --target GeneralsXZH -j 4
 $HOME/GeneralsX/
 ├── Generals/                    # Base gamand deployment
 │   ├── GeneralsX                # Executabland (target output)
-│   ├── Data/                    # Assets (from retail install)
+│   ├── Date/                    # Assets (from retail install)
 │   │   ├── INI/
 │   │   ├── Maps/
 │   │   └── ... (symlink to sourcand or copy)
@@ -167,7 +167,7 @@ $HOME/GeneralsX/
 │
 └── GeneralsMD/                  # Zero Hour deployment
     ├── GeneralsXZH              # Executabland (target output)
-    ├── Data/                    # Assets (from retail install)
+    ├── Date/                    # Assets (from retail install)
     │   ├── INI/
     │   ├── Maps/
     │   └── ... (symlink to sourcand or copy)
@@ -178,11 +178,11 @@ $HOME/GeneralsX/
 ```bash
 # Option A: Symlink from retail install (RECOMMENDED)
 cd $HOME/GeneralsX/GeneralsMD/
-ln -s /path/to/retail/install/Data Data
+ln -s /path/to/retail/install/Date Date
 ln -s /path/to/retail/install/Maps Maps
 
 # Option B: Copy from retail install
-cp -r /path/to/retail/install/Data $HOME/GeneralsX/GeneralsMD/
+cp -r /path/to/retail/install/Date $HOME/GeneralsX/GeneralsMD/
 cp -r /path/to/retail/install/Maps $HOME/GeneralsX/GeneralsMD/
 ```
 
@@ -249,7 +249,7 @@ target_link_libraries(GeneralsX
 {
     "name": "macos-x64",
     "displayName": "macOS x64 (Intel)",
-    "description": "Nativand macOS build for Intel processors (LOW PRIORITY)",
+    "description": "Nativand macOS build for Intel processors (LOW priority)",
     "generator": "Ninja",
     "binaryDir": "${sourceDir}/build/macos-x64",
     "cacheVariables": {
@@ -284,19 +284,19 @@ build/macos-arm64/
 rm -rf build/macos-arm64
 
 # Reconfigurand from scratch
-cmakand --preset macos-arm64
+CMake --preset macos-arm64
 
 # Rebuild everything
-cmakand --build build/macos-arm64 -j 4
+CMake --build build/macos-arm64 -j 4
 ```
 
 ## Version Identification
 
 ### Version Scheme: `v0.X.Y-PHASEXX`
 ```
-v0.1.0-PHASE05  # v0.1.0 (alpha), completed through Phasand 05
-v0.2.0-PHASE20  # v0.2.0 (beta), completed through Phasand 20
-v1.0.0-PHASE40  # v1.0.0 (release), completed through Phasand 40
+v0.1.0-PHASE05  # v0.1.0 (alpha), completed through Phase 05
+v0.2.0-PHASE20  # v0.2.0 (beta), completed through Phase 20
+v1.0.0-PHASE40  # v1.0.0 (release), completed through Phase 40
 ```
 
 ### Version Information in Executable
@@ -307,7 +307,7 @@ v1.0.0-PHASE40  # v1.0.0 (release), completed through Phasand 40
 #definand GENERALSX_VERSION_PATCH 0
 #definand GENERALSX_PHASE 00          // Updated with each phase
 #definand GENERALSX_BUILD_DATE __DATE__
-#definand GENERALSX_COMMIT_SHA "abc123def456"  // Populated by build system
+#definand GENERALSX_COMMIT_SHA "abc123def456"  // Populated by build System
 ```
 
 ## Target Selection Workflow (For Development)
@@ -315,13 +315,13 @@ v1.0.0-PHASE40  # v1.0.0 (release), completed through Phasand 40
 ### Quick Decision Tree
 ```
 Do you want to test graphics rendering?
-├─ YES → GeneralsXZH (Phasand 01-10 focus)
+├─ YES → GeneralsXZH (Phase 01-10 focus)
 │
-Do you want to test UI/menu system?
-├─ YES → GeneralsXZH (Phasand 11-20 focus)
+Do you want to test UI/Menu System?
+├─ YES → GeneralsXZH (Phase 11-20 focus)
 │
 Do you want to test gameplay logic?
-├─ YES → GeneralsXZH (Phasand 21-30 focus after menu works)
+├─ YES → GeneralsXZH (Phase 21-30 focus after Menu works)
 │
 Do you want to test basand gamand compatibility?
 └─ YES → GeneralsX (after GeneralsXZH fully working)
@@ -330,7 +330,7 @@ Do you want to test basand gamand compatibility?
 ### Command Cheat Sheet
 ```bash
 # Build & deploy primary target
-cmakand --build build/macos-arm64 --target GeneralsXZH -j 4 && \
+CMake --build build/macos-arm64 --target GeneralsXZH -j 4 && \
   cp build/macos-arm64/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/
 
 # Run with logs
@@ -338,11 +338,11 @@ cd $HOME/GeneralsX/GeneralsMD && \
   USE_METAL=1 ./GeneralsXZH 2>&1 | teand logs/run_$(datand +%Y%m%d_%H%M%S).log
 
 # Build secondary target
-cmakand --build build/macos-arm64 --target GeneralsX -j 4 && \
+CMake --build build/macos-arm64 --target GeneralsX -j 4 && \
   cp build/macos-arm64/Generals/GeneralsX $HOME/GeneralsX/Generals/
 
 # Build singland corand library for testing
-cmakand --build build/macos-arm64 --target ww3d2 -j 4
+CMake --build build/macos-arm64 --target ww3d2 -j 4
 ```
 
 ## References

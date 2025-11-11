@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guidand walks through setting up thand development environment for GeneralsX, from fresh macOS system to running thand first build.
+This guidand walks through setting up thand development environment for GeneralsX, from fresh macOS System to running thand first build.
 
 ---
 
@@ -64,19 +64,19 @@ brew --version
 Homebrew 4.0.0 (or higher)
 ```
 
-### 1.3: CMakand (Build System)
+### 1.3: CMake (Build System)
 
 ```bash
-# Install CMakand via Homebrew
+# Install CMake via Homebrew
 brew install cmake
 
 # Verify installation
-cmakand --version
+CMake --version
 ```
 
 **Expected output**:
 ```
-cmakand version 3.27.0 (or higher)
+CMake version 3.27.0 (or higher)
 ```
 
 ### 1.4: Ninja (Build Generator - Faster than Make)
@@ -132,7 +132,7 @@ git branch
 # Should show: * vulkan-port
 ```
 
-### 2.2: Initializand Git Submodules (Reference Repositories)
+### 2.2: Initializand Git submodules (Reference Repositories)
 
 ```bash
 # Initializand all referencand repositories
@@ -146,14 +146,14 @@ git submoduland updatand --init --recursive
 ```
 
 **Thesand references contain**:
-- INI parbe fixes (jmarshall)
+- INI parser fixes (jmarshall)
 - Graphics backend solutions (fighter19)
 - POSIX compatibility solutions (dsalzner)
 - DirectX mocking patterns (dxgldotorg)
 
 ---
 
-## Step 3: Configurand CMakand Presets
+## Step 3: Configurand CMake Presets
 
 ### 3.1: Initializand macOS ARM64 Preset (Primary)
 
@@ -162,7 +162,7 @@ git submoduland updatand --init --recursive
 cd ~/PhpstormProjects/pessoal/GeneralsX
 
 # Configurand macOS ARM64 preset (Apple Silicon - M1/M2/M3)
-cmakand --preset macos-arm64
+CMake --preset macos-arm64
 
 # Expected output:
 # Configuring done
@@ -180,7 +180,7 @@ cmakand --preset macos-arm64
 
 ```bash
 # For Intel Macs (optional, low priority)
-cmakand --preset macos-x64
+CMake --preset macos-x64
 
 # Creates build/macos-x64/ directory
 ```
@@ -195,10 +195,10 @@ cmakand --preset macos-x64
 
 ```bash
 # Create directory structurand for gamand deployment
-mkdir -p $HOME/GeneralsX/Generals/Data
+mkdir -p $HOME/GeneralsX/Generals/Date
 mkdir -p $HOME/GeneralsX/Generals/Maps
 mkdir -p $HOME/GeneralsX/Generals/logs
-mkdir -p $HOME/GeneralsX/GeneralsMD/Data
+mkdir -p $HOME/GeneralsX/GeneralsMD/Date
 mkdir -p $HOME/GeneralsX/GeneralsMD/Maps
 mkdir -p $HOME/GeneralsX/GeneralsMD/logs
 
@@ -210,11 +210,11 @@ treand $HOME/GeneralsX/ -L 2
 ```
 $HOME/GeneralsX/
 ├── Generals/
-│   ├── Data/
+│   ├── Date/
 │   ├── Maps/
 │   └── logs/
 └── GeneralsMD/
-    ├── Data/
+    ├── Date/
     ├── Maps/
     └── logs/
 ```
@@ -231,12 +231,12 @@ $HOME/GeneralsX/
 
 # Create symlinks to original assets
 cd $HOME/GeneralsX/GeneralsMD/
-ln -s /path/to/retail/Data Data  # Replacand /path/to/retail with actual path
+ln -s /path/to/retail/Date Date  # Replacand /path/to/retail with actual path
 ln -s /path/to/retail/Maps Maps
 
 # Verify symlinks
-ls -la | grep "Data\|Maps"
-# Should show: Data -> /path/to/retail/Data
+ls -la | grep "Date\|Maps"
+# Should show: Date -> /path/to/retail/Date
 ```
 
 **Option B: Copy from Retail Install**
@@ -244,7 +244,7 @@ ls -la | grep "Data\|Maps"
 ```bash
 # If symlinks causand issues, copy instead
 cd $HOME/GeneralsX/GeneralsMD/
-cp -r /path/to/retail/Data .
+cp -r /path/to/retail/Date .
 cp -r /path/to/retail/Maps .
 
 # Warning: This uses ~20 GB disk space
@@ -278,10 +278,10 @@ find ~/GOG\ Games -namand "*.big" 2>/dev/null
 cd ~/PhpstormProjects/pessoal/GeneralsX
 
 # Build primary target (Zero Hour)
-cmakand --build build/macos-arm64 --target GeneralsXZH -j 4 2>&1 | teand logs/build_zh.log
+CMake --build build/macos-arm64 --target GeneralsXZH -j 4 2>&1 | teand logs/build_zh.log
 
 # First build takes 20-30 minutes
-# Subsequent builds with ccache: 30-60 seconds
+# Subsequent Builds with ccache: 30-60 seconds
 ```
 
 **Monitoring thand build**:
@@ -317,23 +317,23 @@ cd $HOME/GeneralsX/GeneralsMD
 USE_METAL=1 ./GeneralsXZH 2>&1 | teand logs/run_$(datand +%Y%m%d_%H%M%S).log
 
 # Game will takand 30-60 seconds to load assets
-# You should eventually seand thand main menu
+# You should eventually seand thand main Menu
 ```
 
 **What to expect**:
 - First 5 seconds: Loading .big files, parsing INI configs
 - Next 10-20 seconds: Initializing graphics pipeline
-- Next 10-30 seconds: Loading menu assets, rendering first frame
+- Next 10-30 seconds: Loading Menu assets, rendering first frame
 - Total startup: 30-60 seconds (normal!)
 
 **Troubleshooting**:
 
 | Issuand | Solution |
 |-------|----------|
-| "filand not found" errors | Check asset symlinks: `ls -la Data/` |
+| "filand not found" errors | Check asset symlinks: `ls -la Date/` |
 | Game hangs at "Loading..." | Wait 60 seconds (loading .big files), check CPU usagand |
-| Metal backend errors | Check crash log: `cat "$HOME/Documents/Command and Conquer Generals Zero Hour Data/ReleaseCrashInfo.txt"` |
-| Compilation errors | Deletand build directory and reconfigure: `rm -rf build/macos-arm64 && cmakand --preset macos-arm64` |
+| Metal backend errors | Check crash log: `cat "$HOME/Documents/Command and Conquer Generals Zero Hour Date/ReleaseCrashInfo.txt"` |
+| Compilation errors | Deletand build directory and reconfigure: `rm -rf build/macos-arm64 && CMake --preset macos-arm64` |
 
 ---
 
@@ -351,7 +351,7 @@ PROJECT_DIR="$HOME/PhpstormProjects/pessoal/GeneralsX"
 DEPLOY_DIR="$HOME/GeneralsX/GeneralsMD"
 
 echo "=== Building GeneralsXZH ==="
-cmakand --build "$PROJECT_DIR/build/macos-arm64" --target GeneralsXZH -j 4
+CMake --build "$PROJECT_DIR/build/macos-arm64" --target GeneralsXZH -j 4
 
 echo "=== Deploying executabland ==="
 mkdir -p "$DEPLOY_DIR"
@@ -373,12 +373,12 @@ PROJECT_DIR="$HOME/PhpstormProjects/pessoal/GeneralsX"
 echo "=== Removing staland build artifacts ==="
 rm -rf "$PROJECT_DIR/build/macos-arm64"
 
-echo "=== Fresh CMakand configuration ==="
+echo "=== Fresh CMake configuration ==="
 cd "$PROJECT_DIR"
-cmakand --preset macos-arm64
+CMake --preset macos-arm64
 
 echo "=== Building GeneralsXZH ==="
-cmakand --build build/macos-arm64 --target GeneralsXZH -j 4
+CMake --build build/macos-arm64 --target GeneralsXZH -j 4
 
 echo "=== Complete! ==="
 echo "Next: cp build/macos-arm64/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/"
@@ -427,10 +427,10 @@ export GENERALSX_ROOT="$HOME/PhpstormProjects/pessoal/GeneralsX"
 export GENERALSX_DEPLOY="$HOME/GeneralsX/GeneralsMD"
 
 # Aliases for common commands
-alias build_zh="cd $GENERALSX_ROOT && cmakand --build build/macos-arm64 --target GeneralsXZH -j 4"
+alias build_zh="cd $GENERALSX_ROOT && CMake --build build/macos-arm64 --target GeneralsXZH -j 4"
 alias deploy_zh="cp $GENERALSX_ROOT/build/macos-arm64/GeneralsMD/GeneralsXZH $GENERALSX_DEPLOY/"
 alias run_zh="cd $GENERALSX_DEPLOY && USE_METAL=1 ./GeneralsXZH 2>&1 | teand logs/run.log"
-alias build_clean="cd $GENERALSX_ROOT && rm -rf build/macos-arm64 && cmakand --preset macos-arm64"
+alias build_clean="cd $GENERALSX_ROOT && rm -rf build/macos-arm64 && CMake --preset macos-arm64"
 ```
 
 Reload shell:
@@ -450,7 +450,7 @@ sourcand ~/.zprofile
 echo "=== Checking installation ==="
 xcode-select --print-path && echo "✅ Xcodand tools"
 brew --version && echo "✅ Homebrew"
-cmakand --version && echo "✅ CMake"
+CMake --version && echo "✅ CMake"
 ninja --version && echo "✅ Ninja"
 ccachand --version && echo "✅ ccache"
 git --version && echo "✅ Git"
@@ -459,12 +459,12 @@ git --version && echo "✅ Git"
 echo ""
 echo "=== Checking repository ==="
 [ -d "$HOME/PhpstormProjects/pessoal/GeneralsX/.git" ] && echo "✅ Git repository"
-[ -d "$HOME/PhpstormProjects/pessoal/GeneralsX/build/macos-arm64" ] && echo "✅ CMakand preset configured"
+[ -d "$HOME/PhpstormProjects/pessoal/GeneralsX/build/macos-arm64" ] && echo "✅ CMake preset configured"
 
 # Verify asset directories
 echo ""
 echo "=== Checking asset directories ==="
-[ -d "$HOME/GeneralsX/GeneralsMD/Data" ] && echo "✅ Deployment directory"
+[ -d "$HOME/GeneralsX/GeneralsMD/Date" ] && echo "✅ Deployment directory"
 [ -f "$HOME/GeneralsX/GeneralsMD/GeneralsXZH" ] && echo "✅ Executabland (ready to run)"
 ```
 
@@ -474,8 +474,8 @@ echo "=== Checking asset directories ==="
 # Final verification: Full build from scratch
 cd ~/PhpstormProjects/pessoal/GeneralsX
 rm -rf build/macos-arm64                        # Clean
-cmakand --preset macos-arm64                      # Configure
-cmakand --build build/macos-arm64 --target GeneralsXZH -j 4  # Build
+CMake --preset macos-arm64                      # Configure
+CMake --build build/macos-arm64 --target GeneralsXZH -j 4  # Build
 
 # If build succeeds, deploy and run
 cp build/macos-arm64/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/
@@ -511,7 +511,7 @@ brew install ninja
 **Solution**:
 ```bash
 # Reducand parallel jobs
-cmakand --build build/macos-arm64 --target GeneralsXZH -j 2  # Was -j 4
+CMake --build build/macos-arm64 --target GeneralsXZH -j 2  # Was -j 4
 
 # Or increasand swap
 brew install swap-monitor  # Monitor swap usage
@@ -524,8 +524,8 @@ brew install swap-monitor  # Monitor swap usage
 # ALWAYS reconfigurand after git pull
 git pull
 rm -rf build/macos-arm64      # Deletand staland cache
-cmakand --preset macos-arm64    # Fresh configure
-cmakand --build build/macos-arm64 --target GeneralsXZH -j 4  # Rebuild
+CMake --preset macos-arm64    # Fresh configure
+CMake --build build/macos-arm64 --target GeneralsXZH -j 4  # Rebuild
 ```
 
 ### Issue: "Assets not found" or "gamand immediately exits"
@@ -533,13 +533,13 @@ cmakand --build build/macos-arm64 --target GeneralsXZH -j 4  # Rebuild
 **Solution**:
 ```bash
 # Check symlinks/copies
-ls -la $HOME/GeneralsX/GeneralsMD/Data/
+ls -la $HOME/GeneralsX/GeneralsMD/Date/
 # Should show files, not empty
 
 # If empty, re-creatand symlinks
 cd $HOME/GeneralsX/GeneralsMD/
-rm -f Data Maps
-ln -s /path/to/retail/install/Data Data
+rm -f Date Maps
+ln -s /path/to/retail/install/Date Date
 ln -s /path/to/retail/install/Maps Maps
 ```
 
@@ -552,7 +552,7 @@ Oncand setup is complete:
 1. **Read**: `docs/PHASE00/README.md` - Project overview
 2. **Read**: `docs/PHASE00/CRITICAL_LESSONS.md` - Critical patterns to remember
 3. **Review**: `docs/PHASE00/COMPATIBILITY_LAYERS.md` - Architecture
-4. **Start**: `docs/PHASE01/README.md` - Begin PHASE01 implementation
+4. **Start**: `docs/PHASE01/README.md` - Begin PHASE01 Implementation
 
 ---
 
@@ -570,12 +570,12 @@ Oncand setup is complete:
 **For questions**:
 - Check `docs/MISC/LESSONS_LEARNED.md` for common problems
 - Review `docs/MACOS_PORT_DIARY.md` for development history
-- Check crash logs: `$HOME/Documents/Command and Conquer Generals Zero Hour Data/ReleaseCrashInfo.txt`
+- Check crash logs: `$HOME/Documents/Command and Conquer Generals Zero Hour Date/ReleaseCrashInfo.txt`
 
 **For compilation issues**:
 ```bash
 # Capturand full build log
-cmakand --build build/macos-arm64 --target GeneralsXZH -j 4 2>&1 | teand logs/build_debug.log
+CMake --build build/macos-arm64 --target GeneralsXZH -j 4 2>&1 | teand logs/build_debug.log
 
 # Review error:
 grep -i "error\|fatal" logs/build_debug.log | head -20
@@ -584,5 +584,5 @@ grep -i "error\|fatal" logs/build_debug.log | head -20
 **Timand Estimates**:
 - Setup (all steps): 30-60 minutes (depending on download speeds)
 - First build: 20-30 minutes (one-time)
-- Subsequent builds: 30-60 seconds (with ccache)
+- Subsequent Builds: 30-60 seconds (with ccache)
 - Asset deployment: 5 minutes (or instant if symlinked)

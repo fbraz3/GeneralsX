@@ -80,7 +80,7 @@
 
 ---
 
-## 🔗 Dependência Crítica Path
+## 🔗 Dependency Critical Path
 
 ```
 PHASE 1 (geometry)
@@ -142,29 +142,29 @@ PHASE 17-20 (menu system)
 
 ---
 
-## 🎯 Critical Blockers
+## 🔕 Critical Blockers
 
-**NO PODE PULAR**:
-- Phasand 1-5: Graphics foundation (sem isso, nothing renderiza)
-- Phasand 11-16: UI infrastructurand (sem isso, menu not podand be clickado)
-- Phasand 17-20: Menu system (sem isso, menu not aparece)
+**CANNOT SKIP**:
+- Phase 1-5: Graphics foundation (without it, nothing renders)
+- Phase 11-16: UI infrastructure (without it, menu can't be clicked)
+- Phase 17-20: Menu system (without it, menu doesn't appear)
 
-**PODE PARALELIZAR**:
-- Phases 21-30: Game logic (while faz UI)
-- Phasand 10: Post-processing (opcional, podand pular)
+**CAN PARALLELIZE**:
+- Phases 21-30: Game logic (while building UI)
+- Phase 10: Post-processing (optional, can skip)
 
 ---
 
-## 🏗️ Camadas dand Compatibilidade
+## 🏗️ Compatibility Layers
 
 ```
 Layer 1: win32_compat.h (2,295 lines)
-         ├─ Tipos Windows (HWND, HRESULT)
+         ├─ Windows Types (HWND, HRESULT)
          └─ APIs (GetModuleFileName, MessageBox)
          
 Layer 2: d3d8_vulkan_graphics_compat
          ├─ IDirect3DDevice8 → IGraphicsBackend
-         ├─ 47 methods mapeados
+         ├─ 47 methods mapped
          └─ Vulkan/MoltenVK backend
          
 Layer 3: Game-specific
@@ -176,11 +176,11 @@ Layer 3: Game-specific
 
 ---
 
-## 📁 Estrutura dand Documentation
+## 📁 Documentation Structure
 
 ```
 docs/
-├── PHASE00/ ✅ COMPLETO
+├── PHASE00/ ✅ COMPLETE
 │   ├── SPIKE_PLANNING.md
 │   ├── COMPATIBILITY_LAYERS.md
 │   ├── PLATFORM_PRESETS.md
@@ -188,10 +188,10 @@ docs/
 │   ├── README.md
 │   └── EXECUTIVE_SUMMARY.md
 │
-├── PHASE01/ (a create)
+├── PHASE01/ (to create)
 │   └── GEOMETRY_RENDERING.md
 │
-├── PHASE02/ (a create)
+├── PHASE02/ (to create)
 │   └── TEXTURE_SYSTEM.md
 │
 └── ...
@@ -199,14 +199,14 @@ docs/
 
 ---
 
-## ✅ Status Current
+## ✅ Current Status
 
-| Componentand | Status |
+| Component | Status |
 |-----------|--------|
 | Build System | ✅ OK (macos-arm64-vulkan) |
-| Vulkan Backend | ✅ OK (Phasand 39-48) |
+| Vulkan Backend | ✅ OK (Phase 39-48) |
 | Asset Loading | ✅ OK (.big files) |
-| Graphics Pipelinand | ✅ OK (Vulkan instance/device) |
+| Graphics Pipeline | ✅ OK (Vulkan instance/device) |
 | Geometry Rendering | ❌ MISSING (PHASE 1) |
 | UI System | ❌ MISSING (PHASE 11-16) |
 | Menu System | ❌ MISSING (PHASE 17-20) |
@@ -215,14 +215,14 @@ docs/
 
 ## 🚀 Next Actions
 
-1. **Validate roadmap** - Confirm sequência dand phases
-2. **Iniciar PHASE 1** - Geometry rendering (triangle)
-3. **Ciclo dand implementation**:
-   - Codand → Test → Document → Next Phase
-4. **Manter documentação atualizada** - Each phase tem seu README.md
+1. **Validate roadmap** - Confirm sequence of phases
+2. **Start PHASE 1** - Geometry rendering (triangle)
+3. **Cycle of implementation**:
+   - Code → Test → Document → Next Phase
+4. **Keep documentation updated** - Each phase has its README.md
 
 ---
 
-**Data**: November 10, 2025  
-**Status**: SPIKE PLANNING ✅ COMPLETO  
+**Date**: November 10, 2025  
+**Status**: SPIKE PLANNING ✅ COMPLETE  
 **Next**: PHASE 1 - Geometry Rendering

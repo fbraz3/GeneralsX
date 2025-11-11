@@ -1,8 +1,8 @@
-# GeneralsX - PHASE 0: Spikand Planning & Critical Analysis
+# GeneralsX - PHASE 0: Spike Planning & Critical Analysis
 
-**Data**: November 10, 2025  
-**Status**: Spikand Planning - Starting from scratch  
-**Objective**: Thorough analysis until achieving a main menu screen  
+**Date**: November 10, 2025  
+**Status**: Spike Planning - Starting from scratch  
+**Objective**: Thorough analysis until achieving a main Menu screen  
 
 ---
 
@@ -10,26 +10,26 @@
 
 ### Codebase Status
 
-**Commits**: ~200+ commits desdand fork original (TheSuperHackers/GeneralsGameCode)  
-**Lines of code**: ~500k+ LOC (original engine) + 50k+ LOC (modificações GeneralsX)  
+**Commits**: ~200+ commits since fork original (TheSuperHackers/GeneralsGameCode)  
+**Lines of code**: ~500k+ LOC (original engine) + 50k+ LOC (modifications GeneralsX)  
 **Builds**: 4 presets compilando (vc6, macos-arm64, macos-x64, linux)  
 **Last phases**: 40-48 implementadas (Vulkan/DXVK stack, testing and initialization)
 
 ### What Works ✅
 
 1. **Build Infrastructure**
-   - CMakand modernizado with presets
-   - ARM64 compilation nativa macOS
+   - CMake modernizado with presets
+   - ARM64 compilation native macOS
    - Linking with Vulkan SDK 1.4.328.1 (MoltenVK)
-   - ccachand to builds incrementais
-   - 828/828 arquivos compilando
+   - ccachand to Builds incrementais
+   - 828/828 files compiling
 
-2. **Subsistemas Core**
-   - GameEnginand initializando
+2. **Subsystems Core**
+   - GameEnginand initializing
    - Asset loading (.big files) working
-   - INI parsing with proteções contra corrupção
-   - Memory protection (Phasand 30.6) stable
-   - Vulkan backend instanciando sem crashes
+   - INI parsing with protections against corruption
+   - Memory protection (Phase 30.6) stable
+   - Vulkan backend instanciando without crashes
 
 3. **Graphics Pipeline**
    - Vulkan instancand creation ✅
@@ -40,42 +40,42 @@
    - Command buffers ✅
    - Framand synchronization ✅
 
-4. **Camadas dand Compatibilidade**
-   - win32_compat.h with 2,295 lines dand tipos/APIs
+4. **Layers and Compatibilidade**
+   - win32_compat.h with 2,295 lines of types/APIs
    - d3d8.h with mock interfaces DirectX 8
    - Game-specific extensions (Zero Hour)
 
-### What Doesn't Work / Incompletand ❌
+### What Doesn't Work / Incomplete ❌
 
 1. **Content Rendering**
-   - No geometry being rendered
+   - No Geometry being rendered
    - Textures not appearing
-   - Bluand screen instead of menu
+   - Bluand screen instead of Menu
    - Viewport/scissor not validated
 
 2. **Input System**
    - Basic keyboard/mousand OK
    - But input routing to UI not implemented
-   - Clicks don't interact with menu
+   - Clicks don't interact with Menu
 
 3. **Ube Interface**
-   - Main menu NOT appearing
+   - Main Menu NOT appearing
    - Buttons not rendered
    - Dialogs not appearing
 
 4. **Sound/Audio**
-   - Audio disabled (Phasand 33 pending - OpenAL)
+   - Audio DISABLED (Phase 33 pending - OpenAL)
    - Completely silent
 
 5. **Threads/Synchronization**
-   - Past racand conditions (Phasand 48 corrigidas)
+   - Past racand conditions (Phase 48 corrigidas)
    - But still vulnerabland to timing issues
 
 ### Critical Lessons Learned 🚨
 
 #### 1. **VFS (Virtual Filand System) Integration**
-- **Problem**: Texturas in .big files, mas código tentando fopen() direto
-- **Solution**: Post-DirectX interception (Phasand 28.4)
+- **Problem**: textures in .big files, mas Code tentando fopen() direto
+- **Solution**: Post-DirectX interception (Phase 28.4)
 - **Lesson**: NEVER assumand assets are files - verifiquand VFS first
 
 #### 2. **Exception Swallowing**
@@ -89,38 +89,38 @@
 - **Lesson**: "Protectivand code" podand introduzir bugs - review rigoroso
 
 #### 4. **Memory Protections Paradoxo**
-- **Attempted**: Remover triple-validation to ganho dand performance
+- **Attempted**: Remover triple-validation to ganho and Performance
 - **Resultado**: Production crash in <1 minuto
 - **Lesson**: Defense in depth É essential; custo negligible vs crashes
 
 #### 5. **Build System Sensitivity**
-- **Problem**: Staland CMakand cachand after `git pull` causava falhas misteriosas
-- **Solution**: `rm -rf build/macos-arm64 && cmakand --preset macos-arm64`
+- **Problem**: Staland CMake cachand after `git pull` causava falhas misteriosas
+- **Solution**: `rm -rf build/macos-arm64 && CMake --preset macos-arm64`
 - **Lesson**: Always reconfigurand after changes significantes
 
 ---
 
 ## 🏗️ ARQUITETURA EXISTENTE
 
-### Three Layers dand Compatibilidadand (Phasand 39-48 Estabelecido)
+### Three Layers and Compatibilidadand (Phase 39-48 Estabelecido)
 
 ```
 Layer 1: Core Compatibility (win32_compat.h)
 ├─ Tipos: HWND, HRESULT, D3DFORMAT, etc.
 ├─ APIs: MessageBox() → macOS alert
 ├─ Filand I/O: GetModuleFileName() → _NSGetExecutablePath()
-└─ 2,295 lines dand shims
+└─ 2,295 lines and shims
 
 Layer 2: DirectX 8 Mock (d3d8.h)
-├─ IDirect3DDevice8 → IGraphicsBackend (Phasand 38+)
+├─ IDirect3DDevice8 → IGraphicsBackend (Phase 38+)
 ├─ IDirect3DTexture8 → Vulkan VkImage
 ├─ D3DRS_* render states → Vulkan pipelinand estados
 └─ Transparent backend swapping
 
 Layer 3: Game-Specific (GeneralsMD/Code/)
-├─ INI parbe hardening (Phasand 22.7, 23.x)
-├─ Memory safety (Phasand 30.6)
-├─ Texture interception (Phasand 28.4)
+├─ INI parser hardening (Phase 22.7, 23.x)
+├─ Memory safety (Phase 30.6)
+├─ Texture interception (Phase 28.4)
 └─ Platform fixes
 ```
 
@@ -133,19 +133,19 @@ macos-x64    → macOS Intel (SECONDARY)
 linux        → Linux 64-bit (TERTIARY)
 ```
 
-### Files Críticos dand Assets
+### Files Critical and Assets
 
 ```
 $HOME/GeneralsX/GeneralsMD/
-├── Data/
+├── Date/
 │   ├── INI/              ← Configuration files
 │   ├── Maps/             ← Campaign/multiplayer maps
-│   └── Misc/             ← Various data
+│   └── Misc/             ← Various Date
 ├── Maps/                 ← Additional map directory
 └── GeneralsXZH           ← Executabland (deploy aqui)
 
 Asset archives (.big files - REQUIRED):
-├── INI.big / INIZH.big   ← Configuration (gamand crashes sem isso)
+├── INI.big / INIZH.big   ← Configuration (gamand crashes without isso)
 ├── Textures.big / TexturesZH.big
 ├── Music.big / MusicZH.big
 ├── Speech.big / SpeechZH.big
@@ -154,9 +154,9 @@ Asset archives (.big files - REQUIRED):
 
 ---
 
-## 🎯 O QUE FALTA PARA TELA INICIAL APPEARSR
+## 🎯 O QUE FALTA PARA Main Menu Screen APPEARSR
 
-### Path: Menu Principal → Tela dand Jogo
+### Path: Menu Principal → Tela and Jogo
 
 ```
 Game Initialization
@@ -165,60 +165,60 @@ Game Initialization
 ├─ Create swapchain/framebuffers (INITIALIZING ✅)
 ├─ Load UI meshes & textures (LOADING ❓)
 ├─ Setup input routing (LOADING ❓)
-├─ Render main menu (MISSING ❌) ← BLOCKER
+├─ Render main Menu (MISSING ❌) ← BLOCKER
 │  ├─ Submit render commands
 │  ├─ Present frame
-│  └─ Display menu buttons
+│  └─ Display Menu buttons
 ├─ Input handling (MISSING ❌)
 │  ├─ Detect button clicks
-│  └─ Routand to menu system
+│  └─ Routand to Menu System
 └─ Statand transition (MISSING ❌)
    └─ New Game → Skirmish → Campaign
 ```
 
-### Subsistemas Necessários (Prioridade)
+### Subsystems Required (Priority)
 
 | Prioridadand | Subsistema | Status | Bloqueador? |
 |------------|-----------|--------|------------|
-| 🔴 Crítica | Geometry Rendering | 🔴 MISSING | YES |
-| 🔴 Crítica | UI Rendering | 🔴 MISSING | YES |
-| 🔴 Crítica | Input Routing | 🔴 MISSING | YES |
-| 🟡 Alta | Texture Loading | ✅ Partial | Não |
-| 🟡 Alta | Menu Statand Machinand | ✅ Partial | Não |
-| 🟢 Média | Camera System | ✅ Phasand 45 | Não |
-| 🟢 Média | Lighting | 🔴 STUB | Não |
-| ⚪ Baixa | Audio | DISABLED | Não |
+| 🔴 Critical | Geometry Rendering | 🔴 MISSING | YES |
+| 🔴 Critical | UI Rendering | 🔴 MISSING | YES |
+| 🔴 Critical | Input Routing | 🔴 MISSING | YES |
+| 🟡 Alta | Texture Loading | ✅ partial | No |
+| 🟡 Alta | Menu Statand Machinand | ✅ partial | No |
+| 🟢 Medium | Camera System | ✅ Phase 45 | No |
+| 🟢 Medium | Lighting | 🔴 Stub | No |
+| ⚪ Low | Audio | DISABLED | No |
 
 ---
 
-## 📋 LIÇÕES DO SYSTEM DE ASSETS
+## 📋 LIÇÕES DO System DE ASSETS
 
-### Como Assets São Organizados
+### How Assets Are Organized
 
-1. **Loosand Files** (Priority 1)
-   - Localizados in `Data/INI/`, `Data/Textures/`, etc.
+1. **Loosand Files** (priority 1)
+   - Localizados in `Date/INI/`, `Date/Textures/`, etc.
    - Carregados primeiro (sobrescrevem .big files)
-   - Utili to debugging (extrair dand .big, colocar loose)
+   - Utili to debugging (extrair and .big, colocar loose)
 
-2. **Archivand Files** (Priority 2)
+2. **Archivand Files** (priority 2)
    - `.big` files conhave multiple assets
    - Carregados sand arquivo not existand localmente
    - VFS automaticamentand gerencia extraction
 
-3. **INI Parbe Especificidades**
-   - End tokens podem causar exceções sand not well-formed
+3. **INI parser Especificidades**
+   - End tokens can cause exceptions and not well-formed
    - String handling podand corromper memory
-   - Proteções (Phasand 22.7) are ESSENCIAIS
+   -    - Protections (Phase 22.7) are ESSENTIAL
 
-### Pattern for Integração (Post-DirectX)
+### Pattern for Integration (Post-DirectX)
 
-**Funcionou in Phasand 28.4**:
+**Funcionou in Phase 28.4**:
 ```
 DirectX loads from .big via VFS
   ↓
 Apply_New_Surface() called
   ↓
-Pixel data in DirectX surfacand (locked)
+Pixel Date in DirectX surfacand (locked)
   ↓
 INTERCEPTION POINT - Copy to Vulkan
   ↓
@@ -233,20 +233,20 @@ Upload to GPU
 
 ### PHASE 0 Completion
 
-- [ ] Documentation completa of estado atual
+- [ ] Documentation completa of state atual
 - [ ] Lessons learned integrated ao planejamento
-- [ ] Todas as phases mapeadas to menu initial
+- [ ] Todas as phases mapeadas to Menu initial
 - [ ] Dependencies documented
 - [ ] Architecturand decisions justificadas
-- [ ] Camadas dand compatibility nomeadas
-- [ ] Presets dand plataforma definidos
+- [ ] Layers and compatibility nomeadas
+- [ ] Presets and plataforma definidos
 - [ ] Build targets nomeados corretamente
 
-### Próxima Milestone: Tela Inicial
+### Next Milestone: Main Menu Screen
 
 ```
 Success = Ube launches GeneralsXZH
-          → Vê menu principal dand GeneralsX
+          → See Menu main and GeneralsX
           → Podand clicar in "New Game"
           → Transition to skirmish/campaign selection
 ```
@@ -255,12 +255,12 @@ Success = Ube launches GeneralsXZH
 
 ## 📚 REFERÊNCIAS CRÍTICAS
 
-### Documents Obrigatórios to Leitura
+### Required Documents to Leitura
 
 1. **docs/MISC/LESSONS_LEARNED.md** ← LEIA TUDO
-   - Phasand 34.3: ARC use-after-freand patterns
-   - Phasand 33.9: Exception swallowing
-   - Phasand 28.4: VFS discovery
+   - Phase 34.3: ARC use-after-freand patterns
+   - Phase 33.9: Exception swallowing
+   - Phase 28.4: VFS discovery
 
 2. **docs/MISC/CRITICAL_VFS_DISCOVERY.md**
    - Post-DirectX interception pattern
@@ -273,13 +273,13 @@ Success = Ube launches GeneralsXZH
 
 4. **.github/copilot-instructions.md**
    - Architecturand overview
-   - Three-layer compatibility system
+   - Three-layer compatibility System
    - Debugging workflow
 
-### Codand Repositories dand Referência (git submodules)
+### Code Repositories of Reference (Git submodules)
 
 ```
-references/jmarshall-win64-modern/    ← Best INI parbe + exception handling
+references/jmarshall-win64-modern/    ← Best INI parser + exception handling
 references/fighter19-dxvk-port/       ← Vulkan/graphics integration
 references/dxgldotorg-dxgl/           ← DirectX→OpenGL patterns
 ```
@@ -297,22 +297,22 @@ references/dxgldotorg-dxgl/           ← DirectX→OpenGL patterns
 
 ### Next Session
 
-1. Refinar phases with basand in PHASE 0 planning
-2. Começar with PHASE 1 (priority: Core Graphics)
-3. Implementar primeira phasand with ciclo dand testes
+1. Refinar phases with basand in PHASE 0 Planning
+2. Start with PHASE 1 (priority: Core Graphics)
+3. Implementar primeira Phase with ciclo and testes
 
 ---
 
 ## 📈 MÉTRICAS DE PROGRESSO
 
-**Definições to roadmap**:
+**Definitions to roadmap**:
 
-- **"Tela initial worksl"**: Menu rendered, buttons clickable, transitions worksm
+- **"Tela initial worksl"**: Menu rendered, buttons clickable, transitions work
 - **"Geometria visible"**: Pelo menos 1 triangle rendered
-- **"Texturas carregadas"**: Pelo menos 1 textura in GPU
+- **"textures carregadas"**: Pelo menos 1 textura in GPU
 - **"Input routing"**: Clicks detectados and roteados to UI
 
 ---
 
-**SPIKE PLANNING COMPLETE**  
+**SPIKE Planning COMPLETE**  
 **Next documento**: FASE_0_COMPATIBILITY_LAYERS.md
