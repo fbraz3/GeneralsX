@@ -128,6 +128,16 @@ typedef void* HICON;
 typedef void* HCURSOR;
 #endif
 
+/** @brief Font handle pointer */
+#ifndef HFONT
+typedef void* HFONT;
+#endif
+
+/** @brief Bitmap handle pointer */
+#ifndef HBITMAP
+typedef void* HBITMAP;
+#endif
+
 /** @brief Far procedure pointer (legacy 16-bit) */
 #ifndef FARPROC
 typedef void* FARPROC;

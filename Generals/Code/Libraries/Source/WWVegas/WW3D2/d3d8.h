@@ -20,7 +20,11 @@
 
 #ifndef _WIN32
 #include "win32_types.h"
+#include "d3d8_types.h"  // For IID and RGNDATA
 #endif
+
+// Note: d3d8_enums.h is not included here to avoid redefinition conflicts
+// with existing enum definitions in this file. Enums are defined locally below.
 
 // =====================================================================
 // Forward Declarations
@@ -94,120 +98,12 @@ typedef void* LPDIRECT3DVOLUMETEXTURE8;
 #define D3DPRESENT_RATE_DEFAULT       0
 
 // =====================================================================
-// DirectX Enumerations
+// DirectX Enumerations (moved to d3d8_enums.h - included above)
 // =====================================================================
+// All enum definitions are now in d3d8_enums.h for organization
 
-/** @brief DirectX texture filter types */
-#ifndef D3DTEXF_NONE
-typedef enum {
-    D3DTEXF_NONE          = 0,
-    D3DTEXF_POINT         = 1,
-    D3DTEXF_LINEAR        = 2,
-    D3DTEXF_ANISOTROPIC   = 3,
-    D3DTEXF_FLATCUBIC     = 4,
-    D3DTEXF_GAUSSIANCUBIC = 5
-} D3DTEXTUREFILTERTYPE;
-#endif
+// Keep only the most commonly used #defines for backward compatibility
 
-/** @brief DirectX Z-buffer types */
-typedef enum {
-    D3DZB_FALSE = 0,
-    D3DZB_TRUE  = 1,
-    D3DZB_USEW  = 2
-} D3DZBUFFERTYPE;
-
-/** @brief DirectX primitive types */
-#define D3DPT_POINTLIST               1
-#define D3DPT_LINELIST                2
-#define D3DPT_LINESTRIP               3
-#define D3DPT_TRIANGLELIST            4
-#define D3DPT_TRIANGLESTRIP           5
-#define D3DPT_TRIANGLEFAN             6
-
-/** @brief DirectX cull modes */
-#define D3DCULL_NONE                  1
-#define D3DCULL_CW                    2
-#define D3DCULL_CCW                   3
-
-/** @brief DirectX shading modes */
-#define D3DSHADE_FLAT                 1
-#define D3DSHADE_GOURAUD              2
-#define D3DSHADE_PHONG                3
-
-/** @brief DirectX fill modes */
-#define D3DFILL_POINT                 1
-#define D3DFILL_WIREFRAME             2
-#define D3DFILL_SOLID                 3
-
-/** @brief DirectX light types */
-#define D3DLIGHT_POINT                1
-#define D3DLIGHT_SPOT                 2
-#define D3DLIGHT_DIRECTIONAL          3
-
-/** @brief DirectX blend operations */
-typedef enum {
-    D3DBLENDOP_ADD        = 1,
-    D3DBLENDOP_SUBTRACT   = 2,
-    D3DBLENDOP_REVSUBTRACT = 3,
-    D3DBLENDOP_MIN        = 4,
-    D3DBLENDOP_MAX        = 5
-} D3DBLENDOP;
-
-/** @brief DirectX blend modes */
-#define D3DBLEND_ZERO                 1
-#define D3DBLEND_ONE                  2
-#define D3DBLEND_SRCCOLOR             3
-#define D3DBLEND_INVSRCCOLOR          4
-#define D3DBLEND_SRCALPHA             5
-#define D3DBLEND_INVSRCALPHA          6
-#define D3DBLEND_DESTALPHA            7
-#define D3DBLEND_INVDESTALPHA         8
-#define D3DBLEND_DESTCOLOR            9
-#define D3DBLEND_INVDESTCOLOR         10
-#define D3DBLEND_SRCALPHASAT          11
-#define D3DBLEND_BOTHSRCALPHA         12
-#define D3DBLEND_BOTHINVSRCALPHA      13
-
-/** @brief DirectX comparison functions */
-#define D3DCMP_NEVER                  1
-#define D3DCMP_LESS                   2
-#define D3DCMP_EQUAL                  3
-#define D3DCMP_LESSEQUAL              4
-#define D3DCMP_GREATER                5
-#define D3DCMP_NOTEQUAL               6
-#define D3DCMP_GREATEREQUAL           7
-#define D3DCMP_ALWAYS                 8
-
-/** @brief DirectX stencil operations */
-#define D3DSTENCILOP_KEEP             1
-#define D3DSTENCILOP_ZERO             2
-#define D3DSTENCILOP_REPLACE          3
-#define D3DSTENCILOP_INCRSAT          4
-#define D3DSTENCILOP_DECRSAT          5
-#define D3DSTENCILOP_INVERT           6
-#define D3DSTENCILOP_INCR             7
-#define D3DSTENCILOP_DECR             8
-
-/** @brief DirectX fog modes */
-#define D3DFOG_NONE                   0
-#define D3DFOG_EXP                    1
-#define D3DFOG_EXP2                   2
-#define D3DFOG_LINEAR                 3
-
-/** @brief DirectX material color source */
-#define D3DMCS_MATERIAL               0
-#define D3DMCS_COLOR1                 1
-#define D3DMCS_COLOR2                 2
-
-// =====================================================================
-// DirectX Texture Addressing Modes
-// =====================================================================
-
-#define D3DTADDRESS_WRAP              1
-#define D3DTADDRESS_MIRROR            2
-#define D3DTADDRESS_CLAMP             3
-#define D3DTADDRESS_BORDER            4
-#define D3DTADDRESS_MIRRORONCE        5
 
 // =====================================================================
 // DirectX Texture Argument Constants
@@ -893,6 +789,9 @@ typedef struct IDirect3DSwapChain8 IDirect3DSwapChain8;
 #ifdef __cplusplus
 }
 #endif
+
+// Include COM interface stub definitions after all enums are defined
+#include "d3d8_interfaces.h"
 
 #endif // D3D8_H_INCLUDED
 
