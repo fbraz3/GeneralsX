@@ -75,10 +75,10 @@ Establish **build system infrastructure** for cross-platform compilation of Gene
 - [x] CMake configure succeeds without warnings related to missing options
 - [x] Build progresses 50+ compilation units before hitting graphics/backend issues
 - [x] Logs captured and stored in `logs/` directory with phase/target naming
-- [ ] Helper scripts created and documented:
-  - [ ] `build_zh.sh` - build GeneralsXZH
-  - [ ] `build_clean.sh` - clean reconfigure
-  - [ ] `deploy.sh` - post-build deployment
+- [x] Helper scripts created and documented:
+  - [x] `build_zh.sh` - build GeneralsXZH
+  - [x] `build_clean.sh` - clean reconfigure
+  - [x] `deploy.sh` - post-build deployment
 - [x] CMake presets properly configured:
   - [x] `macos-arm64-vulkan` preset works
   - [x] `macos-arm64` (OpenGL) preset works
@@ -176,13 +176,13 @@ $HOME/GeneralsX/
 │   ├── GeneralsX                # Executable (generated)
 │   ├── Date/ → /retail/Date/    # Symlink to retail assets
 │   ├── Maps/ → /retail/Maps/    # Symlink to retail maps
-│   └── logs/                    # Runtimand logs
+│   └── logs/                    # Runtime logs
 │
 └── GeneralsMD/
     ├── GeneralsXZH              # Executable (generated)
     ├── Date/ → /retail/Date/    # Symlink to retail assets
     ├── Maps/ → /retail/Maps/    # Symlink to retail maps
-    └── logs/                    # Runtimand logs
+    └── logs/                    # Runtime logs
 ```
 
 ### Helper Scripts
@@ -272,7 +272,7 @@ setup_assets() {
     [ -L Date ] && rm Date
     [ -L Maps ] && rm Maps
     
-    # Creatand new symlinks
+    # Create new symlinks
     ln -s "$retail_data/Date" Date
     ln -s "$retail_data/Maps" Maps
     
@@ -281,7 +281,7 @@ setup_assets() {
     ls -la | grep "Date\|Maps"
 }
 
-# Creatand directories
+# Create directories
 mkdir -p $HOME/GeneralsX/GeneralsMD
 mkdir -p $HOME/GeneralsX/GeneralsMD/logs
 mkdir -p $HOME/GeneralsX/Generals
@@ -324,7 +324,7 @@ setup_assets "$HOME/GeneralsX/Generals" "$RETAIL_PATH"
 # Install ccache if not present
 brew install ccache
 
-# Configurand cache sizand (10 GB recommended)
+# Configure cache size (10 GB recommended)
 ccache -M 10G
 
 # Show cache statistics
@@ -332,6 +332,161 @@ ccache -s
 
 # Clear cache if needed
 ccache -C
+```
+
+### Helper Scripts Documentation
+
+Four helper scripts are provided in `scripts/` directory for common development workflows:
+
+#### 1. **build_zh.sh** - Build and Deploy GeneralsXZH
+
+```bash
+./scripts/build_zh.sh
+```
+
+**What it does:**
+- Builds GeneralsXZH target with CMake
+- Automatically deploys executable to `$HOME/GeneralsX/GeneralsMD/`
+- Creates timestamped logs in `logs/` directory
+- Sets executable permissions on deployed binary
+
+**Usage:**
+```bash
+cd /path/to/GeneralsX
+./scripts/build_zh.sh
+```
+
+**Output:**
+- Build artifact: `$HOME/GeneralsX/GeneralsMD/GeneralsXZH`
+- Build log: `logs/phase00_5_build_YYYYMMDD_HHMMSS.log`
+
+#### 2. **build_clean.sh** - Clean Build from Scratch
+
+```bash
+./scripts/build_clean.sh
+```
+
+**What it does:**
+- Removes stale build directory completely
+- Runs fresh CMake configuration with `macos-arm64` preset
+- Builds GeneralsXZH from scratch (bypasses ccache)
+- Useful after major dependency changes or build failures
+
+**Usage:**
+```bash
+cd /path/to/GeneralsX
+./scripts/build_clean.sh
+```
+
+**When to use:**
+- After `git pull` with CMakeLists.txt changes
+- When build cache is corrupted
+- When CMake configuration changes
+
+#### 3. **deploy.sh** - Manual Deployment
+
+```bash
+./scripts/deploy.sh
+```
+
+**What it does:**
+- Deploys both GeneralsXZH (if built) and GeneralsX (if available)
+- Creates deployment directories and logs subdirectories
+- Sets executable permissions
+- Useful when you want to deploy without rebuilding
+
+**Usage:**
+```bash
+cd /path/to/GeneralsX
+./scripts/deploy.sh
+```
+
+**Output:**
+- GeneralsXZH: `$HOME/GeneralsX/GeneralsMD/GeneralsXZH`
+- GeneralsX (if exists): `$HOME/GeneralsX/Generals/GeneralsX`
+
+#### 4. **setup_assets.sh** - Configure Asset Symlinks
+
+```bash
+./scripts/setup_assets.sh /path/to/retail/install
+```
+
+**What it does:**
+- Creates deployment directories
+- Sets up symlinks to retail game assets (Data/, Maps/)
+- Creates logs subdirectories
+- Run this once to prepare for first game execution
+
+**Usage:**
+```bash
+cd /path/to/GeneralsX
+./scripts/setup_assets.sh ~/.steamapps/Command\ and\ Conquer\ Generals/
+```
+
+**Expected retail structure:**
+```
+/path/to/retail/
+├── Date/           # Game data files
+└── Maps/           # Game map files
+```
+
+#### 5. **aliases.sh** - Shell Aliases (Optional)
+
+```bash
+source ./scripts/aliases.sh
+```
+
+**What it provides:**
+- `build_zh` - Build GeneralsXZH
+- `deploy_zh` - Deploy GeneralsXZH
+- `run_zh` - Run GeneralsXZH with Vulkan backend
+
+**Setup (add to ~/.zprofile or ~/.bashrc):**
+```bash
+# Add this line to your shell profile
+source /path/to/GeneralsX/scripts/aliases.sh
+```
+
+**Then use:**
+```bash
+build_zh      # Build GeneralsXZH
+deploy_zh     # Deploy to $HOME/GeneralsX/GeneralsMD/
+run_zh        # Run the game
+```
+
+### Complete Workflow Example
+
+**First time setup:**
+```bash
+cd ~/PhpstormProjects/pessoal/GeneralsGameCode
+
+# 1. Configure CMake
+cmake --preset macos-arm64
+
+# 2. Setup assets (one time)
+./scripts/setup_assets.sh /path/to/retail/install
+
+# 3. Build and deploy
+./scripts/build_zh.sh
+
+# 4. Run the game
+cd $HOME/GeneralsX/GeneralsMD
+USE_VULKAN=1 ./GeneralsXZH
+```
+
+**Subsequent builds (with ccache):**
+```bash
+# Build + deploy takes 30-60 seconds
+./scripts/build_zh.sh
+```
+
+**After git pull (if CMakeLists.txt changed):**
+```bash
+# Clean rebuild
+./scripts/build_clean.sh
+
+# Or with short deployment
+./scripts/build_zh.sh
 ```
 
 ## Implementation Checklist
@@ -346,18 +501,18 @@ ccache -C
 
 ### Phase 2: Deployment Infrastructure
 
-- [ ] Creatand `$HOME/GeneralsX/GeneralsMD/` directory
-- [ ] Creatand `$HOME/GeneralsX/Generals/` directory
-- [ ] Creatand `logs/` subdirectories
+- [ ] Create `$HOME/GeneralsX/GeneralsMD/` directory
+- [ ] Create `$HOME/GeneralsX/Generals/` directory
+- [ ] Create `logs/` subdirectories
 - [ ] Test asset symlinks from retail install
 - [ ] Verify symlinks with `ls -la`
 
 ### Phase 3: Helper Scripts
 
-- [ ] Creatand `build_zh.sh` in project root
-- [ ] Creatand `build_clean.sh` in project root
-- [ ] Creatand `deploy.sh` in project root
-- [ ] Makand scripts executable: `chmod +x *.sh`
+- [ ] Create `build_zh.sh` in project root
+- [ ] Create `build_clean.sh` in project root
+- [ ] Create `deploy.sh` in project root
+- [ ] Make scripts executable: `chmod +x *.sh`
 - [ ] Test each script once
 
 ### Phase 4: Developer Workflow
@@ -373,13 +528,13 @@ ccache -C
 - [ ] Reload shell: `source ~/.zprofile`
 - [ ] Test aliases
 
-### Phase 5: Seeification
+### Phase 5: Verification
 
 - [ ] First build cycle: `build_zh.sh` (should complete in 20-30 min)
 - [ ] Second build cycle: `build_zh.sh` (should complete in 30-60 sec with ccache)
 - [ ] Deployment: Verify executable in `$HOME/GeneralsX/GeneralsMD/GeneralsXZH`
 - [ ] Assets: Verify symlinks point to correct data
-- [ ] Logs: Creatand `logs/` directory and verify write permissions
+- [ ] Logs: Create `logs/` directory and verify write permissions
 
 ## Estimated Scope
 
@@ -508,12 +663,12 @@ cmake --build build/macos-arm64 --target GeneralsXZH -j 4
 - [ ] Helper scripts functional and documented
 - [ ] All CMake presets (macOS ARM64, macOS x64, Linux) pass configure stage
 
-## Referencand Documentation
+## Reference Documentation
 
-- **Build System Guide**: Seand `docs/PHASE00/BUILD_TARGETS.md`
-- **Setup Guide**: Seand `docs/PHASE00/SETUP_ENVIRONMENT.md`
-- **Asset System**: Seand `docs/PHASE00/ASSET_SYSTEM.md`
-- **Platform Decisions**: Seand `docs/PHASE00/PLATFORM_PRESETS.md`
+- **Build System Guide**: See `docs/PHASE00/BUILD_TARGETS.md`
+- **Setup Guide**: See `docs/PHASE00/SETUP_ENVIRONMENT.md`
+- **Asset System**: See `docs/PHASE00/ASSET_SYSTEM.md`
+- **Platform Decisions**: See `docs/PHASE00/PLATFORM_PRESETS.md`
 - **CMake Documentation**: <https://cmake.org/documentation/>
 
 ## Related Phases
@@ -555,7 +710,7 @@ cmake --build build/macos-arm64-vulkan --target z_generals -j 4
 
 ## Notes
 
-### Important: Clean Reconfigurand Pattern
+### Important: Clean Reconfigure Pattern
 
 ---
 
@@ -563,7 +718,7 @@ cmake --build build/macos-arm64-vulkan --target z_generals -j 4
 
 ```bash
 git pull
-rm -rf build/macos-arm64          # Deletand stale cache
+rm -rf build/macos-arm64          # Delete stale cache
 cmake --preset macos-arm64        # Fresh configure
 cmake --build build/macos-arm64 --target GeneralsXZH -j 4
 ```
@@ -572,19 +727,19 @@ cmake --build build/macos-arm64 --target GeneralsXZH -j 4
 
 First build: 20-30 minutes
 Second build with ccache: 30-60 seconds
-→ 99% timand savings for incremental development
+→ 99% time savings for incremental development
 
 ### Why Two Targets?
 
 - **GeneralsXZH** (Primary): Most stable, well-maintained
 - **GeneralsX** (Secondary): Older codebase, lower priority
-Testing GeneralsXZH first validates graphics pipeline morand effectively
+Testing GeneralsXZH first validates graphics pipeline more effectively
 
 ### Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
 | Build fails with "stale cache" | `rm -rf build/macos-arm64 && cmake --preset macos-arm64` |
-| ccache not working | Seeify: `cmake --build ... -DUSE_CCACHE=ON` |
+| ccache not working | Verify: `cmake --build ... -DUSE_CCACHE=ON` |
 | Asset symlinks broken | Verify retail path: `ls /path/to/retail/Date/` |
-| Deployment fails | Ensurand `$HOME/GeneralsX/GeneralsMD/` exists |
+| Deployment fails | Ensure `$HOME/GeneralsX/GeneralsMD/` exists |
