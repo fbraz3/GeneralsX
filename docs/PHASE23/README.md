@@ -1,27 +1,27 @@
-# Phase 23: Menu Interaction
+# Phase 22: Menu Rendering
 
-**Phase**: 23  
-**Title**: Menu Interaction  
+**Phase**: 22  
+**Title**: Menu Rendering  
 **Area**: Menu System  
-**Scope**: SMALL  
+**Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 05, Phase 22
+**Dependencies**: Phase 16, Phase 19, Phase 21
 
 ---
 
 ## Objective
 
-Menu button interaction and input handling
+Render menu UI via Vulkan
 
 ---
 
 ## Key Deliverables
 
-- [ ] Button click detection
-- [ ] Keyboard navigation
-- [ ] Selection highlight rendering
-- [ ] Save/load file dialogs
-- [ ] Settings menu updates
+- [ ] Menu layout rendering
+- [ ] Text rendering (bitmap fonts or SDF)
+- [ ] Button geometry and textures
+- [ ] Transition animations
+- [ ] Menu state visualization
 
 ---
 
@@ -57,7 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- GeneralsMD/Code/GameEngine/Source/UI/MenuInteraction.h
+- GeneralsMD/Code/GameEngine/Source/UI/MenuRenderer.h
 
 ---
 

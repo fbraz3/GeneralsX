@@ -231,6 +231,13 @@ set(WW3D2_SRC
     ww3dformat.h
     ww3dids.h
     ww3dtrig.h
+    # Phase 01: DirectX 8 Compatibility Layer
+    d3dx8fvf.h
+    d3d8.h
+    win32_types.h
+    # Phase 02: SDL2 Window & Event Loop compatibility layer
+    win32_sdl_api_compat.h
+    win32_sdl_api_compat.cpp
 )
 
 # Exclude DX8-only files when building with the Vulkan backend to avoid
@@ -262,4 +269,5 @@ endif()
 
 target_link_libraries(corei_ww3d2 INTERFACE
     core_browserengine
+    sdl2_compat
 )

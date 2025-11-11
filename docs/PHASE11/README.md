@@ -1,27 +1,26 @@
-# Phase 11: Texture System
+# Phase 10: Vertex & Index Buffers
 
-**Phase**: 11  
-**Title**: Texture System  
+**Phase**: 10  
+**Title**: Vertex & Index Buffers  
 **Area**: Graphics Layer (d3d8_vulkan_graphics_compat)  
 **Scope**: MEDIUM  
-**Status**: not-started  
-**Dependencies**: Phase 06, Phase 10
+**Status**: COMPLETE (Phase 41)  
+**Dependencies**: Phase 06
 
 ---
 
 ## Objective
 
-Vulkan texture creation, loading, and GPU management
+Vulkan buffer management for vertex and index data (ALREADY COMPLETE in Phase 41)
 
 ---
 
 ## Key Deliverables
 
-- [ ] VkImage allocation with format conversion
-- [ ] VkImageView creation
-- [ ] Texture layout transitions
-- [ ] Staging buffers for GPU upload
-- [ ] Format support: RGBA8, BC1/2/3 DXT compression
+- [ ] VkBuffer allocation for geometry
+- [ ] Memory binding and GPU upload
+- [ ] Dynamic buffer updates
+- [ ] Large pre-allocated buffer pools
 
 ---
 
@@ -57,8 +56,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/Libraries/Source/WWVegas/WW3D2/graphics_backend_dxvk_textures.cpp
-- GeneralsMD/Code/GameEngine/Source/Graphics/TextureLoader.cpp
+- Core/Libraries/Source/WWVegas/WW3D2/graphics_backend_dxvk_buffers.cpp
 
 ---
 

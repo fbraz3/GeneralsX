@@ -1,27 +1,27 @@
-# Phase 38: Optimization & Profiling
+# Phase 37: Cross-Platform Validation
 
-**Phase**: 38  
-**Title**: Optimization & Profiling  
+**Phase**: 37  
+**Title**: Cross-Platform Validation  
 **Area**: Testing & Polish  
-**Scope**: MEDIUM  
+**Scope**: LARGE  
 **Status**: not-started  
-**Dependencies**: Phase 37
+**Dependencies**: Phase 36
 
 ---
 
 ## Objective
 
-Performance optimization and profiling
+Multi-platform build and feature validation
 
 ---
 
 ## Key Deliverables
 
-- [ ] Vulkan profiling integration
-- [ ] Frame time analysis
-- [ ] GPU memory optimization
-- [ ] Shader optimization
-- [ ] Batching improvements
+- [ ] Build on Windows/macOS/Linux
+- [ ] Feature parity verification
+- [ ] Performance profiling
+- [ ] Driver compatibility
+- [ ] Platform-specific fixes
 
 ---
 
@@ -57,7 +57,8 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- GeneralsMD/Code/GameEngine/Source/Profiling/Profiler.h
+- CMakeLists.txt
+- CMakePresets.json
 
 ---
 

@@ -1,27 +1,27 @@
-# Phase 30: Camera System
+# Phase 29: Rendering Integration
 
-**Phase**: 30  
-**Title**: Camera System  
+**Phase**: 29  
+**Title**: Rendering Integration  
 **Area**: Game Logic  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 05, Phase 19, Phase 29
+**Dependencies**: Phase 20, Phase 26, Phase 27
 
 ---
 
 ## Objective
 
-Multiple camera modes for gameplay
+Render game objects via Vulkan
 
 ---
 
 ## Key Deliverables
 
-- [ ] Free camera (WASD + mouse look)
-- [ ] RTS camera (isometric, pan, zoom)
-- [ ] Chase camera (follow unit)
-- [ ] Orbit camera (rotate around point)
-- [ ] Smooth camera transitions
+- [ ] GameObject rendering with transform
+- [ ] Back-to-front sorting for transparency
+- [ ] Material batching
+- [ ] Debug visualization
+- [ ] Performance optimization
 
 ---
 
@@ -57,7 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- GeneralsMD/Code/GameEngine/Source/Input/CameraController.h
+- GeneralsMD/Code/GameEngine/Source/Graphics/GameRenderer.h
 
 ---
 

@@ -1,27 +1,27 @@
-# Phase 36: Test Infrastructure
+# Phase 35: Game State Management
 
-**Phase**: 36  
-**Title**: Test Infrastructure  
-**Area**: Testing & Polish  
-**Scope**: LARGE  
+**Phase**: 35  
+**Title**: Game State Management  
+**Area**: Gameplay Features  
+**Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 00.5
+**Dependencies**: Phase 04, Phase 26, Phase 28
 
 ---
 
 ## Objective
 
-Unit test framework and test suite
+Save/load and game state serialization
 
 ---
 
 ## Key Deliverables
 
-- [ ] Test runner and assertion macros
-- [ ] Graphics rendering tests
-- [ ] Game logic unit tests
-- [ ] Performance benchmarks
-- [ ] Integration tests
+- [ ] Save game serialization
+- [ ] Load game deserialization
+- [ ] Game state versioning
+- [ ] Undo/redo system
+- [ ] Replay recording (optional Phase 39+)
 
 ---
 
@@ -57,9 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- tests/core/test_runner.h
-- tests/test_graphics.cpp
-- tests/test_gamelogic.cpp
+- GeneralsMD/Code/GameEngine/Source/Gameplay/GameStateManager.h
 
 ---
 

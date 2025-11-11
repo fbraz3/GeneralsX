@@ -1,27 +1,27 @@
-# Phase 21: INI Parser Hardening
+# Phase 20: Draw Command System
 
-**Phase**: 21  
-**Title**: INI Parser Hardening  
-**Area**: Menu System  
+**Phase**: 20  
+**Title**: Draw Command System  
+**Area**: Graphics Layer (d3d8_vulkan_graphics_compat)  
 **Scope**: MEDIUM  
-**Status**: not-started  
-**Dependencies**: Phase 02, Phase 04
+**Status**: COMPLETE (Phase 41)  
+**Dependencies**: Phase 10, Phase 14, Phase 19
 
 ---
 
 ## Objective
 
-Fix INI parser to correctly read all field types (Phase 33.9 regression)
+Drawing primitives and command recording (ALREADY COMPLETE in Phase 41)
 
 ---
 
 ## Key Deliverables
 
-- [ ] Fix exception handling (re-throw with context)
-- [ ] Parse all menu definitions
-- [ ] Support all data types (string, float, int, color)
-- [ ] VFS integration for .big file access
-- [ ] Comprehensive error reporting
+- [ ] vkCmdDraw and vkCmdDrawIndexed commands
+- [ ] Instancing support
+- [ ] Multi-pass rendering
+- [ ] Draw call batching
+- [ ] State sorting optimization
 
 ---
 
@@ -57,14 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/Libraries/Source/WWVegas/WWLib/Source/Ini.cpp
-
----
-
-## Critical Notes
-
-CRITICAL: Phase 33.9 shows exception swallowing prevents proper parsing. Must re-throw exceptions with context.
-
+- Core/Libraries/Source/WWVegas/WW3D2/graphics_backend_dxvk_drawing.cpp
 
 ---
 

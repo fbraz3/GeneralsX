@@ -1,27 +1,26 @@
-# Phase 05: Input System
+# Phase 04: Registry & Configuration
 
-**Phase**: 05  
-**Title**: Input System  
+**Phase**: 04  
+**Title**: Registry & Configuration  
 **Area**: OS API Layer (win32_sdl_api_compat)  
-**Scope**: MEDIUM  
+**Scope**: SMALL  
 **Status**: not-started  
-**Dependencies**: Phase 01, Phase 03
+**Dependencies**: Phase 02, Phase 03
 
 ---
 
 ## Objective
 
-Implement SDL2-based cross-platform input handling with keyboard, mouse, and gamepad support.
+Replace Windows Registry with INI-based configuration system.
 
 ---
 
 ## Key Deliverables
 
-- [ ] Keyboard input mapping (SDL2 → game constants)
-- [ ] Mouse input handling with relative/absolute modes
-- [ ] Gamepad/joystick detection and mapping
-- [ ] Input rebinding configuration
-- [ ] Multi-platform input verification
+- [ ] Cross-platform config directory management
+- [ ] INI configuration file reading/writing
+- [ ] Registry key migration to INI
+- [ ] Per-platform config paths
 
 ---
 
@@ -57,8 +56,8 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/Libraries/Source/WWVegas/WW3D2/win32_input_api_compat.h
-- GeneralsMD/Code/GameEngine/Source/Input/InputManager.cpp
+- Core/Libraries/Source/WWVegas/WWLib/Source/Ini.cpp
+- GeneralsMD/Code/GameEngine/Source/Config/ConfigManager.h
 
 ---
 

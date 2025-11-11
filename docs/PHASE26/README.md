@@ -1,27 +1,27 @@
-# Phase 26: Game Object System
+# Phase 25: Audio Integration (Phase 1)
 
-**Phase**: 26  
-**Title**: Game Object System  
-**Area**: Game Logic  
-**Scope**: MEDIUM  
+**Phase**: 25  
+**Title**: Audio Integration (Phase 1)  
+**Area**: Menu System  
+**Scope**: SMALL  
 **Status**: not-started  
-**Dependencies**: Phase 04
+**Dependencies**: Phase 02, Phase 24
 
 ---
 
 ## Objective
 
-Base entity system with units, buildings, effects
+Audio playback during menu (music, click sounds)
 
 ---
 
 ## Key Deliverables
 
-- [ ] GameObject base class
-- [ ] Unit subclass with movement/targeting
-- [ ] Building subclass with construction
-- [ ] Effect subclass with lifetime
-- [ ] Entity lifecycle management
+- [ ] Load music from .big archives (VFS)
+- [ ] Background music playback
+- [ ] Menu click SFX
+- [ ] Volume control UI
+- [ ] Audio device detection
 
 ---
 
@@ -57,7 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- GeneralsMD/Code/GameEngine/Source/GameObject/GameObject.h
+- GeneralsMD/Code/GameEngine/Source/Audio/AudioManager.h
 
 ---
 

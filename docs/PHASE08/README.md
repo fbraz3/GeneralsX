@@ -1,26 +1,26 @@
-# Phase 08: Render Pass & Pipeline
+# Phase 07: Swapchain & Presentation
 
-**Phase**: 08  
-**Title**: Render Pass & Pipeline  
+**Phase**: 07  
+**Title**: Swapchain & Presentation  
 **Area**: Graphics Layer (d3d8_vulkan_graphics_compat)  
 **Scope**: MEDIUM  
 **Status**: COMPLETE (Phase 40)  
-**Dependencies**: Phase 07
+**Dependencies**: Phase 06
 
 ---
 
 ## Objective
 
-Vulkan render passes and graphics pipelines (ALREADY COMPLETE in Phase 40)
+Vulkan swapchain creation and frame presentation (ALREADY COMPLETE in Phase 40)
 
 ---
 
 ## Key Deliverables
 
-- [ ] VkRenderPass creation
-- [ ] VkGraphicsPipeline creation
-- [ ] Pipeline layout with descriptor sets
-- [ ] Dynamic state management
+- [ ] VkSwapchainKHR creation for each platform
+- [ ] Frame acquisition and presentation
+- [ ] Out-of-date swapchain handling
+- [ ] Triple-buffering support
 
 ---
 
@@ -56,7 +56,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/Libraries/Source/WWVegas/WW3D2/graphics_backend_dxvk_render.cpp
+- Core/Libraries/Source/WWVegas/WW3D2/graphics_backend_dxvk_device.cpp
 
 ---
 

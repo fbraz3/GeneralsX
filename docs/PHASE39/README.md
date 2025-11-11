@@ -1,27 +1,27 @@
-# Phase 39: Documentation & Hardening
+# Phase 38: Optimization & Profiling
 
-**Phase**: 39  
-**Title**: Documentation & Hardening  
+**Phase**: 38  
+**Title**: Optimization & Profiling  
 **Area**: Testing & Polish  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 38
+**Dependencies**: Phase 37
 
 ---
 
 ## Objective
 
-API documentation and error handling
+Performance optimization and profiling
 
 ---
 
 ## Key Deliverables
 
-- [ ] API reference documentation
-- [ ] Developer guides
-- [ ] Configuration documentation
-- [ ] Troubleshooting guides
-- [ ] Error messages and logging
+- [ ] Vulkan profiling integration
+- [ ] Frame time analysis
+- [ ] GPU memory optimization
+- [ ] Shader optimization
+- [ ] Batching improvements
 
 ---
 
@@ -57,8 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- docs/API_REFERENCE.md
-- docs/DEVELOPER_GUIDE.md
+- GeneralsMD/Code/GameEngine/Source/Profiling/Profiler.h
 
 ---
 

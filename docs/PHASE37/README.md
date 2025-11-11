@@ -1,27 +1,27 @@
-# Phase 37: Cross-Platform Validation
+# Phase 36: Test Infrastructure
 
-**Phase**: 37  
-**Title**: Cross-Platform Validation  
+**Phase**: 36  
+**Title**: Test Infrastructure  
 **Area**: Testing & Polish  
 **Scope**: LARGE  
 **Status**: not-started  
-**Dependencies**: Phase 36
+**Dependencies**: Phase 00.5
 
 ---
 
 ## Objective
 
-Multi-platform build and feature validation
+Unit test framework and test suite
 
 ---
 
 ## Key Deliverables
 
-- [ ] Build on Windows/macOS/Linux
-- [ ] Feature parity verification
-- [ ] Performance profiling
-- [ ] Driver compatibility
-- [ ] Platform-specific fixes
+- [ ] Test runner and assertion macros
+- [ ] Graphics rendering tests
+- [ ] Game logic unit tests
+- [ ] Performance benchmarks
+- [ ] Integration tests
 
 ---
 
@@ -57,8 +57,9 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- CMakeLists.txt
-- CMakePresets.json
+- tests/core/test_runner.h
+- tests/test_graphics.cpp
+- tests/test_gamelogic.cpp
 
 ---
 

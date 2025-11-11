@@ -1,27 +1,27 @@
-# Phase 29: Rendering Integration
+# Phase 28: Game Loop Integration
 
-**Phase**: 29  
-**Title**: Rendering Integration  
+**Phase**: 28  
+**Title**: Game Loop Integration  
 **Area**: Game Logic  
-**Scope**: MEDIUM  
+**Scope**: SMALL  
 **Status**: not-started  
-**Dependencies**: Phase 20, Phase 26, Phase 27
+**Dependencies**: Phase 16, Phase 27
 
 ---
 
 ## Objective
 
-Render game objects via Vulkan
+Main game loop with Update/Render/Present
 
 ---
 
 ## Key Deliverables
 
-- [ ] GameObject rendering with transform
-- [ ] Back-to-front sorting for transparency
-- [ ] Material batching
-- [ ] Debug visualization
-- [ ] Performance optimization
+- [ ] Frame timing and delta time
+- [ ] Update phase (game logic)
+- [ ] Render phase (graphics)
+- [ ] Frame rate limiting
+- [ ] Statistics tracking
 
 ---
 
@@ -57,7 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- GeneralsMD/Code/GameEngine/Source/Graphics/GameRenderer.h
+- GeneralsMD/Code/GameEngine/Source/GameLoop/GameLoop.cpp
 
 ---
 

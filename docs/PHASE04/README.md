@@ -1,26 +1,27 @@
-# Phase 04: Registry & Configuration
+# Phase 03: Memory & Threading
 
-**Phase**: 04  
-**Title**: Registry & Configuration  
+**Phase**: 03  
+**Title**: Memory & Threading  
 **Area**: OS API Layer (win32_sdl_api_compat)  
-**Scope**: SMALL  
+**Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 02, Phase 03
+**Dependencies**: Phase 01, Phase 02
 
 ---
 
 ## Objective
 
-Replace Windows Registry with INI-based configuration system.
+Implement cross-platform threading, synchronization primitives, and memory allocation hooks.
 
 ---
 
 ## Key Deliverables
 
-- [ ] Cross-platform config directory management
-- [ ] INI configuration file reading/writing
-- [ ] Registry key migration to INI
-- [ ] Per-platform config paths
+- [ ] Thread creation wrapper (std::thread / pthread)
+- [ ] Mutex and condition variable wrappers
+- [ ] Critical section equivalent
+- [ ] Memory allocation hooks with statistics
+- [ ] Performance counter abstraction
 
 ---
 
@@ -56,8 +57,8 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/Libraries/Source/WWVegas/WWLib/Source/Ini.cpp
-- GeneralsMD/Code/GameEngine/Source/Config/ConfigManager.h
+- Core/Libraries/Source/WWVegas/WW3D2/win32_thread_compat.h
+- Core/GameEngine/Source/Common/System/GameMemory.cpp
 
 ---
 

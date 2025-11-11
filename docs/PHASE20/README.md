@@ -1,27 +1,27 @@
-# Phase 20: Draw Command System
+# Phase 19: Viewport & Projection
 
-**Phase**: 20  
-**Title**: Draw Command System  
+**Phase**: 19  
+**Title**: Viewport & Projection  
 **Area**: Graphics Layer (d3d8_vulkan_graphics_compat)  
 **Scope**: MEDIUM  
-**Status**: COMPLETE (Phase 41)  
-**Dependencies**: Phase 10, Phase 14, Phase 19
+**Status**: not-started  
+**Dependencies**: Phase 08, Phase 18
 
 ---
 
 ## Objective
 
-Drawing primitives and command recording (ALREADY COMPLETE in Phase 41)
+Camera view/projection matrices and viewport management
 
 ---
 
 ## Key Deliverables
 
-- [ ] vkCmdDraw and vkCmdDrawIndexed commands
-- [ ] Instancing support
-- [ ] Multi-pass rendering
-- [ ] Draw call batching
-- [ ] State sorting optimization
+- [ ] View matrix calculation from camera position/orientation
+- [ ] Perspective projection matrix (Vulkan NDC: Z ∈ [0,1])
+- [ ] Orthographic projection for UI
+- [ ] Screen-to-world ray casting
+- [ ] Viewport dynamic adjustment
 
 ---
 
@@ -57,7 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/Libraries/Source/WWVegas/WW3D2/graphics_backend_dxvk_drawing.cpp
+- GeneralsMD/Code/GameEngine/Source/Graphics/Camera.h
 
 ---
 

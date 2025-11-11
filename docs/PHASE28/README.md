@@ -1,27 +1,27 @@
-# Phase 28: Game Loop Integration
+# Phase 27: World Management
 
-**Phase**: 28  
-**Title**: Game Loop Integration  
+**Phase**: 27  
+**Title**: World Management  
 **Area**: Game Logic  
-**Scope**: SMALL  
+**Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 16, Phase 27
+**Dependencies**: Phase 26
 
 ---
 
 ## Objective
 
-Main game loop with Update/Render/Present
+Scene graph and spatial query system
 
 ---
 
 ## Key Deliverables
 
-- [ ] Frame timing and delta time
-- [ ] Update phase (game logic)
-- [ ] Render phase (graphics)
-- [ ] Frame rate limiting
-- [ ] Statistics tracking
+- [ ] GameWorld manager
+- [ ] Spatial indexing (quadtree for 5K+ objects)
+- [ ] Radius queries
+- [ ] Frustum containment tests
+- [ ] Deferred deletion system
 
 ---
 
@@ -57,7 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- GeneralsMD/Code/GameEngine/Source/GameLoop/GameLoop.cpp
+- GeneralsMD/Code/GameEngine/Source/GameWorld/GameWorld.h
 
 ---
 

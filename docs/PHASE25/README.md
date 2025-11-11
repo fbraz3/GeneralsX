@@ -1,27 +1,27 @@
-# Phase 25: Audio Integration (Phase 1)
+# Phase 24: Main Menu State Machine
 
-**Phase**: 25  
-**Title**: Audio Integration (Phase 1)  
+**Phase**: 24  
+**Title**: Main Menu State Machine  
 **Area**: Menu System  
-**Scope**: SMALL  
+**Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 02, Phase 24
+**Dependencies**: Phase 21, Phase 23
 
 ---
 
 ## Objective
 
-Audio playback during menu (music, click sounds)
+Main menu state transitions and mode selection
 
 ---
 
 ## Key Deliverables
 
-- [ ] Load music from .big archives (VFS)
-- [ ] Background music playback
-- [ ] Menu click SFX
-- [ ] Volume control UI
-- [ ] Audio device detection
+- [ ] Main menu → Campaign/Skirmish/Multiplayer
+- [ ] Settings menu integration
+- [ ] Demo/intro video playback
+- [ ] Difficulty selection
+- [ ] Exit to desktop
 
 ---
 
@@ -57,7 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- GeneralsMD/Code/GameEngine/Source/Audio/AudioManager.h
+- GeneralsMD/Code/GameEngine/Source/UI/MainMenuStateMachine.h
 
 ---
 

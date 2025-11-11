@@ -1,27 +1,27 @@
-# Phase 22: Menu Rendering
+# Phase 21: INI Parser Hardening
 
-**Phase**: 22  
-**Title**: Menu Rendering  
+**Phase**: 21  
+**Title**: INI Parser Hardening  
 **Area**: Menu System  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 16, Phase 19, Phase 21
+**Dependencies**: Phase 02, Phase 04
 
 ---
 
 ## Objective
 
-Render menu UI via Vulkan
+Fix INI parser to correctly read all field types (Phase 33.9 regression)
 
 ---
 
 ## Key Deliverables
 
-- [ ] Menu layout rendering
-- [ ] Text rendering (bitmap fonts or SDF)
-- [ ] Button geometry and textures
-- [ ] Transition animations
-- [ ] Menu state visualization
+- [ ] Fix exception handling (re-throw with context)
+- [ ] Parse all menu definitions
+- [ ] Support all data types (string, float, int, color)
+- [ ] VFS integration for .big file access
+- [ ] Comprehensive error reporting
 
 ---
 
@@ -57,7 +57,14 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- GeneralsMD/Code/GameEngine/Source/UI/MenuRenderer.h
+- Core/Libraries/Source/WWVegas/WWLib/Source/Ini.cpp
+
+---
+
+## Critical Notes
+
+CRITICAL: Phase 33.9 shows exception swallowing prevents proper parsing. Must re-throw exceptions with context.
+
 
 ---
 

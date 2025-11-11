@@ -1,27 +1,27 @@
-# Phase 13: Shader System
+# Phase 12: Sampler & Descriptor Sets
 
-**Phase**: 13  
-**Title**: Shader System  
+**Phase**: 12  
+**Title**: Sampler & Descriptor Sets  
 **Area**: Graphics Layer (d3d8_vulkan_graphics_compat)  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 08, Phase 12
+**Dependencies**: Phase 08, Phase 11
 
 ---
 
 ## Objective
 
-GLSL to SPIR-V shader compilation pipeline
+Vulkan samplers and descriptor set management
 
 ---
 
 ## Key Deliverables
 
-- [ ] GLSL shader files (vertex + fragment)
-- [ ] GLSL to SPIR-V compilation (glslc / shaderc)
-- [ ] VkShaderModule creation and caching
-- [ ] Shader reflection for metadata
-- [ ] Shader error reporting
+- [ ] VkSampler creation with filtering options
+- [ ] VkDescriptorSetLayout definition
+- [ ] VkDescriptorPool allocation
+- [ ] Descriptor set binding and updates
+- [ ] Material property binding
 
 ---
 
@@ -57,9 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/GameEngine/Source/Graphics/ShaderCompiler.h
-- resources/shaders/basic.vert
-- resources/shaders/basic.frag
+- Core/Libraries/Source/WWVegas/WW3D2/graphics_backend_dxvk.cpp
 
 ---
 

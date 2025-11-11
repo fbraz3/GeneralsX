@@ -1,27 +1,26 @@
-# Phase 15: Render Target Management
+# Phase 14: Material System
 
-**Phase**: 15  
-**Title**: Render Target Management  
+**Phase**: 14  
+**Title**: Material System  
 **Area**: Graphics Layer (d3d8_vulkan_graphics_compat)  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 07, Phase 08
+**Dependencies**: Phase 12, Phase 13
 
 ---
 
 ## Objective
 
-Vulkan render target and framebuffer management
+Material definition and descriptor set binding
 
 ---
 
 ## Key Deliverables
 
-- [ ] Framebuffer creation and management
-- [ ] Depth/stencil buffer creation
-- [ ] Off-screen rendering targets
-- [ ] Dynamic resolution support
-- [ ] Multisampling (MSAA) support
+- [ ] Material class with texture/parameter storage
+- [ ] Descriptor set binding
+- [ ] Material cache for batching
+- [ ] Material state machine
 
 ---
 
@@ -57,7 +56,8 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- GeneralsMD/Code/GameEngine/Source/Graphics/RenderTarget.h
+- GeneralsMD/Code/GameEngine/Source/Graphics/Material.h
+- GeneralsMD/Code/GameEngine/Source/Graphics/MaterialCache.cpp
 
 ---
 

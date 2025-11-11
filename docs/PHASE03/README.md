@@ -1,27 +1,27 @@
-# Phase 03: Memory & Threading
+# Phase 02: File I/O Wrapper Layer
 
-**Phase**: 03  
-**Title**: Memory & Threading  
+**Phase**: 02  
+**Title**: File I/O Wrapper Layer  
 **Area**: OS API Layer (win32_sdl_api_compat)  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 01, Phase 02
+**Dependencies**: Phase 01
 
 ---
 
 ## Objective
 
-Implement cross-platform threading, synchronization primitives, and memory allocation hooks.
+Abstract file operations behind a cross-platform interface supporting both physical files and VFS (.big archive) access.
 
 ---
 
 ## Key Deliverables
 
-- [ ] Thread creation wrapper (std::thread / pthread)
-- [ ] Mutex and condition variable wrappers
-- [ ] Critical section equivalent
-- [ ] Memory allocation hooks with statistics
-- [ ] Performance counter abstraction
+- [ ] FILE* wrapper for cross-platform file I/O
+- [ ] VFS integration with Win32BIGFileSystem
+- [ ] Path normalization (backslashes → forward slashes)
+- [ ] Binary and text mode file access
+- [ ] Directory traversal support
 
 ---
 
@@ -57,8 +57,8 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/Libraries/Source/WWVegas/WW3D2/win32_thread_compat.h
-- Core/GameEngine/Source/Common/System/GameMemory.cpp
+- Core/Libraries/Source/WWVegas/WW3D2/win32_file_api_compat.h
+- Core/GameEngineDevice/Source/Win32Device/Common/Win32BIGFileSystem.cpp
 
 ---
 

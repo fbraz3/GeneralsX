@@ -1,27 +1,27 @@
-# Phase 16: Render Loop Integration
+# Phase 15: Render Target Management
 
-**Phase**: 16  
-**Title**: Render Loop Integration  
+**Phase**: 15  
+**Title**: Render Target Management  
 **Area**: Graphics Layer (d3d8_vulkan_graphics_compat)  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 06, Phase 09, Phase 15
+**Dependencies**: Phase 07, Phase 08
 
 ---
 
 ## Objective
 
-Game loop and render loop integration
+Vulkan render target and framebuffer management
 
 ---
 
 ## Key Deliverables
 
-- [ ] Update/Render phase coordination
-- [ ] Frame pacing and FPS limiting
-- [ ] GPU/CPU synchronization points
-- [ ] Frame statistics collection
-- [ ] BeginFrame/EndFrame coordination
+- [ ] Framebuffer creation and management
+- [ ] Depth/stencil buffer creation
+- [ ] Off-screen rendering targets
+- [ ] Dynamic resolution support
+- [ ] Multisampling (MSAA) support
 
 ---
 
@@ -57,7 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- GeneralsMD/Code/GameEngine/Source/GameLoop/GameLoop.cpp
+- GeneralsMD/Code/GameEngine/Source/Graphics/RenderTarget.h
 
 ---
 

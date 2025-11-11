@@ -1,27 +1,27 @@
-# Phase 33: Pathfinding & Movement
+# Phase 32: Input Handling
 
-**Phase**: 33  
-**Title**: Pathfinding & Movement  
+**Phase**: 32  
+**Title**: Input Handling  
 **Area**: Gameplay Features  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 26, Phase 27
+**Dependencies**: Phase 05, Phase 26, Phase 30
 
 ---
 
 ## Objective
 
-A* pathfinding and unit movement
+Unit selection and command system
 
 ---
 
 ## Key Deliverables
 
-- [ ] A* algorithm implementation
-- [ ] Navigation grid/graph
-- [ ] Collision avoidance
-- [ ] Formation movement
-- [ ] Speed/acceleration control
+- [ ] Single/multi-select mechanics
+- [ ] Box select with mouse drag
+- [ ] Command queuing
+- [ ] Hotkey binding
+- [ ] Control groups
 
 ---
 
@@ -57,7 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- GeneralsMD/Code/GameEngine/Source/AI/Pathfinder.h
+- GeneralsMD/Code/GameEngine/Source/Input/SelectionSystem.h
 
 ---
 

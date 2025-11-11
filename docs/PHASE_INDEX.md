@@ -28,14 +28,15 @@ The project is organized into phases grouped into logical development areas:
 - [PHASE00: Project Planning & Architecture](./PHASE00/README.md) - Strategic decisions
 - [PHASE00.5: Build System Infrastructure](./PHASE00_5/README.md) - CMake, ccache, cross-platform builds
 
-### Phase 01-05: Core Graphics Foundation
-Graphics pipeline fundamentals using Vulkan.
+### Phase 01-06: Cross-Platform Prerequisites
+Core compatibility layers for cross-platform support.
 
-- PHASE01: Vulkan Instance & Device Setup
-- PHASE02: Vulkan Command Buffers & Rendering
-- PHASE03: Shader System (SPIR-V)
-- PHASE04: Vertex & Index Buffers
-- PHASE05: Texture Loading & Sampling
+- PHASE01: DirectX 8 Compatibility Layer
+- PHASE02: SDL2 Window & Event Loop
+- PHASE03: File I/O Wrapper Layer
+- PHASE04: Memory & Threading
+- PHASE05: Registry & Configuration
+- PHASE06: Input System
 
 ### Phase 06-10: Advanced Graphics
 Complex rendering features optimized for Vulkan.
@@ -125,48 +126,54 @@ Each PHASE directory will contain:
 
 ## Phase Dependency Graph
 
-```
+```text
 PHASE00 (Planning)
     ↓
 PHASE00.5 (Build System)
     ↓
-PHASE01 (Vulkan Instance & Device)
-    ├→ PHASE02 (Command Buffers)
-    ├→ PHASE03 (Shaders)
-    ├→ PHASE04 (Buffers)
-    └→ PHASE05 (Textures)
+PHASE01 (DirectX Compatibility)
+    ↓
+PHASE02 (SDL2 Window & Events)
+    ├→ PHASE03 (File I/O)
+    ├→ PHASE04 (Memory & Threading)
+    ├→ PHASE05 (Registry)
+    └→ PHASE06 (Input System)
        ↓
-    PHASE06 (Materials & Pipeline)
+    PHASE07 (Vulkan Instance & Device)
+    ├→ PHASE08 (Swapchain)
+    ├→ PHASE09 (Render Pass)
+    ├→ PHASE10 (Command Buffers)
+    └→ PHASE11 (Buffers)
        ↓
-    PHASE07 (Lighting)
-       ├→ PHASE08 (Camera)
-       ├→ PHASE09 (Culling)
-       ├→ PHASE10 (Mesh Loading)
-       └→ PHASE11 (Game Rendering)
-          ├→ PHASE12 (Particles)
-          ├→ PHASE13 (Terrain)
-          ├→ PHASE14 (Water/FX)
-          └→ PHASE15 (UI)
-             ├→ PHASE16 (Menu)
-             │  ├→ PHASE17 (State Machine)
-             │  ├→ PHASE18 (Rendering)
-             │  ├→ PHASE19 (Interaction)
-             │  └→ PHASE20 (Audio)
+    PHASE12 (Textures)
+       ├→ PHASE13 (Samplers)
+       ├→ PHASE14 (Shaders)
+       ├→ PHASE15 (Materials)
+       └→ PHASE16 (Render Targets)
+          ↓
+       PHASE17 (Render Loop)
+          ├→ PHASE18 (Culling)
+          ├→ PHASE19 (Lighting)
+          ├→ PHASE20 (Viewport)
+          └→ PHASE21 (Draw Commands)
+             ├→ PHASE22 (INI Parser)
+             ├→ PHASE23 (Menu Rendering)
+             ├→ PHASE24 (Menu Interaction)
+             ├→ PHASE25 (Main Menu State)
+             ├→ PHASE26 (Audio Integration)
              │
-             └→ PHASE21 (GameObjects)
-                ├→ PHASE22 (World Mgmt)
-                ├→ PHASE23 (Game Loop)
-                ├→ PHASE24 (Input)
-                ├→ PHASE25 (Selection)
-                ├→ PHASE26 (Commands)
-                ├→ PHASE27 (Pathfinding)
-                ├→ PHASE28 (Physics)
-                ├→ PHASE29 (AI)
-                └→ PHASE30 (State Trans.)
+             └→ PHASE27 (GameObjects)
+                ├→ PHASE28 (World Mgmt)
+                ├→ PHASE29 (Game Loop)
+                ├→ PHASE30 (Input)
+                ├→ PHASE31 (Selection)
+                ├→ PHASE32 (Commands)
+                ├→ PHASE33 (Pathfinding)
+                ├→ PHASE34 (Physics)
+                ├→ PHASE35 (AI)
+                └→ PHASE36 (State Trans.)
                    ↓
-                PHASE31-35 (Audio & Polish)
-                   ↓
-                PHASE36-40 (Testing & Release)
+                PHASE37-41 (Audio & Polish & Testing)
                    ↓
                 🎉 MVP v0.1.0
 ```
@@ -354,12 +361,13 @@ When implementing a phase:
 |---|-------|------|-------|--------|---|
 | 00 | Project Planning | Foundation | - | ✅ COMPLETE | - |
 | 00.5 | Build System | Foundation | SMALL | ✅ COMPLETE | - |
-| 01 | SDL2 Window & Event Loop | OS API | MEDIUM | not-started | [docs/PHASE01/README.md](./PHASE01/README.md) |
-| 02 | File I/O Wrapper Layer | OS API | MEDIUM | not-started | [docs/PHASE02/README.md](./PHASE02/README.md) |
-| 03 | Memory & Threading | OS API | MEDIUM | not-started | [docs/PHASE03/README.md](./PHASE03/README.md) |
-| 04 | Registry & Configuration | OS API | SMALL | not-started | [docs/PHASE04/README.md](./PHASE04/README.md) |
-| 05 | Input System | OS API | MEDIUM | not-started | [docs/PHASE05/README.md](./PHASE05/README.md) |
-| 06 | Vulkan Instance & Device | Graphics | MEDIUM | COMPLETE | [docs/PHASE06/README.md](./PHASE06/README.md) |
+| 01 | DirectX 8 Compatibility Layer | Prerequisites | LARGE | not-started | [docs/PHASE01/README.md](./PHASE01/README.md) |
+| 02 | SDL2 Window & Event Loop | OS API | MEDIUM | not-started | [docs/PHASE02/README.md](./PHASE02/README.md) |
+| 03 | File I/O Wrapper Layer | OS API | MEDIUM | not-started | [docs/PHASE03/README.md](./PHASE03/README.md) |
+| 04 | Memory & Threading | OS API | MEDIUM | not-started | [docs/PHASE04/README.md](./PHASE04/README.md) |
+| 05 | Registry & Configuration | OS API | SMALL | not-started | [docs/PHASE05/README.md](./PHASE05/README.md) |
+| 06 | Input System | OS API | MEDIUM | not-started | [docs/PHASE06/README.md](./PHASE06/README.md) |
+| 07 | Vulkan Instance & Device | Graphics | MEDIUM | COMPLETE | [docs/PHASE07/README.md](./PHASE07/README.md) |
 | 07 | Swapchain & Presentation | Graphics | MEDIUM | COMPLETE | [docs/PHASE07/README.md](./PHASE07/README.md) |
 | 08 | Render Pass & Pipeline | Graphics | MEDIUM | COMPLETE | [docs/PHASE08/README.md](./PHASE08/README.md) |
 | 09 | Command Buffers & Sync | Graphics | MEDIUM | COMPLETE | [docs/PHASE09/README.md](./PHASE09/README.md) |

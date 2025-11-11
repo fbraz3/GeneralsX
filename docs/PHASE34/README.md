@@ -1,27 +1,27 @@
-# Phase 34: Combat System
+# Phase 33: Pathfinding & Movement
 
-**Phase**: 34  
-**Title**: Combat System  
+**Phase**: 33  
+**Title**: Pathfinding & Movement  
 **Area**: Gameplay Features  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 26, Phase 32
+**Dependencies**: Phase 26, Phase 27
 
 ---
 
 ## Objective
 
-Weapon firing and damage calculation
+A* pathfinding and unit movement
 
 ---
 
 ## Key Deliverables
 
-- [ ] Weapon selection and firing
-- [ ] Damage calculation
-- [ ] Health tracking
-- [ ] Death handling
-- [ ] Experience/veterancy
+- [ ] A* algorithm implementation
+- [ ] Navigation grid/graph
+- [ ] Collision avoidance
+- [ ] Formation movement
+- [ ] Speed/acceleration control
 
 ---
 
@@ -57,7 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- GeneralsMD/Code/GameEngine/Source/Gameplay/CombatSystem.h
+- GeneralsMD/Code/GameEngine/Source/AI/Pathfinder.h
 
 ---
 

@@ -1,27 +1,26 @@
-# Phase 09: Command Buffers & Synchronization
+# Phase 08: Render Pass & Pipeline
 
-**Phase**: 09  
-**Title**: Command Buffers & Synchronization  
+**Phase**: 08  
+**Title**: Render Pass & Pipeline  
 **Area**: Graphics Layer (d3d8_vulkan_graphics_compat)  
 **Scope**: MEDIUM  
 **Status**: COMPLETE (Phase 40)  
-**Dependencies**: Phase 07, Phase 08
+**Dependencies**: Phase 07
 
 ---
 
 ## Objective
 
-Vulkan command buffers and GPU/CPU synchronization primitives
+Vulkan render passes and graphics pipelines (ALREADY COMPLETE in Phase 40)
 
 ---
 
 ## Key Deliverables
 
-- [ ] Command pool and buffer allocation
-- [ ] Command buffer recording
-- [ ] VkSemaphore for GPU-GPU sync
-- [ ] VkFence for GPU-CPU sync
-- [ ] Frame pacing implementation
+- [ ] VkRenderPass creation
+- [ ] VkGraphicsPipeline creation
+- [ ] Pipeline layout with descriptor sets
+- [ ] Dynamic state management
 
 ---
 
@@ -57,7 +56,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/Libraries/Source/WWVegas/WW3D2/graphics_backend_dxvk_frame.cpp
+- Core/Libraries/Source/WWVegas/WW3D2/graphics_backend_dxvk_render.cpp
 
 ---
 

@@ -1,27 +1,27 @@
-# Phase 02: File I/O Wrapper Layer
+# Phase 01: SDL2 Window & Event Loop
 
-**Phase**: 02  
-**Title**: File I/O Wrapper Layer  
+**Phase**: 01  
+**Title**: SDL2 Window & Event Loop  
 **Area**: OS API Layer (win32_sdl_api_compat)  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 01
+**Dependencies**: Phase 00, Phase 00.5
 
 ---
 
 ## Objective
 
-Abstract file operations behind a cross-platform interface supporting both physical files and VFS (.big archive) access.
+Replace Windows-specific window creation and message loop with cross-platform SDL2 equivalents.
 
 ---
 
 ## Key Deliverables
 
-- [ ] FILE* wrapper for cross-platform file I/O
-- [ ] VFS integration with Win32BIGFileSystem
-- [ ] Path normalization (backslashes → forward slashes)
-- [ ] Binary and text mode file access
-- [ ] Directory traversal support
+- [ ] SDL2 library integrated into CMake build system
+- [ ] Cross-platform window creation via SDL2
+- [ ] Main event loop polling SDL2 events
+- [ ] Input event translation (SDL2 → Win32 constants)
+- [ ] Window sizing, fullscreen, VSync support
 
 ---
 
@@ -57,8 +57,8 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/Libraries/Source/WWVegas/WW3D2/win32_file_api_compat.h
-- Core/GameEngineDevice/Source/Win32Device/Common/Win32BIGFileSystem.cpp
+- Core/Libraries/Source/WWVegas/WW3D2/win32_sdl_api_compat.h
+- GeneralsMD/Code/GameEngine/Source/WinMain.cpp
 
 ---
 

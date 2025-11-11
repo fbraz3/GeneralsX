@@ -1,27 +1,27 @@
-# Phase 19: Viewport & Projection
+# Phase 18: Lighting System
 
-**Phase**: 19  
-**Title**: Viewport & Projection  
+**Phase**: 18  
+**Title**: Lighting System  
 **Area**: Graphics Layer (d3d8_vulkan_graphics_compat)  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 08, Phase 18
+**Dependencies**: Phase 13, Phase 14
 
 ---
 
 ## Objective
 
-Camera view/projection matrices and viewport management
+Lighting calculations and shader integration
 
 ---
 
 ## Key Deliverables
 
-- [ ] View matrix calculation from camera position/orientation
-- [ ] Perspective projection matrix (Vulkan NDC: Z ∈ [0,1])
-- [ ] Orthographic projection for UI
-- [ ] Screen-to-world ray casting
-- [ ] Viewport dynamic adjustment
+- [ ] Light data structures (directional, point, spot, ambient)
+- [ ] Shader uniform buffer objects
+- [ ] Per-object light contributions
+- [ ] Dynamic light updates
+- [ ] Shadow mapping infrastructure (Phase 39+ optional)
 
 ---
 
@@ -57,7 +57,8 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- GeneralsMD/Code/GameEngine/Source/Graphics/Camera.h
+- GeneralsMD/Code/GameEngine/Source/Graphics/Lighting.h
+- resources/shaders/lighting.glsl
 
 ---
 

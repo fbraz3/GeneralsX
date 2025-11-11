@@ -1,27 +1,27 @@
-# Phase 12: Sampler & Descriptor Sets
+# Phase 11: Texture System
 
-**Phase**: 12  
-**Title**: Sampler & Descriptor Sets  
+**Phase**: 11  
+**Title**: Texture System  
 **Area**: Graphics Layer (d3d8_vulkan_graphics_compat)  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 08, Phase 11
+**Dependencies**: Phase 06, Phase 10
 
 ---
 
 ## Objective
 
-Vulkan samplers and descriptor set management
+Vulkan texture creation, loading, and GPU management
 
 ---
 
 ## Key Deliverables
 
-- [ ] VkSampler creation with filtering options
-- [ ] VkDescriptorSetLayout definition
-- [ ] VkDescriptorPool allocation
-- [ ] Descriptor set binding and updates
-- [ ] Material property binding
+- [ ] VkImage allocation with format conversion
+- [ ] VkImageView creation
+- [ ] Texture layout transitions
+- [ ] Staging buffers for GPU upload
+- [ ] Format support: RGBA8, BC1/2/3 DXT compression
 
 ---
 
@@ -57,7 +57,8 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/Libraries/Source/WWVegas/WW3D2/graphics_backend_dxvk.cpp
+- Core/Libraries/Source/WWVegas/WW3D2/graphics_backend_dxvk_textures.cpp
+- GeneralsMD/Code/GameEngine/Source/Graphics/TextureLoader.cpp
 
 ---
 

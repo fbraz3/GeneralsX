@@ -1,26 +1,27 @@
-# Phase 10: Vertex & Index Buffers
+# Phase 09: Command Buffers & Synchronization
 
-**Phase**: 10  
-**Title**: Vertex & Index Buffers  
+**Phase**: 09  
+**Title**: Command Buffers & Synchronization  
 **Area**: Graphics Layer (d3d8_vulkan_graphics_compat)  
 **Scope**: MEDIUM  
-**Status**: COMPLETE (Phase 41)  
-**Dependencies**: Phase 06
+**Status**: COMPLETE (Phase 40)  
+**Dependencies**: Phase 07, Phase 08
 
 ---
 
 ## Objective
 
-Vulkan buffer management for vertex and index data (ALREADY COMPLETE in Phase 41)
+Vulkan command buffers and GPU/CPU synchronization primitives
 
 ---
 
 ## Key Deliverables
 
-- [ ] VkBuffer allocation for geometry
-- [ ] Memory binding and GPU upload
-- [ ] Dynamic buffer updates
-- [ ] Large pre-allocated buffer pools
+- [ ] Command pool and buffer allocation
+- [ ] Command buffer recording
+- [ ] VkSemaphore for GPU-GPU sync
+- [ ] VkFence for GPU-CPU sync
+- [ ] Frame pacing implementation
 
 ---
 
@@ -56,7 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/Libraries/Source/WWVegas/WW3D2/graphics_backend_dxvk_buffers.cpp
+- Core/Libraries/Source/WWVegas/WW3D2/graphics_backend_dxvk_frame.cpp
 
 ---
 

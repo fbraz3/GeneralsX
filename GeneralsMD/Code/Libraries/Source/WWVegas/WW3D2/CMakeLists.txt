@@ -231,6 +231,10 @@ set(WW3D2_SRC
     #ww3dformat.h
     #ww3dids.h
     #ww3dtrig.h
+    # Phase 01: DirectX 8 Compatibility Layer
+    d3dx8fvf.h
+    d3d8.h
+    win32_types.h
 )
 
 # When building with Vulkan backend, exclude Direct3D8-specific sources to avoid

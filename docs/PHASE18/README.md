@@ -1,27 +1,27 @@
-# Phase 18: Lighting System
+# Phase 17: Visibility & Culling
 
-**Phase**: 18  
-**Title**: Lighting System  
+**Phase**: 17  
+**Title**: Visibility & Culling  
 **Area**: Graphics Layer (d3d8_vulkan_graphics_compat)  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 13, Phase 14
+**Dependencies**: Phase 08, Phase 14
 
 ---
 
 ## Objective
 
-Lighting calculations and shader integration
+Frustum culling and visibility determination
 
 ---
 
 ## Key Deliverables
 
-- [ ] Light data structures (directional, point, spot, ambient)
-- [ ] Shader uniform buffer objects
-- [ ] Per-object light contributions
-- [ ] Dynamic light updates
-- [ ] Shadow mapping infrastructure (Phase 39+ optional)
+- [ ] Frustum construction from camera matrices
+- [ ] Point/sphere/box in frustum tests
+- [ ] Distance-based culling (fog of war)
+- [ ] Occlusion query infrastructure
+- [ ] Culling statistics
 
 ---
 
@@ -57,8 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- GeneralsMD/Code/GameEngine/Source/Graphics/Lighting.h
-- resources/shaders/lighting.glsl
+- GeneralsMD/Code/GameEngine/Source/Graphics/Culling.h
 
 ---
 

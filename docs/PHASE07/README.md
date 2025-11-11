@@ -1,26 +1,26 @@
-# Phase 07: Swapchain & Presentation
+# Phase 06: Vulkan Instance & Device
 
-**Phase**: 07  
-**Title**: Swapchain & Presentation  
+**Phase**: 06  
+**Title**: Vulkan Instance & Device  
 **Area**: Graphics Layer (d3d8_vulkan_graphics_compat)  
 **Scope**: MEDIUM  
-**Status**: COMPLETE (Phase 40)  
-**Dependencies**: Phase 06
+**Status**: COMPLETE (Phase 39.2)  
+**Dependencies**: Phase 00.5
 
 ---
 
 ## Objective
 
-Vulkan swapchain creation and frame presentation (ALREADY COMPLETE in Phase 40)
+Vulkan instance creation and physical device selection (ALREADY COMPLETE in Phase 39)
 
 ---
 
 ## Key Deliverables
 
-- [ ] VkSwapchainKHR creation for each platform
-- [ ] Frame acquisition and presentation
-- [ ] Out-of-date swapchain handling
-- [ ] Triple-buffering support
+- [ ] VkInstance creation with platform extensions
+- [ ] Physical device selection and scoring
+- [ ] VkDevice creation with appropriate queues
+- [ ] Validation layers for debug builds
 
 ---
 
@@ -56,7 +56,8 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/Libraries/Source/WWVegas/WW3D2/graphics_backend_dxvk_device.cpp
+- Core/Libraries/Source/WWVegas/WW3D2/graphics_backend_dxvk.h
+- Core/Libraries/Source/WWVegas/WW3D2/graphics_backend_dxvk.cpp
 
 ---
 

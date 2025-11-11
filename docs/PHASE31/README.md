@@ -1,27 +1,27 @@
-# Phase 31: Audio System (Phase 2)
+# Phase 30: Camera System
 
-**Phase**: 31  
-**Title**: Audio System (Phase 2)  
-**Area**: Gameplay Features  
-**Scope**: LARGE  
+**Phase**: 30  
+**Title**: Camera System  
+**Area**: Game Logic  
+**Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 02, Phase 25
+**Dependencies**: Phase 05, Phase 19, Phase 29
 
 ---
 
 ## Objective
 
-OpenAL backend for game audio
+Multiple camera modes for gameplay
 
 ---
 
 ## Key Deliverables
 
-- [ ] OpenAL device/context initialization
-- [ ] WAV/MP3 file loading from .big archives
-- [ ] 3D positional audio
-- [ ] Music/SFX/voice channel mixing
-- [ ] Audio effect support
+- [ ] Free camera (WASD + mouse look)
+- [ ] RTS camera (isometric, pan, zoom)
+- [ ] Chase camera (follow unit)
+- [ ] Orbit camera (rotate around point)
+- [ ] Smooth camera transitions
 
 ---
 
@@ -57,7 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- Core/GameEngineDevice/Source/Audio/OpenALAudioDevice.h
+- GeneralsMD/Code/GameEngine/Source/Input/CameraController.h
 
 ---
 

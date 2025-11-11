@@ -1,27 +1,27 @@
-# Phase 32: Input Handling
+# Phase 31: Audio System (Phase 2)
 
-**Phase**: 32  
-**Title**: Input Handling  
+**Phase**: 31  
+**Title**: Audio System (Phase 2)  
 **Area**: Gameplay Features  
-**Scope**: MEDIUM  
+**Scope**: LARGE  
 **Status**: not-started  
-**Dependencies**: Phase 05, Phase 26, Phase 30
+**Dependencies**: Phase 02, Phase 25
 
 ---
 
 ## Objective
 
-Unit selection and command system
+OpenAL backend for game audio
 
 ---
 
 ## Key Deliverables
 
-- [ ] Single/multi-select mechanics
-- [ ] Box select with mouse drag
-- [ ] Command queuing
-- [ ] Hotkey binding
-- [ ] Control groups
+- [ ] OpenAL device/context initialization
+- [ ] WAV/MP3 file loading from .big archives
+- [ ] 3D positional audio
+- [ ] Music/SFX/voice channel mixing
+- [ ] Audio effect support
 
 ---
 
@@ -57,7 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- GeneralsMD/Code/GameEngine/Source/Input/SelectionSystem.h
+- Core/GameEngineDevice/Source/Audio/OpenALAudioDevice.h
 
 ---
 

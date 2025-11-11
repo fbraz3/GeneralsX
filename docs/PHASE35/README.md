@@ -1,27 +1,27 @@
-# Phase 35: Game State Management
+# Phase 34: Combat System
 
-**Phase**: 35  
-**Title**: Game State Management  
+**Phase**: 34  
+**Title**: Combat System  
 **Area**: Gameplay Features  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 04, Phase 26, Phase 28
+**Dependencies**: Phase 26, Phase 32
 
 ---
 
 ## Objective
 
-Save/load and game state serialization
+Weapon firing and damage calculation
 
 ---
 
 ## Key Deliverables
 
-- [ ] Save game serialization
-- [ ] Load game deserialization
-- [ ] Game state versioning
-- [ ] Undo/redo system
-- [ ] Replay recording (optional Phase 39+)
+- [ ] Weapon selection and firing
+- [ ] Damage calculation
+- [ ] Health tracking
+- [ ] Death handling
+- [ ] Experience/veterancy
 
 ---
 
@@ -57,7 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- GeneralsMD/Code/GameEngine/Source/Gameplay/GameStateManager.h
+- GeneralsMD/Code/GameEngine/Source/Gameplay/CombatSystem.h
 
 ---
 

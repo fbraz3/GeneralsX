@@ -1,27 +1,27 @@
-# Phase 27: World Management
+# Phase 26: Game Object System
 
-**Phase**: 27  
-**Title**: World Management  
+**Phase**: 26  
+**Title**: Game Object System  
 **Area**: Game Logic  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 26
+**Dependencies**: Phase 04
 
 ---
 
 ## Objective
 
-Scene graph and spatial query system
+Base entity system with units, buildings, effects
 
 ---
 
 ## Key Deliverables
 
-- [ ] GameWorld manager
-- [ ] Spatial indexing (quadtree for 5K+ objects)
-- [ ] Radius queries
-- [ ] Frustum containment tests
-- [ ] Deferred deletion system
+- [ ] GameObject base class
+- [ ] Unit subclass with movement/targeting
+- [ ] Building subclass with construction
+- [ ] Effect subclass with lifetime
+- [ ] Entity lifecycle management
 
 ---
 
@@ -57,7 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- GeneralsMD/Code/GameEngine/Source/GameWorld/GameWorld.h
+- GeneralsMD/Code/GameEngine/Source/GameObject/GameObject.h
 
 ---
 

@@ -1,27 +1,27 @@
-# Phase 24: Main Menu State Machine
+# Phase 23: Menu Interaction
 
-**Phase**: 24  
-**Title**: Main Menu State Machine  
+**Phase**: 23  
+**Title**: Menu Interaction  
 **Area**: Menu System  
-**Scope**: MEDIUM  
+**Scope**: SMALL  
 **Status**: not-started  
-**Dependencies**: Phase 21, Phase 23
+**Dependencies**: Phase 05, Phase 22
 
 ---
 
 ## Objective
 
-Main menu state transitions and mode selection
+Menu button interaction and input handling
 
 ---
 
 ## Key Deliverables
 
-- [ ] Main menu → Campaign/Skirmish/Multiplayer
-- [ ] Settings menu integration
-- [ ] Demo/intro video playback
-- [ ] Difficulty selection
-- [ ] Exit to desktop
+- [ ] Button click detection
+- [ ] Keyboard navigation
+- [ ] Selection highlight rendering
+- [ ] Save/load file dialogs
+- [ ] Settings menu updates
 
 ---
 
@@ -57,7 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- GeneralsMD/Code/GameEngine/Source/UI/MainMenuStateMachine.h
+- GeneralsMD/Code/GameEngine/Source/UI/MenuInteraction.h
 
 ---
 

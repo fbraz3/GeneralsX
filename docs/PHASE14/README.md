@@ -1,26 +1,27 @@
-# Phase 14: Material System
+# Phase 13: Shader System
 
-**Phase**: 14  
-**Title**: Material System  
+**Phase**: 13  
+**Title**: Shader System  
 **Area**: Graphics Layer (d3d8_vulkan_graphics_compat)  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 12, Phase 13
+**Dependencies**: Phase 08, Phase 12
 
 ---
 
 ## Objective
 
-Material definition and descriptor set binding
+GLSL to SPIR-V shader compilation pipeline
 
 ---
 
 ## Key Deliverables
 
-- [ ] Material class with texture/parameter storage
-- [ ] Descriptor set binding
-- [ ] Material cache for batching
-- [ ] Material state machine
+- [ ] GLSL shader files (vertex + fragment)
+- [ ] GLSL to SPIR-V compilation (glslc / shaderc)
+- [ ] VkShaderModule creation and caching
+- [ ] Shader reflection for metadata
+- [ ] Shader error reporting
 
 ---
 
@@ -56,8 +57,9 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- GeneralsMD/Code/GameEngine/Source/Graphics/Material.h
-- GeneralsMD/Code/GameEngine/Source/Graphics/MaterialCache.cpp
+- Core/GameEngine/Source/Graphics/ShaderCompiler.h
+- resources/shaders/basic.vert
+- resources/shaders/basic.frag
 
 ---
 

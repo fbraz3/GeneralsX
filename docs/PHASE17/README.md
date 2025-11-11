@@ -1,27 +1,27 @@
-# Phase 17: Visibility & Culling
+# Phase 16: Render Loop Integration
 
-**Phase**: 17  
-**Title**: Visibility & Culling  
+**Phase**: 16  
+**Title**: Render Loop Integration  
 **Area**: Graphics Layer (d3d8_vulkan_graphics_compat)  
 **Scope**: MEDIUM  
 **Status**: not-started  
-**Dependencies**: Phase 08, Phase 14
+**Dependencies**: Phase 06, Phase 09, Phase 15
 
 ---
 
 ## Objective
 
-Frustum culling and visibility determination
+Game loop and render loop integration
 
 ---
 
 ## Key Deliverables
 
-- [ ] Frustum construction from camera matrices
-- [ ] Point/sphere/box in frustum tests
-- [ ] Distance-based culling (fog of war)
-- [ ] Occlusion query infrastructure
-- [ ] Culling statistics
+- [ ] Update/Render phase coordination
+- [ ] Frame pacing and FPS limiting
+- [ ] GPU/CPU synchronization points
+- [ ] Frame statistics collection
+- [ ] BeginFrame/EndFrame coordination
 
 ---
 
@@ -57,7 +57,7 @@ Implementation details and code examples will be added as phase is developed.
 
 ## Key Files
 
-- GeneralsMD/Code/GameEngine/Source/Graphics/Culling.h
+- GeneralsMD/Code/GameEngine/Source/GameLoop/GameLoop.cpp
 
 ---
 
