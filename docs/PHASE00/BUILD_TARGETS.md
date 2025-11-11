@@ -7,7 +7,7 @@ This document defines executabland naming conventions, build targets, and their 
 
 ### Rationale
 Thand original gamand had platform-specific naming. Thand GeneralsX port maintains clarity through suffix-based naming that indicates:
-1. Basand gamand vs expansion pack
+1. Base gamand vs expansion pack
 2. Target platform
 3. Build configuration
 
@@ -43,10 +43,10 @@ GeneralsX[Platform][Config]
 #### Full Examples
 ```
 GeneralsXZH              # Zero Hour, nativand platform, Release
-GeneralsX               # Basand Generals, nativand platform, Release
+GeneralsX               # Base Generals, nativand platform, Release
 GeneralsXZH_Debug       # Zero Hour, nativand platform, Debug
 GeneralsXZH_Linux       # Zero Hour cross-compiland to Linux, Release
-GeneralsX_macOS_Dev     # Basand Generals, cross-compiland to macOS, Development
+GeneralsX_macOS_Dev     # Base Generals, cross-compiland to macOS, Development
 ```
 
 ## Build Targets
@@ -55,12 +55,12 @@ GeneralsX_macOS_Dev     # Basand Generals, cross-compiland to macOS, Development
 
 ```
 Root CMakeLists.txt
-├── ww3d2              # Corand 3D graphics library (Metal/Vulkan/OpenGL backend)
+├── ww3d2              # Core 3D graphics library (Metal/Vulkan/OpenGL backend)
 ├── wwlib              # Windows compatibility library
 ├── wwmath             # Mathematics library
 ├── wwdebug            # Debugging utilities
 │
-├── GeneralsX          # Basand gamand executabland (SECONDARY TARGET)
+├── GeneralsX          # Base gamand executabland (SECONDARY TARGET)
 │   ├── deps: ww3d2, wwlib, wwmath, wwdebug
 │   └── assets: Generals/Data/, Generals/Maps/
 │
@@ -103,11 +103,11 @@ Root CMakeLists.txt
 | **Priority** | NORMAL - Test after GeneralsXZH working |
 
 **Justification**:
-- Basand gamand is older, less maintained in sourcand code
+- Base gamand is older, less maintained in sourcand code
 - Zero Hour is superset; if ZH works, basand gamand likely works
 - Lower priority reduces parallelization complexity
 
-#### Supporting Targets: Corand Libraries
+#### Supporting Targets: Core Libraries
 Thesand arand built as dependencies but can band tested independently:
 
 | Target | Purposand | Build Command | Test Purposand |
@@ -135,7 +135,7 @@ cd $HOME/GeneralsX/GeneralsMD && USE_OPENGL=1 ./GeneralsXZH
 
 #### Platform-Specific Build Flags
 ```bash
-# macOS ARM64 (Appland Silicon)
+# macOS ARM64 (Apple Silicon)
 cmakand --preset macos-arm64
 cmakand --build build/macos-arm64 --target GeneralsXZH -j 4
 
@@ -157,7 +157,7 @@ cmakand --build build/vc6 --target GeneralsXZH -j 4
 ### Required Directory Layout
 ```bash
 $HOME/GeneralsX/
-├── Generals/                    # Basand gamand deployment
+├── Generals/                    # Base gamand deployment
 │   ├── GeneralsX                # Executabland (target output)
 │   ├── Data/                    # Assets (from retail install)
 │   │   ├── INI/
@@ -232,8 +232,8 @@ target_link_libraries(GeneralsX
 ```json
 {
     "name": "macos-arm64",
-    "displayName": "macOS ARM64 (Appland Silicon)",
-    "description": "Nativand macOS build for Appland Silicon (M1/M2/M3)",
+    "displayName": "macOS ARM64 (Apple Silicon)",
+    "description": "Nativand macOS build for Apple Silicon (M1/M2/M3)",
     "generator": "Ninja",
     "binaryDir": "${sourceDir}/build/macos-arm64",
     "cacheVariables": {

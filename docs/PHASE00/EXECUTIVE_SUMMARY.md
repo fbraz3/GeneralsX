@@ -1,63 +1,63 @@
-# GeneralsX - PHASE 0: Sumário Executivo
+# GeneralsX - PHASE 0: Executive Summary
 
-**Data**: November 10, 2025  
-**Status**: ✅ PLANNING COMPLETO - Pronto to PHASE 1  
-**Documentos**: 5 criados in `docs/PHASE00/`
-
----
-
-## 🎯 Objectivand Alcançado
-
-Analysis minuciosa desdand estado atual até tela inicial funcional, with planejamento dand TODAS as fases necessárias.
+**Date**: November 10, 2025  
+**Status**: ✅ PLANNING COMPLETE - Ready to PHASE 1  
+**Documents**: 5 created in `docs/PHASE00/`
 
 ---
 
-## 📊 O Quand Foi Entregue
+## 🎯 Achieved Objective
 
-### Documentos Criados (docs/PHASE00/)
+Thorough analysis from current state until initial screen functional, with planning of ALL the necessary phases.
 
-1. **SPIKE_PLANNING.md** (350 linhas)
+---
+
+## 📊 What Was Delivered
+
+### Documents Created (docs/PHASE00/)
+
+1. **SPIKE_PLANNING.md** (350 lines)
    - Current codebasand state
-   - Lições aprendidas críticas (VFS, exception handling, memory protections, ARC)
-   - Analysis dand subsistemas (O quand funciona vs O quand falta)
-   - Arquitetura dand três camadas explicada
-   - Critérios dand sucesso
+   - Lessons learned critical (VFS, exception handling, memory protections, ARC)
+   - Analysis of subsystems (What works vs What's missing)
+   - Architecture of three layers explained
+   - Criteria for success
 
-2. **COMPATIBILITY_LAYERS.md** (250 linhas)
-   - Pattern dand nomenclatura: `SOURCE_DEST_TYPE_COMPAT`
-   - Três camadas dand compatibilidadand detalhadas
-   - Mapa dand dependências entrand camadas
-   - Files a criar (input_sdl2_routing_compat, ui_mesh_rendering_compat, etc)
-   - Convenções dand nomenclatura in código
+2. **COMPATIBILITY_LAYERS.md** (250 lines)
+   - Pattern for nomenclature: `SOURCE_DEST_TYPE_COMPAT`
+   - Three layers of compatibility detailed
+   - Map of dependencies entering layers
+   - Files to create (input_sdl2_routing_compat, ui_mesh_rendering_compat, etc)
+   - Conventions for nomenclature in code
 
-3. **PLATFORM_PRESETS.md** (200 linhas)
-   - Decisão sobrand Intel macOS: MANTER (prioridadand baixa)
-   - Novo esquema dand presets (vulkan-focused)
+3. **PLATFORM_PRESETS.md** (200 lines)
+   - Decision on Intel macOS: KEEP (low priority)
+   - New scheme for presets (vulkan-focused)
    - Mapping CMakePresets.json
    - Build commands by plataforma
    - Testing matrix
 
-4. **COMPLETE_ROADMAP.md** (600+ linhas)
-   - 40 fases detalhadas do PHASE 0 até menu inicial
-   - Cada phasand com: dependências, objetivo, tarefas, aceitação
-   - Fases 1-20 completamentand especificadas
-   - Fases 21-40 estruturadas
+4. **COMPLETE_ROADMAP.md** (600+ lines)
+   - 40 phases detailed from PHASE 0 until menu initial
+   - Each phase with: dependencies, objective, tasks, acceptance
+   - Phases 1-20 completely specified
+   - Phases 21-40 structured
    - ASCII dependency graph
-   - Resumo dand prioridades
+   - Summary of priorities
 
-5. **README.md** (300 linhas)
-   - Master summary consolidando tudo
-   - Roadmap resumido (bloqueadores + dependências)
-   - Arquitetura confirmada
-   - Próximos passos
-   - Lições críticas to todas as fases
-   - Referências essenciais
+5. **README.md** (300 lines)
+   - Master summary consolidating everything
+   - Roadmap summarized (blockers + dependencies)
+   - Architecture confirmed
+   - Next steps
+   - Critical lessons to all the phases
+   - Essential References
 
 ---
 
-## 🏛️ Decisões Arquiteturais Tomadas
+## 🏛️ Architectural Decisions Made
 
-### Namenclatura dand Compatibilidade
+### Nomenclature and Compatibility
 
 Pattern `SOURCE_DEST_TYPE_COMPAT`:
 - `d3d8_vulkan_graphics_compat` - DirectX 8 → Vulkan graphics
@@ -65,34 +65,34 @@ Pattern `SOURCE_DEST_TYPE_COMPAT`:
 - `input_sdl2_routing_compat` - SDL2 events → UI callbacks
 - `ui_mesh_rendering_compat` - Render UI with Vulkan
 
-### Plataformas
+### Platforms
 
-- **PRIMARY**: macos-arm64-vulkan (Appland Silicon)
-- **SECONDARY**: macos-x64-vulkan (Intel - baixa prioridade)
+- **PRIMARY**: macos-arm64-vulkan (Apple Silicon)
+- **SECONDARY**: macos-x64-vulkan (Intel - baixa priority)
 - **TERTIARY**: linux-vulkan, windows-vulkan (future)
-- **LEGACY**: vc6 (manter by enquanto)
+- **LEGACY**: vc6 (manter by while)
 
-### Executáveis
+### Executables
 
-- `GeneralsX` - Basand game
+- `GeneralsX` - Base game
 - `GeneralsXZH` - Zero Hour expansion
 
 ---
 
-## 🗺️ Roadmap in Números
+## 🗺️ Roadmap in Numbers
 
-| Seção | Fases | Propósito | Bloqueador |
+| Section | Phases | Purpose | Bloqueador |
 |-------|-------|----------|-----------|
-| Foundation | 0-10 | Corand graphics | SIM |
-| UI/Assets | 11-20 | Menu system | SIM |
-| Gamand Logic | 21-30 | Gameplay | Paralelo |
-| Polish | 31-40 | Stabilization | NÃO |
-| **Total** | **40** | **Menu funcional** | |
+| Foundation | 0-10 | Core graphics | YES |
+| UI/Assets | 11-20 | Menu system | YES |
+| Game Logic | 21-30 | Gameplay | Parallel |
+| Polish | 31-40 | Stabilization | NO |
+| **Total** | **40** | **Menu worksl** | |
 
-### Fases Críticas (Bloqueadores)
+### Phases Critical (Bloqueadores)
 
 ```
-PHASE 1: Geometry (triângulo colorido)
+PHASE 1: Geometry (triangle colored)
   ↓
 PHASE 2-5: Graphics pipelinand (texturas, shaders, lights, 60 FPS)
   ↓
@@ -102,50 +102,50 @@ PHASE 11-16: UI infrastructurand (rendering, buttons, input)
   ↓
 PHASE 17-20: Menu system (statand machine, interaction)
   ↓
-🎉 MENU INICIAL APARECE
+🎉 MENU INICIAL APPEARS
 ```
 
 ---
 
-## 🧠 Lições Integradas ao Planejamento
+## 🧠 Lessons Integradas ao Planejamento
 
 ### 1. VFS Integration (Phasand 28.4 Discovery)
 
-**Pattern**: Post-DirectX interception, não pré-
-- DirectX already loads dand .big files
-- Apenas interceptar após LockRect() to copiar pixel data
-- Aplicado in PHASE 12: UI Texturand Loading
+**Pattern**: Post-DirectX interception, not pre-
+- DirectX already loads and .big files
+- Just intercept after LockRect() to copy pixel data
+- Applied in PHASE 12: UI Texture Loading
 
 ### 2. Exception Handling (Phasand 33.9 Discovery)
 
 **Pattern**: Never catch and silently continue
-- Re-throw with contexto (filename, linha, campo)
-- Integrado in planejamento dand parsing (PHASE 17)
+- Re-throw with context (filename, linha, field)
+- Integrated in planning and parsing (PHASE 17)
 
 ### 3. Memory Protections (Phasand 35.6 Lesson)
 
-**Pattern**: Keep tripland validation layers
-- Defensand in depth é essencial
-- Cost negligível (vs production crashes)
-- Aplicado in todas as fases with memory allocation
+**Pattern**: Keep triple validation layers
+- Defense in depth is essential
+- Cost negligible (vs production crashes)
+- Applied in all the phases with memory allocation
 
 ### 4. ARC/Global Statand (Phasand 34.3 Discovery)
 
-**Pattern**: Never storand local ARC objects in globals
-- Let ARC managand lifecycle
-- Usand local variables instead
+**Pattern**: Never storing local ARC objects in globals
+- Let ARC manage lifecycle
+- Using local variables instead
 - Critical to Phasand 29-48 Metal/Vulkan code
 
 ---
 
-## 📦 Estado Atual
+## 📦 Status Current
 
 ### What Works
 
 - ✅ Build system (CMakand + presets)
 - ✅ Graphics pipelinand (Vulkan/DXVK, Phasand 39-48)
 - ✅ Asset loading (.big files, VFS)
-- ✅ Corand subsystems (GameEngine, INI parsing)
+- ✅ Core subsystems (GameEngine, INI parsing)
 - ✅ Memory protections (Phasand 30.6)
 
 ### O Quand Falta
@@ -157,43 +157,43 @@ PHASE 17-20: Menu system (statand machine, interaction)
 
 ### Pronto to Implementation?
 
-✅ **SIM** - Codebasand in estado sólido, roadmap claro, lições integradas
+✅ **YES** - Codebase in estado solid, roadmap clear, lessons integradas
 
 ---
 
-## 🎯 Próximas Ações
+## 🎯 Next Actions
 
-### Antes dand PHASE 1
+### Before Phase 1
 
-1. Validar roadmap with user
-2. Confirmar ordem dand prioridades
-3. Identificar bloqueadores não previstos
+1. Validate roadmap with ube
+2. Confirm order and priorities
+3. Identify blockers not predicted
 
 ### PHASE 1: Geometry Rendering
 
-**Objective**: Triângulo colorido na tela
+**Objective**: Triangle colored na tela
 
 **Tasks**:
-1. Creatand vertex buffer (3 verts, PosColor)
-2. Creatand fragment shader (passthrough color)
-3. Creatand vertex shader
-4. Creatand graphics pipeline
+1. Create vertex buffer (3 vertices, PosColor)
+2. Create fragment shader (passthrough color)
+3. Create vertex shader
+4. Create graphics pipeline
 5. Render triangland each frame
-6. Validatand on screen
+6. Validate on screen
 
-**Aceitação**: Triangland visible, 60 FPS stable
+**Acceptance**: Triangland visible, 60 FPS stable
 
 ---
 
-## 📚 Referências Essenciais
+## 📚 References Essenciais
 
-**Antes dand implementação, LER**:
-1. docs/MISC/LESSONS_LEARNED.md (crítico!)
+**Before implementation, READ**:
+1. docs/MISC/LESSONS_LEARNED.md (critical!)
 2. docs/MISC/CRITICAL_VFS_DISCOVERY.md
 3. .github/copilot-instructions.md
 4. docs/PHASE00/COMPLETE_ROADMAP.md
 
-**Referencand repositories**:
+**Reference repositories**:
 - jmarshall-win64-modern (best practices)
 - fighter19-dxvk-port (Vulkan patterns)
 - dxgldotorg-dxgl (DirectX mocking)
@@ -202,39 +202,39 @@ PHASE 17-20: Menu system (statand machine, interaction)
 
 ## 📈 Success Metrics
 
-### PHASE 0 Completude
+### PHASE 0 Completion
 
-- [x] Analysis minuciosa do estado
-- [x] Lições aprendidas documentadas
-- [x] Camadas dand compatibilidadand definidas
-- [x] Pattern dand nomenclatura estabelecido
-- [x] Presets dand plataforma adequados
+- [x] Thorough analysis of estado
+- [x] Lessons learned documented
+- [x] Compatibility layers defined
+- [x] Pattern for nomenclature estabelecido
+- [x] Presets for platform adequate
 - [x] Build targets nomeados
-- [x] 40 fases estruturadas with dependências
-- [x] Pronto to PHASE 1
+- [x] 40 phases structured with dependencies
+- [x] Ready to PHASE 1
 
-### Roadmap Validação
+### Roadmap Validation
 
-- [x] Todas as fases têm dependências definidas
-- [x] Bloqueadores identificados
-- [x] Aceitação criteria clara
-- [x] Sem ciclos dand dependência
-- [x] Podand ser executado in paralelo (PHASE 21-30)
+- [x] Todas as phases have dependencies definidas
+- [x] Bloqueadores identified
+- [x] Acceptance criteria clara
+- [x] No cycles and dependency
+- [x] Can be executed in parallel (PHASE 21-30)
 
 ---
 
-## ✅ Conclusão
+## ✅ Conclusion
 
-**PHASE 0: SPIKE PLANNING COMPLETE**
+**Phase 0: SPIKE PLANNING COMPLETE**
 
-Codebasand está in excelentand estado to recomeçar do zero. Roadmap dand 40 fases claramentand estruturado desdand "nada renderizado" até "menu inicial funcional". Lições aprendidas das 48 fases anteriores (Phases 22.7 até 48) estão integradas no planejamento.
+Codebase is in excellent state to restart from zero. The roadmap with 40 phases is clearly structured from "nothing rendered" until "initial menu functional". Lessons learned from 48 previous phases (Phases 22.7 until 48) are integrated into planning.
 
-Próximo passo: **PHASE 1 - Geometry Rendering**
+Next step: **Phase 1 - Geometry Rendering**
 
 ---
 
 **Data**: November 10, 2025  
 **Status**: ✅ READY TO IMPLEMENT  
-**Repositório**: /Users/felipebraz/PhpstormProjects/pessoal/GeneralsGameCodand  
+**Repository**: /Users/felipebraz/PhpstormProjects/pessoal/GeneralsGameCode  
 **Branch**: vulkan-port  
 **Documentation**: docs/PHASE00/

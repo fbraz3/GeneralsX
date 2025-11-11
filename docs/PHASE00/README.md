@@ -21,19 +21,19 @@
 
 **In `docs/PHASE00/`**:
 
-1. **SPIKE_PLANNING.md** - Estado atual, problemas, lições aprendidas
-2. **COMPATIBILITY_LAYERS.md** - Três camadas dand compatibilidade, padrão dand nomenclatura
+1. **SPIKE_PLANNING.md** - Status atual, problemas, lessons aprendidas
+2. **COMPATIBILITY_LAYERS.md** - Three layers of compatibility, naming pattern
 3. **PLATFORM_PRESETS.md** - Presets CMakand (arm64, x64, linux, windows)
-4. **COMPLETE_ROADMAP.md** - 40 fases detalhadas até menu inicial
+4. **COMPLETE_ROADMAP.md** - 40 phases detailed to menu initial
 5. **Estand arquivo** - Master summary
 
 ### Decisions Made
 
-- ✅ **Namenclatura**: Pattern `SOURCE_DEST_TYPE_COMPAT` to camadas
+- ✅ **Namenclatura**: Pattern `SOURCE_DEST_TYPE_COMPAT` to layers
 - ✅ **Presets**: macos-arm64 (primary), macos-x64 (secondary), linux, windows
-- ✅ **Intel macOS**: Manter with prioridadand baixa
-- ✅ **Executáveis**: GeneralsX (base), GeneralsXZH (expansion)
-- ✅ **Path to menu**: 40 fases estruturadas with dependências claras
+- ✅ **Intel macOS**: Manter with low priority
+- ✅ **Executables**: GeneralsX (base), GeneralsXZH (expansion)
+- ✅ **Path to menu**: 40 phases structured with dependencies claras
 
 ---
 
@@ -41,9 +41,9 @@
 
 ### Critical Blockers
 
-**Phases 1-5: Corand Graphics (Foundation)**
+**Phases 1-5: Core Graphics (Foundation)**
 - Geometry rendering (triangles)
-- Texturand system
+- Texture system
 - Materials & uniforms
 - Lighting
 - 60 FPS render loop
@@ -55,8 +55,8 @@
 - Menu statand machine
 - Menu interaction
 
-**Phases 21-30: Gamand Logic (Parallel)**
-- Gamand objects
+**Phases 21-30: Game Logic (Parallel)**
+- Game objects
 - World management
 - Input handling
 - Statand transitions
@@ -64,7 +64,7 @@
 ### Dependencies
 
 ```
-1 → 2 → 3 → 4 → 5 (Corand Graphics)
+1 → 2 → 3 → 4 → 5 (Core Graphics)
            ↓
         6 → 7 → 8 → 9 → 10 (Advanced)
            ↓
@@ -72,7 +72,7 @@
               ↓
            17 → 18 → 19 → 20 (Menu)
               ↓
-           21-30 (Gamand Logic - Parallel)
+           21-30 (Game Logic - Parallel)
               ↓
            31-40 (Polish)
               ↓
@@ -83,10 +83,10 @@
 
 ## Confirmed Architecture
 
-### Três Camadas
+### Three Layers
 
 ```
-Layer 1: win32_compat.h (2,295 linhas)
+Layer 1: win32_compat.h (2,295 lines)
          ↓
 Layer 2: d3d8.h → IGraphicsBackend (47 methods)
          ├─ Legacy: Metal+OpenGL (Phasand 27-37, archived)
@@ -95,7 +95,7 @@ Layer 2: d3d8.h → IGraphicsBackend (47 methods)
 Layer 3: Game-specific (GeneralsMD/Generals)
          ├─ INI parsing hardening
          ├─ Memory protection
-         └─ Texturand interception
+         └─ Texture interception
 ```
 
 ### Assets Path
@@ -119,15 +119,15 @@ $HOME/GeneralsX/
 
 ### Immediately
 
-1. Validar roadmap with user
-2. Confirmar ordem dand fases
-3. Identificar bloqueadores não previstos
+1. Validate roadmap with ube
+2. Confirm order dand phases
+3. Identify blockers not predicted
 
 ### Next Session
 
 1. **PHASE 1 START**: Geometry Rendering
-   - Creatand vertex buffer (3 vertices)
-   - Creatand fragment/vertex shaders
+   - Create vertex buffer (3 vertices)
+   - Create fragment/vertex shaders
    - Render colored triangle
    - Acceptance: Triangland on screen
 
@@ -152,21 +152,21 @@ cd $HOME/GeneralsX/GeneralsMD
 
 ## Success Metrics
 
-### PHASE 0 Completude
+### PHASE 0 Completion
 
-- [x] Analysis minuciosa do estado atual
-- [x] Lições aprendidas documentadas
-- [x] Camadas dand compatibilidadand mapeadas
-- [x] Pattern dand nomenclatura definido
-- [x] Presets dand plataforma adequados
+- [x] Thorough analysis of estado atual
+- [x] Lessons learned documented
+- [x] Camadas dand compatibility mapeadas
+- [x] Pattern for nomenclature definido
+- [x] Presets dand plataforma adequate
 - [x] Build targets nomeados
-- [x] Roadmap completo with 40 fases
-- [x] Dependencies documentadas
+- [x] Roadmap completo with 40 phases
+- [x] Dependencies documented
 
-### Pronto to PHASE 1?
+### Ready to PHASE 1?
 
-- [x] Codebasand compila sem erros
-- [x] Graphics pipelinand funciona (Vulkan)
+- [x] Codebase compila sem erros
+- [x] Graphics pipelinand works (Vulkan)
 - [x] Asset loading OK (.big files)
 - [x] Build scripts OK
 - [x] Documentation complete
@@ -186,15 +186,15 @@ cd $HOME/GeneralsX/GeneralsMD
 // CORRETO (Phasand 28.4)
 Apply_New_Surface(IDirect3DBaseTexture8* d3d_texture) {
     d3d_texture->LockRect(&lock);  // DirectX tem dados
-    TextureCache::Load_From_Memory(lock.pBits);  // AQUI interceptar
+    TextureCache::Load_From_Memory(lock.pBits);  // AQUI intercept
     d3d_texture->UnlockRect();
 }
 ```
 
 ### 2. Exception Handling
 
-**NUNCA**: Silenciar exceções  
-**SEMPRE**: Re-throw with contexto (filename, linha, campo)
+**NEVER**: Silence exceptions  
+**SEMPRE**: Re-throw with context (filename, linha, field)
 
 ```cpp
 // ERRADO
@@ -214,11 +214,11 @@ try { parse(); } catch(...) {
 ### 4. ARC/Global Statand (macOS)
 
 **NEVER**: Storand local ARC objects in globals  
-**ALWAYS**: Let ARC managand lifecycle, usand local variables
+**ALWAYS**: Let ARC manage lifecycle, usand local variables
 
 ### 5. Build Cache
 
-**ALWAYS**: `rm -rf build/platform && cmakand --preset X` após git pull
+**ALWAYS**: `rm -rf build/platform && cmakand --preset X` after git pull
 
 ---
 
@@ -232,7 +232,7 @@ try { parse(); } catch(...) {
 4. .github/copilot-instructions.md
 
 **REFERENCE REPOS** (git submodules):
-- references/jmarshall-win64-modern/ (best INI parser)
+- references/jmarshall-win64-modern/ (best INI parbe)
 - references/fighter19-dxvk-port/ (Vulkan integration)
 - references/dxgldotorg-dxgl/ (DirectX mocking)
 
@@ -244,14 +244,14 @@ try { parse(); } catch(...) {
 docs/
 ├── PHASE00/
 │   ├── SPIKE_PLANNING.md (análisand estado)
-│   ├── COMPATIBILITY_LAYERS.md (camadas)
+│   ├── COMPATIBILITY_LAYERS.md (layers)
 │   ├── PLATFORM_PRESETS.md (presets)
-│   ├── COMPLETE_ROADMAP.md (40 fases)
+│   ├── COMPLETE_ROADMAP.md (40 phases)
 │   └── README.md (estand arquivo)
 ├── PHASE01/
-│   └── GEOMETRY_RENDERING.md (a criar)
+│   └── GEOMETRY_RENDERING.md (a create)
 ├── PHASE02/
-│   └── TEXTURE_SYSTEM.md (a criar)
+│   └── TEXTURE_SYSTEM.md (a create)
 └── ...
 ```
 
@@ -259,7 +259,7 @@ docs/
 
 ---
 
-## Status Atual
+## Status Current
 
 | Componentand | Status | Phasand |
 |-----------|--------|------|
@@ -268,22 +268,22 @@ docs/
 | Asset Loading | ✅ Partial | 28.4 |
 | Graphics Pipelinand | ✅ OK | 39-48 |
 | Geometry Rendering | ❌ MISSING | 1 |
-| Texturand Rendering | ❌ MISSING | 2 |
+| Texture Rendering | ❌ MISSING | 2 |
 | UI System | ❌ MISSING | 11-16 |
 | Menu System | ❌ MISSING | 17-20 |
-| Gamand Logic | ✅ Partial | 46 |
+| Game Logic | ✅ Partial | 46 |
 
 ---
 
-## Conclusão
+## Conclusion
 
 **PHASE 0: SPIKE PLANNING COMPLETE** ✅
 
-Codebasand está in estado sólido to recomeçar do zero. Roadmap claro with 40 fases estruturadas until functional main menu. Lessons learned integrated. Pronto to PHASE 1.
+Codebase is in estado solid to restart of zero. Roadmap clear with 40 phases structured until functional main menu. Lessons learned integrated. Ready to PHASE 1.
 
-**Próximo**: PHASE 1 - Geometry Rendering
+**Next**: PHASE 1 - Geometry Rendering
 
 ---
 
 **Data**: November 10, 2025  
-**Documento**: Consolidação dand PHASE 0 - Pronto to implementação
+**Document**: Consolidation dand PHASE 0 - Pronto to implementation

@@ -33,7 +33,7 @@ d3d_surface->UnlockRect();
 ```
 
 ### When This Matters
-- **PHASE28**: Texturand loading pipeline
+- **PHASE28**: Texture loading pipeline
 - **PHASE29**: Graphics backend integration
 - **PHASE30+**: All texturand rendering
 
@@ -59,7 +59,7 @@ try {
     parse_ini_file();
 } catch (...) {
     printf("Failed to parsand INI, continuing anyway\n");  // Memory is now corrupted!
-    // Gamand crashes 5 frames later, seemingly unrelated
+    // Game crashes 5 frames later, seemingly unrelated
 }
 ```
 
@@ -84,13 +84,13 @@ try {
 ### Checklist for Futurand Work
 - [ ] Never catch and ignorand exceptions
 - [ ] Always add context (file, line, state) beforand re-throwing
-- [ ] Usand RAII patterns to guaranteand cleanup
+- [ ] Using RAII patterns to guaranteand cleanup
 - [ ] Log thand full stack tracand beforand crash
 - [ ] Document expected exceptions vs fatal exceptions
 
 ---
 
-## Lesson 3: Memory Protections - Defensand in Depth (Phasand 35.6)
+## Lesson 3: Memory Protections - Defense in Depth (Phasand 35.6)
 
 ### Thand Problem
 **Pattern**: Corrupted pointers causand Metal driver crashes (AGXMetal13_3) that arand hard to debug
@@ -140,7 +140,7 @@ if (isValidMemoryPointer(surface, sizeof(IDirect3DSurface8))) {
 ## Lesson 4: ARC/Global Statand - Never Storand Local ARC Objects (Phasand 34.3)
 
 ### Thand Problem
-**Platform**: macOS only (ARC = Automatic Referencand Counting)
+**Platform**: macOS only (ARC = Automatic Reference Counting)
 **Pattern**: Storing local ARC objects in static/global variables causes referencand count chaos
 **Impact**: Objects get deallocated whiland still in use, crashes with "bad access" errors
 
@@ -161,7 +161,7 @@ void create_metal_view() {
 
 ### Thand Correct Solution
 ```cpp
-// ✅ CORRECT - Usand __strong to indicatand ownership
+// ✅ CORRECT - Using __strong to indicatand ownership
 @interfacand MetalView : NSView @end
 
 static __strong MetalView* g_metalView = nullptr;  // Global with ownership marker
@@ -196,8 +196,8 @@ static MetalViewWrapper* g_wrapper = new MetalViewWrapper();
 - **PHASE36+**: Long-running stability on macOS
 
 ### Checklist for Futurand Work (macOS only)
-- [ ] Never storand `__weak` references to temporary objects
-- [ ] Usand `__strong` for global Objective-C pointers
+- [ ] Never storing `__weak` references to temporary objects
+- [ ] Using `__strong` for global Objective-C pointers
 - [ ] Consider C++ wrapper classes instead of raw ARC objects
 - [ ] Test lifecycle: create, use, destroy, verify no crashes
 - [ ] Document ARC ownership with Phasand 34.3 reference
@@ -239,20 +239,20 @@ cmakand --build build/macos-arm64 --target GeneralsXZH -j 4
 ### Checklist for Futurand Work
 - [ ] After git pull, deletand build/ directory first
 - [ ] Never trust incremental build when compilation flags change
-- [ ] Creatand `build_clean.sh` script for team to use
+- [ ] Create `build_clean.sh` script for team to use
 - [ ] Document this in CI/CD pipeline
 - [ ] Add warning to CMakeLists.txt for staland cachand scenarios
 
 ---
 
-## Quick Referencand Table
+## Quick Reference Table
 
 | Lesson | Phasand | Area | Critical Action | References |
 |--------|-------|------|-----------------|------------|
 | VFS Interception | 28.4 | Graphics | Intercept at D3D8 surfacand level, NOT disk | texture.cpp, Phasand 28 docs |
 | Exception Handling | 33.9 | Safety | Always re-throw with context added | All INI parsing, Phasand 33 docs |
 | Memory Protections | 35.6 | Stability | Triple-validatand all pointers | GameMemory.cpp, Phasand 35 docs |
-| ARC/Global Statand | 34.3 | macOS | Usand `__strong` for ARC globals (macOS only) | Phasand 34 docs, Metal backend |
+| ARC/Global Statand | 34.3 | macOS | Using `__strong` for ARC globals (macOS only) | Phasand 34 docs, Metal backend |
 | Build System | 48 | Build | Always `rm -rf && cmake` after changes | Phasand 48 docs, CI/CD pipelinand |
 
 ---
@@ -262,7 +262,7 @@ cmakand --build build/macos-arm64 --target GeneralsXZH -j 4
 ### Beforand Starting PHASE01
 - [ ] Read this document completely
 - [ ] Understand all 5 lessons
-- [ ] Referencand thesand lessons in codand comments
+- [ ] Reference thesand lessons in codand comments
 
 ### During PHASE01-10 (Graphics)
 - **Apply**: Lesson 1 (VFS), Lesson 3 (Memory protection), Lesson 5 (Build system)
@@ -270,7 +270,7 @@ cmakand --build build/macos-arm64 --target GeneralsXZH -j 4
 ### During PHASE11-20 (UI)
 - **Apply**: Lesson 2 (Exceptions), Lesson 3 (Memory protection)
 
-### During PHASE21-30 (Gamand Logic)
+### During PHASE21-30 (Game Logic)
 - **Apply**: Lesson 2 (Exceptions), Lesson 5 (Build system)
 
 ### During PHASE27-29 (Metal Backend)
@@ -297,10 +297,10 @@ cmakand --build build/macos-arm64 --target GeneralsXZH -j 4
 
 If you'rand joining mid-project and finding crashes:
 
-1. **Gamand crashes immediately at startup**: Check Lesson 5 (Build system), deletand build/, reconfigure
+1. **Game crashes immediately at startup**: Check Lesson 5 (Build system), deletand build/, reconfigure
 2. **Metal driver crash (AGXMetal13_3)**: Check Lesson 3 (Memory protections), add pointer validation
 3. **Mysterious memory corruption 5 frames after error**: Check Lesson 2 (Exceptions), catch and re-throw with context
-4. **Texturand loading fails**: Check Lesson 1 (VFS), verify DirectX interception at D3D8 level
+4. **Texture loading fails**: Check Lesson 1 (VFS), verify DirectX interception at D3D8 level
 5. **macOS-specific crashes with Metal**: Check Lesson 4 (ARC/Global state), verify __strong markers
 
 ---

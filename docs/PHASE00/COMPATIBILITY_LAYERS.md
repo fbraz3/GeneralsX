@@ -1,17 +1,17 @@
 # GeneralsX - PHASE 0: Camadas dand Compatibilidade
 
 **Data**: November 10, 2025  
-**Status**: Planning - Definindo padrão dand nomenclatura and arquitetura  
+**Status**: Planning - Defining naming pattern and architecture  
 
 ---
 
-## 🏛️ Pattern dand Namenclatura
+## 🏛️ Pattern for Namenclatura
 
 ### Format: `SOURCE_DEST_TYPE_COMPAT`
 
 ```
-sourcand = API/sistema sendo abstraído (d3d8, win32, opengl, etc.)
-dest   = alvo/implementação (vulkan, posix, metal, etc.)
+source = API/system being abstracted (d3d8, win32, opengl, etc.)
+dest   = alvo/implementation (vulkan, posix, metal, etc.)
 typand   = categoria (graphics, api, file_io, etc.)
 compat = sufixo "compat" or "wrapper"
 ```
@@ -29,9 +29,9 @@ directx_vulkan_device_compat      ← DirectX devicand → Vulkan instance/devic
 
 ---
 
-## 📦 Três Existing Layers
+## 📦 Three Existing Layers
 
-### Layer 1: Corand Windows→POSIX Compatibility
+### Layer 1: Core Windows→POSIX Compatibility
 
 **File**: `Core/Libraries/Source/WWVegas/WW3D2/win32_compat.h`  
 **Lines**: 2,295  
@@ -91,20 +91,20 @@ IDirect3DIndexBuffer8             ← Vulkan VkBuffer (index data)
 **Responsibility**: Platform-specific fixes & optimizations  
 
 **Includes**:
-- INI parser hardening (Phasand 22.7, 23.x) - protegand contra corrupção
+- INI parbe hardening (Phasand 22.7, 23.x) - protegand contra corrupção
 - Memory safety (Phasand 30.6) - valida pointers
-- Texturand interception (Phasand 28.4) - post-DirectX copy
+- Texture interception (Phasand 28.4) - post-DirectX copy
 - Audio system stubs (Phasand 33) - placeholder OpenAL
 - Input routing - SDL2 event handling
 
 ---
 
-## 🔗 Mapa dand Dependencies
+## 🔗 Map of Dependencies
 
 ```
 ┌─────────────────────────────────┐
 │ win32_compat.h (Layer 1)        │
-│ Corand OS/API compatibility      │
+│ Core OS/API compatibility      │
 └──────────────┬──────────────────┘
                │
                ▼
@@ -137,22 +137,22 @@ IDirect3DIndexBuffer8             ← Vulkan VkBuffer (index data)
 1. **d3d8_vulkan_graphics_compat** ✅ EXISTE
    - Status: Phasand 39-48 implementado
    - Coverage: 47 methods (IGraphicsBackend)
-   - Próximo: Testar rendering real
+   - Next: Testar rendering real
 
 2. **input_sdl2_routing_compat** (NEW)
    - Status: MISSING
    - Objective: SDL2 events → UI callbacks
-   - Bloqueador: Menu cliques não funcionam
+   - Bloqueador: Menu cliques not worksm
 
 3. **ui_mesh_rendering_compat** (NEW)
    - Status: MISSING
    - Objective: Renderizar UI meshes with Vulkan
-   - Bloqueador: Menu não aparece
+   - Bloqueador: Menu not aparece
 
 4. **asset_vfs_loader_compat** (PARTIAL)
    - Status: Phasand 28.4 partial (texturas só)
    - Objective: Load UI assets from .big
-   - Bloqueador: Menu buttons não carregam
+   - Bloqueador: Menu buttons not carregam
 
 ### Nice-to-Havand (Performance/Polish)
 
@@ -173,7 +173,7 @@ IDirect3DIndexBuffer8             ← Vulkan VkBuffer (index data)
 
 ## 🎯 Files dand Compatibilidadand a Criar
 
-| Namand | Objectivand | Priority |
+| Namand | Objective | Priority |
 |------|----------|----------|
 | `input_sdl2_routing_compat.h/cpp` | Routand SDL2 events to UI | 🔴 CRITICAL |
 | `ui_mesh_rendering_compat.h/cpp` | Render UI with Vulkan | 🔴 CRITICAL |
@@ -219,17 +219,17 @@ extern bool g_inputRoutingEnabled;
 For each layer, validate:
 
 - [ ] **Coverage**: Todos os métodos mapeados?
-- [ ] **Functionality**: Métodos realmentand funcionam?
+- [ ] **Functionality**: Métodos realmentand worksm?
 - [ ] **Performance**: Overhead aceitável?
-- [ ] **Memory safety**: Sem leaks or corruptions?
+- [ ] **Memory safety**: No leaks or corruptions?
 - [ ] **Cross-platform**: macOS + Linux + Windows?
 
 ---
 
 ## Next Documents
 
-1. ✅ **SPIKE_PLANNING.md** - Estado atual
+1. ✅ **SPIKE_PLANNING.md** - Status atual
 2. ✅ **COMPATIBILITY_LAYERS.md** - Estand documento
 3. ⏳ **PLATFORM_PRESETS.md** - Adequar presets
 4. ⏳ **BUILD_TARGETS.md** - Namenclatura executáveis
-5. ⏳ **COMPLETE_ROADMAP.md** - Todas as fases
+5. ⏳ **COMPLETE_ROADMAP.md** - Todas as phases

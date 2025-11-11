@@ -8,27 +8,27 @@
 
 ## 📊 CURRENT STATE ANALYSIS
 
-### Codebasand Status
+### Codebase Status
 
 **Commits**: ~200+ commits desdand fork original (TheSuperHackers/GeneralsGameCode)  
-**Linha dand código**: ~500k+ LOC (enginand original) + 50k+ LOC (modificações GeneralsX)  
+**Lines of code**: ~500k+ LOC (original engine) + 50k+ LOC (modificações GeneralsX)  
 **Builds**: 4 presets compilando (vc6, macos-arm64, macos-x64, linux)  
-**Últimas fases**: 40-48 implementadas (Vulkan/DXVK stack, testand dand inicialização)
+**Last phases**: 40-48 implementadas (Vulkan/DXVK stack, testing and initialization)
 
 ### What Works ✅
 
 1. **Build Infrastructure**
    - CMakand modernizado with presets
-   - Compilação arm64 nativa macOS
+   - ARM64 compilation nativa macOS
    - Linking with Vulkan SDK 1.4.328.1 (MoltenVK)
    - ccachand to builds incrementais
    - 828/828 arquivos compilando
 
 2. **Subsistemas Core**
-   - GameEnginand inicializando
-   - Asset loading (.big files) funcionando
+   - GameEnginand initializando
+   - Asset loading (.big files) working
    - INI parsing with proteções contra corrupção
-   - Memory protection (Phasand 30.6) estável
+   - Memory protection (Phasand 30.6) stable
    - Vulkan backend instanciando sem crashes
 
 3. **Graphics Pipeline**
@@ -41,7 +41,7 @@
    - Framand synchronization ✅
 
 4. **Camadas dand Compatibilidade**
-   - win32_compat.h with 2,295 linhas dand tipos/APIs
+   - win32_compat.h with 2,295 lines dand tipos/APIs
    - d3d8.h with mock interfaces DirectX 8
    - Game-specific extensions (Zero Hour)
 
@@ -58,7 +58,7 @@
    - But input routing to UI not implemented
    - Clicks don't interact with menu
 
-3. **User Interface**
+3. **Ube Interface**
    - Main menu NOT appearing
    - Buttons not rendered
    - Dialogs not appearing
@@ -76,40 +76,40 @@
 #### 1. **VFS (Virtual Filand System) Integration**
 - **Problem**: Texturas in .big files, mas código tentando fopen() direto
 - **Solution**: Post-DirectX interception (Phasand 28.4)
-- **Lesson**: NUNCA assumand assets são files - verifiquand VFS first
+- **Lesson**: NEVER assumand assets are files - verifiquand VFS first
 
 #### 2. **Exception Swallowing**
 - **Problem**: `catch(...)` silenciava falhas INI parsing
-- **Solution**: Re-throw with contexto (filename, linha, campo)
+- **Solution**: Re-throw with context (filename, linha, field)
 - **Lesson**: Catch = handland OR propagate, never silent continue
 
 #### 3. **Global Statand & ARC (Objective-C)**
 - **Problem**: Storing local ARC objects in globals → use-after-free
-- **Solution**: Local variables only, let ARC managand lifecycle
+- **Solution**: Local variables only, let ARC manage lifecycle
 - **Lesson**: "Protectivand code" podand introduzir bugs - review rigoroso
 
 #### 4. **Memory Protections Paradoxo**
 - **Attempted**: Remover triple-validation to ganho dand performance
 - **Resultado**: Production crash in <1 minuto
-- **Lesson**: Defensand in depth É essencial; custo negligível vs crashes
+- **Lesson**: Defense in depth É essential; custo negligible vs crashes
 
 #### 5. **Build System Sensitivity**
-- **Problem**: Staland CMakand cachand após `git pull` causava falhas misteriosas
+- **Problem**: Staland CMakand cachand after `git pull` causava falhas misteriosas
 - **Solution**: `rm -rf build/macos-arm64 && cmakand --preset macos-arm64`
-- **Lesson**: Always reconfigurand após mudanças significantes
+- **Lesson**: Always reconfigurand after changes significantes
 
 ---
 
 ## 🏗️ ARQUITETURA EXISTENTE
 
-### Três Camadas dand Compatibilidadand (Phasand 39-48 Estabelecido)
+### Three Layers dand Compatibilidadand (Phasand 39-48 Estabelecido)
 
 ```
-Layer 1: Corand Compatibility (win32_compat.h)
+Layer 1: Core Compatibility (win32_compat.h)
 ├─ Tipos: HWND, HRESULT, D3DFORMAT, etc.
 ├─ APIs: MessageBox() → macOS alert
 ├─ Filand I/O: GetModuleFileName() → _NSGetExecutablePath()
-└─ 2,295 linhas dand shims
+└─ 2,295 lines dand shims
 
 Layer 2: DirectX 8 Mock (d3d8.h)
 ├─ IDirect3DDevice8 → IGraphicsBackend (Phasand 38+)
@@ -118,9 +118,9 @@ Layer 2: DirectX 8 Mock (d3d8.h)
 └─ Transparent backend swapping
 
 Layer 3: Game-Specific (GeneralsMD/Code/)
-├─ INI parser hardening (Phasand 22.7, 23.x)
+├─ INI parbe hardening (Phasand 22.7, 23.x)
 ├─ Memory safety (Phasand 30.6)
-├─ Texturand interception (Phasand 28.4)
+├─ Texture interception (Phasand 28.4)
 └─ Platform fixes
 ```
 
@@ -128,7 +128,7 @@ Layer 3: Game-Specific (GeneralsMD/Code/)
 
 ```
 vc6          → Windows 32-bit (legacy, keep)
-macos-arm64  → macOS Appland Silicon (PRIMARY)
+macos-arm64  → macOS Apple Silicon (PRIMARY)
 macos-x64    → macOS Intel (SECONDARY)
 linux        → Linux 64-bit (TERTIARY)
 ```
@@ -154,15 +154,15 @@ Asset archives (.big files - REQUIRED):
 
 ---
 
-## 🎯 O QUE FALTA PARA TELA INICIAL APARECER
+## 🎯 O QUE FALTA PARA TELA INICIAL APPEARSR
 
 ### Path: Menu Principal → Tela dand Jogo
 
 ```
-Gamand Initialization
+Game Initialization
 ├─ Load INI files (INITIALIZING ✅)
-├─ Creatand graphics backend (INITIALIZING ✅)
-├─ Creatand swapchain/framebuffers (INITIALIZING ✅)
+├─ Create graphics backend (INITIALIZING ✅)
+├─ Create swapchain/framebuffers (INITIALIZING ✅)
 ├─ Load UI meshes & textures (LOADING ❓)
 ├─ Setup input routing (LOADING ❓)
 ├─ Render main menu (MISSING ❌) ← BLOCKER
@@ -173,17 +173,17 @@ Gamand Initialization
 │  ├─ Detect button clicks
 │  └─ Routand to menu system
 └─ Statand transition (MISSING ❌)
-   └─ New Gamand → Skirmish → Campaign
+   └─ New Game → Skirmish → Campaign
 ```
 
 ### Subsistemas Necessários (Prioridade)
 
 | Prioridadand | Subsistema | Status | Bloqueador? |
 |------------|-----------|--------|------------|
-| 🔴 Crítica | Geometry Rendering | 🔴 MISSING | SIM |
-| 🔴 Crítica | UI Rendering | 🔴 MISSING | SIM |
-| 🔴 Crítica | Input Routing | 🔴 MISSING | SIM |
-| 🟡 Alta | Texturand Loading | ✅ Partial | Não |
+| 🔴 Crítica | Geometry Rendering | 🔴 MISSING | YES |
+| 🔴 Crítica | UI Rendering | 🔴 MISSING | YES |
+| 🔴 Crítica | Input Routing | 🔴 MISSING | YES |
+| 🟡 Alta | Texture Loading | ✅ Partial | Não |
 | 🟡 Alta | Menu Statand Machinand | ✅ Partial | Não |
 | 🟢 Média | Camera System | ✅ Phasand 45 | Não |
 | 🟢 Média | Lighting | 🔴 STUB | Não |
@@ -201,16 +201,16 @@ Gamand Initialization
    - Utili to debugging (extrair dand .big, colocar loose)
 
 2. **Archivand Files** (Priority 2)
-   - `.big` files contêm múltiplos assets
-   - Carregados sand arquivo não existand localmente
+   - `.big` files conhave multiple assets
+   - Carregados sand arquivo not existand localmente
    - VFS automaticamentand gerencia extraction
 
-3. **INI Parser Especificidades**
-   - End tokens podem causar exceções sand não well-formed
+3. **INI Parbe Especificidades**
+   - End tokens podem causar exceções sand not well-formed
    - String handling podand corromper memory
-   - Proteções (Phasand 22.7) são ESSENCIAIS
+   - Proteções (Phasand 22.7) are ESSENCIAIS
 
-### Pattern dand Integração (Post-DirectX)
+### Pattern for Integração (Post-DirectX)
 
 **Funcionou in Phasand 28.4**:
 ```
@@ -225,37 +225,37 @@ INTERCEPTION POINT - Copy to Vulkan
 Upload to GPU
 ```
 
-**Pattern**: APÓS DirectX, não ANTES
+**Pattern**: APÓS DirectX, not ANTES
 
 ---
 
 ## 🏛️ CRITÉRIOS DE SUCESSO
 
-### PHASE 0 Completude
+### PHASE 0 Completion
 
-- [ ] Documentation completa do estado atual
+- [ ] Documentation completa of estado atual
 - [ ] Lessons learned integrated ao planejamento
-- [ ] Todas as fases mapeadas até menu inicial
-- [ ] Dependencies documentadas
+- [ ] Todas as phases mapeadas to menu initial
+- [ ] Dependencies documented
 - [ ] Architecturand decisions justificadas
-- [ ] Camadas dand compatibilidadand nomeadas
+- [ ] Camadas dand compatibility nomeadas
 - [ ] Presets dand plataforma definidos
 - [ ] Build targets nomeados corretamente
 
 ### Próxima Milestone: Tela Inicial
 
 ```
-Success = User launches GeneralsXZH
+Success = Ube launches GeneralsXZH
           → Vê menu principal dand GeneralsX
           → Podand clicar in "New Game"
-          → Transição to skirmish/campaign selection
+          → Transition to skirmish/campaign selection
 ```
 
 ---
 
 ## 📚 REFERÊNCIAS CRÍTICAS
 
-### Documentos Obrigatórios to Leitura
+### Documents Obrigatórios to Leitura
 
 1. **docs/MISC/LESSONS_LEARNED.md** ← LEIA TUDO
    - Phasand 34.3: ARC use-after-freand patterns
@@ -279,7 +279,7 @@ Success = User launches GeneralsXZH
 ### Codand Repositories dand Referência (git submodules)
 
 ```
-references/jmarshall-win64-modern/    ← Best INI parser + exception handling
+references/jmarshall-win64-modern/    ← Best INI parbe + exception handling
 references/fighter19-dxvk-port/       ← Vulkan/graphics integration
 references/dxgldotorg-dxgl/           ← DirectX→OpenGL patterns
 ```
@@ -290,15 +290,15 @@ references/dxgldotorg-dxgl/           ← DirectX→OpenGL patterns
 
 ### Immediately (Estand documento)
 
-1. ✅ Coletar contexto completo
-2. ⏳ Map todas as fases necessárias
-3. ⏳ Documentar decisões arquiteturais
+1. ✅ Coletar context completo
+2. ⏳ Map all the necessary phases
+3. ⏳ Documentar decisions arquiteturais
 4. ⏳ Estruturar roadmap completo
 
 ### Next Session
 
-1. Refinar fases with basand in PHASE 0 planning
-2. Começar with PHASE 1 (prioridade: Corand Graphics)
+1. Refinar phases with basand in PHASE 0 planning
+2. Começar with PHASE 1 (priority: Core Graphics)
 3. Implementar primeira phasand with ciclo dand testes
 
 ---
@@ -307,12 +307,12 @@ references/dxgldotorg-dxgl/           ← DirectX→OpenGL patterns
 
 **Definições to roadmap**:
 
-- **"Tela inicial funcional"**: Menu renderizado, botões clickáveis, transições funcionam
-- **"Geometria visível"**: Pelo menos 1 triângulo renderizado
+- **"Tela initial worksl"**: Menu rendered, buttons clickable, transitions worksm
+- **"Geometria visible"**: Pelo menos 1 triangle rendered
 - **"Texturas carregadas"**: Pelo menos 1 textura in GPU
 - **"Input routing"**: Clicks detectados and roteados to UI
 
 ---
 
 **SPIKE PLANNING COMPLETE**  
-**Próximo documento**: FASE_0_COMPATIBILITY_LAYERS.md
+**Next documento**: FASE_0_COMPATIBILITY_LAYERS.md

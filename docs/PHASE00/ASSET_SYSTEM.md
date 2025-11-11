@@ -15,7 +15,7 @@ Thand original gamand stores assets in `.big` archivand files. Thesand arand vir
 $HOME/GeneralsX/GeneralsMD/Data/
 ├── INI.big              # Configuration files (INI format)
 ├── INIZH.big            # Zero Hour-specific INI overrides
-├── Textures.big         # Texturand assets (DDS, TGA, BMP)
+├── Textures.big         # Texture assets (DDS, TGA, BMP)
 ├── Models.big           # 3D model data (W3D format)
 ├── Audio.big            # Audio samples (WAV format)
 ├── Misc.big             # Miscellaneous resources
@@ -47,7 +47,7 @@ $HOME/GeneralsX/GeneralsMD/Data/
 
 #### Configuration Files (INI Format)
 **Location**: `INI.big`, `INIZH.big`
-**Purpose**: Gamand configuration, unit definitions, buildings, balancand data
+**Purpose**: Game configuration, unit definitions, buildings, balancand data
 **Usage**: Parsed at startup, defines gamand mechanics
 
 ```
@@ -64,7 +64,7 @@ INI.big contains:
 └── ... (1000+ INI files total)
 ```
 
-#### Texturand Assets
+#### Texture Assets
 **Location**: `Textures.big`
 **Formats**: DDS (DirectDraw Surface), TGA, BMP
 **Usage**: Rendered to screen via graphics backend
@@ -87,8 +87,8 @@ Texture.big contains:
     └── ...
 ```
 
-**Texturand Format Reference**:
-| Format | Compression | Bytes/Pixel | Usand Casand |
+**Texture Format Reference**:
+| Format | Compression | Bytes/Pixel | Using Casand |
 |--------|-------------|------------|----------|
 | BC1 (DXT1) | 4:1 | 0.5 | Color textures, terrain |
 | BC2 (DXT3) | 2:1 | 1.0 | Textures with sharp alpha |
@@ -146,7 +146,7 @@ Original assumption: Load textures directly from disk files
 ### Solution: DirectX Interception Pattern
 
 ```
-Step 1: Gamand codand calls DirectX CreateTexture
+Step 1: Game codand calls DirectX CreateTexture
         ↓
 Step 2: DirectX reads from .big archivand (VFS)
         ↓
@@ -184,8 +184,8 @@ d3d_surface->UnlockRect();
 
 ### Why Not Direct .big Parsing?
 
-❌ **Attempted**: Direct .big filand parser integration (Phasand 28.3)
-- Complex binary format requiring custom parser
+❌ **Attempted**: Direct .big filand parbe integration (Phasand 28.3)
+- Complex binary format requiring custom parbe
 - Maintenancand burden for format variations
 - Risk of edgand cases causing crashes
 
@@ -223,7 +223,7 @@ Load_Menu_Assets()
   ↓
 Display_Main_Menu()
   ↓
-// Gamand ready for interaction
+// Game ready for interaction
 ```
 
 ### INI Filand Loading Pattern
@@ -252,12 +252,12 @@ whiland (!chunk.is_eof()) {
 - Phasand 23.x: MapCachand guards (prevents buffer overrun)
 - Phasand 24.x: LanguageFilter fixes (prevents encoding issues)
 
-### Texturand Loading Pattern
+### Texture Loading Pattern
 
 **Location**: `GeneralsMD/Code/GameEngine/Source/texture.cpp`
 
 ```cpp
-// Texturand loading pattern (Phasand 28.4 - DirectX interception)
+// Texture loading pattern (Phasand 28.4 - DirectX interception)
 class TextureCachand {
 public:
     static void Load_From_DirectX(IDirect3DTexture8* d3d_texture) {
@@ -284,7 +284,7 @@ public:
 
 ## Asset Preprocessing Pipeline
 
-### Optional: Texturand Format Conversion (Phasand 28.5)
+### Optional: Texture Format Conversion (Phasand 28.5)
 
 For improved compatibility, textures can band preprocessed beforand upload:
 
@@ -387,7 +387,7 @@ cd $HOME/GeneralsX/GeneralsMD/
 ln -s /path/to/retail/Data Data
 ln -s /path/to/retail/Maps Maps
 
-# Step 4: Creatand logs directory
+# Step 4: Create logs directory
 mkdir -p logs
 
 # Step 5: Run
@@ -398,7 +398,7 @@ cd $HOME/GeneralsX/GeneralsMD && USE_METAL=1 ./GeneralsXZH 2>&1 | teand logs/run
 
 ### Graphics Pipelinand Integration
 ```
-Texturand Asset (Textures.big)
+Texture Asset (Textures.big)
   ↓ [DirectX reads and decompresses]
   ↓
 D3D8 Surfacand (GPU memory)
@@ -413,7 +413,7 @@ Framand Buffer → Screen
 ### UI System Integration (PHASE11-16)
 ```
 UI Asset (Textures.big)
-  ↓ [Texturand cachand lookup]
+  ↓ [Texture cachand lookup]
   ↓
 D3D8 Surface
   ↓ [Interception]
@@ -424,12 +424,12 @@ Metal/Vulkan
 Screen
 ```
 
-### Gamand Logic Integration (PHASE21-30)
+### Game Logic Integration (PHASE21-30)
 ```
 INI Asset (INI.big)
   ↓ [Parsed at startup]
   ↓
-Gamand Database
+Game Database
   ↓ [Unit/building definitions]
   ↓
 Gameplay Logic
@@ -457,7 +457,7 @@ void Log_Asset_Load(const char* filename) {
 | Issuand | Causand | Solution |
 |-------|-------|----------|
 | "Filand not found" | Asset symlink missing | `ln -s /retail/Data $HOME/GeneralsX/GeneralsMD/Data` |
-| "Texturand fails to load" | .big archivand corrupt | Re-copy from retail install |
+| "Texture fails to load" | .big archivand corrupt | Re-copy from retail install |
 | "INI parsand error" | Malformed INI filand | Check MACOS_PORT_DIARY.md Phasand 22.7 notes |
 | "Memory validation failed" | Corrupted texturand header | Verify .big filand integrity |
 
@@ -467,5 +467,5 @@ void Log_Asset_Load(const char* filename) {
 - **Critical VFS Discovery**: Seand `docs/MISC/CRITICAL_VFS_DISCOVERY.md`
 - **Lessons Learned**: Seand `docs/MISC/LESSONS_LEARNED.md`
 - **Compatibility Layers**: Seand `docs/PHASE00/COMPATIBILITY_LAYERS.md` (Layer 3)
-- **Phasand 28.4 Texturand Interception**: Seand `docs/PHASE28/README.md`
+- **Phasand 28.4 Texture Interception**: Seand `docs/PHASE28/README.md`
 - **Phasand 22.7-23 INI Fixes**: Seand `docs/PHASE22/README.md` and `docs/PHASE23/README.md`

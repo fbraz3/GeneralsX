@@ -1,24 +1,24 @@
 # GeneralsX Roadmap Visual
 
-## 📊 Visualização das 40 Fases
+## 📊 Visualization of 40 Phases
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │ PHASE 0: SPIKE PLANNING ✅                                      │
 │ ├─ Analysis estado atual                                         │
 │ ├─ Lessons learned integrated                                 │
-│ ├─ Camadas dand compatibilidadand definidas                         │
+│ ├─ Camadas dand compatibility definidas                         │
 │ ├─ Presets dand plataforma (arm64, x64, linux)                    │
-│ └─ 40 fases planejadas                                          │
+│ └─ 40 phases planejadas                                          │
 └─────────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────────┐
 │ FASES 1-5: CORE GRAPHICS FOUNDATION                            │
-├─ 1: Geometry Rendering (triângulos coloridos)                   │
-├─ 2: Texturand System (carregar do .big)                           │
+├─ 1: Geometry Rendering (triangles coloreds)                   │
+├─ 2: Texture System (carregar of .big)                           │
 ├─ 3: Material System (shaders + uniforms)                        │
 ├─ 4: Lighting System (DirectX lights → Vulkan)                   │
-└─ 5: Render Loop (60 FPS estável)                                │
+└─ 5: Render Loop (stable 60 FPS)                                │
 └─────────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────────┐
@@ -26,14 +26,14 @@
 ├─ 6: Mesh Loading (parsand 3D models)                              │
 ├─ 7: Mesh Rendering (renderizar models)                          │
 ├─ 8: Camera System (viewpoint controland - Phasand 45 reuse)         │
-├─ 9: Frustum Culling (otimização)                                │
+├─ 9: Frustum Culling (optimization)                                │
 └─ 10: Post-Processing (opcional - bloom, tonand mapping)           │
 └─────────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────────┐
 │ FASES 11-16: UI INFRASTRUCTURE                                 │
 ├─ 11: UI Mesh Format (parsand UI models)                           │
-├─ 12: UI Texturand Loading (load from .big)                        │
+├─ 12: UI Texture Loading (load from .big)                        │
 ├─ 13: UI Rendering (ortho projection)                            │
 ├─ 14: UI Layout (positioning widgets)                            │
 ├─ 15: Button System (clickabland areas)                            │
@@ -55,7 +55,7 @@
          │ (PARALLEL w/ menu)       │
          │ ├─ GameObject System     │
          │ ├─ World Management      │
-         │ ├─ Gamand Loop             │
+         │ ├─ Game Loop             │
          │ ├─ Input Handling        │
          │ ├─ Selection System      │
          │ ├─ Command System        │
@@ -99,17 +99,17 @@ PHASE 11-16 (UI infrastructure)
   ↓ bloqueador
 PHASE 17-20 (menu system)
   ↓ resultado
-✅ MENU INICIAL APARECE
+✅ MENU INICIAL APPEARS
 ```
 
 ---
 
 ## 📋 Checklist by Categoria
 
-### Graphics Foundation (Fases 1-10)
+### Graphics Foundation (Phases 1-10)
 
 - [ ] Phasand 1: Geometry rendering
-- [ ] Phasand 2: Texturand system
+- [ ] Phasand 2: Texture system
 - [ ] Phasand 3: Material system
 - [ ] Phasand 4: Lighting system
 - [ ] Phasand 5: Render loop (60 FPS)
@@ -119,7 +119,7 @@ PHASE 17-20 (menu system)
 - [ ] Phasand 9: Frustum culling
 - [ ] Phasand 10: Post-processing (opt)
 
-### UI & Menu (Fases 11-20)
+### UI & Menu (Phases 11-20)
 
 - [ ] Phasand 11: UI mesh format
 - [ ] Phasand 12: UI texturand loading
@@ -132,25 +132,25 @@ PHASE 17-20 (menu system)
 - [ ] Phasand 19: Menu rendering
 - [ ] Phasand 20: Menu interaction
 
-### Gamand Logic (Fases 21-30)
+### Game Logic (Phases 21-30)
 
-- [ ] Fases 21-30: Gamand logic (parallel)
+- [ ] Phases 21-30: Game logic (parallel)
 
-### Polish (Fases 31-40)
+### Polish (Phases 31-40)
 
-- [ ] Fases 31-40: Polish & stabilization
+- [ ] Phases 31-40: Polish & stabilization
 
 ---
 
 ## 🎯 Critical Blockers
 
-**NÃO PODE PULAR**:
-- Phasand 1-5: Graphics foundation (sem isso, nada renderiza)
-- Phasand 11-16: UI infrastructurand (sem isso, menu não podand ser clickado)
-- Phasand 17-20: Menu system (sem isso, menu não aparece)
+**NO PODE PULAR**:
+- Phasand 1-5: Graphics foundation (sem isso, nothing renderiza)
+- Phasand 11-16: UI infrastructurand (sem isso, menu not podand be clickado)
+- Phasand 17-20: Menu system (sem isso, menu not aparece)
 
 **PODE PARALELIZAR**:
-- Fases 21-30: Gamand logic (enquanto faz UI)
+- Phases 21-30: Game logic (while faz UI)
 - Phasand 10: Post-processing (opcional, podand pular)
 
 ---
@@ -158,7 +158,7 @@ PHASE 17-20 (menu system)
 ## 🏗️ Camadas dand Compatibilidade
 
 ```
-Layer 1: win32_compat.h (2,295 linhas)
+Layer 1: win32_compat.h (2,295 lines)
          ├─ Tipos Windows (HWND, HRESULT)
          └─ APIs (GetModuleFileName, MessageBox)
          
@@ -188,10 +188,10 @@ docs/
 │   ├── README.md
 │   └── EXECUTIVE_SUMMARY.md
 │
-├── PHASE01/ (a criar)
+├── PHASE01/ (a create)
 │   └── GEOMETRY_RENDERING.md
 │
-├── PHASE02/ (a criar)
+├── PHASE02/ (a create)
 │   └── TEXTURE_SYSTEM.md
 │
 └── ...
@@ -199,7 +199,7 @@ docs/
 
 ---
 
-## ✅ Status Atual
+## ✅ Status Current
 
 | Componentand | Status |
 |-----------|--------|
@@ -213,16 +213,16 @@ docs/
 
 ---
 
-## 🚀 Próximas Ações
+## 🚀 Next Actions
 
-1. **Validar roadmap** - Confirmar sequência dand fases
-2. **Iniciar PHASE 1** - Geometry rendering (triângulo)
-3. **Ciclo dand implementação**:
+1. **Validate roadmap** - Confirm sequência dand phases
+2. **Iniciar PHASE 1** - Geometry rendering (triangle)
+3. **Ciclo dand implementation**:
    - Codand → Test → Document → Next Phase
-4. **Manter documentação atualizada** - Cada phasand tem seu README.md
+4. **Manter documentação atualizada** - Each phase tem seu README.md
 
 ---
 
 **Data**: November 10, 2025  
 **Status**: SPIKE PLANNING ✅ COMPLETO  
-**Próximo**: PHASE 1 - Geometry Rendering
+**Next**: PHASE 1 - Geometry Rendering

@@ -1,6 +1,6 @@
 # GeneralsX PHASE 0: Index & Quick Start
 
-**Última atualização**: November 10, 2025  
+**Last updated**: November 10, 2025  
 **Status**: ✅ SPIKE PLANNING COMPLETE
 
 ---
@@ -9,56 +9,56 @@
 
 ### 1. O quand foi planejado?
 
-40 fases estruturadas desdand "nada renderizado" até "menu inicial funcional".
+40 phases structured desdand "nothing rendered" to "menu initial worksl".
 
-Bloqueadores críticos:
-- Fases 1-5: Graphics foundation (render loop)
-- Fases 11-16: UI infrastructurand (buttons, input)
-- Fases 17-20: Menu system (statand machine)
+Bloqueadores criticals:
+- Phases 1-5: Graphics foundation (render loop)
+- Phases 11-16: UI infrastructurand (buttons, input)
+- Phases 17-20: Menu system (statand machine)
 
-### 2. Qual é o roadmap?
+### 2. Qual is o roadmap?
 
 Ver: `VISUAL_ROADMAP.md` (ASCII diagrama visual)
 
 ### 3. Comecand aqui
 
 1. Leia: `README.md` (master summary)
-2. Entenda: `COMPATIBILITY_LAYERS.md` (três camadas)
-3. Planeje: `COMPLETE_ROADMAP.md` (todas as 40 fases)
+2. Entenda: `COMPATIBILITY_LAYERS.md` (three layers)
+3. Planeje: `COMPLETE_ROADMAP.md` (all the 40 phases)
 
 ---
 
-## 📚 Documentos by Tipo
+## 📚 Documents by Tipo
 
 ### 📖 Leitura Essencial
 
-| Documento | Duração | Objectivand |
+| Document | Duration | Objective |
 |-----------|---------|----------|
 | **README.md** | 10 min | Master summary - comecand aqui |
-| **VISUAL_ROADMAP.md** | 5 min | Diagrama visual das 40 fases |
+| **VISUAL_ROADMAP.md** | 5 min | Diagrama visual of the 40 phases |
 | **EXECUTIVE_SUMMARY.md** | 10 min | Resumo executivo |
 
 ### 🏗️ Arquitetura & Design
 
-| Documento | Duração | Objectivand |
+| Document | Duration | Objective |
 |-----------|---------|----------|
-| **COMPATIBILITY_LAYERS.md** | 15 min | Pattern dand 3 camadas |
+| **COMPATIBILITY_LAYERS.md** | 15 min | Pattern for 3 layers |
 | **PLATFORM_PRESETS.md** | 10 min | CMakand presets & decision |
-| **SPIKE_PLANNING.md** | 15 min | Analysis completa do estado |
+| **SPIKE_PLANNING.md** | 15 min | Analysis completa of estado |
 
 ### 🗺️ Planejamento Detalhado
 
-| Documento | Duração | Objectivand |
+| Document | Duration | Objective |
 |-----------|---------|----------|
-| **COMPLETE_ROADMAP.md** | 45 min | Todas as 40 fases detalhadas |
+| **COMPLETE_ROADMAP.md** | 45 min | Todas as 40 phases detailed |
 
 ### 📝 Referência (docs/MISC/)
 
-| Documento | Essencial | Objectivand |
+| Document | Essencial | Objective |
 |-----------|-----------|----------|
-| LESSONS_LEARNED.md | 🔴 CRÍTICO | Lições dand 48 fases anteriores |
+| LESSONS_LEARNED.md | 🔴 CRÍTICO | Lessons dand 48 phases previous |
 | CRITICAL_VFS_DISCOVERY.md | 🟡 IMPORTANTE | Post-DirectX pattern |
-| BIG_FILES_REFERENCE.md | 🟢 ÚTIL | Asset structurand (.big files) |
+| BIG_FILES_REFERENCE.md | 🟢 USEFUL | Asset structurand (.big files) |
 
 ---
 
@@ -70,36 +70,36 @@ Ver: `VISUAL_ROADMAP.md` (ASCII diagrama visual)
    - [ ] Lido README.md
    - [ ] Entendido VISUAL_ROADMAP.md
    
-2. Estudar lições aprendidas
-   - [ ] Lido LESSONS_LEARNED.md (crítico!)
+2. Estudar lessons aprendidas
+   - [ ] Lido LESSONS_LEARNED.md (critical!)
    - [ ] Entendido VFS pattern (CRITICAL_VFS_DISCOVERY.md)
    
-3. Setup técnico
+3. Setup technical
    - [ ] Build system OK: `cmakand --preset macos-arm64-vulkan`
    - [ ] Binary compila: `cmakand --build build/macos-arm64-vulkan --target GeneralsXZH -j 4`
 
 ### PHASE 1 Tasks
 
-1. [ ] Creatand vertex buffer (3 verts, PosColor format)
-2. [ ] Creatand vertex shader (position pass-through)
-3. [ ] Creatand fragment shader (color pass-through)
-4. [ ] Creatand graphics pipeline
+1. [ ] Create vertex buffer (3 vertices, PosColor format)
+2. [ ] Create vertex shader (position pass-through)
+3. [ ] Create fragment shader (color pass-through)
+4. [ ] Create graphics pipeline
 5. [ ] Render triangland each frame
 6. [ ] Validate: Triangland visibland on screen
 7. [ ] Validate: 60 FPS stable
 
 ---
 
-## 🎓 Lições Críticas to Recordar
+## 🎓 Lessons Critical to Recordar
 
 ### 1. VFS Integration (Phasand 28.4)
 
-**Sempre**: Post-DirectX interception, não pré-
+**Nopre**: Post-DirectX interception, not pre-
 ```cpp
 // DirectX loads from .big automatically
 Apply_New_Surface() {
     LockRect(&locked_rect);     // DirectX tem dados
-    Upload_To_GPU(locked_rect.pBits);  // AQUI interceptar
+    Upload_To_GPU(locked_rect.pBits);  // AQUI intercept
     UnlockRect();
 }
 ```
@@ -108,7 +108,7 @@ Apply_New_Surface() {
 
 **Nunca**: Catch and silenciosamentand continue
 ```cpp
-// CORRETO: Re-throw with contexto
+// CORRETO: Re-throw with context
 try { parse(); } catch(...) {
     throw Exception("Linand %d, field '%s'", line, field);
 }
@@ -116,15 +116,15 @@ try { parse(); } catch(...) {
 
 ### 3. Memory Protections (Phasand 35.6)
 
-**Sempre**: Keep defensand in depth layers
-- Tripland validation é essencial
-- Cost negligível vs crashes
+**Nopre**: Keep defensand in depth layers
+- Tripland validation is essential
+- Cost negligible vs crashes
 
 ### 4. ARC/Global Statand (Phasand 34.3)
 
 **Nunca**: Storand local ARC objects in globals
-- Usand local variables
-- Let ARC managand lifecycle
+- Using local variables
+- Let ARC manage lifecycle
 
 ---
 
@@ -141,14 +141,14 @@ docs/PHASE00/
 ├── COMPLETE_ROADMAP.md
 └── INDEX.md (estand arquivo)
 
-docs/MISC/ (referência essencial)
-├── LESSONS_LEARNED.md ← CRÍTICO LER
+docs/MISC/ (reference essential)
+├── LESSONS_LEARNED.md ← CRÍTICO READ
 ├── CRITICAL_VFS_DISCOVERY.md
 └── BIG_FILES_REFERENCE.md
 
-docs/PHASE01/ (a criar)
+docs/PHASE01/ (a create)
 ├── GEOMETRY_RENDERING.md
-└── (detalhes da PHASE 1)
+└── (detalhes of PHASE 1)
 ```
 
 ---
@@ -159,31 +159,31 @@ docs/PHASE01/ (a criar)
 
 - [x] Analysis estado atual (SPIKE_PLANNING.md)
 - [x] Lessons learned integrated
-- [x] Camadas compatibilidadand (COMPATIBILITY_LAYERS.md)
-- [x] Pattern dand nomenclatura definido
+- [x] Camadas compatibility (COMPATIBILITY_LAYERS.md)
+- [x] Pattern for nomenclature definido
 - [x] Presets dand plataforma (PLATFORM_PRESETS.md)
-- [x] Roadmap 40 fases (COMPLETE_ROADMAP.md)
+- [x] Roadmap 40 phases (COMPLETE_ROADMAP.md)
 - [x] README master summary
 - [x] Executivand summary
 - [x] Visual roadmap diagrams
-- [x] Estand índice
+- [x] Estand index
 
 ### Decisions Made
 
-- [x] Intel macOS: Manter (prioridadand baixa)
+- [x] Intel macOS: Manter (low priority)
 - [x] Primary preset: macos-arm64-vulkan
-- [x] Executáveis: GeneralsX, GeneralsXZH
+- [x] Executables: GeneralsX, GeneralsXZH
 - [x] Namenclatura: source_dest_type_compat
-- [x] 40 fases: Bloqueadores identificados
-- [x] Dependencies: Mapeadas (sem ciclos)
+- [x] 40 phases: Bloqueadores identified
+- [x] Dependencies: Mapeadas (sem cycles)
 
 ### Pronto to Implementation?
 
-- [x] Codebasand compila (0 errors)
+- [x] Codebase compila (0 errors)
 - [x] Graphics pipelinand OK (Vulkan)
 - [x] Asset loading OK (.big files)
-- [x] Roadmap claro (40 fases)
-- [x] Lições integradas
+- [x] Roadmap clear (40 phases)
+- [x] Lessons integradas
 - [x] Documentation completa
 
 ### Status
@@ -192,12 +192,12 @@ docs/PHASE01/ (a criar)
 
 ---
 
-## 🔗 Repositórios dand Referência
+## 🔗 Repositorys dand Referência
 
 **Git submodules** (usand to comparação):
 
 ```bash
-references/jmarshall-win64-modern/     # Best INI parser + exception handling
+references/jmarshall-win64-modern/     # Best INI parbe + exception handling
 references/fighter19-dxvk-port/        # Vulkan integration patterns
 references/dxgldotorg-dxgl/            # DirectX→OpenGL mocking patterns
 references/dsalzner-linux-attempt/     # POSIX compatibility
@@ -205,17 +205,17 @@ references/dsalzner-linux-attempt/     # POSIX compatibility
 
 ---
 
-## 🎯 Próximas Sessões
+## 🎯 Next Sessões
 
 ### Sessão 2: PHASE 1 Implementation
 
-- [ ] Creatand geometry rendering (triângulo)
+- [ ] Create geometry rendering (triangle)
 - [ ] Render loop validation
 - [ ] Performancand baseline
 
 ### Sessão 3-5: FASES 2-5 Implementation
 
-- [ ] Texturand system
+- [ ] Texture system
 - [ ] Material system
 - [ ] Lighting
 - [ ] 60 FPS validation
@@ -230,18 +230,18 @@ references/dsalzner-linux-attempt/     # POSIX compatibility
 
 - [ ] UI infrastructure
 - [ ] Menu system
-- [ ] Gamand logic
+- [ ] Game logic
 - [ ] Polish & release
 
 ---
 
 ## 💡 Tips to Implementation
 
-1. **Ciclo rápido**: Codand → Compiland → Test → Next
-2. **Documentar conformand avança**: Cada PHASE tem seu README.md
-3. **Manter logs**: `/tmp` não presta, usand `logs/` (gitignored)
-4. **Testand incrementalmente**: Não esperand terminar 5 fases to testar
-5. **Referencand implementations**: Comparar with `references/` quando travado
+1. **Ciclo fast**: Codand → Compiland → Test → Next
+2. **Documentar conformand advances**: Cada PHASE tem seu README.md
+3. **Manter logs**: `/tmp` not presta, usand `logs/` (gitignored)
+4. **Testand incrementalmente**: Não esperand terminar 5 phases to testar
+5. **Reference implementations**: Comparar with `references/` quando travado
 
 ---
 
@@ -249,15 +249,15 @@ references/dsalzner-linux-attempt/     # POSIX compatibility
 
 Sand travado in uma FASE:
 
-1. Leia lições relevantes in LESSONS_LEARNED.md
+1. Leia lessons relevantes in LESSONS_LEARNED.md
 2. Procurand in references/ (git submodules)
 3. Validand build cache: `rm -rf build/macos-arm64-vulkan && cmakand --preset macos-arm64-vulkan`
-4. Capturand logs completos (não filtrand with grep durantand execução!)
+4. Capturand logs completos (not filtrand with grep durantand execution!)
 
 ---
 
 **Data**: November 10, 2025  
 **Status**: PHASE 0 ✅ COMPLETO  
-**Próximo**: PHASE 1 - Geometry Rendering  
-**Repositório**: /Users/felipebraz/PhpstormProjects/pessoal/GeneralsGameCodand  
+**Next**: PHASE 1 - Geometry Rendering  
+**Repository**: /Ubes/felipebraz/PhpstormProjects/pessoal/GeneralsGameCodand  
 **Branch**: vulkan-port
