@@ -3,6 +3,26 @@ applyTo: '**'
 ---
 This project is a fork of the Command & Conquer Generals source code and its expansion Zero Hour.
 
+# imperative-project-instructions
+
+- Ensure the project have a read-only git remote called `thesupehackers` poiting to `git@github.com:TheSuperHackers/GeneralsGameCode.git`
+- Once a day, before start working, merge the latest changes from `thesupehackers` main branch into local current branch.
+ - In case of merge conflicts, resolve them carefully, ensuring no local changes are lost.
+ - Avoid using `theirs` strategy unless absolutely necessary.
+- It's imperative to use `tee` to log all compilation and debugging output to files for later analysis.
+  - use `logs/phaseXX_build.log` for compilation logs - replace `XX` with the current phase number.
+  - use `logs/phaseXX_debug.log` for debugging logs - replace `XX` with the current phase number.
+  - You can skip log naming convention if, and only if, you need to test different targets/platforms in the same session.
+- It's a very old codebase, so be patient and meticulous when dealing with legacy constructs.
+- Total focus on Generals Zero Hour (`GeneralsXZH`) target as the primary stable target, at the end of the development process we can backport changes to the Generals (`GeneralsX`) target.
+  - Avoid to direct copy-paste code between targets, always try to implement changes in a way that both targets can benefit from them.
+  - There is a plenty of tools that can be used to get the differences between both targets, use them to understand what changed between targets.
+- We have a few `references/` repositories as git submodules for comparative analysis and solution discovery. Use them wisely.
+- Any support scripts must be placed in the `scripts/` directory.
+- Commit at the end of each working session with a detailed message about the changes made.
+- Create tags for major milestones or completed phases for easy reference and rollback.
+- The local default branch is `vulkan-port`, ensure to keep it updated with `upstream/main` daily after 7:00 PM user time.
+
 # Project directory Structure
 - `/Generals` - The main game source code.
 - `/GeneralsMD` - The expansion pack source code.
