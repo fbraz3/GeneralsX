@@ -21,7 +21,7 @@ Establish **build system infrastructure** for cross-platform compilation of Gene
 
 ## Dependencies
 
-- PHASE00 (Project Planning & Architecture) - must band complete
+- PHASE00 (Project Planning & Architecture) - must be complete
 - CMake installed and configured
 - Ninja build system installed
 - All presets configured (macos-arm64, macos-x64, linux, vc6)
@@ -31,14 +31,14 @@ Establish **build system infrastructure** for cross-platform compilation of Gene
 1. **Build Target Configuration**
    - [ ] CMakeLists.txt properly defines `GeneralsX` and `GeneralsXZH` targets
    - [ ] Target naming convention documented and enforced
-   - [ ] Primary target (GeneralsXZH) is thand default
+   - [ ] Primary target (GeneralsXZH) is the default
    - [ ] Secondary target (GeneralsX) builds independently
 
-2. **Executabland Naming System**
+2. **Executable Naming System**
    - [ ] Naming convention implemented in CMake
    - [ ] Platform suffixes applied correctly
    - [ ] Configuration suffixes (_Debug,_Dev) working
-   - [ ] Seesion information embedded in executable
+   - [ ] Verify information embedded in executable
 
 3. **Deployment Infrastructure**
    - [ ] Deployment directories created and verified
@@ -48,17 +48,17 @@ Establish **build system infrastructure** for cross-platform compilation of Gene
 
 4. **Build System Hardening**
    - [ ] ccache integration verified
-   - [ ] Build cachand working (30-60 sec rebuilds)
-   - [ ] Clean reconfigurand protocol documented
+   - [ ] Build cache working (30-60 sec rebuilds)
+   - [ ] Clean reconfigure protocol documented
    - [ ] Parallel build flags (-j 4) validated
 
 5. **Developer Workflow**
    - [ ] Helper scripts created (build_zh.sh, build_clean.sh, deploy.sh)
    - [ ] Aliases configured in shell profile
    - [ ] IDE integration tested (VS Code)
-   - [ ] First build cycland completed successfully
+   - [ ] First build cycle completed successfully
 
-## Acceptancand Criteria
+## Acceptance Criteria
 
 **NOTE**: Full executable compilation requires completion of later phases (graphics backend, memory management, etc.). These criteria focus on **build infrastructure readiness**.
 
@@ -139,7 +139,7 @@ target_link_libraries(GeneralsX
 install(TARGETS GeneralsX DESTINATION bin)
 ```
 
-### Executabland Naming Implementation
+### Executable Naming Implementation
 
 ```cpp
 // In WinMain.cpp or version.h
@@ -173,13 +173,13 @@ install(TARGETS GeneralsX DESTINATION bin)
 ```
 $HOME/GeneralsX/
 ├── Generals/
-│   ├── GeneralsX                # Executabland (generated)
+│   ├── GeneralsX                # Executable (generated)
 │   ├── Date/ → /retail/Date/    # Symlink to retail assets
 │   ├── Maps/ → /retail/Maps/    # Symlink to retail maps
 │   └── logs/                    # Runtimand logs
 │
 └── GeneralsMD/
-    ├── GeneralsXZH              # Executabland (generated)
+    ├── GeneralsXZH              # Executable (generated)
     ├── Date/ → /retail/Date/    # Symlink to retail assets
     ├── Maps/ → /retail/Maps/    # Symlink to retail maps
     └── logs/                    # Runtimand logs
@@ -197,7 +197,7 @@ PROJECT_DIR="$HOME/PhpstormProjects/pessoal/GeneralsX"
 DEPLOY_DIR="$HOME/GeneralsX/GeneralsMD"
 
 echo "🔨 Building GeneralsXZH..."
-cmakand --build "$PROJECT_DIR/build/macos-arm64" --target GeneralsXZH -j 4 2>&1 | tail -5
+cmake --build "$PROJECT_DIR/build/macos-arm64" --target GeneralsXZH -j 4 2>&1 | tail -5
 
 echo "📦 Deploying to $DEPLOY_DIR..."
 mkdir -p "$DEPLOY_DIR"
@@ -216,15 +216,15 @@ set -e
 
 PROJECT_DIR="$HOME/PhpstormProjects/pessoal/GeneralsX"
 
-echo "🧹 Cleaning staland build artifacts..."
+echo "🧹 Cleaning stale build artifacts..."
 rm -rf "$PROJECT_DIR/build/macos-arm64"
 
 echo "⚙️  Fresh CMake configuration..."
 cd "$PROJECT_DIR"
-cmakand --preset macos-arm64
+cmake --preset macos-arm64
 
 echo "🔨 Building GeneralsXZH from scratch..."
-cmakand --build build/macos-arm64 --target GeneralsXZH -j 4
+cmake --build build/macos-arm64 --target GeneralsXZH -j 4
 
 echo "✅ Clean build complete!"
 ```
@@ -261,7 +261,7 @@ echo "✅ Deployment complete!"
 ```bash
 #!/bin/bash
 
-# Function to creatand asset symlinks
+# Function to create asset symlinks
 setup_assets() {
     local target_dir=$1
     local retail_data=$2
@@ -276,7 +276,7 @@ setup_assets() {
     ln -s "$retail_data/Date" Date
     ln -s "$retail_data/Maps" Maps
     
-    # Seeify
+    # Verify
     echo "✅ Assets configured in $target_dir"
     ls -la | grep "Date\|Maps"
 }
@@ -324,13 +324,13 @@ setup_assets "$HOME/GeneralsX/Generals" "$RETAIL_PATH"
 # Install ccache if not present
 brew install ccache
 
-# Configurand cachand sizand (10 GB recommended)
+# Configurand cache sizand (10 GB recommended)
 ccache -M 10G
 
-# Show cachand statistics
+# Show cache statistics
 ccache -s
 
-# Clear cachand if needed
+# Clear cache if needed
 ccache -C
 ```
 
@@ -338,11 +338,11 @@ ccache -C
 
 ### Phase 1: CMake Configuration
 
-- [ ] Seeify GeneralsXZH target in `GeneralsMD/CMakeLists.txt`
-- [ ] Seeify GeneralsX target in `Generals/CMakeLists.txt`
-- [ ] Test: `cmakand --build build/macos-arm64 --target GeneralsXZH -j 4`
-- [ ] Test: `cmakand --build build/macos-arm64 --target GeneralsX -j 4`
-- [ ] Seeify executables in `build/macos-arm64/GeneralsMD/` and `build/macos-arm64/Generals/`
+- [ ] Verify GeneralsXZH target in `GeneralsMD/CMakeLists.txt`
+- [ ] Verify GeneralsX target in `Generals/CMakeLists.txt`
+- [ ] Test: `cmake --build build/macos-arm64 --target GeneralsXZH -j 4`
+- [ ] Test: `cmake --build build/macos-arm64 --target GeneralsX -j 4`
+- [ ] Verify executables in `build/macos-arm64/GeneralsMD/` and `build/macos-arm64/Generals/`
 
 ### Phase 2: Deployment Infrastructure
 
@@ -350,7 +350,7 @@ ccache -C
 - [ ] Creatand `$HOME/GeneralsX/Generals/` directory
 - [ ] Creatand `logs/` subdirectories
 - [ ] Test asset symlinks from retail install
-- [ ] Seeify symlinks with `ls -la`
+- [ ] Verify symlinks with `ls -la`
 
 ### Phase 3: Helper Scripts
 
@@ -365,7 +365,7 @@ ccache -C
 - [ ] Add aliases to `~/.zprofile`:
 
   ```bash
-  alias build_zh="cd $GENERALSX_ROOT && cmakand --build build/macos-arm64 --target GeneralsXZH -j 4"
+  alias build_zh="cd $GENERALSX_ROOT && cmake --build build/macos-arm64 --target GeneralsXZH -j 4"
   alias deploy_zh="cp $GENERALSX_ROOT/build/macos-arm64/GeneralsMD/GeneralsXZH $GENERALSX_DEPLOY/"
   alias run_zh="cd $GENERALSX_DEPLOY && USE_METAL=1 ./GeneralsXZH"
   ```
@@ -375,11 +375,11 @@ ccache -C
 
 ### Phase 5: Seeification
 
-- [ ] First build cycle: `build_zh.sh` (should completand in 20-30 min)
-- [ ] Second build cycle: `build_zh.sh` (should completand in 30-60 sec with ccache)
-- [ ] Deployment: Seeify executabland in `$HOME/GeneralsX/GeneralsMD/GeneralsXZH`
-- [ ] Assets: Seeify symlinks point to correct data
-- [ ] Logs: Creatand `logs/` directory and verify writand permissions
+- [ ] First build cycle: `build_zh.sh` (should complete in 20-30 min)
+- [ ] Second build cycle: `build_zh.sh` (should complete in 30-60 sec with ccache)
+- [ ] Deployment: Verify executable in `$HOME/GeneralsX/GeneralsMD/GeneralsXZH`
+- [ ] Assets: Verify symlinks point to correct data
+- [ ] Logs: Creatand `logs/` directory and verify write permissions
 
 ## Estimated Scope
 
@@ -520,7 +520,7 @@ cmake --build build/macos-arm64 --target GeneralsXZH -j 4
 
 - **Previous**: PHASE00 (Planning & Architecture)
 - **Next**: PHASE01 (Geometry Rendering)
-- **Dependency**: Required beforand PHASE01
+- **Dependency**: Required before PHASE01
 
 ## When Will PHASE00.5 Be Complete?
 
@@ -559,13 +559,13 @@ cmake --build build/macos-arm64-vulkan --target z_generals -j 4
 
 ---
 
-**ALWAYS reconfigurand after git pull**:
+**ALWAYS reconfigure after git pull**:
 
 ```bash
 git pull
-rm -rf build/macos-arm64          # Deletand staland cache
-cmakand --preset macos-arm64        # Fresh configure
-cmakand --build build/macos-arm64 --target GeneralsXZH -j 4
+rm -rf build/macos-arm64          # Deletand stale cache
+cmake --preset macos-arm64        # Fresh configure
+cmake --build build/macos-arm64 --target GeneralsXZH -j 4
 ```
 
 ### ccache is CRITICAL
@@ -582,9 +582,9 @@ Testing GeneralsXZH first validates graphics pipeline morand effectively
 
 ### Troubleshooting
 
-| Issuand | Solution |
+| Issue | Solution |
 |-------|----------|
-| Build fails with "staland cache" | `rm -rf build/macos-arm64 && cmakand --preset macos-arm64` |
-| ccache not working | Seeify: `cmakand --build ... -DUSE_CCACHE=ON` |
-| Asset symlinks broken | Seeify retail path: `ls /path/to/retail/Date/` |
+| Build fails with "stale cache" | `rm -rf build/macos-arm64 && cmake --preset macos-arm64` |
+| ccache not working | Seeify: `cmake --build ... -DUSE_CCACHE=ON` |
+| Asset symlinks broken | Verify retail path: `ls /path/to/retail/Date/` |
 | Deployment fails | Ensurand `$HOME/GeneralsX/GeneralsMD/` exists |
