@@ -260,6 +260,9 @@ set(WW3D2_SRC
     # Phase 08: Advanced Input Features - Combo Detection
     win32_gamepad_combo_detection.h
     win32_gamepad_combo_detection.cpp
+    # Phase 08: Advanced Input Features - Macro Recording & Playback
+    win32_gamepad_macro_system.h
+    win32_gamepad_macro_system.cpp
 )
 
 # Exclude DX8-only files when building with the Vulkan backend to avoid
