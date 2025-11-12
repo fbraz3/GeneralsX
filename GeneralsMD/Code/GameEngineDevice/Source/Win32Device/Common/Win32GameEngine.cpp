@@ -29,7 +29,13 @@
 //   the game application, it creates all the devices we will use for the game
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+#ifdef _WIN32
 #include <windows.h>
+#else
+// Phase 02: SDL2 cross-platform event handling
+#include <SDL3/SDL.h>
+#endif
+
 #include "Win32Device/Common/Win32GameEngine.h"
 #include "Common/PerfTimer.h"
 
@@ -132,6 +138,8 @@ void Win32GameEngine::update( void )
 //-------------------------------------------------------------------------------------------------
 void Win32GameEngine::serviceWindowsOS( void )
 {
+#ifdef _WIN32
+	// Windows implementation
 	MSG msg;
   Int returnValue;
 
@@ -165,5 +173,33 @@ void Win32GameEngine::serviceWindowsOS( void )
 
 	}
 
+#else
+	// Phase 02: SDL2 event loop implementation
+	SDL_Event event;
+	
+	while (SDL_PollEvent(&event)) {
+		switch (event.type) {
+			case SDL_EVENT_QUIT:
+				// User clicked close button
+				setQuitting(true);
+				break;
+				
+			case SDL_EVENT_WINDOW_FOCUS_GAINED:
+				// Window gained focus
+				setIsActive(true);
+				break;
+				
+			case SDL_EVENT_WINDOW_FOCUS_LOST:
+				// Window lost focus
+				setIsActive(false);
+				break;
+				
+			default:
+				// Other SDL2 events will be handled by input subsystems
+				break;
+		}
+	}
+
+#endif
 }
 

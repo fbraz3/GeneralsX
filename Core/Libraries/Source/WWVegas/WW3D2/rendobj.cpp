@@ -108,12 +108,12 @@ Filename_From_Asset_Name (const char *asset_name)
 		//
 		// Copy the model name into a new filename buffer
 		//
-		::lstrcpy (filename.Get_Buffer (::lstrlen (asset_name) + 5), asset_name);
+		lstrcpy (filename.Get_Buffer (lstrlen (asset_name) + 5), asset_name);
 
 		//
 		// Do we need to strip off the model's suffix?
 		//
-		char *suffix = ::strchr (filename.Peek_Buffer(), '.');
+		char *suffix = strchr (filename.Peek_Buffer(), '.');
 		if (suffix != NULL) {
 			suffix[0] = 0;
 		}
@@ -1152,12 +1152,12 @@ void RenderObjClass::Add_Dependencies_To_List
 		const HTreeClass *phtree = Get_HTree ();
 		if (phtree != NULL) {
 			const char *htree_name = phtree->Get_Name ();
-			if (::lstrcmpi (htree_name, model_name) != 0) {
+			if (lstrcmpi (htree_name, model_name) != 0) {
 
 				//
 				// Add this file to the list
 				//
-				file_list.Add (::Filename_From_Asset_Name (htree_name));
+				file_list.Add (Filename_From_Asset_Name (htree_name));
 			}
 		}
 

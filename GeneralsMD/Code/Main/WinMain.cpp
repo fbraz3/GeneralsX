@@ -693,6 +693,8 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message,
 //=============================================================================
 static Bool initializeAppWindows( HINSTANCE hInstance, Int nCmdShow, Bool runWindowed )
 {
+#ifdef _WIN32
+	// Windows implementation
 	DWORD windowStyle;
 	Int startWidth = DEFAULT_DISPLAY_WIDTH,
 			startHeight = DEFAULT_DISPLAY_HEIGHT;
@@ -766,6 +768,58 @@ static Bool initializeAppWindows( HINSTANCE hInstance, Int nCmdShow, Bool runWin
 
 	return true;  // success
 
+#else
+	// Phase 02: SDL2/Vulkan cross-platform implementation
+	Int startWidth = DEFAULT_DISPLAY_WIDTH;
+	Int startHeight = DEFAULT_DISPLAY_HEIGHT;
+	
+	gInitializing = true;
+	
+	// Initialize SDL2
+	if (!SDL_Init(SDL_INIT_VIDEO)) {
+		DEBUG_LOG(("Phase 02: Failed to initialize SDL2: %s\n", SDL_GetError()));
+		return false;
+	}
+	
+	// Calculate window position (center on screen)
+	SDL_DisplayID displayID = SDL_GetDisplays(nullptr)[0];
+	SDL_Rect displayBounds;
+	SDL_GetDisplayBounds(displayID, &displayBounds);
+	
+	Int windowX = (displayBounds.w - startWidth) / 2;
+	Int windowY = (displayBounds.h - startHeight) / 2;
+	
+	// Set up window flags
+	SDL_WindowFlags windowFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN;
+	if (!runWindowed) {
+		windowFlags = (SDL_WindowFlags)(windowFlags | SDL_WINDOW_FULLSCREEN);
+		gDoPaint = false;
+	}
+	
+	// Create SDL2 window for Vulkan rendering
+	SDL_Window* sdlWindow = SDL_CreateWindow(
+		"Command and Conquer Generals",
+		startWidth,
+		startHeight,
+		windowFlags
+	);
+	
+	if (!sdlWindow) {
+		DEBUG_LOG(("Phase 02: Failed to create SDL2 window: %s\n", SDL_GetError()));
+		SDL_Quit();
+		return false;
+	}
+	
+	// Store SDL window handle for later use
+	// ApplicationHWnd will store the SDL_Window* pointer cast to HWND
+	ApplicationHWnd = (HWND)sdlWindow;
+	
+	DEBUG_LOG(("Phase 02: SDL2 window created successfully (%dx%d)\n", startWidth, startHeight));
+	
+	gInitializing = false;
+	return true;  // success
+
+#endif
 }
 
 // Necessary to allow memory managers and such to have useful critical sections
@@ -779,6 +833,85 @@ static LONG WINAPI UnHandledExceptionFilter( struct _EXCEPTION_POINTERS* e_info 
 	DumpExceptionInfo( e_info->ExceptionRecord->ExceptionCode, e_info );
 	return EXCEPTION_EXECUTE_HANDLER;
 }
+
+// processSDL2Events ==========================================================
+/** Process SDL2 events and translate to Win32 message equivalents.
+    This function runs the event loop on non-Windows platforms.
+    Returns false when quit event is detected. */
+//=============================================================================
+#ifndef _WIN32
+static Bool processSDL2Events()
+{
+	SDL_Event event;
+	
+	while (SDL_PollEvent(&event)) {
+		switch (event.type) {
+			case SDL_EVENT_QUIT:
+				// User clicked close button - translate to WM_CLOSE equivalent
+				if (!TheGameEngine->getQuitting()) {
+					TheMessageStream->appendMessage(GameMessage::MSG_META_DEMO_INSTANT_QUIT);
+				}
+				return false;  // Signal exit
+				
+			case SDL_EVENT_WINDOW_FOCUS_GAINED:
+				// Window gained focus - WM_SETFOCUS equivalent
+				if (TheKeyboard)
+					TheKeyboard->resetKeys();
+				if (TheMouse)
+					TheMouse->regainFocus();
+				if (TheGameEngine)
+					TheGameEngine->setIsActive(true);
+				if (TheAudio)
+					TheAudio->regainFocus();
+				break;
+				
+			case SDL_EVENT_WINDOW_FOCUS_LOST:
+				// Window lost focus - WM_KILLFOCUS equivalent
+				if (TheKeyboard)
+					TheKeyboard->resetKeys();
+				if (TheMouse)
+					TheMouse->loseFocus();
+				if (TheGameEngine)
+					TheGameEngine->setIsActive(false);
+				if (TheAudio)
+					TheAudio->loseFocus();
+				break;
+				
+			case SDL_EVENT_WINDOW_MOVED:
+				// Window moved - refresh mouse capture if needed
+				if (TheMouse)
+					TheMouse->refreshCursorCapture();
+				break;
+				
+			case SDL_EVENT_WINDOW_RESIZED:
+				// Window resized - similar to WM_SIZE
+				gDoPaint = false;
+				if (TheMouse)
+					TheMouse->refreshCursorCapture();
+				break;
+				
+			case SDL_EVENT_KEYBOARD_KEY:
+				// Keyboard events - will be handled by SDL2 compat layer
+				// The key state is queried by TheKeyboard->getKey()
+				break;
+				
+			case SDL_EVENT_MOUSE_MOTION:
+			case SDL_EVENT_MOUSE_BUTTON_DOWN:
+			case SDL_EVENT_MOUSE_BUTTON_UP:
+			case SDL_EVENT_MOUSE_WHEEL:
+				// Mouse events - will be handled by SDL2 compat layer
+				// The mouse state is queried by TheMouse->getPos(), etc.
+				break;
+				
+			default:
+				// Other SDL2 events (not relevant for game logic)
+				break;
+		}
+	}
+	
+	return true;  // Continue running
+}
+#endif
 
 // WinMain ====================================================================
 /** Application entry point */
