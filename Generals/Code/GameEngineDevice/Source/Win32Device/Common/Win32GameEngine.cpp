@@ -34,6 +34,8 @@
 #else
 // Phase 02: SDL2 cross-platform event handling
 #include <SDL3/SDL.h>
+// Phase 03: SDL2 input compatibility layer
+#include "WW3D2/win32_sdl_api_compat.h"
 #endif
 
 #include "Win32Device/Common/Win32GameEngine.h"
@@ -42,6 +44,11 @@
 #include "GameNetwork/LANAPICallbacks.h"
 
 extern DWORD TheMessageTime;
+
+#ifndef _WIN32
+// Phase 03: SDL2 input classes forward declarations
+extern class Win32Mouse *TheWin32Mouse;
+#endif
 
 //-------------------------------------------------------------------------------------------------
 /** Constructor for Win32GameEngine */
@@ -168,7 +175,7 @@ void Win32GameEngine::serviceWindowsOS( void )
 	}
 
 #else
-	// Phase 02: SDL2 event loop implementation
+	// Phase 02-03: SDL2 event loop implementation with keyboard/mouse support
 	SDL_Event event;
 	
 	while (SDL_PollEvent(&event)) {
@@ -187,9 +194,77 @@ void Win32GameEngine::serviceWindowsOS( void )
 				// Window lost focus
 				setIsActive(false);
 				break;
+
+			// Phase 03: Keyboard events
+			case SDL_KEY_DOWN:
+			case SDL_KEY_UP:
+			{
+				// Translate SDL keyboard event to Windows format
+				uint32_t msg, wparam, lparam;
+				if (SDL2_ProcessKeyboardEvent(&event.key, &msg, &wparam, &lparam)) {
+					// TODO: Pass to keyboard subsystem when available
+					// For now, just log the event
+					printf("Phase 03: Keyboard event - msg:0x%X wParam:0x%X lParam:0x%X\n",
+					       msg, wparam, lparam);
+				}
+				break;
+			}
+
+			// Phase 03: Mouse button events
+			case SDL_MOUSE_BUTTON_DOWN:
+			case SDL_MOUSE_BUTTON_UP:
+			{
+				if (TheWin32Mouse) {
+					// Translate SDL mouse button event to Windows format
+					uint32_t msg = SDL2_TranslateMouseButton(event.button.button,
+					                                         event.type == SDL_MOUSE_BUTTON_DOWN ? 1 : 0);
+					uint32_t lparam = SDL2_EncodeMouseCoords(event.button.x, event.button.y);
+					uint32_t wparam = 0;  // TODO: encode button state from SDL_GetMouseState()
+					
+					// Add to mouse event queue
+					TheWin32Mouse->addWin32Event(msg, wparam, lparam, SDL_GetTicks());
+				}
+				break;
+			}
+
+			// Phase 03: Mouse motion events
+			case SDL_MOUSE_MOTION:
+			{
+				if (TheWin32Mouse) {
+					// Queue mouse move event
+					uint32_t lparam = SDL2_EncodeMouseCoords(event.motion.x, event.motion.y);
+					uint32_t wparam = 0;  // TODO: encode button state
+					
+					// Add to mouse event queue
+					TheWin32Mouse->addWin32Event(0x0200, wparam, lparam, SDL_GetTicks());  // WM_MOUSEMOVE
+				}
+				break;
+			}
+
+			// Phase 03: Mouse wheel events
+			case SDL_MOUSE_WHEEL:
+			{
+				if (TheWin32Mouse) {
+					// Get current mouse position from the motion event data
+					// For wheel events, we need to query current position
+					int x, y;
+					SDL_GetMouseState(&x, &y);
+					
+					uint32_t lparam = SDL2_EncodeMouseCoords(x, y);
+					// Encode wheel delta: positive = scroll up, negative = scroll down
+					// Windows uses 120 as one wheel click (MOUSE_WHEEL_DELTA)
+					uint32_t wparam = (event.wheel.direction == SDL_MOUSEWHEEL_NORMAL) ?
+						(event.wheel.y > 0 ? 0x00780000 : 0xFF880000) :  // 120 or -120 in upper word
+						(event.wheel.y < 0 ? 0x00780000 : 0xFF880000);   // Inverted for natural scrolling
+					
+					// Add to mouse event queue
+					TheWin32Mouse->addWin32Event(0x020A, wparam, lparam, SDL_GetTicks());  // WM_MOUSEWHEEL
+				}
+				break;
+			}
 				
 			default:
-				// Other SDL2 events will be handled by input subsystems
+				// Other SDL2 events are handled elsewhere
 				break;
 		}
 	}

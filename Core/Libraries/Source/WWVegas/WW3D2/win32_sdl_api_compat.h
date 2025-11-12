@@ -140,10 +140,15 @@ SDL_Window* SDL2_GetWindowFromEvent(const SDL_Event* event);
  * INPUT TRANSLATION - SDL2 key codes to Windows VK_* constants
  * ============================================================================ */
 
+/* ============================================================================
+ * INPUT TRANSLATION - SDL2 key codes to Windows VK_* constants
+ * ============================================================================ */
+
 /**
  * Translate SDL key code to Windows virtual key code (VK_*)
  * 
  * @param sdl_keycode   SDL_Keycode from SDL_KeyboardEvent.keysym.sym
+ * @param scancode      SDL_Scancode for fallback mapping
  * @return              Windows VK_* constant (e.g., VK_ESCAPE, VK_RETURN)
  *
  * EXAMPLES:
@@ -153,6 +158,19 @@ SDL_Window* SDL2_GetWindowFromEvent(const SDL_Event* event);
  *   SDL_SCANCODE_DOWN    → VK_DOWN   (0x28)
  *   SDL_SCANCODE_LEFT    → VK_LEFT   (0x25)
  *   SDL_SCANCODE_RIGHT   → VK_RIGHT  (0x27)
+ *   SDL_SCANCODE_A       → VK_A      (0x41)
+ *   SDL_SCANCODE_LSHIFT  → VK_LSHIFT (0xA0)
+ *
+ * KEYBOARD COVERAGE:
+ *   - Function keys: F1-F12
+ *   - Special keys: ESC, TAB, RETURN, BACKSPACE, SPACE
+ *   - Modifier keys: SHIFT (left/right), CTRL (left/right), ALT (left/right)
+ *   - Navigation: UP, DOWN, LEFT, RIGHT, HOME, END, PAGEUP, PAGEDOWN
+ *   - Editing: INSERT, DELETE
+ *   - Lock keys: CAPSLOCK, NUMLOCK, SCROLLLOCK
+ *   - Numeric keypad: All 0-9, +, -, *, /, DECIMAL, ENTER
+ *   - Symbols: ;:, =+, ,<, -_, .>, /?, `~, [{, \|, ]}, '"
+ *   - Alphanumeric: A-Z, 0-9
  */
 uint32_t SDL2_TranslateKeycode(SDL_Keycode sdl_keycode, SDL_Scancode scancode);
 
@@ -238,6 +256,50 @@ uint32_t SDL2_GetMousePosition(int* x, int* y);
  * @param y             Target Y coordinate
  */
 void SDL2_SetMousePosition(SDL_Window* window, int x, int y);
+
+/* ============================================================================
+ * SDL2 EVENT PROCESSING - Helper functions for game input integration
+ * ============================================================================ */
+
+/**
+ * Process SDL2 keyboard event into Win32-compatible message parameters
+ * Translates SDL_KeyboardEvent to WM_KEYDOWN/WM_KEYUP with proper wParam/lParam
+ * 
+ * @param sdl_event     SDL_KeyboardEvent to process
+ * @param out_msg       Output WM_KEYDOWN or WM_KEYUP constant
+ * @param out_wparam    Output virtual key code (VK_*)
+ * @param out_lparam    Output repeat count and scan code
+ * @return              1 if event was translated, 0 if not
+ *
+ * USAGE:
+ *   uint32_t msg, wparam, lparam;
+ *   if (SDL2_ProcessKeyboardEvent(&event.key, &msg, &wparam, &lparam)) {
+ *       TheWin32Keyboard->addWin32Event(msg, wparam, lparam);
+ *   }
+ */
+int SDL2_ProcessKeyboardEvent(
+    const SDL_KeyboardEvent* sdl_event,
+    uint32_t* out_msg,
+    uint32_t* out_wparam,
+    uint32_t* out_lparam
+);
+
+/**
+ * Get SDL2 keyboard modifier state as Windows-compatible bitmask
+ * Translates SDL_GetModState() to Win32 modifier flags
+ * 
+ * @return              Bitmask of KEY_STATE_* flags
+ *
+ * MAPPING:
+ *   SDL_KMOD_LCTRL → KEY_STATE_LCONTROL
+ *   SDL_KMOD_RCTRL → KEY_STATE_RCONTROL
+ *   SDL_KMOD_LSHIFT → KEY_STATE_LSHIFT
+ *   SDL_KMOD_RSHIFT → KEY_STATE_RSHIFT
+ *   SDL_KMOD_LALT → KEY_STATE_LALT
+ *   SDL_KMOD_RALT → KEY_STATE_RALT
+ *   SDL_KMOD_CAPS → KEY_STATE_CAPSLOCK
+ */
+uint32_t SDL2_GetModifierState(void);
 
 /* ============================================================================
  * WINDOWS API COMPATIBILITY - Win32-style constants and types

@@ -216,62 +216,114 @@ SDL_Window* SDL2_GetWindowFromEvent(const SDL_Event* event)
 }
 
 /* ============================================================================
- * INPUT TRANSLATION - Keycodes
+ * INPUT TRANSLATION - Keycodes (SDL → Windows VK_*)
  * ============================================================================ */
 
+/**
+ * Enhanced SDL keycode to Windows VK_* translation with complete coverage
+ * Handles all keys used by the game engine
+ */
 uint32_t SDL2_TranslateKeycode(SDL_Keycode sdl_keycode, SDL_Scancode scancode)
 {
     /* Map SDL keycodes to Windows VK_* codes */
     switch (sdl_keycode) {
-        /* Function keys */
-        case SDLK_F1:        return VK_F1;
-        case SDLK_F2:        return VK_F2;
-        case SDLK_F3:        return VK_F3;
-        case SDLK_F4:        return VK_F4;
-        case SDLK_F5:        return VK_F5;
-        case SDLK_F6:        return VK_F6;
-        case SDLK_F7:        return VK_F7;
-        case SDLK_F8:        return VK_F8;
-        case SDLK_F9:        return VK_F9;
-        case SDLK_F10:       return VK_F10;
-        case SDLK_F11:       return VK_F11;
-        case SDLK_F12:       return VK_F12;
+        /* Function keys F1-F12 */
+        case SDLK_F1:        return VK_F1;      /* 0x70 */
+        case SDLK_F2:        return VK_F2;      /* 0x71 */
+        case SDLK_F3:        return VK_F3;      /* 0x72 */
+        case SDLK_F4:        return VK_F4;      /* 0x73 */
+        case SDLK_F5:        return VK_F5;      /* 0x74 */
+        case SDLK_F6:        return VK_F6;      /* 0x75 */
+        case SDLK_F7:        return VK_F7;      /* 0x76 */
+        case SDLK_F8:        return VK_F8;      /* 0x77 */
+        case SDLK_F9:        return VK_F9;      /* 0x78 */
+        case SDLK_F10:       return VK_F10;     /* 0x79 */
+        case SDLK_F11:       return VK_F11;     /* 0x7A */
+        case SDLK_F12:       return VK_F12;     /* 0x7B */
 
         /* Special keys */
-        case SDLK_ESCAPE:    return VK_ESCAPE;
-        case SDLK_TAB:       return VK_TAB;
-        case SDLK_RETURN:    return VK_RETURN;
-        case SDLK_SPACE:     return VK_SPACE;
+        case SDLK_ESCAPE:    return VK_ESCAPE;  /* 0x1B */
+        case SDLK_TAB:       return VK_TAB;     /* 0x09 */
+        case SDLK_RETURN:    return VK_RETURN;  /* 0x0D */
+        case SDLK_BACKSPACE: return 0x08;       /* VK_BACK */
+        case SDLK_SPACE:     return VK_SPACE;   /* 0x20 */
 
-        /* Modifier keys */
-        case SDLK_LSHIFT:
-        case SDLK_RSHIFT:    return VK_SHIFT;
-        case SDLK_LCTRL:
-        case SDLK_RCTRL:     return VK_CONTROL;
-        case SDLK_LALT:
-        case SDLK_RALT:      return VK_MENU;
+        /* Modifier keys - note: use specific left/right codes for better compatibility */
+        case SDLK_LSHIFT:    return 0xA0;       /* VK_LSHIFT */
+        case SDLK_RSHIFT:    return 0xA1;       /* VK_RSHIFT */
+        case SDLK_LCTRL:     return 0xA2;       /* VK_LCONTROL */
+        case SDLK_RCTRL:     return 0xA3;       /* VK_RCONTROL */
+        case SDLK_LALT:      return 0xA4;       /* VK_LMENU */
+        case SDLK_RALT:      return 0xA5;       /* VK_RMENU */
 
         /* Navigation keys */
-        case SDLK_UP:        return VK_UP;
-        case SDLK_DOWN:      return VK_DOWN;
-        case SDLK_LEFT:      return VK_LEFT;
-        case SDLK_RIGHT:     return VK_RIGHT;
-        case SDLK_HOME:      return VK_HOME;
-        case SDLK_END:       return VK_END;
-        case SDLK_PAGEUP:    return VK_PRIOR;
-        case SDLK_PAGEDOWN:  return VK_NEXT;
-        case SDLK_DELETE:    return VK_DELETE;
+        case SDLK_UP:        return VK_UP;      /* 0x26 */
+        case SDLK_DOWN:      return VK_DOWN;    /* 0x28 */
+        case SDLK_LEFT:      return VK_LEFT;    /* 0x25 */
+        case SDLK_RIGHT:     return VK_RIGHT;   /* 0x27 */
+        case SDLK_HOME:      return VK_HOME;    /* 0x24 */
+        case SDLK_END:       return VK_END;     /* 0x23 */
+        case SDLK_PAGEUP:    return VK_PRIOR;   /* 0x21 */
+        case SDLK_PAGEDOWN:  return VK_NEXT;    /* 0x22 */
+        case SDLK_INSERT:    return 0x2D;       /* VK_INSERT */
+        case SDLK_DELETE:    return VK_DELETE;  /* 0x2E */
+
+        /* Lock keys */
+        case SDLK_CAPSLOCK:  return 0x14;       /* VK_CAPITAL */
+        case SDLK_NUMLOCKCLEAR: return 0x90;    /* VK_NUMLOCK */
+        case SDLK_SCROLLLOCK: return 0x91;      /* VK_SCROLL */
+
+        /* Numeric keypad keys */
+        case SDLK_KP_0:      return 0x60;       /* VK_NUMPAD0 */
+        case SDLK_KP_1:      return 0x61;       /* VK_NUMPAD1 */
+        case SDLK_KP_2:      return 0x62;       /* VK_NUMPAD2 */
+        case SDLK_KP_3:      return 0x63;       /* VK_NUMPAD3 */
+        case SDLK_KP_4:      return 0x64;       /* VK_NUMPAD4 */
+        case SDLK_KP_5:      return 0x65;       /* VK_NUMPAD5 */
+        case SDLK_KP_6:      return 0x66;       /* VK_NUMPAD6 */
+        case SDLK_KP_7:      return 0x67;       /* VK_NUMPAD7 */
+        case SDLK_KP_8:      return 0x68;       /* VK_NUMPAD8 */
+        case SDLK_KP_9:      return 0x69;       /* VK_NUMPAD9 */
+        case SDLK_KP_DECIMAL: return 0x6E;      /* VK_DECIMAL */
+        case SDLK_KP_DIVIDE: return 0x6F;       /* VK_DIVIDE */
+        case SDLK_KP_MULTIPLY: return 0x6A;     /* VK_MULTIPLY */
+        case SDLK_KP_MINUS:  return 0x6D;       /* VK_SUBTRACT */
+        case SDLK_KP_PLUS:   return 0x6B;       /* VK_ADD */
+        case SDLK_KP_ENTER:  return 0x0D;       /* VK_RETURN (numpad enter) */
+
+        /* Symbol keys */
+        case SDLK_SEMICOLON: return 0xBA;       /* VK_OEM_1 (;:) */
+        case SDLK_EQUALS:    return 0xBB;       /* VK_OEM_PLUS (=+) */
+        case SDLK_COMMA:     return 0xBC;       /* VK_OEM_COMMA (,<) */
+        case SDLK_MINUS:     return 0xBD;       /* VK_OEM_MINUS (-_) */
+        case SDLK_PERIOD:    return 0xBE;       /* VK_OEM_PERIOD (.>) */
+        case SDLK_SLASH:     return 0xBF;       /* VK_OEM_2 (/?  ) */
+        case SDLK_BACKQUOTE: return 0xC0;       /* VK_OEM_3 (`~) */
+        case SDLK_LEFTBRACKET: return 0xDB;     /* VK_OEM_4 ([{) */
+        case SDLK_BACKSLASH: return 0xDC;       /* VK_OEM_5 (\|) */
+        case SDLK_RIGHTBRACKET: return 0xDD;    /* VK_OEM_6 (]}) */
+        case SDLK_QUOTE:     return 0xDE;       /* VK_OEM_7 ('") */
 
         /* Numeric and character keys - use scancode as fallback */
         default:
             /* For alphanumeric keys, SDL typically preserves ASCII values */
             if (sdl_keycode >= 'a' && sdl_keycode <= 'z') {
-                return (sdl_keycode - 'a') + 'A';  /* Convert to uppercase VK_A, VK_B, etc. */
+                /* Convert lowercase to uppercase ASCII (VK_A = 0x41 = 'A', etc.) */
+                return (uint32_t)((sdl_keycode - 'a') + 'A');
             }
             if (sdl_keycode >= '0' && sdl_keycode <= '9') {
-                return sdl_keycode;  /* '0'-'9' are same in Win32 */
+                /* Numeric keys: '0'-'9' are 0x30-0x39 in both SDL and Windows */
+                return (uint32_t)sdl_keycode;
             }
-            return sdl_keycode;  /* Return as-is for other characters */
+            if (sdl_keycode >= 32 && sdl_keycode <= 126) {
+                /* Printable ASCII range */
+                return (uint32_t)sdl_keycode;
+            }
+            
+            /* Fallback: use scancode-based translation for unknown keys */
+            printf("Phase 03: Unknown SDL keycode 0x%X (scancode 0x%X), returning keycode as-is\n",
+                   sdl_keycode, scancode);
+            return (uint32_t)sdl_keycode;
     }
 }
 
@@ -377,6 +429,68 @@ void SDL2_SetMousePosition(SDL_Window* window, int x, int y)
     }
 
     SDL_WarpMouseInWindow(window, (float)x, (float)y);
+}
+
+/* ============================================================================
+ * SDL2 EVENT PROCESSING - Keyboard and mouse event conversion
+ * ============================================================================ */
+
+int SDL2_ProcessKeyboardEvent(
+    const SDL_KeyboardEvent* sdl_event,
+    uint32_t* out_msg,
+    uint32_t* out_wparam,
+    uint32_t* out_lparam)
+{
+    if (!sdl_event || !out_msg || !out_wparam || !out_lparam) {
+        return 0;
+    }
+
+    /* Translate event type to Windows message */
+    if (sdl_event->type == SDL_KEY_DOWN) {
+        *out_msg = 0x0100;  /* WM_KEYDOWN */
+    } else if (sdl_event->type == SDL_KEY_UP) {
+        *out_msg = 0x0101;  /* WM_KEYUP */
+    } else {
+        return 0;
+    }
+
+    /* Translate keycode to Windows VK_* constant */
+    *out_wparam = SDL2_TranslateKeycode(sdl_event->keysym.sym, sdl_event->keysym.scancode);
+
+    /* Encode LPARAM: repeat count (0-15) + scan code (16-23) + extended flag (24) + reserved + context (29) + previous (30) + transition (31) */
+    uint32_t repeat_count = (sdl_event->repeat) ? (sdl_event->repeat & 0xFFFF) : 1;
+    uint32_t scan_code = (uint32_t)sdl_event->keysym.scancode & 0xFF;
+    uint32_t extended = (scan_code > 0x53) ? 0x01000000 : 0;  /* Extended key flag */
+    uint32_t previous = (sdl_event->type == SDL_KEY_UP) ? 0 : 0x40000000;  /* Previous state */
+    uint32_t transition = (sdl_event->type == SDL_KEY_UP) ? 0x80000000 : 0;  /* Transition state */
+
+    *out_lparam = repeat_count | (scan_code << 16) | extended | previous | transition;
+
+    printf("Phase 03: SDL keyboard event - type:%s key:0x%X scan:0x%X → WM_KEY%s wParam:0x%X lParam:0x%X\n",
+           sdl_event->type == SDL_KEY_DOWN ? "DOWN" : "UP",
+           sdl_event->keysym.sym,
+           sdl_event->keysym.scancode,
+           sdl_event->type == SDL_KEY_DOWN ? "DOWN" : "UP",
+           *out_wparam,
+           *out_lparam);
+
+    return 1;
+}
+
+uint32_t SDL2_GetModifierState(void)
+{
+    SDL_Keymod mods = SDL_GetModState();
+    uint32_t key_state = 0;
+
+    if (mods & SDL_KMOD_LCTRL)   key_state |= 0x0004;  /* KEY_STATE_LCONTROL */
+    if (mods & SDL_KMOD_RCTRL)   key_state |= 0x0008;  /* KEY_STATE_RCONTROL */
+    if (mods & SDL_KMOD_LSHIFT)  key_state |= 0x0010;  /* KEY_STATE_LSHIFT */
+    if (mods & SDL_KMOD_RSHIFT)  key_state |= 0x0020;  /* KEY_STATE_RSHIFT */
+    if (mods & SDL_KMOD_LALT)    key_state |= 0x0040;  /* KEY_STATE_LALT */
+    if (mods & SDL_KMOD_RALT)    key_state |= 0x0080;  /* KEY_STATE_RALT */
+    if (mods & SDL_KMOD_CAPS)    key_state |= 0x0200;  /* KEY_STATE_CAPSLOCK */
+
+    return key_state;
 }
 
 /* ============================================================================
