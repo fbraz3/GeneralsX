@@ -305,6 +305,9 @@ set(WW3D2_SRC
     # Phase 19: Lighting System
     d3d8_vulkan_lighting.h
     d3d8_vulkan_lighting.cpp
+    # Phase 20: Viewport & Projection
+    d3d8_vulkan_viewport.h
+    d3d8_vulkan_viewport.cpp
 )
 
 # Exclude DX8-only files when building with the Vulkan backend to avoid
