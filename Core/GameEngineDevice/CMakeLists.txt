@@ -208,6 +208,9 @@ if(NOT IS_VS6_BUILD)
     )
 endif()
 
+# Include Phase 40 - Performance Optimization subsystem
+add_subdirectory(Source/Optimization)
+
 add_library(corei_gameenginedevice_private INTERFACE)
 add_library(corei_gameenginedevice_public INTERFACE)
 
