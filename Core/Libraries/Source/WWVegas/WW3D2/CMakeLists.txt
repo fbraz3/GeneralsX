@@ -287,6 +287,9 @@ set(WW3D2_SRC
     # Phase 13: Sampler & Descriptor Sets
     d3d8_vulkan_descriptor.h
     d3d8_vulkan_descriptor.cpp
+    # Phase 14: Shader System
+    d3d8_vulkan_shader.h
+    d3d8_vulkan_shader.cpp
 )
 
 # Exclude DX8-only files when building with the Vulkan backend to avoid
