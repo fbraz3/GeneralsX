@@ -293,6 +293,12 @@ set(WW3D2_SRC
     # Phase 15: Material System
     d3d8_vulkan_material.h
     d3d8_vulkan_material.cpp
+    # Phase 16: Render Target Management
+    d3d8_vulkan_rendertarget.h
+    d3d8_vulkan_rendertarget.cpp
+    # Phase 17: Render Loop Integration
+    d3d8_vulkan_renderloop.h
+    d3d8_vulkan_renderloop.cpp
 )
 
 # Exclude DX8-only files when building with the Vulkan backend to avoid
