@@ -1,0 +1,351 @@
+PHASE 05: REGISTRY & CONFIGURATION LAYER - INTEGRATION GUIDE
+==============================================================
+
+## Overview
+
+Phase 05 provides cross-platform Windows Registry emulation using INI configuration files.
+The system automatically stores settings in platform-appropriate directories:
+
+- Windows: %APPDATA%\Electronic Arts\EA Games\{game_name}\
+- macOS: ~/Library/Application Support/Electronic Arts/EA Games/{game_name}/
+- Linux: ~/.config/electronic-arts/ea-games/{game_name}/
+
+## Architecture
+
+### Three-Layer Approach
+
+1. **Win32 Compatibility Layer** (`win32_config_compat.h/cpp`)
+   - Implements Windows Registry API (RegOpenKeyEx, RegQueryValueEx, etc.)
+   - Maps Registry operations to INI file operations
+   - Handles platform-specific directory paths
+
+2. **INI File Format**
+   - INI files replace Registry hive format
+   - Standard [Section] key=value format
+   - Type tracking: Type_key=REG_SZ|REG_DWORD|REG_BINARY
+
+3. **Game-Specific Code** (unchanged)
+   - Existing code continues to call Registry functions
+   - No modification needed to game logic
+
+## Implementation Strategy
+
+### Phase 1: Skeleton (CURRENT)
+- Create registry compatibility headers
+- Stub implementations for critical functions
+- Compilation testing
+
+### Phase 2: INI Parser
+- Implement SDL2_ReadINIFile()
+- Implement SDL2_WriteINIFile()
+- Full RegOpenKeyEx/RegQueryValueEx/RegSetValueEx
+
+### Phase 3: Audio System Integration
+- Integrate with WWAudioClass (Phase 33 dependency)
+- Test audio settings persistence
+
+### Phase 4: Game Settings
+- Integrate with game configuration
+- Language settings (GetRegistryLanguage)
+- Player preferences
+
+## Usage Examples
+
+### Example 1: Read Registry Value (Existing Code - No Changes)
+
+Original code (continues to work):
+```cpp
+RegistryClass registry("GameSettings");
+if (registry.Is_Valid()) {
+    int quality = registry.Get_Int("GraphicsQuality", 2);
+}
+```
+
+Behind the scenes (Phase 05):
+- Registry path "SOFTWARE\Electronic Arts\EA Games\Generals\GameSettings" 
+  → INI file "~/.config/.../Generals.ini"
+- INI Section: [GameSettings]
+- INI Contents:
+  ```
+  [GameSettings]
+  GraphicsQuality=2
+  Type_GraphicsQuality=REG_DWORD
+  ```
+
+### Example 2: Write Registry Value (Existing Code - No Changes)
+
+Original code (continues to work):
+```cpp
+RegistryClass registry("GameSettings");
+registry.Set_Int("LastMap", 42);
+```
+
+Behind the scenes (Phase 05):
+- Updates INI file with new value
+- Type information automatically recorded
+
+### Example 3: Direct Registry API Usage (Existing Code - No Changes)
+
+Original code (continues to work):
+```cpp
+HKEY hKey;
+if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, 
+                 "SOFTWARE\\Electronic Arts\\EA Games\\Generals", 
+                 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
+    DWORD value;
+    DWORD size = sizeof(value);
+    DWORD type;
+    
+    if (RegQueryValueEx(hKey, "Version", NULL, &type, 
+                        (LPBYTE)&value, &size) == ERROR_SUCCESS) {
+        printf("Game version: %d\n", value);
+    }
+    
+    RegCloseKey(hKey);
+}
+```
+
+Behind the scenes (Phase 05):
+- All Registry calls map to INI file operations
+- INI file created automatically if needed
+- Directory structure created automatically
+
+## Files Created
+
+### Headers
+- `Core/Libraries/Source/WWVegas/WW3D2/win32_config_compat.h`
+  - Registry API function prototypes
+  - Configuration system initialization
+  - Cross-platform path utilities
+
+### Implementations
+- `Core/Libraries/Source/WWVegas/WW3D2/win32_config_compat.cpp`
+  - Platform-specific directory resolution
+  - INI file parsing and writing
+  - Registry compatibility functions
+  - Thread-safe critical sections
+
+### Documentation
+- `GeneralsMD/Code/GameEngine/Source/Common/GameMemory_Phase05_Integration.txt` (this file)
+
+## Integration Checklist
+
+### Prerequisites
+- [ ] Phase 04 (threading & memory) completed
+- [ ] Build system updated to include new files
+
+### Compilation
+- [ ] win32_config_compat.h compiles without errors
+- [ ] win32_config_compat.cpp compiles without errors (skeleton)
+- [ ] No conflicts with existing Registry.h files
+
+### Platform Support
+- [ ] Windows: %APPDATA% directory creation works
+- [ ] macOS: ~/Library/Application Support creation works
+- [ ] Linux: ~/.config directory creation works
+
+### Registry Function Coverage
+- [ ] RegOpenKeyEx() - opens/creates registry keys
+- [ ] RegQueryValueEx() - reads registry values
+- [ ] RegSetValueEx() - writes registry values
+- [ ] RegCloseKey() - closes registry keys
+- [ ] RegCreateKeyEx() - creates registry keys
+- [ ] RegDeleteKey() - deletes registry keys
+- [ ] RegEnumValueA() - enumerates registry values
+
+### Testing Strategy
+
+1. **Unit Tests** (optional for this phase)
+   - Test registry path → INI path conversion
+   - Test platform-specific directory resolution
+   - Test INI file creation
+
+2. **Integration Tests**
+   - Verify RegistryClass continues to work
+   - Verify game settings persist across sessions
+   - Verify cross-platform settings compatibility
+
+3. **Platform-Specific Tests**
+   - Windows: Verify %APPDATA% usage
+   - macOS: Verify ~/Library/Application Support usage
+   - Linux: Verify ~/.config usage
+
+## Known Limitations (Phase 05)
+
+1. **Registry Hives**
+   - Only HKEY_LOCAL_MACHINE and HKEY_CURRENT_USER supported
+   - Single INI file per game (not per subkey)
+
+2. **Data Types**
+   - REG_SZ (strings) - fully supported
+   - REG_DWORD (integers) - supported
+   - REG_BINARY - partial support (stores as hex strings)
+
+3. **Concurrent Access**
+   - INI files not locked (multiple processes could conflict)
+   - Thread-safe via critical sections within process
+
+4. **Performance**
+   - INI files re-read from disk on each RegOpenKeyEx()
+   - No in-memory caching (future optimization)
+
+## Future Optimizations (Phase 39+)
+
+1. **In-Memory Caching**
+   - Cache INI contents in memory
+   - Batch writes for performance
+
+2. **Registry Hive Conversion**
+   - Tool to convert old Registry hives to INI
+   - Automatic migration on first launch
+
+3. **Encryption**
+   - Optional encryption for sensitive settings
+
+## Common Integration Points
+
+### Audio Settings (Phase 33 Dependency)
+File: `Core/Libraries/Source/WWVegas/WWAudio/WWAudio.cpp`
+
+Methods affected:
+- `WWAudioClass::Load_From_Registry()`
+- `WWAudioClass::Save_To_Registry()`
+
+These methods use RegistryClass internally, which uses Phase 05 Registry API.
+
+### Game Settings
+File: `GeneralsMD/Code/GameEngine/Source/Common/System/registry.cpp`
+
+Functions affected:
+- `GetStringFromRegistry()`
+- `GetUnsignedIntFromRegistry()`
+- `SetStringInRegistry()`
+- `SetUnsignedIntInRegistry()`
+- `GetRegistryLanguage()`
+
+All use RegOpenKeyEx/RegQueryValueEx/RegSetValueEx internally.
+
+## Debugging
+
+### Enable Debug Output
+Phase 05 includes printf() statements prefixed with "Phase 05:".
+Grep logs to see all config system operations:
+
+```bash
+# Find all Phase 05 config operations
+grep "Phase 05:" game.log
+
+# Find errors only
+grep "Phase 05.*error\|Phase 05.*failed" game.log
+
+# Watch config directory being used
+grep "Phase 05.*directory:" game.log
+```
+
+### Verify INI Files
+After game startup, check INI files:
+
+```bash
+# Windows
+dir %APPDATA%\Electronic Arts\EA Games\
+
+# macOS
+ls -la ~/Library/Application\ Support/Electronic Arts/EA\ Games/
+
+# Linux
+ls -la ~/.config/electronic-arts/ea-games/
+```
+
+### Manual INI Inspection
+INI files are plain text, editable with any text editor:
+
+```bash
+# macOS example
+cat ~/Library/Application\ Support/Electronic Arts/EA\ Games/Generals.ini
+```
+
+## Troubleshooting
+
+### Problem: "Failed to get APPDATA directory" (Windows)
+
+Solution: Check Windows environment is properly initialized.
+Usually means running in non-user context or permissions issue.
+
+### Problem: INI file permissions denied (macOS/Linux)
+
+Solution: Verify directory permissions:
+```bash
+# macOS
+chmod -R 755 ~/Library/Application\ Support/Electronic Arts/
+
+# Linux
+chmod -R 755 ~/.config/electronic-arts/
+```
+
+### Problem: Settings not persisting
+
+Solution: 
+1. Verify INI file is being written (check logs for "Wrote INI file")
+2. Verify file path is correct (check logs for directory path)
+3. Check file permissions (should be readable/writable by user)
+
+### Problem: Game can't find settings
+
+Solution:
+1. Verify RegOpenKeyEx succeeded (check error codes)
+2. Verify INI file exists in expected location
+3. Check section/key names match exactly (case-sensitive on Linux)
+
+## Dependencies
+
+### Internal
+- `win32_thread_compat.h` - for critical section locking
+- `win32_compat.h` - for Windows type definitions
+
+### External
+- None (standard C library only)
+
+### Platform-Specific
+- Windows: `shlobj.h` (SHGetFolderPath for %APPDATA%)
+- macOS: Standard POSIX APIs
+- Linux: Standard POSIX APIs
+
+## Build Integration
+
+### CMakeLists.txt Changes (if needed)
+
+Add to the appropriate CMakeLists.txt:
+
+```cmake
+# Phase 05: Registry & Configuration Compatibility
+list(APPEND SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Libraries/Source/WWVegas/WW3D2/win32_config_compat.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Libraries/Source/WWVegas/WW3D2/win32_config_compat.cpp
+)
+```
+
+### Include Paths
+
+Ensure include path includes:
+```
+Core/Libraries/Source/WWVegas/WW3D2/
+```
+
+This should already be set up from Phase 04.
+
+## Migration Guide
+
+If converting existing Registry hives to INI:
+
+1. Export old Registry keys (Windows)
+2. Parse export format
+3. Create INI files in platform-specific directories
+4. Test game settings load correctly
+
+Future: Tool to automate this process.
+
+## Next Phases
+
+- Phase 06+: Graphics layers (DirectX → Metal/OpenGL/Vulkan)
+- Phase 33: Audio system integration
+- Phase 39+: Vulkan backend integration

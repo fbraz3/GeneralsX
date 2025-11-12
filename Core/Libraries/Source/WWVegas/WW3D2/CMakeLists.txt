@@ -238,6 +238,14 @@ set(WW3D2_SRC
     # Phase 02: SDL2 Window & Event Loop compatibility layer
     win32_sdl_api_compat.h
     win32_sdl_api_compat.cpp
+    # Phase 04: Cross-platform Threading & Memory Layer
+    win32_thread_compat.h
+    win32_thread_compat.cpp
+    win32_memory_compat.h
+    win32_memory_compat.cpp
+    # Phase 05: Registry & Configuration Compatibility Layer
+    win32_config_compat.h
+    win32_config_compat.cpp
 )
 
 # Exclude DX8-only files when building with the Vulkan backend to avoid
