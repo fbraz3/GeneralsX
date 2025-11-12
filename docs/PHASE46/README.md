@@ -11,6 +11,16 @@
 
 ---
 
+## Quick Reminders
+
+- Use `Fail fast` approach when testing new changes
+- Focus on GeneralsXZH first, then backport to GeneralsX
+- See `.github/instructions/project.instructions.md` for project guidelines
+- Check for integration issues from previous phases before proceeding
+- Always include rollback capability for applied fixes
+
+---
+
 ## Overview
 
 Phase 46 implements a **comprehensive automated testing framework** to validate all optimization changes across platforms, detect performance regressions, and ensure code quality during the optimization pipeline.

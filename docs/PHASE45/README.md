@@ -11,6 +11,16 @@
 
 ---
 
+## Quick Reminders
+
+- Use `Fail fast` approach when testing new changes
+- Focus on GeneralsXZH first, then backport to GeneralsX
+- See `.github/instructions/project.instructions.md` for project guidelines
+- Check for integration issues from previous phases before proceeding
+- Always include rollback capability for applied fixes
+
+---
+
 ## Overview
 
 Phase 45 implements **advanced memory management systems** to reduce memory fragmentation, improve allocation performance, and enable efficient resource pooling across the entire engine.

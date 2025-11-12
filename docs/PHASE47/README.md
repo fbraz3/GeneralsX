@@ -11,6 +11,16 @@
 
 ---
 
+## Quick Reminders
+
+- Use `Fail fast` approach when testing new changes
+- Focus on GeneralsXZH first, then backport to GeneralsX
+- See `.github/instructions/project.instructions.md` for project guidelines
+- Check for integration issues from previous phases before proceeding
+- Always include rollback capability for applied fixes
+
+---
+
 ## Overview
 
 Phase 47 implements a **complete release management system** for building, versioning, packaging, and distributing GeneralsX binaries across all supported platforms (Windows, macOS, Linux).
