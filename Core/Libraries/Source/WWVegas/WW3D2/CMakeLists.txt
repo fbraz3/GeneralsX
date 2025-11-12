@@ -299,6 +299,9 @@ set(WW3D2_SRC
     # Phase 17: Render Loop Integration
     d3d8_vulkan_renderloop.h
     d3d8_vulkan_renderloop.cpp
+    # Phase 18: Visibility & Culling
+    d3d8_vulkan_culling.h
+    d3d8_vulkan_culling.cpp
 )
 
 # Exclude DX8-only files when building with the Vulkan backend to avoid
