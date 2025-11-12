@@ -254,6 +254,9 @@ set(WW3D2_SRC
     win32_gamepad_event_integration.cpp
     win32_gamepad_config_compat.h
     win32_gamepad_config_compat.cpp
+    # Phase 08: Advanced Input Features - In-Game Configuration UI
+    win32_gamepad_config_ui.h
+    win32_gamepad_config_ui.cpp
 )
 
 # Exclude DX8-only files when building with the Vulkan backend to avoid
