@@ -246,6 +246,9 @@ set(WW3D2_SRC
     # Phase 05: Registry & Configuration Compatibility Layer
     win32_config_compat.h
     win32_config_compat.cpp
+    # Phase 06: Complete Input System - Gamepad & Joystick Support
+    win32_gamepad_compat.h
+    win32_gamepad_compat.cpp
 )
 
 # Exclude DX8-only files when building with the Vulkan backend to avoid
