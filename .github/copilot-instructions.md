@@ -31,14 +31,14 @@ Zero Hour expansion code that extends base game with platform-specific fixes:
 
 ### Presets Are Everything
 ```bash
-# Configure (creates build/macos-arm64/)
-cmake --preset macos-arm64
+# Configure (creates build/macos-arm64-vulkan/)
+cmake --preset macos-arm64-vulkan
 
 # Build PRIMARY TARGET (Zero Hour expansion - most stable)
-cmake --build build/macos-arm64 --target GeneralsXZH -j 4 | tee logs/build.log
+cmake --build build/macos-arm64-vulkan --target GeneralsXZH -j 4 | tee logs/build.log
 
 # Build SECONDARY TARGET (original game - less tested)
-cmake --build build/macos-arm64 --target GeneralsX -j 4 | tee logs/build.log
+cmake --build build/macos-arm64-vulkan --target GeneralsX -j 4 | tee logs/build.log
 ```
 
 **Why `-j 4` not `-j 8`?** This codebase has MASSIVE translation units (5MB+ object files). Half CPU cores prevents OOM kills. See `build_zh.sh` for production workflow.
@@ -48,7 +48,7 @@ First build: ~20-30 minutes. With ccache: ~30-60 seconds for incremental changes
 ```bash
 brew install ccache  # macOS
 ccache -M 10G        # Set 10GB cache
-cmake --preset macos-arm64 -DUSE_CCACHE=ON
+cmake --preset macos-arm64-vulkan -DUSE_CCACHE=ON
 ```
 
 ### The Asset Path Problem
@@ -59,7 +59,7 @@ $HOME/GeneralsX/GeneralsMD/Data/      # Contains INI.big, INIZH.big, Textures.bi
 $HOME/GeneralsX/GeneralsMD/Maps/      # Contains map files
 
 # Deploy executable here too
-cp build/macos-arm64/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/
+cp build/macos-arm64-vulkan/GeneralsMD/GeneralsXZH $HOME/GeneralsX/GeneralsMD/
 ```
 
 **Why?** The engine uses relative paths: `Data\INI\Object\AirforceGeneral.ini` expects `Data/` directory adjacent to executable.
@@ -229,8 +229,8 @@ grep "Subsystem.*operational" logs/subsystem_test.log
 
 4. **Build Errors After Git Pull**: Stale CMake cache. **Always reconfigure**:
    ```bash
-   rm -rf build/macos-arm64
-   cmake --preset macos-arm64
+   rm -rf build/macos-arm64-vulkan
+   cmake --preset macos-arm64-vulkan
    ```
 
 5. **"Game Hangs at Startup"**: NOT a hang - it's loading 15+ .big files. Wait 30-60 seconds or check CPU usage.

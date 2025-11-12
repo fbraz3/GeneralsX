@@ -26,8 +26,9 @@ static unsigned missing_image_width=128;
 static unsigned missing_image_height=128;
 static unsigned missing_image_depth=24;
 
-extern unsigned int missing_image_palette[];
-extern unsigned int missing_image_pixels[];
+// Phase 02: Forward declarations commented out - full definitions at end of file
+// static unsigned int missing_image_palette[];
+// static unsigned int missing_image_pixels[];
 
 static IDirect3DTexture8 * _MissingTexture = NULL;
 
@@ -83,7 +84,8 @@ void MissingTexture::_Init()
 			0));
 
 	unsigned *buffer=(unsigned*)locked_rect.pBits;
-	unsigned char *pixels=(unsigned char *)missing_image_pixels;
+	// Phase 02: Commented out - missing_image_pixels/palette not needed for color generation
+	//unsigned char *pixels=(unsigned char *)missing_image_pixels;
 	for (unsigned y=0;y<missing_image_height;y++)
 	{
 		for (unsigned x=0; x<missing_image_width; x++)

@@ -549,9 +549,25 @@ typedef BITMAPINFO* LPBITMAPINFO;
 #define lstrcpy(dest, src) strcpy((dest), (src))
 #endif
 
+// Phase 02: Global namespace wrapper for ::lstrcpy syntax
+#undef lstrcpy
+inline char* lstrcpy(char* dest, const char* src) { return strcpy(dest, src); }
+
 #ifndef lstrlen
 #define lstrlen(s) strlen((s))
 #endif
+
+// Phase 02: Global namespace wrapper for ::lstrlen syntax
+#undef lstrlen
+inline size_t lstrlen(const char* s) { return strlen(s); }
+
+#ifndef lstrcmpi
+#define lstrcmpi(s1, s2) strcasecmp((s1), (s2))
+#endif
+
+// Phase 02: Global namespace wrapper for ::lstrcmpi syntax
+#undef lstrcmpi
+inline int lstrcmpi(const char* s1, const char* s2) { return strcasecmp(s1, s2); }
 
 #ifndef _isnan
 #define _isnan(x) isnan((x))

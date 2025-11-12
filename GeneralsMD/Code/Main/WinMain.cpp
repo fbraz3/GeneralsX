@@ -32,12 +32,21 @@
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #define WIN32_LEAN_AND_MEAN  // only bare bones windows stuff wanted
+
+#ifdef _WIN32
 #include <windows.h>
 #include <stdlib.h>
 #include <crtdbg.h>
 #include <eh.h>
 #include <ole2.h>
 #include <dbt.h>
+#else
+// Phase 02: SDL2 Window & Event Loop - cross-platform headers
+#include <SDL3/SDL.h>
+#include <vulkan/vulkan.h>
+#include <cstdlib>
+#include <cstdint>
+#endif
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "WinMain.h"
@@ -67,6 +76,11 @@
 #include "resource.h"
 
 #include <rts/profile.h>
+
+// Phase 02: SDL2 Window & Event Loop compatibility
+#ifndef _WIN32
+#include "WWVegas/WW3D2/win32_sdl_api_compat.h"
+#endif
 
 
 // GLOBALS ////////////////////////////////////////////////////////////////////
