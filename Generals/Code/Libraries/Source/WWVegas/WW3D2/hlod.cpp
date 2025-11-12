@@ -133,7 +133,7 @@
 #include "chunkio.h"
 #include "predlod.h"
 #include "rinfo.h"
-#include "win32_types.h"  // For lstrcpyn, _strdup macros
+#include "win32_sdl_types_compat.h"  // For lstrcpyn, _strdup macros
 #include <win.h>
 #include "sphere.h"
 #include "boxrobj.h"

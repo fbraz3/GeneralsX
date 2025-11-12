@@ -33,7 +33,7 @@
 #pragma once
 
 #include <windows.h>
-#include "d3d8.h"
+#include "d3d8_vulkan_graphics_compat.h"
 
 // ***********************************
 // Set this to 0 to remove all embedded browser code.

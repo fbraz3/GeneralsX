@@ -1,6 +1,6 @@
 # Critical Lessons Learned
 
-## 🚨 Phase 34.3: Use-After-Free via Global State Storage (October 24, 2025)
+## 🚨 Phase 051.3: Use-After-Free via Global State Storage (October 24, 2025)
 
 **CRITICAL DISCOVERY**: Storing local ARC-managed objects in global variables caused Metal driver crashes with address=0xffffffffffffffff
 
@@ -85,7 +85,7 @@ METAL: BeginFrame() - Pipeline state set on encoder
 
 **Discovery Method**:
 
-User recognized pattern from previous `LESSONS_LEARNED.md` Phase 33.9 (exception swallowing). Asked: "We added lots of try/catches as protection, this has blocked us in the past. Could this be happening again?"
+User recognized pattern from previous `LESSONS_LEARNED.md` Phase 051.9 (exception swallowing). Asked: "We added lots of try/catches as protection, this has blocked us in the past. Could this be happening again?"
 
 This led to examining ALL "protective code" additions that store state globally. Found `s_passDesc` storing local ARC object.
 
@@ -109,7 +109,7 @@ This led to examining ALL "protective code" additions that store state globally.
 
 **Impact on Timeline**:
 
-- Phase 34.3 blocked for ~1 hour with driver crashes
+- Phase 051.3 blocked for ~1 hour with driver crashes
 - User's pattern recognition identified issue class immediately
 - Fix applied and validated in 15 minutes
 - Revealed next issue: Metal texture upload not yet implemented
@@ -138,14 +138,14 @@ s_globalTexture = tex;  // Safe because newTexture* returns retained object
 
 **References**:
 
-- Previous similar bug: Phase 33.9 (exception swallowing causing silent data corruption)
+- Previous similar bug: Phase 051.9 (exception swallowing causing silent data corruption)
 - Metal ARC documentation: Objects created with `new*` or `copy*` are retained
 - Apple Metal Best Practices: Avoid storing transient objects globally
 - Commit: [pending] - "fix(metal): remove s_passDesc global causing use-after-free"
 
 ---
 
-## 🚨 Phase 33.9: Blanket Exception Catching Anti-Pattern (October 20, 2025)
+## 🚨 Phase 051.9: Blanket Exception Catching Anti-Pattern (October 20, 2025)
 
 **CRITICAL DISCOVERY**: Blanket `catch(...)` blocks swallowing exceptions without re-throwing caused silent data corruption across entire INI parsing system
 
@@ -254,7 +254,7 @@ Warning Box: ***FATAL*** String Manager failed to initilaize properly
 
 **Impact on Timeline**:
 
-- Phase 33.8 blocked for 2 hours debugging "invalid audio data"
+- Phase 051.8 blocked for 2 hours debugging "invalid audio data"
 - Root cause traced to INI parser in 1 hour
 - Fix applied and validated in 30 minutes
 - Revealed audio loop bug (separate issue for investigation)
@@ -269,14 +269,14 @@ Warning Box: ***FATAL*** String Manager failed to initilaize properly
 **References**:
 
 - Jmarshall pattern: `references/jmarshall-win64-modern/Code/GameEngine/Source/Common/INI/INI.cpp` (lines 1485-1565)
-- Phase documentation: `docs/MACOS_PORT_DIARY.md` (Phase 33.9)
+- Phase documentation: `docs/MACOS_PORT_DIARY.md` (Phase 051.9)
 - Commit: 99030886 - "fix(ini): remove blanket exception catching, restore proper re-throwing"
 
 ---
 
-## 🚨 Phase 28.4: Virtual File Systems (VFS) Discovery (October 17, 2025)
+## 🚨 Phase 051.4: Virtual File Systems (VFS) Discovery (October 17, 2025)
 
-**CRITICAL DISCOVERY**: Phase 28.4 integration NEVER EXECUTES - VFS architecture mismatch identified
+**CRITICAL DISCOVERY**: Phase 051.4 integration NEVER EXECUTES - VFS architecture mismatch identified
 
 **Problem**:
 
@@ -355,7 +355,7 @@ printf("PHASE 28.4 DEBUG: Begin_Load FAILED - applying missing texture\n");
 
 **Impact on Timeline**:
 
-- Phase 28 revised: 9-12 days → 11-14 days (+2 days for redesign)
+- Phase 051 revised: 9-12 days → 11-14 days (+2 days for redesign)
 - New ETA: October 31, 2025
 
 **Documentation Created**:

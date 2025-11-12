@@ -20,7 +20,7 @@
 #include "missingtexture.h"
 #include "texture.h"
 #include "dx8wrapper.h"
-#include <d3dx8core.h>
+#include "d3dx8_compat.h"  /* Phase 03: Use compat stub for d3dx8 */
 
 static unsigned missing_image_width=128;
 static unsigned missing_image_height=128;

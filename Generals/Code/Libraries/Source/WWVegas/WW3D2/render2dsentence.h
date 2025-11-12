@@ -42,7 +42,7 @@
 #include "vector2i.h"
 #include "wwstring.h"
 #include "win.h"
-#include "win32_types.h"  /* Phase 01: Windows type compatibility for HFONT, HBITMAP, HDC */
+#include "win32_sdl_types_compat.h"  /* Phase 01: Windows type compatibility for HFONT, HBITMAP, HDC */
 
 /*
 ** FontCharsClass

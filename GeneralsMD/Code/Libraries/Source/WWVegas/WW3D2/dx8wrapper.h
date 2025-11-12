@@ -43,7 +43,7 @@
 
 #include "always.h"
 #include "dllist.h"
-#include "d3d8.h"
+#include "d3d8_vulkan_graphics_compat.h"
 #include "matrix4.h"
 #include "statistics.h"
 #include "wwstring.h"

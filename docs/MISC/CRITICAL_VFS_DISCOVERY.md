@@ -1,7 +1,7 @@
-# Phase 28.4 Critical VFS Discovery
+# Phase 051.4 Critical VFS Discovery
 
 **Date**: October 17, 2025
-**Status**: Phase 28.4 design flaw identified - requires fundamental redesign
+**Status**: Phase 051.4 design flaw identified - requires fundamental redesign
 
 ## Problem Summary
 
@@ -98,7 +98,7 @@ All 7 textures tested are in `.big` archives:
 6. **twalphaedge.tga** - likely in TexturesZH.big
 7. **watersurfacebubbles.tga** - likely in TexturesZH.big
 
-## Why Previous Phase 28.4 Implementation Failed
+## Why Previous Phase 051.4 Implementation Failed
 
 ### Original Design (Commit 38b4f718)
 
@@ -144,7 +144,7 @@ if (loaded && g_useMetalBackend && Texture != NULL && MipLevelCount > 0) {
 
 **Pros**:
 - Fixes root cause - texture loading will work correctly
-- Allows Phase 28.4 integration in `Load()` as designed
+- Allows Phase 051.4 integration in `Load()` as designed
 - Future-proof - all texture loading will use VFS
 
 **Cons**:
@@ -233,7 +233,7 @@ if (!thumb) {
 
 ### Debug Early in Pipeline
 
-- Initial Phase 28.4 integration was too late (End_Load)
+- Initial Phase 051.4 integration was too late (End_Load)
 - Second attempt (Load) was still too late
 - Should have traced from entry point (Finish_Load) to find where pipeline fails
 
@@ -247,10 +247,10 @@ if (!thumb) {
 
 | Task | Original Estimate | Revised Estimate | Reason |
 |------|------------------|------------------|--------|
-| Phase 28.4 Integration | 2 days | +2 days (4 total) | VFS discovery + redesign |
+| Phase 051.4 Integration | 2 days | +2 days (4 total) | VFS discovery + redesign |
 | Testing & Validation | 1 day | 1 day | No change |
 | Documentation | 1 day | 1 day | No change |
-| **Total Phase 28** | **9-12 days** | **11-14 days** | +2 days for redesign |
+| **Total Phase 051** | **9-12 days** | **11-14 days** | +2 days for redesign |
 
 ## Files Affected
 
@@ -275,7 +275,7 @@ if (!thumb) {
 
 **Date**: October 17, 2025
 **Commit**: 114f5f28
-**Status**: Phase 28.4 COMPLETE - Option 2 Post-DirectX Interception WORKING
+**Status**: Phase 051.4 COMPLETE - Option 2 Post-DirectX Interception WORKING
 
 ### The Breakthrough
 
@@ -430,10 +430,10 @@ PHASE 28.4 REDESIGN SUCCESS: Texture 'TBBib.tga' loaded (ID=2906690560, 128x128,
 
 ### Next Steps
 
-- ✅ **Phase 28.4**: COMPLETE (Option 2 working)
-- ⏳ **Phase 28.5**: Extended testing with DXT1/3/5 compressed formats
-- ⏳ **Phase 28.6**: Remove excessive debug logs
-- ⏳ **Phase 28.7**: Validate texture rendering in game menus
+- ✅ **Phase 051.4**: COMPLETE (Option 2 working)
+- ⏳ **Phase 051.5**: Extended testing with DXT1/3/5 compressed formats
+- ⏳ **Phase 051.6**: Remove excessive debug logs
+- ⏳ **Phase 051.7**: Validate texture rendering in game menus
 
 ### Conclusion
 
@@ -444,11 +444,11 @@ PHASE 28.4 REDESIGN SUCCESS: Texture 'TBBib.tga' loaded (ID=2906690560, 128x128,
 - Zero crashes, zero errors
 - **7/7 textures loading successfully to Metal backend** ✅
 
-**Phase 28.4 Status**: ✅ **COMPLETE** (October 17, 2025)
+**Phase 051.4 Status**: ✅ **COMPLETE** (October 17, 2025)
 
 
 ---
 
 **Status**: Awaiting decision on implementation approach (Option 1, 2, or 3)
 **Next Action**: Implement Option 2 - Post-DirectX texture interception
-**Priority**: HIGH - blocks Phase 28 completion
+**Priority**: HIGH - blocks Phase 051 completion

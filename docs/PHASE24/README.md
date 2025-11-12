@@ -1,11 +1,19 @@
-# Phase 23: Menu Interaction
+# Phase 24: Menu Interaction
 
-**Phase**: 23  
+**Phase**: 24  
 **Title**: Menu Interaction  
 **Area**: Menu System  
 **Scope**: SMALL  
 **Status**: not-started  
 **Dependencies**: Phase 05, Phase 22
+
+---
+
+## Quick reminders
+
+- Use `Fail fast` approach when testing new changes, if something is not working as expected, stop and investigate immediately;
+- Focus on finish `GeneralsXZH`, then backport to `GeneralsX`;
+- See `.github/instructions/project.instructions.md` for more specific details about above instructions.
 
 ---
 

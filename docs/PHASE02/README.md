@@ -1,11 +1,19 @@
-# Phase 01: SDL2 Window & Event Loop
+# Phase 02: SDL2 Window & Event Loop
 
-**Phase**: 01  
+**Phase**: 02  
 **Title**: SDL2 Window & Event Loop  
 **Area**: OS API Layer (win32_sdl_api_compat)  
 **Scope**: MEDIUM  
 **Status**: not-started  
 **Dependencies**: Phase 00, Phase 00.5
+
+---
+
+## Quick reminders
+
+- Use `Fail fast` approach when testing new changes, if something is not working as expected, stop and investigate immediately;
+- Focus on finish `GeneralsXZH`, then backport to `GeneralsX`;
+- See `.github/instructions/project.instructions.md` for more specific details about above instructions.
 
 ---
 

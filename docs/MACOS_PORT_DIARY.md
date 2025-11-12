@@ -29,11 +29,11 @@
    - PHASE28 (Physics/Textures) - VFS pattern + Asset system
 
 3. ✅ **CRITICAL_LESSONS.md Integration** (10 phases linked)
-   - Lesson 1 (VFS Pattern - Phase 28.4): PHASE02, PHASE06, PHASE11, PHASE12, PHASE28
-   - Lesson 2 (Exception Handling - Phase 33.9): PHASE33
-   - Lesson 3 (Memory Protections - Phase 35.6): PHASE33, PHASE35
-   - Lesson 4 (ARC/Global State - Phase 34.3): PHASE34, PHASE35
-   - Lesson 5 (Build System - Phase 48): PHASE40
+   - Lesson 1 (VFS Pattern - Phase 051.4): PHASE02, PHASE06, PHASE11, PHASE12, PHASE28
+   - Lesson 2 (Exception Handling - Phase 051.9): PHASE33
+   - Lesson 3 (Memory Protections - Phase 051.6): PHASE33, PHASE35
+   - Lesson 4 (ARC/Global State - Phase 051.3): PHASE34, PHASE35
+   - Lesson 5 (Build System - Phase 058): PHASE40
 
 4. ✅ **BUILD_TARGETS.md Integration** (2 phases + 1 dependency)
    - PHASE01 - Added explicit reference + PHASE00.5 dependency
@@ -107,7 +107,7 @@ PHASE01-40 (Implementation Phases) ✅
 8. ✅ **INDEX.md** (150+ lines) - Quick reference navigation
 9. ✅ **SUMMARY.txt** - Text format summary
 10. ✅ **BUILD_TARGETS.md** (400+ lines) - Target naming, build flags, deployment structure
-11. ✅ **ASSET_SYSTEM.md** (500+ lines) - .big files, VFS patterns, texture loading, Phase 28.4 discovery
+11. ✅ **ASSET_SYSTEM.md** (500+ lines) - .big files, VFS patterns, texture loading, Phase 051.4 discovery
 12. ✅ **CRITICAL_LESSONS.md** (500+ lines) - 5 critical bug patterns from previous phases
 13. ✅ **SETUP_ENVIRONMENT.md** (600+ lines) - Development environment setup, step-by-step guide
 
@@ -115,17 +115,17 @@ PHASE01-40 (Implementation Phases) ✅
 
 - ✅ 3-layer compatibility architecture with naming pattern `SOURCE_DEST_TYPE_COMPAT`
 - ✅ Build preset decisions (macos-arm64 primary, macos-x64 secondary with LOW priority)
-- ✅ Graphics backend decision: Vulkan/MoltenVK (Phase 39+), Metal legacy (Phase 27-37)
+- ✅ Graphics backend decision: Vulkan/MoltenVK (Phase 051+), Metal legacy (Phase 051-37)
 - ✅ Build system workflow with -j 4 parallelization and ccache optimization
 - ✅ Asset deployment strategy (symlinks from retail install)
 
 **Integration of Lessons Learned** (from 48 previous phases):
 
-1. ✅ **Lesson 1 (Phase 28.4)**: VFS Pattern - Post-DirectX interception documented in ASSET_SYSTEM.md
-2. ✅ **Lesson 2 (Phase 33.9)**: Exception Handling - Re-throw with context in CRITICAL_LESSONS.md
-3. ✅ **Lesson 3 (Phase 35.6)**: Memory Protections - Triple-validation pattern documented
-4. ✅ **Lesson 4 (Phase 34.3)**: ARC/Global State - macOS __strong markers documented
-5. ✅ **Lesson 5 (Phase 48)**: Build System - Always rm -rf && reconfigure documented
+1. ✅ **Lesson 1 (Phase 051.4)**: VFS Pattern - Post-DirectX interception documented in ASSET_SYSTEM.md
+2. ✅ **Lesson 2 (Phase 051.9)**: Exception Handling - Re-throw with context in CRITICAL_LESSONS.md
+3. ✅ **Lesson 3 (Phase 051.6)**: Memory Protections - Triple-validation pattern documented
+4. ✅ **Lesson 4 (Phase 051.3)**: ARC/Global State - macOS __strong markers documented
+5. ✅ **Lesson 5 (Phase 058)**: Build System - Always rm -rf && reconfigure documented
 
 **40-Phase Roadmap Structure** (created during earlier sessions):
 
@@ -201,7 +201,7 @@ USE_METAL=1 ./GeneralsXZH 2>&1 | tee logs/run.log
 
 ## Latest: November 6 Evening — **VALIDATION COMPLETE: METAL/OPENGL DISABLED, VULKAN-ONLY CONFIRMED** ✅✅✅✅
 
-### Session: Phase 48 Validation & Verification
+### Session: Phase 058 Validation & Verification
 
 **CRITICAL VALIDATION PASSED**: Comprehensive audit confirms NO old "artesanal" Metal/OpenGL code is executing.
 
@@ -258,13 +258,13 @@ Logs: 25.2 MB each run (full initialization)
 
 - Commit validation findings
 - Archive/cleanup Metal wrapper code if never to be re-enabled
-- Continue Phase 49 development with confidence in graphics stability
+- Continue Phase 059 development with confidence in graphics stability
 
 ---
 
 ## Previous: November 4 Evening — **RANDOM CRASH FIXED - 0% CRASH RATE ACHIEVED** ✅✅✅
 
-### Session: Phase 48 Implementation Crash Debugging
+### Session: Phase 058 Implementation Crash Debugging
 
 **CRITICAL ISSUE RESOLVED**: Random SIGSEGV crash during TheArchiveFileSystem initialization has been eliminated.
 
@@ -306,32 +306,32 @@ Logs: 25.2 MB each run (full initialization)
 
 **Status**:
 
-- ✅ **Crash eliminated** - binary now stable for Phase 48 implementation
+- ✅ **Crash eliminated** - binary now stable for Phase 058 implementation
 - ✅ **Initialization** - GetEngine()->init() completes successfully
 - ✅ **Graphics** - Metal backend rendering frames
-- ⏳ **Phase 48**: Ready to start Vulkan swapchain implementation (Task 1)
+- ⏳ **Phase 058**: Ready to start Vulkan swapchain implementation (Task 1)
 
 ---
 
 ## Previous: November 2 Evening — **PHASE 48 REORGANIZED & VULKAN DEFAULT SET** ✅✅
 
-### Session: Phase 48 Reorganization and Infrastructure Confirmation
+### Session: Phase 058 Reorganization and Infrastructure Confirmation
 
 **OBJECTIVES COMPLETED**:
 1. ✅ Confirmed Vulkan is **default backend** (USE_DXVK=ON in cmake/config-build.cmake line 11)
 2. ✅ Tested build with ONLY `cmake --preset macos-arm64` (no flags needed) → Vulkan runs by default
-3. ✅ **Phase 48 completely reorganized** into 3 prerequisite Vulkan graphics tasks
+3. ✅ **Phase 058 completely reorganized** into 3 prerequisite Vulkan graphics tasks
 
-**Phase 48 New Structure**:
+**Phase 058 New Structure**:
 
-Replaced generic "Minimal Playable Version" Phase 48 with **Vulkan Graphics Pipeline Foundation** (Pre-requisite for full Phase 48 integration):
+Replaced generic "Minimal Playable Version" Phase 058 with **Vulkan Graphics Pipeline Foundation** (Pre-requisite for full Phase 058 integration):
 
 - **PHASE48_OVERVIEW.md**: Master document explaining all 3 tasks and their relationships
 - **PHASE48_1_VULKAN_SWAPCHAIN.md**: VkSwapchainKHR creation, frame acquisition, presentation (1-2 days)
 - **PHASE48_2_GRAPHICS_PIPELINE.md**: Shader compilation to SPIR-V, render pass, graphics pipeline (2 days)
 - **PHASE48_3_FIRST_QUAD.md**: Command buffers, GPU sync, render colored quad to screen (1-2 days)
 
-**Sequence**: Task 1 → Task 2 → Task 3 → Original Phase 48 (main menu integration)
+**Sequence**: Task 1 → Task 2 → Task 3 → Original Phase 058 (main menu integration)
 
 **Code Organization**:
 - File locations clearly documented (graphics_backend_dxvk_*.cpp)
@@ -342,7 +342,7 @@ Replaced generic "Minimal Playable Version" Phase 48 with **Vulkan Graphics Pipe
 
 1. **Vulkan Already Default**: No code changes needed!
    - USE_DXVK=ON is default in cmake/config-build.cmake
-   - Message: "✅ DXVK/Vulkan graphics backend enabled (Phase 40+) - PRIMARY PATH"
+   - Message: "✅ DXVK/Vulkan graphics backend enabled (Phase 051+) - PRIMARY PATH"
 
 2. **Binary Confirms Vulkan Works**:
    ```
@@ -358,7 +358,7 @@ Replaced generic "Minimal Playable Version" Phase 48 with **Vulkan Graphics Pipe
 - Each task has acceptance criteria and testing approach
 - Code samples for all major Vulkan calls
 - Error handling patterns included
-- References to existing code patterns (Phase 40-47)
+- References to existing code patterns (Phase 051-47)
 
 **Status**: Ready for implementation phase
 - Task 1 (Swapchain): Not started, ready to implement
@@ -454,14 +454,14 @@ METAL: BeginFrame() - Render encoder created (0x70cffbca0)
 **PHASE 47 STATUS**: ✅ **ALL 8 STAGES COMPLETE** - Testing, Profiling, Optimization & Stabilization
 
 **Phases Complete**:
-- Phase 47.1: Test Infrastructure (TestRunner, macros, utilities) ✅
-- Phase 47.2: Graphics Unit Tests (22+ tests) ✅
-- Phase 47.3: Game Logic Unit Tests (18+ tests) ✅
-- Phase 47.4: Integration & Stress Tests (15+ tests) ✅
-- Phase 47.5: Profiling Systems (CPU, GPU, Memory) ✅
-- Phase 47.6: Bug Fixes & Stabilization (Validation, memory tracking) ✅
-- Phase 47.7: Performance Optimizations (Stress test 100+ units) ✅
-- Phase 47.8: Validation & Reporting (Complete) ✅
+- Phase 057.1: Test Infrastructure (TestRunner, macros, utilities) ✅
+- Phase 057.2: Graphics Unit Tests (22+ tests) ✅
+- Phase 057.3: Game Logic Unit Tests (18+ tests) ✅
+- Phase 057.4: Integration & Stress Tests (15+ tests) ✅
+- Phase 057.5: Profiling Systems (CPU, GPU, Memory) ✅
+- Phase 057.6: Bug Fixes & Stabilization (Validation, memory tracking) ✅
+- Phase 057.7: Performance Optimizations (Stress test 100+ units) ✅
+- Phase 057.8: Validation & Reporting (Complete) ✅
 
 **Complete Achievement**: ✅ Comprehensive testing and profiling infrastructure
 - Test framework: 1,443 lines of infrastructure
@@ -483,7 +483,7 @@ METAL: BeginFrame() - Render encoder created (0x70cffbca0)
 - `tests/run_tests.sh` - Test execution script
 - Documentation: PLANNING.md, STAGE1_TEST_INFRASTRUCTURE.md, STAGE1_COMPLETE.md
 
-### Session Summary: Phase 47 Stage 1
+### Session Summary: Phase 057 Stage 1
 
 **Duration**: ~1 hour  
 **Focus**: Test infrastructure foundation for all subsequent phases
@@ -515,7 +515,7 @@ METAL: BeginFrame() - Render encoder created (0x70cffbca0)
 4. **GPU Profiler** (Vulkan-ready)
    - Query pool infrastructure (1024 queries per pool)
    - `BeginQuery()` / `EndQuery()` interface
-   - Ready for VkQueryPool integration (Phase 39+)
+   - Ready for VkQueryPool integration (Phase 051+)
    - Statistics collection (total, min, max, average, samples)
    - Console + file reporting
 
@@ -542,19 +542,19 @@ METAL: BeginFrame() - Render encoder created (0x70cffbca0)
 - ✅ Example tests demonstrating framework usage
 
 **Integration Points Established**:
-- Graphics pipeline (Phase 40-44): Ready for texture/buffer tests
-- Game logic (Phase 45-46): Ready for GameObject/GameWorld tests
-- Vulkan backend (Phase 39+): GPU profiler ready for VkQueryPool integration
+- Graphics pipeline (Phase 051-44): Ready for texture/buffer tests
+- Game logic (Phase 055-46): Ready for GameObject/GameWorld tests
+- Vulkan backend (Phase 051+): GPU profiler ready for VkQueryPool integration
 
 ## Latest: November 1 Morning — **PHASE 46 COMPLETE** ✅✅✅
 
 **PHASE 46 STATUS**: ✅ **COMPLETE** - Game Logic Integration & Gameplay Connection
-- Phase 46.1: GameObject System (Transform + Health + Lifecycle) ✅
-- Phase 46.2: GameWorld Management (Object manager + Spatial queries) ✅
-- Phase 46.3: Game Loop Integration (Frame timing + Update/Render coordination) ✅
-- Phase 46.4: Input & Camera Control (Selection + Commands) ✅
-- Phase 46.5: Rendering Integration (Culling + Batching) ✅
-- Phase 46.6: Test Suite (15 comprehensive unit tests) ✅
+- Phase 056.1: GameObject System (Transform + Health + Lifecycle) ✅
+- Phase 056.2: GameWorld Management (Object manager + Spatial queries) ✅
+- Phase 056.3: Game Loop Integration (Frame timing + Update/Render coordination) ✅
+- Phase 056.4: Input & Camera Control (Selection + Commands) ✅
+- Phase 056.5: Rendering Integration (Culling + Batching) ✅
+- Phase 056.6: Test Suite (15 comprehensive unit tests) ✅
 
 **Build Status**: ✅ Success (0 errors, building at full preset)
 **Code Size**: 7,000+ lines across 11 files
@@ -562,7 +562,7 @@ METAL: BeginFrame() - Render encoder created (0x70cffbca0)
 **Commits**: 2 commits (04c5cffc: stages 1-4, c5071e28: stages 5-6)
 **Testing**: 15 unit tests framework + performance stress tests
 
-### Phase 46 Summary — Game Logic Integration & Gameplay Connection
+### Phase 056 Summary — Game Logic Integration & Gameplay Connection
 
 **PHASE 46 EXECUTION**: ✅ **6 STAGES COMPLETE** (Automatic Mode)
 
@@ -599,7 +599,7 @@ METAL: BeginFrame() - Render encoder created (0x70cffbca0)
    - Input handling: mouse clicks, keyboard hotkeys, drag operations
    - ScreenToWorldPosition conversion with ray casting
    - Command queue and deferred execution
-   - Integration with CameraInputController from Phase 45
+   - Integration with CameraInputController from Phase 055
 
 5. **Stage 5: Rendering Integration** (game_renderer.h/cpp - 600 lines total)
    - Frustum culling system (6-plane intersection tests)
@@ -644,10 +644,10 @@ METAL: BeginFrame() - Render encoder created (0x70cffbca0)
 - tests/test_gameobject.cpp (350 lines)
 
 **Integration Points**:
-- Phase 45 Camera System: Camera selection, frustum culling, ScreenToWorldPosition
-- Phase 44 Material System: Material binding for render batching
-- Phase 43 Render Loop: GameObject rendering with update/render phases
-- Game logic: Ready for pathfinding, physics, and advanced gameplay (Phase 47+)
+- Phase 055 Camera System: Camera selection, frustum culling, ScreenToWorldPosition
+- Phase 054 Material System: Material binding for render batching
+- Phase 053 Render Loop: GameObject rendering with update/render phases
+- Game logic: Ready for pathfinding, physics, and advanced gameplay (Phase 057+)
 
 **Performance**:
 - GameObject.Update(): < 0.1ms per 1000 objects
@@ -658,10 +658,10 @@ METAL: BeginFrame() - Render encoder created (0x70cffbca0)
 
 **Scaling**:
 - Linear spatial search: Works up to 5,000 objects
-- Phase 47 optimization: Quadtree for > 10,000 objects
+- Phase 057 optimization: Quadtree for > 10,000 objects
 - Frustum culling: Significant GPU/CPU savings at any scale
 
-**Documentation**: Complete Phase 46 documentation in docs/PHASE46/COMPLETE.md
+**Documentation**: Complete Phase 056 documentation in docs/PHASE46/COMPLETE.md
 
 **Git Commits**: 
 - 04c5cffc: "feat(phase-46): implement game logic integration (stages 1-4)" - 3,010 insertions
@@ -672,11 +672,11 @@ METAL: BeginFrame() - Render encoder created (0x70cffbca0)
 ## October 31 Night — **PHASE 45 COMPLETE** ✅✅✅
 
 **PHASE 45 STATUS**: ✅ **COMPLETE** - Camera System & View Transformation
-- Phase 45.1: Camera Class (Core matrices) ✅
-- Phase 45.2: Euler & Quaternions (Gimbal lock prevention) ✅
-- Phase 45.3: Camera Modes (4 modes + manager) ✅
-- Phase 45.4: Render Integration (GPU uniform buffers) ✅
-- Phase 45.5: Controls & Animation (Smooth transitions) ✅
+- Phase 055.1: Camera Class (Core matrices) ✅
+- Phase 055.2: Euler & Quaternions (Gimbal lock prevention) ✅
+- Phase 055.3: Camera Modes (4 modes + manager) ✅
+- Phase 055.4: Render Integration (GPU uniform buffers) ✅
+- Phase 055.5: Controls & Animation (Smooth transitions) ✅
 
 **Build Status**: ✅ Success (0 errors, ~130 warnings)
 **Code Size**: 4,379 lines across 11 files
@@ -684,7 +684,7 @@ METAL: BeginFrame() - Render encoder created (0x70cffbca0)
 **Commits**: 1 commit (a9a53de3)
 **Testing**: 20 unit tests framework + comprehensive documentation
 
-### Phase 45 Summary — Camera System & View Transformation
+### Phase 055 Summary — Camera System & View Transformation
 
 **PHASE 45 EXECUTION**: ✅ **5 STAGES COMPLETE** (Automatic Mode)
 
@@ -720,7 +720,7 @@ METAL: BeginFrame() - Render encoder created (0x70cffbca0)
    - Frustum culling: Point, sphere, box intersection tests
    - Viewport management with dynamic aspect ratio
    - Screen space utilities: ProjectToScreen, CastRay
-   - Integration with Phase 44 Material System (descriptor sets)
+   - Integration with Phase 054 Material System (descriptor sets)
 
 5. **Stage 5: Controls & Animation** (camera_input.h/cpp - 1,300 lines total)
    - 20 input actions with state tracking
@@ -752,9 +752,9 @@ METAL: BeginFrame() - Render encoder created (0x70cffbca0)
 - tests/test_camera.cpp (250 lines)
 
 **Integration Points**:
-- Phase 44 Material System: Camera uniform buffers in descriptor sets
-- Phase 43 Render Loop: Camera updates each frame before rendering
-- Phase 46 Game Logic: Frustum culling for object visibility
+- Phase 054 Material System: Camera uniform buffers in descriptor sets
+- Phase 053 Render Loop: Camera updates each frame before rendering
+- Phase 056 Game Logic: Frustum culling for object visibility
 - Input System: All keyboard/mouse events routed through CameraInputController
 
 **Performance**:
@@ -763,7 +763,7 @@ METAL: BeginFrame() - Render encoder created (0x70cffbca0)
 - Memory per camera: ~5KB CPU + 160 bytes GPU per frame
 - **Total GPU bandwidth**: < 1KB per frame (negligible)
 
-**Documentation**: Complete Phase 45 documentation in docs/PHASE45/COMPLETE.md
+**Documentation**: Complete Phase 055 documentation in docs/PHASE45/COMPLETE.md
 
 **Git Commit**: a9a53de3
 - Message: "feat(phase-45): complete camera system and view transformation implementation"
@@ -774,13 +774,13 @@ METAL: BeginFrame() - Render encoder created (0x70cffbca0)
 ## Previous: October 31 Night — **PHASE 44 COMPLETE** ✅✅✅
 
 **PHASE 44 STATUS**: ✅ **COMPLETE** - Full Graphics Pipeline Stack
-- Phase 44.1: Graphics Pipeline ✅
-- Phase 44.2: Vertex Buffers (16MB) ✅
-- Phase 44.3: Index Buffers (16MB) ✅
-- Phase 44.4: Draw Commands ✅
-- Phase 44.5.1: Material Descriptor Sets ✅
-- Phase 44.5.2: Shader Parameter Binding ✅
-- Phase 44.5.3: Material Cache System ✅
+- Phase 054.1: Graphics Pipeline ✅
+- Phase 054.2: Vertex Buffers (16MB) ✅
+- Phase 054.3: Index Buffers (16MB) ✅
+- Phase 054.4: Draw Commands ✅
+- Phase 054.5.1: Material Descriptor Sets ✅
+- Phase 054.5.2: Shader Parameter Binding ✅
+- Phase 054.5.3: Material Cache System ✅
 
 **Build Status**: ✅ Success (0 errors, ~130 warnings)
 **Binary**: 14MB GeneralsXZH (macOS ARM64)
@@ -801,15 +801,15 @@ METAL: BeginFrame() - Render encoder created (0x70cffbca0)
 - Descriptor pool allocation for 1000 material descriptor sets
 - Descriptor set binding to command buffers for frame rendering
 - Texture sampler configuration for material textures
-- Integration with Phase 44.1 graphics pipeline
+- Integration with Phase 054.1 graphics pipeline
 
-**Session Timeline**: ~45 minutes (Phase 44.5.1 implementation + documentation)
+**Session Timeline**: ~45 minutes (Phase 054.5.1 implementation + documentation)
 
 **Commits**: 1 commit (06f52e4e)
 
 **Build Status**: ✅ Compilation successful, 0 errors, ~130 non-critical warnings
 
-### Phase 44.5.1 Complete Achievements — Material Descriptor Sets
+### Phase 054.5.1 Complete Achievements — Material Descriptor Sets
 
 **Implemented Operations**:
 
@@ -841,9 +841,9 @@ METAL: BeginFrame() - Render encoder created (0x70cffbca0)
 
 5. **BindMaterialDescriptorSet()** ✅
    - Bind descriptor set to command buffer
-   - Integration with Phase 44.1 pipeline layout
+   - Integration with Phase 054.1 pipeline layout
    - Proper dynamic offset handling (0 offsets for static descriptors)
-   - Called before DrawIndexed in Phase 44.4 draw sequence
+   - Called before DrawIndexed in Phase 054.4 draw sequence
 
 6. **Cleanup Functions** ✅
    - DestroyMaterialDescriptorSetLayout()
@@ -866,13 +866,13 @@ METAL: BeginFrame() - Render encoder created (0x70cffbca0)
 - Format conversion utilities (D3D → Vulkan)
 - Production-ready texture API
 
-**Session Timeline**: ~1.5 hours (Phase 42.1 implementation)
+**Session Timeline**: ~1.5 hours (Phase 052.1 implementation)
 
 **Commits**: 1 commit (a01f1234)
 
 **Build Status**: ✅ Compilation successful, 0 errors, 130 non-critical warnings
 
-### Phase 42.1 Complete Achievements — Texture Management
+### Phase 052.1 Complete Achievements — Texture Management
 
 **Implemented Operations**:
 
@@ -933,14 +933,14 @@ METAL: BeginFrame() - Render encoder created (0x70cffbca0)
 - IGraphicsBackend::CreateTexture/DestroyTexture
 - IGraphicsBackend::LockTexture/UnlockTexture
 - IGraphicsBackend::SetTexture/GetTexture
-- Pipeline descriptor binding (Phase 41 integration ready)
+- Pipeline descriptor binding (Phase 051 integration ready)
 
-### Next Steps (Phase 42.2-42.5)
+### Next Steps (Phase 052.2-42.5)
 
-Phase 42.2: DDS Format Conversion (BC3 decompression)
-Phase 42.3: TGA Format Loader
-Phase 42.4: Mipmap Generation
-Phase 42.5: Texture Caching System
+Phase 052.2: DDS Format Conversion (BC3 decompression)
+Phase 052.3: TGA Format Loader
+Phase 052.4: Mipmap Generation
+Phase 052.5: Texture Caching System
 
 ---
 
@@ -956,13 +956,13 @@ Phase 42.5: Texture Caching System
 - Complete test coverage with colored triangle test suite
 - Zero errors, 0 crashes, production-ready code
 
-**Session Timeline**: ~2.5 hours (Complete Phase 41)
+**Session Timeline**: ~2.5 hours (Complete Phase 051)
 
 **Commits**: 4 commits (2a06bdce, f51ae2d7, 6ad46347, + this session)
 
 **Build Status**: ✅ Compilation successful, 0 errors, non-critical warnings only
 
-### Phase 41 Complete Achievements
+### Phase 051 Complete Achievements
 
 **Stage 1: Drawing Operation Stubs** ✅ COMPLETE
 
@@ -1058,10 +1058,10 @@ Phase 42.5: Texture Caching System
 
 ### Commits This Session
 
-1. **2a06bdce**: Phase 41.1 - Drawing operations and render state stubs
-2. **f51ae2d7**: Phase 41.2 & 41.3 - Vulkan draw commands and state mapping helpers
-3. **6ad46347**: Phase 41.6 - Colored triangle rendering test suite
-4. **Pending**: Phase 41 completion documentation
+1. **2a06bdce**: Phase 051.1 - Drawing operations and render state stubs
+2. **f51ae2d7**: Phase 051.2 & 41.3 - Vulkan draw commands and state mapping helpers
+3. **6ad46347**: Phase 051.6 - Colored triangle rendering test suite
+4. **Pending**: Phase 051 completion documentation
 
 ### Performance & Stability
 
@@ -1072,7 +1072,7 @@ Phase 42.5: Texture Caching System
 ✅ **Memory**: Proper resource cleanup in vertex/index buffers
 ✅ **Command Buffers**: Recording and submission working correctly
 
-### Next Phase: Phase 42 - Texture System
+### Next Phase: Phase 052 - Texture System
 
 **Objectives**:
 - Implement texture creation and destruction
@@ -1083,7 +1083,7 @@ Phase 42.5: Texture Caching System
 
 **Estimated Duration**: 2-3 days
 
-**Prerequisites**: Phase 41 ✅ Complete
+**Prerequisites**: Phase 051 ✅ Complete
 
 ---
 
@@ -1098,7 +1098,7 @@ Phase 42.5: Texture Caching System
 - `m_currentVertexBuffer`, `m_currentIndexBuffer`
 - `m_activeLights[MAX_LIGHTS]`
 
-### Next Steps: Phase 41 Stage 2
+### Next Steps: Phase 051 Stage 2
 
 #### Vulkan Pipeline Integration
 
@@ -1131,7 +1131,7 @@ Phase 42.5: Texture Caching System
 
 **Commits**: 2 commits (cfc54cd8 - Backend Enable, 2bf4969b - Stub Removal)
 
-### Phase 40 Milestones
+### Phase 051 Milestones
 
 **40.1: Backend Selection Fix** ✅ COMPLETE
 
@@ -1176,7 +1176,7 @@ Backend: Vulkan/MoltenVK (macOS) ✅
 - Linking: ✅ All Vulkan symbols resolved
 - Runtime: ✅ Game initializing without crashes
 
-### Next Steps (Phase 40+ Continuation)
+### Next Steps (Phase 051+ Continuation)
 
 - Implement remaining graphics operations (drawing, textures)
 - Test render loop and frame presentation
@@ -1195,9 +1195,9 @@ Backend: Vulkan/MoltenVK (macOS) ✅
 
 **Session Timeline**: ~4 hours (Automatic implementation from evening through completion)
 **Code Generated**: 5,272 lines of implementation + 800+ lines of documentation
-**Total Phase 39.2 Commits**: 4 commits (271ec0ee, 0d1491ca, e4236b9c, plus earlier 44b0cae9, 7b047131)
+**Total Phase 051.2 Commits**: 4 commits (271ec0ee, 0d1491ca, e4236b9c, plus earlier 44b0cae9, 7b047131)
 
-### Phase 39.2 Sub-Phases Status
+### Phase 051.2 Sub-Phases Status
 
 **39.2.1: Header File** ✅ COMPLETE
 - File: `graphics_backend_dxvk.h` (702 lines)
@@ -1262,7 +1262,7 @@ Backend: Vulkan/MoltenVK (macOS) ✅
 | CMake/Config | 70 | e4236b9c |
 | **Total Implementation** | **5,272** | |
 | Documentation | 800+ | |
-| **Total Phase 39.2** | **6,072+** | |
+| **Total Phase 051.2** | **6,072+** | |
 
 ### Key Technical Achievements
 
@@ -1305,7 +1305,7 @@ Backend: Vulkan/MoltenVK (macOS) ✅
    - Comprehensive sub-phase completion summary
    - All 47 DirectX methods mapped
    - Code statistics and architecture
-   - Ready for Phase 39.4
+   - Ready for Phase 051.4
 
 ### Git Commits This Session
 
@@ -1330,27 +1330,27 @@ cmake --build build/macos-arm64 --target GeneralsXZH -j 4
 - Format conversion tests
 
 **Future Phases**:
-- Phase 39.5: Shader system
-- Phase 40: Graphics pipeline optimization
-- Phase 41: Performance profiling
+- Phase 051.5: Shader system
+- Phase 051: Graphics pipeline optimization
+- Phase 051: Performance profiling
 
-### Known Limitations (Phase 40+)
+### Known Limitations (Phase 051+)
 
-- Descriptor sets for textures/samplers (Phase 40)
-- Dynamic render state (blending, depth/stencil) (Phase 40)
+- Descriptor sets for textures/samplers (Phase 051)
+- Dynamic render state (blending, depth/stencil) (Phase 051)
 - Compute shaders (Future)
 - Ray tracing (Future)
 
 ### Session Conclusion
 
-**Phase 39.2 is production-ready and fully tested**. The Vulkan backend with MoltenVK provides:
+**Phase 051.2 is production-ready and fully tested**. The Vulkan backend with MoltenVK provides:
 - ✅ Cross-platform graphics abstraction
 - ✅ DirectX 8 → Vulkan 1.4 compatibility
 - ✅ MoltenVK best practices compliance
 - ✅ Complete texture/buffer lifecycle
 - ✅ Production-quality error handling
 
-**Ready for Phase 39.4**: Integration testing and performance validation.
+**Ready for Phase 051.4**: Integration testing and performance validation.
 
 ---
 
@@ -1358,26 +1358,26 @@ cmake --build build/macos-arm64 --target GeneralsXZH -j 4
 
 ### Summary
 
-**PHASE 38.6 STATUS**: ✅ **COMPLETE** (Vulkan analysis + Phase 39 planning documented)
+**PHASE 38.6 STATUS**: ✅ **COMPLETE** (Vulkan analysis + Phase 051 planning documented)
 
-**Major Achievement**: Comprehensive Vulkan SDK analysis and detailed Phase 39-40 roadmap
+**Major Achievement**: Comprehensive Vulkan SDK analysis and detailed Phase 051-40 roadmap
 
 **Key Findings**:
 - ✅ Vulkan SDK 1.4.328.1 confirmed working on macOS ARM64
 - ✅ All 47 IGraphicsBackend methods map cleanly to Vulkan concepts
 - ✅ DXVK compilation on macOS ARM64 is feasible
-- ✅ Phase 38 abstraction enables seamless backend swapping
-- ✅ Phase 39 timeline: ~18-26 hours (4-5 days focused work)
+- ✅ Phase 051 abstraction enables seamless backend swapping
+- ✅ Phase 051 timeline: ~18-26 hours (4-5 days focused work)
 
-**Phase 38.6 Analysis Document**: `docs/PHASE38/PHASE38_6_VULKAN_ANALYSIS.md`
+**Phase 051.6 Analysis Document**: `docs/PHASE38/PHASE38_6_VULKAN_ANALYSIS.md`
 - Part 1: Vulkan SDK validation (vkcube, vkconfig working)
 - Part 2: DirectX 8 → Vulkan architecture mapping
 - Part 3: DXVK integration strategy (compilation options)
-- Part 4: Phase 39 detailed 5-phase implementation plan
+- Part 4: Phase 051 detailed 5-phase implementation plan
 - Part 5: Risk assessment & contingencies
 - Part 6: Validation checklist
 
-**Phase 38.6 Key Documents Referenced**:
+**Phase 051.6 Key Documents Referenced**:
 - `docs/Vulkan/README.md` - Vulkan SDK setup guide
 - `docs/Vulkan/VulkanSDK-Mac-Docs-1.4.328.1/` - 234MB documentation (gitignored)
 - Getting started guide, best practices, layer user guide
@@ -1386,20 +1386,20 @@ cmake --build build/macos-arm64 --target GeneralsXZH -j 4
 - DirectX 8 Device model maps to VkDevice + VkQueue ✅
 - All render states translate to Vulkan pipeline ✅
 - Texture/Buffer management compatible with Vulkan model ✅
-- Phase 38 interface needs NO changes for Vulkan ✅
+- Phase 051 interface needs NO changes for Vulkan ✅
 
-**Phase 39 Implementation Plan**:
-- Phase 39.1: DXVK Compilation & Setup (4-6 hrs)
-- Phase 39.2: DXVKGraphicsBackend Implementation (6-8 hrs)
-- Phase 39.3: CMake Integration (1-2 hrs)
-- Phase 39.4: Testing & Optimization (2-3 hrs)
-- Phase 39.5: Documentation & Fallback (1-2 hrs)
+**Phase 051 Implementation Plan**:
+- Phase 051.1: DXVK Compilation & Setup (4-6 hrs)
+- Phase 051.2: DXVKGraphicsBackend Implementation (6-8 hrs)
+- Phase 051.3: CMake Integration (1-2 hrs)
+- Phase 051.4: Testing & Optimization (2-3 hrs)
+- Phase 051.5: Documentation & Fallback (1-2 hrs)
 - **Total**: ~18-26 hours
 
 **Next Action**: 
 1. Read Vulkan SDK docs (getting_started.html, best_practices.html)
-2. Review Phase 38.6 analysis document
-3. Begin Phase 39.1: DXVK compilation
+2. Review Phase 051.6 analysis document
+3. Begin Phase 051.1: DXVK compilation
 
 ---
 
@@ -1409,30 +1409,30 @@ cmake --build build/macos-arm64 --target GeneralsXZH -j 4
 
 **PHASE 38 STATUS**: ✅ **COMPLETE** (Framework complete, Metal hang documented)
 
-**Major Achievement**: Graphics backend abstraction layer ready for Phase 39 DXVK integration
+**Major Achievement**: Graphics backend abstraction layer ready for Phase 051 DXVK integration
 
 **Scope Clarification**: 
-- Phase 38 = Create abstraction interface for existing backends ✅ DONE
-- Phase 39 = Implement new DXVK/MoltenVK backend 🟡 READY
-- Metal hang = Pre-existing Phase 27-37 issue (will be solved by Phase 39 different rendering pipeline)
+- Phase 051 = Create abstraction interface for existing backends ✅ DONE
+- Phase 051 = Implement new DXVK/MoltenVK backend 🟡 READY
+- Metal hang = Pre-existing Phase 051-37 issue (will be solved by Phase 051 different rendering pipeline)
 
 **Commits**:
-- e80539c0: Phase 38.1 - IGraphicsBackend interface (47 methods)
-- 664f671b: Phase 38.2 - LegacyGraphicsBackend wrapper
-- 136c04dd: Phase 38.3 - GameMain integration
-- 91d5d9de: Phase 38.4 - Real delegation (376 insertions)
-- e944de50: Phase 38.4 - Complete forwarding to DX8Wrapper
-- 8e4f9a23: Phase 38.5 - Dependency analysis (Phase 39 requirements)
-- e9966dbd: Phase 38 COMPLETE - Documentation + Metal autoreleasepool fix
+- e80539c0: Phase 051.1 - IGraphicsBackend interface (47 methods)
+- 664f671b: Phase 051.2 - LegacyGraphicsBackend wrapper
+- 136c04dd: Phase 051.3 - GameMain integration
+- 91d5d9de: Phase 051.4 - Real delegation (376 insertions)
+- e944de50: Phase 051.4 - Complete forwarding to DX8Wrapper
+- 8e4f9a23: Phase 051.5 - Dependency analysis (Phase 051 requirements)
+- e9966dbd: Phase 051 COMPLETE - Documentation + Metal autoreleasepool fix
 
-**Phase 38.5 Testing Results**:
+**Phase 051.5 Testing Results**:
 - ✅ Game initialization successful
-- ✅ Graphics backend delegates correctly to Phase 27-37 Metal
+- ✅ Graphics backend delegates correctly to Phase 051-37 Metal
 - ✅ UI rendered to screen
 - ✅ Delegation layer transparent to game code
-- ⚠️ Metal hang on extended runs (pre-existing, Phase 27-37 driver issue)
+- ⚠️ Metal hang on extended runs (pre-existing, Phase 051-37 driver issue)
 
-**Phase 38 Metrics**:
+**Phase 051 Metrics**:
 - Interface methods: 47/47 ✅
 - Real delegation code: 376 lines ✅
 - Compilation errors: 0 ✅
@@ -1440,14 +1440,14 @@ cmake --build build/macos-arm64 --target GeneralsXZH -j 4
 - Performance overhead: <1% ✅
 - Test success rate: 100% (initialization) ✅
 
-**Why Phase 38 + Skip Metal Hang?**:
-- Phase 38 proves abstraction works (✅ verified)
-- Metal hang is Phase 27-37 legacy issue (not Phase 38)
-- Phase 39 DXVK will use completely different rendering (Vulkan layer)
-- Metal hang becomes irrelevant once Phase 39 ships
-- No point fixing Metal when Phase 39 replaces it
+**Why Phase 051 + Skip Metal Hang?**:
+- Phase 051 proves abstraction works (✅ verified)
+- Metal hang is Phase 051-37 legacy issue (not Phase 051)
+- Phase 051 DXVK will use completely different rendering (Vulkan layer)
+- Metal hang becomes irrelevant once Phase 051 ships
+- No point fixing Metal when Phase 051 replaces it
 
-**NEXT PHASE: Phase 39 - DXVK/MoltenVK Backend** 🚀
+**NEXT PHASE: Phase 051 - DXVK/MoltenVK Backend** 🚀
 - Install DXVK, MoltenVK via Homebrew
 - Create DXVKGraphicsBackend class (implements IGraphicsBackend)
 - Test with `USE_DXVK=1` environment variable
@@ -1459,16 +1459,16 @@ cmake --build build/macos-arm64 --target GeneralsXZH -j 4
 
 **Project Name**: 🎯 **GeneralsX** (formerly Command & Conquer: Generals)
 
-**Port Status**: � **Phase 38.1 STARTED - Graphics Backend Abstraction** (October 29, 2025)  
+**Port Status**: � **Phase 051.1 STARTED - Graphics Backend Abstraction** (October 29, 2025)  
 **Previous Status**: 🚧 **DECISION GATE - Architecture Approved** (Oct 29 AM)  
-**Original Status**: ⚠️ **Phase 37.5 – Metal Texture Handle Population** 🎬 (ARCHIVED)  
-**Current Focus**: **Phase 38.1 Complete - Interface created and compiling**
+**Original Status**: ⚠️ **Phase 051.5 – Metal Texture Handle Population** 🎬 (ARCHIVED)  
+**Current Focus**: **Phase 051.1 Complete - Interface created and compiling**
 
-## Latest Update (October 29 Evening) — Phase 38.1 Graphics Backend Interface Complete ✅
+## Latest Update (October 29 Evening) — Phase 051.1 Graphics Backend Interface Complete ✅
 
 ### Summary
 
-- **DXVK ROADMAP APPROVED** - Switching from Phase 27-37 (Metal hangs) to Phase 38-50 (DXVK proven)
+- **DXVK ROADMAP APPROVED** - Switching from Phase 051-37 (Metal hangs) to Phase 051-50 (DXVK proven)
 - **PHASE 38.1 COMPLETE** ✅
   - Created: `Core/Libraries/Source/WWVegas/WW3D2/graphics_backend.h`
   - Interface: `IGraphicsBackend` with 47 virtual methods
@@ -1501,11 +1501,11 @@ cmake --build build/macos-arm64 --target GeneralsXZH -j 4
 ✅ No compilation errors from new header
 ```
 
-### Next: Phase 38.2 (Tomorrow)
+### Next: Phase 051.2 (Tomorrow)
 
 Create `LegacyGraphicsBackend` that:
 - Implements `IGraphicsBackend` interface
-- Delegates all calls to existing Phase 27-37 code
+- Delegates all calls to existing Phase 051-37 code
 - No logic changes - pure delegation
 - Enables `-DUSE_DXVK=OFF` to work perfectly
 
@@ -1522,15 +1522,15 @@ Create `LegacyGraphicsBackend` that:
   - Alternative to Phases 27-37 custom Metal/OpenGL approach
 
 - **DECISION GATE DOCUMENT**: `docs/DECISION_GATE_DXVK.md`
-  - Compares Phase 27-37 (Custom) vs Phase 38-50 (DXVK)
+  - Compares Phase 051-37 (Custom) vs Phase 051-50 (DXVK)
   - Risk analysis and rollback strategy
   - Approval matrix and stakeholder questions
   - Status: **AWAITING YOUR DECISION**
 
 ### Why This Pivot?
 
-**Phase 37 Status: BLOCKED**
-- Metal texture system implementation complete (Phase 37.5)
+**Phase 051 Status: BLOCKED**
+- Metal texture system implementation complete (Phase 051.5)
 - BUT: Game still shows blue screen (no textures visible)
 - OR: Metal driver crashes (AGXMetal13_3 error)
 - Root issue: Custom graphics abstraction too complex for 1 developer
@@ -1545,19 +1545,19 @@ Create `LegacyGraphicsBackend` that:
 
 | Approach | Status | Timeline | Next Milestone |
 |----------|--------|----------|-----------------|
-| **Phase 27-37 (Current)** | BLOCKED | 6+ weeks | Unknown (Phase 37 hangs) |
-| **Phase 38-50 (DXVK)** | PLANNED | **4-6 weeks** | **PLAYABLE GAME** |
+| **Phase 051-37 (Current)** | BLOCKED | 6+ weeks | Unknown (Phase 051 hangs) |
+| **Phase 051-50 (DXVK)** | PLANNED | **4-6 weeks** | **PLAYABLE GAME** |
 
-### What Happens to Phase 37 Work?
+### What Happens to Phase 051 Work?
 
 **If DXVK Approved**:
-- Phase 27-37 archived to `docs/metal_port/`
+- Phase 051-37 archived to `docs/metal_port/`
 - All code preserved in git history
 - Can rollback if DXVK fails
-- Clean fresh start with Phase 38
+- Clean fresh start with Phase 051
 
 **If DXVK Rejected**:
-- Continue Phase 37 texture debugging
+- Continue Phase 051 texture debugging
 - Additional 2-3 weeks on unknown issues
 - Higher risk of further delays
 
@@ -1565,7 +1565,7 @@ Create `LegacyGraphicsBackend` that:
 
 **READ**: `docs/DECISION_GATE_DXVK.md` (Risk analysis, timeline, Q&A)  
 **READ**: `docs/PHASE_ROADMAP_V2.md` (Full DXVK architecture & phases)  
-**DECIDE**: Approve Phase 38-50 or Continue Phase 37?
+**DECIDE**: Approve Phase 051-50 or Continue Phase 051?
 
 To approve:
 ```bash
@@ -1576,20 +1576,20 @@ To approve:
 
 ---
 
-## Previous Update (October 28, 2025) — Phase 37.5 Metal texture handle population ✅
+## Previous Update (October 28, 2025) — Phase 051.5 Metal texture handle population ✅
 
 ### Summary
 
-- **Phase 37.4 Complete**: Real Metal texture binding implemented and tested (commit 1607174d)
+- **Phase 051.4 Complete**: Real Metal texture binding implemented and tested (commit 1607174d)
   - Replaced placeholder `GX::MetalWrapper::BindTexture()` stub with actual binding calls
   - Runtime: 20+ seconds stable without crashes
   
-- **Phase 37.5 Discovery**: Critical issue found - MetalTexture member was NEVER populated
+- **Phase 051.5 Discovery**: Critical issue found - MetalTexture member was NEVER populated
   - Root cause: TextureCache creates Metal textures internally but doesn't expose pointers
   - MetalTexture stayed NULL, causing Apply() to fallback to OpenGL (GLTexture)
   - This prevented actual Metal texture binding despite code being in place
 
-- **Phase 37.5 Solution Implemented**: Populate MetalTexture handle in Apply()
+- **Phase 051.5 Solution Implemented**: Populate MetalTexture handle in Apply()
   - Store GL texture ID as Metal handle (both created from same pixel data in TextureCache)
   - Applied to ALL four texture classes (TextureClass, ZTextureClass, CubeTextureClass, VolumeTextureClass)
   - Moved population code OUTSIDE if(GLTexture==0) condition to catch cached textures
@@ -1612,7 +1612,7 @@ extern bool g_useMetalBackend;
 if (g_useMetalBackend && GLTexture != 0 && MetalTexture == NULL) {
     // Store GL texture ID as Metal handle
     MetalTexture = (void*)(uintptr_t)GLTexture;
-    printf("Phase 37.5: Metal handle populated (GL_ID=%u→Metal_ID=%p)\n", GLTexture, MetalTexture);
+    printf("Phase 051.5: Metal handle populated (GL_ID=%u→Metal_ID=%p)\n", GLTexture, MetalTexture);
 }
 #endif
 ```
@@ -1628,14 +1628,14 @@ if (g_useMetalBackend && GLTexture != 0 && MetalTexture == NULL) {
 
 - Build: ✅ Success (commit 4215f608)
 - Runtime: Pending full validation (texture visibility test needed)
-- Expected: "Phase 37.5: Metal handle populated" messages in logs during texture loading
+- Expected: "Phase 051.5: Metal handle populated" messages in logs during texture loading
 - Next: Verify textures render in viewport instead of blue screen
 
 ### Context
 
-- Follows Phase 37.4 real Metal binding implementation
-- Phase 37 focuses on making Metal texture system end-to-end functional
-- Phase 38 will address texture rendering quality and filtering
+- Follows Phase 051.4 real Metal binding implementation
+- Phase 051 focuses on making Metal texture system end-to-end functional
+- Phase 051 will address texture rendering quality and filtering
 
 
 
@@ -1662,7 +1662,7 @@ static bool s_imeDisabled = false;
 if (!s_imeDisabled) {
    SDL_StopTextInput();
    s_imeDisabled = true;
-   printf("Phase 35.6: SDL text input disabled to prevent macOS IME crashes\n");
+   printf("Phase 051.6: SDL text input disabled to prevent macOS IME crashes\n");
 }
 ```
 
@@ -1675,7 +1675,7 @@ Build/Runtime Verification
 
 Context and Status
 
-- Follows complete rollback of Phase 35.6 memory "optimization" (protections restored in GameMemory.cpp)
+- Follows complete rollback of Phase 051.6 memory "optimization" (protections restored in GameMemory.cpp)
 - Confirms the 5-step Metal crash sequence is resolved (shader buffer index, SDL_MetalView lifecycle, pipeline validation, NSEventThread validation)
 - This update addresses input/IME stability; rendering stability remains strong
 
@@ -1696,13 +1696,13 @@ METAL: BeginFrame()
 EMERGENCY EXIT: ESC pressed - quitting immediately
 ```
 
-## Latest Update (October 26, 2025) — Phase 35.6: COMPLETE ROLLBACK ❌
+## Latest Update (October 26, 2025) — Phase 051.6: COMPLETE ROLLBACK ❌
 
-**CRITICAL CRASH**: Phase 35.6 caused instant crash in production - **IMMEDIATE ROLLBACK EXECUTED**
+**CRITICAL CRASH**: Phase 051.6 caused instant crash in production - **IMMEDIATE ROLLBACK EXECUTED**
 
 ### Incident Timeline
 
-**17:00-19:00**: Phase 35.6 implemented and deployed (memory protection optimization)  
+**17:00-19:00**: Phase 051.6 implemented and deployed (memory protection optimization)  
 **19:28**: User executes game → **INSTANT CRASH** (<1 minute of execution)  
 **19:33**: Complete rollback implemented, compiled, and deployed  
 
@@ -1722,7 +1722,7 @@ Call Stack:     StdBIGFileSystem::openArchiveFile() → AsciiString::operator=()
 - Bytes `0x001c0001` = Garbage/invalid offset  
 - **Conclusion**: `m_data` pointed to already-freed memory containing ASCII garbage
 
-### Why Phase 35.6 Was WRONG
+### Why Phase 051.6 Was WRONG
 
 **False Premise**:
 > "Triple validations cause overhead → race conditions → intermittent segfaults"
@@ -1738,14 +1738,14 @@ Call Stack:     StdBIGFileSystem::openArchiveFile() → AsciiString::operator=()
 ```
 AsciiString::releaseBuffer()
   ↓
-TheDynamicMemoryAllocator->freeBytes(m_data)  ← Phase 35.6 removed validation here ❌
+TheDynamicMemoryAllocator->freeBytes(m_data)  ← Phase 051.6 removed validation here ❌
   ↓
-recoverBlockFromUserData(m_data)              ← Phase 35.6 removed validation here ❌
+recoverBlockFromUserData(m_data)              ← Phase 051.6 removed validation here ❌
   ↓
 CRASH: pointer arithmetic with 0x6e646461001c0001
 ```
 
-**If protections were active** (Phase 30.6):
+**If protections were active** (Phase 051.6):
 
 - `freeBytes()` would have detected ASCII pointer: `isValidMemoryPointer(0x6e646461001c0001) → false`
 - Silent return (no crash)
@@ -1780,14 +1780,14 @@ CRASH: pointer arithmetic with 0x6e646461001c0001
 
 **Build**: ✅ Compiled successfully (828/828 files)  
 **Deploy**: ✅ Executable deployed (19:33)  
-**Protections**: ✅ ALL restored (Phase 30.6 status)  
+**Protections**: ✅ ALL restored (Phase 051.6 status)  
 **Performance**: ⚠️ Overhead accepted in exchange for stability  
 
 **Next Steps**: ⏳ User must test and confirm that crash no longer occurs
 
 ---
 
-## History: Phase 35.6 - Memory Protection Optimization ❌ (FAILED)
+## History: Phase 051.6 - Memory Protection Optimization ❌ (FAILED)
 
 **Duration**: 17:00-19:00 (2 hours implementation)  
 **Outcome**: ❌ **PRODUCTION CRASH** (<1min uptime)  
@@ -1795,7 +1795,7 @@ CRASH: pointer arithmetic with 0x6e646461001c0001
 
 **OPTIMIZATION COMPLETE**: Eliminated triple-validation in delete operators, reduced logging overhead by 99%, targeting intermittent segfault resolution.
 
-### Phase 35.6: Memory Protection Optimization Success 🎉
+### Phase 051.6: Memory Protection Optimization Success 🎉
 
 **Duration**: 2 hours (analysis + implementation + compilation)  
 **Outcome**: ✅ **BUILD SUCCESS** (testing pending)  
@@ -1847,7 +1847,7 @@ void DynamicMemoryAllocator::freeBytes(void* pBlockPtr) {
 
 // After
 void DynamicMemoryAllocator::freeBytes(void* pBlockPtr) {
-    // Phase 35.6: Validation removed - caller (operator delete) already validates
+    // Phase 051.6: Validation removed - caller (operator delete) already validates
     // Single-point validation strategy: protect at entry points (delete operators)
     // ...
 }
@@ -1867,7 +1867,7 @@ if (all_ascii) {
     return false;
 }
 
-// After (Phase 35.6)
+// After (Phase 051.6)
 if (all_ascii) {
     static int detection_count = 0;
     if (++detection_count % 100 == 0) {  // Log only every 100 detections
@@ -1898,8 +1898,8 @@ if (all_ascii) {
 
 **References**:
 
-- Phase 30.6: Original protection introduction (AGXMetal13_3 driver bugs)
-- Phase 35.1-35.5: Previous protection removal work (completed October 19-21)
+- Phase 051.6: Original protection introduction (AGXMetal13_3 driver bugs)
+- Phase 051.1-35.5: Previous protection removal work (completed October 19-21)
 - PROTECTION_INVENTORY.md: Complete protection catalog
 
 **Next Steps (User Testing Required)**:
@@ -1925,11 +1925,11 @@ If segfaults increase:
 
 ---
 
-## Previous Update (October 25, 2025) — Phase 36.5: Upstream Merge Complete ✅
+## Previous Update (October 25, 2025) — Phase 051.5: Upstream Merge Complete ✅
 
 **MERGE COMPLETED**: Successfully integrated 73 upstream commits with comprehensive conflict resolution and platform compatibility fixes. Build clean, runtime validated, no regressions detected.
 
-### Phase 36.5: Merge Execution Success 🎉
+### Phase 051.5: Merge Execution Success 🎉
 
 **Duration**: 4 hours (conflict resolution + build fixes + runtime validation)  
 **Outcome**: ✅ **COMPLETE SUCCESS**  
@@ -1968,7 +1968,7 @@ If segfaults increase:
   - Constructor, destructor, `TestMethod()`, `init()`, `reset()`, `update()`, `findURL()`, `makeNewURL()`
   - **Removed**: Incorrect `initSubsystem()`/`shutdownSubsystem()` (not declared in class)
 - **WebBrowserURL parse table**: Defined `m_URLFieldParseTable[]` in `INIWebpageURL.cpp`
-- **MilesAudioManager guards**: Wrapped in `#ifdef _WIN32` (audio disabled on macOS - Phase 33 pending)
+- **MilesAudioManager guards**: Wrapped in `#ifdef _WIN32` (audio disabled on macOS - Phase 051 pending)
 - **g_SDLWindow definition**: Added global in `dx8wrapper.cpp`
 - **TheWebBrowser pointer**: Single definition in `cross_platform_stubs.cpp` (removed duplicates)
 
@@ -2023,7 +2023,7 @@ If segfaults increase:
 ⚠️ **Partially Operational**:
 
 - Audio: Disabled on non-Windows (MilesAudioManager Windows-only)
-  - Phase 33 (OpenAL backend) pending
+  - Phase 051 (OpenAL backend) pending
   - Stub returns `NULL` to prevent crashes
 - Web Browser: Stub implementation
   - Browser functionality disabled gracefully
@@ -2038,7 +2038,7 @@ If segfaults increase:
 **Git Commit**:
 
 ```
-feat: merge upstream 73 commits (Phase 36 - cross-platform compatibility)
+feat: merge upstream 73 commits (Phase 051 - cross-platform compatibility)
 
 Commit: f4edfdfd
 Files changed: 1000+
@@ -2047,20 +2047,20 @@ Build status: ✅ Success
 Runtime status: ✅ Validated
 ```
 
-**Next Steps (Phase 37)**:
+**Next Steps (Phase 051)**:
 
 1. Feature integration from new upstream components (FramePacer, etc.)
 2. Test upstream improvements in existing subsystems
 3. Evaluate new compiler scripts for future use
-4. Continue Phase 33 audio backend development (OpenAL integration)
+4. Continue Phase 051 audio backend development (OpenAL integration)
 
 ---
 
-## Previous Update (October 25, 2025) — Phase 36.4: Critical Discovery - Pre-Merge Migration Blocker ⚠️
+## Previous Update (October 25, 2025) — Phase 051.4: Critical Discovery - Pre-Merge Migration Blocker ⚠️
 
-**CRITICAL DISCOVERY**: Attempted pre-merge API migration and discovered architectural blocker - FramePacer class does not exist in our Phase 35 codebase, making pre-migration impossible.
+**CRITICAL DISCOVERY**: Attempted pre-merge API migration and discovered architectural blocker - FramePacer class does not exist in our Phase 051 codebase, making pre-migration impossible.
 
-### Phase 36.4: Pre-Merge Migration Attempt - REVERTED ❌
+### Phase 051.4: Pre-Merge Migration Attempt - REVERTED ❌
 
 **Duration**: 2 hours (migration attempt + discovery + reversion + documentation)  
 **Goal**: Pre-migrate GameEngine→FramePacer API before upstream merge  
@@ -2182,19 +2182,19 @@ git commit
 
 **Time Investment Summary**:
 
-- Phase 36.1 (Initial Analysis): 3 hours
-- Phase 36.2 (Critical Files): 2 hours  
-- Phase 36.3 (GameEngine Refactoring): 4 hours
-- **Phase 36.4 (Migration Attempt)**: 2 hours
+- Phase 051.1 (Initial Analysis): 3 hours
+- Phase 051.2 (Critical Files): 2 hours  
+- Phase 051.3 (GameEngine Refactoring): 4 hours
+- **Phase 051.4 (Migration Attempt)**: 2 hours
 - **Total**: 11 hours (all analysis and documentation preserved for merge phase)
 
 ---
 
-## October 24, 2025 - Phase 36 (Part 3): GameEngine→FramePacer Refactoring Analysis
+## October 24, 2025 - Phase 051 (Part 3): GameEngine→FramePacer Refactoring Analysis
 
-**MILESTONE**: Phase 35 (Code Cleanup & Protection Removal) officially begun! After identifying critical bugs caused by defensive programming patterns in Phase 33.9 (exception swallowing) and Phase 34.3 (global state corruption), we now systematically audit and remove high-risk protections that introduce bugs rather than prevent them.
+**MILESTONE**: Phase 051 (Code Cleanup & Protection Removal) officially begun! After identifying critical bugs caused by defensive programming patterns in Phase 051.9 (exception swallowing) and Phase 051.3 (global state corruption), we now systematically audit and remove high-risk protections that introduce bugs rather than prevent them.
 
-### Phase 35.1: Protection Code Inventory - COMPLETE ✅
+### Phase 051.1: Protection Code Inventory - COMPLETE ✅
 
 **Duration**: 1 day (planned 1-2 days)  
 **Goal**: Catalog all defensive programming additions and classify by risk level
@@ -2210,13 +2210,13 @@ git commit
 1. **INI.cpp Exception Swallowing** (Lines 430-503) - 🔴 HIGH RISK
    - Pattern: `catch(...) { /* resync to End */ continue; }`
    - **Impact**: Silent data corruption - all field values read as 0/empty
-   - **Proven Bug**: Phase 33.9 audio INI values (DefaultSoundVolume, DefaultMusicVolume) read as zero
+   - **Proven Bug**: Phase 051.9 audio INI values (DefaultSoundVolume, DefaultMusicVolume) read as zero
    - **Action**: Remove and replace with jmarshall catch-add-context-rethrow pattern
 
 2. **MetalWrapper Global State** (metalwrapper.mm Lines 26-28) - � HIGH RISK (PARTIALLY RESOLVED)
-   - ✅ **s_passDesc removed** (October 24, 2025 - Phase 34.3)
+   - ✅ **s_passDesc removed** (October 24, 2025 - Phase 051.3)
    - ⚠️ **Remaining globals need audit**: s_renderEncoder, s_currentDrawable, s_cmdBuffer
-   - **Proven Bug**: Phase 34.3 use-after-free crash (AGXMetal13_3 driver)
+   - **Proven Bug**: Phase 051.3 use-after-free crash (AGXMetal13_3 driver)
    - **Action**: Audit lifetime management for remaining static ARC objects
 
 3. **Unknown Block Skip** (INI.cpp Lines 506-545) - 🔴 HIGH RISK
@@ -2231,7 +2231,7 @@ git commit
 
 5. **Memory Pointer Validation** (GameMemory.cpp) - � MEDIUM RISK
    - ASCII-like pointer detection (Metal/OpenGL driver workaround)
-   - **Status**: Working as designed (Phase 30.6)
+   - **Status**: Working as designed (Phase 051.6)
    - **Action**: Keep but consider optimization (debug-only or sampling)
 
 **Documents Created**:
@@ -2270,7 +2270,7 @@ grep -rn "isValidMemoryPointer" --include="*.cpp"
 | **5** | Constructor logging | texture.cpp | 857 | 15m | LOW |
 | **6** | Memory validation | GameMemory.cpp | 222-267 | 4h | LOW |
 
-**Total Estimated Time**: 11-13 hours (2 working days for Phase 35.2)
+**Total Estimated Time**: 11-13 hours (2 working days for Phase 051.2)
 
 ### Testing Strategy Established
 
@@ -2301,7 +2301,7 @@ grep "ERROR\|FATAL" logs/baseline.log  # Count errors
 - More than 5 new error messages
 - Frame count drops significantly
 
-### Next Steps (Phase 35.2)
+### Next Steps (Phase 051.2)
 
 **Immediate Actions** (Priority 1-3):
 
@@ -2322,12 +2322,12 @@ grep "ERROR\|FATAL" logs/baseline.log  # Count errors
 
 **Expected Timeline**:
 
-- Phase 35.2 (High-Risk Removal): 2-3 days
-- Phase 35.3 (Validation): 1-2 days
-- Phase 35.4 (Documentation): 1 day
-- **Total Phase 35**: 5-8 days
+- Phase 051.2 (High-Risk Removal): 2-3 days
+- Phase 051.3 (Validation): 1-2 days
+- Phase 051.4 (Documentation): 1 day
+- **Total Phase 051**: 5-8 days
 
-**Success Criteria for Phase 35.1** ✅:
+**Success Criteria for Phase 051.1** ✅:
 
 - [x] All protective code cataloged in PROTECTION_INVENTORY.md
 - [x] Risk classifications assigned (RED/YELLOW/GREEN)
@@ -2339,16 +2339,16 @@ grep "ERROR\|FATAL" logs/baseline.log  # Count errors
 
 **Why This Matters**:
 
-1. **Bug Prevention**: Exception swallowing (Phase 33.9) caused silent data corruption
-2. **Crash Prevention**: Global state (Phase 34.3) caused Metal driver use-after-free
+1. **Bug Prevention**: Exception swallowing (Phase 051.9) caused silent data corruption
+2. **Crash Prevention**: Global state (Phase 051.3) caused Metal driver use-after-free
 3. **Code Quality**: Remove "why is this here?" confusion for future developers
 4. **Performance**: Reduce unnecessary validations in hot paths (render, memory)
 5. **Foundation**: Clean base for upcoming phases (audio, multiplayer)
 
 **Lessons from Previous Bugs**:
 
-- Phase 33.9: Exception swallowing prevents error detection, causes silent failures
-- Phase 34.3: Global storage of local ARC objects causes use-after-free
+- Phase 051.9: Exception swallowing prevents error detection, causes silent failures
+- Phase 051.3: Global storage of local ARC objects causes use-after-free
 - Pattern: "Protective code" often introduces worse bugs than it prevents
 
 **Strategic Value**:
@@ -2362,12 +2362,12 @@ grep "ERROR\|FATAL" logs/baseline.log  # Count errors
 
 - `docs/PHASE35/README.md` - Phase overview and objectives
 - `docs/PHASE35/PROTECTION_INVENTORY.md` - Complete catalog (created this session)
-- `docs/Misc/LESSONS_LEARNED.md` - Phase 33.9, Phase 34.3 anti-patterns
+- `docs/Misc/LESSONS_LEARNED.md` - Phase 051.9, Phase 051.3 anti-patterns
 - `references/jmarshall-win64-modern/` - Proven exception handling patterns
 
 ---
 
-### Phase 35.2: Exception Swallowing Removal + Initialization Order Fixes - COMPLETE ✅
+### Phase 051.2: Exception Swallowing Removal + Initialization Order Fixes - COMPLETE ✅
 
 **Duration**: 1 day (planned 2-3 days)  
 **Goal**: Remove high-risk protection code that masks bugs
@@ -2421,14 +2421,14 @@ cd $HOME/GeneralsX/GeneralsMD && USE_METAL=1 timeout 60 ./GeneralsXZH
 - `0be64a32` - fix(gameengine): initialization order fixes for UpgradeCenter/ThingFactory
 - `04b9993c` - docs(phase35): discovery documentation for initialization order
 - `0003820c` - feat(ini): fail-fast implementation, remove exception swallowing
-- `2b46ed44` - refactor(docs): Phase 36 reorganization (preparation)
+- `2b46ed44` - refactor(docs): Phase 051 reorganization (preparation)
 
 ---
 
-### Phase 35.3: MetalWrapper Global State Audit - COMPLETE ✅
+### Phase 051.3: MetalWrapper Global State Audit - COMPLETE ✅
 
 **Duration**: 4 hours (planned 3 hours)  
-**Goal**: Audit remaining Metal globals for use-after-free risks (similar to Phase 34.3 s_passDesc bug)
+**Goal**: Audit remaining Metal globals for use-after-free risks (similar to Phase 051.3 s_passDesc bug)
 
 **Globals Audited**:
 
@@ -2450,7 +2450,7 @@ cd $HOME/GeneralsX/GeneralsMD && USE_METAL=1 timeout 60 ./GeneralsXZH
 **Key Finding - Why s_renderEncoder is Safe**:
 
 ```objectivec++
-// Phase 34.3 Bug (s_passDesc) - UNSAFE:
+// Phase 051.3 Bug (s_passDesc) - UNSAFE:
 MTLRenderPassDescriptor* pass = [MTLRenderPassDescriptor renderPassDescriptor];
 s_passDesc = pass;  // ❌ BAD: Reference to local variable!
 // pass goes out of scope → s_passDesc now points to freed memory
@@ -2484,11 +2484,11 @@ s_renderEncoder = [s_cmdBuffer renderCommandEncoderWithDescriptor:pass];
 
 - All remaining Metal globals use **safe patterns**
 - No code changes needed
-- s_passDesc was the only problematic global (already removed in Phase 34.3)
+- s_passDesc was the only problematic global (already removed in Phase 051.3)
 
 ---
 
-### Phase 35.4: Vtable Debug Log Removal - COMPLETE ✅
+### Phase 051.4: Vtable Debug Log Removal - COMPLETE ✅
 
 **Duration**: 2 hours (planned 1 hour)  
 **Goal**: Remove debugging printf statements added for historical crash investigation
@@ -2531,19 +2531,19 @@ grep -c "METAL: BeginFrame" /tmp/phase35_4_test.log
 
 **Commit**:
 
-- `<just committed>` - refactor(ww3d2): remove vtable debug logs + complete Phase 35.3 audit
+- `<just committed>` - refactor(ww3d2): remove vtable debug logs + complete Phase 051.3 audit
 
 ---
 
-### Phase 35: Overall Status - COMPLETE ✅
+### Phase 051: Overall Status - COMPLETE ✅
 
 **All 5 Tasks Completed**:
 
-- [x] Phase 35.1 - Protection Inventory (PROTECTION_INVENTORY.md created)
-- [x] Phase 35.2 - Exception Swallowing Removal + Initialization Order Fixes
-- [x] Phase 35.3 - MetalWrapper Global State Audit (all globals SAFE)
-- [x] Phase 35.4 - Vtable Debug Log Removal (logs cleaned, rendering stable)
-- [x] Phase 35.5 - Documentation Update (this diary entry)
+- [x] Phase 051.1 - Protection Inventory (PROTECTION_INVENTORY.md created)
+- [x] Phase 051.2 - Exception Swallowing Removal + Initialization Order Fixes
+- [x] Phase 051.3 - MetalWrapper Global State Audit (all globals SAFE)
+- [x] Phase 051.4 - Vtable Debug Log Removal (logs cleaned, rendering stable)
+- [x] Phase 051.5 - Documentation Update (this diary entry)
 
 **Total Duration**: 3 days (planned 5-8 days)  
 **Success Rate**: 5/5 tasks completed successfully
@@ -2552,7 +2552,7 @@ grep -c "METAL: BeginFrame" /tmp/phase35_4_test.log
 
 1. **Removed 3 high-risk protection patterns**:
    - Exception swallowing (INI.cpp) - caused silent data corruption
-   - Unknown block skip (to be reviewed in Phase 36)
+   - Unknown block skip (to be reviewed in Phase 051)
    - Vtable debug logs (render2d.cpp, texture.cpp) - reduced log noise
 
 2. **Fixed 3 critical bugs**:
@@ -2585,14 +2585,14 @@ grep -c "METAL: BeginFrame" /tmp/phase35_4_test.log
 - Better initialization order (explicit vs implicit DLL load order)
 - Cleaner logs (reduced noise from texture operations)
 
-**Next Steps (Phase 36)**:
+**Next Steps (Phase 051)**:
 
 - Review unknown block skip logic (INI.cpp lines 506-545)
 - Compare with jmarshall reference implementation
 - Decide: Keep extensibility feature or remove bug workaround
-- Continue Phase 34.x (Game Logic Validation)
+- Continue Phase 051.x (Game Logic Validation)
 
-**Success Criteria for Phase 35** ✅:
+**Success Criteria for Phase 051** ✅:
 
 - [x] All high-risk protection code removed or validated safe
 - [x] All initialization order bugs fixed
@@ -2605,28 +2605,28 @@ grep -c "METAL: BeginFrame" /tmp/phase35_4_test.log
 - `docs/PHASE35/PROTECTION_INVENTORY.md` - Complete catalog with removal results
 - `docs/PHASE35/PHASE35_2_CRITICAL_DISCOVERY.md` - Initialization order discovery
 - `docs/PHASE35/PHASE35_3_METALWRAPPER_AUDIT.md` - Metal globals lifecycle analysis
-- `docs/Misc/LESSONS_LEARNED.md` - Anti-pattern catalog (Phase 33.9, Phase 34.3, Phase 35)
+- `docs/Misc/LESSONS_LEARNED.md` - Anti-pattern catalog (Phase 051.9, Phase 051.3, Phase 051)
 - `references/jmarshall-win64-modern/` - Proven exception handling patterns
 
 ---
 
-## Previous Update (October 21, 2025) — Phase 34: Game Logic Validation Started ✅
+## Previous Update (October 21, 2025) — Phase 051: Game Logic Validation Started ✅
 
-**MILESTONE**: Phase 34 (Game Logic & Gameplay Systems) officially begun! After completing Phase 30 (Metal Backend), Phase 31 (Texture System), Phase 32 (Audio Investigation), and Phase 33 (OpenAL Implementation), we now focus on validating core gameplay systems work correctly on macOS.
+**MILESTONE**: Phase 051 (Game Logic & Gameplay Systems) officially begun! After completing Phase 051 (Metal Backend), Phase 051 (Texture System), Phase 051 (Audio Investigation), and Phase 051 (OpenAL Implementation), we now focus on validating core gameplay systems work correctly on macOS.
 
-### Phase 34: Structure & Objectives
+### Phase 051: Structure & Objectives
 
 **Duration**: 2-3 weeks (4 sub-phases)  
 **Goal**: Validate game logic, UI, input, AI, and pathfinding systems for cross-platform compatibility
 
 **Sub-phases**:
 
-1. **Phase 34.1** (4-5 days): UI Interactive System - Menu navigation, button interaction, text input
-2. **Phase 34.2** (3-4 days): Input System - Mouse/keyboard handling, camera controls, unit selection
-3. **Phase 34.3** (5-6 days): Basic AI System - State machines, target acquisition, formation movement
-4. **Phase 34.4** (3-4 days): Pathfinding & Collision - A* algorithm, obstacle avoidance, unit collision
+1. **Phase 051.1** (4-5 days): UI Interactive System - Menu navigation, button interaction, text input
+2. **Phase 051.2** (3-4 days): Input System - Mouse/keyboard handling, camera controls, unit selection
+3. **Phase 051.3** (5-6 days): Basic AI System - State machines, target acquisition, formation movement
+4. **Phase 051.4** (3-4 days): Pathfinding & Collision - A* algorithm, obstacle avoidance, unit collision
 
-### Phase 34.1: UI Interactive System - Analysis Started ✅
+### Phase 051.1: UI Interactive System - Analysis Started ✅
 
 **Focus Areas**:
 
@@ -2690,18 +2690,18 @@ static inline Int getSafeModifierFlags() {
 
 **Dependencies**:
 
-- ✅ Phase 30: Metal Backend (rendering operational)
-- ✅ Phase 31: Texture System (UI visuals working)
-- ✅ Phase 32: Audio Investigation (audio subsystem mapped)
-- ⏳ Phase 33: OpenAL Backend (for UI click sounds - not blocking)
+- ✅ Phase 051: Metal Backend (rendering operational)
+- ✅ Phase 051: Texture System (UI visuals working)
+- ✅ Phase 051: Audio Investigation (audio subsystem mapped)
+- ⏳ Phase 051: OpenAL Backend (for UI click sounds - not blocking)
 
 ---
 
-## Previous Update (October 20, 2025) — Phase 34.1: CD Loading Infinite Loop FIXED ✅
+## Previous Update (October 20, 2025) — Phase 051.1: CD Loading Infinite Loop FIXED ✅
 
 **BREAKTHROUGH**: CD music loading infinite loop **COMPLETELY RESOLVED**! The `OSDisplayWarningBox()` stub in `MacOSDisplay.cpp` now returns `OSDBT_CANCEL`, breaking the CD loading loop immediately when music files are not found on physical media. Game runs perfectly for 10+ seconds with Metal rendering, audio subsystem operational, and all game loop systems executing normally.
 
-### Phase 34.1: CD Loading Loop Protection ✅
+### Phase 051.1: CD Loading Loop Protection ✅
 
 **Root Cause**: The `GameAudio::initSubsystem()` method had a `while(TRUE)` loop (lines 232-253) that repeatedly called `isMusicAlreadyLoaded()` to check if CD music was loaded. On macOS (no physical CD), this loop never exited because:
 
@@ -2757,20 +2757,20 @@ static inline Int getSafeModifierFlags() {
   - Requires investigation: why `TheGameText->init()` fails
 - ✅ Audio subsystem now fully operational
 - ✅ Game loop executing normally
-- 🔍 Begin Phase 34.2: String Manager initialization debugging
+- 🔍 Begin Phase 051.2: String Manager initialization debugging
 
 **Commits**:
 
-- Phase 34.1 CD loading loop fix (OSDisplayWarningBox returns OSDBT_CANCEL)
-- Phase 34.1 retry limit backup protection (MAX_CD_LOAD_ATTEMPTS = 3)
+- Phase 051.1 CD loading loop fix (OSDisplayWarningBox returns OSDBT_CANCEL)
+- Phase 051.1 retry limit backup protection (MAX_CD_LOAD_ATTEMPTS = 3)
 
 ---
 
-## Previous Update (October 20, 2025) — Phase 33.9: INI Parser Fix Validated, New Audio Loop Bug Discovered ✅
+## Previous Update (October 20, 2025) — Phase 051.9: INI Parser Fix Validated, New Audio Loop Bug Discovered ✅
 
 **BREAKTHROUGH**: INI parser fix **SUCCESSFUL** - blanket exception catching removed, proper exception re-throwing restored! All INI files (GameLOD.ini, MiscAudio.ini) now parse correctly with all fields read successfully. However, testing revealed a NEW bug: infinite loop in `isMusicAlreadyLoaded()` after successful INI parsing.
 
-### Phase 33 Complete Summary (Core Implementation + INI Parser Fix)
+### Phase 051 Complete Summary (Core Implementation + INI Parser Fix)
 
 | Phase | Description | Status | Completion Date |
 |-------|-------------|--------|-----------------|
@@ -2783,11 +2783,11 @@ static inline Int getSafeModifierFlags() {
 | 33.7 | Audio State Management (reset + Fading) | ✅ **COMPLETE** | October 20, 2025 |
 | 33.8 | Audio Request Processing Pipeline | ✅ **COMPLETE** | October 20, 2025 |
 | 33.9 | INI Parser Fix & Validation | ✅ **COMPLETE** | October 20, 2025 |
-| **TOTAL** | **9 Sub-phases** | **9/9 (100%) COMPLETE** | **Phase 33 DONE ✅** |
+| **TOTAL** | **9 Sub-phases** | **9/9 (100%) COMPLETE** | **Phase 051 DONE ✅** |
 
 **⚠️ NEW BUG FOUND**: `isMusicAlreadyLoaded()` enters infinite loop checking for `'Data\Audio\Tracks\End_USAf.mp3'` after successful INI parsing. This is a separate audio system bug, not related to INI parser. String Manager failure is a consequence of this loop.
 
-### Phase 33.1: OpenAL Device Initialization ✅
+### Phase 051.1: OpenAL Device Initialization ✅
 
 **Implemented**: Complete OpenAL device setup with multi-pool architecture
 
@@ -2806,7 +2806,7 @@ static inline Int getSafeModifierFlags() {
 - `Core/GameEngineDevice/Source/OpenALDevice/OpenALAudioManager.cpp` (lines 127-180)
 - `Core/GameEngineDevice/Source/OpenALDevice/OpenALAudioManager.h` (lines 45-62)
 
-### Phase 33.2: 2D/3D Audio Playback System ✅
+### Phase 051.2: 2D/3D Audio Playback System ✅
 
 **Implemented**: Full spatial audio with OpenAL positioning parameters
 
@@ -2837,26 +2837,26 @@ static inline Int getSafeModifierFlags() {
   - `adjustPlayingVolume()` - Runtime volume adjustment (line 620)
   - `getFreeSource()` - Pool-based source allocation (line 625-661)
 
-### Phase 33.3: Three-Phase Update Loop ✅
+### Phase 051.3: Three-Phase Update Loop ✅
 
 **Implemented**: Per-frame audio state management with three processing phases
 
 **Update Architecture** (`update()`, line 192-198):
 
-1. **Phase 1: processPlayingList()** (line 749-801)
+1. **Phase 02: processPlayingList()** (line 749-801)
    - Check playback state via `alGetSourcei(AL_SOURCE_STATE)`
    - Detect finished sounds (state != `AL_PLAYING`)
    - Update 3D position for moving sources via `alSource3f(AL_POSITION)`
    - Volume changes applied via `alSourcef(AL_GAIN)`
    - Move finished sounds to fading list (if fade enabled) or stopped list
 
-2. **Phase 2: processFadingList()** (line 803-848)
+2. **Phase 03: processFadingList()** (line 803-848)
    - Apply fade-out effect: `volume -= fadeSpeed * deltaTime`
    - Stop sound when volume reaches 0.0f
    - Move to stopped list for cleanup
    - **TODO**: Implement smooth temporal interpolation (currently instant)
 
-3. **Phase 3: processStoppedList()** (line 850-873)
+3. **Phase 04: processStoppedList()** (line 850-873)
    - Stop OpenAL source: `alSourceStop(source)`
    - Unbind buffer: `alSourcei(AL_BUFFER, 0)`
    - Return source to pool for reuse
@@ -2867,7 +2867,7 @@ static inline Int getSafeModifierFlags() {
 - `Core/GameEngineDevice/Source/OpenALDevice/OpenALAudioManager.cpp` (lines 747-873)
 - `Core/GameEngineDevice/Source/OpenALDevice/OpenALAudioManager.h` (line 176 - m_volumeHasChanged flag)
 
-### Phase 33.4: WAV/MP3 File Loader ✅
+### Phase 051.4: WAV/MP3 File Loader ✅
 
 **Implemented**: Audio file loading from .big archives via TheFileSystem
 
@@ -2891,7 +2891,7 @@ static inline Int getSafeModifierFlags() {
 - `Core/GameEngineDevice/Include/OpenALDevice/OpenALAudioLoader.h` (static interface)
 - Added `#include "Common/FileSystem.h"` for VFS access (line 24)
 
-### Phase 33.5: Music System with Streaming ✅
+### Phase 051.5: Music System with Streaming ✅
 
 **Implemented**: Music playback with dedicated source and volume control
 
@@ -2916,7 +2916,7 @@ static inline Int getSafeModifierFlags() {
 - `Core/GameEngineDevice/Source/OpenALDevice/OpenALAudioManager.cpp` (lines 582-745)
 - `Core/GameEngineDevice/Source/OpenALDevice/OpenALAudioManager.h` (line 54 - m_musicSource)
 
-### Phase 33.6: Runtime Testing ✅
+### Phase 051.6: Runtime Testing ✅
 
 **Test Results** (October 20, 2025 - 11:10 AM):
 
@@ -2964,7 +2964,7 @@ INI::load - Pre-parse block: token='AudioEvent' (line 8) in file 'Data\INI\Sound
 2. Verify 3D spatial positioning with moving units
 3. Test music system in main menu (Shell map theme)
 
-### Phase 33.8: Audio Request Processing Pipeline ✅❗
+### Phase 051.8: Audio Request Processing Pipeline ✅❗
 
 **Implementation Date**: October 20, 2025 - 19:00
 
@@ -3117,14 +3117,14 @@ End
 
 ---
 
-### Phase 33.9: INI Parser Fix & Validation ✅
+### Phase 051.9: INI Parser Fix & Validation ✅
 
 **Implementation Date**: October 20, 2025 - 19:50
 
 **Status**: ✅ **COMPLETE** - INI parser fix **SUCCESSFUL**, new audio loop bug discovered
 
 **Problem Statement**:
-During Phase 33.8 testing, discovered that ALL INI float/string values were returning defaults (0.00 for floats, empty strings for text). Investigation revealed blanket `catch(...)` exception handling swallowing parsing errors without re-throwing.
+During Phase 051.8 testing, discovered that ALL INI float/string values were returning defaults (0.00 for floats, empty strings for text). Investigation revealed blanket `catch(...)` exception handling swallowing parsing errors without re-throwing.
 
 **Root Cause Analysis**:
 
@@ -3232,11 +3232,11 @@ Warning Box: ***FATAL*** String Manager failed to initilaize properly
 **Conclusion**:
 
 - ✅ **INI Parser Fix**: VALIDATED and COMPLETE
-- ✅ **Phase 33.9 Objective**: ACHIEVED (restore proper exception handling)
+- ✅ **Phase 051.9 Objective**: ACHIEVED (restore proper exception handling)
 - ⚠️ **New Bug**: Audio system deadlock (separate issue for investigation)
 - 📝 **Lesson Learned**: Fixing one bug can reveal hidden bugs in downstream systems
 
-**Next Steps** (Phase 34 - Audio System Debugging):
+**Next Steps** (Phase 051 - Audio System Debugging):
 
 1. Investigate `isMusicAlreadyLoaded()` loop condition
 2. Add timeout/retry limit to music file checks
@@ -3247,7 +3247,7 @@ Warning Box: ***FATAL*** String Manager failed to initilaize properly
 
 ---
 
-### Phase 33.7: Audio State Management (reset + Volume Fading) ✅
+### Phase 051.7: Audio State Management (reset + Volume Fading) ✅
 
 **Implementation Date**: October 20, 2025 - 15:45
 
@@ -3352,16 +3352,16 @@ void processFadingList(void) {
 - Uses C++11 `<chrono>` for precise time measurement
 - No additional memory allocations during fade
 
-### Phase 32 Complete Summary (3/3 Sub-phases DONE)
+### Phase 051 Complete Summary (3/3 Sub-phases DONE)
 
 | Phase | Description | Status | Completion Date |
 |-------|-------------|--------|-----------------|
 | 32.1 | Audio Pipeline Investigation | ✅ **COMPLETE** | October 19, 2025 |
 | 32.2 | Event System Validation | ✅ **COMPLETE** | October 19, 2025 |
 | 32.3 | OpenAL Backend Analysis | ✅ **COMPLETE** | **October 19, 2025** |
-| **TOTAL** | **3 Sub-phases** | **3/3 (100%) COMPLETE** | **Phase 32 DONE ✅** |
+| **TOTAL** | **3 Sub-phases** | **3/3 (100%) COMPLETE** | **Phase 051 DONE ✅** |
 
-### Phase 32.1: Audio Pipeline Investigation ✅
+### Phase 051.1: Audio Pipeline Investigation ✅
 
 **Implemented**: SDL2 audio subsystem with real-time mixing callback
 
@@ -3376,7 +3376,7 @@ void processFadingList(void) {
 - `SDL2AudioBackend.h/cpp` - SDL2 device management
 - `SDL2AudioMixer.h/cpp` - Audio mixing engine
 
-### Phase 32.2: Miles Sound System Integration ✅
+### Phase 051.2: Miles Sound System Integration ✅
 
 **Implemented**: Miles Sound System stub integration for MP3/WAV playback
 
@@ -3413,7 +3413,7 @@ void processFadingList(void) {
 - SDL2MilesCompat.h: Added sentinel macro
 - MilesAudioManager.h: Added sentinel macro
 
-### Phase 32.3: 3D Audio Positioning ✅
+### Phase 051.3: 3D Audio Positioning ✅
 
 **Implemented**: Spatial audio with distance attenuation and stereo panning
 
@@ -3451,7 +3451,7 @@ void processFadingList(void) {
   - `calculateStereoPan()` - Left/right positioning
   - `updateSpatialAudio()` - Apply effects to Miles sample
 
-**Doppler Effect**: Skipped (optional, low priority for Phase 32)
+**Doppler Effect**: Skipped (optional, low priority for Phase 051)
 
 **Integration Status**:
 
@@ -3468,15 +3468,15 @@ void processFadingList(void) {
 
 ---
 
-## Previous Update (October 19, 2025) — Phase 31 Integration Complete ✅
+## Previous Update (October 19, 2025) — Phase 051 Integration Complete ✅
 
-**DISCOVERY**: Phase 31 DDS/TGA integration implemented, but **textures already loading via Phase 28.4!** In-game test confirms 7 textures operational through `Apply_New_Surface()` → `TextureCache` → Metal backend. Phase 31 code serves as backup for future DirectX deprecation.
+**DISCOVERY**: Phase 051 DDS/TGA integration implemented, but **textures already loading via Phase 051.4!** In-game test confirms 7 textures operational through `Apply_New_Surface()` → `TextureCache` → Metal backend. Phase 051 code serves as backup for future DirectX deprecation.
 
-## Previous Update (October 17, 2025) — Phase 28.4 Post-DirectX Texture Interception ✅
+## Previous Update (October 17, 2025) — Phase 051.4 Post-DirectX Texture Interception ✅
 
-**MAJOR BREAKTHROUGH**: Phase 28.4 REDESIGN Option 2 fully operational! **7 textures successfully loaded from DirectX to Metal backend!**
+**MAJOR BREAKTHROUGH**: Phase 051.4 REDESIGN Option 2 fully operational! **7 textures successfully loaded from DirectX to Metal backend!**
 
-### Phase 28 Complete Summary (4/4 Phases DONE)
+### Phase 051 Complete Summary (4/4 Phases DONE)
 
 | Phase | Description | Status | Completion Date |
 |-------|-------------|--------|-----------------|
@@ -3484,11 +3484,11 @@ void processFadingList(void) {
 | 28.2 | TGA Texture Loader (RLE + uncompressed) | ✅ **COMPLETE** | January 13, 2025 |
 | 28.3 | Texture Upload & Binding (MTLTexture) | ✅ **COMPLETE** | January 13, 2025 |
 | 28.4 | Post-DirectX Texture Interception | ✅ **COMPLETE** | **October 17, 2025** |
-| **TOTAL** | **4 Phases** | **4/4 (100%) COMPLETE** | **Phase 28 DONE ✅** |
+| **TOTAL** | **4 Phases** | **4/4 (100%) COMPLETE** | **Phase 051 DONE ✅** |
 
-### Phase 28.4 REDESIGN: Option 2 Success (October 17, 2025)
+### Phase 051.4 REDESIGN: Option 2 Success (October 17, 2025)
 
-**Problem Discovered**: Phase 28.4 VFS integration (Option 1) never executed
+**Problem Discovered**: Phase 051.4 VFS integration (Option 1) never executed
 
 - Texture loading pipeline stopped at `Begin_Load()` validation
 - `Get_Texture_Information()` failed for .big file textures (no physical files on disk)
@@ -3537,17 +3537,17 @@ void processFadingList(void) {
 
 **Next Steps**:
 
-- ⏳ Phase 28.5: Extended testing with DXT1/3/5 compressed formats
-- ⏳ Phase 28.6: Remove excessive debug logs
-- ⏳ Phase 28.7: Validate texture rendering in game menus
+- ⏳ Phase 051.5: Extended testing with DXT1/3/5 compressed formats
+- ⏳ Phase 051.6: Remove excessive debug logs
+- ⏳ Phase 051.7: Validate texture rendering in game menus
 
 ---
 
-## Update (January 14, 2025) — Phase 29 Metal Render States COMPLETE ✅
+## Update (January 14, 2025) — Phase 051 Metal Render States COMPLETE ✅
 
-**MAJOR ACHIEVEMENT**: All Phase 29 render state integrations complete - Metal backend now supports lighting, fog, stencil, and point sprites!
+**MAJOR ACHIEVEMENT**: All Phase 051 render state integrations complete - Metal backend now supports lighting, fog, stencil, and point sprites!
 
-### Phase 29 Complete Summary (4/4 Sub-phases DONE)
+### Phase 051 Complete Summary (4/4 Sub-phases DONE)
 
 | Phase | Description | Status | Completion Date | Commit |
 |-------|-------------|--------|-----------------|--------|
@@ -3555,9 +3555,9 @@ void processFadingList(void) {
 | 29.2 | Metal Fog Support | ✅ **COMPLETE** | January 13, 2025 | ed3fd8a7 |
 | 29.3 | Metal Stencil Buffer Support | ✅ **COMPLETE** | January 14, 2025 | 9d2b219f |
 | 29.4 | Metal Point Sprite Support | ✅ **COMPLETE** | January 14, 2025 | bd6b75d6 |
-| **TOTAL** | **4 Sub-phases** | **4/4 (100%) COMPLETE** | **Phase 29 DONE ✅** | - |
+| **TOTAL** | **4 Sub-phases** | **4/4 (100%) COMPLETE** | **Phase 051 DONE ✅** | - |
 
-### Phase 29.1: Metal Lighting Support ✅
+### Phase 051.1: Metal Lighting Support ✅
 
 **Implemented**: 8 lighting render states + 6 MetalWrapper API functions
 
@@ -3585,7 +3585,7 @@ SetEmissiveMaterialSource(int source)
 
 **Technical Details**: Placeholder implementations with printf logging - actual Metal requires shader uniform updates for lighting equations
 
-### Phase 29.2: Metal Fog Support ✅
+### Phase 051.2: Metal Fog Support ✅
 
 **Implemented**: 7 fog render states + 6 MetalWrapper API functions
 
@@ -3616,7 +3616,7 @@ SetRangeFogEnabled(bool enabled)
 - EXP: factor = 1 / e^(density × z)
 - EXP2: factor = 1 / e^((density × z)²)
 
-### Phase 29.3: Metal Stencil Buffer Support ✅
+### Phase 051.3: Metal Stencil Buffer Support ✅
 
 **Implemented**: 8 stencil render states + 6 MetalWrapper API functions
 
@@ -3646,7 +3646,7 @@ SetStencilOp(int sfail, int dpfail, int dppass)
 
 **Technical Details**: Actual Metal implementation requires MTLDepthStencilDescriptor configuration
 
-### Phase 29.4: Metal Point Sprite Support ✅
+### Phase 051.4: Metal Point Sprite Support ✅
 
 **Implemented**: 8 point sprite render states + 6 MetalWrapper API functions
 
@@ -3691,7 +3691,7 @@ where D = distance from camera
 - Uses partial values (0.0f placeholders) for other coefficients
 - Full implementation requires adding `point_scale_a/b/c` fields to RenderStateStruct
 
-### Phase 29 Build Status
+### Phase 051 Build Status
 
 **Compilation**:
 
@@ -3708,20 +3708,20 @@ where D = distance from camera
 
 **Commit History**:
 
-1. `a91fcaaa` - Phase 29.1: Metal Lighting Support
-2. `ed3fd8a7` - Phase 29.2: Metal Fog Support
-3. `9d2b219f` - Phase 29.3: Metal Stencil Buffer Support
-4. `bd6b75d6` - Phase 29.4: Metal Point Sprite Support
+1. `a91fcaaa` - Phase 051.1: Metal Lighting Support
+2. `ed3fd8a7` - Phase 051.2: Metal Fog Support
+3. `9d2b219f` - Phase 051.3: Metal Stencil Buffer Support
+4. `bd6b75d6` - Phase 051.4: Metal Point Sprite Support
 
-### Next Steps: Phase 29.5 Testing & Validation
+### Next Steps: Phase 051.5 Testing & Validation
 
 **Goals**:
 
-- Review entire Phase 29 implementation
+- Review entire Phase 051 implementation
 - Test lighting, fog, stencil, point sprites with sample geometry
 - Performance validation
 - Update ROADMAP.md with completion status
-- Consider Phase 30 features (texture filtering, mipmapping, etc.)
+- Consider Phase 051 features (texture filtering, mipmapping, etc.)
 
 **Estimated Time**: 2-3 days
 
@@ -3731,7 +3731,7 @@ where D = distance from camera
 
 **MAJOR BREAKTHROUGH**: Native Metal backend successfully implemented and validated on macOS ARM64!
 
-### Phase 30 Complete Summary
+### Phase 051 Complete Summary
 
 - ✅ **Metal renders colored triangle** - Full shader pipeline working
 - ✅ **Buffer system operational** - Vertex/index buffers with Lock/Unlock
@@ -3754,13 +3754,13 @@ where D = distance from camera
 
 ---
 
-## Phase 31: Texture System Integration (October 19, 2025) ✅
+## Phase 051: Texture System Integration (October 19, 2025) ✅
 
-**Status**: ✅ **COMPLETE** - Textures loading via Phase 28.4, Phase 31 code as backup
+**Status**: ✅ **COMPLETE** - Textures loading via Phase 051.4, Phase 051 code as backup
 
 ### Summary
 
-Phase 31 implemented DDS/TGA loader integration with `textureloader.cpp`, but discovered **textures already work** through Phase 28.4 (`Apply_New_Surface()` → `TextureCache` → Metal backend). Phase 31 code serves as future-proof backup.
+Phase 051 implemented DDS/TGA loader integration with `textureloader.cpp`, but discovered **textures already work** through Phase 051.4 (`Apply_New_Surface()` → `TextureCache` → Metal backend). Phase 051 code serves as future-proof backup.
 
 ### In-Game Results (120s test, ESC exit)
 
@@ -3782,14 +3782,14 @@ Metal Backend Stability:
 
 ### Architecture Discovery
 
-**Active Path (Phase 28.4)**:
+**Active Path (Phase 051.4)**:
 
 ```
 DirectX (legacy) loads from .big → Apply_New_Surface() → 
 TextureCache::Load_From_Memory() → MetalWrapper::CreateTextureFromMemory() → MTLTexture
 ```
 
-**Implemented Path (Phase 31)** - NOT executed in-game:
+**Implemented Path (Phase 051)** - NOT executed in-game:
 
 ```
 textureloader.cpp::Load_Compressed_Mipmap() → DDSLoader::Load() → 
@@ -3799,7 +3799,7 @@ textureloader.cpp::Load_Uncompressed_Mipmap() → TGALoader::Load() →
 MetalWrapper::CreateTextureFromTGA() → MTLTexture
 ```
 
-**Why Phase 31 not called**: `Apply_New_Surface()` (Phase 28.4) intercepts BEFORE `Load_Compressed_Mipmap()` execution path.
+**Why Phase 051 not called**: `Apply_New_Surface()` (Phase 051.4) intercepts BEFORE `Load_Compressed_Mipmap()` execution path.
 
 ### Implementation Details
 
@@ -3825,9 +3825,9 @@ MetalWrapper::CreateTextureFromTGA() → MTLTexture
 
 ### Future Work
 
-- If Phase 28.4 removed (DirectX deprecation), enable Phase 31 by removing `Apply_New_Surface()` intercept
-- Performance comparison: Phase 28.4 (DirectX decode → Metal) vs Phase 31 (direct Metal)
-- .big VFS direct integration with DDSLoader/TGALoader (Phase 28.4 discovery showed why this failed)
+- If Phase 051.4 removed (DirectX deprecation), enable Phase 051 by removing `Apply_New_Surface()` intercept
+- Performance comparison: Phase 051.4 (DirectX decode → Metal) vs Phase 051 (direct Metal)
+- .big VFS direct integration with DDSLoader/TGALoader (Phase 051.4 discovery showed why this failed)
 
 **See**: `docs/PHASE31/INTEGRATION_COMPLETE.md` for full technical analysis
 
@@ -3858,13 +3858,13 @@ SDL2 → NSOpenGLContext → GLEngine → AppleMetalOpenGLRenderer
 
 **Date**: October 13, 2025
 
-**Status**: ✅ **STABLE RUNTIME** – Phase 28.9 complete! Game runs stably with SDL2 window, OpenGL rendering, and graceful exit. Memory corruption eliminated. 7/9 phases complete (78%). Ready for UI testing and texture rendering.
+**Status**: ✅ **STABLE RUNTIME** – Phase 051.9 complete! Game runs stably with SDL2 window, OpenGL rendering, and graceful exit. Memory corruption eliminated. 7/9 phases complete (78%). Ready for UI testing and texture rendering.
 
-## Latest Update (October 10, 2025 - Phase 28.9.11: Runtime Stability Achieved)
+## Latest Update (October 10, 2025 - Phase 051.9.11: Runtime Stability Achieved)
 
 **🎉 PHASE 28.9.11 COMPLETE: MEMORY CORRUPTION ELIMINATED - STABLE RUNTIME ACHIEVED**
 
-### Phase 28 Achievement Summary (Updated January 13, 2025)
+### Phase 051 Achievement Summary (Updated January 13, 2025)
 
 | Phase | Description | Status |
 |-------|-------------|--------|
@@ -3879,7 +3879,7 @@ SDL2 → NSOpenGLContext → GLEngine → AppleMetalOpenGLRenderer
 | 28.9 - Stability Fixes | Memory protection, crash prevention | ✅ **COMPLETE** |
 | **TOTAL** | **9 Phases** | **7/9 (78%) COMPLETE** |
 
-#### ✅ Phase 28.1-28.3: Game Engine Integration (January 13, 2025)
+#### ✅ Phase 051.1-28.3: Game Engine Integration (January 13, 2025)
 
 **MILESTONE**: Texture loading system successfully integrated with game engine's texture loading pipeline!
 
@@ -3898,14 +3898,14 @@ if (g_useMetalBackend) {
     const char* filepath = fullpath.Peek_Buffer();
     
     if (filepath && filepath[0] != '\0') {
-        printf("Phase 28: Loading texture via TextureCache: %s\n", filepath);
+        printf("Phase 051: Loading texture via TextureCache: %s\n", filepath);
         
         TextureCache* cache = TextureCache::Get_Instance();
         GLuint tex_id = cache->Get_Texture(filepath);
         
         if (tex_id != 0) {
             D3DTexture = reinterpret_cast<IDirect3DTexture8*>(static_cast<uintptr_t>(tex_id));
-            printf("Phase 28: Texture loaded successfully via Metal backend (ID: %u)\n", tex_id);
+            printf("Phase 051: Texture loaded successfully via Metal backend (ID: %u)\n", tex_id);
             return true;
         }
     }
@@ -3923,7 +3923,7 @@ if (g_useMetalBackend) {
 **Validation**:
 
 - ✅ Compilation successful (36 warnings, 0 errors) - January 13, 2025
-- ✅ Metal backend initializes: "Phase 29: Metal backend initialized successfully"
+- ✅ Metal backend initializes: "Phase 051: Metal backend initialized successfully"
 - ⏳ In-game texture loading: Awaiting menu rendering phase (textures loaded on demand)
 - ✅ Standalone test validated: defeated.dds (1024×256 BC3), GameOver.tga (1024×256 RGB8), caust00.tga (64×64 RGBA8)
 
@@ -3935,13 +3935,13 @@ if (g_useMetalBackend) {
 
 **Next Steps**:
 
-- Phase 28.7: Wait for menu rendering to trigger texture loads via Begin_Compressed_Load()
-- Expected logs: "Phase 28: Loading texture via TextureCache: Data/English/Art/Textures/..."
+- Phase 051.7: Wait for menu rendering to trigger texture loads via Begin_Compressed_Load()
+- Expected logs: "Phase 051: Loading texture via TextureCache: Data/English/Art/Textures/..."
 - Validation: Menu background and UI elements should display with Metal-rendered textures
 
 ### Recent Achievements (October 10, 2025)
 
-#### ✅ Phase 28.9.11: Block Pointer Validation - CRITICAL FIX
+#### ✅ Phase 051.9.11: Block Pointer Validation - CRITICAL FIX
 
 **BREAKTHROUGH**: Eliminated memory corruption crash in `getOwningBlob()` - game now runs stably until manual exit!
 
@@ -3949,7 +3949,7 @@ if (g_useMetalBackend) {
 
 - **Symptom**: Segfault at address `0xaffffffe8` in `MemoryPoolSingleBlock::getOwningBlob()`
 - **Root Cause**: `block` pointer was corrupted BEFORE calling `getOwningBlob()`
-- **Previous Protection**: Phase 28.9.7 validated `owning_blob` AFTER calling `getOwningBlob()` - too late!
+- **Previous Protection**: Phase 051.9.7 validated `owning_blob` AFTER calling `getOwningBlob()` - too late!
 - **Crash Location**: `GameMemory.cpp:572` trying to access `block->m_owningBlob`
 
 **Solution Implemented**:
@@ -3958,7 +3958,7 @@ if (g_useMetalBackend) {
 // Core/GameEngine/Source/Common/System/GameMemory.cpp
 MemoryPoolSingleBlock *block = MemoryPoolSingleBlock::recoverBlockFromUserData(pBlockPtr);
 
-// Phase 28.9.11: Validate block pointer BEFORE any access
+// Phase 051.9.11: Validate block pointer BEFORE any access
 if (!block || (uintptr_t)block < 0x1000) {
     printf("MEMORY CORRUPTION: Invalid block pointer %p in freeBytes (userData=%p)\n", 
         (void*)block, pBlockPtr);
@@ -3975,42 +3975,42 @@ if (!block || (uintptr_t)block < 0x1000) {
 - ✅ Clean exit with Ctrl+Q
 - ✅ Blue/gray background (textures disabled - expected)
 
-#### Previous Stability Fixes (Phase 28.9.5b-28.9.10)
+#### Previous Stability Fixes (Phase 051.9.5b-28.9.10)
 
-**Phase 28.9.5b-28.9.6**: Initial Protection
+**Phase 051.9.5b-28.9.6**: Initial Protection
 
 - Memory pool validation
 - GL_DEBUG_OUTPUT disabled to reduce noise
 
-**Phase 28.9.7**: Memory & Exit Handling
+**Phase 051.9.7**: Memory & Exit Handling
 
 - NULL pointer validation for owning_blob/owning_pool (buggy - validated too late)
 - SDL_QUIT re-enabled for window close
 
-**Phase 28.9.8**: Path Compatibility
+**Phase 051.9.8**: Path Compatibility
 
 - Fixed Windows `\` to Unix `/` in MapCache.ini paths
 - File creates correctly in Maps/ directory
 
-**Phase 28.9.9**: Output Sanitization
+**Phase 051.9.9**: Output Sanitization
 
 - Suppressed Metal shader binary dump to stdout
 - Clean terminal output during execution
 
-**Phase 28.9.10**: Texture Crash Prevention
+**Phase 051.9.10**: Texture Crash Prevention
 
 - Disabled texture creation to prevent AGXMetal crash
 - Returns stub texture ID (1) instead of real textures
 - Expected: No rendering (blue/gray screen)
 
-**Files Modified in Phase 28.9**:
+**Files Modified in Phase 051.9**:
 
 - `Core/GameEngine/Source/Common/System/GameMemory.cpp` - Block pointer validation
 - `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp` - Texture disabled, logs suppressed
 - `GeneralsMD/Code/GameEngine/Source/Common/System/SaveGame/GameState.cpp` - Path separators
 - `GeneralsMD/Code/GameEngineDevice/Source/Win32Device/Common/Win32GameEngine.cpp` - SDL_QUIT
 
-**Runtime Status (Phase 28.9.11)**:
+**Runtime Status (Phase 051.9.11)**:
 
 - ✅ SDL2 window opens and displays
 - ✅ OpenGL 2.1 Compatibility Profile context
@@ -4020,7 +4020,7 @@ if (!block || (uintptr_t)block < 0x1000) {
 - ✅ Stable until manual exit
 - ⚠️ No textures (creation disabled)
 
-#### ⏸️ Phase 28.7: UI Testing & Texture Loading (Deferred)
+#### ⏸️ Phase 051.7: UI Testing & Texture Loading (Deferred)
 
 **PARTIAL SUCCESS**: Game executes completely, SDL2/OpenGL initialized, shaders loaded, but texture loading not triggered during initialization.
 
@@ -4047,7 +4047,7 @@ if (!block || (uintptr_t)block < 0x1000) {
 
 **Root Cause Analysis**:
 
-The texture system (Phase 28.1-28.5) is **correctly implemented and integrated**, but remains **dormant** because:
+The texture system (Phase 051.1-28.5) is **correctly implemented and integrated**, but remains **dormant** because:
 
 - Game initialization focuses on data loading (INI, BIG files, MapCache)
 - No 3D geometry rendering occurs during startup
@@ -4056,8 +4056,8 @@ The texture system (Phase 28.1-28.5) is **correctly implemented and integrated**
 
 **Next Steps**:
 
-- Phase 28.8 (Font Support) deferred - font system uses CPU-based glyph management
-- Phase 28.9 (Skirmish Test) required for full texture system validation
+- Phase 051.8 (Font Support) deferred - font system uses CPU-based glyph management
+- Phase 051.9 (Skirmish Test) required for full texture system validation
 - Alternative: Add debug logging in TextureClass::Init() to verify file loading paths
 
 **Files Modified**:
@@ -4067,11 +4067,11 @@ The texture system (Phase 28.1-28.5) is **correctly implemented and integrated**
 
 ---
 
-## Previous Update (October 10, 2025 - Phase 28.5: DX8 Wrapper Integration)
+## Previous Update (October 10, 2025 - Phase 051.5: DX8 Wrapper Integration)
 
 **🎉 PHASE 28.5 COMPLETE: Full Texture System Integration with DX8 Wrapper! (100%)**
 
-### Phase 28 Achievement Summary
+### Phase 051 Achievement Summary
 
 | Phase | Description | Status |
 |-------|-------------|--------|
@@ -4088,7 +4088,7 @@ The texture system (Phase 28.1-28.5) is **correctly implemented and integrated**
 
 ### Recent Achievements (October 10, 2025)
 
-#### ✅ Phase 28.5: DX8 Wrapper Integration (100%)
+#### ✅ Phase 051.5: DX8 Wrapper Integration (100%)
 
 **BREAKTHROUGH**: Complete texture system integrated with DX8 wrapper! TextureClass::Apply() now uses TextureCache for all texture loading. Fixed all DDSData API mismatches, added platform protection, and achieved successful build with 0 errors.
 
@@ -4111,7 +4111,7 @@ The texture system (Phase 28.1-28.5) is **correctly implemented and integrated**
      - `DDSFormat::DXT1/DXT3/DXT5` → `DDS_FORMAT_DXT1/DXT3/DXT5`
      - `DDSFormat::RGB8` → `DDS_FORMAT_RGB8`
    - Added dds_loader.cpp, tga_loader.cpp to CMakeLists.txt
-   - Platform protection: All Phase 28 files wrapped with `#ifndef _WIN32`
+   - Platform protection: All Phase 051 files wrapped with `#ifndef _WIN32`
 
 4. ✅ **Build Success**
    - Compilation: 0 errors, 129 pre-existing warnings
@@ -4119,22 +4119,22 @@ The texture system (Phase 28.1-28.5) is **correctly implemented and integrated**
    - Exit code: 0
    - Deployed to $HOME/GeneralsX/GeneralsMD/
 
-**Files Created** (Phase 28.1-28.5):
+**Files Created** (Phase 051.1-28.5):
 
 - `dds_loader.cpp/.h` (260 lines) - DDS format parser
 - `tga_loader.cpp/.h` (315 lines) - TGA format parser
 - `texture_upload.cpp/.h` (250 lines) - OpenGL upload pipeline
 - `texture_cache.cpp/.h` (300 lines) - Singleton cache with refcounting
 
-**Next Steps**: Phase 28.6 - Runtime validation with actual game assets
+**Next Steps**: Phase 051.6 - Runtime validation with actual game assets
 
 ---
 
-## Previous Update (October 7, 2025 - Phase 27.5: Complete Testing & Validation Suite)
+## Previous Update (October 7, 2025 - Phase 051.5: Complete Testing & Validation Suite)
 
 **🎉 PHASE 27.5 COMPLETE: All Testing, Validation, and Documentation Finished! (100%)**
 
-### Phase 27 Achievement Summary
+### Phase 051 Achievement Summary
 
 | Phase | Tasks | Completed | Status |
 |-------|-------|-----------|--------|
@@ -4148,9 +4148,9 @@ The texture system (Phase 28.1-28.5) is **correctly implemented and integrated**
 
 ### Recent Achievements (October 7, 2025)
 
-#### ✅ Phase 27.5: Complete Testing & Validation Suite (100%)
+#### ✅ Phase 051.5: Complete Testing & Validation Suite (100%)
 
-**BREAKTHROUGH**: All Phase 27.5 tasks completed! Runtime testing successful (144,712 log lines, exit code 0), comprehensive shader debugging infrastructure operational (0 GL errors), performance baseline established (10s init, 14,471 lines/sec), texture loading designed (implementation deferred to Phase 28), and complete backport guide updated with 430+ lines of Phase 27.5 documentation.
+**BREAKTHROUGH**: All Phase 051.5 tasks completed! Runtime testing successful (144,712 log lines, exit code 0), comprehensive shader debugging infrastructure operational (0 GL errors), performance baseline established (10s init, 14,471 lines/sec), texture loading designed (implementation deferred to Phase 051), and complete backport guide updated with 430+ lines of Phase 051.5 documentation.
 
 **Tasks Completed**:
 
@@ -4177,11 +4177,11 @@ The texture system (Phase 28.1-28.5) is **correctly implemented and integrated**
 4. ✅ **Task 27.5.4**: Texture Loading Design
    - Design document created (PHASE27/TEXTURE_LOADING_DESIGN.md)
    - Architecture fully documented
-   - Implementation pragmatically deferred to Phase 28
+   - Implementation pragmatically deferred to Phase 051
 
 5. ✅ **Task 27.5.5**: Backport Guide Update
    - PHASE27/OPENGL_BACKPORT_GUIDE.md updated with 430+ lines
-   - All Phase 27.5 procedures documented
+   - All Phase 051.5 procedures documented
    - Complete code examples and troubleshooting
 
 **Documentation Created**:
@@ -4192,18 +4192,18 @@ The texture system (Phase 28.1-28.5) is **correctly implemented and integrated**
 
 **Commits**:
 
-- `ee68dc65` - feat(opengl): complete Phase 27.5 testing and documentation
+- `ee68dc65` - feat(opengl): complete Phase 051.5 testing and documentation
 
-#### 🔄 Phase 27.6: Final Documentation Update (In Progress - 83%)
+#### 🔄 Phase 051.6: Final Documentation Update (In Progress - 83%)
 
-**CURRENT TASK**: Updating all project documentation with Phase 27 completion status, achievements, and next steps.
+**CURRENT TASK**: Updating all project documentation with Phase 051 completion status, achievements, and next steps.
 
 **Files Being Updated**:
 
 1. ✅ PHASE27/TODO_LIST.md (corrected to 26/32 tasks, 81%)
-2. ✅ MACOS_PORT_DIARY.md (this file - updated with Phase 27.5 and Generals investigation)
+2. ✅ MACOS_PORT_DIARY.md (this file - updated with Phase 051.5 and Generals investigation)
 3. ⏳ OPENGL_SUMMARY.md (pending - final implementation documentation)
-4. ⏳ NEXT_STEPS.md (pending - post-Phase 27 roadmap)
+4. ⏳ NEXT_STEPS.md (pending - post-Phase 051 roadmap)
 5. ⏳ .github/copilot-instructions.md (pending - AI agent context update)
 6. ⏳ PHASE27/COMPLETION_SUMMARY.md (pending - consolidated report)
 
@@ -4211,7 +4211,7 @@ The texture system (Phase 28.1-28.5) is **correctly implemented and integrated**
 
 ---
 
-## 🔍 Phase 27.7: Generals Base Game Investigation (October 9, 2025)
+## 🔍 Phase 051.7: Generals Base Game Investigation (October 9, 2025)
 
 ### ❌ Generals (Base Game) Linking Issue - ROOT CAUSE IDENTIFIED
 
@@ -4338,7 +4338,7 @@ Int APIENTRY WinMain(...) {
 - ✅ GeneralsMD: All code compiles on macOS → full symbol table → 14.7MB executable
 - ❌ Generals: #ifdef in function bodies → stub code only → 79KB executable
 
-#### Decision: Postpone "Phase 27 Generals" Port
+#### Decision: Postpone "Phase 051 Generals" Port
 
 **Estimated Effort**: 7-11 hours for complete cross-platform port
 
@@ -4356,7 +4356,7 @@ Int APIENTRY WinMain(...) {
 
 **Strategic Decision**:
 
-- ✅ **Postpone Generals base game** to future dedicated "Phase 27 Generals" epic
+- ✅ **Postpone Generals base game** to future dedicated "Phase 051 Generals" epic
 - ✅ **Focus on GeneralsMD (Zero Hour)** - 14.7MB, 31,891 symbols, ready for testing
 - ✅ Approach: Implement all OpenGL features in GeneralsMD first, then backport to Generals
 
@@ -4388,18 +4388,18 @@ Int APIENTRY WinMain(...) {
 **Current Status**:
 
 - ✅ **GeneralsMD (Zero Hour)**: 14.7MB, 31,891 symbols, OpenGL/SDL2 integrated, **READY FOR TESTING**
-- ❌ **Generals (Base Game)**: 79KB stub, 103 symbols, **BLOCKED** - requires "Phase 27 Generals" port (7-11 hours)
+- ❌ **Generals (Base Game)**: 79KB stub, 103 symbols, **BLOCKED** - requires "Phase 051 Generals" port (7-11 hours)
 
 **Next Steps**:
 
-1. Complete Phase 27.6-27.8 documentation for GeneralsMD
+1. Complete Phase 051.6-27.8 documentation for GeneralsMD
 2. Begin GeneralsMD runtime testing and validation
-3. Future: Implement "Phase 27 Generals" epic following GeneralsMD pattern
+3. Future: Implement "Phase 051 Generals" epic following GeneralsMD pattern
 4. Backport OpenGL implementation from GeneralsMD → Generals after testing complete
 
 ---
 
-#### ✅ Phase 27.5.2: Shader Debugging Infrastructure Complete
+#### ✅ Phase 051.5.2: Shader Debugging Infrastructure Complete
 
 **BREAKTHROUGH**: Comprehensive OpenGL error checking and debugging infrastructure implemented! All critical GL operations now have error detection, advanced debug output callback system, and safe uniform location retrieval.
 
@@ -4441,14 +4441,14 @@ Int APIENTRY WinMain(...) {
    - **Unbind operations** (2 error checks):
      - VAO unbind
      - VBO unbind
-   - **Draw calls**: glDrawElements error checking (already present from Phase 27.4.1)
+   - **Draw calls**: glDrawElements error checking (already present from Phase 051.4.1)
 
 **Impact**:
 
 - Systematic error detection across all critical OpenGL operations
 - Advanced debugging capabilities for development (GL_DEBUG_OUTPUT)
 - Production-ready error logging for release builds
-- Foundation for Phase 27.5.1 (Runtime Testing) validation
+- Foundation for Phase 051.5.1 (Runtime Testing) validation
 
 **Technical Highlights**:
 
@@ -4457,7 +4457,7 @@ Int APIENTRY WinMain(...) {
 - GL 4.3+ advanced debugging with graceful fallback
 - Context-aware error messages for faster debugging
 
-#### ✅ Phase 27.5.1: Basic Runtime Testing Complete
+#### ✅ Phase 051.5.1: Basic Runtime Testing Complete
 
 **MAJOR BREAKTHROUGH**: GeneralsXZH executes successfully with full engine initialization! SDL2/OpenGL infrastructure validated through 144,712 lines of runtime execution with clean shutdown (exit code 0).
 
@@ -4485,13 +4485,13 @@ Int APIENTRY WinMain(...) {
 
 3. ✅ GameEngine::init() Completion
    - All core subsystems initialized successfully
-   - TheControlBar initialized early (Phase 23.3 fix operational)
+   - TheControlBar initialized early (Phase 051.3 fix operational)
    - TheThingFactory, TheGameClient initialization sequence successful
 
 4. ✅ SDL2 Window Creation
    - Window created successfully: 800x600 pixels, fullscreen mode
    - OpenGL context established (no GL errors reported)
-   - Phase 27.1.3 SDL2 infrastructure validated
+   - Phase 051.1.3 SDL2 infrastructure validated
 
 5. ✅ GameEngine::execute() Execution
    - FrameRateLimit initialized (frequency: 1,000,000,000 ns)
@@ -4499,7 +4499,7 @@ Int APIENTRY WinMain(...) {
    - Frame timing system operational
 
 6. ✅ Clean Shutdown
-   - Phase 27.1.4 SDL2 cleanup executed
+   - Phase 051.1.4 SDL2 cleanup executed
    - OpenGL context destroyed properly
    - SDL2 window destroyed properly
    - All resources released successfully
@@ -4509,7 +4509,7 @@ Int APIENTRY WinMain(...) {
 
 - **ShadersZH.big Loading**: Successfully loaded game shaders from archive
 - **Shader Field Parsing**: Universal INI protection handled 45+ shader INI field exceptions (expected behavior)
-- **Phase 27.5.2 Error Checking**: No GL errors reported during execution
+- **Phase 051.5.2 Error Checking**: No GL errors reported during execution
 - **GL_DEBUG_OUTPUT**: Debug callback system ready but requires GL 4.3+ (macOS has GL 4.1 Core)
 
 **Validation Outcomes**:
@@ -4530,7 +4530,7 @@ Int APIENTRY WinMain(...) {
 
 ### Previous Achievements (January 7, 2025)
 
-#### ✅ Phase 27.4: Rendering & States Complete (Tasks 27.4.2-27.4.9)
+#### ✅ Phase 051.4: Rendering & States Complete (Tasks 27.4.2-27.4.9)
 
 **BREAKTHROUGH**: Complete DirectX8→OpenGL render state translation layer implemented! All critical rendering states, advanced effects (alpha testing, fog, stencil, point sprites), and texture stage states fully functional.
 
@@ -4623,11 +4623,11 @@ Int APIENTRY WinMain(...) {
 
 **Impact**:
 
-- **Phase 27.4 Complete**: All 9 rendering tasks finished (100%)
-- **Overall Progress**: 24/32 tasks (75% of Phase 27)
+- **Phase 051.4 Complete**: All 9 rendering tasks finished (100%)
+- **Overall Progress**: 24/32 tasks (75% of Phase 051)
 - **Next Phase**: 27.5 Runtime Testing (5 tasks) - deploy to $HOME/GeneralsX/GeneralsMD/ and validate OpenGL rendering
 
-#### ✅ Phase 27.2: Buffer & Shader Abstraction Complete (Tasks 27.2.4-27.2.6)
+#### ✅ Phase 051.2: Buffer & Shader Abstraction Complete (Tasks 27.2.4-27.2.6)
 
 **Files Modified**:
 
@@ -4659,7 +4659,7 @@ Int APIENTRY WinMain(...) {
 3. **Task 27.2.6: Backport Documentation** ✅
    - PHASE27/TODO_LIST.md updated with completion status
    - Implementation details documented for future Generals base backport
-   - Ready for Phase 27.7 backport execution
+   - Ready for Phase 051.7 backport execution
 
 **Implementations**:
 
@@ -4689,7 +4689,7 @@ Int APIENTRY WinMain(...) {
 
 **Build Time**: 22:56 (797 files compiled, 0 errors, warnings only)
 
-#### ✅ Phase 27.4.1: Primitive Draw Calls Complete
+#### ✅ Phase 051.4.1: Primitive Draw Calls Complete
 
 **File Modified**: `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/dx8wrapper.cpp`
 
@@ -4720,14 +4720,14 @@ Int APIENTRY WinMain(...) {
 
 **Git Commits**:
 
-- `4ff9651f` - feat(opengl): implement Phase 27.3-27.4.1 uniform updates and draw calls
-- `ae40f803` - docs(phase27): update NEXT_STEPS.md with Phase 27.3-27.4.1 achievements
+- `4ff9651f` - feat(opengl): implement Phase 051.3-27.4.1 uniform updates and draw calls
+- `ae40f803` - docs(phase27): update NEXT_STEPS.md with Phase 051.3-27.4.1 achievements
 
 ### Implementation Strategy for Generals Base Backport
 
 **Current Approach**: All OpenGL implementations are being done in **GeneralsMD (Zero Hour)** first, then will be backported to **Generals (base game)**.
 
-**Backport Checklist** (to be executed after Phase 27 completion):
+**Backport Checklist** (to be executed after Phase 051 completion):
 
 1. ✅ Copy OpenGL shader files from `resources/shaders/` (basic.vert, basic.frag)
 2. ✅ Copy SDL2 window creation code from `W3DDisplay.cpp`
@@ -4763,7 +4763,7 @@ Int APIENTRY WinMain(...) {
 
 - ✅ GeneralsZH compilation verified (797/797 files, 129 warnings)
 - ✅ GeneralsZH execution tested (exit code 0, all subsystems initialized)
-- ✅ NEXT_STEPS.md updated with Phase 25.4 results
+- ✅ NEXT_STEPS.md updated with Phase 051.4 results
 - ✅ Git commit: Documentation changes (7192268a)
 
 #### Wave 2: Debug Log Consistency ✅
@@ -4870,7 +4870,7 @@ Runtime validation (macOS ARM64) - **Zero Hour**:
 - ✅ Font pipeline stable: Store_GDI_Char macOS fallback working; Blit_Char has NULL-pointer guards validated during InGameUI/ControlBar text processing (e.g., "GUI:DeleteBeacon").
 - ✅ Map systems remain stable (MapCache protections intact; 146 map files observed during scanning in prior runs).
 
-Immediate next focus (carry-over from Phase 25.0):
+Immediate next focus (carry-over from Phase 051.0):
 
 - Implement OpenGL window/context creation in W3DDisplay path (evaluate GLFW/SDL2; no code changes yet).
 - Introduce keyboard/mouse input wiring for macOS (headless guards remain as fallback).
@@ -5008,7 +5008,7 @@ Recent progression confirms the following end-game subsystems initialize success
 
 Update (Sep 29, 2025): Implemented robust INI loading in `SubsystemInterfaceList::initSubsystem` to gracefully skip missing localized files like `Data\\<lang>\\CommandMap.ini` and continue with `Data\\INI\\CommandMap.ini`. Removed a duplicate `AsciiString` stub that could corrupt runtime state. Result validated: TheMetaMap initializes; engine proceeds through TheActionManager → TheGameStateMap → TheGameState → TheGameResultsQueue. Now parsing `Maps\\MapCache.ini` without fatal errors.
 
-### Phase 23.4 - DirectX8 Texture Mock Implementation (September 2025)
+### Phase 051.4 - DirectX8 Texture Mock Implementation (September 2025)
 
 **Status**: 🎯 **IN PROGRESS** - Major breakthrough: DirectX8 device and texture/surface mocks implemented. Engine reaches and passes MissingTexture initialization.
 
@@ -5019,7 +5019,7 @@ Update (Sep 29, 2025): Implemented robust INI loading in `SubsystemInterfaceList
 - ✅ **DEVICE INITIALIZATION SUCCESS**: W3DShaderManager, DX8Caps, and device creation working with proper mock interfaces
 - ✅ **GRAPHICS PIPELINE PROGRESS**: Advanced to MissingTexture creation in DirectX8 wrapper initialization
 
-### Phase 23.5 – IndexBuffer Mock (macOS)
+### Phase 051.5 – IndexBuffer Mock (macOS)
 
 Status: Implemented a CPU-backed mock for IDirect3DIndexBuffer8 (CORE_MockIndexBuffer8) in Core d3d8.h and wired CORE_IDirect3DDevice8::CreateIndexBuffer to allocate it on non-Windows.
 
@@ -5033,7 +5033,7 @@ Next Up:
 - Mirror the approach for vertex buffers (CreateVertexBuffer + Lock/Unlock) to preempt similar crashes.
 - Add minimal GetDesc support where needed by callers.
 
-### Additional Phase 23.4 Progress (September 2025)
+### Additional Phase 051.4 Progress (September 2025)
 
 macOS Headless Mode (Input):
 
@@ -5063,7 +5063,7 @@ DXGL Reference Integration:
 - Value: Patterns for DirectX API mocking and OpenGL integration.
 - Techniques applied: Mock interface patterns, capability emulation, functional stubs, graceful error handling for unsupported features.
 
-**🎯 NEW CRASH LOCATION (Phase 23.4) – RESOLVED THIS SESSION**:
+**🎯 NEW CRASH LOCATION (Phase 051.4) – RESOLVED THIS SESSION**:
 
 ```cpp
 // MissingTexture::_Init() - DirectX8 texture interface crash
@@ -5083,20 +5083,20 @@ DXGL Reference Integration:
 **🎯 CURRENT CRASH LOCATION**:
 
 ```cpp
-// Phase 23.4 - MissingTexture Crash Analysis:
+// Phase 051.4 - MissingTexture Crash Analysis:
 * thread #1, stop reason = EXC_BAD_ACCESS (code=1, address=0x0)  
 * frame #0: MissingTexture::_Init() at missingtexture.cpp:76 [tex->LockRect()]
 * frame #1: DX8Wrapper::Do_Onetime_Device_Dependent_Inits() at dx8wrapper.cpp:439
 ```
 
-**🛡️ SOLUTION IMPLEMENTED (Phase 23.3 → 23.4)**:
+**🛡️ SOLUTION IMPLEMENTED (Phase 051.3 → 23.4)**:
 
 - ✅ **DirectX8 Interface Mocking**: Replaced invalid pointer placeholders ((IDirect3D8*)1, (IDirect3DDevice8*)2) with functional mock classes
 - ✅ **Static Mock Instances**: Created static g_mockD3DInterface and g_mockD3DDevice instances using CORE_IDirect3D8 and CORE_IDirect3DDevice8
 - ✅ **Method Implementation**: Mock interfaces provide functional GetAdapterIdentifier, SetRenderState, and device capability methods
 - ✅ **Device Creation Pipeline**: DX8Wrapper::Create_Device now uses real mock objects enabling proper device initialization flow
 
-**🎯 NEXT PHASE REQUIREMENTS (Phase 23.4)**:
+**🎯 NEXT PHASE REQUIREMENTS (Phase 051.4)**:
 
 - 🎯 Validate auxiliary calls exercised by W3D: CreateImageSurface, CopyRects, and level descriptors.
 - 🎯 Add DX8Wrapper logs around MissingTexture and device-dependent inits for explicit confirmation in runtime logs.
@@ -5119,7 +5119,7 @@ DXGL Reference Integration:
 - MSGNEW macro returning NULL pointer at line 273
 - Memory management system analysis required
 
-### Phase 22.9 - Universal INI Protection: in-block resync (January 2025)
+### Phase 051.9 - Universal INI Protection: in-block resync (January 2025)
 
 Status: In-progress hardening of the INI loader to keep initialization moving even with unsupported or malformed fields.
 
@@ -5380,9 +5380,9 @@ if (vectorSize > 100000) { // Detect massive corruption
 
 ---
 
-## 🎯 Previous Overview (Phase 13)
+## 🎯 Previous Overview (Phase 051)
 
-**🎉 MAJOR BREAKTHROUGH (September 16, 2025)**: **Phase 13 VECTOR TYPE SYSTEM UNIFIED!** ✅ Successfully resolved all Vector3/Coord3D type conflicts, reduced errors from 120+ to ~80, and achieved first successful compilation of W3DModelDraw.cpp (main graphics module)!
+**🎉 MAJOR BREAKTHROUGH (September 16, 2025)**: **Phase 051 VECTOR TYPE SYSTEM UNIFIED!** ✅ Successfully resolved all Vector3/Coord3D type conflicts, reduced errors from 120+ to ~80, and achieved first successful compilation of W3DModelDraw.cpp (main graphics module)!
 
 **🚀 PHASE 13 CROSS-PLATFORM TYPE SYSTEM COMPLETION (September 16, 2025)**:
 
@@ -5461,7 +5461,7 @@ return texture; // CORE_IDirect3DTexture8* vs IDirect3DTexture8*- ✅ **Cross-Pl
 
 SurfaceClass surface; // Constructor mismatch
 
-```**🔧 PHASE 5 AUDIO & MULTIMEDIA API IMPLEMENTATION COMPLETE!** ✅ Successfully implemented comprehensive DirectSound compatibility layer using OpenAL backend, multimedia timer system, and cross-platform audio infrastructure. All Phase 5 compilation completed successfully with 24MB libww3d2.a library generated!
+```**🔧 PHASE 5 AUDIO & MULTIMEDIA API IMPLEMENTATION COMPLETE!** ✅ Successfully implemented comprehensive DirectSound compatibility layer using OpenAL backend, multimedia timer system, and cross-platform audio infrastructure. All Phase 06 compilation completed successfully with 24MB libww3d2.a library generated!
 
 
 
@@ -5485,7 +5485,7 @@ SurfaceClass surface; // Constructor mismatch
 
 - `GeneralsMD/Code/Libraries/Source/WWVegas/WW3D2/d3d8.h`- ✅ **Type Compatibility**: DWORD, CALLBACK, MMRESULT definitions with proper Windows API semantics and cross-platform support
 
-- `Core/Libraries/Source/WWVegas/WW3D2/d3d8.h`- ✅ **Compilation Success**: 100/100 files compiled successfully, 24MB libww3d2.a library generated with full Phase 5 integration
+- `Core/Libraries/Source/WWVegas/WW3D2/d3d8.h`- ✅ **Compilation Success**: 100/100 files compiled successfully, 24MB libww3d2.a library generated with full Phase 06 integration
 
 
 
@@ -5573,11 +5573,11 @@ STARTUPINFOW si;             // Windows process startup info- ✅ **Cross-Platfo
 
 **🎉 MASSIVE BREAKTHROUGH (September 10, 2025)**: DirectX compatibility layer major resolution! Achieved successful compilation of 10+ files with comprehensive interface corrections and function conflict resolution.
 
-### Phase 1-9 Complete Implementation
+### Phase 02-9 Complete Implementation
 
 The macOS port has achieved major milestones by successfully compiling all core game engine libraries and resolving complex DirectX compatibility challenges:
 
-**✅ Configuration System (Phase 1)**:1. **All Core Libraries Compiled** - ✅ **COMPLETE** - libww3d2.a (23MB), libwwlib.a (1.3MB), libwwmath.a (2.3MB), etc.
+**✅ Configuration System (Phase 02)**:1. **All Core Libraries Compiled** - ✅ **COMPLETE** - libww3d2.a (23MB), libwwlib.a (1.3MB), libwwmath.a (2.3MB), etc.
 
 - Complete Windows Registry API replacement with INI-based ConfigManager2. **Comprehensive Windows API Layer** - ✅ **COMPLETE** - 16+ compatibility headers with proper guards
 
@@ -5585,7 +5585,7 @@ The macOS port has achieved major milestones by successfully compiling all core 
 
 4. **Profile & Debug Systems** - ✅ **COMPLETE** - Full __forceinline compatibility and performance profiling
 
-**✅ Core Windows APIs (Phase 2)**:5. **Type System Resolution** - ✅ **COMPLETE** - All typedef conflicts resolved with proper include guards
+**✅ Core Windows APIs (Phase 03)**:5. **Type System Resolution** - ✅ **COMPLETE** - All typedef conflicts resolved with proper include guards
 
 - Threading API: pthread-based CreateThread, WaitForSingleObject, mutexes6. **DirectX Header Coordination** - ✅ **COMPLETE** - All enum redefinition conflicts resolved (D3DPOOL, D3DUSAGE, D3DRS_*, D3DTS_*)
 
@@ -5593,7 +5593,7 @@ The macOS port has achieved major milestones by successfully compiling all core 
 
 - Network API: Socket compatibility with Win32Net namespace isolation8. **Critical Syntax Error Resolution** - ✅ **COMPLETE** - Fixed duplicate #ifndef _WIN32 guards causing compilation failure
 
-**✅ DirectX/Graphics APIs (Phase 3)**:**Executive Summary**:
+**✅ DirectX/Graphics APIs (Phase 04)**:**Executive Summary**:
 
 - Complete DirectX 8 interface stubs with D3D structures and constants- ✅ **All Core Libraries Successfully Compiled** - Complete game engine foundation ready
 
@@ -5603,7 +5603,7 @@ The macOS port has achieved major milestones by successfully compiling all core 
 
 - ✅ **Profile System Working** - Performance profiling with uint64_t/int64_t corrections
 
-**✅ Memory Management APIs (Phase 4)**:- ✅ **Debug System Working** - __forceinline compatibility successfully implemented
+**✅ Memory Management APIs (Phase 05)**:- ✅ **Debug System Working** - __forceinline compatibility successfully implemented
 
 - Heap APIs: HeapAlloc/HeapFree with malloc/free backend- ✅ **DirectX Header Coordination** - All enum redefinition conflicts resolved across Core and Generals
 
@@ -5613,7 +5613,7 @@ The macOS port has achieved major milestones by successfully compiling all core 
 
 - ✅ **DirectX Typedef Resolution COMPLETE** - Zero compilation errors achieved for g_ww3d2 target through LP* coordination
 
-**✅ Audio & Multimedia APIs (Phase 5)**:- 🎯 **Next milestone** - Extend successful typedef resolution pattern to remaining DirectX targets and complete full game compilation
+**✅ Audio & Multimedia APIs (Phase 06)**:- 🎯 **Next milestone** - Extend successful typedef resolution pattern to remaining DirectX targets and complete full game compilation
 
 - DirectSound compatibility layer planning
 
@@ -5623,23 +5623,23 @@ The macOS port has achieved major milestones by successfully compiling all core 
 
 ### Complete macOS Port Roadmap
 
-**✅ Advanced Windows APIs (Phase 6-8)**:- **✅ Phase 1**: Cross-platform configuration (RegOpenKeyEx → INI files)
+**✅ Advanced Windows APIs (Phase 07-8)**:- **✅ Phase 02**: Cross-platform configuration (RegOpenKeyEx → INI files)
 
-- File system enumeration: WIN32_FIND_DATA, FindFirstFile- **✅ Phase 2**: Core Windows APIs (CreateThread, CreateDirectory, socket functions)
+- File system enumeration: WIN32_FIND_DATA, FindFirstFile- **✅ Phase 03**: Core Windows APIs (CreateThread, CreateDirectory, socket functions)
 
-- Date/time formatting: GetDateFormat, GetTimeFormat- **✅ Phase 3**: DirectX/Graphics APIs (D3D device creation, rendering pipeline, texture operations)
+- Date/time formatting: GetDateFormat, GetTimeFormat- **✅ Phase 04**: DirectX/Graphics APIs (D3D device creation, rendering pipeline, texture operations)
 
-- Window management: SetWindowPos, MessageBox system- **✅ Phase 4**: Memory management & performance APIs (HeapAlloc, VirtualAlloc, QueryPerformanceCounter)
+- Window management: SetWindowPos, MessageBox system- **✅ Phase 05**: Memory management & performance APIs (HeapAlloc, VirtualAlloc, QueryPerformanceCounter)
 
-- Memory status: MEMORYSTATUS, GlobalMemoryStatus- **✅ Phase 5**: Audio & multimedia APIs (DirectSound, multimedia timers, codec support)
+- Memory status: MEMORYSTATUS, GlobalMemoryStatus- **✅ Phase 06**: Audio & multimedia APIs (DirectSound, multimedia timers, codec support)
 
-- **✅ Phase 6**: File system & datetime APIs (WIN32_FIND_DATA, GetDateFormat, memory status)
+- **✅ Phase 07**: File system & datetime APIs (WIN32_FIND_DATA, GetDateFormat, memory status)
 
-**✅ Network & Graphics Enhancement (Phase 9)**:- **✅ Phase 7**: IME & input system APIs (complete Input Method Editor compatibility layer)
+**✅ Network & Graphics Enhancement (Phase 10)**:- **✅ Phase 08**: IME & input system APIs (complete Input Method Editor compatibility layer)
 
-- Socket parameter compatibility: socklen_t corrections- **🎯 Phase 8**: DirectX Graphics & Device APIs (final rendering pipeline completion)
+- Socket parameter compatibility: socklen_t corrections- **🎯 Phase 09**: DirectX Graphics & Device APIs (final rendering pipeline completion)
 
-- Network structure fixes: in_addr.s_addr standardization- **📋 Phase 9**: Final linking and runtime validation
+- Network structure fixes: in_addr.s_addr standardization- **📋 Phase 10**: Final linking and runtime validation
 
 - SNMP component isolation with conditional compilation
 
@@ -5729,7 +5729,7 @@ The macOS port has achieved major milestones by successfully compiling all core 
 
 2. Implement macOS debug output alternatives
 
-3. Create cross-platform debug logging system### 🎯 Phase 1: Cross-Platform Configuration System (COMPLETE ✅)
+3. Create cross-platform debug logging system### 🎯 Phase 02: Cross-Platform Configuration System (COMPLETE ✅)
 
 **Afternoon (3-4 hours)**:**Architecture Overview**:
 
@@ -5833,7 +5833,7 @@ The macOS port has achieved major milestones by successfully compiling all core 
 
 - Windows API compatibility layer creation
 
-- DirectX interface architecture design### 🎯 Phase 2: Comprehensive Windows API Compatibility (COMPLETE ✅)
+- DirectX interface architecture design### 🎯 Phase 03: Comprehensive Windows API Compatibility (COMPLETE ✅)
 
 - Core library compilation success
 
@@ -5903,7 +5903,7 @@ The macOS port has achieved major milestones by successfully compiling all core 
 
 ## 🔮 Post-MVP Development Path- **Type Safety**: Null pointer checks and proper return value handling
 
-### Phase 10: OpenGL/Metal Graphics Backend**Symbol Conflict Resolution**
+### Phase 051: OpenGL/Metal Graphics Backend**Symbol Conflict Resolution**
 
 - Replace DirectX stubs with actual OpenGL/Metal rendering- ✅ **Network Functions**: Win32Net::compat_* functions preventing conflicts with system socket APIs
 
@@ -5913,7 +5913,7 @@ The macOS port has achieved major milestones by successfully compiling all core 
 
 - ✅ **Namespace Management**: Strategic use of namespaces and function prefixes
 
-### Phase 11: Audio System Implementation  
+### Phase 051: Audio System Implementation  
 
 - OpenAL-based DirectSound compatibility implementation**DirectX Constants Enhancement**:
 
@@ -5923,19 +5923,19 @@ The macOS port has achieved major milestones by successfully compiling all core 
 
 - ✅ **Texture Filter Types**: D3DTEXF_POINT, D3DTEXF_LINEAR, D3DTEXF_ANISOTROPIC support
 
-### Phase 12: Platform Integration- ✅ **Error Resolution**: Fixed "use of undeclared identifier" errors in texturefilter.cpp
+### Phase 051: Platform Integration- ✅ **Error Resolution**: Fixed "use of undeclared identifier" errors in texturefilter.cpp
 
 - macOS-native file dialogs and system integration
 
 - App Store compatibility and code signing**Compilation Progress**:
 
-- Native macOS input and window management- ✅ **Significant Advancement**: Progressed beyond Phase 1 [47/110] baseline with expanded API coverage
+- Native macOS input and window management- ✅ **Significant Advancement**: Progressed beyond Phase 02 [47/110] baseline with expanded API coverage
 
-- ✅ **API Integration**: All Phase 2 APIs successfully integrated into Core windows.h compatibility layer
+- ✅ **API Integration**: All Phase 03 APIs successfully integrated into Core windows.h compatibility layer
 
 ## 🏆 Conclusion- ✅ **Error Reduction**: Major reduction in undefined function and missing constant errors
 
-- ✅ **Cross-Platform Foundation**: Scalable architecture ready for Phase 3 DirectX/Graphics APIs
+- ✅ **Cross-Platform Foundation**: Scalable architecture ready for Phase 04 DirectX/Graphics APIs
 
 The macOS port of Command & Conquer: Generals has achieved extraordinary success with 95% completion. All foundational systems are operational, comprehensive Windows API compatibility is implemented, and only final interface harmonization remains. The project is positioned for rapid completion within 1-2 days, representing one of the most successful major game engine porting efforts in modern software development.
 
@@ -5954,7 +5954,7 @@ The macOS port of Command & Conquer: Generals has achieved extraordinary success
 *Last Updated: September 14, 2025*- ✅ **Type System**: Consistent typedef system across all compatibility layers
 
 *Next Update: Upon executable compilation success*
-**Error Progression - Phase 2 SUCCESS**:
+**Error Progression - Phase 03 SUCCESS**:
 
 - **Session Start**: 7 typedef redefinition errors (LP* conflicts)
 - **After LP* typedef removal**: 4 redefinition errors  
@@ -5970,7 +5970,7 @@ The macOS port of Command & Conquer: Generals has achieved extraordinary success
 - **D3DRENDERSTATETYPE Completion**: All DirectX render states properly defined for shader system compatibility
 - **Multi-layer DirectX Architecture**: Perfect harmony between Core compatibility layer and Generals implementation
 
-### 🎯 Phase 4: Memory Management & Performance APIs (COMPLETE ✅)
+### 🎯 Phase 05: Memory Management & Performance APIs (COMPLETE ✅)
 
 **Architecture Overview**:
 
@@ -6059,14 +6059,14 @@ The macOS port of Command & Conquer: Generals has achieved extraordinary success
 - ✅ **Memory Flag Support**: Complete flag interpretation matching Windows API behavior exactly
 - ✅ **Resource Management**: Proper handle lifecycle and memory cleanup for production use
 
-**Error Progression - Phase 4 SUCCESS**:
+**Error Progression - Phase 05 SUCCESS**:
 
 - **Session Start**: Multiple memory allocation and performance timing function undefined errors
 - **After Implementation**: 0 memory management errors, 0 performance timing errors
 - **Conflict Resolution**: GlobalAllocPtr redefinition resolved, socklen_t type corrected
-- **Final Status**: All Phase 4 APIs functional and tested ✅ **COMPLETE SUCCESS**
+- **Final Status**: All Phase 05 APIs functional and tested ✅ **COMPLETE SUCCESS**
 
-### 🎯 Phase 3: DirectX/Graphics APIs (COMPLETE ✅)
+### 🎯 Phase 04: DirectX/Graphics APIs (COMPLETE ✅)
 
 ### 📋 Previous Session Progress (January 22, 2025)
 
@@ -6098,34 +6098,34 @@ The macOS port of Command & Conquer: Generals has achieved extraordinary success
 
 ### Critical Barriers to Functional Game Executable (Estimated: 3-5 days)
 
-**✅ Phase 1: Cross-Platform Configuration** - **COMPLETE** ✅
+**✅ Phase 02: Cross-Platform Configuration** - **COMPLETE** ✅
 
 - **Registry API**: Complete RegOpenKeyEx, RegQueryValueEx, RegCloseKey, RegSetValueEx implementation
 - **INI System**: Full INI-based configuration replacing Windows Registry dependency
 - **Status**: All Windows Registry API calls successfully resolved with zero errors
 
-**✅ Phase 2: Core Windows APIs** - **COMPLETE** ✅  
+**✅ Phase 03: Core Windows APIs** - **COMPLETE** ✅  
 
 - **Threading API**: Complete CreateThread, WaitForSingleObject, CloseHandle implementation using pthread
 - **File System API**: Complete CreateDirectory, _chmod, GetFileAttributes using POSIX
 - **Network API**: Complete socket compatibility layer with Win32Net namespace isolation
 - **Status**: All core Windows APIs successfully implemented with zero errors
 
-**✅ Phase 3: DirectX/Graphics APIs** - **COMPLETE** ✅
+**✅ Phase 04: DirectX/Graphics APIs** - **COMPLETE** ✅
 
 - **DirectX Interfaces**: Complete IDirect3D8, IDirect3DDevice8, texture and surface operations
 - **Graphics Pipeline**: D3D device creation, rendering pipeline, matrix transformations
 - **Type System**: Perfect LP* typedef coordination between Core and Generals layers
 - **Status**: All DirectX/Graphics API errors resolved with g_ww3d2 target compiling successfully
 
-**✅ Phase 4: Memory Management & Performance APIs** - **COMPLETE** ✅
+**✅ Phase 05: Memory Management & Performance APIs** - **COMPLETE** ✅
 
 - **Memory Management**: Complete HeapAlloc/HeapFree, GlobalAlloc/GlobalAllocPtr implementation
 - **Performance Timing**: QueryPerformanceCounter/QueryPerformanceFrequency with nanosecond precision
 - **Type System**: HANDLE, HGLOBAL, LARGE_INTEGER structures with proper cross-platform support
 - **Status**: All memory management and performance timing APIs successfully implemented
 
-**📋 Phase 5: Audio & Multimedia APIs (Days 1-3)** � **NEXT PRIORITY**
+**📋 Phase 06: Audio & Multimedia APIs (Days 1-3)** � **NEXT PRIORITY**
 
 - **DirectSound API**: DirectSoundCreate, IDirectSound interface, sound buffer management
 - **Multimedia Timers**: timeGetTime, timeSetEvent, timeKillEvent for audio timing
@@ -6134,7 +6134,7 @@ The macOS port of Command & Conquer: Generals has achieved extraordinary success
 - **Files Affected**: `win32_compat.h`, audio compatibility layer, multimedia headers
 - **Priority**: High - Game audio and multimedia depends on this
 
-**📋 Phase 6: Advanced Memory & Process APIs (Days 3-4)** � **MEDIUM PRIORITY**
+**📋 Phase 07: Advanced Memory & Process APIs (Days 3-4)** � **MEDIUM PRIORITY**
 
 - **Virtual Memory**: VirtualAlloc, VirtualFree, VirtualProtect for advanced memory management
 - **Process Management**: GetCurrentProcess, GetProcessHeap, process enumeration APIs
@@ -6143,7 +6143,7 @@ The macOS port of Command & Conquer: Generals has achieved extraordinary success
 - **Files Affected**: Advanced memory headers, process management compatibility
 - **Priority**: Medium - Advanced engine features depend on this
 
-**Phase 6: Integration Testing (Days 6-7)** 🔵 **VALIDATION**
+**Phase 07: Integration Testing (Days 6-7)** 🔵 **VALIDATION**
 
 - **Executable Compilation**: End-to-end `GeneralsX` and `GeneralsXZH` compilation
 - **Basic Functionality**: Window creation, DirectX initialization, asset loading
@@ -6816,7 +6816,7 @@ Successfully resolved ALL redefinition conflicts between Core's win32_compat.h a
 
 **🏆 Foundation Status**: DirectX typedef resolution COMPLETE - g_ww3d2 target compiling with **0 ERRORS**
 
-### Phase 1: Registry API Implementation (Days 1-2) 🔴 **CRITICAL BLOCKER**
+### Phase 02: Registry API Implementation (Days 1-2) 🔴 **CRITICAL BLOCKER**
 
 **Current Errors** (4 in `registry.cpp`):
 
@@ -6834,7 +6834,7 @@ registry.cpp:89:15: error: use of undeclared identifier 'RegSetValueEx'
 - **Files to Modify**: `Core/Libraries/Include/windows.h`, `win32_compat.h`
 - **Purpose**: Game configuration, player settings, installation paths
 
-### Phase 2: Threading API Implementation (Days 2-3) 🟡 **HIGH PRIORITY**
+### Phase 03: Threading API Implementation (Days 2-3) 🟡 **HIGH PRIORITY**
 
 **Current Errors** (2 in `FTP.CPP`):
 
@@ -6850,7 +6850,7 @@ FTP.CPP:189:15: error: use of undeclared identifier 'WaitForSingleObject'
 - **Files to Modify**: Threading compatibility in `win32_compat.h`
 - **Purpose**: Background downloads, game logic threading, audio processing
 
-### Phase 3: File System API Implementation (Days 3-4) 🟡 **HIGH PRIORITY**
+### Phase 04: File System API Implementation (Days 3-4) 🟡 **HIGH PRIORITY**
 
 **Current Errors** (2 in `FTP.CPP`):
 
@@ -6866,7 +6866,7 @@ FTP.CPP:298:15: error: use of undeclared identifier '_chmod'
 - **Files to Modify**: File system compatibility in `win32_compat.h`
 - **Purpose**: Asset management, save file operations, temporary file creation
 
-### Phase 4: Network API Compatibility (Days 4-5) 🟠 **MEDIUM PRIORITY**
+### Phase 05: Network API Compatibility (Days 4-5) 🟠 **MEDIUM PRIORITY**
 
 **Current Errors** (1 in `FTP.CPP`):
 
@@ -6882,7 +6882,7 @@ FTP.CPP:467:15: error: incomplete type 'in_addr' in network operations
 - **Files to Modify**: New `winsock_compat.h` header
 - **Purpose**: Multiplayer networking, map downloads, update checks
 
-### Phase 5: Integration & Testing (Days 5-7) 🔵 **VALIDATION**
+### Phase 06: Integration & Testing (Days 5-7) 🔵 **VALIDATION**
 
 **Success Criteria**:
 
@@ -6969,9 +6969,9 @@ error: add an explicit instantiation declaration to suppress this warning if 'Au
 2. Complete `switch` statements and fix out-of-order initializations.
 3. Ensure all subcommands execute successfully.
 
-## Phase 2 - Threading, File System and Network APIs
+## Phase 03 - Threading, File System and Network APIs
 
-### Phase 2 Implementation Results
+### Phase 03 Implementation Results
 
 - **Status**: Complete implementation ✅
 - **APIs Implemented**:
@@ -6991,7 +6991,7 @@ error: add an explicit instantiation declaration to suppress this warning if 'Au
 
 Qui 11 Set 2025 21:07:34 -03: Fase 2 APIs implementadas com sucesso
 
-## 🎵 Phase 5: Audio & Multimedia APIs Implementation Details
+## 🎵 Phase 06: Audio & Multimedia APIs Implementation Details
 
 ### DirectSound Compatibility Layer
 
@@ -7024,11 +7024,11 @@ Qui 11 Set 2025 21:07:34 -03: Fase 2 APIs implementadas com sucesso
 - **Buffer Operations**: Play, Stop, SetVolume, SetPan, SetFrequency, Lock/Unlock
 - **Cross-Platform**: Full macOS/Linux/Windows compatibility
 
-Thu 12 Sep 2025 14:07:00 -03: Phase 5 Audio & Multimedia APIs implementation completed successfully
+Thu 12 Sep 2025 14:07:00 -03: Phase 06 Audio & Multimedia APIs implementation completed successfully
 
 ---
 
-## 🎯 Phase 6: DirectX Graphics & Game Engine Compilation (IN PROGRESS 🔄)
+## 🎯 Phase 07: DirectX Graphics & Game Engine Compilation (IN PROGRESS 🔄)
 
 **Current Session Date**: Thu 12 Sep 2025
 **Status**: Advanced DirectX compatibility implementation and executable compilation progress
@@ -7096,11 +7096,11 @@ Thu 12 Sep 2025 14:07:00 -03: Phase 5 Audio & Multimedia APIs implementation com
 3. **Executable linking**: Address final compilation errors for GeneralsXZH target
 4. **OpenGL transition preparation**: Framework ready for DirectX→OpenGL graphics migration
 
-Thu 12 Sep 2025 18:30:00 -03: Phase 6 DirectX Graphics compatibility layer implementation advanced significantly
-Thu 12 Sep 2025 21:45:00 -03: **MAJOR BREAKTHROUGH** - Phase 6 compilation progress increased 674% from 11/691 to 74/708 files compiling successfully through comprehensive Windows API compatibility implementation
-Thu 12 Sep 2025 22:30:00 -03: **CONTINUED EXPANSION** - Phase 6 compilation progress advanced to 157/855 files (112% session increase) with header path resolution, function pointer casting fixes, and Windows API implementations; investigating 'unterminated conditional directive' error for final resolution
+Thu 12 Sep 2025 18:30:00 -03: Phase 07 DirectX Graphics compatibility layer implementation advanced significantly
+Thu 12 Sep 2025 21:45:00 -03: **MAJOR BREAKTHROUGH** - Phase 07 compilation progress increased 674% from 11/691 to 74/708 files compiling successfully through comprehensive Windows API compatibility implementation
+Thu 12 Sep 2025 22:30:00 -03: **CONTINUED EXPANSION** - Phase 07 compilation progress advanced to 157/855 files (112% session increase) with header path resolution, function pointer casting fixes, and Windows API implementations; investigating 'unterminated conditional directive' error for final resolution
 
-## 🎮 Phase 19: Integration of Professional TheSuperHackers Libraries (COMPLETE ✅)
+## 🎮 Phase 051: Integration of Professional TheSuperHackers Libraries (COMPLETE ✅)
 
 ### Integration of TheSuperHackers Libraries to Replace Proprietary Stubs
 
@@ -7129,11 +7129,11 @@ Thu 12 Sep 2025 22:30:00 -03: **CONTINUED EXPANSION** - Phase 6 compilation prog
 
 ---
 
-# 🔧 Phase 22.7: INI Parser End Token Exception Investigation (Dezembro 30, 2024)
+# 🔧 Phase 051.7: INI Parser End Token Exception Investigation (Dezembro 30, 2024)
 
 ## Status: 🔍 **IN PROGRESS** - ARM64 Native + Vector Protection Success, Investigating Persistent End Token Parsing Exceptions
 
-### 🎯 Major Achievements in Phase 22.7
+### 🎯 Major Achievements in Phase 051.7
 
 - ✅ **ARM64 Native Compilation**: Successfully compiled and running natively on Apple Silicon (M1/M2) architecture
 - ✅ **Vector Corruption Protection Working**: Comprehensive protection system detects and handles corrupted vectors (17+ trillion elements)
@@ -7194,7 +7194,7 @@ if (trimmed == "End" || fieldName == "End" || fieldName == "  End") {
 - **Vector Protection**: Consistently detects and handles 17+ trillion element corruption successfully
 - **Native Performance**: ARM64 execution provides superior performance and debugging capabilities
 
-### 🎯 Next Steps for Phase 22.7
+### 🎯 Next Steps for Phase 051.7
 
 1. **Deep Exception Investigation**: Analyze complete call stack and execution flow during End token processing
 2. **Alternative Bypass Strategies**: Implement different approaches if current bypass method is fundamentally flawed
@@ -7202,7 +7202,7 @@ if (trimmed == "End" || fieldName == "End" || fieldName == "  End") {
 4. **Progress Documentation**: Complete documentation of major ARM64 + vector protection breakthrough
 5. **Repository Updates**: Commit and push significant progress achievements before next phase
 
-### 🏆 Major Success Summary for Phase 22.7
+### 🏆 Major Success Summary for Phase 051.7
 
 - **ARM64 Native Architecture**: Fully functional native Apple Silicon execution
 - **Vector Corruption Eliminated**: 100% successful protection against massive vector corruption (17+ trillion elements)
@@ -7211,7 +7211,7 @@ if (trimmed == "End" || fieldName == "End" || fieldName == "  End") {
 
 ## 🎯 Planned Phases
 
-### Phase 33: OpenAL Audio Backend Implementation
+### Phase 051: OpenAL Audio Backend Implementation
 
 **Status**: 📋 **Ready to Start** (October 20, 2025)  
 **Priority**: HIGH - Critical for complete game experience  
@@ -7231,20 +7231,20 @@ if (trimmed == "End" || fieldName == "End" || fieldName == "  End") {
 
 **Documentation**: See `docs/PHASE33/README.md` for detailed implementation plan
 
-**Why Phase 33?** Audio backend is independent of game logic and can be implemented/tested separately. Having working audio will benefit Phase 34 (game logic) by enabling UI feedback sounds and unit responses.
+**Why Phase 051?** Audio backend is independent of game logic and can be implemented/tested separately. Having working audio will benefit Phase 051 (game logic) by enabling UI feedback sounds and unit responses.
 
-### Phase 34: Game Logic & Gameplay Systems
+### Phase 051: Game Logic & Gameplay Systems
 
 **Status**: 📋 Planned  
 **Priority**: HIGH - Core gameplay functionality  
 **Estimated Time**: 2-3 weeks  
-**Depends on**: Phase 33 (OpenAL) for UI sounds and unit audio feedback
+**Depends on**: Phase 051 (OpenAL) for UI sounds and unit audio feedback
 
 Focus on game logic, unit AI, pathfinding, and gameplay mechanics to ensure full feature parity with original game.
 
 **Documentation**: See `docs/PHASE34/README.md` for detailed plan
 
-### Phase 35: Multiplayer & Networking
+### Phase 051: Multiplayer & Networking
 
 **Status**: 📋 Planned  
 **Priority**: LOW - Final polish feature  
@@ -7254,11 +7254,11 @@ Implement multiplayer networking system with replay compatibility. Focus on LAN 
 
 **Documentation**: See `docs/PHASE35/README.md` for detailed networking roadmap
 
-Mon 23 Sep 2025 15:30:00 -03: Phase 19 - TheSuperHackers library integration completed successfully, improving code quality and compatibility
+Mon 23 Sep 2025 15:30:00 -03: Phase 051 - TheSuperHackers library integration completed successfully, improving code quality and compatibility
 
 ---
 
-## Phase 33: OpenAL Audio Backend Implementation ✅ COMPLETE
+## Phase 051: OpenAL Audio Backend Implementation ✅ COMPLETE
 
 **Date**: October 21, 2025  
 **Status**: ✅ **COMPLETE** (with known issue documented)  
@@ -7309,7 +7309,7 @@ Replace OpenAL stub implementation with fully functional audio backend to enable
 **Solution Implemented** (GameAudio.cpp:979):
 
 ```cpp
-// Phase 33: Iterate through ALL music tracks to find at least one that exists
+// Phase 051: Iterate through ALL music tracks to find at least one that exists
 for (it = m_allAudioEventInfo.begin(); it != m_allAudioEventInfo.end(); ++it) {
     if (it->second && it->second->m_soundType == AT_Music) {
         // Test if this music file exists in VFS
@@ -7485,9 +7485,9 @@ GameEngine
 
 **Immediate**:
 
-- Phase 33 considered complete from implementation perspective
+- Phase 051 considered complete from implementation perspective
 - Known issue documented for future investigation
-- Ready to proceed to Phase 34 (Game Logic & Gameplay Systems)
+- Ready to proceed to Phase 051 (Game Logic & Gameplay Systems)
 
 **Future Audio Investigation** (when time permits):
 
@@ -7504,7 +7504,7 @@ GameEngine
 - Audio infrastructure 100% implemented
 - VFS music integration working
 - Foundation ready for when output issue resolved
-- No blockers for Phase 34 gameplay implementation
+- No blockers for Phase 051 gameplay implementation
 
 **Deferred**:
 
@@ -7523,19 +7523,19 @@ GameEngine
 
 ---
 
-**Phase 33 Status**: ✅ **COMPLETE** (with documented known issue)  
-**Next Phase**: Phase 34 - Game Logic & Gameplay Systems  
-**Key Achievement**: Full OpenAL backend implemented, VFS music integration working, ready for Phase 34
+**Phase 051 Status**: ✅ **COMPLETE** (with documented known issue)  
+**Next Phase**: Phase 051 - Game Logic & Gameplay Systems  
+**Key Achievement**: Full OpenAL backend implemented, VFS music integration working, ready for Phase 051
 
 ---
 
-## Latest Update (October 19, 2025) — Phase 37.1: TEXTURE LOADING SUCCESS ✅
+## Latest Update (October 19, 2025) — Phase 051.1: TEXTURE LOADING SUCCESS ✅
 
 **BREAKTHROUGH**: Texture loading pipeline confirmed operational - 10 textures successfully loaded and uploaded to Metal GPU
 
 ### Summary
 
-- ✅ Phase 37.1 complete - texture loading diagnostics successful
+- ✅ Phase 051.1 complete - texture loading diagnostics successful
 - ✅ 10 textures detected loading from .big files through complete pipeline  
 - ✅ Complete data flow verified: .big → DirectX → Apply_New_Surface → TextureCache → Metal
 - ✅ 655 KB texture data uploaded to GPU with ZERO errors
@@ -7602,17 +7602,17 @@ TEXTURE SUCCESS (Metal): Texture uploaded from memory
 ### Architecture Validation
 
 All previous phase infrastructure confirmed operational:
-- ✅ Phase 28.4: Apply_New_Surface() interception working
-- ✅ Phase 28.5: TextureCache integration working
-- ✅ Phase 30: Metal backend operational
-- ✅ Phase 34.2: Metal texture initialization working
-- ✅ Phase 35.6: SDL_MetalView lifecycle working
+- ✅ Phase 051.4: Apply_New_Surface() interception working
+- ✅ Phase 051.5: TextureCache integration working
+- ✅ Phase 051: Metal backend operational
+- ✅ Phase 051.2: Metal texture initialization working
+- ✅ Phase 051.6: SDL_MetalView lifecycle working
 
-### Next Steps (Phase 37.2+)
+### Next Steps (Phase 051.2+)
 
-1. **Phase 37.2**: Add rendering diagnostics - verify texture binding/sampling in render pipeline
-2. **Phase 37.3**: Mesh/geometry investigation - check UV coordinates and vertex setup
-3. **Phase 37.4**: Viewport/camera diagnostics - validate render pass configuration
+1. **Phase 051.2**: Add rendering diagnostics - verify texture binding/sampling in render pipeline
+2. **Phase 051.3**: Mesh/geometry investigation - check UV coordinates and vertex setup
+3. **Phase 051.4**: Viewport/camera diagnostics - validate render pass configuration
 
 ### Documentation
 
@@ -7621,14 +7621,14 @@ All previous phase infrastructure confirmed operational:
 
 ### Status
 
-**Phase 37.1**: ✅ **COMPLETE**  
-**Next Focus**: Phase 37.2 - Rendering pipeline diagnostics
+**Phase 051.1**: ✅ **COMPLETE**  
+**Next Focus**: Phase 051.2 - Rendering pipeline diagnostics
 **Blocker Status**: UNBLOCKED - Eliminated major system, can proceed
 
 ---
 
 
-## Session: Phase 37.4 Metal Texture Binding Implementation (October 19, 2025)
+## Session: Phase 051.4 Metal Texture Binding Implementation (October 19, 2025)
 
 **Duration**: ~1 hour
 **Commits**: 1 (commit 1607174d)
@@ -7666,15 +7666,15 @@ All previous phase infrastructure confirmed operational:
 ```cpp
 // Include Guard (Lines 45-49)
 #ifdef __APPLE__
-#include "metalwrapper.h"   // Phase 37.4: Metal texture binding
+#include "metalwrapper.h"   // Phase 051.4: Metal texture binding
 #endif
 
 // TextureClass::Apply() - Metal Texture Binding (Lines 1143-1161)
 #ifdef __APPLE__
 if (MetalTexture != NULL) {
-    // Phase 37.4: Call actual Metal binding function
+    // Phase 051.4: Call actual Metal binding function
     GX::MetalWrapper::BindTexture(MetalTexture, stage);
-    printf("Phase 37.4: Metal texture bound (ID=%p) for stage %u\n", MetalTexture, stage);
+    printf("Phase 051.4: Metal texture bound (ID=%p) for stage %u\n", MetalTexture, stage);
 } else if (GLTexture != 0) {
     glActiveTexture(GL_TEXTURE0 + stage);
     glBindTexture(GL_TEXTURE_2D, GLTexture);
@@ -7685,9 +7685,9 @@ if (MetalTexture != NULL) {
 ### Architecture Integration Chain
 
 ```
-.big file → DirectX surface → Apply_New_Surface() (Phase 28.4)
+.big file → DirectX surface → Apply_New_Surface() (Phase 051.4)
    ↓
-MetalTexture populated by TextureCache (Phase 28.5)
+MetalTexture populated by TextureCache (Phase 051.5)
    ↓
 Apply(stage) called by render pipeline
    ↓
@@ -7702,18 +7702,18 @@ Pixels rendered to framebuffer
 
 ### Known Working Components
 
-- ✅ **Phase 28.4**: Texture loading from .big files (10 textures, 655 KB GPU memory)
-- ✅ **Phase 34.2**: MetalTexture member initialization (GPU texture reference)
-- ✅ **Phase 37.1**: 10 textures loading successfully through full pipeline
-- ✅ **Phase 37.3**: Safe placeholder implementation (no crashes, 15+ sec verified)
-- ✅ **Phase 37.4**: Real Metal binding implementation (20+ sec verified)
+- ✅ **Phase 051.4**: Texture loading from .big files (10 textures, 655 KB GPU memory)
+- ✅ **Phase 051.2**: MetalTexture member initialization (GPU texture reference)
+- ✅ **Phase 051.1**: 10 textures loading successfully through full pipeline
+- ✅ **Phase 051.3**: Safe placeholder implementation (no crashes, 15+ sec verified)
+- ✅ **Phase 051.4**: Real Metal binding implementation (20+ sec verified)
 
-### Next Steps (Phase 37.5)
+### Next Steps (Phase 051.5)
 
 1. **Texture Visibility Verification**
    - Run game and check for textured geometry instead of solid blue
    - Monitor for texture binding log messages
-   - Verify all 10 textures from Phase 37.1 render correctly
+   - Verify all 10 textures from Phase 051.1 render correctly
 
 2. **Potential Issues to Investigate**
    - Fragment shader may not reference sampler (texture sampling code)
@@ -7734,11 +7734,11 @@ Pixels rendered to framebuffer
 
 ### Commit Hash
 
-- **1607174d**: Phase 37.4 implementation complete with runtime verification
+- **1607174d**: Phase 051.4 implementation complete with runtime verification
 
 ### Session Outcome
 
-Phase 37.4 successfully implements real Metal texture binding, replacing Phase 37.3 placeholder with actual GPU API calls. Runtime test confirms stability and proper Metal backend operation. Ready to progress to Phase 37.5 for texture visibility verification.
+Phase 051.4 successfully implements real Metal texture binding, replacing Phase 051.3 placeholder with actual GPU API calls. Runtime test confirms stability and proper Metal backend operation. Ready to progress to Phase 051.5 for texture visibility verification.
 
 **Status**: ✅ READY FOR PHASE 37.5
 
@@ -7758,33 +7758,33 @@ Phase 37.4 successfully implements real Metal texture binding, replacing Phase 3
    - All documentation in English per project standards
 
 2. **Documentation Summary**:
-   - Phase 43: Render Loop & Frame Presentation (60 FPS target)
-   - Phase 44: Model Loading & Mesh System (W3D format)
-   - Phase 45: Camera System & View Transformations
-   - Phase 46: Game Logic Integration & Gameplay Connection
-   - Phase 47: Testing, Stabilization & Performance Optimization
-   - Phase 48: Minimal Playable Version (complete game)
+   - Phase 053: Render Loop & Frame Presentation (60 FPS target)
+   - Phase 054: Model Loading & Mesh System (W3D format)
+   - Phase 055: Camera System & View Transformations
+   - Phase 056: Game Logic Integration & Gameplay Connection
+   - Phase 057: Testing, Stabilization & Performance Optimization
+   - Phase 058: Minimal Playable Version (complete game)
    - MINIMAL_PLAYABLE_ROADMAP.md: High-level overview and timeline
 
 ### Timeline & Estimates
 
-- **Phase 41-42**: 4-6 days (Graphics pipeline)
-- **Phase 43**: 2-3 days (Render loop)
-- **Phase 44-45**: 5-7 days (Models + Camera, parallel)
-- **Phase 46**: 3-4 days (Game logic)
-- **Phase 47**: 3-4 days (Testing & optimization)
-- **Phase 48**: 2-3 days (Final integration)
+- **Phase 051-42**: 4-6 days (Graphics pipeline)
+- **Phase 053**: 2-3 days (Render loop)
+- **Phase 054-45**: 5-7 days (Models + Camera, parallel)
+- **Phase 056**: 3-4 days (Game logic)
+- **Phase 057**: 3-4 days (Testing & optimization)
+- **Phase 058**: 2-3 days (Final integration)
 - **Total**: 25-30 days to Minimal Playable Version
 
 ### Key Technical Decisions Documented
 
-- Vulkan backend via MoltenVK (already working from Phase 40)
+- Vulkan backend via MoltenVK (already working from Phase 051)
 - DXVK wrapper for Direct3D 8 abstraction
 - 60 FPS frame pacing with GPU synchronization
 - W3D file format support for models
 - GameObject-based game object system
 - Test-first development approach
-- Phase 43-47 focus on stability and optimization
+- Phase 053-47 focus on stability and optimization
 
 ### Repository Status
 
@@ -7798,11 +7798,11 @@ Phase 37.4 successfully implements real Metal texture binding, replacing Phase 3
 
 | Item | Status | Details |
 |------|--------|---------|
-| **Phase 40: DXVK Backend** | ✅ COMPLETE | Vulkan/MoltenVK working, all 11 init stages verified |
-| **Phase 41-42 Documentation** | ✅ COMPLETE | Detailed planning for drawing and texture systems |
-| **Phase 43-48 Documentation** | ✅ COMPLETE | Comprehensive roadmap to minimal playable version |
-| **Next Phase** | 🚀 READY | Phase 41 - Drawing Operations (ready to start) |
-| **Timeline to MVP** | 📅 25-30 days | Phase 41-48 implementation schedule |
+| **Phase 051: DXVK Backend** | ✅ COMPLETE | Vulkan/MoltenVK working, all 11 init stages verified |
+| **Phase 051-42 Documentation** | ✅ COMPLETE | Detailed planning for drawing and texture systems |
+| **Phase 053-48 Documentation** | ✅ COMPLETE | Comprehensive roadmap to minimal playable version |
+| **Next Phase** | 🚀 READY | Phase 051 - Drawing Operations (ready to start) |
+| **Timeline to MVP** | 📅 25-30 days | Phase 051-48 implementation schedule |
 
 ### Session Outcome
 
@@ -7817,15 +7817,15 @@ Successfully created comprehensive planning documentation for all phases leading
 
 **Duration**: ~2.5 hours
 **Focus**: Resolving "incomplete type" compilation blocker in DX8Wrapper
-**Status**: ✅ Phase 02.5 Implementation COMPLETE
+**Status**: ✅ Phase 051.5 Implementation COMPLETE
 
 ### Critical Discovery
 
-Proactive code analysis of DX8Wrapper revealed the real compilation blocker was NOT in Phase 01-02 code, but in pre-existing architecture:
+Proactive code analysis of DX8Wrapper revealed the real compilation blocker was NOT in Phase 051-02 code, but in pre-existing architecture:
 - `dx8wrapper.h` had forward declarations of `IDirect3DDevice8`
 - Game code tries to call methods: `DX8CALL(device)->SetRenderState(...)`
 - Compiler couldn't find method definitions → "incomplete type" error
-- This was blocking all progress past Phase 02
+- This was blocking all progress past Phase 051
 
 ### Solution Implemented: Option A (Stub Interfaces)
 
@@ -7909,13 +7909,13 @@ All files synchronized to 3 source trees:
 
 ### Next Steps
 
-**Phase 03: Graphics Backend Implementation**
+**Phase 051: Graphics Backend Implementation**
 1. Examine dx8wrapper.cpp (4,489 lines)
 2. Create VulkanBackend dispatch layer
 3. Replace stub S_OK returns with Vulkan calls
 
 ### Session Outcome
 
-Critical "incomplete type" blocker COMPLETELY RESOLVED. Build progresses significantly beyond previous stopping point. Project now unblocked for Phase 03.
+Critical "incomplete type" blocker COMPLETELY RESOLVED. Build progresses significantly beyond previous stopping point. Project now unblocked for Phase 051.
 
-**Status**: ✅ PHASE 02.5 COMPLETE - Ready for Phase 03
+**Status**: ✅ PHASE 02.5 COMPLETE - Ready for Phase 051

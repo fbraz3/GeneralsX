@@ -1,26 +1,26 @@
 #pragma once
 
 /**
- * @file d3d8.h
- * @brief DirectX 8.0 API definitions and interface stubs
+ * @file d3d8_vulkan_graphics_compat.h
+ * @brief DirectX 8.0 API definitions and interface stubs for cross-platform Vulkan backend
  * 
  * This header provides DirectX 8 interface definitions and constants needed
  * for cross-platform compilation without the DirectX SDK. 
  * 
  * On Windows, the real directx/d3d8.h is used.
  * On macOS/Linux, we provide mock interfaces backed by memory buffers that
- * can be later intercepted for OpenGL/Metal rendering.
+ * can be later intercepted for Vulkan rendering via Metal/OpenGL backends.
  * 
- * Phase 01: DirectX 8 Compatibility Layer
+ * Phase 01: DirectX 8 Compatibility Layer (renamed Phase 2.7)
  * Acceptance Criteria: AC3 - All DirectX 8 enumerations and types defined
  */
 
-#ifndef D3D8_H_INCLUDED
-#define D3D8_H_INCLUDED
+#ifndef D3D8_VULKAN_GRAPHICS_COMPAT_H_INCLUDED
+#define D3D8_VULKAN_GRAPHICS_COMPAT_H_INCLUDED
 
 #ifndef _WIN32
-#include "win32_types.h"
-#include "d3d8_types.h"  // For IID and RGNDATA
+#include "win32_sdl_types_compat.h"
+#include "d3d8_vulkan_types_compat.h"  // For IID and RGNDATA
 #endif
 
 // Note: d3d8_enums.h is not included here to avoid redefinition conflicts
@@ -792,7 +792,7 @@ typedef struct IDirect3DSwapChain8 IDirect3DSwapChain8;
 #endif
 
 // Include COM interface stub definitions after all enums are defined
-#include "d3d8_interfaces.h"
+#include "d3d8_vulkan_interfaces_compat.h"
 
 #endif // D3D8_H_INCLUDED
 

@@ -41,7 +41,7 @@
 
 #include "always.h"
 #include "ww3dformat.h"
-#include <d3d8.h>
+#include "d3d8_vulkan_graphics_compat.h"
 
 class DX8Caps
 {

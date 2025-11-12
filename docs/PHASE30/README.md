@@ -1,11 +1,19 @@
-# Phase 29: Rendering Integration
+# Phase 30: Rendering Integration
 
-**Phase**: 29  
+**Phase**: 30  
 **Title**: Rendering Integration  
 **Area**: Game Logic  
 **Scope**: MEDIUM  
 **Status**: not-started  
 **Dependencies**: Phase 20, Phase 26, Phase 27
+
+---
+
+## Quick reminders
+
+- Use `Fail fast` approach when testing new changes, if something is not working as expected, stop and investigate immediately;
+- Focus on finish `GeneralsXZH`, then backport to `GeneralsX`;
+- See `.github/instructions/project.instructions.md` for more specific details about above instructions.
 
 ---
 

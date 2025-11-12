@@ -16,6 +16,19 @@
 extern "C" {
 #endif
 
+/* ========== D3DX Math Constants ========== */
+
+/**
+ * @brief PI constant as used in DirectX 8 math functions
+ * Used in rotation, angle, and trigonometric calculations
+ */
+#define D3DX_PI             3.14159265358979323846f
+#define D3DX_2PI            6.28318530717958647692f
+#define D3DX_PI_2           1.57079632679489661923f
+#define D3DX_PI_4           0.78539816339744830962f
+#define D3DX_PI_OVER_180    0.01745329251994329577f  /* PI/180 for degree conversion */
+#define D3DX_180_OVER_PI    57.2957795130823208768f  /* 180/PI for degree conversion */
+
 /* ========== Basic Math Type Definitions ========== */
 
 typedef float D3DXFLOAT16;
@@ -158,6 +171,28 @@ static inline D3DXPLANE* D3DXPlaneNormalize(D3DXPLANE* pOut, const D3DXPLANE* pP
         pOut->c = pP->c / len;
         pOut->d = pP->d / len;
     }
+    return pOut;
+}
+
+/* ========== Matrix Operations ========== */
+
+/**
+ * @brief Create a rotation matrix around the Z axis
+ * @param pOut      Output matrix pointer
+ * @param angle     Rotation angle in radians
+ * @return          Pointer to the output matrix
+ */
+static inline D3DXMATRIX* D3DXMatrixRotationZ(D3DXMATRIX* pOut, float angle) {
+    if (!pOut) return nullptr;
+    
+    float cosA = std::cos(angle);
+    float sinA = std::sin(angle);
+    
+    pOut->_11 = cosA;   pOut->_12 = sinA;   pOut->_13 = 0.0f;  pOut->_14 = 0.0f;
+    pOut->_21 = -sinA;  pOut->_22 = cosA;   pOut->_23 = 0.0f;  pOut->_24 = 0.0f;
+    pOut->_31 = 0.0f;   pOut->_32 = 0.0f;   pOut->_33 = 1.0f;  pOut->_34 = 0.0f;
+    pOut->_41 = 0.0f;   pOut->_42 = 0.0f;   pOut->_43 = 0.0f;  pOut->_44 = 1.0f;
+    
     return pOut;
 }
 

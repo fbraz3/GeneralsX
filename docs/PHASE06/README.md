@@ -1,11 +1,19 @@
-# Phase 05: Input System
+# Phase 06: Input System
 
-**Phase**: 05  
+**Phase**: 06  
 **Title**: Input System  
 **Area**: OS API Layer (win32_sdl_api_compat)  
 **Scope**: MEDIUM  
 **Status**: not-started  
 **Dependencies**: Phase 01, Phase 03
+
+---
+
+## Quick reminders
+
+- Use `Fail fast` approach when testing new changes, if something is not working as expected, stop and investigate immediately;
+- Focus on finish `GeneralsXZH`, then backport to `GeneralsX`;
+- See `.github/instructions/project.instructions.md` for more specific details about above instructions.
 
 ---
 

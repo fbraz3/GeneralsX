@@ -67,6 +67,166 @@ struct IDirect3DSurface8 {
 };
 
 /**
+ * @struct IDirect3DDevice8
+ * @brief Main rendering device interface
+ * 
+ * This is the primary interface used by the game for rendering operations.
+ * All methods are stubs that return S_OK because the Vulkan backend
+ * handles actual rendering through a different code path.
+ * 
+ * **CRITICAL FIX**: Added CreateImageSurface and CopyRects methods
+ * as they are called directly by missingtexture.cpp via DX8CALL macro.
+ */
+struct IDirect3DDevice8 {
+    virtual ~IDirect3DDevice8() {}
+    
+    // ============= COM Methods =============
+    virtual HRESULT QueryInterface(const IID &riid, void **ppvObj) { return S_OK; }
+    virtual ULONG AddRef() { return 1; }
+    virtual ULONG Release() { return 0; }
+    
+    // ============= Device Information =============
+    virtual HRESULT GetDeviceCaps(void *pCaps) { return S_OK; }
+    virtual HRESULT GetDisplayMode(D3DDISPLAYMODE *pMode) { return S_OK; }
+    virtual HRESULT GetCreationParameters(void *pParameters) { return S_OK; }
+    
+    // ============= Render State Management =============
+    virtual HRESULT SetRenderState(D3DRENDERSTATETYPE State, DWORD Value) { return S_OK; }
+    virtual HRESULT GetRenderState(D3DRENDERSTATETYPE State, DWORD *pValue) { return S_OK; }
+    
+    // ============= Texture Stage State Management =============
+    virtual HRESULT SetTextureStageState(DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD Value) { return S_OK; }
+    virtual HRESULT GetTextureStageState(DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD *pValue) { return S_OK; }
+    
+    // ============= Sampler State Management =============
+    virtual HRESULT SetSamplerState(DWORD Sampler, DWORD Type, DWORD Value) { return S_OK; }
+    virtual HRESULT GetSamplerState(DWORD Sampler, DWORD Type, DWORD *pValue) { return S_OK; }
+    
+    // ============= Transform Management =============
+    virtual HRESULT SetTransform(D3DTRANSFORMSTATETYPE State, const D3DMATRIX *pMatrix) { return S_OK; }
+    virtual HRESULT GetTransform(D3DTRANSFORMSTATETYPE State, D3DMATRIX *pMatrix) { return S_OK; }
+    virtual HRESULT MultiplyTransform(D3DTRANSFORMSTATETYPE State, const D3DMATRIX *pMatrix) { return S_OK; }
+    
+    // ============= Viewport and Scissor =============
+    virtual HRESULT SetViewport(const D3DVIEWPORT8 *pViewport) { return S_OK; }
+    virtual HRESULT GetViewport(D3DVIEWPORT8 *pViewport) { return S_OK; }
+    virtual HRESULT SetScissorRect(const RECT *pRect) { return S_OK; }
+    virtual HRESULT GetScissorRect(RECT *pRect) { return S_OK; }
+    
+    // ============= Clipping Planes =============
+    virtual HRESULT SetClipPlane(DWORD Index, const float *pPlane) { return S_OK; }
+    virtual HRESULT GetClipPlane(DWORD Index, float *pPlane) { return S_OK; }
+    
+    // ============= Material =============
+    virtual HRESULT SetMaterial(const D3DMATERIAL8 *pMaterial) { return S_OK; }
+    virtual HRESULT GetMaterial(D3DMATERIAL8 *pMaterial) { return S_OK; }
+    
+    // ============= Lighting =============
+    virtual HRESULT SetLight(DWORD Index, const D3DLIGHT8 *pLight) { return S_OK; }
+    virtual HRESULT GetLight(DWORD Index, D3DLIGHT8 *pLight) { return S_OK; }
+    virtual HRESULT LightEnable(DWORD Index, BOOL Enable) { return S_OK; }
+    virtual HRESULT GetLightEnable(DWORD Index, BOOL *pEnable) { return S_OK; }
+    
+    // ============= Shader Management =============
+    virtual HRESULT CreateVertexShader(const DWORD *pDeclaration, const DWORD *pFunction, DWORD *pHandle, DWORD Usage) { return S_OK; }
+    virtual HRESULT SetVertexShader(DWORD Handle) { return S_OK; }
+    virtual HRESULT GetVertexShader(DWORD *pHandle) { return S_OK; }
+    virtual HRESULT DeleteVertexShader(DWORD Handle) { return S_OK; }
+    
+    virtual HRESULT CreatePixelShader(const DWORD *pFunction, DWORD *pHandle) { return S_OK; }
+    virtual HRESULT SetPixelShader(DWORD Handle) { return S_OK; }
+    virtual HRESULT GetPixelShader(DWORD *pHandle) { return S_OK; }
+    virtual HRESULT DeletePixelShader(DWORD Handle) { return S_OK; }
+    
+    // ============= Shader Constants =============
+    virtual HRESULT SetVertexShaderConstant(UINT Register, const void *pConstantData, UINT ConstantCount) { return S_OK; }
+    virtual HRESULT GetVertexShaderConstant(UINT Register, void *pConstantData, UINT ConstantCount) { return S_OK; }
+    
+    virtual HRESULT SetPixelShaderConstant(UINT Register, const void *pConstantData, UINT ConstantCount) { return S_OK; }
+    virtual HRESULT GetPixelShaderConstant(UINT Register, void *pConstantData, UINT ConstantCount) { return S_OK; }
+    
+    // ============= Texture and Sampler Binding =============
+    virtual HRESULT SetTexture(DWORD Stage, IDirect3DBaseTexture8 *pTexture) { return S_OK; }
+    virtual HRESULT GetTexture(DWORD Stage, IDirect3DBaseTexture8 **ppTexture) { return S_OK; }
+    
+    // ============= Stream Source (Vertex Buffer) Binding =============
+    virtual HRESULT SetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer8 *pStreamData, UINT Stride) { return S_OK; }
+    virtual HRESULT GetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer8 **ppStreamData, UINT *pStride) { return S_OK; }
+    
+    // ============= Index Buffer Binding =============
+    virtual HRESULT SetIndices(IDirect3DIndexBuffer8 *pIndexData, UINT BaseVertexIndex) { return S_OK; }
+    virtual HRESULT GetIndices(IDirect3DIndexBuffer8 **ppIndexData, UINT *pBaseVertexIndex) { return S_OK; }
+    
+    // ============= Vertex Declaration =============
+    virtual HRESULT SetVertexDeclaration(const DWORD *pDecl) { return S_OK; }
+    virtual HRESULT GetVertexDeclaration(DWORD *pDecl) { return S_OK; }
+    
+    // ============= Rendering Operations =============
+    virtual HRESULT Clear(DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil) { return S_OK; }
+    virtual HRESULT BeginScene() { return S_OK; }
+    virtual HRESULT EndScene() { return S_OK; }
+    virtual HRESULT Present(const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion) { return S_OK; }
+    
+    // ============= Drawing Operations =============
+    virtual HRESULT DrawPrimitive(DWORD PrimitiveType, UINT StartVertex, UINT PrimitiveCount) { return S_OK; }
+    virtual HRESULT DrawIndexedPrimitive(DWORD Type, UINT minIndex, UINT NumVertices, UINT startIndex, UINT primCount) { return S_OK; }
+    virtual HRESULT DrawPrimitiveUP(DWORD PrimitiveType, UINT PrimitiveCount, const void *pVertexStreamZeroData, UINT VertexStreamZeroStride) { return S_OK; }
+    virtual HRESULT DrawIndexedPrimitiveUP(DWORD Type, UINT minIndex, UINT NumVertices, UINT PrimitiveCount, const void *pIndexData, DWORD IndexDataFormat, const void *pVertexStreamZeroData, UINT VertexStreamZeroStride) { return S_OK; }
+    
+    // ============= Surface Operations =============
+    virtual HRESULT CopyRects(IDirect3DSurface8 *pSourceSurface, const RECT *pSourceRectsArray, UINT cRects, IDirect3DSurface8 *pDestinationSurface, const POINT *pDestPointsArray) { return S_OK; }
+    virtual HRESULT UpdateTexture(IDirect3DBaseTexture8 *pSourceTexture, IDirect3DBaseTexture8 *pDestinationTexture) { return S_OK; }
+    virtual HRESULT GetFrontBuffer(IDirect3DSurface8 *pDestSurface) { return S_OK; }
+    
+    // ============= Palette (Rarely Used) =============
+    virtual HRESULT SetPaletteEntries(UINT PaletteNumber, const void *pEntries) { return S_OK; }
+    virtual HRESULT GetPaletteEntries(UINT PaletteNumber, void *pEntries) { return S_OK; }
+    virtual HRESULT SetCurrentTexturePalette(UINT PaletteNumber) { return S_OK; }
+    virtual HRESULT GetCurrentTexturePalette(UINT *PaletteNumber) { return S_OK; }
+    
+    // ============= Rendering Target Management =============
+    virtual HRESULT SetRenderTarget(IDirect3DSurface8 *pRenderTarget, IDirect3DSurface8 *pNewZStencil) { return S_OK; }
+    virtual HRESULT GetRenderTarget(IDirect3DSurface8 **ppRenderTarget) { return S_OK; }
+    virtual HRESULT GetDepthStencilSurface(IDirect3DSurface8 **ppZStencilSurface) { return S_OK; }
+    
+    // ============= Device Loss and Reset =============
+    virtual HRESULT GetRasterStatus(void *pRasterStatus) { return S_OK; }
+    virtual HRESULT SetDialogBoxMode(BOOL bEnableDialogs) { return S_OK; }
+    
+    // ============= Resource Creation =============
+    virtual HRESULT CreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture8 **ppTexture) { return S_OK; }
+    virtual HRESULT CreateVolumeTexture(UINT Width, UINT Height, UINT Depth, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DVolumeTexture8 **ppVolumeTexture) { return S_OK; }
+    virtual HRESULT CreateCubeTexture(UINT EdgeLength, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DCubeTexture8 **ppCubeTexture) { return S_OK; }
+    virtual HRESULT CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, D3DPOOL Pool, IDirect3DVertexBuffer8 **ppVertexBuffer) { return S_OK; }
+    virtual HRESULT CreateIndexBuffer(UINT Length, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DIndexBuffer8 **ppIndexBuffer) { return S_OK; }
+    virtual HRESULT CreateSurface(UINT Width, UINT Height, D3DFORMAT Format, BOOL Lockable, BOOL Discard, IDirect3DSurface8 **ppSurface) { return S_OK; }
+    
+    /**
+     * @brief Create an image surface (off-screen rendering)
+     * 
+     * Creates a surface that can be used for rendering or manipulation
+     * without being tied to the display.
+     * 
+     * @param Width         Surface width in pixels
+     * @param Height        Surface height in pixels
+     * @param Format        Surface format (D3DFORMAT)
+     * @param ppSurface     Output pointer to created surface
+     * @return HRESULT (S_OK if successful)
+     */
+    virtual HRESULT CreateImageSurface(DWORD Width, DWORD Height, D3DFORMAT Format, IDirect3DSurface8 **ppSurface) {
+        if (ppSurface) *ppSurface = nullptr;
+        return S_OK;
+    }
+    
+    virtual HRESULT CreateSwapChain(void *pPresentationParameters, IDirect3DSwapChain8 **ppSwapChain) { return S_OK; }
+    
+    // ============= Strided Data =============
+    virtual HRESULT DrawRectPatch(UINT Handle, const float *pNumSegs, const void *pRectPatchInfo) { return S_OK; }
+    virtual HRESULT DrawTriPatch(UINT Handle, const float *pNumSegs, const void *pTriPatchInfo) { return S_OK; }
+    virtual HRESULT DeletePatch(UINT Handle) { return S_OK; }
+};
+
+/**
  * @struct IDirect3DTexture8
  * @brief 2D texture interface
  */
@@ -299,6 +459,10 @@ struct IDirect3DDevice8 {
     virtual HRESULT CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, D3DPOOL Pool, IDirect3DVertexBuffer8 **ppVertexBuffer) { return S_OK; }
     virtual HRESULT CreateIndexBuffer(UINT Length, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DIndexBuffer8 **ppIndexBuffer) { return S_OK; }
     virtual HRESULT CreateSurface(UINT Width, UINT Height, D3DFORMAT Format, BOOL Lockable, BOOL Discard, IDirect3DSurface8 **ppSurface) { return S_OK; }
+    virtual HRESULT CreateImageSurface(UINT Width, UINT Height, D3DFORMAT Format, IDirect3DSurface8 **ppSurface) { 
+        if (ppSurface) *ppSurface = nullptr; 
+        return S_OK; 
+    }
     virtual HRESULT CreateSwapChain(void *pPresentationParameters, IDirect3DSwapChain8 **ppSwapChain) { return S_OK; }
     
     // ============= Strided Data =============

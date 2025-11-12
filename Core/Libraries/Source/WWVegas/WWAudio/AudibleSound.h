@@ -37,7 +37,7 @@
 #pragma once
 
 #pragma warning (push, 3)
-#include "mss.h"
+// #include "mss.h"  // Not available on non-Windows platforms (Miles Sound System)
 #pragma warning (pop)
 
 //#include <malloc.h>

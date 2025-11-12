@@ -227,9 +227,9 @@ set(WW3D2_SRC
     #ww3dids.h
     #ww3dtrig.h
     # Phase 01: DirectX 8 Compatibility Layer
-    d3dx8fvf.h
-    d3d8.h
-    win32_types.h
+    d3dx8_vulkan_fvf_compat.h
+    d3d8_vulkan_graphics_compat.h
+    win32_sdl_types_compat.h
 )
 
 # When building with Vulkan backend, exclude Direct3D8-specific sources to avoid
@@ -250,6 +250,9 @@ if (USE_VULKAN)
         texture.cpp
         sortingrenderer.cpp sortingrenderer.h
         scene.cpp scene.h
+        vertmaterial.cpp vertmaterial.h
+        ww3d.cpp ww3d.h
+        texturefilter.cpp texturefilter.h
     )
 endif()
 

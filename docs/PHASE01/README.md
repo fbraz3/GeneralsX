@@ -3,12 +3,17 @@
 **Objective**: Create comprehensive DirectX 8 compatibility headers and Win32 type definitions to enable cross-platform compilation (macOS, Linux, Windows) without requiring the DirectX SDK.
 
 **Status**: not-started
-
 **Scope**: LARGE (comprehensive DirectX abstraction)
-
 **Phase Type**: Cross-Platform Prerequisites
-
 **Dependencies**: Phase 00, Phase 00.5
+
+---
+
+## Quick reminders
+
+- Use `Fail fast` approach when testing new changes, if something is not working as expected, stop and investigate immediately;
+- Focus on finish `GeneralsXZH`, then backport to `GeneralsX`;
+- See `.github/instructions/project.instructions.md` for more specific details about above instructions.
 
 ---
 

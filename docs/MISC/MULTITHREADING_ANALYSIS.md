@@ -17,21 +17,21 @@ This document outlines a staged strategy to modernize Command & Conquer: General
 
 ## Opportunities by Phase
 
-### Phase 1: Low-Risk Parallelism (Foundations)
+### Phase 02: Low-Risk Parallelism (Foundations)
 - Parallel asset/INI loading during initialization.
 - Background audio processing and streaming I/O.
 - Texture/model preprocessing in worker threads.
 
 Expected impact: Faster startup (40–60%), lower main-thread stalls during loads.
 
-### Phase 2: Moderate Complexity
+### Phase 03: Moderate Complexity
 - AI batch updates (per-squad/per-platoon) with immutable-frame views.
 - Parallel object updates for independent entities using spatial partitioning to avoid write conflicts.
 - Background resource management (eviction, decompression, streaming).
 
 Expected impact: 20–50% logic-side speedup depending on map and unit counts.
 
-### Phase 3: Advanced Architecture
+### Phase 04: Advanced Architecture
 - Producer–consumer game loop: game logic produces frame state; render thread consumes previous frame.
 - Task-based scheduler with dependencies (job graph) for physics/particles/pathing.
 - NUMA-aware thread affinity and work-stealing for scalability.
@@ -86,4 +86,4 @@ Threading can hide platform bugs and complicate debugging. The plan assumes:
 
 ---
 
-See README Roadmap for when this initiative becomes active. This document will evolve with concrete APIs and code references once Phase 1 begins.
+See README Roadmap for when this initiative becomes active. This document will evolve with concrete APIs and code references once Phase 02 begins.

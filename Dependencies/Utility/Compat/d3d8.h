@@ -11,6 +11,7 @@
 typedef unsigned long DWORD;
 typedef int BOOL;
 typedef unsigned int UINT;
+typedef unsigned long HRESULT;
 
 #define D3D_OK 0
 
@@ -50,9 +51,42 @@ typedef struct D3DCAPS8 { int DeviceType; int Caps; } D3DCAPS8;
 
 // Forward declarations for interfaces
 class IDirect3D8 { public: virtual ~IDirect3D8() {} };
-class IDirect3DDevice8 { public: virtual ~IDirect3DDevice8() {} };
+
+/**
+ * @class IDirect3DDevice8
+ * @brief Minimal Direct3D 8 Device interface stub
+ * 
+ * Phase 01: DirectX 8 Compatibility Layer
+ * This class provides the core Direct3D 8 device interface.
+ * Methods are implemented as no-op stubs that return appropriate defaults.
+ */
+class IDirect3DDevice8 { 
+public: 
+    virtual ~IDirect3DDevice8() {} 
+    
+    // Core rendering methods
+    virtual DWORD CreateImageSurface(unsigned int width, unsigned int height, int format, void** surface) {
+        if (surface) *surface = nullptr;
+        return D3D_OK;
+    }
+    
+    virtual DWORD CopyRects(void* src_surface, void* src_rects, unsigned int num_rects, void* dst_surface, void* dst_points) {
+        return D3D_OK;
+    }
+};
+
 class IDirect3DBaseTexture8 { public: virtual ~IDirect3DBaseTexture8() {} };
-class IDirect3DTexture8 : public IDirect3DBaseTexture8 { public: virtual ~IDirect3DTexture8() {} };
+class IDirect3DTexture8 : public IDirect3DBaseTexture8 { 
+public: 
+    virtual ~IDirect3DTexture8() {} 
+    
+    // Texture methods
+    virtual int GetSurfaceLevel(unsigned int level, void** surface) {
+        if (surface) *surface = nullptr;
+        return 0;
+    }
+};
+
 class IDirect3DSurface8 { public: virtual ~IDirect3DSurface8() {} };
 class IDirect3DSwapChain8 { public: virtual ~IDirect3DSwapChain8() {} };
 

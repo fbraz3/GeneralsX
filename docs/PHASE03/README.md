@@ -1,11 +1,19 @@
-# Phase 02: File I/O Wrapper Layer
+# Phase 03: File I/O Wrapper Layer
 
-**Phase**: 02  
+**Phase**: 03  
 **Title**: File I/O Wrapper Layer  
 **Area**: OS API Layer (win32_sdl_api_compat)  
 **Scope**: MEDIUM  
 **Status**: not-started  
 **Dependencies**: Phase 01
+
+---
+
+## Quick reminders
+
+- Use `Fail fast` approach when testing new changes, if something is not working as expected, stop and investigate immediately;
+- Focus on finish `GeneralsXZH`, then backport to `GeneralsX`;
+- See `.github/instructions/project.instructions.md` for more specific details about above instructions.
 
 ---
 

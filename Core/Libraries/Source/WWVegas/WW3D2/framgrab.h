@@ -43,8 +43,8 @@
 #endif
 
 #include "windows.h"
-#include "windowsx.h"
-#include "vfw.h"
+#include "windowsx_compat.h"  /* Phase 03: Use compat stub for non-Windows compatibility */
+#include "vfw_compat.h"       /* Phase 03: Use compat stub for non-Windows compatibility */
 
 #if defined (_MSC_VER)
 #pragma warning (pop)

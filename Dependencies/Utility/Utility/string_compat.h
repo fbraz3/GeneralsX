@@ -31,6 +31,13 @@ inline char *_strlwr(char *str) {
   return str;
 }
 
+inline char *strupr(char *str) {
+  for (int i = 0; str[i] != '\0'; i++) {
+    str[i] = toupper(str[i]);
+  }
+  return str;
+}
+
 #define strlwr _strlwr
 #define stricmp strcasecmp
 #define strnicmp strncasecmp

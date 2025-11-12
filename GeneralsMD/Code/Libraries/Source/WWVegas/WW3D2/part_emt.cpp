@@ -46,7 +46,7 @@
 #include "scene.h"
 #include "texture.h"
 #include "wwprofile.h"
-#include "win32_types.h"  // For _strdup macro
+#include "win32_sdl_types_compat.h"  // For _strdup macro
 #include <limits.h>
 #include <gcd_lcm.h>
 #include "texture.h"

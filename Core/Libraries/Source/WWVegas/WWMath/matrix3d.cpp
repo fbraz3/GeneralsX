@@ -64,7 +64,7 @@
 #include "matrix3.h"
 #include "matrix4.h"
 #include "quat.h"
-#include "d3dx8math.h"
+#include "d3dx8_vulkan_math_compat.h"
 
 // some static matrices which are sometimes useful
 const Matrix3D Matrix3D::Identity

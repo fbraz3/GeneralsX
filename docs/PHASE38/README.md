@@ -1,11 +1,19 @@
-# Phase 37: Cross-Platform Validation
+# Phase 38: Cross-Platform Validation
 
-**Phase**: 37  
+**Phase**: 38  
 **Title**: Cross-Platform Validation  
 **Area**: Testing & Polish  
 **Scope**: LARGE  
 **Status**: not-started  
 **Dependencies**: Phase 36
+
+---
+
+## Quick reminders
+
+- Use `Fail fast` approach when testing new changes, if something is not working as expected, stop and investigate immediately;
+- Focus on finish `GeneralsXZH`, then backport to `GeneralsX`;
+- See `.github/instructions/project.instructions.md` for more specific details about above instructions.
 
 ---
 

@@ -232,9 +232,9 @@ set(WW3D2_SRC
     ww3dids.h
     ww3dtrig.h
     # Phase 01: DirectX 8 Compatibility Layer
-    d3dx8fvf.h
-    d3d8.h
-    win32_types.h
+    d3dx8_vulkan_fvf_compat.h
+    d3d8_vulkan_graphics_compat.h
+    win32_sdl_types_compat.h
     # Phase 02: SDL2 Window & Event Loop compatibility layer
     win32_sdl_api_compat.h
     win32_sdl_api_compat.cpp
@@ -244,6 +244,7 @@ set(WW3D2_SRC
 # pulling Windows/Direct3D dependencies on non-Windows hosts.
 if (USE_VULKAN)
     list(REMOVE_ITEM WW3D2_SRC
+        agg_def.cpp agg_def.h
         dx8caps.cpp dx8caps.h
         dx8fvf.cpp dx8fvf.h
         dx8indexbuffer.cpp dx8indexbuffer.h

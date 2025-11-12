@@ -1,11 +1,19 @@
-# Phase 40: MVP Release v0.1.0
+# Phase 41: MVP Release v0.1.0
 
-**Phase**: 40  
+**Phase**: 41  
 **Title**: MVP Release v0.1.0  
 **Area**: Release  
 **Scope**: MEDIUM  
 **Status**: not-started  
 **Dependencies**: Phase 39
+
+---
+
+## Quick reminders
+
+- Use `Fail fast` approach when testing new changes, if something is not working as expected, stop and investigate immediately;
+- Focus on finish `GeneralsXZH`, then backport to `GeneralsX`;
+- See `.github/instructions/project.instructions.md` for more specific details about above instructions.
 
 ---
 

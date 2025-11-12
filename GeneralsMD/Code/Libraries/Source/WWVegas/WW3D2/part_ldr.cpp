@@ -38,7 +38,7 @@
 #include "w3derr.h"
 #include "chunkio.h"
 #include "win.h"		// for lstrcpy, can this be improved?
-#include "win32_types.h"  // For lstrcpy, _strdup, lstrcpyn, lstrlen macros
+#include "win32_sdl_types_compat.h"  // For lstrcpy, _strdup, lstrcpyn, lstrlen macros
 #include "assetmgr.h"
 #include "texture.h"
 

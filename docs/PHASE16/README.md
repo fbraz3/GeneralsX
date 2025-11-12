@@ -1,11 +1,19 @@
-# Phase 15: Render Target Management
+# Phase 16: Render Target Management
 
-**Phase**: 15  
+**Phase**: 16  
 **Title**: Render Target Management  
 **Area**: Graphics Layer (d3d8_vulkan_graphics_compat)  
 **Scope**: MEDIUM  
 **Status**: not-started  
 **Dependencies**: Phase 07, Phase 08
+
+---
+
+## Quick reminders
+
+- Use `Fail fast` approach when testing new changes, if something is not working as expected, stop and investigate immediately;
+- Focus on finish `GeneralsXZH`, then backport to `GeneralsX`;
+- See `.github/instructions/project.instructions.md` for more specific details about above instructions.
 
 ---
 

@@ -1,11 +1,19 @@
-# Phase 32: Input Handling
+# Phase 33: Input Handling
 
-**Phase**: 32  
+**Phase**: 33  
 **Title**: Input Handling  
 **Area**: Gameplay Features  
 **Scope**: MEDIUM  
 **Status**: not-started  
 **Dependencies**: Phase 05, Phase 26, Phase 30
+
+---
+
+## Quick reminders
+
+- Use `Fail fast` approach when testing new changes, if something is not working as expected, stop and investigate immediately;
+- Focus on finish `GeneralsXZH`, then backport to `GeneralsX`;
+- See `.github/instructions/project.instructions.md` for more specific details about above instructions.
 
 ---
 

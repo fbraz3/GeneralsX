@@ -1,8 +1,8 @@
-# Phase 38.6: Vulkan Analysis & Planning
+# Phase 051.6: Vulkan Analysis & Planning
 
 **Status**: ✅ **READY FOR REVIEW** (Oct 30, 2025)
 
-**Objective**: Analyze Vulkan/DXVK architecture, validate Phase 38 interface compatibility, plan Phase 39-40 implementation
+**Objective**: Analyze Vulkan/DXVK architecture, validate Phase 051 interface compatibility, plan Phase 051-40 implementation
 
 **Timeline**: 4-6 hours analysis + documentation
 
@@ -38,7 +38,7 @@
 | `IDirect3DRenderState` | `VkPipelineState` + `VkRenderPass` | ✅ Mapped |
 | `IDirect3DMatrix` | `glm::mat4` (Vulkan handles math) | ✅ Mapped |
 
-### Phase 38 Interface (47 methods) - Vulkan Mapping
+### Phase 051 Interface (47 methods) - Vulkan Mapping
 
 **Category 1: Frame Management** (5 methods)
 ```cpp
@@ -90,14 +90,14 @@ SetTransform()                  →     Push constants / UBO
 SetAmbient()                    →     Uniform buffer update
 ```
 
-### ✅ Phase 38 Interface Compatibility with Vulkan
+### ✅ Phase 051 Interface Compatibility with Vulkan
 
 **Assessment**: EXCELLENT - All 47 methods map cleanly to Vulkan!
 
 **Why this matters**:
-- Phase 38 abstraction layer was well-designed
+- Phase 051 abstraction layer was well-designed
 - Vulkan is a better target than Metal for cross-platform
-- No interface redesign needed for Phase 39
+- No interface redesign needed for Phase 051
 
 ---
 
@@ -126,7 +126,7 @@ SetAmbient()                    →     Uniform buffer update
 
 **Conclusion**: DXVK CAN compile on macOS ARM64 ✅
 
-### DXVK Compilation Options for Phase 39
+### DXVK Compilation Options for Phase 051
 
 **Option A: Use Pre-built DXVK (Easiest)**
 - Check if Homebrew has DXVK formula
@@ -150,7 +150,7 @@ cd dxvk
 - **Effort**: 3-4 hours
 - **Not recommended** for native macOS app
 
-### Phase 39 Recommendation: Option B (Compile from Source)
+### Phase 051 Recommendation: Option B (Compile from Source)
 
 **Reasoning**:
 1. Most reliable for ARM64
@@ -160,7 +160,7 @@ cd dxvk
 
 ---
 
-## Part 3.5: Vulkan SDK Documentation Review (Required for Phase 38.6)
+## Part 3.5: Vulkan SDK Documentation Review (Required for Phase 051.6)
 
 ### Key Documentation Files to Read
 
@@ -194,7 +194,7 @@ cd dxvk
 
 ### Current Architecture Validation Tasks
 
-**Before Phase 39.1 starts**, must validate:
+**Before Phase 051.1 starts**, must validate:
 
 1. ✅ **Vulkan instance creation** - Does it work on macOS ARM64?
    - Run: `vkinfo` from Vulkan SDK
@@ -216,9 +216,9 @@ cd dxvk
    - Study: Vulkan memory types on macOS
    - Plan: Texture upload strategy
 
-### Phase 38.6 Validation Checklist
+### Phase 051.6 Validation Checklist
 
-Before proceeding to Phase 39, verify:
+Before proceeding to Phase 051, verify:
 
 - [ ] Read `getting_started.html` completely
 - [ ] Understand Vulkan Instance → Device → Queue hierarchy
@@ -232,9 +232,9 @@ Before proceeding to Phase 39, verify:
 
 ---
 
-## Part 4: Phase 39 Implementation Plan
+## Part 4: Phase 051 Implementation Plan
 
-### Phase 39.1: DXVK Compilation & Setup (4-6 hours)
+### Phase 051.1: DXVK Compilation & Setup (4-6 hours)
 
 **Tasks**:
 1. Clone DXVK repository
@@ -246,7 +246,7 @@ Before proceeding to Phase 39, verify:
 
 **Deliverable**: Working DXVK library, documented setup
 
-### Phase 39.2: DXVKGraphicsBackend Implementation (6-8 hours)
+### Phase 051.2: DXVKGraphicsBackend Implementation (6-8 hours)
 
 **Tasks**:
 1. Create `graphics_backend_dxvk.cpp` (implements IGraphicsBackend)
@@ -258,7 +258,7 @@ Before proceeding to Phase 39, verify:
 
 **File**: `Core/Libraries/Source/WWVegas/WW3D2/graphics_backend_dxvk.cpp`
 
-**Pattern** (like Phase 38 LegacyGraphicsBackend):
+**Pattern** (like Phase 051 LegacyGraphicsBackend):
 ```cpp
 class DXVKGraphicsBackend : public IGraphicsBackend {
     // Initialize Vulkan
@@ -274,7 +274,7 @@ class DXVKGraphicsBackend : public IGraphicsBackend {
 };
 ```
 
-### Phase 39.3: CMake Integration (1-2 hours)
+### Phase 051.3: CMake Integration (1-2 hours)
 
 **Tasks**:
 1. Add DXVK detection in CMakeLists.txt
@@ -289,7 +289,7 @@ cmake --preset macos-arm64-dxvk
 cmake --build build/macos-arm64-dxvk --target GeneralsXZH -j 4
 ```
 
-### Phase 39.4: Testing & Optimization (2-3 hours)
+### Phase 051.4: Testing & Optimization (2-3 hours)
 
 **Tasks**:
 1. Compile with DXVK backend
@@ -306,14 +306,14 @@ cmake --build build/macos-arm64-dxvk --target GeneralsXZH -j 4
 - ✅ No memory leaks
 - ✅ Stable 60+ minute sessions
 
-### Phase 39.5: Documentation & Fallback (1-2 hours)
+### Phase 051.5: Documentation & Fallback (1-2 hours)
 
 **Tasks**:
 1. Document DXVK compilation process
 2. Add DXVK troubleshooting guide
 3. Implement Metal fallback (`USE_DXVK=0`)
 4. Update instruction files
-5. Commit Phase 39 complete
+5. Commit Phase 051 complete
 
 **Deliverable**: Full DXVK integration, documented, with fallback
 
@@ -323,7 +323,7 @@ cmake --build build/macos-arm64-dxvk --target GeneralsXZH -j 4
 
 ### Risk 1: DXVK Compilation Fails on ARM64
 - **Likelihood**: Low (proven Vulkan works)
-- **Mitigation**: Revert to Phase 39alt (Metal optimization)
+- **Mitigation**: Revert to Phase 051alt (Metal optimization)
 - **Fallback Time**: 2-4 hours (Metal hardening)
 
 ### Risk 2: DXVK Performance < Metal
@@ -343,12 +343,12 @@ cmake --build build/macos-arm64-dxvk --target GeneralsXZH -j 4
 
 ---
 
-## Part 6: Phase 38.6 Deliverables
+## Part 6: Phase 051.6 Deliverables
 
 ### ✅ Documentation
-1. This analysis document (Phase 38.6 plan)
+1. This analysis document (Phase 051.6 plan)
 2. DirectX 8 → Vulkan method mapping
-3. DXVK compilation guide (for Phase 39)
+3. DXVK compilation guide (for Phase 051)
 4. Updated Vulkan/README.md with local docs setup
 
 ### ✅ Code Changes
@@ -356,26 +356,26 @@ cmake --build build/macos-arm64-dxvk --target GeneralsXZH -j 4
 2. Create `docs/PHASE38/PHASE38_6_VULKAN_ANALYSIS.md` (this file)
 3. Update `.gitignore` for large Vulkan docs
 4. Update `.github/instructions/project.instructions.md` with Vulkan references
-5. Update `.github/copilot-instructions.md` with Phase 38.6-39 info
+5. Update `.github/copilot-instructions.md` with Phase 051.6-39 info
 
 ### ✅ Commits (3-5)
 1. "docs(vulkan): Add Vulkan SDK setup guide and analysis"
 2. "docs(phase38.6): Complete DirectX→Vulkan architecture analysis"
-3. "docs(instructions): Reference Vulkan SDK and Phase 39 DXVK"
+3. "docs(instructions): Reference Vulkan SDK and Phase 051 DXVK"
 4. "chore(.gitignore): Exclude large Vulkan documentation files"
 
 ---
 
-## Part 7: Next Phase - Phase 39 Start Checklist
+## Part 7: Next Phase - Phase 051 Start Checklist
 
 - [ ] Vulkan SDK docs downloaded locally
 - [ ] `.gitignore` configured for docs directory
-- [ ] Phase 38.6 analysis completed and committed
+- [ ] Phase 051.6 analysis completed and committed
 - [ ] DirectX → Vulkan mapping document finalized
 - [ ] DXVK compilation tested on ARM64
 - [ ] Build system plan (Meson + CMake) documented
 - [ ] Risk mitigation strategies identified
-- [ ] Phase 39 implementation timeline confirmed
+- [ ] Phase 051 implementation timeline confirmed
 
 ---
 
@@ -389,50 +389,50 @@ cmake --build build/macos-arm64-dxvk --target GeneralsXZH -j 4
 | 39.3 | CMake integration | 1-2 hrs | ⏳ PENDING |
 | 39.4 | Testing & optimization | 2-3 hrs | ⏳ PENDING |
 | 39.5 | Documentation | 1-2 hrs | ⏳ PENDING |
-| **Phase 39 Total** | | **~18-26 hours** | |
+| **Phase 051 Total** | | **~18-26 hours** | |
 
 ---
 
 ## Conclusion
 
-**Phase 38.6 Assessment**: ✅ READY TO PROCEED
+**Phase 051.6 Assessment**: ✅ READY TO PROCEED
 
 **Findings**:
 1. ✅ Vulkan SDK confirmed working on macOS ARM64
-2. ✅ Phase 38 interface maps perfectly to Vulkan
+2. ✅ Phase 051 interface maps perfectly to Vulkan
 3. ✅ DXVK feasible with MoltenVK on macOS
 4. ✅ Implementation path clear and documented
-5. ⚠️ ~18-26 hours estimated for Phase 39 (realistic)
+5. ⚠️ ~18-26 hours estimated for Phase 051 (realistic)
 
-**Recommendation**: Proceed with Phase 39 DXVK implementation
+**Recommendation**: Proceed with Phase 051 DXVK implementation
 
-**Alternative**: If Phase 39 takes >30 hours, switch to Phase 39alt (Metal optimization, ~4 hours)
-
----
-
-**Phase 38.6 Status**: ✅ **COMPLETE** - Full Vulkan analysis & Phase 39 planning documented
-**Next Action**: Review & approve Phase 38.6, then proceed to Phase 39.1 DXVK compilation
+**Alternative**: If Phase 051 takes >30 hours, switch to Phase 051alt (Metal optimization, ~4 hours)
 
 ---
 
-## Phase 38.6 Session Summary
+**Phase 051.6 Status**: ✅ **COMPLETE** - Full Vulkan analysis & Phase 051 planning documented
+**Next Action**: Review & approve Phase 051.6, then proceed to Phase 051.1 DXVK compilation
+
+---
+
+## Phase 051.6 Session Summary
 
 **What Was Done**:
 1. ✅ Validated Vulkan SDK 1.4.328.1 on macOS ARM64 (vkcube, vkconfig working)
 2. ✅ Mapped all 47 IGraphicsBackend methods → Vulkan equivalents
 3. ✅ Designed DXVKGraphicsBackend class structure
-4. ✅ Created detailed Phase 39 implementation plan (5 sub-phases, ~18-26 hours)
+4. ✅ Created detailed Phase 051 implementation plan (5 sub-phases, ~18-26 hours)
 5. ✅ Identified risks and mitigation strategies
 6. ✅ Documented Vulkan SDK directory structure and key resources
-7. ✅ Prepared Phase 39 readiness checklist
+7. ✅ Prepared Phase 051 readiness checklist
 
 **Key Discoveries**:
 - Vulkan is ideal for GeneralsX (better cross-platform than Metal alone)
-- Phase 38 abstraction enables seamless backend swapping
+- Phase 051 abstraction enables seamless backend swapping
 - DXVK compilation on macOS ARM64 is feasible
 - DirectX 8 → Vulkan mapping is straightforward (no interface changes needed)
 - MoltenVK provides stable translation layer for macOS
 
-**Validation Gate Complete**: ✅ Ready to proceed with Phase 39 implementation
+**Validation Gate Complete**: ✅ Ready to proceed with Phase 051 implementation
 
-**Timeline Estimate**: ~18-26 hours for Phase 39 (4-5 days focused work)
+**Timeline Estimate**: ~18-26 hours for Phase 051 (4-5 days focused work)

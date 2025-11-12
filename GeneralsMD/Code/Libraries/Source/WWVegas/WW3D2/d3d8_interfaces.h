@@ -299,6 +299,10 @@ struct IDirect3DDevice8 {
     virtual HRESULT CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, D3DPOOL Pool, IDirect3DVertexBuffer8 **ppVertexBuffer) { return S_OK; }
     virtual HRESULT CreateIndexBuffer(UINT Length, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DIndexBuffer8 **ppIndexBuffer) { return S_OK; }
     virtual HRESULT CreateSurface(UINT Width, UINT Height, D3DFORMAT Format, BOOL Lockable, BOOL Discard, IDirect3DSurface8 **ppSurface) { return S_OK; }
+    virtual HRESULT CreateImageSurface(UINT Width, UINT Height, D3DFORMAT Format, IDirect3DSurface8 **ppSurface) { 
+        if (ppSurface) *ppSurface = nullptr; 
+        return S_OK; 
+    }
     virtual HRESULT CreateSwapChain(void *pPresentationParameters, IDirect3DSwapChain8 **ppSwapChain) { return S_OK; }
     
     // ============= Strided Data =============

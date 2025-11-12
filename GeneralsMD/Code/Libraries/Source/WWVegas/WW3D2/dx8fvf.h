@@ -42,7 +42,7 @@
 #pragma once
 
 #include "always.h"
-#include <d3d8.h>
+#include "d3d8_vulkan_graphics_compat.h"
 #ifdef WWDEBUG
 #include "wwdebug.h"
 #endif

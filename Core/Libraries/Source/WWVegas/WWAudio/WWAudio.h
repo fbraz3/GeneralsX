@@ -38,8 +38,11 @@
 
 #include "always.h"
 #pragma warning (push, 3)
-#include "mss.h"
+// #include "mss.h"  // Not available on non-Windows platforms (Miles Sound System)
 #pragma warning (pop)
+
+/* Phase 03: Include MSS compatibility stubs for non-Windows builds */
+#include "mss_compat.h"
 
 #include "Vector.h"
 #include "SoundBuffer.h"

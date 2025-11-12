@@ -1,11 +1,19 @@
-# Phase 20: Draw Command System
+# Phase 21: Draw Command System
 
-**Phase**: 20  
+**Phase**: 21  
 **Title**: Draw Command System  
 **Area**: Graphics Layer (d3d8_vulkan_graphics_compat)  
 **Scope**: MEDIUM  
 **Status**: COMPLETE (Phase 41)  
 **Dependencies**: Phase 10, Phase 14, Phase 19
+
+---
+
+## Quick reminders
+
+- Use `Fail fast` approach when testing new changes, if something is not working as expected, stop and investigate immediately;
+- Focus on finish `GeneralsXZH`, then backport to `GeneralsX`;
+- See `.github/instructions/project.instructions.md` for more specific details about above instructions.
 
 ---
 

@@ -27,19 +27,19 @@ Continue the current strategy of porting the original C&C Generals (2003) engine
    - Render states mapping (47+ states)
 
 3. **Layer 3: Game Logic** (`GeneralsMD/Code/`)
-   - INI parser hardening (Phase 22-23)
-   - Memory safety checks (Phase 30.6)
+   - INI parser hardening (Phase 051-23)
+   - Memory safety checks (Phase 051.6)
    - Texture interception post-DirectX
 
 ### Known Issues
 
 | Issue | Status | Impact |
 |-------|--------|--------|
-| Graphics 95% complete | Phase 28-29 | Visual quality high |
-| Shader precision mismatches | Phase 29.4 | Minor visual glitches |
+| Graphics 95% complete | Phase 051-29 | Visual quality high |
+| Shader precision mismatches | Phase 051.4 | Minor visual glitches |
 | Multiplayer protocol unknown | Undiscovered | 8-month research req'd |
-| Audio Miles System integration | Phase 33 pending | Critical blocker |
-| Memory leaks under Metal | Phase 30.6 identified | Crashes @ 200+ units |
+| Audio Miles System integration | Phase 051 pending | Critical blocker |
+| Memory leaks under Metal | Phase 051.6 identified | Crashes @ 200+ units |
 
 **Realistic estimate for functional multiplayer:**
 - 3-4 months of parallel reengineering
@@ -101,7 +101,7 @@ Continue the current strategy of porting the original C&C Generals (2003) engine
 **Sprint 5:** Input Abstraction
 - [ ] Keyboard events
 - [ ] Mouse movement/clicks
-- [ ] Gamepad support (optional Phase 2)
+- [ ] Gamepad support (optional Phase 03)
 - [ ] UI navigation
 - **Test:** Menu navigation, unit selection
 
@@ -166,7 +166,7 @@ Continue the current strategy of porting the original C&C Generals (2003) engine
 
 **Sprint 21:** Community Tools
 - [ ] Replay viewer
-- [ ] Map editor (Phase 1)
+- [ ] Map editor (Phase 02)
 - [ ] Stat tracker
 
 **Sprint 22-24:** Launch & Support
@@ -208,7 +208,7 @@ wwmath              # Math library
 # Graphics
 Metal (macOS)       # Primary backend
 OpenGL 4.5          # Fallback
-Vulkan 1.4          # Future (Phase 40+)
+Vulkan 1.4          # Future (Phase 051+)
 
 # Audio
 OpenAL Soft         # Miles System replacement
@@ -293,7 +293,7 @@ Key Libraries:
 - wwlib: System abstraction
 - wwmath: Math operations
 - OpenAL: Audio
-- RakNet: Networking (Phase 34+)
+- RakNet: Networking (Phase 051+)
 ```
 
 ---
@@ -361,6 +361,6 @@ This approach is **viable but brutal**. You're literally bridging 20 years of AP
 
 **The engine will be alive, but always a "zombie"** — working, but never truly optimized for modern platforms.
 
-Multiplayer is the critical breaking point. If community demands online functionality, you'll need Phase 34-36, which is practically rewriting the entire networking layer.
+Multiplayer is the critical breaking point. If community demands online functionality, you'll need Phase 051-36, which is practically rewriting the entire networking layer.
 
 **Recommendation:** Start with this approach (you already have 70% graphics), but reserve weeks 12-16 for "multiplayer spike". If feasibility is <30%, consider Option 2.

@@ -44,8 +44,8 @@
 #include "dx8wrapper.h"
 #include "vertmaterial.h"
 #include "texture.h"
-#include "d3d8.h"
-#include "d3dx8math.h"
+#include "d3d8_vulkan_graphics_compat.h"
+#include "d3dx8_vulkan_math_compat.h"
 #include "statistics.h"
 #include <wwprofile.h>
 #include <algorithm>

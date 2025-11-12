@@ -1,14 +1,14 @@
 # INI Parser Blocker - Critical Analysis & Resolution Guide
 
-**Status**: 🔴 CRITICAL BLOCKER - Prevents Phase 33 audio testing and potentially affects entire game  
+**Status**: 🔴 CRITICAL BLOCKER - Prevents Phase 051 audio testing and potentially affects entire game  
 **Discovery Date**: October 19, 2025  
-**Phase Context**: Phase 33.8 (Audio Request Processing complete but untestable)  
+**Phase Context**: Phase 051.8 (Audio Request Processing complete but untestable)  
 
 ---
 
 ## Problem Summary
 
-The INI parser is failing to read **all float and string values** from configuration files, returning default values (0.00 for floats, empty strings for text). This is caused by overly aggressive exception handling added during Phase 22-23 when the VFS/BIG file system was not yet understood.
+The INI parser is failing to read **all float and string values** from configuration files, returning default values (0.00 for floats, empty strings for text). This is caused by overly aggressive exception handling added during Phase 051-23 when the VFS/BIG file system was not yet understood.
 
 ### Impact Assessment
 
@@ -80,9 +80,9 @@ AudioManager::addAudioEvent() - Adding MUSIC track: 'MissionBriefing' (handle=8,
 
 ## Root Cause Analysis
 
-### Historical Context: Phase 22-23 Stub Protections
+### Historical Context: Phase 051-23 Stub Protections
 
-During Phase 22-23 (September 2025), the project was experiencing crashes from:
+During Phase 051-23 (September 2025), the project was experiencing crashes from:
 - Unknown VFS/BIG file system behavior
 - Unstable INI parsing with unexpected token sequences
 - Memory corruption from malformed data
@@ -90,7 +90,7 @@ During Phase 22-23 (September 2025), the project was experiencing crashes from:
 **Solution at the time**: Add "UNIVERSAL PROTECTION" try-catch blocks to prevent crashes:
 
 ```cpp
-// Phase 22.7 - Universal Protection Pattern
+// Phase 051.7 - Universal Protection Pattern
 try {
     field_parser->Parse(chunk, ini);
 } catch (...) {
@@ -215,11 +215,11 @@ void INI::parseFieldFromTable(FieldParse* table, void* obj, INIChunk* chunk) {
    - FieldParse tables for AudioSettings
    - FieldParse tables for MusicTrack
 
-### Priority 3: Phase 22-23 Protection Commits
+### Priority 3: Phase 051-23 Protection Commits
 6. **Git History**: Search for "UNIVERSAL PROTECTION" commits
    ```bash
    git log --all --grep="UNIVERSAL PROTECTION" --oneline
-   git log --all --grep="Phase 22" --oneline
+   git log --all --grep="Phase 051" --oneline
    git log --all --grep="INI.*protection" --oneline
    ```
 
@@ -361,7 +361,7 @@ try {
 **Benefits**:
 - Fixes silent failures system-wide
 - Exposes real bugs for proper fixing
-- Removes technical debt from Phase 22-23
+- Removes technical debt from Phase 051-23
 
 ### Solution 2: Add Field Type Validation (SAFER)
 **Impact**: Medium risk, medium reward  
@@ -434,7 +434,7 @@ git log --all --grep="INI\|parse" --oneline | head -20
 
 ## Testing Strategy
 
-### Phase 1: Verify Current Failure
+### Phase 02: Verify Current Failure
 ```bash
 # Build and run with debug logging
 cmake --build build/macos-arm64 --target GeneralsXZH -j 4 2>&1 | tee logs/build_ini_debug.log
@@ -447,7 +447,7 @@ USE_METAL=1 ./GeneralsXZH 2>&1 | tee logs/ini_debug_$(date +%Y%m%d_%H%M%S).log
 grep "UNIVERSAL PROTECTION" logs/ini_debug_*.log | wc -l
 ```
 
-### Phase 2: Test Fix in Isolation
+### Phase 03: Test Fix in Isolation
 ```bash
 # Create minimal test case
 cd tests/
@@ -457,7 +457,7 @@ g++ -o test_ini_parser test_ini_parser.cpp -I../Core/Libraries/Include/WWVegas/W
 ./test_ini_parser
 ```
 
-### Phase 3: Validate Audio System
+### Phase 04: Validate Audio System
 After INI fix:
 ```bash
 # Should see valid filenames and volumes
@@ -469,7 +469,7 @@ grep "parseMusicTrackDefinition" logs/audio_test_fixed.log | head -5
 # Expected: filename='Music.big:Shell.mp3', volume=1.00 (or similar)
 ```
 
-### Phase 4: Full Regression Test
+### Phase 05: Full Regression Test
 ```bash
 # Test all subsystems that depend on INI parsing
 # - Audio configuration (AudioSettings.ini)
@@ -502,7 +502,7 @@ grep -c "UNIVERSAL PROTECTION" logs/full_test.log
 - ✅ Zero regression in game stability
 
 ### Documentation Goals
-- ✅ Update `docs/MACOS_PORT_DIARY.md` with Phase 33.9 (INI Parser Fix)
+- ✅ Update `docs/MACOS_PORT_DIARY.md` with Phase 051.9 (INI Parser Fix)
 - ✅ Document lessons learned in `docs/Misc/LESSONS_LEARNED.md`
 - ✅ Add INI parsing patterns to `.github/copilot-instructions.md`
 
@@ -511,7 +511,7 @@ grep -c "UNIVERSAL PROTECTION" logs/full_test.log
 ## Related Documentation
 
 ### Project Files
-- **`docs/MACOS_PORT_DIARY.md`** - Phase 33.8 documents audio blocker discovery
+- **`docs/MACOS_PORT_DIARY.md`** - Phase 051.8 documents audio blocker discovery
 - **`docs/Misc/AUDIO_BACKEND_STATUS.md`** - Audio implementation status
 - **`docs/Misc/BIG_FILES_REFERENCE.md`** - Asset structure and INI file locations
 - **`docs/PHASE33/README.md`** - OpenAL implementation details
@@ -523,8 +523,8 @@ grep -c "UNIVERSAL PROTECTION" logs/full_test.log
 
 ### Git History
 ```bash
-# Find Phase 22-23 protection commits
-git log --all --grep="Phase 22\|Phase 23" --oneline
+# Find Phase 051-23 protection commits
+git log --all --grep="Phase 051\|Phase 051" --oneline
 git log --all --grep="UNIVERSAL PROTECTION" --oneline
 git log --all --grep="INI.*exception" --oneline
 
@@ -549,9 +549,9 @@ git log --all --grep="audio.*INI\|AudioSettings" --oneline
 
 **AI Agent Instructions**: `.github/copilot-instructions.md`  
 **Project Guidelines**: `.github/instructions/project.instructions.md`  
-**Development Diary**: `docs/MACOS_PORT_DIARY.md` (Phase 33.8 for audio context)  
+**Development Diary**: `docs/MACOS_PORT_DIARY.md` (Phase 051.8 for audio context)  
 
-**Key Insight**: This is NOT just an audio bug - it's a **system-wide infrastructure issue** affecting potentially every INI-configured system in the game. Fixing this unblocks Phase 33 audio testing AND improves stability across the entire codebase.
+**Key Insight**: This is NOT just an audio bug - it's a **system-wide infrastructure issue** affecting potentially every INI-configured system in the game. Fixing this unblocks Phase 051 audio testing AND improves stability across the entire codebase.
 
 ---
 

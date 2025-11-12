@@ -1,11 +1,19 @@
-# Phase 26: Game Object System
+# Phase 27: Game Object System
 
-**Phase**: 26  
+**Phase**: 27  
 **Title**: Game Object System  
 **Area**: Game Logic  
 **Scope**: MEDIUM  
 **Status**: not-started  
 **Dependencies**: Phase 04
+
+---
+
+## Quick reminders
+
+- Use `Fail fast` approach when testing new changes, if something is not working as expected, stop and investigate immediately;
+- Focus on finish `GeneralsXZH`, then backport to `GeneralsX`;
+- See `.github/instructions/project.instructions.md` for more specific details about above instructions.
 
 ---
 

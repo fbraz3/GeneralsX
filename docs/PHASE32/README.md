@@ -1,11 +1,19 @@
-# Phase 31: Audio System (Phase 2)
+# Phase 32: Audio System (Phase 2)
 
-**Phase**: 31  
+**Phase**: 32  
 **Title**: Audio System (Phase 2)  
 **Area**: Gameplay Features  
 **Scope**: LARGE  
 **Status**: not-started  
 **Dependencies**: Phase 02, Phase 25
+
+---
+
+## Quick reminders
+
+- Use `Fail fast` approach when testing new changes, if something is not working as expected, stop and investigate immediately;
+- Focus on finish `GeneralsXZH`, then backport to `GeneralsX`;
+- See `.github/instructions/project.instructions.md` for more specific details about above instructions.
 
 ---
 

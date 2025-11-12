@@ -1,11 +1,19 @@
-# Phase 25: Audio Integration (Phase 1)
+# Phase 26: Audio Integration (Phase 1)
 
-**Phase**: 25  
+**Phase**: 26  
 **Title**: Audio Integration (Phase 1)  
 **Area**: Menu System  
 **Scope**: SMALL  
 **Status**: not-started  
 **Dependencies**: Phase 02, Phase 24
+
+---
+
+## Quick reminders
+
+- Use `Fail fast` approach when testing new changes, if something is not working as expected, stop and investigate immediately;
+- Focus on finish `GeneralsXZH`, then backport to `GeneralsX`;
+- See `.github/instructions/project.instructions.md` for more specific details about above instructions.
 
 ---
 
