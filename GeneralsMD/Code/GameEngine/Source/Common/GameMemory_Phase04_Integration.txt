@@ -1,0 +1,167 @@
+/*
+**  Command & Conquer Generals Zero Hour(tm)
+**  Copyright 2025 Electronic Arts Inc.
+**
+**  This program is free software: you can redistribute it and/or modify
+**  it under the terms of the GNU General Public License as published by
+**  the Free Software Foundation, either version 3 of the License, or
+**  (at your option) any later version.
+**
+**  This program is distributed in the hope that it will be useful,
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**  GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License
+**  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/******************************************************************************
+**
+**  FILE: GameMemory.cpp - Phase 04 Cross-Platform Memory Integration
+**
+**  AUTHOR: Ported for GeneralsX
+**
+**  DATE: November 2025
+**
+**  PURPOSE: Cross-platform memory allocation integration with existing system
+**
+**  DESCRIPTION:
+**    This file demonstrates how Phase 04 memory tracking integrates with
+**    the existing GameMemory system. The compatibility layer provides
+**    thread-safe allocation tracking and performance profiling hooks.
+**
+******************************************************************************/
+
+/* 
+ * Phase 04: Memory & Threading Integration Guide
+ *
+ * The existing game code uses custom memory managers (GameMemory.cpp).
+ * Phase 04 adds cross-platform support by:
+ *
+ * 1. ALLOCATION TRACKING
+ *    - SDL2_InitializeMemoryTracking() at startup
+ *    - Thread-safe statistics via SDL2_GetMemoryStats()
+ *    - Per-allocation tracking with SDL2_Malloc/SDL2_Free
+ *
+ * 2. SYNCHRONIZATION PRIMITIVES
+ *    - Critical sections replace CRITICAL_SECTION (Windows-specific)
+ *    - Mutexes replace CreateMutex/ReleaseMutex
+ *    - Condition variables for thread coordination
+ *    - Semaphores for counting synchronization
+ *
+ * 3. PERFORMANCE PROFILING
+ *    - SDL2_GetPerformanceCounter() for high-resolution timing
+ *    - SDL2_PerformanceCounterToMilliseconds() for measurements
+ *    - SDL2_ScopedTimer for RAII-based profiling
+ *
+ * INTEGRATION POINTS:
+ *
+ * Existing: void* GameMemory::Allocate(size_t size)
+ * Phase 04: Call SDL2_Malloc internally for tracking
+ *
+ * Existing: void GameMemory::Free(void* ptr)
+ * Phase 04: Call SDL2_Free for tracking
+ *
+ * Existing: CriticalSection locks throughout game
+ * Phase 04: Use SDL2_CriticalSectionLock for automatic lock/unlock
+ *
+ * EXAMPLE USAGE IN GAME CODE:
+ *
+ * Before (Windows-only):
+ *   CRITICAL_SECTION cs;
+ *   InitializeCriticalSection(&cs);
+ *   EnterCriticalSection(&cs);
+ *   // Critical section code
+ *   LeaveCriticalSection(&cs);
+ *   DeleteCriticalSection(&cs);
+ *
+ * After (Cross-platform):
+ *   SDL2_CriticalSection cs = SDL2_CreateCriticalSection();
+ *   {
+ *       SDL2_CriticalSectionLock lock(&cs);
+ *       // Critical section code - automatically unlocked
+ *   }
+ *   SDL2_DestroyCriticalSection(&cs);
+ *
+ * THREAD CREATION EXAMPLE:
+ *
+ * Before (Windows-only):
+ *   HANDLE thread = _beginthread(ThreadFunc, 0, arg);
+ *   WaitForSingleObject(thread, INFINITE);
+ *
+ * After (Cross-platform):
+ *   SDL2_ThreadHandle thread = SDL2_CreateThread(ThreadFunc, arg, "worker", 0);
+ *   SDL2_WaitThread(thread);
+ *
+ * PERFORMANCE TIMING EXAMPLE:
+ *
+ * Before:
+ *   LARGE_INTEGER start, end, freq;
+ *   QueryPerformanceFrequency(&freq);
+ *   QueryPerformanceCounter(&start);
+ *   // Do work
+ *   QueryPerformanceCounter(&end);
+ *   double ms = (end.QuadPart - start.QuadPart) * 1000.0 / freq.QuadPart;
+ *
+ * After:
+ *   SDL2_PerformanceCounter start = SDL2_GetPerformanceCounter();
+ *   // Do work
+ *   SDL2_PerformanceCounter end = SDL2_GetPerformanceCounter();
+ *   double ms = SDL2_PerformanceCounterToMilliseconds(start, end);
+ *
+ * MEMORY STATISTICS EXAMPLE:
+ *
+ * SDL2_InitializeMemoryTracking();
+ *
+ * SDL2_MemoryStats stats;
+ * SDL2_GetMemoryStats(&stats);
+ *
+ * printf("Total allocated: %llu bytes\n", stats.total_allocated);
+ * printf("Currently used:  %llu bytes\n", stats.current_allocated);
+ * printf("Peak usage:      %llu bytes\n", stats.peak_allocated);
+ * printf("Active allocs:   %u\n", stats.active_allocations);
+ *
+ * HEADER DEPENDENCIES:
+ *
+ * - Core/Libraries/Source/WWVegas/WW3D2/win32_thread_compat.h
+ *   SDL2_ThreadHandle, SDL2_CriticalSection, SDL2_Mutex, SDL2_ConditionVariable
+ *
+ * - Core/Libraries/Source/WWVegas/WW3D2/win32_memory_compat.h
+ *   SDL2_Malloc, SDL2_Free, SDL2_GetPerformanceCounter, SDL2_MemoryStats
+ *
+ * COMPILATION:
+ *
+ * Add to CMakeLists.txt:
+ *   set(WIN32_COMPAT_SOURCES
+ *       "${WWVEGAS_SOURCE_DIR}/WW3D2/win32_sdl_api_compat.cpp"
+ *       "${WWVEGAS_SOURCE_DIR}/WW3D2/win32_thread_compat.cpp"
+ *       "${WWVEGAS_SOURCE_DIR}/WW3D2/win32_memory_compat.cpp"
+ *   )
+ *
+ * PLATFORM SUPPORT:
+ *
+ * ✓ Windows (Win32 API)
+ * ✓ macOS (POSIX/pthreads)
+ * ✓ Linux (POSIX/pthreads)
+ *
+ * TESTING:
+ *
+ * 1. Unit test thread creation
+ * 2. Unit test mutex locking/unlocking
+ * 3. Unit test memory tracking
+ * 4. Integration test with texture loader (existing threaded code)
+ * 5. Performance benchmark on all platforms
+ *
+ */
+
+/* Phase 04 implementation is in:
+ * - win32_thread_compat.h/.cpp   - Threading, mutexes, condition variables
+ * - win32_memory_compat.h/.cpp   - Memory tracking, performance counters
+ *
+ * The compatibility layer handles platform differences:
+ * - Windows: CreateThread, CreateMutex, QueryPerformanceCounter
+ * - POSIX:   pthread_create, pthread_mutex, clock_gettime
+ *
+ * All APIs are thread-safe and designed for the game's existing architecture.
+ */
