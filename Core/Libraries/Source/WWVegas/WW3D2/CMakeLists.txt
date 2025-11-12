@@ -263,6 +263,9 @@ set(WW3D2_SRC
     # Phase 08: Advanced Input Features - Macro Recording & Playback
     win32_gamepad_macro_system.h
     win32_gamepad_macro_system.cpp
+    # Phase 08: Advanced Input Features - Force Feedback & Haptics
+    win32_gamepad_force_feedback.h
+    win32_gamepad_force_feedback.cpp
 )
 
 # Exclude DX8-only files when building with the Vulkan backend to avoid
