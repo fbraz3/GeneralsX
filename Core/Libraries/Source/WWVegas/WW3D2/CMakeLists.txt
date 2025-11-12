@@ -284,6 +284,9 @@ set(WW3D2_SRC
     # Phase 12: Texture System
     d3d8_vulkan_texture.h
     d3d8_vulkan_texture.cpp
+    # Phase 13: Sampler & Descriptor Sets
+    d3d8_vulkan_descriptor.h
+    d3d8_vulkan_descriptor.cpp
 )
 
 # Exclude DX8-only files when building with the Vulkan backend to avoid
