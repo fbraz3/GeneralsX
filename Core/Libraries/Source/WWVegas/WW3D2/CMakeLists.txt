@@ -302,6 +302,9 @@ set(WW3D2_SRC
     # Phase 18: Visibility & Culling
     d3d8_vulkan_culling.h
     d3d8_vulkan_culling.cpp
+    # Phase 19: Lighting System
+    d3d8_vulkan_lighting.h
+    d3d8_vulkan_lighting.cpp
 )
 
 # Exclude DX8-only files when building with the Vulkan backend to avoid
