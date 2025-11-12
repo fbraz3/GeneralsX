@@ -1,53 +1,183 @@
 # GeneralsX macOS Port Development Diary
 
-## Latest: Current Session — **PHASES 12-15 GRAPHICS LAYER COMPLETE**
+## Latest: Current Session — **PHASES 16-20 GRAPHICS PIPELINE COMPLETE**
 
-### Session: Phases 12-15 - Graphics System Implementation (Vulkan)
+### Session: Phases 16-20 - Advanced Graphics Pipeline (Vulkan)
 
-**STATUS**: ✅ COMPLETE - All 4 phases implemented, tested, committed, and pushed
+**STATUS**: ✅ COMPLETE - All 5 phases implemented, tested, committed, and pushed
 
 **Date**: November 12, 2025
 
+**Duration**: ~4 hours for all 5 phases
+
 ---
 
-## Phase 12: Texture System
+## Phase 16: Render Target Management
 
-**Status**: ✅ COMPLETE - Committed (6620399b) and pushed
+**Status**: ✅ COMPLETE - Committed (cd837139) and pushed
 
 **Deliverables**:
-
-- `d3d8_vulkan_texture.h` (350+ lines) - Texture management API with 15 functions
-- `d3d8_vulkan_texture.cpp` (620+ lines) - Stub implementation with caching
+- `d3d8_vulkan_rendertarget.h` (430+ lines) - Render target management API with 18 functions
+- `d3d8_vulkan_rendertarget.cpp` (550+ lines) - Full implementation with caching
 - CMakeLists.txt - Updated with 2 new files
 
-**API Functions** (15 total):
-
-1. CreateTexture, FreeTexture, UploadTextureData, TransitionTextureLayout
-2. CreateSampler, FreeSampler, LoadTextureFromFile
-3. GenerateMipmaps, CreateTextureView, UpdateTextureRegion
-4. GetTextureStats, CreateTextureAtlas, GetFormatBPP, GetFormatBlockSize, ConvertDX8Format
+**API Functions** (18 total):
+- Create, Destroy, GetInfo, Set, Clear, Resize, CreateDepth, CreateOffscreen, Blit, ReadPixels
+- GetStats, ClearCache, Validate, RefCount (inc/dec), GetError
 
 **Features**:
+- 128-entry render target cache
+- State machine: UNINITIALIZED → READY → ACTIVE → DESTROYED
+- Reference counting
+- Handle generation at 11000+
+- Comprehensive error tracking
 
-- 8 texture formats: RGBA8, RGB8, BC1/2/3 DXT, RGBA_FLOAT, DEPTH24/32
-- 4 usage modes: SAMPLE, COLOR_ATTACHMENT, DEPTH_ATTACHMENT, STORAGE
-- 256-entry texture cache, 64-entry sampler cache
-- Sequential handle generation (textures 1000+, samplers 2000+)
-- DirectX 8 format conversion
-- Atlas support
-
-**Compilation**: ✅ Clean (0 errors after struct fix)
+**Compilation**: ✅ Clean (0 errors after enum fix)
 
 ---
 
-## Phase 13: Sampler & Descriptor Sets
+## Phase 17: Render Loop Integration
 
-**Status**: ✅ COMPLETE - Committed (f815900e) and pushed
+**Status**: ✅ COMPLETE - Committed (31128ea3) and pushed
 
 **Deliverables**:
-- `d3d8_vulkan_descriptor.h` (380+ lines) - Descriptor system API with 18 functions
-- `d3d8_vulkan_descriptor.cpp` (650+ lines) - Descriptor pool/set management
+- `d3d8_vulkan_renderloop.h` (290+ lines) - Render loop coordination API with 14 functions
+- `d3d8_vulkan_renderloop.cpp` (560+ lines) - Frame synchronization and pacing
 - CMakeLists.txt - Updated with 2 new files
+
+**API Functions** (14 total):
+- Initialize, Shutdown, BeginFrame, EndFrame, UpdatePhase, RenderPhase, PresentFrame
+- WaitForGPU, GetInfo, SetTargetFPS, SetSyncMode, GetPhase, GetStats, GetError
+
+**Features**:
+- 4-entry cache for multiple render loops
+- Frame phases: BEGIN → UPDATE → RENDER → PRESENT → END
+- Sync modes: IMMEDIATE, VSYNC, TRIPLE_BUFFER, VARIABLE_RATE
+- CPU/GPU time profiling
+- Handle generation at 12000+
+
+**Compilation**: ✅ Clean (0 errors)
+
+---
+
+## Phase 18: Visibility & Culling
+
+**Status**: ✅ COMPLETE - Committed (61762ed3) and pushed
+
+**Deliverables**:
+- `d3d8_vulkan_culling.h` (440+ lines) - Culling API with 16 functions
+- `d3d8_vulkan_culling.cpp` (570+ lines) - Frustum and distance-based culling
+- CMakeLists.txt - Updated with 2 new files
+
+**API Functions** (16 total):
+- Initialize, Shutdown, BuildFrustum, TestPoint, TestSphere, TestAABB, TestDistance
+- StartQuery, EndQuery, GetQueryResult, GetStats, GetInfo, ResetStats
+- SetFrustum, SetDistanceParams, GetError
+
+**Features**:
+- 2-entry culling cache
+- Frustum with 6 planes for visibility determination
+- Point/sphere/AABB intersection tests
+- Distance-based culling (fog of war)
+- Occlusion query infrastructure (256 queries max)
+- Handle generation at 13000+
+
+**Compilation**: ✅ Clean (0 errors)
+
+---
+
+## Phase 19: Lighting System
+
+**Status**: ✅ COMPLETE - Committed (66710b81) and pushed
+
+**Deliverables**:
+- `d3d8_vulkan_lighting.h` (350+ lines) - Lighting API with 19 functions
+- `d3d8_vulkan_lighting.cpp` (580+ lines) - Light management and materials
+- CMakeLists.txt - Updated with 2 new files
+
+**API Functions** (19 total):
+- Initialize, Shutdown
+- AddDirectionalLight, UpdateDirectionalLight, RemoveDirectionalLight
+- AddPointLight, UpdatePointLight, RemovePointLight
+- AddSpotLight, UpdateSpotLight, RemoveSpotLight
+- SetAmbientLight, SetMaterial, GetMaterial
+- UpdateLightingUBO, GetStats, GetInfo, ResetStats, GetError
+
+**Features**:
+- 2-entry lighting cache
+- 4 light types: directional (2-4), point (8-16), spot (4-8), ambient (1)
+- 512 object material storage
+- 4 attenuation models: none, linear, quadratic, exponential
+- Dynamic light updates
+- Shader UBO infrastructure
+- Handle generation at 14000+
+
+**Compilation**: ✅ Clean (0 errors)
+
+---
+
+## Phase 20: Viewport & Projection
+
+**Status**: ✅ COMPLETE - Committed (f66a372c) and pushed
+
+**Deliverables**:
+- `d3d8_vulkan_viewport.h` (380+ lines) - Viewport API with 22 functions
+- `d3d8_vulkan_viewport.cpp` (820+ lines) - Camera matrices and transformations
+- CMakeLists.txt - Updated with 2 new files
+
+**API Functions** (22 total):
+- Initialize, Shutdown
+- SetCameraPosition, SetCameraOrientation, MoveCamera, RotateCamera
+- GetCameraPosition, GetCameraOrientation
+- SetViewport, GetViewport
+- SetPerspectiveProjection, SetOrthographicProjection
+- GetViewMatrix, GetProjectionMatrix, GetViewProjectionMatrix
+- GetScreenToWorldRay, GetWorldToScreenPoint
+- UpdateMatrices, GetStats, GetInfo, ResetStats, GetError
+
+**Features**:
+- Single-entry viewport cache
+- Camera system with 6-direction movement
+- Rodrigues' formula for rotation
+- Perspective projection (Vulkan NDC: Z ∈ [0,1])
+- Orthographic projection for UI
+- Screen-to-world ray casting (mouse picking)
+- World-to-screen projection
+- Comprehensive math utilities
+- Handle generation at 15000+
+
+**Compilation**: ✅ Clean (0 errors)
+
+---
+
+## Session Summary: Phases 16-20
+
+**Total Implementation**:
+- 10 source files created (5 headers + 5 implementations)
+- ~4,500+ lines of code
+- ~90 functions across all phases
+- 5 phases committed with detailed messages
+- 5 pushes to origin/vulkan-port successful
+
+**Compilation Status**: ✅ All phases compile cleanly (0 errors)
+
+**Handle Ranges** (Non-overlapping verified):
+- Phase 16 RenderTargets: 11000+
+- Phase 17 RenderLoop: 12000+
+- Phase 18 Culling: 13000+
+- Phase 19 Lighting: 14000+
+- Phase 20 Viewport: 15000+
+
+**Architecture Consistency**:
+- All phases use cache-based management
+- Handle validation with version checking
+- State machine enforcement
+- Comprehensive error tracking
+- Reference counting where applicable
+- Statistics collection
+- Consistent API naming conventions
+
+**Previous: Phase 12-15 Graphics Layer Complete**
 
 **API Functions** (18 total):
 1. CreateSampler, DestroySampler
