@@ -278,6 +278,9 @@ set(WW3D2_SRC
     # Phase 10: Command Buffers & GPU/CPU Synchronization
     d3d8_vulkan_command_buffer.h
     d3d8_vulkan_command_buffer.cpp
+    # Phase 11: Vertex & Index Buffers
+    d3d8_vulkan_buffer.h
+    d3d8_vulkan_buffer.cpp
 )
 
 # Exclude DX8-only files when building with the Vulkan backend to avoid
