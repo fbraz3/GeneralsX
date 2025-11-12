@@ -249,6 +249,11 @@ set(WW3D2_SRC
     # Phase 06: Complete Input System - Gamepad & Joystick Support
     win32_gamepad_compat.h
     win32_gamepad_compat.cpp
+    # Phase 07: Event Queue Integration & Configuration Persistence
+    win32_gamepad_event_integration.h
+    win32_gamepad_event_integration.cpp
+    win32_gamepad_config_compat.h
+    win32_gamepad_config_compat.cpp
 )
 
 # Exclude DX8-only files when building with the Vulkan backend to avoid
