@@ -281,6 +281,9 @@ set(WW3D2_SRC
     # Phase 11: Vertex & Index Buffers
     d3d8_vulkan_buffer.h
     d3d8_vulkan_buffer.cpp
+    # Phase 12: Texture System
+    d3d8_vulkan_texture.h
+    d3d8_vulkan_texture.cpp
 )
 
 # Exclude DX8-only files when building with the Vulkan backend to avoid
