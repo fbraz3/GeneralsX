@@ -275,6 +275,9 @@ set(WW3D2_SRC
     # Phase 09: Render Pass & Graphics Pipeline
     d3d8_vulkan_render_pass.h
     d3d8_vulkan_render_pass.cpp
+    # Phase 10: Command Buffers & GPU/CPU Synchronization
+    d3d8_vulkan_command_buffer.h
+    d3d8_vulkan_command_buffer.cpp
 )
 
 # Exclude DX8-only files when building with the Vulkan backend to avoid
