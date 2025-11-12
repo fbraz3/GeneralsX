@@ -17,6 +17,22 @@ set(OPTIMIZATION_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/RegressionDetector.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TrendAnalyzer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/TrendAnalyzer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/BatchOptimizationApplier.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/BatchOptimizationApplier.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/OptimizationRollback.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/OptimizationRollback.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SafeOptimizationValidator.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/SafeOptimizationValidator.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/AutomaticMeshBatcher.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/AutomaticMeshBatcher.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/MemoryCompactor.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/MemoryCompactor.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ShaderOptimizer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/ShaderOptimizer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/OptimizationScheduler.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/OptimizationScheduler.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/OptimizationMonitor.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/OptimizationMonitor.cpp
 )
 
 # Add to parent project's source list
