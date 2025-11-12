@@ -308,6 +308,9 @@ set(WW3D2_SRC
     # Phase 20: Viewport & Projection
     d3d8_vulkan_viewport.h
     d3d8_vulkan_viewport.cpp
+    # Phase 21: Draw Command System
+    d3d8_vulkan_drawing.h
+    d3d8_vulkan_drawing.cpp
 )
 
 # Exclude DX8-only files when building with the Vulkan backend to avoid

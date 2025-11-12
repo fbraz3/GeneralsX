@@ -14,6 +14,7 @@
 - Use `Fail fast` approach when testing new changes, if something is not working as expected, stop and investigate immediately;
 - Focus on finish `GeneralsXZH`, then backport to `GeneralsX`;
 - See `.github/instructions/project.instructions.md` for more specific details about above instructions.
+- before start, check if there are some integration missing from previous phases, then fix it before proceed.
 
 ---
 
