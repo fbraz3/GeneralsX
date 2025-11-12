@@ -266,6 +266,12 @@ set(WW3D2_SRC
     # Phase 08: Advanced Input Features - Force Feedback & Haptics
     win32_gamepad_force_feedback.h
     win32_gamepad_force_feedback.cpp
+    # Phase 07/08 Integration: Macro System Persistence
+    win32_gamepad_macro_persistence.h
+    win32_gamepad_macro_persistence.cpp
+    # Phase 07/08 Integration: Force Feedback Profiles Persistence
+    win32_gamepad_ff_persistence.h
+    win32_gamepad_ff_persistence.cpp
 )
 
 # Exclude DX8-only files when building with the Vulkan backend to avoid
