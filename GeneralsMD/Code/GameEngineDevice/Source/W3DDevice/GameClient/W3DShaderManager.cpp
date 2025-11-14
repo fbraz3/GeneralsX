@@ -2267,6 +2267,7 @@ Int CloudTextureShader::init(void)
 /**Setup a certain texture stage to project our cloud texture*/
 Int CloudTextureShader::set(Int stage)
 {
+#ifdef _WIN32
 	Matrix4x4 curView;
 	DX8Wrapper::_Get_DX8_Transform(D3DTS_VIEW, curView);
 
@@ -2297,10 +2298,14 @@ Int CloudTextureShader::set(Int stage)
 
 	m_stageOfSet=stage;
 	return TRUE;
+#else // _WIN32
+	return FALSE;
+#endif // _WIN32
 }
 
 void CloudTextureShader::reset(void)
 {
+#ifdef _WIN32
 	//Free reference to texture
 	DX8Wrapper::_Get_D3D_Device8()->SetTexture(m_stageOfSet, NULL);
 	//Turn off texture projection
@@ -2309,6 +2314,9 @@ void CloudTextureShader::reset(void)
 
 	DX8Wrapper::Set_DX8_Texture_Stage_State( m_stageOfSet, D3DTSS_COLOROP,   D3DTOP_DISABLE );
 	DX8Wrapper::Set_DX8_Texture_Stage_State( m_stageOfSet, D3DTSS_ALPHAOP,   D3DTOP_DISABLE );
+#else // _WIN32
+	// Non-Windows stub
+#endif // _WIN32
 }
 
 /*===========================================================================================*/
