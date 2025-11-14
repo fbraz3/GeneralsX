@@ -76,6 +76,7 @@ Bool W3DSnowManager::ReAcquireResources(void)
 	if (!TheWeatherSetting->m_snowEnabled)
 		return TRUE;	//no need for resources if snow is disabled.
 
+#ifdef _WIN32
 	if (TheWeatherSetting->m_usePointSprites && DX8Wrapper::Get_Current_Caps()->Support_PointSprites())
 	{
 		LPDIRECT3DDEVICE8 m_pDev=DX8Wrapper::_Get_D3D_Device8();
@@ -127,6 +128,9 @@ Bool W3DSnowManager::ReAcquireResources(void)
 			}
 		}
 	}
+#else // _WIN32
+	// Non-Windows: DirectX vertex buffer allocation not available
+#endif // _WIN32
 
 	m_snowTexture = WW3DAssetManager::Get_Instance()->Get_Texture(TheWeatherSetting->m_snowTexture.str());
 
@@ -175,6 +179,7 @@ method is used so that very few off-screen particles end up getting rendered.  C
 be too expensive since we're dealing with 1000's for this effect.*/
 void W3DSnowManager::renderSubBox(RenderInfoClass &rinfo, Int originX, Int originY, Int cubeDimX, Int cubeDimY )
 {
+#ifdef _WIN32
 	//check if this box is too large and needs subdivision
 	Int boxDimX=cubeDimX - originX;
 	Int boxDimY=cubeDimY - originY;
@@ -318,6 +323,9 @@ flush_particles:
 			m_dwBase += numberInBatch;
 		}
 	}
+#else // _WIN32
+	// Non-Windows: Point sprite rendering not available (DirectX-only)
+#endif // _WIN32
 }
 
 void W3DSnowManager::render(RenderInfoClass &rinfo)

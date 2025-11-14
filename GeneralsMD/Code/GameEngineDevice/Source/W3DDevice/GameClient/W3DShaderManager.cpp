@@ -665,6 +665,7 @@ Int ScreenBWFilterDOT3::set(FilterModes mode)
 			}
 		}
 
+#ifdef _WIN32
 		VertexMaterialClass *vmat=VertexMaterialClass::Get_Preset(VertexMaterialClass::PRELIT_DIFFUSE);
 		DX8Wrapper::Set_Material(vmat);
 		REF_PTR_RELEASE(vmat);	//no need to keep a reference since it's a preset.
@@ -677,6 +678,10 @@ Int ScreenBWFilterDOT3::set(FilterModes mode)
 		DX8Wrapper::Apply_Render_State_Changes();	//force update of view and projection matrices
 
 		return true;
+#else // _WIN32
+		// Non-Windows: BW filter setup not available (DirectX-only render states)
+		return false;
+#endif // _WIN32
 	}
 	return false;
 }
@@ -984,6 +989,7 @@ Bool ScreenMotionBlurFilter::preRender(Bool &skipRender, CustomScenePassModes &s
 
 Bool ScreenMotionBlurFilter::postRender(FilterModes mode, Coord2D &scrollDelta,Bool &doExtraRender)
 {
+#ifdef _WIN32
 	IDirect3DTexture8 * tex =	W3DShaderManager::endRenderToTexture();
 	DEBUG_ASSERTCRASH(tex, ("Require rendered texture."));
 	if (!tex) return false;
@@ -1143,6 +1149,10 @@ Bool ScreenMotionBlurFilter::postRender(FilterModes mode, Coord2D &scrollDelta,B
 		m_zoomToValid = false;
 	}
 	return continueEffect;
+#else // _WIN32
+	// Non-Windows: Motion blur filter not available (DirectX-only rendering)
+	return false;
+#endif // _WIN32
 }
 
 Bool ScreenMotionBlurFilter::setup(FilterModes mode)
@@ -1182,6 +1192,7 @@ Bool ScreenMotionBlurFilter::setup(FilterModes mode)
 
 Int ScreenMotionBlurFilter::set(FilterModes mode)
 {
+#ifdef _WIN32
 	if (mode > FM_NULL_MODE)
 	{	//rendering a quad with redirected rendering surface motion blurred
 
@@ -1198,6 +1209,10 @@ Int ScreenMotionBlurFilter::set(FilterModes mode)
 		DX8Wrapper::Apply_Render_State_Changes();	//force update of view and projection matrices
 	}
 	return TRUE;
+#else // _WIN32
+	// Non-Windows: Motion blur filter setup not available (DirectX-only render states)
+	return FALSE;
+#endif // _WIN32
 }
 
 void ScreenMotionBlurFilter::reset(void)
@@ -1244,6 +1259,7 @@ Int ShroudTextureShader::init(void)
 //Setup a texture projection in the given stage that applies our shroud.
 Int ShroudTextureShader::set(Int stage)
 {
+#ifdef _WIN32
 	//force WW3D2 system to set it's states so it won't later overwrite our custom settings.
 	VertexMaterialClass *vmat=VertexMaterialClass::Get_Preset(VertexMaterialClass::PRELIT_DIFFUSE);
 	DX8Wrapper::Set_Material(vmat);
@@ -1306,14 +1322,21 @@ Int ShroudTextureShader::set(Int stage)
 	}
 	m_stageOfSet=stage;
 	return TRUE;
+#else // _WIN32
+	// Non-Windows: Shroud texture projection not available (DirectX-only matrix operations)
+	m_stageOfSet=stage;
+	return FALSE;
+#endif // _WIN32
 }
 
 void ShroudTextureShader::reset(void)
 {
+#ifdef _WIN32
 	DX8Wrapper::Set_Texture(m_stageOfSet,NULL);
 	DX8Wrapper::Set_DX8_Render_State(D3DRS_ZFUNC,D3DCMP_LESSEQUAL);
 	DX8Wrapper::Set_DX8_Texture_Stage_State(m_stageOfSet,  D3DTSS_TEXCOORDINDEX, m_stageOfSet);
 	DX8Wrapper::Set_DX8_Texture_Stage_State(m_stageOfSet,  D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);
+#endif // _WIN32
 }
 
 ///Shroud layer rendering shader
@@ -1345,6 +1368,7 @@ Int FlatShroudTextureShader::init(void)
 //Setup a texture projection in the given stage that applies our shroud.
 Int FlatShroudTextureShader::set(Int stage)
 {
+#ifdef _WIN32
 	//force WW3D2 system to set it's states so it won't later overwrite our custom settings.
 	if (stage < 2)
 		DX8Wrapper::Set_Texture(stage, W3DShaderManager::getShaderTexture(stage));
@@ -1399,15 +1423,22 @@ Int FlatShroudTextureShader::set(Int stage)
 	}
 	m_stageOfSet=stage;
 	return TRUE;
+#else // _WIN32
+	// Non-Windows: Flat shroud texture projection not available (DirectX-only matrix operations)
+	m_stageOfSet=stage;
+	return FALSE;
+#endif // _WIN32
 }
 
 void FlatShroudTextureShader::reset(void)
 {
+#ifdef _WIN32
 	if (m_stageOfSet < MAX_TEXTURE_STAGES)
 		DX8Wrapper::Set_Texture(m_stageOfSet,NULL);
 	DX8Wrapper::Set_DX8_Render_State(D3DRS_ZFUNC,D3DCMP_LESSEQUAL);
 	DX8Wrapper::Set_DX8_Texture_Stage_State(m_stageOfSet,  D3DTSS_TEXCOORDINDEX, m_stageOfSet);
 	DX8Wrapper::Set_DX8_Texture_Stage_State(m_stageOfSet,  D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);
+#endif // _WIN32
 }
 
 ///Mask layer rendering shader
@@ -1435,6 +1466,7 @@ Int MaskTextureShader::init(void)
 
 Int MaskTextureShader::set(Int pass)
 {
+#ifdef _WIN32
 	Real fadeLevel=ScreenCrossFadeFilter::getCurrentFadeValue();
 
 	//Use the current fade level to scale the mask texture
@@ -1504,13 +1536,19 @@ Int MaskTextureShader::set(Int pass)
 	DX8Wrapper::_Set_DX8_Transform(D3DTS_TEXTURE0, *((Matrix4x4*)&curView));
 
 	return TRUE;
+#else // _WIN32
+	// Non-Windows: Mask texture projection not available (DirectX-only matrix operations)
+	return FALSE;
+#endif // _WIN32
 }
 
 void MaskTextureShader::reset(void)
 {
+#ifdef _WIN32
 	DX8Wrapper::Set_Texture(0,NULL);
 	DX8Wrapper::Set_DX8_Texture_Stage_State(0,  D3DTSS_TEXCOORDINDEX, 0);
 	DX8Wrapper::Set_DX8_Texture_Stage_State(0,  D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);
+#endif // _WIN32
 }
 
 /*===========================================================================================*/
@@ -1531,8 +1569,13 @@ public:
 	virtual void reset(void);		///<do any custom resetting necessary to bring W3D in sync.
 
 	void updateCloud();
+#ifdef _WIN32
 	void updateNoise1 (D3DXMATRIX *destMatrix,D3DXMATRIX *curViewInverse, Bool doUpdate=true);	///<generate the uv coordinates for Noise1 (i.e clouds)
 	void updateNoise2 (D3DXMATRIX *destMatrix,D3DXMATRIX *curViewInverse, Bool doUpdate=true);	///<generate the uv coordinates for Noise2 (i.e lightmap)
+#else // _WIN32
+	void updateNoise1 (void *destMatrix, void *curViewInverse, Bool doUpdate=true) { }  ///<stub
+	void updateNoise2 (void *destMatrix, void *curViewInverse, Bool doUpdate=true) { }  ///<stub
+#endif // _WIN32
 } terrainShader2Stage;
 
 ///regular terrain shader that should work on all multi-texture video cards (slowest version)
@@ -1649,6 +1692,7 @@ void TerrainShader2Stage::updateCloud()
 
 void TerrainShader2Stage::updateNoise1(D3DXMATRIX *destMatrix,D3DXMATRIX *curViewInverse, Bool doUpdate)
 {
+#ifdef _WIN32
 	#define STRETCH_FACTOR ((float)(1/(63.0*MAP_XY_FACTOR/2))) /* covers 63/2 tiles */
 
 	D3DXMATRIX scale;
@@ -1659,15 +1703,17 @@ void TerrainShader2Stage::updateNoise1(D3DXMATRIX *destMatrix,D3DXMATRIX *curVie
 	D3DXMATRIX offset;
 	D3DXMatrixTranslation(&offset, m_xOffset, m_yOffset,0);
 	*destMatrix *= offset;
+#endif // _WIN32
 }
 
 void TerrainShader2Stage::updateNoise2(D3DXMATRIX *destMatrix,D3DXMATRIX *curViewInverse, Bool doUpdate)
 {
-
+#ifdef _WIN32
 	D3DXMATRIX scale;
 
 	D3DXMatrixScaling(&scale, STRETCH_FACTOR, STRETCH_FACTOR,1);
 	*destMatrix = *curViewInverse * scale;
+#endif // _WIN32
 }
 
 Int TerrainShader2Stage::set(Int pass)
