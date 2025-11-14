@@ -1,5 +1,70 @@
 # GeneralsX macOS Port Development Diary
 
+## Current Session: Cross-Platform DirectX Conditional Compilation — **PHASE 40 CONTINUATION**
+
+### Session Summary: Strategic DirectX Method Wrapping
+
+**STATUS**: 🔄 IN PROGRESS - Phase 40 continued with systematic cross-platform compatibility fixes
+
+**Date**: Current Session (Post-Phase 39)
+
+**Duration**: Extended compilation fixing session
+
+**Key Outcomes This Session**:
+- ✅ Fixed TerrainTex.cpp completely (all D3DTEXF_*, D3DTADDRESS_*, D3DBLEND_* errors)
+- ✅ Wrapped W3DVolumetricShadow.cpp major rendering methods (updateMeshVolume, renderShadows, resource management)
+- ✅ Wrapped W3DProjectedShadow.cpp decal queueing methods (queueDecal, queueSimpleDecal)  
+- ✅ Fixed cross-platform includes (io.h guards, DirectX headers)
+- ✅ Fixed type definitions (HKEY registry types, LPDISPATCH COM types)
+- ✅ Wrapped screen filter rendering (ScreenDefaultFilter::postRender)
+- ✅ Wrapped D3D resource management throughout shadow system
+
+**Compilation Progress**:
+- Starting point: 20+ critical errors (from Session 39 summary)
+- Intermediate: Reduced to 42 errors after initial shadow wrapping
+- After full fixes: 77 cascading errors (exposing deeper DirectX type dependencies)
+- Root cause: Wrapping methods exposes more undefined DirectX types in call chains
+
+**Files Modified** (10+ files):
+1. GeneralsMD/Code/GameEngineDevice/Source/W3DDevice/GameClient/Shadow/W3DVolumetricShadow.cpp
+2. GeneralsMD/Code/GameEngineDevice/Source/W3DDevice/GameClient/Shadow/W3DProjectedShadow.cpp
+3. GeneralsMD/Code/GameEngineDevice/Source/W3DDevice/GameClient/W3DShaderManager.cpp
+4. GeneralsMD/Code/GameEngineDevice/Source/W3DDevice/GameClient/W3DDisplay.cpp
+5. GeneralsMD/Code/GameEngineDevice/Source/W3DDevice/GameClient/W3DFileSystem.cpp
+6. Core/Libraries/Source/WWVegas/WWLib/registry.h
+7. Core/Libraries/Source/WWVegas/WW3D2/rddesc.h
+8. Core/Libraries/Source/WWVegas/WW3D2/dx8webbrowser.h
+
+**Strategic Approach - Method Wrapping Pattern**:
+```cpp
+// Entire method is DirectX-dependent: wrap entire body
+bool SomeMethod() {
+#ifdef _WIN32
+    // All DirectX rendering code
+    device->SetRenderState(...);
+    device->DrawPrimitive(...);
+    return TRUE;
+#else
+    // Non-Windows: stub implementation
+    return FALSE;
+#endif // _WIN32
+}
+```
+
+**Lessons Learned This Session**:
+1. **Nested Preprocessor Directives**: Wrapping methods with existing nested #ifdef blocks (CNC3, SV_DEBUG) requires careful structuring to avoid "expected unqualified-id" errors
+2. **Type Dependency Chains**: Guarding includes at header level (d3d8types.h, d3d8caps.h) prevents cascading errors better than method-level wraps
+3. **Variable Scope Issues**: Methods using DirectX-only variables (like `LPDIRECT3DDEVICE8`) need entire body wrapped since stub implementations can't define those types
+4. **Cascading Errors**: Each fix can expose 5-10+ new errors in dependent code - need to guard at header/definition level, not just method level
+
+**Remaining Work** (Future Sessions):
+- [ ] W3DShaderManager.cpp: Complete wrapping of remaining shader/filter rendering methods
+- [ ] W3DMouse.cpp: Wrap Windows input methods (SetCursor, GetCursorPos, ScreenToClient)
+- [ ] W3DScene.cpp: Wrap rendering scene methods
+- [ ] rddesc.h: Fix StringClass constructor ambiguity (non-DirectX issue)
+- [ ] W3DDisplay.cpp: Complete remaining input methods
+- [ ] Global strategy: Consider header-level DirectX type guards instead of per-method wraps
+
 ## Latest: Performance Profiling Framework — **PHASE 39 OPTIMIZATION & PROFILING**
 
 ### Session Summary: Profiling Infrastructure Implementation
