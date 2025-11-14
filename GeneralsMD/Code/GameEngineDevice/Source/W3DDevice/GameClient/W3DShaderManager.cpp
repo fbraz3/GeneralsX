@@ -1690,9 +1690,9 @@ void TerrainShader2Stage::updateCloud()
 	m_yOffset -= (Int)m_yOffset;
 }
 
+#ifdef _WIN32
 void TerrainShader2Stage::updateNoise1(D3DXMATRIX *destMatrix,D3DXMATRIX *curViewInverse, Bool doUpdate)
 {
-#ifdef _WIN32
 	#define STRETCH_FACTOR ((float)(1/(63.0*MAP_XY_FACTOR/2))) /* covers 63/2 tiles */
 
 	D3DXMATRIX scale;
@@ -1703,21 +1703,20 @@ void TerrainShader2Stage::updateNoise1(D3DXMATRIX *destMatrix,D3DXMATRIX *curVie
 	D3DXMATRIX offset;
 	D3DXMatrixTranslation(&offset, m_xOffset, m_yOffset,0);
 	*destMatrix *= offset;
-#endif // _WIN32
 }
 
 void TerrainShader2Stage::updateNoise2(D3DXMATRIX *destMatrix,D3DXMATRIX *curViewInverse, Bool doUpdate)
 {
-#ifdef _WIN32
 	D3DXMATRIX scale;
 
 	D3DXMatrixScaling(&scale, STRETCH_FACTOR, STRETCH_FACTOR,1);
 	*destMatrix = *curViewInverse * scale;
-#endif // _WIN32
 }
+#endif // _WIN32
 
 Int TerrainShader2Stage::set(Int pass)
 {
+#ifdef _WIN32
 	//force WW3D2 system to set it's states so it won't later overwrite our custom settings.
 	DX8Wrapper::Apply_Render_State_Changes();
 
@@ -1862,6 +1861,9 @@ Int TerrainShader2Stage::set(Int pass)
 	}
 
 	return TRUE;
+#else // _WIN32
+	return FALSE;
+#endif // _WIN32
 }
 
 Int TerrainShader8Stage::init( void )
