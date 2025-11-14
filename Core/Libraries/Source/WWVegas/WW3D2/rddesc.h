@@ -38,8 +38,10 @@
 
 #include "Vector.h"
 #include "wwstring.h"
+#ifdef _WIN32
 #include <d3d8types.h>
 #include <d3d8caps.h>
+#endif // _WIN32
 
 class ResolutionDescClass
 {

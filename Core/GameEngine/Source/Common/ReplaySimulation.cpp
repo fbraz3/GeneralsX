@@ -133,8 +133,12 @@ int ReplaySimulation::simulateReplaysInWorkerProcesses(const std::vector<AsciiSt
 {
 	DWORD totalStartTimeMillis = GetTickCount();
 
-	WideChar exePath[1024];
-	GetModuleFileNameW(NULL, exePath, ARRAY_SIZE(exePath));
+	char exePathA[1024];
+	GetModuleFileName(NULL, exePathA, ARRAY_SIZE(exePathA));
+	
+	// Convert ASCII path to wide string for command building
+	UnicodeString exePath;
+	exePath.translate(exePathA);
 
 	std::vector<WorkerProcess> processes;
 	int filenamePositionStarted = 0;
@@ -172,7 +176,7 @@ int ReplaySimulation::simulateReplaysInWorkerProcesses(const std::vector<AsciiSt
 			filenameWide.translate(filenames[filenamePositionStarted]);
 			UnicodeString command;
 			command.format(L"\"%s\"%s%s -replay \"%s\"",
-				exePath,
+				exePath.str(),
 				TheGlobalData->m_windowed ? L" -win" : L"",
 				TheGlobalData->m_headless ? L" -headless" : L"",
 				filenameWide.str());

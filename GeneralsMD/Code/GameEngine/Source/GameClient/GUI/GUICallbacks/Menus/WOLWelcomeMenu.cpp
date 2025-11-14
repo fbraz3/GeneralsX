@@ -19,16 +19,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 //																																						//
 //  (c) 2001-2003 Electronic Arts Inc.																				//
+
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // FILE: WOLWelcomeMenu.cpp
+
 // Author: Chris Huybregts, November 2001
+
 // Description: Lan Lobby Menu
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
+
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "gamespy/peer/peer.h"
@@ -70,11 +75,13 @@
 #include "GameNetwork/WOLBrowser/WebBrowser.h"
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
+
 static Bool isShuttingDown = FALSE;
 static Bool buttonPushed = FALSE;
 static const char *nextScreen = NULL;
 
 // window ids ------------------------------------------------------------------------------
+
 static NameKeyType parentWOLWelcomeID = NAMEKEY_INVALID;
 static NameKeyType buttonBackID = NAMEKEY_INVALID;
 static NameKeyType buttonQuickMatchID = NAMEKEY_INVALID;
@@ -86,6 +93,7 @@ static NameKeyType buttonMyInfoID = NAMEKEY_INVALID;
 static NameKeyType listboxInfoID = NAMEKEY_INVALID;
 static NameKeyType buttonOptionsID = NAMEKEY_INVALID;
 // Window Pointers ------------------------------------------------------------------------
+
 static GameWindow *parentWOLWelcome = NULL;
 static GameWindow *buttonBack = NULL;
 static GameWindow *buttonQuickMatch = NULL;
@@ -724,7 +732,7 @@ WindowMsgHandledType WOLWelcomeMenuInput( GameWindow *window, UnsignedInt msg,
 					if( BitIsSet( state, KEY_STATE_UP ) )
 					{
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																							(WindowMsgData)buttonBack, buttonBackID );
+																							(WindowMsgData)(uintptr_t)buttonBack, buttonBackID );
 
 					}
 
@@ -897,3 +905,4 @@ WindowMsgHandledType WOLWelcomeMenuSystem( GameWindow *window, UnsignedInt msg,
 
 	return MSG_HANDLED;
 }
+

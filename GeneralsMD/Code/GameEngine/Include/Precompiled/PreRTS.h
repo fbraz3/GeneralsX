@@ -40,50 +40,76 @@ class STLSpecialAlloc;
 // PLEASE DO NOT ABUSE WINDOWS OR IT WILL BE REMOVED ENTIRELY. :-)
 //--------------------------------------------------------------------------------- System Includes
 #define WIN32_LEAN_AND_MEAN
-#include <atlbase.h>
+
+// Cross-platform MSVC type definitions (must come before windows.h)
+#include <Compat/msvc_types_compat.h>
+
+#ifdef _WIN32
+	#include <atlbase.h>
+#endif
 #include <windows.h>
 
 #include <assert.h>
 #include <ctype.h>
-#include <direct.h>
-#include <excpt.h>
+#ifndef _WIN32
+	// On Unix/macOS, these don't exist
+	// #include <direct.h>  // Windows directory operations
+#endif
+#ifdef _WIN32
+	#include <excpt.h>  // Structured exception handling (Windows only)
+#endif
 #include <float.h>
 #include <Utility/fstream_adapter.h>
-#include <imagehlp.h>
-#include <io.h>
+#ifdef _WIN32
+	#include <imagehlp.h>
+	#include <io.h>
+#endif
 #include <limits.h>
-#include <lmcons.h>
+#ifdef _WIN32
+	#include <lmcons.h>
+#endif
 #if defined(_MSC_VER) && _MSC_VER < 1300
-#include <mapicode.h>
+	#include <mapicode.h>
 #endif
 #include <math.h>
 #include <memory.h>
-#include <mmsystem.h>
-#include <objbase.h>
-#include <ocidl.h>
-#include <process.h>
-#include <shellapi.h>
-#include <shlobj.h>
-#include <shlguid.h>
-#include <snmp.h>
+#ifdef _WIN32
+	#include <mmsystem.h>
+	#include <objbase.h>
+	#include <ocidl.h>
+	#include <process.h>
+	#include <shellapi.h>
+	#include <shlobj.h>
+	#include <shlguid.h>
+	#include <snmp.h>
+#endif
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/timeb.h>
 #include <sys/types.h>
-#include <tchar.h>
+#ifdef _WIN32
+	#include <tchar.h>
+#else
+	// On Unix/macOS, use char instead of TCHAR
+	typedef char TCHAR;
+#endif
 #include <time.h>
-#include <vfw.h>
-#include <winerror.h>
-#include <wininet.h>
-#include <winreg.h>
-
-#ifndef DIRECTINPUT_VERSION
-#	define DIRECTINPUT_VERSION	0x800
+#ifdef _WIN32
+	#include <vfw.h>
+	#include <winerror.h>
+	#include <wininet.h>
+	#include <winreg.h>
 #endif
 
-#include <dinput.h>
+#ifndef DIRECTINPUT_VERSION
+	#define DIRECTINPUT_VERSION	0x800
+#endif
+
+#ifdef _WIN32
+	#include <dinput.h>
+#endif
 
 //------------------------------------------------------------------------------------ STL Includes
 // srj sez: no, include STLTypesdefs below, instead, thanks

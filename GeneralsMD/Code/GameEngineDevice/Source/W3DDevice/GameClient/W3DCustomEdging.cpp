@@ -341,6 +341,7 @@ void W3DCustomEdging::clearAllEdging(void)
 void W3DCustomEdging::drawEdging(WorldHeightMap *pMap, Int minX, Int maxX, Int minY, Int maxY,
 		TextureClass * terrainTexture, TextureClass * cloudTexture, TextureClass * noiseTexture)
 {
+#ifdef _WIN32
 	static Bool foo = false;
 	if (foo) {
 		return;
@@ -427,6 +428,7 @@ void W3DCustomEdging::drawEdging(WorldHeightMap *pMap, Int minX, Int maxX, Int m
 		DX8Wrapper::Set_DX8_Render_State(D3DRS_DESTBLEND,D3DBLEND_ZERO);
 		DX8Wrapper::Draw_Triangles(	m_curEdgingIndexOffset, m_curNumEdgingIndices/3, 0,	m_curNumEdgingVertices);
 	}
+#endif // _WIN32
 }
 
 

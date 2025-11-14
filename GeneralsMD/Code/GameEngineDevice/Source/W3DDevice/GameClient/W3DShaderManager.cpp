@@ -70,7 +70,9 @@
 #include "GameLogic/GameLogic.h"
 #include "Common/GlobalData.h"
 #include "Common/GameLOD.h"
+#ifdef _WIN32
 #include "d3dx8tex.h"
+#endif
 #include "dx8caps.h"
 
 
@@ -184,6 +186,7 @@ Bool ScreenDefaultFilter::preRender(Bool &skipRender, CustomScenePassModes &scen
 
 Bool ScreenDefaultFilter::postRender(FilterModes mode, Coord2D &scrollDelta,Bool &doExtraRender)
 {
+#ifdef _WIN32
 	IDirect3DTexture8 * tex =	W3DShaderManager::endRenderToTexture();
 	DEBUG_ASSERTCRASH(tex, ("Require rendered texture."));
 	if (!tex) return false;
@@ -230,6 +233,9 @@ Bool ScreenDefaultFilter::postRender(FilterModes mode, Coord2D &scrollDelta,Bool
 
 	reset();
 	return true;
+#else
+	return false;
+#endif // _WIN32
 }
 
 Int ScreenDefaultFilter::set(FilterModes mode)

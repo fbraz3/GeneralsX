@@ -66,7 +66,11 @@ static Bool st_AppIsFast = false;
 static void _appendMessage(const AsciiString& str, Bool isTrueMessage = true, Bool shouldPause = false);
 static void _adjustVariable(const AsciiString& str, Int value, Bool shouldPause = false);
 static void _updateFrameNumber( void );
+#ifdef _WIN32
 static HMODULE st_DebugDLL;
+#else
+static void* st_DebugDLL = NULL;  // Stub for non-Windows platforms
+#endif
 // That's it for debugger window
 
 // These are for particle editor
@@ -92,7 +96,11 @@ static void _writeOutINI( void );
 extern void _writeSingleParticleSystem( File *out, ParticleSystemTemplate *particleTemplate );
 static void _reloadTextures( void );
 
+#ifdef _WIN32
 static HMODULE st_ParticleDLL;
+#else
+static void* st_ParticleDLL = NULL;  // Stub for non-Windows platforms
+#endif
 ParticleSystem *st_particleSystem;
 Bool st_particleSystemNeedsStopping = FALSE; ///< Set along with st_particleSystem if the particle system has infinite life
 #define ARBITRARY_BUFF_SIZE	128
@@ -474,6 +482,7 @@ m_ChooseVictimAlwaysUsesNormal(false)
 //-------------------------------------------------------------------------------------------------
 ScriptEngine::~ScriptEngine()
 {
+#ifdef _WIN32
 	if (st_DebugDLL) {
 		FARPROC proc = GetProcAddress(st_DebugDLL, "DestroyDebugDialog");
 		if (proc) {
@@ -493,6 +502,7 @@ ScriptEngine::~ScriptEngine()
 		FreeLibrary(st_ParticleDLL);
 		st_ParticleDLL = NULL;
 	}
+#endif
 
 #ifdef DO_VTUNE_STUFF
 	_cleanUpVTune();
@@ -520,6 +530,7 @@ ScriptEngine::~ScriptEngine()
 //-------------------------------------------------------------------------------------------------
 void ScriptEngine::init( void )
 {
+#ifdef _WIN32
 	if (TheGlobalData->m_windowed)
 		if (TheGlobalData->m_scriptDebug) {
 			st_DebugDLL = LoadLibrary("DebugWindow.dll");
@@ -546,6 +557,11 @@ void ScriptEngine::init( void )
 			proc();
 		}
 	}
+#else
+	// On non-Windows: DLL loading not available, just initialize to NULL
+	st_DebugDLL = NULL;
+	st_ParticleDLL = NULL;
+#endif
 
 #ifdef DO_VTUNE_STUFF
 	_initVTune();
@@ -9418,6 +9434,7 @@ void _adjustVariable(const AsciiString& str, Int value, Bool shouldPause)
 
 void _updateFrameNumber( void )
 {
+#ifdef _WIN32
 	if (TheScriptEngine->isTimeFast()) return;
 	typedef void (*funcptr)(int);
 	if (!st_DebugDLL) {
@@ -9433,10 +9450,12 @@ void _updateFrameNumber( void )
 	UnsignedInt frameNum = TheGameLogic->getFrame();
 
 	((funcptr)proc)(frameNum);
+#endif
 }
 
 void _appendAllParticleSystems( void )
 {
+#ifdef _WIN32
 	typedef void (*funcptr)(const char*);
 	if (!st_ParticleDLL) {
 		return;
@@ -9461,11 +9480,13 @@ void _appendAllParticleSystems( void )
 	for (; begin != end; ++begin) {
 		((funcptr)proc)((*begin).first.str());
 	}
+#endif
 }
 
 // all ThingTemplates can be thrown with a particle system, so...
 void _appendAllThingTemplates( void )
 {
+#ifdef _WIN32
 	typedef void (*funcptr)(const char*);
 	if (!st_ParticleDLL) {
 		return;
@@ -9489,12 +9510,14 @@ void _appendAllThingTemplates( void )
 		((funcptr)proc)(pTemplate->getName().str());
 		pTemplate = pTemplate->friend_getNextTemplate();
 	}
+#endif
 
 }
 
 
 void _addUpdatedParticleSystem( AsciiString particleSystemName )
 {
+#ifdef _WIN32
 	typedef void (*funcptr)(const char*);
 	typedef void (*funcptr2)(ParticleSystemTemplate*);
 	if (!st_ParticleDLL) {
@@ -9524,6 +9547,7 @@ void _addUpdatedParticleSystem( AsciiString particleSystemName )
 
 	((funcptr)proc)(pTemplate->getName().str());
 	((funcptr2)proc2)(pTemplate);
+#endif
 }
 
 AsciiString _getParticleSystemName( void )

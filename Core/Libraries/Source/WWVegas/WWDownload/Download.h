@@ -21,6 +21,9 @@
 #pragma once
 
 //#include "../resource.h"       // main symbols
+
+#ifdef _WIN32
+
 #include "WWDownload/ftp.h"
 #include "WWDownload/downloaddefs.h"
 
@@ -94,3 +97,5 @@ private:
 	Cftp			*m_Ftp;
 	IDownload	*Listener;
 };
+
+#endif // _WIN32

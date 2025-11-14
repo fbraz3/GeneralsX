@@ -45,6 +45,9 @@
 
 #pragma once
 
+// Cross-platform MSVC type definitions (must come first)
+#include <Compat/msvc_types_compat.h>
+
 #include <stdarg.h>
 #include "Lib/BaseType.h"
 #include "Common/Debug.h"

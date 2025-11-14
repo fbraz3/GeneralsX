@@ -341,7 +341,7 @@ void Network::init()
 
 	m_localStatus = NETLOCALSTATUS_PREGAME;
 
-	QueryPerformanceFrequency((LARGE_INTEGER *)&m_perfCountFreq);
+	QueryPerformanceFrequency((void *)&m_perfCountFreq);
 	m_nextFrameTime = 0;
 	m_sawCRCMismatch = FALSE;
 	m_checkCRCsThisFrame = FALSE;
@@ -729,7 +729,7 @@ void Network::update( void )
 	}
 	else {
 		__int64 curTime;
-		QueryPerformanceCounter((LARGE_INTEGER *)&curTime);
+		QueryPerformanceCounter((void *)&curTime);
 		m_isStalling = curTime >= m_nextFrameTime;
 	}
 }
@@ -770,7 +770,7 @@ void Network::endOfGameCheck() {
 
 Bool Network::timeForNewFrame() {
 	__int64 curTime;
-	QueryPerformanceCounter((LARGE_INTEGER *)&curTime);
+	QueryPerformanceCounter((void *)&curTime);
 	__int64 frameDelay = m_perfCountFreq / m_frameRate;
 
 	/*

@@ -25,6 +25,8 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#ifdef _WIN32
+
 #include "Common/crc.h"
 #include "GameNetwork/Transport.h"
 #include "GameNetwork/NetworkInterface.h"
@@ -501,4 +503,4 @@ Real Transport::getUnknownPacketsPerSecond( void )
 }
 
 
-
+#endif // _WIN32

@@ -60,6 +60,8 @@
 #include "GameNetwork/DownloadManager.h"
 #include "GameNetwork/GameSpy/MainMenuUtils.h"
 
+#ifdef _WIN32
+
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 static NameKeyType buttonCancelID = NAMEKEY_INVALID;
 static NameKeyType staticTextSizeID = NAMEKEY_INVALID;
@@ -354,7 +356,7 @@ WindowMsgHandledType DownloadMenuInput( GameWindow *window, UnsignedInt msg,
 						GameWindow *button = TheWindowManager->winGetWindowFromId( window, buttonID );
 
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																								(WindowMsgData)button, buttonID );
+																								(WindowMsgData)(uintptr_t)button, buttonID );
 
 					}
 
@@ -433,3 +435,5 @@ WindowMsgHandledType DownloadMenuSystem( GameWindow *window, UnsignedInt msg,
 	return MSG_HANDLED;
 
 }
+
+#endif // _WIN32

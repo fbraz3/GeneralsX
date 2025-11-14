@@ -32,7 +32,9 @@
 #include "GameClient/Image.h"
 #include "GameClient/GameWindow.h"
 #include "vector2i.h"
+#ifdef _WIN32
 #include <d3dx8.h>
+#endif
 #include "WW3D2/dx8wrapper.h"
 #include "WW3D2/dx8webbrowser.h"
 

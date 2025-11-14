@@ -30,6 +30,8 @@
 
 #include "Common/PerfTimer.h"
 
+#ifdef _WIN32
+
 #ifdef PERF_TIMERS
 extern PerfGather TheCritSecPerfGather;
 #endif
@@ -91,6 +93,27 @@ class ScopedCriticalSection
 				m_cs->exit();
 		}
 };
+
+#else // _WIN32
+
+// Stub implementation for non-Windows platforms
+class CriticalSection
+{
+public:
+	CriticalSection() {}
+	virtual ~CriticalSection() {}
+	void enter( void ) {}
+	void exit( void ) {}
+};
+
+class ScopedCriticalSection
+{
+public:
+	ScopedCriticalSection( CriticalSection *cs ) {}
+	virtual ~ScopedCriticalSection() {}
+};
+
+#endif // _WIN32
 
 #include "mutex.h"
 

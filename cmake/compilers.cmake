@@ -29,6 +29,7 @@ else()
     string(APPEND CMAKE_C_FLAGS_RELEASE " -g")
 endif()
 
+set(CMAKE_CXX_STANDARD 20)  # C++20 for variadic macros and modern features
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)  # Ensures only ISO features are used
 

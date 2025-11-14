@@ -51,7 +51,9 @@
 #	define DIRECTINPUT_VERSION	0x800
 #endif
 
+#ifdef _WIN32
 #include <dinput.h>
+#endif
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "GameClient/Keyboard.h"
@@ -64,6 +66,7 @@
 /** Class for interfacing with the keyboard using direct input as the
 	* implementation */
 //-----------------------------------------------------------------------------
+#ifdef _WIN32
 class DirectInputKeyboard : public Keyboard
 {
 
@@ -94,6 +97,8 @@ protected:
 	LPDIRECTINPUTDEVICE8 m_pKeyboardDevice;  ///< pointer to keyboard device
 
 };
+
+#endif // _WIN32
 
 // INLINING ///////////////////////////////////////////////////////////////////
 

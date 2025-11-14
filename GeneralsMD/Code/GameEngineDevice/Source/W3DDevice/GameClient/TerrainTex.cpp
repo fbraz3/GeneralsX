@@ -52,7 +52,9 @@
 #include "W3DDevice/GameClient/TileData.h"
 #include "Common/GlobalData.h"
 #include "WW3D2/dx8wrapper.h"
+#ifdef _WIN32
 #include "d3dx8tex.h"
+#endif
 
 /******************************************************************************
 						TerrainTextureClass
@@ -194,10 +196,12 @@ int TerrainTextureClass::update(WorldHeightMap *htMap)
 	}
 	surface_level->UnlockRect();
 	surface_level->Release();
+#ifdef _WIN32
 	DX8_ErrorCode(D3DXFilterTexture(Peek_D3D_Texture(), NULL, 0, D3DX_FILTER_BOX));
 	if (WW3D::Get_Texture_Reduction()) {
 		Peek_D3D_Texture()->SetLOD(WW3D::Get_Texture_Reduction());
 	}
+#endif
 	return(surface_desc.Height);
 }
 
@@ -363,7 +367,9 @@ int TerrainTextureClass::update(WorldHeightMap *htMap)
 //=============================================================================
 void TerrainTextureClass::setLOD(Int LOD)
 {
+#ifdef _WIN32
 	if (Peek_D3D_Texture()) Peek_D3D_Texture()->SetLOD(LOD);
+#endif
 }
 //=============================================================================
 // TerrainTextureClass::update
@@ -424,7 +430,9 @@ Bool TerrainTextureClass::updateFlat(WorldHeightMap *htMap, Int xCell, Int yCell
 
 	surface_level->UnlockRect();
 	surface_level->Release();
+#ifdef _WIN32
 	DX8_ErrorCode(D3DXFilterTexture(Peek_D3D_Texture(), NULL, 0, D3DX_FILTER_BOX));
+#endif
 	return(surface_desc.Height);
 }
 
@@ -506,6 +514,7 @@ set up the pipe so that we blend onto the base texture in stage 0.
 //=============================================================================
 void AlphaTerrainTextureClass::Apply(unsigned int stage)
 {
+#ifdef _WIN32
 	// Do the base apply.
 	TextureClass::Apply(stage);
 
@@ -624,16 +633,15 @@ void AlphaTerrainTextureClass::Apply(unsigned int stage)
 			DX8Wrapper::Set_DX8_Texture_Stage_State( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
 			DX8Wrapper::Set_DX8_Texture_Stage_State( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
 
-			DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_COLORARG1, D3DTA_TEXTURE );
-			DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_COLOROP,   D3DTOP_MODULATE );
-			DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_COLORARG2, D3DTA_CURRENT );
-			DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
-			DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
+		DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_COLORARG1, D3DTA_TEXTURE );
+		DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_COLOROP,   D3DTOP_MODULATE );
+		DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_COLORARG2, D3DTA_CURRENT );
+		DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
+		DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
 		}
 	}
+#endif // _WIN32
 }
-
-
 /******************************************************************************
 						LightMapTerrainTextureClass
 ******************************************************************************/
@@ -836,7 +844,9 @@ int AlphaEdgeTextureClass::update(WorldHeightMap *htMap)
 	}
 	surface_level->UnlockRect();
 	surface_level->Release();
+#ifdef _WIN32
 	DX8_ErrorCode(D3DXFilterTexture(Peek_D3D_Texture(), NULL, 0, D3DX_FILTER_BOX));
+#endif
 	return(surface_desc.Height);
 }
 
@@ -1031,6 +1041,7 @@ understood by w3d. */
 //=============================================================================
 void CloudMapTerrainTextureClass::restore(void)
 {
+#ifdef _WIN32
 	DX8Wrapper::Set_DX8_Texture_Stage_State( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
 	DX8Wrapper::Set_DX8_Texture_Stage_State( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
 	DX8Wrapper::Set_DX8_Texture_Stage_State( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
@@ -1073,6 +1084,7 @@ void CloudMapTerrainTextureClass::restore(void)
 			DX8Wrapper::Set_DX8_Texture(i, NULL);
 		}
 	}
+#endif // _WIN32
 }
 
 /******************************************************************************
@@ -1105,6 +1117,7 @@ terrain mesh.
 //=============================================================================
 void ScorchTextureClass::Apply(unsigned int stage)
 {
+#ifdef _WIN32
 	// Do the base apply.
 	TextureClass::Apply(stage);
 	// Setup bilinear or trilinear filtering as specified in global data.
@@ -1137,6 +1150,7 @@ void ScorchTextureClass::Apply(unsigned int stage)
 
 	DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_COLOROP,   D3DTOP_DISABLE );
 	DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_ALPHAOP,   D3DTOP_DISABLE );
+#endif // _WIN32
 }
 
 

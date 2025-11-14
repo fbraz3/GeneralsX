@@ -40,7 +40,9 @@
 
 #include "GameNetwork/LANAPICallbacks.h"
 #include "GameNetwork/GameMessageParser.h"
+#ifndef _UNIX
 #include "GameNetwork/GameSpy/PeerDefs.h"
+#endif // _UNIX
 #include "GameNetwork/networkutil.h"
 #include "GameLogic/GameLogic.h"
 #include "Common/RandomValue.h"
@@ -596,9 +598,11 @@ void RecorderClass::startRecording(GameDifficulty diff, Int originalGameMode, In
 	m_file->writeChar(L"\0");
 
 	// Date and Time
+	#ifdef _WIN32
 	SYSTEMTIME systemTime;
 	GetLocalTime( &systemTime );
 	m_file->write(&systemTime, sizeof(systemTime));
+	#endif // _WIN32
 
 	// write out version info
 	UnicodeString versionString = TheVersion->getUnicodeVersion();
@@ -640,8 +644,10 @@ void RecorderClass::startRecording(GameDifficulty diff, Int originalGameMode, In
 		}
 		else
 		{
+#ifdef _WIN32
 			theSlotList = GameInfoToAsciiString(TheGameSpyGame);
 			localIndex = TheGameSpyGame->getLocalSlotNum();
+#endif // _WIN32
 		}
 	}
 	else
@@ -745,6 +751,7 @@ void RecorderClass::stopRecording() {
  */
 void RecorderClass::archiveReplay(AsciiString fileName)
 {
+	#ifdef _WIN32
 	SYSTEMTIME st;
 	GetLocalTime(&st);
 
@@ -767,6 +774,7 @@ void RecorderClass::archiveReplay(AsciiString fileName)
 
 	if (!CopyFile(sourcePath.str(), destPath.str(), FALSE))
 		DEBUG_LOG(("RecorderClass::archiveReplay: Failed to copy %s to %s", sourcePath.str(), destPath.str()));
+	#endif // _WIN32
 }
 
 /**

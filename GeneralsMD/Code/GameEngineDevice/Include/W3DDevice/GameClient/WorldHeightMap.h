@@ -87,6 +87,8 @@ class OutputStream;
 class DataChunkInput;
 struct DataChunkInfo;
 class AlphaEdgeTextureClass;
+class TerrainTextureClass;
+class AlphaTerrainTextureClass;
 
 #define NUM_ALPHA_TILES 12
 

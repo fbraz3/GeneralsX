@@ -19,16 +19,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 //																																						//
 //  (c) 2001-2003 Electronic Arts Inc.																				//
+
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // FILE: WOLQuickMatchMenu.cpp
+
 // Author: Chris Huybregts, November 2001
+
 // Description: Lan Lobby Menu
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
+
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/GameEngine.h"
@@ -78,7 +83,9 @@ static Bool s_inQM = FALSE;
 #endif // DEBUG_LOGGING
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
+
 // window ids ------------------------------------------------------------------------------
+
 static NameKeyType parentWOLQuickMatchID = NAMEKEY_INVALID;
 static NameKeyType buttonBackID = NAMEKEY_INVALID;
 static NameKeyType buttonStartID = NAMEKEY_INVALID;
@@ -103,6 +110,7 @@ static NameKeyType comboBoxColorID = NAMEKEY_INVALID;
 
 
 // Window Pointers ------------------------------------------------------------------------
+
 static GameWindow *parentWOLQuickMatch = NULL;
 static GameWindow *buttonBack = NULL;
 static GameWindow *buttonStart = NULL;
@@ -254,6 +262,7 @@ void UpdateStartButton(void)
 
 // -----------------------------------------------------------------------------
 
+
 static void populateQMColorComboBox(QuickMatchPreferences& pref)
 {
 	Int numColors = TheMultiplayerSettings->getNumColors();
@@ -279,6 +288,7 @@ static void populateQMColorComboBox(QuickMatchPreferences& pref)
 }
 
 // -----------------------------------------------------------------------------
+
 
 static void populateQMSideComboBox(Int favSide, const LadderInfo *li = NULL)
 {
@@ -1219,6 +1229,7 @@ void WOLQuickMatchMenuUpdate( WindowLayout * layout, void *userData)
 
 
 // LORENZEN EXPRESSES DOUBT ABOUT THIS ONE, AS IT MAY HAVE SUFFERED MERGE MANGLING... SORRY
+
             // I THINK THIS IS THE OBSOLETE VERSION... SEE THE NEWER LOOKING ONE ABOVE
 /*
   			case PeerResponse::PEERRESPONSE_DISCONNECT:
@@ -1491,7 +1502,7 @@ WindowMsgHandledType WOLQuickMatchMenuInput( GameWindow *window, UnsignedInt msg
 					{
 						if(!buttonBack->winIsHidden())
 							TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																							(WindowMsgData)buttonBack, buttonBackID );
+																							(WindowMsgData)(uintptr_t)buttonBack, buttonBackID );
 
 					}
 
@@ -1887,3 +1898,4 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 
 	return MSG_HANDLED;
 }
+

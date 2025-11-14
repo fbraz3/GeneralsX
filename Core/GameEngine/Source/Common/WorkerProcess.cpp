@@ -19,6 +19,8 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "Common/WorkerProcess.h"
 
+#ifdef _WIN32
+
 // We need Job-related functions, but these aren't defined in the Windows-headers that VC6 uses.
 // So we define them here and load them dynamically.
 #if defined(_MSC_VER) && _MSC_VER < 1300
@@ -228,4 +230,59 @@ void WorkerProcess::kill()
 	m_stdOutput.clear();
 	m_isDone = false;
 }
+
+#else  // Unix/macOS stubs
+
+WorkerProcess::WorkerProcess()
+{
+	m_processHandle = NULL;
+	m_readHandle = NULL;
+	m_jobHandle = NULL;
+	m_exitcode = 0;
+	m_isDone = false;
+}
+
+bool WorkerProcess::startProcess(UnicodeString command)
+{
+	// TODO: Implement Unix process creation with pipes using fork/exec
+	// For now, return false to indicate worker processes are not supported on this platform
+	return false;
+}
+
+bool WorkerProcess::isRunning() const
+{
+	return false;
+}
+
+bool WorkerProcess::isDone() const
+{
+	return m_isDone;
+}
+
+DWORD WorkerProcess::getExitCode() const
+{
+	return 0;
+}
+
+AsciiString WorkerProcess::getStdOutput() const
+{
+	return m_stdOutput;
+}
+
+bool WorkerProcess::fetchStdOutput()
+{
+	return true;
+}
+
+void WorkerProcess::update()
+{
+	// No-op on Unix/macOS
+}
+
+void WorkerProcess::kill()
+{
+	// No-op on Unix/macOS
+}
+
+#endif  // _WIN32
 

@@ -16,13 +16,15 @@ typedef void* HANDLE;
 #define WINAPI
 #endif
 
-// Basic RECT/POINT types (only if not already defined by win32_types.h)
-#if !defined(RECT_DEFINED)
+// Basic RECT/POINT types (only if not already defined by win32_types.h or win32_sdl_types_compat.h)
+#if !defined(RECT_DEFINED) && !defined(RECT)
 typedef struct tagRECT { long left; long top; long right; long bottom; } RECT;
+#define RECT_DEFINED
 #endif
 
-#if !defined(POINT_DEFINED)
+#if !defined(POINT_DEFINED) && !defined(POINT)
 typedef struct tagPOINT { long x; long y; } POINT;
+#define POINT_DEFINED
 #endif
 
 // Minimal HRESULT-like defines

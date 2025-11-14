@@ -45,7 +45,9 @@
 #include "WW3D2/dx8renderer.h"
 #include "Lib/BaseType.h"
 #include "W3DDevice/GameClient/HeightMap.h"
+#ifdef _WIN32
 #include "d3dx8math.h"
+#endif
 #include "Common/GlobalData.h"
 #include "W3DDevice/GameClient/W3DProjectedShadow.h"
 #include "WW3D2/statistics.h"
@@ -254,6 +256,7 @@ Bool W3DProjectedShadowManager::init( void )
 
 Bool W3DProjectedShadowManager::ReAcquireResources(void)
 {
+#ifdef _WIN32
 	//grab assets which don't survive a device reset and need
 	//to be present for duration of game.
 
@@ -301,10 +304,15 @@ Bool W3DProjectedShadowManager::ReAcquireResources(void)
 	}
 
 	return TRUE;
+#else // _WIN32
+	// Non-Windows: stub implementation returns success but does no actual work
+	return TRUE;
+#endif // _WIN32
 }
 
 void W3DProjectedShadowManager::ReleaseResources(void)
 {
+#ifdef _WIN32
 	invalidateCachedLightPositions();	//textures need to be updated
 	REF_PTR_RELEASE(m_dynamicRenderTarget);	//need to create a new render target
 	if (shadowDecalIndexBufferD3D)
@@ -313,6 +321,10 @@ void W3DProjectedShadowManager::ReleaseResources(void)
 		shadowDecalVertexBufferD3D->Release();
 	shadowDecalIndexBufferD3D=NULL;
 	shadowDecalVertexBufferD3D=NULL;
+#else // _WIN32
+	// Non-Windows: no-op stub
+	invalidateCachedLightPositions();
+#endif // _WIN32
 }
 
 void W3DProjectedShadowManager::invalidateCachedLightPositions(void)
@@ -343,6 +355,7 @@ void W3DProjectedShadowManager::updateRenderTargetTextures(void)
 ///Renders shadow on part of terrain covered by world-space bounding box.
 Int W3DProjectedShadowManager::renderProjectedTerrainShadow(W3DProjectedShadow *shadow, AABoxClass &box)
 {
+#ifdef _WIN32
 	static	Matrix4x4 mWorld(true);	//initialize to identity matrix
 	struct SHADOW_VOLUME_VERTEX	//vertex structure passed to D3D
 	{
@@ -523,11 +536,15 @@ Int W3DProjectedShadowManager::renderProjectedTerrainShadow(W3DProjectedShadow *
 		nShadowVertsInBuf += numVerts;
 		nShadowStartBatchVertex=nShadowVertsInBuf;
 
-		nShadowIndicesInBuf += numIndex;
-		nShadowStartBatchIndex=nShadowIndicesInBuf;
-		return 1;
+	nShadowIndicesInBuf += numIndex;
+	nShadowStartBatchIndex=nShadowIndicesInBuf;
+	return 1;
 	}
 	return 0;
+#else // _WIN32
+	// Non-Windows: stub returns 0 (no shadow rendered)
+	return 0;
+#endif // _WIN32
 }
 
 #if 0
@@ -676,6 +693,7 @@ void TestBlendRender(RenderInfoClass & rinfo)
 
 void W3DProjectedShadowManager::flushDecals(W3DShadowTexture *texture, ShadowType type)
 {
+#ifdef _WIN32
 	static	Matrix4x4 mWorld(true);	//initialize to identity matrix
 
 	if (nShadowDecalVertsInBatch == 0 && nShadowDecalPolysInBatch == 0)
@@ -774,6 +792,7 @@ void W3DProjectedShadowManager::flushDecals(W3DShadowTexture *texture, ShadowTyp
 	nShadowDecalStartBatchIndex=nShadowDecalIndicesInBuf;
 	nShadowDecalPolysInBatch=0;	//reset number of polys in texture batch
 	nShadowDecalVertsInBatch=0;
+#endif // _WIN32
 }
 
 /*
@@ -802,6 +821,7 @@ is an optimized system that only uses the render objects bounding box to determi
 */
 void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow)
 {
+#ifdef _WIN32
 	int i,j,k;
 	Vector3 hmapVertex,objPos;
 	AABoxClass box;
@@ -1132,6 +1152,9 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow)
 		return;
 	}
 
+#else
+	// Non-Windows stub: projected shadow decal queueing not available on non-DirectX platforms
+#endif // _WIN32
 }
 
 /**Simpler/faster decal system that always uses 2 triangles that are roughly oriented
@@ -1141,6 +1164,7 @@ TODO: Too much clipping.  Need to check terrain heights at all 4 corners and adj
 ///@todo: We should have a pre-made static filled index buffer since we always send down 2 triangles.
 void W3DProjectedShadowManager::queueSimpleDecal(W3DProjectedShadow *shadow)
 {
+#ifdef _WIN32
 	Vector3 objPos;
 	Matrix3D   objXform;
 	Vector3 uVector,vVector;
@@ -1272,6 +1296,9 @@ void W3DProjectedShadowManager::queueSimpleDecal(W3DProjectedShadow *shadow)
 		return;
 	}
 
+#else
+	// Non-Windows stub: simple decal queueing not available on non-DirectX platforms
+#endif // _WIN32
 }
 
 void W3DProjectedShadowManager::prepareShadows()

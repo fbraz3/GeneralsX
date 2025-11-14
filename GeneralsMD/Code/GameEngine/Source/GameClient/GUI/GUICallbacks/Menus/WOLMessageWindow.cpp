@@ -19,16 +19,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 //																																						//
 //  (c) 2001-2003 Electronic Arts Inc.																				//
+
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // FILE: WOLMessageWindow.cpp
+
 // Author: Chris Huybregts, November 2001
+
 // Description: Lan Lobby Menu
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
+
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/GameEngine.h"
@@ -45,11 +50,14 @@
 
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
+
 // window ids ------------------------------------------------------------------------------
+
 static NameKeyType parentWOLMessageWindowID = NAMEKEY_INVALID;
 static NameKeyType buttonCancelID = NAMEKEY_INVALID;
 
 // Window Pointers ------------------------------------------------------------------------
+
 static GameWindow *parentWOLMessageWindow = NULL;
 static GameWindow *buttonCancel = NULL;
 
@@ -128,7 +136,7 @@ WindowMsgHandledType WOLMessageWindowInput( GameWindow *window, UnsignedInt msg,
 					if( BitIsSet( state, KEY_STATE_UP ) )
 					{
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																							(WindowMsgData)buttonCancel, buttonCancelID );
+																							(WindowMsgData)(uintptr_t)buttonCancel, buttonCancelID );
 
 					}
 
@@ -194,3 +202,4 @@ WindowMsgHandledType WOLMessageWindowSystem( GameWindow *window, UnsignedInt msg
 
 	return MSG_HANDLED;
 }
+

@@ -70,7 +70,9 @@
 #include "GameNetwork/GameSpy/PeerThread.h"
 #include "GameNetwork/GameSpy/BuddyThread.h"
 
+#ifdef _WIN32
 #include "GameNetwork/DownloadManager.h"
+#endif // _WIN32
 #include "GameNetwork/GameSpy/MainMenuUtils.h"
 
 #include "GameClient/CDCheck.h"
@@ -317,7 +319,7 @@ static MessageBoxReturnType checkCDCallback( void *userData )
 	}
 	else
 	{
-		prepareCampaignGame((GameDifficulty)(Int)(Int *)userData);
+		prepareCampaignGame((GameDifficulty)(Int)(uintptr_t)userData);
 		return MB_RETURN_CLOSE;
 	}
 }
@@ -832,11 +834,13 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 	if(DontShowMainMenu && justEntered)
 		justEntered = FALSE;
 
+#ifdef _WIN32
 	if (TheDownloadManager && !TheDownloadManager->isDone())
 	{
 		TheDownloadManager->update();
 		DownloadMenuUpdate(layout, userData);
 	}
+#endif // _WIN32
 
 	// Added by Saad to the confirmation or decline of the resoluotion change
 	// dialog box.
@@ -1503,6 +1507,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 			}
 			else if( controlID == worldBuilderID )
 			{
+#ifdef _WIN32
 #if defined RTS_DEBUG
 				if(_spawnl(_P_NOWAIT,"WorldBuilderD.exe","WorldBuilderD.exe", NULL) < 0)
 					MessageBoxOk(TheGameText->fetch("GUI:WorldBuilder"), TheGameText->fetch("GUI:WorldBuilderLoadFailed"),NULL);
@@ -1510,10 +1515,13 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				if(_spawnl(_P_NOWAIT,"WorldBuilder.exe","WorldBuilder.exe", NULL) < 0)
 					MessageBoxOk(TheGameText->fetch("GUI:WorldBuilder"), TheGameText->fetch("GUI:WorldBuilderLoadFailed"),NULL);
 #endif
+#endif // _WIN32
 			}
 			else if( controlID == getUpdateID )
 			{
+#ifdef _WIN32
 				StartDownloadingPatches();
+#endif // _WIN32
 			}
 			else if( controlID == exitID )
 			{

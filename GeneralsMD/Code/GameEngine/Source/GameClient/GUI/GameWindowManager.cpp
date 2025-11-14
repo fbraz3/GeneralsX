@@ -754,7 +754,7 @@ Int GameWindowManager::winSetFocus( GameWindow *window )
 	if( (m_keyboardFocus) && (m_keyboardFocus != window) )
 	{
 		Bool wf;	// dummy var, ignored, but must be passed
-		winSendSystemMsg( m_keyboardFocus, GWM_INPUT_FOCUS, FALSE, (WindowMsgData)&wf );
+		winSendSystemMsg( m_keyboardFocus, GWM_INPUT_FOCUS, FALSE, (WindowMsgData)(uintptr_t)&wf );
 	}
 
 	// Set focus to new window
@@ -766,7 +766,7 @@ Int GameWindowManager::winSetFocus( GameWindow *window )
 
 		for (;;)
 		{
-			winSendSystemMsg( window, GWM_INPUT_FOCUS, TRUE, (WindowMsgData)&wantsFocus );
+			winSendSystemMsg( window, GWM_INPUT_FOCUS, TRUE, (WindowMsgData)(uintptr_t)&wantsFocus );
 			if (wantsFocus)
 				break;
 

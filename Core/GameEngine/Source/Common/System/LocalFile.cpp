@@ -48,7 +48,11 @@
 #include "PreRTS.h"
 
 #include <fcntl.h>
+#ifdef _WIN32
 #include <io.h>
+#else
+#include <unistd.h>
+#endif
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -450,7 +454,7 @@ Int LocalFile::writeFormat( const WideChar* format, ... )
 Int LocalFile::writeChar( const Char* character )
 {
 	if ( write( character, sizeof(Char) ) == sizeof(Char) ) {
-		return (Int)character;
+		return (Int)*character;
 	}
 
 	return EOF;
@@ -463,7 +467,7 @@ Int LocalFile::writeChar( const Char* character )
 Int LocalFile::writeChar( const WideChar* character )
 {
 	if ( write( character, sizeof(WideChar) ) == sizeof(WideChar) ) {
-		return (Int)character;
+		return (Int)*character;
 	}
 
 	return WEOF;

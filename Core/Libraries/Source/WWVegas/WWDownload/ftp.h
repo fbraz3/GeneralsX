@@ -22,6 +22,8 @@
 
 //#include "../resource.h"       // main symbols
 
+#ifdef _WIN32
+
 #include "winsock.h"
 #include <Utility/stdio_adapter.h>
 
@@ -111,3 +113,5 @@ public:
 	HRESULT SendCommand( LPCSTR pCommand, int iSize );
 
 };
+
+#endif // _WIN32

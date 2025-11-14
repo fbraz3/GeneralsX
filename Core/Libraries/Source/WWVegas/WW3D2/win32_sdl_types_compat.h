@@ -545,33 +545,17 @@ typedef BITMAPINFO* LPBITMAPINFO;
 #define _strdup(s) strdup((s))
 #endif
 
-// Phase 02: String function wrappers for global namespace access (::lstrcpy, etc.)
-// First define macros for legacy compatibility, then define inline functions
+// Phase 02: String function wrappers (lstrcpy, lstrlen, lstrcmpi)
 #ifndef lstrcpy
 #define lstrcpy(dest, src) strcpy((dest), (src))
-#undef lstrcpy
-#endif
-#ifndef lstrcpy
-inline char* lstrcpy(char* dest, const char* src) { return strcpy(dest, src); }
-#define lstrcpy(dest, src) ::lstrcpy((dest), (src))
 #endif
 
 #ifndef lstrlen
 #define lstrlen(s) strlen((s))
-#undef lstrlen
-#endif
-#ifndef lstrlen
-inline size_t lstrlen(const char* s) { return strlen(s); }
-#define lstrlen(s) ::lstrlen(s)
 #endif
 
 #ifndef lstrcmpi
 #define lstrcmpi(s1, s2) strcasecmp((s1), (s2))
-#undef lstrcmpi
-#endif
-#ifndef lstrcmpi
-inline int lstrcmpi(const char* s1, const char* s2) { return strcasecmp(s1, s2); }
-#define lstrcmpi(s1, s2) ::lstrcmpi((s1), (s2))
 #endif
 
 #ifndef _isnan

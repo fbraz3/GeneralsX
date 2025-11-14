@@ -56,3 +56,23 @@ inline unsigned int GetTickCount()
   return (unsigned int)timespec_to_ms(ts);
 }
 
+// Query performance counter functions (LARGE_INTEGER is defined in d3d8_vulkan_graphics_compat.h)
+inline bool QueryPerformanceCounter(void* lpPerformanceCount) {
+    struct timespec ts;
+    #ifdef CLOCK_MONOTONIC
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    #else
+    clock_gettime(CLOCK_REALTIME, &ts);
+    #endif
+    // Cast to LARGE_INTEGER union pointer
+    int64_t nanoseconds = (int64_t)ts.tv_sec * 1000000000LL + ts.tv_nsec;
+    *(int64_t*)lpPerformanceCount = nanoseconds;
+    return true;
+}
+
+inline bool QueryPerformanceFrequency(void* lpFrequency) {
+    // Nanosecond precision = 1 billion Hz
+    *(int64_t*)lpFrequency = 1000000000LL;
+    return true;
+}
+

@@ -200,14 +200,14 @@ SDL_Window* SDL2_GetWindowFromEvent(const SDL_Event* event)
         case SDL_WINDOW_FOCUS_LOST:
             return SDL_GetWindowFromID(event->window.windowID);
 
-        case SDL_KEY_DOWN:
-        case SDL_KEY_UP:
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
             return SDL_GetWindowFromID(event->key.windowID);
 
-        case SDL_MOUSE_MOTION:
-        case SDL_MOUSE_BUTTON_DOWN:
-        case SDL_MOUSE_BUTTON_UP:
-        case SDL_MOUSE_WHEEL:
+        case SDL_MOUSEMOTION:
+        case SDL_MOUSEBUTTONDOWN:
+        case SDL_MOUSEBUTTONUP:
+        case SDL_MOUSEWHEEL:
             return SDL_GetWindowFromID(event->motion.windowID);
 
         default:
@@ -408,14 +408,14 @@ int SDL2_IsKeyModActive(SDL_Keymod mod_flag)
 
 uint32_t SDL2_GetMousePosition(int* x, int* y)
 {
-    float fx, fy;
-    uint32_t buttons = SDL_GetMouseState(&fx, &fy);
+    int ix, iy;
+    uint32_t buttons = SDL_GetMouseState(&ix, &iy);
 
     if (x) {
-        *x = (int)fx;
+        *x = ix;
     }
     if (y) {
-        *y = (int)fy;
+        *y = iy;
     }
 
     return buttons;
@@ -428,7 +428,7 @@ void SDL2_SetMousePosition(SDL_Window* window, int x, int y)
         return;
     }
 
-    SDL_WarpMouseInWindow(window, (float)x, (float)y);
+    SDL_WarpMouseInWindow(window, x, y);
 }
 
 /* ============================================================================
@@ -446,9 +446,9 @@ int SDL2_ProcessKeyboardEvent(
     }
 
     /* Translate event type to Windows message */
-    if (sdl_event->type == SDL_KEY_DOWN) {
+    if (sdl_event->type == SDL_KEYDOWN) {
         *out_msg = 0x0100;  /* WM_KEYDOWN */
-    } else if (sdl_event->type == SDL_KEY_UP) {
+    } else if (sdl_event->type == SDL_KEYUP) {
         *out_msg = 0x0101;  /* WM_KEYUP */
     } else {
         return 0;
@@ -461,16 +461,16 @@ int SDL2_ProcessKeyboardEvent(
     uint32_t repeat_count = (sdl_event->repeat) ? (sdl_event->repeat & 0xFFFF) : 1;
     uint32_t scan_code = (uint32_t)sdl_event->keysym.scancode & 0xFF;
     uint32_t extended = (scan_code > 0x53) ? 0x01000000 : 0;  /* Extended key flag */
-    uint32_t previous = (sdl_event->type == SDL_KEY_UP) ? 0 : 0x40000000;  /* Previous state */
-    uint32_t transition = (sdl_event->type == SDL_KEY_UP) ? 0x80000000 : 0;  /* Transition state */
+    uint32_t previous = (sdl_event->type == SDL_KEYUP) ? 0 : 0x40000000;  /* Previous state */
+    uint32_t transition = (sdl_event->type == SDL_KEYUP) ? 0x80000000 : 0;  /* Transition state */
 
     *out_lparam = repeat_count | (scan_code << 16) | extended | previous | transition;
 
     printf("Phase 03: SDL keyboard event - type:%s key:0x%X scan:0x%X → WM_KEY%s wParam:0x%X lParam:0x%X\n",
-           sdl_event->type == SDL_KEY_DOWN ? "DOWN" : "UP",
+           sdl_event->type == SDL_KEYDOWN ? "DOWN" : "UP",
            sdl_event->keysym.sym,
            sdl_event->keysym.scancode,
-           sdl_event->type == SDL_KEY_DOWN ? "DOWN" : "UP",
+           sdl_event->type == SDL_KEYDOWN ? "DOWN" : "UP",
            *out_wparam,
            *out_lparam);
 

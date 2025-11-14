@@ -30,6 +30,8 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#ifdef _WIN32
+
 #include "Common/FunctionLexicon.h"
 #include "GameClient/GameWindow.h"
 #include "GameClient/GameWindowManager.h"
@@ -715,3 +717,10 @@ WindowLayoutInitFunc FunctionLexicon::winLayoutInitFunc( NameKeyType key, TableI
 	// search the specified table
 	return (WindowLayoutInitFunc)findFunction( key, index );
 }
+
+#else // _WIN32
+
+// Stub implementation for non-Windows platforms
+// FunctionLexicon is a Windows UI callback registry that is not applicable on other platforms
+
+#endif // _WIN32

@@ -54,7 +54,9 @@
 #include <coltest.h>
 #include <rinfo.h>
 #include <camera.h>
+#ifdef _WIN32
 #include <d3dx8core.h>
+#endif
 #include "Common/GlobalData.h"
 #include "Common/PerfTimer.h"
 
@@ -1090,9 +1092,9 @@ Bool BaseHeightMapRenderObjClass::isClearLineOfSight(const Coord3D& pos, const C
 
 		Int idx = x + y*xExtent;
 		float height = data[idx];
-		height = __max(height, data[idx + 1]);
-		height = __max(height, data[idx + xExtent]);
-		height = __max(height, data[idx + xExtent + 1]);
+		height = (height > data[idx + 1]) ? height : data[idx + 1];
+		height = (height > data[idx + xExtent]) ? height : data[idx + xExtent];
+		height = (height > data[idx + xExtent + 1]) ? height : data[idx + xExtent + 1];
 		height *= MAP_HEIGHT_SCALE;
 
 		// if terrainHeight > z, we can't see, so punt.
@@ -1438,8 +1440,10 @@ RenderObjClass *	 BaseHeightMapRenderObjClass::Clone(void) const
 //=============================================================================
 void BaseHeightMapRenderObjClass::loadRoadsAndBridges(W3DTerrainLogic *pTerrainLogic, Bool saveGame)
 {
+#ifdef _WIN32
 	if (DX8Wrapper::_Get_D3D_Device8() && (DX8Wrapper::_Get_D3D_Device8()->TestCooperativeLevel()) != D3D_OK)
 		return;	//device not ready to render anything
+#endif
 
 #ifdef DO_ROADS
 	if (m_roadBuffer) {

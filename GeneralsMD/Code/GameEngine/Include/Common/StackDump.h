@@ -45,8 +45,13 @@ void StackDumpFromAddresses(void**addresses, unsigned int count, void (*callback
 
 void GetFunctionDetails(void *pointer, char*name, char*filename, unsigned int* linenumber, unsigned int* address);
 
+#ifdef _WIN32
 // Dumps out the exception info and stack trace.
 void DumpExceptionInfo( unsigned int u, EXCEPTION_POINTERS* e_info );
+#else
+// Non-Windows stub for exception info
+inline void DumpExceptionInfo( unsigned int u, void* e_info ) {}
+#endif
 
 #else
 
@@ -60,8 +65,13 @@ __inline void StackDumpFromAddresses(void**addresses, unsigned int count, void (
 
 __inline void GetFunctionDetails(void *pointer, char*name, char*filename, unsigned int* linenumber, unsigned int* address) {}
 
+#ifdef _WIN32
 // Dumps out the exception info and stack trace.
 __inline void DumpExceptionInfo( unsigned int u, EXCEPTION_POINTERS* e_info ) {};
+#else
+// Non-Windows stub for exception info
+__inline void DumpExceptionInfo( unsigned int u, void* e_info ) {};
+#endif;
 
 #endif
 

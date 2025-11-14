@@ -61,7 +61,11 @@
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 
-#include <new.h>
+#ifdef _WIN32
+	#include <new.h>
+#else
+	#include <new>
+#endif
 #include <Utility/stdio_adapter.h>
 #ifdef MEMORYPOOL_OVERRIDE_MALLOC
 	#include <malloc.h>

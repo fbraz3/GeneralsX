@@ -50,7 +50,7 @@
 #define WIN32_SDL_API_COMPAT_H
 
 #include <stdint.h>
-#include <SDL3/SDL.h>
+#include <SDL2/SDL.h>
 
 /* ============================================================================
  * SDL2 WINDOW CREATION - Win32-compatible interface

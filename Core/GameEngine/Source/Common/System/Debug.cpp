@@ -719,11 +719,13 @@ void ReleaseCrash(const char *reason)
 {
 	/// do additional reporting on the crash, if possible
 
+#ifdef _WIN32
 	if (!DX8Wrapper_IsWindowed) {
 		if (ApplicationHWnd) {
 			ShowWindow(ApplicationHWnd, SW_HIDE);
 		}
 	}
+#endif
 
 	char prevbuf[ _MAX_PATH ];
 	char curbuf[ _MAX_PATH ];
@@ -744,18 +746,21 @@ void ReleaseCrash(const char *reason)
 	if (theReleaseCrashLogFile)
 	{
 		fprintf(theReleaseCrashLogFile, "Release Crash at %s; Reason %s\n", getCurrentTimeString(), reason);
+#if defined(RTS_DEBUG) || defined(IG_DEBUG_STACKTRACE)
 		fprintf(theReleaseCrashLogFile, "\nLast error:\n%s\n\nCurrent stack:\n", g_LastErrorDump.str());
 		const int STACKTRACE_SIZE	= 12;
 		const int STACKTRACE_SKIP = 6;
 		void* stacktrace[STACKTRACE_SIZE];
 		::FillStackAddresses(stacktrace, STACKTRACE_SIZE, STACKTRACE_SKIP);
 		::StackDumpFromAddresses(stacktrace, STACKTRACE_SIZE, releaseCrashLogOutput);
+#endif
 
 		fflush(theReleaseCrashLogFile);
 		fclose(theReleaseCrashLogFile);
 		theReleaseCrashLogFile = NULL;
 	}
 
+#ifdef _WIN32
 	if (!DX8Wrapper_IsWindowed) {
 		if (ApplicationHWnd) {
 			ShowWindow(ApplicationHWnd, SW_HIDE);
@@ -778,6 +783,7 @@ void ReleaseCrash(const char *reason)
 
 
 #endif
+#endif
 
 	_exit(1);
 }
@@ -796,6 +802,7 @@ void ReleaseCrashLocalized(const AsciiString& p, const AsciiString& m)
 
 	/// do additional reporting on the crash, if possible
 
+#ifdef _WIN32
 	if (!DX8Wrapper_IsWindowed) {
 		if (ApplicationHWnd) {
 			ShowWindow(ApplicationHWnd, SW_HIDE);
@@ -817,6 +824,7 @@ void ReleaseCrashLocalized(const AsciiString& p, const AsciiString& m)
 		::SetWindowPos(ApplicationHWnd, HWND_NOTOPMOST, 0, 0, 0, 0,SWP_NOSIZE |SWP_NOMOVE);
 		::MessageBoxA(NULL, mesgA.str(), promptA.str(), MB_OK|MB_TASKMODAL|MB_ICONERROR);
 	}
+#endif
 
 	char prevbuf[ _MAX_PATH ];
 	char curbuf[ _MAX_PATH ];

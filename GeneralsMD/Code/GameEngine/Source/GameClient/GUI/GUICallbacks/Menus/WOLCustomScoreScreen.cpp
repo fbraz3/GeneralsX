@@ -19,16 +19,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 //																																						//
 //  (c) 2001-2003 Electronic Arts Inc.																				//
+
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // FILE: WOLCustomScoreScreen.cpp
+
 // Author: Matt Campbell, December 2001
+
 // Description: Custom match score screen
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
+
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Lib/BaseType.h"
@@ -48,12 +53,15 @@
 
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
+
 // window ids ------------------------------------------------------------------------------
+
 static NameKeyType parentWOLCustomScoreID = NAMEKEY_INVALID;
 static NameKeyType buttonDisconnectID = NAMEKEY_INVALID;
 static NameKeyType buttonLobbyID = NAMEKEY_INVALID;
 
 // Window Pointers ------------------------------------------------------------------------
+
 static GameWindow *parentWOLCustomScore = NULL;
 static GameWindow *buttonDisconnect = NULL;
 static GameWindow *buttonLobby = NULL;
@@ -139,7 +147,7 @@ WindowMsgHandledType WOLCustomScoreScreenInput( GameWindow *window, UnsignedInt 
 					if( BitIsSet( state, KEY_STATE_UP ) )
 					{
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																							(WindowMsgData)buttonDisconnect, buttonDisconnectID );
+																							(WindowMsgData)(uintptr_t)buttonDisconnect, buttonDisconnectID );
 
 					}
 
@@ -230,3 +238,4 @@ WindowMsgHandledType WOLCustomScoreScreenSystem( GameWindow *window, UnsignedInt
 
 	return MSG_HANDLED;
 }
+

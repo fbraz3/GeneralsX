@@ -30,6 +30,8 @@
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#ifdef _WIN32
+
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "Common/GameEngine.h"
 //#include "GameNetwork/NetworkInterface.h"
@@ -532,3 +534,5 @@ Int UDP::AllowBroadcasts(Bool status)
 	else
 		return FALSE;
 }
+
+#endif // _WIN32

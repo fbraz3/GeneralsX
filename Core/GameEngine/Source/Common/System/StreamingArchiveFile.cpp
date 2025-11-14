@@ -48,7 +48,11 @@
 #include "PreRTS.h"
 
 #include <fcntl.h>
+#ifdef _WIN32
 #include <io.h>
+#else
+#include <unistd.h>
+#endif
 #include <sys/stat.h>
 
 #include "Common/AsciiString.h"

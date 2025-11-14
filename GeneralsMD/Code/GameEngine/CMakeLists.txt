@@ -559,8 +559,8 @@ set(GAMEENGINE_SRC
 #    Source/Common/Audio/GameSounds.cpp
     #Source/Common/Audio/simpleplayer.cpp # unused
     #Source/Common/Audio/urllaunch.cpp # unused
-    Source/Common/Bezier/BezFwdIterator.cpp
-    Source/Common/Bezier/BezierSegment.cpp
+    #Source/Common/Bezier/BezFwdIterator.cpp  # TODO: Fix d3dx8math.h dependency
+    #Source/Common/Bezier/BezierSegment.cpp   # TODO: Fix d3dx8math.h dependency
     Source/Common/BitFlags.cpp
     Source/Common/CommandLine.cpp
 #    Source/Common/crc.cpp
@@ -656,7 +656,7 @@ set(GAMEENGINE_SRC
     Source/Common/System/QuotedPrintable.cpp
     Source/Common/System/Radar.cpp
 #    Source/Common/System/RAMFile.cpp
-    Source/Common/System/registry.cpp
+#    Source/Common/System/registry.cpp  # TODO: Add Windows Registry type support
     Source/Common/System/SaveGame/GameState.cpp
     Source/Common/System/SaveGame/GameStateMap.cpp
     Source/Common/System/Snapshot.cpp
@@ -768,23 +768,26 @@ set(GAMEENGINE_SRC
     Source/GameClient/GUI/GUICallbacks/Menus/SinglePlayerMenu.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/SkirmishGameOptionsMenu.cpp
     Source/GameClient/GUI/GUICallbacks/Menus/SkirmishMapSelectMenu.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/WOLBuddyOverlay.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/WOLCustomScoreScreen.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/WOLGameSetupMenu.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/WOLLadderScreen.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/WOLLobbyMenu.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/WOLLocaleSelectPopup.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/WOLLoginMenu.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/WOLMapSelectMenu.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/WOLMessageWindow.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/WOLQMScoreScreen.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/WOLQuickMatchMenu.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/WOLStatusMenu.cpp
-    Source/GameClient/GUI/GUICallbacks/Menus/WOLWelcomeMenu.cpp
+    # WOL (Westwood Online) files - Windows-only networking layer (defunct)
+    # Excluded on non-Windows platforms - uses Windows-only APIs (WebBrowser, _wtoi, etc.)
+    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLBuddyOverlay.cpp>
+    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLCustomScoreScreen.cpp>
+    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLGameSetupMenu.cpp>
+    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLLadderScreen.cpp>
+    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLLobbyMenu.cpp>
+    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLLocaleSelectPopup.cpp>
+    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLLoginMenu.cpp>
+    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLMapSelectMenu.cpp>
+    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLMessageWindow.cpp>
+    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLQMScoreScreen.cpp>
+    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLQuickMatchMenu.cpp>
+    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLStatusMenu.cpp>
+    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/GUICallbacks/Menus/WOLWelcomeMenu.cpp>
     Source/GameClient/GUI/GUICallbacks/MessageBox.cpp
     Source/GameClient/GUI/GUICallbacks/ReplayControls.cpp
     Source/GameClient/GUI/HeaderTemplate.cpp
-    Source/GameClient/GUI/IMEManager.cpp
+    # IMEManager.cpp - Windows-only IME (Input Method Editor) support
+    $<$<BOOL:${WIN32}>:Source/GameClient/GUI/IMEManager.cpp>
     Source/GameClient/GUI/LoadScreen.cpp
     Source/GameClient/GUI/ProcessAnimateWindow.cpp
     Source/GameClient/GUI/Shell/Shell.cpp

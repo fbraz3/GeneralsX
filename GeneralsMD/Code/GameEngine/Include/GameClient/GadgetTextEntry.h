@@ -66,7 +66,12 @@ class GameWindow;
 
 inline void GadgetTextEntrySetText( GameWindow *g, UnicodeString text )
 {
+#ifdef _WIN32
 	TheWindowManager->winSendSystemMsg( g, GEM_SET_TEXT, (WindowMsgData)&text, 0 );
+#else
+	// TODO: Port this function to non-Windows systems
+	(void)g; (void)text;  // Suppress unused parameter warnings
+#endif // _WIN32
 }
 extern UnicodeString GadgetTextEntryGetText( GameWindow *textentry ); ///< Get the text from the text entry field
 extern void GadgetTextEntrySetFont( GameWindow *g, GameFont *font );  ///< set font for window and edit text display strings

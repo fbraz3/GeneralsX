@@ -48,7 +48,9 @@
 #include "WW3D2/meshmdl.h"
 #include "Lib/BaseType.h"
 #include "W3DDevice/GameClient/HeightMap.h"
+#ifdef _WIN32
 #include "d3dx8math.h"
+#endif
 #include "Common/GlobalData.h"
 #include "Common/DrawModule.h"
 #include "W3DDevice/GameClient/W3DVolumetricShadow.h"
@@ -1325,6 +1327,7 @@ void W3DVolumetricShadow::RenderVolume(Int meshIndex, Int lightIndex)
 
 void W3DVolumetricShadow::RenderMeshVolume(Int meshIndex, Int lightIndex, const Matrix3D *meshXform)
 {
+#ifdef _WIN32
 	Geometry *geometry;
 	Int numVerts, numPolys, numIndex;
 
@@ -1381,11 +1384,13 @@ void W3DVolumetricShadow::RenderMeshVolume(Int meshIndex, Int lightIndex, const 
 		Debug_Statistics::Record_DX8_Polys_And_Vertices(numPolys,numVerts,ShaderClass::_PresetOpaqueShader);
 		m_pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST,0,numVerts,ibSlot->m_start,numPolys);
 	}
+#endif // _WIN32
 
 }
 
 void W3DVolumetricShadow::RenderDynamicMeshVolume(Int meshIndex, Int lightIndex, const Matrix3D *meshXform)
 {
+#ifdef _WIN32
 	Geometry *geometry;
 	Int numVerts, numPolys, numIndex;
 	SHADOW_DYNAMIC_VOLUME_VERTEX* pvVertices;
@@ -1488,11 +1493,13 @@ void W3DVolumetricShadow::RenderDynamicMeshVolume(Int meshIndex, Int lightIndex,
 
 	nShadowIndicesInBuf += numIndex;
 	nShadowStartBatchIndex=nShadowIndicesInBuf;
+#endif // _WIN32
 }
 
 /** Debug function to draw bounding boxes around shadow volumes */
 void W3DVolumetricShadow::RenderMeshVolumeBounds(Int meshIndex, Int lightIndex, const Matrix3D *meshXform)
 {
+#ifdef _WIN32
 	Geometry *geometry;
 	Int numVerts, numPolys, numIndex;
 	SHADOW_DYNAMIC_VOLUME_VERTEX* pvVertices;
@@ -1637,6 +1644,7 @@ void W3DVolumetricShadow::RenderMeshVolumeBounds(Int meshIndex, Int lightIndex, 
 
 	nShadowIndicesInBuf += numIndex;
 	nShadowStartBatchIndex=nShadowIndicesInBuf;
+#endif // _WIN32
 }
 
 // Shadow =====================================================================
@@ -1944,6 +1952,7 @@ void W3DVolumetricShadow::updateMeshVolume(Int meshIndex, Int lightIndex, const 
 	// cast shadows
 	//
 
+#ifdef _WIN32
 #ifdef CNC3 //(gth) numerical error requires that the axis vectors be normalized...
 
 	//When dealing with infinite light sources, we can assume that the shadow doesn't
@@ -2198,6 +2207,7 @@ void W3DVolumetricShadow::updateMeshVolume(Int meshIndex, Int lightIndex, const 
 		if (m_shadowVolume[ lightIndex ][meshIndex])
 			m_shadowVolume[ lightIndex ][meshIndex]->setVisibleState(Geometry::STATE_UNKNOWN);
 	}
+#endif // _WIN32
 }
 
 // addSilhouetteEdge ==========================================================
@@ -3336,6 +3346,7 @@ void W3DVolumetricShadow::resetSilhouette( Int meshIndex )
 // ============================================================================
 void W3DVolumetricShadowManager::renderStencilShadows( void )
 {
+#ifdef _WIN32
 	LPDIRECT3DDEVICE8 m_pDev=DX8Wrapper::_Get_D3D_Device8();
 
 	if (!m_pDev)
@@ -3397,11 +3408,12 @@ void W3DVolumetricShadowManager::renderStencilShadows( void )
 	m_pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
 	// turn off the stencil buffer
 	m_pDev->SetRenderState( D3DRS_STENCILENABLE, FALSE );
-
+#endif // _WIN32
 }
 
 void W3DVolumetricShadowManager::renderShadows( Bool forceStencilFill )
 {
+#ifdef _WIN32
 	W3DVolumetricShadow *shadow;
 	Int numRenderedShadows = 0;
 
@@ -3631,6 +3643,9 @@ void W3DVolumetricShadowManager::renderShadows( Bool forceStencilFill )
 		DX8Wrapper::Invalidate_Cached_Render_States();
 	}
 
+#else
+	// Non-Windows stub: volumetric shadow rendering not available on non-DirectX platforms
+#endif // _WIN32
 }
 
 /** This class will manage shadow geometry for each render object.  Shadow geometry may
@@ -3725,6 +3740,7 @@ W3DVolumetricShadowManager::~W3DVolumetricShadowManager( void )
 /** Releases all W3D/D3D assets before a reset.. */
 void W3DVolumetricShadowManager::ReleaseResources(void)
 {
+#ifdef _WIN32
 	if (shadowIndexBufferD3D)
 		shadowIndexBufferD3D->Release();
 	if (shadowVertexBufferD3D)
@@ -3735,11 +3751,13 @@ void W3DVolumetricShadowManager::ReleaseResources(void)
 	{	TheW3DBufferManager->ReleaseResources();
 		invalidateCachedLightPositions();	//vertex buffers need to be refilled.
 	}
+#endif // _WIN32
 }
 
 /** (Re)allocates all W3D/D3D assets after a reset.. */
 Bool W3DVolumetricShadowManager::ReAcquireResources(void)
 {
+#ifdef _WIN32
 	ReleaseResources();
 
 	LPDIRECT3DDEVICE8 m_pDev=DX8Wrapper::_Get_D3D_Device8();
@@ -3775,6 +3793,10 @@ Bool W3DVolumetricShadowManager::ReAcquireResources(void)
 			return FALSE;
 
 	return TRUE;
+#else
+	// Non-Windows stub: DirectX shadow buffer creation not available on non-DirectX platforms
+	return FALSE;
+#endif // _WIN32
 }
 
 // Init =======================================================================

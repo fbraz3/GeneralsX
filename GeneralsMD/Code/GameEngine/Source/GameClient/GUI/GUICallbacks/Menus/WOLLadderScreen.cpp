@@ -36,7 +36,9 @@
 #include "GameClient/KeyDefs.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/MessageBox.h"
+#include "GameClient/MessageBox.h"
 #include "GameNetwork/WOLBrowser/WebBrowser.h"
+
 
 // window ids -------------------------------------------------------------------------------------
 static NameKeyType parentWindowID = NAMEKEY_INVALID;
@@ -141,7 +143,7 @@ WindowMsgHandledType WOLLadderScreenInput( GameWindow *window, UnsignedInt msg,
 					{
 
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																								(WindowMsgData)buttonBack, buttonBackID );
+																								(WindowMsgData)(uintptr_t)buttonBack, buttonBackID );
 
 					}
 
@@ -222,4 +224,5 @@ WindowMsgHandledType WOLLadderScreenSystem( GameWindow *window, UnsignedInt msg,
 
 	return MSG_HANDLED;
 }
+
 

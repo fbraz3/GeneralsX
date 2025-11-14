@@ -24,6 +24,8 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#ifdef _WIN32
+
 #include "GameNetwork/IPEnumeration.h"
 #include "GameNetwork/networkutil.h"
 #include "GameClient/ClientInstance.h"
@@ -192,5 +194,7 @@ AsciiString IPEnumeration::getMachineName( void )
 
 	return AsciiString(hostname);
 }
+
+#endif // _WIN32
 
 

@@ -18,6 +18,8 @@
 
 #pragma once
 
+#ifdef _WIN32
+
 #include "always.h"
 
 #include <win.h>
@@ -184,6 +186,4 @@ private:
 	HMODULE m_dllModule;
 	int m_referenceCount;
 	CriticalSectionClass m_criticalSection;
-	bool m_failed;
-	bool m_loadedFromSystem;
-};
+	bool m_failed;\n\tbool m_loadedFromSystem;\n};\n\n#endif // _WIN32

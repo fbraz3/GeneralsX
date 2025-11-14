@@ -28,6 +28,8 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#ifdef _WIN32
+
 #include <winsock.h>	// This one has to be here. Prevents collisions with windsock2.h
 
 #include "GameNetwork/GameSpy/PingThread.h"
@@ -566,8 +568,10 @@ cleanup:
    if (hICMP_DLL)
       FreeLibrary((HINSTANCE)hICMP_DLL);
 
-   return pingTime;
+	return pingTime;
 }
 
 
 //-------------------------------------------------------------------------
+
+#endif // _WIN32

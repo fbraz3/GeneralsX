@@ -29,6 +29,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"
+#include <ctime>  // For time() and localtime() in POSIX systems
 #include "Common/file.h"
 #include "Common/FileSystem.h"
 #include "Common/GameEngine.h"
@@ -207,6 +208,7 @@ GameState::SnapshotBlock *GameState::findBlockInfoByToken( AsciiString token, Sn
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 UnicodeString getUnicodeDateBuffer(SYSTEMTIME timeVal)
 {
+#ifdef _WIN32
 	// setup date buffer for local region date format
 	#define DATE_BUFFER_SIZE 256
 	OSVERSIONINFO	osvi;
@@ -228,17 +230,22 @@ UnicodeString getUnicodeDateBuffer(SYSTEMTIME timeVal)
 	}
 	wchar_t dateBuffer[ DATE_BUFFER_SIZE ];
 	GetDateFormatW( LOCALE_SYSTEM_DEFAULT,
-								 DATE_SHORTDATE,
-								 &timeVal,
-								 NULL,
-								 dateBuffer, ARRAY_SIZE(dateBuffer) );
+									 DATE_SHORTDATE,
+									 &timeVal,
+									 NULL,
+									 dateBuffer, ARRAY_SIZE(dateBuffer) );
 	displayDateBuffer.set(dateBuffer);
 	return displayDateBuffer;
 	//displayDateBuffer.format( L"%ls", dateBuffer );
-}
-
-UnicodeString getUnicodeTimeBuffer(SYSTEMTIME timeVal)
+#else // _WIN32
+	// Stub for non-Windows platforms
+	UnicodeString displayDateBuffer;
+	displayDateBuffer.set(L"00/00/00");  // Placeholder date format
+	return displayDateBuffer;
+#endif // _WIN32
+}UnicodeString getUnicodeTimeBuffer(SYSTEMTIME timeVal)
 {
+#ifdef _WIN32
 	// setup time buffer for local region time format
 	UnicodeString displayTimeBuffer;
 	OSVERSIONINFO	osvi;
@@ -268,6 +275,12 @@ UnicodeString getUnicodeTimeBuffer(SYSTEMTIME timeVal)
 								 ARRAY_SIZE(timeBuffer) );
 	displayTimeBuffer.set(timeBuffer);
 	return displayTimeBuffer;
+#else // _WIN32
+	// Stub for non-Windows platforms
+	UnicodeString displayTimeBuffer;
+	displayTimeBuffer.set(L"00:00:00");  // Placeholder time format
+	return displayTimeBuffer;
+#endif // _WIN32
 }
 
 
@@ -502,8 +515,14 @@ AsciiString GameState::findNextSaveFilename( UnicodeString desc )
 			fullPath = getFilePathInSaveDirectory(filename);
 
 			// if file does not exist we're all good
+#ifdef _WIN32
 			if( _access( fullPath.str(), 0 ) == -1 )
 				return filename;
+#else
+			// On non-Windows, use access() from unistd.h
+			if( access( fullPath.str(), F_OK ) == -1 )
+				return filename;
+#endif
 
 			// test the text filename
 			i++;
@@ -1257,6 +1276,7 @@ void GameState::iterateSaveFiles( IterateSaveFileCallback callback, void *userDa
 	if( callback == NULL )
 		return;
 
+#ifdef _WIN32
 	// save the current directory
 	char currentDirectory[ _MAX_PATH ];
 	GetCurrentDirectory( _MAX_PATH, currentDirectory );
@@ -1317,6 +1337,11 @@ void GameState::iterateSaveFiles( IterateSaveFileCallback callback, void *userDa
 
 	// restore the current directory
 	SetCurrentDirectory( currentDirectory );
+
+#else // _WIN32
+	// Stub for non-Windows platforms - iterate saves directory
+	// TODO: Implement using POSIX directory functions (opendir/readdir)
+#endif // _WIN32
 
 }
 
@@ -1589,7 +1614,21 @@ void GameState::xfer( Xfer *xfer )
 
 	// current system time
 	SYSTEMTIME systemTime;
+#ifdef _WIN32
 	GetLocalTime( &systemTime );
+#else
+	// POSIX alternative: use time() and localtime()
+	time_t now = time(NULL);
+	struct tm* local = localtime(&now);
+	systemTime.wYear = (WORD)(1900 + local->tm_year);
+	systemTime.wMonth = (WORD)(local->tm_mon + 1);
+	systemTime.wDay = (WORD)local->tm_mday;
+	systemTime.wDayOfWeek = (WORD)local->tm_wday;
+	systemTime.wHour = (WORD)local->tm_hour;
+	systemTime.wMinute = (WORD)local->tm_min;
+	systemTime.wSecond = (WORD)local->tm_sec;
+	systemTime.wMilliseconds = 0;  // POSIX doesn't provide milliseconds
+#endif
 
 	// date and time
 	saveGameInfo->date.year = systemTime.wYear;

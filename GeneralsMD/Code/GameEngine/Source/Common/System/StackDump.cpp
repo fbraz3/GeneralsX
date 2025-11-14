@@ -26,6 +26,8 @@
 
 #if defined(RTS_DEBUG) || defined(IG_DEBUG_STACKTRACE)
 
+#ifdef _WIN32
+
 #pragma pack(push, 8)
 
 #include "Common/StackDump.h"
@@ -604,6 +606,8 @@ void DumpExceptionInfo( unsigned int u, EXCEPTION_POINTERS* e_info )
 
 
 #pragma pack(pop)
+
+#endif // _WIN32
 
 #endif
 

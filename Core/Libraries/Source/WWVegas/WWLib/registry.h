@@ -102,9 +102,15 @@ public:
 
 private:
 
+#ifdef _WIN32
 	static void Delete_Registry_Values(HKEY key);
 	static void Save_Registry_Tree(char *path, INIClass *ini);
 	static void Save_Registry_Values(HKEY key, char *path, INIClass *ini);
+#else
+	static void Delete_Registry_Values(void *key);
+	static void Save_Registry_Tree(char *path, INIClass *ini);
+	static void Save_Registry_Values(void *key, char *path, INIClass *ini);
+#endif // _WIN32
 
 
 	int	Key;

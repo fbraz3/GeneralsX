@@ -35,6 +35,8 @@
 #include <WWCommon.h>
 #include <new>      // needed for placement new prototype
 
+#ifdef _WIN32
+
 // a little dummy variable that makes the linker actually include
 // us...
 extern "C" bool __DebugIncludeInLink1;
@@ -1626,3 +1628,5 @@ void __cdecl _heap_abort(void)
 {
   DCRASH_RELEASE("Fatal heap error.");
 }
+
+#endif // _WIN32

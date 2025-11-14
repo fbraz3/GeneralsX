@@ -754,17 +754,17 @@ unsigned ProfileFuncLevel::Id::GetLine(void) const
   return 0;
 }
 
-unsigned _int64 ProfileFuncLevel::Id::GetCalls(unsigned frame) const
+uint64_t ProfileFuncLevel::Id::GetCalls(unsigned frame) const
 {
   return 0;
 }
 
-unsigned _int64 ProfileFuncLevel::Id::GetTime(unsigned frame) const
+uint64_t ProfileFuncLevel::Id::GetTime(unsigned frame) const
 {
   return 0;
 }
 
-unsigned _int64 ProfileFuncLevel::Id::GetFunctionTime(unsigned frame) const
+uint64_t ProfileFuncLevel::Id::GetFunctionTime(unsigned frame) const
 {
   return 0;
 }

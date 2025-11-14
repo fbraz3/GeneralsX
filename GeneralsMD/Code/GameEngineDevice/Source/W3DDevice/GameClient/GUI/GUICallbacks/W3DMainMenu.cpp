@@ -48,7 +48,9 @@
 //-----------------------------------------------------------------------------
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#ifdef _WIN32
 #include <mmsystem.h>
+#endif
 #include <time.h>
 //-----------------------------------------------------------------------------
 // USER INCLUDES //////////////////////////////////////////////////////////////
@@ -75,7 +77,7 @@
 // DEFINES ////////////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
 
-void drawText( GameWindow *window, WinInstanceData *instData );
+static void drawText( GameWindow *window, WinInstanceData *instData );
 static Color BrownishColor = GameMakeColor(167,134,94,255);
 static IRegion2D clipRegion;
 //-----------------------------------------------------------------------------

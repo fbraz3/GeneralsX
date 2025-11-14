@@ -29,6 +29,8 @@
 #include "debug.h"
 #include <windows.h>
 
+#ifdef _WIN32
+
 void DebugInternalAssert(const char *file, int line, const char *expr)
 {
   // dangerous as well but since this function is used in this
@@ -85,3 +87,5 @@ void DebugFreeMemory(void *ptr)
   if (ptr)
     GlobalFree((HGLOBAL)ptr);
 }
+
+#endif // _WIN32

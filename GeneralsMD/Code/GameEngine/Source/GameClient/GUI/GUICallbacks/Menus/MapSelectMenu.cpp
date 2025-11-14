@@ -285,7 +285,7 @@ WindowMsgHandledType MapSelectMenuInput( GameWindow *window, UnsignedInt msg,
 						GameWindow *button = TheWindowManager->winGetWindowFromId( window, buttonID );
 
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																								(WindowMsgData)button, buttonID );
+																								(WindowMsgData)(uintptr_t)button, buttonID );
 
 					}
 
@@ -461,7 +461,7 @@ WindowMsgHandledType MapSelectMenuSystem( GameWindow *window, UnsignedInt msg,
 						GameWindow *buttonOK = TheWindowManager->winGetWindowFromId( NULL, buttonOKID );
 
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																								(WindowMsgData)buttonOK, buttonOKID );
+																								(WindowMsgData)(uintptr_t)buttonOK, buttonOKID );
 					}
 				}
 				break;

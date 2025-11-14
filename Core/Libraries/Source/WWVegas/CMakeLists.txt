@@ -28,7 +28,7 @@ target_include_directories(core_wwcommon INTERFACE
 add_subdirectory(WW3D2)
 add_subdirectory(WWAudio)
 add_subdirectory(WWDebug)
-add_subdirectory(WWDownload)
+#add_subdirectory(WWDownload)  # TODO: Fix Windows winsock.h and process.h dependencies
 add_subdirectory(WWLib)
 add_subdirectory(WWMath)
 add_subdirectory(WWSaveLoad)

@@ -1081,8 +1081,10 @@ void GameClient::allocateShadows(void)
 void GameClient::preloadAssets( TimeOfDay timeOfDay )
 {
 
+#ifdef _WIN32
 	MEMORYSTATUS before, after;
 	GlobalMemoryStatus(&before);
+#endif // _WIN32
 
 	// first, for every drawable in the map load the assets for all states we care about
 	Drawable *draw;
@@ -1118,6 +1120,8 @@ void GameClient::preloadAssets( TimeOfDay timeOfDay )
 		}
 
 	}
+
+#ifdef _WIN32
 	GlobalMemoryStatus(&after);
 
 	DEBUG_LOG(("Preloading memory dwAvailPageFile %d --> %d : %d",
@@ -1126,6 +1130,7 @@ void GameClient::preloadAssets( TimeOfDay timeOfDay )
 		before.dwAvailPhys, after.dwAvailPhys, before.dwAvailPhys - after.dwAvailPhys));
 	DEBUG_LOG(("Preloading memory dwAvailVirtual  %d --> %d : %d",
 		before.dwAvailVirtual, after.dwAvailVirtual, before.dwAvailVirtual - after.dwAvailVirtual));
+#endif // _WIN32
 	/*
 	DEBUG_LOG(("Preloading memory dwLength        %d --> %d : %d",
 		before.dwLength, after.dwLength, before.dwLength - after.dwLength));
@@ -1139,13 +1144,16 @@ void GameClient::preloadAssets( TimeOfDay timeOfDay )
 		before.dwTotalVirtual , after.dwTotalVirtual, before.dwTotalVirtual - after.dwTotalVirtual));
 	*/
 
+#ifdef _WIN32
 	GlobalMemoryStatus(&before);
+#endif // _WIN32
 	extern std::vector<AsciiString>	debrisModelNamesGlobalHack;
 	size_t i=0;
 	for (; i<debrisModelNamesGlobalHack.size(); ++i)
 	{
 		TheDisplay->preloadModelAssets(debrisModelNamesGlobalHack[i]);
 	}
+#ifdef _WIN32
 	GlobalMemoryStatus(&after);
 	debrisModelNamesGlobalHack.clear();
 
@@ -1155,11 +1163,17 @@ void GameClient::preloadAssets( TimeOfDay timeOfDay )
 		before.dwAvailPhys, after.dwAvailPhys, before.dwAvailPhys - after.dwAvailPhys));
 	DEBUG_LOG(("Preloading memory dwAvailVirtual  %d --> %d : %d",
 		before.dwAvailVirtual, after.dwAvailVirtual, before.dwAvailVirtual - after.dwAvailVirtual));
+#else
+	debrisModelNamesGlobalHack.clear();
+#endif // _WIN32
 
 	TheControlBar->preloadAssets( timeOfDay );
 
+#ifdef _WIN32
 	GlobalMemoryStatus(&before);
+#endif // _WIN32
 	TheParticleSystemManager->preloadAssets( timeOfDay );
+#ifdef _WIN32
 	GlobalMemoryStatus(&after);
 
 	DEBUG_LOG(("Preloading memory dwAvailPageFile %d --> %d : %d",
@@ -1168,6 +1182,7 @@ void GameClient::preloadAssets( TimeOfDay timeOfDay )
 		before.dwAvailPhys, after.dwAvailPhys, before.dwAvailPhys - after.dwAvailPhys));
 	DEBUG_LOG(("Preloading memory dwAvailVirtual  %d --> %d : %d",
 		before.dwAvailVirtual, after.dwAvailVirtual, before.dwAvailVirtual - after.dwAvailVirtual));
+#endif // _WIN32
 
 	const char *const textureNames[] = {
 		"ptspruce01.tga",
@@ -1211,9 +1226,12 @@ void GameClient::preloadAssets( TimeOfDay timeOfDay )
 		""
 	};
 
+#ifdef _WIN32
 	GlobalMemoryStatus(&before);
+#endif // _WIN32
 	for (i=0; *textureNames[i]; ++i)
 		TheDisplay->preloadTextureAssets(textureNames[i]);
+#ifdef _WIN32
 	GlobalMemoryStatus(&after);
 
 	DEBUG_LOG(("Preloading memory dwAvailPageFile %d --> %d : %d",
@@ -1222,6 +1240,7 @@ void GameClient::preloadAssets( TimeOfDay timeOfDay )
 		before.dwAvailPhys, after.dwAvailPhys, before.dwAvailPhys - after.dwAvailPhys));
 	DEBUG_LOG(("Preloading memory dwAvailVirtual  %d --> %d : %d",
 		before.dwAvailVirtual, after.dwAvailVirtual, before.dwAvailVirtual - after.dwAvailVirtual));
+#endif // _WIN32
 
 //	preloadTextureNamesGlobalHack2 = preloadTextureNamesGlobalHack;
 //	preloadTextureNamesGlobalHack.clear();

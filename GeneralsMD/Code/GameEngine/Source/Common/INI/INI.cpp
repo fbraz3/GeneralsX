@@ -658,7 +658,9 @@ void INI::parseBool( INI* ini, void * /*instance*/, void *store, const void* /*u
 void INI::parseBitInInt32( INI *ini, void *instance, void *store, const void* userData )
 {
 	UnsignedInt* s = (UnsignedInt*)store;
-	UnsignedInt mask = (UnsignedInt)userData;
+	// Use reinterpret_cast to safely convert void pointer to integer
+	// On 64-bit systems, userData might be larger than UnsignedInt, so we cast through uintptr_t
+	UnsignedInt mask = static_cast<UnsignedInt>(reinterpret_cast<uintptr_t>(userData));
 
 	if (INI::scanBool(ini->getNextToken()))
 		*s |= mask;

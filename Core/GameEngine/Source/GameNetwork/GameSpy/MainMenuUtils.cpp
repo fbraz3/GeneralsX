@@ -57,6 +57,8 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
+#ifdef _WIN32
+
 static Bool checkingForPatchBeforeGameSpy = FALSE;
 static Int checksLeftBeforeOnline = 0;
 static Int timeThroughOnline = 0; // used to avoid having old callbacks cause problems
@@ -883,3 +885,5 @@ static void reallyStartPatchCheck( void )
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
+
+#endif // _WIN32

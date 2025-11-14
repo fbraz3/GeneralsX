@@ -43,14 +43,18 @@
 #pragma once
 
 #include "Common/SubsystemInterface.h"
+#ifdef _WIN32
 #include <atlbase.h>
 #include <windows.h>
-#include <Common/GameMemory.h>
 #include "EABrowserDispatch/BrowserDispatch.h"
 #include "FEBDispatch.h"
+#endif
+#include <Common/GameMemory.h>
 #include <Lib/BaseType.h>
 
 class GameWindow;
+
+#ifdef _WIN32
 
 class WebBrowserURL : public MemoryPoolObject
 {
@@ -122,3 +126,5 @@ class WebBrowser :
 	};
 
 extern CComObject<WebBrowser> *TheWebBrowser;
+
+#endif // _WIN32

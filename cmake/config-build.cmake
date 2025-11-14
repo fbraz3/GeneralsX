@@ -70,7 +70,7 @@ if(MSVC)
 endif()
 
 if(UNIX)
-    target_compile_definitions(core_config INTERFACE _UNIX)
+    target_compile_definitions(core_config INTERFACE _UNIX=1)
 endif()
 
 if(RTS_BUILD_OPTION_DEBUG)

@@ -157,8 +157,8 @@ set(WW3D2_SRC
     rddesc.h
     #render2d.cpp
     #render2d.h
-    render2dsentence.cpp
-    render2dsentence.h
+    render2dsentence_stub.cpp  # Cross-platform stub for FontCharsClass and Render2DSentenceClass
+    render2dsentence.h         # API header (works on all platforms)
     renderobjectrecycler.cpp
     renderobjectrecycler.h
     rendobj.cpp
@@ -198,7 +198,7 @@ set(WW3D2_SRC
     streakRender.h
     stripoptimizer.cpp
     stripoptimizer.h
-    surfaceclass.cpp
+    #surfaceclass.cpp
     surfaceclass.h
     #texproject.cpp
     #texproject.h
@@ -237,26 +237,26 @@ set(WW3D2_SRC
     win32_sdl_types_compat.h
     # Phase 02: SDL2 Window & Event Loop compatibility layer
     win32_sdl_api_compat.h
-    win32_sdl_api_compat.cpp
+    #win32_sdl_api_compat.cpp  # TODO: Fix SDL2/SDL3 compatibility issues
     # Phase 04: Cross-platform Threading & Memory Layer
     win32_thread_compat.h
     win32_thread_compat.cpp
     win32_memory_compat.h
     win32_memory_compat.cpp
     # Phase 05: Registry & Configuration Compatibility Layer
-    win32_config_compat.h
-    win32_config_compat.cpp
+    #win32_config_compat.h  # TODO: Add Windows Registry types to win32_sdl_types_compat.h
+    #win32_config_compat.cpp
     # Phase 06: Complete Input System - Gamepad & Joystick Support
     win32_gamepad_compat.h
-    win32_gamepad_compat.cpp
+    #win32_gamepad_compat.cpp  # TODO: Fix SDL2/SDL3 compatibility issues
     # Phase 07: Event Queue Integration & Configuration Persistence
     win32_gamepad_event_integration.h
     win32_gamepad_event_integration.cpp
-    win32_gamepad_config_compat.h
-    win32_gamepad_config_compat.cpp
+    #win32_gamepad_config_compat.h  # TODO: Fix Windows Registry type dependencies
+    #win32_gamepad_config_compat.cpp
     # Phase 08: Advanced Input Features - In-Game Configuration UI
-    win32_gamepad_config_ui.h
-    win32_gamepad_config_ui.cpp
+    #win32_gamepad_config_ui.h  # TODO: Fix Windows Registry type dependencies
+    #win32_gamepad_config_ui.cpp
     # Phase 08: Advanced Input Features - Combo Detection
     win32_gamepad_combo_detection.h
     win32_gamepad_combo_detection.cpp
@@ -267,11 +267,11 @@ set(WW3D2_SRC
     win32_gamepad_force_feedback.h
     win32_gamepad_force_feedback.cpp
     # Phase 07/08 Integration: Macro System Persistence
-    win32_gamepad_macro_persistence.h
-    win32_gamepad_macro_persistence.cpp
+    #win32_gamepad_macro_persistence.h  # TODO: Fix Windows Registry type dependencies
+    #win32_gamepad_macro_persistence.cpp
     # Phase 07/08 Integration: Force Feedback Profiles Persistence
-    win32_gamepad_ff_persistence.h
-    win32_gamepad_ff_persistence.cpp
+    #win32_gamepad_ff_persistence.h  # TODO: Fix Windows Registry type dependencies
+    #win32_gamepad_ff_persistence.cpp
     # Phase 09: Render Pass & Graphics Pipeline
     d3d8_vulkan_render_pass.h
     d3d8_vulkan_render_pass.cpp

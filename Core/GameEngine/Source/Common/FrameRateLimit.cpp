@@ -22,19 +22,19 @@
 
 FrameRateLimit::FrameRateLimit()
 {
-	LARGE_INTEGER freq;
-	LARGE_INTEGER start;
+	Int64 freq;
+	Int64 start;
 	QueryPerformanceFrequency(&freq);
 	QueryPerformanceCounter(&start);
-	m_freq = freq.QuadPart;
-	m_start = start.QuadPart;
+	m_freq = freq;
+	m_start = start;
 }
 
 Real FrameRateLimit::wait(UnsignedInt maxFps)
 {
-	LARGE_INTEGER tick;
+	Int64 tick;
 	QueryPerformanceCounter(&tick);
-	double elapsedSeconds = static_cast<double>(tick.QuadPart - m_start) / m_freq;
+	double elapsedSeconds = static_cast<double>(tick - m_start) / m_freq;
 	const double targetSeconds = 1.0 / maxFps;
 	const double sleepSeconds = targetSeconds - elapsedSeconds - 0.002; // leave ~2ms for spin wait
 
@@ -49,11 +49,11 @@ Real FrameRateLimit::wait(UnsignedInt maxFps)
 	do
 	{
 		QueryPerformanceCounter(&tick);
-		elapsedSeconds = static_cast<double>(tick.QuadPart - m_start) / m_freq;
+		elapsedSeconds = static_cast<double>(tick - m_start) / m_freq;
 	}
 	while (elapsedSeconds < targetSeconds);
 
-	m_start = tick.QuadPart;
+	m_start = tick;
 	return (Real)elapsedSeconds;
 }
 

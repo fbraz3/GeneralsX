@@ -32,7 +32,9 @@
 
 #include "Common/INI.h"
 #include "Common/Registry.h"
+#ifdef _WIN32
 #include "GameNetwork/WOLBrowser/WebBrowser.h"
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -75,6 +77,7 @@ AsciiString encodeURL(AsciiString source)
 //-------------------------------------------------------------------------------------------------
 /** Parse Music entry */
 //-------------------------------------------------------------------------------------------------
+#ifdef _WIN32
 void INI::parseWebpageURLDefinition( INI* ini )
 {
 	AsciiString tag;
@@ -119,5 +122,6 @@ void INI::parseWebpageURLDefinition( INI* ini )
 		DEBUG_LOG(("INI::parseWebpageURLDefinition() - converted URL to [%s]", url->m_url.str()));
 	}
 }
+#endif // _WIN32
 
 

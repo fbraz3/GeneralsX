@@ -46,7 +46,9 @@
 //----------------------------------------------------------------------------
 
 #include "GameClient/VideoPlayer.h"
+#ifdef _WIN32
 #include "bink.h"
+#endif
 
 //----------------------------------------------------------------------------
 //           Forward References
@@ -58,9 +60,11 @@ class BinkVideoPlayer;
 //           Type Defines
 //----------------------------------------------------------------------------
 
-//===============================
+//============================================================================
 // BinkVideoStream
 //===============================
+
+#ifdef _WIN32
 
 class BinkVideoStream : public VideoStream
 {
@@ -126,9 +130,11 @@ class BinkVideoPlayer : public VideoPlayer
 		virtual VideoStreamInterface*	open( AsciiString movieTitle );	///< Open video file for playback
 		virtual VideoStreamInterface*	load( AsciiString movieTitle );	///< Load video file in to memory for playback
 
-		virtual void notifyVideoPlayerOfNewProvider( Bool nowHasValid );
-		virtual void initializeBinkWithMiles( void );
+	virtual void notifyVideoPlayerOfNewProvider( Bool nowHasValid );
+	virtual void initializeBinkWithMiles( void );
 };
+
+#endif // _WIN32
 
 
 //----------------------------------------------------------------------------

@@ -19,16 +19,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 //																																						//
 //  (c) 2001-2003 Electronic Arts Inc.																				//
+
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // FILE: WOLLoginMenu.cpp
+
 // Author: Chris Huybregts, November 2001
+
 // Description: Lan Lobby Menu
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
+
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/STLTypedefs.h"
@@ -368,7 +373,9 @@ static void shutdownComplete( WindowLayout *layout )
 
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
+
 // window ids ------------------------------------------------------------------------------
+
 static NameKeyType parentWOLLoginID =						NAMEKEY_INVALID;
 static NameKeyType buttonBackID =								NAMEKEY_INVALID;	// profile, quick
 static NameKeyType buttonLoginID =							NAMEKEY_INVALID;	// profile, quick
@@ -389,6 +396,7 @@ static NameKeyType textEntryDayID =				NAMEKEY_INVALID;	// profile
 static NameKeyType textEntryYearID =				NAMEKEY_INVALID;	// profile
 
 // Window Pointers ------------------------------------------------------------------------
+
 static GameWindow *parentWOLLogin =						NULL;
 static GameWindow *buttonBack =								NULL;
 static GameWindow *buttonLogin =							NULL;
@@ -722,7 +730,7 @@ void WOLLoginMenuInit( WindowLayout *layout, void *userData )
 	if (!optionPref.getBool("SawTOS", TRUE))
 	{
 		TheWindowManager->winSendSystemMsg( parentWOLLogin, GBM_SELECTED,
-																			(WindowMsgData)buttonTOS, buttonTOSID );
+																			(WindowMsgData)(uintptr_t)buttonTOS, buttonTOSID );
 	}
 	TheTransitionHandler->setGroup("GameSpyLoginProfileFade");
 
@@ -763,6 +771,7 @@ void WOLLoginMenuShutdown( WindowLayout *layout, void *userData )
 
 
 // this is used to check if we've got all the pings
+
 static void checkLogin( void )
 {
 	if (loggedInOK && ThePinger && !ThePinger->arePingsInProgress())
@@ -932,7 +941,7 @@ WindowMsgHandledType WOLLoginMenuInput( GameWindow *window, UnsignedInt msg,
 					if( BitIsSet( state, KEY_STATE_UP ) )
 					{
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																							(WindowMsgData)buttonBack, buttonBackID );
+																							(WindowMsgData)(uintptr_t)buttonBack, buttonBackID );
 
 					}
 
@@ -1533,5 +1542,6 @@ WindowMsgHandledType WOLLoginMenuSystem( GameWindow *window, UnsignedInt msg,
 
 	return MSG_HANDLED;
 }
+
 
 

@@ -19,16 +19,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 //																																						//
 //  (c) 2001-2003 Electronic Arts Inc.																				//
+
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // FILE: WOLLobbyMenu.cpp
+
 // Author: Chris Huybregts, November 2001
+
 // Description: WOL Lobby Menu
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
+
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/GameEngine.h"
@@ -82,6 +87,7 @@ static LogClass s_perfLog("Perf.txt");
 #endif // DEBUG_LOGGING
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
+
 static Bool isShuttingDown = false;
 static Bool buttonPushed = false;
 static const char *nextScreen = NULL;
@@ -97,6 +103,7 @@ Bool DontShowMainMenu = FALSE;
 enum { COLUMN_PLAYERNAME = 1 };
 
 // window ids ------------------------------------------------------------------------------
+
 static NameKeyType parentWOLLobbyID = NAMEKEY_INVALID;
 static NameKeyType buttonBackID = NAMEKEY_INVALID;
 static NameKeyType buttonHostID = NAMEKEY_INVALID;
@@ -111,6 +118,7 @@ static NameKeyType comboLobbyGroupRoomsID = NAMEKEY_INVALID;
 //static NameKeyType // sliderChatAdjustID = NAMEKEY_INVALID;
 
 // Window Pointers ------------------------------------------------------------------------
+
 static GameWindow *parentWOLLobby = NULL;
 static GameWindow *buttonBack = NULL;
 static GameWindow *buttonHost = NULL;
@@ -136,6 +144,7 @@ Bool g_debugSlots = FALSE;
 std::list<PeerResponse> TheLobbyQueuedUTMs;
 
 // Slash commands -------------------------------------------------------------------------
+
 extern "C" {
 int getQR2HostingStatus(void);
 }
@@ -222,6 +231,7 @@ void SetLobbyAttemptHostJoin(Bool start)
 }
 
 // Tooltips -------------------------------------------------------------------------------
+
 
 static void playerTooltip(GameWindow *window,
 													WinInstanceData *instData,
@@ -1308,6 +1318,7 @@ void WOLLobbyMenuUpdate( WindowLayout * layout, void *userData)
 
 #if 0
 // Removed 2-17-03 to pull out into a function so we can do the same checks
+
 		Int refreshInterval = gameListRefreshInterval;
 
 		if ((gameListRefreshTime == 0) || ((gameListRefreshTime + refreshInterval) <= timeGetTime()))
@@ -1361,7 +1372,7 @@ WindowMsgHandledType WOLLobbyMenuInput( GameWindow *window, UnsignedInt msg,
 					if( BitIsSet( state, KEY_STATE_UP ) )
 					{
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																							(WindowMsgData)buttonBack, buttonBackID );
+																							(WindowMsgData)(uintptr_t)buttonBack, buttonBackID );
 
 					}
 
@@ -1712,7 +1723,7 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 						GameWindow *button = TheWindowManager->winGetWindowFromId( window, buttonJoinID );
 
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																								(WindowMsgData)button, buttonJoinID );
+																								(WindowMsgData)(uintptr_t)button, buttonJoinID );
 					}
 				}
 				break;
@@ -1877,3 +1888,5 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 
 	return MSG_HANDLED;
 }
+
+

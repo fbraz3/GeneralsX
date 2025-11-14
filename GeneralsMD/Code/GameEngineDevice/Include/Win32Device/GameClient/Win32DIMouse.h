@@ -44,7 +44,9 @@
 #	define DIRECTINPUT_VERSION	0x800
 #endif
 
+#ifdef _WIN32
 #include <dinput.h>
+#endif
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "GameClient/Mouse.h"
@@ -56,6 +58,7 @@
 // class DirectInputMouse -----------------------------------------------------
 /** Direct input implementation for the mouse device */
 //-----------------------------------------------------------------------------
+#ifdef _WIN32
 class DirectInputMouse : public Mouse
 {
 
@@ -93,6 +96,8 @@ protected:
 	LPDIRECTINPUTDEVICE8 m_pMouseDevice;  ///< pointer to mouse device
 
 };
+
+#endif // _WIN32
 
 // INLINING ///////////////////////////////////////////////////////////////////
 

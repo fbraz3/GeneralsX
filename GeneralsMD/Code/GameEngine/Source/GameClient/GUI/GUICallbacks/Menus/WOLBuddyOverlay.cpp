@@ -19,16 +19,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 //																																						//
 //  (c) 2001-2003 Electronic Arts Inc.																				//
+
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // FILE: WOLBuddyOverlay.cpp
+
 // Author: Chris Huybregts, November 2001
+
 // Description: Lan Lobby Menu
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
+
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/AudioEventRTS.h"
@@ -58,7 +63,9 @@
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 
 
+
 // window ids ------------------------------------------------------------------------------
+
 static NameKeyType parentID = NAMEKEY_INVALID;
 static NameKeyType buttonHideID = NAMEKEY_INVALID;
 static NameKeyType buttonAddBuddyID = NAMEKEY_INVALID;
@@ -77,6 +84,7 @@ static NameKeyType buttonNotificationID = NAMEKEY_INVALID;
 
 
 // Window Pointers ------------------------------------------------------------------------
+
 static GameWindow *parent = NULL;
 static GameWindow *buttonHide = NULL;
 static GameWindow *buttonAddBuddy = NULL;
@@ -93,8 +101,9 @@ static GameWindow *parentIgnore = NULL;
 static GameWindow *listboxIgnore = NULL;
 
 static Bool isOverlayActive = false;
-void insertChat( BuddyMessage msg );
+static void insertChat( BuddyMessage msg );
 // RightClick pointers ---------------------------------------------------------------------
+
 static GameWindow *rcMenu = NULL;
 static WindowLayout *noticeLayout = NULL;
 static UnsignedInt noticeExpires = 0;
@@ -134,6 +143,7 @@ BuddyControls::BuddyControls(	void )
 	isInit = FALSE;
 }
 // At this point I don't give a damn about how good this way is.  I'm doing it anyway.
+
 enum
 {
 	BUDDY_RESETALL_CRAP = -1,
@@ -215,8 +225,8 @@ WindowMsgHandledType BuddyControlSystem( GameWindow *window, UnsignedInt msg,
 					if(rc->pos < 0)
 						break;
 
-					GPProfile profileID = (GPProfile)GadgetListBoxGetItemData(control, rc->pos, 0);
-					RCItemType itemType = (RCItemType)(Int)GadgetListBoxGetItemData(control, rc->pos, 1);
+					GPProfile profileID = (GPProfile)(uintptr_t)GadgetListBoxGetItemData(control, rc->pos, 0);
+					RCItemType itemType = (RCItemType)(Int)(uintptr_t)GadgetListBoxGetItemData(control, rc->pos, 1);
 					UnicodeString nick = GadgetListBoxGetText(control, rc->pos);
 
 					GadgetListBoxSetSelected(control, rc->pos);
@@ -267,7 +277,7 @@ WindowMsgHandledType BuddyControlSystem( GameWindow *window, UnsignedInt msg,
 				GadgetListBoxGetSelected(buddyControls.listboxBuddies, &selected);
 				if (selected >= 0)
 				{
-					GPProfile selectedProfile = (GPProfile)GadgetListBoxGetItemData(buddyControls.listboxBuddies, selected);
+					GPProfile selectedProfile = (GPProfile)(uintptr_t)GadgetListBoxGetItemData(buddyControls.listboxBuddies, selected);
 					BuddyInfoMap *m = TheGameSpyInfo->getBuddyMap();
 					BuddyInfoMap::iterator recipIt = m->find(selectedProfile);
 					if (recipIt == m->end())
@@ -393,7 +403,7 @@ void updateBuddyInfo( void )
 
 	GadgetListBoxGetSelected(buddyControls.listboxBuddies, &selected);
 	if (selected >= 0)
-		selectedProfile = (GPProfile)GadgetListBoxGetItemData(buddyControls.listboxBuddies, selected);
+		selectedProfile = (GPProfile)(uintptr_t)GadgetListBoxGetItemData(buddyControls.listboxBuddies, selected);
 
 	selected = -1;
 	GadgetListBoxReset(buddyControls.listboxBuddies);
@@ -819,7 +829,7 @@ WindowMsgHandledType WOLBuddyOverlayInput( GameWindow *window, UnsignedInt msg,
 					if( BitIsSet( state, KEY_STATE_UP ) )
 					{
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																							(WindowMsgData)buttonHide, buttonHideID );
+																							(WindowMsgData)(uintptr_t)buttonHide, buttonHideID );
 
 					}
 
@@ -1141,6 +1151,7 @@ static NameKeyType buttonPlayID = NAMEKEY_INVALID;
 static NameKeyType buttonIgnoreID = NAMEKEY_INVALID;
 static NameKeyType buttonStatsID = NAMEKEY_INVALID;
 // Window Pointers ------------------------------------------------------------------------
+
 //static GameWindow *rCparent = NULL;
 
 
@@ -1437,3 +1448,5 @@ void refreshIgnoreList( void )
 //		profileID = it->second.m_profileID;
 
 }
+
+

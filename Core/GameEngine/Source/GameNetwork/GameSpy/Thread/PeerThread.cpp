@@ -31,6 +31,8 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#ifdef _WIN32
+
 #include "Common/Registry.h"
 #include "Common/UserPreferences.h"
 #include "Common/version.h"
@@ -2996,4 +2998,6 @@ static void listingGamesCallback(PEER peer, PEERBool success, const char * name,
 }
 
 //-------------------------------------------------------------------------
+
+#endif // _WIN32
 

@@ -35,6 +35,8 @@
 #include <WWCommon.h>
 #include <new>      // needed for placement new prototype
 
+#ifdef _WIN32
+
 DebugIOFlat::OutputStream::OutputStream(const char *filename, unsigned maxSize):
   m_bufferUsed(0), m_nextChar(0)
 {
@@ -546,3 +548,5 @@ void DebugIOFlat::Delete(void)
   this->~DebugIOFlat();
   DebugFreeMemory(this);
 }
+
+#endif // _WIN32

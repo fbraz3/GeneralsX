@@ -32,6 +32,8 @@
 #include <windows.h>
 #include <new>      // needed for placement new prototype
 
+#ifdef _WIN32
+
 DebugIONet::DebugIONet(void)
 {
 }
@@ -129,3 +131,5 @@ void DebugIONet::Delete(void)
   this->~DebugIONet();
   DebugFreeMemory(this);
 }
+
+#endif // _WIN32

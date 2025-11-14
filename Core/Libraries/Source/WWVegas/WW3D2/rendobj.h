@@ -47,6 +47,7 @@
 #include "persist.h"
 #include "multilist.h"
 #include "robjlist.h"
+#include "win32_sdl_types_compat.h"
 #include <float.h>
 
 class	Vector3;

@@ -71,7 +71,11 @@ public:
 	static void			Render(int backbufferindex);	//Draws all browsers to the backbuffer.
 
 	// Creates a browser with the specified name
+#ifdef _WIN32
 	static void			CreateBrowser(const char* browsername, const char* url, int x, int y, int w, int h, int updateticks = 0, LONG options = BROWSEROPTION_SCROLLBARS | BROWSEROPTION_3DBORDER, LPDISPATCH gamedispatch = 0);
+#else
+	static void			CreateBrowser(const char* browsername, const char* url, int x, int y, int w, int h, int updateticks = 0, LONG options = BROWSEROPTION_SCROLLBARS | BROWSEROPTION_3DBORDER, void* gamedispatch = 0);
+#endif // _WIN32
 
 	// Destroys the browser with the specified name
 	static void			DestroyBrowser(const char* browsername);

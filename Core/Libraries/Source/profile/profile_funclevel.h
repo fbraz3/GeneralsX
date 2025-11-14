@@ -29,6 +29,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 /**
   \brief The function level profiler.
 
@@ -124,7 +126,7 @@ public:
       \param frame number of recorded frame, or Total
       \return number of calls
     */
-    unsigned _int64 GetCalls(unsigned frame) const;
+    uint64_t GetCalls(unsigned frame) const;
 
     /**
       \brief Determine time spend in this function and its children.
@@ -132,7 +134,7 @@ public:
       \param frame number of recorded frame, or Total
       \return time spend (in CPU ticks)
     */
-    unsigned _int64 GetTime(unsigned frame) const;
+    uint64_t GetTime(unsigned frame) const;
 
     /**
       \brief Determine time spend in this function only (exclude
@@ -141,7 +143,7 @@ public:
       \param frame number of recorded frame, or Total
       \return time spend in this function alone (in CPU ticks)
     */
-    unsigned _int64 GetFunctionTime(unsigned frame) const;
+    uint64_t GetFunctionTime(unsigned frame) const;
 
     /**
       \brief Determine the list of caller Ids.
@@ -182,7 +184,7 @@ public:
     */
     unsigned GetId(void) const
     {
-      return unsigned(m_threadID);
+      return static_cast<unsigned>(reinterpret_cast<uintptr_t>(m_threadID));
     }
 
   private:

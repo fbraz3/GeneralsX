@@ -29,7 +29,9 @@
 #include "profile.h"
 #include "internal.h"
 #include <new>
+#ifdef _WIN32
 #include "mmsystem.h"
+#endif
 
 // yuk, I'm doing this so weird because the destructor
 // of cmd must never be called...
@@ -85,6 +87,8 @@ void ProfileFreeMemory(void *ptr)
 }
 
 //////////////////////////////////////////////////////////////////////////////
+
+#ifdef _WIN32
 
 static _int64 GetClockCyclesFast(void)
 {
@@ -148,6 +152,16 @@ static _int64 GetClockCyclesFast(void)
   // (rounded to the next MHz)
   return ((avg/2+500000)/1000000)*1000000;
 }
+
+#else
+
+// Non-Windows implementation - return a conservative estimate
+static _int64 GetClockCyclesFast(void)
+{
+  return 1000000; // 1 MHz fallback
+}
+
+#endif // _WIN32
 
 unsigned Profile::m_rec;
 char **Profile::m_recNames;

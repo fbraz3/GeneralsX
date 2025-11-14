@@ -37,7 +37,9 @@ static void drawFramerateBar(void);
 #include <numeric>
 #include <stdlib.h>
 #include <windows.h>
+#ifdef _WIN32
 #include <io.h>
+#endif // _WIN32
 #include <time.h>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////

@@ -767,17 +767,15 @@ RenderObjClass * W3DAssetManager::Create_Render_Obj(
 	if (WW3D_Load_On_Demand && proto == NULL)
 	{
 		// If we didn't find one, try to load on demand
-		char filename [MAX_PATH];
-		const char *mesh_name = strchr (name, '.');
-		if (mesh_name != NULL)
-		{
-			lstrcpyn(filename, name, ((int)mesh_name) - ((int)name) + 1);
-			lstrcat(filename, ".w3d");
-		} else {
-			sprintf( filename, "%s.w3d", name);
-		}
-
-		// If we can't find it, try the parent directory
+	char filename [MAX_PATH];
+	const char *mesh_name = strchr (name, '.');
+	if (mesh_name != NULL)
+	{
+		lstrcpyn(filename, name, (int)((uintptr_t)mesh_name - (uintptr_t)name) + 1);
+		lstrcat(filename, ".w3d");
+	} else {
+		sprintf( filename, "%s.w3d", name);
+	}		// If we can't find it, try the parent directory
 		if ( Load_3D_Assets( filename ) == false )
 		{
 			StringClass	new_filename = StringClass("..\\") + filename;

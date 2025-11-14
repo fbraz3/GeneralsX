@@ -214,7 +214,7 @@ WindowMsgHandledType PopupReplayInput( GameWindow *window, UnsignedInt msg, Wind
 					{
 						GameWindow *button = TheWindowManager->winGetWindowFromId( parent, buttonBackKey );
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																								(WindowMsgData)button, buttonBackKey );
+																								(WindowMsgData)(uintptr_t)button, buttonBackKey );
 
 					}
 
@@ -278,6 +278,7 @@ void reallySaveReplay(void)
 	if (oldFilename == filename)
 		return;
 
+#ifdef _WIN32
 	if (TheLocalFileSystem->doesFileExist(filename.str()))
 	{
 		if(DeleteFile(filename.str()) == 0)
@@ -320,6 +321,7 @@ void reallySaveReplay(void)
 		MessageBoxOk(TheGameText->fetch("GUI:Error"),errorStr, NULL);
 		return;
 	}
+#endif // _WIN32
 
 	// get the listbox that will have the save games in it
 	GameWindow *listboxGames = TheWindowManager->winGetWindowFromId( parent, listboxGamesKey );

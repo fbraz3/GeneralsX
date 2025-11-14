@@ -29,6 +29,8 @@
 ******************************************************************************/
 
 #include "win32_thread_compat.h"
+
+#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -376,18 +378,46 @@ int SDL2_LockMutex(SDL2_Mutex mutex, int timeout_ms)
         ts.tv_nsec -= 1000000000;
     }
 
+    // Use fallback: try mutex lock with timeout using pthreads condition variable
+    #ifdef __APPLE__
+    // macOS doesn't support pthread_mutex_timedlock, use alternative
+    int result = pthread_mutex_trylock(mutex);
+    if (result == 0) {
+        return 0;  /* Acquired immediately */
+    }
+    if (result != EBUSY) {
+        fprintf(stderr, "Phase 04: pthread_mutex_trylock failed (result: %d)\n", result);
+        return -1;
+    }
+    
+    // Fallback: simulate timeout with small sleep iterations
+    struct timespec now;
+    clock_gettime(CLOCK_REALTIME, &now);
+    while (now.tv_sec < ts.tv_sec || (now.tv_sec == ts.tv_sec && now.tv_nsec < ts.tv_nsec)) {
+        usleep(1000);  /* Sleep 1ms */
+        result = pthread_mutex_trylock(mutex);
+        if (result == 0) {
+            return 0;  /* Acquired */
+        }
+        if (result != EBUSY) {
+            fprintf(stderr, "Phase 04: pthread_mutex_trylock failed (result: %d)\n", result);
+            return -1;
+        }
+        clock_gettime(CLOCK_REALTIME, &now);
+    }
+    return -1;  /* Timeout */
+    #else
+    // Linux and other POSIX systems
     int result = pthread_mutex_timedlock(mutex, &ts);
-
     if (result == 0) {
         return 0;
     }
-
     if (result == ETIMEDOUT) {
         return -1;  /* Timeout */
     }
-
     fprintf(stderr, "Phase 04: pthread_mutex_timedlock failed (result: %d)\n", result);
     return -1;
+    #endif
 }
 
 int SDL2_UnlockMutex(SDL2_Mutex mutex)

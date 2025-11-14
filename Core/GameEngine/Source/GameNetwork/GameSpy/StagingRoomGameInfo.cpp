@@ -28,6 +28,8 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#ifdef _WIN32
+
 #include "Common/GameState.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
@@ -884,3 +886,5 @@ void GameSpyStagingRoom::reset(void)
 #endif
 	GameInfo::reset();
 }
+
+#endif // _WIN32

@@ -32,6 +32,8 @@
 #include <stdlib.h>
 #include <new>      // needed for placement new prototype
 
+#ifdef _WIN32
+
 DebugIOCon::DebugIOCon(void):
   m_inputUsed(0), m_inputRead(0)
 {
@@ -230,3 +232,5 @@ void DebugIOCon::Delete(void)
   this->~DebugIOCon();
   DebugFreeMemory(this);
 }
+
+#endif // _WIN32

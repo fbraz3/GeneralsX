@@ -28,6 +28,8 @@
 
 #pragma once
 
+#ifdef _WIN32
+
 #include "WWDownload/downloaddefs.h"
 #include "WWDownload/Download.h"
 
@@ -91,3 +93,5 @@ protected:
 };
 
 extern DownloadManager *TheDownloadManager;
+
+#endif // _WIN32

@@ -175,7 +175,7 @@ Bool HotKeyManager::executeHotKey( const AsciiString& keyIn )
 	{
 		if( BitIsSet( win->winGetStatus(), WIN_STATUS_ENABLED ) )
  		{
- 			TheWindowManager->winSendSystemMsg( win->winGetParent(), GBM_SELECTED, (WindowMsgData)win, win->winGetWindowId() );
+ 			TheWindowManager->winSendSystemMsg( win->winGetParent(), GBM_SELECTED, (WindowMsgData)(uintptr_t)win, win->winGetWindowId() );
 
  			// here we make the same click sound that the GUI uses when you click a button
  			AudioEventRTS buttonClick("GUIClick");

@@ -29,6 +29,10 @@
 
 #pragma once
 
+// Cross-platform MSVC type definitions (must come first)
+#include <Compat/msvc_types_compat.h>
+#include <Utility/time_compat.h>
+
 // include all our public header files (use double quotes here)
 #include "profile_doc.h"
 #include "profile_highlevel.h"

@@ -19,13 +19,36 @@
 // This file contains WCHAR and related macros for compatibility with non-windows platforms.
 #pragma once
 
+#include <cwchar>
+#include <cstring>
+
 // WCHAR
 typedef wchar_t WCHAR;
 typedef const WCHAR* LPCWSTR;
 typedef WCHAR* LPWSTR;
 
-#define _wcsicmp wcscasecmp
-#define wcsicmp wcscasecmp
+// Wide character case-insensitive comparison
+// On Windows: _wcsicmp, On Unix/macOS: wcscasecmp
+#ifdef _WIN32
+	#define _wcsicmp _wcsicmp
+	#define wcsicmp _wcsicmp
+#else
+	// macOS and Linux use wcscasecmp instead of wcscasecmp
+	// Implement a wrapper for _wcsicmp/wcsicmp
+	inline int wcscasecmp_wrapper(const wchar_t* s1, const wchar_t* s2) {
+		while (*s1 && *s2) {
+			wchar_t c1 = std::towlower(*s1);
+			wchar_t c2 = std::towlower(*s2);
+			if (c1 != c2) return c1 - c2;
+			s1++;
+			s2++;
+		}
+		return std::towlower(*s1) - std::towlower(*s2);
+	}
+	#define _wcsicmp wcscasecmp_wrapper
+	#define wcsicmp wcscasecmp_wrapper
+	#define wcscmp wcscmp  // Already exists in cwchar
+#endif
 
 // MultiByteToWideChar
 #define CP_ACP 0

@@ -566,7 +566,7 @@ DLOG( "My HResult is: " << Debug::HResult(SomeHRESULTValue) << "\n" );
     \param val signed 64 bit integer
     \return *this
   */
-  Debug& operator<<(__int64 val);
+  Debug& operator<<(int64_t val);
 
   /** \internal
 
@@ -575,7 +575,7 @@ DLOG( "My HResult is: " << Debug::HResult(SomeHRESULTValue) << "\n" );
     \param val unsigned 64 bit integer
     \return *this
   */
-  Debug& operator<<(unsigned __int64 val);
+  Debug& operator<<(uint64_t val);
 
   /** \internal
 

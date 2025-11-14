@@ -452,6 +452,7 @@ void GameStateMap::xfer( Xfer *xfer )
 void GameStateMap::clearScratchPadMaps( void )
 {
 
+#ifdef _WIN32
 	// remember the current directory
 	char currentDirectory[ _MAX_PATH ];
 	GetCurrentDirectory( _MAX_PATH, currentDirectory );
@@ -515,5 +516,10 @@ void GameStateMap::clearScratchPadMaps( void )
 
 	// restore our directory to the current directory
 	SetCurrentDirectory( currentDirectory );
+
+#else // _WIN32
+	// Stub for non-Windows platforms - clear scratch pad maps
+	// TODO: Implement using POSIX directory functions (opendir/readdir)
+#endif // _WIN32
 
 }

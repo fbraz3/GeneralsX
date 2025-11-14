@@ -28,6 +28,8 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#ifdef _WIN32
+
 #include "GameClient/GameText.h"
 #include "GameNetwork/DownloadManager.h"
 
@@ -222,3 +224,5 @@ HRESULT DownloadManager::OnStatusUpdate( Int status )
 	DEBUG_LOG(("DownloadManager::OnStatusUpdate(): %s(%d)", s.str(), status));
 	return S_OK;
 }
+
+#endif // _WIN32

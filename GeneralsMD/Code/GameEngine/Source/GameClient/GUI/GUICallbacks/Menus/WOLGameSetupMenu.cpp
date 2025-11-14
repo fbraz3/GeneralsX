@@ -19,13 +19,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 //																																						//
 //  (c) 2001-2003 Electronic Arts Inc.																				//
+
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // FILE: WOLGameSetupMenu.cpp
+
 // Author: Matt Campbell, December 2001
+
 // Description: WOL Game Options Menu
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
@@ -132,6 +136,7 @@ void SendStatsToOtherPlayers(const GameInfo *game)
 }
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
+
 static Bool isShuttingDown = false;
 static Bool buttonPushed = false;
 static const char *nextScreen = NULL;
@@ -139,6 +144,7 @@ static Bool raiseMessageBoxes = false;
 static Bool launchGameNext = FALSE;
 
 // window ids ------------------------------------------------------------------------------
+
 static NameKeyType parentWOLGameSetupID = NAMEKEY_INVALID;
 
 static NameKeyType comboBoxPlayerID[MAX_SLOTS] = { NAMEKEY_INVALID,NAMEKEY_INVALID,
@@ -199,6 +205,7 @@ static NameKeyType comboBoxStartingCashID = NAMEKEY_INVALID;
 static NameKeyType checkBoxLimitArmiesID = NAMEKEY_INVALID;
 
 // Window Pointers ------------------------------------------------------------------------
+
 static GameWindow *parentWOLGameSetup = NULL;
 static GameWindow *buttonBack = NULL;
 static GameWindow *buttonStart = NULL;
@@ -335,6 +342,7 @@ static void savePlayerInfo( void )
 }
 
 // Tooltips -------------------------------------------------------------------------------
+
 
 static void playerTooltip(GameWindow *window,
 													WinInstanceData *instData,
@@ -1039,7 +1047,9 @@ void WOLDisplayGameOptions( void )
 
 
 //  -----------------------------------------------------------------------------------------
+
 // The Bad munkee slot list displaying function
+
 //-------------------------------------------------------------------------------------------------
 void WOLDisplaySlotList( void )
 {
@@ -2471,7 +2481,7 @@ WindowMsgHandledType WOLGameSetupMenuInput( GameWindow *window, UnsignedInt msg,
 					if( BitIsSet( state, KEY_STATE_UP ) )
 					{
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																							(WindowMsgData)buttonBack, buttonBackID );
+																							(WindowMsgData)(uintptr_t)buttonBack, buttonBackID );
 					}
 					// don't let key fall through anywhere else
 					return MSG_HANDLED;
@@ -2485,6 +2495,7 @@ WindowMsgHandledType WOLGameSetupMenuInput( GameWindow *window, UnsignedInt msg,
 
 
 // Slash commands -------------------------------------------------------------------------
+
 extern "C" {
 int getQR2HostingStatus(void);
 }
@@ -2881,5 +2892,7 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 	}
 	return MSG_HANDLED;
 }
+
+
 
 

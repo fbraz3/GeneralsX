@@ -40,6 +40,7 @@
 #include "wwprofile.h"
 #include "wwmemlog.h"
 #include "dx8wrapper.h"
+#include "gdi_compat.h"  // For GDI API stubs on non-Windows
 
 
 ////////////////////////////////////////////////////////////////////////////////////

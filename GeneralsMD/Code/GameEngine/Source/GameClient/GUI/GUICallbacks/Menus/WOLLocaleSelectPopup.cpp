@@ -19,16 +19,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 //																																						//
 //  (c) 2001-2003 Electronic Arts Inc.																				//
+
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // FILE: WOLLocaleSelectPopup.cpp
+
 // Author: Matt Campbell, December 2001
+
 // Description: WOL locale select popup
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
+
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "GameClient/GameText.h"
@@ -50,12 +55,15 @@
 
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
+
 // window ids ------------------------------------------------------------------------------
+
 static NameKeyType parentLocaleSelectID = NAMEKEY_INVALID;
 static NameKeyType buttonOkID = NAMEKEY_INVALID;
 static NameKeyType listboxLocaleID = NAMEKEY_INVALID;
 
 // Window Pointers ------------------------------------------------------------------------
+
 static GameWindow *parentLocaleSelect = NULL;
 static GameWindow *buttonOk = NULL;
 static GameWindow *listboxLocale = NULL;
@@ -228,3 +236,4 @@ WindowMsgHandledType WOLLocaleSelectSystem( GameWindow *window, UnsignedInt msg,
 
 	return MSG_HANDLED;
 }
+

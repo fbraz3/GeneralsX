@@ -29,6 +29,9 @@
 
 #pragma once
 
+// Cross-platform MSVC type definitions (must come first)
+#include <Compat/msvc_types_compat.h>
+
 /**
   \page lib_var Library variants
 

@@ -19,16 +19,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 //																																						//
 //  (c) 2001-2003 Electronic Arts Inc.																				//
+
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // FILE: WOLQMScoreScreen.cpp
+
 // Author: Matt Campbell, November 2001
+
 // Description: QuickMatch score screen (different from normal screen in that it has 'QM' and 'Discon' buttons)
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
+
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/GameEngine.h"
@@ -45,12 +50,15 @@
 
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
+
 // window ids ------------------------------------------------------------------------------
+
 static NameKeyType parentWOLQMScoreID = NAMEKEY_INVALID;
 static NameKeyType buttonDisconnectID = NAMEKEY_INVALID;
 static NameKeyType buttonQuickmatchID = NAMEKEY_INVALID;
 
 // Window Pointers ------------------------------------------------------------------------
+
 static GameWindow *parentWOLQMScore = NULL;
 static GameWindow *buttonDisconnect = NULL;
 static GameWindow *buttonQuickmatch = NULL;
@@ -144,7 +152,7 @@ WindowMsgHandledType WOLQMScoreScreenInput( GameWindow *window, UnsignedInt msg,
 					if( BitIsSet( state, KEY_STATE_UP ) )
 					{
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
-																							(WindowMsgData)buttonDisconnect, buttonDisconnectID );
+																							(WindowMsgData)(uintptr_t)buttonDisconnect, buttonDisconnectID );
 
 					}
 
@@ -237,3 +245,4 @@ WindowMsgHandledType WOLQMScoreScreenSystem( GameWindow *window, UnsignedInt msg
 
 	return MSG_HANDLED;
 }
+
