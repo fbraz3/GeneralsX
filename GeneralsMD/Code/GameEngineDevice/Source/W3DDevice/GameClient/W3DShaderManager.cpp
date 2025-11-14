@@ -1889,6 +1889,7 @@ Int TerrainShader8Stage::init( void )
 
 Int TerrainShader8Stage::set(Int pass)
 {
+#ifdef _WIN32
 	if (pass == 0)
 	{
 		//force WW3D2 system to set it's states so it won't later overwrite our custom settings.
@@ -2002,10 +2003,14 @@ Int TerrainShader8Stage::set(Int pass)
 		terrainShader2Stage.set(2);
 	}
 	return TRUE;
+#else // _WIN32
+	return FALSE;
+#endif // _WIN32
 }
 
 void TerrainShader8Stage::reset(void)
 {
+#ifdef _WIN32
 	DX8Wrapper::Set_DX8_Texture_Stage_State( 2, D3DTSS_COLOROP, D3DTOP_DISABLE);
 	DX8Wrapper::Set_DX8_Texture_Stage_State( 2, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 	DX8Wrapper::Set_DX8_Texture_Stage_State( 3, D3DTSS_COLOROP, D3DTOP_DISABLE);
@@ -2016,6 +2021,9 @@ void TerrainShader8Stage::reset(void)
 	DX8Wrapper::_Get_D3D_Device8()->SetTexture(0, NULL);
 	DX8Wrapper::_Get_D3D_Device8()->SetTexture(1, NULL);
 	DX8Wrapper::Invalidate_Cached_Render_States();
+#else // _WIN32
+	// Non-Windows stub - no texture state management
+#endif // _WIN32
 }
 
 Int TerrainShaderPixelShader::shutdown(void)
@@ -2039,6 +2047,7 @@ Int TerrainShaderPixelShader::shutdown(void)
 Int TerrainShaderPixelShader::init( void )
 {
 	Int res;
+#ifdef _WIN32
 #ifdef DISABLE_PIXEL_SHADERS
 	return false;
 #endif
@@ -2086,11 +2095,15 @@ Int TerrainShaderPixelShader::init( void )
 		}
 	}
 	return FALSE;
+#else // _WIN32
+	return FALSE;
+#endif // _WIN32
 }
 
 Int TerrainShaderPixelShader::set(Int pass)
 {
 	//force WW3D2 system to set it's states so it won't later overwrite our custom settings.
+#ifdef _WIN32
 	DX8Wrapper::Apply_Render_State_Changes();
 
 	//setup base pass
@@ -2192,10 +2205,14 @@ Int TerrainShaderPixelShader::set(Int pass)
 	}
 
 	return TRUE;
+#else // _WIN32
+	return FALSE;
+#endif // _WIN32
 }
 
 void TerrainShaderPixelShader::reset(void)
 {
+#ifdef _WIN32
 	DX8Wrapper::_Get_D3D_Device8()->SetTexture(2,NULL);	//release reference to any texture
 	DX8Wrapper::_Get_D3D_Device8()->SetTexture(3,NULL);	//release reference to any texture
 
@@ -2218,6 +2235,9 @@ void TerrainShaderPixelShader::reset(void)
 
 
 	DX8Wrapper::Invalidate_Cached_Render_States();
+#else // _WIN32
+	// Non-Windows stub
+#endif // _WIN32
 }
 
 ///Cloud layer rendering shader - used for objects similar to terrain which only need the cloud layer.
