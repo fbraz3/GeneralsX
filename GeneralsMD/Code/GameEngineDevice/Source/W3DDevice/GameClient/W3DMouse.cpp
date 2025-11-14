@@ -108,6 +108,7 @@ W3DMouse::W3DMouse( void )
 
 W3DMouse::~W3DMouse( void )
 {
+#ifdef _WIN32
 	LPDIRECT3DDEVICE8 m_pDev=DX8Wrapper::_Get_D3D_Device8();
 
 	if (m_pDev)
@@ -115,6 +116,7 @@ W3DMouse::~W3DMouse( void )
 		m_pDev->ShowCursor(FALSE);	//kill DX8 cursor
 		Win32Mouse::setCursor(ARROW); //enable default windows cursor
 	}
+#endif // _WIN32
 
 	freeD3DAssets();
 	freeW3DAssets();
@@ -359,6 +361,7 @@ void W3DMouse::reset( void )
 //-------------------------------------------------------------------------------------------------
 /** Super basic simplistic cursor */
 //-------------------------------------------------------------------------------------------------
+#ifdef _WIN32
 void W3DMouse::setCursor( MouseCursor cursor )
 {
 
@@ -469,9 +472,17 @@ void W3DMouse::setCursor( MouseCursor cursor )
 	m_currentCursor = cursor;
 
 }
+#else // _WIN32
+void W3DMouse::setCursor( MouseCursor cursor )
+{
+	// Non-Windows stub
+	m_currentCursor = cursor;
+}
+#endif // _WIN32
 
 extern HWND ApplicationHWnd;
 
+#ifdef _WIN32
 void W3DMouse::draw(void)
 {
 	CriticalSectionClass::LockClass m(mutex);
@@ -590,6 +601,13 @@ void W3DMouse::draw(void)
 
 	m_drawing = FALSE;
 }
+#else // _WIN32
+void W3DMouse::draw(void)
+{
+	// Non-Windows stub
+	m_drawing = FALSE;
+}
+#endif // _WIN32
 
 void W3DMouse::setRedrawMode(RedrawMode mode)
 {

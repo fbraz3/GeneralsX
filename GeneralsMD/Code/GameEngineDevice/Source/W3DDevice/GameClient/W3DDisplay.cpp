@@ -35,12 +35,14 @@ static void drawFramerateBar(void);
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #include <numeric>
+#include <algorithm>
 #include <stdlib.h>
 #include <windows.h>
 #ifdef _WIN32
 #include <io.h>
 #endif // _WIN32
 #include <time.h>
+#include "../../../../../Dependencies/Utility/Compat/msvc_types_compat.h"
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "Common/FramePacer.h"
@@ -1253,6 +1255,7 @@ void W3DDisplay::gatherDebugStats( void )
 
 		// display the keyboard modifier and mouse states.
 		unibuffer.format( L"States: " );
+#ifdef _WIN32
 		if( TheKeyboard->isShift() )
 		{
 			unibuffer.concat( L"Shift(" );
@@ -1292,6 +1295,7 @@ void W3DDisplay::gatherDebugStats( void )
 			}
 			unibuffer.concat( L") " );
 		}
+#endif // _WIN32
 
 		const MouseIO *mouseStatus = TheMouse->getMouseStatus();
 
@@ -1667,10 +1671,12 @@ void W3DDisplay::draw( void )
 {
 	//USE_PERF_TIMER(W3DDisplay_draw)
 
+#ifdef _WIN32
 	extern HWND ApplicationHWnd;
 	if (ApplicationHWnd && ::IsIconic(ApplicationHWnd)) {
 		return;
 	}
+#endif // _WIN32
 
 	if (TheGlobalData->m_headless)
 		return;
@@ -1807,6 +1813,7 @@ AGAIN:
 	do {
 
 		// update all views of the world - recomputes data which will affect drawing
+#ifdef _WIN32
 		if (DX8Wrapper::_Get_D3D_Device8() && (DX8Wrapper::_Get_D3D_Device8()->TestCooperativeLevel()) == D3D_OK)
 		{	//Checking if we have the device before updating views because the heightmap crashes otherwise while
 			//trying to refresh the visible terrain geometry.
@@ -1830,6 +1837,15 @@ AGAIN:
 			if (TheW3DProjectedShadowManager)
 				TheW3DProjectedShadowManager->updateRenderTargetTextures();
 		}
+#else // _WIN32
+		// On non-Windows, assume device is ready
+		updateViews();
+		TheParticleSystemManager->update();
+		if (TheWaterRenderObj && TheGlobalData->m_waterType == 2)
+			TheWaterRenderObj->updateRenderTargetTextures(primaryW3DView->get3DCamera());
+		if (TheW3DProjectedShadowManager)
+			TheW3DProjectedShadowManager->updateRenderTargetTextures();
+#endif // _WIN32
 
 		Debug_Statistics::End_Statistics();	//record number of polygons rendered in RenderTargetTextures.
 
@@ -2662,45 +2678,44 @@ void W3DDisplay::drawImage( const Image *image, Int startX, Int startY,
 			{
 
 
-				//
-				//	Clip the polygons to the specified area
-				//
 
-				clipped_rect.Left		= __max (screen_rect.Left, m_clipRegion.lo.x);
-				clipped_rect.Right	= __min (screen_rect.Right, m_clipRegion.hi.x);
-				clipped_rect.Top		= __max (screen_rect.Top, m_clipRegion.lo.y);
-				clipped_rect.Bottom	= __min (screen_rect.Bottom, m_clipRegion.hi.y);
+			//
+			//	Clip the polygons to the specified area
+			//
 
-				//
-				//	Clip the texture to the specified area
-				//
+			clipped_rect.Left		= __max (screen_rect.Left, (float)m_clipRegion.lo.x);
+			clipped_rect.Right	= __min (screen_rect.Right, (float)m_clipRegion.hi.x);
+			clipped_rect.Top		= __max (screen_rect.Top, (float)m_clipRegion.lo.y);
+			clipped_rect.Bottom	= __min (screen_rect.Bottom, (float)m_clipRegion.hi.y);
 
-				float percent				= ((clipped_rect.Left - screen_rect.Left) / screen_rect.Width ());
-				clipped_uv_rect.Top		= uv_rect.Top + (uv_rect.Height () * percent);
+			//
+			//	Clip the texture to the specified area
+			//
 
-				percent						= ((clipped_rect.Right - screen_rect.Left) / screen_rect.Width ());
-				clipped_uv_rect.Bottom	= uv_rect.Top + (uv_rect.Height () * percent);
+			float percent				= ((clipped_rect.Left - screen_rect.Left) / screen_rect.Width ());
+			clipped_uv_rect.Top		= uv_rect.Top + (uv_rect.Height () * percent);
 
-				percent						= ((clipped_rect.Top - screen_rect.Top) / screen_rect.Height ());
-				clipped_uv_rect.Right	= uv_rect.Right - (uv_rect.Width () * percent);
+			percent						= ((clipped_rect.Right - screen_rect.Left) / screen_rect.Width ());
+			clipped_uv_rect.Bottom	= uv_rect.Top + (uv_rect.Height () * percent);
 
-				percent						= ((clipped_rect.Bottom - screen_rect.Top) / screen_rect.Height ());
-				clipped_uv_rect.Left		= uv_rect.Right - (uv_rect.Width () * percent);
-			}
-			else
+			percent						= ((clipped_rect.Top - screen_rect.Top) / screen_rect.Height ());
+			clipped_uv_rect.Right	= uv_rect.Right - (uv_rect.Width () * percent);
 
-			{
+			percent						= ((clipped_rect.Bottom - screen_rect.Top) / screen_rect.Height ());
+			clipped_uv_rect.Left		= uv_rect.Right - (uv_rect.Width () * percent);
+		}
+		else
 
-				//
-				//	Clip the polygons to the specified area
-				//
+		{
 
-				clipped_rect.Left		= __max (screen_rect.Left, m_clipRegion.lo.x);
-				clipped_rect.Right	= __min (screen_rect.Right, m_clipRegion.hi.x);
-				clipped_rect.Top		= __max (screen_rect.Top, m_clipRegion.lo.y);
-				clipped_rect.Bottom	= __min (screen_rect.Bottom, m_clipRegion.hi.y);
+			//
+			//	Clip the polygons to the specified area
+			//
 
-				//
+			clipped_rect.Left		= __max (screen_rect.Left, (float)m_clipRegion.lo.x);
+			clipped_rect.Right	= __min (screen_rect.Right, (float)m_clipRegion.hi.x);
+			clipped_rect.Top		= __max (screen_rect.Top, (float)m_clipRegion.lo.y);
+			clipped_rect.Bottom	= __min (screen_rect.Bottom, (float)m_clipRegion.hi.y);				//
 				//	Clip the texture to the specified area
 				//
 
@@ -2924,6 +2939,7 @@ void W3DDisplay::setShroudLevel( Int x, Int y, CellShroudStatus setting )
 
 //=============================================================================
 ///Utility function to dump data into a .BMP file
+#ifdef _WIN32
 static void CreateBMPFile(LPTSTR pszFile, char *image, Int width, Int height)
 {
 	HANDLE hf;                  // file handle
@@ -2967,15 +2983,15 @@ static void CreateBMPFile(LPTSTR pszFile, char *image, Int width, Int height)
 		hdr.bfType = 0x4d42;        // 0x42 = "B" 0x4d = "M"
 		// Compute the size of the entire file.
 		hdr.bfSize = (DWORD) (sizeof(BITMAPFILEHEADER) +
-									pbih->biSize + pbih->biClrUsed
-									* sizeof(RGBQUAD) + pbih->biSizeImage);
+								pbih->biSize + pbih->biClrUsed
+								* sizeof(RGBQUAD) + pbih->biSizeImage);
 		hdr.bfReserved1 = 0;
 		hdr.bfReserved2 = 0;
 
 		// Compute the offset to the array of color indices.
 		hdr.bfOffBits = (DWORD) sizeof(BITMAPFILEHEADER) +
-										pbih->biSize + pbih->biClrUsed
-										* sizeof (RGBQUAD);
+									pbih->biSize + pbih->biClrUsed
+									* sizeof (RGBQUAD);
 
 		// Copy the BITMAPFILEHEADER into the .BMP file.
 		if (WriteFile(hf, (LPVOID) &hdr, sizeof(BITMAPFILEHEADER),
@@ -2997,9 +3013,10 @@ static void CreateBMPFile(LPTSTR pszFile, char *image, Int width, Int height)
 
 	// Free memory.
 	LocalFree( (HLOCAL) pbmi);
-}
+#endif // _WIN32
 
 ///Save Screen Capture to a file
+#ifdef _WIN32
 void W3DDisplay::takeScreenShot(void)
 {
 	char leafname[256];
@@ -3136,12 +3153,25 @@ void W3DDisplay::takeScreenShot(void)
 	ufileName.translate(leafname);
 	TheInGameUI->message(TheGameText->fetch("GUI:ScreenCapture"), ufileName.str());
 }
+#else // _WIN32
+void W3DDisplay::takeScreenShot(void)
+{
+	// Non-Windows stub
+}
+#endif // _WIN32
 
 /** Start/Stop capturing an AVI movie*/
+#ifdef _WIN32
 void W3DDisplay::toggleMovieCapture(void)
 {
 	WW3D::Toggle_Movie_Capture("Movie",30);
 }
+#else // _WIN32
+void W3DDisplay::toggleMovieCapture(void)
+{
+	// Non-Windows stub
+}
+#endif // _WIN32
 
 
 #if defined(RTS_DEBUG)

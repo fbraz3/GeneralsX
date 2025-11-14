@@ -972,6 +972,7 @@ void RTS3DScene::updatePlayerColorPasses(void)
 void RTS3DScene::Render(RenderInfoClass & rinfo)
 {
 	//USE_PERF_TIMER(NonTerrainRender)
+#ifdef _WIN32
 	DX8Wrapper::Set_Fog(FogEnabled, FogColor, FogStart, FogEnd);
 
 	//Override the behind building selection if it's not available on current hardware (needs stencil).
@@ -1092,6 +1093,10 @@ void RTS3DScene::Render(RenderInfoClass & rinfo)
 			ShaderClass::Invalidate();
 		}
 	}
+#else // _WIN32
+	// Non-Windows stub: Rendering passes not supported
+	return;
+#endif // _WIN32
 }
 
 //=============================================================================
@@ -1102,6 +1107,7 @@ void RTS3DScene::Render(RenderInfoClass & rinfo)
 //=============================================================================
 void RTS3DScene::Customized_Render( RenderInfoClass &rinfo )
 {
+#ifdef _WIN32
 #ifdef DIRTY_CONDITION_FLAGS
 	StDrawableDirtyStuffLocker lockDirtyStuff;
 #endif
@@ -1207,6 +1213,11 @@ void RTS3DScene::Customized_Render( RenderInfoClass &rinfo )
 	{
 		TheParticleSystemManager->queueParticleRender();
 	}
+#else // _WIN32
+	// Non-Windows stub: Custom rendering not supported
+	// Fallback to base scene rendering
+	return;
+#endif // _WIN32
 }
 
 /**Convert a player index to a color index, we use this because color indices are
@@ -1243,6 +1254,7 @@ Int playerIndexToColorIndex(Int playerIndex)
 stencil mask*/
 void renderStenciledPlayerColor( UnsignedInt color, UnsignedInt stencilRef, Bool clear=FALSE)
 {
+#ifdef _WIN32
 	struct _TRANSLITVERTEX {
 	    Vector4 p;
 		DWORD color;   // diffuse color
@@ -1337,12 +1349,18 @@ void renderStenciledPlayerColor( UnsignedInt color, UnsignedInt stencilRef, Bool
 
 	if (oldColorWriteEnable != 0x12345678)
 		DX8Wrapper::Set_DX8_Render_State(D3DRS_COLORWRITEENABLE,oldColorWriteEnable);
+#else // _WIN32
+	// Non-Windows stub: Stencil player color rendering not supported
+	// Fallback to simple color rendering without stencil buffer
+	return;
+#endif // _WIN32
 
 }
 
 #define MAX_VISIBLE_OCCLUDED_PLAYER_OBJECTS	512 //maximum number of occluded objects permitted per player
 void RTS3DScene::flushOccludedObjectsIntoStencil(RenderInfoClass & rinfo)
 {
+#ifdef _WIN32
 	RenderObjClass *robj;
 	Drawable *draw;
 	RenderObjClass *playerObjects[MAX_PLAYER_COUNT][MAX_VISIBLE_OCCLUDED_PLAYER_OBJECTS];
@@ -1561,11 +1579,16 @@ void RTS3DScene::flushOccludedObjectsIntoStencil(RenderInfoClass & rinfo)
 	//glow, etc. when processing drawables.  This is a good place to do it because this
 	//function gets called right after we flush regular render objects.
 	DX8Wrapper::Set_DX8_Render_State(D3DRS_AMBIENT,DX8Wrapper::Convert_Color(this->Get_Ambient_Light(),0.0f));
+#else // _WIN32
+	// Non-Windows stub: Occluded object stencil rendering not supported
+	return;
+#endif // _WIN32
 }
 
 /*Version which does not require stencil buffer*/
 void RTS3DScene::flushOccludedObjects(RenderInfoClass & rinfo)
 {
+#ifdef _WIN32
 	RenderObjClass *robj;
 	Drawable *draw;
 
@@ -1634,6 +1657,10 @@ void RTS3DScene::flushOccludedObjects(RenderInfoClass & rinfo)
 	//glow, etc. when processing drawables.  This is a good place to do it because this
 	//function gets called right after we flush regular render objects.
 	DX8Wrapper::Set_DX8_Render_State(D3DRS_AMBIENT,DX8Wrapper::Convert_Color(this->Get_Ambient_Light(),0.0f));
+#else // _WIN32
+	// Non-Windows stub: Occluded object rendering not supported
+	return;
+#endif // _WIN32
 }
 
 void RTS3DScene::flushTranslucentObjects(RenderInfoClass & rinfo)

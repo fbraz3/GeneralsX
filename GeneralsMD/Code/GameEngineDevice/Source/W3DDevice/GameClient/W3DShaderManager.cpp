@@ -240,6 +240,7 @@ Bool ScreenDefaultFilter::postRender(FilterModes mode, Coord2D &scrollDelta,Bool
 
 Int ScreenDefaultFilter::set(FilterModes mode)
 {
+#ifdef _WIN32
 	VertexMaterialClass *vmat=VertexMaterialClass::Get_Preset(VertexMaterialClass::PRELIT_DIFFUSE);
 	DX8Wrapper::Set_Material(vmat);
 	REF_PTR_RELEASE(vmat);	//no need to keep a reference since it's a preset.
@@ -252,6 +253,10 @@ Int ScreenDefaultFilter::set(FilterModes mode)
 	DX8Wrapper::Apply_Render_State_Changes();	//force update of view and projection matrices
 
 	return true;
+#else // _WIN32
+	// Non-Windows stub: Screen filter not supported
+	return false;
+#endif // _WIN32
 }
 
 void ScreenDefaultFilter::reset(void)
@@ -281,6 +286,7 @@ W3DFilterInterface *ScreenBWFilterList[]=
 
 Int ScreenBWFilter::init(void)
 {
+#ifdef _WIN32
 	Int res;
 	HRESULT hr;
 
@@ -318,6 +324,10 @@ Int ScreenBWFilter::init(void)
 		}
 	}
 	return FALSE;
+#else // _WIN32
+	// Non-Windows stub: BW filter initialization not supported
+	return false;
+#endif // _WIN32
 }
 
 Bool ScreenBWFilter::preRender(Bool &skipRender, CustomScenePassModes &scenePassMode)
@@ -329,6 +339,7 @@ Bool ScreenBWFilter::preRender(Bool &skipRender, CustomScenePassModes &scenePass
 
 Bool ScreenBWFilter::postRender(FilterModes mode, Coord2D &scrollDelta,Bool &doExtraRender)
 {
+#ifdef _WIN32
 	IDirect3DTexture8 * tex =	W3DShaderManager::endRenderToTexture();
 	DEBUG_ASSERTCRASH(tex, ("Require rendered texture."));
 	if (!tex) return false;
@@ -375,10 +386,15 @@ Bool ScreenBWFilter::postRender(FilterModes mode, Coord2D &scrollDelta,Bool &doE
 
 	reset();
 	return true;
+#else // _WIN32
+	// Non-Windows stub: BW filter post-render not supported
+	return false;
+#endif // _WIN32
 }
 
 Int ScreenBWFilter::set(FilterModes mode)
 {
+#ifdef _WIN32
 	HRESULT hr;
 
 	if (mode > FM_NULL_MODE)
@@ -470,6 +486,10 @@ Int ScreenBWFilter::set(FilterModes mode)
 		return true;
 	}
 	return false;
+#else // _WIN32
+	// Non-Windows stub: BW filter set not supported
+	return false;
+#endif // _WIN32
 }
 
 void ScreenBWFilter::reset(void)
@@ -518,6 +538,7 @@ Bool ScreenBWFilterDOT3::preRender(Bool &skipRender, CustomScenePassModes &scene
 
 Bool ScreenBWFilterDOT3::postRender(FilterModes mode, Coord2D &scrollDelta,Bool &doExtraRender)
 {
+#ifdef _WIN32
 	IDirect3DTexture8 * tex =	W3DShaderManager::endRenderToTexture();
 	DEBUG_ASSERTCRASH(tex, ("Require rendered texture."));
 	if (!tex) return false;
@@ -599,6 +620,10 @@ Bool ScreenBWFilterDOT3::postRender(FilterModes mode, Coord2D &scrollDelta,Bool 
 
 	reset();
 	return true;
+#else // _WIN32
+	// Non-Windows: DOT3 B&W filter not available (DirectX-only)
+	return false;
+#endif // _WIN32
 }
 
 Int ScreenBWFilterDOT3::set(FilterModes mode)
@@ -767,6 +792,7 @@ Bool ScreenCrossFadeFilter::preRender(Bool &skipRender, CustomScenePassModes &sc
 
 Bool ScreenCrossFadeFilter::postRender(FilterModes mode, Coord2D &scrollDelta,Bool &doExtraRender)
 {
+#ifdef _WIN32
 	IDirect3DTexture8 * tex;
 
 	if (m_skipRender)
@@ -854,10 +880,15 @@ Bool ScreenCrossFadeFilter::postRender(FilterModes mode, Coord2D &scrollDelta,Bo
 
 	reset();
 	return true;
+#else // _WIN32
+	// Non-Windows: CrossFade filter not available (DirectX-only)
+	return false;
+#endif // _WIN32
 }
 
 Int ScreenCrossFadeFilter::set(FilterModes mode)
 {
+#ifdef _WIN32
 	if (mode > FM_NULL_MODE)
 	{	//rendering a quad with redirected rendering surface
 		VertexMaterialClass *vmat=VertexMaterialClass::Get_Preset(VertexMaterialClass::PRELIT_DIFFUSE);
@@ -891,6 +922,10 @@ Int ScreenCrossFadeFilter::set(FilterModes mode)
 		return true;
 	}
 	return false;
+#else // _WIN32
+	// Non-Windows: CrossFade filter set operations not available (DirectX-only)
+	return false;
+#endif // _WIN32
 }
 
 void ScreenCrossFadeFilter::reset(void)

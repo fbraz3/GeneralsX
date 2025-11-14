@@ -133,6 +133,7 @@ void W3DSmudgeManager::ReAcquireResources(void)
 /*Copies a portion of the current render target into a specified buffer*/
 Int copyRect(unsigned char *buf, Int bufSize, int oX, int oY, int width, int height)
 {
+#ifdef _WIN32
  	IDirect3DSurface8 *surface=NULL;	///<previous render target
  	IDirect3DSurface8 *tempSurface=NULL;
 	Int result = 0;
@@ -196,6 +197,10 @@ error:
 		tempSurface->Release();
 
 	return result;
+#else // _WIN32
+	// Non-Windows: Cannot copy render target (DirectX-only feature)
+	return 0;
+#endif // _WIN32
 }
 
 #define UNIQUE_COLOR	(0x12345678)
@@ -203,6 +208,7 @@ error:
 
 Bool W3DSmudgeManager::testHardwareSupport(void)
 {
+#ifdef _WIN32
 	if (m_hardwareSupportStatus == SMUDGE_SUPPORT_UNKNOWN)
 	{	//we have not done the test yet.
 
@@ -298,10 +304,16 @@ Bool W3DSmudgeManager::testHardwareSupport(void)
 	}
 
 	return (SMUDGE_SUPPORT_YES == m_hardwareSupportStatus);
+#else // _WIN32
+	// Non-Windows: Smudge hardware support not available
+	m_hardwareSupportStatus = SMUDGE_SUPPORT_NO;
+	return FALSE;
+#endif // _WIN32
 }
 
 void W3DSmudgeManager::render(RenderInfoClass &rinfo)
 {
+#ifdef _WIN32
 	//Verify that the card supports the effect.
 	if (!testHardwareSupport())
 		return;
@@ -550,5 +562,7 @@ flushSmudges:
 
 	DX8Wrapper::Set_DX8_Texture_Stage_State(0,D3DTSS_COLOROP,D3DTOP_MODULATE);
 	DX8Wrapper::Set_DX8_Texture_Stage_State(0,D3DTSS_ALPHAOP,D3DTOP_MODULATE);
-
+#else // _WIN32
+	// Non-Windows: Smudge rendering not available (DirectX-only feature)
+#endif // _WIN32
 }
