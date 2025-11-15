@@ -2943,6 +2943,7 @@ Bool W3DShaderManager::filterSetup(FilterTypes filter, FilterModes mode)
 }
 
 /*Draws 2 triangles covering the viewport given the current render states*/
+#ifdef _WIN32
 void W3DShaderManager::drawViewport(Int color)
 {
 	LPDIRECT3DDEVICE8 pDev=DX8Wrapper::_Get_D3D_Device8();
@@ -2984,10 +2985,19 @@ void W3DShaderManager::drawViewport(Int color)
 	pDev->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, v, sizeof(_TRANS_LIT_TEX_VERTEX));
 }
 
+#else // _WIN32
+
+void W3DShaderManager::drawViewport(Int color)
+{
+}
+
+#endif // _WIN32
+
 // W3DShaderManager::startRenderToTexture =======================================================
 /** Starts rendering to a texture.
  */
 //=============================================================================
+#ifdef _WIN32
 void W3DShaderManager::startRenderToTexture(void)
 {
 	DEBUG_ASSERTCRASH(!m_renderingToTexture, ("Already rendering to texture - cannot nest calls."));
@@ -3021,10 +3031,19 @@ void W3DShaderManager::startRenderToTexture(void)
 	}
 }
 
+#else // _WIN32
+
+void W3DShaderManager::startRenderToTexture(void)
+{
+}
+
+#endif // _WIN32
+
 // W3DShaderManager::startRenderToTexture =======================================================
 /** Ends rendering to a texture.
  */
 //=============================================================================
+#ifdef _WIN32
 IDirect3DTexture8 *W3DShaderManager::endRenderToTexture(void)
 {
 	DEBUG_ASSERTCRASH(m_renderingToTexture, ("Not rendering to texture."));
@@ -3046,6 +3065,15 @@ IDirect3DTexture8 *W3DShaderManager::endRenderToTexture(void)
 	}
 	return m_renderTexture;
 }
+
+#else // _WIN32
+
+IDirect3DTexture8 *W3DShaderManager::endRenderToTexture(void)
+{
+	return NULL;
+}
+
+#endif // _WIN32
 
 /**Returns texture containing the image that was last rendered using any of the effects requiring render target
 textures.  Used mostly for cross-fading effects that need an unmodified version of the view before the effect
