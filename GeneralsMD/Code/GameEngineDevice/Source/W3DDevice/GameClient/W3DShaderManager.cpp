@@ -2348,6 +2348,7 @@ W3DShaderInterface *RoadShaderList[]=
 	NULL
 };
 
+#ifdef _WIN32
 Int RoadShaderPixelShader::shutdown(void)
 {
 	if (m_dwBaseNoise2PixelShader)
@@ -2481,6 +2482,30 @@ void RoadShaderPixelShader::reset(void)
 	DX8Wrapper::Invalidate_Cached_Render_States();
 }
 
+#else // _WIN32
+
+Int RoadShaderPixelShader::shutdown(void)
+{
+	return TRUE;
+}
+
+Int RoadShaderPixelShader::init( void )
+{
+	return FALSE;
+}
+
+Int RoadShaderPixelShader::set(Int pass)
+{
+	return TRUE;
+}
+
+void RoadShaderPixelShader::reset(void)
+{
+}
+
+#endif // _WIN32
+
+#ifdef _WIN32
 Int RoadShader2Stage::init( void )
 {
 	//no special device validation needed - anything in our min spec should handle this.
@@ -2650,6 +2675,24 @@ void RoadShader2Stage::reset(void)
 	DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);
 	DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_TEXCOORDINDEX, D3DTSS_TCI_PASSTHRU|1);
 }
+
+#else // _WIN32
+
+Int RoadShader2Stage::init( void )
+{
+	return TRUE;
+}
+
+Int RoadShader2Stage::set(Int pass)
+{
+	return TRUE;
+}
+
+void RoadShader2Stage::reset(void)
+{
+}
+
+#endif // _WIN32
 
 /** List of all custom shader lists - each list in this list contains variations of the same
 	shader to allow it to work on different hardware configurations.
@@ -3024,6 +3067,7 @@ enum GraphicsVenderID CPP_11(: Int)
 	for coding around specific driver bugs.
  */
 //=============================================================================
+#ifdef _WIN32
 ChipsetType W3DShaderManager::getChipset( void )
 {
 	//check if globaldata has an override for current chipset
@@ -3112,11 +3156,21 @@ ChipsetType W3DShaderManager::getChipset( void )
 	return chip;
 }
 
+#else // _WIN32
+
+ChipsetType W3DShaderManager::getChipset( void )
+{
+	return DC_UNKNOWN;
+}
+
+#endif // _WIN32
+
 //=============================================================================
 // WaterRenderObjClass::LoadAndCreateShader
 //=============================================================================
 /** Loads and creates a D3D pixel or vertex shader.*/
 //=============================================================================
+#ifdef _WIN32
 HRESULT W3DShaderManager::LoadAndCreateD3DShader(const char* strFilePath, const DWORD* pDeclaration, DWORD Usage, Bool ShaderType, DWORD* pHandle)
 {
 	if (getChipset() < DC_GENERIC_PIXEL_SHADER_1_1)
@@ -3175,6 +3229,15 @@ HRESULT W3DShaderManager::LoadAndCreateD3DShader(const char* strFilePath, const 
 
 	return S_OK;
 }
+
+#else // _WIN32
+
+HRESULT W3DShaderManager::LoadAndCreateD3DShader(const char* strFilePath, const DWORD* pDeclaration, DWORD Usage, Bool ShaderType, DWORD* pHandle)
+{
+	return E_FAIL;
+}
+
+#endif // _WIN32
 
 //For the MP test, we're enforcing high min-spec requirements that need to be verified.
 #define MIN_INTEL_CPU_FREQ	1300
@@ -3258,6 +3321,7 @@ void add(float *sum,float *addend)
 }
 
 /**Returns seconds needed to run the test*/
+#ifdef _WIN32
 Real W3DShaderManager::GetCPUBenchTime(void)
 {
 	float ztot, yran, ymult, ymod, x, y, z, pi, prod;
@@ -3296,11 +3360,20 @@ Real W3DShaderManager::GetCPUBenchTime(void)
 	return ((double)(endTime64-startTime64)/(double)(freq64));
 }
 
+#else // _WIN32
+
+Real W3DShaderManager::GetCPUBenchTime(void)
+{
+	return 0.0;
+}
+
+#endif // _WIN32
 
 // W3DShaderManager::setShroudTex =======================================================
 /** Puts the shroud texture into a texture stage.
  */
 //=============================================================================
+#ifdef _WIN32
 Int W3DShaderManager::setShroudTex(Int stage)
 {
 	//We need to scale so shroud texel stretches over one full terrain cell.  Each texel
@@ -3354,8 +3427,18 @@ Int W3DShaderManager::setShroudTex(Int stage)
 	return FALSE;
 }
 
+#else // _WIN32
+
+Int W3DShaderManager::setShroudTex(Int stage)
+{
+	return FALSE;
+}
+
+#endif // _WIN32
 
 
+
+#ifdef _WIN32
 Int FlatTerrainShader2Stage::init( void )
 {
 	//no special device validation needed - anything in our min spec should handle this.
@@ -3576,17 +3659,29 @@ Int FlatTerrainShader2Stage::set(Int pass)
 	return TRUE;
 }
 
+#else // _WIN32
 
+Int FlatTerrainShader2Stage::init( void )
+{
+	return TRUE;
+}
 
+void FlatTerrainShader2Stage::reset(void)
+{
+}
 
+Int FlatTerrainShader2Stage::set(Int pass)
+{
+	return TRUE;
+}
 
+#endif // _WIN32
 
+#ifdef _WIN32
 Int FlatTerrainShaderPixelShader::shutdown(void)
 {
 	if (m_dwBasePixelShader)
-		DX8Wrapper::_Get_D3D_Device8()->DeletePixelShader(m_dwBasePixelShader);
-
-	if (m_dwBase0PixelShader)
+		DX8Wrapper::_Get_D3D_Device8()->DeletePixelShader(m_dwBasePixelShader);	if (m_dwBase0PixelShader)
 		DX8Wrapper::_Get_D3D_Device8()->DeletePixelShader(m_dwBase0PixelShader);
 
 	if (m_dwBaseNoise1PixelShader)
@@ -3841,6 +3936,30 @@ void FlatTerrainShaderPixelShader::reset(void)
 
 	DX8Wrapper::Invalidate_Cached_Render_States();
 }
+
+#else // _WIN32
+
+Int FlatTerrainShaderPixelShader::shutdown(void)
+{
+	return TRUE;
+}
+
+Int FlatTerrainShaderPixelShader::init( void )
+{
+	return FALSE;
+}
+
+Int FlatTerrainShaderPixelShader::set(Int pass)
+{
+	return TRUE;
+}
+
+void FlatTerrainShaderPixelShader::reset(void)
+{
+}
+
+#endif // _WIN32
+
 
 
 
