@@ -48,7 +48,9 @@
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
+#ifdef _WIN32
 #include "Win32Device/GameClient/Win32Mouse.h"
+#endif
 
 // FORWARD REFERENCES /////////////////////////////////////////////////////////
 class CameraClass;
@@ -59,7 +61,11 @@ class SurfaceClass;
 // W3DMouse -----------------------------------------------------------------
 /** Mouse interface for when using only the Win32 messages and W3D for cursor */
 //-----------------------------------------------------------------------------
+#ifdef _WIN32
 class W3DMouse : public Win32Mouse
+#else
+class W3DMouse : public Mouse
+#endif
 {
 
 public:

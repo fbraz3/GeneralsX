@@ -72,12 +72,12 @@ set(GAMEENGINEDEVICE_SRC
     Include/W3DDevice/GameLogic/W3DTerrainLogic.h
 #    Include/Win32Device/Common/Win32BIGFile.h
 #    Include/Win32Device/Common/Win32BIGFileSystem.h
-    Include/Win32Device/Common/Win32CDManager.h
-    Include/Win32Device/Common/Win32GameEngine.h
+#    Include/Win32Device/Common/Win32CDManager.h  # Windows-only
+#    Include/Win32Device/Common/Win32GameEngine.h  # Windows-only
 #    Include/Win32Device/Common/Win32LocalFile.h
 #    Include/Win32Device/Common/Win32LocalFileSystem.h
-    Include/Win32Device/GameClient/Win32DIKeyboard.h
-    Include/Win32Device/GameClient/Win32Mouse.h
+#    Include/Win32Device/GameClient/Win32DIKeyboard.h  # Windows-only
+#    Include/Win32Device/GameClient/Win32Mouse.h  # Windows-only
 #    Source/MilesAudioDevice/MilesAudioManager.cpp
 #    Source/VideoDevice/Bink/BinkVideoPlayer.cpp
     Source/W3DDevice/Common/System/W3DFunctionLexicon.cpp
@@ -146,7 +146,7 @@ set(GAMEENGINEDEVICE_SRC
     Source/W3DDevice/GameClient/W3DFileSystem.cpp
     Source/W3DDevice/GameClient/W3DGameClient.cpp
     Source/W3DDevice/GameClient/W3DInGameUI.cpp
-    Source/W3DDevice/GameClient/W3DMouse.cpp
+    #Source/W3DDevice/GameClient/W3DMouse.cpp  # Windows-specific (uses Win32Mouse)
     Source/W3DDevice/GameClient/W3DParticleSys.cpp
     Source/W3DDevice/GameClient/W3DPoly.cpp
     Source/W3DDevice/GameClient/W3DRoadBuffer.cpp
@@ -171,14 +171,26 @@ set(GAMEENGINEDEVICE_SRC
     Source/W3DDevice/GameLogic/W3DTerrainLogic.cpp
 #    Source/Win32Device/Common/Win32BIGFile.cpp
 #    Source/Win32Device/Common/Win32BIGFileSystem.cpp
-    Source/Win32Device/Common/Win32CDManager.cpp
-    Source/Win32Device/Common/Win32GameEngine.cpp
+#    Source/Win32Device/Common/Win32CDManager.cpp  # Only compile on Windows
+#    Source/Win32Device/Common/Win32GameEngine.cpp  # Only compile on Windows
 #    Source/Win32Device/Common/Win32LocalFile.cpp
 #    Source/Win32Device/Common/Win32LocalFileSystem.cpp
-    Source/Win32Device/Common/Win32OSDisplay.cpp
-    Source/Win32Device/GameClient/Win32DIKeyboard.cpp
-    Source/Win32Device/GameClient/Win32Mouse.cpp
+#    Source/Win32Device/Common/Win32OSDisplay.cpp  # Only compile on Windows
+#    Source/Win32Device/GameClient/Win32DIKeyboard.cpp  # Only compile on Windows
+#    Source/Win32Device/GameClient/Win32Mouse.cpp  # Only compile on Windows
 )
+
+# Conditionally compile Windows-specific device code
+# (Input handling, display management, and CD/DVD detection are Windows-only)
+if(WIN32 OR IS_VS6_BUILD)
+    list(APPEND GAMEENGINEDEVICE_SRC
+        Source/Win32Device/Common/Win32GameEngine.cpp
+        Source/Win32Device/Common/Win32CDManager.cpp
+        Source/Win32Device/Common/Win32OSDisplay.cpp
+        Source/Win32Device/GameClient/Win32DIKeyboard.cpp
+        Source/Win32Device/GameClient/Win32Mouse.cpp
+    )
+endif()
 
 add_library(g_gameenginedevice STATIC)
 set_target_properties(g_gameenginedevice PROPERTIES OUTPUT_NAME gameenginedevice)

@@ -57,6 +57,7 @@ struct NewParticleStruct
 	Vector3			Position;	// Particle position in worldspace.
 	Vector3			Velocity;	// Particle velocity in worldspace.
 	unsigned int	TimeStamp;	// Millisecond time at creation.
+	unsigned char	GroupID;		// Group ID of the particle
 
 	// These are needed by DynamicVectorClass (will probably never be used).
 	bool operator != (const NewParticleStruct & p)
@@ -87,7 +88,7 @@ class ParticleBufferClass : public RenderObjClass
 			ParticlePropertyStruct<float> &size, ParticlePropertyStruct<float> &rotation,
 			float orient_rnd, ParticlePropertyStruct<float> &frame,
 			ParticlePropertyStruct<float> &blurtime, Vector3 accel,
-			float max_age, TextureClass *tex, ShaderClass shader, bool pingpong,
+			float max_age, float future_start, TextureClass *tex, ShaderClass shader, bool pingpong,
 			int render_mode, int frame_mode, const W3dEmitterLinePropertiesStruct * line_props);
 
 		ParticleBufferClass(const ParticleBufferClass & src);
@@ -189,6 +190,8 @@ class ParticleBufferClass : public RenderObjClass
 		void						Set_Texture (TextureClass *tex)  { PointGroup->Set_Texture(tex); }
 		float						Get_Fade_Time (void) const			{ return (NumColorKeyFrames > 1) ? (((float)ColorKeyFrameTimes[1]) / 1000.0f) : 0.0f; }
 		ShaderClass				Get_Shader (void) const				{ return PointGroup->Get_Shader (); }
+		float						Get_Future_Start_Time(void) const { return (float(FutureStartTime)) / 1000.0f; }
+		void						Set_Current_GroupID(unsigned char grp) { CurrentGroupID = grp; }
 
 		//
 		// Line rendering properties.  These functions will always return
@@ -275,6 +278,7 @@ class ParticleBufferClass : public RenderObjClass
 		Vector3			Accel;			// Worldspace acceleration per ms^2.
 		bool				HasAccel;		// Is the acceleration non-zero?
 		unsigned int	MaxAge;			// Maximum age in milliseconds.
+		unsigned int	FutureStartTime;// Future start time in milliseconds
 		unsigned int	LastUpdateTime;// Time at last update.
 		bool				IsEmitterDead;
 		float				MaxSize;			// Used for BBox calculations
@@ -424,4 +428,7 @@ class ParticleBufferClass : public RenderObjClass
 		// particle buffer can have. We can change these from being global to
 		// being per-buffer later if we wish. Default is NO_MAX_SCREEN_SIZE.
 		static float						LODMaxScreenSizes[17];
+
+		// Group ID for particles
+		unsigned char						CurrentGroupID;
 };

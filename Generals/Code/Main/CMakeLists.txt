@@ -8,20 +8,26 @@ else()
 endif()
 
 target_link_libraries(g_generals PRIVATE
-    binkstub
-    comctl32
-    d3d8
-    d3dx8
-    dinput8
-    dxguid
     g_gameengine
     g_gameenginedevice
     gi_always
-    imm32
-    milesstub
-    vfw32
-    winmm
 )
+
+# Windows-only libraries
+if(WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows")
+    target_link_libraries(g_generals PRIVATE
+        binkstub
+        comctl32
+        d3d8
+        d3dx8
+        dinput8
+        dxguid
+        imm32
+        milesstub
+        vfw32
+        winmm
+    )
+endif()
 
 # TODO Originally referred to build host and user, replace with git info perhaps?
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/GeneratedVersion.h
@@ -54,7 +60,10 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/BuildVersion.h
 )
 endif()
 
-target_link_options(g_generals PRIVATE "/NODEFAULTLIB:libci.lib")
+# Windows-only linker options
+if(WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows")
+    target_link_options(g_generals PRIVATE "/NODEFAULTLIB:libci.lib")
+endif()
 
 target_include_directories(g_generals PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -63,9 +72,20 @@ target_include_directories(g_generals PRIVATE
 )
 
 target_sources(g_generals PRIVATE
-    WinMain.cpp
     WinMain.h
 )
+
+# Platform-specific entry point
+if(WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows")
+    target_sources(g_generals PRIVATE
+        WinMain.cpp
+    )
+else()
+    # POSIX/Unix entry point for macOS/Linux
+    target_sources(g_generals PRIVATE
+        main_posix.cpp
+    )
+endif()
 
 if(WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows")
     # VS2005 and later adds default manifest, we need to turn it off to prevent conflict with custom manifest

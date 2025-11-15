@@ -33,7 +33,7 @@
 #include <windows.h>
 #else
 // Phase 02: SDL2 cross-platform event handling
-#include <SDL3/SDL.h>
+#include <SDL2/SDL.h>
 // Phase 03: SDL2 input compatibility layer
 #include "WW3D2/win32_sdl_api_compat.h"
 #endif
@@ -180,24 +180,24 @@ void Win32GameEngine::serviceWindowsOS( void )
 	
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
-			case SDL_EVENT_QUIT:
+			case SDL_QUIT:
 				// User clicked close button
 				setQuitting(true);
 				break;
 				
-			case SDL_EVENT_WINDOW_FOCUS_GAINED:
+			case SDL_WINDOWEVENT_FOCUS_GAINED:
 				// Window gained focus
 				setIsActive(true);
 				break;
 				
-			case SDL_EVENT_WINDOW_FOCUS_LOST:
+			case SDL_WINDOWEVENT_FOCUS_LOST:
 				// Window lost focus
 				setIsActive(false);
 				break;
 
 			// Phase 03: Keyboard events
-			case SDL_KEY_DOWN:
-			case SDL_KEY_UP:
+			case SDL_KEYDOWN:
+			case SDL_KEYUP:
 			{
 				// Translate SDL keyboard event to Windows format
 				uint32_t msg, wparam, lparam;
@@ -211,13 +211,13 @@ void Win32GameEngine::serviceWindowsOS( void )
 			}
 
 			// Phase 03: Mouse button events
-			case SDL_MOUSE_BUTTON_DOWN:
-			case SDL_MOUSE_BUTTON_UP:
+			case SDL_MOUSEBUTTONDOWN:
+			case SDL_MOUSEBUTTONUP:
 			{
 				if (TheWin32Mouse) {
 					// Translate SDL mouse button event to Windows format
 					uint32_t msg = SDL2_TranslateMouseButton(event.button.button,
-					                                         event.type == SDL_MOUSE_BUTTON_DOWN ? 1 : 0);
+					                                         event.type == SDL_MOUSEBUTTONDOWN ? 1 : 0);
 					uint32_t lparam = SDL2_EncodeMouseCoords(event.button.x, event.button.y);
 					uint32_t wparam = 0;  // TODO: encode button state from SDL_GetMouseState()
 					
@@ -228,7 +228,7 @@ void Win32GameEngine::serviceWindowsOS( void )
 			}
 
 			// Phase 03: Mouse motion events
-			case SDL_MOUSE_MOTION:
+			case SDL_MOUSEMOTION:
 			{
 				if (TheWin32Mouse) {
 					// Queue mouse move event
@@ -242,7 +242,7 @@ void Win32GameEngine::serviceWindowsOS( void )
 			}
 
 			// Phase 03: Mouse wheel events
-			case SDL_MOUSE_WHEEL:
+			case SDL_MOUSEWHEEL:
 			{
 				if (TheWin32Mouse) {
 					// Get current mouse position from the motion event data

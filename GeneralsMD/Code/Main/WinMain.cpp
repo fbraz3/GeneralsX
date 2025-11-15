@@ -42,7 +42,7 @@
 #include <dbt.h>
 #else
 // Phase 02: SDL2 Window & Event Loop - cross-platform headers
-#include <SDL3/SDL.h>
+#include <SDL2/SDL.h>
 #include <vulkan/vulkan.h>
 #include <cstdlib>
 #include <cstdint>
@@ -78,9 +78,9 @@
 #include <rts/profile.h>
 
 // Phase 02: SDL2 Window & Event Loop compatibility
-#ifndef _WIN32
-#include "WWVegas/WW3D2/win32_sdl_api_compat.h"
-#endif
+//#ifndef _WIN32
+//#include "WWVegas/WW3D2/win32_sdl_api_compat.h"
+//#endif
 
 
 // GLOBALS ////////////////////////////////////////////////////////////////////

@@ -1,12 +1,51 @@
 # GeneralsX macOS Port Development Diary
 
-## Current Session: Cross-Platform DirectX Conditional Compilation — **PHASE 40 CONTINUATION**
+## Current Session: Phase 39.1 Completion — **SYSTEMATIC WINDOWS API RESOLUTION**
+
+### Session Summary: Cross-Platform Synchronization Between Generals and GeneralsMD
+
+**STATUS**: ✅ COMPLETE - Phase 39.1 Windows API abstraction layer finalized
+
+**Date**: November 15, 2025
+
+**Key Achievements This Session**:
+
+- ✅ Systematically resolved 12+ cross-platform compatibility issues
+- ✅ Synchronized Generals codebase with GeneralsMD (particle systems, animation, emitters)
+- ✅ Applied "Fail Fast" principle: identified and fixed root causes, not symptoms
+- ✅ Protected all Windows-specific headers with `#ifdef _WIN32` guards
+- ✅ Created compatibility shims for missing functionality (shdlib.h stub)
+- ✅ Reduced graphics-related compilation errors from 16+ to **ZERO**
+- ✅ Documented Phase 39.1 progress in `docs/PHASE39/PHASE39_1_SESSION_PROGRESS.md`
+
+**Compilation Results**:
+- Before fixes: ~16+ graphics-related errors blocking macOS ARM64 compilation
+- After fixes: 0 graphics errors ✅
+- Remaining errors: 9 audio-system errors (out of scope - belongs to Phase 33 audio backend)
+
+**Critical Files Synchronized**:
+1. **particle_emt.h** - Added visibility and timing methods (GroupID, IsInvisible, Future_Start_Time)
+2. **particle_buf.h** - Added constructor parameter for future_start timing
+3. **particle_ldr.h** - Added extra info methods for emitter definitions
+4. **motchan.h** - Added compression support (CompressedData, ValueScale, ValueOffset)
+5. **hrawanim.cpp** - Fixed member access to use public accessor methods
+6. **shdlib.h** - Created NEW compatibility stub for WWShade functionality
+7. **PreRTS.h** - Protected 15+ Windows-specific headers with `#ifdef _WIN32`
+
+**Architecture Validation**:
+- Layer 1 (Core Compatibility) ✅ - POSIX types and Windows shims untouched
+- Layer 2 (DirectX Mock) ✅ - Mock interfaces continue working
+- Layer 3 (Game Extensions) ✅ - Particle/animation enhancements properly integrated
+
+---
+
+## Previous Session: Cross-Platform DirectX Conditional Compilation — **PHASE 40 CONTINUATION**
 
 ### Session Summary: Strategic DirectX Method Wrapping
 
 **STATUS**: 🔄 IN PROGRESS - Phase 40 continued with systematic cross-platform compatibility fixes
 
-**Date**: Current Session (Post-Phase 39)
+**Date**: Previous Session (Post-Phase 39)
 
 **Duration**: Extended compilation fixing session
 

@@ -9,10 +9,16 @@ target_compile_definitions(core_wwcommon INTERFACE
 target_link_libraries(core_wwcommon INTERFACE
     core_config
     core_utility
-    d3d8lib
-    milesstub
     stlport
 )
+
+# Link Windows-only stubs (only on Windows)
+if(WIN32 OR MSVC OR "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
+    target_link_libraries(core_wwcommon INTERFACE
+        d3d8lib
+        milesstub
+    )
+endif()
 
 target_include_directories(core_wwcommon INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}

@@ -5,10 +5,16 @@ target_link_libraries(z_wwcommon INTERFACE
     core_config
     core_utility
     core_wwcommon
-    d3d8lib
-    milesstub
     stlport
 )
+
+# Link Windows-only stubs (only on Windows)
+if(WIN32 OR MSVC OR "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
+    target_link_libraries(z_wwcommon INTERFACE
+        d3d8lib
+        milesstub
+    )
+endif()
 
 target_include_directories(z_wwcommon INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}

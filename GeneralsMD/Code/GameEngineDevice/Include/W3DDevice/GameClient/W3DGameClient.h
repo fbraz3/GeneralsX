@@ -54,14 +54,16 @@
 #ifdef _WIN32
 #include "Win32Device/GameClient/Win32DIKeyboard.h"
 #include "Win32Device/GameClient/Win32DIMouse.h"
-#endif
 #include "Win32Device/GameClient/Win32Mouse.h"
+#endif
 #include "W3DDevice/GameClient/W3DMouse.h"
 #include "W3DDevice/GameClient/W3DSnow.h"
 
 class ThingTemplate;
 
+#ifdef _WIN32
 extern Win32Mouse *TheWin32Mouse;
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // PROTOTYPES /////////////////////////////////////////////////////////////////
@@ -144,7 +146,11 @@ inline Keyboard *W3DGameClient::createKeyboard( void ) {
 inline Mouse *W3DGameClient::createMouse( void )
 {
 	//return new DirectInputMouse;
+#ifdef _WIN32
 	Win32Mouse * mouse = NEW W3DMouse;
 	TheWin32Mouse = mouse;   ///< global cheat for the WndProc()
 	return mouse;
+#else
+	return nullptr;  // TODO: Implement cross-platform mouse handler
+#endif
 }

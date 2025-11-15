@@ -167,6 +167,12 @@ class ParticleEmitterClass : public RenderObjClass
 		void						Stop(void);
 		bool						Is_Stopped(void);
 
+		// Yet another way to make an emitter stop rendering (besides setting Hidden or Animation_Hidden).
+		// We added this because we needed a way independent from the other two. This would be appropriate
+		// to set, for example, when setting RINFO_OVERRIDE_ADDITIONAL_PASSES_ONLY on the container.
+		void						Set_Invisible(bool onoff)		{ IsInvisible = onoff; }
+		bool						Is_Invisible(void)				{ return IsInvisible; }
+
 		// Change starting position/velocity/acceleration parameters:
 		void Set_Position_Randomizer(Vector3Randomizer *rand);
 		void Set_Velocity_Randomizer(Vector3Randomizer *rand);
@@ -237,6 +243,7 @@ class ParticleEmitterClass : public RenderObjClass
 		float						Get_Emission_Rate (void) const	{ return 1000.0f / float(EmitRate); }
 		int						Get_Burst_Size (void) const		{ return BurstSize; }
 		int						Get_Max_Particles (void) const	{ return MaxParticles; }
+		float						Get_Future_Start_Time (void) const { return Buffer->Get_Future_Start_Time(); }
 		Vector3					Get_Start_Velocity (void) const	{ return BaseVel * 1000.0F; }
 		Vector3Randomizer *	Get_Creation_Volume (void) const;
 		Vector3Randomizer *	Get_Velocity_Random (void) const;
@@ -321,6 +328,8 @@ class ParticleEmitterClass : public RenderObjClass
 		char *						UserString;
 		bool							RemoveOnComplete;	// Should this emitter destroy itself when it completes?
 		bool							IsInScene;
+		unsigned char				GroupID;			// The group ID of a particle. A start causes the group ID to increment.
+		bool							IsInvisible;		// Yet another way to disable rendering (see Set/Is_Invisible)
 
 		// This pointer is used only for sending new particles to the particle
 		// buffer and for informing the buffer when the emitter is destroyed.

@@ -36,9 +36,13 @@
 #include <windows.h>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
+#ifdef _WIN32
 #include "Win32Device/GameClient/Win32Mouse.h"
+#endif
 
 // EXTERNAL ///////////////////////////////////////////////////////////////////
+#ifdef _WIN32
 extern HINSTANCE ApplicationHInstance;  ///< our application instance
 extern HWND ApplicationHWnd;  ///< our application window handle
 extern Win32Mouse *TheWin32Mouse;  ///< global for win32 mouse only!
+#endif

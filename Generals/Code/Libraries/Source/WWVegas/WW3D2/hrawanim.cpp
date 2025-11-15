@@ -310,7 +310,7 @@ bool HRawAnimClass::read_channel(ChunkLoadClass & cload,MotionChannelClass * * n
 	bool result = (*newchan)->Load_W3D(cload);
 
 	if (result && pre30) {
-		(*newchan)->PivotIdx += 1;
+		(*newchan)->Set_Pivot((*newchan)->Get_Pivot()+1);
 	}
 
 	return result;

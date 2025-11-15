@@ -1,6 +1,6 @@
 set(GAMEENGINEDEVICE_SRC
-    Include/MilesAudioDevice/MilesAudioManager.h
-    Include/VideoDevice/Bink/BinkVideoPlayer.h
+#    Include/MilesAudioDevice/MilesAudioManager.h  # Windows-only audio system
+    Include/VideoDevice/Bink/BinkVideoPlayer.h  # Windows-only video codec
 #    Include/W3DDevice/Common/W3DConvert.h
 #    Include/W3DDevice/Common/W3DFunctionLexicon.h
 #    Include/W3DDevice/Common/W3DModuleFactory.h
@@ -86,12 +86,12 @@ set(GAMEENGINEDEVICE_SRC
 #    Include/Win32Device/Common/Win32CDManager.h
 #    Include/Win32Device/Common/Win32GameEngine.h
     Include/Win32Device/Common/Win32LocalFile.h
-    Include/Win32Device/Common/Win32LocalFileSystem.h
+#    Include/Win32Device/Common/Win32LocalFileSystem.h  # Windows-only file system
 #    Include/Win32Device/GameClient/Win32DIKeyboard.h
 #    Include/Win32Device/GameClient/Win32DIMouse.h
 #    Include/Win32Device/GameClient/Win32Mouse.h
-    Source/MilesAudioDevice/MilesAudioManager.cpp
-    Source/VideoDevice/Bink/BinkVideoPlayer.cpp
+#    Source/MilesAudioDevice/MilesAudioManager.cpp  # Windows-only audio system
+#    Source/VideoDevice/Bink/BinkVideoPlayer.cpp  # Windows-only video codec
 #    Source/W3DDevice/Common/System/W3DFunctionLexicon.cpp
 #    Source/W3DDevice/Common/System/W3DRadar.cpp
 #    Source/W3DDevice/Common/Thing/W3DModuleFactory.cpp
@@ -187,7 +187,7 @@ set(GAMEENGINEDEVICE_SRC
 #    Source/Win32Device/Common/Win32CDManager.cpp
 #    Source/Win32Device/Common/Win32GameEngine.cpp
     Source/Win32Device/Common/Win32LocalFile.cpp
-    Source/Win32Device/Common/Win32LocalFileSystem.cpp
+    #Source/Win32Device/Common/Win32LocalFileSystem.cpp  # Windows-only filesystem (io.h)
 #    Source/Win32Device/Common/Win32OSDisplay.cpp
 #    Source/Win32Device/GameClient/Win32DIKeyboard.cpp
     #Source/Win32Device/GameClient/Win32DIMouse.cpp
@@ -208,8 +208,8 @@ if(NOT IS_VS6_BUILD)
     )
 endif()
 
-# Include Phase 40 - Performance Optimization subsystem
-add_subdirectory(Source/Optimization)
+# Include Phase 40 - Performance Optimization subsystem (TODO: Fix type declarations)
+#add_subdirectory(Source/Optimization)
 
 add_library(corei_gameenginedevice_private INTERFACE)
 add_library(corei_gameenginedevice_public INTERFACE)
@@ -226,11 +226,17 @@ target_link_libraries(corei_gameenginedevice_private INTERFACE
 )
 
 target_link_libraries(corei_gameenginedevice_public INTERFACE
-    binkstub
     corei_gameengine_public
-    d3d8lib
-    milesstub
 )
+
+# Link Windows-only audio/video stubs (only on Windows)
+if(WIN32 OR MSVC OR "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
+    target_link_libraries(corei_gameenginedevice_public INTERFACE
+        binkstub
+        d3d8lib
+        milesstub
+    )
+endif()
 
 if(RTS_BUILD_OPTION_FFMPEG)
     find_package(FFMPEG REQUIRED)

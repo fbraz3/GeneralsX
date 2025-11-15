@@ -45,15 +45,19 @@
 #include "W3DDevice/GameClient/W3DGameWindowManager.h"
 #include "W3DDevice/GameClient/W3DGameFont.h"
 #include "W3DDevice/GameClient/W3DDisplayStringManager.h"
+#ifdef _WIN32
 #include "VideoDevice/Bink/BinkVideoPlayer.h"
 #include "Win32Device/GameClient/Win32DIKeyboard.h"
 #include "Win32Device/GameClient/Win32DIMouse.h"
 #include "Win32Device/GameClient/Win32Mouse.h"
+#endif
 #include "W3DDevice/GameClient/W3DMouse.h"
 
 class ThingTemplate;
 
+#ifdef _WIN32
 extern Win32Mouse *TheWin32Mouse;
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // PROTOTYPES /////////////////////////////////////////////////////////////////
@@ -119,7 +123,11 @@ inline Keyboard *W3DGameClient::createKeyboard( void ) { return NEW DirectInputK
 inline Mouse *W3DGameClient::createMouse( void )
 {
 	//return new DirectInputMouse;
+#ifdef _WIN32
 	Win32Mouse * mouse = NEW W3DMouse;
 	TheWin32Mouse = mouse;   ///< global cheat for the WndProc()
 	return mouse;
+#else
+	return nullptr;  // TODO: Implement cross-platform mouse handler
+#endif
 }
