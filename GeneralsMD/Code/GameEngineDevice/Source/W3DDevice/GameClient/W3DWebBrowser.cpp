@@ -22,8 +22,8 @@
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
-////// W3DWebBrowser.cpp ///////////////
-// July 2002 Bryan Cleveland
+///// W3DWebBrowser.cpp ///////////////////
+// July 2002, Bryan Cleveland
 
 #include "W3DDevice/GameClient/W3DWebBrowser.h"
 #include "WW3D2/texture.h"
@@ -38,12 +38,14 @@
 #include "WW3D2/dx8wrapper.h"
 #include "WW3D2/dx8webbrowser.h"
 
-W3DWebBrowser::W3DWebBrowser() : WebBrowser() {
+#ifdef _WIN32
+
+W3DWebBrowser::W3DWebBrowser() : WebBrowser()
+{
 }
 
 Bool W3DWebBrowser::createBrowserWindow(const char *tag, GameWindow *win)
 {
-#ifdef _WIN32
 	WinInstanceData *winData = win->winGetInstanceData();
 	AsciiString windowName = winData->m_decoratedNameString;
 
@@ -72,15 +74,17 @@ Bool W3DWebBrowser::createBrowserWindow(const char *tag, GameWindow *win)
 	DX8WebBrowser::CreateBrowser(windowName.str(), url->m_url.str(), x, y, w, h, 0, BROWSEROPTION_SCROLLBARS | BROWSEROPTION_3DBORDER, (LPDISPATCH)this);
 
 	return TRUE;
-#else // _WIN32
-	// Non-Windows: Web browser functionality not available (Windows COM API)
-	return FALSE;
-#endif // _WIN32
 }
 
 void W3DWebBrowser::closeBrowserWindow(GameWindow *win)
 {
-#ifdef _WIN32
 	DX8WebBrowser::DestroyBrowser(win->winGetInstanceData()->m_decoratedNameString.str());
-#endif // _WIN32
 }
+
+#else // _WIN32
+
+// Non-Windows: Web browser functionality not available (Windows COM API)
+// No implementation needed - class is not defined on non-Windows platforms
+
+#endif // _WIN32
+

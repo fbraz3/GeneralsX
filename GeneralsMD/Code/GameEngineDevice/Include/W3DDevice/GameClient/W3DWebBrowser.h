@@ -27,6 +27,7 @@
 
 #pragma once
 
+#ifdef _WIN32
 #include "GameNetwork/WOLBrowser/WebBrowser.h"
 
 class TextureClass;
@@ -42,3 +43,4 @@ class W3DWebBrowser : public WebBrowser
 		virtual void closeBrowserWindow(GameWindow *win);
 
 };
+#endif // _WIN32

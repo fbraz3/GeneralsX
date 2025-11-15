@@ -846,6 +846,7 @@ void setFPMode( void );
 //=============================================================================
 /** Draw all active track marks for this frame */
 //=============================================================================
+#ifdef _WIN32
 void WaterTracksRenderSystem::flush(RenderInfoClass & rinfo)
 {
 /** @todo: Optimize system by drawing tracks as triangle strips and use dynamic vertex buffer access.
@@ -936,6 +937,12 @@ Try improving the fit to vertical surfaces like cliffs.
 		W3DShaderManager::resetShader(W3DShaderManager::ST_SHROUD_TEXTURE);
 	}
 }
+#else // _WIN32
+// Non-Windows: Water track rendering not implemented
+void WaterTracksRenderSystem::flush(RenderInfoClass & rinfo)
+{
+}
+#endif // _WIN32
 
 WaterTracksObj *WaterTracksRenderSystem::findTrack(Vector2 &start, Vector2 &end, waveType type)
 {
@@ -1083,6 +1090,7 @@ extern HWND ApplicationHWnd;
 //TODO: Fix editor so it actually draws the wave segment instead of line while editing
 //Could freeze all the water while editing?  Or keep setting elapsed time on current segment.
 //Have to make it so seamless merge of segments at final position.
+#ifdef _WIN32
 static void TestWaterUpdate(void)
 {
 	static Int doInit=1;
@@ -1307,3 +1315,6 @@ static void TestWaterUpdate(void)
 		}
 	}
 }
+#else // _WIN32
+// Non-Windows: TestWaterUpdate not implemented (stub in Windows-only section)
+#endif // _WIN32

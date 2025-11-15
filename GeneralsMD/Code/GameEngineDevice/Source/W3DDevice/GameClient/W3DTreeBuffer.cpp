@@ -126,6 +126,7 @@ W3DTreeBuffer::W3DTreeTextureClass::W3DTreeTextureClass(unsigned width, unsigned
 	pixel borders around them, so that when the tiles are scaled and bilinearly
 	interpolated, you don't get seams between the tiles.  */
 //=============================================================================
+#ifdef _WIN32
 int W3DTreeBuffer::W3DTreeTextureClass::update(W3DTreeBuffer *buffer)
 {
 
@@ -196,6 +197,13 @@ int W3DTreeBuffer::W3DTreeTextureClass::update(W3DTreeBuffer *buffer)
 	}
 	return(surface_desc.Height);
 }
+#else // _WIN32
+// Non-Windows: Tree texture update not implemented
+int W3DTreeBuffer::W3DTreeTextureClass::update(W3DTreeBuffer *buffer)
+{
+	return 0;  // Stub implementation
+}
+#endif // _WIN32
 
 
 //=============================================================================
@@ -1218,6 +1226,7 @@ void W3DTreeBuffer::unitMoved(Object *unit)
 //=============================================================================
 /** Allocates the index and vertex buffers. */
 //=============================================================================
+#ifdef _WIN32
 void W3DTreeBuffer::allocateTreeBuffers(void)
 {
 	Int i;
@@ -1254,6 +1263,13 @@ void W3DTreeBuffer::allocateTreeBuffers(void)
 	if (FAILED(hr))
 		return;
 }
+#else // _WIN32
+// Non-Windows: Tree buffer allocation not implemented
+void W3DTreeBuffer::allocateTreeBuffers(void)
+{
+	// Stub implementation - tree shaders are Windows/DirectX only
+}
+#endif // _WIN32
 
 //=============================================================================
 // W3DTreeBuffer::clearAllTrees
@@ -1717,6 +1733,7 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 	W3DShaderManager::setShroudTex(1);
 	DX8Wrapper::Apply_Render_State_Changes();
 
+#ifdef _WIN32
 	if (m_dwTreeVertexShader) {
 		D3DXMATRIX matProj, matView, matWorld;
 		DX8Wrapper::_Get_DX8_Transform(D3DTS_WORLD, *(Matrix4x4*)&matWorld);
@@ -1774,6 +1791,7 @@ void W3DTreeBuffer::drawTrees(CameraClass * camera, RefRenderObjListIterator *pD
 	} else {
 		DX8Wrapper::Set_Vertex_Shader(DX8_FVF_XYZNDUV1);
 	}
+#endif // _WIN32
 
 
 	Int bNdx;

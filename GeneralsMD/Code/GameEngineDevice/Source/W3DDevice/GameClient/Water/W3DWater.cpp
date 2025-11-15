@@ -280,6 +280,8 @@ void WaterRenderObjClass::setupJbaWaterShader(void)
 //-------------------------------------------------------------------------------------------------
 WaterRenderObjClass::~WaterRenderObjClass(void)
 {
+	Int i;  // Declare outside of #ifdef so it's available for both paths
+
 #ifdef _WIN32
 	REF_PTR_RELEASE(m_meshVertexMaterialClass);
 	REF_PTR_RELEASE(m_vertexMaterialClass);
@@ -292,8 +294,6 @@ WaterRenderObjClass::~WaterRenderObjClass(void)
 	REF_PTR_RELEASE (m_waterNoiseTexture);
 	REF_PTR_RELEASE (m_riverAlphaEdge);
 	REF_PTR_RELEASE (m_waterSparklesTexture);
-
-	Int i;
 
 	for(i=0; i<TIME_OF_DAY_COUNT; i++)
 	{	REF_PTR_RELEASE(m_settings[i].skyTexture);
@@ -430,6 +430,7 @@ RenderObjClass *	 WaterRenderObjClass::Clone(void) const
 /** Copies raw bits from pBumpSrc (a regular grayscale texture) into a D3D
 	*   bump-map format. */
 //-------------------------------------------------------------------------------------------------
+#ifdef _WIN32
 HRESULT WaterRenderObjClass::initBumpMap(LPDIRECT3DTEXTURE8 *pTex, TextureClass *pBumpSource)
 {
     SurfaceClass::SurfaceDescription    d3dsd;
@@ -611,17 +612,17 @@ HRESULT WaterRenderObjClass::initBumpMap(LPDIRECT3DTEXTURE8 *pTex, TextureClass 
             pSrcB0+=4;   pSrcB1+=4;   pSrcB2+=4;
         }
 
-        // Move to the next line
-        pSrc += dwSrcPitch;    pDst += dwDstPitch;
+    // Move to the next line
+    pSrc += dwSrcPitch;    pDst += dwDstPitch;
     }
 
     m_pBumpTexture[i]->UnlockRect(0);
     surf->Unlock();
-#endif
+#endif // MIPMAP_BUMP_TEXTURE
 
     return S_OK;
 }
-
+#endif // _WIN32
 //-------------------------------------------------------------------------------------------------
 /** Create and fill a D3D vertex buffer with water surface vertices */
 //-------------------------------------------------------------------------------------------------
