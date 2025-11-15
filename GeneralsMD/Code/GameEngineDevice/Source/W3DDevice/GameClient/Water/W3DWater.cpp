@@ -193,6 +193,7 @@ static Bool wireframeForDebug = 0;
 
 void WaterRenderObjClass::setupJbaWaterShader(void)
 {
+#ifdef _WIN32
 	if (!TheWaterTransparency->m_additiveBlend)
 		DX8Wrapper::Set_Shader(ShaderClass::_PresetAlphaShader);
 	else
@@ -266,6 +267,9 @@ void WaterRenderObjClass::setupJbaWaterShader(void)
 		DX8Wrapper::_Get_D3D_Device8()->SetPixelShaderConstant(0,   D3DXVECTOR4(REFLECTION_FACTOR, REFLECTION_FACTOR, REFLECTION_FACTOR, 1.0f), 1);
 		DX8Wrapper::_Get_D3D_Device8()->SetPixelShader(m_riverWaterPixelShader);
 	}
+#else // _WIN32
+	// Non-Windows stub - water shader setup skipped
+#endif // _WIN32
 }
 
 
@@ -276,6 +280,7 @@ void WaterRenderObjClass::setupJbaWaterShader(void)
 //-------------------------------------------------------------------------------------------------
 WaterRenderObjClass::~WaterRenderObjClass(void)
 {
+#ifdef _WIN32
 	REF_PTR_RELEASE(m_meshVertexMaterialClass);
 	REF_PTR_RELEASE(m_vertexMaterialClass);
 	REF_PTR_RELEASE(m_meshLight);
@@ -300,6 +305,9 @@ WaterRenderObjClass::~WaterRenderObjClass(void)
 	{	SAFE_RELEASE( m_pBumpTexture[i]);
 		SAFE_RELEASE( m_pBumpTexture2[i]);
 	}
+#else // _WIN32
+	// Non-Windows stub - DirectX resources skipped
+#endif // _WIN32
 
 	delete [] m_meshData;
 	m_meshData = NULL;
