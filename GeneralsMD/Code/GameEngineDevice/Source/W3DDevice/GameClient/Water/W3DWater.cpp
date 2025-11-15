@@ -626,6 +626,7 @@ HRESULT WaterRenderObjClass::initBumpMap(LPDIRECT3DTEXTURE8 *pTex, TextureClass 
 //-------------------------------------------------------------------------------------------------
 /** Create and fill a D3D vertex buffer with water surface vertices */
 //-------------------------------------------------------------------------------------------------
+#ifdef _WIN32
 HRESULT WaterRenderObjClass::generateVertexBuffer( Int sizeX, Int sizeY, Int vertexSize, Bool doStatic)
 {
 	m_numVertices=sizeX*sizeY;
@@ -701,10 +702,19 @@ HRESULT WaterRenderObjClass::generateVertexBuffer( Int sizeX, Int sizeY, Int ver
 
 	return S_OK;
 }
+#else // _WIN32
+HRESULT WaterRenderObjClass::generateVertexBuffer( Int sizeX, Int sizeY, Int vertexSize, Bool doStatic)
+{
+	m_numVertices=sizeX*sizeY;
+	m_vertexBufferD3DOffset=0;
+	return S_OK;  // Stub - no D3D vertex buffer on non-Windows
+}
+#endif // _WIN32
 
 //-------------------------------------------------------------------------------------------------
 /** Create and fill a D3D index buffer with water surface strip indices */
 //-------------------------------------------------------------------------------------------------
+#ifdef _WIN32
 HRESULT WaterRenderObjClass::generateIndexBuffer(Int sizeX, Int sizeY)
 {
 	HRESULT hr;
@@ -803,6 +813,13 @@ HRESULT WaterRenderObjClass::generateIndexBuffer(Int sizeX, Int sizeY)
 
 	return S_OK;
 }
+#else // _WIN32
+HRESULT WaterRenderObjClass::generateIndexBuffer(Int sizeX, Int sizeY)
+{
+	m_numIndices=(sizeY-1)*(sizeX*2+2) - 2;
+	return S_OK;  // Stub - no D3D index buffer on non-Windows
+}
+#endif // _WIN32
 
 //-------------------------------------------------------------------------------------------------
 /** Releases all w3d assets, to prepare for Reset device call. */
@@ -813,12 +830,15 @@ void WaterRenderObjClass::ReleaseResources(void)
 	REF_PTR_RELEASE(m_indexBuffer);
 
 	REF_PTR_RELEASE(m_pReflectionTexture);
+#ifdef _WIN32
 	SAFE_RELEASE(m_vertexBufferD3D);
 	SAFE_RELEASE(m_indexBufferD3D);
+#endif // _WIN32
 
 	if (m_waterTrackSystem)
 		m_waterTrackSystem->ReleaseResources();
 
+#ifdef _WIN32
 	if (m_dwWavePixelShader)
 		m_pDev->DeletePixelShader(m_dwWavePixelShader);
 
@@ -833,6 +853,7 @@ void WaterRenderObjClass::ReleaseResources(void)
 
 	if (m_riverWaterPixelShader)
 		m_pDev->DeletePixelShader(m_riverWaterPixelShader);
+#endif // _WIN32
 
 	m_dwWavePixelShader=0;
 	m_dwWaveVertexShader=0;
@@ -888,6 +909,7 @@ void WaterRenderObjClass::ReAcquireResources(void)
 		if (FAILED(hr=generateVertexBuffer(PATCH_SIZE,PATCH_SIZE,sizeof(SEA_PATCH_VERTEX),true)))
 			return;
 
+#ifdef _WIN32
 		//shader decleration
 		DWORD Declaration[]=
 		{
@@ -961,6 +983,11 @@ void WaterRenderObjClass::ReAcquireResources(void)
 			compiledShader->Release();
 		}
 	}
+#else // _WIN32
+	}
+	if (m_waterTrackSystem)
+		m_waterTrackSystem->ReAcquireResources();
+#endif // _WIN32
 
 	//W3D Invalidate textures after losing the device and since we peek at the textures directly, it won't
 	//know to reinit them for us.  Do it here manually:
@@ -1203,8 +1230,10 @@ void WaterRenderObjClass::enableWaterGrid(Bool state)
 		reset();
 
 		//Release existing grid data
+#ifdef _WIN32
 		SAFE_RELEASE(m_vertexBufferD3D);
 		SAFE_RELEASE(m_indexBufferD3D);
+#endif // _WIN32
 
 		//Create new grid data
 		if (FAILED(generateIndexBuffer(m_gridCellsX+1,m_gridCellsY+1)))
@@ -1782,6 +1811,7 @@ Bool WaterRenderObjClass::getClippedWaterPlane(CameraClass *cam, AABoxClass *box
 /** Draws the water surface using a custom D3D vertex/pixel shader and a
 	* reflection texture.  Only tested to work on GeForce3. */
 //-------------------------------------------------------------------------------------------------
+#ifdef _WIN32
 void WaterRenderObjClass::drawSea(RenderInfoClass & rinfo)
 {
 	AABoxClass	seaBox;
@@ -1986,6 +2016,12 @@ void WaterRenderObjClass::drawSea(RenderInfoClass & rinfo)
 	}
 
 }
+#else // _WIN32
+void WaterRenderObjClass::drawSea(RenderInfoClass & rinfo)
+{
+	// Stub - no D3D rendering on non-Windows
+}
+#endif // _WIN32
 
 
 #define FEATHER_LAYER_COUNT (5.0f)
@@ -2234,6 +2270,7 @@ void WaterRenderObjClass::renderSkyBody(Matrix3D *mat)
 /** Renders (draws) the water surface mesh geometry.
 	*	This is a work-in-progress!  Do not use this code! */
 //-------------------------------------------------------------------------------------------------
+#ifdef _WIN32
 void WaterRenderObjClass::renderWaterMesh(void)
 {
 
@@ -2461,6 +2498,12 @@ inline void WaterRenderObjClass::setGridVertexHeight(Int x, Int y, Real value)
 		m_meshData[(y+1)*(m_gridCellsX+1+2)+x+1].height = value;
 	}
 }
+#else // _WIN32
+void WaterRenderObjClass::renderWaterMesh(void)
+{
+	// Stub - no D3D mesh rendering on non-Windows
+}
+#endif // _WIN32
 
 void WaterRenderObjClass::setGridHeightClamps(Real minz, Real maxz)
 {
@@ -2706,6 +2749,7 @@ Real WaterRenderObjClass::getWaterHeight(Real x, Real y)
 //-------------------------------------------------------------------------------------------------
 //Draw a many sided river polygon.
 //-------------------------------------------------------------------------------------------------
+#ifdef _WIN32
 void WaterRenderObjClass::drawRiverWater(PolygonTrigger *pTrig)
 {
 	DX8Wrapper::Invalidate_Cached_Render_States();	///@todo: Figure out why rivers don't draw without reset of all states.
@@ -3030,10 +3074,17 @@ void WaterRenderObjClass::setupFlatWaterShader(void)
 		DX8Wrapper::_Get_D3D_Device8()->SetPixelShader(m_trapezoidWaterPixelShader);
 	}
 }
+#else // _WIN32
+void WaterRenderObjClass::drawRiverWater(PolygonTrigger *pTrig)
+{
+	// Stub - no D3D river rendering on non-Windows
+}
+#endif // _WIN32
 
 //-------------------------------------------------------------------------------------------------
 //Draw a 4 sided flat water area.
 //-------------------------------------------------------------------------------------------------
+#ifdef _WIN32
 void WaterRenderObjClass::drawTrapezoidWater(Vector3 points[4])
 {
 	Vector3 origin(points[0]);
@@ -3344,6 +3395,12 @@ void WaterRenderObjClass::drawTrapezoidWater(Vector3 points[4])
 	}
 	DX8Wrapper::_Get_D3D_Device8()->SetRenderState(D3DRS_CULLMODE, cull);
 }
+#else // _WIN32
+void WaterRenderObjClass::drawTrapezoidWater(Vector3 points[4])
+{
+	// Stub - no D3D trapezoid water rendering on non-Windows
+}
+#endif // _WIN32
 
 
 
