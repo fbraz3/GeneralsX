@@ -1,6 +1,100 @@
 # GeneralsX macOS Port Development Diary
 
-## Current Session: Phase 39.1 Completion — **SYSTEMATIC WINDOWS API RESOLUTION**
+## Current Session: Phase 39.2.1 — **WIN32 FUNCTION GUARDS**
+
+### Session Focus: Securing Windows-Specific Functions
+
+**STATUS**: ✅ COMPLETE - Win32-specific function guards added to WinMain.cpp
+
+**Date**: November 16, 2025 (session 2)
+
+**Key Achievements This Session**:
+
+✅ **WinMainSetupDialogProc Guard**: Protected Windows-specific dialog procedure with `#ifdef _WIN32`
+✅ **CreateGameEngine Guard**: Protected Win32GameEngine creation with `#ifdef _WIN32` guard
+✅ **Compilation Success**: GeneralsXZH builds successfully with all guards in place
+✅ **Commit**: Changes committed to main branch (hash: 93e96b5a)
+
+**Technical Details**:
+- WinMainSetupDialogProc() wrapped with `#ifdef _WIN32` / `#endif`
+- CreateGameEngine() completely protected (declaration and implementation)
+- Both functions depend on Windows-only classes/APIs, safe to guard
+- No functional changes to Windows build, POSIX builds avoid undefined references
+
+**Errors Resolved**:
+- ✅ WinMainSetupDialogProc undefined reference on POSIX (FIXED)
+- ✅ CreateGameEngine Win32GameEngine dependency issue (FIXED)
+
+**Remaining Work**:
+- Continue with remaining Win32 function guards in other source files
+- Phase 39.2 will continue systematic protection of all Windows-specific code
+
+---
+
+## Previous Session: Phase 39.2 — **ENTRY POINT CONSOLIDATION**
+
+### Session Focus: Unified Cross-Platform Architecture
+
+**STATUS**: 🔄 COMPLETE - Entry point consolidation milestone achieved
+
+**Date**: November 16, 2025 (cont.)
+
+**Key Achievements This Session**:
+
+✅ **Architectural Decision**: Recognized that dual-stack approach (parallel Win32-native + SDL2 wrappers) was unsustainable
+✅ **Strategic Pivot**: Consolidated fragmented entry points into single unified WinMain.cpp
+✅ **Removed Files**: Deleted artisanal main_posix.cpp and WinMainSDL2.cpp entry point wrappers
+✅ **CMakeLists Simplification**: Both Generals and GeneralsMD now use single WinMain.cpp for all platforms
+✅ **SDL2 Integration**: Added proper SDL2 event loop with correct SDL2 API (not SDL3)
+✅ **Platform Guards**: Protected all Windows-only globals with `#ifdef _WIN32` guards
+
+**Consolidation Pattern Implemented**:
+```
+OLD (Unsustainable): 
+  - WinMain.cpp (Windows)
+  - main_posix.cpp (POSIX entry)
+  - WinMainSDL2.cpp (SDL2 wrapper)
+  → Multiple versions to maintain, sync issues
+
+NEW (Unified):
+  - WinMain.cpp (Single file for all platforms)
+    - #ifdef _WIN32 → Windows: native Win32 window/message loop
+    - #else → POSIX: SDL2 window/event loop
+  → Single code path, less maintenance burden
+```
+
+**Technical Details**:
+- SDL2 ARM64 library verified: /opt/homebrew/lib/libSDL2.dylib
+- SDL2 version: 2.32.10 (confirmed compatibility)
+- SDL2 Event API used correctly (SDL_QUIT, SDL_WINDOWEVENT, etc.)
+- Window creation parameters fixed for SDL2 API (6 args: title, x, y, w, h, flags)
+
+**Compilation Status**:
+- CMake configuration: ✅ SUCCESS
+- Build progress: 1006/1009 files compiled successfully
+- Remaining errors: 20 Win32-specific type errors (next phase focus)
+
+**Errors Remaining (Awaiting Phase 39.2.1)**:
+1. `wcscasecmp_wrapper` macro redefinition in header conflict
+2. Win32Mouse.h references WPARAM/LPARAM outside ifdef guards
+3. Global `TheKeyboard` undefined in POSIX builds
+4. `SetCurrentDirectory()` and Windows file operations outside ifdef
+5. `gLoadScreenBitmap` and `IMAGE_BITMAP` constants outside ifdef
+6. Multiple source files still have mixed Win32 code
+
+**Why This Matters**:
+- Eliminates "ifdef _WIN32 is not a solution for everything" anti-pattern
+- Reduces code complexity from maintaining parallel implementations
+- Provides clear separation: platform-specific within boundaries, not sprinkled everywhere
+- Sets foundation for systematic SDL2 replacement (Phase 39.2.1)
+
+**Commit Hash**: 7827f367 (consolidate fragmented entry points into unified WinMain.cpp)
+
+---
+
+## Previous Session: Cross-Platform Synchronization — **PHASE 39.1 COMPLETION**
+
+
 
 ### Session Summary: Cross-Platform Synchronization Between Generals and GeneralsMD
 
