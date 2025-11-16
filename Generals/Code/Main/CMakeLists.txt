@@ -75,17 +75,11 @@ target_sources(g_generals PRIVATE
     WinMain.h
 )
 
-# Platform-specific entry point
-if(WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows")
-    target_sources(g_generals PRIVATE
-        WinMain.cpp
-    )
-else()
-    # POSIX/Unix entry point for macOS/Linux
-    target_sources(g_generals PRIVATE
-        main_posix.cpp
-    )
-endif()
+# Unified entry point: WinMain.cpp for all platforms (Windows uses native Win32, POSIX uses SDL2)
+# Uses #ifdef _WIN32 / #else to branch at compile time
+target_sources(g_generals PRIVATE
+    WinMain.cpp
+)
 
 if(WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows")
     # VS2005 and later adds default manifest, we need to turn it off to prevent conflict with custom manifest
