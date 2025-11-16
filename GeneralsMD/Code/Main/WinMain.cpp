@@ -67,10 +67,13 @@
 #include "GameClient/ClientInstance.h"
 #include "GameClient/InGameUI.h"
 #include "GameClient/GameClient.h"
-#include "GameLogic/GameLogic.h"  ///< @todo for demo, remove
+#include "GameClient/Keyboard.h"
 #include "GameClient/Mouse.h"
 #include "GameClient/IMEManager.h"
+#include "GameLogic/GameLogic.h"  ///< @todo for demo, remove
+#ifdef _WIN32
 #include "Win32Device/GameClient/Win32Mouse.h"
+#endif
 #include "Win32Device/Common/Win32GameEngine.h"
 #include "Common/version.h"
 #include "BuildVersion.h"
@@ -941,7 +944,9 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	try {
 
+#ifdef _WIN32
 		SetUnhandledExceptionFilter( UnHandledExceptionFilter );
+#endif
 		//
 		// there is something about checkin in and out the .dsp and .dsw files
 		// that blows the working directory information away on each of the
@@ -960,6 +965,7 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		initMemoryManager();
 
 		/// @todo remove this force set of working directory later
+#ifdef _WIN32
 		Char buffer[ _MAX_PATH ];
 		GetModuleFileName( NULL, buffer, sizeof( buffer ) );
 		if (Char *pEnd = strrchr(buffer, '\\'))
@@ -967,7 +973,7 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			*pEnd = 0;
 		}
 		::SetCurrentDirectory(buffer);
-
+#endif
 
 		#ifdef RTS_DEBUG
 			// Turn on Memory heap tracking
@@ -985,6 +991,7 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 
 // Force "splash image" to be loaded from a file, not a resource so same exe can be used in different localizations.
+#ifdef _WIN32
 #if defined(RTS_DEBUG) || defined RTS_PROFILE
 
 			// check both localized directory and root dir
@@ -1006,6 +1013,7 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		// in release, the file only ever lives in the root dir
 		gLoadScreenBitmap = (HBITMAP)LoadImage(hInstance, "Install_Final.bmp", IMAGE_BITMAP, 0, 0, LR_SHARED|LR_LOADFROMFILE);
 #endif
+#endif  // _WIN32
 
 		CommandLine::parseCommandLineForStartup();
 
@@ -1013,6 +1021,7 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		if(!TheGlobalData->m_headless && initializeAppWindows(hInstance, nCmdShow, TheGlobalData->m_windowed) == false)
 			return exitcode;
 
+#ifdef _WIN32
 		// save our application instance for future use
 		ApplicationHInstance = hInstance;
 
@@ -1020,6 +1029,7 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			::DeleteObject(gLoadScreenBitmap);
 			gLoadScreenBitmap = NULL;
 		}
+#endif
 
 
 		// BGC - initialize COM
@@ -1035,6 +1045,7 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 		// TheSuperHackers @refactor The instance mutex now lives in its own class.
 
+#ifdef _WIN32
 		if (!rts::ClientInstance::initialize())
 		{
 			HWND ccwindow = FindWindow(rts::ClientInstance::getFirstInstanceName(), NULL);
@@ -1050,6 +1061,16 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			shutdownMemoryManager();
 			return exitcode;
 		}
+#else
+		if (!rts::ClientInstance::initialize())
+		{
+			DEBUG_LOG(("Generals is already running...Bail!"));
+			delete TheVersion;
+			TheVersion = NULL;
+			shutdownMemoryManager();
+			return exitcode;
+		}
+#endif
 		DEBUG_LOG(("Create Generals Mutex okay."));
 
 		DEBUG_LOG(("CRC message is %d", GameMessage::MSG_LOGIC_CRC));
@@ -1085,9 +1106,58 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 }
 
+#else  // POSIX main() entry point
+
+// Non-Windows (SDL2) entry point
+Int main( Int argc, Char* argv[] )
+{
+	// On non-Windows, simulate WinMain with dummy parameters
+	Int hInstance = 0;           // No HINSTANCE on POSIX
+	Int hPrevInstance = 0;       // Not used on modern systems
+	const Char* lpCmdLine = "";        // Could build from argc/argv if needed
+	Int nCmdShow = 1;            // SW_NORMAL equivalent
+	
+	// Just call the game main logic which doesn't depend on WinMain specifics
+	// For now, we'll call into the game initialization directly
+	// This will be expanded as the port progresses
+	
+	try {
+		// Initialize critical sections
+		static CriticalSection critSec1, critSec2, critSec3, critSec4, critSec5;
+		TheAsciiStringCriticalSection = &critSec1;
+		TheUnicodeStringCriticalSection = &critSec2;
+		TheDmaCriticalSection = &critSec3;
+		TheMemoryPoolCriticalSection = &critSec4;
+		TheDebugLogCriticalSection = &critSec5;
+		
+		// Initialize memory manager
+		initMemoryManager();
+		
+		// Parse command line from argc/argv
+		CommandLine::parseCommandLineForStartup();
+		
+		// Create and run game engine
+		TheGameEngine = CreateGameEngine();
+		if (TheGameEngine) {
+			// Main game loop would go here
+			// For now, this is a stub
+			DEBUG_LOG(("GeneralsX Game Engine initialized on POSIX/SDL2"));
+		}
+		
+		return 0;
+	}
+	catch (...)
+	{
+		return 1;
+	}
+}
+
+#endif  // _WIN32
+
 // CreateGameEngine ===========================================================
 /** Create the Win32 game engine we're going to use */
 //=============================================================================
+#ifdef _WIN32
 GameEngine *CreateGameEngine( void )
 {
 	Win32GameEngine *engine;
@@ -1100,4 +1170,5 @@ GameEngine *CreateGameEngine( void )
 	return engine;
 
 }
+#endif
 
