@@ -32,6 +32,7 @@ typedef WCHAR* LPWSTR;
 #ifdef _WIN32
 	#define _wcsicmp _wcsicmp
 	#define wcsicmp _wcsicmp
+	#define _wcsnicmp _wcsnicmp
 #else
 	// macOS and Linux use wcscasecmp instead of wcscasecmp
 	// Implement a wrapper for _wcsicmp/wcsicmp
@@ -45,8 +46,22 @@ typedef WCHAR* LPWSTR;
 		}
 		return std::towlower(*s1) - std::towlower(*s2);
 	}
+	
+	inline int wcsnicmp_wrapper(const wchar_t* s1, const wchar_t* s2, size_t n) {
+		for (size_t i = 0; i < n; i++) {
+			if (!s1[i] || !s2[i]) {
+				return (s1[i] != 0) - (s2[i] != 0);
+			}
+			wchar_t c1 = std::towlower(s1[i]);
+			wchar_t c2 = std::towlower(s2[i]);
+			if (c1 != c2) return c1 - c2;
+		}
+		return 0;
+	}
+	
 	#define _wcsicmp wcscasecmp_wrapper
 	#define wcsicmp wcscasecmp_wrapper
+	#define _wcsnicmp wcsnicmp_wrapper
 	#define wcscmp wcscmp  // Already exists in cwchar
 #endif
 

@@ -64,29 +64,9 @@ inline int _strnicmp(const char* s1, const char* s2, size_t n) {
     return strncasecmp(s1, s2, n);
 }
 
-// Wide character comparison
-inline int _wcsicmp(const wchar_t* s1, const wchar_t* s2) {
-    while (*s1 && *s2) {
-        wchar_t c1 = towlower(*s1);
-        wchar_t c2 = towlower(*s2);
-        if (c1 != c2) return c1 - c2;
-        s1++;
-        s2++;
-    }
-    return towlower(*s1) - towlower(*s2);
-}
-
-inline int _wcsnicmp(const wchar_t* s1, const wchar_t* s2, size_t n) {
-    for (size_t i = 0; i < n; i++) {
-        if (!s1[i] || !s2[i]) {
-            return (s1[i] != 0) - (s2[i] != 0);
-        }
-        wchar_t c1 = towlower(s1[i]);
-        wchar_t c2 = towlower(s2[i]);
-        if (c1 != c2) return c1 - c2;
-    }
-    return 0;
-}
+// Wide character comparison functions are defined in wchar_compat.h
+// Do NOT duplicate _wcsicmp or _wcsnicmp here to avoid redefinition conflicts
+// wchar_compat.h provides: _wcsicmp, _wcsnicmp implementations
 
 // Windows SYSTEMTIME structure (used for replay timestamps)
 #include <ctime>
