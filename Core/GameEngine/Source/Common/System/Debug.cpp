@@ -404,7 +404,19 @@ void DebugInit(int flags)
 		strlcat(theLogFileName, ".txt", ARRAY_SIZE(theLogFileNamePrev));
 
 		remove(theLogFileNamePrev);
-		rename(theLogFileName, theLogFileNamePrev);
+		if (rename(theLogFileName, theLogFileNamePrev) != 0)
+		{
+#ifdef DEBUG_LOGGING
+			DebugLog("Warning: Could not rename buffer file '%s' to '%s'. Will remove instead", theLogFileName, theLogFileNamePrev);
+#endif
+			if (remove(theLogFileName) != 0)
+			{
+#ifdef DEBUG_LOGGING
+				DebugLog("Warning: Failed to remove file '%s'", theLogFileName);
+#endif
+			}
+		}
+
 		theLogFile = fopen(theLogFileName, "w");
 		if (theLogFile != NULL)
 		{
@@ -740,7 +752,18 @@ void ReleaseCrash(const char *reason)
 	strlcat(curbuf, RELEASECRASH_FILE_NAME, ARRAY_SIZE(curbuf));
 
  	remove(prevbuf);
-	rename(curbuf, prevbuf);
+	if (rename(curbuf, prevbuf) != 0)
+	{
+#ifdef DEBUG_LOGGING
+		DebugLog("Warning: Could not rename buffer file '%s' to '%s'. Will remove instead", curbuf, prevbuf);
+#endif
+		if (remove(curbuf) != 0)
+		{
+#ifdef DEBUG_LOGGING
+			DebugLog("Warning: Failed to remove file '%s'", curbuf);
+#endif
+		}
+	}
 
 	theReleaseCrashLogFile = fopen(curbuf, "w");
 	if (theReleaseCrashLogFile)
@@ -835,7 +858,18 @@ void ReleaseCrashLocalized(const AsciiString& p, const AsciiString& m)
 	strlcat(curbuf, RELEASECRASH_FILE_NAME, ARRAY_SIZE(curbuf));
 
  	remove(prevbuf);
-	rename(curbuf, prevbuf);
+	if (rename(curbuf, prevbuf) != 0)
+	{
+#ifdef DEBUG_LOGGING
+		DebugLog("Warning: Could not rename buffer file '%s' to '%s'. Will remove instead", curbuf, prevbuf);
+#endif
+		if (remove(curbuf) != 0)
+		{
+#ifdef DEBUG_LOGGING
+			DebugLog("Warning: Failed to remove file '%s'", curbuf);
+#endif
+		}
+	}
 
 	theReleaseCrashLogFile = fopen(curbuf, "w");
 	if (theReleaseCrashLogFile)
