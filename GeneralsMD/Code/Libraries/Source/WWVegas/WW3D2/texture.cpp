@@ -42,7 +42,6 @@
 #include "texture.h"
 
 #include "d3d8_vulkan_graphics_compat.h"
-#include <d3dx8core.h>
 #include "dx8wrapper.h"
 #include "TARGA.h"
 #include <nstrdup.h>

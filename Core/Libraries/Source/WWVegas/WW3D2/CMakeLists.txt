@@ -1,28 +1,28 @@
 set(WW3D2_SRC
     aabtree.cpp
     aabtree.h
-    #aabtreebuilder.cpp
-    #aabtreebuilder.h
-    agg_def.cpp
+    aabtreebuilder.cpp
+    aabtreebuilder.h
+    #agg_def.cpp
     agg_def.h
     animatedsoundmgr.cpp
     animatedsoundmgr.h
-    #animobj.cpp
-    #animobj.h
-    #assetmgr.cpp
-    #assetmgr.h
+    animobj.cpp
+    animobj.h
+    assetmgr.cpp
+    assetmgr.h
     assetstatus.cpp
     assetstatus.h
     bitmaphandler.cpp
     bitmaphandler.h
-    #bmp2d.cpp
-    #bmp2d.h
-    #boxrobj.cpp
-    #boxrobj.h
+    bmp2d.cpp
+    bmp2d.h
+    boxrobj.cpp
+    boxrobj.h
     bwrender.cpp
     bwrender.h
-    #camera.cpp
-    #camera.h
+    camera.cpp
+    camera.h
     #classid.h # unused
     collect.cpp
     collect.h
@@ -32,12 +32,12 @@ set(WW3D2_SRC
     coltype.h
     composite.cpp
     composite.h
-    #dazzle.cpp
-    #dazzle.h
+    dazzle.cpp
+    dazzle.h
     #ddsfile.cpp
     #ddsfile.h
-    #decalmsh.cpp
-    #decalmsh.h
+    decalmsh.cpp
+    decalmsh.h
     decalsys.cpp
     decalsys.h
     distlod.cpp
@@ -45,25 +45,25 @@ set(WW3D2_SRC
     dllist.h
     #dx8caps.cpp
     #dx8caps.h
-    #dx8fvf.cpp
-    #dx8fvf.h
-    #dx8indexbuffer.cpp
-    #dx8indexbuffer.h
-    dx8list.h
-    dx8polygonrenderer.cpp
-    dx8polygonrenderer.h
-    #dx8renderer.cpp
-    #dx8renderer.h
-    #dx8rendererdebugger.cpp
-    #dx8rendererdebugger.h
-    #dx8texman.cpp
-    #dx8texman.h
-    #dx8vertexbuffer.cpp
-    #dx8vertexbuffer.h
-    dx8webbrowser.cpp
-    dx8webbrowser.h
-    #dx8wrapper.cpp
-    #dx8wrapper.h
+#    dx8fvf.cpp
+#    dx8fvf.h
+#    dx8indexbuffer.cpp
+#    dx8indexbuffer.h
+#    dx8list.h
+#    dx8polygonrenderer.cpp
+#    dx8polygonrenderer.h
+#    dx8renderer.cpp
+#    dx8renderer.h
+#    dx8rendererdebugger.cpp
+#    dx8rendererdebugger.h
+#    dx8texman.cpp
+#    dx8texman.h
+#    dx8vertexbuffer.cpp
+#    dx8vertexbuffer.h
+#    dx8webbrowser.cpp
+#    dx8webbrowser.h
+#    dx8wrapper.cpp
+#    dx8wrapper.h
     dynamesh.cpp
     dynamesh.h
     font3d.cpp
@@ -74,71 +74,71 @@ set(WW3D2_SRC
     framgrab.h
     hanim.cpp
     hanim.h
-    #hanimmgr.cpp
-    #hanimmgr.h
+    hanimmgr.cpp
+    hanimmgr.h
     hcanim.cpp
     hcanim.h
     #hlod.cpp
     #hlod.h
     hmdldef.cpp
     hmdldef.h
-    #hmorphanim.cpp
-    #hmorphanim.h
-    #hrawanim.cpp
-    #hrawanim.h
+    hmorphanim.cpp
+    hmorphanim.h
+    hrawanim.cpp
+    hrawanim.h
     htree.cpp
     htree.h
-    #htreemgr.cpp
-    #htreemgr.h
+    htreemgr.cpp
+    htreemgr.h
     intersec.cpp
     intersec.h
     intersec.inl
     inttest.h
     layer.cpp
     layer.h
-    #light.cpp
-    #light.h
+    light.cpp
+    light.h
     #lightenvironment.cpp
     #lightenvironment.h
     line3d.cpp
     line3d.h
-    #linegrp.cpp
-    #linegrp.h
-    #mapper.cpp
-    #mapper.h
+    linegrp.cpp
+    linegrp.h
+    mapper.cpp
+    mapper.h
     matinfo.cpp
     matinfo.h
-    #matpass.cpp
-    #matpass.h
-    #matrixmapper.cpp
-    #matrixmapper.h
-    #mesh.cpp
-    #mesh.h
-    #meshbuild.cpp
-    #meshbuild.h
+    matpass.cpp
+    matpass.h
+    matrixmapper.cpp
+    matrixmapper.h
+    mesh.cpp
+    mesh.h
+    meshbuild.cpp
+    meshbuild.h
     meshdam.cpp
     meshdam.h
-    #meshgeometry.cpp
-    #meshgeometry.h
-    #meshmatdesc.cpp
-    #meshmatdesc.h
-    #meshmdl.cpp
-    #meshmdl.h
-    #meshmdlio.cpp
+    meshgeometry.cpp
+    meshgeometry.h
+    meshmatdesc.cpp
+    meshmatdesc.h
+    meshmdl.cpp
+    meshmdl.h
+    meshmdlio.cpp
     metalmap.cpp
     metalmap.h
     missingtexture.cpp
     missingtexture.h
-    #motchan.cpp
-    #motchan.h
-    #nullrobj.cpp
-    #nullrobj.h
-    #part_buf.cpp
-    #part_buf.h
-    #part_emt.cpp
-    #part_emt.h
-    #part_ldr.cpp
-    #part_ldr.h
+    motchan.cpp
+    motchan.h
+    nullrobj.cpp
+    nullrobj.h
+    part_buf.cpp
+    part_buf.h
+    part_emt.cpp
+    part_emt.h
+    part_ldr.cpp
+    part_ldr.h
     pivot.cpp
     pivot.h
     pointgr.cpp
@@ -156,33 +156,33 @@ set(WW3D2_SRC
     proxy.h
     rddesc.h
     #render2d.cpp
-    #render2d.h
+    render2d.h
     render2dsentence_stub.cpp  # Cross-platform stub for FontCharsClass and Render2DSentenceClass
     render2dsentence.h         # API header (works on all platforms)
     renderobjectrecycler.cpp
     renderobjectrecycler.h
     rendobj.cpp
     rendobj.h
-    #rinfo.cpp
-    #rinfo.h
+    rinfo.cpp
+    rinfo.h
     ringobj.cpp
     ringobj.h
     robjlist.h
-    #scene.cpp
-    #scene.h
+    scene.cpp
+    scene.h
     segline.cpp
     segline.h
     seglinerenderer.cpp
     seglinerenderer.h
     #shader.cpp
-    #shader.h
+    shader.h
     shattersystem.cpp
     shattersystem.h
     #shdlib.h
     snappts.cpp
     snapPts.h
     #sortingrenderer.cpp
-    #sortingrenderer.h
+    sortingrenderer.h
     soundlibrarybridge.h
     soundrobj.cpp
     soundrobj.h
@@ -198,22 +198,22 @@ set(WW3D2_SRC
     streakRender.h
     stripoptimizer.cpp
     stripoptimizer.h
-    #surfaceclass.cpp
+#    surfaceclass.cpp
     surfaceclass.h
-    #texproject.cpp
-    #texproject.h
+#    texproject.cpp
+    texproject.h
     #textdraw.cpp # unused
     textdraw.h
-    #texture.cpp
-    #texture.h
-    #texturefilter.cpp
-    #texturefilter.h
-    #textureloader.cpp
-    #textureloader.h
-    #texturethumbnail.cpp
-    #texturethumbnail.h
-    #vertmaterial.cpp
-    #vertmaterial.h
+#    texture.cpp
+    texture.h
+#    texturefilter.cpp
+    texturefilter.h
+#    textureloader.cpp
+    textureloader.h
+#    texturethumbnail.cpp
+    texturethumbnail.h
+    vertmaterial.cpp
+    vertmaterial.h
     visrasterizer.cpp
     visrasterizer.h
     w3d_dep.cpp
@@ -225,8 +225,8 @@ set(WW3D2_SRC
     w3derr.h
     w3dexclusionlist.cpp
     w3dexclusionlist.h
-    #ww3d.cpp
-    #ww3d.h
+    ww3d.cpp
+    ww3d.h
     ww3dformat.cpp
     ww3dformat.h
     ww3dids.h
@@ -313,23 +313,9 @@ set(WW3D2_SRC
     d3d8_vulkan_drawing.cpp
 )
 
-# Exclude DX8-only files when building with the Vulkan backend to avoid
-# pulling Windows/Direct3D dependencies on non-Windows hosts.
-if (USE_VULKAN)
-    list(REMOVE_ITEM WW3D2_SRC
-        agg_def.cpp agg_def.h
-        dx8caps.cpp dx8caps.h
-        dx8fvf.cpp dx8fvf.h
-        dx8indexbuffer.cpp dx8indexbuffer.h
-        dx8list.h dx8polygonrenderer.cpp dx8polygonrenderer.h
-        dx8renderer.cpp dx8renderer.h
-        dx8rendererdebugger.cpp dx8rendererdebugger.h
-        dx8texman.cpp dx8texman.h
-        dx8vertexbuffer.cpp dx8vertexbuffer.h
-        dx8webbrowser.cpp dx8webbrowser.h
-        dx8wrapper.cpp dx8wrapper.h
-    )
-endif()
+# NOTE: DX8 files are kept for compilation - they provide compatibility layer
+# Even with Vulkan backend, DX8Wrapper and related classes are needed for linking
+# and wrapping the game's DirectX API calls to Vulkan equivalents
 
 add_library(corei_ww3d2 INTERFACE)
 

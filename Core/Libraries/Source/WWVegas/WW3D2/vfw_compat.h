@@ -30,12 +30,6 @@ typedef unsigned short USHORT;
 typedef int BOOL;
 /* Note: RECT is already defined in windows.h, so we don't redefine it here */
 
-/* Common memory functions */
-static inline void ZeroMemory(void* ptr, size_t size)
-{
-    memset(ptr, 0, size);
-}
-
 /* Memory allocation flags */
 #define GMEM_MOVEABLE 0x0002
 #define GMEM_FIXED 0x0000
@@ -69,13 +63,15 @@ typedef void* HDRAWDIB;
 #define streamtypeVIDEO mmioFOURCC('v', 'i', 'd', 's')
 #define streamtypeAUDIO mmioFOURCC('a', 'u', 'd', 's')
 
-/* BI_* compression constants */
+/* BI_* compression constants - BI_RGB needed for VFW, others in win32_sdl_types_compat.h */
+#ifndef BI_RGB
 #define BI_RGB 0L
-#define BI_RLE8 1L
-#define BI_RLE4 2L
-#define BI_BITFIELDS 3L
+#endif
 
-/* BITMAPINFOHEADER structure stub - used for bitmap/video format information */
+/* BITMAPINFOHEADER structure - defined here for VFW AVI operations */
+#ifndef BITMAPINFOHEADER_DEFINED
+#define BITMAPINFOHEADER_DEFINED
+
 typedef struct {
     unsigned long biSize;
     long biWidth;
@@ -89,6 +85,8 @@ typedef struct {
     unsigned long biClrUsed;
     unsigned long biClrImportant;
 } BITMAPINFOHEADER;
+
+#endif /* BITMAPINFOHEADER_DEFINED */
 
 /* AVISTREAMINFO structure stub */
 typedef struct {
@@ -187,87 +185,5 @@ static inline int DrawDibSetPalette(HDRAWDIB hdd, void* hpal)
 {
     return 0;
 }
-
-#endif /* VFW_COMPAT_H_INCLUDED */
-
-
-#pragma once
-
-#ifndef VFW_COMPAT_H_INCLUDED
-#define VFW_COMPAT_H_INCLUDED
-
-/* 
- * Video for Windows (VFW) API is Windows-only.
- * This stub allows code that conditionally uses VFW to compile on non-Windows platforms.
- * 
- * On non-Windows platforms, video capture/encoding should use platform-specific APIs:
- * - macOS: AVFoundation
- * - Linux: V4L2, GStreamer, or FFmpeg
- */
-
-/* Define dummy handles for AVI operations */
-typedef void* PAVIFILE;
-typedef void* PAVISTREAM;
-typedef void* HDRAWDIB;
-
-/* Common FOURCC values */
-#define mmioFOURCC(ch0, ch1, ch2, ch3) \
-    ((unsigned long)(unsigned char)(ch0) | ((unsigned long)(unsigned char)(ch1) << 8) | \
-     ((unsigned long)(unsigned char)(ch2) << 16) | ((unsigned long)(unsigned char)(ch3) << 24))
-
-/* Stream type codes */
-#define streamtypeVIDEO mmioFOURCC('v', 'i', 'd', 's')
-#define streamtypeAUDIO mmioFOURCC('a', 'u', 'd', 's')
-
-/* BI_* compression constants */
-#define BI_RGB 0L
-#define BI_RLE8 1L
-#define BI_RLE4 2L
-#define BI_BITFIELDS 3L
-
-/* AVISTREAMINFO structure stub */
-typedef struct {
-    unsigned int fccType;
-    unsigned int fccHandler;
-    unsigned long dwFlags;
-    unsigned long dwCaps;
-    unsigned short wPriority;
-    unsigned short wLanguage;
-    unsigned long dwScale;
-    unsigned long dwRate;
-    unsigned long dwStart;
-    unsigned long dwLength;
-    unsigned long dwInitialFrames;
-    unsigned long dwSuggestedBufferSize;
-    unsigned long dwQuality;
-    unsigned long dwSampleSize;
-} AVISTREAMINFO;
-
-/* BITMAPINFOHEADER structure stub - used for bitmap/video format information */
-typedef struct {
-    unsigned long biSize;
-    long biWidth;
-    long biHeight;
-    unsigned short biPlanes;
-    unsigned short biBitCount;
-    unsigned long biCompression;
-    unsigned long biSizeImage;
-    long biXPelsPerMeter;
-    long biYPelsPerMeter;
-    unsigned long biClrUsed;
-    unsigned long biClrImportant;
-} BITMAPINFOHEADER;
-
-/* Empty stub functions that immediately fail or return NULL */
-#define AVIFileInit() 0
-#define AVIFileOpen(ppfile, szFile, uMode, lpHandler) NULL
-#define AVIFileCreateStream(pfile, ppavi, psi) NULL
-#define AVIStreamWrite(pavi, lStart, lSamples, lpBuffer, cbBuffer, dwFlags, plSampWritten, plBytesWritten) 0
-#define AVIStreamRelease(pavi) 0
-#define AVIFileRelease(pfile) 0
-#define DrawDibOpen() NULL
-#define DrawDibClose(hdd) FALSE
-#define DrawDibDraw(hdd, hdc, xDst, yDst, dxDst, dyDst, lpbi, lpBits, xSrc, ySrc, dxSrc, dySrc, wFlags) FALSE
-#define DrawDibSetPalette(hdd, hpal) 0
 
 #endif /* VFW_COMPAT_H_INCLUDED */

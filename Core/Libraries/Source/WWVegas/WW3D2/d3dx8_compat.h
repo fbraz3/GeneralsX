@@ -32,18 +32,7 @@
  * Memory Utilities
  * ===================================================================== */
 
-/**
- * @brief Zero out a memory region
- * 
- * Fills a block of memory with zeros. This is commonly used for
- * initializing structures to zero before use.
- * 
- * @param ptr       Pointer to memory to zero
- * @param size      Number of bytes to zero
- */
-inline void ZeroMemory(void* ptr, size_t size) {
-    std::memset(ptr, 0, size);
-}
+/* ZeroMemory is defined as a macro in d3d8_vulkan_graphics_compat.h */
 
 /* =====================================================================
  * D3DX Filter Flags

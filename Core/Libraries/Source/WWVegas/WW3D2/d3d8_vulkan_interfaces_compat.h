@@ -291,6 +291,8 @@ struct IDirect3DDevice8 {
     // ============= Device Loss and Reset =============
     virtual HRESULT GetRasterStatus(void *pRasterStatus) { return S_OK; }
     virtual HRESULT SetDialogBoxMode(BOOL bEnableDialogs) { return S_OK; }
+    virtual HRESULT TestCooperativeLevel() { return S_OK; }
+    virtual HRESULT Reset(void *pPresentationParameters) { return S_OK; }
     
     // ============= Resource Creation =============
     virtual HRESULT CreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture8 **ppTexture) { return S_OK; }

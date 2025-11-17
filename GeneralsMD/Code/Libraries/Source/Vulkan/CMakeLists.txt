@@ -8,6 +8,8 @@ find_package(Vulkan REQUIRED)
 set(VULKAN_GRAPHICS_BACKEND_SRC
     vulkan_graphics_backend.h
     vulkan_graphics_backend.cpp
+    vulkan_globals.cpp
+    vulkan_ww3d_wrapper.cpp
 )
 
 add_library(z_vulkan_graphics_backend STATIC)

@@ -28,6 +28,80 @@ typedef enum D3DTRANSFORMSTATETYPE { D3DTS_WORLD = 0, D3DTS_VIEW = 1, D3DTS_PROJ
 typedef enum D3DRENDERSTATETYPE { D3DRS_ZBIAS = 0 } D3DRENDERSTATETYPE;
 typedef enum D3DTEXTURESTAGESTATETYPE { D3DTSS_COLOROP = 0 } D3DTEXTURESTAGESTATETYPE;
 
+// Fill mode constants
+#ifndef D3DFILL_POINT
+#define D3DFILL_POINT 1
+#endif
+#ifndef D3DFILL_WIREFRAME
+#define D3DFILL_WIREFRAME 2
+#endif
+#ifndef D3DFILL_SOLID
+#define D3DFILL_SOLID 3
+#endif
+
+// Shade mode constants
+#ifndef D3DSHADE_FLAT
+#define D3DSHADE_FLAT 1
+#endif
+#ifndef D3DSHADE_GOURAUD
+#define D3DSHADE_GOURAUD 2
+#endif
+#ifndef D3DSHADE_PHONG
+#define D3DSHADE_PHONG 3
+#endif
+
+// Cull mode constants
+#ifndef D3DCULL_NONE
+#define D3DCULL_NONE 1
+#endif
+#ifndef D3DCULL_CW
+#define D3DCULL_CW 2
+#endif
+#ifndef D3DCULL_CCW
+#define D3DCULL_CCW 3
+#endif
+
+// Blend mode constants
+#ifndef D3DBLEND_ZERO
+#define D3DBLEND_ZERO 1
+#endif
+#ifndef D3DBLEND_ONE
+#define D3DBLEND_ONE 2
+#endif
+#ifndef D3DBLEND_SRCCOLOR
+#define D3DBLEND_SRCCOLOR 3
+#endif
+#ifndef D3DBLEND_INVSRCCOLOR
+#define D3DBLEND_INVSRCCOLOR 4
+#endif
+#ifndef D3DBLEND_SRCALPHA
+#define D3DBLEND_SRCALPHA 5
+#endif
+#ifndef D3DBLEND_INVSRCALPHA
+#define D3DBLEND_INVSRCALPHA 6
+#endif
+#ifndef D3DBLEND_DESTALPHA
+#define D3DBLEND_DESTALPHA 7
+#endif
+#ifndef D3DBLEND_INVDESTALPHA
+#define D3DBLEND_INVDESTALPHA 8
+#endif
+#ifndef D3DBLEND_DESTCOLOR
+#define D3DBLEND_DESTCOLOR 9
+#endif
+#ifndef D3DBLEND_INVDESTCOLOR
+#define D3DBLEND_INVDESTCOLOR 10
+#endif
+#ifndef D3DBLEND_SRCALPHASAT
+#define D3DBLEND_SRCALPHASAT 11
+#endif
+#ifndef D3DBLEND_BOTHSRCALPHA
+#define D3DBLEND_BOTHSRCALPHA 12
+#endif
+#ifndef D3DBLEND_BOTHINVSRCALPHA
+#define D3DBLEND_BOTHINVSRCALPHA 13
+#endif
+
 // Fixed-function vertex format flags (FVF) used by legacy code
 #ifndef D3DFVF_XYZ
 #define D3DFVF_XYZ 0x002

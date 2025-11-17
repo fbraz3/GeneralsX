@@ -18,6 +18,8 @@
 #ifndef D3D8_VULKAN_GRAPHICS_COMPAT_H_INCLUDED
 #define D3D8_VULKAN_GRAPHICS_COMPAT_H_INCLUDED
 
+#include <cmath>
+
 #ifndef _WIN32
 #include "win32_sdl_types_compat.h"
 #include "d3d8_vulkan_types_compat.h"  // For IID and RGNDATA
@@ -327,8 +329,231 @@ typedef enum {
 } D3DRENDERSTATETYPE;
 
 // =====================================================================
-// DirectX Texture Stage State Types
+// DirectX Fill Mode Constants
 // =====================================================================
+
+#ifndef D3DFILL_POINT
+#define D3DFILL_POINT                 1
+#endif
+#ifndef D3DFILL_WIREFRAME
+#define D3DFILL_WIREFRAME             2
+#endif
+#ifndef D3DFILL_SOLID
+#define D3DFILL_SOLID                 3
+#endif
+
+// =====================================================================
+// DirectX Shade Mode Constants
+// =====================================================================
+
+#ifndef D3DSHADE_FLAT
+#define D3DSHADE_FLAT                 1
+#endif
+#ifndef D3DSHADE_GOURAUD
+#define D3DSHADE_GOURAUD              2
+#endif
+#ifndef D3DSHADE_PHONG
+#define D3DSHADE_PHONG                3
+#endif
+
+// =====================================================================
+// DirectX Cull Mode Constants
+// =====================================================================
+
+#ifndef D3DCULL_NONE
+#define D3DCULL_NONE                  1
+#endif
+#ifndef D3DCULL_CW
+#define D3DCULL_CW                    2
+#endif
+#ifndef D3DCULL_CCW
+#define D3DCULL_CCW                   3
+#endif
+
+// =====================================================================
+// DirectX Blend Mode Constants
+// =====================================================================
+
+#ifndef D3DBLEND_ZERO
+#define D3DBLEND_ZERO                 1
+#endif
+#ifndef D3DBLEND_ONE
+#define D3DBLEND_ONE                  2
+#endif
+#ifndef D3DBLEND_SRCCOLOR
+#define D3DBLEND_SRCCOLOR             3
+#endif
+#ifndef D3DBLEND_INVSRCCOLOR
+#define D3DBLEND_INVSRCCOLOR          4
+#endif
+#ifndef D3DBLEND_SRCALPHA
+#define D3DBLEND_SRCALPHA             5
+#endif
+#ifndef D3DBLEND_INVSRCALPHA
+#define D3DBLEND_INVSRCALPHA          6
+#endif
+#ifndef D3DBLEND_DESTALPHA
+#define D3DBLEND_DESTALPHA            7
+#endif
+#ifndef D3DBLEND_INVDESTALPHA
+#define D3DBLEND_INVDESTALPHA         8
+#endif
+#ifndef D3DBLEND_DESTCOLOR
+#define D3DBLEND_DESTCOLOR            9
+#endif
+#ifndef D3DBLEND_INVDESTCOLOR
+#define D3DBLEND_INVDESTCOLOR         10
+#endif
+#ifndef D3DBLEND_SRCALPHASAT
+#define D3DBLEND_SRCALPHASAT          11
+#endif
+#ifndef D3DBLEND_BOTHSRCALPHA
+#define D3DBLEND_BOTHSRCALPHA         12
+#endif
+#ifndef D3DBLEND_BOTHINVSRCALPHA
+#define D3DBLEND_BOTHINVSRCALPHA      13
+#endif
+
+// =====================================================================
+// DirectX Blend Mode Type Definition
+// =====================================================================
+
+/** @brief DirectX blend mode type (mapped from defines to int) */
+typedef int D3DBLEND;
+
+// =====================================================================
+// DirectX Comparison Function Constants
+// =====================================================================
+
+#ifndef D3DCMP_NEVER
+#define D3DCMP_NEVER                  1
+#endif
+#ifndef D3DCMP_LESS
+#define D3DCMP_LESS                   2
+#endif
+#ifndef D3DCMP_EQUAL
+#define D3DCMP_EQUAL                  3
+#endif
+#ifndef D3DCMP_LESSEQUAL
+#define D3DCMP_LESSEQUAL              4
+#endif
+#ifndef D3DCMP_GREATER
+#define D3DCMP_GREATER                5
+#endif
+#ifndef D3DCMP_NOTEQUAL
+#define D3DCMP_NOTEQUAL               6
+#endif
+#ifndef D3DCMP_GREATEREQUAL
+#define D3DCMP_GREATEREQUAL           7
+#endif
+#ifndef D3DCMP_ALWAYS
+#define D3DCMP_ALWAYS                 8
+#endif
+
+/** @brief Typedef for D3D comparison function (alias for DWORD) */
+typedef DWORD D3DCMPFUNC;
+
+// =====================================================================
+// DirectX Utility Macros and Functions
+// =====================================================================
+
+#ifndef ZeroMemory
+#define ZeroMemory(ptr, size) memset((ptr), 0, (size))
+#endif
+
+#ifndef FillMemory
+#define FillMemory(ptr, size, val) memset((ptr), (val), (size))
+#endif
+
+#ifndef CopyMemory
+#define CopyMemory(dst, src, size) memcpy((dst), (src), (size))
+#endif
+
+#ifndef MoveMemory
+#define MoveMemory(dst, src, size) memmove((dst), (src), (size))
+#endif
+
+// =====================================================================
+// DirectX Material Color Source Constants
+// =====================================================================
+
+#ifndef D3DMCS_MATERIAL
+#define D3DMCS_MATERIAL               0
+#endif
+#ifndef D3DMCS_COLOR1
+#define D3DMCS_COLOR1                 1
+#endif
+#ifndef D3DMCS_COLOR2
+#define D3DMCS_COLOR2                 2
+#endif
+
+#ifndef D3DTADDRESS_WRAP
+#define D3DTADDRESS_WRAP              1
+#endif
+#ifndef D3DTADDRESS_MIRROR
+#define D3DTADDRESS_MIRROR            2
+#endif
+#ifndef D3DTADDRESS_CLAMP
+#define D3DTADDRESS_CLAMP             3
+#endif
+#ifndef D3DTADDRESS_BORDER
+#define D3DTADDRESS_BORDER            4
+#endif
+#ifndef D3DTADDRESS_MIRRORONCE
+#define D3DTADDRESS_MIRRORONCE        5
+#endif
+
+// =====================================================================
+// DirectX Texture Filter Constants
+// =====================================================================
+
+#ifndef D3DTEXF_NONE
+#define D3DTEXF_NONE                  0
+#endif
+#ifndef D3DTEXF_POINT
+#define D3DTEXF_POINT                 1
+#endif
+#ifndef D3DTEXF_LINEAR
+#define D3DTEXF_LINEAR                2
+#endif
+#ifndef D3DTEXF_ANISOTROPIC
+#define D3DTEXF_ANISOTROPIC           3
+#endif
+#ifndef D3DTEXF_PYRAMIDALQUAD
+#define D3DTEXF_PYRAMIDALQUAD         6
+#endif
+#ifndef D3DTEXF_GAUSSIANQUAD
+#define D3DTEXF_GAUSSIANQUAD          7
+#endif
+
+// =====================================================================
+// DirectX Texture Filter Capability Constants
+// =====================================================================
+
+#ifndef D3DPTFILTERCAPS_MINFPOINT
+#define D3DPTFILTERCAPS_MINFPOINT     0x00000100L
+#endif
+#ifndef D3DPTFILTERCAPS_MINFLINEAR
+#define D3DPTFILTERCAPS_MINFLINEAR    0x00000200L
+#endif
+#ifndef D3DPTFILTERCAPS_MINFANISOTROPIC
+#define D3DPTFILTERCAPS_MINFANISOTROPIC 0x00000400L
+#endif
+#ifndef D3DPTFILTERCAPS_MAGFPOINT
+#define D3DPTFILTERCAPS_MAGFPOINT     0x00001000L
+#endif
+#ifndef D3DPTFILTERCAPS_MAGFLINEAR
+#define D3DPTFILTERCAPS_MAGFLINEAR    0x00002000L
+#endif
+#ifndef D3DPTFILTERCAPS_MAGFANISOTROPIC
+#define D3DPTFILTERCAPS_MAGFANISOTROPIC 0x00004000L
+#endif
+#ifndef D3DPTFILTERCAPS_MIPFPOINT
+#define D3DPTFILTERCAPS_MIPFPOINT     0x00010000L
+#endif
+#ifndef D3DPTFILTERCAPS_MIPFLINEAR
+#define D3DPTFILTERCAPS_MIPFLINEAR    0x00020000L
+#endif
 
 /** @brief DirectX texture stage state enumeration */
 typedef enum {
@@ -361,6 +586,182 @@ typedef enum {
     D3DTSS_RESULTARG                = 28,
     D3DTSS_CONSTANT                 = 32
 } D3DTEXTURESTAGESTATETYPE;
+
+/** @brief Typedef for texture operation (alias for DWORD) */
+typedef DWORD D3DTEXTUREOP;
+
+// =====================================================================
+// DirectX Texture Operation Capability Flags
+// =====================================================================
+
+#ifndef D3DTEXOPCAPS_DISABLE
+#define D3DTEXOPCAPS_DISABLE                  0x00000001L
+#endif
+#ifndef D3DTEXOPCAPS_SELECTARG1
+#define D3DTEXOPCAPS_SELECTARG1               0x00000002L
+#endif
+#ifndef D3DTEXOPCAPS_SELECTARG2
+#define D3DTEXOPCAPS_SELECTARG2               0x00000004L
+#endif
+#ifndef D3DTEXOPCAPS_MODULATE
+#define D3DTEXOPCAPS_MODULATE                 0x00000008L
+#endif
+#ifndef D3DTEXOPCAPS_MODULATE2X
+#define D3DTEXOPCAPS_MODULATE2X               0x00000010L
+#endif
+#ifndef D3DTEXOPCAPS_MODULATE4X
+#define D3DTEXOPCAPS_MODULATE4X               0x00000020L
+#endif
+#ifndef D3DTEXOPCAPS_ADD
+#define D3DTEXOPCAPS_ADD                      0x00000040L
+#endif
+#ifndef D3DTEXOPCAPS_ADDSIGNED
+#define D3DTEXOPCAPS_ADDSIGNED                0x00000080L
+#endif
+#ifndef D3DTEXOPCAPS_ADDSIGNED2X
+#define D3DTEXOPCAPS_ADDSIGNED2X              0x00000100L
+#endif
+#ifndef D3DTEXOPCAPS_SUBTRACT
+#define D3DTEXOPCAPS_SUBTRACT                 0x00000200L
+#endif
+#ifndef D3DTEXOPCAPS_ADDSMOOTH
+#define D3DTEXOPCAPS_ADDSMOOTH                0x00000400L
+#endif
+#ifndef D3DTEXOPCAPS_BLENDDIFFUSEALPHA
+#define D3DTEXOPCAPS_BLENDDIFFUSEALPHA        0x00000800L
+#endif
+#ifndef D3DTEXOPCAPS_BLENDTEXTUREALPHA
+#define D3DTEXOPCAPS_BLENDTEXTUREALPHA        0x00001000L
+#endif
+#ifndef D3DTEXOPCAPS_BLENDFACTORALPHA
+#define D3DTEXOPCAPS_BLENDFACTORALPHA         0x00002000L
+#endif
+#ifndef D3DTEXOPCAPS_BLENDTEXTUREALPHAPM
+#define D3DTEXOPCAPS_BLENDTEXTUREALPHAPM      0x00004000L
+#endif
+#ifndef D3DTEXOPCAPS_BLENDCURRENTALPHA
+#define D3DTEXOPCAPS_BLENDCURRENTALPHA        0x00008000L
+#endif
+#ifndef D3DTEXOPCAPS_PREMODULATE
+#define D3DTEXOPCAPS_PREMODULATE              0x00010000L
+#endif
+#ifndef D3DTEXOPCAPS_MODULATEALPHA_ADDCOLOR
+#define D3DTEXOPCAPS_MODULATEALPHA_ADDCOLOR   0x00020000L
+#endif
+#ifndef D3DTEXOPCAPS_MODULATECOLOR_ADDALPHA
+#define D3DTEXOPCAPS_MODULATECOLOR_ADDALPHA   0x00040000L
+#endif
+#ifndef D3DTEXOPCAPS_MODULATEINVALPHA_ADDCOLOR
+#define D3DTEXOPCAPS_MODULATEINVALPHA_ADDCOLOR 0x00080000L
+#endif
+#ifndef D3DTEXOPCAPS_MODULATEINVCOLOR_ADDALPHA
+#define D3DTEXOPCAPS_MODULATEINVCOLOR_ADDALPHA 0x00100000L
+#endif
+#ifndef D3DTEXOPCAPS_BUMPENVMAP
+#define D3DTEXOPCAPS_BUMPENVMAP               0x00200000L
+#endif
+#ifndef D3DTEXOPCAPS_BUMPENVMAPLUMINANCE
+#define D3DTEXOPCAPS_BUMPENVMAPLUMINANCE      0x00400000L
+#endif
+#ifndef D3DTEXOPCAPS_DOTPRODUCT3
+#define D3DTEXOPCAPS_DOTPRODUCT3              0x00800000L
+#endif
+#ifndef D3DTEXOPCAPS_MULTIPLYADD
+#define D3DTEXOPCAPS_MULTIPLYADD              0x01000000L
+#endif
+#ifndef D3DTEXOPCAPS_LERP
+#define D3DTEXOPCAPS_LERP                     0x02000000L
+#endif
+
+// =====================================================================
+// DirectX Transform State Types
+// =====================================================================
+
+// =====================================================================
+// DirectX Fill Mode Constants
+// =====================================================================
+
+#ifndef D3DFILL_POINT
+#define D3DFILL_POINT                 1
+#endif
+#ifndef D3DFILL_WIREFRAME
+#define D3DFILL_WIREFRAME             2
+#endif
+#ifndef D3DFILL_SOLID
+#define D3DFILL_SOLID                 3
+#endif
+
+// =====================================================================
+// DirectX Shade Mode Constants
+// =====================================================================
+
+#ifndef D3DSHADE_FLAT
+#define D3DSHADE_FLAT                 1
+#endif
+#ifndef D3DSHADE_GOURAUD
+#define D3DSHADE_GOURAUD              2
+#endif
+#ifndef D3DSHADE_PHONG
+#define D3DSHADE_PHONG                3
+#endif
+
+// =====================================================================
+// DirectX Cull Mode Constants
+// =====================================================================
+
+#ifndef D3DCULL_NONE
+#define D3DCULL_NONE                  1
+#endif
+#ifndef D3DCULL_CW
+#define D3DCULL_CW                    2
+#endif
+#ifndef D3DCULL_CCW
+#define D3DCULL_CCW                   3
+#endif
+
+// =====================================================================
+// DirectX Blend Mode Constants
+// =====================================================================
+
+#ifndef D3DBLEND_ZERO
+#define D3DBLEND_ZERO                 1
+#endif
+#ifndef D3DBLEND_ONE
+#define D3DBLEND_ONE                  2
+#endif
+#ifndef D3DBLEND_SRCCOLOR
+#define D3DBLEND_SRCCOLOR             3
+#endif
+#ifndef D3DBLEND_INVSRCCOLOR
+#define D3DBLEND_INVSRCCOLOR          4
+#endif
+#ifndef D3DBLEND_SRCALPHA
+#define D3DBLEND_SRCALPHA             5
+#endif
+#ifndef D3DBLEND_INVSRCALPHA
+#define D3DBLEND_INVSRCALPHA          6
+#endif
+#ifndef D3DBLEND_DESTALPHA
+#define D3DBLEND_DESTALPHA            7
+#endif
+#ifndef D3DBLEND_INVDESTALPHA
+#define D3DBLEND_INVDESTALPHA         8
+#endif
+#ifndef D3DBLEND_DESTCOLOR
+#define D3DBLEND_DESTCOLOR            9
+#endif
+#ifndef D3DBLEND_INVDESTCOLOR
+#define D3DBLEND_INVDESTCOLOR         10
+#endif
+#ifndef D3DBLEND_SRCALPHASAT
+#define D3DBLEND_SRCALPHASAT          11
+#endif
+#ifndef D3DBLEND_BOTHSRCALPHA
+#define D3DBLEND_BOTHSRCALPHA         12
+#endif
+#ifndef D3DBLEND_BOTHINVSRCALPHA
+#define D3DBLEND_BOTHINVSRCALPHA      13
+#endif
 
 // =====================================================================
 // DirectX Transform State Types
@@ -550,6 +951,21 @@ typedef struct {
     DWORD Height;     /**< Height in pixels */
     DWORD Size;       /**< Total size in bytes */
 } D3DSURFACE_DESC;
+#endif
+
+/** @brief Volume (3D texture) description structure */
+#ifndef D3DVOLUME_DESC_DEFINED
+#define D3DVOLUME_DESC_DEFINED
+typedef struct {
+    D3DFORMAT Format; /**< Volume pixel format */
+    DWORD Type;       /**< Resource type */
+    DWORD Usage;      /**< Usage flags */
+    D3DPOOL Pool;     /**< Memory pool */
+    DWORD Width;      /**< Width in voxels */
+    DWORD Height;     /**< Height in voxels */
+    DWORD Depth;      /**< Depth in voxels */
+    DWORD Size;       /**< Total size in bytes */
+} D3DVOLUME_DESC;
 #endif
 
 /** @brief Capabilities structure for device capabilities */
@@ -793,6 +1209,12 @@ typedef struct IDirect3DSwapChain8 IDirect3DSwapChain8;
 
 // Include COM interface stub definitions after all enums are defined
 #include "d3d8_vulkan_interfaces_compat.h"
+
+#ifdef __cplusplus
+// Include D3DX Math definitions (vectors, matrices, and math functions)
+// Must be included after C declarations, inside C++ namespace
+#include "d3dx8_vulkan_math_compat.h"
+#endif
 
 #endif // D3D8_H_INCLUDED
 

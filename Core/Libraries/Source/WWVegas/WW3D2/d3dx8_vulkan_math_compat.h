@@ -12,9 +12,7 @@
 #ifndef __D3DX8MATH_H__
 #define __D3DX8MATH_H__
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <cmath>
 
 /* ========== D3DX Math Constants ========== */
 
@@ -45,6 +43,27 @@ typedef struct D3DXVECTOR3 {
 
 typedef struct D3DXVECTOR4 {
     float x, y, z, w;
+    
+    /* Subscript operator for array-like access */
+    inline float& operator[](int idx) {
+        switch(idx) {
+            case 0: return x;
+            case 1: return y;
+            case 2: return z;
+            case 3: return w;
+            default: return x;  /* Return first element for out-of-bounds */
+        }
+    }
+    
+    inline float operator[](int idx) const {
+        switch(idx) {
+            case 0: return x;
+            case 1: return y;
+            case 2: return z;
+            case 3: return w;
+            default: return x;
+        }
+    }
 } D3DXVECTOR4;
 
 /* Matrix type - 4x4 transformation matrix */
@@ -147,6 +166,19 @@ static inline D3DXVECTOR3* D3DXVec3Cross(D3DXVECTOR3* pOut, const D3DXVECTOR3* p
     return pOut;
 }
 
+/* Vector/Matrix transformation */
+static inline D3DXVECTOR4* D3DXVec3Transform(D3DXVECTOR4* pOut, const D3DXVECTOR3* pV, const D3DXMATRIX* pM) {
+    if (!pOut || !pV || !pM) return nullptr;
+    float x = pV->x;
+    float y = pV->y;
+    float z = pV->z;
+    pOut->x = x * pM->_11 + y * pM->_21 + z * pM->_31 + pM->_41;
+    pOut->y = x * pM->_12 + y * pM->_22 + z * pM->_32 + pM->_42;
+    pOut->z = x * pM->_13 + y * pM->_23 + z * pM->_33 + pM->_43;
+    pOut->w = x * pM->_14 + y * pM->_24 + z * pM->_34 + pM->_44;
+    return pOut;
+}
+
 /* ========== Quaternion Operations (Minimal Stubs) ========== */
 
 /* Quaternion identity (no rotation) */
@@ -195,9 +227,24 @@ static inline D3DXMATRIX* D3DXMatrixRotationZ(D3DXMATRIX* pOut, float angle) {
     
     return pOut;
 }
+/* ========== Matrix Operators (C++ Only) ========== */
 
 #ifdef __cplusplus
+
+/* Matrix multiplication operator for C++ */
+inline D3DXMATRIX operator * (const D3DXMATRIX& a, const D3DXMATRIX& b) {
+    D3DXMATRIX result;
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            result.m[i][j] = 0.0f;
+            for (int k = 0; k < 4; ++k) {
+                result.m[i][j] += a.m[i][k] * b.m[k][j];
+            }
+        }
+    }
+    return result;
 }
+
 #endif
 
 #endif /* __D3DX8MATH_H__ */
