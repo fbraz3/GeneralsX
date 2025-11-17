@@ -100,6 +100,7 @@ set(WW3D2_SRC
     light.h
     #lightenvironment.cpp
     #lightenvironment.h
+    dx8_minimal_rendering_backend_stubs.cpp  # Cross-platform rendering stubs
     line3d.cpp
     line3d.h
     linegrp.cpp

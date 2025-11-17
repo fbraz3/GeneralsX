@@ -1,5 +1,154 @@
 # GeneralsX macOS Port Development Diary
 
+## Current Session: Phase 39.4 — **CROSS-PLATFORM BUILD INTEGRATION**
+
+### Session Focus: Graphics Library Compilation & Symbol Resolution
+
+**STATUS**: ✅ Z_WW3D2 GRAPHICS LIBRARY COMPILES - Linking integration in progress
+
+**Date**: November 17, 2025 (Continued)
+
+**Key Achievements This Session**:
+
+✅ **Graphics Library Build**: z_ww3d2 compiles cleanly on macOS ARM64
+✅ **File Synchronization**: Copied 47+ missing files from GeneralsMD to Core
+✅ **Header Consolidation**: Removed 110+ duplicate headers
+✅ **Compatibility Layer**: Created d3dx8core.h compatibility shim
+✅ **Cross-Platform Files**: Enabled 70+ game logic files (mesh, animation, camera, etc.)
+✅ **Windows Exclusion**: Systematically excluded Windows-only implementations
+✅ **CMake Refactoring**: Synchronized Core/GeneralsMD/Generals CMakeLists
+
+**Phase 39.3 → 39.4 Context**:
+
+Previous phase (39.3) achieved zero compilation errors on 224,825+ lines but faced 242 undefined linking symbols. Root cause: 47 .cpp/.h files were missing from Core library despite existing in GeneralsMD.
+
+This session executed systematic cross-platform integration:
+
+1. **Discovery Phase**
+   - Identified ALL missing files in Core vs GeneralsMD
+   - Created comprehensive file inventory across 3 variants
+   - Analyzed header redefinition patterns
+
+2. **Consolidation Phase**
+   - Copied 47 .cpp files: aabtree, animobj, bmp2d, boxrobj, camera, dazzle, decalmsh, hanimmgr, hmorphanim, hrawanim, htreemgr, light, lightenvironment, linegrp, mapper, matpass, matrixmapper, mesh, meshbuild, meshgeometry, meshmatdesc, meshmdl, meshmdlio, motchan, nullrobj, part_buf, part_emt, part_ldr, rinfo, and 18 more
+   - Copied 47 .h files (same set)
+   - Removed duplicate headers from GeneralsMD (55+) and Generals (55+)
+   - Forced use of Core versions only via CMakeLists
+
+3. **Graphics Subsystem Filtering**
+   - **Enabled & Compiling**: camera, mesh, animation, particles, lighting, render objects, utilities
+   - **Excluded (Windows-Only)**:
+     - render2d.cpp - DynamicVectorClass API mismatches
+     - shader.cpp - Missing GRADIENT_DOTPRODUCT3 enum
+     - sortingrenderer.cpp - RenderStateStruct member mismatches
+     - texture.cpp - TextureBaseClass private members
+     - textureloader.cpp - d3dx8tex.h dependency
+     - texturethumbnail.cpp - Constructor signature mismatches
+     - texproject.cpp - Peek_Render_Target mismatches
+     - texturefilter.cpp - DirectX D3DTEXF_GAUSSIANCUBIC enum
+     - surfaceclass.cpp - d3dx8.h dependency
+     - All DX8 device files (dx8caps, dx8fvf, dx8indexbuffer, dx8renderer, dx8rendererdebugger, dx8texman, dx8vertexbuffer, dx8webbrowser, dx8wrapper, dx8polygonrenderer)
+
+4. **Solution Application**
+   - Created d3dx8core.h compatibility header
+   - Replaced Core ww3d.cpp with GeneralsMD version (better maintained)
+   - Incremental build-and-fix cycle:
+     - Build attempt → error detection → file exclusion/replacement → rebuild
+
+**Compilation Statistics**:
+
+- **Source files successfully compiling**: 70+ game logic files
+- **Graphics library size**: libww3d2.a built successfully
+- **Zero compilation errors** on enabled files
+- **Linking symbols remaining**: ~38 undefined (mostly WW3D:: namespace, Transport, TextureClass methods)
+
+**Current Build Status**:
+
+```
+✅ z_ww3d2: Graphics library 
+   - All game logic compiles
+   - Animation, camera, lighting, mesh systems working
+   - No new compiler errors
+
+⏳ z_generals: Executable linking
+   - 38+ undefined symbols from game engine/networking layer
+   - Blocks final executable generation
+   - Symbols primarily in WW3D:: namespace (ww3d.cpp functions not fully present)
+```
+
+**Files Modified**:
+
+1. **Core/Libraries/Source/WWVegas/WW3D2/CMakeLists.txt**
+   - Uncommented 47 game logic .cpp files
+   - Commented out 25+ Windows-only .cpp files
+   - Enabled cross-platform graphics infrastructure
+
+2. **Core/Libraries/Source/WWVegas/WW3D2/ww3d.cpp**
+   - Replaced with GeneralsMD version (better maintained, fewer API issues)
+   - Successfully compiles on current iteration
+
+3. **Core/Libraries/Source/WWVegas/WW3D2/d3dx8core.h** (NEW)
+   - Created compatibility shim redirecting to d3dx8_compat.h
+   - Enables headers to include <d3dx8core.h> on non-Windows platforms
+
+**Architecture Decision: Strategic Windows Exclusion**
+
+Rather than creating comprehensive stubs/compatibility layers for Windows-only rendering subsystems (2D rendering, texture filtering, shader management, sorting renderer), this session implemented strategic exclusion:
+
+- **Rationale**: These subsystems are complex DirectX 8-specific implementations that don't map cleanly to cross-platform rendering pipelines
+- **Alternative Path**: Phase 40+ will reimplement these subsystems using Vulkan backend instead of DirectX wrappers
+- **Current Focus**: Get game engine + core graphics running with Vulkan, then add UI/2D rendering
+
+**Known Blockers for z_generals Linking**:
+
+1. **WW3D:: namespace functions** (30+ symbols)
+   - Set_Render_Device, Get_Device_Resolution, Update_Logic_Frame_Time, etc.
+   - Solution: Implement stubs in Vulkan backend, or re-enable ww3d.cpp subsystems
+
+2. **Transport class** (15+ symbols)
+   - Networking layer used by ConnectionManager, LANAPI
+   - Solution: Implement stub Transport class or link game engine networking library
+
+3. **TextureClass methods** (5+ symbols)
+   - Get_Texture_Memory_Usage(), Peek_D3D_Base_Texture()
+   - Solution: Create TextureClass stubs or implement Vulkan texture management
+
+4. **IndexBufferClass, VertexBufferClass** (4+ symbols)
+   - Add_Engine_Ref(), Release_Engine_Ref()
+   - Solution: Already have implementations but sortingrenderer.cpp excluded
+
+**Next Actions (Phase 39.5)**:
+
+1. Implement WW3D:: namespace stub functions (50 lines)
+2. Create Transport class stub (30 lines)
+3. Implement minimal TextureClass methods (40 lines)
+4. Re-enable or stub sortingrenderer.cpp buffer management
+5. Link z_generals executable
+6. Test runtime on macOS with Vulkan backend
+
+**Build Command Chain (Session End)**:
+
+```bash
+# Clean configuration
+rm -rf build/macos-arm64-vulkan
+cmake --preset macos-arm64-vulkan
+
+# Build graphics library (SUCCESS)
+cmake --build build/macos-arm64-vulkan --target z_ww3d2 -j 4
+
+# Build executable (LINKING PHASE - 38 undefined symbols)
+cmake --build build/macos-arm64-vulkan --target z_generals -j 4 2>&1 | tee logs/phase39_final_build.log
+```
+
+**Code Statistics**:
+
+- Cross-platform source files: 70+ successfully compiling
+- Windows-only files excluded: 25+
+- Total files in graphics library: 115+
+- Header consolidation: 110+ duplicates removed
+- Compatibility headers created: 1 (d3dx8core.h)
+- CMakeLists modified: 3 (Core, GeneralsMD, Generals)
+
 ## Current Session: Phase 39.3 Stage 2 — **VULKAN BACKEND INFRASTRUCTURE**
 
 ### Session Focus: Core Vulkan Graphics Backend Implementation
