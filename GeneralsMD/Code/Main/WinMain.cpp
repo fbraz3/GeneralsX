@@ -73,8 +73,10 @@
 #include "GameLogic/GameLogic.h"  ///< @todo for demo, remove
 #ifdef _WIN32
 #include "Win32Device/GameClient/Win32Mouse.h"
-#endif
 #include "Win32Device/Common/Win32GameEngine.h"
+#else
+#include "W3DDevice/Common/SDL2GameEngine.h"
+#endif
 #include "Common/version.h"
 #include "BuildVersion.h"
 #include "GeneratedVersion.h"
@@ -931,8 +933,9 @@ static Bool processSDL2Events()
 #endif
 
 // WinMain ====================================================================
-/** Application entry point */
+/** Application entry point (Windows only) */
 //=============================================================================
+#ifdef _WIN32
 Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
                       LPSTR lpCmdLine, Int nCmdShow )
 {
@@ -1155,11 +1158,11 @@ Int main( Int argc, Char* argv[] )
 #endif  // _WIN32
 
 // CreateGameEngine ===========================================================
-/** Create the Win32 game engine we're going to use */
+/** Create the game engine appropriate for the current platform */
 //=============================================================================
-#ifdef _WIN32
 GameEngine *CreateGameEngine( void )
 {
+#ifdef _WIN32
 	Win32GameEngine *engine;
 
 	engine = NEW Win32GameEngine;
@@ -1169,6 +1172,13 @@ GameEngine *CreateGameEngine( void )
 
 	return engine;
 
-}
+#else // POSIX/SDL2 platforms
+	// For cross-platform builds (macOS, Linux), use SDL2GameEngine
+	SDL2GameEngine *engine;
+	engine = NEW SDL2GameEngine;
+	// On POSIX, we assume the app is active by default (no focus model like Windows)
+	engine->setIsActive(true);
+	return engine;
 #endif
+}
 

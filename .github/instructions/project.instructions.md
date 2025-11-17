@@ -64,10 +64,10 @@ This project is a fork of the Command & Conquer Generals source code and its exp
 - Command example:
 ```bash
 # Example for macOS ARM64 - GeneralsXZH
-cmake --build build/macos-arm64-vulkan --target GeneralsXZH -j 4 2>&1 | tee /tmp/generalsxzh_build.log.txt
+cmake --build build/macos-arm64-vulkan --target z_generals -j 4 2>&1 | tee /tmp/generalsxzh_build.log.txt
 
 # Example for macOS ARM64 - GeneralsX
-cmake --build build/macos-arm64-vulkan --target GeneralsX -j 4 2>&1 | tee /tmp/generalsx_build.log.txt
+cmake --build build/macos-arm64-vulkan --target g_generals -j 4 2>&1 | tee /tmp/generalsx_build.log.txt
 ```
 
 ## Debugging Guidelines
@@ -136,12 +136,12 @@ cd $HOME/GeneralsX/GeneralsMD/ && USE_METAL=1 lldb -o run -o bt -o quit ./Genera
     - **Generals (base game)**: `$HOME/GeneralsX/Generals/` - Copy original game assets (Data/, Maps/) here
     - **Zero Hour (expansion)**: `$HOME/GeneralsX/GeneralsMD/` - Copy Zero Hour assets (Data/, Maps/) here
     - Deploy executables to their respective directories for testing
-12. **Primary build workflow**: Use `cmake --preset macos-arm64-vulkan` for ARM64 native compilation on Apple Silicon, then `cmake --build build/macos-arm64-vulkan --target GeneralsXZH -j 4` for Zero Hour target.
+12. **Primary build workflow**: Use `cmake --preset macos-arm64-vulkan` for ARM64 native compilation on Apple Silicon, then `cmake --build build/macos-arm64-vulkan --target z_generals -j 4` for Zero Hour target.
 13. **Platform-specific workflows**:
-    - **macOS ARM64**: `cmake --preset macos-arm64-vulkan` → `cmake --build build/macos-arm64-vulkan --target GeneralsXZH -j 4 | tee /tmp/generalsxzh_build.log.txt`
-    - **macOS Intel**: `cmake --preset macos-x64` → `cmake --build build/macos-x64 --target GeneralsXZH -j 4 | tee /tmp/generalsx_build.log.txt`
-    - **Linux**: `cmake --preset linux` → `cmake --build build/linux --target GeneralsXZH -j 4 | tee /tmp/generalsxzh_build.log.txt`
-    - **Windows**: `cmake --preset vc6` → `cmake --build build/vc6 --target GeneralsXZH -j 4 | tee /tmp/generalsxzh_build.log.txt`
+    - **macOS ARM64**: `cmake --preset macos-arm64-vulkan` → `cmake --build build/macos-arm64-vulkan --target z_generals -j 4 | tee /tmp/generalsxzh_build.log.txt`
+    - **macOS Intel**: `cmake --preset macos-x64` → `cmake --build build/macos-x64 --target z_generals -j 4 | tee /tmp/generalsx_build.log.txt`
+    - **Linux**: `cmake --preset linux` → `cmake --build build/linux --target z_generals -j 4 | tee /tmp/generalsxzh_build.log.txt`
+    - **Windows**: `cmake --preset vc6` → `cmake --build build/vc6 --target z_generals -j 4 | tee /tmp/generalsxzh_build.log.txt`
 14. **Target priority**: `GeneralsXZH` (Zero Hour) is the primary stable target, `GeneralsX` (Original Generals) is secondary. Core libraries (`ww3d2`, `wwlib`, `wwmath`) can be tested independently.
 
 # Reference Repositories (Git Submodules)

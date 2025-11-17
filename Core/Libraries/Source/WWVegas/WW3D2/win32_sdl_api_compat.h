@@ -308,6 +308,7 @@ uint32_t SDL2_GetModifierState(void);
 /* Virtual Key Codes (VK_*) - for SDL2_TranslateKeycode() output */
 #ifndef VK_ESCAPE
 #define VK_ESCAPE       0x1B
+#define VK_BACK         0x08
 #define VK_TAB          0x09
 #define VK_RETURN       0x0D
 #define VK_SHIFT        0x10
@@ -316,13 +317,14 @@ uint32_t SDL2_GetModifierState(void);
 #define VK_SPACE        0x20
 #define VK_PRIOR        0x21  /* Page Up */
 #define VK_NEXT         0x22  /* Page Down */
+#define VK_INSERT       0x2D
+#define VK_DELETE       0x2E
 #define VK_END          0x23
 #define VK_HOME         0x24
 #define VK_LEFT         0x25
 #define VK_UP           0x26
 #define VK_RIGHT        0x27
 #define VK_DOWN         0x28
-#define VK_DELETE       0x2E
 #define VK_F1           0x70
 #define VK_F2           0x71
 #define VK_F3           0x72

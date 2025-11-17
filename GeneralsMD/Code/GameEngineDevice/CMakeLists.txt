@@ -6,6 +6,7 @@ set(GAMEENGINEDEVICE_SRC
     Include/W3DDevice/Common/W3DModuleFactory.h
     Include/W3DDevice/Common/W3DRadar.h
     Include/W3DDevice/Common/W3DThingFactory.h
+    Include/W3DDevice/Common/SDL2GameEngine.h
     Include/W3DDevice/GameClient/BaseHeightMap.h
     Include/W3DDevice/GameClient/camerashakesystem.h
     Include/W3DDevice/GameClient/FlatHeightMap.h
@@ -97,6 +98,7 @@ set(GAMEENGINEDEVICE_SRC
     Source/W3DDevice/Common/Thing/W3DModuleFactory.cpp
     Source/W3DDevice/Common/Thing/W3DThingFactory.cpp
     Source/W3DDevice/Common/W3DConvert.cpp
+    Source/W3DDevice/Common/SDL2GameEngine.cpp
     Source/W3DDevice/GameClient/BaseHeightMap.cpp
     Source/W3DDevice/GameClient/camerashakesystem.cpp
     Source/W3DDevice/GameClient/Drawable/Draw/W3DDebrisDraw.cpp

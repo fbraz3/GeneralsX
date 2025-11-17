@@ -35,10 +35,10 @@ Zero Hour expansion code that extends base game with platform-specific fixes:
 cmake --preset macos-arm64-vulkan
 
 # Build PRIMARY TARGET (Zero Hour expansion - most stable)
-cmake --build build/macos-arm64-vulkan --target GeneralsXZH -j 4 | tee logs/build.log
+cmake --build build/macos-arm64-vulkan --target z_generals -j 4 | tee logs/build.log
 
 # Build SECONDARY TARGET (original game - less tested)
-cmake --build build/macos-arm64-vulkan --target GeneralsX -j 4 | tee logs/build.log
+cmake --build build/macos-arm64-vulkan --target g_generals -j 4 | tee logs/build.log
 ```
 
 **Why `-j 4` not `-j 8`?** This codebase has MASSIVE translation units (5MB+ object files). Half CPU cores prevents OOM kills. See `build_zh.sh` for production workflow.

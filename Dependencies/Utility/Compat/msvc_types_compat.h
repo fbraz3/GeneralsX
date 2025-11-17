@@ -30,6 +30,9 @@
 #include <unistd.h>
 #include <chrono>
 
+// Cross-platform event system using SDL2 (threading primitives: CreateEvent, SetEvent, WaitForSingleObject)
+// Note: SDL2_Events.h is included AFTER HANDLE/DWORD/BOOL typedefs below to avoid circular dependency
+
 #ifndef _WIN32
 
 // MSVC integer type keywords - must be usable with 'unsigned' prefix
@@ -108,16 +111,15 @@ inline int wsprintf(char* buf, const char* format, ...) {
 
 // Windows sync primitives stubs
 typedef void* HANDLE;
+typedef int BOOL;                   // Boolean type (int for Win32 compatibility)
+typedef unsigned long DWORD;        // 32-bit unsigned integer
 // Note: NULL is NOT redefined here because it's used for integer zero initialization
 // in C++ legacy code. The standard NULL (0) from cstddef works fine.
 
-// CreateEvent stub - return a dummy handle
-inline HANDLE CreateEvent(void* lpEventAttributes, int bManualReset, int bInitialState, const char* lpName) {
-    // Non-functional stub for cross-platform compatibility
-    // Return a non-null value to avoid null checks in existing code
-    static int dummy_handle = 0xDEADBEEF;
-    return (HANDLE)&dummy_handle;
-}
+// CreateEvent, SetEvent, ResetEvent, WaitForSingleObject - SDL2 implementations
+// Implementation: SDL2_Events.h (included above for non-Windows platforms)
+// On Windows: Native Win32 HANDLE-based implementations from windows.h
+// Cross-platform: Use SDL2 event system with SDL_mutex and SDL_cond
 
 // GetDoubleClickTime stub - return default system value
 inline unsigned int GetDoubleClickTime() {
@@ -153,6 +155,59 @@ inline HKL GetKeyboardLayout(unsigned int idThread) {
     // Return US English layout ID (0x0409)
     // This is safe because the code only checks the low word for language ID
     return (HKL)0x04090409;  // Format: LANGID SUBLANGID
+}
+
+// GetAsyncKeyState - get keyboard key state via SDL2
+// Returns SHORT: high bit (0x8000) set if key is pressed, low bit (0x0001) set if key was toggled
+// Used by: W3DWaterTracks.cpp (debug features: F5-F8, DELETE, INSERT), WorldBuilder tools (SHIFT, CONTROL)
+#include <SDL2/SDL.h>
+inline short GetAsyncKeyState(int vKey) {
+    // Get SDL2 keyboard state
+    const uint8_t* keyboard_state = SDL_GetKeyboardState(NULL);
+    if (!keyboard_state) return 0;
+    
+    // Map virtual key to SDL scancode (based on win32_sdl_api_compat.h VK_* definitions)
+    SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
+    
+    switch (vKey) {
+        case 0x08: scancode = SDL_SCANCODE_BACKSPACE; break;  // VK_BACK
+        case 0x09: scancode = SDL_SCANCODE_TAB; break;        // VK_TAB
+        case 0x0D: scancode = SDL_SCANCODE_RETURN; break;     // VK_RETURN
+        case 0x10: scancode = SDL_SCANCODE_LSHIFT; break;     // VK_SHIFT (maps to left shift)
+        case 0x11: scancode = SDL_SCANCODE_LCTRL; break;      // VK_CONTROL (maps to left ctrl)
+        case 0x12: scancode = SDL_SCANCODE_LALT; break;       // VK_MENU (ALT key)
+        case 0x20: scancode = SDL_SCANCODE_SPACE; break;      // VK_SPACE
+        case 0x21: scancode = SDL_SCANCODE_PAGEUP; break;     // VK_PRIOR
+        case 0x22: scancode = SDL_SCANCODE_PAGEDOWN; break;   // VK_NEXT
+        case 0x23: scancode = SDL_SCANCODE_END; break;        // VK_END
+        case 0x24: scancode = SDL_SCANCODE_HOME; break;       // VK_HOME
+        case 0x25: scancode = SDL_SCANCODE_LEFT; break;       // VK_LEFT
+        case 0x26: scancode = SDL_SCANCODE_UP; break;         // VK_UP
+        case 0x27: scancode = SDL_SCANCODE_RIGHT; break;      // VK_RIGHT
+        case 0x28: scancode = SDL_SCANCODE_DOWN; break;       // VK_DOWN
+        case 0x2D: scancode = SDL_SCANCODE_INSERT; break;     // VK_INSERT
+        case 0x2E: scancode = SDL_SCANCODE_DELETE; break;     // VK_DELETE
+        case 0x70: scancode = SDL_SCANCODE_F1; break;         // VK_F1
+        case 0x71: scancode = SDL_SCANCODE_F2; break;         // VK_F2
+        case 0x72: scancode = SDL_SCANCODE_F3; break;         // VK_F3
+        case 0x73: scancode = SDL_SCANCODE_F4; break;         // VK_F4
+        case 0x74: scancode = SDL_SCANCODE_F5; break;         // VK_F5
+        case 0x75: scancode = SDL_SCANCODE_F6; break;         // VK_F6
+        case 0x76: scancode = SDL_SCANCODE_F7; break;         // VK_F7
+        case 0x77: scancode = SDL_SCANCODE_F8; break;         // VK_F8
+        case 0x78: scancode = SDL_SCANCODE_F9; break;         // VK_F9
+        case 0x79: scancode = SDL_SCANCODE_F10; break;        // VK_F10
+        case 0x7A: scancode = SDL_SCANCODE_F11; break;        // VK_F11
+        case 0x7B: scancode = SDL_SCANCODE_F12; break;        // VK_F12
+        default: return 0;  // Unmapped key
+    }
+    
+    // Return high bit set (0x8000) if key is currently pressed
+    // Low bit (0x0001) is not implemented (toggle state requires event tracking)
+    if (keyboard_state[scancode]) {
+        return 0x8000;  // High bit set = key pressed
+    }
+    return 0;  // Key not pressed
 }
 
 // SHGetSpecialFolderPath stub - get special folder paths
@@ -378,6 +433,9 @@ inline unsigned int _controlfp(unsigned int newVal, unsigned int mask) {
 #define _PC_24      0x00000000  // 24-bit precision
 #define _PC_53      0x00010000  // 53-bit precision
 #define _PC_64      0x00020000  // 64-bit precision
+
+// Include SDL2 event system AFTER HANDLE/DWORD/BOOL typedefs are defined
+#include "SDL2_Events.h"
 
 #endif // !_WIN32
 
