@@ -574,6 +574,134 @@ public:
 	}
 };
 
+// Command buffer management (frame buffering support)
+class VulkanCommandBuffer
+{
+public:
+	VkCommandPool pool = VK_NULL_HANDLE;
+	std::vector<VkCommandBuffer> buffers;
+	std::vector<VkFence> fences;
+	std::vector<VkSemaphore> image_available_semaphores;
+	std::vector<VkSemaphore> render_finished_semaphores;
+	uint32_t current_frame = 0;
+	const uint32_t MAX_FRAMES_IN_FLIGHT = 2;  // Double buffering
+	
+	bool Create(VkDevice device, uint32_t queue_family_index)
+	{
+		// Phase 39.3 Stage 2: Create command pool
+		printf("[Vulkan] VulkanCommandBuffer::Create() - Creating command pool\n");
+		
+		VkCommandPoolCreateInfo pool_info{};
+		pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		pool_info.queueFamilyIndex = queue_family_index;
+		pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+		
+		VkResult result = vkCreateCommandPool(device, &pool_info, nullptr, &pool);
+		if (result != VK_SUCCESS) {
+			printf("[Vulkan] ERROR: Failed to create command pool (result=%d)\n", result);
+			return false;
+		}
+		
+		// Allocate command buffers (one per frame in flight)
+		buffers.resize(MAX_FRAMES_IN_FLIGHT);
+		VkCommandBufferAllocateInfo alloc_info{};
+		alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		alloc_info.commandPool = pool;
+		alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		alloc_info.commandBufferCount = MAX_FRAMES_IN_FLIGHT;
+		
+		result = vkAllocateCommandBuffers(device, &alloc_info, buffers.data());
+		if (result != VK_SUCCESS) {
+			printf("[Vulkan] ERROR: Failed to allocate command buffers (result=%d)\n", result);
+			return false;
+		}
+		
+		// Create synchronization primitives
+		VkFenceCreateInfo fence_info{};
+		fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;  // Start signaled
+		
+		VkSemaphoreCreateInfo semaphore_info{};
+		semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		
+		fences.resize(MAX_FRAMES_IN_FLIGHT);
+		image_available_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
+		render_finished_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
+		
+		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
+			result = vkCreateFence(device, &fence_info, nullptr, &fences[i]);
+			if (result != VK_SUCCESS) {
+				printf("[Vulkan] ERROR: Failed to create fence %u (result=%d)\n", i, result);
+				return false;
+			}
+			
+			result = vkCreateSemaphore(device, &semaphore_info, nullptr, &image_available_semaphores[i]);
+			if (result != VK_SUCCESS) {
+				printf("[Vulkan] ERROR: Failed to create semaphore %u (result=%d)\n", i, result);
+				return false;
+			}
+			
+			result = vkCreateSemaphore(device, &semaphore_info, nullptr, &render_finished_semaphores[i]);
+			if (result != VK_SUCCESS) {
+				printf("[Vulkan] ERROR: Failed to create semaphore %u (result=%d)\n", i, result);
+				return false;
+			}
+		}
+		
+		printf("[Vulkan] VulkanCommandBuffer::Create() - Success! Pool and synchronization objects created\n");
+		return true;
+	}
+	
+	void Destroy(VkDevice device)
+	{
+		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
+			vkDestroySemaphore(device, image_available_semaphores[i], nullptr);
+			vkDestroySemaphore(device, render_finished_semaphores[i], nullptr);
+			vkDestroyFence(device, fences[i], nullptr);
+		}
+		
+		if (pool != VK_NULL_HANDLE) {
+			vkDestroyCommandPool(device, pool, nullptr);
+			printf("[Vulkan] VulkanCommandBuffer::Destroy() - Command pool destroyed\n");
+		}
+		pool = VK_NULL_HANDLE;
+	}
+	
+	VkCommandBuffer Begin_Frame(VkDevice device)
+	{
+		// Wait for fence
+		vkWaitForFences(device, 1, &fences[current_frame], VK_TRUE, UINT64_MAX);
+		vkResetFences(device, 1, &fences[current_frame]);
+		
+		// Reset command buffer
+		vkResetCommandBuffer(buffers[current_frame], 0);
+		
+		// Begin recording
+		VkCommandBufferBeginInfo begin_info{};
+		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		
+		vkBeginCommandBuffer(buffers[current_frame], &begin_info);
+		return buffers[current_frame];
+	}
+	
+	void End_Frame(VkDevice device, VkQueue queue)
+	{
+		vkEndCommandBuffer(buffers[current_frame]);
+		
+		// Submit
+		VkSubmitInfo submit_info{};
+		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submit_info.commandBufferCount = 1;
+		submit_info.pCommandBuffers = &buffers[current_frame];
+		
+		vkQueueSubmit(queue, 1, &submit_info, fences[current_frame]);
+		
+		// Next frame
+		current_frame = (current_frame + 1) % MAX_FRAMES_IN_FLIGHT;
+	}
+};
+
 // Static member initialization
 std::unique_ptr<VulkanInstance> VulkanGraphicsBackend::s_instance = nullptr;
 std::unique_ptr<VulkanPhysicalDevice> VulkanGraphicsBackend::s_physical_device = nullptr;
@@ -581,6 +709,9 @@ std::unique_ptr<VulkanDevice> VulkanGraphicsBackend::s_device = nullptr;
 std::unique_ptr<VulkanSwapchain> VulkanGraphicsBackend::s_swapchain = nullptr;
 std::unique_ptr<VulkanMemoryAllocator> VulkanGraphicsBackend::s_memory_allocator = nullptr;
 std::unique_ptr<VulkanRenderPass> VulkanGraphicsBackend::s_render_pass = nullptr;
+
+// VulkanCommandBuffer is internal to cpp, managed separately
+static std::unique_ptr<VulkanCommandBuffer> s_command_buffer = nullptr;
 
 bool VulkanGraphicsBackend::s_initialized = false;
 bool VulkanGraphicsBackend::s_in_scene = false;
@@ -642,6 +773,13 @@ bool VulkanGraphicsBackend::Init(void* window_handle, bool debug_mode)
 		return false;
 	}
 	
+	// Phase 39.3 Stage 2: Create command buffers
+	s_command_buffer = std::make_unique<VulkanCommandBuffer>();
+	if (!s_command_buffer->Create(s_device->handle, s_device->graphics_queue_family)) {
+		printf("[Vulkan] ERROR: Failed to create command buffers\n");
+		return false;
+	}
+	
 	s_initialized = true;
 	printf("[Vulkan] Initialization complete\n");
 	return true;
@@ -661,6 +799,10 @@ void VulkanGraphicsBackend::Shutdown()
 	}
 	
 	// Destroy in reverse order of creation
+	if (s_command_buffer) {
+		s_command_buffer->Destroy(s_device ? s_device->handle : VK_NULL_HANDLE);
+	}
+	
 	if (s_render_pass) {
 		s_render_pass->Destroy(s_device ? s_device->handle : VK_NULL_HANDLE);
 	}

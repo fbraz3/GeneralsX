@@ -1,6 +1,95 @@
 # GeneralsX macOS Port Development Diary
 
-## Current Session: Phase 39.2.1 — **WIN32 FUNCTION GUARDS**
+## Current Session: Phase 39.3 Stage 2 — **VULKAN BACKEND INFRASTRUCTURE**
+
+### Session Focus: Core Vulkan Graphics Backend Implementation
+
+**STATUS**: ✅ STAGE 2 FOUNDATION COMPLETE - All core Vulkan components implemented
+
+**Date**: November 17, 2025
+
+**Key Achievements This Session**:
+
+✅ **VulkanInstance::Create()**: Implemented with validation layers, platform extensions
+✅ **VulkanPhysicalDevice::Select()**: Device enumeration with discrete GPU scoring
+✅ **VulkanDevice::Create()**: Logical device creation with graphics queue selection
+✅ **VulkanSwapchain::Create()**: Surface and swapchain creation (platform-specific)
+✅ **VulkanMemoryAllocator::Create()**: Memory type queries (VMA integration ready)
+✅ **VulkanRenderPass::Create()**: Color + depth attachment render pass setup
+✅ **CMake Integration**: Vulkan backend library compiles cleanly (libvulkan_graphics_backend.a)
+✅ **Compilation**: z_vulkan_graphics_backend builds successfully, no new errors
+✅ **Commit**: d5d640b9 - Vulkan infrastructure implementation complete
+
+**Technical Achievements**:
+
+1. **VulkanInstance** (62 lines)
+   - vkCreateInstance with VK_KHR_SURFACE_EXTENSION_NAME
+   - Platform-specific surface extensions (MVK, Win32, XCB)
+   - Validation layer support (VK_LAYER_KHRONOS_validation)
+   - Proper error handling and logging
+
+2. **VulkanPhysicalDevice** (68 lines)
+   - vkEnumeratePhysicalDevices with device scoring
+   - Discrete GPU prioritization (1000 points), integrated (100 points)
+   - Graphics queue family detection
+   - Device properties and features querying
+
+3. **VulkanDevice** (65 lines)
+   - Queue family selection with graphics bit check
+   - vkCreateDevice with proper queue info
+   - vkGetDeviceQueue for graphics queue extraction
+   - vkDeviceWaitIdle for proper shutdown synchronization
+
+4. **VulkanSwapchain** (100 lines)
+   - VkSurfaceKHR creation (platform-specific macOS MVK implementation)
+   - Surface capabilities and format querying
+   - Present mode selection (mailbox preferred, FIFO fallback)
+   - Image count calculation (triple buffering when possible)
+   - Proper extent calculations and transformations
+
+5. **VulkanMemoryAllocator** (50 lines)
+   - VkPhysicalDeviceMemoryProperties querying
+   - Memory heap and type enumeration
+   - Find_Memory_Type() helper function
+   - Foundation for VMA integration
+
+6. **VulkanRenderPass** (82 lines)
+   - Color attachment with PRESENT_SRC layout
+   - Depth attachment with DEPTH_STENCIL layout
+   - Subpass dependencies for proper synchronization
+   - Clear operations on both attachments
+   - Proper attachment references and layouts
+
+**Build Status**:
+- Vulkan backend compiles cleanly: ✅
+- No new compilation errors introduced: ✅
+- Linker shows same 296 symbols as baseline: ✅ (expected - DX8Wrapper stubs pending)
+- Framework ready for frame rendering: ✅
+
+**Architecture Pattern Established**:
+```cpp
+// Init sequence:
+VulkanInstance → VulkanPhysicalDevice → VulkanDevice → VulkanSwapchain → 
+VulkanMemoryAllocator → VulkanRenderPass
+
+// Shutdown sequence (reverse order):
+VulkanRenderPass → VulkanMemoryAllocator → VulkanSwapchain → 
+VulkanDevice → VulkanPhysicalDevice → VulkanInstance
+```
+
+**Next Steps (Stage 2 Continuation)**:
+- [ ] Implement command pool and buffer management
+- [ ] Create frame synchronization primitives (semaphores, fences)
+- [ ] Implement Begin_Scene/End_Scene with command buffer recording
+- [ ] Add frame buffer creation and management
+
+**Critical Reference Documents**:
+- docs/PHASE39/39.3_D3D8_VULKAN_MAPPING.md - Complete API mapping
+- Vulkan SDK 1.4.328.1 documentation (local + online)
+
+---
+
+## Previous Session: Phase 39.2.1 — **WIN32 FUNCTION GUARDS**
 
 ### Session Focus: Securing Windows-Specific Functions
 
