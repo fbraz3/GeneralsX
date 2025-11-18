@@ -130,7 +130,7 @@ class TextureBaseClass {
 public:
     TextureBaseClass() { }
     virtual ~TextureBaseClass() { }
-    virtual void* Peek_D3D_Base_Texture() { return nullptr; }
+    virtual void* Peek_D3D_Base_Texture() const { return nullptr; }
 };
 
 class TextureClass : public TextureBaseClass {
@@ -163,16 +163,16 @@ class IndexBufferClass {
 public:
     IndexBufferClass() { }
     ~IndexBufferClass() { }
-    void Add_Engine_Ref() { }
-    void Release_Engine_Ref() { }
+    void Add_Engine_Ref() const { }
+    void Release_Engine_Ref() const { }
 };
 
 class VertexBufferClass {
 public:
     VertexBufferClass() { }
     ~VertexBufferClass() { }
-    void Add_Engine_Ref() { }
-    void Release_Engine_Ref() { }
+    void Add_Engine_Ref() const { }
+    void Release_Engine_Ref() const { }
 };
 
 class DynamicIBAccessClass {

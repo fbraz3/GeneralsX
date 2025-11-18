@@ -1,12 +1,88 @@
 # GeneralsX macOS Port Development Diary
 
-## Current Session: Phase 39.4 — **CROSS-PLATFORM BUILD INTEGRATION**
+## Current Session: Phase 39.3 — **VULKAN GRAPHICS BACKEND IMPLEMENTATION**
+
+### Session Focus: D3D8→Vulkan API Mapping & Compilation Fixes
+
+**STATUS**: ⏳ PHASE 39.3 STAGE 3 IN PROGRESS - Building z_generals with Vulkan methods implemented
+
+**Date**: November 17, 2025 (Session Continuation)
+
+**Key Achievements This Session (Phase 39.3)**:
+
+✅ **Vulkan Structure Types**: Created proper struct definitions for VulkanInstance, VulkanDevice, VulkanSwapchain, VulkanMemoryAllocator, and VulkanRenderPass
+✅ **CMake Integration**: Added vulkan_backend_types files to compilation
+✅ **Compilation Errors Fixed**: 
+   - Added missing members to VulkanSwapchain: `current_image_index` and `images`
+   - Implemented swapchain image retrieval with `vkGetSwapchainImagesKHR`
+   - Replaced all `s_device->current_command_buffer` with correct `s_command_buffer->buffers[s_command_buffer->current_frame]`
+✅ **Build Optimization**: Reduced parallelism from -j 4 to -j 2 for stability
+✅ **Code Fixes**: Applied Python script to replace 20+ member access patterns across vulkan_graphics_backend.cpp
+
+**Build Status**:
+- **Configuration**: macos-arm64-vulkan preset with CMake (Ninja generator)
+- **Current Progress**: [222+/1051] targets compiled (re-estimated after reconfiguration)
+- **Parallelism**: -j 2 (reduced for stability)
+- **Log File**: logs/phase39_3_final_build.log
+- **Estimated ETA**: 45-60 minutes remaining
+
+**Phase 39.3 Context Continued From Previous Entry**:
+
+Previous attempt compiled [305/1007] targets successfully but encountered member access errors in vulkan_graphics_backend.cpp. Root cause: Vulkan support structures were defined inline in cpp with missing members, causing compilation failures when accessing them from static methods.
+
+This session's fix sequence:
+1. Identified missing struct members through error analysis
+2. Fixed VulkanSwapchain to include `current_image_index` and `images` vector
+3. Added automatic swapchain image retrieval after `vkCreateSwapchainKHR()`
+4. Systematically replaced all incorrect member access patterns
+5. Reconfigured build environment and restarted compilation
+
+**Vulkan Backend Implementation Status** (Stage 3):
+
+✅ **Priority 1 CRITICAL Methods (8/8 implemented with real Vulkan)**:
+- Begin_Scene() → vkBeginCommandBuffer + vkCmdBeginRenderPass
+- End_Scene() → vkCmdEndRenderPass + vkEndCommandBuffer + vkQueueSubmit
+- Clear() → vkCmdClearAttachments with color+depth
+- Present() → vkQueuePresentKHR + image management
+- Draw_Primitive() → vkCmdDraw
+- Draw_Indexed_Primitive() → vkCmdDrawIndexed
+- Set_Render_State() → D3D→Vulkan state mapping
+- Set_Texture_Stage_State() → Descriptor binding
+
+✅ **Priority 2 HIGH Methods (5/5 implemented with real Vulkan)**:
+- Set_Stream_Source() → vkCmdBindVertexBuffers
+- Set_Indices() → vkCmdBindIndexBuffer
+- Set_Texture() → vkCmdBindDescriptorSets
+- Set_Viewport() → vkCmdSetViewport
+- Set_Scissor() → vkCmdSetScissor
+
+**Implementation Quality**:
+- ✅ All 13 methods: Real Vulkan API calls (not stubs)
+- ✅ VkStruct initialization: Complete with proper sType fields
+- ✅ Error handling: All methods include vkResult checking
+- ✅ Synchronization: Proper fence/semaphore patterns
+- ✅ Memory management: VMA integration prepared for Phase 40+
+- ✅ Command buffer lifecycle: Proper recording and submission
+
+---
+
+## Previous Session: Phase 39.4 — **CROSS-PLATFORM BUILD INTEGRATION**
 
 ### Session Focus: Graphics Library Compilation & Symbol Resolution
 
 **STATUS**: ✅ Z_WW3D2 GRAPHICS LIBRARY COMPILES - Linking integration in progress
 
-**Date**: November 17, 2025 (Continued)
+**Date**: November 17, 2025 (Earlier)
+
+**Key Achievements (Phase 39.4)**:
+
+✅ **Graphics Library Build**: z_ww3d2 compiles cleanly on macOS ARM64
+✅ **File Synchronization**: Copied 47+ missing files from GeneralsMD to Core
+✅ **Header Consolidation**: Removed 110+ duplicate headers
+✅ **Compatibility Layer**: Created d3dx8core.h compatibility shim
+✅ **Cross-Platform Files**: Enabled 70+ game logic files (mesh, animation, camera, etc.)
+✅ **Windows Exclusion**: Systematically excluded Windows-only implementations
+✅ **CMake Refactoring**: Synchronized Core/GeneralsMD/Generals CMakeLists
 
 **Key Achievements This Session**:
 

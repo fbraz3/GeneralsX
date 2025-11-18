@@ -35,7 +35,8 @@
 #include <memory>
 #include <string>
 
-// Forward declarations
+// Forward declarations (implemented as internal classes in cpp)
+// These are defined in vulkan_graphics_backend.cpp
 class VulkanInstance;
 class VulkanPhysicalDevice;
 class VulkanDevice;
@@ -43,6 +44,7 @@ class VulkanSwapchain;
 class VulkanMemoryAllocator;
 class VulkanRenderPass;
 class VulkanPipeline;
+class VulkanCommandBuffer;
 
 /**
  * VulkanGraphicsBackend
