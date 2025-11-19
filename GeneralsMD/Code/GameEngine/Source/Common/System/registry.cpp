@@ -39,6 +39,149 @@
 // Global configuration file path (cached after first use)
 static AsciiString g_configFilePath;
 
+// Default values for INI file initialization
+// These values match the template files in assets/ini/
+namespace DefaultValues
+{
+	// GeneralsXZH Settings section
+	static const char* LANGUAGE = "english";
+	static const char* SKU_GENERALS = "GeneralsX";
+	static const char* SKU_ZH = "GeneralsZH";
+	static const UnsignedInt VERSION = 65540;
+	static const UnsignedInt MAP_PACK_VERSION = 65536;
+	static const char* INSTALL_PATH = "";
+	static const char* PROXY = "";
+	static const char* ERGC = "GP205480888522112040";
+	
+	// Graphics section
+	static const UnsignedInt WIDTH = 1024;
+	static const UnsignedInt HEIGHT = 768;
+	static const UnsignedInt WINDOWED = 0;
+	static const UnsignedInt COLOR_DEPTH = 32;
+	static const UnsignedInt USE_METAL_BACKEND = 1;
+	
+	// Audio section
+	static const UnsignedInt AUDIO_ENABLED = 1;
+	static const UnsignedInt MUSIC_VOLUME = 100;
+	static const UnsignedInt SOUND_VOLUME = 100;
+	
+	// Network section
+	static const char* CONNECTION_TYPE = "LAN";
+	static const UnsignedInt BANDWIDTH = 100000;
+	
+	// Player section
+	static const char* PLAYER_NAME = "Player";
+	static const char* PLAYER_SIDE = "USA";
+	static const char* PLAYER_DIFFICULTY = "Hard";
+	static const UnsignedInt GENERAL_INDEX = 0;
+	
+	// Advanced section
+	static const UnsignedInt ENABLE_DEBUG = 0;
+	static const UnsignedInt LOG_LEVEL = 0;
+	static const char* ASSET_PATH = "";
+	static const char* MAP_PATH = "";
+}
+
+// Initialize default INI file if it doesn't exist
+static void InitializeDefaultConfigurationFile(const AsciiString& ini_file)
+{
+	try
+	{
+		// Check if file already exists
+		std::ifstream check(ini_file.str());
+		if (check.good())
+		{
+			check.close();
+			return;  // File exists, no need to create
+		}
+		check.close();
+
+		// File doesn't exist, create with defaults
+		std::ofstream output(ini_file.str());
+		if (!output.is_open())
+		{
+			DEBUG_LOG(("Registry: Failed to create default INI file: %s", ini_file.str()));
+			return;
+		}
+
+		// Determine if this is Zero Hour or Generals
+		bool is_zh = (std::string(ini_file.str()).find("GeneralsXZH.ini") != std::string::npos);
+
+		// Write GeneralsXZH Settings or Generals Settings section
+		if (is_zh)
+		{
+			output << "[GeneralsXZH Settings]" << std::endl;
+		}
+		else
+		{
+			output << "[Generals Settings]" << std::endl;
+		}
+		output << "Language = " << DefaultValues::LANGUAGE << std::endl;
+		output << "SKU = " << (is_zh ? DefaultValues::SKU_ZH : DefaultValues::SKU_GENERALS) << std::endl;
+		output << "Version = " << DefaultValues::VERSION << std::endl;
+		output << "MapPackVersion = " << DefaultValues::MAP_PACK_VERSION << std::endl;
+		output << "InstallPath = " << DefaultValues::INSTALL_PATH << std::endl;
+		output << "Proxy = " << DefaultValues::PROXY << std::endl;
+		
+		if (is_zh)
+		{
+			output << "ERGC = " << DefaultValues::ERGC << std::endl;
+		}
+
+		// Graphics section
+		output << std::endl << "[Graphics]" << std::endl;
+		output << "Width = " << DefaultValues::WIDTH << std::endl;
+		output << "Height = " << DefaultValues::HEIGHT << std::endl;
+		output << "Windowed = " << DefaultValues::WINDOWED << std::endl;
+		output << "ColorDepth = " << DefaultValues::COLOR_DEPTH << std::endl;
+		
+		if (is_zh)
+		{
+			output << "UseMetalBackend = " << DefaultValues::USE_METAL_BACKEND << std::endl;
+		}
+
+		// Audio section
+		output << std::endl << "[Audio]" << std::endl;
+		output << "Enabled = " << DefaultValues::AUDIO_ENABLED << std::endl;
+		output << "MusicVolume = " << DefaultValues::MUSIC_VOLUME << std::endl;
+		output << "SoundVolume = " << DefaultValues::SOUND_VOLUME << std::endl;
+
+		// Network section
+		output << std::endl << "[Network]" << std::endl;
+		output << "ConnectionType = " << DefaultValues::CONNECTION_TYPE << std::endl;
+		output << "Bandwidth = " << DefaultValues::BANDWIDTH << std::endl;
+
+		// Player section
+		output << std::endl << "[Player]" << std::endl;
+		output << "Name = " << DefaultValues::PLAYER_NAME << std::endl;
+		output << "Side = " << DefaultValues::PLAYER_SIDE << std::endl;
+		output << "Difficulty = " << DefaultValues::PLAYER_DIFFICULTY << std::endl;
+		
+		if (is_zh)
+		{
+			output << "GeneralIndex = " << DefaultValues::GENERAL_INDEX << std::endl;
+		}
+
+		// Advanced section
+		output << std::endl << "[Advanced]" << std::endl;
+		output << "EnableDebug = " << DefaultValues::ENABLE_DEBUG << std::endl;
+		output << "LogLevel = " << DefaultValues::LOG_LEVEL << std::endl;
+		
+		if (is_zh)
+		{
+			output << "AssetPath = " << DefaultValues::ASSET_PATH << std::endl;
+			output << "MapPath = " << DefaultValues::MAP_PATH << std::endl;
+		}
+
+		output.close();
+		DEBUG_LOG(("Registry: Created default INI file: %s", ini_file.str()));
+	}
+	catch (const std::exception& e)
+	{
+		DEBUG_LOG(("Registry: Error creating default INI file: %s", e.what()));
+	}
+}
+
 // Initialize config file path using SDL_GetPrefPath
 static AsciiString GetConfigFilePath()
 {
@@ -85,6 +228,9 @@ static AsciiString GetINIFilePath()
 	#else
 		ini_file.concat("GeneralsX.ini");
 	#endif
+	
+	// Initialize default configuration if file doesn't exist
+	InitializeDefaultConfigurationFile(ini_file);
 	
 	return ini_file;
 }
