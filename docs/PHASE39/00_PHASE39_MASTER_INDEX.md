@@ -56,11 +56,11 @@ These philosophies apply to ALL work in Phase 39 series:
 | Phase | Focus | Duration | Status | Key Deliverable |
 |-------|-------|----------|--------|-----------------|
 | **39.2** | SDL2 event consolidation | 1 week | ✅ Complete | 100% SDL2 events, verified |
-| **39.5** | SDL2 system unification | 5 weeks | 🚀 **NEXT (NEW ORDER)** | Remove 261 #ifdef blocks |
-| **39.3** | Vulkan graphics backend | 4-6 weeks | ⏳ Planned (after 39.5) | 50+ D3D8→Vulkan mappings |
+| **39.5** | SDL2 system unification | 5 weeks | ✅ **COMPLETE (Nov 20)** | 363 #ifdef removed, CMakeLists unified |
+| **39.3** | Vulkan graphics backend | 4-6 weeks | 🚀 **NEXT & READY** | 50+ D3D8→Vulkan mappings, all materials prepared |
 | **39.4** | Remove DirectX 8 legacy | 1-2 weeks | ⏳ Planned (after 39.3) | Unified Vulkan everywhere |
 | **39.6** | Cleanup & Polish | 2-3 weeks | ⏳ Planned (final) | Cross-platform validation + root cause fixes |
-| **TOTAL** | Complete unification | **13-17 weeks** | - | Unified cross-platform engine |
+| **TOTAL** | Complete unification | **13-17 weeks** | **38% DONE** | Unified cross-platform engine |
 
 ---
 
