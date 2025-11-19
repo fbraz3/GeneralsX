@@ -25,8 +25,11 @@ add_subdirectory(WWAudio)
 add_subdirectory(WW3D2)
 #add_subdirectory(WWDownload)  # TODO: Fix Windows winsock.h and process.h dependencies
 
-# Phase 39.3: Vulkan Graphics Backend (mandatory, replaces DirectX8Wrapper)
-add_subdirectory(../Vulkan Vulkan)
+# Phase 39.3: Vulkan Graphics Backend (replaces DirectX8Wrapper)
+# Only include Vulkan backend when USE_VULKAN is enabled
+if(USE_VULKAN)
+    add_subdirectory(../Vulkan Vulkan)
+endif()
 
 # Helpful interface to bundle the ww modules together.
 add_library(z_wwvegas INTERFACE)
@@ -42,7 +45,9 @@ target_link_libraries(z_wwvegas INTERFACE
     #z_wwdownload  # TODO: Fix Windows winsock.h and process.h dependencies
 )
 
-# Phase 39.3: Link Vulkan backend (mandatory)
-target_link_libraries(z_wwvegas INTERFACE
-    z_vulkan_graphics_backend
-)
+# Phase 39.3: Link Vulkan backend when enabled
+if(USE_VULKAN)
+    target_link_libraries(z_wwvegas INTERFACE
+        z_vulkan_graphics_backend
+    )
+endif()

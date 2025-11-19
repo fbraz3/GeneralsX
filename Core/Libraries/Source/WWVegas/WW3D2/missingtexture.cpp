@@ -48,12 +48,13 @@ IDirect3DSurface8* MissingTexture::_Create_Missing_Surface()
 	DX8_ErrorCode(texture_surface->GetDesc(&texture_surface_desc));
 
 	IDirect3DSurface8 *surface = NULL;
-	DX8CALL(CreateImageSurface(
+	// Phase 39.4: Use stub function from DX8Wrapper - returns nullptr in Vulkan mode
+	DX8CALL(DX8Wrapper::CreateImageSurface(
 		texture_surface_desc.Width,
 		texture_surface_desc.Height,
 		texture_surface_desc.Format,
-		&surface));
-	DX8CALL(CopyRects(texture_surface, NULL, 0, surface, NULL));
+		(void**)&surface));
+	DX8CALL(DX8Wrapper::CopyRects(texture_surface, NULL, 0, surface, NULL));
 	texture_surface->Release();
 	return surface;
 }
@@ -62,13 +63,20 @@ void MissingTexture::_Init()
 {
 	WWASSERT(!_MissingTexture);
 
-	IDirect3DTexture8* tex=DX8Wrapper::_Create_DX8_Texture
-	(
+	// Phase 39.4: Create stub texture object for cross-platform compatibility
+	// In Vulkan-only mode, this returns a stub that no-ops all DirectX 8 operations
+	IDirect3DTexture8* tex = (IDirect3DTexture8*)DX8Wrapper::_Create_DX8_Texture(
 		missing_image_width,
 		missing_image_height,
 		WW3D_FORMAT_A8R8G8B8,
 		MIP_LEVELS_ALL
 	);
+	
+	// Phase 39.4: If texture creation failed (Vulkan mode), skip texture initialization
+	// The game will use a fallback magenta placeholder instead of attempting GPU access
+	if (!tex) {
+		return;
+	}
 
 	D3DLOCKED_RECT locked_rect;
 	RECT rect;
@@ -99,12 +107,14 @@ void MissingTexture::_Init()
 
 	DX8_ErrorCode(tex->UnlockRect(0));
 
+	// Phase 39.4: Mipmap level count (Vulkan stub returns 1, so loop skips)
 	for (unsigned i=1;i<tex->GetLevelCount();++i) {
 		IDirect3DSurface8 *src,*dst;
 		DX8_ErrorCode(tex->GetSurfaceLevel(i-1,&src));
 		DX8_ErrorCode(tex->GetSurfaceLevel(i,&dst));
 
-		DX8_ErrorCode(D3DXLoadSurfaceFromSurface(
+		// Phase 39.4: Use stub function from DX8Wrapper - no-op in Vulkan mode
+		DX8_ErrorCode(DX8Wrapper::D3DXLoadSurfaceFromSurface(
 			dst,
 			NULL,	// palette
 			NULL,	// rect

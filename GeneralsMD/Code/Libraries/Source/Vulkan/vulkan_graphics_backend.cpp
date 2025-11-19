@@ -39,6 +39,8 @@
 #include "vulkan_graphics_backend.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_vulkan.h>
 
 // Forward declarations of components
 class VulkanInstance
@@ -486,18 +488,14 @@ public:
 private:
 	bool create_surface(VkInstance instance, void* window_handle, VkSurfaceKHR& out_surface)
 	{
-		// Platform-specific surface creation
-		// Note: This is a simplified approach. In production, use SDL_Vulkan_CreateSurface()
-#ifdef VK_USE_PLATFORM_MACOS_MVK
-		VkMacOSSurfaceCreateInfoMVK surface_create_info{};
-		surface_create_info.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
-		surface_create_info.pView = window_handle;
-		return vkCreateMacOSSurfaceMVK(instance, &surface_create_info, nullptr, &out_surface) == VK_SUCCESS;
-#else
-		// For other platforms, would use different surface creation methods
-		printf("[Vulkan] WARNING: Surface creation not implemented for this platform\n");
-		return false;
-#endif
+		// Phase 39.3: Cross-platform surface creation via SDL2 (unified in Phase 39.5)
+		SDL_Window* window = static_cast<SDL_Window*>(window_handle);
+		if (!SDL_Vulkan_CreateSurface(window, instance, &out_surface)) {
+			printf("[Vulkan] ERROR: SDL_Vulkan_CreateSurface failed: %s\n", SDL_GetError());
+			return false;
+		}
+		printf("[Vulkan] Surface created via SDL2\n");
+		return true;
 	}
 };
 

@@ -42,6 +42,7 @@
 #include "static_sort_list.h"
 
 #include "rendobj.h"
+#include "DX8Wrapper_Stubs.h"  // Phase 39.4: For TheDX8MeshRenderer
 // #include "dx8renderer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

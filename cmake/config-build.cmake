@@ -25,9 +25,9 @@ add_feature_info(Vc6FullDebug RTS_BUILD_OPTION_VC6_FULL_DEBUG "Building VC6 with
 add_feature_info(FFmpegSupport RTS_BUILD_OPTION_FFMPEG "Building with FFmpeg support")
 
 # New options that can be controlled via CMake presets
-# Phase 39.3: Vulkan is now the mandatory graphics backend
+option(USE_VULKAN "Enable Vulkan backend (when available)" OFF)
 option(USE_CCACHE "Enable use of ccache as compiler launcher" ON)
-add_feature_info(UsingVulkan TRUE "Using Vulkan backend for rendering (mandatory)")
+add_feature_info(UsingVulkan USE_VULKAN "Using Vulkan backend for rendering")
 add_feature_info(UsingCcache USE_CCACHE "Using ccache for compiler launcher")
 
 if(RTS_BUILD_ZEROHOUR)
@@ -94,6 +94,11 @@ if(USE_CCACHE)
     message(STATUS "Using ccache as compiler launcher (USE_CCACHE=ON)")
 endif()
 
-# Phase 39.3: Vulkan is mandatory - always compile with Vulkan support
-target_compile_definitions(core_config INTERFACE USE_VULKAN=1)
-message(STATUS "Vulkan backend enabled (mandatory)")
+# Honor USE_VULKAN preset variable so top-level CMake consumes it and exposes
+# a preprocessor definition to code that wants to conditionally compile Vulkan paths.
+if(USE_VULKAN)
+    target_compile_definitions(core_config INTERFACE USE_VULKAN=1)
+    message(STATUS "Vulkan backend enabled (USE_VULKAN=ON)")
+else()
+    target_compile_definitions(core_config INTERFACE USE_VULKAN=0)
+endif()

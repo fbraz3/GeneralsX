@@ -19,6 +19,7 @@
 #include "statistics.h"
 #include "wwstring.h"
 #include "simplevec.h"
+#include "shader.h"  // Phase 39.4: For ShaderClass definition
 // #include "dx8renderer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "dx8wrapper.h"
 // #include "dx8caps.h" // Phase 39.4: Removed with DirectX 8 cleanup
@@ -292,11 +293,12 @@ void Debug_Statistics::Record_DX8_Skin_Polys_And_Vertices(int pcount,int vcount)
 
 void Debug_Statistics::Record_DX8_Polys_And_Vertices(int pcount,int vcount,const ShaderClass& shader)
 {
-	if (shader.Get_NPatch_Enable()==ShaderClass::NPATCH_ENABLE && DX8Wrapper::Get_Current_Caps()->Support_NPatches()) {
-		unsigned level=WW3D::Get_NPatches_Level();
-		level*=level;
-		pcount*=level;
-	}
+	// Phase 39.4: NPatches support disabled for Vulkan backend
+	// if (shader.Get_NPatch_Enable()==ShaderClass::NPATCH_ENABLE && DX8Wrapper::Get_Current_Caps()->Support_NPatches()) {
+	// 	unsigned level=WW3D::Get_NPatches_Level();
+	// 	level*=level;
+	// 	pcount*=level;
+	// }
 	dx8_polygons+=pcount;
 	dx8_vertices+=vcount;
 	draw_calls++;

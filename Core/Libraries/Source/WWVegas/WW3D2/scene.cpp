@@ -555,7 +555,7 @@ void SimpleSceneClass::Customized_Render(RenderInfoClass & rinfo)
 	{
 		if (count<4)
 		{
-			DX8Wrapper::Set_Light(count,*(LightClass*)it.Peek_Obj());
+			DX8Wrapper::Set_Light(count, (void*)&(*(LightClass*)it.Peek_Obj()));
 		} else
 		{
 			// Simple scene only supports 4 global lights

@@ -17,6 +17,7 @@
 
 // Include DirectX 8 graphics compatibility layer (provides D3DSURFACE_DESC, etc.)
 #include "d3d8_vulkan_graphics_compat.h"
+#include "vector3.h"  // Phase 39.4: For Convert_Color parameter type
 #include "vector4.h"  // Phase 39.4: For Convert_Color return type
 
 // ============================================================================
@@ -93,6 +94,18 @@
 #define BUFFER_TYPE_STATIC_DX8 0
 #define BUFFER_TYPE_DYNAMIC_SORTING 2  // Phase 39.4: Added for sorting buffer support
 
+// Phase 39.4: D3DX Filter constants for D3DXLoadSurfaceFromSurface (missingtexture.cpp)
+#ifndef D3DX_FILTER_BOX
+#define D3DX_FILTER_NONE       0x00000000
+#define D3DX_FILTER_POINT      0x00000001
+#define D3DX_FILTER_LINEAR     0x00000002
+#define D3DX_FILTER_TRIANGLE   0x00000004
+#define D3DX_FILTER_BOX        0x00000008
+#define D3DX_FILTER_MIRROR_U   0x00010000
+#define D3DX_FILTER_MIRROR_V   0x00020000
+#define D3DX_FILTER_MIRROR_W   0x00040000
+#endif
+
 // Phase 39.4: FVF (Flexible Vertex Format) stub
 extern const int dynamic_fvf_type;  // Forward declare global constant
 
@@ -100,6 +113,7 @@ extern const int dynamic_fvf_type;  // Forward declare global constant
 class FVFInfoClass {
 public:
     int Get_Location_Offset() const { return 0; }
+    int Get_Normal_Offset() const { return 0; }
     int Get_Diffuse_Offset() const { return 0; }
     int Get_Tex_Offset(int) const { return 0; }
     int Get_FVF_Width() const { return 0; }
@@ -210,6 +224,7 @@ public:
     static void Set_Texture(int stage, TextureClass* texture) {}
     static void Set_DX8_Texture(int stage, void* d3d_texture) {}
     static void* _Create_DX8_Texture(int width, int height, int format) { return nullptr; }
+    static void* _Create_DX8_Texture(int width, int height, int format, int mip_levels) { return nullptr; }
     static void* _Create_DX8_Surface(int width, int height, int format) { return nullptr; }
     static void* _Create_DX8_ZTexture(int width, int height, int format) { return nullptr; }
     static void* _Create_DX8_Cube_Texture(int width, int height, int format) { return nullptr; }
@@ -217,6 +232,11 @@ public:
                                             { return nullptr; }
     static void _Copy_DX8_Rects(void* src_surface, void* src_rect, int src_pitch,
                                void* dst_surface, void* dst_rect) {}
+    static int CreateImageSurface(int width, int height, int format, void** surface) { return 0; }
+    static int CopyRects(void* src_surface, void* src_rect, int count, void* dst_surface, void* dst_rect) { return 0; }
+    static int D3DXLoadSurfaceFromSurface(void* dst_surface, void* dst_palette, void* dst_rect,
+                                         void* src_surface, void* src_palette, void* src_rect,
+                                         int filter, int color_key) { return 0; }
 
     // ========================================================================
     // Material & Shader Operations
@@ -285,6 +305,12 @@ public:
     static void Set_Light_Environment(void* light_env) {}
 
     // ========================================================================
+    // Statistics / Debugging (Phase 39.4: No-op stubs)
+    // ========================================================================
+    static void Begin_Statistics() {}  // Called by Debug_Statistics::Begin_Statistics()
+    static void End_Statistics() {}    // Called by Debug_Statistics::End_Statistics()
+
+    // ========================================================================
     // Fog Operations
     // ========================================================================
     static void Set_Fog(bool enable, const Vector3 &color, float start, float end) {}
@@ -306,8 +332,22 @@ public:
     // Utility Functions
     // ========================================================================
     static unsigned int Convert_Color(const void* color, float alpha = 1.0f) { return 0; }
-    static unsigned int Convert_Color(const Vector3& color, float alpha = 1.0f) { return 0; }  // Phase 39.4: Vector3 overload
-    static unsigned int Convert_Color(const Vector4& color, float alpha = 1.0f) { return 0; }  // Phase 39.4: Vector4 overload
+    static unsigned int Convert_Color(const Vector3& color, float alpha = 1.0f) { 
+        // Convert RGB float (0.0-1.0) to ARGB unsigned int
+        unsigned char r = static_cast<unsigned char>(color.X * 255.0f);
+        unsigned char g = static_cast<unsigned char>(color.Y * 255.0f);
+        unsigned char b = static_cast<unsigned char>(color.Z * 255.0f);
+        unsigned char a = static_cast<unsigned char>(alpha * 255.0f);
+        return (a << 24) | (r << 16) | (g << 8) | b;
+    }
+    static unsigned int Convert_Color(const Vector4& color, float alpha = 1.0f) { 
+        // Convert RGBA float (0.0-1.0) to ARGB unsigned int
+        unsigned char r = static_cast<unsigned char>(color.X * 255.0f);
+        unsigned char g = static_cast<unsigned char>(color.Y * 255.0f);
+        unsigned char b = static_cast<unsigned char>(color.Z * 255.0f);
+        unsigned char a = static_cast<unsigned char>(color.W * 255.0f);  // Use W component as alpha
+        return (a << 24) | (r << 16) | (g << 8) | b;
+    }
     // Phase 39.4: Convert from unsigned int (ARGB format) - declaration only, implemented at end of file
     static Vector4 Convert_Color(unsigned int color);
     static unsigned int Convert_Color_Clamp(const Vector4& color) { return 0; }
@@ -435,6 +475,8 @@ public:
     virtual bool Support_NPatches() const { return false; }  // N-Patches support (tessellation)
     virtual bool Support_Dot3() const { return false; }  // Phase 39.4: Dot3 (DOT product) support for render2d.cpp
     virtual bool Support_ModAlphaAddClr() const { return false; }  // MODULATEALPHA_ADDCOLOR support for shader.cpp
+    virtual bool Support_DXTC() const { return false; }  // Phase 39.4: DXTC compression support
+    virtual bool Support_Texture_Format(int format) const { return false; }  // Phase 39.4: Check specific texture format support
     
     // Hardware identification (shader.cpp line 552-553)
     virtual unsigned int Get_Vendor() const { return VENDOR_UNKNOWN; }
@@ -453,6 +495,7 @@ public:
     virtual ~DX8MeshRenderer() {}
     virtual void Render() {}
     virtual void Invalidate() {}  // Phase 39.4: Add Invalidate method for WW3DAssetManager compatibility
+    virtual void Flush() {}  // Phase 39.4: Flush any pending render commands (no-op for stub)
     // Phase 39.4: Mesh type registration (no-ops for stub)
     virtual void Register_Mesh_Type(void*) {}  // Called in MeshModelClass constructor
     virtual void Unregister_Mesh_Type(void*) {}  // Called in MeshModelClass destructor
@@ -536,6 +579,62 @@ public:
     };
 };
 
+// Phase 39.4: Base class for index buffers - used by pointgr.cpp
+class IndexBufferClass {
+public:
+    IndexBufferClass(int size = 0) : m_indices(nullptr), m_size(size), m_ref_count(1) {
+        if (size > 0) {
+            m_indices = new unsigned short[size];
+        }
+    }
+    virtual ~IndexBufferClass() { 
+        if (m_indices) delete[] m_indices; 
+    }
+    
+    // Reference counting methods (used by REF_PTR_RELEASE macro)
+    virtual void Add_Ref() { m_ref_count++; }
+    virtual void Release_Ref() { 
+        m_ref_count--;
+        if (m_ref_count <= 0) delete this;
+    }
+    
+    class WriteLockClass {
+    public:
+        WriteLockClass(IndexBufferClass* ib) : m_ib(ib) {}
+        virtual ~WriteLockClass() {}
+        unsigned short* Get_Index_Array() { 
+            return m_ib ? m_ib->m_indices : nullptr;
+        }
+    private:
+        IndexBufferClass* m_ib;
+    };
+    
+protected:
+    unsigned short* m_indices;
+    int m_size;
+    int m_ref_count;
+};
+
+// Phase 39.4: DX8IndexBufferClass stub - used by pointgr.cpp
+class DX8IndexBufferClass : public IndexBufferClass {
+public:
+    DX8IndexBufferClass(int size = 0) : IndexBufferClass(size) {}
+    virtual ~DX8IndexBufferClass() {}
+};
+
+// Phase 39.4: SortingIndexBufferClass stub - used by pointgr.cpp
+class SortingIndexBufferClass : public IndexBufferClass {
+public:
+    SortingIndexBufferClass(int size = 0) : IndexBufferClass(size) {}
+    virtual ~SortingIndexBufferClass() {}
+};
+
+// ============================================================================
+// DELETED CLASS STUBS (Phase 39.4)
+// These classes were now defined in meshmdl.h to avoid redefinition issues.
+// DX8FVFCategoryContainer, DX8PolygonRendererList, and related classes
+// are fully defined as stubs in meshmdl.h
+
 // ============================================================================
 // DELETED CLASS STUBS (Phase 39.4)
 // ============================================================================
@@ -551,5 +650,78 @@ inline Vector4 DX8Wrapper::Convert_Color(unsigned int color) {
     float alpha = float((color >> 24) & 0xFF) / 255.0f;
     return Vector4(1.0f, 1.0f, 1.0f, alpha);
 }
+
+// ============================================================================
+// DIRECTX 8 INTERFACE STUB WRAPPERS (Phase 39.4)
+// These provide minimal COM-like interface stubs for legacy code compatibility
+// ============================================================================
+
+/**
+ * @brief Stub COM wrapper for IDirect3DTexture8 interface
+ * Provides no-op implementations of texture methods used by missingtexture.cpp
+ */
+class DX8TextureStub {
+public:
+    DX8TextureStub() : m_ref_count(1), m_level_count(1) {}
+    virtual ~DX8TextureStub() {}
+    
+    // Reference counting (COM-like interface)
+    virtual void AddRef() { m_ref_count++; }
+    virtual void Release() { if (--m_ref_count == 0) delete this; }
+    
+    // Texture methods used by missingtexture.cpp
+    virtual int GetSurfaceLevel(int level, void** surface) { 
+        *surface = nullptr; 
+        return 0; 
+    }
+    virtual int LockRect(int level, D3DLOCKED_RECT* locked, void* rect, int flags) { 
+        static D3DLOCKED_RECT stub_rect = {nullptr, 0};
+        *locked = stub_rect;
+        return 0; 
+    }
+    virtual int UnlockRect(int level) { return 0; }
+    virtual unsigned int GetLevelCount() const { return m_level_count; }
+    
+    // Set level count for mipmap calculations
+    void SetLevelCount(unsigned int count) { m_level_count = count; }
+    
+private:
+    int m_ref_count;
+    unsigned int m_level_count;
+};
+
+/**
+ * @brief Stub COM wrapper for IDirect3DSurface8 interface
+ * Provides no-op implementations of surface methods
+ */
+class DX8SurfaceStub {
+public:
+    DX8SurfaceStub() : m_ref_count(1) {}
+    virtual ~DX8SurfaceStub() {}
+    
+    // Reference counting (COM-like interface)
+    virtual void AddRef() { m_ref_count++; }
+    virtual void Release() { if (--m_ref_count == 0) delete this; }
+    
+    // Surface methods
+    virtual int GetDesc(D3DSURFACE_DESC* desc) { 
+        if (desc) {
+            desc->Format = static_cast<D3DFORMAT>(D3DFMT_A8R8G8B8);
+            desc->Width = 128;
+            desc->Height = 128;
+            desc->Type = D3DRTYPE_SURFACE;
+        }
+        return 0; 
+    }
+    virtual int LockRect(D3DLOCKED_RECT* locked, void* rect, int flags) { 
+        static D3DLOCKED_RECT stub_rect = {nullptr, 0};
+        *locked = stub_rect;
+        return 0; 
+    }
+    virtual int UnlockRect() { return 0; }
+    
+private:
+    int m_ref_count;
+};
 
 #endif // __DX8WRAPPER_STUBS_H__

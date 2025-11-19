@@ -43,11 +43,19 @@
 #include "texture.h"
 #include "matrix3d.h"
 #include "vector2.h"
+#include "w3d_file.h"  // Phase 39.4: For W3dEmitterLinePropertiesStruct
+#include "vertmaterial.h"  // Phase 39.4: For VertexMaterialClass definition
 
 class RenderInfoClass;
 class SphereClass;
-struct W3dEmitterLinePropertiesStruct;
-struct VertexFormatXYZUV1;
+
+// Phase 39.4: Vertex format structure for streak rendering
+// Used by streakRender.cpp to store vertex data
+struct VertexFormatXYZUV1 {
+	float x, y, z;              // Position
+	unsigned int diffuse;       // Diffuse color (ARGB packed as unsigned int)
+	float u1, v1;               // Texture coordinates
+};
 
 // The maximum allowable level of subdivision. This should be no more than 7 to avoid increasing
 // the chunk buffer size too much

@@ -168,9 +168,11 @@
             "binaryDir": "${sourceDir}/build/${presetName}",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
+                "USE_VULKAN": "ON",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             },
             "environment": {
+                "USE_VULKAN": "1",
                 "USE_METAL": "0",
                 "USE_OPENGL": "0"
             }
@@ -183,6 +185,7 @@
             "cacheVariables": {
                 "CMAKE_OSX_ARCHITECTURES": "arm64",
                 "CMAKE_BUILD_TYPE": "Release",
+                "USE_VULKAN": "ON",
                 "CMAKE_C_COMPILER_LAUNCHER": "ccache",
                 "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
                 "USE_CCACHE": "ON",
@@ -190,6 +193,7 @@
             }
             ,
             "environment": {
+                "USE_VULKAN": "1",
                 "USE_METAL": "0",
                 "USE_OPENGL": "0"
             }
@@ -202,6 +206,7 @@
             "cacheVariables": {
                 "CMAKE_OSX_ARCHITECTURES": "x86_64",
                 "CMAKE_BUILD_TYPE": "Release",
+                "USE_VULKAN": "ON",
                 "CMAKE_C_COMPILER_LAUNCHER": "ccache",
                 "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
                 "USE_CCACHE": "ON",
@@ -209,6 +214,7 @@
             }
             ,
             "environment": {
+                "USE_VULKAN": "1",
                 "USE_METAL": "0",
                 "USE_OPENGL": "0"
             }
@@ -220,6 +226,7 @@
             "binaryDir": "${sourceDir}/build/${presetName}",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
+                "USE_VULKAN": "ON",
                 "CMAKE_C_COMPILER_LAUNCHER": "ccache",
                 "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
                 "USE_CCACHE": "ON",
@@ -227,6 +234,7 @@
             }
             ,
             "environment": {
+                "USE_VULKAN": "1",
                 "USE_METAL": "0",
                 "USE_OPENGL": "0"
             }
