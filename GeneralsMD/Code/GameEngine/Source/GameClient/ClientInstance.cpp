@@ -17,12 +17,13 @@
 */
 #include "PreRTS.h"
 #include "GameClient/ClientInstance.h"
+#include "WWVegas/win32_thread_compat.h"
 
 #define GENERALS_GUID "685EAFF2-3216-4265-B047-251C5F4B82F3"
 
 namespace rts
 {
-HANDLE ClientInstance::s_mutexHandle = NULL;
+SDL2_Mutex ClientInstance::s_mutexHandle = NULL;
 UnsignedInt ClientInstance::s_instanceIndex = 0;
 
 #if defined(RTS_MULTI_INSTANCE)
@@ -38,7 +39,6 @@ bool ClientInstance::initialize()
 		return true;
 	}
 
-#ifdef _WIN32
 	// Create a mutex with a unique name to Generals in order to determine if our app is already running.
 	// WARNING: DO NOT use this number for any other application except Generals.
 	while (true)
@@ -49,39 +49,28 @@ bool ClientInstance::initialize()
 			if (s_instanceIndex > 0u)
 			{
 				char idStr[33];
-				itoa(s_instanceIndex, idStr, 10);
+				snprintf(idStr, sizeof(idStr), "%u", s_instanceIndex);
 				guidStr.push_back('-');
 				guidStr.append(idStr);
 			}
-			s_mutexHandle = CreateMutex(NULL, FALSE, guidStr.c_str());
-			if (GetLastError() == ERROR_ALREADY_EXISTS)
+			s_mutexHandle = SDL2_CreateMutex(guidStr.c_str());
+			if (s_mutexHandle == NULL)
 			{
-				if (s_mutexHandle != NULL)
-				{
-					CloseHandle(s_mutexHandle);
-					s_mutexHandle = NULL;
-				}
-				// Try again with a new instance.
+				// Mutex already exists, try again with a new instance index
 				++s_instanceIndex;
 				continue;
 			}
 		}
 		else
 		{
-			s_mutexHandle = CreateMutex(NULL, FALSE, getFirstInstanceName());
-			if (GetLastError() == ERROR_ALREADY_EXISTS)
+			s_mutexHandle = SDL2_CreateMutex(getFirstInstanceName());
+			if (s_mutexHandle == NULL)
 			{
-				if (s_mutexHandle != NULL)
-				{
-					CloseHandle(s_mutexHandle);
-					s_mutexHandle = NULL;
-				}
 				return false;
 			}
 		}
 		break;
 	}
-#endif // _WIN32
 
 	return true;
 }

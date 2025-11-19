@@ -49,7 +49,7 @@ public:
 	static const char* getFirstInstanceName();
 
 private:
-	static HANDLE s_mutexHandle;
+	static SDL2_Mutex s_mutexHandle;
 	static UnsignedInt s_instanceIndex;
 	static Bool s_isMultiInstance;
 };
