@@ -28,13 +28,10 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
-#ifdef _WIN32
-
 #include <winsock.h>	// This one has to be here. Prevents collisions with windsock2.h
 
 #include "GameNetwork/GameSpy/PingThread.h"
-#include "mutex.h"
-#include "thread.h"
+#include "win32_thread_compat.h"
 
 #include "Common/SubsystemInterface.h"
 
@@ -68,9 +65,9 @@ public:
 	virtual AsciiString getPingString( Int timeout );
 
 private:
-	MutexClass m_requestMutex;
-	MutexClass m_responseMutex;
-	MutexClass m_pingMapMutex;
+	SDL2_Mutex m_requestMutex;
+	SDL2_Mutex m_responseMutex;
+	SDL2_Mutex m_pingMapMutex;
 	RequestQueue m_requests;
 	ResponseQueue m_responses;
 	Int m_requestCount;
@@ -78,7 +75,7 @@ private:
 
 	std::map<std::string, Int> m_pingMap;
 
-	PingThreadClass *m_workerThreads[NumWorkerThreads];
+	SDL2_ThreadHandle m_workerThreads[NumWorkerThreads];
 };
 
 PingerInterface* PingerInterface::createNewPingerInterface( void )
@@ -90,23 +87,26 @@ PingerInterface *ThePinger;
 
 //-------------------------------------------------------------------------
 
-class PingThreadClass : public ThreadClass
+// Thread function wrapper for SDL2
+static void ping_worker_thread(void* arg);
+
+class PingThreadContext
 {
-
 public:
-	PingThreadClass() : ThreadClass() {}
-
-	void Thread_Function();
-
-private:
-	Int doPing( UnsignedInt IP, Int timeout );
+	Pinger* pinger;
+	volatile bool running;
+	
+	PingThreadContext() : pinger(nullptr), running(true) {}
 };
-
 
 //-------------------------------------------------------------------------
 
 Pinger::Pinger() : m_requestCount(0), m_responseCount(0)
 {
+	m_requestMutex = SDL2_CreateMutex("PingThread_RequestMutex");
+	m_responseMutex = SDL2_CreateMutex("PingThread_ResponseMutex");
+	m_pingMapMutex = SDL2_CreateMutex("PingThread_PingMapMutex");
+	
 	for (Int i=0; i<NumWorkerThreads; ++i)
 	{
 		m_workerThreads[i] = NULL;
@@ -116,6 +116,9 @@ Pinger::Pinger() : m_requestCount(0), m_responseCount(0)
 Pinger::~Pinger()
 {
 	endThreads();
+	if (m_requestMutex) SDL2_DestroyMutex(m_requestMutex);
+	if (m_responseMutex) SDL2_DestroyMutex(m_responseMutex);
+	if (m_pingMapMutex) SDL2_DestroyMutex(m_pingMapMutex);
 }
 
 void Pinger::startThreads( void )
@@ -123,8 +126,16 @@ void Pinger::startThreads( void )
 	endThreads();
 	for (Int i=0; i<NumWorkerThreads; ++i)
 	{
-		m_workerThreads[i] = NEW PingThreadClass;
-		m_workerThreads[i]->Execute();
+		PingThreadContext* ctx = NEW PingThreadContext;
+		ctx->pinger = this;
+		ctx->running = true;
+		
+		m_workerThreads[i] = SDL2_CreateThread(ping_worker_thread, (void*)ctx, "PingWorker", 0);
+		if (m_workerThreads[i] == NULL)
+		{
+			DEBUG_LOG(("Failed to create ping worker thread %d", i));
+			delete ctx;
+		}
 	}
 }
 
@@ -132,8 +143,11 @@ void Pinger::endThreads( void )
 {
 	for (Int i=0; i<NumWorkerThreads; ++i)
 	{
-		delete m_workerThreads[i];
-		m_workerThreads[i] = NULL;
+		if (m_workerThreads[i])
+		{
+			SDL2_WaitThread(m_workerThreads[i]);
+			m_workerThreads[i] = NULL;
+		}
 	}
 }
 
@@ -143,8 +157,7 @@ Bool Pinger::areThreadsRunning( void )
 	{
 		if (m_workerThreads[i])
 		{
-			if (m_workerThreads[i]->Is_Running())
-				return true;
+			return true;  // If thread handle exists, it's running or about to run
 		}
 	}
 	return false;
@@ -152,16 +165,15 @@ Bool Pinger::areThreadsRunning( void )
 
 void Pinger::addRequest( const PingRequest& req )
 {
-	MutexClass::LockClass m(m_requestMutex);
-
+	SDL2_MutexLock lock(m_requestMutex);
 	++m_requestCount;
 	m_requests.push(req);
 }
 
 Bool Pinger::getRequest( PingRequest& req )
 {
-	MutexClass::LockClass m(m_requestMutex, 0);
-	if (m.Failed())
+	SDL2_MutexLock lock(m_requestMutex, 0);
+	if (lock.Failed())
 		return false;
 
 	if (m_requests.empty())
@@ -174,13 +186,11 @@ Bool Pinger::getRequest( PingRequest& req )
 void Pinger::addResponse( const PingResponse& resp )
 {
 	{
-		MutexClass::LockClass m(m_pingMapMutex);
-
+		SDL2_MutexLock lock(m_pingMapMutex);
 		m_pingMap[resp.hostname] = resp.avgPing;
 	}
 	{
-		MutexClass::LockClass m(m_responseMutex);
-
+		SDL2_MutexLock lock(m_responseMutex);
 		++m_responseCount;
 		m_responses.push(resp);
 	}
@@ -188,8 +198,8 @@ void Pinger::addResponse( const PingResponse& resp )
 
 Bool Pinger::getResponse( PingResponse& resp )
 {
-	MutexClass::LockClass m(m_responseMutex, 0);
-	if (m.Failed())
+	SDL2_MutexLock lock(m_responseMutex, 0);
+	if (lock.Failed())
 		return false;
 
 	if (m_responses.empty())
@@ -206,8 +216,8 @@ Bool Pinger::arePingsInProgress( void )
 
 Int Pinger::getPing( AsciiString hostname )
 {
-	MutexClass::LockClass m(m_pingMapMutex, 0);
-	if (m.Failed())
+	SDL2_MutexLock lock(m_pingMapMutex, 0);
+	if (lock.Failed())
 		return false;
 
 	std::map<std::string, Int>::const_iterator it = m_pingMap.find(hostname.str());
@@ -219,13 +229,13 @@ Int Pinger::getPing( AsciiString hostname )
 
 void Pinger::clearPingMap( void )
 {
-	MutexClass::LockClass m(m_pingMapMutex);
+	SDL2_MutexLock lock(m_pingMapMutex);
 	m_pingMap.clear();
 }
 
 AsciiString Pinger::getPingString( Int timeout )
 {
-	MutexClass::LockClass m(m_pingMapMutex);
+	SDL2_MutexLock lock(m_pingMapMutex);
 
 	AsciiString pingString;
 	AsciiString tmp;
@@ -240,6 +250,104 @@ AsciiString Pinger::getPingString( Int timeout )
 	}
 	return pingString;
 }
+
+//-------------------------------------------------------------------------
+
+// Thread function wrapper for SDL2 - Forward declaration
+static Int doPing(UnsignedInt IP, Int timeout);
+
+// Thread function wrapper for SDL2
+static void ping_worker_thread(void* arg)
+{
+	PingThreadContext* ctx = (PingThreadContext*)arg;
+	Pinger* pinger = ctx->pinger;
+	
+	try {
+		PingRequest req;
+
+		WSADATA wsaData;
+
+		// Fire up winsock (prob already done, but doesn't matter)
+		WORD wVersionRequested = MAKEWORD(1, 1);
+		WSAStartup( wVersionRequested, &wsaData );
+
+		while ( ctx->running )
+		{
+			// deal with requests
+			if (pinger->getRequest(req))
+			{
+				// resolve the hostname
+				const char *hostnameBuffer = req.hostname.c_str();
+				UnsignedInt IP = 0xFFFFFFFF;
+				if (isdigit(hostnameBuffer[0]))
+				{
+					IP = inet_addr(hostnameBuffer);
+					in_addr hostNode;
+					hostNode.s_addr = IP;
+					DEBUG_LOG(("pinging %s - IP = %s", hostnameBuffer, inet_ntoa(hostNode) ));
+				}
+				else
+				{
+					HOSTENT *hostStruct;
+					in_addr *hostNode;
+					hostStruct = gethostbyname(hostnameBuffer);
+					if (hostStruct == NULL)
+					{
+						DEBUG_LOG(("pinging %s - host lookup failed", hostnameBuffer));
+
+						// Even though this failed to resolve IP, still need to send a
+						//   callback.
+						IP = 0xFFFFFFFF;   // flag for IP resolve failed
+					}
+					else
+					{
+						hostNode = (in_addr *) hostStruct->h_addr;
+						IP = hostNode->s_addr;
+						DEBUG_LOG(("pinging %s IP = %s", hostnameBuffer, inet_ntoa(*hostNode) ));
+					}
+				}
+
+				// do ping
+				Int totalPing = 0;
+				Int goodReps = 0;
+				Int reps = req.repetitions;
+				while (reps-- && ctx->running && IP != 0xFFFFFFFF)
+				{
+					Int ping = doPing(IP, req.timeout);
+					if (ping >= 0)
+					{
+						totalPing += ping;
+						++goodReps;
+					}
+
+					// end our timeslice
+					SDL2_YieldThread();
+				}
+				if (!goodReps)
+					totalPing = -1;
+				else
+					totalPing = totalPing / goodReps;
+
+				PingResponse resp;
+				resp.hostname = req.hostname;
+				resp.avgPing = totalPing;
+				resp.repetitions = goodReps;
+				pinger->addResponse(resp);
+			}
+
+			// end our timeslice
+			SDL2_YieldThread();
+		}
+
+		WSACleanup();
+	} catch ( ... ) {
+		DEBUG_CRASH(("Exception in ping thread!"));
+	}
+	
+	delete ctx;
+}
+
+//-------------------------------------------------------------------------
 
 //-------------------------------------------------------------------------
 
@@ -304,7 +412,7 @@ void PingThreadClass::Thread_Function()
 				}
 
 				// end our timeslice
-				Switch_Thread();
+				SDL2_YieldThread();
 			}
 			if (!goodReps)
 				totalPing = -1;
@@ -319,7 +427,7 @@ void PingThreadClass::Thread_Function()
 		}
 
 		// end our timeslice
-		Switch_Thread();
+		SDL2_YieldThread();
 	}
 
 	WSACleanup();
@@ -416,7 +524,7 @@ DWORD WINAPI IcmpSendEcho(
 #define LOOPLIMIT   4
 #define DEFAULT_TTL 64
 
-Int PingThreadClass::doPing(UnsignedInt IP, Int timeout)
+Int doPing(UnsignedInt IP, Int timeout)
 {
    /*
     * Initialize default settings
@@ -570,8 +678,3 @@ cleanup:
 
 	return pingTime;
 }
-
-
-//-------------------------------------------------------------------------
-
-#endif // _WIN32

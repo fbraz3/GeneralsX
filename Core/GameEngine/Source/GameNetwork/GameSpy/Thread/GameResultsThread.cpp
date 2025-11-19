@@ -28,13 +28,10 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
-#ifdef _WIN32
-
 #include <winsock.h>	// This one has to be here. Prevents collisions with winsock2.h
 
 #include "GameNetwork/GameSpy/GameResultsThread.h"
-#include "mutex.h"
-#include "thread.h"
+#include "win32_thread_compat.h"
 
 #include "Common/SubsystemInterface.h"
 
@@ -69,14 +66,14 @@ public:
 	virtual Bool areGameResultsBeingSent( void );
 
 private:
-	MutexClass m_requestMutex;
-	MutexClass m_responseMutex;
+	SDL2_Mutex m_requestMutex;
+	SDL2_Mutex m_responseMutex;
 	RequestQueue m_requests;
 	ResponseQueue m_responses;
 	Int m_requestCount;
 	Int m_responseCount;
 
-	GameResultsThreadClass *m_workerThreads[NumWorkerThreads];
+	SDL2_ThreadHandle m_workerThreads[NumWorkerThreads];
 };
 
 GameResultsInterface* GameResultsInterface::createNewGameResultsInterface( void )
@@ -85,6 +82,20 @@ GameResultsInterface* GameResultsInterface::createNewGameResultsInterface( void 
 }
 
 GameResultsInterface *TheGameResultsQueue;
+
+//-------------------------------------------------------------------------
+
+// Thread function wrapper for SDL2
+static void gameresults_worker_thread(void* arg);
+
+class GameResultsThreadContext
+{
+public:
+	GameResultsQueue* queue;
+	volatile bool running;
+	
+	GameResultsThreadContext() : queue(nullptr), running(true) {}
+};
 
 //-------------------------------------------------------------------------
 
@@ -105,6 +116,9 @@ private:
 
 GameResultsQueue::GameResultsQueue() : m_requestCount(0), m_responseCount(0)
 {
+	m_requestMutex = SDL2_CreateMutex("GameResultsThread_RequestMutex");
+	m_responseMutex = SDL2_CreateMutex("GameResultsThread_ResponseMutex");
+	
 	for (Int i=0; i<NumWorkerThreads; ++i)
 	{
 		m_workerThreads[i] = NULL;
@@ -116,6 +130,8 @@ GameResultsQueue::GameResultsQueue() : m_requestCount(0), m_responseCount(0)
 GameResultsQueue::~GameResultsQueue()
 {
 	endThreads();
+	if (m_requestMutex) SDL2_DestroyMutex(m_requestMutex);
+	if (m_responseMutex) SDL2_DestroyMutex(m_responseMutex);
 }
 
 void GameResultsQueue::startThreads( void )
@@ -123,8 +139,16 @@ void GameResultsQueue::startThreads( void )
 	endThreads();
 	for (Int i=0; i<NumWorkerThreads; ++i)
 	{
-		m_workerThreads[i] = NEW GameResultsThreadClass;
-		m_workerThreads[i]->Execute();
+		GameResultsThreadContext* ctx = NEW GameResultsThreadContext;
+		ctx->queue = this;
+		ctx->running = true;
+		
+		m_workerThreads[i] = SDL2_CreateThread(gameresults_worker_thread, (void*)ctx, "GameResultsWorker", 0);
+		if (m_workerThreads[i] == NULL)
+		{
+			DEBUG_LOG(("Failed to create game results worker thread %d", i));
+			delete ctx;
+		}
 	}
 }
 
@@ -132,8 +156,11 @@ void GameResultsQueue::endThreads( void )
 {
 	for (Int i=0; i<NumWorkerThreads; ++i)
 	{
-		delete m_workerThreads[i];
-		m_workerThreads[i] = NULL;
+		if (m_workerThreads[i])
+		{
+			SDL2_WaitThread(m_workerThreads[i]);
+			m_workerThreads[i] = NULL;
+		}
 	}
 }
 
@@ -143,8 +170,7 @@ Bool GameResultsQueue::areThreadsRunning( void )
 	{
 		if (m_workerThreads[i])
 		{
-			if (m_workerThreads[i]->Is_Running())
-				return true;
+			return true;
 		}
 	}
 	return false;
@@ -152,7 +178,7 @@ Bool GameResultsQueue::areThreadsRunning( void )
 
 void GameResultsQueue::addRequest( const GameResultsRequest& req )
 {
-	MutexClass::LockClass m(m_requestMutex);
+	SDL2_MutexLock m(m_requestMutex);
 
 	++m_requestCount;
 	m_requests.push(req);
@@ -160,7 +186,7 @@ void GameResultsQueue::addRequest( const GameResultsRequest& req )
 
 Bool GameResultsQueue::getRequest( GameResultsRequest& req )
 {
-	MutexClass::LockClass m(m_requestMutex, 0);
+	SDL2_MutexLock m(m_requestMutex, 0);
 	if (m.Failed())
 		return false;
 
@@ -174,7 +200,7 @@ Bool GameResultsQueue::getRequest( GameResultsRequest& req )
 void GameResultsQueue::addResponse( const GameResultsResponse& resp )
 {
 	{
-		MutexClass::LockClass m(m_responseMutex);
+		SDL2_MutexLock m(m_responseMutex);
 
 		++m_responseCount;
 		m_responses.push(resp);
@@ -183,7 +209,7 @@ void GameResultsQueue::addResponse( const GameResultsResponse& resp )
 
 Bool GameResultsQueue::getResponse( GameResultsResponse& resp )
 {
-	MutexClass::LockClass m(m_responseMutex, 0);
+	SDL2_MutexLock m(m_responseMutex, 0);
 	if (m.Failed())
 		return false;
 
@@ -196,11 +222,89 @@ Bool GameResultsQueue::getResponse( GameResultsResponse& resp )
 
 Bool GameResultsQueue::areGameResultsBeingSent( void )
 {
-	MutexClass::LockClass m(m_requestMutex, 0);
+	SDL2_MutexLock m(m_requestMutex, 0);
 	if (m.Failed())
 		return true;
 
 	return m_requestCount > 0;
+}
+
+//-------------------------------------------------------------------------
+
+//-------------------------------------------------------------------------
+
+// Thread function wrapper for SDL2 - Forward declaration
+static Int sendGameResults(UnsignedInt IP, UnsignedShort port, const std::string& results);
+
+// Thread function wrapper for SDL2
+static void gameresults_worker_thread(void* arg)
+{
+	GameResultsThreadContext* ctx = (GameResultsThreadContext*)arg;
+	GameResultsQueue* queue = ctx->queue;
+	
+	try {
+		GameResultsRequest req;
+
+		WSADATA wsaData;
+
+		// Fire up winsock (prob already done, but doesn't matter)
+		WORD wVersionRequested = MAKEWORD(1, 1);
+		WSAStartup( wVersionRequested, &wsaData );
+
+		while ( ctx->running )
+		{
+			// deal with requests
+			if (queue && queue->getRequest(req))
+			{
+				// resolve the hostname
+				const char *hostnameBuffer = req.hostname.c_str();
+				UnsignedInt IP = 0xFFFFFFFF;
+				if (isdigit(hostnameBuffer[0]))
+				{
+					IP = inet_addr(hostnameBuffer);
+					in_addr hostNode;
+					hostNode.s_addr = IP;
+					DEBUG_LOG(("sending game results to %s - IP = %s", hostnameBuffer, inet_ntoa(hostNode) ));
+				}
+				else
+				{
+					HOSTENT *hostStruct;
+					in_addr *hostNode;
+					hostStruct = gethostbyname(hostnameBuffer);
+					if (hostStruct == NULL)
+					{
+						DEBUG_LOG(("sending game results to %s - host lookup failed", hostnameBuffer));
+
+						// Even though this failed to resolve IP, still need to send a
+						//   callback.
+						IP = 0xFFFFFFFF;   // flag for IP resolve failed
+					}
+					else
+					{
+						hostNode = (in_addr *) hostStruct->h_addr;
+						IP = hostNode->s_addr;
+						DEBUG_LOG(("sending game results to %s IP = %s", hostnameBuffer, inet_ntoa(*hostNode) ));
+					}
+				}
+
+				int result = sendGameResults( IP, req.port, req.results );
+				GameResultsResponse resp;
+				resp.hostname = req.hostname;
+				resp.port = req.port;
+				resp.sentOk = (result == req.results.length());
+
+			}
+
+			// end our timeslice
+			SDL2_YieldThread();
+		}
+
+		WSACleanup();
+	} catch ( ... ) {
+		DEBUG_CRASH(("Exception in results thread!"));
+	}
+	
+	delete ctx;
 }
 
 //-------------------------------------------------------------------------
@@ -261,7 +365,7 @@ void GameResultsThreadClass::Thread_Function()
 		}
 
 		// end our timeslice
-		Switch_Thread();
+		SDL2_YieldThread();
 	}
 
 	WSACleanup();
@@ -341,7 +445,7 @@ static const char *getWSAErrorString( Int error )
 #endif
 //-------------------------------------------------------------------------
 
-Int GameResultsThreadClass::sendGameResults( UnsignedInt IP, UnsignedShort port, const std::string& results )
+Int sendGameResults( UnsignedInt IP, UnsignedShort port, const std::string& results )
 {
 	int error = 0;
 
@@ -393,4 +497,3 @@ Int GameResultsThreadClass::sendGameResults( UnsignedInt IP, UnsignedShort port,
 
 //-------------------------------------------------------------------------
 
-#endif // _WIN32

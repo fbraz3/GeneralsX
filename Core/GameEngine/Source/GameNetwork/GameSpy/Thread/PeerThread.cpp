@@ -31,8 +31,6 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
-#ifdef _WIN32
-
 #include "Common/Registry.h"
 #include "Common/UserPreferences.h"
 #include "Common/version.h"
@@ -44,8 +42,7 @@
 #include "GameNetwork/GameSpy/ThreadUtils.h"
 
 #include "strtok_r.h"
-#include "mutex.h"
-#include "thread.h"
+#include "win32_thread_compat.h"
 
 #include "Common/MiniLog.h"
 
@@ -156,8 +153,8 @@ public:
 	PeerThreadClass* getThread( void );
 
 private:
-	MutexClass m_requestMutex;
-	MutexClass m_responseMutex;
+	SDL2_Mutex m_requestMutex;
+	SDL2_Mutex m_responseMutex;
 	RequestQueue m_requests;
 	ResponseQueue m_responses;
 	PeerThreadClass *m_thread;
@@ -589,7 +586,7 @@ Bool GameSpyPeerMessageQueue::isConnecting( void )
 
 void GameSpyPeerMessageQueue::addRequest( const PeerRequest& req )
 {
-	MutexClass::LockClass m(m_requestMutex);
+	SDL2_MutexLock m(m_requestMutex);
 	if (m.Failed())
 		return;
 
@@ -599,7 +596,7 @@ void GameSpyPeerMessageQueue::addRequest( const PeerRequest& req )
 //PeerRequest GameSpyPeerMessageQueue::getRequest( void )
 Bool GameSpyPeerMessageQueue::getRequest( PeerRequest& req )
 {
-	MutexClass::LockClass m(m_requestMutex, 0);
+	SDL2_MutexLock m(m_requestMutex, 0);
 	if (m.Failed())
 		return false;
 
@@ -615,7 +612,7 @@ void GameSpyPeerMessageQueue::addResponse( const PeerResponse& resp )
 	if (resp.nick == "(END)")
 		return;
 
-	MutexClass::LockClass m(m_responseMutex);
+	SDL2_MutexLock m(m_responseMutex);
 	if (m.Failed())
 		return;
 
@@ -625,7 +622,7 @@ void GameSpyPeerMessageQueue::addResponse( const PeerResponse& resp )
 //PeerResponse GameSpyPeerMessageQueue::getResponse( void )
 Bool GameSpyPeerMessageQueue::getResponse( PeerResponse& resp )
 {
-	MutexClass::LockClass m(m_responseMutex, 0);
+	SDL2_MutexLock m(m_responseMutex, 0);
 	if (m.Failed())
 		return false;
 
@@ -2998,6 +2995,4 @@ static void listingGamesCallback(PEER peer, PEERBool success, const char * name,
 }
 
 //-------------------------------------------------------------------------
-
-#endif // _WIN32
 
