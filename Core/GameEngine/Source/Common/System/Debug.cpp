@@ -731,13 +731,6 @@ void ReleaseCrash(const char *reason)
 {
 	/// do additional reporting on the crash, if possible
 
-#ifdef _WIN32
-	if (!DX8Wrapper_IsWindowed) {
-		if (ApplicationHWnd) {
-			ShowWindow(ApplicationHWnd, SW_HIDE);
-		}
-	}
-#endif
 
 	char prevbuf[ _MAX_PATH ];
 	char curbuf[ _MAX_PATH ];
@@ -783,18 +776,6 @@ void ReleaseCrash(const char *reason)
 		theReleaseCrashLogFile = NULL;
 	}
 
-#ifdef _WIN32
-	if (!DX8Wrapper_IsWindowed) {
-		if (ApplicationHWnd) {
-			ShowWindow(ApplicationHWnd, SW_HIDE);
-		}
-	}
-
-#if defined(RTS_DEBUG)
-	/* static */ char buff[8192]; // not so static so we can be threadsafe
-	snprintf(buff, 8192, "Sorry, a serious error occurred. (%s)", reason);
-	::MessageBox(NULL, buff, "Technical Difficulties...", MB_OK|MB_SYSTEMMODAL|MB_ICONERROR);
-#else
 // crash error messaged changed 3/6/03 BGC
 //	::MessageBox(NULL, "Sorry, a serious error occurred.", "Technical Difficulties...", MB_OK|MB_TASKMODAL|MB_ICONERROR);
 //	::MessageBox(NULL, "You have encountered a serious error.  Serious errors can be caused by many things including viruses, overheated hardware and hardware that does not meet the minimum specifications for the game. Please visit the forums at www.generals.ea.com for suggested courses of action or consult your manual for Technical Support contact information.", "Technical Difficulties...", MB_OK|MB_TASKMODAL|MB_ICONERROR);
@@ -805,7 +786,6 @@ void ReleaseCrash(const char *reason)
    MB_OK|MB_SYSTEMMODAL|MB_ICONERROR);
 
 
-#endif
 #endif
 
 	_exit(1);
@@ -825,29 +805,6 @@ void ReleaseCrashLocalized(const AsciiString& p, const AsciiString& m)
 
 	/// do additional reporting on the crash, if possible
 
-#ifdef _WIN32
-	if (!DX8Wrapper_IsWindowed) {
-		if (ApplicationHWnd) {
-			ShowWindow(ApplicationHWnd, SW_HIDE);
-		}
-	}
-
-	if (TheSystemIsUnicode)
-	{
-		::MessageBoxW(NULL, mesg.str(), prompt.str(), MB_OK|MB_SYSTEMMODAL|MB_ICONERROR);
-	}
-	else
-	{
-		// However, if we're using the default version of the message box, we need to
-		// translate the string into an AsciiString
-		AsciiString promptA, mesgA;
-		promptA.translate(prompt);
-		mesgA.translate(mesg);
-		//Make sure main window is not TOP_MOST
-		::SetWindowPos(ApplicationHWnd, HWND_NOTOPMOST, 0, 0, 0, 0,SWP_NOSIZE |SWP_NOMOVE);
-		::MessageBoxA(NULL, mesgA.str(), promptA.str(), MB_OK|MB_TASKMODAL|MB_ICONERROR);
-	}
-#endif
 
 	char prevbuf[ _MAX_PATH ];
 	char curbuf[ _MAX_PATH ];

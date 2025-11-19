@@ -18,9 +18,6 @@
 
 #pragma once
 
-#ifdef _WIN32
-#include <process.h>
-#endif
 //#include <wstring.h>
 //#include <dictionary.h>
 //#include <arraylist.h>

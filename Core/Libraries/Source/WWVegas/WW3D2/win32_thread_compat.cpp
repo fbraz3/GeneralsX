@@ -38,93 +38,6 @@
  * THREAD CREATION AND MANAGEMENT
  * ============================================================================ */
 
-#ifdef _WIN32
-
-SDL2_ThreadHandle SDL2_CreateThread(
-    SDL2_ThreadFunction func,
-    void* arg,
-    const char* name,
-    size_t stack_size)
-{
-    if (!func) {
-        fprintf(stderr, "Phase 04: SDL2_CreateThread - NULL function pointer\n");
-        return NULL;
-    }
-
-    printf("Phase 04: SDL2_CreateThread(%s, stack_size=%zu)\n",
-           name ? name : "unnamed", stack_size);
-
-    /* Windows thread creation via _beginthread */
-    uintptr_t handle = _beginthread(
-        (void(__cdecl*)(void*))func,
-        stack_size ? (unsigned)stack_size : 0,
-        arg
-    );
-
-    if (handle == -1) {
-        fprintf(stderr, "Phase 04: _beginthread failed\n");
-        return NULL;
-    }
-
-    printf("Phase 04: Thread created successfully (handle: %p)\n", (void*)handle);
-    return (SDL2_ThreadHandle)handle;
-}
-
-int SDL2_WaitThread(SDL2_ThreadHandle thread)
-{
-    if (!thread) {
-        return -1;
-    }
-
-    printf("Phase 04: SDL2_WaitThread - waiting for thread (handle: %p)\n", thread);
-
-    DWORD result = WaitForSingleObject(thread, INFINITE);
-
-    if (result == WAIT_OBJECT_0) {
-        CloseHandle(thread);
-        printf("Phase 04: Thread joined successfully\n");
-        return 0;
-    }
-
-    fprintf(stderr, "Phase 04: WaitForSingleObject failed (result: %lu)\n", result);
-    return -1;
-}
-
-int SDL2_DetachThread(SDL2_ThreadHandle thread)
-{
-    if (!thread) {
-        return -1;
-    }
-
-    printf("Phase 04: SDL2_DetachThread - detaching thread (handle: %p)\n", thread);
-
-    if (CloseHandle(thread)) {
-        printf("Phase 04: Thread detached successfully\n");
-        return 0;
-    }
-
-    fprintf(stderr, "Phase 04: CloseHandle failed\n");
-    return -1;
-}
-
-SDL2_ThreadID SDL2_GetCurrentThreadID(void)
-{
-    SDL2_ThreadID id = GetCurrentThread();
-    printf("Phase 04: Current thread ID: %p\n", (void*)id);
-    return id;
-}
-
-void SDL2_Sleep(unsigned int milliseconds)
-{
-    Sleep(milliseconds);
-}
-
-void SDL2_YieldThread(void)
-{
-    Sleep(0);
-}
-
-#else /* !_WIN32 - POSIX implementation */
 
 struct ThreadWrapper {
     SDL2_ThreadFunction func;
@@ -252,75 +165,11 @@ void SDL2_YieldThread(void)
     sched_yield();
 }
 
-#endif /* _WIN32 */
 
 /* ============================================================================
  * MUTEX (Mutual Exclusion)
  * ============================================================================ */
 
-#ifdef _WIN32
-
-SDL2_Mutex SDL2_CreateMutex(const char* name)
-{
-    printf("Phase 04: SDL2_CreateMutex(%s)\n", name ? name : "unnamed");
-
-    HANDLE handle = CreateMutexA(NULL, FALSE, name);
-
-    if (!handle) {
-        fprintf(stderr, "Phase 04: CreateMutexA failed\n");
-        return NULL;
-    }
-
-    printf("Phase 04: Mutex created successfully (handle: %p)\n", handle);
-    return handle;
-}
-
-void SDL2_DestroyMutex(SDL2_Mutex mutex)
-{
-    if (!mutex) {
-        return;
-    }
-
-    printf("Phase 04: SDL2_DestroyMutex (handle: %p)\n", mutex);
-    CloseHandle(mutex);
-}
-
-int SDL2_LockMutex(SDL2_Mutex mutex, int timeout_ms)
-{
-    if (!mutex) {
-        return -1;
-    }
-
-    DWORD ms = (timeout_ms < 0) ? INFINITE : (DWORD)timeout_ms;
-    DWORD result = WaitForSingleObject(mutex, ms);
-
-    if (result == WAIT_OBJECT_0) {
-        return 0;
-    }
-
-    if (result == WAIT_TIMEOUT) {
-        return -1;  /* Timeout */
-    }
-
-    fprintf(stderr, "Phase 04: WaitForSingleObject failed (result: %lu)\n", result);
-    return -1;
-}
-
-int SDL2_UnlockMutex(SDL2_Mutex mutex)
-{
-    if (!mutex) {
-        return -1;
-    }
-
-    if (ReleaseMutex(mutex)) {
-        return 0;
-    }
-
-    fprintf(stderr, "Phase 04: ReleaseMutex failed\n");
-    return -1;
-}
-
-#else /* !_WIN32 - POSIX implementation */
 
 SDL2_Mutex SDL2_CreateMutex(const char* name)
 {
@@ -430,7 +279,6 @@ int SDL2_UnlockMutex(SDL2_Mutex mutex)
     return (result == 0) ? 0 : -1;
 }
 
-#endif /* _WIN32 */
 
 /* ============================================================================
  * MUTEX RAII LOCK GUARD
@@ -455,42 +303,6 @@ SDL2_MutexLock::~SDL2_MutexLock()
  * CRITICAL SECTION
  * ============================================================================ */
 
-#ifdef _WIN32
-
-SDL2_CriticalSection SDL2_CreateCriticalSection(void)
-{
-    printf("Phase 04: SDL2_CreateCriticalSection\n");
-
-    SDL2_CriticalSection cs;
-    InitializeCriticalSection(&cs);
-    return cs;
-}
-
-void SDL2_DestroyCriticalSection(SDL2_CriticalSection* cs)
-{
-    if (!cs) {
-        return;
-    }
-
-    printf("Phase 04: SDL2_DestroyCriticalSection (ptr: %p)\n", (void*)cs);
-    DeleteCriticalSection(cs);
-}
-
-void SDL2_EnterCriticalSection(SDL2_CriticalSection* cs)
-{
-    if (cs) {
-        EnterCriticalSection(cs);
-    }
-}
-
-void SDL2_LeaveCriticalSection(SDL2_CriticalSection* cs)
-{
-    if (cs) {
-        LeaveCriticalSection(cs);
-    }
-}
-
-#else /* !_WIN32 - POSIX implementation */
 
 SDL2_CriticalSection SDL2_CreateCriticalSection(void)
 {
@@ -524,7 +336,6 @@ void SDL2_LeaveCriticalSection(SDL2_CriticalSection* cs)
     }
 }
 
-#endif /* _WIN32 */
 
 /* ============================================================================
  * CRITICAL SECTION RAII LOCK GUARD
@@ -549,72 +360,6 @@ SDL2_CriticalSectionLock::~SDL2_CriticalSectionLock()
  * CONDITION VARIABLE
  * ============================================================================ */
 
-#ifdef _WIN32
-
-SDL2_ConditionVariable SDL2_CreateConditionVariable(void)
-{
-    printf("Phase 04: SDL2_CreateConditionVariable\n");
-
-    SDL2_ConditionVariable cv;
-    InitializeConditionVariable(&cv);
-    return cv;
-}
-
-void SDL2_DestroyConditionVariable(SDL2_ConditionVariable* cond)
-{
-    if (!cond) {
-        return;
-    }
-
-    printf("Phase 04: SDL2_DestroyConditionVariable (ptr: %p)\n", (void*)cond);
-    /* Windows condition variables don't require explicit cleanup */
-}
-
-int SDL2_ConditionWait(
-    SDL2_ConditionVariable* cond,
-    SDL2_CriticalSection* cs,
-    int timeout_ms)
-{
-    if (!cond || !cs) {
-        return -1;
-    }
-
-    DWORD ms = (timeout_ms < 0) ? INFINITE : (DWORD)timeout_ms;
-    BOOL result = SleepConditionVariableCS(cond, cs, ms);
-
-    if (result) {
-        return 0;
-    }
-
-    if (GetLastError() == ERROR_TIMEOUT) {
-        return -1;  /* Timeout */
-    }
-
-    fprintf(stderr, "Phase 04: SleepConditionVariableCS failed\n");
-    return -1;
-}
-
-int SDL2_ConditionSignal(SDL2_ConditionVariable* cond)
-{
-    if (!cond) {
-        return -1;
-    }
-
-    WakeConditionVariable(cond);
-    return 0;
-}
-
-int SDL2_ConditionBroadcast(SDL2_ConditionVariable* cond)
-{
-    if (!cond) {
-        return -1;
-    }
-
-    WakeAllConditionVariable(cond);
-    return 0;
-}
-
-#else /* !_WIN32 - POSIX implementation */
 
 SDL2_ConditionVariable SDL2_CreateConditionVariable(void)
 {
@@ -693,95 +438,11 @@ int SDL2_ConditionBroadcast(SDL2_ConditionVariable* cond)
     return (result == 0) ? 0 : -1;
 }
 
-#endif /* _WIN32 */
 
 /* ============================================================================
  * SEMAPHORE
  * ============================================================================ */
 
-#ifdef _WIN32
-
-SDL2_Semaphore SDL2_CreateSemaphore(int initial_count, int max_count)
-{
-    printf("Phase 04: SDL2_CreateSemaphore (initial: %d, max: %d)\n", initial_count, max_count);
-
-    HANDLE handle = CreateSemaphoreA(
-        NULL,
-        initial_count,
-        (max_count < 0) ? INT_MAX : max_count,
-        NULL
-    );
-
-    if (!handle) {
-        fprintf(stderr, "Phase 04: CreateSemaphoreA failed\n");
-        return NULL;
-    }
-
-    printf("Phase 04: Semaphore created successfully (handle: %p)\n", handle);
-    return handle;
-}
-
-void SDL2_DestroySemaphore(SDL2_Semaphore sem)
-{
-    if (!sem) {
-        return;
-    }
-
-    printf("Phase 04: SDL2_DestroySemaphore (handle: %p)\n", sem);
-    CloseHandle(sem);
-}
-
-int SDL2_WaitSemaphore(SDL2_Semaphore sem, int timeout_ms)
-{
-    if (!sem) {
-        return -1;
-    }
-
-    DWORD ms = (timeout_ms < 0) ? INFINITE : (DWORD)timeout_ms;
-    DWORD result = WaitForSingleObject(sem, ms);
-
-    if (result == WAIT_OBJECT_0) {
-        return 0;
-    }
-
-    if (result == WAIT_TIMEOUT) {
-        return -1;  /* Timeout */
-    }
-
-    fprintf(stderr, "Phase 04: WaitForSingleObject failed (result: %lu)\n", result);
-    return -1;
-}
-
-int SDL2_PostSemaphore(SDL2_Semaphore sem, int count)
-{
-    if (!sem) {
-        return -1;
-    }
-
-    if (ReleaseSemaphore(sem, count, NULL)) {
-        return 0;
-    }
-
-    fprintf(stderr, "Phase 04: ReleaseSemaphore failed\n");
-    return -1;
-}
-
-int SDL2_GetSemaphoreValue(SDL2_Semaphore sem)
-{
-    if (!sem) {
-        return -1;
-    }
-
-    LONG prev_count;
-    if (ReleaseSemaphore(sem, 0, &prev_count)) {
-        return (int)prev_count;
-    }
-
-    fprintf(stderr, "Phase 04: ReleaseSemaphore (peek) failed\n");
-    return -1;
-}
-
-#else /* !_WIN32 - POSIX implementation */
 
 SDL2_Semaphore SDL2_CreateSemaphore(int initial_count, int max_count)
 {
@@ -886,4 +547,3 @@ int SDL2_GetSemaphoreValue(SDL2_Semaphore sem)
     return value;
 }
 
-#endif /* _WIN32 */

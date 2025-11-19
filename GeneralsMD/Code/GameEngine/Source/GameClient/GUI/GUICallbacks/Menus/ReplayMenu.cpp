@@ -780,25 +780,6 @@ void copyReplay( void )
 	translate.translate(GetReplayFilenameFromListbox(listboxReplayFiles, selected));
 	filename.concat(translate);
 
-#ifdef _WIN32
-	char path[1024];
-	LPITEMIDLIST pidl;
-	SHGetSpecialFolderLocation(NULL, CSIDL_DESKTOPDIRECTORY, &pidl);
-	SHGetPathFromIDList(pidl,path);
-	AsciiString newFilename;
-	newFilename.set(path);
-	newFilename.concat("\\");
-	newFilename.concat(translate);
-	if(CopyFile(filename.str(),newFilename.str(), FALSE) == 0)
-	{
-		wchar_t buffer[1024];
-		FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, buffer, ARRAY_SIZE(buffer), NULL);
-		UnicodeString errorStr;
-		errorStr.set(buffer);
-		errorStr.trim();
-		MessageBoxOk(TheGameText->fetch("GUI:Error"),errorStr, NULL);
-	}
-#endif // _WIN32
 
 }
 

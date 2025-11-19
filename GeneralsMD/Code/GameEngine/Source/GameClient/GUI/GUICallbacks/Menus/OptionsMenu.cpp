@@ -2450,11 +2450,7 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 				char num[16];
 				num[0] = 0;
 				TheWritableGlobalData->m_firewallBehavior = FirewallHelperClass::FIREWALL_TYPE_UNKNOWN;
-#ifdef _WIN32
-				itoa(TheGlobalData->m_firewallBehavior, num, 10);
-#else
 				snprintf(num, sizeof(num), "%d", TheGlobalData->m_firewallBehavior);
-#endif // _WIN32
 				AsciiString numstr;
 				numstr = num;
 				(*pref)["FirewallBehavior"] = numstr;

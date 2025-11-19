@@ -18,9 +18,6 @@
 
 #pragma once
 
-#ifdef _WIN32
-#include <process.h>
-#endif
 #include <configfile.h>
 #include <critsec.h>
 #include <threadfac.h>

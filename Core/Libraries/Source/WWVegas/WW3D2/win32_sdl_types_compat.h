@@ -28,7 +28,6 @@
 #define CONST const
 #endif
 
-#ifndef _WIN32
 
 /** @brief Signed long (32-bit) */
 #ifndef LONG
@@ -73,7 +72,6 @@ typedef int BOOL;
 #else
 typedef DWORD BOOL;
 #endif
-#endif
 
 /** @brief Signed char (8-bit) */
 #ifndef CHAR
@@ -96,7 +94,6 @@ typedef long long LONGLONG;
 // Windows Pointer Types
 // =====================================================================
 
-#ifndef _WIN32
 
 /** @brief Window handle pointer */
 #ifndef HWND
@@ -153,19 +150,16 @@ typedef void* FARPROC;
 typedef BYTE* LPBYTE;
 #endif
 
-#endif // !_WIN32
 
 // =====================================================================
 // Windows Message Types
 // =====================================================================
 
-#ifndef _WIN32
 
 /* Message types: WPARAM and LPARAM for message handlers */
 typedef intptr_t WPARAM;                       ///< Unsigned parameter (use as integer or pointer)
 typedef intptr_t LPARAM;                       ///< Signed parameter (use as integer or pointer)
 
-#endif // !_WIN32
 
 // =====================================================================
 // Boolean Constants
@@ -183,7 +177,6 @@ typedef intptr_t LPARAM;                       ///< Signed parameter (use as int
 // HRESULT - COM Error Handling
 // =====================================================================
 
-#ifndef _WIN32
 
 /** @brief COM result/error code type */
 #ifndef HRESULT
@@ -209,7 +202,6 @@ typedef long HRESULT;
 #define HRESULT_FACILITY(hr)          (((hr) >> 16) & 0x1FFF)
 #define HRESULT_SEVERITY(hr)          (((hr) >> 31) & 0x1)
 
-#endif // !_WIN32
 
 // =====================================================================
 // RECT - Rectangle Structure (Geometry)
@@ -298,7 +290,6 @@ typedef DWORD COLORREF;
 // Compiler Attribute Compatibility
 // =====================================================================
 
-#ifndef _WIN32
 
 /** @brief __declspec compatibility macro for non-Windows platforms */
 #ifndef __declspec
@@ -330,7 +321,6 @@ typedef DWORD COLORREF;
 #define APIENTRY
 #endif
 
-#endif // !_WIN32
 
 // =====================================================================
 // Bitmap and Image Structures
@@ -414,7 +404,6 @@ typedef BITMAPINFO* LPBITMAPINFO;
 // File and Directory Constants
 // =====================================================================
 
-#ifndef _WIN32
 
 /** @brief File attributes - directory */
 #define FILE_ATTRIBUTE_DIRECTORY      0x00000010
@@ -431,13 +420,11 @@ typedef BITMAPINFO* LPBITMAPINFO;
 /** @brief File attributes - system */
 #define FILE_ATTRIBUTE_SYSTEM         0x00000004
 
-#endif // !_WIN32
 
 // =====================================================================
 // Format and Locale Constants
 // =====================================================================
 
-#ifndef _WIN32
 
 /** @brief Short date format (MM/DD/YY) */
 #define DATE_SHORTDATE                0x00000001
@@ -457,13 +444,11 @@ typedef BITMAPINFO* LPBITMAPINFO;
 /** @brief User default locale ID */
 #define LOCALE_USER_DEFAULT           0x0400
 
-#endif // !_WIN32
 
 // =====================================================================
 // COM Interface Support (Stub)
 // =====================================================================
 
-#ifndef _WIN32
 
 /** @brief COM uninitialization stub - no-op on non-Windows platforms */
 #define CoUninitialize()              do { } while(0)
@@ -474,13 +459,11 @@ typedef BITMAPINFO* LPBITMAPINFO;
 /** @brief COM multithread initialization stub - no-op on non-Windows platforms */
 #define CoInitializeEx(pvReserved, dwCoInit) S_OK
 
-#endif // !_WIN32
 
 // =====================================================================
 // Memory Allocation Flags (Compatibility)
 // =====================================================================
 
-#ifndef _WIN32
 
 /** @brief Local memory - fixed allocation */
 #define LMEM_FIXED                    0x0000
@@ -494,13 +477,11 @@ typedef BITMAPINFO* LPBITMAPINFO;
 /** @brief Combined fixed + zero init flags */
 #define LPTR                          (LMEM_FIXED | LMEM_ZEROINIT)
 
-#endif // !_WIN32
 
 // =====================================================================
 // DIB (Device Independent Bitmap) Constants
 // =====================================================================
 
-#ifndef _WIN32
 
 /** @brief DIB uses RGB color table */
 #define DIB_RGB_COLORS                0
@@ -574,7 +555,6 @@ typedef BITMAPINFO* LPBITMAPINFO;
 #define DDSCAPS2_VOLUME            0x00200000  ///< Surface is a volume texture
 #endif
 
-#endif // !_WIN32
 
 #endif // WIN32_TYPES_H_INCLUDED
 

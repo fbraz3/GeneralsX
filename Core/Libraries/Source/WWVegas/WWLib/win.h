@@ -45,30 +45,17 @@
 **	4069, 4200, 4237, 4103, 4001, 4035, 4164. Makes you wonder, eh?
 */
 
-#ifdef _WIN32
-
-// When including windows, lets just bump the warning level back to 3...
-#if (_MSC_VER >= 1200)
-#pragma warning(push, 3)
-#endif
 
 // this define should also be in the DSP just in case someone includes windows stuff directly
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
 
-#include	<windows.h>
-//#include <mmsystem.h>
-//#include	<windowsx.h>
-//#include	<winnt.h>
-//#include	<winuser.h>
+// Cross-platform Windows type definitions
+#include <Compat/msvc_types_compat.h>
 
-#if (_MSC_VER >= 1200)
-#pragma warning(pop)
-#endif
-
-extern HINSTANCE	ProgramInstance;
-extern HWND			MainWindow;
+extern void* ProgramInstance;
+extern void* MainWindow;
 extern bool GameInFocus;
 
 #ifdef RTS_DEBUG
@@ -80,7 +67,3 @@ void __cdecl Print_Win32Error(unsigned long win32Error);
 #define Print_Win32Error
 
 #endif // RTS_DEBUG
-
-#else // _WIN32
-//#include <unistd.h>	// file does not exist
-#endif // _WIN32

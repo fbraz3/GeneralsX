@@ -42,9 +42,6 @@
 #include <stdarg.h>
 #include "trim.h"
 #include "wwdebug.h"
-#ifdef _WIN32
-#include <tchar.h>
-#endif
 
 
 

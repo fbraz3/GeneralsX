@@ -32,59 +32,14 @@
 #include "GameClient/Image.h"
 #include "GameClient/GameWindow.h"
 #include "vector2i.h"
-#ifdef _WIN32
-// #include <d3dx8.h // Phase 39.4: Removed with DirectX 8 cleanup>
-#endif
 #include "WW3D2/dx8wrapper.h"
 // #include "WW3D2/dx8webbrowser.h // Phase 39.4: Removed with DirectX 8 cleanup"
 
-#ifdef _WIN32
-
-W3DWebBrowser::W3DWebBrowser() : WebBrowser()
-{
-}
-
-Bool W3DWebBrowser::createBrowserWindow(const char *tag, GameWindow *win)
-{
-	WinInstanceData *winData = win->winGetInstanceData();
-	AsciiString windowName = winData->m_decoratedNameString;
-
-	Int x, y, w, h;
-
-	win->winGetSize(&w, &h);
-	win->winGetScreenPosition(&x, &y);
-
-	WebBrowserURL *url = findURL( AsciiString(tag) );
-
-	if (url == NULL) {
-		DEBUG_LOG(("W3DWebBrowser::createBrowserWindow - couldn't find URL for page %s", tag));
-		return FALSE;
-	}
-
 #ifdef __GNUC__
-	CComQIIDPtr<I_ID(IDispatch)> idisp(m_dispatch);
 #else
-	CComQIPtr<IDispatch> idisp(m_dispatch);
 #endif
-	if (m_dispatch == NULL)
-	{
-		return FALSE;
-	}
-
-	DX8WebBrowser::CreateBrowser(windowName.str(), url->m_url.str(), x, y, w, h, 0, BROWSEROPTION_SCROLLBARS | BROWSEROPTION_3DBORDER, (LPDISPATCH)this);
-
-	return TRUE;
-}
-
-void W3DWebBrowser::closeBrowserWindow(GameWindow *win)
-{
-	DX8WebBrowser::DestroyBrowser(win->winGetInstanceData()->m_decoratedNameString.str());
-}
-
-#else // _WIN32
 
 // Non-Windows: Web browser functionality not available (Windows COM API)
 // No implementation needed - class is not defined on non-Windows platforms
 
-#endif // _WIN32
 

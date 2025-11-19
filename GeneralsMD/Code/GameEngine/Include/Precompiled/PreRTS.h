@@ -41,75 +41,14 @@ class STLSpecialAlloc;
 //--------------------------------------------------------------------------------- System Includes
 #define WIN32_LEAN_AND_MEAN
 
-// Cross-platform MSVC type definitions (must come before windows.h)
+// Cross-platform MSVC type definitions
 #include <Compat/msvc_types_compat.h>
-
-#ifdef _WIN32
-	#include <atlbase.h>
-#endif
-#include <windows.h>
 
 #include <assert.h>
 #include <ctype.h>
-#ifndef _WIN32
-	// On Unix/macOS, these don't exist
-	// #include <direct.h>  // Windows directory operations
-#endif
-#ifdef _WIN32
-	#include <excpt.h>  // Structured exception handling (Windows only)
-#endif
 #include <float.h>
 #include <Utility/fstream_adapter.h>
-#ifdef _WIN32
-	#include <imagehlp.h>
-	#include <io.h>
-#endif
 #include <limits.h>
-#ifdef _WIN32
-	#include <lmcons.h>
-#endif
-#if defined(_MSC_VER) && _MSC_VER < 1300
-	#include <mapicode.h>
-#endif
-#include <math.h>
-#include <memory.h>
-#ifdef _WIN32
-	#include <mmsystem.h>
-	#include <objbase.h>
-	#include <ocidl.h>
-	#include <process.h>
-	#include <shellapi.h>
-	#include <shlobj.h>
-	#include <shlguid.h>
-	#include <snmp.h>
-#endif
-#include <stdarg.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <sys/timeb.h>
-#include <sys/types.h>
-#ifdef _WIN32
-	#include <tchar.h>
-#else
-	// On Unix/macOS, use char instead of TCHAR
-	typedef char TCHAR;
-#endif
-#include <time.h>
-#ifdef _WIN32
-	#include <vfw.h>
-	#include <winerror.h>
-	#include <wininet.h>
-	#include <winreg.h>
-#endif
-
-#ifndef DIRECTINPUT_VERSION
-	#define DIRECTINPUT_VERSION	0x800
-#endif
-
-#ifdef _WIN32
-	#include <dinput.h>
-#endif
 
 //------------------------------------------------------------------------------------ STL Includes
 // srj sez: no, include STLTypesdefs below, instead, thanks

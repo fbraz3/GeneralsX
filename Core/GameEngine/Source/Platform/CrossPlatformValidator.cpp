@@ -12,24 +12,11 @@
 #include <time.h>
 #include <math.h>
 
-#ifdef _WIN32
-    #define PLATFORM_NAME "Windows"
-    #define CURRENT_PLATFORM PLATFORM_WINDOWS
-#elif __APPLE__
     #ifdef __arm64__
-        #define PLATFORM_NAME "macOS ARM64"
-        #define CURRENT_PLATFORM PLATFORM_MACOS_ARM64
     #else
-        #define PLATFORM_NAME "macOS x64"
-        #define CURRENT_PLATFORM PLATFORM_MACOS_X64
     #endif
-#elif __linux__
-    #define PLATFORM_NAME "Linux x64"
-    #define CURRENT_PLATFORM PLATFORM_LINUX_X64
-#else
     #define PLATFORM_NAME "Unknown"
     #define CURRENT_PLATFORM PLATFORM_UNKNOWN
-#endif
 
 /* Feature registration entry */
 typedef struct {

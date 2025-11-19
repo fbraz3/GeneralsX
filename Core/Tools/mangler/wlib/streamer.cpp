@@ -18,9 +18,6 @@
 
 
 #include "streamer.h"
-#ifdef _WIN32
-  #include <windows.h>
-#endif
 
 #if defined(USING_STLPORT) || (defined(_MSC_VER) && _MSC_VER < 1300)
 #define STREAMER_UNBUFFERED unbuffered()

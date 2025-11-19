@@ -24,9 +24,6 @@
 #include "systimer.h"
 #include <Utility/intrin_compat.h>
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
 
 #ifdef _UNIX
 # include <time.h>  // for time(), localtime() and timezone variable.
@@ -998,11 +995,6 @@ void CPUDetectClass::Init_Processor_Log()
 
 	SYSLOG(("Operating System: "));
 	switch (OSVersionPlatformId) {
-#ifdef _WIN32
-	case VER_PLATFORM_WIN32s: SYSLOG(("Windows 3.1")); break;
-	case VER_PLATFORM_WIN32_WINDOWS: SYSLOG(("Windows 9x")); break;
-	case VER_PLATFORM_WIN32_NT: SYSLOG(("Windows NT")); break;
-#endif
 	}
 	SYSLOG(("\r\n"));
 
@@ -1275,88 +1267,5 @@ void Get_OS_Info(
 	switch (OSVersionPlatformId) {
 	default:
 		break;
-#ifdef _WIN32
-	case VER_PLATFORM_WIN32_WINDOWS:
-		{
-			for(int i=0;i<sizeof(Windows9xVersionTable)/sizeof(os_info);++i) {
-				if (
-					Windows9xVersionTable[i].VersionMajor==OSVersionNumberMajor &&
-					Windows9xVersionTable[i].VersionMinor==OSVersionNumberMinor &&
-					Windows9xVersionTable[i].BuildMajor==build_major &&
-					Windows9xVersionTable[i].BuildMinor==build_minor &&
-					Windows9xVersionTable[i].BuildSub==build_sub) {
-					os_info=Windows9xVersionTable[i];
-					return;
-				}
-			}
-
-			os_info.BuildMajor=build_major;
-			os_info.BuildMinor=build_minor;
-			os_info.BuildSub=build_sub;
-			if (OSVersionNumberMajor==4) {
-//				os_info.SubCode.Format("%d",build_sub);
-				os_info.SubCode="UNKNOWN";
-				if (OSVersionNumberMinor==0) {
-					os_info.Code="WIN95";
-					return;
-				}
-				if (OSVersionNumberMinor==10) {
-					os_info.Code="WIN98";
-					return;
-				}
-				if (OSVersionNumberMinor==90) {
-					os_info.Code="WINME";
-					return;
-				}
-				os_info.Code="WIN9X";
-				return;
-			}
-		}
-		break;
-	case VER_PLATFORM_WIN32_NT:
-//		os_info.SubCode.Format("%d",build_sub);
-		os_info.SubCode="UNKNOWN";
-		if (OSVersionNumberMajor==4) {
-			os_info.Code="WINNT";
-			return;
-		}
-		if (OSVersionNumberMajor==5) {
-			if (OSVersionNumberMinor==0) {
-				os_info.Code="WIN2K";
-				return;
-			}
-			if (OSVersionNumberMinor==1) {
-				os_info.Code="WINXP";
-				return;
-			}
-		}
-		if (OSVersionNumberMajor==6) {
-			if (OSVersionNumberMinor==0) {
-				os_info.Code="WINVS"; // Vista
-				return;
-			}
-			if (OSVersionNumberMinor==1) {
-				os_info.Code="WIN70"; // Win 7
-				return;
-			}
-			if (OSVersionNumberMinor==2) {
-				os_info.Code="WIN80"; // Win 8.0
-				return;
-			}
-			if (OSVersionNumberMinor==3) {
-				os_info.Code="WIN81"; // Win 8.1
-				return;
-			}
-		}
-		if (OSVersionNumberMinor==10) {
-			os_info.Code="WIN1X"; // Win 10, Win 11, Server 2016, Server 2019, Server 2022
-			return;
-		}
-		// Reference 1: https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-osversioninfoa#remarks
-		// Reference 2: https://learn.microsoft.com/en-us/windows/win32/sysinfo/operating-system-version
-
-		// No more-specific version detected; fallback to XX
-		os_info.Code="WINXX";
-#endif
 	}
 }

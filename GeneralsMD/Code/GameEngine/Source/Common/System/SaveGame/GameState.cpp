@@ -209,79 +209,16 @@ GameState::SnapshotBlock *GameState::findBlockInfoByToken( AsciiString token, Sn
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 UnicodeString getUnicodeDateBuffer(SYSTEMTIME timeVal)
 {
-#ifdef _WIN32
-	// setup date buffer for local region date format
-	#define DATE_BUFFER_SIZE 256
-	OSVERSIONINFO	osvi;
-	osvi.dwOSVersionInfoSize=sizeof(OSVERSIONINFO);
-	UnicodeString displayDateBuffer;
-	if (GetVersionEx(&osvi))
-	{	//check if we're running Win9x variant since they may need different characters
-		if (osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
-		{
-			char dateBuffer[ DATE_BUFFER_SIZE ];
-			GetDateFormat( LOCALE_SYSTEM_DEFAULT,
-										 DATE_SHORTDATE,
-										 &timeVal,
-										 NULL,
-										 dateBuffer, sizeof(dateBuffer) );
-			displayDateBuffer.translate(dateBuffer);
-			return displayDateBuffer;
-		}
-	}
-	wchar_t dateBuffer[ DATE_BUFFER_SIZE ];
-	GetDateFormatW( LOCALE_SYSTEM_DEFAULT,
-									 DATE_SHORTDATE,
-									 &timeVal,
-									 NULL,
-									 dateBuffer, ARRAY_SIZE(dateBuffer) );
-	displayDateBuffer.set(dateBuffer);
-	return displayDateBuffer;
-	//displayDateBuffer.format( L"%ls", dateBuffer );
-#else // _WIN32
 	// Stub for non-Windows platforms
 	UnicodeString displayDateBuffer;
 	displayDateBuffer.set(L"00/00/00");  // Placeholder date format
 	return displayDateBuffer;
-#endif // _WIN32
 }UnicodeString getUnicodeTimeBuffer(SYSTEMTIME timeVal)
 {
-#ifdef _WIN32
-	// setup time buffer for local region time format
-	UnicodeString displayTimeBuffer;
-	OSVERSIONINFO	osvi;
-	osvi.dwOSVersionInfoSize=sizeof(OSVERSIONINFO);
-	if (GetVersionEx(&osvi))
-	{	//check if we're running Win9x variant since they may need different characters
-		if (osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
-		{
-			char timeBuffer[ DATE_BUFFER_SIZE ];
-			GetTimeFormat( LOCALE_SYSTEM_DEFAULT,
-										 TIME_NOSECONDS|TIME_FORCE24HOURFORMAT|TIME_NOTIMEMARKER,
-										 &timeVal,
-										 NULL,
-										 timeBuffer, sizeof(timeBuffer) );
-			displayTimeBuffer.translate(timeBuffer);
-			return displayTimeBuffer;
-		}
-	}
-	// setup time buffer for local region time format
-	#define TIME_BUFFER_SIZE 256
-	wchar_t timeBuffer[ TIME_BUFFER_SIZE ];
-	GetTimeFormatW( LOCALE_SYSTEM_DEFAULT,
-								 TIME_NOSECONDS,
-								 &timeVal,
-								 NULL,
-								 timeBuffer,
-								 ARRAY_SIZE(timeBuffer) );
-	displayTimeBuffer.set(timeBuffer);
-	return displayTimeBuffer;
-#else // _WIN32
 	// Stub for non-Windows platforms
 	UnicodeString displayTimeBuffer;
 	displayTimeBuffer.set(L"00:00:00");  // Placeholder time format
 	return displayTimeBuffer;
-#endif // _WIN32
 }
 
 
@@ -516,14 +453,9 @@ AsciiString GameState::findNextSaveFilename( UnicodeString desc )
 			fullPath = getFilePathInSaveDirectory(filename);
 
 			// if file does not exist we're all good
-#ifdef _WIN32
-			if( _access( fullPath.str(), 0 ) == -1 )
-				return filename;
-#else
 			// On non-Windows, use access() from unistd.h
 			if( access( fullPath.str(), F_OK ) == -1 )
 				return filename;
-#endif
 
 			// test the text filename
 			i++;
@@ -1281,72 +1213,8 @@ void GameState::iterateSaveFiles( IterateSaveFileCallback callback, void *userDa
 	if( callback == NULL )
 		return;
 
-#ifdef _WIN32
-	// save the current directory
-	char currentDirectory[ _MAX_PATH ];
-	GetCurrentDirectory( _MAX_PATH, currentDirectory );
-
-	// switch into the save directory
-	SetCurrentDirectory( getSaveDirectory().str() );
-
-	// iterate all items in the directory
-	WIN32_FIND_DATA item;  // search item
-	HANDLE hFile = INVALID_HANDLE_VALUE;  // handle for search resources
-	Bool done = FALSE;
-	Bool first = TRUE;
-	while( done == FALSE )
-	{
-
-		// if our first time through we need to start the search
-		if( first )
-		{
-
-			// start search
-			hFile = FindFirstFile( "*", &item );
-			if( hFile == INVALID_HANDLE_VALUE )
-				return;
-
-			// we are no longer on our first item
-			first = FALSE;
-
-		}
-
-		// see if this is a file, and therefore a possible save file
-		if( !(item.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) )
-		{
-
-			// see if there is a ".sav" at end of this filename
-			Char *c = strrchr( item.cFileName, '.' );
-			if( c && stricmp( c, ".sav" ) == 0 )
-			{
-
-				// construction asciistring filename
-				AsciiString filename;
-				filename.set( item.cFileName );
-
-				// call the callback
-				callback( filename, userData );
-
-			}
-
-		}
-
-		// on to the next file
-		if( FindNextFile( hFile, &item ) == 0 )
-			done = TRUE;
-
-	}
-
-	// close search resources
-	FindClose( hFile );
-
-	// restore the current directory
-	SetCurrentDirectory( currentDirectory );
-
-#else // _WIN32
 	// Stub for non-Windows platforms - iterate saves directory
 	// TODO: Implement using POSIX directory functions (opendir/readdir)
-#endif // _WIN32
 
 }
 
@@ -1619,9 +1487,6 @@ void GameState::xfer( Xfer *xfer )
 
 	// current system time
 	SYSTEMTIME systemTime;
-#ifdef _WIN32
-	GetLocalTime( &systemTime );
-#else
 	// POSIX alternative: use time() and localtime()
 	time_t now = time(NULL);
 	struct tm* local = localtime(&now);
@@ -1633,7 +1498,6 @@ void GameState::xfer( Xfer *xfer )
 	systemTime.wMinute = (WORD)local->tm_min;
 	systemTime.wSecond = (WORD)local->tm_sec;
 	systemTime.wMilliseconds = 0;  // POSIX doesn't provide milliseconds
-#endif
 
 	// date and time
 	saveGameInfo->date.year = systemTime.wYear;

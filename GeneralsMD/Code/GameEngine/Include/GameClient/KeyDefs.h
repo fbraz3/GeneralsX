@@ -59,9 +59,6 @@
 #	define DIRECTINPUT_VERSION	0x800
 #endif
 
-#ifdef _WIN32
-#include <dinput.h>
-#else
 // Cross-platform key code definitions for non-Windows builds
 // DirectInput (DIK_*) scan codes mapped to standard keyboard codes
 #define DIK_ESCAPE          0x01
@@ -175,7 +172,6 @@
 #define DIK_CIRCUMFLEX      0x90    /* (Japanese keyboard) */
 #define DIK_KANJI           0x94    /* (Japanese keyboard) */
 
-#endif
 #include <Lib/BaseType.h>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////

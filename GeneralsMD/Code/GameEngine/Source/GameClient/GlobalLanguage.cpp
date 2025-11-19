@@ -139,16 +139,6 @@ GlobalLanguage::GlobalLanguage()
 
 GlobalLanguage::~GlobalLanguage()
 {
-#ifdef _WIN32
-	StringListIt it = m_localFonts.begin();
-	while( it != m_localFonts.end())
-	{
-		AsciiString font = *it;
-		RemoveFontResource(font.str());
-		//SendMessage( HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
-		++it;
-	}
-#endif // _WIN32
 }
 
 void GlobalLanguage::init( void )
@@ -161,22 +151,6 @@ void GlobalLanguage::init( void )
 		ini.loadFileDirectory( fname, INI_LOAD_OVERWRITE, NULL );
 	}
 
-#ifdef _WIN32
-	StringListIt it = m_localFonts.begin();
-	while( it != m_localFonts.end())
-	{
-		AsciiString font = *it;
-		if(AddFontResource(font.str()) == 0)
-		{
-			DEBUG_ASSERTCRASH(FALSE,("GlobalLanguage::init Failed to add font %s", font.str()));
-		}
-		else
-		{
-			//SendMessage( HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
-		}
-		++it;
-	}
-#endif // _WIN32
 
 	// override values with user preferences
 	OptionPreferences optionPref;

@@ -14,13 +14,8 @@
 #define FRAME_STATS_WINDOW 120  // Track last 120 frames for average
 
 // Platform-specific timing
-#ifdef _WIN32
-#include <windows.h>
-typedef LARGE_INTEGER TimerValue;
-#else
 #include <sys/time.h>
 typedef struct timespec TimerValue;
-#endif
 
 // Game loop state
 typedef struct {
@@ -65,16 +60,9 @@ static GameLoopState g_loop_state = {0};
 
 // Get current time in milliseconds (platform-specific)
 static uint64_t GetTimeMS(void) {
-#ifdef _WIN32
-    LARGE_INTEGER freq, count;
-    QueryPerformanceFrequency(&freq);
-    QueryPerformanceCounter(&count);
-    return (count.QuadPart * 1000) / freq.QuadPart;
-#else
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     return (ts.tv_sec * 1000) + (ts.tv_nsec / 1000000);
-#endif
 }
 
 // Set error message
@@ -264,14 +252,10 @@ int GameLoop_ExecuteFrame(void) {
         if (frame_total_ms < target_frame_ms) {
             uint64_t sleep_ms = target_frame_ms - frame_total_ms;
             
-#ifdef _WIN32
-            Sleep(sleep_ms);
-#else
             struct timespec sleep_time;
             sleep_time.tv_sec = sleep_ms / 1000;
             sleep_time.tv_nsec = (sleep_ms % 1000) * 1000000;
             nanosleep(&sleep_time, NULL);
-#endif
         } else if (frame_total_ms > target_frame_ms) {
             g_loop_state.stats.frames_dropped++;
         }

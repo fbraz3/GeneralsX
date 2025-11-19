@@ -108,15 +108,6 @@ W3DMouse::W3DMouse( void )
 
 W3DMouse::~W3DMouse( void )
 {
-#ifdef _WIN32
-	LPDIRECT3DDEVICE8 m_pDev=DX8Wrapper::_Get_D3D_Device8();
-
-	if (m_pDev)
-	{
-		m_pDev->ShowCursor(FALSE);	//kill DX8 cursor
-		Win32Mouse::setCursor(ARROW); //enable default windows cursor
-	}
-#endif // _WIN32
 
 	freeD3DAssets();
 	freeW3DAssets();
@@ -361,253 +352,19 @@ void W3DMouse::reset( void )
 //-------------------------------------------------------------------------------------------------
 /** Super basic simplistic cursor */
 //-------------------------------------------------------------------------------------------------
-#ifdef _WIN32
-void W3DMouse::setCursor( MouseCursor cursor )
-{
-
-	CriticalSectionClass::LockClass m(mutex);
-
-	m_directionFrame=0;
-	if (m_currentRedrawMode == RM_WINDOWS)
-	{	//Windows default cursor needs to refreshed whenever we get a WM_SETCURSOR
-		m_currentD3DCursor=NONE;
-		m_currentW3DCursor=NONE;
-		m_currentPolygonCursor=NONE;
-		setCursorDirection(cursor);
-		if (m_drawing)	//only allow cursor to change when drawing the cursor (once per frame) to fix flickering.
-			Win32Mouse::setCursor(cursor);
-		m_currentCursor = cursor;
-		return;
-	}
-
-	// extend
-	Mouse::setCursor( cursor );
-
-	// if we're already on this cursor ignore the rest of code to stop cursor flickering.
-	if( m_currentCursor == cursor && m_currentD3DCursor == cursor)
-		return;
-
-	//make sure Windows didn't reset our cursor
-	if (m_currentRedrawMode == RM_DX8)
-	{
-		SetCursor(NULL);	//Kill Windows Cursor
-
-		LPDIRECT3DDEVICE8 m_pDev=DX8Wrapper::_Get_D3D_Device8();
-		Bool doImageChange=FALSE;
-
-		if (m_pDev != NULL)
-		{
-			m_pDev->ShowCursor(FALSE);	//disable DX8 cursor
-			if (cursor != m_currentD3DCursor)
-			{	if (!isThread)
-				{	releaseD3DCursorTextures(m_currentD3DCursor);
-					//Since this type of cursor is updated from a non-D3D thread, we need
-					//to preallocate all surfaces in main thread.
-					loadD3DCursorTextures(cursor);
-				}
-			}
-			if (m_currentD3DSurface[0])
-				doImageChange=TRUE;
-		}
-		//For DX8 Cursors, we continually set the image on every call even when
-		//it didn't change.  This is needed to prevent the cursor from flickering.
-		if (doImageChange)
-		{
-			HRESULT res;
-			m_currentHotSpot = m_cursorInfo[cursor].hotSpotPosition;
-			m_currentFMS = m_cursorInfo[cursor].fps/1000.0f;
-			m_currentAnimFrame = 0;	//reset animation when cursor changes
-			res = m_pDev->SetCursorProperties(m_currentHotSpot.x,m_currentHotSpot.y,m_currentD3DSurface[(Int)m_currentAnimFrame]->Peek_D3D_Surface());
-			m_pDev->ShowCursor(TRUE);	//Enable DX8 cursor
-			m_currentD3DFrame=(Int)m_currentAnimFrame;
-			m_currentD3DCursor = cursor;
-			m_lastAnimTime=timeGetTime();
-		}
-	}
-	else if (m_currentRedrawMode == RM_POLYGON)
-	{
-		SetCursor(NULL);	//Kill Windows Cursor
-		m_currentD3DCursor=NONE;
-		m_currentW3DCursor=NONE;
-		m_currentPolygonCursor = cursor;
-		m_currentHotSpot = m_cursorInfo[cursor].hotSpotPosition;
-	}
-	else if (m_currentRedrawMode == RM_W3D)
-	{
-		SetCursor(NULL);	//Kill Windows Cursor
-		m_currentD3DCursor=NONE;
-		m_currentPolygonCursor=NONE;
-		if (cursor != m_currentW3DCursor)
-		{
-			// set the new model visible
-			if (!cursorModels[1])
-				initW3DAssets();
-
-			if (cursorModels[1])
-			{
-				if (cursorModels[m_currentW3DCursor])
-				{
-					W3DDisplay::m_3DInterfaceScene->Remove_Render_Object(cursorModels[m_currentW3DCursor]);
-				}
-
-				m_currentW3DCursor=cursor;
-
-				if (cursorModels[m_currentW3DCursor])
-				{
-					W3DDisplay::m_3DInterfaceScene->Add_Render_Object(cursorModels[m_currentW3DCursor]);
-					if (m_cursorInfo[m_currentW3DCursor].loop == FALSE && cursorAnims[m_currentW3DCursor])
-					{
-						cursorModels[m_currentW3DCursor]->Set_Animation(cursorAnims[m_currentW3DCursor], 0, RenderObjClass::ANIM_MODE_ONCE);
-					}
-				}
-			}
-		}
-		else
-		{
-			m_currentW3DCursor=cursor;
-		}
-	}
-
-	// save current cursor
-	m_currentCursor = cursor;
-
-}
-#else // _WIN32
 void W3DMouse::setCursor( MouseCursor cursor )
 {
 	// Non-Windows stub
 	m_currentCursor = cursor;
 }
-#endif // _WIN32
 
 extern HWND ApplicationHWnd;
 
-#ifdef _WIN32
-void W3DMouse::draw(void)
-{
-	CriticalSectionClass::LockClass m(mutex);
-
-	m_drawing = TRUE;
-
-	//make sure the correct cursor image is selected
-	setCursor(m_currentCursor);
-
-	if (m_currentRedrawMode == RM_DX8 && m_currentD3DCursor != NONE)
-	{
-		//called from upate thread or rendering loop.  Tells D3D where
-		//to draw the mouse cursor.
-		LPDIRECT3DDEVICE8 m_pDev=DX8Wrapper::_Get_D3D_Device8();
-		if (m_pDev)
-		{	m_pDev->ShowCursor(TRUE);	//Enable DX8 cursor
-
-			if (TheDisplay && !TheDisplay->getWindowed())
-			{	//if we're full-screen, need to manually move cursor image
-				POINT ptCursor;
-
-				GetCursorPos( &ptCursor );
-				ScreenToClient( ApplicationHWnd, &ptCursor );
-				m_pDev->SetCursorPosition( ptCursor.x, ptCursor.y, D3DCURSOR_IMMEDIATE_UPDATE);
-			}
-			//Check if animated cursor and new frame
-			if (m_currentFrames > 1)
-			{
-				Int msTime=timeGetTime();
-				m_currentAnimFrame += (msTime-m_lastAnimTime) * m_currentFMS;
-				m_currentAnimFrame=fmod(m_currentAnimFrame,m_currentFrames);
-				m_lastAnimTime=msTime;
-
-				if ((Int)m_currentAnimFrame != m_currentD3DFrame)
-				{
-					m_currentD3DFrame=(Int)m_currentAnimFrame;
-					m_pDev->SetCursorProperties(m_currentHotSpot.x,m_currentHotSpot.y,m_currentD3DSurface[m_currentD3DFrame]->Peek_D3D_Surface());
-				}
-			}
-		}
-	}
-	else if (m_currentRedrawMode == RM_POLYGON)
-	{
-		const Image *image=cursorImages[m_currentPolygonCursor];
-		if (image)
-		{
-			TheDisplay->drawImage(image,m_currMouse.pos.x-m_currentHotSpot.x,m_currMouse.pos.y-m_currentHotSpot.y,
-				m_currMouse.pos.x+image->getImageWidth()-m_currentHotSpot.x, m_currMouse.pos.y+image->getImageHeight()-m_currentHotSpot.y);
-		}
-	}
-	else if (m_currentRedrawMode == RM_WINDOWS)
-	{
-	}
-	else if (m_currentRedrawMode == RM_W3D)
-	{
-		if ( W3DDisplay::m_3DInterfaceScene && m_camera && m_visible)
-		{
-			if (cursorModels[m_currentW3DCursor])
-			{
-				Real xPercent = (1.0f - (TheDisplay->getWidth() - m_currMouse.pos.x) / (Real)TheDisplay->getWidth());
-				Real yPercent = ((TheDisplay->getHeight() - m_currMouse.pos.y) / (Real)TheDisplay->getHeight());
-
-				Real x, y, z = -1.0f;
-
-				if (m_orthoCamera)
-				{
-					x = xPercent*2 - 1;
-					y = yPercent*2;
-				}
-				else
-				{
-					//W3D Screen coordinates are -1 to 1, so we need to do some conversion:
-					Real logX, logY;
-					PixelScreenToW3DLogicalScreen(m_currMouse.pos.x - 0, m_currMouse.pos.y - 0, &logX, &logY, TheDisplay->getWidth(), TheDisplay->getHeight());
-
-					Vector3 rayStart;
-					Vector3 rayEnd;
-					rayStart = m_camera->Get_Position();							//get camera location
-					m_camera->Un_Project(rayEnd,Vector2(logX,logY));	//get world space point
-					rayEnd -= rayStart;																//vector camera to world space point
-					rayEnd.Normalize();																//make unit vector
-					rayEnd *= m_camera->Get_Depth();									//adjust length to reach far clip plane
-					rayEnd += rayStart;																//get point on far clip plane along ray from camera.
-
-					x = Vector3::Find_X_At_Z(z, rayStart, rayEnd);
-					y = Vector3::Find_Y_At_Z(z, rayStart, rayEnd);
-				}
-
-				Matrix3D tm(1);
-				tm.Set_Translation(Vector3(x, y, z));
-				Coord2D offset = {0, 0};
-				if (TheInGameUI && TheInGameUI->isScrolling())
-				{
-					offset = TheInGameUI->getScrollAmount();
-					offset.normalize();
-					Real theta = atan2(-offset.y, offset.x);
-					theta -= (Real)M_PI/2;
-					tm.Rotate_Z(theta);
-				}
-				cursorModels[m_currentW3DCursor]->Set_Transform(tm);
-
-				WW3D::Render( W3DDisplay::m_3DInterfaceScene, m_camera );
-			}
-		}
-	}
-
-	//@todo: In DX8 mode the mouse is drawn in another thread which isn't allowed
-	//access to D3D so we can't do any drawing here.
-	// draw the cursor text
-	if (!isThread)
-		drawCursorText();
-
-	// draw tooltip text
-	if (m_visible && !isThread)
-		drawTooltip();
-
-	m_drawing = FALSE;
-}
-#else // _WIN32
 void W3DMouse::draw(void)
 {
 	// Non-Windows stub
 	m_drawing = FALSE;
 }
-#endif // _WIN32
 
 void W3DMouse::setRedrawMode(RedrawMode mode)
 {

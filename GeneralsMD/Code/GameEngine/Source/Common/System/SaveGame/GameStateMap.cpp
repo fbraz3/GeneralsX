@@ -454,79 +454,7 @@ void GameStateMap::xfer( Xfer *xfer )
 void GameStateMap::clearScratchPadMaps( void )
 {
 
-#ifdef _WIN32
-	// remember the current directory
-	char currentDirectory[ _MAX_PATH ];
-	GetCurrentDirectory( _MAX_PATH, currentDirectory );
-
-	// switch into the save directory
-	SetCurrentDirectory( TheGameState->getSaveDirectory().str() );
-
-	// iterate all items in the directory
-	AsciiString fileToDelete;
-	WIN32_FIND_DATA item;  // search item
-	HANDLE hFile = INVALID_HANDLE_VALUE;  // handle for search resources
-	Bool done = FALSE;
-	Bool first = TRUE;
-	while( done == FALSE )
-	{
-
-		// first, clear flag for deleting file
-		fileToDelete.clear();
-
-		// if our first time through we need to start the search
-		if( first )
-		{
-
-			// start search
-			hFile = FindFirstFile( "*", &item );
-			if( hFile == INVALID_HANDLE_VALUE )
-				return;
-
-			// we are no longer on our first item
-			first = FALSE;
-
-		}
-
-		// see if this is a file, and therefore a possible .map file
-		if( !(item.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) )
-		{
-
-			// see if there is a ".map" at end of this filename
-			Char *c = strrchr( item.cFileName, '.' );
-			if( c && stricmp( c, ".map" ) == 0 )
-				fileToDelete.set( item.cFileName );  // we want to delete this one
-
-		}
-
-		//
-		// find the next file before we delete this one, this is probably not necessary
-		// to strcuture things this way so that the find next occurs before the file
-		// delete, but it seems more correct to do so
-		//
-		if( FindNextFile( hFile, &item ) == 0 )
-			done = TRUE;
-
-		// delete file if set
-		if( fileToDelete.isEmpty() == FALSE ) {
-			try {
-				std::filesystem::remove(std::filesystem::path(fileToDelete.str()));
-			} catch (const std::filesystem::filesystem_error& e) {
-				DEBUG_LOG(("GameStateMap - Failed to delete file: %s", e.what()));
-			}
-		}
-
-	}
-
-	// close search resources
-	FindClose( hFile );
-
-	// restore our directory to the current directory
-	SetCurrentDirectory( currentDirectory );
-
-#else // _WIN32
 	// Stub for non-Windows platforms - clear scratch pad maps
 	// TODO: Implement using POSIX directory functions (opendir/readdir)
-#endif // _WIN32
 
 }

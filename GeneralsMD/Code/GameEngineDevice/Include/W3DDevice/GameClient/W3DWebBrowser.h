@@ -27,20 +27,3 @@
 
 #pragma once
 
-#ifdef _WIN32
-#include "GameNetwork/WOLBrowser/WebBrowser.h"
-
-class TextureClass;
-class Image;
-class GameWindow;
-
-class W3DWebBrowser : public WebBrowser
-{
-	public:
-		W3DWebBrowser();
-
-		virtual Bool createBrowserWindow(const char *tag, GameWindow *win);
-		virtual void closeBrowserWindow(GameWindow *win);
-
-};
-#endif // _WIN32

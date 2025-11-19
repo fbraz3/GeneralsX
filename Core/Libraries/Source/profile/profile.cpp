@@ -29,9 +29,6 @@
 #include "profile.h"
 #include "internal.h"
 #include <new>
-#ifdef _WIN32
-#include "mmsystem.h"
-#endif
 
 // yuk, I'm doing this so weird because the destructor
 // of cmd must never be called...
@@ -88,72 +85,6 @@ void ProfileFreeMemory(void *ptr)
 
 //////////////////////////////////////////////////////////////////////////////
 
-#ifdef _WIN32
-
-static _int64 GetClockCyclesFast(void)
-{
-  // this is where we're adding our internal result functions
-  Profile::AddResultFunction(ProfileResultFileCSV::Create,
-                              "file_csv",
-                              "");
-  Profile::AddResultFunction(ProfileResultFileCSV::Create,
-                              "file_dot",
-                              "[ file [ frame_name [ fold_threshold ] ] ]");
-
-  // this must not take a very huge CPU hit...
-
-  // measure clock cycles 3 times for 20 msec each
-  // then take the 2 counts that are closest, average
-  _int64 n[3];
-  for (int k=0;k<3;k++)
-  {
-    // wait for end of current tick
-    unsigned timeEnd=timeGetTime()+2;
-    while (timeGetTime()<timeEnd);
-
-    // get cycles
-    _int64 start,startQPC,endQPC;
-    QueryPerformanceCounter((LARGE_INTEGER *)&startQPC);
-    ProfileGetTime(start);
-    timeEnd+=20;
-    while (timeGetTime()<timeEnd);
-    ProfileGetTime(n[k]);
-    n[k]-=start;
-
-    // convert to 1 second
-    if (QueryPerformanceCounter((LARGE_INTEGER *)&endQPC))
-    {
-      _int64 freq;
-      QueryPerformanceFrequency((LARGE_INTEGER *)&freq);
-      n[k]=(n[k]*freq)/(endQPC-startQPC);
-    }
-    else
-    {
-      n[k]=(n[k]*1000)/20;
-    }
-  }
-
-  // find two closest values
-  _int64 d01=n[1]-n[0],d02=n[2]-n[0],d12=n[2]-n[1];
-  if (d01<0) d01=-d01;
-  if (d02<0) d02=-d02;
-  if (d12<0) d12=-d12;
-  _int64 avg;
-  if (d01<d02)
-  {
-    avg=d01<d12?n[0]+n[1]:n[1]+n[2];
-  }
-  else
-  {
-    avg=d02<d12?n[0]+n[2]:n[1]+n[2];
-  }
-
-  // return result
-  // (rounded to the next MHz)
-  return ((avg/2+500000)/1000000)*1000000;
-}
-
-#else
 
 // Non-Windows implementation - return a conservative estimate
 static _int64 GetClockCyclesFast(void)
@@ -161,7 +92,6 @@ static _int64 GetClockCyclesFast(void)
   return 1000000; // 1 MHz fallback
 }
 
-#endif // _WIN32
 
 unsigned Profile::m_rec;
 char **Profile::m_recNames;

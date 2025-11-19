@@ -18,9 +18,6 @@
 
 #include "mutex.h"
 #include "wwdebug.h"
-#ifdef _WIN32
-#include <windows.h>
-#endif
 
 // ----------------------------------------------------------------------------
 

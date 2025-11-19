@@ -54,9 +54,6 @@
 #include <coltest.h>
 #include <rinfo.h>
 #include <camera.h>
-#ifdef _WIN32
-// #include <d3dx8core.h // Phase 39.4: Removed with DirectX 8 cleanup>
-#endif
 #include "Common/GlobalData.h"
 #include "Common/PerfTimer.h"
 
@@ -1440,10 +1437,6 @@ RenderObjClass *	 BaseHeightMapRenderObjClass::Clone(void) const
 //=============================================================================
 void BaseHeightMapRenderObjClass::loadRoadsAndBridges(W3DTerrainLogic *pTerrainLogic, Bool saveGame)
 {
-#ifdef _WIN32
-	if (DX8Wrapper::_Get_D3D_Device8() && (DX8Wrapper::_Get_D3D_Device8()->TestCooperativeLevel()) != D3D_OK)
-		return;	//device not ready to render anything
-#endif
 
 #ifdef DO_ROADS
 	if (m_roadBuffer) {

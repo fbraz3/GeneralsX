@@ -45,25 +45,14 @@
 #include "W3DDevice/GameClient/W3DGameWindowManager.h"
 #include "W3DDevice/GameClient/W3DGameFont.h"
 #include "W3DDevice/GameClient/W3DDisplayStringManager.h"
-#ifdef _WIN32
-#include "VideoDevice/Bink/BinkVideoPlayer.h"
-#endif
 #ifdef RTS_HAS_FFMPEG
 #include "VideoDevice/FFmpeg/FFmpegVideoPlayer.h"
-#endif
-#ifdef _WIN32
-#include "Win32Device/GameClient/Win32DIKeyboard.h"
-#include "Win32Device/GameClient/Win32DIMouse.h"
-#include "Win32Device/GameClient/Win32Mouse.h"
 #endif
 #include "W3DDevice/GameClient/W3DMouse.h"
 #include "W3DDevice/GameClient/W3DSnow.h"
 
 class ThingTemplate;
 
-#ifdef _WIN32
-extern Win32Mouse *TheWin32Mouse;
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // PROTOTYPES /////////////////////////////////////////////////////////////////
@@ -117,15 +106,10 @@ protected:
 
   /// Manager for display strings
 	virtual DisplayStringManager *createDisplayStringManager( void ) { return NEW W3DDisplayStringManager; }
-#ifdef _WIN32
 #ifdef RTS_HAS_FFMPEG
-	virtual VideoPlayerInterface *createVideoPlayer( void ) { return NEW FFmpegVideoPlayer; }
 #else
-	virtual VideoPlayerInterface *createVideoPlayer( void ) { return NEW BinkVideoPlayer; }
 #endif
-#else
 	virtual VideoPlayerInterface *createVideoPlayer( void ) { return NULL; }
-#endif
 	/// factory for creating the TerrainVisual
 	virtual TerrainVisual *createTerrainVisual( void ) { return NEW W3DTerrainVisual; }
 
@@ -137,20 +121,10 @@ protected:
 };
 
 inline Keyboard *W3DGameClient::createKeyboard( void ) { 
-#ifdef _WIN32
-	return NEW DirectInputKeyboard; 
-#else
 	return NULL;
-#endif
 }
 inline Mouse *W3DGameClient::createMouse( void )
 {
 	//return new DirectInputMouse;
-#ifdef _WIN32
-	Win32Mouse * mouse = NEW W3DMouse;
-	TheWin32Mouse = mouse;   ///< global cheat for the WndProc()
-	return mouse;
-#else
 	return nullptr;  // TODO: Implement cross-platform mouse handler
-#endif
 }

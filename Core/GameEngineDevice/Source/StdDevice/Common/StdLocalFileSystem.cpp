@@ -46,15 +46,12 @@ static std::filesystem::path fixFilenameFromWindowsPath(const Char *filename, In
 {
 	std::string fixedFilename(filename);
 
-#ifndef _WIN32
 	// Replace backslashes with forward slashes on unix
 	std::replace(fixedFilename.begin(), fixedFilename.end(), '\\', '/');
-#endif
 
 	// Convert the filename to a std::filesystem::path and pass that
 	std::filesystem::path path(std::move(fixedFilename));
 
-#ifndef _WIN32
 	// check if the file exists to see if fixup is required
 	// if it's not found try to match disregarding case sensitivity
 	// For cases where a write is happening, we should check if the parent path exists, if so, let it through, since the file may not exist yet.
@@ -120,7 +117,6 @@ static std::filesystem::path fixFilenameFromWindowsPath(const Char *filename, In
 		}
 		path = pathFixed;
 	}
-#endif
 
 	return path;
 }
@@ -221,10 +217,8 @@ void StdLocalFileSystem::getFileListInDirectory(const AsciiString& currentDirect
 
 	std::string fixedDirectory(asciisearch.str());
 
-#ifndef _WIN32
 	// Replace backslashes with forward slashes on unix
 	std::replace(fixedDirectory.begin(), fixedDirectory.end(), '\\', '/');
-#endif
 
 	Bool done = FALSE;
 	std::error_code ec;
@@ -318,10 +312,8 @@ Bool StdLocalFileSystem::createDirectory(AsciiString directory)
 
 	std::string fixedDirectory(directory.str());
 
-#ifndef _WIN32
 	// Replace backslashes with forward slashes on unix
 	std::replace(fixedDirectory.begin(), fixedDirectory.end(), '\\', '/');
-#endif
 
 	if ((fixedDirectory.length() > 0) && (fixedDirectory.length() < _MAX_DIR)) {
 		// Convert to host path
@@ -339,10 +331,8 @@ Bool StdLocalFileSystem::createDirectory(AsciiString directory)
 AsciiString StdLocalFileSystem::normalizePath(const AsciiString& filePath) const
 {
 	std::string nonNormalized(filePath.str());
-#ifndef _WIN32
 	// Replace backslashes with forward slashes on non-Windows platforms
 	std::replace(nonNormalized.begin(), nonNormalized.end(), '\\', '/');
-#endif
 	std::filesystem::path pathNonNormalized(nonNormalized);
 	return AsciiString(pathNonNormalized.lexically_normal().string().c_str());
 }

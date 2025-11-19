@@ -19,53 +19,6 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "Common/WorkerProcess.h"
 
-#ifdef _WIN32
-
-// We need Job-related functions, but these aren't defined in the Windows-headers that VC6 uses.
-// So we define them here and load them dynamically.
-#if defined(_MSC_VER) && _MSC_VER < 1300
-struct JOBOBJECT_BASIC_LIMIT_INFORMATION2
-{
-	LARGE_INTEGER PerProcessUserTimeLimit;
-	LARGE_INTEGER PerJobUserTimeLimit;
-	DWORD LimitFlags;
-	SIZE_T MinimumWorkingSetSize;
-	SIZE_T MaximumWorkingSetSize;
-	DWORD ActiveProcessLimit;
-	ULONG_PTR Affinity;
-	DWORD PriorityClass;
-	DWORD SchedulingClass;
-};
-struct IO_COUNTERS
-{
-	ULONGLONG ReadOperationCount;
-	ULONGLONG WriteOperationCount;
-	ULONGLONG OtherOperationCount;
-	ULONGLONG ReadTransferCount;
-	ULONGLONG WriteTransferCount;
-	ULONGLONG OtherTransferCount;
-};
-struct JOBOBJECT_EXTENDED_LIMIT_INFORMATION
-{
-	JOBOBJECT_BASIC_LIMIT_INFORMATION2 BasicLimitInformation;
-	IO_COUNTERS IoInfo;
-	SIZE_T ProcessMemoryLimit;
-	SIZE_T JobMemoryLimit;
-	SIZE_T PeakProcessMemoryUsed;
-	SIZE_T PeakJobMemoryUsed;
-};
-
-#define JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE 0x00002000
-const int JobObjectExtendedLimitInformation = 9;
-
-typedef HANDLE (WINAPI *PFN_CreateJobObjectW)(LPSECURITY_ATTRIBUTES, LPCWSTR);
-typedef BOOL (WINAPI *PFN_SetInformationJobObject)(HANDLE, JOBOBJECTINFOCLASS, LPVOID, DWORD);
-typedef BOOL (WINAPI *PFN_AssignProcessToJobObject)(HANDLE, HANDLE);
-
-static PFN_CreateJobObjectW CreateJobObjectW = (PFN_CreateJobObjectW)GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "CreateJobObjectW");
-static PFN_SetInformationJobObject SetInformationJobObject = (PFN_SetInformationJobObject)GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "SetInformationJobObject");
-static PFN_AssignProcessToJobObject AssignProcessToJobObject = (PFN_AssignProcessToJobObject)GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "AssignProcessToJobObject");
-#endif
 
 WorkerProcess::WorkerProcess()
 {

@@ -31,23 +31,3 @@
 #include "internal_io.h"
 #include <new>      // needed for placement new prototype
 
-#ifdef _WIN32
-
-void DebugIOOds::Write(StringType type, const char *src, const char *str)
-{
-  if (type!=StringType::StructuredCmdReply&&str)
-    OutputDebugString(str);
-}
-
-DebugIOInterface *DebugIOOds::Create(void)
-{
-  return new (DebugAllocMemory(sizeof(DebugIOOds))) DebugIOOds();
-}
-
-void DebugIOOds::Delete(void)
-{
-  this->~DebugIOOds();
-  DebugFreeMemory(this);
-}
-
-#endif // _WIN32

@@ -32,9 +32,6 @@
 #include <cstdlib>
 #include <cstdio>
 #include <windows.h>
-#ifdef _WIN32
-	#include <process.h>
-#endif
 
 bool DebugCmdInterfaceDebug::Execute(class Debug& dbg, const char *cmd,
                                      CommandMode cmdmode, unsigned argn,

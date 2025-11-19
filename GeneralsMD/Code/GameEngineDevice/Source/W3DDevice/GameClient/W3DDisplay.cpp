@@ -38,9 +38,6 @@ static void drawFramerateBar(void);
 #include <algorithm>
 #include <stdlib.h>
 #include <windows.h>
-#ifdef _WIN32
-#include <io.h>
-#endif // _WIN32
 #include <time.h>
 #include "../../../../../Dependencies/Utility/Compat/msvc_types_compat.h"
 
@@ -703,13 +700,8 @@ void W3DDisplay::init( void )
 		{
 			SortingRendererClass::SetMinVertexBufferSize(1);
 		}
-#ifdef _WIN32
-		if (WW3D::Init( ApplicationHWnd ) != WW3D_ERROR_OK)
-			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
-#else
 		if (WW3D::Init( NULL ) != WW3D_ERROR_OK)
 			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
-#endif
 
 		WW3D::Set_Prelit_Mode( WW3D::PRELIT_MODE_LIGHTMAP_MULTI_PASS );
 		WW3D::Set_Collision_Box_Display_Mask(0x00);	///<set to 0xff to make collision boxes visible
@@ -1260,47 +1252,6 @@ void W3DDisplay::gatherDebugStats( void )
 
 		// display the keyboard modifier and mouse states.
 		unibuffer.format( L"States: " );
-#ifdef _WIN32
-		if( TheKeyboard->isShift() )
-		{
-			unibuffer.concat( L"Shift(" );
-			if( TheKeyboard->getModifierFlags() & KEY_STATE_LSHIFT )
-			{
-				unibuffer.concat( L"L" );
-			}
-			if( TheKeyboard->getModifierFlags() & KEY_STATE_RSHIFT )
-			{
-				unibuffer.concat( L"R" );
-			}
-			unibuffer.concat( L") " );
-		}
-		if( TheKeyboard->isCtrl() )
-		{
-			unibuffer.concat( L"Ctrl(" );
-			if( TheKeyboard->getModifierFlags() & KEY_STATE_LCONTROL )
-			{
-				unibuffer.concat( L"L" );
-			}
-			if( TheKeyboard->getModifierFlags() & KEY_STATE_RCONTROL )
-			{
-				unibuffer.concat( L"R" );
-			}
-			unibuffer.concat( L") " );
-		}
-		if( TheKeyboard->isAlt() )
-		{
-			unibuffer.concat( L"Alt(" );
-			if( TheKeyboard->getModifierFlags() & KEY_STATE_LALT )
-			{
-				unibuffer.concat( L"L" );
-			}
-			if( TheKeyboard->getModifierFlags() & KEY_STATE_RALT )
-			{
-				unibuffer.concat( L"R" );
-			}
-			unibuffer.concat( L") " );
-		}
-#endif // _WIN32
 
 		const MouseIO *mouseStatus = TheMouse->getMouseStatus();
 
@@ -1676,12 +1627,6 @@ void W3DDisplay::draw( void )
 {
 	//USE_PERF_TIMER(W3DDisplay_draw)
 
-#ifdef _WIN32
-	extern HWND ApplicationHWnd;
-	if (ApplicationHWnd && ::IsIconic(ApplicationHWnd)) {
-		return;
-	}
-#endif // _WIN32
 
 	if (TheGlobalData->m_headless)
 		return;
@@ -1818,31 +1763,6 @@ AGAIN:
 	do {
 
 		// update all views of the world - recomputes data which will affect drawing
-#ifdef _WIN32
-		if (DX8Wrapper::_Get_D3D_Device8() && (DX8Wrapper::_Get_D3D_Device8()->TestCooperativeLevel()) == D3D_OK)
-		{	//Checking if we have the device before updating views because the heightmap crashes otherwise while
-			//trying to refresh the visible terrain geometry.
-//			if(TheGlobalData->m_loadScreenRender != TRUE)
-				updateViews();
-     		TheParticleSystemManager->update();//LORENZEN AND WILCZYNSKI MOVED THIS FROM ITS NATIVE POSITION, ABOVE
-                                           //FOR THE PURPOSE OF LETTING THE PARTICLE SYSTEM LOOK UP THE RENDER OBJECT"S
-                                           //TRANSFORM MATRIX, WHILE IT IS STILL VALID (HAVING DONE ITS CLIENT TRANSFORMS
-                                           //BUT NOT YET RESETTING TOT HE LOGICAL TRANSFORM)
-                                           //THE RESULT IS THAT PARTICLESYSTEMS LINKED TO BONES IN DRAWABLES.OBJECTS
-                                           //MOVE WITH THE CLIENT TRANSFORMS, NOW.
-                                           //REVOLUTIONARY!
-                                           //-LORENZEN
-
-
-			if (TheWaterRenderObj && TheGlobalData->m_waterType == 2)
-				TheWaterRenderObj->updateRenderTargetTextures(primaryW3DView->get3DCamera());	//do a render into each texture
-
-			//Can't render into textures while rendering to screen so these textures need to be updated
-			//before we enter main rendering loop.
-			if (TheW3DProjectedShadowManager)
-				TheW3DProjectedShadowManager->updateRenderTargetTextures();
-		}
-#else // _WIN32
 		// On non-Windows, assume device is ready
 		updateViews();
 		TheParticleSystemManager->update();
@@ -1850,7 +1770,6 @@ AGAIN:
 			TheWaterRenderObj->updateRenderTargetTextures(primaryW3DView->get3DCamera());
 		if (TheW3DProjectedShadowManager)
 			TheW3DProjectedShadowManager->updateRenderTargetTextures();
-#endif // _WIN32
 
 		Debug_Statistics::End_Statistics();	//record number of polygons rendered in RenderTargetTextures.
 
@@ -2944,239 +2863,24 @@ void W3DDisplay::setShroudLevel( Int x, Int y, CellShroudStatus setting )
 
 //=============================================================================
 ///Utility function to dump data into a .BMP file
-#ifdef _WIN32
-static void CreateBMPFile(LPTSTR pszFile, char *image, Int width, Int height)
-{
-	HANDLE hf;                  // file handle
-	BITMAPFILEHEADER hdr;       // bitmap file-header
-	PBITMAPINFOHEADER pbih;     // bitmap info-header
-	LPBYTE lpBits;              // memory pointer
-	DWORD dwTotal;              // total count of bytes
-	DWORD cb;                   // incremental count of bytes
-	BYTE *hp;                   // byte pointer
-	DWORD dwTmp;
-
-	PBITMAPINFO pbmi;
-
-	pbmi = (PBITMAPINFO) LocalAlloc(LPTR,sizeof(BITMAPINFOHEADER));
-	if (pbmi == NULL)
-		return;
-
-	pbmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	pbmi->bmiHeader.biWidth = width;
-	pbmi->bmiHeader.biHeight = height;
-	pbmi->bmiHeader.biPlanes = 1;
-	pbmi->bmiHeader.biBitCount = 24;
-	pbmi->bmiHeader.biCompression = BI_RGB;
-	pbmi->bmiHeader.biSizeImage = (pbmi->bmiHeader.biWidth + 7) /8 * pbmi->bmiHeader.biHeight * 24;
-	pbmi->bmiHeader.biClrImportant = 0;
-
-	pbih = (PBITMAPINFOHEADER) pbmi;
-	lpBits = (LPBYTE) image;
-
-	// Create the .BMP file.
-	hf = CreateFile(pszFile,
-		GENERIC_READ | GENERIC_WRITE,
-		(DWORD) 0,
-		NULL,
-		CREATE_ALWAYS,
-		FILE_ATTRIBUTE_NORMAL,
-		(HANDLE) NULL);
-
-	if (hf != INVALID_HANDLE_VALUE)
-	{
-		hdr.bfType = 0x4d42;        // 0x42 = "B" 0x4d = "M"
-		// Compute the size of the entire file.
-		hdr.bfSize = (DWORD) (sizeof(BITMAPFILEHEADER) +
-								pbih->biSize + pbih->biClrUsed
-								* sizeof(RGBQUAD) + pbih->biSizeImage);
-		hdr.bfReserved1 = 0;
-		hdr.bfReserved2 = 0;
-
-		// Compute the offset to the array of color indices.
-		hdr.bfOffBits = (DWORD) sizeof(BITMAPFILEHEADER) +
-									pbih->biSize + pbih->biClrUsed
-									* sizeof (RGBQUAD);
-
-		// Copy the BITMAPFILEHEADER into the .BMP file.
-		if (WriteFile(hf, (LPVOID) &hdr, sizeof(BITMAPFILEHEADER),
-				(LPDWORD) &dwTmp,  NULL))
-		{
-			// Copy the BITMAPINFOHEADER and RGBQUAD array into the file.
-			if (WriteFile(hf, (LPVOID) pbih, sizeof(BITMAPINFOHEADER) + pbih->biClrUsed * sizeof (RGBQUAD),(LPDWORD) &dwTmp, NULL))
-			{
-				// Copy the array of color indices into the .BMP file.
-				dwTotal = cb = pbih->biSizeImage;
-				hp = lpBits;
-				WriteFile(hf, (LPSTR) hp, (int) cb, (LPDWORD) &dwTmp, NULL);
-			}
-		}
-
-		// Close the .BMP file.
-		CloseHandle(hf);
-	}
-
-	// Free memory.
-	LocalFree( (HLOCAL) pbmi);
-#endif // _WIN32
 
 ///Save Screen Capture to a file
-#ifdef _WIN32
-void W3DDisplay::takeScreenShot(void)
-{
-	char leafname[256];
-	char pathname[1024];
-
-	static int frame_number = 1;
-
-	Bool done = false;
-	while (!done) {
 #ifdef CAPTURE_TO_TARGA
-		sprintf( leafname, "%s%.3d.tga", "sshot", frame_number++);
 #else
-		sprintf( leafname, "%s%.3d.bmp", "sshot", frame_number++);
 #endif
-		strlcpy(pathname, TheGlobalData->getPath_UserData().str(), ARRAY_SIZE(pathname));
-		strlcat(pathname, leafname, ARRAY_SIZE(pathname));
-		if (_access( pathname, 0 ) == -1)
-			done = true;
-	}
-
-	// TheSuperHackers @bugfix xezon 21/05/2025 Get the back buffer and create a copy of the surface.
-	// Originally this code took the front buffer and tried to lock it. This does not work when the
-	// render view clips outside the desktop boundaries. It crashed the game.
-	SurfaceClass* surface = DX8Wrapper::_Get_DX8_Back_Buffer();
-
-	SurfaceClass::SurfaceDescription surfaceDesc;
-	surface->Get_Description(surfaceDesc);
-
-	SurfaceClass* surfaceCopy = NEW_REF(SurfaceClass, (DX8Wrapper::_Create_DX8_Surface(surfaceDesc.Width, surfaceDesc.Height, surfaceDesc.Format)));
-	DX8Wrapper::_Copy_DX8_Rects(surface->Peek_D3D_Surface(), NULL, 0, surfaceCopy->Peek_D3D_Surface(), NULL);
-
-	surface->Release_Ref();
-	surface = NULL;
-
-	struct Rect
-	{
-		int Pitch;
-		void* pBits;
-	} lrect;
-
-	lrect.pBits = surfaceCopy->Lock(&lrect.Pitch);
-	if (lrect.pBits == NULL)
-	{
-		surfaceCopy->Release_Ref();
-		return;
-	}
-
-	unsigned int x,y,index,index2,width,height;
-
-	width = surfaceDesc.Width;
-	height = surfaceDesc.Height;
-
-	char *image=NEW char[3*width*height];
 #ifdef CAPTURE_TO_TARGA
-	//bytes are mixed in targa files, not rgb order.
-	for (y=0; y<height; y++)
-	{
-		for (x=0; x<width; x++)
-		{
-			// index for image
-			index=3*(x+y*width);
-			// index for fb
-			index2=y*lrect.Pitch+4*x;
-
-			image[index]=*((char *) lrect.pBits + index2+2);
-			image[index+1]=*((char *) lrect.pBits + index2+1);
-			image[index+2]=*((char *) lrect.pBits + index2+0);
-		}
-	}
-
-	surfaceCopy->Unlock();
-	surfaceCopy->Release_Ref();
-	surfaceCopy = NULL;
-
-	Targa targ;
-	memset(&targ.Header,0,sizeof(targ.Header));
-	targ.Header.Width=width;
-	targ.Header.Height=height;
-	targ.Header.PixelDepth=24;
-	targ.Header.ImageType=TGA_TRUECOLOR;
-	targ.SetImage(image);
-	targ.YFlip();
-
-	targ.Save(pathname,TGAF_IMAGE,false);
 #else	//capturing to bmp file
-	//bmp is same byte order
-	for (y=0; y<height; y++)
-	{
-		for (x=0; x<width; x++)
-		{
-			// index for image
-			index=3*(x+y*width);
-			// index for fb
-			index2=y*lrect.Pitch+4*x;
-
-			image[index]=*((char *) lrect.pBits + index2+0);
-			image[index+1]=*((char *) lrect.pBits + index2+1);
-			image[index+2]=*((char *) lrect.pBits + index2+2);
-		}
-	}
-
-	surfaceCopy->Unlock();
-	surfaceCopy->Release_Ref();
-	surfaceCopy = NULL;
-
-	//Flip the image
-	char *ptr,*ptr1;
-	char  v,v1;
-
-	for (y = 0; y < (height >> 1); y++)
-	{
-		/* Compute address of lines to exchange. */
-		ptr = (image + ((width * y) * 3));
-		ptr1 = (image + ((width * (height - 1)) * 3));
-		ptr1 -= ((width * y) * 3);
-
-		/* Exchange all the pixels on this scan line. */
-		for (x = 0; x < (width * 3); x++)
-			{
-			v = *ptr;
-			v1 = *ptr1;
-			*ptr = v1;
-			*ptr1 = v;
-			ptr++;
-			ptr1++;
-			}
-	}
-	CreateBMPFile(pathname, image, width, height);
 #endif
-
-	delete [] image;
-
-	UnicodeString ufileName;
-	ufileName.translate(leafname);
-	TheInGameUI->message(TheGameText->fetch("GUI:ScreenCapture"), ufileName.str());
-}
-#else // _WIN32
 void W3DDisplay::takeScreenShot(void)
 {
 	// Non-Windows stub
 }
-#endif // _WIN32
 
 /** Start/Stop capturing an AVI movie*/
-#ifdef _WIN32
-void W3DDisplay::toggleMovieCapture(void)
-{
-	WW3D::Toggle_Movie_Capture("Movie",30);
-}
-#else // _WIN32
 void W3DDisplay::toggleMovieCapture(void)
 {
 	// Non-Windows stub
 }
-#endif // _WIN32
 
 
 #if defined(RTS_DEBUG)

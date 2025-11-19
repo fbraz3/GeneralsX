@@ -46,9 +46,6 @@
 //----------------------------------------------------------------------------
 
 #include "GameClient/VideoPlayer.h"
-#ifdef _WIN32
-#include "bink.h"
-#endif
 
 //----------------------------------------------------------------------------
 //           Forward References
@@ -64,77 +61,6 @@ class BinkVideoPlayer;
 // BinkVideoStream
 //===============================
 
-#ifdef _WIN32
-
-class BinkVideoStream : public VideoStream
-{
-	friend class BinkVideoPlayer;
-
-	protected:
-
-		HBINK					m_handle;														///< Bink streaming handle;
-		Char					*m_memFile;													///< Pointer to memory resident file
-
-		BinkVideoStream();																///< only BinkVideoPlayer can create these
-		virtual ~BinkVideoStream();
-
-	public:
-
-		virtual void update( void );											///< Update bink stream
-
-		virtual Bool	isFrameReady( void );								///< Is the frame ready to be displayed
-		virtual void	frameDecompress( void );						///< Render current frame in to buffer
-		virtual void	frameRender( VideoBuffer *buffer ); ///< Render current frame in to buffer
-		virtual void	frameNext( void );									///< Advance to next frame
-		virtual Int		frameIndex( void );									///< Returns zero based index of current frame
-		virtual Int		frameCount( void );									///< Returns the total number of frames in the stream
-		virtual void	frameGoto( Int index );							///< Go to the spcified frame index
-		virtual Int		height( void );											///< Return the height of the video
-		virtual Int		width( void );											///< Return the width of the video
-
-
-};
-
-//===============================
-// BinkVideoPlayer
-//===============================
-/**
-  *	Bink video playback code.
-	*/
-//===============================
-
-class BinkVideoPlayer : public VideoPlayer
-{
-
-	protected:
-
-		VideoStreamInterface* createStream( HBINK handle );
-
-	public:
-
-		// subsytem requirements
-		virtual void	init( void );														///< Initialize video playback code
-		virtual void	reset( void );													///< Reset video playback
-		virtual void	update( void );													///< Services all audio tasks. Should be called frequently
-
-		virtual void	deinit( void );													///< Close down player
-
-
-		BinkVideoPlayer();
-		~BinkVideoPlayer();
-
-		// service
-		virtual void	loseFocus( void );											///< Should be called when application loses focus
-		virtual void	regainFocus( void );										///< Should be called when application regains focus
-
-		virtual VideoStreamInterface*	open( AsciiString movieTitle );	///< Open video file for playback
-		virtual VideoStreamInterface*	load( AsciiString movieTitle );	///< Load video file in to memory for playback
-
-	virtual void notifyVideoPlayerOfNewProvider( Bool nowHasValid );
-	virtual void initializeBinkWithMiles( void );
-};
-
-#endif // _WIN32
 
 
 //----------------------------------------------------------------------------

@@ -29,14 +29,10 @@
 //   the game application, it creates all the devices we will use for the game
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef _WIN32
-#include <windows.h>
-#else
 // Phase 02: SDL2 cross-platform event handling
 #include <SDL2/SDL.h>
 // Phase 03: SDL2 input compatibility layer
 #include "WW3D2/win32_sdl_api_compat.h"
-#endif
 
 #include "Win32Device/Common/Win32GameEngine.h"
 #include "Common/PerfTimer.h"
@@ -45,10 +41,8 @@
 
 extern DWORD TheMessageTime;
 
-#ifndef _WIN32
 // Phase 03: SDL2 input classes forward declarations
 extern class Win32Mouse *TheWin32Mouse;
-#endif
 
 //-------------------------------------------------------------------------------------------------
 /** Constructor for Win32GameEngine */
@@ -139,42 +133,6 @@ void Win32GameEngine::update( void )
 //-------------------------------------------------------------------------------------------------
 void Win32GameEngine::serviceWindowsOS( void )
 {
-#ifdef _WIN32
-	// Windows implementation
-	MSG msg;
-  Int returnValue;
-
-	//
-	// see if we have any messages to process, a NULL window handle tells the
-	// OS to look at the main window associated with the calling thread, us!
-	//
-	while( PeekMessage( &msg, NULL, 0, 0, PM_NOREMOVE ) )
-	{
-
-		// get the message
-		returnValue = GetMessage( &msg, NULL, 0, 0 );
-
-		// this is one possible way to check for quitting conditions as a message
-		// of WM_QUIT will cause GetMessage() to return 0
-/*
-		if( returnValue == 0 )
-		{
-
-			setQuitting( true );
-			break;
-
-		}
-*/
-
-		TheMessageTime = msg.time;
-		// translate and dispatch the message
-		TranslateMessage( &msg );
-		DispatchMessage( &msg );
-		TheMessageTime = 0;
-
-	}
-
-#else
 	// Phase 02-03: SDL2 event loop implementation with keyboard/mouse support
 	SDL_Event event;
 	
@@ -269,6 +227,5 @@ void Win32GameEngine::serviceWindowsOS( void )
 		}
 	}
 
-#endif
 }
 

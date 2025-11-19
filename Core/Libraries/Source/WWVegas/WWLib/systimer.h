@@ -39,13 +39,6 @@
 #ifndef _SYSTIMER_H
 
 #include "always.h"
-#ifdef _WIN32
-#include <windows.h>
-#include "mmsys.h"
-
-#define TIMEGETTIME SystemTime.Get
-#define MS_TIMER_SECOND 1000
-#else
 #include <sys/time.h>
 
 inline unsigned long systimerGetMS(void)
@@ -57,7 +50,6 @@ inline unsigned long systimerGetMS(void)
 
 #define TIMEGETTIME systimerGetMS
 #define MS_TIMER_SECOND 1000
-#endif
 
 /*
 ** Class that just wraps around timeGetTime()

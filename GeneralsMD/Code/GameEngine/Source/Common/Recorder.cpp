@@ -598,11 +598,6 @@ void RecorderClass::startRecording(GameDifficulty diff, Int originalGameMode, In
 	m_file->writeChar(L"\0");
 
 	// Date and Time
-	#ifdef _WIN32
-	SYSTEMTIME systemTime;
-	GetLocalTime( &systemTime );
-	m_file->write(&systemTime, sizeof(systemTime));
-	#endif // _WIN32
 
 	// write out version info
 	UnicodeString versionString = TheVersion->getUnicodeVersion();
@@ -644,10 +639,6 @@ void RecorderClass::startRecording(GameDifficulty diff, Int originalGameMode, In
 		}
 		else
 		{
-#ifdef _WIN32
-			theSlotList = GameInfoToAsciiString(TheGameSpyGame);
-			localIndex = TheGameSpyGame->getLocalSlotNum();
-#endif // _WIN32
 		}
 	}
 	else
@@ -751,30 +742,6 @@ void RecorderClass::stopRecording() {
  */
 void RecorderClass::archiveReplay(AsciiString fileName)
 {
-	#ifdef _WIN32
-	SYSTEMTIME st;
-	GetLocalTime(&st);
-
-	AsciiString archiveFileName;
-	// Use a standard YYYYMMDD_HHMMSS format for simplicity and to avoid conflicts.
-	archiveFileName.format("%04d%02d%02d_%02d%02d%02d", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
-
-	AsciiString extension = getReplayExtention();
-	AsciiString sourcePath = getReplayDir();
-	sourcePath.concat(fileName);
-
-	if (!sourcePath.endsWith(extension))
-		sourcePath.concat(extension);
-
-	AsciiString destPath = getReplayArchiveDir();
-	TheFileSystem->createDirectory(destPath.str());
-
-	destPath.concat(archiveFileName);
-	destPath.concat(extension);
-
-	if (!CopyFile(sourcePath.str(), destPath.str(), FALSE))
-		DEBUG_LOG(("RecorderClass::archiveReplay: Failed to copy %s to %s", sourcePath.str(), destPath.str()));
-	#endif // _WIN32
 }
 
 /**

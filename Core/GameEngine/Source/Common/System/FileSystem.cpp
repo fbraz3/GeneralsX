@@ -435,22 +435,14 @@ Bool FileSystem::isPathInDirectory(const AsciiString& testPath, const AsciiStrin
 		return false;
 	}
 
-#ifdef _WIN32
-	const char* pathSep = "\\";
-#else
 	const char* pathSep = "/";
-#endif
 
 	if (!basePathNormalized.endsWith(pathSep))
 	{
 		basePathNormalized.concat(pathSep);
 	}
 
-#ifdef _WIN32
-	if (!testPathNormalized.startsWithNoCase(basePathNormalized))
-#else
 	if (!testPathNormalized.startsWith(basePathNormalized))
-#endif
 	{
 		return false;
 	}

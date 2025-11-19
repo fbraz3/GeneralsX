@@ -20,10 +20,8 @@
 
 #include <cmath>
 
-#ifndef _WIN32
 #include "win32_sdl_types_compat.h"
 #include "d3d8_vulkan_types_compat.h"  // For IID and RGNDATA
-#endif
 
 // Note: d3d8_enums.h is not included here to avoid redefinition conflicts
 // with existing enum definitions in this file. Enums are defined locally below.

@@ -22,17 +22,10 @@
 
 #pragma once
 
-#ifdef _WIN32
-  #include <process.h>
-#endif
 #include "wstypes.h"
 #include <stdlib.h>
 
-#ifdef _WIN32
-  #include <wtypes.h>
-#else // UNIX
   #include <pthread.h>
-#endif
 
 // Windows headers have a tendency to redefine IN
 #ifdef IN
@@ -46,18 +39,10 @@
 
 #ifdef THREADFAC_CODE
   // This is the fake thread entry point for functions
-  #ifdef _WIN32
-    static unsigned __stdcall threadFuncLauncher(void *temp);
-  #else  // UNIX
     static void *threadFuncLauncher(void *temp);
-  #endif
 
   // Fake entry point for classes
-  #ifdef _WIN32
-    static unsigned __stdcall threadClassLauncher(void *temp);
-  #else  // UNIX
     static void *threadClassLauncher(void *temp);
-  #endif
 #endif
 
 
@@ -95,11 +80,7 @@ class Runnable
    friend class ThreadFactory;
 
    // So do the threadClassLaunchers
-   #ifdef _WIN32
-     friend unsigned __stdcall threadClassLauncher(void *temp);
-   #else  // UNIX
      friend void *threadClassLauncher(void *temp);
-   #endif
 
    virtual void run(void *data)=0;       // Thread entry point
 

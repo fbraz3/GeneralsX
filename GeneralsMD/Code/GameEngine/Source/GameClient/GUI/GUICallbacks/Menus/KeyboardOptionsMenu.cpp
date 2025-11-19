@@ -723,17 +723,6 @@ WindowMsgHandledType KeyboardTextEntryInput( GameWindow *window, UnsignedInt msg
 			WideChar ch = (WideChar) mData1;
 
 			// --------------------------------------------------------------------
-#ifdef _WIN32
-			if ( ch == VK_RETURN )
-			{
-				// Done with this edit
-			 		TheWindowManager->winSendSystemMsg( window->winGetOwner(),
-			 																				GEM_EDIT_DONE,
-			 																				(WindowMsgData)(uintptr_t)window,
-			 																				0 );
-				return MSG_HANDLED;
-			};
-#endif // _WIN32
 
 			if( ch )
 			{

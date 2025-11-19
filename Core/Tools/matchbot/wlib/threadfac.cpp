@@ -68,24 +68,6 @@ bit8 ThreadFactory::startThread(Runnable &runable, void *data, bit8 destroy)
   tInfo->data=data;
   tInfo->destroy=destroy;
 
-  #ifdef _WIN32
-    // Under windows call _beginthreadex instead of CreateThread so you can
-    //  use all the normal C library stuff. (IMPORTANT!!!)
-    uint32 handle;
-	uint32 stup1d;
-    handle=_beginthreadex(NULL,0,  threadClassLauncher, tInfo, 0, &stup1d);
-    if (handle!=NULL)
-      return(TRUE);
-    else
-    {
-      {
-        runable.CritSec_.lock();
-        runable.ThreadCount_--;   // Ok, so it didn't really start
-        runable.CritSec_.unlock();
-      }
-      return(FALSE);
-    }
-  #else // UNIX
     // Setup thread attributes for client threads
     int retval;
     pthread_attr_t threadAttr;
@@ -104,7 +86,6 @@ bit8 ThreadFactory::startThread(Runnable &runable, void *data, bit8 destroy)
       }
       return(FALSE);
     }
-  #endif
 #else
 	return (FALSE);
 #endif /* _REENTRANT */
@@ -121,16 +102,6 @@ bit8 ThreadFactory::startThread(void (*start_func)(void *), void *data)
   tInfo->startPoint=start_func;
   tInfo->data=data;
 
-  #ifdef _WIN32
-    // Under windows call _beginthreadex instead of CreateThread so you can
-    //  use all the normal C library stuff. (IMPORTANT!!!)
-    uint32 handle;
-	unsigned temp;
-    handle=_beginthreadex(NULL,0,  threadFuncLauncher, tInfo, 0, &temp);
-    if (handle!=NULL)
-      return(TRUE);
-    return(FALSE);
-  #else // UNIX
     // Setup thread attributes for client threads
     int retval;
     pthread_attr_t threadAttr;
@@ -142,17 +113,12 @@ bit8 ThreadFactory::startThread(void (*start_func)(void *), void *data)
       return(TRUE);
     else
       return(FALSE);
-  #endif
 #else
 	return(FALSE);
 #endif /* REENTRANT */
 }
 
-#ifdef _WIN32
-  unsigned __stdcall threadFuncLauncher(void *temp)
-#else  // UNIX
   void *threadFuncLauncher(void *temp)
-#endif
 {
   ThreadInformation *tInfo=(ThreadInformation *)temp;
 
@@ -166,11 +132,7 @@ bit8 ThreadFactory::startThread(void (*start_func)(void *), void *data)
   return(0);
 }
 
-#ifdef _WIN32
-  unsigned __stdcall threadClassLauncher(void *temp)
-#else  // UNIX
   void *threadClassLauncher(void *temp)
-#endif
 {
   ThreadInformation *tInfo=(ThreadInformation *)temp;
 
@@ -190,9 +152,6 @@ bit8 ThreadFactory::startThread(void (*start_func)(void *), void *data)
 	  Runnable::CritSec_.unlock();
   }
 
-  #ifdef _WIN32
-    ExitThread(0);    // is this really needed?
-  #endif
   return(0);
 }
 

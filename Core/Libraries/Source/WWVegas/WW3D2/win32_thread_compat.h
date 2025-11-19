@@ -49,13 +49,8 @@
 #include <condition_variable>
 #include <functional>
 
-#ifdef _WIN32
-#include <windows.h>
-#include <process.h>
-#else
 #include <pthread.h>
 #include <unistd.h>
-#endif
 
 /* ============================================================================
  * THREAD CREATION AND MANAGEMENT
@@ -65,13 +60,8 @@
  * Cross-platform thread handle abstraction
  * On Windows: HANDLE, on POSIX: pthread_t
  */
-#ifdef _WIN32
-typedef HANDLE SDL2_ThreadHandle;
-typedef DWORD SDL2_ThreadID;
-#else
 typedef pthread_t SDL2_ThreadHandle;
 typedef pthread_t SDL2_ThreadID;
-#endif
 
 /**
  * Thread function signature - returns void, takes void* argument
@@ -141,11 +131,7 @@ void SDL2_YieldThread(void);
 /**
  * Mutex handle abstraction
  */
-#ifdef _WIN32
-typedef HANDLE SDL2_Mutex;
-#else
 typedef pthread_mutex_t* SDL2_Mutex;
-#endif
 
 /**
  * Create a new mutex
@@ -211,11 +197,7 @@ private:
 /**
  * Critical section handle abstraction
  */
-#ifdef _WIN32
-typedef CRITICAL_SECTION SDL2_CriticalSection;
-#else
 typedef pthread_mutex_t SDL2_CriticalSection;
-#endif
 
 /**
  * Create a new critical section
@@ -277,11 +259,7 @@ private:
 /**
  * Condition variable handle abstraction
  */
-#ifdef _WIN32
-typedef CONDITION_VARIABLE SDL2_ConditionVariable;
-#else
 typedef pthread_cond_t SDL2_ConditionVariable;
-#endif
 
 /**
  * Create a new condition variable
@@ -336,16 +314,12 @@ int SDL2_ConditionBroadcast(SDL2_ConditionVariable* cond);
 /**
  * Semaphore handle abstraction
  */
-#ifdef _WIN32
-typedef HANDLE SDL2_Semaphore;
-#else
 typedef struct {
     pthread_mutex_t mutex;
     pthread_cond_t cond;
     int count;
 } SDL2_Semaphore_Internal;
 typedef SDL2_Semaphore_Internal* SDL2_Semaphore;
-#endif
 
 /**
  * Create a new semaphore

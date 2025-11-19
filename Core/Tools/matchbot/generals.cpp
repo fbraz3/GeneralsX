@@ -16,9 +16,6 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef _WIN32
-#include <process.h>
-#endif
 
 #include <wstring.h>
 #include <tcp.h>

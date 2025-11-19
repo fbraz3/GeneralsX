@@ -16,15 +16,8 @@
 #include <sys/stat.h>
 #include <errno.h>
 
-#ifdef _WIN32
-#include <windows.h>
-#include <shlobj.h>
-#include <direct.h>
-#define PATH_MAX MAX_PATH
-#else
 #include <unistd.h>
 #include <pwd.h>
-#endif
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
@@ -75,24 +68,6 @@ typedef struct {
  * Platform-Specific Config Directory Functions
  */
 
-#ifdef _WIN32
-static LONG SDL2_GetWindowsConfigDirectory(char *buffer, unsigned long buffer_size)
-{
-    char appdata[MAX_PATH];
-    
-    // Get %APPDATA% directory
-    if (SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, appdata) != S_OK) {
-        printf("Phase 05: Failed to get APPDATA directory\n");
-        return ERROR_PATH_NOT_FOUND;
-    }
-    
-    // Build path: %APPDATA%\Electronic Arts\EA Games\
-    snprintf(buffer, buffer_size, "%s\\Electronic Arts\\EA Games\\", appdata);
-    
-    printf("Phase 05: Windows config directory: %s\n", buffer);
-    return ERROR_SUCCESS;
-}
-#endif
 
 #ifdef __APPLE__
 static LONG SDL2_GetMacOSConfigDirectory(char *buffer, unsigned long buffer_size)
@@ -155,34 +130,19 @@ static LONG SDL2_CreateDirectoryRecursive(const char *path)
         if (*p == '/' || *p == '\\') {
             *p = '\0';
             
-#ifdef _WIN32
-            if (_mkdir(buffer) != 0 && errno != EEXIST) {
-                printf("Phase 05: Failed to create directory: %s (errno=%d)\n", buffer, errno);
-                return ERROR_PATH_NOT_FOUND;
-            }
-            *p = '\\';
-#else
             if (mkdir(buffer, 0755) != 0 && errno != EEXIST) {
                 printf("Phase 05: Failed to create directory: %s (errno=%d)\n", buffer, errno);
                 return ERROR_PATH_NOT_FOUND;
             }
             *p = '/';
-#endif
         }
     }
     
     // Create final directory
-#ifdef _WIN32
-    if (_mkdir(buffer) != 0 && errno != EEXIST) {
-        printf("Phase 05: Failed to create directory: %s (errno=%d)\n", buffer, errno);
-        return ERROR_PATH_NOT_FOUND;
-    }
-#else
     if (mkdir(buffer, 0755) != 0 && errno != EEXIST) {
         printf("Phase 05: Failed to create directory: %s (errno=%d)\n", buffer, errno);
         return ERROR_PATH_NOT_FOUND;
     }
-#endif
     
     printf("Phase 05: Created directory: %s\n", buffer);
     return ERROR_SUCCESS;
@@ -490,16 +450,8 @@ LONG SDL2_InitializeConfigSystem(void)
         LONG result = ERROR_SUCCESS;
         
         // Determine platform-specific config directory
-#ifdef _WIN32
-        result = SDL2_GetWindowsConfigDirectory(g_config_base_dir, sizeof(g_config_base_dir));
-#elif defined(__APPLE__)
-        result = SDL2_GetMacOSConfigDirectory(g_config_base_dir, sizeof(g_config_base_dir));
-#elif defined(__linux__)
-        result = SDL2_GetLinuxConfigDirectory(g_config_base_dir, sizeof(g_config_base_dir));
-#else
         printf("Phase 05: Unknown platform\n");
         result = ERROR_PATH_NOT_FOUND;
-#endif
         
         if (result == ERROR_SUCCESS) {
             // Create base directory if it doesn't exist

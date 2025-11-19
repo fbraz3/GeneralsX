@@ -44,9 +44,6 @@
 #	define DIRECTINPUT_VERSION	0x800
 #endif
 
-#ifdef _WIN32
-#include <dinput.h>
-#endif
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "GameClient/Mouse.h"
@@ -58,46 +55,6 @@
 // class DirectInputMouse -----------------------------------------------------
 /** Direct input implementation for the mouse device */
 //-----------------------------------------------------------------------------
-#ifdef _WIN32
-class DirectInputMouse : public Mouse
-{
-
-public:
-
-	DirectInputMouse( void );
-	virtual ~DirectInputMouse( void );
-
-	// extended methods from base class
-	virtual void init( void );		///< initialize the direct input mouse, extending functionality
-	virtual void reset( void );		///< reset system
-	virtual void update( void );  ///< update the mouse data, extending functionality
-	virtual void setPosition( Int x, Int y );  ///< set position for mouse
-
-	virtual void setMouseLimits( void );  ///< update the limit extents the mouse can move in
-
-	virtual void setCursor( MouseCursor cursor );  ///< set mouse cursor
-
-	virtual void capture( void );  ///< capture the mouse
-	virtual void releaseCapture( void );  ///< release mouse capture
-
-protected:
-
-	/// device implementation to get mouse event
-	virtual UnsignedByte getMouseEvent( MouseIO *result, Bool flush );
-
-	// new internal methods for our direct input implemetation
-	void openMouse( void );  ///< create the direct input mouse
-	void closeMouse( void );  ///< close and release mouse resources
-	/// map direct input mouse data to our own format
-	void mapDirectInputMouse( MouseIO *mouse, DIDEVICEOBJECTDATA *mdat );
-
-	// internal data members for our direct input mouse
-	LPDIRECTINPUT8 m_pDirectInput;  ///< pointer to direct input interface
-	LPDIRECTINPUTDEVICE8 m_pMouseDevice;  ///< pointer to mouse device
-
-};
-
-#endif // _WIN32
 
 // INLINING ///////////////////////////////////////////////////////////////////
 

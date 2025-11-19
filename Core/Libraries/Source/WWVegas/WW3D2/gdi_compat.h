@@ -13,11 +13,6 @@
 // Include types that are already defined
 #include "win32_sdl_types_compat.h"
 
-#ifdef _WIN32
-    // On Windows, use the native GDI headers
-    #include <windows.h>
-    #include <wingdi.h>
-#else
     // On non-Windows platforms, provide stub functions for GDI calls
     // All types (SIZE, RECT, BITMAPINFO, TEXTMETRIC, etc.) are already
     // defined in win32_sdl_types_compat.h
@@ -63,6 +58,5 @@
     
     inline int DeleteDC(HDC hdc) { return 1; }
 
-#endif // _WIN32
 
 #endif // GDI_COMPAT_H

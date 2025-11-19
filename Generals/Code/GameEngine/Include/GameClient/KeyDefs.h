@@ -56,10 +56,6 @@
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #include <stdlib.h>
 
-#ifdef _WIN32
-#ifndef DIRECTINPUT_VERSION
-#	define DIRECTINPUT_VERSION	0x800
-#endif
 
 #include <dinput.h>
 #endif // _WIN32

@@ -16,19 +16,12 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef _WIN32
-#include <process.h>
-#endif
 #include <cstdlib>
 #include <csignal>
 #include <Utility/iostream_adapter.h>
 
-#ifdef _WIN32
-#include <direct.h>
-#else
 #include <sys/types.h>
 #include <sys/stat.h>
-#endif
 
 //#define THREADSAFE_HEADER
 

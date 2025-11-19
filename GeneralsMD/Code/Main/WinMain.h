@@ -33,28 +33,13 @@
 #pragma once
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
-#ifdef _WIN32
-#include <windows.h>
-#else
 #include "Lib/BaseType.h"
-#endif
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
-#ifdef _WIN32
-#include "Win32Device/GameClient/Win32Mouse.h"
-#endif
 
 // EXTERNAL ///////////////////////////////////////////////////////////////////
-#ifdef _WIN32
-extern HINSTANCE ApplicationHInstance;  ///< our application instance
-extern HWND ApplicationHWnd;  ///< our application window handle
-extern Win32Mouse *TheWin32Mouse;  ///< global for win32 mouse only!
-#else
 extern void* ApplicationHWnd;  ///< SDL2 window handle (cast from SDL_Window*)
-#endif
 
 // Forward declarations
-#ifndef _WIN32
 extern Int WinMainSDL2(int argc, char* argv[]);  ///< POSIX/Unix entry point
-#endif
 

@@ -49,9 +49,6 @@
 #include "Common/Registry.h"
 #include "W3DDevice/GameClient/W3DFileSystem.h"
 
-#ifdef _WIN32
-#include <io.h>
-#endif // _WIN32
 
 // DEFINES ////////////////////////////////////////////////////////////////////////////////////////
 

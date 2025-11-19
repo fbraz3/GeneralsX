@@ -18,12 +18,7 @@
 
 #pragma once
 
-#ifdef _WIN32
-#include <process.h>
 #ifdef IN
-#undef IN
-#endif
-#define IN const
 #endif
 #include <wstypes.h>
 #include <configfile.h>

@@ -46,12 +46,8 @@
 #include <stddef.h>
 #include <time.h>
 
-#ifdef _WIN32
-#include <windows.h>
-#else
 #include <sys/time.h>
 #include <unistd.h>
-#endif
 
 /* ============================================================================
  * MEMORY ALLOCATION TRACKING
@@ -160,14 +156,10 @@ uint64_t SDL2_GetPeakMemoryUsage(void);
 /**
  * Performance counter type for timing operations
  */
-#ifdef _WIN32
-typedef LARGE_INTEGER SDL2_PerformanceCounter;
-#else
 typedef struct {
     uint64_t seconds;
     uint64_t nanoseconds;
 } SDL2_PerformanceCounter;
-#endif
 
 /**
  * Get current performance counter value

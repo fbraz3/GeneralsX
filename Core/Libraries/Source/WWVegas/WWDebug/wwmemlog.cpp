@@ -69,18 +69,11 @@
 ** Enable one of the following #defines to specify which thread-sychronization
 ** method to use.
 */
-#ifdef _WIN32
-#include <windows.h>
-#define MEMLOG_USE_MUTEX					0
-#define MEMLOG_USE_CRITICALSECTION		1
-#define MEMLOG_USE_FASTCRITICALSECTION	0
-#else
 #undef DISABLE_MEMLOG
 #define DISABLE_MEMLOG						1
 #define MEMLOG_USE_MUTEX					0
 #define MEMLOG_USE_CRITICALSECTION		0
 #define MEMLOG_USE_FASTCRITICALSECTION	0
-#endif
 
 #if (DISABLE_MEMLOG == 0)
 bool WWMemoryLogClass::IsMemoryLogEnabled=true;

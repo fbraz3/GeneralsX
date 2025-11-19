@@ -51,11 +51,7 @@
 #include <signal.h>
 #include "Except.h"
 
-#ifdef _WIN32
-#include <windows.h>
-#else
 #include <errno.h>
-#endif
 
 static PrintFunc			_CurMessageHandler = NULL;
 static AssertPrintFunc	_CurAssertHandler = NULL;
@@ -82,11 +78,7 @@ void Convert_System_Error_To_String(int id, char* buffer, int buf_len)
 
 int Get_Last_System_Error()
 {
-#ifdef _WIN32
-	return GetLastError();
-#else
 	return errno;
-#endif
 }
 
 /***********************************************************************************************

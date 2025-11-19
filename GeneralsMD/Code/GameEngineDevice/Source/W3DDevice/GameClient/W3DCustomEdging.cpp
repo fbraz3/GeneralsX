@@ -341,49 +341,7 @@ void W3DCustomEdging::clearAllEdging(void)
 void W3DCustomEdging::drawEdging(WorldHeightMap *pMap, Int minX, Int maxX, Int minY, Int maxY,
 		TextureClass * terrainTexture, TextureClass * cloudTexture, TextureClass * noiseTexture)
 {
-#ifdef _WIN32
-	static Bool foo = false;
-	if (foo) {
-		return;
-	}
-	//m_anythingChanged = true;
-	loadEdgingsInVertexAndIndexBuffers(pMap, minX, maxX, minY, maxY);
-
-	if (m_curNumEdgingIndices == 0) {
-		return;
-	}
-	TextureClass *edgeTex = pMap->getEdgeTerrainTexture();
-	// Setup the vertex buffer, shader & texture.
-	DX8Wrapper::Set_Index_Buffer(m_indexEdging,0);
-	DX8Wrapper::Set_Vertex_Buffer(m_vertexEdging);
-	DX8Wrapper::Set_Shader(detailAlphaTestShader);
 #ifdef RTS_DEBUG
-	//DX8Wrapper::Set_Shader(detailShader); // shows clipping.
-#endif
-
-	DX8Wrapper::Set_Texture(0,terrainTexture);
-	DX8Wrapper::Set_Texture(1,edgeTex);
-	DX8Wrapper::Apply_Render_State_Changes();
-
-	DX8Wrapper::Set_DX8_Render_State(D3DRS_ALPHAREF,0x7B);
-	DX8Wrapper::Set_DX8_Render_State(D3DRS_ALPHAFUNC,D3DCMP_LESSEQUAL);	//pass pixels who's alpha is not zero
-	DX8Wrapper::Set_DX8_Render_State(D3DRS_ALPHATESTENABLE, true);	//test pixels if transparent(clipped) before rendering.
-	DX8Wrapper::Draw_Triangles(	m_curEdgingIndexOffset, m_curNumEdgingIndices/3, 0,	m_curNumEdgingVertices);
-
-	DX8Wrapper::Set_Texture(0,edgeTex);
-	DX8Wrapper::Set_Texture(1, NULL);
-	// Draw the custom edge.
-	DX8Wrapper::Apply_Render_State_Changes();
-
-	DX8Wrapper::Set_DX8_Render_State(D3DRS_ALPHAREF,0x84);
-	DX8Wrapper::Set_DX8_Render_State(D3DRS_ALPHAFUNC,D3DCMP_GREATEREQUAL);	//pass pixels who's alpha is not zero
-	DX8Wrapper::Set_DX8_Render_State(D3DRS_ALPHATESTENABLE, true);	//test pixels if transparent(clipped) before rendering.
-	DX8Wrapper::Draw_Triangles(	m_curEdgingIndexOffset, m_curNumEdgingIndices/3, 0,	m_curNumEdgingVertices);
-
-#if 0 // Dumps out unmasked data.
-	DX8Wrapper::Set_DX8_Render_State(D3DRS_ALPHABLENDENABLE,false);
-	DX8Wrapper::Set_DX8_Render_State(D3DRS_ALPHATESTENABLE, false);	//test pixels if transparent(clipped) before rendering.
-	DX8Wrapper::Draw_Triangles(	m_curEdgingIndexOffset, m_curNumEdgingIndices/3, 0,	m_curNumEdgingVertices);
 #endif
 	DX8Wrapper::Set_Texture(1, NULL);
 	if (cloudTexture) {

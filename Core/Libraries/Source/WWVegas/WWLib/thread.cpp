@@ -26,10 +26,6 @@
 #include "systimer.h"
 #pragma warning ( pop )
 
-#ifdef _WIN32
-#include <process.h>
-#include <windows.h>
-#endif
 
 ThreadClass::ThreadClass(const char *thread_name, ExceptionHandlerType exception_handler) : handle(0), running(false), thread_priority(0)
 {
@@ -54,24 +50,8 @@ void __cdecl ThreadClass::Internal_Thread_Function(void* params)
 	tc->running=true;
 	tc->ThreadID = GetCurrentThreadId();
 
-#ifdef _WIN32
-	Register_Thread_ID(tc->ThreadID, tc->ThreadName);
-
-	if (tc->ExceptionHandler != NULL) {
-		__try {
-			tc->Thread_Function();
-		} __except(tc->ExceptionHandler(GetExceptionCode(), GetExceptionInformation())) {};
-	} else {
-		tc->Thread_Function();
-	}
-
-#else //_WIN32
 	tc->Thread_Function();
-#endif //_WIN32
 
-#ifdef _WIN32
-	Unregister_Thread_ID(tc->ThreadID, tc->ThreadName);
-#endif // _WIN32
 	tc->handle=0;
 	tc->ThreadID = 0;
 }

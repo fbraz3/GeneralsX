@@ -361,29 +361,15 @@ void W3DStatusCircle::Render(RenderInfoClass & rinfo)
 			DX8Wrapper::Draw_Triangles(	0,2, 0,	(2*3));
 			break;
 		case ScriptEngine::FADE_SUBTRACT:
-#ifdef _WIN32
-			DX8Wrapper::Set_DX8_Render_State(D3DRS_BLENDOP, D3DBLENDOP_REVSUBTRACT );
 			DX8Wrapper::Draw_Triangles(	0,2, 0,	(2*3));
-			DX8Wrapper::Set_DX8_Render_State(D3DRS_BLENDOP, D3DBLENDOP_ADD );
-#else // _WIN32
-			DX8Wrapper::Draw_Triangles(	0,2, 0,	(2*3));
-#endif // _WIN32
 			break;
 		case ScriptEngine::FADE_SATURATE:
 			// 4x multiply
-#ifdef _WIN32
-			DX8Wrapper::Set_DX8_Render_State(D3DRS_SRCBLEND,D3DBLEND_DESTCOLOR);
-			DX8Wrapper::Set_DX8_Render_State(D3DRS_DESTBLEND,D3DBLEND_SRCCOLOR);
-#endif // _WIN32
 			DX8Wrapper::Draw_Triangles(	0,2, 0,	(2*3));
 			DX8Wrapper::Draw_Triangles(	0,2, 0,	(2*3));
 			break;
 		case ScriptEngine::FADE_MULTIPLY:
 			// Straight multiply
-#ifdef _WIN32
-			DX8Wrapper::Set_DX8_Render_State(D3DRS_SRCBLEND,D3DBLEND_ZERO);
-			DX8Wrapper::Set_DX8_Render_State(D3DRS_DESTBLEND,D3DBLEND_SRCCOLOR);
-#endif // _WIN32
 			DX8Wrapper::Draw_Triangles(	0,2, 0,	(2*3));
 			break;
 	}

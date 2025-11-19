@@ -36,11 +36,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef _WIN32
-#include <windows.h>
-#else
 #include <unistd.h>
-#endif
 
 #include "win32_sdl_types_compat.h"
 #include "win32_gamepad_compat.h"

@@ -156,14 +156,10 @@ void* SDL2_MallocAligned(size_t alignment, size_t size)
         return NULL;
     }
 
-#ifdef _WIN32
-    void* ptr = _aligned_malloc(size, alignment);
-#else
     void* ptr;
     if (posix_memalign(&ptr, alignment, size) != 0) {
         ptr = NULL;
     }
-#endif
 
     if (!ptr) {
         fprintf(stderr, "Phase 04: aligned malloc failed (alignment: %zu, size: %zu)\n", alignment, size);
@@ -192,11 +188,7 @@ void SDL2_FreeAligned(void* ptr)
         return;
     }
 
-#ifdef _WIN32
-    _aligned_free(ptr);
-#else
     free(ptr);
-#endif
 
     if (g_memory_tracking_initialized) {
         SDL2_CriticalSectionLock lock(&g_memory_lock);
@@ -267,87 +259,6 @@ uint64_t SDL2_GetPeakMemoryUsage(void)
  * PERFORMANCE COUNTERS
  * ============================================================================ */
 
-#ifdef _WIN32
-
-static uint64_t g_perf_frequency = 0;
-
-static void Init_Perf_Frequency(void)
-{
-    if (g_perf_frequency == 0) {
-        LARGE_INTEGER freq;
-        QueryPerformanceFrequency(&freq);
-        g_perf_frequency = freq.QuadPart;
-    }
-}
-
-SDL2_PerformanceCounter SDL2_GetPerformanceCounter(void)
-{
-    LARGE_INTEGER counter;
-    QueryPerformanceCounter(&counter);
-    return counter;
-}
-
-uint64_t SDL2_GetPerformanceFrequency(void)
-{
-    Init_Perf_Frequency();
-    return g_perf_frequency;
-}
-
-double SDL2_PerformanceCounterToMilliseconds(
-    SDL2_PerformanceCounter start,
-    SDL2_PerformanceCounter end)
-{
-    Init_Perf_Frequency();
-
-    uint64_t diff = end.QuadPart - start.QuadPart;
-    return (double)diff * 1000.0 / (double)g_perf_frequency;
-}
-
-double SDL2_PerformanceCounterToMicroseconds(
-    SDL2_PerformanceCounter start,
-    SDL2_PerformanceCounter end)
-{
-    Init_Perf_Frequency();
-
-    uint64_t diff = end.QuadPart - start.QuadPart;
-    return (double)diff * 1000000.0 / (double)g_perf_frequency;
-}
-
-double SDL2_PerformanceCounterToSeconds(
-    SDL2_PerformanceCounter start,
-    SDL2_PerformanceCounter end)
-{
-    Init_Perf_Frequency();
-
-    uint64_t diff = end.QuadPart - start.QuadPart;
-    return (double)diff / (double)g_perf_frequency;
-}
-
-void SDL2_HighResolutionSleep(double milliseconds)
-{
-    Init_Perf_Frequency();
-
-    SDL2_PerformanceCounter start = SDL2_GetPerformanceCounter();
-
-    while (true) {
-        SDL2_PerformanceCounter now = SDL2_GetPerformanceCounter();
-        double elapsed = SDL2_PerformanceCounterToMilliseconds(start, now);
-
-        if (elapsed >= milliseconds) {
-            break;
-        }
-
-        double remaining = milliseconds - elapsed;
-
-        if (remaining > 1.0) {
-            Sleep((DWORD)(remaining - 0.5));  /* Sleep slightly less to avoid overshooting */
-        } else {
-            Sleep(0);  /* Yield */
-        }
-    }
-}
-
-#else /* !_WIN32 - POSIX implementation */
 
 static uint64_t g_perf_frequency = 1000000000LL;  /* nanoseconds per second */
 
@@ -413,7 +324,6 @@ void SDL2_HighResolutionSleep(double milliseconds)
     nanosleep(&ts, NULL);
 }
 
-#endif /* _WIN32 */
 
 /* ============================================================================
  * SCOPED TIMER
