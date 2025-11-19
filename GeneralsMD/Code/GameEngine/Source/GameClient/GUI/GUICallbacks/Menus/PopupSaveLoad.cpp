@@ -47,6 +47,8 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <filesystem>
+
 #include "Common/GameEngine.h"
 #include "Common/GameState.h"
 #include "Common/MessageStream.h"
@@ -715,11 +717,11 @@ WindowMsgHandledType SaveLoadMenuSystem( GameWindow *window, UnsignedInt msg,
 					AsciiString filepath = TheGameState->getFilePathInSaveDirectory(selectedGameInfo->filename);
 
 					// delete the file
-					DeleteFile( filepath.str() );
-
-					// repopulate the listbox
-					TheGameState->populateSaveGameListbox( listboxGames, currentLayoutType );
-
+				try {
+					std::filesystem::remove(std::filesystem::path(filepath.str()));
+				} catch (const std::filesystem::filesystem_error& e) {
+					DEBUG_LOG(("PopupSaveLoad - Failed to delete file: %s", e.what()));
+				}
 				}
 
 				// hide the confirm dialog

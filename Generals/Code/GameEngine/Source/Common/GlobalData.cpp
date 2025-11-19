@@ -34,6 +34,8 @@
 
 #include "Common/GlobalData.h"
 
+#include <filesystem>
+
 #define DEFINE_TERRAIN_LOD_NAMES
 #define DEFINE_TIME_OF_DAY_NAMES
 #define DEFINE_WEATHER_NAMES
@@ -1173,7 +1175,11 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 			strcat(temp, "\\");
 		strcat(temp, TheWritableGlobalData->m_userDataLeafName.str());
 		strcat(temp, "\\");
-		CreateDirectory(temp, NULL);
+		try {
+			std::filesystem::create_directories(std::filesystem::path(temp));
+		} catch (const std::filesystem::filesystem_error& e) {
+			DEBUG_LOG(("GlobalData - Failed to create directory: %s", e.what()));
+		}
 		TheWritableGlobalData->m_userDataDir = temp;
 	}
 

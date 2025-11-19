@@ -30,6 +30,8 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"
 
+#include <filesystem>
+
 #include "Common/file.h"
 #include "Common/FileSystem.h"
 #include "Common/GameState.h"
@@ -506,8 +508,13 @@ void GameStateMap::clearScratchPadMaps( void )
 			done = TRUE;
 
 		// delete file if set
-		if( fileToDelete.isEmpty() == FALSE )
-			DeleteFile( fileToDelete.str() );
+		if( fileToDelete.isEmpty() == FALSE ) {
+			try {
+				std::filesystem::remove(std::filesystem::path(fileToDelete.str()));
+			} catch (const std::filesystem::filesystem_error& e) {
+				DEBUG_LOG(("GameStateMap - Failed to delete file: %s", e.what()));
+			}
+		}
 
 	}
 

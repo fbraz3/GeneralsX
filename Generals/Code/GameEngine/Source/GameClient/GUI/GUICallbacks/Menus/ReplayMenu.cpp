@@ -30,6 +30,7 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <filesystem>
 
 #include "Lib/BaseType.h"
 #include "Common/FileSystem.h"
@@ -747,15 +748,17 @@ void deleteReplay( void )
 	filename = TheRecorder->getReplayDir();
 	translate.translate(GetReplayFilenameFromListbox(listboxReplayFiles, selected));
 	filename.concat(translate);
-	if(DeleteFile(filename.str()) == 0)
-	{
-		char buffer[1024];
-		FormatMessage ( FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, buffer, sizeof(buffer), NULL);
+
+	try {
+		std::filesystem::remove(std::filesystem::path(filename.str()));
+	} catch (const std::filesystem::filesystem_error& e) {
 		UnicodeString errorStr;
-		translate.set(buffer);
-		errorStr.translate(translate);
-		MessageBoxOk(TheGameText->fetch("GUI:Error"),errorStr, NULL);
+		AsciiString errMsg;
+		errMsg.format("Failed to delete replay file: %s", e.what());
+		errorStr.translate(errMsg);
+		MessageBoxOk(TheGameText->fetch("GUI:Error"), errorStr, NULL);
 	}
+
 	//Load the listbox shiznit
 	GadgetListBoxReset(listboxReplayFiles);
 	PopulateReplayFileListbox(listboxReplayFiles);

@@ -30,6 +30,7 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"
 #include <ctime>  // For time() and localtime() in POSIX systems
+#include <filesystem>
 #include "Common/file.h"
 #include "Common/FileSystem.h"
 #include "Common/GameEngine.h"
@@ -568,7 +569,11 @@ SaveCode GameState::saveGame( AsciiString filename, UnicodeString desc,
 	}
 
 	// make absolutely sure the save directory exists
-	CreateDirectory( getSaveDirectory().str(), NULL );
+	try {
+		std::filesystem::create_directories(std::filesystem::path(getSaveDirectory().str()));
+	} catch (const std::filesystem::filesystem_error& e) {
+		DEBUG_LOG(("GameState::saveGame - Failed to create save directory: %s", e.what()));
+	}
 
 	// construct path to file
 	AsciiString filepath = getFilePathInSaveDirectory(filename);

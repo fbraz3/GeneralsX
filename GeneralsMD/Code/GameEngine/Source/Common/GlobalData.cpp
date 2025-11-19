@@ -34,6 +34,8 @@
 
 #include "Common/GlobalData.h"
 
+#include <filesystem>
+
 #define DEFINE_TERRAIN_LOD_NAMES
 #define DEFINE_TIME_OF_DAY_NAMES
 #define DEFINE_WEATHER_NAMES
@@ -1058,7 +1060,11 @@ GlobalData::GlobalData()
     if (myDocumentsDirectory.getCharAt( myDocumentsDirectory.getLength() - 1) != '\\')
       myDocumentsDirectory.concat( '\\' );
 
-    CreateDirectory(myDocumentsDirectory.str(), NULL);
+    try {
+      std::filesystem::create_directories(std::filesystem::path(myDocumentsDirectory.str()));
+    } catch (const std::filesystem::filesystem_error& e) {
+      DEBUG_LOG(("GlobalData::GlobalData - Failed to create directory: %s", e.what()));
+    }
     m_userDataDir = myDocumentsDirectory;
   }
 

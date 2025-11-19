@@ -28,6 +28,8 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <filesystem>
+
 #include "Common/ActionManager.h"
 #include "Common/AudioAffect.h"
 #include "Common/BuildAssistant.h"
@@ -399,7 +401,11 @@ void GameEngine::init()
 		//I was unable to resolve the RTPatch method of deleting a shipped file. English, Chinese, and Korean
 		//SKU's shipped with two INIZH.big files. One properly in the Run directory and the other in Run\INI\Data.
 		//We need to toast the latter in order for the game to patch properly.
-		DeleteFile( "Data\\INI\\INIZH.big" );
+		try {
+			std::filesystem::remove(std::filesystem::path("Data/INI/INIZH.big"));
+		} catch (const std::filesystem::filesystem_error& e) {
+			DEBUG_LOG(("GameEngine - Failed to delete Data/INI/INIZH.big: %s", e.what()));
+		}
 
 		// not part of the subsystem list, because it should normally never be reset!
 		TheNameKeyGenerator = MSGNEW("GameEngineSubsystem") NameKeyGenerator;

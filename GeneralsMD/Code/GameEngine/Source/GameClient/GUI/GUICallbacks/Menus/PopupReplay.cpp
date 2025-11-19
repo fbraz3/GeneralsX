@@ -47,6 +47,8 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <filesystem>
+
 #include "Common/LocalFileSystem.h"
 #include "Common/MessageStream.h"
 #include "Common/Recorder.h"
@@ -278,22 +280,22 @@ void reallySaveReplay(void)
 	if (oldFilename == filename)
 		return;
 
-#ifdef _WIN32
 	if (TheLocalFileSystem->doesFileExist(filename.str()))
 	{
-		if(DeleteFile(filename.str()) == 0)
-		{
-			wchar_t buffer[1024];
-			FormatMessageW ( FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, buffer, ARRAY_SIZE(buffer), NULL);
+		try {
+			std::filesystem::remove(std::filesystem::path(filename.str()));
+		} catch (const std::filesystem::filesystem_error& e) {
 			UnicodeString errorStr;
-			errorStr.set(buffer);
+			AsciiString errMsg;
+			errMsg.format("Failed to delete file: %s", e.what());
+			errorStr.translate(errMsg);
 			errorStr.trim();
 			if(messageBoxWin)
 			{
 				TheWindowManager->winUnsetModal(messageBoxWin);
 				messageBoxWin = NULL;
 			}
-			MessageBoxOk(TheGameText->fetch("GUI:Error"),errorStr, NULL);
+			MessageBoxOk(TheGameText->fetch("GUI:Error"), errorStr, NULL);
 
 			// get the listbox that will have the save games in it
 			GameWindow *listboxGames = TheWindowManager->winGetWindowFromId( parent, listboxGamesKey );
@@ -321,7 +323,6 @@ void reallySaveReplay(void)
 		MessageBoxOk(TheGameText->fetch("GUI:Error"),errorStr, NULL);
 		return;
 	}
-#endif // _WIN32
 
 	// get the listbox that will have the save games in it
 	GameWindow *listboxGames = TheWindowManager->winGetWindowFromId( parent, listboxGamesKey );
