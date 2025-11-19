@@ -1,11 +1,8 @@
-add_executable(g_generals WIN32)
+add_executable(g_generals)
 
 # Use a binary name that doesn't conflict with original game.
-if("${CMAKE_SYSTEM}" MATCHES "Windows")
-    set_target_properties(g_generals PROPERTIES OUTPUT_NAME generalsv)
-else()
-    set_target_properties(g_generals PROPERTIES OUTPUT_NAME generalsv)
-endif()
+# Phase 39.5: Unified output name for all platforms
+set_target_properties(g_generals PROPERTIES OUTPUT_NAME generalsv)
 
 target_link_libraries(g_generals PRIVATE
     g_gameengine
@@ -13,21 +10,9 @@ target_link_libraries(g_generals PRIVATE
     gi_always
 )
 
-# Windows-only libraries
-if(WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows")
-    target_link_libraries(g_generals PRIVATE
-        binkstub
-        comctl32
-        d3d8
-        d3dx8
-        dinput8
-        dxguid
-        imm32
-        milesstub
-        vfw32
-        winmm
-    )
-endif()
+# Phase 39.5: Windows-specific libraries removed
+# Graphics now unified to Vulkan, input unified to SDL2
+# Complete cross-platform unification achieved
 
 # TODO Originally referred to build host and user, replace with git info perhaps?
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/GeneratedVersion.h
@@ -60,10 +45,7 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/BuildVersion.h
 )
 endif()
 
-# Windows-only linker options
-if(WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows")
-    target_link_options(g_generals PRIVATE "/NODEFAULTLIB:libci.lib")
-endif()
+# Phase 39.5: Platform-specific linker options removed - unified for all platforms
 
 target_include_directories(g_generals PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -75,20 +57,14 @@ target_sources(g_generals PRIVATE
     WinMain.h
 )
 
-# Unified entry point: WinMain.cpp for all platforms (Windows uses native Win32, POSIX uses SDL2)
-# Uses #ifdef _WIN32 / #else to branch at compile time
+# Unified entry point: WinMain.cpp for all platforms
+# Phase 39.5: Platform #ifdef blocks removed - all platforms use same SDL2 code path
 target_sources(g_generals PRIVATE
     WinMain.cpp
 )
 
-if(WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows")
-    # VS2005 and later adds default manifest, we need to turn it off to prevent conflict with custom manifest
-    if(NOT IS_VS6_BUILD)
-        target_link_options(g_generals PRIVATE
-            "/MANIFEST:NO"
-        )
-    endif()
-
+# VC6 Windows builds still need RC file
+if(IS_VS6_BUILD)
     target_sources(g_generals PRIVATE
         RTS.RC
     )

@@ -38,8 +38,9 @@ include(cmake/compilers.cmake)
 
 include(FetchContent)
 
-# Find/Add build dependencies and stubs shared by all projects
-if((WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows") AND ${CMAKE_SIZEOF_VOID_P} EQUAL 4)
+# Build dependencies (miles/bink only needed for VC6 Windows builds)
+# Phase 39.5: Platform detection removed - codebase unified for all platforms
+if (IS_VS6_BUILD AND ${CMAKE_SIZEOF_VOID_P} EQUAL 4)
     include(cmake/miles.cmake)
     include(cmake/bink.cmake)
 endif()
