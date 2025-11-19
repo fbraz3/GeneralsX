@@ -150,17 +150,16 @@ set(WWLIB_SRC
     XSTRAW.h
 )
 
-# Remove Windows-only WWLib sources when building with Vulkan on non-Windows
-if (USE_VULKAN)
-    list(REMOVE_ITEM WWLIB_SRC
-        DbgHelpGuard.cpp DbgHelpGuard.h
-        DbgHelpLoader.cpp DbgHelpLoader.h
-        Except.cpp
-        FastAllocator.cpp FastAllocator.h
-        TARGA.cpp TARGA.h
-        # Files that include <malloc.h> or imagehlp.h are excluded for non-Windows builds
-    )
-endif()
+# Phase 39.3: Remove Windows-only WWLib sources when building with Vulkan on non-Windows
+# Vulkan is mandatory, so these sources are excluded for non-Windows builds
+list(REMOVE_ITEM WWLIB_SRC
+    DbgHelpGuard.cpp DbgHelpGuard.h
+    DbgHelpLoader.cpp DbgHelpLoader.h
+    Except.cpp
+    FastAllocator.cpp FastAllocator.h
+    TARGA.cpp TARGA.h
+    # Files that include <malloc.h> or imagehlp.h are excluded for non-Windows builds
+)
 
 if(WIN32)
     list(APPEND WWLIB_SRC
@@ -186,33 +185,13 @@ target_include_directories(core_wwlib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-if (USE_VULKAN)
-    # When building with Vulkan on non-Windows: avoid windows-specific PCH
-    target_precompile_headers(core_wwlib PRIVATE
-        always.h
-        STLUtils.h
-        win.h
-        WWCommon.h
-        wwstring.h
-    )
-    # Exclude Windows-only source files that require imagehlp.h, DbgHelp, etc.
-    list(REMOVE_ITEM WWLIB_SRC
-        DbgHelpGuard.cpp DbgHelpGuard.h
-        DbgHelpLoader.cpp DbgHelpLoader.h
-        Except.cpp
-        FastAllocator.cpp FastAllocator.h
-        TARGA.cpp TARGA.h
-    )
-else()
-    target_precompile_headers(core_wwlib PRIVATE
-        always.h
-        STLUtils.h
-        win.h
-        WWCommon.h
-        wwstring.h
-        <windows.h>
-    )
-endif()
+target_precompile_headers(core_wwlib PRIVATE
+    always.h
+    STLUtils.h
+    win.h
+    WWCommon.h
+    wwstring.h
+)
 
 target_link_libraries(core_wwlib PRIVATE
     core_wwcommon

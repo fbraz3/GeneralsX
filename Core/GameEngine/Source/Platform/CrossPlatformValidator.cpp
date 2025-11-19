@@ -199,17 +199,8 @@ GraphicsBackend CrossPlatformValidator_GetCurrentGraphicsBackend(CrossPlatformVa
         return GRAPHICS_BACKEND_UNKNOWN;
     }
     
-    #ifdef USE_VULKAN
-        return GRAPHICS_BACKEND_VULKAN;
-    #elif USE_METAL
-        return GRAPHICS_BACKEND_METAL;
-    #elif USE_OPENGL
-        return GRAPHICS_BACKEND_OPENGL;
-    #elif _WIN32
-        return GRAPHICS_BACKEND_DIRECTX;
-    #else
-        return GRAPHICS_BACKEND_UNKNOWN;
-    #endif
+    // Phase 39.3: Vulkan is the mandatory graphics backend
+    return GRAPHICS_BACKEND_VULKAN;
 }
 
 /* Is graphics backend supported */
