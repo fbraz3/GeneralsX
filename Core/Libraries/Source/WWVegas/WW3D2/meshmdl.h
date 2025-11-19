@@ -51,7 +51,9 @@
 #include "rinfo.h"
 #include "meshgeometry.h"
 #include "meshmatdesc.h"
-#include "dx8list.h"
+// Phase 39.4: Include DirectX 8 stub layer for DX8MeshRenderer and related classes
+#include "DX8Wrapper_Stubs.h"
+// #include "dx8list.h // Phase 39.4: Removed with DirectX 8 cleanup"
 
 class TextureClass;
 class RenderInfoClass;
@@ -75,7 +77,101 @@ class LightEnvironmentClass;
 
 class DX8MeshRendererClass;
 class DX8PolygonRendererAttachClass;
-class DX8SkinFVFCategoryContainer;
+
+// Phase 39.4: Stub forward-declarations for deleted classes
+class DX8PolygonRendererListIterator;
+class DX8PolygonRendererClass;
+class DX8MeshRenderer;
+
+// Forward declare extern for TheDX8MeshRenderer (defined in DX8Wrapper_Stubs.h)
+extern DX8MeshRenderer TheDX8MeshRenderer;
+
+// Stub FVF Category Container
+class DX8FVFCategoryContainer {
+public:
+    virtual ~DX8FVFCategoryContainer() {}
+    DX8FVFCategoryContainer* Get_Container() { return this; }  // Self-return for stub
+    void Add_Delayed_Visible_Material_Pass(void*, void*) {}
+    void Add_Visible_Material_Pass(void*, void*) {}
+    void Add_Render_Task(void*, void*) {}  // Phase 39.4: Add_Render_Task for mesh.cpp line 750
+    void Change_Polygon_Renderer_Texture(void*, void*, void*, int, int) {}  // No-op stub - takes polygon list as void*
+    void Change_Polygon_Renderer_Material(void*, void*, void*, int) {}  // No-op stub - takes polygon list as void*
+};
+
+// Forward declare to avoid incomplete type issues
+class DX8PolygonRendererClass;
+
+// Stub Skin FVF Category Container
+class DX8SkinFVFCategoryContainer : public DX8FVFCategoryContainer {
+public:
+    virtual ~DX8SkinFVFCategoryContainer() {}
+    void Add_Visible_Skin(void*) {}  // No-op stub
+};
+
+// Complete stub implementation for deleted DX8PolygonRendererList
+class DX8PolygonRendererList {
+public:
+    DX8PolygonRendererList() {}
+    virtual ~DX8PolygonRendererList() {}
+    bool Is_Empty() const { return true; }
+    
+    // Stub methods to satisfy legacy code
+    DX8PolygonRendererClass* Peek_Head() { 
+        return nullptr;  // Phase 39.4: No rendering data
+    }
+    
+    // Phase 39.4: Get_Head() for mesh.cpp line 258 (same as Peek_Head)
+    DX8PolygonRendererClass* Get_Head() {
+        return nullptr;  // Phase 39.4: No rendering data
+    }
+    
+    int Count() const { return 0; }  // Phase 39.4: For mesh.cpp line 1563
+    
+    friend class DX8PolygonRendererListIterator;
+};
+
+// Stub iterator class
+class DX8PolygonRendererListIterator {
+public:
+    DX8PolygonRendererListIterator(DX8PolygonRendererList* list) {}
+    bool Is_Done() const { return true; }
+    DX8PolygonRendererClass* Peek_Obj();  // Implemented below to return stub renderer
+    void Next() {}
+    int Get_Vertex_Offset() { return 0; }  // Phase 39.4: For mesh.cpp line 945
+};
+
+// Phase 39.4: Texture Category stub class (referenced by polygon renderers)
+class DX8TextureCategoryClass {
+public:
+    virtual ~DX8TextureCategoryClass() {}
+    DX8FVFCategoryContainer* Get_Container() {
+        static DX8FVFCategoryContainer stub_container;
+        return &stub_container;
+    }
+    // Phase 39.4: Add missing methods for rendering tasks
+    void Add_Render_Task(void*, void*) {}  // No-op stub
+};
+
+// Stub renderer class
+class DX8PolygonRendererClass {
+public:
+    virtual ~DX8PolygonRendererClass() {}
+    DX8TextureCategoryClass* Get_Texture_Category() { 
+        // Return a global stub texture category instance
+        static DX8TextureCategoryClass stub_texture_category;
+        return &stub_texture_category;
+    }
+    int Get_Pass() { return 0; }  // Phase 39.4: Get_Pass for mesh.cpp line 862
+    void Render(int) {}  // Phase 39.4: Render method for mesh.cpp line 863 (takes vertex offset as int)
+    int Get_Vertex_Offset() { return 0; }  // Phase 39.4: Get_Vertex_Offset for mesh.cpp line 945
+};
+
+// Implement Peek_Obj to return valid stub renderer
+inline DX8PolygonRendererClass* DX8PolygonRendererListIterator::Peek_Obj() {
+    static DX8PolygonRendererClass stub_renderer;
+    return &stub_renderer;
+}
+
 class GapFillerClass;
 
 struct VertexFormatXYZNDUV2;

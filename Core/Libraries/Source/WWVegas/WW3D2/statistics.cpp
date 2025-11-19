@@ -19,9 +19,9 @@
 #include "statistics.h"
 #include "wwstring.h"
 #include "simplevec.h"
-#include "dx8renderer.h"
+// #include "dx8renderer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "dx8wrapper.h"
-#include "dx8caps.h"
+// #include "dx8caps.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "textureloader.h"
 #include "texture.h"
 

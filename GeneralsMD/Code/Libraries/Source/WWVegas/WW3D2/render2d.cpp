@@ -48,12 +48,12 @@
 #include "matrix4.h"
 #include "matrix3d.h"
 #include "dx8wrapper.h"
-#include "dx8indexbuffer.h"
-#include "dx8vertexbuffer.h"
+// #include "dx8indexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
+// #include "dx8vertexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "sortingrenderer.h"
 #include "vertmaterial.h"
-#include "dx8fvf.h"
-#include "dx8caps.h"
+// #include "dx8fvf.h" // Phase 39.4: Removed with DirectX 8 cleanup
+// #include "dx8caps.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "wwprofile.h"
 #include "wwmemlog.h"
 #include "assetmgr.h"

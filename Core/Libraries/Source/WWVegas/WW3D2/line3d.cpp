@@ -54,9 +54,9 @@
 #include "ww3d.h"
 #include "rinfo.h"
 #include "dx8wrapper.h"
-#include "dx8vertexbuffer.h"
-#include "dx8indexbuffer.h"
-#include "dx8fvf.h"
+// #include "dx8vertexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
+// #include "dx8indexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
+// #include "dx8fvf.h" // Phase 39.4: Removed with DirectX 8 cleanup
 
 // 12 Triangles for index buffer
 const unsigned short Indices[]=

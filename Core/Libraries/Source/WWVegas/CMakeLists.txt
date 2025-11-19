@@ -15,7 +15,6 @@ target_link_libraries(core_wwcommon INTERFACE
 # Link Windows-only stubs (only on Windows)
 if(WIN32 OR MSVC OR "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
     target_link_libraries(core_wwcommon INTERFACE
-        d3d8lib
         milesstub
     )
 endif()

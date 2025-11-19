@@ -67,10 +67,11 @@
 #include "ww3d.h"
 #include "rinfo.h"
 #include "chunkio.h"
-#include "dx8renderer.h"
+// #include "dx8renderer.h"  // Phase 39.4: Removed with DirectX 8 cleanup
 #include "dx8wrapper.h"
 #include "sortingrenderer.h"
 #include "coltest.h"
+#include "lightenvironment.h"  // Phase 39.4: Added for LightEnvironmentClass
 
 
 /*

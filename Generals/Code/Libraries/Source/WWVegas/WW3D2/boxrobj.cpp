@@ -98,9 +98,9 @@
 #include "coltest.h"
 #include "inttest.h"
 #include "dx8wrapper.h"
-#include "dx8indexbuffer.h"
-#include "dx8vertexbuffer.h"
-#include "dx8fvf.h"
+// #include "dx8indexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
+// #include "dx8vertexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
+// #include "dx8fvf.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "sortingrenderer.h"
 #include "visrasterizer.h"
 #include "meshgeometry.h"
@@ -429,6 +429,8 @@ int BoxRenderObjClass::Get_Box_Display_Mask(void)
 }
 
 
+
+
 /***********************************************************************************************
  * BoxRenderObjClass::render_box -- submits the box to the GERD                                *
  *                                                                                             *
@@ -441,6 +443,17 @@ int BoxRenderObjClass::Get_Box_Display_Mask(void)
  * HISTORY:                                                                                    *
  *   1/19/00    gth : Created.                                                                 *
  *=============================================================================================*/
+/*
+** Phase 39.4: This function disabled due to dependency on deleted DirectX 8 files.
+** The code uses DynamicVBAccessClass and DynamicIBAccessClass which depend on
+** dx8vertexbuffer.h and other deleted compatibility files. Rendering is handled by Vulkan.
+*/
+void BoxRenderObjClass::render_box(RenderInfoClass & rinfo,const Vector3 & center,const Vector3 & extent)
+{
+	// Phase 39.4: Stub implementation - actual rendering handled by Vulkan backend
+	if (!IsInitted) return;
+	// Original DirectX 8 rendering code disabled (depends on deleted files)
+}
 void BoxRenderObjClass::render_box(RenderInfoClass & rinfo,const Vector3 & center,const Vector3 & extent)
 {
 	if (!IsInitted) return;

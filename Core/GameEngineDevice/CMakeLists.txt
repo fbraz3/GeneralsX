@@ -233,7 +233,6 @@ target_link_libraries(corei_gameenginedevice_public INTERFACE
 if(WIN32 OR MSVC OR "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
     target_link_libraries(corei_gameenginedevice_public INTERFACE
         binkstub
-        d3d8lib
         milesstub
     )
 endif()

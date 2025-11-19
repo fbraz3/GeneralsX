@@ -181,7 +181,7 @@ set(WW3D2_SRC
 #    shdlib.h
     #snappts.cpp
     #snapPts.h
-    sortingrenderer.cpp
+    #sortingrenderer.cpp  # Phase 39.5: Temporarily disabled - has pre-existing DLNodeClass compilation errors
 #    sortingrenderer.h
     #soundlibrarybridge.h
     #soundrobj.cpp
@@ -200,7 +200,7 @@ set(WW3D2_SRC
     #stripoptimizer.h
     #surfaceclass.cpp
     #surfaceclass.h
-    texproject.cpp
+    #texproject.cpp  # Phase 39.5: Temporarily disabled - has pre-existing SurfaceClass compilation errors
 #    texproject.h
     #texture.cpp
     #texturefilter.cpp

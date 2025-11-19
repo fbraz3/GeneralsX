@@ -51,8 +51,8 @@
 #include "textureloader.h"
 #include "missingtexture.h"
 #include "ffactory.h"
-#include "dx8caps.h"
-#include "dx8texman.h"
+// #include "dx8caps.h" // Phase 39.4: Removed with DirectX 8 cleanup
+// #include "dx8texman.h // Phase 39.4: Removed with DirectX 8 cleanup"
 #include "meshmatdesc.h"
 #include "texturethumbnail.h"
 #include "wwprofile.h"

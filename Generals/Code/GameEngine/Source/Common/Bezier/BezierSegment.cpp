@@ -27,7 +27,7 @@
 #include "Common/BezierSegment.h"
 #include "Common/BezFwdIterator.h"
 
-#include <d3dx8math.h>
+// #include <d3dx8math.h // Phase 39.4: Removed with DirectX 8 cleanup>
 
 //-------------------------------------------------------------------------------------------------
 BezierSegment::BezierSegment()

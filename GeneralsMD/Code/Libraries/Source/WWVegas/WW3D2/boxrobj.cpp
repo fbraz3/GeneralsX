@@ -98,9 +98,9 @@
 #include "coltest.h"
 #include "inttest.h"
 #include "dx8wrapper.h"
-#include "dx8indexbuffer.h"
-#include "dx8vertexbuffer.h"
-#include "dx8fvf.h"
+// #include "dx8indexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
+// #include "dx8vertexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
+// #include "dx8fvf.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "sortingrenderer.h"
 #include "visrasterizer.h"
 #include "meshgeometry.h"
@@ -441,81 +441,16 @@ int BoxRenderObjClass::Get_Box_Display_Mask(void)
  * HISTORY:                                                                                    *
  *   1/19/00    gth : Created.                                                                 *
  *=============================================================================================*/
+/*
+** Phase 39.4: This function disabled due to dependency on deleted DirectX 8 files.
+** The code uses DynamicVBAccessClass and DynamicIBAccessClass which depend on
+** dx8vertexbuffer.h and other deleted compatibility files. Rendering is handled by Vulkan.
+*/
 void BoxRenderObjClass::render_box(RenderInfoClass & rinfo,const Vector3 & center,const Vector3 & extent)
 {
+	// Phase 39.4: Stub implementation - actual rendering handled by Vulkan backend
 	if (!IsInitted) return;
-	if (DisplayMask & Get_Collision_Type()) {
-
-		static Vector3 verts[NUM_BOX_VERTS];
-
-		// compute the vertex positions
-		for (int ivert=0; ivert<NUM_BOX_VERTS; ivert++) {
-			verts[ivert].X = center.X + _BoxVerts[ivert][0] * extent.X;
-			verts[ivert].Y = center.Y + _BoxVerts[ivert][1] * extent.Y;
-			verts[ivert].Z = center.Z + _BoxVerts[ivert][2] * extent.Z;
-		}
-
-		/*
-		** Dump the box vertices into the sorting dynamic vertex buffer.
-		*/
-		DWORD color = DX8Wrapper::Convert_Color(Color,Opacity);
-
-		int buffer_type = BUFFER_TYPE_DYNAMIC_DX8;
-
-		DynamicVBAccessClass vbaccess(buffer_type,dynamic_fvf_type,NUM_BOX_VERTS);
-		{
-			DynamicVBAccessClass::WriteLockClass lock(&vbaccess);
-			//unsigned char *vb=(unsigned char *) lock.Get_Vertex_Array();
-			VertexFormatXYZNDUV2* vb=lock.Get_Formatted_Vertex_Array();
-
-			for (int i=0; i<NUM_BOX_VERTS; i++) {
-
-				// Locations
-				vb->x=verts[i][0];
-				vb->y=verts[i][1];
-				vb->z=verts[i][2];
-
-				// Normals
-				vb->nx=_BoxVertexNormals[i][0];
-				vb->ny=_BoxVertexNormals[i][1];
-				vb->nz=_BoxVertexNormals[i][2];
-
-				// Colors
-				vb->diffuse=color;
-
-				vb++;
-			}
-		}
-
-		/*
-		** Dump the faces into the sorting dynamic index buffer.
-		*/
-		DynamicIBAccessClass ibaccess(buffer_type,NUM_BOX_FACES*3);
-		{
-			DynamicIBAccessClass::WriteLockClass lock(&ibaccess);
-			unsigned short * indices = lock.Get_Index_Array();
-			for (int i=0; i<NUM_BOX_FACES; i++) {
-				indices[3*i] = _BoxFaces[i][0];
-				indices[3*i+1] = _BoxFaces[i][1];
-				indices[3*i+2] = _BoxFaces[i][2];
-			}
-		}
-
-		/*
-		** Apply the shader and material
-		*/
-		DX8Wrapper::Set_Material(_BoxMaterial);
-		DX8Wrapper::Set_Shader(_BoxShader);
-		DX8Wrapper::Set_Texture(0,NULL);
-
-		DX8Wrapper::Set_Index_Buffer(ibaccess,0);
-		DX8Wrapper::Set_Vertex_Buffer(vbaccess);
-
-		SphereClass sphere;
-		Get_Obj_Space_Bounding_Sphere(sphere);
-
-		DX8Wrapper::Draw_Triangles(buffer_type,0,NUM_BOX_FACES,0,NUM_BOX_VERTS);
-	}
+	// Original DirectX 8 rendering code disabled (depends on deleted files)
 }
 
 

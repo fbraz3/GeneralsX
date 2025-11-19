@@ -49,10 +49,10 @@
 #include "ww3d.h"
 #include "assetmgr.h"
 #include "dx8wrapper.h"
-#include "dx8caps.h"
+// #include "dx8caps.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "missingtexture.h"
 #include "TARGA.h"
-#include <d3dx8tex.h>
+// #include <d3dx8tex.h> // Phase 39.4: Removed with DirectX 8 cleanup
 #include "wwmemlog.h"
 #include "texture.h"
 #include "formconv.h"

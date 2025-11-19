@@ -35,7 +35,7 @@
 #include "GameClient/View.h"
 #include "GameClient/Display.h"
 #include "WW3D2/texture.h"
-#include "WW3D2/dx8indexbuffer.h"
+// #include "WW3D2/dx8indexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "WW3D2/dx8wrapper.h"
 #include "WW3D2/rinfo.h"
 #include "WW3D2/camera.h"

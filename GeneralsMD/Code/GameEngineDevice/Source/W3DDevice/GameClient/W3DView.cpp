@@ -82,13 +82,13 @@
 #include "W3DDevice/GameClient/W3DScene.h"
 #include "W3DDevice/GameClient/W3DView.h"
 #ifdef _WIN32
-#include "d3dx8math.h"
+// #include "d3dx8math.h // Phase 39.4: Removed with DirectX 8 cleanup"
 #endif
 #include "W3DDevice/GameClient/W3DShaderManager.h"
 #include "W3DDevice/GameClient/Module/W3DModelDraw.h"
 #include "W3DDevice/GameClient/W3DCustomScene.h"
 
-#include "WW3D2/dx8renderer.h"
+// #include "WW3D2/dx8renderer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "WW3D2/light.h"
 #include "WW3D2/camera.h"
 #include "WW3D2/coltype.h"

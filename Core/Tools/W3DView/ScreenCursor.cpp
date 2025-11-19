@@ -41,8 +41,8 @@
 #include "rinfo.h"
 #include "texture.h"
 #include "dx8wrapper.h"
-#include "dx8vertexbuffer.h"
-#include "dx8indexbuffer.h"
+// #include "dx8vertexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
+// #include "dx8indexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "sortingrenderer.h"
 
 

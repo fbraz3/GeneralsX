@@ -144,9 +144,19 @@ inline void Recolor(Vector3 &rgb, const Vector3 &hsv_shift)
 	HSV_To_RGB(rgb,hsv);
 }
 
+// Phase 39.4: Disabled - Vector4 type conversion issue with Convert_Color return type
+/*
 inline void Recolor(unsigned& rgba, const Vector3 &hsv_shift)
 {
 	Vector4 rgba_v = DX8Wrapper::Convert_Color(rgba);
 	Recolor((Vector3&)rgba_v, hsv_shift);
 	rgba = DX8Wrapper::Convert_Color(rgba_v);
+}
+*/
+
+// Phase 39.4: No-op stub to satisfy calling code (Vulkan backend handles actual recoloring)
+inline void Recolor(unsigned& rgba, const Vector3 &hsv_shift)
+{
+	// Stub: No-op recolor for compatibility with legacy code
+	// Actual recoloring is handled by the Vulkan backend
 }

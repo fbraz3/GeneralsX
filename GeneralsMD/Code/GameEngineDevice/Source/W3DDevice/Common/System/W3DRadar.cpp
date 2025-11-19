@@ -53,7 +53,7 @@
 #include "W3DDevice/GameClient/HeightMap.h"
 #include "W3DDevice/GameClient/W3DShroud.h"
 #include "WW3D2/texture.h"
-#include "WW3D2/dx8caps.h"
+// #include "WW3D2/dx8caps.h" // Phase 39.4: Removed with DirectX 8 cleanup
 
 
 

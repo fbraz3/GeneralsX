@@ -100,7 +100,6 @@ set(WW3D2_SRC
     light.h
     #lightenvironment.cpp
     #lightenvironment.h
-    dx8_minimal_rendering_backend_stubs.cpp  # Cross-platform rendering stubs
     line3d.cpp
     line3d.h
     linegrp.cpp
@@ -313,10 +312,6 @@ set(WW3D2_SRC
     d3d8_vulkan_drawing.h
     d3d8_vulkan_drawing.cpp
 )
-
-# NOTE: DX8 files are kept for compilation - they provide compatibility layer
-# Even with Vulkan backend, DX8Wrapper and related classes are needed for linking
-# and wrapping the game's DirectX API calls to Vulkan equivalents
 
 add_library(corei_ww3d2 INTERFACE)
 

@@ -33,10 +33,10 @@
 #include "GameClient/GameWindow.h"
 #include "vector2i.h"
 #ifdef _WIN32
-#include <d3dx8.h>
+// #include <d3dx8.h // Phase 39.4: Removed with DirectX 8 cleanup>
 #endif
 #include "WW3D2/dx8wrapper.h"
-#include "WW3D2/dx8webbrowser.h"
+// #include "WW3D2/dx8webbrowser.h // Phase 39.4: Removed with DirectX 8 cleanup"
 
 #ifdef _WIN32
 

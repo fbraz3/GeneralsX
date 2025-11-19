@@ -48,14 +48,14 @@
 #include "WW3D2/meshmdl.h"
 #include "Lib/BaseType.h"
 #include "W3DDevice/GameClient/HeightMap.h"
-#include "d3dx8math.h"
+// #include "d3dx8math.h // Phase 39.4: Removed with DirectX 8 cleanup"
 #include "Common/GlobalData.h"
 #include "Common/DrawModule.h"
 #include "W3DDevice/GameClient/W3DVolumetricShadow.h"
 #include "W3DDevice/GameClient/W3DShadow.h"
 #include "WW3D2/statistics.h"
 #include "GameLogic/TerrainLogic.h"
-#include "WW3D2/dx8caps.h"
+// #include "WW3D2/dx8caps.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "GameClient/Drawable.h"
 
 

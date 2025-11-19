@@ -53,7 +53,7 @@
 #include "Common/GlobalData.h"
 #include "WW3D2/dx8wrapper.h"
 #ifdef _WIN32
-#include "d3dx8tex.h"
+// #include "d3dx8tex.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #endif
 
 /******************************************************************************

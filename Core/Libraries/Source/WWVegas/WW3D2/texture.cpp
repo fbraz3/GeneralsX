@@ -38,7 +38,7 @@
 #include "texture.h"
 
 #include "d3d8_vulkan_graphics_compat.h"
-#include <d3dx8core.h>
+// #include <d3dx8core.h // Phase 39.4: Removed with DirectX 8 cleanup>
 #include "dx8wrapper.h"
 #include "TARGA.h"
 #include <nstrdup.h>
@@ -48,8 +48,8 @@
 #include "textureloader.h"
 #include "missingtexture.h"
 #include "ffactory.h"
-#include "dx8caps.h"
-#include "dx8texman.h"
+// #include "dx8caps.h" // Phase 39.4: Removed with DirectX 8 cleanup
+// #include "dx8texman.h // Phase 39.4: Removed with DirectX 8 cleanup"
 #include "meshmatdesc.h"
 
 /*

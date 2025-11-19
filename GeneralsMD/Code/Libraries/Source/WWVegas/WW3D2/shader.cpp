@@ -44,7 +44,8 @@
 #include "w3d_file.h"
 #include "wwdebug.h"
 #include "dx8wrapper.h"
-#include "dx8caps.h"
+#include "ww3d.h"  // Phase 39.4: Added for SNAPSHOT_SAY macro
+// #include "dx8caps.h" // Phase 39.4: Removed with DirectX 8 cleanup
 
 
 bool ShaderClass::ShaderDirty=true;

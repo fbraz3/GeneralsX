@@ -58,12 +58,15 @@
 #include "meshmdl.h"
 #include "plane.h"
 #include "statistics.h"
-#include "dx8vertexbuffer.h"
-#include "dx8indexbuffer.h"
+// #include "dx8vertexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
+// #include "dx8indexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "simplevec.h"
 #include "texture.h"
 #include "dx8wrapper.h"
-#include "dx8caps.h"
+// #include "dx8caps.h" // Phase 39.4: Removed with DirectX 8 cleanup
+
+// Phase 39.4: FVF type constant now defined in DX8Wrapper_Stubs.cpp as global
+// static const int dynamic_fvf_type = 0;  // Moved to DX8Wrapper_Stubs.cpp to avoid redefinition
 
 #define DISABLE_CLIPPING	0
 
@@ -456,131 +459,135 @@ bool RigidDecalMeshClass::Create_Decal
 	/*
 	** Grab pointers to the parent mesh's components
 	*/
-	MeshModelClass * model = Parent->Peek_Model();
-	const TriIndex * src_polys		= model->Get_Polygon_Array();
-	const Vector3 * src_verts		= model->Get_Vertex_Array();
-	const Vector3 * src_vnorms		= model->Get_Vertex_Normal_Array();
+	// Phase 39.4: Comment out legacy mesh processing - Vulkan backend will handle this
+	//MeshModelClass * model = Parent->Peek_Model();
+	//const TriIndex * src_polys		= model->Get_Polygon_Array();
+	//const Vector3 * src_verts		= model->Get_Vertex_Array();
+	//const Vector3 * src_vnorms		= model->Get_Vertex_Normal_Array();
 
 	/*
 	** Grab a pointer to the material settings
 	*/
-	MaterialPassClass * material = generator->Get_Material();
+	//MaterialPassClass * material = generator->Get_Material();
 
 	/*
 	** Set up the generator for our coordinate system
 	*/
-	generator->Set_Mesh_Transform(Parent->Get_Transform());
+	//generator->Set_Mesh_Transform(Parent->Get_Transform());
 
 	/*
 	** Compute the clipping planes
 	*/
-	PlaneClass planes[4];
-	Vector3 extent;
+	//PlaneClass planes[4];
+	//Vector3 extent;
 
-	Matrix3x3::Rotate_Vector(localbox.Basis,Vector3(localbox.Extent.X,0,0),&extent);
-	Vector3 direction(localbox.Basis.Get_X_Vector());
+	//Matrix3x3::Rotate_Vector(localbox.Basis,Vector3(localbox.Extent.X,0,0),&extent);
+	//Vector3 direction(localbox.Basis.Get_X_Vector());
 
-	planes[0].Set(-direction,localbox.Center + extent);
-	planes[1].Set(direction,localbox.Center - extent);
+	//planes[0].Set(-direction,localbox.Center + extent);
+	//planes[1].Set(direction,localbox.Center - extent);
 
-	Matrix3x3::Rotate_Vector(localbox.Basis,Vector3(0,localbox.Extent.Y,0),&extent);
-	direction.Set(localbox.Basis.Get_Y_Vector());
+	//Matrix3x3::Rotate_Vector(localbox.Basis,Vector3(0,localbox.Extent.Y,0),&extent);
+	//direction.Set(localbox.Basis.Get_Y_Vector());
 
-	planes[2].Set(-direction,localbox.Center + extent);
-	planes[3].Set(direction,localbox.Center - extent);
+	//planes[2].Set(-direction,localbox.Center + extent);
+	//planes[3].Set(direction,localbox.Center - extent);
 
 	/*
 	** Generate the faces and per-face info
 	*/
+	//bool added_polys = false;
+	//Vector3 pdir = localbox.Basis.Get_Z_Vector();
+
+	//for (i=0; i<apt.Count(); i++) {
+
+	//	/*
+	//	** check if the polygon is backfacing
+	//	*/
+	//	PlaneClass plane;
+	//	model->Compute_Plane(apt[i],&plane);
+
+	//	float dot = Vector3::Dot_Product(plane.N,pdir);
+	//	if (dot > generator->Get_Backface_Threshhold()) {
+	//		/*
+	//		** Copy src_polys[apt[i]] into our clip polygon
+	//		*/
+	//		_DecalPoly0.Reset();
+	//		const TriIndex & poly = src_polys[apt[i]];
+	//		for (j=0; j<3; j++) {
+	//			_DecalPoly0.Add_Vertex(src_verts[poly[j]] + zbias_offset,src_vnorms[poly[j]]);
+	//		}
+
+	//		/*
+	//		** Clip against the edges of the bounding box
+	//		*/
+	//		_DecalPoly0.Clip(planes[0],_DecalPoly1);
+	//		_DecalPoly1.Clip(planes[1],_DecalPoly0);
+	//		_DecalPoly0.Clip(planes[2],_DecalPoly1);
+	//		_DecalPoly1.Clip(planes[3],_DecalPoly0);
+
+	//		/*
+	//		** Check if the clipped polygon is empty or degenerate
+	//		*/
+	//		if (_DecalPoly0.Verts.Count() >= 3) {
+
+	//			/*
+	//			** Extract triangles from the clipped polygon
+	//			*/
+	//			int first_vert = Verts.Count();
+
+	//			for (j=1; j<_DecalPoly0.Verts.Count()-1; j++) {
+
+	//				/*
+	//				** Check if this triangle is degenerate (Sutherland-Hodgeman can sometimes create degenerate tris)
+	//				*/
+	//				// TODO
+
+	//				/*
+	//				** Add the triangle, its plane equation, and the per-tri materials
+	//				*/
+	//				added_polys = true;
+	//				Polys.Add(TriIndex(first_vert,first_vert + j,first_vert + j + 1));
+	//				Shaders.Add(material->Peek_Shader());
+	//				Textures.Add(material->Get_Texture());					// Get_Texture gives us a reference...
+	//			}
+
+	//			/*
+	//			** Extract verts from the clipped polygon
+	//			*/
+	//			for (j=0; j<_DecalPoly0.Verts.Count(); j++) {
+
+	//				Verts.Add(_DecalPoly0.Verts[j]);
+	//				_DecalPoly0.VertNorms[j].Normalize();
+	//				VertNorms.Add(_DecalPoly0.VertNorms[j]);
+	//				VertexMaterials.Add(material->Get_Material());	// Get_Material gives us a ref.
+
+	//				/*
+	//				** Compute the uv coordinates for this vertex
+	//				*/
+	//				Vector3 stq;
+	//				generator->Compute_Texture_Coordinate(Verts[Verts.Count()-1],&stq);
+	//				TexCoords.Add(Vector2(stq.X,stq.Y));
+	//			}
+	//		}
+	//	}
+	//}
+
+	//if (added_polys) {
+	//	newdecal.FaceCount = Polys.Count() - newdecal.FaceStartIndex;
+	//	newdecal.VertexCount = Verts.Count() - newdecal.VertexStartIndex;
+	//	Decals.Add(newdecal);
+
+	//	/*
+	//	** tell the generator that we added a decal
+	//	*/
+	//	generator->Add_Mesh(Parent);
+	//}
+
+	//material->Release_Ref();
+
+	// Phase 39.4: Legacy decal mesh processing disabled - return false for compatibility
 	bool added_polys = false;
-	Vector3 pdir = localbox.Basis.Get_Z_Vector();
-
-	for (i=0; i<apt.Count(); i++) {
-
-		/*
-		** check if the polygon is backfacing
-		*/
-		PlaneClass plane;
-		model->Compute_Plane(apt[i],&plane);
-
-		float dot = Vector3::Dot_Product(plane.N,pdir);
-		if (dot > generator->Get_Backface_Threshhold()) {
-			/*
-			** Copy src_polys[apt[i]] into our clip polygon
-			*/
-			_DecalPoly0.Reset();
-			const TriIndex & poly = src_polys[apt[i]];
-			for (j=0; j<3; j++) {
-				_DecalPoly0.Add_Vertex(src_verts[poly[j]] + zbias_offset,src_vnorms[poly[j]]);
-			}
-
-			/*
-			** Clip against the edges of the bounding box
-			*/
-			_DecalPoly0.Clip(planes[0],_DecalPoly1);
-			_DecalPoly1.Clip(planes[1],_DecalPoly0);
-			_DecalPoly0.Clip(planes[2],_DecalPoly1);
-			_DecalPoly1.Clip(planes[3],_DecalPoly0);
-
-			/*
-			** Check if the clipped polygon is empty or degenerate
-			*/
-			if (_DecalPoly0.Verts.Count() >= 3) {
-
-				/*
-				** Extract triangles from the clipped polygon
-				*/
-				int first_vert = Verts.Count();
-
-				for (j=1; j<_DecalPoly0.Verts.Count()-1; j++) {
-
-					/*
-					** Check if this triangle is degenerate (Sutherland-Hodgeman can sometimes create degenerate tris)
-					*/
-					// TODO
-
-					/*
-					** Add the triangle, its plane equation, and the per-tri materials
-					*/
-					added_polys = true;
-					Polys.Add(TriIndex(first_vert,first_vert + j,first_vert + j + 1));
-					Shaders.Add(material->Peek_Shader());
-					Textures.Add(material->Get_Texture());					// Get_Texture gives us a reference...
-				}
-
-				/*
-				** Extract verts from the clipped polygon
-				*/
-				for (j=0; j<_DecalPoly0.Verts.Count(); j++) {
-
-					Verts.Add(_DecalPoly0.Verts[j]);
-					_DecalPoly0.VertNorms[j].Normalize();
-					VertNorms.Add(_DecalPoly0.VertNorms[j]);
-					VertexMaterials.Add(material->Get_Material());	// Get_Material gives us a ref.
-
-					/*
-					** Compute the uv coordinates for this vertex
-					*/
-					Vector3 stq;
-					generator->Compute_Texture_Coordinate(Verts[Verts.Count()-1],&stq);
-					TexCoords.Add(Vector2(stq.X,stq.Y));
-				}
-			}
-		}
-	}
-
-	if (added_polys) {
-		newdecal.FaceCount = Polys.Count() - newdecal.FaceStartIndex;
-		newdecal.VertexCount = Verts.Count() - newdecal.VertexStartIndex;
-		Decals.Add(newdecal);
-
-		/*
-		** tell the generator that we added a decal
-		*/
-		generator->Add_Mesh(Parent);
-	}
-
-	material->Release_Ref();
 
 #ifdef WWDEBUG
 	/*

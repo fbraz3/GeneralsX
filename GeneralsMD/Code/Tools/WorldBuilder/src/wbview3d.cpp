@@ -33,10 +33,10 @@
 #include "part_ldr.h"
 #include "hanim.h"
 #include "dx8wrapper.h"
-#include "dx8indexbuffer.h"
-#include "dx8vertexbuffer.h"
-#include "dx8renderer.h"
-#include "dx8fvf.h"
+// #include "dx8indexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
+// #include "dx8vertexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
+// #include "dx8renderer.h" // Phase 39.4: Removed with DirectX 8 cleanup
+// #include "dx8fvf.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "vertmaterial.h"
 #include "font3d.h"
 #include "render2d.h"
@@ -93,7 +93,7 @@
 #include "ImpassableOptions.h"
 
 
-#include <d3dx8.h>
+// #include <d3dx8.h // Phase 39.4: Removed with DirectX 8 cleanup>
 
 
 // ----------------------------------------------------------------------------

@@ -56,8 +56,8 @@
 
 #ifdef RTS_DEBUG
 #include "W3DDevice/GameClient/HeightMap.h"
-#include "WW3D2/dx8indexbuffer.h"
-#include "WW3D2/dx8vertexbuffer.h"
+// #include "WW3D2/dx8indexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
+// #include "WW3D2/dx8vertexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "WW3D2/vertmaterial.h"
 class DebugHintObject : public RenderObjClass
 {

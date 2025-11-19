@@ -107,7 +107,7 @@
 #include "wwmemlog.h"
 #include "dazzle.h"
 #include "dx8wrapper.h"
-#include "dx8renderer.h"
+// #include "dx8renderer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "metalmap.h"
 #include "w3dexclusionlist.h"
 #include <INI.h>

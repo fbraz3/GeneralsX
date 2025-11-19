@@ -40,10 +40,10 @@
 #include "htree.h"
 #include "vp.h"
 #include "visrasterizer.h"
-#include "dx8polygonrenderer.h"
+// #include "dx8polygonrenderer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "bwrender.h"
 #include "camera.h"
-#include "dx8renderer.h"
+// #include "dx8renderer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "hashtemplate.h"
 
 

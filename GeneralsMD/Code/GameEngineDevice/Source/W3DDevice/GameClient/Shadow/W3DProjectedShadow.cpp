@@ -42,11 +42,11 @@
 #include "WW3D2/meshmdl.h"
 #include "WW3D2/assetmgr.h"
 #include "WW3D2/texproject.h"
-#include "WW3D2/dx8renderer.h"
+// #include "WW3D2/dx8renderer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "Lib/BaseType.h"
 #include "W3DDevice/GameClient/HeightMap.h"
 #ifdef _WIN32
-#include "d3dx8math.h"
+// #include "d3dx8math.h // Phase 39.4: Removed with DirectX 8 cleanup"
 #endif
 #include "Common/GlobalData.h"
 #include "W3DDevice/GameClient/W3DProjectedShadow.h"

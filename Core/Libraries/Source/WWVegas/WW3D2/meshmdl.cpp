@@ -43,10 +43,10 @@
 #include "htree.h"
 #include "vp.h"
 #include "visrasterizer.h"
-#include "dx8polygonrenderer.h"
+// #include "dx8polygonrenderer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "bwrender.h"
 #include "camera.h"
-#include "dx8renderer.h"
+// #include "dx8renderer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "hashtemplate.h"
 
 
@@ -218,7 +218,7 @@ void MeshModelClass::Replace_Texture(TextureClass* texture,TextureClass* new_tex
 			// system to change texturing as well.
 			DX8FVFCategoryContainer* fvf_category=Peek_FVF_Category_Container();
 			if (fvf_category) {
-				fvf_category->Change_Polygon_Renderer_Texture(PolygonRendererList,texture,new_texture,pass,stage);
+				fvf_category->Change_Polygon_Renderer_Texture((void*)&PolygonRendererList,texture,new_texture,pass,stage);
 			}
 		}
 	}
@@ -246,7 +246,7 @@ void MeshModelClass::Replace_VertexMaterial(VertexMaterialClass* vmat,VertexMate
 		// system to change texturing as well.
 		DX8FVFCategoryContainer* fvf_category=Peek_FVF_Category_Container();
 		if (fvf_category) {
-			fvf_category->Change_Polygon_Renderer_Material(PolygonRendererList,vmat,new_vmat,pass);
+			fvf_category->Change_Polygon_Renderer_Material((void*)&PolygonRendererList,vmat,new_vmat,pass);
 		}
 	}
 }

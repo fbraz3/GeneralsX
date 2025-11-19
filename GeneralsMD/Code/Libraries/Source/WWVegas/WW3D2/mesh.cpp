@@ -112,12 +112,16 @@
 #include "inttest.h"
 #include "decalmsh.h"
 #include "decalsys.h"
-#include "dx8polygonrenderer.h"
-#include "dx8indexbuffer.h"
-#include "dx8renderer.h"
+// Phase 39.4: File deleted - using stubs from meshmdl.h instead
+// #include "dx8polygonrenderer.h"
+// Phase 39.4: File deleted - not needed for stub implementation
+// #include "dx8indexbuffer.h"
+// Phase 39.4: File deleted - not needed for stub implementation  
+// #include "dx8renderer.h"
 #include "visrasterizer.h"
 #include "wwmemlog.h"
-#include "dx8rendererdebugger.h"
+// Phase 39.4: File deleted - not needed for stub implementation
+// #include "dx8rendererdebugger.h"
 #include <wwprofile.h>
 
 static unsigned MeshDebugIdCount;
@@ -801,7 +805,8 @@ void MeshClass::Render(RenderInfoClass & rinfo)
 				}
 			}
 
-			DX8RendererDebugger::Add_Mesh(this);
+			// Phase 39.4: DX8RendererDebugger removed, not needed for stub implementation
+			// DX8RendererDebugger::Add_Mesh(this);
 		}
 	}
 }

@@ -45,9 +45,14 @@
 #include "wwmath.h"
 #include "rinfo.h"
 #include "camera.h"
-#include "dx8indexbuffer.h"
-#include "dx8vertexbuffer.h"
+// #include "dx8indexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
+// #include "dx8vertexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "sortingrenderer.h"
+
+// Phase 39.4: Buffer type constant defined in DX8Wrapper_Stubs.h
+// static const int BUFFER_TYPE_DYNAMIC_SORTING = 0; // Now defined as #define in DX8Wrapper_Stubs.h
+// Phase 39.4: FVF type constant now defined in DX8Wrapper_Stubs.cpp as global
+// static const int dynamic_fvf_type = 0;  // Moved to DX8Wrapper_Stubs.cpp to avoid redefinition
 
 // Line groups are a rendering primitive similar to point groups
 // They are tetrahedra which are aligned with the view plane with their centers

@@ -69,8 +69,8 @@
 #include "GameLogic/GameLogic.h"
 #include "Common/GlobalData.h"
 #include "Common/GameLOD.h"
-#include "d3dx8tex.h"
-#include "dx8caps.h"
+// #include "d3dx8tex.h" // Phase 39.4: Removed with DirectX 8 cleanup
+// #include "dx8caps.h" // Phase 39.4: Removed with DirectX 8 cleanup
 
 
 /** Interface definition for custom shaders we define in our app.  These shaders can perform more complex

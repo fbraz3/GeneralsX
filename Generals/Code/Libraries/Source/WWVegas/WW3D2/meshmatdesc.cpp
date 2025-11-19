@@ -41,7 +41,7 @@
 #include "vertmaterial.h"
 #include "realcrc.h"
 #include	"dx8wrapper.h"
-#include "dx8caps.h"
+// #include "dx8caps.h" // Phase 39.4: Removed with DirectX 8 cleanup
 
 
 /**************************************************************************************************

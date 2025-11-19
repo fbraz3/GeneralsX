@@ -1200,6 +1200,5 @@ target_link_libraries(corei_gameengine_public INTERFACE
 # Link Windows-only stubs (only on Windows)
 if(WIN32 OR MSVC OR "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
     target_link_libraries(corei_gameengine_public INTERFACE
-        d3d8lib
     )
 endif()

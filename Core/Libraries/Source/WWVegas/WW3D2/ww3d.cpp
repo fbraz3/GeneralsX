@@ -103,7 +103,7 @@
 #include "INI.h"
 #include "dazzle.h"
 #include "meshmdl.h"
-#include "dx8renderer.h"
+// #include "dx8renderer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "render2d.h"
 #include "bound.h"
 #include "rddesc.h"
@@ -113,7 +113,7 @@
 #include "sortingrenderer.h"
 #include "thread.h"
 #include "cpudetect.h"
-#include "dx8texman.h"
+// #include "dx8texman.h // Phase 39.4: Removed with DirectX 8 cleanup"
 #include "formconv.h"
 #include "animatedsoundmgr.h"
 #include "static_sort_list.h"

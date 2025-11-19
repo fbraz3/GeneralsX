@@ -58,14 +58,16 @@
 #include "persistfactory.h"
 #include "ww3dids.h"
 #include "dx8wrapper.h"
-#include "dx8vertexbuffer.h"
-#include "dx8indexbuffer.h"
+// #include "dx8vertexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
+// #include "dx8indexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "sortingrenderer.h"
 #include "texture.h"
 #include "scene.h"
 #include "wwprofile.h"
 #include <limits.h>
 
+// Phase 39.4: FVF type constant now defined in DX8Wrapper_Stubs.cpp as global
+// static const int dynamic_fvf_type = 0;  // Moved to DX8Wrapper_Stubs.cpp to avoid redefinition
 
 // All dazzle types appear under Dazzles_List in the dazzle.ini file.
 const char* DAZZLE_LIST_STRING="Dazzles_List";

@@ -41,7 +41,7 @@
 #include "vertmaterial.h"
 #include "realcrc.h"
 #include	"dx8wrapper.h"
-#include "dx8caps.h"
+// #include "dx8caps.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "meshmdl.h"
 
 
@@ -744,6 +744,8 @@ void MeshMatDescClass::Post_Load_Process(bool lighting_enabled,MeshModelClass * 
 
 		}
 
+		// Phase 39.4: Commenting out color manipulation code - not needed in stub rendering
+		/*
 		// If both DCG and DIG arrays are submitted, multiply them together to DCG channel
 		if ((DCGSource[pass] != VertexMaterialClass::MATERIAL) && (ColorArray[0] != NULL) &&
 			 (DIGSource[pass] != VertexMaterialClass::MATERIAL) && (ColorArray[1] != NULL)) {
@@ -760,8 +762,13 @@ void MeshMatDescClass::Post_Load_Process(bool lighting_enabled,MeshModelClass * 
 			}
 		}
 		DIGSource[pass]=VertexMaterialClass::MATERIAL;	// DIG channel no more
+		*/
+		// Phase 39.4: Set DIGSource directly without processing
+		DIGSource[pass]=VertexMaterialClass::MATERIAL;	// DIG channel no more
 
 		if ((DCGSource[pass] != VertexMaterialClass::MATERIAL) && (ColorArray[0] != NULL)) {
+			// Phase 39.4: Commenting out color manipulation code - not needed in stub rendering
+			/*
 			unsigned * diffuse_array = ColorArray[0]->Get_Array();
 			Vector3 mtl_diffuse;
 			float mtl_opacity = 1.0f;
@@ -843,6 +850,7 @@ void MeshMatDescClass::Post_Load_Process(bool lighting_enabled,MeshModelClass * 
 					}
 				}
 			}
+			*/
 		}
 	}
 

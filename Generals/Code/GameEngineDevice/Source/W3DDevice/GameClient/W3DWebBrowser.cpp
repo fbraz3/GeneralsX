@@ -32,9 +32,9 @@
 #include "GameClient/Image.h"
 #include "GameClient/GameWindow.h"
 #include "vector2i.h"
-#include <d3dx8.h>
+// #include <d3dx8.h // Phase 39.4: Removed with DirectX 8 cleanup>
 #include "WW3D2/dx8wrapper.h"
-#include "WW3D2/dx8webbrowser.h"
+// #include "WW3D2/dx8webbrowser.h // Phase 39.4: Removed with DirectX 8 cleanup"
 
 W3DWebBrowser::W3DWebBrowser() : WebBrowser() {
 }

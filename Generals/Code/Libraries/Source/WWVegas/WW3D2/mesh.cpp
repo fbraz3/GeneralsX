@@ -112,9 +112,9 @@
 #include "inttest.h"
 #include "decalmsh.h"
 #include "decalsys.h"
-#include "dx8polygonrenderer.h"
-#include "dx8indexbuffer.h"
-#include "dx8renderer.h"
+// #include "dx8polygonrenderer.h" // Phase 39.4: Removed with DirectX 8 cleanup
+// #include "dx8indexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
+// #include "dx8renderer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "visrasterizer.h"
 #include "wwmemlog.h"
 #include <wwprofile.h>
