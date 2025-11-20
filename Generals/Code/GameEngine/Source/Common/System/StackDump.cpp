@@ -32,6 +32,7 @@
 #include "Common/Debug.h"
 
 #include "DbgHelpLoader.h"
+#include "Common/System/SDL2_AppWindow.h"
 
 //*****************************************************************************
 //	Prototypes
@@ -127,7 +128,7 @@ BOOL InitSymbolInfo()
 	process = GetCurrentProcess();
 
 	//Get the apps name
-	::GetModuleFileName(NULL, pathname, _MAX_PATH);
+	SDL2_GetModuleFilePath(pathname, sizeof(pathname));
 
 	// turn it into a search path
 	_splitpath(pathname, drive, directory, NULL, NULL);
@@ -139,7 +140,7 @@ BOOL InitSymbolInfo()
 	if(DbgHelpLoader::symInitialize(process, pathname, FALSE))
 	{
 		// regenerate the name of the app
-		::GetModuleFileName(NULL, pathname, _MAX_PATH);
+		SDL2_GetModuleFilePath(pathname, sizeof(pathname));
 		if(DbgHelpLoader::symLoadModule(process, NULL, pathname, NULL, 0, 0))
 		{
 				//Load any other relevant modules (ie dlls) here

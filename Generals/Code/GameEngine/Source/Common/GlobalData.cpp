@@ -50,6 +50,7 @@
 #include "Common/INI.h"
 #include "Common/UserPreferences.h"
 #include "Common/version.h"
+#include "Common/System/SDL2_AppWindow.h"
 
 #include "GameLogic/AI.h"
 #include "GameLogic/Weapon.h"
@@ -1256,7 +1257,7 @@ UnsignedInt GlobalData::generateExeCRC()
 #else
 	{
 		Char buffer[ _MAX_PATH ];
-		GetModuleFileName( NULL, buffer, sizeof( buffer ) );
+		SDL2_GetModuleFilePath( buffer, sizeof( buffer ) );
 		fp = TheFileSystem->openFile(buffer, File::READ | File::BINARY);
 		if (fp != NULL) {
 			unsigned char crcBlock[blockSize];

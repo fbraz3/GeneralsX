@@ -30,6 +30,11 @@
 #include <unistd.h>
 #include <chrono>
 
+// Phase 40: macOS system header for SDL2_GetModuleFilePath
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
+
 // Cross-platform event system using SDL2 (threading primitives: CreateEvent, SetEvent, WaitForSingleObject)
 // Note: SDL2_Events.h is included AFTER HANDLE/DWORD/BOOL typedefs below to avoid circular dependency
 
@@ -233,10 +238,14 @@ inline bool CreateDirectory(const char* lpPathName, void* lpSecurityAttributes) 
 }
 
 // GetModuleFileName stub - get executable path
+// Phase 40: Now using SDL2_GetModuleFilePath instead of this stub
+// Keeping this for backwards compatibility but no longer used in new code
 inline unsigned int GetModuleFileName(void* hModule, char* lpFilename, unsigned int nSize) {
-    // Use _NSGetExecutablePath on macOS, /proc/self/exe on Linux
+    // This stub is deprecated - use SDL2_GetModuleFilePath() instead
+    // See Core/GameEngine/Source/Common/System/SDL2_AppWindow.cpp
+    
     #ifdef __APPLE__
-    extern int _NSGetExecutablePath(char* buf, uint32_t* bufsize);
+    // macOS: Use system call directly (declaration is in <mach-o/dyld.h> included at top of file)
     uint32_t size = nSize;
     if (_NSGetExecutablePath(lpFilename, &size) == 0) {
         return size;
@@ -433,6 +442,54 @@ inline unsigned int _controlfp(unsigned int newVal, unsigned int mask) {
 #define _PC_24      0x00000000  // 24-bit precision
 #define _PC_53      0x00010000  // 53-bit precision
 #define _PC_64      0x00020000  // 64-bit precision
+
+// MessageBox constants - Windows API compatibility
+// Phase 40: SDL2 migration requires these constants for MessageBoxWrapper
+#define MB_OK                   0x00000000
+#define MB_OKCANCEL             0x00000001
+#define MB_ABORTRETRYIGNORE     0x00000002
+#define MB_YESNOCANCEL          0x00000003
+#define MB_YESNO                0x00000004
+#define MB_RETRYCANCEL          0x00000005
+#define MB_CANCELTRYCONTINUE    0x00000006
+
+// MessageBox icons
+#define MB_ICONHAND             0x00000010  // ICONERROR
+#define MB_ICONERROR            0x00000010
+#define MB_ICONQUESTION         0x00000020
+#define MB_ICONWARNING          0x00000030  // ICONEXCLAMATION
+#define MB_ICONEXCLAMATION      0x00000030
+#define MB_ICONASTERISK         0x00000040  // ICONINFORMATION
+#define MB_ICONINFORMATION      0x00000040
+
+// MessageBox modality
+#define MB_APPLMODAL            0x00000000
+#define MB_SYSTEMMODAL          0x00001000
+#define MB_TASKMODAL            0x00002000
+
+// MessageBox default buttons
+#define MB_DEFBUTTON1           0x00000000
+#define MB_DEFBUTTON2           0x00000100
+#define MB_DEFBUTTON3           0x00000200
+#define MB_DEFBUTTON4           0x00000300
+
+// MessageBox misc
+#define MB_SETFOREGROUND        0x00010000
+#define MB_TOPMOST              0x00040000
+#define MB_RIGHT                0x00080000
+#define MB_RTLREADING           0x00100000
+#define MB_NOFOCUS              0x00008000
+
+// MessageBox return codes
+#define IDOK                    1
+#define IDCANCEL                2
+#define IDABORT                 3
+#define IDRETRY                 4
+#define IDIGNORE                5
+#define IDYES                   6
+#define IDNO                    7
+#define IDTRYAGAIN              10
+#define IDCONTINUE              11
 
 // Include SDL2 event system AFTER HANDLE/DWORD/BOOL typedefs are defined
 #include "SDL2_Events.h"

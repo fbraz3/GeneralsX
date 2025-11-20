@@ -73,7 +73,9 @@
 
 // Horrible reference, but we really, really need to know if we are windowed.
 extern bool DX8Wrapper_IsWindowed;
-extern HWND ApplicationHWnd;
+
+// Phase 40: SDL2 window replacement for Win32 HWND
+#include "../../../Include/Common/System/SDL2_AppWindow.h"
 
 extern const char *gAppPrefix; /// So WB can have a different log file name.
 
@@ -161,19 +163,84 @@ inline Bool ignoringAsserts()
 	return false;
 }
 
-// ----------------------------------------------------------------------------
-inline HWND getThreadHWND()
+
+// Phase 40: SDL2 message box replacement for Win32 MessageBox
+// Replaces Win32 MessageBoxWrapper with SDL_ShowMessageBox for advanced button support
+int MessageBoxWrapper( const char* lpText, const char* lpCaption, unsigned int uType )
 {
-	return (theMainThreadID == GetCurrentThreadId())?ApplicationHWnd:NULL;
+	// If window not initialized, just log and return a safe default
+	if (g_applicationWindow == NULL) {
+		fprintf(stderr, "MessageBoxWrapper: %s - %s\n", lpCaption ? lpCaption : "Message", lpText ? lpText : "");
+		// Return safe defaults based on button type
+		if (uType & MB_YESNO) return IDYES;
+		if (uType & MB_ABORTRETRYIGNORE) return IDIGNORE;
+		return IDOK;
+	}
+	
+	// Map Win32 message box flags to SDL2 flags
+	SDL_MessageBoxFlags flags = SDL_MESSAGEBOX_INFORMATION;
+	if (uType & MB_ICONWARNING) {
+		flags = SDL_MESSAGEBOX_WARNING;
+	} else if (uType & MB_ICONERROR) {
+		flags = SDL_MESSAGEBOX_ERROR;
+	}
+	
+	// Handle different button combinations
+	int result = IDOK;
+	
+	if (uType & MB_ABORTRETRYIGNORE) {
+		// Show Abort/Retry/Ignore dialog
+		const SDL_MessageBoxButtonData buttons[] = {
+			{ SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, IDABORT, "Abort" },
+			{ 0, IDRETRY, "Retry" },
+			{ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, IDIGNORE, "Ignore" }
+		};
+		
+		SDL_MessageBoxData messageBoxData = {
+			flags,
+			g_applicationWindow,
+			lpCaption ? lpCaption : "Message",
+			lpText ? lpText : "",
+			SDL_arraysize(buttons),
+			buttons,
+			NULL
+		};
+		
+		SDL_ShowMessageBox(&messageBoxData, &result);
+	} 
+	else if (uType & MB_YESNO) {
+		// Show Yes/No dialog
+		const SDL_MessageBoxButtonData buttons[] = {
+			{ SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, IDYES, "Yes" },
+			{ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, IDNO, "No" }
+		};
+		
+		SDL_MessageBoxData messageBoxData = {
+			flags,
+			g_applicationWindow,
+			lpCaption ? lpCaption : "Message",
+			lpText ? lpText : "",
+			SDL_arraysize(buttons),
+			buttons,
+			NULL
+		};
+		
+		SDL_ShowMessageBox(&messageBoxData, &result);
+	} 
+	else {
+		// Default: OK button
+		SDL_ShowSimpleMessageBox(
+			flags,
+			lpCaption ? lpCaption : "Message",
+			lpText ? lpText : "",
+			g_applicationWindow
+		);
+		result = IDOK;
+	}
+	
+	return result;
 }
 
-// ----------------------------------------------------------------------------
-
-int MessageBoxWrapper( LPCSTR lpText, LPCSTR lpCaption, UINT uType )
-{
-	HWND threadHWND = getThreadHWND();
-	return ::MessageBox(threadHWND, lpText, lpCaption, uType);
-}
 
 // ----------------------------------------------------------------------------
 // getCurrentTimeString

@@ -645,6 +645,7 @@ set(GAMEENGINE_SRC
 #    Source/Common/System/CriticalSection.cpp
 #    Source/Common/System/DataChunk.cpp
     Source/Common/System/Debug.cpp
+    Source/Common/System/SDL2_AppWindow.cpp
 #    Source/Common/System/Directory.cpp
 #    Source/Common/System/DisabledTypes.cpp
 #    Source/Common/System/encrypt.cpp
