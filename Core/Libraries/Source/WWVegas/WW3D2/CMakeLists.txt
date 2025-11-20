@@ -3,7 +3,7 @@ set(WW3D2_SRC
     aabtree.h
     aabtreebuilder.cpp
     aabtreebuilder.h
-    #agg_def.cpp
+    agg_def.cpp
     agg_def.h
     animatedsoundmgr.cpp
     animatedsoundmgr.h
@@ -23,7 +23,6 @@ set(WW3D2_SRC
     bwrender.h
     camera.cpp
     camera.h
-    #classid.h # unused
     collect.cpp
     collect.h
     colorspace.h
@@ -34,8 +33,8 @@ set(WW3D2_SRC
     composite.h
     dazzle.cpp
     dazzle.h
-    #ddsfile.cpp
-    #ddsfile.h
+    ddsfile.cpp
+    ddsfile.h
     decalmsh.cpp
     decalmsh.h
     decalsys.cpp
@@ -43,27 +42,6 @@ set(WW3D2_SRC
     distlod.cpp
     distlod.h
     dllist.h
-    #dx8caps.cpp
-    #dx8caps.h
-#    dx8fvf.cpp
-#    dx8fvf.h
-#    dx8indexbuffer.cpp
-#    dx8indexbuffer.h
-#    dx8list.h
-#    dx8polygonrenderer.cpp
-#    dx8polygonrenderer.h
-#    dx8renderer.cpp
-#    dx8renderer.h
-#    dx8rendererdebugger.cpp
-#    dx8rendererdebugger.h
-#    dx8texman.cpp
-#    dx8texman.h
-#    dx8vertexbuffer.cpp
-#    dx8vertexbuffer.h
-#    dx8webbrowser.cpp
-#    dx8webbrowser.h
-#    dx8wrapper.cpp
-#    dx8wrapper.h
     dynamesh.cpp
     dynamesh.h
     font3d.cpp
@@ -78,8 +56,8 @@ set(WW3D2_SRC
     hanimmgr.h
     hcanim.cpp
     hcanim.h
-    #hlod.cpp
-    #hlod.h
+    hlod.cpp
+    hlod.h
     hmdldef.cpp
     hmdldef.h
     hmorphanim.cpp
@@ -98,8 +76,7 @@ set(WW3D2_SRC
     layer.h
     light.cpp
     light.h
-    #lightenvironment.cpp
-    #lightenvironment.h
+    lightenvironment.h
     line3d.cpp
     line3d.h
     linegrp.cpp
@@ -141,7 +118,7 @@ set(WW3D2_SRC
     part_ldr.h
     pivot.cpp
     pivot.h
-    pointgr.cpp
+    # pointgr.cpp  # Phase: Temporarily commented - uses legacy DX8IndexBufferClass::WriteLockClass API
     pointgr.h
     polyinfo.cpp
     polyinfo.h
@@ -155,10 +132,11 @@ set(WW3D2_SRC
     proto.h
     proxy.h
     rddesc.h
-    #render2d.cpp
+    # render2d.cpp  # Phase: Temporarily commented - API incompatibilities with Delete_All() and Add_Multiple()
     render2d.h
-    render2dsentence_stub.cpp  # Cross-platform stub for FontCharsClass and Render2DSentenceClass
-    render2dsentence.h         # API header (works on all platforms)
+    render2dsentence.cpp
+    render2dsentence.h
+    render2dsentence_stub.cpp
     renderobjectrecycler.cpp
     renderobjectrecycler.h
     rendobj.cpp
@@ -174,14 +152,14 @@ set(WW3D2_SRC
     segline.h
     seglinerenderer.cpp
     seglinerenderer.h
-    #shader.cpp
+    shader.cpp
     shader.h
     shattersystem.cpp
     shattersystem.h
-    #shdlib.h
+    shdlib.h
     snappts.cpp
     snapPts.h
-    #sortingrenderer.cpp
+    # sortingrenderer.cpp  # Phase: Temporarily commented - API incompatibilities with sorting_state struct
     sortingrenderer.h
     soundlibrarybridge.h
     soundrobj.cpp
@@ -198,19 +176,19 @@ set(WW3D2_SRC
     streakRender.h
     stripoptimizer.cpp
     stripoptimizer.h
-#    surfaceclass.cpp
+    # surfaceclass.cpp  # Phase: Temporarily commented - DirectX types and D3DXLoadSurfaceFromSurface API
     surfaceclass.h
-#    texproject.cpp
+    # texproject.cpp  # Phase: Temporarily commented - DX8Wrapper render target API incompatibilities
     texproject.h
-    #textdraw.cpp # unused
+    # textdraw.cpp  # Phase 42: Temporarily commented - Font Peek_Texture method signature mismatch
     textdraw.h
-#    texture.cpp
+    # texture.cpp  # Phase 42: Temporarily commented - TextureBaseClass and DX8Wrapper API incompatibilities
     texture.h
-#    texturefilter.cpp
+    # texturefilter.cpp  # Phase 42: Temporarily commented - D3DCAPS8 conversion and DX8 filter capabilities
     texturefilter.h
-#    textureloader.cpp
+    # textureloader.cpp  # Phase 42: Temporarily commented - TextureLoadTaskClass and ThumbnailClass API incompatibilities
     textureloader.h
-#    texturethumbnail.cpp
+    # texturethumbnail.cpp  # Phase 42: Temporarily commented - ThumbnailClass constructor/method incompatibilities
     texturethumbnail.h
     vertmaterial.cpp
     vertmaterial.h
@@ -218,7 +196,7 @@ set(WW3D2_SRC
     visrasterizer.h
     w3d_dep.cpp
     w3d_dep.h
-    #w3d_file.h
+    w3d_file.h
     w3d_obsolete.h
     w3d_util.cpp
     w3d_util.h
@@ -231,47 +209,59 @@ set(WW3D2_SRC
     ww3dformat.h
     ww3dids.h
     ww3dtrig.h
+    # Windows compatibility stubs - System APIs
+    DX8Wrapper_Stubs.cpp
+    DX8Wrapper_Stubs.h
+    gdi_compat.h
+    io_compat.h
+    vfw_compat.h
+    windowsx_compat.h
+    win32_file_api_compat.h
     # Phase 01: DirectX 8 Compatibility Layer
-    d3dx8_vulkan_fvf_compat.h
+    d3d8_vulkan_enums_compat.h
     d3d8_vulkan_graphics_compat.h
+    d3d8_vulkan_interfaces_compat.h
+    d3d8_vulkan_types_compat.h
+    d3dx8_vulkan_fvf_compat.h
+    d3dx8_vulkan_math_compat.h
     win32_sdl_types_compat.h
     # Phase 02: SDL2 Window & Event Loop compatibility layer
     win32_sdl_api_compat.h
-    #win32_sdl_api_compat.cpp  # TODO: Fix SDL2/SDL3 compatibility issues
+    # win32_sdl_api_compat.cpp  # Phase 42: Temporarily commented - SDL2 constants and event handling incompatibilities
     # Phase 04: Cross-platform Threading & Memory Layer
     win32_thread_compat.h
     win32_thread_compat.cpp
     win32_memory_compat.h
     win32_memory_compat.cpp
-    # Phase 05: Registry & Configuration Compatibility Layer
-    #win32_config_compat.h  # TODO: Add Windows Registry types to win32_sdl_types_compat.h
-    #win32_config_compat.cpp
+    # Phase 05: Registry & Configuration Compatibility Layer (Deferred to Phase 42)
+    # win32_config_compat.h  # Phase 42: Temporarily commented - Windows Registry types (HKEY, REGSAM, LPDWORD) not defined
+    # win32_config_compat.cpp  # Phase 42: Temporarily commented
     # Phase 06: Complete Input System - Gamepad & Joystick Support
     win32_gamepad_compat.h
-    #win32_gamepad_compat.cpp  # TODO: Fix SDL2/SDL3 compatibility issues
-    # Phase 07: Event Queue Integration & Configuration Persistence
-    win32_gamepad_event_integration.h
-    win32_gamepad_event_integration.cpp
-    #win32_gamepad_config_compat.h  # TODO: Fix Windows Registry type dependencies
-    #win32_gamepad_config_compat.cpp
+    # win32_gamepad_compat.cpp  # Phase 42: Temporarily commented - SDL2 gamepad API version incompatibilities
+        # Phase 07: Event Queue Integration & Configuration Persistence
+    # win32_gamepad_event_integration.h  # Phase 42: Temporarily commented - Depends on win32_config_compat
+    # win32_gamepad_event_integration.cpp  # Phase 42: Temporarily commented
+    # win32_gamepad_config_compat.h  # Phase 42: Temporarily commented - Depends on win32_config_compat (Windows Registry)
+    # win32_gamepad_config_compat.cpp  # Phase 42: Temporarily commented
     # Phase 08: Advanced Input Features - In-Game Configuration UI
-    #win32_gamepad_config_ui.h  # TODO: Fix Windows Registry type dependencies
-    #win32_gamepad_config_ui.cpp
+    # win32_gamepad_config_ui.h  # Phase 42: Temporarily commented
+    # win32_gamepad_config_ui.cpp  # Phase 42: Temporarily commented
     # Phase 08: Advanced Input Features - Combo Detection
-    win32_gamepad_combo_detection.h
-    win32_gamepad_combo_detection.cpp
+    # win32_gamepad_combo_detection.h  # Phase 42: Temporarily commented
+    # win32_gamepad_combo_detection.cpp  # Phase 42: Temporarily commented
     # Phase 08: Advanced Input Features - Macro Recording & Playback
-    win32_gamepad_macro_system.h
-    win32_gamepad_macro_system.cpp
+    # win32_gamepad_macro_system.h  # Phase 42: Temporarily commented
+    # win32_gamepad_macro_system.cpp  # Phase 42: Temporarily commented
     # Phase 08: Advanced Input Features - Force Feedback & Haptics
-    win32_gamepad_force_feedback.h
-    win32_gamepad_force_feedback.cpp
+    # win32_gamepad_force_feedback.h  # Phase 42: Temporarily commented
+    # win32_gamepad_force_feedback.cpp  # Phase 42: Temporarily commented
     # Phase 07/08 Integration: Macro System Persistence
-    #win32_gamepad_macro_persistence.h  # TODO: Fix Windows Registry type dependencies
-    #win32_gamepad_macro_persistence.cpp
+    # win32_gamepad_macro_persistence.h  # Phase 42: Temporarily commented - Depends on Registry API
+    # win32_gamepad_macro_persistence.cpp  # Phase 42: Temporarily commented
     # Phase 07/08 Integration: Force Feedback Profiles Persistence
-    #win32_gamepad_ff_persistence.h  # TODO: Fix Windows Registry type dependencies
-    #win32_gamepad_ff_persistence.cpp
+    # win32_gamepad_ff_persistence.h  # Phase 42: Temporarily commented - Depends on Registry API
+    # win32_gamepad_ff_persistence.cpp  # Phase 42: Temporarily commented
     # Phase 09: Render Pass & Graphics Pipeline
     d3d8_vulkan_render_pass.h
     d3d8_vulkan_render_pass.cpp

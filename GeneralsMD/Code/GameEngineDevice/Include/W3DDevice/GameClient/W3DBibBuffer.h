@@ -50,8 +50,8 @@
 #include "always.h"
 #include "rendobj.h"
 #include "w3d_file.h"
-// #include "dx8vertexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
-// #include "dx8indexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
+#include "dx8buffer_compat.h"    // Phase 41: DirectX 8 buffer compatibility layer
+
 #include "shader.h"
 #include "vertmaterial.h"
 #include "Lib/BaseType.h"

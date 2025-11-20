@@ -401,6 +401,43 @@ typedef BITMAPINFO* LPBITMAPINFO;
 #endif
 
 // =====================================================================
+// TEXTMETRIC - Font Metrics Structure
+// =====================================================================
+
+#ifndef TEXTMETRIC_DEFINED
+#define TEXTMETRIC_DEFINED
+
+/** @brief Text metric information for a font */
+typedef struct {
+    LONG  tmHeight;           /**< Height of character cell including internal leading */
+    LONG  tmAscent;           /**< Ascent of character cell */
+    LONG  tmDescent;          /**< Descent of character cell */
+    LONG  tmInternalLeading;  /**< Internal leading */
+    LONG  tmExternalLeading;  /**< External leading */
+    LONG  tmAveCharWidth;     /**< Average character width */
+    LONG  tmMaxCharWidth;     /**< Maximum character width */
+    LONG  tmWeight;           /**< Font weight (FW_* constants) */
+    LONG  tmOverhang;         /**< Overhang for italic fonts */
+    LONG  tmDigitizedAspectX; /**< Aspect ratio - horizontal */
+    LONG  tmDigitizedAspectY; /**< Aspect ratio - vertical */
+    BYTE  tmFirstChar;        /**< First character in the font */
+    BYTE  tmLastChar;         /**< Last character in the font */
+    BYTE  tmDefaultChar;      /**< Character to substitute for unavailable glyphs */
+    BYTE  tmBreakChar;        /**< Character used to define spaces between words */
+    BYTE  tmItalic;           /**< Non-zero if italic */
+    BYTE  tmUnderlined;       /**< Non-zero if underlined */
+    BYTE  tmStruckOut;        /**< Non-zero if struck through */
+    BYTE  tmPitchAndFamily;   /**< Pitch and family (VARIABLE_PITCH, FIXED_PITCH, etc.) */
+    BYTE  tmCharSet;          /**< Character set */
+} TEXTMETRIC;
+
+/** @brief Pointer to TEXTMETRIC structure */
+typedef TEXTMETRIC* PTEXTMETRIC;
+typedef TEXTMETRIC* LPTEXTMETRIC;
+
+#endif
+
+// =====================================================================
 // File and Directory Constants
 // =====================================================================
 
@@ -553,6 +590,158 @@ typedef BITMAPINFO* LPBITMAPINFO;
 
 #ifndef DDSCAPS2_VOLUME
 #define DDSCAPS2_VOLUME            0x00200000  ///< Surface is a volume texture
+#endif
+
+// =====================================================================
+// Font Weight Constants (for CreateFont)
+// =====================================================================
+
+#ifndef FW_DONTCARE
+#define FW_DONTCARE     0
+#endif
+
+#ifndef FW_THIN
+#define FW_THIN         100
+#endif
+
+#ifndef FW_EXTRALIGHT
+#define FW_EXTRALIGHT   200
+#endif
+
+#ifndef FW_LIGHT
+#define FW_LIGHT        300
+#endif
+
+#ifndef FW_NORMAL
+#define FW_NORMAL       400
+#endif
+
+#ifndef FW_MEDIUM
+#define FW_MEDIUM       500
+#endif
+
+#ifndef FW_SEMIBOLD
+#define FW_SEMIBOLD     600
+#endif
+
+#ifndef FW_BOLD
+#define FW_BOLD         700
+#endif
+
+#ifndef FW_EXTRABOLD
+#define FW_EXTRABOLD    800
+#endif
+
+#ifndef FW_HEAVY
+#define FW_HEAVY        900
+#endif
+
+// =====================================================================
+// Font Charset Constants
+// =====================================================================
+
+#ifndef DEFAULT_CHARSET
+#define DEFAULT_CHARSET 1
+#endif
+
+#ifndef SYMBOL_CHARSET
+#define SYMBOL_CHARSET 2
+#endif
+
+// =====================================================================
+// Font Output Precision Constants
+// =====================================================================
+
+#ifndef OUT_DEFAULT_PRECIS
+#define OUT_DEFAULT_PRECIS 0
+#endif
+
+#ifndef OUT_STRING_PRECIS
+#define OUT_STRING_PRECIS 1
+#endif
+
+#ifndef OUT_CHARACTER_PRECIS
+#define OUT_CHARACTER_PRECIS 2
+#endif
+
+// =====================================================================
+// Font Clipping Precision Constants
+// =====================================================================
+
+#ifndef CLIP_DEFAULT_PRECIS
+#define CLIP_DEFAULT_PRECIS 0
+#endif
+
+#ifndef CLIP_CHARACTER_PRECIS
+#define CLIP_CHARACTER_PRECIS 1
+#endif
+
+#ifndef CLIP_STROKE_PRECIS
+#define CLIP_STROKE_PRECIS 2
+#endif
+
+// =====================================================================
+// Font Quality Constants
+// =====================================================================
+
+#ifndef DEFAULT_QUALITY
+#define DEFAULT_QUALITY 0
+#endif
+
+#ifndef DRAFT_QUALITY
+#define DRAFT_QUALITY 1
+#endif
+
+#ifndef PROOF_QUALITY
+#define PROOF_QUALITY 2
+#endif
+
+#ifndef NONANTIALIASED_QUALITY
+#define NONANTIALIASED_QUALITY 3
+#endif
+
+#ifndef ANTIALIASED_QUALITY
+#define ANTIALIASED_QUALITY 4
+#endif
+
+#ifndef CLEARTYPE_QUALITY
+#define CLEARTYPE_QUALITY 5
+#endif
+
+// =====================================================================
+// Font Pitch Constants
+// =====================================================================
+
+#ifndef VARIABLE_PITCH
+#define VARIABLE_PITCH 2
+#endif
+
+#ifndef FIXED_PITCH
+#define FIXED_PITCH 1
+#endif
+
+#ifndef DEFAULT_PITCH
+#define DEFAULT_PITCH 0
+#endif
+
+// =====================================================================
+// Bitmap Information Constants
+// =====================================================================
+
+#ifndef BI_RGB
+#define BI_RGB 0
+#endif
+
+#ifndef BI_RLE8
+#define BI_RLE8 1
+#endif
+
+#ifndef BI_RLE4
+#define BI_RLE4 2
+#endif
+
+#ifndef BI_BITFIELDS
+#define BI_BITFIELDS 3
 #endif
 
 

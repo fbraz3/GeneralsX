@@ -81,6 +81,7 @@
 #include "vp.h"
 #include "matrix4.h"
 #include "dx8wrapper.h"
+#include "dx8buffer_compat.h"    // Phase 41: DirectX 8 buffer compatibility layer - needed for DX8IndexBufferClass
 // #include "dx8vertexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 // #include "dx8indexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
 #include "rinfo.h"

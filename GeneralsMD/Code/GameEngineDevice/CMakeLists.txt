@@ -214,6 +214,7 @@ target_sources(z_gameenginedevice PRIVATE ${GAMEENGINEDEVICE_SRC})
 
 target_include_directories(z_gameenginedevice PUBLIC
     Include
+    ../../../Core/Libraries/Source/Graphics  # Phase 41: For dx8buffer_compat.h
 )
 
 target_precompile_headers(z_gameenginedevice PRIVATE

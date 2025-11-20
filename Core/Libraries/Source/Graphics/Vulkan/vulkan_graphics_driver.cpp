@@ -905,58 +905,373 @@ Viewport VulkanGraphicsDriver::GetViewport() const
     return m_viewport;
 }
 
+// ============================================================================
+// Resource Storage (Internal to VulkanGraphicsDriver)
+// ============================================================================
+
+// Simple buffer storage for vertex/index buffers
+struct VulkanBufferAllocation {
+    VkBuffer buffer = VK_NULL_HANDLE;
+    VkDeviceMemory memory = VK_NULL_HANDLE;
+    void* mapped_ptr = nullptr;
+    uint32_t size = 0;
+    bool is_dynamic = false;
+};
+
+// Storage for created buffers (simple map)
+static std::vector<VulkanBufferAllocation> g_vertex_buffers;
+static std::vector<VulkanBufferAllocation> g_index_buffers;
+
+// ============================================================================
+// Buffer Management Implementation (REAL Vulkan)
+// ============================================================================
+
+/**
+ * Find suitable memory type for buffer allocation
+ */
+static uint32_t FindMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
+{
+    VkPhysicalDeviceMemoryProperties memProperties;
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+    
+    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+            return i;
+        }
+    }
+    
+    printf("[Vulkan] ERROR: Failed to find suitable memory type\n");
+    return 0;
+}
+
 VertexBufferHandle VulkanGraphicsDriver::CreateVertexBuffer(uint32_t sizeInBytes, bool dynamic,
                                                            const void* initialData)
 {
-    return INVALID_HANDLE;
+    if (!m_initialized || !m_device || !m_memory_allocator) {
+        printf("[Vulkan] CreateVertexBuffer: Driver not initialized\n");
+        return INVALID_HANDLE;
+    }
+    
+    printf("[Vulkan] CreateVertexBuffer: size=%u dynamic=%d\n", sizeInBytes, dynamic);
+    
+    VulkanBufferAllocation allocation;
+    allocation.size = sizeInBytes;
+    allocation.is_dynamic = dynamic;
+    
+    // Create buffer with appropriate usage
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = sizeInBytes;
+    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    
+    VkResult result = vkCreateBuffer(m_device->handle, &bufferInfo, nullptr, &allocation.buffer);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] ERROR: vkCreateBuffer failed (result=%d)\n", result);
+        return INVALID_HANDLE;
+    }
+    
+    // Get memory requirements
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(m_device->handle, allocation.buffer, &memRequirements);
+    
+    // Allocate GPU memory
+    VkMemoryPropertyFlags memFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    if (dynamic) {
+        memFlags |= VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+    }
+    
+    uint32_t memTypeIndex = FindMemoryType(m_physical_device->handle, memRequirements.memoryTypeBits, memFlags);
+    
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = memTypeIndex;
+    
+    result = vkAllocateMemory(m_device->handle, &allocInfo, nullptr, &allocation.memory);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] ERROR: vkAllocateMemory failed (result=%d)\n", result);
+        vkDestroyBuffer(m_device->handle, allocation.buffer, nullptr);
+        return INVALID_HANDLE;
+    }
+    
+    // Bind memory to buffer
+    result = vkBindBufferMemory(m_device->handle, allocation.buffer, allocation.memory, 0);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] ERROR: vkBindBufferMemory failed (result=%d)\n", result);
+        vkFreeMemory(m_device->handle, allocation.memory, nullptr);
+        vkDestroyBuffer(m_device->handle, allocation.buffer, nullptr);
+        return INVALID_HANDLE;
+    }
+    
+    // Upload initial data if provided
+    if (initialData && sizeInBytes > 0) {
+        if (dynamic) {
+            // For dynamic buffers, map directly
+            void* mappedPtr = nullptr;
+            result = vkMapMemory(m_device->handle, allocation.memory, 0, sizeInBytes, 0, &mappedPtr);
+            if (result == VK_SUCCESS && mappedPtr) {
+                memcpy(mappedPtr, initialData, sizeInBytes);
+                vkUnmapMemory(m_device->handle, allocation.memory);
+                allocation.mapped_ptr = nullptr;  // Not mapped after unmap
+            }
+        }
+        // For static buffers, data would need staging buffer (simplified for now)
+    }
+    
+    // Store buffer and return handle as index
+    g_vertex_buffers.push_back(allocation);
+    VertexBufferHandle handle = (VertexBufferHandle)(g_vertex_buffers.size() - 1);
+    
+    printf("[Vulkan] CreateVertexBuffer: SUCCESS handle=%llu\n", handle);
+    return handle;
 }
 
 void VulkanGraphicsDriver::DestroyVertexBuffer(VertexBufferHandle handle)
 {
-    // Stub
+    if (!m_initialized || !m_device || handle >= (uint64_t)g_vertex_buffers.size()) {
+        printf("[Vulkan] DestroyVertexBuffer: Invalid handle %llu\n", handle);
+        return;
+    }
+    
+    VulkanBufferAllocation& alloc = g_vertex_buffers[handle];
+    
+    if (alloc.mapped_ptr) {
+        vkUnmapMemory(m_device->handle, alloc.memory);
+    }
+    
+    if (alloc.buffer != VK_NULL_HANDLE) {
+        vkDestroyBuffer(m_device->handle, alloc.buffer, nullptr);
+    }
+    
+    if (alloc.memory != VK_NULL_HANDLE) {
+        vkFreeMemory(m_device->handle, alloc.memory, nullptr);
+    }
+    
+    printf("[Vulkan] DestroyVertexBuffer: handle=%llu\n", handle);
 }
 
 bool VulkanGraphicsDriver::LockVertexBuffer(VertexBufferHandle handle, uint32_t offset,
                                            uint32_t size, void** lockedData, bool readOnly)
 {
-    return false;
+    if (!m_initialized || !m_device || handle >= (uint64_t)g_vertex_buffers.size() || !lockedData) {
+        printf("[Vulkan] LockVertexBuffer: Invalid parameters\n");
+        return false;
+    }
+    
+    VulkanBufferAllocation& alloc = g_vertex_buffers[handle];
+    
+    if (!alloc.is_dynamic) {
+        printf("[Vulkan] ERROR: Cannot lock static vertex buffer\n");
+        return false;
+    }
+    
+    if (offset + size > alloc.size) {
+        printf("[Vulkan] ERROR: Lock range exceeds buffer size\n");
+        return false;
+    }
+    
+    VkResult result = vkMapMemory(m_device->handle, alloc.memory, offset, size, 0, &alloc.mapped_ptr);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] ERROR: vkMapMemory failed (result=%d)\n", result);
+        return false;
+    }
+    
+    *lockedData = alloc.mapped_ptr;
+    printf("[Vulkan] LockVertexBuffer: handle=%llu offset=%u size=%u\n", handle, offset, size);
+    return true;
 }
 
 bool VulkanGraphicsDriver::UnlockVertexBuffer(VertexBufferHandle handle)
 {
-    return true;
+    if (!m_initialized || !m_device || handle >= (uint64_t)g_vertex_buffers.size()) {
+        printf("[Vulkan] UnlockVertexBuffer: Invalid handle\n");
+        return false;
+    }
+    
+    VulkanBufferAllocation& alloc = g_vertex_buffers[handle];
+    
+    if (alloc.mapped_ptr) {
+        vkUnmapMemory(m_device->handle, alloc.memory);
+        alloc.mapped_ptr = nullptr;
+        printf("[Vulkan] UnlockVertexBuffer: handle=%llu\n", handle);
+        return true;
+    }
+    
+    return false;
 }
 
 uint32_t VulkanGraphicsDriver::GetVertexBufferSize(VertexBufferHandle handle) const
 {
-    return 0;
+    if (handle >= (uint64_t)g_vertex_buffers.size()) {
+        return 0;
+    }
+    
+    return g_vertex_buffers[handle].size;
 }
 
 IndexBufferHandle VulkanGraphicsDriver::CreateIndexBuffer(uint32_t sizeInBytes, bool is32Bit,
                                                          bool dynamic, const void* initialData)
 {
-    return INVALID_HANDLE;
+    if (!m_initialized || !m_device || !m_memory_allocator) {
+        printf("[Vulkan] CreateIndexBuffer: Driver not initialized\n");
+        return INVALID_HANDLE;
+    }
+    
+    printf("[Vulkan] CreateIndexBuffer: size=%u is32Bit=%d dynamic=%d\n", sizeInBytes, is32Bit, dynamic);
+    
+    VulkanBufferAllocation allocation;
+    allocation.size = sizeInBytes;
+    allocation.is_dynamic = dynamic;
+    
+    // Create buffer with INDEX_BUFFER usage
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = sizeInBytes;
+    bufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    
+    VkResult result = vkCreateBuffer(m_device->handle, &bufferInfo, nullptr, &allocation.buffer);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] ERROR: vkCreateBuffer failed (result=%d)\n", result);
+        return INVALID_HANDLE;
+    }
+    
+    // Get memory requirements
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(m_device->handle, allocation.buffer, &memRequirements);
+    
+    // Allocate GPU memory
+    VkMemoryPropertyFlags memFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    if (dynamic) {
+        memFlags |= VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+    }
+    
+    uint32_t memTypeIndex = FindMemoryType(m_physical_device->handle, memRequirements.memoryTypeBits, memFlags);
+    
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = memTypeIndex;
+    
+    result = vkAllocateMemory(m_device->handle, &allocInfo, nullptr, &allocation.memory);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] ERROR: vkAllocateMemory failed (result=%d)\n", result);
+        vkDestroyBuffer(m_device->handle, allocation.buffer, nullptr);
+        return INVALID_HANDLE;
+    }
+    
+    // Bind memory to buffer
+    result = vkBindBufferMemory(m_device->handle, allocation.buffer, allocation.memory, 0);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] ERROR: vkBindBufferMemory failed (result=%d)\n", result);
+        vkFreeMemory(m_device->handle, allocation.memory, nullptr);
+        vkDestroyBuffer(m_device->handle, allocation.buffer, nullptr);
+        return INVALID_HANDLE;
+    }
+    
+    // Upload initial data if provided
+    if (initialData && sizeInBytes > 0) {
+        if (dynamic) {
+            void* mappedPtr = nullptr;
+            result = vkMapMemory(m_device->handle, allocation.memory, 0, sizeInBytes, 0, &mappedPtr);
+            if (result == VK_SUCCESS && mappedPtr) {
+                memcpy(mappedPtr, initialData, sizeInBytes);
+                vkUnmapMemory(m_device->handle, allocation.memory);
+                allocation.mapped_ptr = nullptr;
+            }
+        }
+    }
+    
+    // Store buffer and return handle as index
+    g_index_buffers.push_back(allocation);
+    IndexBufferHandle handle = (IndexBufferHandle)(g_index_buffers.size() - 1);
+    
+    printf("[Vulkan] CreateIndexBuffer: SUCCESS handle=%llu\n", handle);
+    return handle;
 }
 
 void VulkanGraphicsDriver::DestroyIndexBuffer(IndexBufferHandle handle)
 {
-    // Stub
+    if (!m_initialized || !m_device || handle >= (uint64_t)g_index_buffers.size()) {
+        printf("[Vulkan] DestroyIndexBuffer: Invalid handle %llu\n", handle);
+        return;
+    }
+    
+    VulkanBufferAllocation& alloc = g_index_buffers[handle];
+    
+    if (alloc.mapped_ptr) {
+        vkUnmapMemory(m_device->handle, alloc.memory);
+    }
+    
+    if (alloc.buffer != VK_NULL_HANDLE) {
+        vkDestroyBuffer(m_device->handle, alloc.buffer, nullptr);
+    }
+    
+    if (alloc.memory != VK_NULL_HANDLE) {
+        vkFreeMemory(m_device->handle, alloc.memory, nullptr);
+    }
+    
+    printf("[Vulkan] DestroyIndexBuffer: handle=%llu\n", handle);
 }
 
 bool VulkanGraphicsDriver::LockIndexBuffer(IndexBufferHandle handle, uint32_t offset,
                                           uint32_t size, void** lockedData, bool readOnly)
 {
-    return false;
+    if (!m_initialized || !m_device || handle >= (uint64_t)g_index_buffers.size() || !lockedData) {
+        printf("[Vulkan] LockIndexBuffer: Invalid parameters\n");
+        return false;
+    }
+    
+    VulkanBufferAllocation& alloc = g_index_buffers[handle];
+    
+    if (!alloc.is_dynamic) {
+        printf("[Vulkan] ERROR: Cannot lock static index buffer\n");
+        return false;
+    }
+    
+    if (offset + size > alloc.size) {
+        printf("[Vulkan] ERROR: Lock range exceeds buffer size\n");
+        return false;
+    }
+    
+    VkResult result = vkMapMemory(m_device->handle, alloc.memory, offset, size, 0, &alloc.mapped_ptr);
+    if (result != VK_SUCCESS) {
+        printf("[Vulkan] ERROR: vkMapMemory failed (result=%d)\n", result);
+        return false;
+    }
+    
+    *lockedData = alloc.mapped_ptr;
+    printf("[Vulkan] LockIndexBuffer: handle=%llu offset=%u size=%u\n", handle, offset, size);
+    return true;
 }
 
 bool VulkanGraphicsDriver::UnlockIndexBuffer(IndexBufferHandle handle)
 {
-    return true;
+    if (!m_initialized || !m_device || handle >= (uint64_t)g_index_buffers.size()) {
+        printf("[Vulkan] UnlockIndexBuffer: Invalid handle\n");
+        return false;
+    }
+    
+    VulkanBufferAllocation& alloc = g_index_buffers[handle];
+    
+    if (alloc.mapped_ptr) {
+        vkUnmapMemory(m_device->handle, alloc.memory);
+        alloc.mapped_ptr = nullptr;
+        printf("[Vulkan] UnlockIndexBuffer: handle=%llu\n", handle);
+        return true;
+    }
+    
+    return false;
 }
 
 uint32_t VulkanGraphicsDriver::GetIndexBufferSize(IndexBufferHandle handle) const
 {
-    return 0;
+    if (handle >= (uint64_t)g_index_buffers.size()) {
+        return 0;
+    }
+    
+    return g_index_buffers[handle].size;
 }
 
 VertexFormatHandle VulkanGraphicsDriver::CreateVertexFormat(const VertexElement* elements,

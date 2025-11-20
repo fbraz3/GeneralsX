@@ -41,6 +41,7 @@
 #include "wwmemlog.h"
 #include "dx8wrapper.h"
 #include "gdi_compat.h"  // For GDI API stubs on non-Windows
+#include "ww3d.h"        // For WW3D::Get_Window()
 
 
 ////////////////////////////////////////////////////////////////////////////////////

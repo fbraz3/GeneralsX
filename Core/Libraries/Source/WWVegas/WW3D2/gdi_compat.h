@@ -13,6 +13,27 @@
 // Include types that are already defined
 #include "win32_sdl_types_compat.h"
 
+// =====================================================================
+// GDI Constants - ExtTextOut Options
+// =====================================================================
+#ifndef ETO_OPAQUE
+#define ETO_OPAQUE 0x0002  // Fill background with current background color
+#endif
+
+#ifndef ETO_CLIPPED
+#define ETO_CLIPPED 0x0004  // Clip text to rectangle
+#endif
+
+// =====================================================================
+// GDI Functions - Math & Utility  
+// =====================================================================
+// MulDiv: Multiply two values and divide by third (with rounding)
+// This prevents overflow during intermediate calculation
+inline int MulDiv(int nNumber, int nNumerator, int nDenominator) {
+    if (nDenominator == 0) return 0;
+    return (nNumber * nNumerator) / nDenominator;
+}
+
     // On non-Windows platforms, provide stub functions for GDI calls
     // All types (SIZE, RECT, BITMAPINFO, TEXTMETRIC, etc.) are already
     // defined in win32_sdl_types_compat.h

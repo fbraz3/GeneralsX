@@ -176,6 +176,7 @@ public:
 		GRADIENT_BUMPENVMAP,				// 011	environment-mapped bump mapping
 		GRADIENT_BUMPENVMAPLUMINANCE,	// 100	environment-mapped bump mapping with luminance control
 		GRADIENT_MODULATE2X,				// 101	modulate fragment ARGB by gradient ARGB and multiply RGB by 2
+		GRADIENT_DOTPRODUCT3,				// 110	dot product 3 bump mapping (Generals feature)
  	};
 
 	enum SecGradientType

@@ -30,8 +30,8 @@
 #pragma once
 
 #include "Lib/BaseType.h"
-// #include "dx8vertexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
-// #include "dx8indexbuffer.h" // Phase 39.4: Removed with DirectX 8 cleanup
+#include "dx8buffer_compat.h"    // Phase 41: DirectX 8 buffer compatibility layer
+
 
 // TheSuperHackers @info The max sizes correspond to a number of vertices and indices of a mesh casting shadows
 // in the scene. The more vertices the meshes are supposed to have, the higher these limits need to be.

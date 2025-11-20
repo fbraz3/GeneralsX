@@ -152,6 +152,7 @@ static IDirect3DDevice8Stub* g_stub_d3d_device8 = nullptr;
 
 // Forward declarations for vertex format classes
 class VertexFormatXYZNDUV2;
+class VertexFormatXYZDUV2;
 class VertexFormatXYZ;
 
 /*
@@ -481,6 +482,15 @@ struct VertexFormatXYZNDUV2 {
     float u2, v2;           // Alternative naming for second UV (legacy compatibility)
 };
 
+struct VertexFormatXYZDUV2 {
+    float x, y, z;
+    unsigned int diffuse;
+    float tu, tv;           // First UV set
+    float tu2, tv2;         // Second UV set
+    float u1, v1;           // Alternative naming for first UV (legacy compatibility)
+    float u2, v2;           // Alternative naming for second UV (legacy compatibility)
+};
+
 struct VertexFormatXYZ {
     float x, y, z;
 };
@@ -681,12 +691,9 @@ protected:
     int m_ref_count;
 };
 
-// Phase 39.4: DX8IndexBufferClass stub - used by pointgr.cpp
-class DX8IndexBufferClass : public IndexBufferClass {
-public:
-    DX8IndexBufferClass(int size = 0) : IndexBufferClass(size) {}
-    virtual ~DX8IndexBufferClass() {}
-};
+// Phase 41: DX8 buffer classes now provided by dx8buffer_compat.h
+// These stub implementations are replaced by real implementations
+// linked from Core/Libraries/Source/Graphics/dx8buffer_compat.cpp
 
 // Phase 39.4: SortingIndexBufferClass stub - used by pointgr.cpp
 class SortingIndexBufferClass : public IndexBufferClass {
@@ -694,6 +701,9 @@ public:
     SortingIndexBufferClass(int size = 0) : IndexBufferClass(size) {}
     virtual ~SortingIndexBufferClass() {}
 };
+
+// Phase 41: DX8VertexBufferClass compatibility wrapper
+// Provided by dx8buffer_compat.h when included
 
 // ============================================================================
 // DELETED CLASS STUBS (Phase 39.4)

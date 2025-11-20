@@ -12,7 +12,7 @@ static DX8Caps g_dx8_caps;
 
 // Global mesh renderer stub instance (Phase 39.4: Changed from pointer to static object)
 static DX8MeshRenderer g_dx8_mesh_renderer;
-DX8MeshRenderer& TheDX8MeshRenderer = g_dx8_mesh_renderer;
+DX8MeshRenderer TheDX8MeshRenderer = g_dx8_mesh_renderer;
 
 // Global Renderer Debugger stub (Phase 39.4)
 class DX8RendererDebugger {

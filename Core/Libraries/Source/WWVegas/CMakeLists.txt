@@ -21,6 +21,7 @@ endif()
 
 target_include_directories(core_wwcommon INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Graphics
     WW3D2
     WWAudio
     WWDebug

@@ -43,7 +43,12 @@
 #include "texture.h"
 #include "wwstring.h"
 
-#include <windows.h>
+// Cross-platform file system utilities
+#include <cstring>
+#include <cstdlib>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <libgen.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -257,7 +262,7 @@ AggregateDefClass::Find_Subobject
 				if (ptemp_obj == NULL)
 					continue;
 
-				if (::lstrcmpi (ptemp_obj->Get_Name (), mesh_path[index]) == 0) {
+				if (lstrcmpi (ptemp_obj->Get_Name (), mesh_path[index]) == 0) {
 					sub_obj = ptemp_obj;
 				} else {
 					REF_PTR_RELEASE (ptemp_obj);
@@ -349,22 +354,25 @@ AggregateDefClass::Load_Assets (const char *passet_name)
 	// Param OK?
 	if (passet_name != NULL) {
 
-		// Determine what the current working directory is
-		char path[MAX_PATH];
-		::GetCurrentDirectory (sizeof (path), path);
+		// Cross-platform: get current working directory
+		char path[260];  // MAX_PATH equivalent
+		if (getcwd(path, sizeof(path)) != nullptr) {
 
-		// Ensure the path is directory delimited
-		if (path[::lstrlen(path)-1] != '\\') {
-			::lstrcat (path, "\\");
-		}
+			// Ensure the path is directory delimited (use '/' for cross-platform compatibility)
+			size_t path_len = strlen(path);
+			if (path_len > 0 && path[path_len - 1] != '/' && path[path_len - 1] != '\\') {
+				strncat(path, "/", sizeof(path) - path_len - 1);
+			}
 
-		// Assume the filename is simply the "asset name" + the w3d extension
-		::lstrcat (path, passet_name);
-		::lstrcat (path, ".w3d");
+			// Assume the filename is simply the "asset name" + the w3d extension
+			strncat(path, passet_name, sizeof(path) - strlen(path) - 1);
+			strncat(path, ".w3d", sizeof(path) - strlen(path) - 1);
 
-		// If the file exists, then load it into the asset manager.
-		if (::GetFileAttributes (path) != 0xFFFFFFFF) {
-			retval = WW3DAssetManager::Get_Instance()->Load_3D_Assets (path);
+			// Cross-platform: check if file exists using stat()
+			struct stat file_stat;
+			if (stat(path, &file_stat) == 0 && S_ISREG(file_stat.st_mode)) {
+				retval = WW3DAssetManager::Get_Instance()->Load_3D_Assets (path);
+			}
 		}
 	}
 
@@ -388,7 +396,7 @@ AggregateDefClass::Initialize (RenderObjClass &base_model)
 	orig_model_name = (orig_model_name == NULL) ? base_model.Get_Name () : orig_model_name;
 
 	// Record information about this base model
-	::lstrcpy (m_Info.BaseModelName, orig_model_name);
+	lstrcpy (m_Info.BaseModelName, orig_model_name);
 	m_Info.SubobjectCount = 0;
 	m_MiscInfo.OriginalClassID = base_model.Class_ID ();
 	m_MiscInfo.Flags = 0;
@@ -468,8 +476,8 @@ AggregateDefClass::Build_Subobject_List
 					 (Is_Object_In_List (prototype_name, orig_node_list) == false)) {
 
 					// Add this subobject to our list
-					::lstrcpy (subobj_info.SubobjectName, prototype_name);
-					::lstrcpy (subobj_info.BoneName, pbone_name);
+					lstrcpy (subobj_info.SubobjectName, prototype_name);
+					lstrcpy (subobj_info.BoneName, pbone_name);
 					Add_Subobject (subobj_info);
 					m_Info.SubobjectCount ++;
 
@@ -520,7 +528,7 @@ AggregateDefClass::Is_Object_In_List
 
 		// Is this the render object we were looking for?
 		if (prender_obj != NULL &&
-		    ::lstrcmpi (prender_obj->Get_Name (), passet_name) == 0) {
+		    lstrcmpi (prender_obj->Get_Name (), passet_name) == 0) {
 			retval = true;
 		}
 	}
@@ -673,8 +681,8 @@ AggregateDefClass::Add_Subobject (const W3dAggregateSubobjectStruct &subobj_info
 {
 	// Create a new structure and copy the contents of the src
 	W3dAggregateSubobjectStruct *pnew_entry = W3DNEW W3dAggregateSubobjectStruct;
-	::lstrcpy (pnew_entry->SubobjectName, subobj_info.SubobjectName);
-	::lstrcpy (pnew_entry->BoneName, subobj_info.BoneName);
+	lstrcpy (pnew_entry->SubobjectName, subobj_info.SubobjectName);
+	lstrcpy (pnew_entry->BoneName, subobj_info.BoneName);
 
 	// Add this new entry to the list
 	m_SubobjectList.Add (pnew_entry);
@@ -752,7 +760,7 @@ AggregateDefClass::Save_Header (ChunkSaveClass &chunk_save)
 		// Fill the header structure
 		W3dAggregateHeaderStruct header = { 0 };
 		header.Version = W3D_CURRENT_AGGREGATE_VERSION;
-		::lstrcpyn (header.Name, m_pName, sizeof (header.Name));
+		lstrcpyn (header.Name, m_pName, sizeof (header.Name));
 		header.Name[sizeof (header.Name) - 1] = 0;
 
 		// Write the header out to the chunk

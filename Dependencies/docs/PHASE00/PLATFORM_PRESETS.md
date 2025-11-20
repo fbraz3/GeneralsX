@@ -1,0 +1,201 @@
+# GeneralsX - PHASE 0: Presets and Plataforma
+
+**Date**: November 10, 2025  
+**Decision**: Define strategy for presets to cross-platform  
+
+---
+
+## Presets Atuais
+
+```
+vc6          → Windows 32-bit (legacy)
+macos-arm64  → macOS Apple Silicon (PRIMARY)
+macos-x64    → macOS Intel x86_64 (SECONDARY)
+linux        → Linux 64-bit (x86_64)
+```
+
+---
+
+## Decision: Intel macOS Support
+
+### Quare
+Valand manter compatibility with macOS Intel (x86_64)?
+
+### Analysis
+
+**Contra manter**:
+- Apple descontinuou Intel macs in 2021
+- Most ubes agora have ARM64
+- Duplica tempo and testing
+- CMake complexity
+
+**A favor**:
+- Still there are users with Intel Macs
+- Build timand minimal (ccache)
+- Ubes podem compilar sand quibeem
+
+### Decision: KEEP COM Low PRIORIDADE
+
+- PRIMARY: `macos-arm64-vulkan` (Apple Silicon)
+- SECONDARY: `macos-x64-vulkan` (Intel - will compile mas LOW priority testing)
+- MAINTAINER: Sand quebrar, not is bloqueador
+
+---
+
+## Novo Esquema and Presets
+
+```yaml
+# Build Presets (Platform-Specific)
+
+Legacy Windows:
+  - vc6 - Windows 32-bit (Visual C++ 6 compatibility) - KEEP FOR NOW
+
+Modern Vulkan Backends:
+  - windows-vulkan    - Windows 64-bit (Vulkan native)
+  - macos-arm64-vulkan - macOS Apple Silicon (Vulkan→Metal via MoltenVK)
+  - macos-x64-vulkan   - macOS Intel x86_64 (Vulkan→Metal via MoltenVK)
+  - linux-vulkan       - Linux 64-bit (Vulkan native)
+```
+
+### Renaming (Future Planning)
+
+Quando descontinuar suportand Windows legacy:
+```
+vc6 → deprecated (removand in Phase 60+)
+windows-vulkan → windows (simplificar)
+```
+
+---
+
+## Mapeamento CMakePresets.json
+
+```json
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "vc6",
+      "displayName": "Windows 32-bit (VC6 Legacy)",
+      "generator": "Visual Studio 17",
+      "binaryDir": "${sourceDir}/build/vc6",
+      "cacheVariables": {
+        "RTS_BUILD_ZEROHOUR": "ON",
+        "RTS_BUILD_GENERALS": "ON"
+      }
+    },
+    {
+      "name": "macos-arm64-vulkan",
+      "displayName": "macOS Apple Silicon (Vulkan)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/macos-arm64-vulkan",
+      "cacheVariables": {
+        "CMAKE_OSX_ARCHITECTURES": "arm64",
+        "USE_DXVK": "ON",
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "macos-x64-vulkan",
+      "displayName": "macOS Intel x86_64 (Vulkan)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/macos-x64-vulkan",
+      "cacheVariables": {
+        "CMAKE_OSX_ARCHITECTURES": "x86_64",
+        "USE_DXVK": "ON",
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "linux-vulkan",
+      "displayName": "Linux x86_64 (Vulkan)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/linux-vulkan",
+      "cacheVariables": {
+        "USE_DXVK": "ON",
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "windows-vulkan",
+      "displayName": "Windows 64-bit (Vulkan)",
+      "generator": "Visual Studio 17",
+      "binaryDir": "${sourceDir}/build/windows-vulkan",
+      "cacheVariables": {
+        "USE_DXVK": "ON"
+      }
+    }
+  ]
+}
+```
+
+---
+
+## Build Commands by Plataforma
+
+```bash
+# macOS ARM64 (PRIMARY)
+CMake --preset macos-arm64-vulkan
+CMake --build build/macos-arm64-vulkan --target GeneralsXZH -j 4
+
+# macOS Intel (SECONDARY)  
+CMake --preset macos-x64-vulkan
+CMake --build build/macos-x64-vulkan --target GeneralsXZH -j 4
+
+# Linux (TERTIARY)
+CMake --preset linux-vulkan
+CMake --build build/linux-vulkan --target GeneralsXZH -j 4
+
+# Windows 64-bit Vulkan (FUTURE)
+CMake --preset windows-vulkan
+CMake --build build/windows-vulkan --target GeneralsXZH -j 4
+
+# Windows 32-bit Legacy (DEPRECATED)
+CMake --preset vc6
+CMake --build build/vc6 --target GeneralsXZH -j 4
+```
+
+---
+
+## Testing Matrix
+
+| Preset | Test priority | Status |
+|--------|---------------|--------|
+| macos-arm64-vulkan | 🔴 CRITICAL | Activand |
+| macos-x64-vulkan | 🟡 Secondary | Compile-only |
+| linux-vulkan | 🟡 Secondary | Compile-only |
+| windows-vulkan | 🟢 Future | Not yet tested |
+| vc6 | ⚪ Legacy | Compile-only |
+
+---
+
+## Target Executables
+
+Mesmo to All os presets:
+
+```
+GeneralsX    → Base gamand executable
+GeneralsXZH  → Zero Hour expansion executable
+```
+
+Installation:
+```
+$HOME/GeneralsX/Generals/GeneralsX
+$HOME/GeneralsX/GeneralsMD/GeneralsXZH
+```
+
+---
+
+## Decision Final
+
+✅ **KEEP**:
+- macos-arm64-vulkan (primary development)
+- macos-x64-vulkan (secondary - may break, not priority)
+- linux-vulkan (tertiary)
+- windows-vulkan (future)
+- vc6 (legacy - keep for now)
+
+❌ **REMOVER** (future, Phase 55+):
+- vc6 quando descontinuarmos suportand Windows legacy
+
+⏳ **ADICIONAR** (future):
+- windows-vulkan with suportand completo (Phase 50+)
